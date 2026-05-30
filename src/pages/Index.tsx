@@ -41,7 +41,7 @@ const menuItems: MenuItem[] = [
 
 const Index = () => {
   const [active, setActive] = useState("Home");
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ Gerencial: true });
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ Contábil: true });
   const [collapsed, setCollapsed] = useState(false);
 
   return (
