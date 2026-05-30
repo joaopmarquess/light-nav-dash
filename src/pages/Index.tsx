@@ -33,9 +33,9 @@ const menuItems: MenuItem[] = [
       { icon: Percent, label: "Impostos" },
     ],
   },
-  { icon: CircleDollarSign, label: "Carteira" },
-  { icon: HandCoins, label: "Sinistralidade" },
-  { icon: MoreHorizontal, label: "Assistencial" },
+  { icon: Users, label: "Carteira" },
+  { icon: Percent, label: "Sinistralidade" },
+  { icon: Stethoscope, label: "Assistencial" },
 ];
 
 const Index = () => {
