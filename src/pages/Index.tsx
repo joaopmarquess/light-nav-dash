@@ -25,7 +25,7 @@ const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   {
     icon: TrendingUp,
-    label: "Gerencial",
+    label: "Contábil",
     children: [
       { icon: FileText, label: "DRE" },
       { icon: Settings2, label: "Operacional" },
@@ -34,14 +34,14 @@ const menuItems: MenuItem[] = [
       { icon: Percent, label: "Impostos" },
     ],
   },
-  { icon: CircleDollarSign, label: "Patrimônio" },
-  { icon: HandCoins, label: "Custos" },
-  { icon: MoreHorizontal, label: "Outros" },
+  { icon: CircleDollarSign, label: "Carteira" },
+  { icon: HandCoins, label: "Sinistralidade" },
+  { icon: MoreHorizontal, label: "Assistencial" },
 ];
 
 const Index = () => {
   const [active, setActive] = useState("Home");
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ Gerencial: true });
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ Contábil: true });
   const [collapsed, setCollapsed] = useState(false);
 
   return (
