@@ -372,6 +372,7 @@ const Vendas = () => {
                       <th
                         key={col.k}
                         onClick={() => toggleSort(col.k)}
+                        title={col.k === "vidas" || col.k === "producao" ? "Período: 05/2025 a 04/2026" : undefined}
                         className={`font-medium px-3 py-2 cursor-pointer select-none ${col.w} ${col.align === "right" ? "text-right" : "text-left"} ${active ? "text-foreground" : "text-muted-foreground"} hover:text-foreground whitespace-nowrap`}
                       >
                         <span className={`inline-flex items-center gap-1 ${col.align === "right" ? "justify-end" : ""}`}>
