@@ -364,6 +364,7 @@ const Vendas = () => {
                             {s.vendedor}
                           </span>
                         </td>
+                        <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtInt(s.planos)}</td>
                         <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(s.vidas)}</td>
                         <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(s.producao)}</td>
                       </tr>
@@ -419,6 +420,9 @@ const Vendas = () => {
               <tfoot className="sticky bottom-0 bg-muted">
                 <tr className="border-t border-border">
                   <td className="px-3 py-2 text-xs font-semibold text-foreground" colSpan={singleAgent ? 1 : 2}>Total</td>
+                  {summarize && (
+                    <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.planos)}</td>
+                  )}
                   <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.vidas)}</td>
                   <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(totals.producao)}</td>
                   {!summarize && <td className="px-3 py-2"></td>}
