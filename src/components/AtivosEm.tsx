@@ -32,6 +32,7 @@ const AtivosEm = ({ dateValue }: Props) => {
   const [appliedTerms, setAppliedTerms] = useState<string[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>("vidas");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [showSubtotals, setShowSubtotals] = useState(true);
 
   const toggleSort = (k: SortKey) => {
     if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
