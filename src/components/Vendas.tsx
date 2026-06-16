@@ -122,12 +122,12 @@ const Vendas = () => {
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-8rem)] flex flex-col">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+        <div className="shrink-0">
           <h2 className="text-lg font-semibold text-foreground">Vendas</h2>
           <p className="text-xs text-muted-foreground">Filtro por AGENTE — vidas vendidas e produção</p>
         </div>
-        <div className="w-full sm:w-[32rem] flex flex-col gap-2">
+        <div className="flex-1 min-w-0 flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <select
               value={agente}
