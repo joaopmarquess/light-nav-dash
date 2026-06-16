@@ -17,7 +17,7 @@ type Row = {
   producao: number;
 };
 type VendasFile = { rows: Row[] };
-type SortKey = "agente" | "vendedor" | "vidas" | "producao" | "plano" | "nome";
+type SortKey = "agente" | "vendedor" | "vidas" | "producao" | "plano" | "nome" | "planos";
 type SortDir = "asc" | "desc";
 
 const fmtBRL = (n: number) =>
@@ -95,42 +95,46 @@ const Vendas = () => {
 
   // Group by VENDEDOR for subtotals
   const grouped = useMemo(() => {
-    const map = new Map<string, { vendedor: string; rows: Row[]; vidas: number; producao: number }>();
+    const map = new Map<string, { vendedor: string; rows: Row[]; vidas: number; producao: number; planos: Set<string> }>();
     for (const r of results) {
       let g = map.get(r.vendedor);
       if (!g) {
-        g = { vendedor: r.vendedor, rows: [], vidas: 0, producao: 0 };
+        g = { vendedor: r.vendedor, rows: [], vidas: 0, producao: 0, planos: new Set() };
         map.set(r.vendedor, g);
       }
       g.rows.push(r);
       g.vidas += r.vidas;
       g.producao += r.producao;
+      g.planos.add(r.plano);
     }
     return Array.from(map.values());
   }, [results]);
 
   const totals = useMemo(() => {
     let vidas = 0, producao = 0;
+    const planos = new Set<string>();
     for (const r of results) {
       vidas += r.vidas;
       producao += r.producao;
+      planos.add(r.plano);
     }
-    return { vidas, producao, count: results.length };
+    return { vidas, producao, count: results.length, planos: planos.size };
   }, [results]);
 
   const summary = useMemo(() => {
-    const map = new Map<string, { agente: string; vendedor: string; vidas: number; producao: number }>();
+    const map = new Map<string, { agente: string; vendedor: string; vidas: number; producao: number; planosSet: Set<string> }>();
     for (const r of results) {
       const k = `${r.agente}||${r.vendedor}`;
       let g = map.get(k);
-      if (!g) { g = { agente: r.agente, vendedor: r.vendedor, vidas: 0, producao: 0 }; map.set(k, g); }
+      if (!g) { g = { agente: r.agente, vendedor: r.vendedor, vidas: 0, producao: 0, planosSet: new Set() }; map.set(k, g); }
       g.vidas += r.vidas;
       g.producao += r.producao;
+      g.planosSet.add(r.plano);
     }
-    const arr = Array.from(map.values());
+    const arr = Array.from(map.values()).map((g) => ({ ...g, planos: g.planosSet.size }));
     const dir = sortDir === "asc" ? 1 : -1;
     arr.sort((a, b) => {
-      if (sortKey === "vidas" || sortKey === "producao") return (a[sortKey] - b[sortKey]) * dir;
+      if (sortKey === "vidas" || sortKey === "producao" || sortKey === "planos") return (a[sortKey] - b[sortKey]) * dir;
       const k = sortKey === "agente" || sortKey === "vendedor" ? sortKey : "vendedor";
       const av = a[k as "agente" | "vendedor"].toLowerCase();
       const bv = b[k as "agente" | "vendedor"].toLowerCase();
@@ -158,6 +162,7 @@ const Vendas = () => {
     ? [
         { k: "agente", label: "AGENTE", align: "left", w: "w-56" },
         { k: "vendedor", label: "VENDEDOR", align: "left", w: "" },
+        { k: "planos", label: "PLANOS", align: "right", w: "w-24" },
         { k: "vidas", label: "VIDAS", align: "right", w: "w-32" },
         { k: "producao", label: "PRODUÇÃO", align: "right", w: "w-40" },
       ]
@@ -359,6 +364,7 @@ const Vendas = () => {
                             {s.vendedor}
                           </span>
                         </td>
+                        <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtInt(s.planos)}</td>
                         <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(s.vidas)}</td>
                         <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(s.producao)}</td>
                       </tr>
@@ -414,6 +420,9 @@ const Vendas = () => {
               <tfoot className="sticky bottom-0 bg-muted">
                 <tr className="border-t border-border">
                   <td className="px-3 py-2 text-xs font-semibold text-foreground" colSpan={singleAgent ? 1 : 2}>Total</td>
+                  {summarize && (
+                    <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.planos)}</td>
+                  )}
                   <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.vidas)}</td>
                   <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(totals.producao)}</td>
                   {!summarize && <td className="px-3 py-2"></td>}
