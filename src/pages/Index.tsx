@@ -14,7 +14,15 @@ import {
   ChevronLeft,
   Plus,
   Calendar as CalendarIcon,
+  RotateCcw,
 } from "lucide-react";
+
+const todayBR = () => {
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${dd}/${mm}/${d.getFullYear()}`;
+};
 import AtivosEm from "@/components/AtivosEm";
 
 type MenuItem = {
@@ -46,7 +54,7 @@ const Index = () => {
   const [active, setActive] = useState("Home");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ Contábil: true });
   const [collapsed, setCollapsed] = useState(false);
-  const [dateValue, setDateValue] = useState("");
+  const [dateValue, setDateValue] = useState(todayBR());
 
   return (
     <div className="min-h-screen flex w-full bg-background">
@@ -142,15 +150,26 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-3">
             {active === "Ativos em" && (
-              <div className="relative">
-                <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                <input
-                  type="text"
-                  value={dateValue}
-                  onChange={(e) => setDateValue(e.target.value)}
-                  placeholder="dd/mm/aaaa"
-                  className="h-9 w-40 pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  <input
+                    type="text"
+                    value={dateValue}
+                    onChange={(e) => setDateValue(e.target.value)}
+                    placeholder="dd/mm/aaaa"
+                    className="h-9 w-40 pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDateValue(todayBR())}
+                  title="Voltar para hoje"
+                  aria-label="Voltar para hoje"
+                  className="h-9 w-9 flex items-center justify-center rounded-md border border-border bg-background text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </button>
               </div>
             )}
             <span className="text-sm text-muted-foreground">Olá, Usuário</span>

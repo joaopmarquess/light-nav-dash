@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import plansData from "@/data/plans.json";
+
+type SortKey = "plano" | "nome" | "vidas";
+type SortDir = "asc" | "desc";
 
 type Dataset = { p: number[]; v: number[]; r: number[]; c: number[] };
 type Plan = { p: string; n: string };
@@ -25,6 +28,16 @@ const AtivosEm = ({ dateValue }: Props) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState("");
+  const [sortKey, setSortKey] = useState<SortKey>("vidas");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  const toggleSort = (k: SortKey) => {
+    if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortKey(k);
+      setSortDir(k === "vidas" ? "desc" : "asc");
+    }
+  };
 
   useEffect(() => {
     let abort = false;
@@ -53,9 +66,13 @@ const AtivosEm = ({ dateValue }: Props) => {
 
   const results = useMemo(() => {
     if (!data || !refDate) return [];
-    const ref = Math.floor((refDate.getTime() - EPOCH) / DAY);
+    const todayDays = Math.floor((Date.now() - EPOCH) / DAY);
+    // se a data informada for futura, usa hoje (conforme HOJE() da fórmula)
+    const refRaw = Math.floor((refDate.getTime() - EPOCH) / DAY);
+    const ref = Math.min(refRaw, todayDays);
+    const refYear = new Date(EPOCH + ref * DAY).getUTCFullYear();
     const yearEnd = Math.floor(
-      (Date.UTC(new Date().getUTCFullYear(), 11, 31) - EPOCH) / DAY,
+      (Date.UTC(refYear, 11, 31) - EPOCH) / DAY,
     );
     const totals = new Map<number, number>();
     const { p, v, r, c } = data;
@@ -81,9 +98,15 @@ const AtivosEm = ({ dateValue }: Props) => {
         list.push({ plano: pl.p || "(sem código)", nome: pl.n || "(sem nome)", vidas });
       }
     }
-    list.sort((a, b) => b.vidas - a.vidas);
+    const dir = sortDir === "asc" ? 1 : -1;
+    list.sort((a, b) => {
+      if (sortKey === "vidas") return (a.vidas - b.vidas) * dir;
+      const av = (a[sortKey] as string).toLowerCase();
+      const bv = (b[sortKey] as string).toLowerCase();
+      return av < bv ? -dir : av > bv ? dir : 0;
+    });
     return list;
-  }, [data, refDate?.getTime(), filter, plans]);
+  }, [data, refDate?.getTime(), filter, plans, sortKey, sortDir]);
 
   const totalVidas = useMemo(
     () => results.reduce((s, r) => s + r.vidas, 0),
@@ -149,15 +172,32 @@ const AtivosEm = ({ dateValue }: Props) => {
             <table className="w-full text-sm">
               <thead className="bg-muted/40 sticky top-0">
                 <tr>
-                  <th className="text-left font-medium text-muted-foreground px-4 py-2 w-32">
-                    PLANO
-                  </th>
-                  <th className="text-left font-medium text-muted-foreground px-4 py-2">
-                    NOME_PLANO
-                  </th>
-                  <th className="text-right font-medium text-muted-foreground px-4 py-2 w-32">
-                    VIDAS
-                  </th>
+                  {([
+                    { k: "plano" as SortKey, label: "PLANO", align: "left", w: "w-32" },
+                    { k: "nome" as SortKey, label: "NOME_PLANO", align: "left", w: "" },
+                    { k: "vidas" as SortKey, label: "VIDAS", align: "right", w: "w-32" },
+                  ]).map((col) => {
+                    const active = sortKey === col.k;
+                    const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
+                    return (
+                      <th
+                        key={col.k}
+                        onClick={() => toggleSort(col.k)}
+                        className={`font-medium px-4 py-2 cursor-pointer select-none ${col.w} ${
+                          col.align === "right" ? "text-right" : "text-left"
+                        } ${active ? "text-foreground" : "text-muted-foreground"} hover:text-foreground`}
+                      >
+                        <span
+                          className={`inline-flex items-center gap-1 ${
+                            col.align === "right" ? "justify-end" : ""
+                          }`}
+                        >
+                          {col.label}
+                          <Icon className="h-3 w-3 opacity-70" />
+                        </span>
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>
