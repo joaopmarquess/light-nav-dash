@@ -270,7 +270,6 @@ const Vendas = () => {
                             <td className="px-3 py-2 text-foreground">{row.vendedor}</td>
                             <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(row.vidas)}</td>
                             <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(row.producao)}</td>
-                            <td className="px-3 py-2 text-foreground tabular-nums">{row.plano}</td>
                             <td className="px-3 py-2 text-foreground">{row.nome}</td>
                           </tr>
                         ))}
@@ -283,7 +282,7 @@ const Vendas = () => {
                           <td className="px-3 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(g.vidas)}</td>
                           <td className="px-3 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(g.producao)}</td>
                           <td className="px-3 py-1.5"></td>
-                          <td className="px-3 py-1.5"></td>
+
                         </tr>
                       </Fragment>
                     ))
@@ -293,7 +292,7 @@ const Vendas = () => {
                         <td className="px-3 py-2 text-foreground">{row.vendedor}</td>
                         <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(row.vidas)}</td>
                         <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(row.producao)}</td>
-                        <td className="px-3 py-2 text-foreground tabular-nums">{row.plano}</td>
+                        
                         <td className="px-3 py-2 text-foreground">{row.nome}</td>
                       </tr>
                     ))}
@@ -304,7 +303,7 @@ const Vendas = () => {
                   <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.vidas)}</td>
                   <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(totals.producao)}</td>
                   <td className="px-3 py-2"></td>
-                  <td className="px-3 py-2"></td>
+
                 </tr>
               </tfoot>
             </table>
