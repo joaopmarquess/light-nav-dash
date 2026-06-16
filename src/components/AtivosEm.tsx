@@ -157,7 +157,7 @@ const AtivosEm = ({ dateValue }: Props) => {
       }
     }
     const terms = appliedTerms.map((t) => t.toLowerCase()).filter(Boolean);
-    const list: ({ plano: string; nome: string; vidas: number } & PlanoMoney)[] = [];
+    const list: ({ plano: string; nome: string; vidas: number; entrou: number } & PlanoMoney)[] = [];
     for (const [idx, vidas] of totals) {
       const pl = plans[idx];
       if (!pl) continue;
@@ -170,6 +170,7 @@ const AtivosEm = ({ dateValue }: Props) => {
           plano: code || "(sem código)",
           nome: pl.n || "(sem nome)",
           vidas,
+          entrou: vendasEntrou[code] || 0,
           mens: m.mens || 0,
           copart: m.copart || 0,
           receita: m.receita || 0,
@@ -180,7 +181,7 @@ const AtivosEm = ({ dateValue }: Props) => {
     }
     const dir = sortDir === "asc" ? 1 : -1;
     list.sort((a, b) => {
-      if (sortKey === "vidas" || sortKey === "mens" || sortKey === "copart" || sortKey === "receita" || sortKey === "despesa" || sortKey === "saldo") {
+      if (sortKey === "vidas" || sortKey === "entrou" || sortKey === "mens" || sortKey === "copart" || sortKey === "receita" || sortKey === "despesa" || sortKey === "saldo") {
         return ((a[sortKey] as number) - (b[sortKey] as number)) * dir;
       }
       const av = (a[sortKey] as string).toLowerCase();
@@ -188,18 +189,20 @@ const AtivosEm = ({ dateValue }: Props) => {
       return av < bv ? -dir : av > bv ? dir : 0;
     });
     return list;
-  }, [data, refDate?.getTime(), appliedTerms, plans, sortKey, sortDir, moneyByPlano]);
+  }, [data, refDate?.getTime(), appliedTerms, plans, sortKey, sortDir, moneyByPlano, vendasEntrou]);
+
 
   const grouped = useMemo(() => {
-    const map = new Map<string, { nome: string; rows: typeof results; subtotal: number } & PlanoMoney>();
+    const map = new Map<string, { nome: string; rows: typeof results; subtotal: number; entrou: number } & PlanoMoney>();
     for (const r of results) {
       let g = map.get(r.nome);
       if (!g) {
-        g = { nome: r.nome, rows: [], subtotal: 0, mens: 0, copart: 0, receita: 0, despesa: 0, saldo: 0 };
+        g = { nome: r.nome, rows: [], subtotal: 0, entrou: 0, mens: 0, copart: 0, receita: 0, despesa: 0, saldo: 0 };
         map.set(r.nome, g);
       }
       g.rows.push(r);
       g.subtotal += r.vidas;
+      g.entrou += r.entrou;
       g.mens += r.mens;
       g.copart += r.copart;
       g.receita += r.receita;
@@ -214,6 +217,7 @@ const AtivosEm = ({ dateValue }: Props) => {
     [grouped, drillNome],
   );
   const totalVidas = useMemo(() => visibleGroups.reduce((s, g) => s + g.subtotal, 0), [visibleGroups]);
+  const totalEntrou = useMemo(() => visibleGroups.reduce((s, g) => s + g.entrou, 0), [visibleGroups]);
   const totalPlanos = useMemo(() => visibleGroups.reduce((s, g) => s + g.rows.length, 0), [visibleGroups]);
   const totals = useMemo(() => {
     const t: PlanoMoney = { mens: 0, copart: 0, receita: 0, despesa: 0, saldo: 0 };
@@ -223,7 +227,8 @@ const AtivosEm = ({ dateValue }: Props) => {
     return t;
   }, [visibleGroups]);
 
-  const colCount = (summarize && !drillNome ? 3 : drillNome ? 2 : 3) + MONEY_COLS.length + 1;
+  const colCount = (summarize && !drillNome ? 3 : drillNome ? 2 : 3) + 1 + MONEY_COLS.length + 1;
+
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-8rem)] flex flex-col">
