@@ -287,26 +287,27 @@ const Vendas = () => {
           </div>
 
           {singleAgent && chartData.length > 0 && (
-            <div className="mb-3 border border-border rounded-lg bg-muted/20 p-3">
-              <div className="text-[11px] font-semibold text-foreground mb-2">
+            <div className="mb-2 border border-border rounded-lg bg-muted/20 px-3 pt-2 pb-1 shrink-0">
+              <div className="text-[11px] font-semibold text-foreground mb-1">
                 VIDAS por VENDEDOR — {agente}
               </div>
-              <div style={{ width: "100%", height: Math.max(120, chartData.length * 28 + 30) }}>
+              <div style={{ width: "100%", height: 140 }}>
                 <ResponsiveContainer>
-                  <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 24, left: 8, bottom: 4 }}>
-                    <XAxis type="number" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                    <YAxis
+                  <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+                    <XAxis
                       type="category"
                       dataKey="vendedor"
                       tick={{ fontSize: 10 }}
-                      width={180}
+                      interval={0}
+                      tickFormatter={(v: string) => v.split(" ")[0]}
                       stroke="hsl(var(--muted-foreground))"
                     />
+                    <YAxis type="number" tick={{ fontSize: 10 }} width={40} stroke="hsl(var(--muted-foreground))" />
                     <Tooltip
                       contentStyle={{ fontSize: 11, padding: "4px 8px", borderRadius: 6 }}
                       formatter={(v: number) => [fmtInt(v), "VIDAS"]}
                     />
-                    <Bar dataKey="vidas" radius={[0, 4, 4, 0]}>
+                    <Bar dataKey="vidas" radius={[4, 4, 0, 0]}>
                       {chartData.map((d, i) => (
                         <Cell key={i} fill={vendedorColors[d.vendedor] || "#3b82f6"} />
                       ))}
