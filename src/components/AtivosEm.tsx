@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, Plus, X } from "lucide-react";
 import plansData from "@/data/plans.json";
 
 type SortKey = "plano" | "nome" | "vidas";
@@ -27,7 +27,9 @@ const AtivosEm = ({ dateValue }: Props) => {
   const [data, setData] = useState<Dataset | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState("");
+  const [filterDraft, setFilterDraft] = useState("");
+  const [pendingTerms, setPendingTerms] = useState<string[]>([]);
+  const [appliedTerms, setAppliedTerms] = useState<string[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>("vidas");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
