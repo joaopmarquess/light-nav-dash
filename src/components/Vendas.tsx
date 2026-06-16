@@ -392,15 +392,74 @@ const Vendas = () => {
                   </tr>
                 )}
                 {summarizeAgent
-                  ? agentSummary.map((s, i) => (
-                      <tr key={`as-${i}`} className="border-t border-border hover:bg-accent/40">
-                        <td className="px-3 py-2 text-foreground">{s.agente}</td>
-                        <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtInt(s.vendedores)}</td>
-                        <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtInt(s.planos)}</td>
-                        <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(s.vidas)}</td>
-                        <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(s.producao)}</td>
-                      </tr>
-                    ))
+                  ? agentSummary.map((s, i) => {
+                      const exp = expanded[s.agente] || null;
+                      const agentRows = results.filter((r) => r.agente === s.agente);
+                      // vendedor breakdown
+                      const vendMap = new Map<string, { vendedor: string; planos: Set<string>; vidas: number; producao: number }>();
+                      // plano breakdown
+                      const planMap = new Map<string, { plano: string; nome: string; vidas: number; producao: number }>();
+                      for (const r of agentRows) {
+                        let v = vendMap.get(r.vendedor);
+                        if (!v) { v = { vendedor: r.vendedor, planos: new Set(), vidas: 0, producao: 0 }; vendMap.set(r.vendedor, v); }
+                        v.planos.add(r.plano); v.vidas += r.vidas; v.producao += r.producao;
+                        let p = planMap.get(r.plano);
+                        if (!p) { p = { plano: r.plano, nome: r.nome, vidas: 0, producao: 0 }; planMap.set(r.plano, p); }
+                        p.vidas += r.vidas; p.producao += r.producao;
+                      }
+                      const vendList = Array.from(vendMap.values()).sort((a, b) => b.vidas - a.vidas);
+                      const planList = Array.from(planMap.values()).sort((a, b) => b.vidas - a.vidas);
+                      return (
+                        <Fragment key={`as-${i}`}>
+                          <tr className="border-t border-border hover:bg-accent/40">
+                            <td
+                              className="px-3 py-2 text-primary cursor-pointer underline-offset-2 hover:underline"
+                              onClick={() => toggleExpand(s.agente, "vendedores")}
+                            >
+                              <span className="inline-flex items-center gap-1">
+                                <span className="text-[10px] opacity-70">{exp === "vendedores" ? "▾" : "▸"}</span>
+                                {s.agente}
+                              </span>
+                            </td>
+                            <td
+                              className="px-3 py-2 text-right text-primary cursor-pointer underline-offset-2 hover:underline tabular-nums"
+                              onClick={() => toggleExpand(s.agente, "vendedores")}
+                            >
+                              {fmtInt(s.vendedores)}
+                            </td>
+                            <td
+                              className="px-3 py-2 text-right text-primary cursor-pointer underline-offset-2 hover:underline tabular-nums"
+                              onClick={() => toggleExpand(s.agente, "planos")}
+                            >
+                              {fmtInt(s.planos)}
+                            </td>
+                            <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(s.vidas)}</td>
+                            <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(s.producao)}</td>
+                          </tr>
+                          {exp === "vendedores" && vendList.map((v, j) => (
+                            <tr key={`as-${i}-v-${j}`} className="border-t border-border bg-muted/20 text-xs">
+                              <td className="px-3 py-1.5 pl-8 text-muted-foreground italic">↳ {v.vendedor}</td>
+                              <td className="px-3 py-1.5"></td>
+                              <td className="px-3 py-1.5 text-right text-foreground tabular-nums">{fmtInt(v.planos.size)}</td>
+                              <td className="px-3 py-1.5 text-right text-foreground tabular-nums">{fmtInt(v.vidas)}</td>
+                              <td className="px-3 py-1.5 text-right text-foreground tabular-nums">{fmtBRL(v.producao)}</td>
+                            </tr>
+                          ))}
+                          {exp === "planos" && planList.map((p, j) => (
+                            <tr key={`as-${i}-p-${j}`} className="border-t border-border bg-muted/20 text-xs">
+                              <td className="px-3 py-1.5 pl-8 text-muted-foreground italic">
+                                <span className="tabular-nums mr-2">{p.plano}</span>
+                                <span className="opacity-80">{p.nome}</span>
+                              </td>
+                              <td className="px-3 py-1.5"></td>
+                              <td className="px-3 py-1.5"></td>
+                              <td className="px-3 py-1.5 text-right text-foreground tabular-nums">{fmtInt(p.vidas)}</td>
+                              <td className="px-3 py-1.5 text-right text-foreground tabular-nums">{fmtBRL(p.producao)}</td>
+                            </tr>
+                          ))}
+                        </Fragment>
+                      );
+                    })
                   : summarize
                   ? summary.map((s, i) => (
                       <tr key={`sum-${i}`} className="border-t border-border hover:bg-accent/40">
