@@ -15,6 +15,7 @@ import {
   Plus,
   Calendar as CalendarIcon,
 } from "lucide-react";
+import AtivosEm from "@/components/AtivosEm";
 
 type MenuItem = {
   icon: React.ComponentType<{ className?: string }>;
@@ -160,14 +161,18 @@ const Index = () => {
         </header>
 
         <main className="flex-1 p-8">
-          <section className="bg-card rounded-xl border border-border shadow-sm overflow-hidden h-[calc(100vh-8rem)]">
-            <iframe
-              title="Power BI Dashboard"
-              src="https://app.powerbi.com/view?r=eyJrIjoiYjQ4MjY3OTctYjI1Ny00NDIyLWE4ZmEtY2FmNzMyMmI1NjNlIiwidCI6IjQ5ZWQ4MDM4LTcwMTctNDg0Mi1iN2Q1LTI3MDdlYTYzMTQwOSJ9"
-              className="w-full h-full border-0"
-              allowFullScreen
-            />
-          </section>
+          {active === "Ativos em" ? (
+            <AtivosEm dateValue={dateValue} />
+          ) : (
+            <section className="bg-card rounded-xl border border-border shadow-sm overflow-hidden h-[calc(100vh-8rem)]">
+              <iframe
+                title="Power BI Dashboard"
+                src="https://app.powerbi.com/view?r=eyJrIjoiYjQ4MjY3OTctYjI1Ny00NDIyLWE4ZmEtY2FmNzMyMmI1NjNlIiwidCI6IjQ5ZWQ4MDM4LTcwMTctNDg0Mi1iN2Q1LTI3MDdlYTYzMTQwOSJ9"
+                className="w-full h-full border-0"
+                allowFullScreen
+              />
+            </section>
+          )}
         </main>
       </div>
     </div>
