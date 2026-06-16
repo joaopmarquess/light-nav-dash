@@ -37,6 +37,11 @@ const Vendas = () => {
   const [showSubtotals, setShowSubtotals] = useState(true);
   const [summarize, setSummarize] = useState(false);
   const [summarizeAgent, setSummarizeAgent] = useState(false);
+  const [expanded, setExpanded] = useState<Record<string, "vendedores" | "planos" | null>>({});
+
+  const toggleExpand = (agt: string, kind: "vendedores" | "planos") => {
+    setExpanded((prev) => ({ ...prev, [agt]: prev[agt] === kind ? null : kind }));
+  };
 
   const toggleSort = (k: SortKey) => {
     if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
