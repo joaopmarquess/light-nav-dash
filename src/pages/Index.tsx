@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Home,
   TrendingUp,
@@ -59,6 +59,23 @@ const Index = () => {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ Contábil: true });
   const [collapsed, setCollapsed] = useState(false);
   const [dateValue, setDateValue] = useState(todayBR());
+  const [ativosDrillNome, setAtivosDrillNome] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ nome: string }>).detail;
+      if (detail?.nome) {
+        setAtivosDrillNome(detail.nome);
+        setActive("Ativos em");
+      }
+    };
+    window.addEventListener("open-ativos-em", handler as EventListener);
+    return () => window.removeEventListener("open-ativos-em", handler as EventListener);
+  }, []);
+
+  useEffect(() => {
+    if (active !== "Ativos em" && ativosDrillNome) setAtivosDrillNome(null);
+  }, [active, ativosDrillNome]);
 
   return (
     <div className="min-h-screen flex w-full bg-background">
@@ -185,7 +202,7 @@ const Index = () => {
 
         <main className="flex-1 p-8">
           {active === "Ativos em" ? (
-            <AtivosEm dateValue={dateValue} />
+            <AtivosEm dateValue={dateValue} initialDrillNome={ativosDrillNome} />
           ) : active === "Vendas" ? (
             <Vendas />
           ) : (

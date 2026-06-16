@@ -493,7 +493,13 @@ const Vendas = () => {
                             </td>
                             <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(row.vidas)}</td>
                             <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(row.producao)}</td>
-                            <td className="px-3 py-2 text-foreground">{row.nome}</td>
+                            <td
+                              className="px-3 py-2 text-primary cursor-pointer underline-offset-2 hover:underline"
+                              onClick={() => window.dispatchEvent(new CustomEvent("open-ativos-em", { detail: { nome: row.nome } }))}
+                              title="Abrir em Ativos em"
+                            >
+                              {row.nome}
+                            </td>
                           </tr>
                         ))}
                         <tr className="border-t border-border bg-muted/30">
@@ -521,7 +527,13 @@ const Vendas = () => {
                         </td>
                         <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(row.vidas)}</td>
                         <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(row.producao)}</td>
-                        <td className="px-3 py-2 text-foreground">{row.nome}</td>
+                        <td
+                          className="px-3 py-2 text-primary cursor-pointer underline-offset-2 hover:underline"
+                          onClick={() => window.dispatchEvent(new CustomEvent("open-ativos-em", { detail: { nome: row.nome } }))}
+                          title="Abrir em Ativos em"
+                        >
+                          {row.nome}
+                        </td>
                       </tr>
                     ))}
               </tbody>
