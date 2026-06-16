@@ -217,7 +217,7 @@ const AtivosEm = ({ dateValue }: Props) => {
     return t;
   }, [visibleGroups]);
 
-  const colCount = (summarize && !drillNome ? 3 : 3) + MONEY_COLS.length + 1;
+  const colCount = (summarize && !drillNome ? 3 : drillNome ? 2 : 3) + MONEY_COLS.length + 1;
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-8rem)] flex flex-col">
@@ -467,7 +467,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                                 {row.plano}
                               </span>
                             </td>
-                            <td className="px-3 py-2 text-foreground">{row.nome}</td>
+                            {!drillNome && <td className="px-3 py-2 text-foreground">{row.nome}</td>}
                             <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{row.vidas.toLocaleString("pt-BR")}</td>
                             {MONEY_COLS.map((c) => (
                               <td key={c.k} className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(row[c.k])}</td>
