@@ -13,6 +13,7 @@ import {
   ChevronDown,
   ChevronLeft,
   Plus,
+  Calendar as CalendarIcon,
 } from "lucide-react";
 
 type MenuItem = {
