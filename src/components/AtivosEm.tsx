@@ -34,6 +34,7 @@ const AtivosEm = ({ dateValue }: Props) => {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [showSubtotals, setShowSubtotals] = useState(true);
   const [summarize, setSummarize] = useState(false);
+  const [drillNome, setDrillNome] = useState<string | null>(null);
 
   const toggleSort = (k: SortKey) => {
     if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -263,6 +264,21 @@ const AtivosEm = ({ dateValue }: Props) => {
       )}
       {!loading && !error && refDate && (
         <>
+          {drillNome && (
+            <div className="mb-2 flex items-center justify-between text-xs px-1">
+              <span className="text-muted-foreground">
+                Detalhe de:{" "}
+                <span className="font-semibold text-foreground">{drillNome}</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setDrillNome(null)}
+                className="text-primary hover:underline"
+              >
+                ← Voltar ao resumo
+              </button>
+            </div>
+          )}
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 gap-3 flex-wrap">
             <div className="flex items-center gap-4 pl-1">
               <label className="flex items-center gap-1.5 cursor-pointer select-none">
@@ -308,7 +324,7 @@ const AtivosEm = ({ dateValue }: Props) => {
             <table className="w-full text-sm">
               <thead className="bg-muted/40 sticky top-0">
                 <tr>
-                  {(summarize
+                  {(summarize && !drillNome
                     ? [
                         { k: "nome" as SortKey, label: "NOME PLANO", align: "left", w: "" },
                         { k: "plano" as SortKey, label: "PLANOS", align: "right", w: "w-32" },
@@ -354,7 +370,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                     </td>
                   </tr>
                 )}
-                {summarize
+                {summarize && !drillNome
                   ? [...grouped]
                       .sort((a, b) => {
                         const dir = sortDir === "asc" ? 1 : -1;
@@ -369,7 +385,13 @@ const AtivosEm = ({ dateValue }: Props) => {
                           key={`s-${g.nome}`}
                           className="border-t border-border hover:bg-accent/40"
                         >
-                          <td className="px-4 py-2 text-foreground">{g.nome}</td>
+                          <td
+                            className="px-4 py-2 text-primary underline-offset-2 hover:underline cursor-pointer"
+                            onClick={() => setDrillNome(g.nome)}
+                            title="Ver detalhe dos planos"
+                          >
+                            {g.nome}
+                          </td>
                           <td className="px-4 py-2 text-right text-foreground tabular-nums">
                             {g.rows.length.toLocaleString("pt-BR")}
                           </td>
@@ -378,7 +400,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                           </td>
                         </tr>
                       ))
-                  : grouped.map((g) => (
+                  : (drillNome ? grouped.filter((g) => g.nome === drillNome) : grouped).map((g) => (
                       <Fragment key={`g-${g.nome}`}>
                         {g.rows.map((row) => (
                           <tr
@@ -394,7 +416,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                             </td>
                           </tr>
                         ))}
-                        {showSubtotals && (
+                        {showSubtotals && !drillNome && (
                           <tr
                             key={`sub-${g.nome}`}
                             className="border-t border-border bg-muted/30"
