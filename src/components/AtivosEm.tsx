@@ -328,6 +328,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                     const cols = [
                       ...baseCols,
                       ...MONEY_COLS.map((c) => ({ k: c.k as SortKey, label: c.label, align: "right" as const, w: "w-32" })),
+                      { k: "sin" as SortKey, label: "%SIN", align: "right" as const, w: "w-20" },
                     ];
                     return cols.map((col) => {
                       const active = sortKey === col.k;
@@ -365,6 +366,9 @@ const AtivosEm = ({ dateValue }: Props) => {
                         if (sortKey === "mens" || sortKey === "copart" || sortKey === "receita" || sortKey === "despesa" || sortKey === "saldo") {
                           return (a[sortKey] - b[sortKey]) * dir;
                         }
+                        if (sortKey === "sin") {
+                          return (sinValue(a.despesa, a.receita) - sinValue(b.despesa, b.receita)) * dir;
+                        }
                         const an = a.nome.toLowerCase();
                         const bn = b.nome.toLowerCase();
                         return an < bn ? -dir : an > bn ? dir : 0;
@@ -379,6 +383,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                           {MONEY_COLS.map((c) => (
                             <td key={c.k} className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(g[c.k])}</td>
                           ))}
+                          <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtPct(g.despesa, g.receita)}</td>
                         </tr>
                       ))
                   : (drillNome ? grouped.filter((g) => g.nome === drillNome) : grouped).map((g) => (
@@ -391,6 +396,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                             {MONEY_COLS.map((c) => (
                               <td key={c.k} className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(row[c.k])}</td>
                             ))}
+                            <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtPct(row.despesa, row.receita)}</td>
                           </tr>
                         ))}
                         {showSubtotals && !drillNome && (
@@ -404,6 +410,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                             {MONEY_COLS.map((c) => (
                               <td key={c.k} className="px-3 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(g[c.k])}</td>
                             ))}
+                            <td className="px-3 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">{fmtPct(g.despesa, g.receita)}</td>
                           </tr>
                         )}
                       </Fragment>
@@ -421,6 +428,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                   {MONEY_COLS.map((c) => (
                     <td key={c.k} className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(totals[c.k])}</td>
                   ))}
+                  <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtPct(totals.despesa, totals.receita)}</td>
                 </tr>
               </tfoot>
             </table>
