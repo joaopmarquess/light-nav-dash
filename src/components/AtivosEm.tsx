@@ -302,7 +302,7 @@ const AtivosEm = ({ dateValue }: Props) => {
             </div>
           </div>
           <div className="flex-1 overflow-auto border border-border rounded-lg">
-            <table className="w-full text-sm">
+            <table className="w-full text-xs">
               <thead className="bg-muted/40 sticky top-0">
                 <tr>
                   {(() => {
@@ -363,7 +363,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                         return an < bn ? -dir : an > bn ? dir : 0;
                       })
                       .map((g) => (
-                        <tr key={`s-${g.nome}`} className="border-t border-border hover:bg-accent/40">
+                        <tr key={`s-${g.nome}`} className="border-t border-border hover:bg-accent/40 text-xs">
                           <td className="px-3 py-2 text-primary underline-offset-2 hover:underline cursor-pointer" onClick={() => setDrillNome(g.nome)} title="Ver detalhe dos planos">
                             {g.nome}
                           </td>
