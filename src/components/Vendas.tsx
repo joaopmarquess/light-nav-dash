@@ -293,7 +293,16 @@ const Vendas = () => {
                     </td>
                   </tr>
                 )}
-                {showSubtotals
+                {summarize
+                  ? summary.map((s, i) => (
+                      <tr key={`sum-${i}`} className="border-t border-border hover:bg-accent/40">
+                        <td className="px-3 py-2 text-foreground">{s.agente}</td>
+                        <td className="px-3 py-2 text-foreground">{s.vendedor}</td>
+                        <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(s.vidas)}</td>
+                        <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(s.producao)}</td>
+                      </tr>
+                    ))
+                  : showSubtotals
                   ? grouped.map((g) => (
                       <Fragment key={`g-${g.vendedor}`}>
                         {g.rows.map((row, i) => (
@@ -314,7 +323,6 @@ const Vendas = () => {
                           <td className="px-3 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(g.vidas)}</td>
                           <td className="px-3 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(g.producao)}</td>
                           <td className="px-3 py-1.5"></td>
-
                         </tr>
                       </Fragment>
                     ))
@@ -324,7 +332,6 @@ const Vendas = () => {
                         <td className="px-3 py-2 text-foreground">{row.vendedor}</td>
                         <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(row.vidas)}</td>
                         <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(row.producao)}</td>
-                        
                         <td className="px-3 py-2 text-foreground">{row.nome}</td>
                       </tr>
                     ))}
@@ -334,8 +341,7 @@ const Vendas = () => {
                   <td className="px-3 py-2 text-xs font-semibold text-foreground" colSpan={2}>Total</td>
                   <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.vidas)}</td>
                   <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(totals.producao)}</td>
-                  <td className="px-3 py-2"></td>
-
+                  {!summarize && <td className="px-3 py-2"></td>}
                 </tr>
               </tfoot>
             </table>
