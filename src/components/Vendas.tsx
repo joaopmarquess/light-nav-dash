@@ -325,7 +325,7 @@ const Vendas = () => {
             </div>
           </div>
 
-          {singleAgent && summarize && chartData.length > 0 && (
+          {singleAgent && summarize && !summarizeAgent && chartData.length > 0 && (
             <div className="mb-2 border border-border rounded-lg bg-muted/20 px-3 pt-2 pb-1 shrink-0">
               <div className="text-[11px] font-semibold text-foreground mb-1">
                 VIDAS por VENDEDOR — {agente}
@@ -386,7 +386,17 @@ const Vendas = () => {
                     </td>
                   </tr>
                 )}
-                {summarize
+                {summarizeAgent
+                  ? agentSummary.map((s, i) => (
+                      <tr key={`as-${i}`} className="border-t border-border hover:bg-accent/40">
+                        <td className="px-3 py-2 text-foreground">{s.agente}</td>
+                        <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtInt(s.vendedores)}</td>
+                        <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtInt(s.planos)}</td>
+                        <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(s.vidas)}</td>
+                        <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(s.producao)}</td>
+                      </tr>
+                    ))
+                  : summarize
                   ? summary.map((s, i) => (
                       <tr key={`sum-${i}`} className="border-t border-border hover:bg-accent/40">
                         {!singleAgent && <td className="px-3 py-2 text-foreground">{s.agente}</td>}
@@ -452,15 +462,25 @@ const Vendas = () => {
                     ))}
               </tbody>
               <tfoot className="sticky bottom-0 bg-muted">
-                <tr className="border-t border-border">
-                  <td className="px-3 py-2 text-xs font-semibold text-foreground" colSpan={singleAgent ? 1 : 2}>Total</td>
-                  {summarize && (
+                {summarizeAgent ? (
+                  <tr className="border-t border-border">
+                    <td className="px-3 py-2 text-xs font-semibold text-foreground">Total</td>
+                    <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(agentSummary.reduce((s, r) => s + r.vendedores, 0))}</td>
                     <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.planos)}</td>
-                  )}
-                  <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.vidas)}</td>
-                  <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(totals.producao)}</td>
-                  {!summarize && <td className="px-3 py-2"></td>}
-                </tr>
+                    <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.vidas)}</td>
+                    <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(totals.producao)}</td>
+                  </tr>
+                ) : (
+                  <tr className="border-t border-border">
+                    <td className="px-3 py-2 text-xs font-semibold text-foreground" colSpan={singleAgent ? 1 : 2}>Total</td>
+                    {summarize && (
+                      <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.planos)}</td>
+                    )}
+                    <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.vidas)}</td>
+                    <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(totals.producao)}</td>
+                    {!summarize && <td className="px-3 py-2"></td>}
+                  </tr>
+                )}
               </tfoot>
             </table>
           </div>
