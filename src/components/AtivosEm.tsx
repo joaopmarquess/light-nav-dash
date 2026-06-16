@@ -34,6 +34,7 @@ const AtivosEm = ({ dateValue }: Props) => {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [showSubtotals, setShowSubtotals] = useState(true);
   const [summarize, setSummarize] = useState(false);
+  const [drillNome, setDrillNome] = useState<string | null>(null);
 
   const toggleSort = (k: SortKey) => {
     if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
