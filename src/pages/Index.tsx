@@ -8,6 +8,7 @@ import {
   Coins,
   Percent,
   Users,
+  UserCheck,
   Stethoscope,
   ChevronDown,
   ChevronLeft,
@@ -34,6 +35,7 @@ const menuItems: MenuItem[] = [
     ],
   },
   { icon: Users, label: "Carteira" },
+  { icon: UserCheck, label: "Ativos em" },
   { icon: Percent, label: "Sinistralidade" },
   { icon: Stethoscope, label: "Assistencial" },
 ];
