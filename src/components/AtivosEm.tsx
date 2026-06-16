@@ -380,6 +380,11 @@ const AtivosEm = ({ dateValue }: Props) => {
                             { k: "plano", label: "PLANOS", align: "right", w: "w-24" },
                             { k: "vidas", label: "VIDAS", align: "right", w: "w-24" },
                           ]
+                        : drillNome
+                        ? [
+                            { k: "plano", label: "PLANO", align: "left", w: "w-24" },
+                            { k: "vidas", label: "VIDAS", align: "right", w: "w-20" },
+                          ]
                         : [
                             { k: "plano", label: "PLANO", align: "left", w: "w-24" },
                             { k: "nome", label: "NOME PLANO", align: "left", w: "" },
