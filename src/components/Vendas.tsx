@@ -139,7 +139,22 @@ const Vendas = () => {
     return arr;
   }, [results, sortKey, sortDir]);
 
-  const cols: { k: SortKey; label: string; align: "left" | "right"; w: string }[] = summarize
+  const singleAgent = agente !== "__ALL__";
+
+  // Color per vendedor (stable per agent selection)
+  const vendedorColors = useMemo(() => {
+    const names = Array.from(new Set(summary.map((s) => s.vendedor))).sort();
+    const m: Record<string, string> = {};
+    names.forEach((n, i) => { m[n] = VEND_COLORS[i % VEND_COLORS.length]; });
+    return m;
+  }, [summary]);
+
+  const chartData = useMemo(
+    () => [...summary].sort((a, b) => b.vidas - a.vidas),
+    [summary],
+  );
+
+  const baseCols: { k: SortKey; label: string; align: "left" | "right"; w: string }[] = summarize
     ? [
         { k: "agente", label: "AGENTE", align: "left", w: "w-56" },
         { k: "vendedor", label: "VENDEDOR", align: "left", w: "" },
@@ -153,6 +168,7 @@ const Vendas = () => {
         { k: "producao", label: "PRODUÇÃO", align: "right", w: "w-32" },
         { k: "nome", label: "NOME PLANO", align: "left", w: "" },
       ];
+  const cols = singleAgent ? baseCols.filter((c) => c.k !== "agente") : baseCols;
   const colCount = cols.length;
 
   return (
