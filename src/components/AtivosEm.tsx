@@ -128,11 +128,18 @@ const AtivosEm = ({ dateValue }: Props) => {
     return Array.from(map.values());
   }, [results]);
 
-  const totalVidas = useMemo(
-    () => results.reduce((s, r) => s + r.vidas, 0),
-    [results],
+  const visibleGroups = useMemo(
+    () => (drillNome ? grouped.filter((g) => g.nome === drillNome) : grouped),
+    [grouped, drillNome],
   );
-  const totalPlanos = results.length;
+  const totalVidas = useMemo(
+    () => visibleGroups.reduce((s, g) => s + g.subtotal, 0),
+    [visibleGroups],
+  );
+  const totalPlanos = useMemo(
+    () => visibleGroups.reduce((s, g) => s + g.rows.length, 0),
+    [visibleGroups],
+  );
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-8rem)] flex flex-col">
