@@ -172,15 +172,32 @@ const AtivosEm = ({ dateValue }: Props) => {
             <table className="w-full text-sm">
               <thead className="bg-muted/40 sticky top-0">
                 <tr>
-                  <th className="text-left font-medium text-muted-foreground px-4 py-2 w-32">
-                    PLANO
-                  </th>
-                  <th className="text-left font-medium text-muted-foreground px-4 py-2">
-                    NOME_PLANO
-                  </th>
-                  <th className="text-right font-medium text-muted-foreground px-4 py-2 w-32">
-                    VIDAS
-                  </th>
+                  {([
+                    { k: "plano" as SortKey, label: "PLANO", align: "left", w: "w-32" },
+                    { k: "nome" as SortKey, label: "NOME_PLANO", align: "left", w: "" },
+                    { k: "vidas" as SortKey, label: "VIDAS", align: "right", w: "w-32" },
+                  ]).map((col) => {
+                    const active = sortKey === col.k;
+                    const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
+                    return (
+                      <th
+                        key={col.k}
+                        onClick={() => toggleSort(col.k)}
+                        className={`font-medium px-4 py-2 cursor-pointer select-none ${col.w} ${
+                          col.align === "right" ? "text-right" : "text-left"
+                        } ${active ? "text-foreground" : "text-muted-foreground"} hover:text-foreground`}
+                      >
+                        <span
+                          className={`inline-flex items-center gap-1 ${
+                            col.align === "right" ? "justify-end" : ""
+                          }`}
+                        >
+                          {col.label}
+                          <Icon className="h-3 w-3 opacity-70" />
+                        </span>
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>
