@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search, Loader2 } from "lucide-react";
 import plansData from "@/data/plans.json";
-import ativosAsset from "@/data/ativos.json.asset.json";
 
 type Dataset = { p: number[]; v: number[]; r: number[]; c: number[] };
+type Plan = { p: string; n: string };
 
 const EPOCH = Date.UTC(1970, 0, 1);
 const DAY = 86400000;
-const dayToDate = (d: number) => (d < 0 ? null : new Date(EPOCH + d * DAY));
 
 // dd/mm/aaaa -> Date (UTC)
 function parseBR(s: string): Date | null {
@@ -30,7 +29,7 @@ const AtivosEm = ({ dateValue }: Props) => {
   useEffect(() => {
     let abort = false;
     setLoading(true);
-    fetch(ativosAsset.url)
+    fetch("/data/ativos.json")
       .then((r) => r.json())
       .then((j) => {
         if (!abort) {
@@ -49,7 +48,7 @@ const AtivosEm = ({ dateValue }: Props) => {
     };
   }, []);
 
-  const plans = plansData as string[];
+  const plans = plansData as Plan[];
   const refDate = parseBR(dateValue);
 
   const results = useMemo(() => {
@@ -70,11 +69,16 @@ const AtivosEm = ({ dateValue }: Props) => {
       }
     }
     const q = filter.trim().toLowerCase();
-    const list: { name: string; vidas: number }[] = [];
+    const list: { plano: string; nome: string; vidas: number }[] = [];
     for (const [idx, vidas] of totals) {
-      const name = plans[idx];
-      if (!q || (name && name.toLowerCase().includes(q))) {
-        list.push({ name: name || "(sem nome)", vidas });
+      const pl = plans[idx];
+      if (!pl) continue;
+      if (
+        !q ||
+        pl.n.toLowerCase().includes(q) ||
+        pl.p.toLowerCase().includes(q)
+      ) {
+        list.push({ plano: pl.p || "(sem código)", nome: pl.n || "(sem nome)", vidas });
       }
     }
     list.sort((a, b) => b.vidas - a.vidas);
@@ -85,6 +89,7 @@ const AtivosEm = ({ dateValue }: Props) => {
     () => results.reduce((s, r) => s + r.vidas, 0),
     [results],
   );
+  const totalPlanos = results.length;
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-8rem)] flex flex-col">
@@ -105,7 +110,7 @@ const AtivosEm = ({ dateValue }: Props) => {
             type="text"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            placeholder="Filtrar nome do plano…"
+            placeholder="Filtrar por PLANO ou NOME_PLANO…"
             className="h-9 w-full pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
         </div>
@@ -130,16 +135,23 @@ const AtivosEm = ({ dateValue }: Props) => {
         <>
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 px-1">
             <span>
-              {results.length} plano{results.length === 1 ? "" : "s"}
+              {totalPlanos} plano{totalPlanos === 1 ? "" : "s"}
             </span>
             <span>
-              Total: <span className="font-semibold text-foreground">{totalVidas.toLocaleString("pt-BR")}</span> vidas
+              Total:{" "}
+              <span className="font-semibold text-foreground">
+                {totalVidas.toLocaleString("pt-BR")}
+              </span>{" "}
+              vidas
             </span>
           </div>
           <div className="flex-1 overflow-auto border border-border rounded-lg">
             <table className="w-full text-sm">
               <thead className="bg-muted/40 sticky top-0">
                 <tr>
+                  <th className="text-left font-medium text-muted-foreground px-4 py-2 w-32">
+                    PLANO
+                  </th>
                   <th className="text-left font-medium text-muted-foreground px-4 py-2">
                     NOME_PLANO
                   </th>
@@ -152,7 +164,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                 {results.length === 0 && (
                   <tr>
                     <td
-                      colSpan={2}
+                      colSpan={3}
                       className="px-4 py-8 text-center text-muted-foreground"
                     >
                       Nenhum plano encontrado.
@@ -161,16 +173,31 @@ const AtivosEm = ({ dateValue }: Props) => {
                 )}
                 {results.map((row) => (
                   <tr
-                    key={row.name}
+                    key={`${row.plano}-${row.nome}`}
                     className="border-t border-border hover:bg-accent/40"
                   >
-                    <td className="px-4 py-2 text-foreground">{row.name}</td>
+                    <td className="px-4 py-2 text-foreground tabular-nums">
+                      {row.plano}
+                    </td>
+                    <td className="px-4 py-2 text-foreground">{row.nome}</td>
                     <td className="px-4 py-2 text-right font-medium text-foreground tabular-nums">
                       {row.vidas.toLocaleString("pt-BR")}
                     </td>
                   </tr>
                 ))}
               </tbody>
+              {results.length > 0 && (
+                <tfoot className="sticky bottom-0">
+                  <tr className="bg-muted/60 border-t-2 border-border">
+                    <td className="px-4 py-2 font-semibold text-foreground" colSpan={2}>
+                      Total ({totalPlanos.toLocaleString("pt-BR")} plano{totalPlanos === 1 ? "" : "s"})
+                    </td>
+                    <td className="px-4 py-2 text-right font-semibold text-foreground tabular-nums">
+                      {totalVidas.toLocaleString("pt-BR")}
+                    </td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
         </>
