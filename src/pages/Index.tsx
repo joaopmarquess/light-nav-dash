@@ -140,16 +140,18 @@ const Index = () => {
             <p className="text-xs text-muted-foreground">Portal administrativo Bensaúde</p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-              <input
-                type="text"
-                value={dateValue}
-                onChange={(e) => setDateValue(e.target.value)}
-                placeholder="dd/mm/aaaa"
-                className="h-9 w-40 pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-              />
-            </div>
+            {active === "Ativos em" && (
+              <div className="relative">
+                <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <input
+                  type="text"
+                  value={dateValue}
+                  onChange={(e) => setDateValue(e.target.value)}
+                  placeholder="dd/mm/aaaa"
+                  className="h-9 w-40 pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+            )}
             <span className="text-sm text-muted-foreground">Olá, Usuário</span>
             <div className="h-9 w-9 rounded-full bg-accent flex items-center justify-center text-primary text-sm font-semibold">
               U
