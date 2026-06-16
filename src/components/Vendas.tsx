@@ -434,7 +434,12 @@ const Vendas = () => {
                             >
                               {fmtInt(s.planos)}
                             </td>
-                            <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(s.vidas)}</td>
+                            <td
+                              className="px-3 py-2 text-right font-medium text-foreground tabular-nums"
+                              title={`${((s.vidas / (totals.vidas || 1)) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% do total`}
+                            >
+                              {fmtInt(s.vidas)}
+                            </td>
                             <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(s.producao)}</td>
                           </tr>
                           {exp === "vendedores" && vendList.map((v, j) => (
