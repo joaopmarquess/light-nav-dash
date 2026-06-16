@@ -2,11 +2,12 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, Plus, X } from "lucide-react";
 import plansData from "@/data/plans.json";
 
-type SortKey = "plano" | "nome" | "vidas";
+type SortKey = "plano" | "nome" | "vidas" | "receita";
 type SortDir = "asc" | "desc";
 
 type Dataset = { p: number[]; v: number[]; r: number[]; c: number[] };
 type Plan = { p: string; n: string };
+type Receitas = Record<string, Record<string, number>>;
 
 const EPOCH = Date.UTC(1970, 0, 1);
 const DAY = 86400000;
@@ -19,12 +20,16 @@ function parseBR(s: string): Date | null {
   return isNaN(d.getTime()) ? null : d;
 }
 
+const fmtBRL = (n: number) =>
+  n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 interface Props {
   dateValue: string;
 }
 
 const AtivosEm = ({ dateValue }: Props) => {
   const [data, setData] = useState<Dataset | null>(null);
+  const [receitas, setReceitas] = useState<Receitas | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterDraft, setFilterDraft] = useState("");
@@ -40,18 +45,21 @@ const AtivosEm = ({ dateValue }: Props) => {
     if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
       setSortKey(k);
-      setSortDir(k === "vidas" ? "desc" : "asc");
+      setSortDir(k === "vidas" || k === "receita" ? "desc" : "asc");
     }
   };
 
   useEffect(() => {
     let abort = false;
     setLoading(true);
-    fetch("/data/ativos.json")
-      .then((r) => r.json())
-      .then((j) => {
+    Promise.all([
+      fetch("/data/ativos.json").then((r) => r.json()),
+      fetch("/data/receitas.json").then((r) => r.json()).catch(() => ({})),
+    ])
+      .then(([j, rec]) => {
         if (!abort) {
           setData(j);
+          setReceitas(rec);
           setLoading(false);
         }
       })
@@ -69,10 +77,19 @@ const AtivosEm = ({ dateValue }: Props) => {
   const plans = plansData as Plan[];
   const refDate = parseBR(dateValue);
 
+  const refBase = useMemo(() => {
+    if (!refDate) return null;
+    return `${refDate.getUTCFullYear()}${String(refDate.getUTCMonth() + 1).padStart(2, "0")}`;
+  }, [refDate?.getTime()]);
+
+  const receitaByPlano = useMemo<Record<string, number>>(() => {
+    if (!receitas || !refBase) return {};
+    return receitas[refBase] || {};
+  }, [receitas, refBase]);
+
   const results = useMemo(() => {
     if (!data || !refDate) return [];
     const todayDays = Math.floor((Date.now() - EPOCH) / DAY);
-    // se a data informada for futura, usa hoje (conforme HOJE() da fórmula)
     const refRaw = Math.floor((refDate.getTime() - EPOCH) / DAY);
     const ref = Math.min(refRaw, todayDays);
     const refYear = new Date(EPOCH + ref * DAY).getUTCFullYear();
@@ -91,7 +108,7 @@ const AtivosEm = ({ dateValue }: Props) => {
       }
     }
     const terms = appliedTerms.map((t) => t.toLowerCase()).filter(Boolean);
-    const list: { plano: string; nome: string; vidas: number }[] = [];
+    const list: { plano: string; nome: string; vidas: number; receita: number }[] = [];
     for (const [idx, vidas] of totals) {
       const pl = plans[idx];
       if (!pl) continue;
@@ -101,29 +118,37 @@ const AtivosEm = ({ dateValue }: Props) => {
         terms.length === 0 ||
         terms.some((q) => n.includes(q) || p2.includes(q))
       ) {
-        list.push({ plano: pl.p || "(sem código)", nome: pl.n || "(sem nome)", vidas });
+        const code = pl.p || "";
+        list.push({
+          plano: code || "(sem código)",
+          nome: pl.n || "(sem nome)",
+          vidas,
+          receita: receitaByPlano[code] || 0,
+        });
       }
     }
     const dir = sortDir === "asc" ? 1 : -1;
     list.sort((a, b) => {
       if (sortKey === "vidas") return (a.vidas - b.vidas) * dir;
+      if (sortKey === "receita") return (a.receita - b.receita) * dir;
       const av = (a[sortKey] as string).toLowerCase();
       const bv = (b[sortKey] as string).toLowerCase();
       return av < bv ? -dir : av > bv ? dir : 0;
     });
     return list;
-  }, [data, refDate?.getTime(), appliedTerms, plans, sortKey, sortDir]);
+  }, [data, refDate?.getTime(), appliedTerms, plans, sortKey, sortDir, receitaByPlano]);
 
   const grouped = useMemo(() => {
-    const map = new Map<string, { nome: string; rows: typeof results; subtotal: number }>();
+    const map = new Map<string, { nome: string; rows: typeof results; subtotal: number; receita: number }>();
     for (const r of results) {
       let g = map.get(r.nome);
       if (!g) {
-        g = { nome: r.nome, rows: [], subtotal: 0 };
+        g = { nome: r.nome, rows: [], subtotal: 0, receita: 0 };
         map.set(r.nome, g);
       }
       g.rows.push(r);
       g.subtotal += r.vidas;
+      g.receita += r.receita;
     }
     return Array.from(map.values());
   }, [results]);
@@ -138,6 +163,10 @@ const AtivosEm = ({ dateValue }: Props) => {
   );
   const totalPlanos = useMemo(
     () => visibleGroups.reduce((s, g) => s + g.rows.length, 0),
+    [visibleGroups],
+  );
+  const totalReceita = useMemo(
+    () => visibleGroups.reduce((s, g) => s + g.receita, 0),
     [visibleGroups],
   );
 
@@ -325,6 +354,12 @@ const AtivosEm = ({ dateValue }: Props) => {
                 </span>{" "}
                 vidas
               </div>
+              <div className="w-40 px-4 text-right">
+                R${" "}
+                <span className="font-semibold text-foreground tabular-nums">
+                  {fmtBRL(totalReceita)}
+                </span>
+              </div>
             </div>
           </div>
           <div className="flex-1 overflow-auto border border-border rounded-lg">
@@ -336,11 +371,13 @@ const AtivosEm = ({ dateValue }: Props) => {
                         { k: "nome" as SortKey, label: "NOME PLANO", align: "left", w: "" },
                         { k: "plano" as SortKey, label: "PLANOS", align: "right", w: "w-32" },
                         { k: "vidas" as SortKey, label: "VIDAS", align: "right", w: "w-32" },
+                        { k: "receita" as SortKey, label: "R$ RECEITAS", align: "right", w: "w-40" },
                       ]
                     : [
                         { k: "plano" as SortKey, label: "PLANO", align: "left", w: "w-32" },
                         { k: "nome" as SortKey, label: "NOME PLANO", align: "left", w: "" },
                         { k: "vidas" as SortKey, label: "VIDAS", align: "right", w: "w-32" },
+                        { k: "receita" as SortKey, label: "R$ RECEITAS", align: "right", w: "w-40" },
                       ]
                   ).map((col) => {
                     const active = sortKey === col.k;
@@ -370,7 +407,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                 {results.length === 0 && (
                   <tr>
                     <td
-                      colSpan={3}
+                      colSpan={4}
                       className="px-4 py-8 text-center text-muted-foreground"
                     >
                       Nenhum plano encontrado.
@@ -383,6 +420,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                         const dir = sortDir === "asc" ? 1 : -1;
                         if (sortKey === "vidas") return (a.subtotal - b.subtotal) * dir;
                         if (sortKey === "plano") return (a.rows.length - b.rows.length) * dir;
+                        if (sortKey === "receita") return (a.receita - b.receita) * dir;
                         const an = a.nome.toLowerCase();
                         const bn = b.nome.toLowerCase();
                         return an < bn ? -dir : an > bn ? dir : 0;
@@ -405,6 +443,9 @@ const AtivosEm = ({ dateValue }: Props) => {
                           <td className="px-4 py-2 text-right font-medium text-foreground tabular-nums">
                             {g.subtotal.toLocaleString("pt-BR")}
                           </td>
+                          <td className="px-4 py-2 text-right text-foreground tabular-nums">
+                            {fmtBRL(g.receita)}
+                          </td>
                         </tr>
                       ))
                   : (drillNome ? grouped.filter((g) => g.nome === drillNome) : grouped).map((g) => (
@@ -421,6 +462,9 @@ const AtivosEm = ({ dateValue }: Props) => {
                             <td className="px-4 py-2 text-right font-medium text-foreground tabular-nums">
                               {row.vidas.toLocaleString("pt-BR")}
                             </td>
+                            <td className="px-4 py-2 text-right text-foreground tabular-nums">
+                              {fmtBRL(row.receita)}
+                            </td>
                           </tr>
                         ))}
                         {showSubtotals && !drillNome && (
@@ -435,6 +479,9 @@ const AtivosEm = ({ dateValue }: Props) => {
                             </td>
                             <td className="px-4 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">
                               {g.subtotal.toLocaleString("pt-BR")}
+                            </td>
+                            <td className="px-4 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">
+                              {fmtBRL(g.receita)}
                             </td>
                           </tr>
                         )}
