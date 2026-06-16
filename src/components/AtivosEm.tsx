@@ -309,7 +309,7 @@ const AtivosEm = ({ dateValue }: Props) => {
             <table className="w-full text-sm">
               <thead className="bg-muted/40 sticky top-0">
                 <tr>
-                  {(summarize
+                  {(summarize && !drillNome
                     ? [
                         { k: "nome" as SortKey, label: "NOME PLANO", align: "left", w: "" },
                         { k: "plano" as SortKey, label: "PLANOS", align: "right", w: "w-32" },
