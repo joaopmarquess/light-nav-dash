@@ -3,7 +3,7 @@ import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, Plus, X } from "lucid
 import plansData from "@/data/plans.json";
 
 type MoneyKey = "mens" | "copart" | "receita" | "despesa" | "saldo";
-type SortKey = "plano" | "nome" | "vidas" | MoneyKey;
+type SortKey = "plano" | "nome" | "vidas" | MoneyKey | "sin";
 type SortDir = "asc" | "desc";
 
 type Dataset = { p: number[]; v: number[]; r: number[]; c: number[] };
@@ -32,6 +32,13 @@ function parseBR(s: string): Date | null {
 
 const fmtBRL = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const fmtPct = (despesa: number, receita: number) =>
+  receita > 0
+    ? `${((despesa / receita) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
+    : "—";
+
+const sinValue = (despesa: number, receita: number) => (receita > 0 ? (despesa / receita) * 100 : -1);
 
 interface Props {
   dateValue: string;
