@@ -303,13 +303,17 @@ const Vendas = () => {
       {!loading && !error && (
         <>
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 gap-3 flex-wrap">
-            <div className="flex items-center gap-4 pl-1">
-              <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                <input type="checkbox" checked={summarize} onChange={(e) => setSummarize(e.target.checked)} className="h-3.5 w-3.5 accent-gray-500 cursor-pointer" />
+            <div className="flex items-center gap-4 pl-1 flex-wrap">
+              <label className={`flex items-center gap-1.5 select-none ${summarizeAgent ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
+                <input type="checkbox" checked={summarize} disabled={summarizeAgent} onChange={(e) => setSummarize(e.target.checked)} className="h-3.5 w-3.5 accent-gray-500 cursor-pointer disabled:cursor-not-allowed" />
                 Resumir
               </label>
-              <label className={`flex items-center gap-1.5 select-none ${summarize ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
-                <input type="checkbox" checked={showSubtotals} disabled={summarize} onChange={(e) => setShowSubtotals(e.target.checked)} className="h-3.5 w-3.5 accent-gray-500 cursor-pointer disabled:cursor-not-allowed" />
+              <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                <input type="checkbox" checked={summarizeAgent} onChange={(e) => setSummarizeAgent(e.target.checked)} className="h-3.5 w-3.5 accent-gray-500 cursor-pointer" />
+                Resumir por Agente
+              </label>
+              <label className={`flex items-center gap-1.5 select-none ${summarize || summarizeAgent ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
+                <input type="checkbox" checked={showSubtotals} disabled={summarize || summarizeAgent} onChange={(e) => setShowSubtotals(e.target.checked)} className="h-3.5 w-3.5 accent-gray-500 cursor-pointer disabled:cursor-not-allowed" />
                 Mostrar subtotais por VENDEDOR
               </label>
             </div>
