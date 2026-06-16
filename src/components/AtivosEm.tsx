@@ -4,8 +4,9 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import plansData from "@/data/plans.json";
 
 type MoneyKey = "mens" | "copart" | "receita" | "despesa" | "saldo";
-type SortKey = "plano" | "nome" | "vidas" | MoneyKey | "sin";
+type SortKey = "plano" | "nome" | "vidas" | "entrou" | MoneyKey | "sin";
 type SortDir = "asc" | "desc";
+
 
 type Dataset = { p: number[]; v: number[]; r: number[]; c: number[] };
 type Plan = { p: string; n: string };
@@ -84,7 +85,9 @@ interface Props {
 const AtivosEm = ({ dateValue }: Props) => {
   const [data, setData] = useState<Dataset | null>(null);
   const [receitas, setReceitas] = useState<Receitas | null>(null);
+  const [vendasEntrou, setVendasEntrou] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
   const [filterDraft, setFilterDraft] = useState("");
   const [pendingTerms, setPendingTerms] = useState<string[]>([]);
@@ -109,14 +112,17 @@ const AtivosEm = ({ dateValue }: Props) => {
     Promise.all([
       fetch("/data/ativos.json").then((r) => r.json()),
       fetch("/data/receitas.json").then((r) => r.json()).catch(() => ({})),
+      fetch("/data/vendas.json").then((r) => r.json()).catch(() => ({ entrou: {} })),
     ])
-      .then(([j, rec]) => {
+      .then(([j, rec, ven]) => {
         if (!abort) {
           setData(j);
           setReceitas(rec);
+          setVendasEntrou(ven.entrou || {});
           setLoading(false);
         }
       })
+
       .catch((e) => {
         if (!abort) {
           setError(String(e));
