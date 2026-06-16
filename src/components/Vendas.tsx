@@ -115,7 +115,7 @@ const Vendas = () => {
     { k: "vendedor", label: "VENDEDOR", align: "left", w: "w-56" },
     { k: "vidas", label: "VIDAS", align: "right", w: "w-24" },
     { k: "producao", label: "PRODUÇÃO", align: "right", w: "w-32" },
-    { k: "plano", label: "PLANO", align: "left", w: "w-20" },
+    
     { k: "nome", label: "NOME PLANO", align: "left", w: "" },
   ];
   const colCount = cols.length;
