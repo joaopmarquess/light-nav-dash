@@ -448,9 +448,20 @@ const AtivosEm = ({ dateValue }: Props) => {
                       ))
                   : (drillNome ? grouped.filter((g) => g.nome === drillNome) : grouped).map((g) => (
                       <Fragment key={`g-${g.nome}`}>
-                        {g.rows.map((row) => (
+                        {g.rows.map((row, idx) => (
                           <tr key={`${row.plano}-${row.nome}`} className="border-t border-border hover:bg-accent/40">
-                            <td className="px-3 py-2 text-foreground tabular-nums">{row.plano}</td>
+                            <td className="px-3 py-2 text-foreground tabular-nums">
+                              <span className="inline-flex items-center gap-1.5">
+                                {drillNome && (
+                                  <span
+                                    aria-hidden
+                                    className="inline-block h-2.5 w-2.5 rounded-full shrink-0"
+                                    style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }}
+                                  />
+                                )}
+                                {row.plano}
+                              </span>
+                            </td>
                             <td className="px-3 py-2 text-foreground">{row.nome}</td>
                             <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{row.vidas.toLocaleString("pt-BR")}</td>
                             {MONEY_COLS.map((c) => (
