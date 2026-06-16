@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, Plus, X } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import plansData from "@/data/plans.json";
 
 type MoneyKey = "mens" | "copart" | "receita" | "despesa" | "saldo";
@@ -39,6 +40,42 @@ const fmtPct = (despesa: number, receita: number) =>
     : "—";
 
 const sinValue = (despesa: number, receita: number) => (receita > 0 ? (despesa / receita) * 100 : -1);
+
+const PIE_COLORS = [
+  "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6",
+  "#ec4899", "#14b8a6", "#f97316", "#6366f1", "#84cc16",
+  "#06b6d4", "#a855f7", "#eab308", "#22c55e", "#f43f5e",
+];
+
+type PieDatum = { name: string; value: number; raw: number };
+
+const PieMini = ({ title, data, fmt }: { title: string; data: PieDatum[]; fmt: (n: number) => string }) => {
+  const total = data.reduce((s, d) => s + d.value, 0);
+  return (
+    <div className="flex flex-col items-center bg-muted/20 border border-border rounded-md p-2">
+      <div className="text-[11px] font-semibold text-foreground mb-1">{title}</div>
+      <div className="w-full h-36">
+        {total > 0 ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie data={data} dataKey="value" nameKey="name" outerRadius="80%" stroke="hsl(var(--background))" strokeWidth={1}>
+                {data.map((_, i) => (
+                  <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{ fontSize: 11, padding: "4px 8px", borderRadius: 6 }}
+                formatter={(_v: number, _n: string, p: { payload: PieDatum }) => [fmt(p.payload.raw), p.payload.name]}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-full flex items-center justify-center text-[11px] text-muted-foreground">Sem dados</div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 interface Props {
   dateValue: string;
@@ -308,6 +345,29 @@ const AtivosEm = ({ dateValue }: Props) => {
               </span>
             </div>
           </div>
+          {drillNome && visibleGroups[0] && (
+            <div className="mb-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+              {(() => {
+                const g = visibleGroups[0];
+                const rows = g.rows;
+                const mk = (key: "vidas" | "receita" | "despesa" | "saldo"): PieDatum[] =>
+                  rows.map((r) => ({ name: r.plano, value: Math.abs(r[key]), raw: r[key] }));
+                const sinData: PieDatum[] = rows.map((r) => {
+                  const s = sinValue(r.despesa, r.receita);
+                  return { name: r.plano, value: s > 0 ? s : 0, raw: s };
+                });
+                return (
+                  <>
+                    <PieMini title="VIDAS" data={mk("vidas")} fmt={(n) => n.toLocaleString("pt-BR")} />
+                    <PieMini title="R$ RECEITAS" data={mk("receita")} fmt={fmtBRL} />
+                    <PieMini title="R$ DESPESAS" data={mk("despesa")} fmt={fmtBRL} />
+                    <PieMini title="R$ SALDO" data={mk("saldo")} fmt={fmtBRL} />
+                    <PieMini title="%SIN" data={sinData} fmt={(n) => (n >= 0 ? `${n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%` : "—")} />
+                  </>
+                );
+              })()}
+            </div>
+          )}
           <div className="flex-1 overflow-auto border border-border rounded-lg">
             <table className="w-full text-xs">
               <thead className="bg-muted/40 sticky top-0">
