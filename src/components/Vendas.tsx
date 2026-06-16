@@ -4,17 +4,13 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import plansData from "@/data/plans.json";
 
 type MoneyKey = "mens" | "copart" | "receita" | "despesa" | "saldo";
-type SortKey = "plano" | "nome" | "vidas" | "entrou" | MoneyKey | "sin";
+type SortKey = "plano" | "nome" | "vidas" | MoneyKey | "sin";
 type SortDir = "asc" | "desc";
-
-
-type Dataset = { p: number[]; v: number[]; r: number[]; c: number[] };
 type Plan = { p: string; n: string };
 type PlanoMoney = { mens: number; copart: number; receita: number; despesa: number; saldo: number };
 type Receitas = Record<string, PlanoMoney>;
+type Vendas = { entrou: Record<string, number>; agentes: Record<string, Record<string, number>> };
 
-const EPOCH = Date.UTC(1970, 0, 1);
-const DAY = 86400000;
 const ZERO: PlanoMoney = { mens: 0, copart: 0, receita: 0, despesa: 0, saldo: 0 };
 
 const MONEY_COLS: { k: MoneyKey; label: string }[] = [
@@ -25,21 +21,12 @@ const MONEY_COLS: { k: MoneyKey; label: string }[] = [
   { k: "saldo", label: "R$ SALDO" },
 ];
 
-function parseBR(s: string): Date | null {
-  const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  if (!m) return null;
-  const d = new Date(Date.UTC(+m[3], +m[2] - 1, +m[1]));
-  return isNaN(d.getTime()) ? null : d;
-}
-
 const fmtBRL = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 const fmtPct = (despesa: number, receita: number) =>
   receita > 0
     ? `${((despesa / receita) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
     : "—";
-
 const sinValue = (despesa: number, receita: number) => (receita > 0 ? (despesa / receita) * 100 : -1);
 
 const PIE_COLORS = [
@@ -78,17 +65,12 @@ const PieMini = ({ title, data, fmt }: { title: string; data: PieDatum[]; fmt: (
   );
 };
 
-interface Props {
-  dateValue: string;
-}
-
-const AtivosEm = ({ dateValue }: Props) => {
-  const [data, setData] = useState<Dataset | null>(null);
+const Vendas = () => {
+  const [vendas, setVendas] = useState<Vendas | null>(null);
   const [receitas, setReceitas] = useState<Receitas | null>(null);
-  const [vendasEntrou, setVendasEntrou] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState<string | null>(null);
+  const [agente, setAgente] = useState<string>("__ALL__");
   const [filterDraft, setFilterDraft] = useState("");
   const [pendingTerms, setPendingTerms] = useState<string[]>([]);
   const [appliedTerms, setAppliedTerms] = useState<string[]>([]);
@@ -110,19 +92,16 @@ const AtivosEm = ({ dateValue }: Props) => {
     let abort = false;
     setLoading(true);
     Promise.all([
-      fetch("/data/ativos.json").then((r) => r.json()),
+      fetch("/data/vendas.json").then((r) => r.json()),
       fetch("/data/receitas.json").then((r) => r.json()).catch(() => ({})),
-      fetch("/data/vendas.json").then((r) => r.json()).catch(() => ({ entrou: {} })),
     ])
-      .then(([j, rec, ven]) => {
+      .then(([v, rec]) => {
         if (!abort) {
-          setData(j);
+          setVendas(v);
           setReceitas(rec);
-          setVendasEntrou(ven.entrou || {});
           setLoading(false);
         }
       })
-
       .catch((e) => {
         if (!abort) {
           setError(String(e));
@@ -135,42 +114,35 @@ const AtivosEm = ({ dateValue }: Props) => {
   }, []);
 
   const plans = plansData as Plan[];
-  const refDate = parseBR(dateValue);
   const moneyByPlano = receitas || {};
+  const agentesList = useMemo(() => (vendas ? Object.keys(vendas.agentes).sort() : []), [vendas]);
+
+  const planoVidas = useMemo<Record<string, number>>(() => {
+    if (!vendas) return {};
+    if (agente === "__ALL__") return vendas.entrou;
+    return vendas.agentes[agente] || {};
+  }, [vendas, agente]);
+
+  const planByCode = useMemo(() => {
+    const m = new Map<string, Plan>();
+    for (const pl of plans) m.set(pl.p, pl);
+    return m;
+  }, [plans]);
 
   const results = useMemo(() => {
-    if (!data || !refDate) return [];
-    const todayDays = Math.floor((Date.now() - EPOCH) / DAY);
-    const refRaw = Math.floor((refDate.getTime() - EPOCH) / DAY);
-    const ref = Math.min(refRaw, todayDays);
-    const refYear = new Date(EPOCH + ref * DAY).getUTCFullYear();
-    const yearEnd = Math.floor((Date.UTC(refYear, 11, 31) - EPOCH) / DAY);
-    const totals = new Map<number, number>();
-    const { p, v, r, c } = data;
-    for (let i = 0; i < p.length; i++) {
-      const vig = v[i];
-      const reat = r[i];
-      const canc = c[i];
-      const end = canc >= 0 && canc > reat ? canc : yearEnd;
-      if (ref < end && vig >= 0 && ref >= vig) {
-        totals.set(p[i], (totals.get(p[i]) || 0) + 1);
-      }
-    }
     const terms = appliedTerms.map((t) => t.toLowerCase()).filter(Boolean);
-    const list: ({ plano: string; nome: string; vidas: number; entrou: number } & PlanoMoney)[] = [];
-    for (const [idx, vidas] of totals) {
-      const pl = plans[idx];
-      if (!pl) continue;
-      const n = pl.n.toLowerCase();
-      const p2 = pl.p.toLowerCase();
+    const list: ({ plano: string; nome: string; vidas: number } & PlanoMoney)[] = [];
+    for (const [code, vidas] of Object.entries(planoVidas)) {
+      const pl = planByCode.get(code);
+      const nome = pl?.n || "(sem nome)";
+      const n = nome.toLowerCase();
+      const p2 = code.toLowerCase();
       if (terms.length === 0 || terms.some((q) => n.includes(q) || p2.includes(q))) {
-        const code = pl.p || "";
         const m = moneyByPlano[code] || ZERO;
         list.push({
-          plano: code || "(sem código)",
-          nome: pl.n || "(sem nome)",
+          plano: code,
+          nome,
           vidas,
-          entrou: vendasEntrou[code] || 0,
           mens: m.mens || 0,
           copart: m.copart || 0,
           receita: m.receita || 0,
@@ -181,33 +153,28 @@ const AtivosEm = ({ dateValue }: Props) => {
     }
     const dir = sortDir === "asc" ? 1 : -1;
     list.sort((a, b) => {
-      if (sortKey === "vidas" || sortKey === "entrou" || sortKey === "mens" || sortKey === "copart" || sortKey === "receita" || sortKey === "despesa" || sortKey === "saldo") {
+      if (sortKey === "vidas" || sortKey === "mens" || sortKey === "copart" || sortKey === "receita" || sortKey === "despesa" || sortKey === "saldo") {
         return ((a[sortKey] as number) - (b[sortKey] as number)) * dir;
       }
+      if (sortKey === "sin") return (sinValue(a.despesa, a.receita) - sinValue(b.despesa, b.receita)) * dir;
       const av = (a[sortKey] as string).toLowerCase();
       const bv = (b[sortKey] as string).toLowerCase();
       return av < bv ? -dir : av > bv ? dir : 0;
     });
     return list;
-  }, [data, refDate?.getTime(), appliedTerms, plans, sortKey, sortDir, moneyByPlano, vendasEntrou]);
-
+  }, [planoVidas, planByCode, appliedTerms, sortKey, sortDir, moneyByPlano]);
 
   const grouped = useMemo(() => {
-    const map = new Map<string, { nome: string; rows: typeof results; subtotal: number; entrou: number } & PlanoMoney>();
+    const map = new Map<string, { nome: string; rows: typeof results; subtotal: number } & PlanoMoney>();
     for (const r of results) {
       let g = map.get(r.nome);
       if (!g) {
-        g = { nome: r.nome, rows: [], subtotal: 0, entrou: 0, mens: 0, copart: 0, receita: 0, despesa: 0, saldo: 0 };
+        g = { nome: r.nome, rows: [], subtotal: 0, mens: 0, copart: 0, receita: 0, despesa: 0, saldo: 0 };
         map.set(r.nome, g);
       }
       g.rows.push(r);
       g.subtotal += r.vidas;
-      g.entrou += r.entrou;
-      g.mens += r.mens;
-      g.copart += r.copart;
-      g.receita += r.receita;
-      g.despesa += r.despesa;
-      g.saldo += r.saldo;
+      g.mens += r.mens; g.copart += r.copart; g.receita += r.receita; g.despesa += r.despesa; g.saldo += r.saldo;
     }
     return Array.from(map.values());
   }, [results]);
@@ -217,7 +184,6 @@ const AtivosEm = ({ dateValue }: Props) => {
     [grouped, drillNome],
   );
   const totalVidas = useMemo(() => visibleGroups.reduce((s, g) => s + g.subtotal, 0), [visibleGroups]);
-  const totalEntrou = useMemo(() => visibleGroups.reduce((s, g) => s + g.entrou, 0), [visibleGroups]);
   const totalPlanos = useMemo(() => visibleGroups.reduce((s, g) => s + g.rows.length, 0), [visibleGroups]);
   const totals = useMemo(() => {
     const t: PlanoMoney = { mens: 0, copart: 0, receita: 0, despesa: 0, saldo: 0 };
@@ -227,20 +193,29 @@ const AtivosEm = ({ dateValue }: Props) => {
     return t;
   }, [visibleGroups]);
 
-  const colCount = (summarize && !drillNome ? 3 : drillNome ? 2 : 3) + 1 + MONEY_COLS.length + 1;
-
+  const colCount = (summarize && !drillNome ? 3 : drillNome ? 2 : 3) + MONEY_COLS.length + 1;
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-8rem)] flex flex-col">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-lg font-semibold text-foreground">Vidas ativas por plano</h2>
+          <h2 className="text-lg font-semibold text-foreground">Vendas por plano</h2>
           <p className="text-xs text-muted-foreground">
-            {refDate ? `Data de referência: ${dateValue}` : "Informe a data no formato dd/mm/aaaa no campo acima"}
+            Filtro por AGENTE — vidas que entraram
           </p>
         </div>
-        <div className="w-full sm:w-[28rem] flex flex-col gap-2">
+        <div className="w-full sm:w-[32rem] flex flex-col gap-2">
           <div className="flex items-center gap-2">
+            <select
+              value={agente}
+              onChange={(e) => { setAgente(e.target.value); setDrillNome(null); }}
+              className="h-9 rounded-md border border-border bg-background text-sm text-foreground px-2 focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <option value="__ALL__">Todos os AGENTES</option>
+              {agentesList.map((a) => (
+                <option key={a} value={a}>{a}</option>
+              ))}
+            </select>
             <div className="relative flex-1">
               <input
                 type="text"
@@ -268,8 +243,6 @@ const AtivosEm = ({ dateValue }: Props) => {
                 setPendingTerms((p) => [...p, t]);
                 setFilterDraft("");
               }}
-              title="Adicionar trecho"
-              aria-label="Adicionar trecho"
               className="h-9 w-9 flex items-center justify-center rounded-md border border-border bg-background text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
             >
               <Plus className="h-4 w-4" />
@@ -283,8 +256,6 @@ const AtivosEm = ({ dateValue }: Props) => {
                 setFilterDraft("");
                 setAppliedTerms(next);
               }}
-              title="Pesquisar"
-              aria-label="Pesquisar"
               className="h-9 w-9 flex items-center justify-center rounded-md border border-border bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
             >
               <Search className="h-4 w-4" />
@@ -295,19 +266,16 @@ const AtivosEm = ({ dateValue }: Props) => {
               {pendingTerms.map((t, i) => (
                 <span key={`p-${i}`} className="inline-flex items-center gap-1 h-6 pl-2 pr-1 rounded-full bg-accent text-xs text-foreground">
                   {t}
-                  <button type="button" onClick={() => setPendingTerms((p) => p.filter((_, j) => j !== i))} className="h-4 w-4 inline-flex items-center justify-center rounded-full hover:bg-background/60" aria-label={`Remover ${t}`}>
+                  <button type="button" onClick={() => setPendingTerms((p) => p.filter((_, j) => j !== i))} className="h-4 w-4 inline-flex items-center justify-center rounded-full hover:bg-background/60">
                     <X className="h-3 w-3" />
                   </button>
                 </span>
               ))}
-              {appliedTerms.length > 0 && pendingTerms.length === 0 && (
-                <span className="text-[11px] text-muted-foreground self-center">Aplicados:</span>
-              )}
               {pendingTerms.length === 0 &&
                 appliedTerms.map((t, i) => (
                   <span key={`a-${i}`} className="inline-flex items-center gap-1 h-6 pl-2 pr-1 rounded-full bg-primary/10 text-xs text-foreground">
                     {t}
-                    <button type="button" onClick={() => setAppliedTerms((p) => p.filter((_, j) => j !== i))} className="h-4 w-4 inline-flex items-center justify-center rounded-full hover:bg-background/60" aria-label={`Remover ${t}`}>
+                    <button type="button" onClick={() => setAppliedTerms((p) => p.filter((_, j) => j !== i))} className="h-4 w-4 inline-flex items-center justify-center rounded-full hover:bg-background/60">
                       <X className="h-3 w-3" />
                     </button>
                   </span>
@@ -322,11 +290,8 @@ const AtivosEm = ({ dateValue }: Props) => {
           <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Carregando dados…
         </div>
       )}
-      {error && <div className="flex-1 flex items-center justify-center text-destructive text-sm">Erro ao carregar: {error}</div>}
-      {!loading && !error && !refDate && (
-        <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">Digite uma data válida para ver os resultados.</div>
-      )}
-      {!loading && !error && refDate && (
+      {error && <div className="flex-1 flex items-center justify-center text-destructive text-sm">Erro: {error}</div>}
+      {!loading && !error && (
         <>
           {drillNome && (
             <div className="mb-2 flex items-center justify-between text-xs px-1">
@@ -403,11 +368,9 @@ const AtivosEm = ({ dateValue }: Props) => {
                           ];
                     const cols = [
                       ...baseCols,
-                      { k: "entrou" as SortKey, label: "ENTROU", align: "right" as const, w: "w-20" },
                       ...MONEY_COLS.map((c) => ({ k: c.k as SortKey, label: c.label, align: "right" as const, w: "w-32" })),
                       { k: "sin" as SortKey, label: "%SIN", align: "right" as const, w: "w-20" },
                     ];
-
                     return cols.map((col) => {
                       const active = sortKey === col.k;
                       const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
@@ -440,7 +403,6 @@ const AtivosEm = ({ dateValue }: Props) => {
                       .sort((a, b) => {
                         const dir = sortDir === "asc" ? 1 : -1;
                         if (sortKey === "vidas") return (a.subtotal - b.subtotal) * dir;
-                        if (sortKey === "entrou") return (a.entrou - b.entrou) * dir;
                         if (sortKey === "plano") return (a.rows.length - b.rows.length) * dir;
                         if (sortKey === "mens" || sortKey === "copart" || sortKey === "receita" || sortKey === "despesa" || sortKey === "saldo") {
                           return (a[sortKey] - b[sortKey]) * dir;
@@ -448,25 +410,22 @@ const AtivosEm = ({ dateValue }: Props) => {
                         if (sortKey === "sin") {
                           return (sinValue(a.despesa, a.receita) - sinValue(b.despesa, b.receita)) * dir;
                         }
-
                         const an = a.nome.toLowerCase();
                         const bn = b.nome.toLowerCase();
                         return an < bn ? -dir : an > bn ? dir : 0;
                       })
                       .map((g) => (
                         <tr key={`s-${g.nome}`} className="border-t border-border hover:bg-accent/40 text-xs">
-                          <td className="px-3 py-2 text-primary underline-offset-2 hover:underline cursor-pointer" onClick={() => setDrillNome(g.nome)} title="Ver detalhe dos planos">
+                          <td className="px-3 py-2 text-primary underline-offset-2 hover:underline cursor-pointer" onClick={() => setDrillNome(g.nome)}>
                             {g.nome}
                           </td>
                           <td className="px-3 py-2 text-right text-foreground tabular-nums">{g.rows.length.toLocaleString("pt-BR")}</td>
                           <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{g.subtotal.toLocaleString("pt-BR")}</td>
-                          <td className="px-3 py-2 text-right text-foreground tabular-nums">{g.entrou.toLocaleString("pt-BR")}</td>
                           {MONEY_COLS.map((c) => (
                             <td key={c.k} className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(g[c.k])}</td>
                           ))}
                           <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtPct(g.despesa, g.receita)}</td>
                         </tr>
-
                       ))
                   : (drillNome ? grouped.filter((g) => g.nome === drillNome) : grouped).map((g) => (
                       <Fragment key={`g-${g.nome}`}>
@@ -486,12 +445,10 @@ const AtivosEm = ({ dateValue }: Props) => {
                             </td>
                             {!drillNome && <td className="px-3 py-2 text-foreground">{row.nome}</td>}
                             <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{row.vidas.toLocaleString("pt-BR")}</td>
-                            <td className="px-3 py-2 text-right text-foreground tabular-nums">{row.entrou.toLocaleString("pt-BR")}</td>
                             {MONEY_COLS.map((c) => (
                               <td key={c.k} className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(row[c.k])}</td>
                             ))}
                             <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtPct(row.despesa, row.receita)}</td>
-
                           </tr>
                         ))}
                         {showSubtotals && !drillNome && (
@@ -502,12 +459,10 @@ const AtivosEm = ({ dateValue }: Props) => {
                               {g.rows.length > 1 ? ` (${g.rows.length} planos)` : ""}
                             </td>
                             <td className="px-3 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">{g.subtotal.toLocaleString("pt-BR")}</td>
-                            <td className="px-3 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">{g.entrou.toLocaleString("pt-BR")}</td>
                             {MONEY_COLS.map((c) => (
                               <td key={c.k} className="px-3 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(g[c.k])}</td>
                             ))}
                             <td className="px-3 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">{fmtPct(g.despesa, g.receita)}</td>
-
                           </tr>
                         )}
                       </Fragment>
@@ -522,12 +477,10 @@ const AtivosEm = ({ dateValue }: Props) => {
                     <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{totalPlanos.toLocaleString("pt-BR")}</td>
                   )}
                   <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{totalVidas.toLocaleString("pt-BR")}</td>
-                  <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{totalEntrou.toLocaleString("pt-BR")}</td>
                   {MONEY_COLS.map((c) => (
                     <td key={c.k} className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(totals[c.k])}</td>
                   ))}
                   <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtPct(totals.despesa, totals.receita)}</td>
-
                 </tr>
               </tfoot>
             </table>
@@ -538,4 +491,4 @@ const AtivosEm = ({ dateValue }: Props) => {
   );
 };
 
-export default AtivosEm;
+export default Vendas;

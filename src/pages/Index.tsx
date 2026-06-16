@@ -24,6 +24,8 @@ const todayBR = () => {
   return `${dd}/${mm}/${d.getFullYear()}`;
 };
 import AtivosEm from "@/components/AtivosEm";
+import Vendas from "@/components/Vendas";
+
 
 type MenuItem = {
   icon: React.ComponentType<{ className?: string }>;
@@ -46,6 +48,8 @@ const menuItems: MenuItem[] = [
   },
   { icon: Users, label: "Carteira" },
   { icon: UserCheck, label: "Ativos em" },
+  { icon: TrendingUp, label: "Vendas" },
+
   { icon: Percent, label: "Sinistralidade" },
   { icon: Stethoscope, label: "Assistencial" },
 ];
@@ -182,6 +186,8 @@ const Index = () => {
         <main className="flex-1 p-8">
           {active === "Ativos em" ? (
             <AtivosEm dateValue={dateValue} />
+          ) : active === "Vendas" ? (
+            <Vendas />
           ) : (
             <section className="bg-card rounded-xl border border-border shadow-sm overflow-hidden h-[calc(100vh-8rem)]">
               <iframe
@@ -192,6 +198,7 @@ const Index = () => {
               />
             </section>
           )}
+
         </main>
       </div>
     </div>
