@@ -17,7 +17,7 @@ type Row = {
   producao: number;
 };
 type VendasFile = { rows: Row[] };
-type SortKey = "agente" | "vendedor" | "vidas" | "producao" | "plano" | "nome" | "planos";
+type SortKey = "agente" | "vendedor" | "vidas" | "producao" | "plano" | "nome" | "planos" | "vendedores";
 type SortDir = "asc" | "desc";
 
 const fmtBRL = (n: number) =>
@@ -146,6 +146,27 @@ const Vendas = () => {
 
   const singleAgent = agente !== "__ALL__";
 
+  const agentSummary = useMemo(() => {
+    const map = new Map<string, { agente: string; vendedoresSet: Set<string>; planosSet: Set<string>; vidas: number; producao: number }>();
+    for (const r of results) {
+      let g = map.get(r.agente);
+      if (!g) { g = { agente: r.agente, vendedoresSet: new Set(), planosSet: new Set(), vidas: 0, producao: 0 }; map.set(r.agente, g); }
+      g.vendedoresSet.add(r.vendedor);
+      g.planosSet.add(r.plano);
+      g.vidas += r.vidas;
+      g.producao += r.producao;
+    }
+    const arr = Array.from(map.values()).map((g) => ({ agente: g.agente, vendedores: g.vendedoresSet.size, planos: g.planosSet.size, vidas: g.vidas, producao: g.producao }));
+    const dir = sortDir === "asc" ? 1 : -1;
+    arr.sort((a, b) => {
+      if (sortKey === "vidas" || sortKey === "producao" || sortKey === "planos" || sortKey === "vendedores") return (a[sortKey] - b[sortKey]) * dir;
+      const av = a.agente.toLowerCase();
+      const bv = b.agente.toLowerCase();
+      return av < bv ? -dir : av > bv ? dir : 0;
+    });
+    return arr;
+  }, [results, sortKey, sortDir]);
+
   // Color per vendedor (stable per agent selection)
   const vendedorColors = useMemo(() => {
     const names = Array.from(new Set(summary.map((s) => s.vendedor))).sort();
@@ -159,7 +180,15 @@ const Vendas = () => {
     [summary],
   );
 
-  const baseCols: { k: SortKey; label: string; align: "left" | "right"; w: string }[] = summarize
+  const baseCols: { k: SortKey; label: string; align: "left" | "right"; w: string }[] = summarizeAgent
+    ? [
+        { k: "agente", label: "AGENTE", align: "left", w: "" },
+        { k: "vendedores", label: "VENDEDORES", align: "right", w: "w-32" },
+        { k: "planos", label: "PLANOS", align: "right", w: "w-24" },
+        { k: "vidas", label: "VIDAS", align: "right", w: "w-32" },
+        { k: "producao", label: "PRODUÇÃO", align: "right", w: "w-40" },
+      ]
+    : summarize
     ? [
         { k: "agente", label: "AGENTE", align: "left", w: "w-56" },
         { k: "vendedor", label: "VENDEDOR", align: "left", w: "" },
@@ -174,7 +203,7 @@ const Vendas = () => {
         { k: "producao", label: "PRODUÇÃO", align: "right", w: "w-32" },
         { k: "nome", label: "NOME PLANO", align: "left", w: "" },
       ];
-  const cols = singleAgent ? baseCols.filter((c) => c.k !== "agente") : baseCols;
+  const cols = singleAgent && !summarizeAgent ? baseCols.filter((c) => c.k !== "agente") : baseCols;
   const colCount = cols.length;
 
   return (
