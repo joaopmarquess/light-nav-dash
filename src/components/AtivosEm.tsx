@@ -87,15 +87,16 @@ const AtivosEm = ({ dateValue }: Props) => {
         totals.set(p[i], (totals.get(p[i]) || 0) + 1);
       }
     }
-    const q = filter.trim().toLowerCase();
+    const terms = appliedTerms.map((t) => t.toLowerCase()).filter(Boolean);
     const list: { plano: string; nome: string; vidas: number }[] = [];
     for (const [idx, vidas] of totals) {
       const pl = plans[idx];
       if (!pl) continue;
+      const n = pl.n.toLowerCase();
+      const p2 = pl.p.toLowerCase();
       if (
-        !q ||
-        pl.n.toLowerCase().includes(q) ||
-        pl.p.toLowerCase().includes(q)
+        terms.length === 0 ||
+        terms.some((q) => n.includes(q) || p2.includes(q))
       ) {
         list.push({ plano: pl.p || "(sem código)", nome: pl.n || "(sem nome)", vidas });
       }
@@ -108,7 +109,7 @@ const AtivosEm = ({ dateValue }: Props) => {
       return av < bv ? -dir : av > bv ? dir : 0;
     });
     return list;
-  }, [data, refDate?.getTime(), filter, plans, sortKey, sortDir]);
+  }, [data, refDate?.getTime(), appliedTerms, plans, sortKey, sortDir]);
 
   const totalVidas = useMemo(
     () => results.reduce((s, r) => s + r.vidas, 0),
@@ -129,15 +130,103 @@ const AtivosEm = ({ dateValue }: Props) => {
               : "Informe a data no formato dd/mm/aaaa no campo acima"}
           </p>
         </div>
-        <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-          <input
-            type="text"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            placeholder="Filtrar por PLANO ou NOME_PLANO…"
-            className="h-9 w-full pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-          />
+        <div className="w-full sm:w-[28rem] flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={filterDraft}
+                onChange={(e) => setFilterDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    const next = [...pendingTerms];
+                    if (filterDraft.trim()) next.push(filterDraft.trim());
+                    setPendingTerms([]);
+                    setFilterDraft("");
+                    setAppliedTerms(next);
+                  }
+                }}
+                placeholder="Trecho do PLANO ou NOME_PLANO…"
+                className="h-9 w-full pl-3 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const t = filterDraft.trim();
+                if (!t) return;
+                setPendingTerms((p) => [...p, t]);
+                setFilterDraft("");
+              }}
+              title="Adicionar trecho"
+              aria-label="Adicionar trecho"
+              className="h-9 w-9 flex items-center justify-center rounded-md border border-border bg-background text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const next = [...pendingTerms];
+                if (filterDraft.trim()) next.push(filterDraft.trim());
+                setPendingTerms([]);
+                setFilterDraft("");
+                setAppliedTerms(next);
+              }}
+              title="Pesquisar"
+              aria-label="Pesquisar"
+              className="h-9 w-9 flex items-center justify-center rounded-md border border-border bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              <Search className="h-4 w-4" />
+            </button>
+          </div>
+          {(pendingTerms.length > 0 || appliedTerms.length > 0) && (
+            <div className="flex flex-wrap gap-1.5">
+              {pendingTerms.map((t, i) => (
+                <span
+                  key={`p-${i}`}
+                  className="inline-flex items-center gap-1 h-6 pl-2 pr-1 rounded-full bg-accent text-xs text-foreground"
+                >
+                  {t}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPendingTerms((p) => p.filter((_, j) => j !== i))
+                    }
+                    className="h-4 w-4 inline-flex items-center justify-center rounded-full hover:bg-background/60"
+                    aria-label={`Remover ${t}`}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+              {appliedTerms.length > 0 && pendingTerms.length === 0 && (
+                <span className="text-[11px] text-muted-foreground self-center">
+                  Aplicados:
+                </span>
+              )}
+              {pendingTerms.length === 0 &&
+                appliedTerms.map((t, i) => (
+                  <span
+                    key={`a-${i}`}
+                    className="inline-flex items-center gap-1 h-6 pl-2 pr-1 rounded-full bg-primary/10 text-xs text-foreground"
+                  >
+                    {t}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setAppliedTerms((p) => p.filter((_, j) => j !== i))
+                      }
+                      className="h-4 w-4 inline-flex items-center justify-center rounded-full hover:bg-background/60"
+                      aria-label={`Remover ${t}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+            </div>
+          )}
         </div>
       </div>
 
