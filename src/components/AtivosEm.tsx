@@ -77,15 +77,7 @@ const AtivosEm = ({ dateValue }: Props) => {
   const plans = plansData as Plan[];
   const refDate = parseBR(dateValue);
 
-  const refBase = useMemo(() => {
-    if (!refDate) return null;
-    return `${refDate.getUTCFullYear()}${String(refDate.getUTCMonth() + 1).padStart(2, "0")}`;
-  }, [refDate?.getTime()]);
-
-  const receitaByPlano = useMemo<Record<string, number>>(() => {
-    if (!receitas || !refBase) return {};
-    return receitas[refBase] || {};
-  }, [receitas, refBase]);
+  const receitaByPlano = receitas || {};
 
   const results = useMemo(() => {
     if (!data || !refDate) return [];
