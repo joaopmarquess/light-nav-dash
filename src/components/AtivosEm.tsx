@@ -3,7 +3,7 @@ import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, Plus, X } from "lucid
 import plansData from "@/data/plans.json";
 
 type MoneyKey = "mens" | "copart" | "receita" | "despesa" | "saldo";
-type SortKey = "plano" | "nome" | "vidas" | MoneyKey;
+type SortKey = "plano" | "nome" | "vidas" | MoneyKey | "sin";
 type SortDir = "asc" | "desc";
 
 type Dataset = { p: number[]; v: number[]; r: number[]; c: number[] };
@@ -32,6 +32,13 @@ function parseBR(s: string): Date | null {
 
 const fmtBRL = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const fmtPct = (despesa: number, receita: number) =>
+  receita > 0
+    ? `${((despesa / receita) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
+    : "—";
+
+const sinValue = (despesa: number, receita: number) => (receita > 0 ? (despesa / receita) * 100 : -1);
 
 interface Props {
   dateValue: string;
@@ -173,7 +180,7 @@ const AtivosEm = ({ dateValue }: Props) => {
     return t;
   }, [visibleGroups]);
 
-  const colCount = (summarize && !drillNome ? 3 : 3) + MONEY_COLS.length;
+  const colCount = (summarize && !drillNome ? 3 : 3) + MONEY_COLS.length + 1;
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-8rem)] flex flex-col">
@@ -321,6 +328,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                     const cols = [
                       ...baseCols,
                       ...MONEY_COLS.map((c) => ({ k: c.k as SortKey, label: c.label, align: "right" as const, w: "w-32" })),
+                      { k: "sin" as SortKey, label: "%SIN", align: "right" as const, w: "w-20" },
                     ];
                     return cols.map((col) => {
                       const active = sortKey === col.k;
@@ -358,6 +366,9 @@ const AtivosEm = ({ dateValue }: Props) => {
                         if (sortKey === "mens" || sortKey === "copart" || sortKey === "receita" || sortKey === "despesa" || sortKey === "saldo") {
                           return (a[sortKey] - b[sortKey]) * dir;
                         }
+                        if (sortKey === "sin") {
+                          return (sinValue(a.despesa, a.receita) - sinValue(b.despesa, b.receita)) * dir;
+                        }
                         const an = a.nome.toLowerCase();
                         const bn = b.nome.toLowerCase();
                         return an < bn ? -dir : an > bn ? dir : 0;
@@ -372,6 +383,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                           {MONEY_COLS.map((c) => (
                             <td key={c.k} className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(g[c.k])}</td>
                           ))}
+                          <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtPct(g.despesa, g.receita)}</td>
                         </tr>
                       ))
                   : (drillNome ? grouped.filter((g) => g.nome === drillNome) : grouped).map((g) => (
@@ -384,6 +396,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                             {MONEY_COLS.map((c) => (
                               <td key={c.k} className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(row[c.k])}</td>
                             ))}
+                            <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtPct(row.despesa, row.receita)}</td>
                           </tr>
                         ))}
                         {showSubtotals && !drillNome && (
@@ -397,6 +410,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                             {MONEY_COLS.map((c) => (
                               <td key={c.k} className="px-3 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(g[c.k])}</td>
                             ))}
+                            <td className="px-3 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">{fmtPct(g.despesa, g.receita)}</td>
                           </tr>
                         )}
                       </Fragment>
@@ -414,6 +428,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                   {MONEY_COLS.map((c) => (
                     <td key={c.k} className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(totals[c.k])}</td>
                   ))}
+                  <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtPct(totals.despesa, totals.receita)}</td>
                 </tr>
               </tfoot>
             </table>
