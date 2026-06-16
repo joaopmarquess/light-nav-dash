@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, Plus, X } from "lucide-react";
 import plansData from "@/data/plans.json";
 
@@ -317,7 +317,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                   </tr>
                 )}
                 {grouped.map((g) => (
-                  <>
+                  <Fragment key={`g-${g.nome}`}>
                     {g.rows.map((row) => (
                       <tr
                         key={`${row.plano}-${row.nome}`}
@@ -345,7 +345,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                         {g.subtotal.toLocaleString("pt-BR")}
                       </td>
                     </tr>
-                  </>
+                  </Fragment>
                 ))}
               </tbody>
             </table>
