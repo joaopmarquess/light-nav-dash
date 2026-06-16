@@ -345,6 +345,29 @@ const AtivosEm = ({ dateValue }: Props) => {
               </span>
             </div>
           </div>
+          {drillNome && visibleGroups[0] && (
+            <div className="mb-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+              {(() => {
+                const g = visibleGroups[0];
+                const rows = g.rows;
+                const mk = (key: "vidas" | "receita" | "despesa" | "saldo"): PieDatum[] =>
+                  rows.map((r) => ({ name: r.plano, value: Math.abs(r[key]), raw: r[key] }));
+                const sinData: PieDatum[] = rows.map((r) => {
+                  const s = sinValue(r.despesa, r.receita);
+                  return { name: r.plano, value: s > 0 ? s : 0, raw: s };
+                });
+                return (
+                  <>
+                    <PieMini title="VIDAS" data={mk("vidas")} fmt={(n) => n.toLocaleString("pt-BR")} />
+                    <PieMini title="R$ RECEITAS" data={mk("receita")} fmt={fmtBRL} />
+                    <PieMini title="R$ DESPESAS" data={mk("despesa")} fmt={fmtBRL} />
+                    <PieMini title="R$ SALDO" data={mk("saldo")} fmt={fmtBRL} />
+                    <PieMini title="%SIN" data={sinData} fmt={(n) => (n >= 0 ? `${n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%` : "—")} />
+                  </>
+                );
+              })()}
+            </div>
+          )}
           <div className="flex-1 overflow-auto border border-border rounded-lg">
             <table className="w-full text-xs">
               <thead className="bg-muted/40 sticky top-0">
