@@ -263,17 +263,14 @@ const AtivosEm = ({ dateValue }: Props) => {
       )}
       {!loading && !error && refDate && (
         <>
-          <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 px-1 gap-3 flex-wrap">
-            <span>
-              {totalPlanos} plano{totalPlanos === 1 ? "" : "s"}
-            </span>
-            <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 gap-3 flex-wrap">
+            <div className="flex items-center gap-4 pl-1">
               <label className="flex items-center gap-1.5 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={summarize}
                   onChange={(e) => setSummarize(e.target.checked)}
-                  className="h-3.5 w-3.5 accent-primary cursor-pointer"
+                  className="h-3.5 w-3.5 accent-gray-500 cursor-pointer"
                 />
                 Resumir
               </label>
@@ -287,18 +284,25 @@ const AtivosEm = ({ dateValue }: Props) => {
                   checked={showSubtotals}
                   disabled={summarize}
                   onChange={(e) => setShowSubtotals(e.target.checked)}
-                  className="h-3.5 w-3.5 accent-primary cursor-pointer disabled:cursor-not-allowed"
+                  className="h-3.5 w-3.5 accent-gray-500 cursor-pointer disabled:cursor-not-allowed"
                 />
                 Mostrar subtotais por NOME_PLANO
               </label>
             </div>
-            <span>
-              Total:{" "}
-              <span className="font-semibold text-foreground">
-                {totalVidas.toLocaleString("pt-BR")}
-              </span>{" "}
-              vidas
-            </span>
+            <div className="flex items-center">
+              <div className="w-32 px-4 text-right">
+                <span className="font-semibold text-foreground tabular-nums">
+                  {totalPlanos.toLocaleString("pt-BR")}
+                </span>{" "}
+                plano{totalPlanos === 1 ? "" : "s"}
+              </div>
+              <div className="w-32 px-4 text-right">
+                <span className="font-semibold text-foreground tabular-nums">
+                  {totalVidas.toLocaleString("pt-BR")}
+                </span>{" "}
+                vidas
+              </div>
+            </div>
           </div>
           <div className="flex-1 overflow-auto border border-border rounded-lg">
             <table className="w-full text-sm">
