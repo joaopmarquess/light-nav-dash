@@ -17,7 +17,7 @@ type Row = {
   producao: number;
 };
 type VendasFile = { rows: Row[] };
-type SortKey = "agente" | "vendedor" | "vidas" | "producao" | "plano" | "nome" | "planos";
+type SortKey = "agente" | "vendedor" | "vidas" | "producao" | "plano" | "nome" | "planos" | "vendedores";
 type SortDir = "asc" | "desc";
 
 const fmtBRL = (n: number) =>
@@ -36,6 +36,7 @@ const Vendas = () => {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [showSubtotals, setShowSubtotals] = useState(true);
   const [summarize, setSummarize] = useState(false);
+  const [summarizeAgent, setSummarizeAgent] = useState(false);
 
   const toggleSort = (k: SortKey) => {
     if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -145,6 +146,27 @@ const Vendas = () => {
 
   const singleAgent = agente !== "__ALL__";
 
+  const agentSummary = useMemo(() => {
+    const map = new Map<string, { agente: string; vendedoresSet: Set<string>; planosSet: Set<string>; vidas: number; producao: number }>();
+    for (const r of results) {
+      let g = map.get(r.agente);
+      if (!g) { g = { agente: r.agente, vendedoresSet: new Set(), planosSet: new Set(), vidas: 0, producao: 0 }; map.set(r.agente, g); }
+      g.vendedoresSet.add(r.vendedor);
+      g.planosSet.add(r.plano);
+      g.vidas += r.vidas;
+      g.producao += r.producao;
+    }
+    const arr = Array.from(map.values()).map((g) => ({ agente: g.agente, vendedores: g.vendedoresSet.size, planos: g.planosSet.size, vidas: g.vidas, producao: g.producao }));
+    const dir = sortDir === "asc" ? 1 : -1;
+    arr.sort((a, b) => {
+      if (sortKey === "vidas" || sortKey === "producao" || sortKey === "planos" || sortKey === "vendedores") return (a[sortKey] - b[sortKey]) * dir;
+      const av = a.agente.toLowerCase();
+      const bv = b.agente.toLowerCase();
+      return av < bv ? -dir : av > bv ? dir : 0;
+    });
+    return arr;
+  }, [results, sortKey, sortDir]);
+
   // Color per vendedor (stable per agent selection)
   const vendedorColors = useMemo(() => {
     const names = Array.from(new Set(summary.map((s) => s.vendedor))).sort();
@@ -158,7 +180,15 @@ const Vendas = () => {
     [summary],
   );
 
-  const baseCols: { k: SortKey; label: string; align: "left" | "right"; w: string }[] = summarize
+  const baseCols: { k: SortKey; label: string; align: "left" | "right"; w: string }[] = summarizeAgent
+    ? [
+        { k: "agente", label: "AGENTE", align: "left", w: "" },
+        { k: "vendedores", label: "VENDEDORES", align: "right", w: "w-32" },
+        { k: "planos", label: "PLANOS", align: "right", w: "w-24" },
+        { k: "vidas", label: "VIDAS", align: "right", w: "w-32" },
+        { k: "producao", label: "PRODUÇÃO", align: "right", w: "w-40" },
+      ]
+    : summarize
     ? [
         { k: "agente", label: "AGENTE", align: "left", w: "w-56" },
         { k: "vendedor", label: "VENDEDOR", align: "left", w: "" },
@@ -173,7 +203,7 @@ const Vendas = () => {
         { k: "producao", label: "PRODUÇÃO", align: "right", w: "w-32" },
         { k: "nome", label: "NOME PLANO", align: "left", w: "" },
       ];
-  const cols = singleAgent ? baseCols.filter((c) => c.k !== "agente") : baseCols;
+  const cols = singleAgent && !summarizeAgent ? baseCols.filter((c) => c.k !== "agente") : baseCols;
   const colCount = cols.length;
 
   return (
@@ -273,13 +303,17 @@ const Vendas = () => {
       {!loading && !error && (
         <>
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 gap-3 flex-wrap">
-            <div className="flex items-center gap-4 pl-1">
-              <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                <input type="checkbox" checked={summarize} onChange={(e) => setSummarize(e.target.checked)} className="h-3.5 w-3.5 accent-gray-500 cursor-pointer" />
+            <div className="flex items-center gap-4 pl-1 flex-wrap">
+              <label className={`flex items-center gap-1.5 select-none ${summarizeAgent ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
+                <input type="checkbox" checked={summarize} disabled={summarizeAgent} onChange={(e) => setSummarize(e.target.checked)} className="h-3.5 w-3.5 accent-gray-500 cursor-pointer disabled:cursor-not-allowed" />
                 Resumir
               </label>
-              <label className={`flex items-center gap-1.5 select-none ${summarize ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
-                <input type="checkbox" checked={showSubtotals} disabled={summarize} onChange={(e) => setShowSubtotals(e.target.checked)} className="h-3.5 w-3.5 accent-gray-500 cursor-pointer disabled:cursor-not-allowed" />
+              <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                <input type="checkbox" checked={summarizeAgent} onChange={(e) => setSummarizeAgent(e.target.checked)} className="h-3.5 w-3.5 accent-gray-500 cursor-pointer" />
+                Resumir por Agente
+              </label>
+              <label className={`flex items-center gap-1.5 select-none ${summarize || summarizeAgent ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
+                <input type="checkbox" checked={showSubtotals} disabled={summarize || summarizeAgent} onChange={(e) => setShowSubtotals(e.target.checked)} className="h-3.5 w-3.5 accent-gray-500 cursor-pointer disabled:cursor-not-allowed" />
                 Mostrar subtotais por VENDEDOR
               </label>
             </div>
@@ -291,7 +325,7 @@ const Vendas = () => {
             </div>
           </div>
 
-          {singleAgent && summarize && chartData.length > 0 && (
+          {singleAgent && summarize && !summarizeAgent && chartData.length > 0 && (
             <div className="mb-2 border border-border rounded-lg bg-muted/20 px-3 pt-2 pb-1 shrink-0">
               <div className="text-[11px] font-semibold text-foreground mb-1">
                 VIDAS por VENDEDOR — {agente}
@@ -352,7 +386,17 @@ const Vendas = () => {
                     </td>
                   </tr>
                 )}
-                {summarize
+                {summarizeAgent
+                  ? agentSummary.map((s, i) => (
+                      <tr key={`as-${i}`} className="border-t border-border hover:bg-accent/40">
+                        <td className="px-3 py-2 text-foreground">{s.agente}</td>
+                        <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtInt(s.vendedores)}</td>
+                        <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtInt(s.planos)}</td>
+                        <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(s.vidas)}</td>
+                        <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(s.producao)}</td>
+                      </tr>
+                    ))
+                  : summarize
                   ? summary.map((s, i) => (
                       <tr key={`sum-${i}`} className="border-t border-border hover:bg-accent/40">
                         {!singleAgent && <td className="px-3 py-2 text-foreground">{s.agente}</td>}
@@ -418,15 +462,25 @@ const Vendas = () => {
                     ))}
               </tbody>
               <tfoot className="sticky bottom-0 bg-muted">
-                <tr className="border-t border-border">
-                  <td className="px-3 py-2 text-xs font-semibold text-foreground" colSpan={singleAgent ? 1 : 2}>Total</td>
-                  {summarize && (
+                {summarizeAgent ? (
+                  <tr className="border-t border-border">
+                    <td className="px-3 py-2 text-xs font-semibold text-foreground">Total</td>
+                    <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(agentSummary.reduce((s, r) => s + r.vendedores, 0))}</td>
                     <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.planos)}</td>
-                  )}
-                  <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.vidas)}</td>
-                  <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(totals.producao)}</td>
-                  {!summarize && <td className="px-3 py-2"></td>}
-                </tr>
+                    <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.vidas)}</td>
+                    <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(totals.producao)}</td>
+                  </tr>
+                ) : (
+                  <tr className="border-t border-border">
+                    <td className="px-3 py-2 text-xs font-semibold text-foreground" colSpan={singleAgent ? 1 : 2}>Total</td>
+                    {summarize && (
+                      <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.planos)}</td>
+                    )}
+                    <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.vidas)}</td>
+                    <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(totals.producao)}</td>
+                    {!summarize && <td className="px-3 py-2"></td>}
+                  </tr>
+                )}
               </tfoot>
             </table>
           </div>
