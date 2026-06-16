@@ -262,10 +262,19 @@ const AtivosEm = ({ dateValue }: Props) => {
       )}
       {!loading && !error && refDate && (
         <>
-          <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 px-1">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 px-1 gap-3">
             <span>
               {totalPlanos} plano{totalPlanos === 1 ? "" : "s"}
             </span>
+            <label className="flex items-center gap-1.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={showSubtotals}
+                onChange={(e) => setShowSubtotals(e.target.checked)}
+                className="h-3.5 w-3.5 accent-primary cursor-pointer"
+              />
+              Mostrar subtotais por NOME_PLANO
+            </label>
             <span>
               Total:{" "}
               <span className="font-semibold text-foreground">
@@ -333,19 +342,21 @@ const AtivosEm = ({ dateValue }: Props) => {
                         </td>
                       </tr>
                     ))}
-                    <tr
-                      key={`sub-${g.nome}`}
-                      className="border-t border-border bg-muted/30"
-                    >
-                      <td className="px-4 py-1.5"></td>
-                      <td className="px-4 py-1.5 text-xs italic text-muted-foreground">
-                        Subtotal {g.nome}
-                        {g.rows.length > 1 ? ` (${g.rows.length} planos)` : ""}
-                      </td>
-                      <td className="px-4 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">
-                        {g.subtotal.toLocaleString("pt-BR")}
-                      </td>
-                    </tr>
+                    {showSubtotals && (
+                      <tr
+                        key={`sub-${g.nome}`}
+                        className="border-t border-border bg-muted/30"
+                      >
+                        <td className="px-4 py-1.5"></td>
+                        <td className="px-4 py-1.5 text-xs italic text-muted-foreground">
+                          Subtotal {g.nome}
+                          {g.rows.length > 1 ? ` (${g.rows.length} planos)` : ""}
+                        </td>
+                        <td className="px-4 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">
+                          {g.subtotal.toLocaleString("pt-BR")}
+                        </td>
+                      </tr>
+                    )}
                   </Fragment>
                 ))}
               </tbody>
