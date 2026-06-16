@@ -7,7 +7,7 @@ type SortDir = "asc" | "desc";
 
 type Dataset = { p: number[]; v: number[]; r: number[]; c: number[] };
 type Plan = { p: string; n: string };
-type Receitas = Record<string, Record<string, number>>;
+type Receitas = Record<string, number>;
 
 const EPOCH = Date.UTC(1970, 0, 1);
 const DAY = 86400000;
