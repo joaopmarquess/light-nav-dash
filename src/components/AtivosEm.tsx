@@ -226,18 +226,6 @@ const AtivosEm = ({ dateValue }: Props) => {
                   </tr>
                 ))}
               </tbody>
-              {results.length > 0 && (
-                <tfoot className="sticky bottom-0">
-                  <tr className="bg-muted/60 border-t-2 border-border">
-                    <td className="px-4 py-2 font-semibold text-foreground" colSpan={2}>
-                      Total ({totalPlanos.toLocaleString("pt-BR")} plano{totalPlanos === 1 ? "" : "s"})
-                    </td>
-                    <td className="px-4 py-2 text-right font-semibold text-foreground tabular-nums">
-                      {totalVidas.toLocaleString("pt-BR")}
-                    </td>
-                  </tr>
-                </tfoot>
-              )}
             </table>
           </div>
         </>
