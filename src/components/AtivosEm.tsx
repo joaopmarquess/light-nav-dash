@@ -263,19 +263,35 @@ const AtivosEm = ({ dateValue }: Props) => {
       )}
       {!loading && !error && refDate && (
         <>
-          <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 px-1 gap-3">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 px-1 gap-3 flex-wrap">
             <span>
               {totalPlanos} plano{totalPlanos === 1 ? "" : "s"}
             </span>
-            <label className="flex items-center gap-1.5 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={showSubtotals}
-                onChange={(e) => setShowSubtotals(e.target.checked)}
-                className="h-3.5 w-3.5 accent-primary cursor-pointer"
-              />
-              Mostrar subtotais por NOME_PLANO
-            </label>
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={summarize}
+                  onChange={(e) => setSummarize(e.target.checked)}
+                  className="h-3.5 w-3.5 accent-primary cursor-pointer"
+                />
+                Resumir
+              </label>
+              <label
+                className={`flex items-center gap-1.5 select-none ${
+                  summarize ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={showSubtotals}
+                  disabled={summarize}
+                  onChange={(e) => setShowSubtotals(e.target.checked)}
+                  className="h-3.5 w-3.5 accent-primary cursor-pointer disabled:cursor-not-allowed"
+                />
+                Mostrar subtotais por NOME_PLANO
+              </label>
+            </div>
             <span>
               Total:{" "}
               <span className="font-semibold text-foreground">
@@ -288,11 +304,18 @@ const AtivosEm = ({ dateValue }: Props) => {
             <table className="w-full text-sm">
               <thead className="bg-muted/40 sticky top-0">
                 <tr>
-                  {([
-                    { k: "plano" as SortKey, label: "PLANO", align: "left", w: "w-32" },
-                    { k: "nome" as SortKey, label: "NOME_PLANO", align: "left", w: "" },
-                    { k: "vidas" as SortKey, label: "VIDAS", align: "right", w: "w-32" },
-                  ]).map((col) => {
+                  {(summarize
+                    ? [
+                        { k: "nome" as SortKey, label: "NOME_PLANO", align: "left", w: "" },
+                        { k: "plano" as SortKey, label: "QTD PLANOS", align: "right", w: "w-32" },
+                        { k: "vidas" as SortKey, label: "VIDAS", align: "right", w: "w-32" },
+                      ]
+                    : [
+                        { k: "plano" as SortKey, label: "PLANO", align: "left", w: "w-32" },
+                        { k: "nome" as SortKey, label: "NOME_PLANO", align: "left", w: "" },
+                        { k: "vidas" as SortKey, label: "VIDAS", align: "right", w: "w-32" },
+                      ]
+                  ).map((col) => {
                     const active = sortKey === col.k;
                     const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
                     return (
@@ -327,39 +350,63 @@ const AtivosEm = ({ dateValue }: Props) => {
                     </td>
                   </tr>
                 )}
-                {grouped.map((g) => (
-                  <Fragment key={`g-${g.nome}`}>
-                    {g.rows.map((row) => (
-                      <tr
-                        key={`${row.plano}-${row.nome}`}
-                        className="border-t border-border hover:bg-accent/40"
-                      >
-                        <td className="px-4 py-2 text-foreground tabular-nums">
-                          {row.plano}
-                        </td>
-                        <td className="px-4 py-2 text-foreground">{row.nome}</td>
-                        <td className="px-4 py-2 text-right font-medium text-foreground tabular-nums">
-                          {row.vidas.toLocaleString("pt-BR")}
-                        </td>
-                      </tr>
+                {summarize
+                  ? [...grouped]
+                      .sort((a, b) => {
+                        const dir = sortDir === "asc" ? 1 : -1;
+                        if (sortKey === "vidas") return (a.subtotal - b.subtotal) * dir;
+                        if (sortKey === "plano") return (a.rows.length - b.rows.length) * dir;
+                        const an = a.nome.toLowerCase();
+                        const bn = b.nome.toLowerCase();
+                        return an < bn ? -dir : an > bn ? dir : 0;
+                      })
+                      .map((g) => (
+                        <tr
+                          key={`s-${g.nome}`}
+                          className="border-t border-border hover:bg-accent/40"
+                        >
+                          <td className="px-4 py-2 text-foreground">{g.nome}</td>
+                          <td className="px-4 py-2 text-right text-foreground tabular-nums">
+                            {g.rows.length.toLocaleString("pt-BR")}
+                          </td>
+                          <td className="px-4 py-2 text-right font-medium text-foreground tabular-nums">
+                            {g.subtotal.toLocaleString("pt-BR")}
+                          </td>
+                        </tr>
+                      ))
+                  : grouped.map((g) => (
+                      <Fragment key={`g-${g.nome}`}>
+                        {g.rows.map((row) => (
+                          <tr
+                            key={`${row.plano}-${row.nome}`}
+                            className="border-t border-border hover:bg-accent/40"
+                          >
+                            <td className="px-4 py-2 text-foreground tabular-nums">
+                              {row.plano}
+                            </td>
+                            <td className="px-4 py-2 text-foreground">{row.nome}</td>
+                            <td className="px-4 py-2 text-right font-medium text-foreground tabular-nums">
+                              {row.vidas.toLocaleString("pt-BR")}
+                            </td>
+                          </tr>
+                        ))}
+                        {showSubtotals && (
+                          <tr
+                            key={`sub-${g.nome}`}
+                            className="border-t border-border bg-muted/30"
+                          >
+                            <td className="px-4 py-1.5"></td>
+                            <td className="px-4 py-1.5 text-xs italic text-muted-foreground">
+                              Subtotal {g.nome}
+                              {g.rows.length > 1 ? ` (${g.rows.length} planos)` : ""}
+                            </td>
+                            <td className="px-4 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">
+                              {g.subtotal.toLocaleString("pt-BR")}
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
                     ))}
-                    {showSubtotals && (
-                      <tr
-                        key={`sub-${g.nome}`}
-                        className="border-t border-border bg-muted/30"
-                      >
-                        <td className="px-4 py-1.5"></td>
-                        <td className="px-4 py-1.5 text-xs italic text-muted-foreground">
-                          Subtotal {g.nome}
-                          {g.rows.length > 1 ? ` (${g.rows.length} planos)` : ""}
-                        </td>
-                        <td className="px-4 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">
-                          {g.subtotal.toLocaleString("pt-BR")}
-                        </td>
-                      </tr>
-                    )}
-                  </Fragment>
-                ))}
               </tbody>
             </table>
           </div>
