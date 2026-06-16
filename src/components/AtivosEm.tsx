@@ -415,14 +415,18 @@ const AtivosEm = ({ dateValue, initialDrillNome = null }: Props) => {
                       ...MONEY_COLS.map((c) => ({ k: c.k as SortKey, label: c.label, align: "right" as const, w: "w-32" })),
                       { k: "sin" as SortKey, label: "%SIN", align: "right" as const, w: "w-20" },
                     ];
+                    const PERIODO_TIP = "Período: 05/2025 a 04/2026";
+                    const externalKeys = new Set<SortKey>(["entrou", "mens", "copart", "receita", "despesa", "saldo", "sin"]);
 
                     return cols.map((col) => {
                       const active = sortKey === col.k;
                       const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
+                      const isExternal = externalKeys.has(col.k);
                       return (
                         <th
                           key={col.k}
                           onClick={() => toggleSort(col.k)}
+                          title={isExternal ? PERIODO_TIP : undefined}
                           className={`font-medium px-3 py-2 cursor-pointer select-none ${col.w} ${col.align === "right" ? "text-right" : "text-left"} ${active ? "text-foreground" : "text-muted-foreground"} hover:text-foreground whitespace-nowrap`}
                         >
                           <span className={`inline-flex items-center gap-1 ${col.align === "right" ? "justify-end" : ""}`}>
