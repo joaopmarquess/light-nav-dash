@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import plansData from "@/data/plans.json";
+
+type SortKey = "plano" | "nome" | "vidas";
+type SortDir = "asc" | "desc";
 
 type Dataset = { p: number[]; v: number[]; r: number[]; c: number[] };
 type Plan = { p: string; n: string };
@@ -25,6 +28,16 @@ const AtivosEm = ({ dateValue }: Props) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState("");
+  const [sortKey, setSortKey] = useState<SortKey>("vidas");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  const toggleSort = (k: SortKey) => {
+    if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortKey(k);
+      setSortDir(k === "vidas" ? "desc" : "asc");
+    }
+  };
 
   useEffect(() => {
     let abort = false;
@@ -53,9 +66,13 @@ const AtivosEm = ({ dateValue }: Props) => {
 
   const results = useMemo(() => {
     if (!data || !refDate) return [];
-    const ref = Math.floor((refDate.getTime() - EPOCH) / DAY);
+    const todayDays = Math.floor((Date.now() - EPOCH) / DAY);
+    // se a data informada for futura, usa hoje (conforme HOJE() da fórmula)
+    const refRaw = Math.floor((refDate.getTime() - EPOCH) / DAY);
+    const ref = Math.min(refRaw, todayDays);
+    const refYear = new Date(EPOCH + ref * DAY).getUTCFullYear();
     const yearEnd = Math.floor(
-      (Date.UTC(new Date().getUTCFullYear(), 11, 31) - EPOCH) / DAY,
+      (Date.UTC(refYear, 11, 31) - EPOCH) / DAY,
     );
     const totals = new Map<number, number>();
     const { p, v, r, c } = data;
@@ -81,9 +98,15 @@ const AtivosEm = ({ dateValue }: Props) => {
         list.push({ plano: pl.p || "(sem código)", nome: pl.n || "(sem nome)", vidas });
       }
     }
-    list.sort((a, b) => b.vidas - a.vidas);
+    const dir = sortDir === "asc" ? 1 : -1;
+    list.sort((a, b) => {
+      if (sortKey === "vidas") return (a.vidas - b.vidas) * dir;
+      const av = (a[sortKey] as string).toLowerCase();
+      const bv = (b[sortKey] as string).toLowerCase();
+      return av < bv ? -dir : av > bv ? dir : 0;
+    });
     return list;
-  }, [data, refDate?.getTime(), filter, plans]);
+  }, [data, refDate?.getTime(), filter, plans, sortKey, sortDir]);
 
   const totalVidas = useMemo(
     () => results.reduce((s, r) => s + r.vidas, 0),
