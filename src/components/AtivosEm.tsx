@@ -306,13 +306,13 @@ const AtivosEm = ({ dateValue }: Props) => {
                 <tr>
                   {(summarize
                     ? [
-                        { k: "nome" as SortKey, label: "NOME_PLANO", align: "left", w: "" },
-                        { k: "plano" as SortKey, label: "QTD PLANOS", align: "right", w: "w-32" },
+                        { k: "nome" as SortKey, label: "NOME PLANO", align: "left", w: "" },
+                        { k: "plano" as SortKey, label: "PLANOS", align: "right", w: "w-32" },
                         { k: "vidas" as SortKey, label: "VIDAS", align: "right", w: "w-32" },
                       ]
                     : [
                         { k: "plano" as SortKey, label: "PLANO", align: "left", w: "w-32" },
-                        { k: "nome" as SortKey, label: "NOME_PLANO", align: "left", w: "" },
+                        { k: "nome" as SortKey, label: "NOME PLANO", align: "left", w: "" },
                         { k: "vidas" as SortKey, label: "VIDAS", align: "right", w: "w-32" },
                       ]
                   ).map((col) => {
