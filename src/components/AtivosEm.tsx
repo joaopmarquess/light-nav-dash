@@ -80,9 +80,10 @@ const PieMini = ({ title, data, fmt }: { title: string; data: PieDatum[]; fmt: (
 
 interface Props {
   dateValue: string;
+  initialDrillNome?: string | null;
 }
 
-const AtivosEm = ({ dateValue }: Props) => {
+const AtivosEm = ({ dateValue, initialDrillNome = null }: Props) => {
   const [data, setData] = useState<Dataset | null>(null);
   const [receitas, setReceitas] = useState<Receitas | null>(null);
   const [vendasEntrou, setVendasEntrou] = useState<Record<string, number>>({});
@@ -95,8 +96,15 @@ const AtivosEm = ({ dateValue }: Props) => {
   const [sortKey, setSortKey] = useState<SortKey>("vidas");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [showSubtotals, setShowSubtotals] = useState(true);
-  const [summarize, setSummarize] = useState(false);
-  const [drillNome, setDrillNome] = useState<string | null>(null);
+  const [summarize, setSummarize] = useState(!!initialDrillNome);
+  const [drillNome, setDrillNome] = useState<string | null>(initialDrillNome);
+
+  useEffect(() => {
+    if (initialDrillNome) {
+      setDrillNome(initialDrillNome);
+      setSummarize(true);
+    }
+  }, [initialDrillNome]);
 
   const toggleSort = (k: SortKey) => {
     if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
