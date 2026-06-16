@@ -1,0 +1,494 @@
+import { Fragment, useEffect, useMemo, useState } from "react";
+import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, Plus, X } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import plansData from "@/data/plans.json";
+
+type MoneyKey = "mens" | "copart" | "receita" | "despesa" | "saldo";
+type SortKey = "plano" | "nome" | "vidas" | MoneyKey | "sin";
+type SortDir = "asc" | "desc";
+type Plan = { p: string; n: string };
+type PlanoMoney = { mens: number; copart: number; receita: number; despesa: number; saldo: number };
+type Receitas = Record<string, PlanoMoney>;
+type Vendas = { entrou: Record<string, number>; agentes: Record<string, Record<string, number>> };
+
+const ZERO: PlanoMoney = { mens: 0, copart: 0, receita: 0, despesa: 0, saldo: 0 };
+
+const MONEY_COLS: { k: MoneyKey; label: string }[] = [
+  { k: "mens", label: "R$ MENSALIDADE" },
+  { k: "copart", label: "R$ COPART." },
+  { k: "receita", label: "R$ RECEITAS" },
+  { k: "despesa", label: "R$ DESPESAS" },
+  { k: "saldo", label: "R$ SALDO" },
+];
+
+const fmtBRL = (n: number) =>
+  n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtPct = (despesa: number, receita: number) =>
+  receita > 0
+    ? `${((despesa / receita) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
+    : "—";
+const sinValue = (despesa: number, receita: number) => (receita > 0 ? (despesa / receita) * 100 : -1);
+
+const PIE_COLORS = [
+  "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6",
+  "#ec4899", "#14b8a6", "#f97316", "#6366f1", "#84cc16",
+  "#06b6d4", "#a855f7", "#eab308", "#22c55e", "#f43f5e",
+];
+
+type PieDatum = { name: string; value: number; raw: number };
+
+const PieMini = ({ title, data, fmt }: { title: string; data: PieDatum[]; fmt: (n: number) => string }) => {
+  const total = data.reduce((s, d) => s + d.value, 0);
+  return (
+    <div className="flex flex-col items-center bg-muted/20 border border-border rounded-md p-2">
+      <div className="text-[11px] font-semibold text-foreground mb-1">{title}</div>
+      <div className="w-full h-36">
+        {total > 0 ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie data={data} dataKey="value" nameKey="name" outerRadius="80%" stroke="hsl(var(--background))" strokeWidth={1}>
+                {data.map((_, i) => (
+                  <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{ fontSize: 11, padding: "4px 8px", borderRadius: 6 }}
+                formatter={(_v: number, _n: string, p: { payload: PieDatum }) => [fmt(p.payload.raw), p.payload.name]}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-full flex items-center justify-center text-[11px] text-muted-foreground">Sem dados</div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const Vendas = () => {
+  const [vendas, setVendas] = useState<Vendas | null>(null);
+  const [receitas, setReceitas] = useState<Receitas | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [agente, setAgente] = useState<string>("__ALL__");
+  const [filterDraft, setFilterDraft] = useState("");
+  const [pendingTerms, setPendingTerms] = useState<string[]>([]);
+  const [appliedTerms, setAppliedTerms] = useState<string[]>([]);
+  const [sortKey, setSortKey] = useState<SortKey>("vidas");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [showSubtotals, setShowSubtotals] = useState(true);
+  const [summarize, setSummarize] = useState(false);
+  const [drillNome, setDrillNome] = useState<string | null>(null);
+
+  const toggleSort = (k: SortKey) => {
+    if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortKey(k);
+      setSortDir(k === "plano" || k === "nome" ? "asc" : "desc");
+    }
+  };
+
+  useEffect(() => {
+    let abort = false;
+    setLoading(true);
+    Promise.all([
+      fetch("/data/vendas.json").then((r) => r.json()),
+      fetch("/data/receitas.json").then((r) => r.json()).catch(() => ({})),
+    ])
+      .then(([v, rec]) => {
+        if (!abort) {
+          setVendas(v);
+          setReceitas(rec);
+          setLoading(false);
+        }
+      })
+      .catch((e) => {
+        if (!abort) {
+          setError(String(e));
+          setLoading(false);
+        }
+      });
+    return () => {
+      abort = true;
+    };
+  }, []);
+
+  const plans = plansData as Plan[];
+  const moneyByPlano = receitas || {};
+  const agentesList = useMemo(() => (vendas ? Object.keys(vendas.agentes).sort() : []), [vendas]);
+
+  const planoVidas = useMemo<Record<string, number>>(() => {
+    if (!vendas) return {};
+    if (agente === "__ALL__") return vendas.entrou;
+    return vendas.agentes[agente] || {};
+  }, [vendas, agente]);
+
+  const planByCode = useMemo(() => {
+    const m = new Map<string, Plan>();
+    for (const pl of plans) m.set(pl.p, pl);
+    return m;
+  }, [plans]);
+
+  const results = useMemo(() => {
+    const terms = appliedTerms.map((t) => t.toLowerCase()).filter(Boolean);
+    const list: ({ plano: string; nome: string; vidas: number } & PlanoMoney)[] = [];
+    for (const [code, vidas] of Object.entries(planoVidas)) {
+      const pl = planByCode.get(code);
+      const nome = pl?.n || "(sem nome)";
+      const n = nome.toLowerCase();
+      const p2 = code.toLowerCase();
+      if (terms.length === 0 || terms.some((q) => n.includes(q) || p2.includes(q))) {
+        const m = moneyByPlano[code] || ZERO;
+        list.push({
+          plano: code,
+          nome,
+          vidas,
+          mens: m.mens || 0,
+          copart: m.copart || 0,
+          receita: m.receita || 0,
+          despesa: m.despesa || 0,
+          saldo: m.saldo || 0,
+        });
+      }
+    }
+    const dir = sortDir === "asc" ? 1 : -1;
+    list.sort((a, b) => {
+      if (sortKey === "vidas" || sortKey === "mens" || sortKey === "copart" || sortKey === "receita" || sortKey === "despesa" || sortKey === "saldo") {
+        return ((a[sortKey] as number) - (b[sortKey] as number)) * dir;
+      }
+      if (sortKey === "sin") return (sinValue(a.despesa, a.receita) - sinValue(b.despesa, b.receita)) * dir;
+      const av = (a[sortKey] as string).toLowerCase();
+      const bv = (b[sortKey] as string).toLowerCase();
+      return av < bv ? -dir : av > bv ? dir : 0;
+    });
+    return list;
+  }, [planoVidas, planByCode, appliedTerms, sortKey, sortDir, moneyByPlano]);
+
+  const grouped = useMemo(() => {
+    const map = new Map<string, { nome: string; rows: typeof results; subtotal: number } & PlanoMoney>();
+    for (const r of results) {
+      let g = map.get(r.nome);
+      if (!g) {
+        g = { nome: r.nome, rows: [], subtotal: 0, mens: 0, copart: 0, receita: 0, despesa: 0, saldo: 0 };
+        map.set(r.nome, g);
+      }
+      g.rows.push(r);
+      g.subtotal += r.vidas;
+      g.mens += r.mens; g.copart += r.copart; g.receita += r.receita; g.despesa += r.despesa; g.saldo += r.saldo;
+    }
+    return Array.from(map.values());
+  }, [results]);
+
+  const visibleGroups = useMemo(
+    () => (drillNome ? grouped.filter((g) => g.nome === drillNome) : grouped),
+    [grouped, drillNome],
+  );
+  const totalVidas = useMemo(() => visibleGroups.reduce((s, g) => s + g.subtotal, 0), [visibleGroups]);
+  const totalPlanos = useMemo(() => visibleGroups.reduce((s, g) => s + g.rows.length, 0), [visibleGroups]);
+  const totals = useMemo(() => {
+    const t: PlanoMoney = { mens: 0, copart: 0, receita: 0, despesa: 0, saldo: 0 };
+    for (const g of visibleGroups) {
+      t.mens += g.mens; t.copart += g.copart; t.receita += g.receita; t.despesa += g.despesa; t.saldo += g.saldo;
+    }
+    return t;
+  }, [visibleGroups]);
+
+  const colCount = (summarize && !drillNome ? 3 : drillNome ? 2 : 3) + MONEY_COLS.length + 1;
+
+  return (
+    <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-8rem)] flex flex-col">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">Vendas por plano</h2>
+          <p className="text-xs text-muted-foreground">
+            Filtro por AGENTE — vidas que entraram
+          </p>
+        </div>
+        <div className="w-full sm:w-[32rem] flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <select
+              value={agente}
+              onChange={(e) => { setAgente(e.target.value); setDrillNome(null); }}
+              className="h-9 rounded-md border border-border bg-background text-sm text-foreground px-2 focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <option value="__ALL__">Todos os AGENTES</option>
+              {agentesList.map((a) => (
+                <option key={a} value={a}>{a}</option>
+              ))}
+            </select>
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={filterDraft}
+                onChange={(e) => setFilterDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    const next = [...pendingTerms];
+                    if (filterDraft.trim()) next.push(filterDraft.trim());
+                    setPendingTerms([]);
+                    setFilterDraft("");
+                    setAppliedTerms(next);
+                  }
+                }}
+                placeholder="Trecho do PLANO ou NOME_PLANO…"
+                className="h-9 w-full pl-3 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const t = filterDraft.trim();
+                if (!t) return;
+                setPendingTerms((p) => [...p, t]);
+                setFilterDraft("");
+              }}
+              className="h-9 w-9 flex items-center justify-center rounded-md border border-border bg-background text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const next = [...pendingTerms];
+                if (filterDraft.trim()) next.push(filterDraft.trim());
+                setPendingTerms([]);
+                setFilterDraft("");
+                setAppliedTerms(next);
+              }}
+              className="h-9 w-9 flex items-center justify-center rounded-md border border-border bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              <Search className="h-4 w-4" />
+            </button>
+          </div>
+          {(pendingTerms.length > 0 || appliedTerms.length > 0) && (
+            <div className="flex flex-wrap gap-1.5">
+              {pendingTerms.map((t, i) => (
+                <span key={`p-${i}`} className="inline-flex items-center gap-1 h-6 pl-2 pr-1 rounded-full bg-accent text-xs text-foreground">
+                  {t}
+                  <button type="button" onClick={() => setPendingTerms((p) => p.filter((_, j) => j !== i))} className="h-4 w-4 inline-flex items-center justify-center rounded-full hover:bg-background/60">
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+              {pendingTerms.length === 0 &&
+                appliedTerms.map((t, i) => (
+                  <span key={`a-${i}`} className="inline-flex items-center gap-1 h-6 pl-2 pr-1 rounded-full bg-primary/10 text-xs text-foreground">
+                    {t}
+                    <button type="button" onClick={() => setAppliedTerms((p) => p.filter((_, j) => j !== i))} className="h-4 w-4 inline-flex items-center justify-center rounded-full hover:bg-background/60">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {loading && (
+        <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+          <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Carregando dados…
+        </div>
+      )}
+      {error && <div className="flex-1 flex items-center justify-center text-destructive text-sm">Erro: {error}</div>}
+      {!loading && !error && (
+        <>
+          {drillNome && (
+            <div className="mb-2 flex items-center justify-between text-xs px-1">
+              <span className="text-muted-foreground">
+                Detalhe de: <span className="font-semibold text-foreground">{drillNome}</span>
+              </span>
+              <button type="button" onClick={() => setDrillNome(null)} className="text-primary hover:underline">
+                ← Voltar ao resumo
+              </button>
+            </div>
+          )}
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 gap-3 flex-wrap">
+            <div className="flex items-center gap-4 pl-1">
+              <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                <input type="checkbox" checked={summarize} onChange={(e) => setSummarize(e.target.checked)} className="h-3.5 w-3.5 accent-gray-500 cursor-pointer" />
+                Resumir
+              </label>
+              <label className={`flex items-center gap-1.5 select-none ${summarize ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
+                <input type="checkbox" checked={showSubtotals} disabled={summarize} onChange={(e) => setShowSubtotals(e.target.checked)} className="h-3.5 w-3.5 accent-gray-500 cursor-pointer disabled:cursor-not-allowed" />
+                Mostrar subtotais por NOME_PLANO
+              </label>
+            </div>
+            <div className="flex items-center gap-2">
+              <span>
+                <span className="font-semibold text-foreground tabular-nums">{totalPlanos.toLocaleString("pt-BR")}</span> plano{totalPlanos === 1 ? "" : "s"} ·{" "}
+                <span className="font-semibold text-foreground tabular-nums">{totalVidas.toLocaleString("pt-BR")}</span> vidas
+              </span>
+            </div>
+          </div>
+          {drillNome && visibleGroups[0] && (
+            <div className="mb-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+              {(() => {
+                const g = visibleGroups[0];
+                const rows = g.rows;
+                const mk = (key: "vidas" | "receita" | "despesa" | "saldo"): PieDatum[] =>
+                  rows.map((r) => ({ name: r.plano, value: Math.abs(r[key]), raw: r[key] }));
+                const sinData: PieDatum[] = rows.map((r) => {
+                  const s = sinValue(r.despesa, r.receita);
+                  return { name: r.plano, value: s > 0 ? s : 0, raw: s };
+                });
+                return (
+                  <>
+                    <PieMini title="VIDAS" data={mk("vidas")} fmt={(n) => n.toLocaleString("pt-BR")} />
+                    <PieMini title="R$ RECEITAS" data={mk("receita")} fmt={fmtBRL} />
+                    <PieMini title="R$ DESPESAS" data={mk("despesa")} fmt={fmtBRL} />
+                    <PieMini title="R$ SALDO" data={mk("saldo")} fmt={fmtBRL} />
+                    <PieMini title="%SIN" data={sinData} fmt={(n) => (n >= 0 ? `${n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%` : "—")} />
+                  </>
+                );
+              })()}
+            </div>
+          )}
+          <div className="flex-1 overflow-auto border border-border rounded-lg">
+            <table className="w-full text-xs">
+              <thead className="bg-muted/40 sticky top-0">
+                <tr>
+                  {(() => {
+                    const baseCols: { k: SortKey; label: string; align: "left" | "right"; w: string }[] =
+                      summarize && !drillNome
+                        ? [
+                            { k: "nome", label: "NOME PLANO", align: "left", w: "" },
+                            { k: "plano", label: "PLANOS", align: "right", w: "w-24" },
+                            { k: "vidas", label: "VIDAS", align: "right", w: "w-24" },
+                          ]
+                        : drillNome
+                        ? [
+                            { k: "plano", label: "PLANO", align: "left", w: "w-24" },
+                            { k: "vidas", label: "VIDAS", align: "right", w: "w-20" },
+                          ]
+                        : [
+                            { k: "plano", label: "PLANO", align: "left", w: "w-24" },
+                            { k: "nome", label: "NOME PLANO", align: "left", w: "" },
+                            { k: "vidas", label: "VIDAS", align: "right", w: "w-20" },
+                          ];
+                    const cols = [
+                      ...baseCols,
+                      ...MONEY_COLS.map((c) => ({ k: c.k as SortKey, label: c.label, align: "right" as const, w: "w-32" })),
+                      { k: "sin" as SortKey, label: "%SIN", align: "right" as const, w: "w-20" },
+                    ];
+                    return cols.map((col) => {
+                      const active = sortKey === col.k;
+                      const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
+                      return (
+                        <th
+                          key={col.k}
+                          onClick={() => toggleSort(col.k)}
+                          className={`font-medium px-3 py-2 cursor-pointer select-none ${col.w} ${col.align === "right" ? "text-right" : "text-left"} ${active ? "text-foreground" : "text-muted-foreground"} hover:text-foreground whitespace-nowrap`}
+                        >
+                          <span className={`inline-flex items-center gap-1 ${col.align === "right" ? "justify-end" : ""}`}>
+                            {col.label}
+                            <Icon className="h-3 w-3 opacity-70" />
+                          </span>
+                        </th>
+                      );
+                    });
+                  })()}
+                </tr>
+              </thead>
+              <tbody>
+                {results.length === 0 && (
+                  <tr>
+                    <td colSpan={colCount} className="px-4 py-8 text-center text-muted-foreground">
+                      Nenhum plano encontrado.
+                    </td>
+                  </tr>
+                )}
+                {summarize && !drillNome
+                  ? [...grouped]
+                      .sort((a, b) => {
+                        const dir = sortDir === "asc" ? 1 : -1;
+                        if (sortKey === "vidas") return (a.subtotal - b.subtotal) * dir;
+                        if (sortKey === "plano") return (a.rows.length - b.rows.length) * dir;
+                        if (sortKey === "mens" || sortKey === "copart" || sortKey === "receita" || sortKey === "despesa" || sortKey === "saldo") {
+                          return (a[sortKey] - b[sortKey]) * dir;
+                        }
+                        if (sortKey === "sin") {
+                          return (sinValue(a.despesa, a.receita) - sinValue(b.despesa, b.receita)) * dir;
+                        }
+                        const an = a.nome.toLowerCase();
+                        const bn = b.nome.toLowerCase();
+                        return an < bn ? -dir : an > bn ? dir : 0;
+                      })
+                      .map((g) => (
+                        <tr key={`s-${g.nome}`} className="border-t border-border hover:bg-accent/40 text-xs">
+                          <td className="px-3 py-2 text-primary underline-offset-2 hover:underline cursor-pointer" onClick={() => setDrillNome(g.nome)}>
+                            {g.nome}
+                          </td>
+                          <td className="px-3 py-2 text-right text-foreground tabular-nums">{g.rows.length.toLocaleString("pt-BR")}</td>
+                          <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{g.subtotal.toLocaleString("pt-BR")}</td>
+                          {MONEY_COLS.map((c) => (
+                            <td key={c.k} className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(g[c.k])}</td>
+                          ))}
+                          <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtPct(g.despesa, g.receita)}</td>
+                        </tr>
+                      ))
+                  : (drillNome ? grouped.filter((g) => g.nome === drillNome) : grouped).map((g) => (
+                      <Fragment key={`g-${g.nome}`}>
+                        {g.rows.map((row, idx) => (
+                          <tr key={`${row.plano}-${row.nome}`} className="border-t border-border hover:bg-accent/40">
+                            <td className="px-3 py-2 text-foreground tabular-nums">
+                              <span className="inline-flex items-center gap-1.5">
+                                {drillNome && (
+                                  <span
+                                    aria-hidden
+                                    className="inline-block h-2.5 w-2.5 rounded-full shrink-0"
+                                    style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }}
+                                  />
+                                )}
+                                {row.plano}
+                              </span>
+                            </td>
+                            {!drillNome && <td className="px-3 py-2 text-foreground">{row.nome}</td>}
+                            <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{row.vidas.toLocaleString("pt-BR")}</td>
+                            {MONEY_COLS.map((c) => (
+                              <td key={c.k} className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(row[c.k])}</td>
+                            ))}
+                            <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtPct(row.despesa, row.receita)}</td>
+                          </tr>
+                        ))}
+                        {showSubtotals && !drillNome && (
+                          <tr key={`sub-${g.nome}`} className="border-t border-border bg-muted/30">
+                            <td className="px-3 py-1.5"></td>
+                            <td className="px-3 py-1.5 text-xs italic text-muted-foreground">
+                              Subtotal {g.nome}
+                              {g.rows.length > 1 ? ` (${g.rows.length} planos)` : ""}
+                            </td>
+                            <td className="px-3 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">{g.subtotal.toLocaleString("pt-BR")}</td>
+                            {MONEY_COLS.map((c) => (
+                              <td key={c.k} className="px-3 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(g[c.k])}</td>
+                            ))}
+                            <td className="px-3 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">{fmtPct(g.despesa, g.receita)}</td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    ))}
+              </tbody>
+              <tfoot className="sticky bottom-0 bg-muted">
+                <tr className="border-t border-border">
+                  <td className="px-3 py-2 text-xs font-semibold text-foreground" colSpan={(summarize && !drillNome) || drillNome ? 1 : 2}>
+                    Total
+                  </td>
+                  {summarize && !drillNome && (
+                    <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{totalPlanos.toLocaleString("pt-BR")}</td>
+                  )}
+                  <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{totalVidas.toLocaleString("pt-BR")}</td>
+                  {MONEY_COLS.map((c) => (
+                    <td key={c.k} className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(totals[c.k])}</td>
+                  ))}
+                  <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtPct(totals.despesa, totals.receita)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </>
+      )}
+    </section>
+  );
+};
+
+export default Vendas;
