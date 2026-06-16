@@ -111,6 +111,20 @@ const AtivosEm = ({ dateValue }: Props) => {
     return list;
   }, [data, refDate?.getTime(), appliedTerms, plans, sortKey, sortDir]);
 
+  const grouped = useMemo(() => {
+    const map = new Map<string, { nome: string; rows: typeof results; subtotal: number }>();
+    for (const r of results) {
+      let g = map.get(r.nome);
+      if (!g) {
+        g = { nome: r.nome, rows: [], subtotal: 0 };
+        map.set(r.nome, g);
+      }
+      g.rows.push(r);
+      g.subtotal += r.vidas;
+    }
+    return Array.from(map.values());
+  }, [results]);
+
   const totalVidas = useMemo(
     () => results.reduce((s, r) => s + r.vidas, 0),
     [results],
@@ -302,19 +316,36 @@ const AtivosEm = ({ dateValue }: Props) => {
                     </td>
                   </tr>
                 )}
-                {results.map((row) => (
-                  <tr
-                    key={`${row.plano}-${row.nome}`}
-                    className="border-t border-border hover:bg-accent/40"
-                  >
-                    <td className="px-4 py-2 text-foreground tabular-nums">
-                      {row.plano}
-                    </td>
-                    <td className="px-4 py-2 text-foreground">{row.nome}</td>
-                    <td className="px-4 py-2 text-right font-medium text-foreground tabular-nums">
-                      {row.vidas.toLocaleString("pt-BR")}
-                    </td>
-                  </tr>
+                {grouped.map((g) => (
+                  <>
+                    {g.rows.map((row) => (
+                      <tr
+                        key={`${row.plano}-${row.nome}`}
+                        className="border-t border-border hover:bg-accent/40"
+                      >
+                        <td className="px-4 py-2 text-foreground tabular-nums">
+                          {row.plano}
+                        </td>
+                        <td className="px-4 py-2 text-foreground">{row.nome}</td>
+                        <td className="px-4 py-2 text-right font-medium text-foreground tabular-nums">
+                          {row.vidas.toLocaleString("pt-BR")}
+                        </td>
+                      </tr>
+                    ))}
+                    <tr
+                      key={`sub-${g.nome}`}
+                      className="border-t border-border bg-muted/30"
+                    >
+                      <td className="px-4 py-1.5"></td>
+                      <td className="px-4 py-1.5 text-xs italic text-muted-foreground">
+                        Subtotal {g.nome}
+                        {g.rows.length > 1 ? ` (${g.rows.length} planos)` : ""}
+                      </td>
+                      <td className="px-4 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">
+                        {g.subtotal.toLocaleString("pt-BR")}
+                      </td>
+                    </tr>
+                  </>
                 ))}
               </tbody>
             </table>
