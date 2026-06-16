@@ -1,5 +1,12 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { Search, Loader2, ArrowUp, ArrowDown, ArrowUpDown, Plus, X } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Cell, Tooltip, ResponsiveContainer } from "recharts";
+
+const VEND_COLORS = [
+  "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6",
+  "#ec4899", "#14b8a6", "#f97316", "#6366f1", "#84cc16",
+  "#06b6d4", "#a855f7", "#eab308", "#22c55e", "#f43f5e",
+];
 
 type Row = {
   agente: string;
@@ -132,7 +139,22 @@ const Vendas = () => {
     return arr;
   }, [results, sortKey, sortDir]);
 
-  const cols: { k: SortKey; label: string; align: "left" | "right"; w: string }[] = summarize
+  const singleAgent = agente !== "__ALL__";
+
+  // Color per vendedor (stable per agent selection)
+  const vendedorColors = useMemo(() => {
+    const names = Array.from(new Set(summary.map((s) => s.vendedor))).sort();
+    const m: Record<string, string> = {};
+    names.forEach((n, i) => { m[n] = VEND_COLORS[i % VEND_COLORS.length]; });
+    return m;
+  }, [summary]);
+
+  const chartData = useMemo(
+    () => [...summary].sort((a, b) => b.vidas - a.vidas),
+    [summary],
+  );
+
+  const baseCols: { k: SortKey; label: string; align: "left" | "right"; w: string }[] = summarize
     ? [
         { k: "agente", label: "AGENTE", align: "left", w: "w-56" },
         { k: "vendedor", label: "VENDEDOR", align: "left", w: "" },
@@ -146,6 +168,7 @@ const Vendas = () => {
         { k: "producao", label: "PRODUÇÃO", align: "right", w: "w-32" },
         { k: "nome", label: "NOME PLANO", align: "left", w: "" },
       ];
+  const cols = singleAgent ? baseCols.filter((c) => c.k !== "agente") : baseCols;
   const colCount = cols.length;
 
   return (
@@ -263,6 +286,36 @@ const Vendas = () => {
             </div>
           </div>
 
+          {singleAgent && chartData.length > 0 && (
+            <div className="mb-3 border border-border rounded-lg bg-muted/20 p-3">
+              <div className="text-[11px] font-semibold text-foreground mb-2">
+                VIDAS por VENDEDOR — {agente}
+              </div>
+              <div style={{ width: "100%", height: Math.max(120, chartData.length * 28 + 30) }}>
+                <ResponsiveContainer>
+                  <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 24, left: 8, bottom: 4 }}>
+                    <XAxis type="number" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                    <YAxis
+                      type="category"
+                      dataKey="vendedor"
+                      tick={{ fontSize: 10 }}
+                      width={180}
+                      stroke="hsl(var(--muted-foreground))"
+                    />
+                    <Tooltip
+                      contentStyle={{ fontSize: 11, padding: "4px 8px", borderRadius: 6 }}
+                      formatter={(v: number) => [fmtInt(v), "VIDAS"]}
+                    />
+                    <Bar dataKey="vidas" radius={[0, 4, 4, 0]}>
+                      {chartData.map((d, i) => (
+                        <Cell key={i} fill={vendedorColors[d.vendedor] || "#3b82f6"} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
           <div className="flex-1 overflow-auto border border-border rounded-lg">
             <table className="w-full text-xs">
               <thead className="bg-muted/40 sticky top-0">
@@ -296,8 +349,15 @@ const Vendas = () => {
                 {summarize
                   ? summary.map((s, i) => (
                       <tr key={`sum-${i}`} className="border-t border-border hover:bg-accent/40">
-                        <td className="px-3 py-2 text-foreground">{s.agente}</td>
-                        <td className="px-3 py-2 text-foreground">{s.vendedor}</td>
+                        {!singleAgent && <td className="px-3 py-2 text-foreground">{s.agente}</td>}
+                        <td className="px-3 py-2 text-foreground">
+                          <span className="inline-flex items-center gap-1.5">
+                            {singleAgent && (
+                              <span aria-hidden className="inline-block h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: vendedorColors[s.vendedor] }} />
+                            )}
+                            {s.vendedor}
+                          </span>
+                        </td>
                         <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(s.vidas)}</td>
                         <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(s.producao)}</td>
                       </tr>
@@ -307,15 +367,22 @@ const Vendas = () => {
                       <Fragment key={`g-${g.vendedor}`}>
                         {g.rows.map((row, i) => (
                           <tr key={`${g.vendedor}-${row.plano}-${i}`} className="border-t border-border hover:bg-accent/40">
-                            <td className="px-3 py-2 text-foreground">{row.agente}</td>
-                            <td className="px-3 py-2 text-foreground">{row.vendedor}</td>
+                            {!singleAgent && <td className="px-3 py-2 text-foreground">{row.agente}</td>}
+                            <td className="px-3 py-2 text-foreground">
+                              <span className="inline-flex items-center gap-1.5">
+                                {singleAgent && (
+                                  <span aria-hidden className="inline-block h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: vendedorColors[row.vendedor] }} />
+                                )}
+                                {row.vendedor}
+                              </span>
+                            </td>
                             <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(row.vidas)}</td>
                             <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(row.producao)}</td>
                             <td className="px-3 py-2 text-foreground">{row.nome}</td>
                           </tr>
                         ))}
                         <tr className="border-t border-border bg-muted/30">
-                          <td className="px-3 py-1.5"></td>
+                          {!singleAgent && <td className="px-3 py-1.5"></td>}
                           <td className="px-3 py-1.5 text-xs italic text-muted-foreground">
                             Subtotal {g.vendedor}
                             {g.rows.length > 1 ? ` (${g.rows.length} registros)` : ""}
@@ -328,8 +395,15 @@ const Vendas = () => {
                     ))
                   : results.map((row, i) => (
                       <tr key={`r-${i}`} className="border-t border-border hover:bg-accent/40">
-                        <td className="px-3 py-2 text-foreground">{row.agente}</td>
-                        <td className="px-3 py-2 text-foreground">{row.vendedor}</td>
+                        {!singleAgent && <td className="px-3 py-2 text-foreground">{row.agente}</td>}
+                        <td className="px-3 py-2 text-foreground">
+                          <span className="inline-flex items-center gap-1.5">
+                            {singleAgent && (
+                              <span aria-hidden className="inline-block h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: vendedorColors[row.vendedor] }} />
+                            )}
+                            {row.vendedor}
+                          </span>
+                        </td>
                         <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(row.vidas)}</td>
                         <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(row.producao)}</td>
                         <td className="px-3 py-2 text-foreground">{row.nome}</td>
@@ -338,7 +412,7 @@ const Vendas = () => {
               </tbody>
               <tfoot className="sticky bottom-0 bg-muted">
                 <tr className="border-t border-border">
-                  <td className="px-3 py-2 text-xs font-semibold text-foreground" colSpan={2}>Total</td>
+                  <td className="px-3 py-2 text-xs font-semibold text-foreground" colSpan={singleAgent ? 1 : 2}>Total</td>
                   <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.vidas)}</td>
                   <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(totals.producao)}</td>
                   {!summarize && <td className="px-3 py-2"></td>}
@@ -346,6 +420,7 @@ const Vendas = () => {
               </tfoot>
             </table>
           </div>
+
         </>
       )}
     </section>
