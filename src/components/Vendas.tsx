@@ -36,6 +36,7 @@ const Vendas = () => {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [showSubtotals, setShowSubtotals] = useState(true);
   const [summarize, setSummarize] = useState(false);
+  const [summarizeAgent, setSummarizeAgent] = useState(false);
 
   const toggleSort = (k: SortKey) => {
     if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
