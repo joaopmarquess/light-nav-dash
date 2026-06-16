@@ -28,6 +28,7 @@ const Vendas = () => {
   const [sortKey, setSortKey] = useState<SortKey>("vidas");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [showSubtotals, setShowSubtotals] = useState(true);
+  const [summarize, setSummarize] = useState(false);
 
   const toggleSort = (k: SortKey) => {
     if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -110,14 +111,41 @@ const Vendas = () => {
     return { vidas, producao, count: results.length };
   }, [results]);
 
-  const cols: { k: SortKey; label: string; align: "left" | "right"; w: string }[] = [
-    { k: "agente", label: "AGENTE", align: "left", w: "w-44" },
-    { k: "vendedor", label: "VENDEDOR", align: "left", w: "w-56" },
-    { k: "vidas", label: "VIDAS", align: "right", w: "w-24" },
-    { k: "producao", label: "PRODUÇÃO", align: "right", w: "w-32" },
-    
-    { k: "nome", label: "NOME PLANO", align: "left", w: "" },
-  ];
+  const summary = useMemo(() => {
+    const map = new Map<string, { agente: string; vendedor: string; vidas: number; producao: number }>();
+    for (const r of results) {
+      const k = `${r.agente}||${r.vendedor}`;
+      let g = map.get(k);
+      if (!g) { g = { agente: r.agente, vendedor: r.vendedor, vidas: 0, producao: 0 }; map.set(k, g); }
+      g.vidas += r.vidas;
+      g.producao += r.producao;
+    }
+    const arr = Array.from(map.values());
+    const dir = sortDir === "asc" ? 1 : -1;
+    arr.sort((a, b) => {
+      if (sortKey === "vidas" || sortKey === "producao") return (a[sortKey] - b[sortKey]) * dir;
+      const k = sortKey === "agente" || sortKey === "vendedor" ? sortKey : "vendedor";
+      const av = a[k as "agente" | "vendedor"].toLowerCase();
+      const bv = b[k as "agente" | "vendedor"].toLowerCase();
+      return av < bv ? -dir : av > bv ? dir : 0;
+    });
+    return arr;
+  }, [results, sortKey, sortDir]);
+
+  const cols: { k: SortKey; label: string; align: "left" | "right"; w: string }[] = summarize
+    ? [
+        { k: "agente", label: "AGENTE", align: "left", w: "w-56" },
+        { k: "vendedor", label: "VENDEDOR", align: "left", w: "" },
+        { k: "vidas", label: "VIDAS", align: "right", w: "w-32" },
+        { k: "producao", label: "PRODUÇÃO", align: "right", w: "w-40" },
+      ]
+    : [
+        { k: "agente", label: "AGENTE", align: "left", w: "w-44" },
+        { k: "vendedor", label: "VENDEDOR", align: "left", w: "w-56" },
+        { k: "vidas", label: "VIDAS", align: "right", w: "w-24" },
+        { k: "producao", label: "PRODUÇÃO", align: "right", w: "w-32" },
+        { k: "nome", label: "NOME PLANO", align: "left", w: "" },
+      ];
   const colCount = cols.length;
 
   return (
@@ -219,7 +247,11 @@ const Vendas = () => {
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 gap-3 flex-wrap">
             <div className="flex items-center gap-4 pl-1">
               <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                <input type="checkbox" checked={showSubtotals} onChange={(e) => setShowSubtotals(e.target.checked)} className="h-3.5 w-3.5 accent-gray-500 cursor-pointer" />
+                <input type="checkbox" checked={summarize} onChange={(e) => setSummarize(e.target.checked)} className="h-3.5 w-3.5 accent-gray-500 cursor-pointer" />
+                Resumir
+              </label>
+              <label className={`flex items-center gap-1.5 select-none ${summarize ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
+                <input type="checkbox" checked={showSubtotals} disabled={summarize} onChange={(e) => setShowSubtotals(e.target.checked)} className="h-3.5 w-3.5 accent-gray-500 cursor-pointer disabled:cursor-not-allowed" />
                 Mostrar subtotais por VENDEDOR
               </label>
             </div>
@@ -261,7 +293,16 @@ const Vendas = () => {
                     </td>
                   </tr>
                 )}
-                {showSubtotals
+                {summarize
+                  ? summary.map((s, i) => (
+                      <tr key={`sum-${i}`} className="border-t border-border hover:bg-accent/40">
+                        <td className="px-3 py-2 text-foreground">{s.agente}</td>
+                        <td className="px-3 py-2 text-foreground">{s.vendedor}</td>
+                        <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(s.vidas)}</td>
+                        <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(s.producao)}</td>
+                      </tr>
+                    ))
+                  : showSubtotals
                   ? grouped.map((g) => (
                       <Fragment key={`g-${g.vendedor}`}>
                         {g.rows.map((row, i) => (
@@ -282,7 +323,6 @@ const Vendas = () => {
                           <td className="px-3 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(g.vidas)}</td>
                           <td className="px-3 py-1.5 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(g.producao)}</td>
                           <td className="px-3 py-1.5"></td>
-
                         </tr>
                       </Fragment>
                     ))
@@ -292,7 +332,6 @@ const Vendas = () => {
                         <td className="px-3 py-2 text-foreground">{row.vendedor}</td>
                         <td className="px-3 py-2 text-right font-medium text-foreground tabular-nums">{fmtInt(row.vidas)}</td>
                         <td className="px-3 py-2 text-right text-foreground tabular-nums">{fmtBRL(row.producao)}</td>
-                        
                         <td className="px-3 py-2 text-foreground">{row.nome}</td>
                       </tr>
                     ))}
@@ -302,8 +341,7 @@ const Vendas = () => {
                   <td className="px-3 py-2 text-xs font-semibold text-foreground" colSpan={2}>Total</td>
                   <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtInt(totals.vidas)}</td>
                   <td className="px-3 py-2 text-right text-xs font-semibold text-foreground tabular-nums">{fmtBRL(totals.producao)}</td>
-                  <td className="px-3 py-2"></td>
-
+                  {!summarize && <td className="px-3 py-2"></td>}
                 </tr>
               </tfoot>
             </table>
