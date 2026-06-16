@@ -402,7 +402,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                       </Fragment>
                     ))}
               </tbody>
-              <tfoot className="sticky bottom-0 bg-muted/60">
+              <tfoot className="sticky bottom-0 bg-muted">
                 <tr className="border-t border-border">
                   <td className="px-3 py-2 text-xs font-semibold text-foreground" colSpan={summarize && !drillNome ? 1 : 2}>
                     Total
