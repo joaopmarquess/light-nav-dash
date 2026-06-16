@@ -180,7 +180,7 @@ const AtivosEm = ({ dateValue }: Props) => {
     return t;
   }, [visibleGroups]);
 
-  const colCount = (summarize && !drillNome ? 3 : 3) + MONEY_COLS.length;
+  const colCount = (summarize && !drillNome ? 3 : 3) + MONEY_COLS.length + 1;
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-8rem)] flex flex-col">
