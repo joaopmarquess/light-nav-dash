@@ -45,6 +45,7 @@ const Index = () => {
   const [active, setActive] = useState("Home");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ Contábil: true });
   const [collapsed, setCollapsed] = useState(false);
+  const [dateValue, setDateValue] = useState("");
 
   return (
     <div className="min-h-screen flex w-full bg-background">
