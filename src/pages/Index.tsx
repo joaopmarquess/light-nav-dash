@@ -186,6 +186,8 @@ const Index = () => {
         <main className="flex-1 p-8">
           {active === "Ativos em" ? (
             <AtivosEm dateValue={dateValue} />
+          ) : active === "Vendas" ? (
+            <Vendas />
           ) : (
             <section className="bg-card rounded-xl border border-border shadow-sm overflow-hidden h-[calc(100vh-8rem)]">
               <iframe
@@ -196,6 +198,7 @@ const Index = () => {
               />
             </section>
           )}
+
         </main>
       </div>
     </div>
