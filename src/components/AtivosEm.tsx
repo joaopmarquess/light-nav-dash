@@ -264,6 +264,21 @@ const AtivosEm = ({ dateValue }: Props) => {
       )}
       {!loading && !error && refDate && (
         <>
+          {drillNome && (
+            <div className="mb-2 flex items-center justify-between text-xs px-1">
+              <span className="text-muted-foreground">
+                Detalhe de:{" "}
+                <span className="font-semibold text-foreground">{drillNome}</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setDrillNome(null)}
+                className="text-primary hover:underline"
+              >
+                ← Voltar ao resumo
+              </button>
+            </div>
+          )}
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 gap-3 flex-wrap">
             <div className="flex items-center gap-4 pl-1">
               <label className="flex items-center gap-1.5 cursor-pointer select-none">
