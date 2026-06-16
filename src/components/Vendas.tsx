@@ -286,7 +286,7 @@ const Vendas = () => {
             </div>
           </div>
 
-          {singleAgent && chartData.length > 0 && (
+          {singleAgent && summarize && chartData.length > 0 && (
             <div className="mb-2 border border-border rounded-lg bg-muted/20 px-3 pt-2 pb-1 shrink-0">
               <div className="text-[11px] font-semibold text-foreground mb-1">
                 VIDAS por VENDEDOR — {agente}
