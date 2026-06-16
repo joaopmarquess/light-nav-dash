@@ -355,7 +355,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                     </td>
                   </tr>
                 )}
-                {summarize
+                {summarize && !drillNome
                   ? [...grouped]
                       .sort((a, b) => {
                         const dir = sortDir === "asc" ? 1 : -1;
@@ -370,7 +370,13 @@ const AtivosEm = ({ dateValue }: Props) => {
                           key={`s-${g.nome}`}
                           className="border-t border-border hover:bg-accent/40"
                         >
-                          <td className="px-4 py-2 text-foreground">{g.nome}</td>
+                          <td
+                            className="px-4 py-2 text-primary underline-offset-2 hover:underline cursor-pointer"
+                            onClick={() => setDrillNome(g.nome)}
+                            title="Ver detalhe dos planos"
+                          >
+                            {g.nome}
+                          </td>
                           <td className="px-4 py-2 text-right text-foreground tabular-nums">
                             {g.rows.length.toLocaleString("pt-BR")}
                           </td>
@@ -379,7 +385,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                           </td>
                         </tr>
                       ))
-                  : grouped.map((g) => (
+                  : (drillNome ? grouped.filter((g) => g.nome === drillNome) : grouped).map((g) => (
                       <Fragment key={`g-${g.nome}`}>
                         {g.rows.map((row) => (
                           <tr
@@ -395,7 +401,7 @@ const AtivosEm = ({ dateValue }: Props) => {
                             </td>
                           </tr>
                         ))}
-                        {showSubtotals && (
+                        {showSubtotals && !drillNome && (
                           <tr
                             key={`sub-${g.nome}`}
                             className="border-t border-border bg-muted/30"
