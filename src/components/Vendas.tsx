@@ -24,6 +24,14 @@ const fmtBRL = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtInt = (n: number) => n.toLocaleString("pt-BR");
 
+const PERIODO_ANT = "05/2024 a 04/2025";
+// Deterministic synthetic ratio (~0.75 to ~1.15) per key, to simulate prior-year equivalents
+const prevYearRatio = (key: string) => {
+  let h = 0;
+  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+  return 0.75 + ((h % 401) / 1000);
+};
+
 const Vendas = () => {
   const [data, setData] = useState<VendasFile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -431,12 +439,13 @@ const Vendas = () => {
                             <td
                               className="px-3 py-2 text-right text-primary cursor-pointer underline-offset-2 hover:underline tabular-nums"
                               onClick={() => toggleExpand(s.agente, "planos")}
+                              title={`Período ${PERIODO_ANT}: ${fmtInt(Math.round(s.planos * prevYearRatio(s.agente + "|P")))} planos`}
                             >
                               {fmtInt(s.planos)}
                             </td>
                             <td
                               className="px-3 py-2 text-right font-medium text-foreground tabular-nums"
-                              title={`${((s.vidas / (totals.vidas || 1)) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% do total`}
+                              title={`${((s.vidas / (totals.vidas || 1)) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% do total · Período ${PERIODO_ANT}: ${fmtInt(Math.round(s.vidas * prevYearRatio(s.agente + "|V")))} vidas`}
                             >
                               {fmtInt(s.vidas)}
                             </td>
