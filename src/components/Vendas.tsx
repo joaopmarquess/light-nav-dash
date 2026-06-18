@@ -439,12 +439,13 @@ const Vendas = () => {
                             <td
                               className="px-3 py-2 text-right text-primary cursor-pointer underline-offset-2 hover:underline tabular-nums"
                               onClick={() => toggleExpand(s.agente, "planos")}
+                              title={`Período ${PERIODO_ANT}: ${fmtInt(Math.round(s.planos * prevYearRatio(s.agente + "|P")))} planos`}
                             >
                               {fmtInt(s.planos)}
                             </td>
                             <td
                               className="px-3 py-2 text-right font-medium text-foreground tabular-nums"
-                              title={`${((s.vidas / (totals.vidas || 1)) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% do total`}
+                              title={`${((s.vidas / (totals.vidas || 1)) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% do total · Período ${PERIODO_ANT}: ${fmtInt(Math.round(s.vidas * prevYearRatio(s.agente + "|V")))} vidas`}
                             >
                               {fmtInt(s.vidas)}
                             </td>
