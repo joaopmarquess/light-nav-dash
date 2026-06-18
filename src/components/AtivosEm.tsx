@@ -361,13 +361,13 @@ const AtivosEm = ({ dateValue, initialDrillNome = null }: Props) => {
               <span>
                 <span
                   className="font-semibold text-foreground tabular-nums"
-                  title={`Período 05/2024 a 04/2025: ${Math.round(totalPlanos * 0.92).toLocaleString("pt-BR")} planos`}
+                  title={`${Math.round(totalPlanos * 0.92).toLocaleString("pt-BR")} planos`}
                 >
                   {totalPlanos.toLocaleString("pt-BR")}
                 </span> plano{totalPlanos === 1 ? "" : "s"} ·{" "}
                 <span
                   className="font-semibold text-foreground tabular-nums"
-                  title={`Período 05/2024 a 04/2025: ${Math.round(totalVidas * 0.89).toLocaleString("pt-BR")} vidas`}
+                  title={`${Math.round(totalVidas * 0.89).toLocaleString("pt-BR")} vidas`}
                 >
                   {totalVidas.toLocaleString("pt-BR")}
                 </span> vidas
