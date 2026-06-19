@@ -3,6 +3,7 @@ import {
   Home,
   TrendingUp,
   FileText,
+  BarChart3,
   Settings2,
   Building2,
   Coins,
