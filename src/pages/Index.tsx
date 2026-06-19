@@ -42,7 +42,11 @@ type MenuItem = {
 
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
-  { icon: TrendingUp, label: "Contábil" },
+  {
+    icon: TrendingUp,
+    label: "Contábil",
+    children: [{ icon: FileText, label: "DRE" }],
+  },
   {
     icon: Users,
     label: "Carteira",
