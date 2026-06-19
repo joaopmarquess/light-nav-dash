@@ -52,12 +52,12 @@ const fmtBRL = (v: number) =>
 const COLORS = ["#3b82f6", "#f59e0b", "#a855f7", "#ef4444", "#06b6d4", "#ec4899", "#f97316", "#eab308", "#8b5cf6", "#14b8a6"];
 
 const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) => (
-  <div className="bg-card rounded-xl border border-border shadow-sm p-5">
-    <div className="mb-3">
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-      {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+  <div className="bg-card rounded-xl border border-border shadow-sm p-3 flex flex-col min-h-0">
+    <div className="mb-1 shrink-0">
+      <h3 className="text-xs font-semibold text-foreground leading-tight">{title}</h3>
+      {subtitle && <p className="text-[10px] text-muted-foreground leading-tight">{subtitle}</p>}
     </div>
-    <div className="h-72">
+    <div className="flex-1 min-h-0">
       <ResponsiveContainer width="100%" height="100%">
         {children as any}
       </ResponsiveContainer>
