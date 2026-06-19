@@ -208,6 +208,8 @@ const Index = () => {
             <AtivosEm dateValue={dateValue} initialDrillNome={ativosDrillNome} />
           ) : active === "Vendas" ? (
             <Vendas />
+          ) : active === "Consulta Beneficiário" ? (
+            <ConsultaBeneficiario />
           ) : (
             <section className="bg-card rounded-xl border border-border shadow-sm overflow-hidden h-[calc(100vh-8rem)]">
               <iframe
