@@ -120,6 +120,7 @@ export const useSinistralidade = () => {
 
 const SinistralidadeGraficos = () => {
   const data = useSinistralidade();
+  const [page, setPage] = useState(0);
   if (!data) {
     return (
       <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-8rem)] flex items-center justify-center text-muted-foreground text-sm">
