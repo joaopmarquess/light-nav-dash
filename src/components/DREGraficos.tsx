@@ -40,7 +40,7 @@ const fmtCompact = (v: number) => {
 const fmtBRL = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(v);
 
-const COLORS = ["#dc2626", "#ef4444", "#f87171", "#b91c1c", "#fb7185", "#e11d48", "#fca5a5", "#7f1d1d"];
+const COLORS = ["#3b82f6", "#f59e0b", "#a855f7", "#ef4444", "#06b6d4", "#ec4899", "#f97316", "#eab308", "#8b5cf6", "#14b8a6"];
 
 const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) => (
   <div className="bg-card rounded-xl border border-border shadow-sm p-5">
