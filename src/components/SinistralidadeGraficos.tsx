@@ -225,15 +225,25 @@ const SinistralidadeGraficos = () => {
             </div>
           ))}
         </div>
-        <button
-          onClick={() => setPage((p) => (p === 0 ? 1 : 0))}
-          className="shrink-0 bg-card rounded-xl border border-border shadow-sm px-4 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
-          title={page === 0 ? "Ver mais 4 gráficos" : "Voltar"}
-          aria-label={page === 0 ? "Ver mais 4 gráficos" : "Voltar"}
-        >
-          {page === 0 ? <ArrowRight className="h-5 w-5" /> : <ArrowLeft className="h-5 w-5" />}
-          <span className="text-[10px] leading-tight">{page === 0 ? "Mais 4" : "Voltar"}</span>
-        </button>
+        {(() => {
+          const totalPages = 6;
+          const labels = ["Visão geral", "Comparativo", "Tipo Copart", "Contratação", "Recuperação", "Microrregião"];
+          const isLast = page === totalPages - 1;
+          return (
+            <>
+              <button
+                onClick={() => setPage((p) => (p + 1) % totalPages)}
+                className="shrink-0 bg-card rounded-xl border border-border shadow-sm px-4 flex flex-col items-center justify-center gap-0.5 text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
+                title={isLast ? "Voltar à visão geral" : "Próximos 4 gráficos"}
+                aria-label={isLast ? "Voltar à visão geral" : "Próximos 4 gráficos"}
+              >
+                {isLast ? <ArrowLeft className="h-5 w-5" /> : <ArrowRight className="h-5 w-5" />}
+                <span className="text-[10px] leading-tight">{isLast ? "Voltar" : "Mais 4"}</span>
+                <span className="text-[9px] leading-tight text-muted-foreground/70">{page + 1}/{totalPages} · {labels[page]}</span>
+              </button>
+            </>
+          );
+        })()}
         <button
           onClick={() => window.dispatchEvent(new CustomEvent("open-bi-overview"))}
           className="shrink-0 bg-card rounded-xl border border-border shadow-sm px-4 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
