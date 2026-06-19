@@ -65,6 +65,7 @@ const menuItems: MenuItem[] = [
   },
   { icon: Percent, label: "Sinistralidade" },
   { icon: Stethoscope, label: "Assistencial" },
+  { icon: LayoutDashboard, label: "B.I. Overview" },
 ];
 
 const Index = () => {
