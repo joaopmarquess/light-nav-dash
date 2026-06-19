@@ -94,18 +94,18 @@ const DREGraficos = () => {
       };
     });
 
-    // Composição de despesas por G3 (todas as despesas)
-    const desp = new Map<string, number>();
-    rows.filter((r) => r.valor < 0).forEach((r) => {
-      const k = strip(r.g3);
-      desp.set(k, (desp.get(k) ?? 0) + Math.abs(r.valor));
-    });
-    const despPie = [...desp.entries()]
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value);
-    const top = despPie.slice(0, 6);
-    const restoTotal = despPie.slice(6).reduce((s, x) => s + x.value, 0);
-    if (restoTotal > 0) top.push({ name: "Outros", value: restoTotal });
+    // Composição de despesas em buckets fixos
+    const sumAbs = (pred: (r: Row) => boolean) =>
+      rows.filter((r) => r.valor < 0 && pred(r)).reduce((s, r) => s + Math.abs(r.valor), 0);
+    const buckets: { name: string; value: number }[] = [
+      { name: "Despesa Assistencial", value: sumAbs((r) => r.g3 === "1|PRINCIPAL" && r.g4 === "3|DESP. ASSISTENCIAL") },
+      { name: "Secundária", value: sumAbs((r) => r.g3 === "2|SECUNDÁRIA") },
+      { name: "Provisões", value: sumAbs((r) => r.g3 === "3|PROVISÕES") },
+      { name: "Comercialização", value: sumAbs((r) => r.g3 === "4|COMERCIALIZAÇÃO") },
+      { name: "Impostos Diretos", value: sumAbs((r) => r.g3 === "5|IMPOSTOS DIRETOS") },
+      { name: "Despesas Administrativas", value: sumAbs((r) => r.g2 === "2|ADMINISTRATIVO") },
+    ];
+    const top = buckets.filter((b) => b.value > 0);
 
     // Administrativo por categoria ao longo dos meses (top 5 categorias)
     const admRows = rows.filter((r) => r.g2 === "2|ADMINISTRATIVO");
