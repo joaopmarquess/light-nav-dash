@@ -4,6 +4,7 @@ import {
   TrendingUp,
   FileText,
   BarChart3,
+  LayoutDashboard,
   Settings2,
   Building2,
   Coins,
