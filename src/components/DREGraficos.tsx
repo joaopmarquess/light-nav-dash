@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Monitor } from "lucide-react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -142,7 +143,8 @@ const DREGraficos = () => {
 
   return (
     <div className="h-[calc(100vh-8rem)] flex flex-col gap-3 min-h-0">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 shrink-0">
+      <div className="flex items-stretch gap-3 shrink-0">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 flex-1">
         {[
           { l: "Receitas (Jan-Abr)", v: fmtBRL(totalReceitas), c: "text-foreground" },
           { l: "Despesas (Jan-Abr)", v: fmtBRL(totalDespesas), c: "text-destructive" },
@@ -154,6 +156,16 @@ const DREGraficos = () => {
             <p className={`text-sm font-semibold mt-0.5 ${k.c}`}>{k.v}</p>
           </div>
         ))}
+        </div>
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("open-bi-overview"))}
+          className="shrink-0 bg-card rounded-xl border border-border shadow-sm px-4 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
+          title="Abrir B.I. Overview"
+          aria-label="Abrir B.I. Overview"
+        >
+          <Monitor className="h-5 w-5" />
+          <span className="text-[10px] leading-tight">B.I. Overview</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
