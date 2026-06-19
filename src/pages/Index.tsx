@@ -26,6 +26,7 @@ const todayBR = () => {
 };
 import AtivosEm from "@/components/AtivosEm";
 import Vendas from "@/components/Vendas";
+import ConsultaBeneficiario from "@/components/ConsultaBeneficiario";
 
 
 type MenuItem = {
