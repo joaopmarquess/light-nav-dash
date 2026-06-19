@@ -202,7 +202,10 @@ const BIOverview = () => {
   const current = slides[idx];
 
   return (
-    <section className="h-[calc(100vh-8rem)] bg-card rounded-xl border border-border shadow-sm overflow-hidden flex flex-col">
+    <section
+      ref={wrapRef}
+      className={`${isFull ? "fixed inset-0 z-50 h-screen w-screen rounded-none" : "h-[calc(100vh-8rem)] rounded-xl border border-border"} bg-card shadow-sm overflow-hidden flex flex-col`}
+    >
       <div className="px-6 py-4 border-b border-border flex items-center justify-between shrink-0">
         <div>
           <h2 className="text-lg font-semibold text-foreground">{current.title}</h2>
@@ -224,6 +227,14 @@ const BIOverview = () => {
             className="px-3 py-1.5 text-xs rounded-md border border-border hover:bg-accent hover:text-primary"
           >
             {paused ? "Retomar" : "Pausar"}
+          </button>
+          <button
+            onClick={toggleFull}
+            className="h-8 w-8 flex items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-accent hover:text-primary"
+            aria-label={isFull ? "Sair da tela cheia" : "Tela cheia"}
+            title={isFull ? "Sair da tela cheia (Esc)" : "Tela cheia"}
+          >
+            {isFull ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </button>
         </div>
       </div>
