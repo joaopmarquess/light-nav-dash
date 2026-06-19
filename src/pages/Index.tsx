@@ -29,6 +29,7 @@ import Vendas from "@/components/Vendas";
 import ConsultaBeneficiario from "@/components/ConsultaBeneficiario";
 import logoFull from "@/assets/bensaude-logo.svg.asset.json";
 import logoIcon from "@/assets/bensaude-icon.svg.asset.json";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 
 
@@ -91,39 +92,56 @@ const Index = () => {
         </div>
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          <TooltipProvider delayDuration={150}>
           {menuItems.map((item) => {
             const isActive = active === item.label;
             const hasChildren = !!item.children;
             const isOpen = openGroups[item.label];
 
+            const button = (
+              <button
+                onClick={() => {
+                  if (hasChildren) {
+                    if (collapsed) {
+                      setCollapsed(false);
+                      setOpenGroups((p) => ({ ...p, [item.label]: true }));
+                    } else {
+                      setOpenGroups((p) => ({ ...p, [item.label]: !p[item.label] }));
+                    }
+                  } else {
+                    setActive(item.label);
+                  }
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-accent text-primary"
+                    : "text-foreground/70 hover:bg-accent/60 hover:text-primary"
+                }`}
+              >
+                <item.icon className="h-4 w-4 shrink-0" />
+                {!collapsed && (
+                  <>
+                    <span className="flex-1 text-left">{item.label}</span>
+                    {hasChildren && (
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform ${isOpen ? "" : "-rotate-90"}`}
+                      />
+                    )}
+                  </>
+                )}
+              </button>
+            );
+
             return (
               <div key={item.label}>
-                <button
-                  onClick={() => {
-                    if (hasChildren) {
-                      setOpenGroups((p) => ({ ...p, [item.label]: !p[item.label] }));
-                    } else {
-                      setActive(item.label);
-                    }
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? "bg-accent text-primary"
-                      : "text-foreground/70 hover:bg-accent/60 hover:text-primary"
-                  }`}
-                >
-                  <item.icon className="h-4 w-4 shrink-0" />
-                  {!collapsed && (
-                    <>
-                      <span className="flex-1 text-left">{item.label}</span>
-                      {hasChildren && (
-                        <ChevronDown
-                          className={`h-4 w-4 transition-transform ${isOpen ? "" : "-rotate-90"}`}
-                        />
-                      )}
-                    </>
-                  )}
-                </button>
+                {collapsed ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>{button}</TooltipTrigger>
+                    <TooltipContent side="right">{item.label}</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  button
+                )}
 
                 {hasChildren && isOpen && !collapsed && (
                   <div className="mt-1 space-y-1">
@@ -149,6 +167,7 @@ const Index = () => {
               </div>
             );
           })}
+          </TooltipProvider>
         </nav>
 
         <div className="p-3 border-t border-border flex justify-start">
