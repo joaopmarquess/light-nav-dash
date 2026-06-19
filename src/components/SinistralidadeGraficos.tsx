@@ -232,6 +232,69 @@ const SinistralidadeGraficos = () => {
           </BarChart>
         </ChartCard>
       </div>
+      ) : (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
+        <ChartCard title="Sinistralidade por Contratação" subtitle="% Despesa / Receita por tipo de contratação">
+          <BarChart data={data.byContr} margin={{ top: 14, right: 10, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="name" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" interval={0} />
+            <YAxis tickFormatter={(v) => `${v}%`} tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
+            <Tooltip formatter={(v: number) => fmtPct(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+            <Bar dataKey="Sinistralidade" fill="#3b82f6" radius={[4, 4, 0, 0]}>
+              <LabelList dataKey="Sinistralidade" position="top" formatter={(v: number) => `${v}%`} style={{ fontSize: 9, fill: "hsl(var(--foreground))" }} />
+            </Bar>
+          </BarChart>
+        </ChartCard>
+
+        <ChartCard title="Sinistralidade por Tipo Plano Contratação" subtitle="% Despesa / Receita">
+          <BarChart data={data.byPlano} margin={{ top: 14, right: 10, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="name" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" interval={0} />
+            <YAxis tickFormatter={(v) => `${v}%`} tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
+            <Tooltip formatter={(v: number) => fmtPct(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+            <Bar dataKey="Sinistralidade" fill="#a855f7" radius={[4, 4, 0, 0]}>
+              <LabelList dataKey="Sinistralidade" position="top" formatter={(v: number) => `${v}%`} style={{ fontSize: 9, fill: "hsl(var(--foreground))" }} />
+            </Bar>
+          </BarChart>
+        </ChartCard>
+
+        <ChartCard title="Despesa por Recuperação" subtitle="Coparticipativo x Não coparticipativo">
+          <PieChart margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+            <Pie
+              data={data.byRecup}
+              dataKey="value"
+              nameKey="name"
+              cx="38%"
+              cy="50%"
+              innerRadius="48%"
+              outerRadius="78%"
+              paddingAngle={2}
+              label={(e: any) => `${(e.percent * 100).toFixed(0)}%`}
+              labelLine={false}
+              style={{ fontSize: 9 }}
+            >
+              {data.byRecup.map((_, i) => (
+                <Cell key={i} fill={COLORS[i % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+            <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ fontSize: 9, lineHeight: "12px", paddingLeft: 8 }} />
+          </PieChart>
+        </ChartCard>
+
+        <ChartCard title="Vidas Atingidas por mês" subtitle="Total de vidas no período">
+          <LineChart data={data.vidasByMes} margin={{ top: 14, right: 10, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="mes" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
+            <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
+            <Tooltip formatter={(v: number) => v.toLocaleString("pt-BR")} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+            <Line type="monotone" dataKey="Vidas" stroke="#06b6d4" strokeWidth={2} dot={{ r: 3 }}>
+              <LabelList dataKey="Vidas" position="top" formatter={fmtCompact} style={{ fontSize: 9, fill: "hsl(var(--foreground))" }} />
+            </Line>
+          </LineChart>
+        </ChartCard>
+      </div>
+      )}
     </div>
   );
 };
