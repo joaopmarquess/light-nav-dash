@@ -37,22 +37,16 @@ type MenuItem = {
 
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
+  { icon: TrendingUp, label: "Contábil" },
   {
-    icon: TrendingUp,
-    label: "Contábil",
+    icon: Users,
+    label: "Carteira",
     children: [
-      { icon: FileText, label: "DRE" },
-      { icon: Settings2, label: "Operacional" },
-      { icon: Building2, label: "Administrativo" },
-      { icon: Coins, label: "Financeiro" },
-      { icon: Percent, label: "Impostos" },
+      { icon: Search, label: "Consulta Beneficiário" },
+      { icon: UserCheck, label: "Ativos em" },
+      { icon: TrendingUp, label: "Vendas" },
     ],
   },
-  { icon: Users, label: "Carteira" },
-  { icon: UserCheck, label: "Ativos em" },
-  { icon: TrendingUp, label: "Vendas" },
-  { icon: Search, label: "Consulta Beneficiário" },
-
   { icon: Percent, label: "Sinistralidade" },
   { icon: Stethoscope, label: "Assistencial" },
 ];
