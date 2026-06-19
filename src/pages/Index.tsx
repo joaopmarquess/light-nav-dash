@@ -37,30 +37,24 @@ type MenuItem = {
 
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
+  { icon: TrendingUp, label: "Contábil" },
   {
-    icon: TrendingUp,
-    label: "Contábil",
+    icon: Users,
+    label: "Carteira",
     children: [
-      { icon: FileText, label: "DRE" },
-      { icon: Settings2, label: "Operacional" },
-      { icon: Building2, label: "Administrativo" },
-      { icon: Coins, label: "Financeiro" },
-      { icon: Percent, label: "Impostos" },
+      { icon: Search, label: "Consulta Beneficiário" },
+      { icon: UserCheck, label: "Ativos em" },
+      { icon: TrendingUp, label: "Vendas" },
     ],
   },
-  { icon: Users, label: "Carteira" },
-  { icon: UserCheck, label: "Ativos em" },
-  { icon: TrendingUp, label: "Vendas" },
-  { icon: Search, label: "Consulta Beneficiário" },
-
   { icon: Percent, label: "Sinistralidade" },
   { icon: Stethoscope, label: "Assistencial" },
 ];
 
 const Index = () => {
   const [active, setActive] = useState("Home");
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ Contábil: true });
-  const [collapsed, setCollapsed] = useState(false);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ Carteira: true });
+  const [collapsed, setCollapsed] = useState(true);
   const [dateValue, setDateValue] = useState(todayBR());
   const [ativosDrillNome, setAtivosDrillNome] = useState<string | null>(null);
 
@@ -211,13 +205,8 @@ const Index = () => {
           ) : active === "Consulta Beneficiário" ? (
             <ConsultaBeneficiario />
           ) : (
-            <section className="bg-card rounded-xl border border-border shadow-sm overflow-hidden h-[calc(100vh-8rem)]">
-              <iframe
-                title="Power BI Dashboard"
-                src="https://app.powerbi.com/view?r=eyJrIjoiYjQ4MjY3OTctYjI1Ny00NDIyLWE4ZmEtY2FmNzMyMmI1NjNlIiwidCI6IjQ5ZWQ4MDM4LTcwMTctNDg0Mi1iN2Q1LTI3MDdlYTYzMTQwOSJ9"
-                className="w-full h-full border-0"
-                allowFullScreen
-              />
+            <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-8rem)] flex items-center justify-center text-muted-foreground text-sm">
+              Selecione uma opção no menu lateral.
             </section>
           )}
 
