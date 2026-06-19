@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Monitor } from "lucide-react";
+import { Monitor, ArrowRight, ArrowLeft } from "lucide-react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -25,6 +25,8 @@ type Data = {
   byTipo: Agg[];
   byMicro: Agg[];
   byContr: Agg[];
+  byPlano: Agg[];
+  byRecup: Agg[];
 };
 
 const MES_LABEL: Record<number, string> = {
@@ -89,17 +91,36 @@ export const useSinistralidade = () => {
       .sort((a, b) => b.Sinistralidade - a.Sinistralidade)
       .slice(0, 10);
 
+    const byContr = (raw.byContr ?? [])
+      .map((c) => ({ name: String(c.k), Sinistralidade: +pct(c.rec, c.desp).toFixed(1), Receita: c.rec, Despesa: c.desp }))
+      .sort((a, b) => b.Despesa - a.Despesa);
+
+    const byPlano = (raw.byPlano ?? [])
+      .map((p) => ({ name: String(p.k), Sinistralidade: +pct(p.rec, p.desp).toFixed(1), Receita: p.rec, Despesa: p.desp }))
+      .sort((a, b) => b.Despesa - a.Despesa);
+
+    const byRecup = (raw.byRecup ?? [])
+      .map((r) => ({ name: String(r.k), value: r.desp, Sinistralidade: +pct(r.rec, r.desp).toFixed(1) }))
+      .filter((x) => x.value > 0)
+      .sort((a, b) => b.value - a.value);
+
+    const vidasByMes = raw.byMes.map((m) => ({
+      mes: MES_LABEL[m.k as number] ?? String(m.k),
+      Vidas: m.vidas,
+    }));
+
     const totalRec = raw.byMes.reduce((s, m) => s + m.rec, 0);
     const totalDesp = raw.byMes.reduce((s, m) => s + m.desp, 0);
     const totalVidas = raw.byMes.reduce((s, m) => s + m.vidas, 0) / Math.max(raw.byMes.length, 1);
     const sinTotal = pct(totalRec, totalDesp);
 
-    return { byMes, byFaixa, byTipo, byMicroTop, totalRec, totalDesp, totalVidas, sinTotal };
+    return { byMes, byFaixa, byTipo, byMicroTop, byContr, byPlano, byRecup, vidasByMes, totalRec, totalDesp, totalVidas, sinTotal };
   }, [raw]);
 };
 
 const SinistralidadeGraficos = () => {
   const data = useSinistralidade();
+  const [page, setPage] = useState(0);
   if (!data) {
     return (
       <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-8rem)] flex items-center justify-center text-muted-foreground text-sm">
@@ -125,6 +146,15 @@ const SinistralidadeGraficos = () => {
           ))}
         </div>
         <button
+          onClick={() => setPage((p) => (p === 0 ? 1 : 0))}
+          className="shrink-0 bg-card rounded-xl border border-border shadow-sm px-4 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
+          title={page === 0 ? "Ver mais 4 gráficos" : "Voltar"}
+          aria-label={page === 0 ? "Ver mais 4 gráficos" : "Voltar"}
+        >
+          {page === 0 ? <ArrowRight className="h-5 w-5" /> : <ArrowLeft className="h-5 w-5" />}
+          <span className="text-[10px] leading-tight">{page === 0 ? "Mais 4" : "Voltar"}</span>
+        </button>
+        <button
           onClick={() => window.dispatchEvent(new CustomEvent("open-bi-overview"))}
           className="shrink-0 bg-card rounded-xl border border-border shadow-sm px-4 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
           title="Abrir B.I. Overview"
@@ -135,7 +165,9 @@ const SinistralidadeGraficos = () => {
         </button>
       </div>
 
+      {page === 0 ? (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
+
         <ChartCard title="Sinistralidade mensal" subtitle="Receita, Despesa e % Sinistralidade">
           <ComposedChart data={data.byMes} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -200,6 +232,69 @@ const SinistralidadeGraficos = () => {
           </BarChart>
         </ChartCard>
       </div>
+      ) : (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
+        <ChartCard title="Sinistralidade por Contratação" subtitle="% Despesa / Receita por tipo de contratação">
+          <BarChart data={data.byContr} margin={{ top: 14, right: 10, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="name" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" interval={0} />
+            <YAxis tickFormatter={(v) => `${v}%`} tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
+            <Tooltip formatter={(v: number) => fmtPct(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+            <Bar dataKey="Sinistralidade" fill="#3b82f6" radius={[4, 4, 0, 0]}>
+              <LabelList dataKey="Sinistralidade" position="top" formatter={(v: number) => `${v}%`} style={{ fontSize: 9, fill: "hsl(var(--foreground))" }} />
+            </Bar>
+          </BarChart>
+        </ChartCard>
+
+        <ChartCard title="Sinistralidade por Tipo Plano Contratação" subtitle="% Despesa / Receita">
+          <BarChart data={data.byPlano} margin={{ top: 14, right: 10, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="name" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" interval={0} />
+            <YAxis tickFormatter={(v) => `${v}%`} tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
+            <Tooltip formatter={(v: number) => fmtPct(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+            <Bar dataKey="Sinistralidade" fill="#a855f7" radius={[4, 4, 0, 0]}>
+              <LabelList dataKey="Sinistralidade" position="top" formatter={(v: number) => `${v}%`} style={{ fontSize: 9, fill: "hsl(var(--foreground))" }} />
+            </Bar>
+          </BarChart>
+        </ChartCard>
+
+        <ChartCard title="Despesa por Recuperação" subtitle="Coparticipativo x Não coparticipativo">
+          <PieChart margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+            <Pie
+              data={data.byRecup}
+              dataKey="value"
+              nameKey="name"
+              cx="38%"
+              cy="50%"
+              innerRadius="48%"
+              outerRadius="78%"
+              paddingAngle={2}
+              label={(e: any) => `${(e.percent * 100).toFixed(0)}%`}
+              labelLine={false}
+              style={{ fontSize: 9 }}
+            >
+              {data.byRecup.map((_, i) => (
+                <Cell key={i} fill={COLORS[i % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+            <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ fontSize: 9, lineHeight: "12px", paddingLeft: 8 }} />
+          </PieChart>
+        </ChartCard>
+
+        <ChartCard title="Vidas Atingidas por mês" subtitle="Total de vidas no período">
+          <LineChart data={data.vidasByMes} margin={{ top: 14, right: 10, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="mes" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
+            <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
+            <Tooltip formatter={(v: number) => v.toLocaleString("pt-BR")} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+            <Line type="monotone" dataKey="Vidas" stroke="#06b6d4" strokeWidth={2} dot={{ r: 3 }}>
+              <LabelList dataKey="Vidas" position="top" formatter={fmtCompact} style={{ fontSize: 9, fill: "hsl(var(--foreground))" }} />
+            </Line>
+          </LineChart>
+        </ChartCard>
+      </div>
+      )}
     </div>
   );
 };
