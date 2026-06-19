@@ -248,10 +248,10 @@ const BIOverview = () => {
       </div>
 
       {!paused && (
-        <div className="h-1 bg-muted/40 shrink-0 overflow-hidden">
+        <div className="h-0.5 bg-muted/30 shrink-0 overflow-hidden">
           <div
             key={idx}
-            className="h-full bg-primary"
+            className="h-full bg-muted-foreground/40"
             style={{ animation: `bi-progress ${ROTATE_MS}ms linear forwards` }}
           />
         </div>
