@@ -33,7 +33,7 @@ const fmtBRL = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(v);
 const COLORS = ["hsl(var(--primary))", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#ec4899", "#84cc16"];
 
-const ROTATE_MS = 20_000;
+const ROTATE_MS = 7_000;
 
 const BIOverview = () => {
   const [rows, setRows] = useState<Row[] | null>(null);
