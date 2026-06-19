@@ -202,7 +202,9 @@ const DREGraficos = () => {
               nameKey="name"
               cx="38%"
               cy="50%"
+              innerRadius="48%"
               outerRadius="78%"
+              paddingAngle={2}
               label={(e: any) => `${(e.percent * 100).toFixed(0)}%`}
               labelLine={false}
               style={{ fontSize: 9 }}
