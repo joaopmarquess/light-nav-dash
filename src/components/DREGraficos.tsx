@@ -52,12 +52,12 @@ const fmtBRL = (v: number) =>
 const COLORS = ["#3b82f6", "#f59e0b", "#a855f7", "#ef4444", "#06b6d4", "#ec4899", "#f97316", "#eab308", "#8b5cf6", "#14b8a6"];
 
 const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) => (
-  <div className="bg-card rounded-xl border border-border shadow-sm p-5">
-    <div className="mb-3">
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-      {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+  <div className="bg-card rounded-xl border border-border shadow-sm p-3 flex flex-col min-h-0">
+    <div className="mb-1 shrink-0">
+      <h3 className="text-xs font-semibold text-foreground leading-tight">{title}</h3>
+      {subtitle && <p className="text-[10px] text-muted-foreground leading-tight">{subtitle}</p>}
     </div>
-    <div className="h-72">
+    <div className="flex-1 min-h-0">
       <ResponsiveContainer width="100%" height="100%">
         {children as any}
       </ResponsiveContainer>
@@ -141,22 +141,22 @@ const DREGraficos = () => {
   const margem = totalReceitas ? (totalResultado / totalReceitas) * 100 : 0;
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="h-[calc(100vh-8rem)] flex flex-col gap-3 min-h-0">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 shrink-0">
         {[
           { l: "Receitas (Jan-Abr)", v: fmtBRL(totalReceitas), c: "text-foreground" },
           { l: "Despesas (Jan-Abr)", v: fmtBRL(totalDespesas), c: "text-destructive" },
           { l: "Resultado do Período", v: fmtBRL(totalResultado), c: totalResultado < 0 ? "text-destructive" : "text-green-500" },
           { l: "Margem Líquida", v: `${margem.toFixed(1)}%`, c: margem < 0 ? "text-destructive" : "text-green-500" },
         ].map((k) => (
-          <div key={k.l} className="bg-card rounded-xl border border-border shadow-sm p-4">
-            <p className="text-xs text-muted-foreground">{k.l}</p>
-            <p className={`text-lg font-semibold mt-1 ${k.c}`}>{k.v}</p>
+          <div key={k.l} className="bg-card rounded-xl border border-border shadow-sm px-3 py-2">
+            <p className="text-[10px] text-muted-foreground leading-tight">{k.l}</p>
+            <p className={`text-sm font-semibold mt-0.5 ${k.c}`}>{k.v}</p>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
         <ChartCard title="Receitas vs Despesas por mês" subtitle="Comparativo mensal em R$">
           <BarChart data={data.byMes}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
