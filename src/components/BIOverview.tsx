@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSinistralidade } from "@/components/SinistralidadeGraficos";
 import { Maximize2, Minimize2 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -115,8 +116,11 @@ const BIOverview = () => {
     return { byMes, despPie: top, admByMes, admCats };
   }, [rows]);
 
+  const sin = useSinistralidade();
+
   const slides = useMemo(() => {
     if (!data) return [];
+    const fmtPct = (v: number) => `${v.toFixed(1)}%`;
     return [
       {
         title: "Receitas vs Despesas por mês",
