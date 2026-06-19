@@ -146,6 +146,15 @@ const SinistralidadeGraficos = () => {
           ))}
         </div>
         <button
+          onClick={() => setPage((p) => (p === 0 ? 1 : 0))}
+          className="shrink-0 bg-card rounded-xl border border-border shadow-sm px-4 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
+          title={page === 0 ? "Ver mais 4 gráficos" : "Voltar"}
+          aria-label={page === 0 ? "Ver mais 4 gráficos" : "Voltar"}
+        >
+          {page === 0 ? <ArrowRight className="h-5 w-5" /> : <ArrowLeft className="h-5 w-5" />}
+          <span className="text-[10px] leading-tight">{page === 0 ? "Mais 4" : "Voltar"}</span>
+        </button>
+        <button
           onClick={() => window.dispatchEvent(new CustomEvent("open-bi-overview"))}
           className="shrink-0 bg-card rounded-xl border border-border shadow-sm px-4 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
           title="Abrir B.I. Overview"
@@ -156,7 +165,9 @@ const SinistralidadeGraficos = () => {
         </button>
       </div>
 
+      {page === 0 ? (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
+
         <ChartCard title="Sinistralidade mensal" subtitle="Receita, Despesa e % Sinistralidade">
           <ComposedChart data={data.byMes} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
