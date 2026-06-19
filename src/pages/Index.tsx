@@ -30,6 +30,7 @@ import Vendas from "@/components/Vendas";
 import ConsultaBeneficiario from "@/components/ConsultaBeneficiario";
 import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
+import BIOverview from "@/components/BIOverview";
 import logoFull from "@/assets/bensaude-logo.svg.asset.json";
 import logoIcon from "@/assets/bensaude-icon.svg.asset.json";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
