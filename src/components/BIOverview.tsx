@@ -193,8 +193,85 @@ const BIOverview = () => {
           </LineChart>
         ),
       },
+      ...(sin
+        ? [
+            {
+              title: "Sinistralidade mensal",
+              subtitle: "Receita, Despesa e % Sinistralidade",
+              chart: (
+                <ComposedChart data={sin.byMes} margin={{ top: 20, right: 40, left: 20, bottom: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="mes" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis yAxisId="l" tickFormatter={fmtCompact} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis yAxisId="r" orientation="right" tickFormatter={(v) => `${v}%`} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip formatter={(v: number, n) => (n === "Sinistralidade" ? fmtPct(v) : fmtBRL(v))} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  <Bar yAxisId="l" dataKey="Receita" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+                  <Bar yAxisId="l" dataKey="Despesa" fill="#ef4444" radius={[6, 6, 0, 0]} />
+                  <Line yAxisId="r" type="monotone" dataKey="Sinistralidade" stroke="#f59e0b" strokeWidth={4} dot={{ r: 5 }}>
+                    <LabelList dataKey="Sinistralidade" position="top" formatter={(v: number) => `${v}%`} style={{ fontSize: 10, fill: "hsl(var(--foreground))" }} />
+                  </Line>
+                </ComposedChart>
+              ),
+            },
+            {
+              title: "Sinistralidade por Faixa Etária",
+              subtitle: "% Despesa / Receita",
+              chart: (
+                <BarChart data={sin.byFaixa} margin={{ top: 20, right: 40, left: 20, bottom: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="faixa" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis tickFormatter={(v) => `${v}%`} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip formatter={(v: number) => fmtPct(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+                  <Bar dataKey="Sinistralidade" fill="#a855f7" radius={[6, 6, 0, 0]}>
+                    <LabelList dataKey="Sinistralidade" position="top" formatter={(v: number) => `${v}%`} style={{ fontSize: 11, fill: "hsl(var(--foreground))" }} />
+                  </Bar>
+                </BarChart>
+              ),
+            },
+            {
+              title: "Despesa por Tipo de Plano",
+              subtitle: "Participação no período",
+              chart: (
+                <PieChart>
+                  <Pie
+                    data={sin.byTipo}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius="70%"
+                    label={(e: any) => `${e.name}: ${(e.percent * 100).toFixed(0)}%`}
+                    labelLine={true}
+                  >
+                    {sin.byTipo.map((_, i) => (
+                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                </PieChart>
+              ),
+            },
+            {
+              title: "Top 10 Microrregiões — Sinistralidade",
+              subtitle: "Mínimo 100 vidas no período",
+              chart: (
+                <BarChart data={sin.byMicroTop} layout="vertical" margin={{ top: 20, right: 60, left: 20, bottom: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis type="number" tickFormatter={(v) => `${v}%`} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis type="category" dataKey="micro" width={160} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip formatter={(v: number) => fmtPct(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+                  <Bar dataKey="Sinistralidade" fill="#06b6d4" radius={[0, 6, 6, 0]}>
+                    <LabelList dataKey="Sinistralidade" position="right" formatter={(v: number) => `${v}%`} style={{ fontSize: 11, fill: "hsl(var(--foreground))" }} />
+                  </Bar>
+                </BarChart>
+              ),
+            },
+          ]
+        : []),
     ];
-  }, [data]);
+  }, [data, sin]);
 
   useEffect(() => {
     if (!slides.length || paused) return;
