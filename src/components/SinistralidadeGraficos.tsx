@@ -18,7 +18,11 @@ import {
   LabelList,
 } from "recharts";
 
-type Agg = { k: string | number; rec: number; desp: number; vidas: number };
+type Agg = {
+  k: string | number;
+  rec: number; desp: number; vidas: number;
+  saldo?: number; rec_tmm?: number; rec_cop?: number;
+};
 type Data = {
   byMes: Agg[];
   byFaixa: Agg[];
@@ -28,6 +32,7 @@ type Data = {
   byPlano: Agg[];
   byRecup: Agg[];
 };
+type MetricRow = { name: string; value: number; vidas: number };
 
 const MES_LABEL: Record<number, string> = {
   202505: "Mai/25", 202506: "Jun/25", 202507: "Jul/25", 202508: "Ago/25",
@@ -58,6 +63,56 @@ const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: st
     </div>
   </div>
 );
+
+type DimRow = { name: string; vidas: number; rec_tmm: number; rec_cop: number; rec_total: number; despesa: number; saldo: number };
+
+const MetricTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  const p = payload[0];
+  const row = p?.payload as DimRow | undefined;
+  return (
+    <div className="bg-card border border-border rounded-md px-2 py-1 text-[11px] shadow-md">
+      <div className="font-semibold text-foreground mb-0.5">{label}</div>
+      <div className="text-foreground">{p.name}: {fmtBRL(p.value)}</div>
+      {row && (
+        <>
+          <div className="text-muted-foreground">Receita total: {fmtBRL(row.rec_total)}</div>
+          <div className="text-muted-foreground">Vidas: {Math.round(row.vidas).toLocaleString("pt-BR")}</div>
+        </>
+      )}
+    </div>
+  );
+};
+
+const MetricBars = ({ rows, dataKey, color, width = 120 }: { rows: DimRow[]; dataKey: keyof DimRow; color: string; width?: number }) => (
+  <BarChart data={rows} layout="vertical" margin={{ top: 4, right: 56, left: 4, bottom: 0 }}>
+    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+    <XAxis type="number" tickFormatter={fmtCompact} tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
+    <YAxis type="category" dataKey="name" width={width} tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
+    <Tooltip content={<MetricTooltip />} cursor={{ fill: "hsl(var(--accent))", opacity: 0.3 }} />
+    <Bar dataKey={dataKey as string} fill={color} radius={[0, 4, 4, 0]}>
+      <LabelList dataKey={dataKey as string} position="right" formatter={fmtCompact} style={{ fontSize: 9, fill: "hsl(var(--foreground))" }} />
+    </Bar>
+  </BarChart>
+);
+
+const DimensionPage = ({ label, rows }: { label: string; rows: DimRow[] }) => (
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
+    <ChartCard title={`Receitas TMM por ${label}`} subtitle="Mensalidade (Sem coparticipação)">
+      <MetricBars rows={rows} dataKey="rec_tmm" color="#3b82f6" />
+    </ChartCard>
+    <ChartCard title={`Receitas Copart por ${label}`} subtitle="Receita de coparticipação">
+      <MetricBars rows={rows} dataKey="rec_cop" color="#06b6d4" />
+    </ChartCard>
+    <ChartCard title={`Despesas por ${label}`} subtitle="Despesa assistencial total">
+      <MetricBars rows={rows} dataKey="despesa" color="#ef4444" />
+    </ChartCard>
+    <ChartCard title={`Saldos por ${label}`} subtitle="Receita total − Despesa">
+      <MetricBars rows={rows} dataKey="saldo" color="#a855f7" />
+    </ChartCard>
+  </div>
+);
+
 
 export const useSinistralidade = () => {
   const [raw, setRaw] = useState<Data | null>(null);
@@ -114,7 +169,32 @@ export const useSinistralidade = () => {
     const totalVidas = raw.byMes.reduce((s, m) => s + m.vidas, 0) / Math.max(raw.byMes.length, 1);
     const sinTotal = pct(totalRec, totalDesp);
 
-    return { byMes, byFaixa, byTipo, byMicroTop, byContr, byPlano, byRecup, vidasByMes, totalRec, totalDesp, totalVidas, sinTotal };
+    // Métricas por dimensão para as páginas "Mais 4"
+    const cleanTipo = (s: string) => s.replace(/\s*\[[^\]]+\]\s*$/, "").trim() || s;
+    const makeMetric = (arr: Agg[], cleanName?: (s: string) => string, topN?: number) => {
+      const norm = arr.map((a) => ({
+        name: (cleanName ?? String)(String(a.k)),
+        vidas: a.vidas,
+        rec_tmm: a.rec_tmm ?? 0,
+        rec_cop: a.rec_cop ?? 0,
+        rec_total: a.rec,
+        despesa: a.desp,
+        saldo: a.saldo ?? (a.rec - a.desp),
+      }));
+      // Para microrregião limitamos por receita total (top N)
+      const sorted = topN
+        ? [...norm].sort((a, b) => b.rec_total - a.rec_total).slice(0, topN)
+        : norm.sort((a, b) => b.rec_total - a.rec_total);
+      return sorted;
+    };
+    const dims = {
+      tipo: { label: "Tipo Copart", rows: makeMetric(raw.byTipo, cleanTipo) },
+      contr: { label: "Contratação", rows: makeMetric(raw.byContr) },
+      recup: { label: "Recuperação", rows: makeMetric(raw.byRecup) },
+      micro: { label: "Microrregião (Top 10)", rows: makeMetric(raw.byMicro, undefined, 10) },
+    };
+
+    return { byMes, byFaixa, byTipo, byMicroTop, byContr, byPlano, byRecup, vidasByMes, totalRec, totalDesp, totalVidas, sinTotal, dims };
   }, [raw]);
 };
 
@@ -145,15 +225,25 @@ const SinistralidadeGraficos = () => {
             </div>
           ))}
         </div>
-        <button
-          onClick={() => setPage((p) => (p === 0 ? 1 : 0))}
-          className="shrink-0 bg-card rounded-xl border border-border shadow-sm px-4 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
-          title={page === 0 ? "Ver mais 4 gráficos" : "Voltar"}
-          aria-label={page === 0 ? "Ver mais 4 gráficos" : "Voltar"}
-        >
-          {page === 0 ? <ArrowRight className="h-5 w-5" /> : <ArrowLeft className="h-5 w-5" />}
-          <span className="text-[10px] leading-tight">{page === 0 ? "Mais 4" : "Voltar"}</span>
-        </button>
+        {(() => {
+          const totalPages = 6;
+          const labels = ["Visão geral", "Comparativo", "Tipo Copart", "Contratação", "Recuperação", "Microrregião"];
+          const isLast = page === totalPages - 1;
+          return (
+            <>
+              <button
+                onClick={() => setPage((p) => (p + 1) % totalPages)}
+                className="shrink-0 bg-card rounded-xl border border-border shadow-sm px-4 flex flex-col items-center justify-center gap-0.5 text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
+                title={isLast ? "Voltar à visão geral" : "Próximos 4 gráficos"}
+                aria-label={isLast ? "Voltar à visão geral" : "Próximos 4 gráficos"}
+              >
+                {isLast ? <ArrowLeft className="h-5 w-5" /> : <ArrowRight className="h-5 w-5" />}
+                <span className="text-[10px] leading-tight">{isLast ? "Voltar" : "Mais 4"}</span>
+                <span className="text-[9px] leading-tight text-muted-foreground/70">{page + 1}/{totalPages} · {labels[page]}</span>
+              </button>
+            </>
+          );
+        })()}
         <button
           onClick={() => window.dispatchEvent(new CustomEvent("open-bi-overview"))}
           className="shrink-0 bg-card rounded-xl border border-border shadow-sm px-4 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
@@ -165,7 +255,11 @@ const SinistralidadeGraficos = () => {
         </button>
       </div>
 
-      {page === 0 ? (
+      {page === 2 ? <DimensionPage label="Tipo Copart" rows={data.dims.tipo.rows as any} /> :
+       page === 3 ? <DimensionPage label="Contratação" rows={data.dims.contr.rows as any} /> :
+       page === 4 ? <DimensionPage label="Recuperação" rows={data.dims.recup.rows as any} /> :
+       page === 5 ? <DimensionPage label="Microrregião" rows={data.dims.micro.rows as any} /> :
+       page === 0 ? (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
 
         <ChartCard title="Sinistralidade mensal" subtitle="Receita, Despesa e % Sinistralidade">
