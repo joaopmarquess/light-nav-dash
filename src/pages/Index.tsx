@@ -3,6 +3,7 @@ import {
   Home,
   TrendingUp,
   FileText,
+  BarChart3,
   Settings2,
   Building2,
   Coins,
@@ -28,6 +29,7 @@ import AtivosEm from "@/components/AtivosEm";
 import Vendas from "@/components/Vendas";
 import ConsultaBeneficiario from "@/components/ConsultaBeneficiario";
 import DRE from "@/components/DRE";
+import DREGraficos from "@/components/DREGraficos";
 import logoFull from "@/assets/bensaude-logo.svg.asset.json";
 import logoIcon from "@/assets/bensaude-icon.svg.asset.json";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -45,7 +47,10 @@ const menuItems: MenuItem[] = [
   {
     icon: TrendingUp,
     label: "Contabilidade",
-    children: [{ icon: FileText, label: "DRE" }],
+    children: [
+      { icon: FileText, label: "DRE" },
+      { icon: BarChart3, label: "Gráfico" },
+    ],
   },
   {
     icon: Users,
@@ -232,6 +237,8 @@ const Index = () => {
             <ConsultaBeneficiario />
           ) : active === "DRE" ? (
             <DRE />
+          ) : active === "Gráfico" ? (
+            <DREGraficos />
           ) : (
             <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-8rem)] flex items-center justify-center text-muted-foreground text-sm">
               Selecione uma opção no menu lateral.
