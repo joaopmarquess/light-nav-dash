@@ -40,7 +40,7 @@ const fmtCompact = (v: number) => {
 const fmtBRL = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(v);
 
-const COLORS = ["hsl(var(--primary))", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#ec4899", "#84cc16"];
+const COLORS = ["#dc2626", "#ef4444", "#f87171", "#b91c1c", "#fb7185", "#e11d48", "#fca5a5", "#7f1d1d"];
 
 const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) => (
   <div className="bg-card rounded-xl border border-border shadow-sm p-5">
@@ -137,8 +137,8 @@ const DREGraficos = () => {
         {[
           { l: "Receitas (Jan-Abr)", v: fmtBRL(totalReceitas), c: "text-foreground" },
           { l: "Despesas (Jan-Abr)", v: fmtBRL(totalDespesas), c: "text-destructive" },
-          { l: "Resultado do Período", v: fmtBRL(totalResultado), c: totalResultado < 0 ? "text-destructive" : "text-emerald-600" },
-          { l: "Margem Líquida", v: `${margem.toFixed(1)}%`, c: margem < 0 ? "text-destructive" : "text-emerald-600" },
+          { l: "Resultado do Período", v: fmtBRL(totalResultado), c: totalResultado < 0 ? "text-destructive" : "text-green-500" },
+          { l: "Margem Líquida", v: `${margem.toFixed(1)}%`, c: margem < 0 ? "text-destructive" : "text-green-500" },
         ].map((k) => (
           <div key={k.l} className="bg-card rounded-xl border border-border shadow-sm p-4">
             <p className="text-xs text-muted-foreground">{k.l}</p>
@@ -155,7 +155,7 @@ const DREGraficos = () => {
             <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
             <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Bar dataKey="Receitas" fill="#10b981" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Receitas" fill="#22c55e" radius={[4, 4, 0, 0]} />
             <Bar dataKey="Despesas" fill="#ef4444" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ChartCard>
