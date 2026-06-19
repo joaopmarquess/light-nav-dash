@@ -64,6 +64,56 @@ const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: st
   </div>
 );
 
+type DimRow = { name: string; vidas: number; rec_tmm: number; rec_cop: number; rec_total: number; despesa: number; saldo: number };
+
+const MetricTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  const p = payload[0];
+  const row = p?.payload as DimRow | undefined;
+  return (
+    <div className="bg-card border border-border rounded-md px-2 py-1 text-[11px] shadow-md">
+      <div className="font-semibold text-foreground mb-0.5">{label}</div>
+      <div className="text-foreground">{p.name}: {fmtBRL(p.value)}</div>
+      {row && (
+        <>
+          <div className="text-muted-foreground">Receita total: {fmtBRL(row.rec_total)}</div>
+          <div className="text-muted-foreground">Vidas: {Math.round(row.vidas).toLocaleString("pt-BR")}</div>
+        </>
+      )}
+    </div>
+  );
+};
+
+const MetricBars = ({ rows, dataKey, color, width = 120 }: { rows: DimRow[]; dataKey: keyof DimRow; color: string; width?: number }) => (
+  <BarChart data={rows} layout="vertical" margin={{ top: 4, right: 56, left: 4, bottom: 0 }}>
+    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+    <XAxis type="number" tickFormatter={fmtCompact} tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
+    <YAxis type="category" dataKey="name" width={width} tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
+    <Tooltip content={<MetricTooltip />} cursor={{ fill: "hsl(var(--accent))", opacity: 0.3 }} />
+    <Bar dataKey={dataKey as string} fill={color} radius={[0, 4, 4, 0]}>
+      <LabelList dataKey={dataKey as string} position="right" formatter={fmtCompact} style={{ fontSize: 9, fill: "hsl(var(--foreground))" }} />
+    </Bar>
+  </BarChart>
+);
+
+const DimensionPage = ({ label, rows }: { label: string; rows: DimRow[] }) => (
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
+    <ChartCard title={`Receitas TMM por ${label}`} subtitle="Mensalidade (Sem coparticipação)">
+      <MetricBars rows={rows} dataKey="rec_tmm" color="#3b82f6" />
+    </ChartCard>
+    <ChartCard title={`Receitas Copart por ${label}`} subtitle="Receita de coparticipação">
+      <MetricBars rows={rows} dataKey="rec_cop" color="#06b6d4" />
+    </ChartCard>
+    <ChartCard title={`Despesas por ${label}`} subtitle="Despesa assistencial total">
+      <MetricBars rows={rows} dataKey="despesa" color="#ef4444" />
+    </ChartCard>
+    <ChartCard title={`Saldos por ${label}`} subtitle="Receita total − Despesa">
+      <MetricBars rows={rows} dataKey="saldo" color="#a855f7" />
+    </ChartCard>
+  </div>
+);
+
+
 export const useSinistralidade = () => {
   const [raw, setRaw] = useState<Data | null>(null);
   useEffect(() => {
