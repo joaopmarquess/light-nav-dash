@@ -27,6 +27,9 @@ const todayBR = () => {
 import AtivosEm from "@/components/AtivosEm";
 import Vendas from "@/components/Vendas";
 import ConsultaBeneficiario from "@/components/ConsultaBeneficiario";
+import logoFull from "@/assets/bensaude-logo.svg.asset.json";
+import logoIcon from "@/assets/bensaude-icon.svg.asset.json";
+
 
 
 type MenuItem = {
@@ -79,12 +82,11 @@ const Index = () => {
       <aside
         className={`${collapsed ? "w-16" : "w-64"} border-r border-border bg-card flex flex-col transition-all duration-200`}
       >
-        <div className="h-20 flex items-center px-5 border-b border-border">
-          <Plus className="h-7 w-7 text-primary shrink-0" strokeWidth={3} />
-          {!collapsed && (
-            <span className="ml-1 text-2xl font-bold text-primary tracking-tight">
-              Bensa<span className="lowercase">úde</span>
-            </span>
+        <div className="h-20 flex items-center justify-center px-3 border-b border-border">
+          {collapsed ? (
+            <img src={logoIcon.url} alt="Bensaúde" className="h-10 w-10" />
+          ) : (
+            <img src={logoFull.url} alt="Bensaúde" className="h-12 w-auto max-w-full" />
           )}
         </div>
 
