@@ -195,23 +195,24 @@ const DREGraficos = () => {
         </ChartCard>
 
         <ChartCard title="Composição de Despesas" subtitle="Participação por categoria no período">
-          <PieChart>
+          <PieChart margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
             <Pie
               data={data.despPie}
               dataKey="value"
               nameKey="name"
-              cx="50%"
+              cx="38%"
               cy="50%"
-              outerRadius={95}
+              outerRadius="78%"
               label={(e: any) => `${(e.percent * 100).toFixed(0)}%`}
               labelLine={false}
+              style={{ fontSize: 9 }}
             >
               {data.despPie.map((_, i) => (
                 <Cell key={i} fill={COLORS[i % COLORS.length]} />
               ))}
             </Pie>
             <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
-            <Legend wrapperStyle={{ fontSize: 10 }} />
+            <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ fontSize: 9, lineHeight: "12px", paddingLeft: 8 }} />
           </PieChart>
         </ChartCard>
 
