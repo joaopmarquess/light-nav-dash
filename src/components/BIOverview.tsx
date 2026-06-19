@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Maximize2, Minimize2 } from "lucide-react";
 import {
   ResponsiveContainer,
   BarChart,
