@@ -84,8 +84,10 @@ const MetricTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-const MetricBars = ({ rows, dataKey, color, width = 120 }: { rows: DimRow[]; dataKey: keyof DimRow; color: string; width?: number }) => (
-  <BarChart data={rows} layout="vertical" margin={{ top: 4, right: 56, left: 4, bottom: 0 }}>
+// Returns BarChart JSX directly (NOT a component) so that ResponsiveContainer
+// receives the chart as its immediate child and can inject width/height.
+const metricBars = (rows: DimRow[], dataKey: keyof DimRow, color: string, width = 130) => (
+  <BarChart data={rows} layout="vertical" margin={{ top: 4, right: 60, left: 4, bottom: 0 }}>
     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
     <XAxis type="number" tickFormatter={fmtCompact} tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
     <YAxis type="category" dataKey="name" width={width} tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
@@ -98,17 +100,23 @@ const MetricBars = ({ rows, dataKey, color, width = 120 }: { rows: DimRow[]; dat
 
 const DimensionPage = ({ label, rows }: { label: string; rows: DimRow[] }) => (
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
-    <ChartCard title={`Receitas TMM por ${label}`} subtitle="Mensalidade (Sem coparticipação)">
-      <MetricBars rows={rows} dataKey="rec_tmm" color="#3b82f6" />
+    <ChartCard title={`Receitas Mensalidade por ${label}`} subtitle="rec_tm — Mensalidade">
+      {metricBars(rows, "rec_tmm", "#3b82f6")}
     </ChartCard>
-    <ChartCard title={`Receitas Copart por ${label}`} subtitle="Receita de coparticipação">
-      <MetricBars rows={rows} dataKey="rec_cop" color="#06b6d4" />
+    <ChartCard title={`Receitas Coparticipação por ${label}`} subtitle="rec_cpa — Coparticipação">
+      {metricBars(rows, "rec_cop", "#06b6d4")}
     </ChartCard>
-    <ChartCard title={`Despesas por ${label}`} subtitle="Despesa assistencial total">
-      <MetricBars rows={rows} dataKey="despesa" color="#ef4444" />
+    <ChartCard title={`Receitas Totais por ${label}`} subtitle="rec_total — Receitas">
+      {metricBars(rows, "rec_total", "#10b981")}
     </ChartCard>
-    <ChartCard title={`Saldos por ${label}`} subtitle="Receita total − Despesa">
-      <MetricBars rows={rows} dataKey="saldo" color="#a855f7" />
+    <ChartCard title={`Despesas por ${label}`} subtitle="vrdespesas — Despesas">
+      {metricBars(rows, "despesa", "#ef4444")}
+    </ChartCard>
+    <ChartCard title={`Resultado (Saldo) por ${label}`} subtitle="!SALDO — Resultado">
+      {metricBars(rows, "saldo", "#a855f7")}
+    </ChartCard>
+    <ChartCard title={`Vidas Atingidas por ${label}`} subtitle="!VIDAS ATING. — Vidas">
+      {metricBars(rows, "vidas", "#f59e0b")}
     </ChartCard>
   </div>
 );
