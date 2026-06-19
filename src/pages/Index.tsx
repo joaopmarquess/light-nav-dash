@@ -15,6 +15,7 @@ import {
   Plus,
   Calendar as CalendarIcon,
   RotateCcw,
+  Search,
 } from "lucide-react";
 
 const todayBR = () => {
