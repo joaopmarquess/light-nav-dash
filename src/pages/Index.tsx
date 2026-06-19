@@ -51,6 +51,7 @@ const menuItems: MenuItem[] = [
   { icon: Users, label: "Carteira" },
   { icon: UserCheck, label: "Ativos em" },
   { icon: TrendingUp, label: "Vendas" },
+  { icon: Search, label: "Consulta Beneficiário" },
 
   { icon: Percent, label: "Sinistralidade" },
   { icon: Stethoscope, label: "Assistencial" },
