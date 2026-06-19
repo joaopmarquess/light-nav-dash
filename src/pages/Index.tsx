@@ -27,6 +27,7 @@ const todayBR = () => {
 import AtivosEm from "@/components/AtivosEm";
 import Vendas from "@/components/Vendas";
 import ConsultaBeneficiario from "@/components/ConsultaBeneficiario";
+import DRE from "@/components/DRE";
 import logoFull from "@/assets/bensaude-logo.svg.asset.json";
 import logoIcon from "@/assets/bensaude-icon.svg.asset.json";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -41,7 +42,11 @@ type MenuItem = {
 
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
-  { icon: TrendingUp, label: "Contábil" },
+  {
+    icon: TrendingUp,
+    label: "Contábil",
+    children: [{ icon: FileText, label: "DRE" }],
+  },
   {
     icon: Users,
     label: "Carteira",
@@ -225,6 +230,8 @@ const Index = () => {
             <Vendas />
           ) : active === "Consulta Beneficiário" ? (
             <ConsultaBeneficiario />
+          ) : active === "DRE" ? (
+            <DRE />
           ) : (
             <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-8rem)] flex items-center justify-center text-muted-foreground text-sm">
               Selecione uma opção no menu lateral.
