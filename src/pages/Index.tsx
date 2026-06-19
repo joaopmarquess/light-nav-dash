@@ -15,6 +15,7 @@ import {
   Plus,
   Calendar as CalendarIcon,
   RotateCcw,
+  Search,
 } from "lucide-react";
 
 const todayBR = () => {
@@ -25,6 +26,7 @@ const todayBR = () => {
 };
 import AtivosEm from "@/components/AtivosEm";
 import Vendas from "@/components/Vendas";
+import ConsultaBeneficiario from "@/components/ConsultaBeneficiario";
 
 
 type MenuItem = {
@@ -49,6 +51,7 @@ const menuItems: MenuItem[] = [
   { icon: Users, label: "Carteira" },
   { icon: UserCheck, label: "Ativos em" },
   { icon: TrendingUp, label: "Vendas" },
+  { icon: Search, label: "Consulta Beneficiário" },
 
   { icon: Percent, label: "Sinistralidade" },
   { icon: Stethoscope, label: "Assistencial" },
@@ -205,6 +208,8 @@ const Index = () => {
             <AtivosEm dateValue={dateValue} initialDrillNome={ativosDrillNome} />
           ) : active === "Vendas" ? (
             <Vendas />
+          ) : active === "Consulta Beneficiário" ? (
+            <ConsultaBeneficiario />
           ) : (
             <section className="bg-card rounded-xl border border-border shadow-sm overflow-hidden h-[calc(100vh-8rem)]">
               <iframe
