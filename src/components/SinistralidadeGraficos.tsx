@@ -255,7 +255,11 @@ const SinistralidadeGraficos = () => {
         </button>
       </div>
 
-      {page === 0 ? (
+      {page === 2 ? <DimensionPage label="Tipo Copart" rows={data.dims.tipo.rows as any} /> :
+       page === 3 ? <DimensionPage label="Contratação" rows={data.dims.contr.rows as any} /> :
+       page === 4 ? <DimensionPage label="Recuperação" rows={data.dims.recup.rows as any} /> :
+       page === 5 ? <DimensionPage label="Microrregião" rows={data.dims.micro.rows as any} /> :
+       page === 0 ? (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
 
         <ChartCard title="Sinistralidade mensal" subtitle="Receita, Despesa e % Sinistralidade">
