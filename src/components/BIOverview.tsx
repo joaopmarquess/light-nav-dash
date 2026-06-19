@@ -25,7 +25,15 @@ const MONTHS = [
   { n: 3, label: "Mar/26" },
   { n: 4, label: "Abr/26" },
 ];
-const strip = (s: string) => s.replace(/^\d+\|/, "");
+const ACRONYMS = ["EBITDA", "TI"];
+const toSentence = (s: string) => {
+  if (!s) return s;
+  let r = s.toLowerCase();
+  r = r.charAt(0).toUpperCase() + r.slice(1);
+  for (const a of ACRONYMS) r = r.replace(new RegExp(`\\b${a.toLowerCase()}\\b`, "gi"), a);
+  return r;
+};
+const strip = (s: string) => toSentence(s.replace(/^\d+\|/, ""));
 const fmtCompact = (v: number) => {
   const a = Math.abs(v);
   return a >= 1_000_000 ? (v / 1_000_000).toFixed(1) + "M" : a >= 1_000 ? (v / 1_000).toFixed(0) + "k" : v.toFixed(0);
