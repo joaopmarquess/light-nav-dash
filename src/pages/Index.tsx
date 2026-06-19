@@ -31,6 +31,7 @@ import Vendas from "@/components/Vendas";
 import ConsultaBeneficiario from "@/components/ConsultaBeneficiario";
 import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
+import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
 import BIOverview from "@/components/BIOverview";
 import logoFull from "@/assets/bensaude-logo.svg.asset.json";
 import logoIcon from "@/assets/bensaude-icon.svg.asset.json";
@@ -63,7 +64,11 @@ const menuItems: MenuItem[] = [
       { icon: TrendingUp, label: "Vendas" },
     ],
   },
-  { icon: Percent, label: "Sinistralidade" },
+  {
+    icon: Percent,
+    label: "Sinistralidade",
+    children: [{ icon: BarChart3, label: "Gráfico Sinistralidade" }],
+  },
   { icon: Stethoscope, label: "Assistencial" },
   { icon: LayoutDashboard, label: "B.I. Overview" },
 ];
@@ -247,6 +252,8 @@ const Index = () => {
             <DRE />
           ) : active === "Gráfico" ? (
             <DREGraficos />
+          ) : active === "Gráfico Sinistralidade" ? (
+            <SinistralidadeGraficos />
           ) : active === "B.I. Overview" ? (
             <BIOverview />
           ) : (
