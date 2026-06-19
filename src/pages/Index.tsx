@@ -53,7 +53,7 @@ const menuItems: MenuItem[] = [
 
 const Index = () => {
   const [active, setActive] = useState("Home");
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ Carteira: true });
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [collapsed, setCollapsed] = useState(true);
   const [dateValue, setDateValue] = useState(todayBR());
   const [ativosDrillNome, setAtivosDrillNome] = useState<string | null>(null);
