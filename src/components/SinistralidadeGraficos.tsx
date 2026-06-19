@@ -91,12 +91,30 @@ export const useSinistralidade = () => {
       .sort((a, b) => b.Sinistralidade - a.Sinistralidade)
       .slice(0, 10);
 
+    const byContr = (raw.byContr ?? [])
+      .map((c) => ({ name: String(c.k), Sinistralidade: +pct(c.rec, c.desp).toFixed(1), Receita: c.rec, Despesa: c.desp }))
+      .sort((a, b) => b.Despesa - a.Despesa);
+
+    const byPlano = (raw.byPlano ?? [])
+      .map((p) => ({ name: String(p.k), Sinistralidade: +pct(p.rec, p.desp).toFixed(1), Receita: p.rec, Despesa: p.desp }))
+      .sort((a, b) => b.Despesa - a.Despesa);
+
+    const byRecup = (raw.byRecup ?? [])
+      .map((r) => ({ name: String(r.k), value: r.desp, Sinistralidade: +pct(r.rec, r.desp).toFixed(1) }))
+      .filter((x) => x.value > 0)
+      .sort((a, b) => b.value - a.value);
+
+    const vidasByMes = raw.byMes.map((m) => ({
+      mes: MES_LABEL[m.k as number] ?? String(m.k),
+      Vidas: m.vidas,
+    }));
+
     const totalRec = raw.byMes.reduce((s, m) => s + m.rec, 0);
     const totalDesp = raw.byMes.reduce((s, m) => s + m.desp, 0);
     const totalVidas = raw.byMes.reduce((s, m) => s + m.vidas, 0) / Math.max(raw.byMes.length, 1);
     const sinTotal = pct(totalRec, totalDesp);
 
-    return { byMes, byFaixa, byTipo, byMicroTop, totalRec, totalDesp, totalVidas, sinTotal };
+    return { byMes, byFaixa, byTipo, byMicroTop, byContr, byPlano, byRecup, vidasByMes, totalRec, totalDesp, totalVidas, sinTotal };
   }, [raw]);
 };
 
