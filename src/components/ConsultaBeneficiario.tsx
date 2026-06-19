@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import asset from "@/../public/data/beneficiarios.json.asset.json";
+import asset from "@/data/beneficiarios.json.asset.json";
 
 type Beneficiario = {
   codigo: string;
