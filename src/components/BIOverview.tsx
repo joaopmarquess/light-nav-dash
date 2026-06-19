@@ -40,10 +40,27 @@ const BIOverview = () => {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [isFull, setIsFull] = useState(false);
+  const wrapRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     fetch("/data/dre.json").then((r) => r.json()).then(setRows).catch(() => setRows([]));
   }, []);
+
+  useEffect(() => {
+    const onChange = () => setIsFull(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  const toggleFull = async () => {
+    try {
+      if (!document.fullscreenElement) await wrapRef.current?.requestFullscreen();
+      else await document.exitFullscreen();
+    } catch {
+      /* noop */
+    }
+  };
 
   const data = useMemo(() => {
     if (!rows) return null;
