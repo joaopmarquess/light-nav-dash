@@ -16,7 +16,15 @@ const fmt = (v: number) => {
   return v < 0 ? `(${s})` : s;
 };
 
-const stripPrefix = (s: string) => s.replace(/^\d+\|/, "");
+const ACRONYMS = ["EBITDA", "TI"];
+const toSentence = (s: string) => {
+  if (!s) return s;
+  let r = s.toLowerCase();
+  r = r.charAt(0).toUpperCase() + r.slice(1);
+  for (const a of ACRONYMS) r = r.replace(new RegExp(`\\b${a.toLowerCase()}\\b`, "gi"), a);
+  return r;
+};
+const stripPrefix = (s: string) => toSentence(s.replace(/^\d+\|/, ""));
 
 type Node = {
   key: string;

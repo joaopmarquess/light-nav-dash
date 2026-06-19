@@ -25,7 +25,15 @@ const MONTHS = [
   { n: 4, label: "Abr/26" },
 ];
 
-const strip = (s: string) => s.replace(/^\d+\|/, "");
+const ACRONYMS = ["EBITDA", "TI"];
+const toSentence = (s: string) => {
+  if (!s) return s;
+  let r = s.toLowerCase();
+  r = r.charAt(0).toUpperCase() + r.slice(1);
+  for (const a of ACRONYMS) r = r.replace(new RegExp(`\\b${a.toLowerCase()}\\b`, "gi"), a);
+  return r;
+};
+const strip = (s: string) => toSentence(s.replace(/^\d+\|/, ""));
 
 const fmtCompact = (v: number) => {
   const abs = Math.abs(v);
@@ -151,10 +159,10 @@ const DREGraficos = () => {
         <ChartCard title="Receitas vs Despesas por mês" subtitle="Comparativo mensal em R$">
           <BarChart data={data.byMes}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="mes" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-            <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+            <XAxis dataKey="mes" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+            <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
             <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
-            <Legend wrapperStyle={{ fontSize: 12 }} />
+            <Legend wrapperStyle={{ fontSize: 10 }} />
             <Bar dataKey="Receitas" fill="#3b82f6" radius={[4, 4, 0, 0]} />
             <Bar dataKey="Despesas" fill="#ef4444" radius={[4, 4, 0, 0]} />
           </BarChart>
@@ -163,10 +171,10 @@ const DREGraficos = () => {
         <ChartCard title="Evolução do Resultado" subtitle="EBITDA, Financeiro e Resultado Líquido">
           <ComposedChart data={data.byMes}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="mes" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-            <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+            <XAxis dataKey="mes" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+            <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
             <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
-            <Legend wrapperStyle={{ fontSize: 12 }} />
+            <Legend wrapperStyle={{ fontSize: 10 }} />
             <Bar dataKey="EBITDA" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
             <Bar dataKey="Financeiro" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
             <Line type="monotone" dataKey="Resultado" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4 }} />
@@ -190,17 +198,17 @@ const DREGraficos = () => {
               ))}
             </Pie>
             <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <Legend wrapperStyle={{ fontSize: 10 }} />
           </PieChart>
         </ChartCard>
 
         <ChartCard title="Despesas Administrativas (Top 5)" subtitle="Evolução mensal por categoria">
           <LineChart data={data.admByMes}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="mes" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-            <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+            <XAxis dataKey="mes" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+            <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
             <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <Legend wrapperStyle={{ fontSize: 10 }} />
             {data.admCats.map((c, i) => (
               <Line key={c} type="monotone" dataKey={c} stroke={COLORS[i % COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
             ))}
