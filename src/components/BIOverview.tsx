@@ -121,10 +121,10 @@ const BIOverview = () => {
         chart: (
           <BarChart data={data.byMes} margin={{ top: 20, right: 40, left: 20, bottom: 10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="mes" tick={{ fontSize: 16 }} stroke="hsl(var(--muted-foreground))" />
-            <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 14 }} stroke="hsl(var(--muted-foreground))" />
+            <XAxis dataKey="mes" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+            <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
             <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
-            <Legend wrapperStyle={{ fontSize: 16 }} />
+            <Legend wrapperStyle={{ fontSize: 10 }} />
             <Bar dataKey="Receitas" fill="#3b82f6" radius={[6, 6, 0, 0]} />
             <Bar dataKey="Despesas" fill="#ef4444" radius={[6, 6, 0, 0]} />
           </BarChart>
@@ -136,10 +136,10 @@ const BIOverview = () => {
         chart: (
           <ComposedChart data={data.byMes} margin={{ top: 20, right: 40, left: 20, bottom: 10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="mes" tick={{ fontSize: 16 }} stroke="hsl(var(--muted-foreground))" />
-            <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 14 }} stroke="hsl(var(--muted-foreground))" />
+            <XAxis dataKey="mes" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+            <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
             <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
-            <Legend wrapperStyle={{ fontSize: 16 }} />
+            <Legend wrapperStyle={{ fontSize: 10 }} />
             <Bar dataKey="EBITDA" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
             <Bar dataKey="Financeiro" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
             <Line type="monotone" dataKey="Resultado" stroke="#f59e0b" strokeWidth={4} dot={{ r: 6 }} />
@@ -166,7 +166,7 @@ const BIOverview = () => {
               ))}
             </Pie>
             <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
-            <Legend wrapperStyle={{ fontSize: 14 }} />
+            <Legend wrapperStyle={{ fontSize: 10 }} />
           </PieChart>
         ),
       },
@@ -176,10 +176,10 @@ const BIOverview = () => {
         chart: (
           <LineChart data={data.admByMes} margin={{ top: 20, right: 40, left: 20, bottom: 10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="mes" tick={{ fontSize: 16 }} stroke="hsl(var(--muted-foreground))" />
-            <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 14 }} stroke="hsl(var(--muted-foreground))" />
+            <XAxis dataKey="mes" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+            <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
             <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
-            <Legend wrapperStyle={{ fontSize: 14 }} />
+            <Legend wrapperStyle={{ fontSize: 10 }} />
             {data.admCats.map((c, i) => (
               <Line key={c} type="monotone" dataKey={c} stroke={COLORS[i % COLORS.length]} strokeWidth={3} dot={{ r: 4 }} />
             ))}
