@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Monitor } from "lucide-react";
+import { Monitor, ArrowRight, ArrowLeft } from "lucide-react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -25,6 +25,8 @@ type Data = {
   byTipo: Agg[];
   byMicro: Agg[];
   byContr: Agg[];
+  byPlano: Agg[];
+  byRecup: Agg[];
 };
 
 const MES_LABEL: Record<number, string> = {
