@@ -32,7 +32,7 @@ const fmtCompact = (v: number) => {
 };
 const fmtBRL = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(v);
-const COLORS = ["hsl(var(--primary))", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#ec4899", "#84cc16"];
+const COLORS = ["#dc2626", "#ef4444", "#f87171", "#b91c1c", "#fb7185", "#e11d48", "#fca5a5", "#7f1d1d"];
 
 const ROTATE_MS = 7_000;
 
@@ -117,7 +117,7 @@ const BIOverview = () => {
             <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 14 }} stroke="hsl(var(--muted-foreground))" />
             <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
             <Legend wrapperStyle={{ fontSize: 16 }} />
-            <Bar dataKey="Receitas" fill="#10b981" radius={[6, 6, 0, 0]} />
+            <Bar dataKey="Receitas" fill="#22c55e" radius={[6, 6, 0, 0]} />
             <Bar dataKey="Despesas" fill="#ef4444" radius={[6, 6, 0, 0]} />
           </BarChart>
         ),
