@@ -44,7 +44,7 @@ const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   {
     icon: TrendingUp,
-    label: "Contábil",
+    label: "Contabilidade",
     children: [{ icon: FileText, label: "DRE" }],
   },
   {
