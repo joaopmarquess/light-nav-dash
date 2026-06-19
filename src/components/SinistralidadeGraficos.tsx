@@ -18,7 +18,11 @@ import {
   LabelList,
 } from "recharts";
 
-type Agg = { k: string | number; rec: number; desp: number; vidas: number };
+type Agg = {
+  k: string | number;
+  rec: number; desp: number; vidas: number;
+  saldo?: number; rec_tmm?: number; rec_cop?: number;
+};
 type Data = {
   byMes: Agg[];
   byFaixa: Agg[];
@@ -28,6 +32,7 @@ type Data = {
   byPlano: Agg[];
   byRecup: Agg[];
 };
+type MetricRow = { name: string; value: number; vidas: number };
 
 const MES_LABEL: Record<number, string> = {
   202505: "Mai/25", 202506: "Jun/25", 202507: "Jul/25", 202508: "Ago/25",
@@ -114,7 +119,32 @@ export const useSinistralidade = () => {
     const totalVidas = raw.byMes.reduce((s, m) => s + m.vidas, 0) / Math.max(raw.byMes.length, 1);
     const sinTotal = pct(totalRec, totalDesp);
 
-    return { byMes, byFaixa, byTipo, byMicroTop, byContr, byPlano, byRecup, vidasByMes, totalRec, totalDesp, totalVidas, sinTotal };
+    // Métricas por dimensão para as páginas "Mais 4"
+    const cleanTipo = (s: string) => s.replace(/\s*\[[^\]]+\]\s*$/, "").trim() || s;
+    const makeMetric = (arr: Agg[], cleanName?: (s: string) => string, topN?: number) => {
+      const norm = arr.map((a) => ({
+        name: (cleanName ?? String)(String(a.k)),
+        vidas: a.vidas,
+        rec_tmm: a.rec_tmm ?? 0,
+        rec_cop: a.rec_cop ?? 0,
+        rec_total: a.rec,
+        despesa: a.desp,
+        saldo: a.saldo ?? (a.rec - a.desp),
+      }));
+      // Para microrregião limitamos por receita total (top N)
+      const sorted = topN
+        ? [...norm].sort((a, b) => b.rec_total - a.rec_total).slice(0, topN)
+        : norm.sort((a, b) => b.rec_total - a.rec_total);
+      return sorted;
+    };
+    const dims = {
+      tipo: { label: "Tipo Copart", rows: makeMetric(raw.byTipo, cleanTipo) },
+      contr: { label: "Contratação", rows: makeMetric(raw.byContr) },
+      recup: { label: "Recuperação", rows: makeMetric(raw.byRecup) },
+      micro: { label: "Microrregião (Top 10)", rows: makeMetric(raw.byMicro, undefined, 10) },
+    };
+
+    return { byMes, byFaixa, byTipo, byMicroTop, byContr, byPlano, byRecup, vidasByMes, totalRec, totalDesp, totalVidas, sinTotal, dims };
   }, [raw]);
 };
 
