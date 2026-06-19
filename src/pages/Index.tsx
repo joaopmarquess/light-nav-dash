@@ -230,6 +230,8 @@ const Index = () => {
             <Vendas />
           ) : active === "Consulta Beneficiário" ? (
             <ConsultaBeneficiario />
+          ) : active === "DRE" ? (
+            <DRE />
           ) : (
             <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-8rem)] flex items-center justify-center text-muted-foreground text-sm">
               Selecione uma opção no menu lateral.
