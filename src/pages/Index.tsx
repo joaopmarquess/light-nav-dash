@@ -205,13 +205,8 @@ const Index = () => {
           ) : active === "Consulta Beneficiário" ? (
             <ConsultaBeneficiario />
           ) : (
-            <section className="bg-card rounded-xl border border-border shadow-sm overflow-hidden h-[calc(100vh-8rem)]">
-              <iframe
-                title="Power BI Dashboard"
-                src="https://app.powerbi.com/view?r=eyJrIjoiYjQ4MjY3OTctYjI1Ny00NDIyLWE4ZmEtY2FmNzMyMmI1NjNlIiwidCI6IjQ5ZWQ4MDM4LTcwMTctNDg0Mi1iN2Q1LTI3MDdlYTYzMTQwOSJ9"
-                className="w-full h-full border-0"
-                allowFullScreen
-              />
+            <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-8rem)] flex items-center justify-center text-muted-foreground text-sm">
+              Selecione uma opção no menu lateral.
             </section>
           )}
 
