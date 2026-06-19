@@ -155,7 +155,7 @@ const DREGraficos = () => {
             <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
             <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Bar dataKey="Receitas" fill="#22c55e" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Receitas" fill="#3b82f6" radius={[4, 4, 0, 0]} />
             <Bar dataKey="Despesas" fill="#ef4444" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ChartCard>
