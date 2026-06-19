@@ -14,6 +14,7 @@ import {
   Legend,
   CartesianGrid,
   ComposedChart,
+  LabelList,
 } from "recharts";
 
 type Row = { g1: string; g2: string; g3: string; g4: string; valor: number; mes: number };
@@ -163,8 +164,8 @@ const DREGraficos = () => {
             <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
             <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
             <Legend wrapperStyle={{ fontSize: 10 }} />
-            <Bar dataKey="Receitas" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="Despesas" fill="#ef4444" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Receitas" fill="#3b82f6" radius={[4, 4, 0, 0]}><LabelList dataKey="Receitas" position="top" formatter={fmtCompact} style={{ fontSize: 10, fill: "hsl(var(--foreground))" }} /></Bar>
+            <Bar dataKey="Despesas" fill="#ef4444" radius={[4, 4, 0, 0]}><LabelList dataKey="Despesas" position="top" formatter={fmtCompact} style={{ fontSize: 10, fill: "hsl(var(--foreground))" }} /></Bar>
           </BarChart>
         </ChartCard>
 
@@ -175,9 +176,9 @@ const DREGraficos = () => {
             <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
             <Tooltip formatter={(v: number) => fmtBRL(v)} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
             <Legend wrapperStyle={{ fontSize: 10 }} />
-            <Bar dataKey="EBITDA" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="Financeiro" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-            <Line type="monotone" dataKey="Resultado" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4 }} />
+            <Bar dataKey="EBITDA" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}><LabelList dataKey="EBITDA" position="top" formatter={fmtCompact} style={{ fontSize: 10, fill: "hsl(var(--foreground))" }} /></Bar>
+            <Bar dataKey="Financeiro" fill="#8b5cf6" radius={[4, 4, 0, 0]}><LabelList dataKey="Financeiro" position="top" formatter={fmtCompact} style={{ fontSize: 10, fill: "hsl(var(--foreground))" }} /></Bar>
+            <Line type="monotone" dataKey="Resultado" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4 }}><LabelList dataKey="Resultado" position="top" formatter={fmtCompact} style={{ fontSize: 10, fill: "hsl(var(--foreground))" }} /></Line>
           </ComposedChart>
         </ChartCard>
 
