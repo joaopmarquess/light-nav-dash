@@ -41,16 +41,13 @@ const Sinistralidade = () => {
     setLoading(true);
     setError(null);
     const n = Math.max(1, Math.min(limit || 1, 10000));
-    // UTILIZAÇÃO costuma ser negativa → maior módulo = ordem ascendente.
-    // TOTAL FATURA → maiores = ordem descendente.
     const ascending = metric === "DESPESAS";
-    let q = supabase
-      .from("Sinistralidade")
-      .select("*")
-      .order(metric, { ascending, nullsFirst: false })
-      .limit(n);
+    let q = supabase.from("Sinistralidade").select("*");
     if (periodo !== "__all__") {
-      q = q.eq(`"${PERIOD_COL}"`, periodo);
+      q = q.eq(`"${PERIOD_COL}"`, periodo).order(metric, { ascending, nullsFirst: false }).limit(n);
+    } else {
+      // Aggregate locally; fetch a wide window to cover all periods
+      q = q.limit(10000);
     }
     const { data, error } = await q;
     if (error) setError(error.message);
@@ -63,15 +60,52 @@ const Sinistralidade = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const HIDDEN_COLS = new Set([PERIOD_COL, "ID"]);
+  const SUM_COLS = ["MENSALIDADES", "COPARTICIPACOES", "RECEITAS", "DESPESAS", "SALDO"];
+
+  const displayRows = useMemo(() => {
+    if (periodo !== "__all__") return rows;
+    if (rows.length === 0) return rows;
+    const periodCount = new Set(rows.map((r) => r[PERIOD_COL])).size || 1;
+    const groups = new Map<string, Row>();
+    for (const r of rows) {
+      const key = String(r["PLANO"] ?? "");
+      let g = groups.get(key);
+      if (!g) {
+        g = { ...r };
+        for (const c of SUM_COLS) g[c] = 0;
+        g["VIDA"] = 0;
+        g["__vidaSum"] = 0;
+        groups.set(key, g);
+      }
+      for (const c of SUM_COLS) g[c] = Number(g[c] || 0) + Number(r[c] || 0);
+      g["__vidaSum"] = Number(g["__vidaSum"] || 0) + Number(r["VIDA"] || 0);
+    }
+    const out: Row[] = [];
+    for (const g of groups.values()) {
+      g["VIDA"] = Number(g["__vidaSum"]) / periodCount;
+      const rec = Number(g["RECEITAS"] || 0);
+      g["%SIN"] = rec !== 0 ? (Number(g["DESPESAS"] || 0) / rec) * 100 : 0;
+      delete g["__vidaSum"];
+      out.push(g);
+    }
+    const n = Math.max(1, Math.min(limit || 1, 10000));
+    out.sort((a, b) => {
+      const va = Number(a[metric] || 0);
+      const vb = Number(b[metric] || 0);
+      return metric === "DESPESAS" ? va - vb : vb - va;
+    });
+    return out.slice(0, n);
+  }, [rows, periodo, metric, limit]);
+
   const columns = useMemo(
-    () => (rows[0] ? Object.keys(rows[0]).filter((c) => c !== PERIOD_COL) : []),
-    [rows],
+    () => (displayRows[0] ? Object.keys(displayRows[0]).filter((c) => !HIDDEN_COLS.has(c)) : []),
+    [displayRows],
   );
 
-
   const sorted = useMemo(() => {
-    if (!sortKey) return rows;
-    const copy = [...rows];
+    if (!sortKey) return displayRows;
+    const copy = [...displayRows];
     copy.sort((a, b) => {
       const va = a[sortKey];
       const vb = b[sortKey];
@@ -85,7 +119,7 @@ const Sinistralidade = () => {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return copy;
-  }, [rows, sortKey, sortDir]);
+  }, [displayRows, sortKey, sortDir]);
 
   const toggleSort = (k: string) => {
     if (sortKey === k) setSortDir(sortDir === "asc" ? "desc" : "asc");
