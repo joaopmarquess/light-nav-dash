@@ -34,8 +34,15 @@ const Sinistralidade = () => {
       ).map(String);
       uniq.sort();
       setPeriodos(uniq);
+      if (uniq.length > 0) setPeriodo(uniq[uniq.length - 1]);
     })();
   }, []);
+
+  // refetch when periodo changes via default selection
+  useEffect(() => {
+    fetchRows();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [periodo]);
 
   const fetchRows = async () => {
     setLoading(true);
