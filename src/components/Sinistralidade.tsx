@@ -194,9 +194,8 @@ const Sinistralidade = () => {
 
   const toggleExpand = (key: string) => {
     setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
+      const next = new Set<string>();
+      if (!prev.has(key)) next.add(key);
       return next;
     });
   };
