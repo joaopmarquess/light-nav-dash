@@ -11,7 +11,7 @@ const Sinistralidade = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [periodos, setPeriodos] = useState<string[]>([]);
   const [periodo, setPeriodo] = useState<string>("__all__");
-  const [limit, setLimit] = useState<number>(100);
+  const [limit, setLimit] = useState<number>(15);
   const [metric, setMetric] = useState<"RECEITAS" | "DESPESAS">("DESPESAS");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,8 +34,15 @@ const Sinistralidade = () => {
       ).map(String);
       uniq.sort();
       setPeriodos(uniq);
+      if (uniq.length > 0) setPeriodo(uniq[uniq.length - 1]);
     })();
   }, []);
+
+  // refetch when periodo changes via default selection
+  useEffect(() => {
+    fetchRows();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [periodo]);
 
   const fetchRows = async () => {
     setLoading(true);
@@ -55,10 +62,6 @@ const Sinistralidade = () => {
     setLoading(false);
   };
 
-  useEffect(() => {
-    fetchRows();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const HIDDEN_COLS = new Set([PERIOD_COL, "ID"]);
   const SUM_COLS = ["MENSALIDADES", "COPARTICIPACOES", "RECEITAS", "DESPESAS", "SALDO"];
