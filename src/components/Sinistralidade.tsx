@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, ArrowUpDown, RotateCcw } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, ChevronRight, RotateCcw } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 type Row = Record<string, any>;
@@ -21,6 +21,7 @@ const Sinistralidade = () => {
   const [error, setError] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   // helper: fetch all rows paginated (bypasses Supabase 1000-row cap)
   const fetchAll = async (build: (q: any) => any): Promise<{ data: any[]; error: any }> => {
@@ -126,13 +127,10 @@ const Sinistralidade = () => {
     });
   }, [rows, tipo]);
 
-  const displayRows = useMemo(() => {
-    if (periodo !== "__all__") return filteredRows;
-    if (filteredRows.length === 0) return filteredRows;
-    const periodCount = new Set(filteredRows.map((r) => r[PERIOD_COL])).size || 1;
+  const aggregate = (list: Row[], keyFn: (r: Row) => string, periodCount: number) => {
     const groups = new Map<string, Row>();
-    for (const r of filteredRows) {
-      const key = String(r["PLANO|EMPRESA"] ?? "");
+    for (const r of list) {
+      const key = keyFn(r);
       let g = groups.get(key);
       if (!g) {
         g = { ...r };
@@ -152,6 +150,34 @@ const Sinistralidade = () => {
       delete g["__vidaSum"];
       out.push(g);
     }
+    return out;
+  };
+
+  const periodCount = useMemo(() => {
+    if (filteredRows.length === 0) return 1;
+    return new Set(filteredRows.map((r) => r[PERIOD_COL])).size || 1;
+  }, [filteredRows]);
+
+  const childrenMap = useMemo(() => {
+    const map = new Map<string, Row[]>();
+    const byParent = new Map<string, Row[]>();
+    for (const r of filteredRows) {
+      const k = String(r["PLANO|EMPRESA"] ?? "");
+      const arr = byParent.get(k) ?? [];
+      arr.push(r);
+      byParent.set(k, arr);
+    }
+    for (const [k, list] of byParent.entries()) {
+      const kids = aggregate(list, (r) => String(r["PLANO"] ?? ""), periodCount);
+      kids.sort((a, b) => Number(b["VIDA"] || 0) - Number(a["VIDA"] || 0));
+      map.set(k, kids);
+    }
+    return map;
+  }, [filteredRows, periodCount]);
+
+  const displayRows = useMemo(() => {
+    if (filteredRows.length === 0) return filteredRows;
+    const out = aggregate(filteredRows, (r) => String(r["PLANO|EMPRESA"] ?? ""), periodCount);
     const noLimit = metric === "TODOS";
     const n = noLimit ? out.length : Math.max(1, Math.min(limit || 1, 10000));
     let filtered = out;
@@ -164,7 +190,16 @@ const Sinistralidade = () => {
       return Number(b[metric] || 0) - Number(a[metric] || 0);
     });
     return filtered.slice(0, n);
-  }, [filteredRows, periodo, metric, limit]);
+  }, [filteredRows, periodCount, metric, limit]);
+
+  const toggleExpand = (key: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   const columns = useMemo(
     () => (displayRows[0] ? Object.keys(displayRows[0]).filter((c) => !HIDDEN_COLS.has(c)) : []),
@@ -322,38 +357,66 @@ const Sinistralidade = () => {
             </tr>
           </thead>
           <tbody>
-            {sorted.map((r, i) => (
-              <tr key={i} className="border-t border-border hover:bg-muted/30">
-                {columns.map((c) => {
-                  const v = r[c];
-                  const isNum =
-                    typeof v === "number" ||
-                    (typeof v === "string" && v !== "" && !Number.isNaN(Number(v)));
-                  const intCol = c === "VIDA";
-                  const plainCol = c === "PLANO" || c === "ID";
-                  const display =
-                    v === null || v === undefined
-                      ? ""
-                      : plainCol
-                      ? String(v)
-                      : isNum
-                      ? new Intl.NumberFormat("pt-BR", {
-                          minimumFractionDigits: intCol ? 0 : 2,
-                          maximumFractionDigits: intCol ? 0 : 2,
-                        }).format(Number(v))
-                      : String(v);
-                  return (
-                    <td
-                      key={c}
-                      title={c === "PLANO|EMPRESA" ? String(display) : undefined}
-                      className={`px-3 py-2 ${isNum ? "text-right tabular-nums whitespace-nowrap" : c === "PLANO|EMPRESA" ? "max-w-[220px] truncate" : "whitespace-nowrap"}`}
-                    >
-                      {display}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
+            {sorted.map((r, i) => {
+              const parentKey = String(r["PLANO|EMPRESA"] ?? "");
+              const kids = childrenMap.get(parentKey) ?? [];
+              const isOpen = expanded.has(parentKey);
+              const hasKids = kids.length > 1;
+              const renderRow = (row: Row, opts: { isChild?: boolean; rowKey: string }) => (
+                <tr key={opts.rowKey} className={`border-t border-border hover:bg-muted/30 ${opts.isChild ? "bg-muted/20" : ""}`}>
+                  {columns.map((c, ci) => {
+                    const v = row[c];
+                    const isNum =
+                      typeof v === "number" ||
+                      (typeof v === "string" && v !== "" && !Number.isNaN(Number(v)));
+                    const intCol = c === "VIDA";
+                    const plainCol = c === "PLANO" || c === "ID";
+                    const display =
+                      v === null || v === undefined
+                        ? ""
+                        : plainCol
+                        ? String(v)
+                        : isNum
+                        ? new Intl.NumberFormat("pt-BR", {
+                            minimumFractionDigits: intCol ? 0 : 2,
+                            maximumFractionDigits: intCol ? 0 : 2,
+                          }).format(Number(v))
+                        : String(v);
+                    const isFirst = ci === 0;
+                    const isPlanoEmp = c === "PLANO|EMPRESA";
+                    return (
+                      <td
+                        key={c}
+                        title={isPlanoEmp ? String(display) : undefined}
+                        className={`px-3 py-2 ${isNum ? "text-right tabular-nums whitespace-nowrap" : isPlanoEmp ? "max-w-[260px] truncate" : "whitespace-nowrap"}`}
+                      >
+                        {isFirst && !opts.isChild && hasKids ? (
+                          <span className="inline-flex items-center gap-1 max-w-full">
+                            <button
+                              onClick={() => toggleExpand(parentKey)}
+                              aria-label={isOpen ? "Recolher" : "Expandir"}
+                              className="inline-flex h-4 w-4 items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted shrink-0"
+                            >
+                              {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                            </button>
+                            <span className="truncate">{display}</span>
+                          </span>
+                        ) : isFirst && opts.isChild ? (
+                          <span className="pl-6 text-muted-foreground text-xs">↳ PLANO {String(row["PLANO"] ?? "")}</span>
+                        ) : (
+                          display
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+              const out = [renderRow(r, { rowKey: `p-${i}` })];
+              if (isOpen) {
+                kids.forEach((kr, ki) => out.push(renderRow(kr, { isChild: true, rowKey: `p-${i}-c-${ki}` })));
+              }
+              return out;
+            })}
             {!loading && sorted.length === 0 && (
               <tr>
                 <td className="px-3 py-6 text-center text-muted-foreground" colSpan={Math.max(columns.length, 1)}>
