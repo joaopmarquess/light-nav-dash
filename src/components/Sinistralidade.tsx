@@ -194,10 +194,13 @@ const Sinistralidade = () => {
                   const isNum =
                     typeof v === "number" ||
                     (typeof v === "string" && v !== "" && !Number.isNaN(Number(v)));
-                  const intCol = c === "N.PLANO" || c === "VIDAS";
+                  const intCol = c === "VIDAS";
+                  const plainCol = c === "N.PLANO";
                   const display =
                     v === null || v === undefined
                       ? ""
+                      : plainCol
+                      ? String(v)
                       : isNum
                       ? new Intl.NumberFormat("pt-BR", {
                           minimumFractionDigits: intCol ? 0 : 2,
