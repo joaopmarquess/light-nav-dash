@@ -261,7 +261,7 @@ const Index = () => {
             <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-8rem)] overflow-hidden">
               <iframe
                 title="PBI U12"
-                src="https://app.powerbi.com/groups/c828e62d-8762-4b62-9e4d-92510f64d8e7/reports/155e8498-e0f9-447c-8190-f80e8f47d7c5/698264a4900575524338?experience=power-bi"
+                src="https://app.powerbi.com/view?r=eyJrIjoiYjJkNjQ3MTYtMjM0Ni00Y2I2LWJiOWItNTcyNWU0YWY0ZTc2IiwidCI6ImM0ZTU0ODgxLWQ1NDktNDQ2Ny1iOGFjLWQ0ZjI1MGM2NzhjNiJ9"
                 className="w-full h-full border-0"
                 allowFullScreen
               />
