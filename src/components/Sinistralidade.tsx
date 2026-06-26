@@ -418,7 +418,7 @@ const Sinistralidade = () => {
                             <span className="truncate">{display}</span>
                           </span>
                         ) : isPlanoEmp && opts.isChild ? (
-                          <span className="pl-6 text-muted-foreground text-xs">↳ PLANO {String(row["PLANO"] ?? "")}</span>
+                          <span className="pl-6 text-xs">↳ PLANO {String(row["PLANO"] ?? "")}</span>
                         ) : (
                           display
                         )}
