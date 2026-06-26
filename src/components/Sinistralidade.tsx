@@ -59,7 +59,8 @@ const Sinistralidade = () => {
   const fetchRows = async () => {
     setLoading(true);
     setError(null);
-    const n = Math.max(1, Math.min(limit || 1, 10000));
+    const noLimit = metric === "TODOS";
+    const n = noLimit ? 10000 : Math.max(1, Math.min(limit || 1, 10000));
     let q = supabase.from("Sinistralidade").select("*");
     if (periodo !== "__all__") {
       q = q.eq(`"${PERIOD_COL}"`, periodo);
@@ -67,7 +68,7 @@ const Sinistralidade = () => {
         q = q.gte("SALDO", 0).order("SALDO", { ascending: false, nullsFirst: false });
       } else if (metric === "PREJUIZOS") {
         q = q.lt("SALDO", 0).order("SALDO", { ascending: true, nullsFirst: false });
-      } else {
+      } else if (metric !== "TODOS") {
         q = q.order(metric, { ascending: false, nullsFirst: false });
       }
       q = q.limit(n);
