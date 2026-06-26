@@ -369,8 +369,12 @@ const Sinistralidade = () => {
                   key={opts.rowKey}
                   className={`border-t border-border hover:bg-muted/30 ${
                     opts.isChild
-                      ? "bg-muted/20 text-foreground"
-                      : `${isOpen ? "font-semibold " : ""}${parentDim ? "text-muted-foreground/60" : "text-foreground"}`
+                      ? "bg-muted/20 text-blue-900 dark:text-blue-300"
+                      : isOpen
+                      ? "font-semibold text-blue-900 dark:text-blue-300"
+                      : parentDim
+                      ? "text-muted-foreground/60"
+                      : "text-foreground"
                   }`}
                 >
                   {columns.map((c, ci) => {
