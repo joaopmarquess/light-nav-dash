@@ -194,8 +194,8 @@ const Sinistralidade = () => {
                   const isNum =
                     typeof v === "number" ||
                     (typeof v === "string" && v !== "" && !Number.isNaN(Number(v)));
-                  const intCol = c === "VIDAS";
-                  const plainCol = c === "N.PLANO";
+                  const intCol = c === "VIDA";
+                  const plainCol = c === "PLANO" || c === "ID";
                   const display =
                     v === null || v === undefined
                       ? ""
