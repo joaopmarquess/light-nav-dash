@@ -15,7 +15,7 @@ const Sinistralidade = () => {
   const [defaultLimit, setDefaultLimit] = useState<number>(15);
   const [limit, setLimit] = useState<number>(15);
   const [fetchedLimit, setFetchedLimit] = useState<number>(15);
-  const [metric, setMetric] = useState<"RECEITAS" | "DESPESAS" | "LUCROS" | "PREJUIZOS">("DESPESAS");
+  const [metric, setMetric] = useState<"TODOS" | "RECEITAS" | "DESPESAS" | "LUCROS" | "PREJUIZOS">("TODOS");
   const [tipo, setTipo] = useState<"todos" | "coletivos" | "individuais">("todos");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
