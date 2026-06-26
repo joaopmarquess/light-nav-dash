@@ -244,7 +244,8 @@ const Sinistralidade = () => {
                   return (
                     <td
                       key={c}
-                      className={`px-3 py-2 whitespace-nowrap ${isNum ? "text-right tabular-nums" : ""}`}
+                      title={c === "PLANO|EMPRESA" ? String(display) : undefined}
+                      className={`px-3 py-2 ${isNum ? "text-right tabular-nums whitespace-nowrap" : c === "PLANO|EMPRESA" ? "max-w-[220px] truncate" : "whitespace-nowrap"}`}
                     >
                       {display}
                     </td>
