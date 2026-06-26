@@ -179,13 +179,15 @@ const Sinistralidade = () => {
           />
         </div>
 
-        <button
-          onClick={fetchRows}
-          disabled={loading}
-          className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50"
-        >
-          {loading ? "Carregando..." : "Buscar"}
-        </button>
+        {limit !== fetchedLimit && (
+          <button
+            onClick={fetchRows}
+            disabled={loading}
+            className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50"
+          >
+            {loading ? "Carregando..." : "Buscar"}
+          </button>
+        )}
 
         <span className="text-xs text-muted-foreground ml-auto">{sorted.length} registro(s)</span>
       </div>
