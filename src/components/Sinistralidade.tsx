@@ -12,7 +12,7 @@ const Sinistralidade = () => {
   const [periodos, setPeriodos] = useState<string[]>([]);
   const [periodo, setPeriodo] = useState<string>("__all__");
   const [limit, setLimit] = useState<number>(100);
-  const [metric, setMetric] = useState<"FATURA" | "DESPESAS">("DESPESAS");
+  const [metric, setMetric] = useState<"TOTAL FATURA" | "UTILIZAÇÃO">("UTILIZAÇÃO");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -41,9 +41,9 @@ const Sinistralidade = () => {
     setLoading(true);
     setError(null);
     const n = Math.max(1, Math.min(limit || 1, 10000));
-    // DESPESAS são negativas → "maiores em módulo" = ordem ascendente.
-    // FATURA → maiores = ordem descendente.
-    const ascending = metric === "DESPESAS";
+    // UTILIZAÇÃO costuma ser negativa → maior módulo = ordem ascendente.
+    // TOTAL FATURA → maiores = ordem descendente.
+    const ascending = metric === "UTILIZAÇÃO";
     let q = supabase
       .from("Sinistralidade")
       .select("*")
@@ -118,11 +118,11 @@ const Sinistralidade = () => {
           <label className="text-xs font-medium text-muted-foreground">Ordenar por</label>
           <select
             value={metric}
-            onChange={(e) => setMetric(e.target.value as "FATURA" | "DESPESAS")}
+            onChange={(e) => setMetric(e.target.value as "TOTAL FATURA" | "UTILIZAÇÃO")}
             className="h-9 min-w-40 rounded-md border border-border bg-background px-3 text-sm"
           >
-            <option value="DESPESAS">Maiores DESPESAS</option>
-            <option value="FATURA">Maiores FATURA</option>
+            <option value="UTILIZAÇÃO">Maiores UTILIZAÇÃO</option>
+            <option value="TOTAL FATURA">Maiores TOTAL FATURA</option>
           </select>
         </div>
 
