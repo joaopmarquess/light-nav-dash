@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, RotateCcw } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 type Row = Record<string, any>;
