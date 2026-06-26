@@ -43,7 +43,7 @@ const Sinistralidade = () => {
     const n = Math.max(1, Math.min(limit || 1, 10000));
     // UTILIZAÇÃO costuma ser negativa → maior módulo = ordem ascendente.
     // TOTAL FATURA → maiores = ordem descendente.
-    const ascending = metric === "UTILIZAÇÃO";
+    const ascending = metric === "DESPESAS";
     let q = supabase
       .from("Sinistralidade")
       .select("*")
