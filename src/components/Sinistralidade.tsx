@@ -85,7 +85,7 @@ const Sinistralidade = () => {
 
   const resetFilters = () => {
     setPeriodo(defaultPeriodo);
-    setMetric("DESPESAS");
+    setMetric("TODOS");
     setTipo("todos");
     setLimit(defaultLimit);
     setSortKey(null);
