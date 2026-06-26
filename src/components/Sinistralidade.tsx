@@ -131,12 +131,15 @@ const Sinistralidade = () => {
       out.push(g);
     }
     const n = Math.max(1, Math.min(limit || 1, 10000));
-    out.sort((a, b) => {
-      const va = Number(a[metric] || 0);
-      const vb = Number(b[metric] || 0);
-      return vb - va;
+    let filtered = out;
+    if (metric === "LUCROS") filtered = out.filter((r) => Number(r["SALDO"] || 0) >= 0);
+    else if (metric === "PREJUIZOS") filtered = out.filter((r) => Number(r["SALDO"] || 0) < 0);
+    filtered.sort((a, b) => {
+      if (metric === "LUCROS") return Number(b["SALDO"] || 0) - Number(a["SALDO"] || 0);
+      if (metric === "PREJUIZOS") return Number(a["SALDO"] || 0) - Number(b["SALDO"] || 0);
+      return Number(b[metric] || 0) - Number(a[metric] || 0);
     });
-    return out.slice(0, n);
+    return filtered.slice(0, n);
   }, [filteredRows, periodo, metric, limit]);
 
   const columns = useMemo(
