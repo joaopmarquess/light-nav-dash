@@ -5,14 +5,14 @@ import { supabase } from "@/lib/supabaseClient";
 type Row = Record<string, any>;
 type SortDir = "asc" | "desc";
 
-const PERIOD_COL = "!Período U12";
+const PERIOD_COL = "PERIODO";
 
 const Sinistralidade = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [periodos, setPeriodos] = useState<string[]>([]);
   const [periodo, setPeriodo] = useState<string>("__all__");
   const [limit, setLimit] = useState<number>(100);
-  const [metric, setMetric] = useState<"TOTAL FATURA" | "UTILIZAÇÃO">("UTILIZAÇÃO");
+  const [metric, setMetric] = useState<"RECEITAS" | "DESPESAS">("DESPESAS");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -43,7 +43,7 @@ const Sinistralidade = () => {
     const n = Math.max(1, Math.min(limit || 1, 10000));
     // UTILIZAÇÃO costuma ser negativa → maior módulo = ordem ascendente.
     // TOTAL FATURA → maiores = ordem descendente.
-    const ascending = metric === "UTILIZAÇÃO";
+    const ascending = metric === "DESPESAS";
     let q = supabase
       .from("Sinistralidade")
       .select("*")
@@ -99,7 +99,7 @@ const Sinistralidade = () => {
     <section className="bg-card rounded-xl border border-border shadow-sm p-6 space-y-4">
       <div className="flex flex-wrap items-end gap-4">
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-muted-foreground">!Período U12</label>
+          <label className="text-xs font-medium text-muted-foreground">PERIODO</label>
           <select
             value={periodo}
             onChange={(e) => setPeriodo(e.target.value)}
@@ -118,11 +118,11 @@ const Sinistralidade = () => {
           <label className="text-xs font-medium text-muted-foreground">Ordenar por</label>
           <select
             value={metric}
-            onChange={(e) => setMetric(e.target.value as "TOTAL FATURA" | "UTILIZAÇÃO")}
+            onChange={(e) => setMetric(e.target.value as "RECEITAS" | "DESPESAS")}
             className="h-9 min-w-40 rounded-md border border-border bg-background px-3 text-sm"
           >
-            <option value="UTILIZAÇÃO">Maiores UTILIZAÇÃO</option>
-            <option value="TOTAL FATURA">Maiores TOTAL FATURA</option>
+            <option value="DESPESAS">Maiores DESPESAS</option>
+            <option value="RECEITAS">Maiores RECEITAS</option>
           </select>
         </div>
 
@@ -194,8 +194,8 @@ const Sinistralidade = () => {
                   const isNum =
                     typeof v === "number" ||
                     (typeof v === "string" && v !== "" && !Number.isNaN(Number(v)));
-                  const intCol = c === "VIDAS";
-                  const plainCol = c === "N.PLANO";
+                  const intCol = c === "VIDA";
+                  const plainCol = c === "PLANO" || c === "ID";
                   const display =
                     v === null || v === undefined
                       ? ""
