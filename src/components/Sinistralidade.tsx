@@ -253,7 +253,7 @@ const Sinistralidade = () => {
           </div>
         )}
 
-        {limit !== fetchedLimit && (
+        {metric !== "TODOS" && limit !== fetchedLimit && (
           <button
             onClick={fetchRows}
             disabled={loading}
