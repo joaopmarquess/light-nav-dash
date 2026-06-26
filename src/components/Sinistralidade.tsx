@@ -22,6 +22,7 @@ const Sinistralidade = () => {
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // helper: fetch all rows paginated (bypasses Supabase 1000-row cap)
   const fetchAll = async (build: (q: any) => any): Promise<{ data: any[]; error: any }> => {
