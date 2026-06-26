@@ -15,7 +15,7 @@ const Sinistralidade = () => {
   const [defaultLimit, setDefaultLimit] = useState<number>(15);
   const [limit, setLimit] = useState<number>(15);
   const [fetchedLimit, setFetchedLimit] = useState<number>(15);
-  const [metric, setMetric] = useState<"RECEITAS" | "DESPESAS" | "LUCROS" | "PREJUIZOS">("DESPESAS");
+  const [metric, setMetric] = useState<"TODOS" | "RECEITAS" | "DESPESAS" | "LUCROS" | "PREJUIZOS">("TODOS");
   const [tipo, setTipo] = useState<"todos" | "coletivos" | "individuais">("todos");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +59,8 @@ const Sinistralidade = () => {
   const fetchRows = async () => {
     setLoading(true);
     setError(null);
-    const n = Math.max(1, Math.min(limit || 1, 10000));
+    const noLimit = metric === "TODOS";
+    const n = noLimit ? 10000 : Math.max(1, Math.min(limit || 1, 10000));
     let q = supabase.from("Sinistralidade").select("*");
     if (periodo !== "__all__") {
       q = q.eq(`"${PERIOD_COL}"`, periodo);
@@ -67,7 +68,7 @@ const Sinistralidade = () => {
         q = q.gte("SALDO", 0).order("SALDO", { ascending: false, nullsFirst: false });
       } else if (metric === "PREJUIZOS") {
         q = q.lt("SALDO", 0).order("SALDO", { ascending: true, nullsFirst: false });
-      } else {
+      } else if (metric !== "TODOS") {
         q = q.order(metric, { ascending: false, nullsFirst: false });
       }
       q = q.limit(n);
@@ -84,7 +85,7 @@ const Sinistralidade = () => {
 
   const resetFilters = () => {
     setPeriodo(defaultPeriodo);
-    setMetric("DESPESAS");
+    setMetric("TODOS");
     setTipo("todos");
     setLimit(defaultLimit);
     setSortKey(null);
@@ -130,13 +131,15 @@ const Sinistralidade = () => {
       delete g["__vidaSum"];
       out.push(g);
     }
-    const n = Math.max(1, Math.min(limit || 1, 10000));
+    const noLimit = metric === "TODOS";
+    const n = noLimit ? out.length : Math.max(1, Math.min(limit || 1, 10000));
     let filtered = out;
     if (metric === "LUCROS") filtered = out.filter((r) => Number(r["SALDO"] || 0) >= 0);
     else if (metric === "PREJUIZOS") filtered = out.filter((r) => Number(r["SALDO"] || 0) < 0);
     filtered.sort((a, b) => {
       if (metric === "LUCROS") return Number(b["SALDO"] || 0) - Number(a["SALDO"] || 0);
       if (metric === "PREJUIZOS") return Number(a["SALDO"] || 0) - Number(b["SALDO"] || 0);
+      if (metric === "TODOS") return 0;
       return Number(b[metric] || 0) - Number(a[metric] || 0);
     });
     return filtered.slice(0, n);
@@ -196,9 +199,10 @@ const Sinistralidade = () => {
           <label className="text-xs font-medium text-muted-foreground">Ordenar por</label>
           <select
             value={metric}
-            onChange={(e) => setMetric(e.target.value as "RECEITAS" | "DESPESAS" | "LUCROS" | "PREJUIZOS")}
+            onChange={(e) => setMetric(e.target.value as "TODOS" | "RECEITAS" | "DESPESAS" | "LUCROS" | "PREJUIZOS")}
             className="h-9 min-w-40 rounded-md border border-border bg-background px-3 text-sm"
           >
+            <option value="TODOS">Todos</option>
             <option value="DESPESAS">Maiores DESPESAS</option>
             <option value="RECEITAS">Maiores RECEITAS</option>
             <option value="LUCROS">Maiores LUCROS</option>
