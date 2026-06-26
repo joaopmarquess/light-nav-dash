@@ -329,7 +329,7 @@ const Sinistralidade = () => {
         </div>
       )}
 
-      <div className="overflow-auto max-h-[calc(100vh-18rem)] border border-border rounded-md">
+      <div ref={scrollRef} className="overflow-auto max-h-[calc(100vh-18rem)] border border-border rounded-md">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 sticky top-0">
             <tr>
