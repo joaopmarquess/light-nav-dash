@@ -201,18 +201,18 @@ const Sinistralidade = () => {
                   <th
                     key={c}
                     onClick={() => toggleSort(c)}
-                    className="text-left font-medium px-3 py-2 whitespace-nowrap cursor-pointer select-none hover:bg-muted"
+                    className={`text-left font-medium px-3 py-2 cursor-pointer select-none hover:bg-muted ${c === "PLANO|EMPRESA" ? "max-w-[220px]" : "whitespace-nowrap"}`}
                   >
-                    <span className="inline-flex items-center gap-1">
-                      {c}
+                    <span className="inline-flex items-center gap-1 truncate align-middle max-w-full">
+                      <span className="truncate">{c}</span>
                       {active ? (
                         sortDir === "asc" ? (
-                          <ArrowUp className="h-3 w-3" />
+                          <ArrowUp className="h-3 w-3 shrink-0" />
                         ) : (
-                          <ArrowDown className="h-3 w-3" />
+                          <ArrowDown className="h-3 w-3 shrink-0" />
                         )
                       ) : (
-                        <ArrowUpDown className="h-3 w-3 opacity-40" />
+                        <ArrowUpDown className="h-3 w-3 opacity-40 shrink-0" />
                       )}
                     </span>
                   </th>
