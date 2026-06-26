@@ -41,7 +41,7 @@ const Sinistralidade = () => {
     setLoading(true);
     setError(null);
     const n = Math.max(1, Math.min(limit || 1, 10000));
-    const ascending = metric === "DESPESAS";
+    const ascending = false;
     let q = supabase.from("Sinistralidade").select("*");
     if (periodo !== "__all__") {
       q = q.eq(`"${PERIOD_COL}"`, periodo).order(metric, { ascending, nullsFirst: false }).limit(n);
@@ -93,7 +93,7 @@ const Sinistralidade = () => {
     out.sort((a, b) => {
       const va = Number(a[metric] || 0);
       const vb = Number(b[metric] || 0);
-      return metric === "DESPESAS" ? va - vb : vb - va;
+      return vb - va;
     });
     return out.slice(0, n);
   }, [rows, periodo, metric, limit]);
