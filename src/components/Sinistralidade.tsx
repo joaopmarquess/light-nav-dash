@@ -112,7 +112,7 @@ const Sinistralidade = () => {
   };
 
 
-  const HIDDEN_COLS = new Set([PERIOD_COL, "ID"]);
+  const HIDDEN_COLS = new Set([PERIOD_COL, "ID", "PLANO"]);
   const SUM_COLS = ["MENSALIDADES", "COPARTICIPACOES", "RECEITAS", "DESPESAS", "SALDO"];
 
   const filteredRows = useMemo(() => {
@@ -130,7 +130,7 @@ const Sinistralidade = () => {
     const periodCount = new Set(filteredRows.map((r) => r[PERIOD_COL])).size || 1;
     const groups = new Map<string, Row>();
     for (const r of filteredRows) {
-      const key = String(r["PLANO"] ?? "");
+      const key = String(r["PLANO|EMPRESA"] ?? "");
       let g = groups.get(key);
       if (!g) {
         g = { ...r };
