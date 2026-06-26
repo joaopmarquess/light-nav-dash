@@ -22,13 +22,27 @@ const Sinistralidade = () => {
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
+  // helper: fetch all rows paginated (bypasses Supabase 1000-row cap)
+  const fetchAll = async (build: (q: any) => any): Promise<{ data: any[]; error: any }> => {
+    const pageSize = 1000;
+    let from = 0;
+    const all: any[] = [];
+    while (true) {
+      const q = build(supabase.from("Sinistralidade").select("*")).range(from, from + pageSize - 1);
+      const { data, error } = await q;
+      if (error) return { data: all, error };
+      const chunk = data ?? [];
+      all.push(...chunk);
+      if (chunk.length < pageSize) break;
+      from += pageSize;
+    }
+    return { data: all, error: null };
+  };
+
   // load distinct periods once
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase
-        .from("Sinistralidade")
-        .select("*")
-        .limit(5000);
+      const { data, error } = await fetchAll((q) => q);
       if (error) {
         setError(error.message);
         return;
@@ -61,27 +75,29 @@ const Sinistralidade = () => {
     setError(null);
     const noLimit = metric === "TODOS";
     const n = noLimit ? 10000 : Math.max(1, Math.min(limit || 1, 10000));
-    let q = supabase.from("Sinistralidade").select("*");
+    let result: { data: any[]; error: any };
     if (periodo !== "__all__") {
-      q = q.eq(`"${PERIOD_COL}"`, periodo);
-      if (metric === "LUCROS") {
-        q = q.gte("SALDO", 0).order("SALDO", { ascending: false, nullsFirst: false });
-      } else if (metric === "PREJUIZOS") {
-        q = q.lt("SALDO", 0).order("SALDO", { ascending: true, nullsFirst: false });
-      } else if (metric !== "TODOS") {
-        q = q.order(metric, { ascending: false, nullsFirst: false });
-      }
-      q = q.limit(n);
+      result = await fetchAll((q) => {
+        let qq = q.eq(`"${PERIOD_COL}"`, periodo);
+        if (metric === "LUCROS") {
+          qq = qq.gte("SALDO", 0).order("SALDO", { ascending: false, nullsFirst: false });
+        } else if (metric === "PREJUIZOS") {
+          qq = qq.lt("SALDO", 0).order("SALDO", { ascending: true, nullsFirst: false });
+        } else if (metric !== "TODOS") {
+          qq = qq.order(metric, { ascending: false, nullsFirst: false });
+        }
+        return qq;
+      });
+      if (!noLimit && result.data.length > n) result.data = result.data.slice(0, n);
     } else {
-      // Aggregate locally; fetch a wide window to cover all periods
-      q = q.limit(10000);
+      result = await fetchAll((q) => q);
     }
-    const { data, error } = await q;
-    if (error) setError(error.message);
-    setRows(data ?? []);
+    if (result.error) setError(result.error.message);
+    setRows(result.data ?? []);
     setFetchedLimit(n);
     setLoading(false);
   };
+
 
   const resetFilters = () => {
     setPeriodo(defaultPeriodo);
