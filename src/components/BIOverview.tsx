@@ -338,9 +338,18 @@ const BIOverview = () => {
 
       <div className="flex-1 min-h-0 p-6">
         <div key={idx} className="h-full w-full animate-fade-in">
-          <ResponsiveContainer width="100%" height="100%">
-            {current.chart as any}
-          </ResponsiveContainer>
+          {(current as any).iframe ? (
+            <iframe
+              title={current.title}
+              src={(current as any).iframe}
+              className="w-full h-full border-0 rounded-md"
+              allowFullScreen
+            />
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              {current.chart as any}
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
 
