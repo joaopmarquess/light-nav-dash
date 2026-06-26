@@ -112,7 +112,7 @@ const Sinistralidade = () => {
   };
 
 
-  const HIDDEN_COLS = new Set([PERIOD_COL, "ID"]);
+  const HIDDEN_COLS = new Set([PERIOD_COL, "ID", "PLANO"]);
   const SUM_COLS = ["MENSALIDADES", "COPARTICIPACOES", "RECEITAS", "DESPESAS", "SALDO"];
 
   const filteredRows = useMemo(() => {
