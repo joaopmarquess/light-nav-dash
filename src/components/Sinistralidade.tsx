@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, RotateCcw } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
 type Row = Record<string, any>;
@@ -11,9 +11,11 @@ const Sinistralidade = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [periodos, setPeriodos] = useState<string[]>([]);
   const [periodo, setPeriodo] = useState<string>("__all__");
+  const [defaultPeriodo, setDefaultPeriodo] = useState<string>("__all__");
+  const [defaultLimit, setDefaultLimit] = useState<number>(15);
   const [limit, setLimit] = useState<number>(15);
   const [fetchedLimit, setFetchedLimit] = useState<number>(15);
-  const [metric, setMetric] = useState<"RECEITAS" | "DESPESAS">("DESPESAS");
+  const [metric, setMetric] = useState<"RECEITAS" | "DESPESAS" | "LUCROS" | "PREJUIZOS">("DESPESAS");
   const [tipo, setTipo] = useState<"todos" | "coletivos" | "individuais">("todos");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +38,15 @@ const Sinistralidade = () => {
       ).map(String);
       uniq.sort();
       setPeriodos(uniq);
-      if (uniq.length > 0) setPeriodo(uniq[uniq.length - 1]);
+      if (uniq.length > 0) {
+        const recent = uniq[uniq.length - 1];
+        const recentCount = (data ?? []).filter((r: any) => String(r[PERIOD_COL]) === recent).length || 15;
+        setDefaultPeriodo(recent);
+        setPeriodo(recent);
+        setDefaultLimit(recentCount);
+        setLimit(recentCount);
+        setFetchedLimit(recentCount);
+      }
     })();
   }, []);
 
@@ -50,10 +60,17 @@ const Sinistralidade = () => {
     setLoading(true);
     setError(null);
     const n = Math.max(1, Math.min(limit || 1, 10000));
-    const ascending = false;
     let q = supabase.from("Sinistralidade").select("*");
     if (periodo !== "__all__") {
-      q = q.eq(`"${PERIOD_COL}"`, periodo).order(metric, { ascending, nullsFirst: false }).limit(n);
+      q = q.eq(`"${PERIOD_COL}"`, periodo);
+      if (metric === "LUCROS") {
+        q = q.gte("SALDO", 0).order("SALDO", { ascending: false, nullsFirst: false });
+      } else if (metric === "PREJUIZOS") {
+        q = q.lt("SALDO", 0).order("SALDO", { ascending: true, nullsFirst: false });
+      } else {
+        q = q.order(metric, { ascending: false, nullsFirst: false });
+      }
+      q = q.limit(n);
     } else {
       // Aggregate locally; fetch a wide window to cover all periods
       q = q.limit(10000);
@@ -63,6 +80,15 @@ const Sinistralidade = () => {
     setRows(data ?? []);
     setFetchedLimit(n);
     setLoading(false);
+  };
+
+  const resetFilters = () => {
+    setPeriodo(defaultPeriodo);
+    setMetric("DESPESAS");
+    setTipo("todos");
+    setLimit(defaultLimit);
+    setSortKey(null);
+    setSortDir("asc");
   };
 
 
@@ -105,12 +131,15 @@ const Sinistralidade = () => {
       out.push(g);
     }
     const n = Math.max(1, Math.min(limit || 1, 10000));
-    out.sort((a, b) => {
-      const va = Number(a[metric] || 0);
-      const vb = Number(b[metric] || 0);
-      return vb - va;
+    let filtered = out;
+    if (metric === "LUCROS") filtered = out.filter((r) => Number(r["SALDO"] || 0) >= 0);
+    else if (metric === "PREJUIZOS") filtered = out.filter((r) => Number(r["SALDO"] || 0) < 0);
+    filtered.sort((a, b) => {
+      if (metric === "LUCROS") return Number(b["SALDO"] || 0) - Number(a["SALDO"] || 0);
+      if (metric === "PREJUIZOS") return Number(a["SALDO"] || 0) - Number(b["SALDO"] || 0);
+      return Number(b[metric] || 0) - Number(a[metric] || 0);
     });
-    return out.slice(0, n);
+    return filtered.slice(0, n);
   }, [filteredRows, periodo, metric, limit]);
 
   const columns = useMemo(
@@ -167,11 +196,13 @@ const Sinistralidade = () => {
           <label className="text-xs font-medium text-muted-foreground">Ordenar por</label>
           <select
             value={metric}
-            onChange={(e) => setMetric(e.target.value as "RECEITAS" | "DESPESAS")}
+            onChange={(e) => setMetric(e.target.value as "RECEITAS" | "DESPESAS" | "LUCROS" | "PREJUIZOS")}
             className="h-9 min-w-40 rounded-md border border-border bg-background px-3 text-sm"
           >
             <option value="DESPESAS">Maiores DESPESAS</option>
             <option value="RECEITAS">Maiores RECEITAS</option>
+            <option value="LUCROS">Maiores LUCROS</option>
+            <option value="PREJUIZOS">Maiores PREJUÍZOS</option>
           </select>
         </div>
 
@@ -213,6 +244,15 @@ const Sinistralidade = () => {
             {loading ? "Carregando..." : "Buscar"}
           </button>
         )}
+
+        <button
+          onClick={resetFilters}
+          title="Zerar filtros"
+          aria-label="Zerar filtros"
+          className="h-9 w-9 inline-flex items-center justify-center rounded-md border border-border bg-background hover:bg-muted"
+        >
+          <RotateCcw className="h-4 w-4" />
+        </button>
 
         <span className="text-xs text-muted-foreground ml-auto">{sorted.length} registro(s)</span>
       </div>
