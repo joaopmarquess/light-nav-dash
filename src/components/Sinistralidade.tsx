@@ -175,6 +175,21 @@ const Sinistralidade = () => {
           </select>
         </div>
 
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-muted-foreground">Tipo de plano</label>
+          <select
+            value={tipo}
+            onChange={(e) => setTipo(e.target.value as "todos" | "coletivos" | "individuais")}
+            className="h-9 min-w-48 rounded-md border border-border bg-background px-3 text-sm"
+          >
+            <option value="todos">Todos</option>
+            <option value="coletivos">Planos Coletivos</option>
+            <option value="individuais">Planos Ind/Familiares</option>
+          </select>
+        </div>
+
+
+
 
 
         <div className="flex flex-col gap-1">
