@@ -93,7 +93,7 @@ const Sinistralidade = () => {
     out.sort((a, b) => {
       const va = Number(a[metric] || 0);
       const vb = Number(b[metric] || 0);
-      return metric === "DESPESAS" ? va - vb : vb - va;
+      return vb - va;
     });
     return out.slice(0, n);
   }, [rows, periodo, metric, limit]);
