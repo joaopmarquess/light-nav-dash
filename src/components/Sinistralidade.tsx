@@ -131,13 +131,15 @@ const Sinistralidade = () => {
       delete g["__vidaSum"];
       out.push(g);
     }
-    const n = Math.max(1, Math.min(limit || 1, 10000));
+    const noLimit = metric === "TODOS";
+    const n = noLimit ? out.length : Math.max(1, Math.min(limit || 1, 10000));
     let filtered = out;
     if (metric === "LUCROS") filtered = out.filter((r) => Number(r["SALDO"] || 0) >= 0);
     else if (metric === "PREJUIZOS") filtered = out.filter((r) => Number(r["SALDO"] || 0) < 0);
     filtered.sort((a, b) => {
       if (metric === "LUCROS") return Number(b["SALDO"] || 0) - Number(a["SALDO"] || 0);
       if (metric === "PREJUIZOS") return Number(a["SALDO"] || 0) - Number(b["SALDO"] || 0);
+      if (metric === "TODOS") return 0;
       return Number(b[metric] || 0) - Number(a[metric] || 0);
     });
     return filtered.slice(0, n);
