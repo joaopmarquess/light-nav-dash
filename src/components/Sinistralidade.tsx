@@ -14,6 +14,7 @@ const Sinistralidade = () => {
   const [limit, setLimit] = useState<number>(15);
   const [fetchedLimit, setFetchedLimit] = useState<number>(15);
   const [metric, setMetric] = useState<"RECEITAS" | "DESPESAS">("DESPESAS");
+  const [tipo, setTipo] = useState<"todos" | "coletivos" | "individuais">("todos");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -68,12 +69,21 @@ const Sinistralidade = () => {
   const HIDDEN_COLS = new Set([PERIOD_COL, "ID"]);
   const SUM_COLS = ["MENSALIDADES", "COPARTICIPACOES", "RECEITAS", "DESPESAS", "SALDO"];
 
+  const filteredRows = useMemo(() => {
+    if (tipo === "todos") return rows;
+    return rows.filter((r) => {
+      const p = Number(r["PLANO"]);
+      if (Number.isNaN(p)) return false;
+      return tipo === "coletivos" ? p > 2000 : p <= 2000;
+    });
+  }, [rows, tipo]);
+
   const displayRows = useMemo(() => {
-    if (periodo !== "__all__") return rows;
-    if (rows.length === 0) return rows;
-    const periodCount = new Set(rows.map((r) => r[PERIOD_COL])).size || 1;
+    if (periodo !== "__all__") return filteredRows;
+    if (filteredRows.length === 0) return filteredRows;
+    const periodCount = new Set(filteredRows.map((r) => r[PERIOD_COL])).size || 1;
     const groups = new Map<string, Row>();
-    for (const r of rows) {
+    for (const r of filteredRows) {
       const key = String(r["PLANO"] ?? "");
       let g = groups.get(key);
       if (!g) {
@@ -101,7 +111,7 @@ const Sinistralidade = () => {
       return vb - va;
     });
     return out.slice(0, n);
-  }, [rows, periodo, metric, limit]);
+  }, [filteredRows, periodo, metric, limit]);
 
   const columns = useMemo(
     () => (displayRows[0] ? Object.keys(displayRows[0]).filter((c) => !HIDDEN_COLS.has(c)) : []),
@@ -164,6 +174,21 @@ const Sinistralidade = () => {
             <option value="RECEITAS">Maiores RECEITAS</option>
           </select>
         </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-muted-foreground">Tipo de plano</label>
+          <select
+            value={tipo}
+            onChange={(e) => setTipo(e.target.value as "todos" | "coletivos" | "individuais")}
+            className="h-9 min-w-48 rounded-md border border-border bg-background px-3 text-sm"
+          >
+            <option value="todos">Todos</option>
+            <option value="coletivos">Planos Coletivos</option>
+            <option value="individuais">Planos Ind/Familiares</option>
+          </select>
+        </div>
+
+
 
 
 
