@@ -428,7 +428,8 @@ const Sinistralidade = () => {
                 kids.forEach((kr, ki) => out.push(renderRow(kr, { isChild: true, rowKey: `p-${i}-c-${ki}` })));
               }
               return out;
-            })}
+            });
+            })()}
             {!loading && sorted.length === 0 && (
               <tr>
                 <td className="px-3 py-6 text-center text-muted-foreground" colSpan={Math.max(columns.length, 1)}>
