@@ -194,13 +194,14 @@ const Sinistralidade = () => {
                   const isNum =
                     typeof v === "number" ||
                     (typeof v === "string" && v !== "" && !Number.isNaN(Number(v)));
+                  const intCol = c === "N.PLANO" || c === "VIDAS";
                   const display =
                     v === null || v === undefined
                       ? ""
                       : isNum
                       ? new Intl.NumberFormat("pt-BR", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
+                          minimumFractionDigits: intCol ? 0 : 2,
+                          maximumFractionDigits: intCol ? 0 : 2,
                         }).format(Number(v))
                       : String(v);
                   return (
