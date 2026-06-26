@@ -12,6 +12,7 @@ const Sinistralidade = () => {
   const [periodos, setPeriodos] = useState<string[]>([]);
   const [periodo, setPeriodo] = useState<string>("__all__");
   const [limit, setLimit] = useState<number>(100);
+  const [metric, setMetric] = useState<"FATURA" | "DESPESAS">("DESPESAS");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -39,7 +40,15 @@ const Sinistralidade = () => {
   const fetchRows = async () => {
     setLoading(true);
     setError(null);
-    let q = supabase.from("Sinistralidade").select("*").limit(Math.max(1, Math.min(limit || 1, 10000)));
+    const n = Math.max(1, Math.min(limit || 1, 10000));
+    // DESPESAS são negativas → "maiores em módulo" = ordem ascendente.
+    // FATURA → maiores = ordem descendente.
+    const ascending = metric === "DESPESAS";
+    let q = supabase
+      .from("Sinistralidade")
+      .select("*")
+      .order(metric, { ascending, nullsFirst: false })
+      .limit(n);
     if (periodo !== "__all__") {
       q = q.eq(PERIOD_COL, periodo);
     }
@@ -54,7 +63,11 @@ const Sinistralidade = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const columns = useMemo(() => (rows[0] ? Object.keys(rows[0]) : []), [rows]);
+  const columns = useMemo(
+    () => (rows[0] ? Object.keys(rows[0]).filter((c) => c !== PERIOD_COL) : []),
+    [rows],
+  );
+
 
   const sorted = useMemo(() => {
     if (!sortKey) return rows;
@@ -100,6 +113,20 @@ const Sinistralidade = () => {
             ))}
           </select>
         </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-muted-foreground">Ordenar por</label>
+          <select
+            value={metric}
+            onChange={(e) => setMetric(e.target.value as "FATURA" | "DESPESAS")}
+            className="h-9 min-w-40 rounded-md border border-border bg-background px-3 text-sm"
+          >
+            <option value="DESPESAS">Maiores DESPESAS</option>
+            <option value="FATURA">Maiores FATURA</option>
+          </select>
+        </div>
+
+
 
         <div className="flex flex-col gap-1">
           <label className="text-xs font-medium text-muted-foreground">Linhas</label>
