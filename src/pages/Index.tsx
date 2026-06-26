@@ -33,6 +33,7 @@ import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
 import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
 import BIOverview from "@/components/BIOverview";
+import homeBg from "@/assets/home-bg.svg.asset.json";
 import logoFull from "@/assets/bensaude-logo.svg.asset.json";
 import logoIcon from "@/assets/bensaude-icon.svg.asset.json";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -268,6 +269,12 @@ const Index = () => {
             </section>
           ) : active === "B.I. Overview" ? (
             <BIOverview />
+          ) : active === "Home" ? (
+            <section
+              className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-8rem)] bg-center bg-no-repeat bg-contain"
+              style={{ backgroundImage: `url(${homeBg.url})` }}
+              aria-label="Home"
+            />
           ) : (
             <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-8rem)] flex items-center justify-center text-muted-foreground text-sm">
               Selecione uma opção no menu lateral.
