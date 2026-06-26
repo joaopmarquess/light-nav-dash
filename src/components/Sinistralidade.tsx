@@ -357,38 +357,66 @@ const Sinistralidade = () => {
             </tr>
           </thead>
           <tbody>
-            {sorted.map((r, i) => (
-              <tr key={i} className="border-t border-border hover:bg-muted/30">
-                {columns.map((c) => {
-                  const v = r[c];
-                  const isNum =
-                    typeof v === "number" ||
-                    (typeof v === "string" && v !== "" && !Number.isNaN(Number(v)));
-                  const intCol = c === "VIDA";
-                  const plainCol = c === "PLANO" || c === "ID";
-                  const display =
-                    v === null || v === undefined
-                      ? ""
-                      : plainCol
-                      ? String(v)
-                      : isNum
-                      ? new Intl.NumberFormat("pt-BR", {
-                          minimumFractionDigits: intCol ? 0 : 2,
-                          maximumFractionDigits: intCol ? 0 : 2,
-                        }).format(Number(v))
-                      : String(v);
-                  return (
-                    <td
-                      key={c}
-                      title={c === "PLANO|EMPRESA" ? String(display) : undefined}
-                      className={`px-3 py-2 ${isNum ? "text-right tabular-nums whitespace-nowrap" : c === "PLANO|EMPRESA" ? "max-w-[220px] truncate" : "whitespace-nowrap"}`}
-                    >
-                      {display}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
+            {sorted.map((r, i) => {
+              const parentKey = String(r["PLANO|EMPRESA"] ?? "");
+              const kids = childrenMap.get(parentKey) ?? [];
+              const isOpen = expanded.has(parentKey);
+              const hasKids = kids.length > 1;
+              const renderRow = (row: Row, opts: { isChild?: boolean; rowKey: string }) => (
+                <tr key={opts.rowKey} className={`border-t border-border hover:bg-muted/30 ${opts.isChild ? "bg-muted/20" : ""}`}>
+                  {columns.map((c, ci) => {
+                    const v = row[c];
+                    const isNum =
+                      typeof v === "number" ||
+                      (typeof v === "string" && v !== "" && !Number.isNaN(Number(v)));
+                    const intCol = c === "VIDA";
+                    const plainCol = c === "PLANO" || c === "ID";
+                    const display =
+                      v === null || v === undefined
+                        ? ""
+                        : plainCol
+                        ? String(v)
+                        : isNum
+                        ? new Intl.NumberFormat("pt-BR", {
+                            minimumFractionDigits: intCol ? 0 : 2,
+                            maximumFractionDigits: intCol ? 0 : 2,
+                          }).format(Number(v))
+                        : String(v);
+                    const isFirst = ci === 0;
+                    const isPlanoEmp = c === "PLANO|EMPRESA";
+                    return (
+                      <td
+                        key={c}
+                        title={isPlanoEmp ? String(display) : undefined}
+                        className={`px-3 py-2 ${isNum ? "text-right tabular-nums whitespace-nowrap" : isPlanoEmp ? "max-w-[260px] truncate" : "whitespace-nowrap"}`}
+                      >
+                        {isFirst && !opts.isChild && hasKids ? (
+                          <span className="inline-flex items-center gap-1 max-w-full">
+                            <button
+                              onClick={() => toggleExpand(parentKey)}
+                              aria-label={isOpen ? "Recolher" : "Expandir"}
+                              className="inline-flex h-4 w-4 items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted shrink-0"
+                            >
+                              {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                            </button>
+                            <span className="truncate">{display}</span>
+                          </span>
+                        ) : isFirst && opts.isChild ? (
+                          <span className="pl-6 text-muted-foreground text-xs">↳ PLANO {String(row["PLANO"] ?? "")}</span>
+                        ) : (
+                          display
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+              const out = [renderRow(r, { rowKey: `p-${i}` })];
+              if (isOpen) {
+                kids.forEach((kr, ki) => out.push(renderRow(kr, { isChild: true, rowKey: `p-${i}-c-${ki}` })));
+              }
+              return out;
+            })}
             {!loading && sorted.length === 0 && (
               <tr>
                 <td className="px-3 py-6 text-center text-muted-foreground" colSpan={Math.max(columns.length, 1)}>
