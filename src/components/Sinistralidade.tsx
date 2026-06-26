@@ -127,13 +127,10 @@ const Sinistralidade = () => {
     });
   }, [rows, tipo]);
 
-  const displayRows = useMemo(() => {
-    if (periodo !== "__all__") return filteredRows;
-    if (filteredRows.length === 0) return filteredRows;
-    const periodCount = new Set(filteredRows.map((r) => r[PERIOD_COL])).size || 1;
+  const aggregate = (list: Row[], keyFn: (r: Row) => string, periodCount: number) => {
     const groups = new Map<string, Row>();
-    for (const r of filteredRows) {
-      const key = String(r["PLANO|EMPRESA"] ?? "");
+    for (const r of list) {
+      const key = keyFn(r);
       let g = groups.get(key);
       if (!g) {
         g = { ...r };
@@ -153,6 +150,34 @@ const Sinistralidade = () => {
       delete g["__vidaSum"];
       out.push(g);
     }
+    return out;
+  };
+
+  const periodCount = useMemo(() => {
+    if (filteredRows.length === 0) return 1;
+    return new Set(filteredRows.map((r) => r[PERIOD_COL])).size || 1;
+  }, [filteredRows]);
+
+  const childrenMap = useMemo(() => {
+    const map = new Map<string, Row[]>();
+    const byParent = new Map<string, Row[]>();
+    for (const r of filteredRows) {
+      const k = String(r["PLANO|EMPRESA"] ?? "");
+      const arr = byParent.get(k) ?? [];
+      arr.push(r);
+      byParent.set(k, arr);
+    }
+    for (const [k, list] of byParent.entries()) {
+      const kids = aggregate(list, (r) => String(r["PLANO"] ?? ""), periodCount);
+      kids.sort((a, b) => Number(b["VIDA"] || 0) - Number(a["VIDA"] || 0));
+      map.set(k, kids);
+    }
+    return map;
+  }, [filteredRows, periodCount]);
+
+  const displayRows = useMemo(() => {
+    if (filteredRows.length === 0) return filteredRows;
+    const out = aggregate(filteredRows, (r) => String(r["PLANO|EMPRESA"] ?? ""), periodCount);
     const noLimit = metric === "TODOS";
     const n = noLimit ? out.length : Math.max(1, Math.min(limit || 1, 10000));
     let filtered = out;
@@ -165,7 +190,16 @@ const Sinistralidade = () => {
       return Number(b[metric] || 0) - Number(a[metric] || 0);
     });
     return filtered.slice(0, n);
-  }, [filteredRows, periodo, metric, limit]);
+  }, [filteredRows, periodCount, metric, limit]);
+
+  const toggleExpand = (key: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   const columns = useMemo(
     () => (displayRows[0] ? Object.keys(displayRows[0]).filter((c) => !HIDDEN_COLS.has(c)) : []),
