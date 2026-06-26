@@ -130,7 +130,7 @@ const Sinistralidade = () => {
     const periodCount = new Set(filteredRows.map((r) => r[PERIOD_COL])).size || 1;
     const groups = new Map<string, Row>();
     for (const r of filteredRows) {
-      const key = String(r["PLANO"] ?? "");
+      const key = String(r["PLANO|EMPRESA"] ?? "");
       let g = groups.get(key);
       if (!g) {
         g = { ...r };
