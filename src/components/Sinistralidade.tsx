@@ -107,6 +107,8 @@ const Sinistralidade = () => {
     setFetchedLimit(DEFAULT_LIMIT);
     setSortKey(null);
     setSortDir("asc");
+    setExpanded(new Set());
+    scrollRef.current?.scrollTo({ top: 0, left: 0 });
   };
 
   const handleMetricChange = (value: "TODOS" | "RECEITAS" | "DESPESAS" | "LUCROS" | "PREJUIZOS") => {
