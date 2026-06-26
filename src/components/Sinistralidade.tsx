@@ -79,7 +79,9 @@ const Sinistralidade = () => {
           qq = qq.gte("SALDO", 0).order("SALDO", { ascending: false, nullsFirst: false });
         } else if (metric === "PREJUIZOS") {
           qq = qq.lt("SALDO", 0).order("SALDO", { ascending: true, nullsFirst: false });
-        } else if (metric !== "TODOS") {
+        } else if (metric === "TODOS") {
+          qq = qq.order("VIDA", { ascending: false, nullsFirst: false });
+        } else {
           qq = qq.order(metric, { ascending: false, nullsFirst: false });
         }
         return qq;
@@ -158,7 +160,7 @@ const Sinistralidade = () => {
     filtered.sort((a, b) => {
       if (metric === "LUCROS") return Number(b["SALDO"] || 0) - Number(a["SALDO"] || 0);
       if (metric === "PREJUIZOS") return Number(a["SALDO"] || 0) - Number(b["SALDO"] || 0);
-      if (metric === "TODOS") return 0;
+      if (metric === "TODOS") return Number(b["VIDA"] || 0) - Number(a["VIDA"] || 0);
       return Number(b[metric] || 0) - Number(a[metric] || 0);
     });
     return filtered.slice(0, n);
