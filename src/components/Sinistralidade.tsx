@@ -115,6 +115,20 @@ const Sinistralidade = () => {
         </div>
 
         <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-muted-foreground">Ordenar por</label>
+          <select
+            value={metric}
+            onChange={(e) => setMetric(e.target.value as "FATURA" | "DESPESAS")}
+            className="h-9 min-w-40 rounded-md border border-border bg-background px-3 text-sm"
+          >
+            <option value="DESPESAS">Maiores DESPESAS</option>
+            <option value="FATURA">Maiores FATURA</option>
+          </select>
+        </div>
+
+
+
+        <div className="flex flex-col gap-1">
           <label className="text-xs font-medium text-muted-foreground">Linhas</label>
           <input
             type="number"
