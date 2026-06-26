@@ -67,7 +67,10 @@ const menuItems: MenuItem[] = [
   {
     icon: Percent,
     label: "Sinistralidade",
-    children: [{ icon: BarChart3, label: "Gráfico Sinistralidade" }],
+    children: [
+      { icon: BarChart3, label: "Gráfico Sinistralidade" },
+      { icon: LayoutDashboard, label: "PBI U12" },
+    ],
   },
   { icon: Stethoscope, label: "Assistencial" },
   { icon: LayoutDashboard, label: "B.I. Overview" },
@@ -254,6 +257,15 @@ const Index = () => {
             <DREGraficos />
           ) : active === "Gráfico Sinistralidade" ? (
             <SinistralidadeGraficos />
+          ) : active === "PBI U12" ? (
+            <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-8rem)] overflow-hidden">
+              <iframe
+                title="PBI U12"
+                src="https://app.powerbi.com/groups/c828e62d-8762-4b62-9e4d-92510f64d8e7/reports/155e8498-e0f9-447c-8190-f80e8f47d7c5/698264a4900575524338?experience=power-bi"
+                className="w-full h-full border-0"
+                allowFullScreen
+              />
+            </section>
           ) : active === "B.I. Overview" ? (
             <BIOverview />
           ) : (
