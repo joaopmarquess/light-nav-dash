@@ -67,7 +67,10 @@ const menuItems: MenuItem[] = [
   {
     icon: Percent,
     label: "Sinistralidade",
-    children: [{ icon: BarChart3, label: "Gráfico Sinistralidade" }],
+    children: [
+      { icon: BarChart3, label: "Gráfico Sinistralidade" },
+      { icon: LayoutDashboard, label: "PBI U12" },
+    ],
   },
   { icon: Stethoscope, label: "Assistencial" },
   { icon: LayoutDashboard, label: "B.I. Overview" },
