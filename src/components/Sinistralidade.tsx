@@ -356,13 +356,23 @@ const Sinistralidade = () => {
             </tr>
           </thead>
           <tbody>
-            {sorted.map((r, i) => {
+            {(() => {
+              const anyExpanded = expanded.size > 0;
+              return sorted.map((r, i) => {
               const parentKey = String(r["PLANO|EMPRESA"] ?? "");
               const kids = childrenMap.get(parentKey) ?? [];
               const isOpen = expanded.has(parentKey);
               const hasKids = kids.length > 1;
+              const parentDim = anyExpanded && !isOpen;
               const renderRow = (row: Row, opts: { isChild?: boolean; rowKey: string }) => (
-                <tr key={opts.rowKey} className={`border-t border-border hover:bg-muted/30 ${opts.isChild ? "bg-muted/20" : ""}`}>
+                <tr
+                  key={opts.rowKey}
+                  className={`border-t border-border hover:bg-muted/30 ${
+                    opts.isChild
+                      ? "bg-muted/20 text-foreground"
+                      : `font-semibold ${parentDim ? "text-muted-foreground" : "text-foreground"}`
+                  }`}
+                >
                   {columns.map((c, ci) => {
                     const v = row[c];
                     const isNum =
