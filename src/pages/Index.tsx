@@ -33,7 +33,7 @@ import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
 import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
 import BIOverview from "@/components/BIOverview";
-import homeBg from "@/assets/home-bg.svg.asset.json";
+
 import logoFull from "@/assets/bensaude-logo.svg.asset.json";
 import logoIcon from "@/assets/bensaude-icon.svg.asset.json";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
