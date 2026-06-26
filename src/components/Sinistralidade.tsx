@@ -38,7 +38,15 @@ const Sinistralidade = () => {
       ).map(String);
       uniq.sort();
       setPeriodos(uniq);
-      if (uniq.length > 0) setPeriodo(uniq[uniq.length - 1]);
+      if (uniq.length > 0) {
+        const recent = uniq[uniq.length - 1];
+        const recentCount = (data ?? []).filter((r: any) => String(r[PERIOD_COL]) === recent).length || 15;
+        setDefaultPeriodo(recent);
+        setPeriodo(recent);
+        setDefaultLimit(recentCount);
+        setLimit(recentCount);
+        setFetchedLimit(recentCount);
+      }
     })();
   }, []);
 
@@ -52,10 +60,17 @@ const Sinistralidade = () => {
     setLoading(true);
     setError(null);
     const n = Math.max(1, Math.min(limit || 1, 10000));
-    const ascending = false;
     let q = supabase.from("Sinistralidade").select("*");
     if (periodo !== "__all__") {
-      q = q.eq(`"${PERIOD_COL}"`, periodo).order(metric, { ascending, nullsFirst: false }).limit(n);
+      q = q.eq(`"${PERIOD_COL}"`, periodo);
+      if (metric === "LUCROS") {
+        q = q.gte("SALDO", 0).order("SALDO", { ascending: false, nullsFirst: false });
+      } else if (metric === "PREJUIZOS") {
+        q = q.lt("SALDO", 0).order("SALDO", { ascending: true, nullsFirst: false });
+      } else {
+        q = q.order(metric, { ascending: false, nullsFirst: false });
+      }
+      q = q.limit(n);
     } else {
       // Aggregate locally; fetch a wide window to cover all periods
       q = q.limit(10000);
@@ -65,6 +80,15 @@ const Sinistralidade = () => {
     setRows(data ?? []);
     setFetchedLimit(n);
     setLoading(false);
+  };
+
+  const resetFilters = () => {
+    setPeriodo(defaultPeriodo);
+    setMetric("DESPESAS");
+    setTipo("todos");
+    setLimit(defaultLimit);
+    setSortKey(null);
+    setSortDir("asc");
   };
 
 
