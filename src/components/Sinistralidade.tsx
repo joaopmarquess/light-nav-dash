@@ -23,7 +23,7 @@ const Sinistralidade = () => {
     (async () => {
       const { data, error } = await supabase
         .from("Sinistralidade")
-        .select(`"${PERIOD_COL}"`)
+        .select("*")
         .limit(5000);
       if (error) {
         setError(error.message);
