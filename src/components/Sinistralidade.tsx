@@ -111,7 +111,7 @@ const Sinistralidade = () => {
       return vb - va;
     });
     return out.slice(0, n);
-  }, [rows, periodo, metric, limit]);
+  }, [filteredRows, periodo, metric, limit]);
 
   const columns = useMemo(
     () => (displayRows[0] ? Object.keys(displayRows[0]).filter((c) => !HIDDEN_COLS.has(c)) : []),
