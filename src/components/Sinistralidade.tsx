@@ -189,11 +189,29 @@ const Sinistralidade = () => {
           <tbody>
             {sorted.map((r, i) => (
               <tr key={i} className="border-t border-border hover:bg-muted/30">
-                {columns.map((c) => (
-                  <td key={c} className="px-3 py-2 whitespace-nowrap">
-                    {r[c] === null || r[c] === undefined ? "" : String(r[c])}
-                  </td>
-                ))}
+                {columns.map((c) => {
+                  const v = r[c];
+                  const isNum =
+                    typeof v === "number" ||
+                    (typeof v === "string" && v !== "" && !Number.isNaN(Number(v)));
+                  const display =
+                    v === null || v === undefined
+                      ? ""
+                      : isNum
+                      ? new Intl.NumberFormat("pt-BR", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }).format(Number(v))
+                      : String(v);
+                  return (
+                    <td
+                      key={c}
+                      className={`px-3 py-2 whitespace-nowrap ${isNum ? "text-right tabular-nums" : ""}`}
+                    >
+                      {display}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
             {!loading && sorted.length === 0 && (
