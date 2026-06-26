@@ -32,6 +32,7 @@ import ConsultaBeneficiario from "@/components/ConsultaBeneficiario";
 import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
 import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
+import Sinistralidade from "@/components/Sinistralidade";
 import BIOverview from "@/components/BIOverview";
 
 import logoFull from "@/assets/bensaude-logo.svg.asset.json";
@@ -69,6 +70,7 @@ const menuItems: MenuItem[] = [
     icon: Percent,
     label: "Sinistralidade",
     children: [
+      { icon: FileText, label: "Tabela Sinistralidade" },
       { icon: BarChart3, label: "Gráfico Sinistralidade" },
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
@@ -258,6 +260,8 @@ const Index = () => {
             <DREGraficos />
           ) : active === "Gráfico Sinistralidade" ? (
             <SinistralidadeGraficos />
+          ) : active === "Tabela Sinistralidade" ? (
+            <Sinistralidade />
           ) : active === "PBI U12" ? (
             <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-8rem)] overflow-hidden">
               <iframe
