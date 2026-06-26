@@ -50,7 +50,7 @@ const Sinistralidade = () => {
       .order(metric, { ascending, nullsFirst: false })
       .limit(n);
     if (periodo !== "__all__") {
-      q = q.eq(PERIOD_COL, periodo);
+      q = q.eq(`"${PERIOD_COL}"`, periodo);
     }
     const { data, error } = await q;
     if (error) setError(error.message);
