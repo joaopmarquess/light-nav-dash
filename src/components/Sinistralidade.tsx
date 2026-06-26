@@ -245,6 +245,15 @@ const Sinistralidade = () => {
           </button>
         )}
 
+        <button
+          onClick={resetFilters}
+          title="Zerar filtros"
+          aria-label="Zerar filtros"
+          className="h-9 w-9 inline-flex items-center justify-center rounded-md border border-border bg-background hover:bg-muted"
+        >
+          <RotateCcw className="h-4 w-4" />
+        </button>
+
         <span className="text-xs text-muted-foreground ml-auto">{sorted.length} registro(s)</span>
       </div>
 
