@@ -79,7 +79,9 @@ const Sinistralidade = () => {
           qq = qq.gte("SALDO", 0).order("SALDO", { ascending: false, nullsFirst: false });
         } else if (metric === "PREJUIZOS") {
           qq = qq.lt("SALDO", 0).order("SALDO", { ascending: true, nullsFirst: false });
-        } else if (metric !== "TODOS") {
+        } else if (metric === "TODOS") {
+          qq = qq.order("VIDA", { ascending: false, nullsFirst: false });
+        } else {
           qq = qq.order(metric, { ascending: false, nullsFirst: false });
         }
         return qq;
