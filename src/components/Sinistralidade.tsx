@@ -11,9 +11,11 @@ const Sinistralidade = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [periodos, setPeriodos] = useState<string[]>([]);
   const [periodo, setPeriodo] = useState<string>("__all__");
+  const [defaultPeriodo, setDefaultPeriodo] = useState<string>("__all__");
+  const [defaultLimit, setDefaultLimit] = useState<number>(15);
   const [limit, setLimit] = useState<number>(15);
   const [fetchedLimit, setFetchedLimit] = useState<number>(15);
-  const [metric, setMetric] = useState<"RECEITAS" | "DESPESAS">("DESPESAS");
+  const [metric, setMetric] = useState<"RECEITAS" | "DESPESAS" | "LUCROS" | "PREJUIZOS">("DESPESAS");
   const [tipo, setTipo] = useState<"todos" | "coletivos" | "individuais">("todos");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
