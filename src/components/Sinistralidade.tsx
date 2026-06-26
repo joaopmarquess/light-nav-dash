@@ -331,7 +331,7 @@ const Sinistralidade = () => {
 
       <div ref={scrollRef} className="overflow-auto max-h-[calc(100vh-18rem)] border border-border rounded-md">
         <table className="w-full text-sm">
-          <thead className="bg-muted/50 sticky top-0">
+          <thead className="bg-muted sticky top-0 z-10">
             <tr>
               {columns.map((c) => {
                 const active = sortKey === c;
