@@ -99,7 +99,7 @@ const Sinistralidade = () => {
     <section className="bg-card rounded-xl border border-border shadow-sm p-6 space-y-4">
       <div className="flex flex-wrap items-end gap-4">
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-muted-foreground">!Período U12</label>
+          <label className="text-xs font-medium text-muted-foreground">PERIODO</label>
           <select
             value={periodo}
             onChange={(e) => setPeriodo(e.target.value)}
