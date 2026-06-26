@@ -62,10 +62,6 @@ const Sinistralidade = () => {
     setLoading(false);
   };
 
-  useEffect(() => {
-    fetchRows();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const HIDDEN_COLS = new Set([PERIOD_COL, "ID"]);
   const SUM_COLS = ["MENSALIDADES", "COPARTICIPACOES", "RECEITAS", "DESPESAS", "SALDO"];
