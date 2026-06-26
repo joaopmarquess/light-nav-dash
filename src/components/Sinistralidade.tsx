@@ -54,12 +54,8 @@ const Sinistralidade = () => {
       setPeriodos(uniq);
       if (uniq.length > 0) {
         const recent = uniq[uniq.length - 1];
-        const distinctPlanos = new Set((data ?? []).map((r: any) => String(r["PLANO"] ?? ""))).size || 15;
         setDefaultPeriodo(recent);
         setPeriodo(recent);
-        setDefaultLimit(distinctPlanos);
-        setLimit(distinctPlanos);
-        setFetchedLimit(distinctPlanos);
       }
     })();
   }, []);
@@ -243,18 +239,19 @@ const Sinistralidade = () => {
 
 
 
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-muted-foreground">Linhas</label>
-          <input
-            type="number"
-            min={1}
-            max={10000}
-            value={metric === "TODOS" ? sorted.length : limit}
-            onChange={(e) => setLimit(parseInt(e.target.value || "0", 10))}
-            disabled={metric === "TODOS"}
-            className="h-9 w-28 rounded-md border border-border bg-background px-3 text-sm disabled:opacity-60"
-          />
-        </div>
+        {metric !== "TODOS" && (
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-muted-foreground">Linhas</label>
+            <input
+              type="number"
+              min={1}
+              max={10000}
+              value={limit}
+              onChange={(e) => setLimit(parseInt(e.target.value || "0", 10))}
+              className="h-9 w-28 rounded-md border border-border bg-background px-3 text-sm"
+            />
+          </div>
+        )}
 
         {limit !== fetchedLimit && (
           <button
