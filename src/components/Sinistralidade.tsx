@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, ChevronRight, RotateCcw } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -22,6 +22,7 @@ const Sinistralidade = () => {
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // helper: fetch all rows paginated (bypasses Supabase 1000-row cap)
   const fetchAll = async (build: (q: any) => any): Promise<{ data: any[]; error: any }> => {
@@ -106,6 +107,8 @@ const Sinistralidade = () => {
     setFetchedLimit(DEFAULT_LIMIT);
     setSortKey(null);
     setSortDir("asc");
+    setExpanded(new Set());
+    scrollRef.current?.scrollTo({ top: 0, left: 0 });
   };
 
   const handleMetricChange = (value: "TODOS" | "RECEITAS" | "DESPESAS" | "LUCROS" | "PREJUIZOS") => {
@@ -326,7 +329,7 @@ const Sinistralidade = () => {
         </div>
       )}
 
-      <div className="overflow-auto max-h-[calc(100vh-18rem)] border border-border rounded-md">
+      <div ref={scrollRef} className="overflow-auto max-h-[calc(100vh-18rem)] border border-border rounded-md">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 sticky top-0">
             <tr>
