@@ -12,7 +12,7 @@ const Sinistralidade = () => {
   const [periodos, setPeriodos] = useState<string[]>([]);
   const [periodo, setPeriodo] = useState<string>("__all__");
   const [limit, setLimit] = useState<number>(100);
-  const [metric, setMetric] = useState<"TOTAL FATURA" | "UTILIZAÇÃO">("UTILIZAÇÃO");
+  const [metric, setMetric] = useState<"RECEITAS" | "DESPESAS">("DESPESAS");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<string | null>(null);
