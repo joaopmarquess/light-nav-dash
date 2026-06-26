@@ -14,6 +14,7 @@ const Sinistralidade = () => {
   const [limit, setLimit] = useState<number>(15);
   const [fetchedLimit, setFetchedLimit] = useState<number>(15);
   const [metric, setMetric] = useState<"RECEITAS" | "DESPESAS">("DESPESAS");
+  const [tipo, setTipo] = useState<"todos" | "coletivos" | "individuais">("todos");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<string | null>(null);
