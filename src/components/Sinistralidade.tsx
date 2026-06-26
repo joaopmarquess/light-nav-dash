@@ -69,10 +69,19 @@ const Sinistralidade = () => {
   const HIDDEN_COLS = new Set([PERIOD_COL, "ID"]);
   const SUM_COLS = ["MENSALIDADES", "COPARTICIPACOES", "RECEITAS", "DESPESAS", "SALDO"];
 
+  const filteredRows = useMemo(() => {
+    if (tipo === "todos") return rows;
+    return rows.filter((r) => {
+      const p = Number(r["PLANO"]);
+      if (Number.isNaN(p)) return false;
+      return tipo === "coletivos" ? p > 2000 : p <= 2000;
+    });
+  }, [rows, tipo]);
+
   const displayRows = useMemo(() => {
-    if (periodo !== "__all__") return rows;
-    if (rows.length === 0) return rows;
-    const periodCount = new Set(rows.map((r) => r[PERIOD_COL])).size || 1;
+    if (periodo !== "__all__") return filteredRows;
+    if (filteredRows.length === 0) return filteredRows;
+    const periodCount = new Set(filteredRows.map((r) => r[PERIOD_COL])).size || 1;
     const groups = new Map<string, Row>();
     for (const r of rows) {
       const key = String(r["PLANO"] ?? "");
