@@ -12,7 +12,7 @@ const Sinistralidade = () => {
   const [periodos, setPeriodos] = useState<string[]>([]);
   const [periodo, setPeriodo] = useState<string>("__all__");
   const [defaultPeriodo, setDefaultPeriodo] = useState<string>("__all__");
-  const [defaultLimit, setDefaultLimit] = useState<number>(15);
+  const DEFAULT_LIMIT = 15;
   const [limit, setLimit] = useState<number>(15);
   const [fetchedLimit, setFetchedLimit] = useState<number>(15);
   const [metric, setMetric] = useState<"TODOS" | "RECEITAS" | "DESPESAS" | "LUCROS" | "PREJUIZOS">("TODOS");
@@ -99,9 +99,16 @@ const Sinistralidade = () => {
     setPeriodo(defaultPeriodo);
     setMetric("TODOS");
     setTipo("todos");
-    setLimit(defaultLimit);
+    setLimit(DEFAULT_LIMIT);
+    setFetchedLimit(DEFAULT_LIMIT);
     setSortKey(null);
     setSortDir("asc");
+  };
+
+  const handleMetricChange = (value: "TODOS" | "RECEITAS" | "DESPESAS" | "LUCROS" | "PREJUIZOS") => {
+    setMetric(value);
+    setLimit(DEFAULT_LIMIT);
+    setFetchedLimit(DEFAULT_LIMIT);
   };
 
 
@@ -211,7 +218,9 @@ const Sinistralidade = () => {
           <label className="text-xs font-medium text-muted-foreground">Ordenar por</label>
           <select
             value={metric}
-            onChange={(e) => setMetric(e.target.value as "TODOS" | "RECEITAS" | "DESPESAS" | "LUCROS" | "PREJUIZOS")}
+            onChange={(e) =>
+              handleMetricChange(e.target.value as "TODOS" | "RECEITAS" | "DESPESAS" | "LUCROS" | "PREJUIZOS")
+            }
             className="h-9 min-w-40 rounded-md border border-border bg-background px-3 text-sm"
           >
             <option value="TODOS">Todos</option>
