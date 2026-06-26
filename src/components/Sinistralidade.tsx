@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 type Row = Record<string, any>;
 type SortDir = "asc" | "desc";
 
-const PERIOD_COL = "!Período U12";
+const PERIOD_COL = "PERIODO";
 
 const Sinistralidade = () => {
   const [rows, setRows] = useState<Row[]>([]);
