@@ -270,6 +270,11 @@ const BIOverview = () => {
             },
           ]
         : []),
+      {
+        title: "PBI U12",
+        subtitle: "Relatório Power BI — Desenvolvimento Sinistralidade",
+        iframe: "https://app.powerbi.com/view?r=eyJrIjoiYjJkNjQ3MTYtMjM0Ni00Y2I2LWJiOWItNTcyNWU0YWY0ZTc2IiwidCI6ImM0ZTU0ODgxLWQ1NDktNDQ2Ny1iOGFjLWQ0ZjI1MGM2NzhjNiJ9",
+      } as any,
     ];
   }, [data, sin]);
 
@@ -333,9 +338,18 @@ const BIOverview = () => {
 
       <div className="flex-1 min-h-0 p-6">
         <div key={idx} className="h-full w-full animate-fade-in">
-          <ResponsiveContainer width="100%" height="100%">
-            {current.chart as any}
-          </ResponsiveContainer>
+          {(current as any).iframe ? (
+            <iframe
+              title={current.title}
+              src={(current as any).iframe}
+              className="w-full h-full border-0 rounded-md"
+              allowFullScreen
+            />
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              {current.chart as any}
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
 
