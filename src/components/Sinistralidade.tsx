@@ -118,11 +118,11 @@ const Sinistralidade = () => {
           <label className="text-xs font-medium text-muted-foreground">Ordenar por</label>
           <select
             value={metric}
-            onChange={(e) => setMetric(e.target.value as "TOTAL FATURA" | "UTILIZAÇÃO")}
+            onChange={(e) => setMetric(e.target.value as "RECEITAS" | "DESPESAS")}
             className="h-9 min-w-40 rounded-md border border-border bg-background px-3 text-sm"
           >
-            <option value="UTILIZAÇÃO">Maiores UTILIZAÇÃO</option>
-            <option value="TOTAL FATURA">Maiores TOTAL FATURA</option>
+            <option value="DESPESAS">Maiores DESPESAS</option>
+            <option value="RECEITAS">Maiores RECEITAS</option>
           </select>
         </div>
 
