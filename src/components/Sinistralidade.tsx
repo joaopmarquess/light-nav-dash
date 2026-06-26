@@ -39,11 +39,11 @@ const Sinistralidade = () => {
     })();
   }, []);
 
-  // refetch when periodo changes via default selection
+  // refetch when periodo or metric changes
   useEffect(() => {
     fetchRows();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [periodo]);
+  }, [periodo, metric]);
 
   const fetchRows = async () => {
     setLoading(true);
@@ -60,6 +60,7 @@ const Sinistralidade = () => {
     const { data, error } = await q;
     if (error) setError(error.message);
     setRows(data ?? []);
+    setFetchedLimit(n);
     setLoading(false);
   };
 
