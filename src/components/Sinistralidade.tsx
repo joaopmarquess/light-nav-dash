@@ -382,26 +382,29 @@ const Sinistralidade = () => {
                             maximumFractionDigits: intCol ? 0 : 2,
                           }).format(Number(v))
                         : String(v);
-                    const isFirst = ci === 0;
                     const isPlanoEmp = c === "PLANO|EMPRESA";
                     return (
                       <td
                         key={c}
                         title={isPlanoEmp ? String(display) : undefined}
-                        className={`px-3 py-2 ${isNum ? "text-right tabular-nums whitespace-nowrap" : isPlanoEmp ? "max-w-[260px] truncate" : "whitespace-nowrap"}`}
+                        className={`px-3 py-2 ${isNum ? "text-right tabular-nums whitespace-nowrap" : isPlanoEmp ? "max-w-[260px]" : "whitespace-nowrap"}`}
                       >
-                        {isFirst && !opts.isChild && hasKids ? (
+                        {isPlanoEmp && !opts.isChild ? (
                           <span className="inline-flex items-center gap-1 max-w-full">
-                            <button
-                              onClick={() => toggleExpand(parentKey)}
-                              aria-label={isOpen ? "Recolher" : "Expandir"}
-                              className="inline-flex h-4 w-4 items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted shrink-0"
-                            >
-                              {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                            </button>
+                            {hasKids ? (
+                              <button
+                                onClick={() => toggleExpand(parentKey)}
+                                aria-label={isOpen ? "Recolher" : "Expandir"}
+                                className="inline-flex h-4 w-4 items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted shrink-0"
+                              >
+                                {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                              </button>
+                            ) : (
+                              <span className="inline-block h-4 w-4 shrink-0" />
+                            )}
                             <span className="truncate">{display}</span>
                           </span>
-                        ) : isFirst && opts.isChild ? (
+                        ) : isPlanoEmp && opts.isChild ? (
                           <span className="pl-6 text-muted-foreground text-xs">↳ PLANO {String(row["PLANO"] ?? "")}</span>
                         ) : (
                           display
