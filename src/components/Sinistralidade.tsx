@@ -158,7 +158,7 @@ const Sinistralidade = () => {
     filtered.sort((a, b) => {
       if (metric === "LUCROS") return Number(b["SALDO"] || 0) - Number(a["SALDO"] || 0);
       if (metric === "PREJUIZOS") return Number(a["SALDO"] || 0) - Number(b["SALDO"] || 0);
-      if (metric === "TODOS") return 0;
+      if (metric === "TODOS") return Number(b["VIDA"] || 0) - Number(a["VIDA"] || 0);
       return Number(b[metric] || 0) - Number(a[metric] || 0);
     });
     return filtered.slice(0, n);
