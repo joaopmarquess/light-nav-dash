@@ -54,12 +54,12 @@ const Sinistralidade = () => {
       setPeriodos(uniq);
       if (uniq.length > 0) {
         const recent = uniq[uniq.length - 1];
-        const recentCount = (data ?? []).filter((r: any) => String(r[PERIOD_COL]) === recent).length || 15;
+        const distinctPlanos = new Set((data ?? []).map((r: any) => String(r["PLANO"] ?? ""))).size || 15;
         setDefaultPeriodo(recent);
         setPeriodo(recent);
-        setDefaultLimit(recentCount);
-        setLimit(recentCount);
-        setFetchedLimit(recentCount);
+        setDefaultLimit(distinctPlanos);
+        setLimit(distinctPlanos);
+        setFetchedLimit(distinctPlanos);
       }
     })();
   }, []);
