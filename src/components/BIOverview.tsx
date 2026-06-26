@@ -270,6 +270,11 @@ const BIOverview = () => {
             },
           ]
         : []),
+      {
+        title: "PBI U12",
+        subtitle: "Relatório Power BI — Desenvolvimento Sinistralidade",
+        iframe: "https://app.powerbi.com/view?r=eyJrIjoiYjJkNjQ3MTYtMjM0Ni00Y2I2LWJiOWItNTcyNWU0YWY0ZTc2IiwidCI6ImM0ZTU0ODgxLWQ1NDktNDQ2Ny1iOGFjLWQ0ZjI1MGM2NzhjNiJ9",
+      } as any,
     ];
   }, [data, sin]);
 
