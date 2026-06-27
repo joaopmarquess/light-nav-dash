@@ -27,6 +27,7 @@ const todayBR = () => {
   return `${dd}/${mm}/${d.getFullYear()}`;
 };
 import AtivosEm from "@/components/AtivosEm";
+import HomeView from "@/components/Home";
 import Vendas from "@/components/Vendas";
 import ConsultaBeneficiario from "@/components/ConsultaBeneficiario";
 import DRE from "@/components/DRE";
@@ -273,6 +274,8 @@ const Index = () => {
             </section>
           ) : active === "B.I. Overview" ? (
             <BIOverview />
+          ) : active === "Home" ? (
+            <HomeView onNavigate={setActive} />
           ) : (
             <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-8rem)] flex items-center justify-center text-muted-foreground text-sm">
               Selecione uma opção no menu lateral.
