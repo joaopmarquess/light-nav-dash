@@ -27,7 +27,7 @@ const todayBR = () => {
   return `${dd}/${mm}/${d.getFullYear()}`;
 };
 import AtivosEm from "@/components/AtivosEm";
-import Home from "@/components/Home";
+import HomeView from "@/components/Home";
 import Vendas from "@/components/Vendas";
 import ConsultaBeneficiario from "@/components/ConsultaBeneficiario";
 import DRE from "@/components/DRE";
