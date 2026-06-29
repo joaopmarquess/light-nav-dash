@@ -67,9 +67,9 @@ const menuItems: MenuItem[] = [
       { icon: Search, label: "Consulta Beneficiário" },
       { icon: UserCheck, label: "Ativos em" },
       { icon: TrendingUp, label: "Vendas" },
+      { icon: LayoutDashboard, label: "gd_eCARTEIRA" },
     ],
   },
-  { icon: Database, label: "DW Carteira" },
   {
     icon: Percent,
     label: "Sinistralidade",
