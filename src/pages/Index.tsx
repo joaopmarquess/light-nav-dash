@@ -18,7 +18,6 @@ import {
   Calendar as CalendarIcon,
   RotateCcw,
   Search,
-  Database,
 } from "lucide-react";
 
 const todayBR = () => {
@@ -36,7 +35,7 @@ import DREGraficos from "@/components/DREGraficos";
 import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
 import Sinistralidade from "@/components/Sinistralidade";
 import BIOverview from "@/components/BIOverview";
-import DWCarteira from "@/components/DWCarteira";
+import GdECarteira from "@/components/GdECarteira";
 
 import logoFull from "@/assets/bensaude-logo.svg.asset.json";
 import logoIcon from "@/assets/bensaude-icon.svg.asset.json";
@@ -68,9 +67,9 @@ const menuItems: MenuItem[] = [
       { icon: Search, label: "Consulta Beneficiário" },
       { icon: UserCheck, label: "Ativos em" },
       { icon: TrendingUp, label: "Vendas" },
+      { icon: LayoutDashboard, label: "gd_eCARTEIRA" },
     ],
   },
-  { icon: Database, label: "DW Carteira" },
   {
     icon: Percent,
     label: "Sinistralidade",
@@ -287,8 +286,8 @@ const Index = () => {
             </section>
           ) : active === "B.I. Overview" ? (
             <BIOverview />
-          ) : active === "DW Carteira" ? (
-            <DWCarteira />
+          ) : active === "gd_eCARTEIRA" ? (
+            <GdECarteira />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : (
