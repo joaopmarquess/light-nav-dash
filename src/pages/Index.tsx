@@ -56,6 +56,7 @@ const menuItems: MenuItem[] = [
     children: [
       { icon: FileText, label: "DRE" },
       { icon: BarChart3, label: "Gráfico" },
+      { icon: LayoutDashboard, label: "DRE PB" },
     ],
   },
   {
