@@ -36,6 +36,7 @@ import DREGraficos from "@/components/DREGraficos";
 import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
 import Sinistralidade from "@/components/Sinistralidade";
 import BIOverview from "@/components/BIOverview";
+import DWCarteira from "@/components/DWCarteira";
 
 import logoFull from "@/assets/bensaude-logo.svg.asset.json";
 import logoIcon from "@/assets/bensaude-icon.svg.asset.json";
