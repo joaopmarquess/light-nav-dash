@@ -273,6 +273,15 @@ const Index = () => {
                 allowFullScreen
               />
             </section>
+          ) : active === "DRE PB" ? (
+            <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-8rem)] overflow-hidden">
+              <iframe
+                title="DEX_DRE"
+                src="https://app.powerbi.com/view?r=eyJrIjoiMTBhYTQ4M2EtYWIzNy00NjBiLWFlOGItNGEyNDY5YTcwOTVhIiwidCI6ImM0ZTU0ODgxLWQ1NDktNDQ2Ny1iOGFjLWQ0ZjI1MGM2NzhjNiJ9"
+                className="w-full h-full border-0"
+                allowFullScreen
+              />
+            </section>
           ) : active === "B.I. Overview" ? (
             <BIOverview />
           ) : active === "Home" ? (
