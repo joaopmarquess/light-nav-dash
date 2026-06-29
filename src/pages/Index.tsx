@@ -70,6 +70,7 @@ const menuItems: MenuItem[] = [
       { icon: TrendingUp, label: "Vendas" },
     ],
   },
+  { icon: Database, label: "DW Carteira" },
   {
     icon: Percent,
     label: "Sinistralidade",
