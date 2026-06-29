@@ -18,6 +18,7 @@ import {
   Calendar as CalendarIcon,
   RotateCcw,
   Search,
+  Database,
 } from "lucide-react";
 
 const todayBR = () => {
@@ -35,6 +36,7 @@ import DREGraficos from "@/components/DREGraficos";
 import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
 import Sinistralidade from "@/components/Sinistralidade";
 import BIOverview from "@/components/BIOverview";
+import DWCarteira from "@/components/DWCarteira";
 
 import logoFull from "@/assets/bensaude-logo.svg.asset.json";
 import logoIcon from "@/assets/bensaude-icon.svg.asset.json";
@@ -68,6 +70,7 @@ const menuItems: MenuItem[] = [
       { icon: TrendingUp, label: "Vendas" },
     ],
   },
+  { icon: Database, label: "DW Carteira" },
   {
     icon: Percent,
     label: "Sinistralidade",
@@ -284,6 +287,8 @@ const Index = () => {
             </section>
           ) : active === "B.I. Overview" ? (
             <BIOverview />
+          ) : active === "DW Carteira" ? (
+            <DWCarteira />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : (
