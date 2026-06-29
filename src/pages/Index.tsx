@@ -67,7 +67,7 @@ const menuItems: MenuItem[] = [
       { icon: Search, label: "Consulta Beneficiário" },
       { icon: UserCheck, label: "Ativos em" },
       { icon: TrendingUp, label: "Vendas" },
-      { icon: LayoutDashboard, label: "gd_eCARTEIRA" },
+      { icon: LayoutDashboard, label: "DW Carteira" },
     ],
   },
   {
@@ -286,7 +286,7 @@ const Index = () => {
             </section>
           ) : active === "B.I. Overview" ? (
             <BIOverview />
-          ) : active === "gd_eCARTEIRA" ? (
+          ) : active === "DW Carteira" ? (
             <GdECarteira />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
