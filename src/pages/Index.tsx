@@ -286,8 +286,8 @@ const Index = () => {
             </section>
           ) : active === "B.I. Overview" ? (
             <BIOverview />
-          ) : active === "DW Carteira" ? (
-            <DWCarteira />
+          ) : active === "gd_eCARTEIRA" ? (
+            <GdECarteira />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : (
