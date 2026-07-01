@@ -53,6 +53,8 @@ const getFabricAccessToken = async (interactive: boolean) => {
     if (account) msalInstance.setActiveAccount(account);
   }
 
+  if (!account) throw new AuthRequiredError();
+
   try {
     return (await msalInstance.acquireTokenSilent({ scopes: FABRIC_SCOPES, account })).accessToken;
   } catch (e) {
@@ -89,7 +91,12 @@ const callGraphql = async <T,>(query: string, variables: Record<string, unknown>
   });
 
   const text = await response.text();
-  const data = JSON.parse(text || "{}") as { data?: T; errors?: GqlError[] };
+  let data: { data?: T; errors?: GqlError[] } = {};
+  try {
+    data = JSON.parse(text || "{}");
+  } catch {
+    data = {};
+  }
 
   if (!response.ok) throw new Error(data.errors?.map((e) => e.message).join(" • ") || text || `Fabric retornou HTTP ${response.status}`);
   if (data?.errors?.length) throw new Error(data.errors.map((e) => e.message).join(" • "));
