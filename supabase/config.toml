@@ -1,0 +1,4 @@
+project_id = "xyuzylbaainzrxrukrou"
+
+[functions.fabric-graphql]
+verify_jwt = false
