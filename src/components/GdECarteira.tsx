@@ -25,7 +25,12 @@ const msalInstance = new PublicClientApplication({
     authority: `https://login.microsoftonline.com/${FABRIC_TENANT_ID}`,
     redirectUri: window.location.origin,
   },
-  cache: { cacheLocation: "sessionStorage" },
+  cache: { cacheLocation: "localStorage" },
+  system: {
+    // Impede tentativas de renovação em iframe oculto (bloqueadas pela Microsoft
+    // quando o app roda dentro de um iframe, ex: preview do Lovable).
+    allowRedirectInIframe: false,
+  },
 });
 
 let msalReady: Promise<void> | null = null;
@@ -36,21 +41,47 @@ class AuthRequiredError extends Error {
   }
 }
 
+class PopupBlockedError extends Error {
+  constructor() {
+    super(
+      "O navegador bloqueou o popup de login da Microsoft (ou o preview está em iframe). " +
+        "Abra o app em uma nova aba e clique em Entrar novamente, ou permita popups para este site.",
+    );
+  }
+}
+
 const ensureMsalReady = () => {
   msalReady ??= msalInstance.initialize();
   return msalReady;
 };
 
+const isPopupBlocked = (e: unknown) => {
+  const code = (e as { errorCode?: string })?.errorCode ?? "";
+  const msg = (e as Error)?.message ?? "";
+  return (
+    code === "popup_window_error" ||
+    code === "empty_window_error" ||
+    code === "user_cancelled" ||
+    /popup|window\.open|blocked/i.test(msg)
+  );
+};
+
 const getFabricAccessToken = async (interactive: boolean) => {
   await ensureMsalReady();
 
-  let account: AccountInfo | null = msalInstance.getActiveAccount() ?? msalInstance.getAllAccounts()[0] ?? null;
+  let account: AccountInfo | null =
+    msalInstance.getActiveAccount() ?? msalInstance.getAllAccounts()[0] ?? null;
 
   if (!account) {
     if (!interactive) throw new AuthRequiredError();
-    const login = await msalInstance.loginPopup({ scopes: FABRIC_SCOPES, prompt: "select_account" });
-    account = login.account;
-    if (account) msalInstance.setActiveAccount(account);
+    try {
+      const login = await msalInstance.loginPopup({ scopes: FABRIC_SCOPES, prompt: "select_account" });
+      account = login.account;
+      if (account) msalInstance.setActiveAccount(account);
+    } catch (e) {
+      if (isPopupBlocked(e)) throw new PopupBlockedError();
+      throw e;
+    }
   }
 
   if (!account) throw new AuthRequiredError();
@@ -58,8 +89,23 @@ const getFabricAccessToken = async (interactive: boolean) => {
   try {
     return (await msalInstance.acquireTokenSilent({ scopes: FABRIC_SCOPES, account })).accessToken;
   } catch (e) {
-    if (!interactive || !(e instanceof InteractionRequiredAuthError)) throw e;
-    return (await msalInstance.acquireTokenPopup({ scopes: FABRIC_SCOPES, account })).accessToken;
+    // Qualquer falha silenciosa (interação requerida OU iframe bloqueado por X-Frame-Options)
+    // deve cair para popup quando o usuário está interagindo.
+    if (!interactive) throw new AuthRequiredError();
+    if (
+      !(e instanceof InteractionRequiredAuthError) &&
+      !/iframe|monitor_window_timeout|block_iframe|BLOCKED_BY_RESPONSE|X-Frame-Options/i.test(
+        (e as Error)?.message ?? "",
+      )
+    ) {
+      throw e;
+    }
+    try {
+      return (await msalInstance.acquireTokenPopup({ scopes: FABRIC_SCOPES, account })).accessToken;
+    } catch (err) {
+      if (isPopupBlocked(err)) throw new PopupBlockedError();
+      throw err;
+    }
   }
 };
 
@@ -261,18 +307,31 @@ const GdECarteira = () => {
           <div className="h-10 w-10 rounded-md bg-accent flex items-center justify-center text-primary">
             <LogIn className="h-5 w-5" />
           </div>
-          <div>
+          <div className="max-w-md">
             <p className="text-sm font-medium text-foreground">Conectar ao Microsoft Fabric</p>
-            <p className="text-xs text-muted-foreground mt-1">Entre com sua conta Microsoft para consultar o DW Carteira.</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Entre com sua conta Microsoft para consultar o DW Carteira.
+              Se o popup for bloqueado (o preview roda dentro de um iframe), abra o app em uma nova aba.
+            </p>
           </div>
-          <button
-            type="button"
-            onClick={() => loadAll(true)}
-            className="h-9 inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 text-sm text-foreground hover:bg-accent hover:text-primary transition-colors"
-          >
-            <LogIn className="h-4 w-4" />
-            Entrar
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => loadAll(true)}
+              className="h-9 inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 text-sm text-foreground hover:bg-accent hover:text-primary transition-colors"
+            >
+              <LogIn className="h-4 w-4" />
+              Entrar
+            </button>
+            <a
+              href={window.location.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="h-9 inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 text-sm text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
+            >
+              Abrir em nova aba
+            </a>
+          </div>
         </div>
       )}
 
