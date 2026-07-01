@@ -35,7 +35,7 @@ import DREGraficos from "@/components/DREGraficos";
 import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
 import Sinistralidade from "@/components/Sinistralidade";
 import BIOverview from "@/components/BIOverview";
-import GdECarteira from "@/components/GdECarteira";
+
 
 import logoFull from "@/assets/bensaude-logo.svg.asset.json";
 import logoIcon from "@/assets/bensaude-icon.svg.asset.json";
@@ -67,7 +67,6 @@ const menuItems: MenuItem[] = [
       { icon: Search, label: "Consulta Beneficiário" },
       { icon: UserCheck, label: "Ativos em" },
       { icon: TrendingUp, label: "Vendas" },
-      { icon: LayoutDashboard, label: "DW Carteira" },
     ],
   },
   {
@@ -286,8 +285,6 @@ const Index = () => {
             </section>
           ) : active === "B.I. Overview" ? (
             <BIOverview />
-          ) : active === "DW Carteira" ? (
-            <GdECarteira />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : (
