@@ -34,10 +34,17 @@ const msalInstance = new PublicClientApplication({
 });
 
 let msalReady: Promise<void> | null = null;
+let msalRedirectReady: Promise<void> | null = null;
 
 class AuthRequiredError extends Error {
   constructor() {
     super("AUTH_REQUIRED");
+  }
+}
+
+class RedirectStartedError extends Error {
+  constructor() {
+    super("REDIRECT_STARTED");
   }
 }
 
@@ -50,9 +57,48 @@ class PopupBlockedError extends Error {
   }
 }
 
-const ensureMsalReady = () => {
+const isEmbeddedFrame = () => {
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
+};
+
+const openAppInNewTab = () => {
+  const opened = window.open(window.location.href, "_blank");
+  if (opened) {
+    opened.opener = null;
+    opened.focus();
+    return true;
+  }
+  return false;
+};
+
+const ensureMsalReady = async () => {
   msalReady ??= msalInstance.initialize();
-  return msalReady;
+  await msalReady;
+
+  msalRedirectReady ??= msalInstance.handleRedirectPromise().then((result) => {
+    if (result?.account) msalInstance.setActiveAccount(result.account);
+  });
+  await msalRedirectReady;
+};
+
+const startMicrosoftRedirect = async (account?: AccountInfo) => {
+  const request = {
+    scopes: FABRIC_SCOPES,
+    prompt: "select_account",
+    redirectStartPage: window.location.href,
+    ...(account ? { account } : {}),
+  };
+
+  if (account) {
+    await msalInstance.acquireTokenRedirect(request);
+  } else {
+    await msalInstance.loginRedirect(request);
+  }
+  throw new RedirectStartedError();
 };
 
 const isPopupBlocked = (e: unknown) => {
@@ -74,6 +120,8 @@ const getFabricAccessToken = async (interactive: boolean) => {
 
   if (!account) {
     if (!interactive) throw new AuthRequiredError();
+    if (!isEmbeddedFrame()) await startMicrosoftRedirect();
+
     try {
       const login = await msalInstance.loginPopup({ scopes: FABRIC_SCOPES, prompt: "select_account" });
       account = login.account;
@@ -100,6 +148,9 @@ const getFabricAccessToken = async (interactive: boolean) => {
     ) {
       throw e;
     }
+
+    if (!isEmbeddedFrame()) await startMicrosoftRedirect(account);
+
     try {
       return (await msalInstance.acquireTokenPopup({ scopes: FABRIC_SCOPES, account })).accessToken;
     } catch (err) {
