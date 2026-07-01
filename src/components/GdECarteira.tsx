@@ -34,10 +34,17 @@ const msalInstance = new PublicClientApplication({
 });
 
 let msalReady: Promise<void> | null = null;
+let msalRedirectReady: Promise<void> | null = null;
 
 class AuthRequiredError extends Error {
   constructor() {
     super("AUTH_REQUIRED");
+  }
+}
+
+class RedirectStartedError extends Error {
+  constructor() {
+    super("REDIRECT_STARTED");
   }
 }
 
@@ -50,9 +57,48 @@ class PopupBlockedError extends Error {
   }
 }
 
-const ensureMsalReady = () => {
+const isEmbeddedFrame = () => {
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
+};
+
+const openAppInNewTab = () => {
+  const opened = window.open(window.location.href, "_blank");
+  if (opened) {
+    opened.opener = null;
+    opened.focus();
+    return true;
+  }
+  return false;
+};
+
+const ensureMsalReady = async () => {
   msalReady ??= msalInstance.initialize();
-  return msalReady;
+  await msalReady;
+
+  msalRedirectReady ??= msalInstance.handleRedirectPromise().then((result) => {
+    if (result?.account) msalInstance.setActiveAccount(result.account);
+  });
+  await msalRedirectReady;
+};
+
+const startMicrosoftRedirect = async (account?: AccountInfo) => {
+  const request = {
+    scopes: FABRIC_SCOPES,
+    prompt: "select_account",
+    redirectStartPage: window.location.href,
+    ...(account ? { account } : {}),
+  } as const;
+
+  if (account) {
+    await msalInstance.acquireTokenRedirect(request);
+  } else {
+    await msalInstance.loginRedirect(request);
+  }
+  throw new RedirectStartedError();
 };
 
 const isPopupBlocked = (e: unknown) => {
@@ -74,6 +120,8 @@ const getFabricAccessToken = async (interactive: boolean) => {
 
   if (!account) {
     if (!interactive) throw new AuthRequiredError();
+    if (!isEmbeddedFrame()) await startMicrosoftRedirect();
+
     try {
       const login = await msalInstance.loginPopup({ scopes: FABRIC_SCOPES, prompt: "select_account" });
       account = login.account;
@@ -100,6 +148,9 @@ const getFabricAccessToken = async (interactive: boolean) => {
     ) {
       throw e;
     }
+
+    if (!isEmbeddedFrame()) await startMicrosoftRedirect(account);
+
     try {
       return (await msalInstance.acquireTokenPopup({ scopes: FABRIC_SCOPES, account })).accessToken;
     } catch (err) {
@@ -244,9 +295,24 @@ const GdECarteira = () => {
         setPhase("auth");
         return;
       }
+      if (e instanceof RedirectStartedError) return;
       setError(e instanceof Error ? e.message : String(e));
       setPhase("error");
     }
+  };
+
+  const startSignIn = async () => {
+    setError(null);
+    if (isEmbeddedFrame()) {
+      const opened = openAppInNewTab();
+      if (!opened) {
+        setError("O navegador bloqueou a nova aba. Libere popups para este site ou abra a URL publicada diretamente.");
+      }
+      setPhase("auth");
+      return;
+    }
+
+    await loadAll(true);
   };
 
   useEffect(() => {
@@ -310,27 +376,30 @@ const GdECarteira = () => {
           <div className="max-w-md">
             <p className="text-sm font-medium text-foreground">Conectar ao Microsoft Fabric</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Entre com sua conta Microsoft para consultar o DW Carteira.
-              Se o popup for bloqueado (o preview roda dentro de um iframe), abra o app em uma nova aba.
+              Entre fora do iframe do preview. Em uma nova aba, o login usa redirecionamento da Microsoft em vez de popup.
             </p>
+            {error && <p className="text-xs text-destructive mt-2">{error}</p>}
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => loadAll(true)}
+              onClick={startSignIn}
               className="h-9 inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 text-sm text-foreground hover:bg-accent hover:text-primary transition-colors"
             >
               <LogIn className="h-4 w-4" />
               Entrar
             </button>
-            <a
-              href={window.location.href}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                const opened = openAppInNewTab();
+                if (!opened) setError("O navegador bloqueou a nova aba. Libere popups para este site ou abra a URL publicada diretamente.");
+              }}
               className="h-9 inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 text-sm text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
             >
               Abrir em nova aba
-            </a>
+            </button>
           </div>
         </div>
       )}
