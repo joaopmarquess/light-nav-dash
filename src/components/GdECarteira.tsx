@@ -91,7 +91,7 @@ const startMicrosoftRedirect = async (account?: AccountInfo) => {
     prompt: "select_account",
     redirectStartPage: window.location.href,
     ...(account ? { account } : {}),
-  };
+  } as const;
 
   if (account) {
     await msalInstance.acquireTokenRedirect(request);
