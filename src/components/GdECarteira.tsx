@@ -307,18 +307,31 @@ const GdECarteira = () => {
           <div className="h-10 w-10 rounded-md bg-accent flex items-center justify-center text-primary">
             <LogIn className="h-5 w-5" />
           </div>
-          <div>
+          <div className="max-w-md">
             <p className="text-sm font-medium text-foreground">Conectar ao Microsoft Fabric</p>
-            <p className="text-xs text-muted-foreground mt-1">Entre com sua conta Microsoft para consultar o DW Carteira.</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Entre com sua conta Microsoft para consultar o DW Carteira.
+              Se o popup for bloqueado (o preview roda dentro de um iframe), abra o app em uma nova aba.
+            </p>
           </div>
-          <button
-            type="button"
-            onClick={() => loadAll(true)}
-            className="h-9 inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 text-sm text-foreground hover:bg-accent hover:text-primary transition-colors"
-          >
-            <LogIn className="h-4 w-4" />
-            Entrar
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => loadAll(true)}
+              className="h-9 inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 text-sm text-foreground hover:bg-accent hover:text-primary transition-colors"
+            >
+              <LogIn className="h-4 w-4" />
+              Entrar
+            </button>
+            <a
+              href={window.location.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="h-9 inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 text-sm text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
+            >
+              Abrir em nova aba
+            </a>
+          </div>
         </div>
       )}
 
