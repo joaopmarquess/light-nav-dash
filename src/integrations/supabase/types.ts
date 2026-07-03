@@ -73,9 +73,9 @@ export type Database = {
           Tipo_Plano_Contratacao: string | null
           UF_CIDADE_OFICIAL: string | null
           UF_PLANO: string | null
-          valor_maior: string | null
+          valor_maior: number | null
           VALOR_TIMM: number | null
-          VALOR_TMM_NA_DATA: string | null
+          VALOR_TMM_NA_DATA: number | null
           VENDEDOR: string | null
           VIGENCIA_BENEFICIARIO: string | null
           VIGENCIA_CONTRATO: string | null
@@ -123,9 +123,9 @@ export type Database = {
           Tipo_Plano_Contratacao?: string | null
           UF_CIDADE_OFICIAL?: string | null
           UF_PLANO?: string | null
-          valor_maior?: string | null
+          valor_maior?: number | null
           VALOR_TIMM?: number | null
-          VALOR_TMM_NA_DATA?: string | null
+          VALOR_TMM_NA_DATA?: number | null
           VENDEDOR?: string | null
           VIGENCIA_BENEFICIARIO?: string | null
           VIGENCIA_CONTRATO?: string | null
@@ -173,9 +173,9 @@ export type Database = {
           Tipo_Plano_Contratacao?: string | null
           UF_CIDADE_OFICIAL?: string | null
           UF_PLANO?: string | null
-          valor_maior?: string | null
+          valor_maior?: number | null
           VALOR_TIMM?: number | null
-          VALOR_TMM_NA_DATA?: string | null
+          VALOR_TMM_NA_DATA?: number | null
           VENDEDOR?: string | null
           VIGENCIA_BENEFICIARIO?: string | null
           VIGENCIA_CONTRATO?: string | null
