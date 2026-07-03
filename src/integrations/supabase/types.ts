@@ -14,22 +14,7 @@ export type Database = {
   }
   public: {
     Tables: {
-      datavista: {
-        Row: {
-          content: string
-          id: number
-        }
-        Insert: {
-          content: string
-          id?: number
-        }
-        Update: {
-          content?: string
-          id?: number
-        }
-        Relationships: []
-      }
-      eCarteira: {
+      ecarteira: {
         Row: {
           ACOMODACAO: string | null
           ANO_OCORRENCIA: number | null
@@ -73,7 +58,7 @@ export type Database = {
           Tipo_Plano_Contratacao: string | null
           UF_CIDADE_OFICIAL: string | null
           UF_PLANO: string | null
-          valor_maior: number | null
+          valor_maior: string | null
           VALOR_TIMM: number | null
           VALOR_TMM_NA_DATA: number | null
           VENDEDOR: string | null
@@ -123,7 +108,7 @@ export type Database = {
           Tipo_Plano_Contratacao?: string | null
           UF_CIDADE_OFICIAL?: string | null
           UF_PLANO?: string | null
-          valor_maior?: number | null
+          valor_maior?: string | null
           VALOR_TIMM?: number | null
           VALOR_TMM_NA_DATA?: number | null
           VENDEDOR?: string | null
@@ -173,66 +158,12 @@ export type Database = {
           Tipo_Plano_Contratacao?: string | null
           UF_CIDADE_OFICIAL?: string | null
           UF_PLANO?: string | null
-          valor_maior?: number | null
+          valor_maior?: string | null
           VALOR_TIMM?: number | null
           VALOR_TMM_NA_DATA?: number | null
           VENDEDOR?: string | null
           VIGENCIA_BENEFICIARIO?: string | null
           VIGENCIA_CONTRATO?: string | null
-        }
-        Relationships: []
-      }
-      iContabil: {
-        Row: {
-          cd_contabil: number | null
-        }
-        Insert: {
-          cd_contabil?: number | null
-        }
-        Update: {
-          cd_contabil?: number | null
-        }
-        Relationships: []
-      }
-      icontabil_orcamento: {
-        Row: {
-          ds_mes: string | null
-          G1: string | null
-          G2: string | null
-          G3: string | null
-          G4: string | null
-          nr_ano: number
-          nr_mes: number | null
-          nr_trimestre: number | null
-          O1: string | null
-          RxO: string | null
-          Valor: number | null
-        }
-        Insert: {
-          ds_mes?: string | null
-          G1?: string | null
-          G2?: string | null
-          G3?: string | null
-          G4?: string | null
-          nr_ano?: number
-          nr_mes?: number | null
-          nr_trimestre?: number | null
-          O1?: string | null
-          RxO?: string | null
-          Valor?: number | null
-        }
-        Update: {
-          ds_mes?: string | null
-          G1?: string | null
-          G2?: string | null
-          G3?: string | null
-          G4?: string | null
-          nr_ano?: number
-          nr_mes?: number | null
-          nr_trimestre?: number | null
-          O1?: string | null
-          RxO?: string | null
-          Valor?: number | null
         }
         Relationships: []
       }
@@ -244,7 +175,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      DATA: "DD-MM-YYYY"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -371,6 +302,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      DATA: ["DD-MM-YYYY"],
+    },
   },
 } as const
