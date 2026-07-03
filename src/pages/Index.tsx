@@ -35,6 +35,7 @@ import DREGraficos from "@/components/DREGraficos";
 import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
 import Sinistralidade from "@/components/Sinistralidade";
 import BIOverview from "@/components/BIOverview";
+import OrcamentoDW from "@/components/OrcamentoDW";
 
 
 import logoFull from "@/assets/bensaude-logo.svg.asset.json";
@@ -58,6 +59,7 @@ const menuItems: MenuItem[] = [
       { icon: FileText, label: "DRE" },
       { icon: BarChart3, label: "Gráfico" },
       { icon: LayoutDashboard, label: "DRE PB" },
+      { icon: FileText, label: "Orçamento DW" },
     ],
   },
   {
@@ -283,6 +285,8 @@ const Index = () => {
                 allowFullScreen
               />
             </section>
+          ) : active === "Orçamento DW" ? (
+            <OrcamentoDW />
           ) : active === "B.I. Overview" ? (
             <BIOverview />
           ) : active === "Home" ? (
