@@ -230,7 +230,13 @@ function Dashboard({
         const rows = (data ?? []) as any[];
         totalRows += rows.length;
         for (const r of rows) {
-          if (r.NOME_PLANO) planoSet.add(String(r.NOME_PLANO));
+          if (r.PLANO != null) {
+            const p = Number(r.PLANO);
+            if (!Number.isNaN(p)) {
+              if (p < 2000) pifSet.add(p);
+              else if (p > 2000) empresasSet.add(p);
+            }
+          }
           if (r.CIDADE_OFICIAL) cidadeSet.add(String(r.CIDADE_OFICIAL));
           if (r.IDADE != null) {
             const idade = Number(r.IDADE);
