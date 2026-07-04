@@ -192,7 +192,7 @@ function Dashboard({
   const [porUF, setPorUF] = useState<{ uf: string; total: number }[]>([]);
   const [ufTotals, setUfTotals] = useState<Record<string, number>>({});
   const [cityTotalsByUF, setCityTotalsByUF] = useState<Record<string, Record<string, number>>>({});
-  const [selectedUF, setSelectedUF] = useState<"SP" | "MG" | "MS" | null>(null);
+  const [mapSelection, setMapSelection] = useState<"SP" | "MG" | "MS" | "AREA" | null>(null);
   const [chartView, setChartView] = useState<"faixa" | "uf">("faixa");
   const [loading, setLoading] = useState(true);
 
