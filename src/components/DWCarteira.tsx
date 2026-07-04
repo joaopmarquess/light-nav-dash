@@ -257,7 +257,8 @@ function Dashboard({
       }
 
       setVidas(totalRows);
-      setPlanosDistintos(planoSet.size);
+      setPifDistintos(pifSet.size);
+      setEmpresasDistintas(empresasSet.size);
       setCidadesDistintas(cidadeSet.size);
       setPorFaixa(
         FAIXAS.map((f) => {
