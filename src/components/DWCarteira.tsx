@@ -136,6 +136,8 @@ function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
   );
 }
 
+type MovFilter = "Venda" | "Transferência" | "Cancelamento" | typeof ALL;
+
 export default function DWCarteira() {
   const [tab, setTab] = useState("dashboard");
   const [planos, setPlanos] = useState<string[]>([]);
@@ -143,6 +145,7 @@ export default function DWCarteira() {
   const [statuses, setStatuses] = useState<string[]>([]);
   const [planoDeOpts, setPlanoDeOpts] = useState<string[]>([]);
   const [planoDe, setPlanoDe] = useState<string>("Saúde");
+  const [movFilter, setMovFilter] = useState<MovFilter>("Venda");
   const [loadingOpts, setLoadingOpts] = useState(true);
 
   useEffect(() => {
@@ -184,8 +187,22 @@ export default function DWCarteira() {
             </SelectContent>
           </Select>
         </div>
+        <div className="w-56">
+          <Label>Movimentação</Label>
+          <Select value={movFilter} onValueChange={(v) => setMovFilter(v as MovFilter)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Todas" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>Todas</SelectItem>
+              <SelectItem value="Venda">Venda</SelectItem>
+              <SelectItem value="Transferência">Transferência</SelectItem>
+              <SelectItem value="Cancelamento">Cancelamento</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <p className="text-xs text-muted-foreground pb-2">
-          Filtro aplicado a todas as consultas abaixo.
+          Filtros aplicados a todas as consultas abaixo.
         </p>
       </div>
 
@@ -215,16 +232,17 @@ export default function DWCarteira() {
             statuses={statuses}
             loadingOpts={loadingOpts}
             planoDe={planoDe}
+            movFilter={movFilter}
           />
         </TabsContent>
         <TabsContent value="nome" className="mt-6">
-          <BuscaNome planoDe={planoDe} />
+          <BuscaNome planoDe={planoDe} movFilter={movFilter} />
         </TabsContent>
         <TabsContent value="cpf" className="mt-6">
-          <BuscaCPF planoDe={planoDe} />
+          <BuscaCPF planoDe={planoDe} movFilter={movFilter} />
         </TabsContent>
         <TabsContent value="cdregusr" className="mt-6">
-          <BuscaCDREGUSR planoDe={planoDe} />
+          <BuscaCDREGUSR planoDe={planoDe} movFilter={movFilter} />
         </TabsContent>
         <TabsContent value="filtros" className="mt-6">
           <BuscaFiltros
@@ -232,6 +250,7 @@ export default function DWCarteira() {
             cidades={cidades}
             statuses={statuses}
             planoDe={planoDe}
+            movFilter={movFilter}
           />
         </TabsContent>
       </Tabs>
@@ -239,9 +258,33 @@ export default function DWCarteira() {
   );
 }
 
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const applyPlanoDe = (q: any, planoDe: string) =>
   planoDe === ALL ? q : q.eq("Plano_de", planoDe);
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const applyMov = (q: any, mov: MovFilter) => {
+  if (mov === ALL) return q;
+  if (mov === "Venda") {
+    return q
+      .is("CANCELAMENTO", null)
+      .neq("STATUS", "C")
+      .or("VENDEDOR.is.null,VENDEDOR.not.ilike.*transfer*");
+  }
+  if (mov === "Cancelamento") {
+    return q
+      .or("CANCELAMENTO.not.is.null,STATUS.eq.C")
+      .or(
+        "MOTIVO_CANCELAMENTO.is.null,and(MOTIVO_CANCELAMENTO.not.ilike.*transfer*,MOTIVO_CANCELAMENTO.not.ilike.*troca*)",
+      );
+  }
+  // Transferência
+  return q.or(
+    "and(or(CANCELAMENTO.not.is.null,STATUS.eq.C),or(MOTIVO_CANCELAMENTO.ilike.*transfer*,MOTIVO_CANCELAMENTO.ilike.*troca*)),and(CANCELAMENTO.is.null,STATUS.neq.C,VENDEDOR.ilike.*transfer*)",
+  );
+};
+
 
 
 function Dashboard({
@@ -250,12 +293,14 @@ function Dashboard({
   statuses,
   loadingOpts,
   planoDe,
+  movFilter,
 }: {
   planos: string[];
   cidades: string[];
   statuses: string[];
   loadingOpts: boolean;
   planoDe: string;
+  movFilter: MovFilter;
 }) {
   const [total, setTotal] = useState<number | null>(null);
   const [ativos, setAtivos] = useState<number | null>(null);
@@ -266,29 +311,29 @@ function Dashboard({
     if (loadingOpts) return;
     (async () => {
       setLoading(true);
-      const totalQ = await applyPlanoDe(
-        dw.from(TABLE).select("CDREGUSR", { count: "exact", head: true }),
-        planoDe,
-      );
-      const ativosQ = await applyPlanoDe(
-        dw.from(TABLE).select("CDREGUSR", { count: "exact", head: true }).eq("STATUS", "A"),
-        planoDe,
-      );
+      const base = () =>
+        applyMov(
+          applyPlanoDe(
+            dw.from(TABLE).select("CDREGUSR", { count: "exact", head: true }),
+            planoDe,
+          ),
+          movFilter,
+        );
+      const totalQ = await base();
+      const ativosQ = await base().eq("STATUS", "A");
       setTotal(totalQ.count ?? 0);
       setAtivos(ativosQ.count ?? 0);
 
       const counts: { status: string; total: number }[] = [];
       for (const s of statuses.slice(0, 10)) {
-        const { count } = await applyPlanoDe(
-          dw.from(TABLE).select("CDREGUSR", { count: "exact", head: true }).eq("STATUS", s),
-          planoDe,
-        );
+        const { count } = await base().eq("STATUS", s);
         counts.push({ status: s, total: count ?? 0 });
       }
       setPorStatus(counts.sort((a, b) => b.total - a.total));
       setLoading(false);
     })();
-  }, [statuses, loadingOpts, planoDe]);
+  }, [statuses, loadingOpts, planoDe, movFilter]);
+
 
 
   return (
@@ -378,14 +423,17 @@ function useSearch() {
   return { rows, loading, run };
 }
 
-function BuscaNome({ planoDe }: { planoDe: string }) {
+function BuscaNome({ planoDe, movFilter }: { planoDe: string; movFilter: MovFilter }) {
   const [nome, setNome] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () =>
     run(() =>
-      applyPlanoDe(
-        dw.from(TABLE).select(COLS).ilike("NOME_BENEFICIARIO", `%${nome}%`),
-        planoDe,
+      applyMov(
+        applyPlanoDe(
+          dw.from(TABLE).select(COLS).ilike("NOME_BENEFICIARIO", `%${nome}%`),
+          planoDe,
+        ),
+        movFilter,
       ).order("NOME_BENEFICIARIO"),
     );
   return (
@@ -414,13 +462,13 @@ function BuscaNome({ planoDe }: { planoDe: string }) {
   );
 }
 
-function BuscaCPF({ planoDe }: { planoDe: string }) {
+function BuscaCPF({ planoDe, movFilter }: { planoDe: string; movFilter: MovFilter }) {
   const [cpf, setCpf] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () => {
     const digits = cpf.replace(/\D/g, "");
     if (!digits) return;
-    run(() => applyPlanoDe(dw.from(TABLE).select(COLS).eq("CPF", digits), planoDe));
+    run(() => applyMov(applyPlanoDe(dw.from(TABLE).select(COLS).eq("CPF", digits), planoDe), movFilter));
   };
   return (
     <Card>
@@ -448,13 +496,13 @@ function BuscaCPF({ planoDe }: { planoDe: string }) {
   );
 }
 
-function BuscaCDREGUSR({ planoDe }: { planoDe: string }) {
+function BuscaCDREGUSR({ planoDe, movFilter }: { planoDe: string; movFilter: MovFilter }) {
   const [cd, setCd] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () => {
     const n = Number(cd.trim());
     if (!n) return;
-    run(() => applyPlanoDe(dw.from(TABLE).select(COLS).eq("CDREGUSR", n), planoDe));
+    run(() => applyMov(applyPlanoDe(dw.from(TABLE).select(COLS).eq("CDREGUSR", n), planoDe), movFilter));
   };
   return (
     <Card>
@@ -487,11 +535,13 @@ function BuscaFiltros({
   cidades,
   statuses,
   planoDe,
+  movFilter,
 }: {
   planos: string[];
   cidades: string[];
   statuses: string[];
   planoDe: string;
+  movFilter: MovFilter;
 }) {
   const [plano, setPlano] = useState<string>(ALL);
   const [cidade, setCidade] = useState<string>(ALL);
@@ -504,7 +554,7 @@ function BuscaFiltros({
       if (plano !== ALL) q = q.eq("NOME_PLANO", plano);
       if (cidade !== ALL) q = q.eq("CIDADE_PLANO", cidade);
       if (status !== ALL) q = q.eq("STATUS", status);
-      return applyPlanoDe(q, planoDe).order("NOME_BENEFICIARIO");
+      return applyMov(applyPlanoDe(q, planoDe), movFilter).order("NOME_BENEFICIARIO");
     });
 
   const anyFilter = useMemo(
