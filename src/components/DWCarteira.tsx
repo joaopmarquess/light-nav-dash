@@ -529,13 +529,13 @@ function BuscaCPF({ planoDe, ocorrencia, movFilter }: { planoDe: string; ocorren
   );
 }
 
-function BuscaCDREGUSR({ planoDe, movFilter }: { planoDe: string; movFilter: MovFilter }) {
+function BuscaCDREGUSR({ planoDe, ocorrencia, movFilter }: { planoDe: string; ocorrencia: string; movFilter: MovFilter }) {
   const [cd, setCd] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () => {
     const n = Number(cd.trim());
     if (!n) return;
-    run(() => applyMov(applyPlanoDe(dw.from(TABLE).select(COLS).eq("CDREGUSR", n), planoDe), movFilter));
+    run(() => applyMov(applyOcorrencia(applyPlanoDe(dw.from(TABLE).select(COLS).eq("CDREGUSR", n), planoDe), ocorrencia), movFilter));
   };
   return (
     <Card>
