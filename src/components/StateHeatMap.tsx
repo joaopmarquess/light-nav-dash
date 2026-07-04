@@ -232,24 +232,6 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
                     />
                   );
                 })}
-                {features.map((f, i) => {
-                  const [tx, ty] = pathFn.centroid(f);
-                  if (!Number.isFinite(tx) || !Number.isFinite(ty)) return null;
-                  if (Math.hypot(tx - cx, ty - cy) * Z > R - 6) return null;
-                  return (
-                    <text
-                      key={`lens-t-${i}`}
-                      x={tx}
-                      y={ty}
-                      textAnchor="middle"
-                      fontSize={2.2}
-                      fill="#0f172a"
-                      style={{ paintOrder: "stroke", stroke: "#fff", strokeWidth: 0.6 }}
-                    >
-                      {f.properties?.name}
-                    </text>
-                  );
-                })}
               </g>
               <circle
                 cx={cx}
@@ -258,8 +240,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
                 fill="none"
                 stroke="#0f172a"
                 strokeWidth={2}
-                onClick={() => setLens(null)}
-                style={{ cursor: "zoom-out" }}
+                pointerEvents="none"
               />
             </g>
           );
