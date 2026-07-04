@@ -119,6 +119,7 @@ export function BrazilHeatMap({ ufTotals, onSelectUF }: Props) {
           const uf = NAME_TO_UF[f.properties?.name] ?? "";
           const total = ufTotals[uf] ?? 0;
           const d = pathFn(f) ?? "";
+          const clickable = !!(onSelectUF && CLICKABLE[uf]);
           return (
             <path
               key={i}
@@ -136,7 +137,10 @@ export function BrazilHeatMap({ ufTotals, onSelectUF }: Props) {
                 });
               }}
               onMouseLeave={() => setHover(null)}
-              style={{ transition: "fill 120ms" }}
+              onClick={() => {
+                if (clickable) onSelectUF!(uf as "SP" | "MG" | "MS");
+              }}
+              style={{ transition: "fill 120ms", cursor: clickable ? "pointer" : "default" }}
             />
           );
         })}
