@@ -163,17 +163,6 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
           if (focused) setFocused(null);
         }}
       >
-        {!isArea &&
-          features.map((f, i) => (
-            <path
-              key={`outline-${i}`}
-              d={pathFn(f) ?? ""}
-              fill="none"
-              stroke="#000"
-              strokeWidth={1.2}
-              strokeLinejoin="round"
-            />
-          ))}
         <g
           transform={
             focused
