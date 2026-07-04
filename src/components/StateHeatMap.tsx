@@ -274,18 +274,6 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
           </div>
         </div>
       )}
-        <div
-          className="pointer-events-none absolute z-10 rounded-md border border-border bg-popover px-2 py-1 text-xs shadow-md"
-          style={{ left: hover.x + 12, top: hover.y + 12 }}
-        >
-          <div className="font-semibold text-foreground">
-            {hover.name} <span className="text-muted-foreground">/ {hover.uf}</span>
-          </div>
-          <div className="text-muted-foreground tabular-nums">
-            {hover.total.toLocaleString("pt-BR")} vidas
-          </div>
-        </div>
-      )}
     </div>
   );
 }
