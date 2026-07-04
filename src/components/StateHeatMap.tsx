@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import type { FeatureCollection, Feature, Geometry } from "geojson";
-import { Loader2 } from "lucide-react";
+import { Loader2, ZoomIn } from "lucide-react";
 
 // IBGE UF codes for municipality geojson from tbrugz/geodata-br
 const UF_CODE: Record<string, string> = { SP: "35", MG: "31", MS: "50" };
@@ -44,12 +44,14 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
     null,
   );
   const [lens, setLens] = useState<{ cx: number; cy: number } | null>(null);
+  const [lensMode, setLensMode] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     setFeatures(null);
     setStateOutlines(null);
     setLens(null);
+    setLensMode(false);
     (async () => {
       const results = await Promise.all(
         ufs.map(async (uf) => {
@@ -136,6 +138,18 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
         className="w-full h-full max-h-full"
         role="img"
         aria-label={`Mapa de calor por município — ${ufs.join(", ")}`}
+        style={{ cursor: lensMode ? "none" : "default" }}
+        onMouseMove={(e) => {
+          if (!lensMode) return;
+          const svg = e.currentTarget;
+          const rect = svg.getBoundingClientRect();
+          const cx = ((e.clientX - rect.left) / rect.width) * width;
+          const cy = ((e.clientY - rect.top) / rect.height) * height;
+          setLens({ cx, cy });
+        }}
+        onMouseLeave={() => {
+          if (lensMode) setLens(null);
+        }}
       >
         {!isArea &&
           features.map((f, i) => (
@@ -171,16 +185,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
                 });
               }}
               onMouseLeave={() => setHover(null)}
-              onClick={() => {
-                if (!isArea) return;
-                const [cx, cy] = pathFn.centroid(f);
-                if (Number.isFinite(cx) && Number.isFinite(cy)) {
-                  setLens((prev) =>
-                    prev && Math.hypot(prev.cx - cx, prev.cy - cy) < 2 ? null : { cx, cy },
-                  );
-                }
-              }}
-              style={{ transition: "fill 120ms", cursor: isArea ? "zoom-in" : "default" }}
+              style={{ transition: "fill 120ms" }}
             />
           );
         })}
@@ -227,24 +232,6 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
                     />
                   );
                 })}
-                {features.map((f, i) => {
-                  const [tx, ty] = pathFn.centroid(f);
-                  if (!Number.isFinite(tx) || !Number.isFinite(ty)) return null;
-                  if (Math.hypot(tx - cx, ty - cy) * Z > R - 6) return null;
-                  return (
-                    <text
-                      key={`lens-t-${i}`}
-                      x={tx}
-                      y={ty}
-                      textAnchor="middle"
-                      fontSize={2.2}
-                      fill="#0f172a"
-                      style={{ paintOrder: "stroke", stroke: "#fff", strokeWidth: 0.6 }}
-                    >
-                      {f.properties?.name}
-                    </text>
-                  );
-                })}
               </g>
               <circle
                 cx={cx}
@@ -253,8 +240,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
                 fill="none"
                 stroke="#0f172a"
                 strokeWidth={2}
-                onClick={() => setLens(null)}
-                style={{ cursor: "zoom-out" }}
+                pointerEvents="none"
               />
             </g>
           );
@@ -273,6 +259,27 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
             {hover.total.toLocaleString("pt-BR")} vidas
           </div>
         </div>
+      )}
+
+      {isArea && (
+        <button
+          type="button"
+          onClick={() => {
+            setLensMode((v) => {
+              if (v) setLens(null);
+              return !v;
+            });
+          }}
+          aria-label={lensMode ? "Desativar lupa" : "Ativar lupa"}
+          title={lensMode ? "Desativar lupa" : "Ativar lupa"}
+          className={`absolute top-2 right-2 z-20 h-8 w-8 flex items-center justify-center rounded-md border border-border shadow-sm transition-colors ${
+            lensMode
+              ? "bg-primary text-primary-foreground"
+              : "bg-background text-foreground hover:bg-accent"
+          }`}
+        >
+          <ZoomIn className="h-4 w-4" />
+        </button>
       )}
     </div>
   );
