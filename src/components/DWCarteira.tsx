@@ -409,13 +409,13 @@ function BuscaCPF({ planoDe }: { planoDe: string }) {
   );
 }
 
-function BuscaCDREGUSR() {
+function BuscaCDREGUSR({ planoDe }: { planoDe: string }) {
   const [cd, setCd] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () => {
     const n = Number(cd.trim());
     if (!n) return;
-    run(() => dw.from(TABLE).select(COLS).eq("CDREGUSR", n));
+    run(() => applyPlanoDe(dw.from(TABLE).select(COLS).eq("CDREGUSR", n), planoDe));
   };
   return (
     <Card>
