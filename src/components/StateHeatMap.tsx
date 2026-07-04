@@ -43,6 +43,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
   const [hover, setHover] = useState<{ name: string; uf: string; total: number; x: number; y: number } | null>(
     null,
   );
+  const [lens, setLens] = useState<{ cx: number; cy: number } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
