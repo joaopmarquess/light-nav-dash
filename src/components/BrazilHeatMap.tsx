@@ -39,12 +39,15 @@ const NAME_TO_UF: Record<string, string> = {
 
 interface Props {
   ufTotals: Record<string, number>;
+  onSelectUF?: (uf: "SP" | "MG" | "MS") => void;
 }
+
+const CLICKABLE: Record<string, true> = { SP: true, MG: true, MS: true };
 
 // simple cache across renders
 let cachedGeo: FeatureCollection | null = null;
 
-export function BrazilHeatMap({ ufTotals }: Props) {
+export function BrazilHeatMap({ ufTotals, onSelectUF }: Props) {
   const [geo, setGeo] = useState<FeatureCollection | null>(cachedGeo);
   const [hover, setHover] = useState<{ uf: string; total: number; x: number; y: number } | null>(
     null,
