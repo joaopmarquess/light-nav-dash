@@ -22,6 +22,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Users, Search, IdCard, Hash, LayoutDashboard, Loader2 } from "lucide-react";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
+import { StateHeatMap } from "@/components/StateHeatMap";
 
 type Row = {
   CDREGUSR: number | null;
