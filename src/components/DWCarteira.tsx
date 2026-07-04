@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { dw } from "@/lib/dwClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,24 +23,23 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Users, Search, IdCard, Hash, LayoutDashboard, Loader2 } from "lucide-react";
 
 type Row = {
-  id: number;
-  CDREGUSR: string | null;
+  CDREGUSR: number | null;
   STATUS: string | null;
   NOME_PLANO: string | null;
   NOME_BENEFICIARIO: string | null;
   NOME_RESPONSAVEL: string | null;
-  CPF: number | null;
+  CPF: string | null;
   CIDADE_PLANO: string | null;
   UF_PLANO: string | null;
   IDADE: number | null;
-  VALOR_TIMM: number | null;
+  VALOR_TMM: number | null;
 };
 
 const COLS =
-  'id,"CDREGUSR","STATUS","NOME_PLANO","NOME_BENEFICIARIO","NOME_RESPONSAVEL","CPF","CIDADE_PLANO","UF_PLANO","IDADE","VALOR_TIMM"';
-
+  '"CDREGUSR","STATUS","NOME_PLANO","NOME_BENEFICIARIO","NOME_RESPONSAVEL","CPF","CIDADE_PLANO","UF_PLANO","IDADE","VALOR_TMM"';
+const TABLE = "gd_ecarteira";
 const ALL = "__all__";
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 100;
 
 function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
   if (loading) {
@@ -52,9 +51,7 @@ function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
   }
   if (!rows.length) {
     return (
-      <div className="text-sm text-muted-foreground py-8 text-center">
-        Nenhum resultado.
-      </div>
+      <div className="text-sm text-muted-foreground py-8 text-center">Nenhum resultado.</div>
     );
   }
   return (
@@ -69,12 +66,12 @@ function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
             <TableHead>Cidade/UF</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Idade</TableHead>
-            <TableHead className="text-right">Valor TIMM</TableHead>
+            <TableHead className="text-right">Valor TMM</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.map((r) => (
-            <TableRow key={r.id}>
+          {rows.map((r, i) => (
+            <TableRow key={`${r.CDREGUSR}-${i}`}>
               <TableCell>{r.CDREGUSR ?? "-"}</TableCell>
               <TableCell className="font-medium">{r.NOME_BENEFICIARIO ?? "-"}</TableCell>
               <TableCell>{r.CPF ?? "-"}</TableCell>
@@ -85,8 +82,8 @@ function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
               <TableCell>{r.STATUS ?? "-"}</TableCell>
               <TableCell className="text-right">{r.IDADE ?? "-"}</TableCell>
               <TableCell className="text-right">
-                {r.VALOR_TIMM != null
-                  ? r.VALOR_TIMM.toLocaleString("pt-BR", {
+                {r.VALOR_TMM != null
+                  ? r.VALOR_TMM.toLocaleString("pt-BR", {
                       style: "currency",
                       currency: "BRL",
                     })
@@ -102,26 +99,27 @@ function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
 
 export default function DWCarteira() {
   const [tab, setTab] = useState("dashboard");
-
-  // shared filter options
   const [planos, setPlanos] = useState<string[]>([]);
   const [cidades, setCidades] = useState<string[]>([]);
   const [statuses, setStatuses] = useState<string[]>([]);
+  const [loadingOpts, setLoadingOpts] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("gd_ecarteira")
+      setLoadingOpts(true);
+      const { data, error } = await dw
+        .from(TABLE)
         .select('"NOME_PLANO","CIDADE_PLANO","STATUS"')
-        .limit(5000);
-      if (!data) return;
+        .limit(10000);
+      if (error) console.error("Erro ao carregar filtros:", error);
       const uniq = (arr: (string | null | undefined)[]) =>
         Array.from(new Set(arr.filter((x): x is string => !!x))).sort();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rows = data as any[];
+      const rows = (data ?? []) as any[];
       setPlanos(uniq(rows.map((r) => r.NOME_PLANO)));
       setCidades(uniq(rows.map((r) => r.CIDADE_PLANO)));
       setStatuses(uniq(rows.map((r) => r.STATUS)));
+      setLoadingOpts(false);
     })();
   }, []);
 
@@ -147,7 +145,7 @@ export default function DWCarteira() {
         </TabsList>
 
         <TabsContent value="dashboard" className="mt-6">
-          <Dashboard planos={planos} cidades={cidades} statuses={statuses} />
+          <Dashboard planos={planos} cidades={cidades} statuses={statuses} loadingOpts={loadingOpts} />
         </TabsContent>
         <TabsContent value="nome" className="mt-6">
           <BuscaNome />
@@ -170,10 +168,12 @@ function Dashboard({
   planos,
   cidades,
   statuses,
+  loadingOpts,
 }: {
   planos: string[];
   cidades: string[];
   statuses: string[];
+  loadingOpts: boolean;
 }) {
   const [total, setTotal] = useState<number | null>(null);
   const [ativos, setAtivos] = useState<number | null>(null);
@@ -181,38 +181,37 @@ function Dashboard({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (loadingOpts) return;
     (async () => {
       setLoading(true);
-      const totalQ = await supabase
-        .from("gd_ecarteira")
-        .select("id", { count: "exact", head: true });
-      const ativosQ = await supabase
-        .from("gd_ecarteira")
-        .select("id", { count: "exact", head: true })
-        .ilike("STATUS", "%ativ%");
+      const totalQ = await dw.from(TABLE).select("CDREGUSR", { count: "exact", head: true });
+      const ativosQ = await dw
+        .from(TABLE)
+        .select("CDREGUSR", { count: "exact", head: true })
+        .eq("STATUS", "A");
       setTotal(totalQ.count ?? 0);
       setAtivos(ativosQ.count ?? 0);
 
       const counts: { status: string; total: number }[] = [];
-      for (const s of statuses.slice(0, 8)) {
-        const { count } = await supabase
-          .from("gd_ecarteira")
-          .select("id", { count: "exact", head: true })
+      for (const s of statuses.slice(0, 10)) {
+        const { count } = await dw
+          .from(TABLE)
+          .select("CDREGUSR", { count: "exact", head: true })
           .eq("STATUS", s);
         counts.push({ status: s, total: count ?? 0 });
       }
       setPorStatus(counts.sort((a, b) => b.total - a.total));
       setLoading(false);
     })();
-  }, [statuses]);
+  }, [statuses, loadingOpts]);
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatCard label="Total de Vidas" value={total} loading={loading} />
-        <StatCard label="Vidas Ativas" value={ativos} loading={loading} />
-        <StatCard label="Planos distintos" value={planos.length} loading={loading} />
-        <StatCard label="Cidades atendidas" value={cidades.length} loading={loading} />
+        <StatCard label="Vidas Ativas (STATUS=A)" value={ativos} loading={loading} />
+        <StatCard label="Planos distintos" value={planos.length} loading={loadingOpts} />
+        <StatCard label="Cidades atendidas" value={cidades.length} loading={loadingOpts} />
       </div>
 
       <Card>
@@ -238,10 +237,7 @@ function Dashboard({
                       </span>
                     </div>
                     <div className="h-2 rounded-full bg-accent overflow-hidden">
-                      <div
-                        className="h-full bg-primary"
-                        style={{ width: `${pct}%` }}
-                      />
+                      <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 );
@@ -266,9 +262,7 @@ function StatCard({
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm text-muted-foreground font-medium">
-          {label}
-        </CardTitle>
+        <CardTitle className="text-sm text-muted-foreground font-medium">{label}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="text-3xl font-semibold text-foreground">
@@ -286,7 +280,7 @@ function StatCard({
 function useSearch() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
-  const run = async (build: () => ReturnType<typeof supabase.from>) => {
+  const run = async (build: () => ReturnType<typeof dw.from>) => {
     setLoading(true);
     const q = build();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -303,11 +297,7 @@ function BuscaNome() {
   const { rows, loading, run } = useSearch();
   const submit = () =>
     run(() =>
-      supabase
-        .from("gd_ecarteira")
-        .select(COLS)
-        .ilike("NOME_BENEFICIARIO", `%${nome}%`)
-        .order("NOME_BENEFICIARIO"),
+      dw.from(TABLE).select(COLS).ilike("NOME_BENEFICIARIO", `%${nome}%`).order("NOME_BENEFICIARIO"),
     );
   return (
     <Card>
@@ -341,12 +331,7 @@ function BuscaCPF() {
   const submit = () => {
     const digits = cpf.replace(/\D/g, "");
     if (!digits) return;
-    run(() =>
-      supabase
-        .from("gd_ecarteira")
-        .select(COLS)
-        .eq("CPF", Number(digits)),
-    );
+    run(() => dw.from(TABLE).select(COLS).eq("CPF", digits));
   };
   return (
     <Card>
@@ -377,10 +362,11 @@ function BuscaCPF() {
 function BuscaCDREGUSR() {
   const [cd, setCd] = useState("");
   const { rows, loading, run } = useSearch();
-  const submit = () =>
-    run(() =>
-      supabase.from("gd_ecarteira").select(COLS).eq("CDREGUSR", cd.trim()),
-    );
+  const submit = () => {
+    const n = Number(cd.trim());
+    if (!n) return;
+    run(() => dw.from(TABLE).select(COLS).eq("CDREGUSR", n));
+  };
   return (
     <Card>
       <CardHeader>
@@ -389,12 +375,12 @@ function BuscaCDREGUSR() {
       <CardContent className="space-y-4">
         <div className="flex gap-2 items-end max-w-xl">
           <div className="flex-1">
-            <Label>CDREGUSR</Label>
+            <Label>CDREGUSR (numérico)</Label>
             <Input
               value={cd}
               onChange={(e) => setCd(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && submit()}
-              placeholder="Código do registro"
+              placeholder="Ex: 100331200"
             />
           </div>
           <Button onClick={submit} disabled={!cd.trim()}>
@@ -423,7 +409,7 @@ function BuscaFiltros({
 
   const submit = () =>
     run(() => {
-      let q = supabase.from("gd_ecarteira").select(COLS);
+      let q = dw.from(TABLE).select(COLS);
       if (plano !== ALL) q = q.eq("NOME_PLANO", plano);
       if (cidade !== ALL) q = q.eq("CIDADE_PLANO", cidade);
       if (status !== ALL) q = q.eq("STATUS", status);
