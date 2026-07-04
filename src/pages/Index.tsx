@@ -36,6 +36,7 @@ import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
 import Sinistralidade from "@/components/Sinistralidade";
 import BIOverview from "@/components/BIOverview";
 import OrcamentoDW from "@/components/OrcamentoDW";
+import DWCarteira from "@/components/DWCarteira";
 
 
 import logoFull from "@/assets/bensaude-logo.svg.asset.json";
@@ -69,6 +70,7 @@ const menuItems: MenuItem[] = [
       { icon: Search, label: "Consulta Beneficiário" },
       { icon: UserCheck, label: "Ativos em" },
       { icon: TrendingUp, label: "Vendas" },
+      { icon: LayoutDashboard, label: "DW Carteira" },
     ],
   },
   {
@@ -255,6 +257,8 @@ const Index = () => {
         <main className="flex-1 p-8">
           {active === "Ativos em" ? (
             <AtivosEm dateValue={dateValue} initialDrillNome={ativosDrillNome} />
+          ) : active === "DW Carteira" ? (
+            <DWCarteira />
           ) : active === "Vendas" ? (
             <Vendas />
           ) : active === "Consulta Beneficiário" ? (
