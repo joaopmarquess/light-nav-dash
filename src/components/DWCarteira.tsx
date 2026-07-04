@@ -423,14 +423,17 @@ function useSearch() {
   return { rows, loading, run };
 }
 
-function BuscaNome({ planoDe }: { planoDe: string }) {
+function BuscaNome({ planoDe, movFilter }: { planoDe: string; movFilter: MovFilter }) {
   const [nome, setNome] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () =>
     run(() =>
-      applyPlanoDe(
-        dw.from(TABLE).select(COLS).ilike("NOME_BENEFICIARIO", `%${nome}%`),
-        planoDe,
+      applyMov(
+        applyPlanoDe(
+          dw.from(TABLE).select(COLS).ilike("NOME_BENEFICIARIO", `%${nome}%`),
+          planoDe,
+        ),
+        movFilter,
       ).order("NOME_BENEFICIARIO"),
     );
   return (
