@@ -204,6 +204,22 @@ export default function DWCarteira() {
             </SelectContent>
           </Select>
         </div>
+        <div className="w-56">
+          <Label>Ocorrência</Label>
+          <Select value={ocorrencia} onValueChange={setOcorrencia}>
+            <SelectTrigger>
+              <SelectValue placeholder="Todas" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>Todas</SelectItem>
+              {ocorrenciaOpts.map((o) => (
+                <SelectItem key={o} value={o}>
+                  {o}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <p className="text-xs text-muted-foreground pb-2">
           Filtros aplicados a todas as consultas abaixo.
         </p>
