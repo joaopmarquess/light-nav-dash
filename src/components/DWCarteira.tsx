@@ -218,7 +218,6 @@ function Dashboard({
           dw
             .from(TABLE)
             .select('"NOME_PLANO","CIDADE_OFICIAL","IDADE","idsex"'),
-          planoDe,
         );
         const { data, error } = await q.range(from, from + pageSize - 1);
         if (error) {
