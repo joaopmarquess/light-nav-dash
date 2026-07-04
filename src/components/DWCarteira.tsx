@@ -22,6 +22,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Users, Search, IdCard, Hash, LayoutDashboard, Loader2 } from "lucide-react";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
+import { StateHeatMap } from "@/components/StateHeatMap";
 
 type Row = {
   CDREGUSR: number | null;
@@ -190,6 +191,8 @@ function Dashboard({
   >([]);
   const [porUF, setPorUF] = useState<{ uf: string; total: number }[]>([]);
   const [ufTotals, setUfTotals] = useState<Record<string, number>>({});
+  const [cityTotalsByUF, setCityTotalsByUF] = useState<Record<string, Record<string, number>>>({});
+  const [selectedUF, setSelectedUF] = useState<"SP" | "MG" | "MS" | null>(null);
   const [chartView, setChartView] = useState<"faixa" | "uf">("faixa");
   const [loading, setLoading] = useState(true);
 
@@ -223,6 +226,11 @@ function Dashboard({
       const UF_KEYS = ["SP", "MS", "MG", "Outros"] as const;
       const perUF = new Map<string, number>(UF_KEYS.map((u) => [u, 0]));
       const perUFAll = new Map<string, number>();
+      const perCityByUF: Record<string, Map<string, number>> = {
+        SP: new Map(),
+        MG: new Map(),
+        MS: new Map(),
+      };
       const pageSize = 1000;
       let from = 0;
       const maxRows = 500000;
@@ -255,6 +263,10 @@ function Dashboard({
             const key = (["SP", "MS", "MG"] as const).includes(uf as never) ? uf : "Outros";
             perUF.set(key, (perUF.get(key) ?? 0) + 1);
             if (uf) perUFAll.set(uf, (perUFAll.get(uf) ?? 0) + 1);
+            if (perCityByUF[uf] && r.CIDADE_OFICIAL) {
+              const city = String(r.CIDADE_OFICIAL);
+              perCityByUF[uf].set(city, (perCityByUF[uf].get(city) ?? 0) + 1);
+            }
           }
           if (r.IDADE != null) {
             const idade = Number(r.IDADE);
@@ -286,6 +298,11 @@ function Dashboard({
       );
       setPorUF(UF_KEYS.map((u) => ({ uf: u, total: perUF.get(u) ?? 0 })));
       setUfTotals(Object.fromEntries(perUFAll));
+      setCityTotalsByUF({
+        SP: Object.fromEntries(perCityByUF.SP),
+        MG: Object.fromEntries(perCityByUF.MG),
+        MS: Object.fromEntries(perCityByUF.MS),
+      });
       setLoading(false);
     })();
   }, [loadingOpts]);
@@ -414,8 +431,26 @@ function Dashboard({
                   });
                 })()}
               </div>
-              <div className="w-full h-[260px] flex items-center justify-center">
-                <BrazilHeatMap ufTotals={ufTotals} />
+              <div className="w-full h-[260px] flex flex-col">
+                {selectedUF && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedUF(null)}
+                    className="self-start mb-1 text-xs text-muted-foreground hover:text-foreground underline"
+                  >
+                    ← Voltar ao Brasil
+                  </button>
+                )}
+                <div className="flex-1 min-h-0 flex items-center justify-center">
+                  {selectedUF ? (
+                    <StateHeatMap
+                      uf={selectedUF}
+                      cityTotals={cityTotalsByUF[selectedUF] ?? {}}
+                    />
+                  ) : (
+                    <BrazilHeatMap ufTotals={ufTotals} onSelectUF={setSelectedUF} />
+                  )}
+                </div>
               </div>
             </div>
           )}
