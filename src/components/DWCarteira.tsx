@@ -375,7 +375,7 @@ function Dashboard({
               })()}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
               <div className="space-y-2">
                 {(() => {
                   const max = Math.max(1, ...porUF.map((r) => r.total));
