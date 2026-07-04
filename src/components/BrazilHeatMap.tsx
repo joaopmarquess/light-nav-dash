@@ -93,10 +93,11 @@ export function BrazilHeatMap({ ufTotals }: Props) {
   }
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full h-full flex items-center justify-center">
       <svg
         viewBox={`0 0 ${width} ${height}`}
-        className="w-full h-auto"
+        preserveAspectRatio="xMidYMid meet"
+        className="w-full h-full max-h-full"
         role="img"
         aria-label="Mapa de calor do Brasil por UF"
       >
