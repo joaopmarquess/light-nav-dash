@@ -311,9 +311,11 @@ function Dashboard({
                     <div key={r.faixa}>
                       <div className="flex justify-between text-sm mb-1">
                         <span className="text-foreground">{r.faixa}</span>
-                        <span className="text-muted-foreground">
-                          {r.total.toLocaleString("pt-BR")}{" "}
-                          <span className="text-xs">
+                        <span>
+                          <span className="font-semibold text-foreground tabular-nums">
+                            {r.total.toLocaleString("pt-BR")}
+                          </span>{" "}
+                          <span className="text-xs text-muted-foreground tabular-nums">
                             ({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)
                           </span>
                         </span>
