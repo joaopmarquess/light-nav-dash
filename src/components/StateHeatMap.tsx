@@ -20,48 +20,70 @@ function normalize(s: string): string {
 }
 
 interface Props {
-  uf: "SP" | "MG" | "MS";
-  cityTotals: Record<string, number>;
+  ufs: ("SP" | "MG" | "MS")[];
+  cityTotalsByUF: Record<string, Record<string, number>>;
 }
 
-export function StateHeatMap({ uf, cityTotals }: Props) {
-  const [geo, setGeo] = useState<FeatureCollection | null>(cache[uf] ?? null);
-  const [hover, setHover] = useState<{ name: string; total: number; x: number; y: number } | null>(
+type FeatWithUF = Feature<Geometry, { name?: string; _uf: string }>;
+
+export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
+  const key = ufs.join("-");
+  const [features, setFeatures] = useState<FeatWithUF[] | null>(null);
+  const [hover, setHover] = useState<{ name: string; uf: string; total: number; x: number; y: number } | null>(
     null,
   );
 
   useEffect(() => {
-    setGeo(cache[uf] ?? null);
-    if (cache[uf]) return;
     let cancelled = false;
-    fetch(geoUrl(uf))
-      .then((r) => r.json())
-      .then((data: FeatureCollection) => {
-        if (cancelled) return;
-        cache[uf] = data;
-        setGeo(data);
-      })
-      .catch((e) => console.error("Falha ao carregar mapa de", uf, e));
+    setFeatures(null);
+    (async () => {
+      const results = await Promise.all(
+        ufs.map(async (uf) => {
+          if (!cache[uf]) {
+            const res = await fetch(geoUrl(uf));
+            cache[uf] = await res.json();
+          }
+          return cache[uf].features.map((f) => ({
+            ...f,
+            properties: { ...(f.properties ?? {}), _uf: uf },
+          })) as FeatWithUF[];
+        }),
+      );
+      if (cancelled) return;
+      setFeatures(results.flat());
+    })().catch((e) => console.error("Falha ao carregar mapas", e));
     return () => {
       cancelled = true;
     };
-  }, [uf]);
+  }, [key]);
 
   const width = 600;
   const height = 560;
 
-  const normalizedCity = useMemo(() => {
-    const out: Record<string, number> = {};
-    for (const [k, v] of Object.entries(cityTotals)) out[normalize(k)] = v;
+  const normalizedByUF = useMemo(() => {
+    const out: Record<string, Record<string, number>> = {};
+    for (const uf of ufs) {
+      const m: Record<string, number> = {};
+      for (const [k, v] of Object.entries(cityTotalsByUF[uf] ?? {})) m[normalize(k)] = v;
+      out[uf] = m;
+    }
     return out;
-  }, [cityTotals]);
+  }, [ufs, cityTotalsByUF]);
 
-  const { pathFn, maxVal } = useMemo(() => {
-    if (!geo) return { pathFn: null as ReturnType<typeof geoPath> | null, maxVal: 0 };
-    const projection = geoMercator().fitSize([width, height], geo);
-    const max = Math.max(0, ...Object.values(cityTotals));
-    return { pathFn: geoPath(projection), maxVal: max };
-  }, [geo, cityTotals]);
+  const maxVal = useMemo(() => {
+    let m = 0;
+    for (const uf of ufs) {
+      for (const v of Object.values(cityTotalsByUF[uf] ?? {})) if (v > m) m = v;
+    }
+    return m;
+  }, [ufs, cityTotalsByUF]);
+
+  const pathFn = useMemo(() => {
+    if (!features) return null;
+    const fc: FeatureCollection = { type: "FeatureCollection", features };
+    const projection = geoMercator().fitSize([width, height], fc);
+    return geoPath(projection);
+  }, [features]);
 
   const colorFor = (total: number) => {
     if (!total || maxVal <= 0) return "hsl(var(--muted))";
@@ -70,10 +92,10 @@ export function StateHeatMap({ uf, cityTotals }: Props) {
     return `hsl(var(--primary) / ${alpha.toFixed(3)})`;
   };
 
-  if (!geo || !pathFn) {
+  if (!features || !pathFn) {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground py-10 justify-center">
-        <Loader2 className="h-4 w-4 animate-spin" /> Carregando mapa de {uf}...
+        <Loader2 className="h-4 w-4 animate-spin" /> Carregando mapa...
       </div>
     );
   }
@@ -85,21 +107,22 @@ export function StateHeatMap({ uf, cityTotals }: Props) {
         preserveAspectRatio="xMidYMid meet"
         className="w-full h-full max-h-full"
         role="img"
-        aria-label={`Mapa de calor de ${uf} por município`}
+        aria-label={`Mapa de calor por município — ${ufs.join(", ")}`}
       >
-        {(geo.features as Feature<Geometry, { name?: string }>[]).map((f, i) => (
+        {features.map((f, i) => (
           <path
             key={`outline-${i}`}
             d={pathFn(f) ?? ""}
             fill="none"
             stroke="#000"
-            strokeWidth={1.5}
+            strokeWidth={1.2}
             strokeLinejoin="round"
           />
         ))}
-        {(geo.features as Feature<Geometry, { name?: string }>[]).map((f, i) => {
+        {features.map((f, i) => {
           const name = f.properties?.name ?? "";
-          const total = normalizedCity[normalize(name)] ?? 0;
+          const uf = f.properties._uf;
+          const total = normalizedByUF[uf]?.[normalize(name)] ?? 0;
           const d = pathFn(f) ?? "";
           return (
             <path
@@ -112,6 +135,7 @@ export function StateHeatMap({ uf, cityTotals }: Props) {
                 const rect = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect();
                 setHover({
                   name,
+                  uf,
                   total,
                   x: e.clientX - rect.left,
                   y: e.clientY - rect.top,
@@ -129,7 +153,9 @@ export function StateHeatMap({ uf, cityTotals }: Props) {
           className="pointer-events-none absolute z-10 rounded-md border border-border bg-popover px-2 py-1 text-xs shadow-md"
           style={{ left: hover.x + 12, top: hover.y + 12 }}
         >
-          <div className="font-semibold text-foreground">{hover.name}</div>
+          <div className="font-semibold text-foreground">
+            {hover.name} <span className="text-muted-foreground">/ {hover.uf}</span>
+          </div>
           <div className="text-muted-foreground tabular-nums">
             {hover.total.toLocaleString("pt-BR")} vidas
           </div>
