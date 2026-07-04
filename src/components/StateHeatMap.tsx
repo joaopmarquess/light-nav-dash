@@ -260,6 +260,27 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
           </div>
         </div>
       )}
+
+      {isArea && (
+        <button
+          type="button"
+          onClick={() => {
+            setLensMode((v) => {
+              if (v) setLens(null);
+              return !v;
+            });
+          }}
+          aria-label={lensMode ? "Desativar lupa" : "Ativar lupa"}
+          title={lensMode ? "Desativar lupa" : "Ativar lupa"}
+          className={`absolute top-2 right-2 z-20 h-8 w-8 flex items-center justify-center rounded-md border border-border shadow-sm transition-colors ${
+            lensMode
+              ? "bg-primary text-primary-foreground"
+              : "bg-background text-foreground hover:bg-accent"
+          }`}
+        >
+          <ZoomIn className="h-4 w-4" />
+        </button>
+      )}
     </div>
   );
 }
