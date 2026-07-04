@@ -174,6 +174,24 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
               strokeLinejoin="round"
             />
           ))}
+        <g
+          transform={
+            focused
+              ? `translate(${focused.cx - focused.cx * focused.z}, ${focused.cy - focused.cy * focused.z}) scale(${focused.z})`
+              : undefined
+          }
+        >
+        {!isArea &&
+          features.map((f, i) => (
+            <path
+              key={`outline-${i}`}
+              d={pathFn(f) ?? ""}
+              fill="none"
+              stroke="#000"
+              strokeWidth={focused ? 1.2 / focused.z : 1.2}
+              strokeLinejoin="round"
+            />
+          ))}
         {features.map((f, i) => {
           const name = f.properties?.name ?? "";
           const uf = f.properties._uf;
@@ -184,8 +202,8 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
               key={i}
               d={d}
               fill={colorFor(total)}
-              stroke={isArea ? "none" : "#4b5563"}
-              strokeWidth={isArea ? 0 : 0.3}
+              stroke={focused ? "#1f2937" : isArea ? "none" : "#4b5563"}
+              strokeWidth={focused ? 0.3 / focused.z : isArea ? 0 : 0.3}
               onMouseMove={(e) => {
                 const rect = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect();
                 setHover({
@@ -208,12 +226,13 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
               d={pathFn(f) ?? ""}
               fill="none"
               stroke="#000"
-              strokeWidth={1.5}
+              strokeWidth={focused ? 1.5 / focused.z : 1.5}
               strokeLinejoin="round"
               pointerEvents="none"
             />
           ))}
-        {isArea && lens && (() => {
+        </g>
+        {isArea && lens && !focused && (() => {
           const Z = 5;
           const R = 90;
           const { cx, cy } = lens;
