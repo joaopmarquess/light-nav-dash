@@ -120,6 +120,7 @@ const BIOverview = () => {
   }, [rows]);
 
   const sin = useSinistralidade();
+  const dw = useDWCarteira(true);
 
   const slides = useMemo(() => {
     if (!data) return [];
