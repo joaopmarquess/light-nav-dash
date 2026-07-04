@@ -171,7 +171,16 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
                 });
               }}
               onMouseLeave={() => setHover(null)}
-              style={{ transition: "fill 120ms" }}
+              onClick={() => {
+                if (!isArea) return;
+                const [cx, cy] = pathFn.centroid(f);
+                if (Number.isFinite(cx) && Number.isFinite(cy)) {
+                  setLens((prev) =>
+                    prev && Math.hypot(prev.cx - cx, prev.cy - cy) < 2 ? null : { cx, cy },
+                  );
+                }
+              }}
+              style={{ transition: "fill 120ms", cursor: isArea ? "zoom-in" : "default" }}
             />
           );
         })}
