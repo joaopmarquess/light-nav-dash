@@ -344,7 +344,7 @@ function Dashboard({
                             ({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)
                           </span>
                           <span className="ml-2 text-xs text-muted-foreground tabular-nums">
-                            F {r.F.toLocaleString("pt-BR")} · M {r.M.toLocaleString("pt-BR")}
+                            F {(r.F ?? 0).toLocaleString("pt-BR")} · M {(r.M ?? 0).toLocaleString("pt-BR")}
                           </span>
                         </span>
                       </div>
