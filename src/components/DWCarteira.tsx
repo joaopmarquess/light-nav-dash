@@ -223,7 +223,7 @@ function Dashboard({
         const q = applyBase(
           dw
             .from(TABLE)
-            .select('"PLANO","CIDADE_OFICIAL","IDADE","idsex"'),
+            .select('"PLANO","CIDADE_OFICIAL","UF_CIDADE_OFICIAL","IDADE","idsex"'),
         );
         const { data, error } = await q.range(from, from + pageSize - 1);
         if (error) {
