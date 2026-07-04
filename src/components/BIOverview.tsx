@@ -366,6 +366,14 @@ const BIOverview = () => {
           <p className="text-xs text-muted-foreground">{current.subtitle}</p>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIdx((i) => (i - 1 + slides.length) % slides.length)}
+            className="h-8 w-8 flex items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-accent hover:text-primary"
+            aria-label="Anterior"
+            title="Anterior"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
           <div className="flex gap-1.5">
             {slides.map((_, i) => (
               <button
@@ -376,6 +384,14 @@ const BIOverview = () => {
               />
             ))}
           </div>
+          <button
+            onClick={() => setIdx((i) => (i + 1) % slides.length)}
+            className="h-8 w-8 flex items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-accent hover:text-primary"
+            aria-label="Próximo"
+            title="Próximo"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
           <button
             onClick={() => setPaused((p) => !p)}
             className="px-3 py-1.5 text-xs rounded-md border border-border hover:bg-accent hover:text-primary"
