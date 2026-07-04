@@ -260,6 +260,10 @@ function Dashboard({
             const key = (["SP", "MS", "MG"] as const).includes(uf as never) ? uf : "Outros";
             perUF.set(key, (perUF.get(key) ?? 0) + 1);
             if (uf) perUFAll.set(uf, (perUFAll.get(uf) ?? 0) + 1);
+            if (perCityByUF[uf] && r.CIDADE_OFICIAL) {
+              const city = String(r.CIDADE_OFICIAL);
+              perCityByUF[uf].set(city, (perCityByUF[uf].get(city) ?? 0) + 1);
+            }
           }
           if (r.IDADE != null) {
             const idade = Number(r.IDADE);
