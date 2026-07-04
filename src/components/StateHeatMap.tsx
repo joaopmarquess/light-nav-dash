@@ -9,7 +9,16 @@ const UF_CODE: Record<string, string> = { SP: "35", MG: "31", MS: "50" };
 const geoUrl = (uf: string) =>
   `https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-${UF_CODE[uf]}-mun.json`;
 
+const STATES_URL =
+  "https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/brazil-states.geojson";
+const NAME_TO_UF: Record<string, string> = {
+  "São Paulo": "SP",
+  "Minas Gerais": "MG",
+  "Mato Grosso do Sul": "MS",
+};
+
 const cache: Record<string, FeatureCollection> = {};
+let statesCache: FeatureCollection | null = null;
 
 function normalize(s: string): string {
   return s
