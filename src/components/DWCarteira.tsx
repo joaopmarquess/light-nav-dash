@@ -136,8 +136,8 @@ export default function DWCarteira() {
   }, []);
 
   return (
-    <section className="space-y-6">
-      <Tabs value={tab} onValueChange={setTab} className="w-full">
+    <section className="h-full flex flex-col">
+      <Tabs value={tab} onValueChange={setTab} className="w-full flex-1 flex flex-col min-h-0">
         <TabsList className="grid grid-cols-5 w-full max-w-3xl">
           <TabsTrigger value="dashboard" className="gap-2">
             <LayoutDashboard className="h-4 w-4" /> Dashboard
