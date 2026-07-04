@@ -292,15 +292,33 @@ function Dashboard({
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Vidas por Faixa Etária</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base">
+            {chartView === "faixa" ? "Vidas por Faixa Etária" : "Vidas por UF"}
+          </CardTitle>
+          <div className="inline-flex rounded-md border border-border overflow-hidden text-xs">
+            <button
+              type="button"
+              onClick={() => setChartView("faixa")}
+              className={`px-3 py-1 ${chartView === "faixa" ? "bg-accent text-foreground" : "bg-background text-muted-foreground hover:text-foreground"}`}
+            >
+              Faixa Etária
+            </button>
+            <button
+              type="button"
+              onClick={() => setChartView("uf")}
+              className={`px-3 py-1 border-l border-border ${chartView === "uf" ? "bg-accent text-foreground" : "bg-background text-muted-foreground hover:text-foreground"}`}
+            >
+              UF
+            </button>
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
               <Loader2 className="h-4 w-4 animate-spin" /> Calculando...
             </div>
-          ) : (
+          ) : chartView === "faixa" ? (
             <div className="space-y-2">
               <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
                 <span className="inline-flex items-center gap-1.5">
@@ -340,6 +358,35 @@ function Dashboard({
                       <div className="flex h-2 rounded-full bg-accent overflow-hidden">
                         <div className="h-full bg-pink-500" style={{ width: `${fPct}%` }} />
                         <div className="h-full bg-blue-500" style={{ width: `${mPct}%` }} />
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {(() => {
+                const max = Math.max(1, ...porUF.map((r) => r.total));
+                const totalAll = porUF.reduce((s, r) => s + r.total, 0);
+                return porUF.map((r) => {
+                  const share = totalAll > 0 ? (r.total / totalAll) * 100 : 0;
+                  const pct = (r.total / max) * 100;
+                  return (
+                    <div key={r.uf}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-foreground">{r.uf}</span>
+                        <span>
+                          <span className="font-semibold text-foreground tabular-nums">
+                            {r.total.toLocaleString("pt-BR")}
+                          </span>{" "}
+                          <span className="text-xs text-muted-foreground tabular-nums">
+                            ({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)
+                          </span>
+                        </span>
+                      </div>
+                      <div className="flex h-2 rounded-full bg-accent overflow-hidden">
+                        <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
                       </div>
                     </div>
                   );
