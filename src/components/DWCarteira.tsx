@@ -431,8 +431,26 @@ function Dashboard({
                   });
                 })()}
               </div>
-              <div className="w-full h-[260px] flex items-center justify-center">
-                <BrazilHeatMap ufTotals={ufTotals} />
+              <div className="w-full h-[260px] flex flex-col">
+                {selectedUF && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedUF(null)}
+                    className="self-start mb-1 text-xs text-muted-foreground hover:text-foreground underline"
+                  >
+                    ← Voltar ao Brasil
+                  </button>
+                )}
+                <div className="flex-1 min-h-0 flex items-center justify-center">
+                  {selectedUF ? (
+                    <StateHeatMap
+                      uf={selectedUF}
+                      cityTotals={cityTotalsByUF[selectedUF] ?? {}}
+                    />
+                  ) : (
+                    <BrazilHeatMap ufTotals={ufTotals} onSelectUF={setSelectedUF} />
+                  )}
+                </div>
               </div>
             </div>
           )}
