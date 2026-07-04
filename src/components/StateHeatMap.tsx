@@ -140,9 +140,9 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
         className="w-full h-full max-h-full"
         role="img"
         aria-label={`Mapa de calor por município — ${ufs.join(", ")}`}
-        style={{ cursor: lensMode ? "none" : "default" }}
+        style={{ cursor: focused ? "zoom-out" : lensMode ? "none" : "default" }}
         onMouseMove={(e) => {
-          if (!lensMode) return;
+          if (!lensMode || focused) return;
           const svg = e.currentTarget;
           const rect = svg.getBoundingClientRect();
           const cx = ((e.clientX - rect.left) / rect.width) * width;
@@ -150,7 +150,17 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
           setLens({ cx, cy });
         }}
         onMouseLeave={() => {
-          if (lensMode) setLens(null);
+          if (lensMode && !focused) setLens(null);
+        }}
+        onClick={() => {
+          if (lensMode && lens && !focused) {
+            setFocused({ cx: lens.cx, cy: lens.cy, z: 5 });
+            setLensMode(false);
+            setLens(null);
+          }
+        }}
+        onDoubleClick={() => {
+          if (focused) setFocused(null);
         }}
       >
         {!isArea &&
