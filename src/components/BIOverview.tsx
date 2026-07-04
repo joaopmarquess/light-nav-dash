@@ -3,7 +3,7 @@ import { useSinistralidade } from "@/components/SinistralidadeGraficos";
 import { useDWCarteira } from "@/components/DWCarteira";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 import { StateHeatMap } from "@/components/StateHeatMap";
-import { Maximize2, Minimize2 } from "lucide-react";
+import { Maximize2, Minimize2, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   ResponsiveContainer,
   BarChart,
