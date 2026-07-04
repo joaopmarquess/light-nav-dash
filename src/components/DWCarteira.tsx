@@ -378,7 +378,7 @@ function useSearch() {
   return { rows, loading, run };
 }
 
-function BuscaNome({ planoDe }: { planoDe: string }) {
+function BuscaNome(()) {
   const [nome, setNome] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () =>
@@ -414,13 +414,13 @@ function BuscaNome({ planoDe }: { planoDe: string }) {
   );
 }
 
-function BuscaCPF({ planoDe }: { planoDe: string }) {
+function BuscaCPF(()) {
   const [cpf, setCpf] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () => {
     const digits = cpf.replace(/\D/g, "");
     if (!digits) return;
-    run(() => applyBase(dw.from(TABLE).select(COLS).eq("CPF", digits), planoDe));
+    run(() => applyBase(dw.from(TABLE).select(COLS).eq("CPF", digits)));
   };
   return (
     <Card>
@@ -448,13 +448,13 @@ function BuscaCPF({ planoDe }: { planoDe: string }) {
   );
 }
 
-function BuscaCDREGUSR({ planoDe }: { planoDe: string }) {
+function BuscaCDREGUSR(()) {
   const [cd, setCd] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () => {
     const n = Number(cd.trim());
     if (!n) return;
-    run(() => applyBase(dw.from(TABLE).select(COLS).eq("CDREGUSR", n), planoDe));
+    run(() => applyBase(dw.from(TABLE).select(COLS).eq("CDREGUSR", n)));
   };
   return (
     <Card>
@@ -500,7 +500,7 @@ function BuscaFiltros({
       let q = dw.from(TABLE).select(COLS);
       if (plano !== ALL) q = q.eq("NOME_PLANO", plano);
       if (cidade !== ALL) q = q.eq("CIDADE_PLANO", cidade);
-      return applyBase(q, planoDe).order("NOME_BENEFICIARIO");
+      return applyBase(q).order("NOME_BENEFICIARIO");
     });
 
   const anyFilter = useMemo(
