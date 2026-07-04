@@ -9,7 +9,16 @@ const UF_CODE: Record<string, string> = { SP: "35", MG: "31", MS: "50" };
 const geoUrl = (uf: string) =>
   `https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-${UF_CODE[uf]}-mun.json`;
 
+const STATES_URL =
+  "https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/brazil-states.geojson";
+const NAME_TO_UF: Record<string, string> = {
+  "São Paulo": "SP",
+  "Minas Gerais": "MG",
+  "Mato Grosso do Sul": "MS",
+};
+
 const cache: Record<string, FeatureCollection> = {};
+let statesCache: FeatureCollection | null = null;
 
 function normalize(s: string): string {
   return s
@@ -27,8 +36,10 @@ interface Props {
 type FeatWithUF = Feature<Geometry, { name?: string; _uf: string }>;
 
 export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
+  const isArea = ufs.length > 1;
   const key = ufs.join("-");
   const [features, setFeatures] = useState<FeatWithUF[] | null>(null);
+  const [stateOutlines, setStateOutlines] = useState<Feature<Geometry>[] | null>(null);
   const [hover, setHover] = useState<{ name: string; uf: string; total: number; x: number; y: number } | null>(
     null,
   );
@@ -36,6 +47,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
   useEffect(() => {
     let cancelled = false;
     setFeatures(null);
+    setStateOutlines(null);
     (async () => {
       const results = await Promise.all(
         ufs.map(async (uf) => {
@@ -51,11 +63,25 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
       );
       if (cancelled) return;
       setFeatures(results.flat());
+
+      if (isArea) {
+        if (!statesCache) {
+          const res = await fetch(STATES_URL);
+          statesCache = await res.json();
+        }
+        if (cancelled) return;
+        const wanted = new Set(ufs as string[]);
+        setStateOutlines(
+          (statesCache!.features as Feature<Geometry, { name: string }>[]).filter(
+            (f) => wanted.has(NAME_TO_UF[f.properties?.name] ?? ""),
+          ),
+        );
+      }
     })().catch((e) => console.error("Falha ao carregar mapas", e));
     return () => {
       cancelled = true;
     };
-  }, [key]);
+  }, [key, isArea]);
 
   const width = 600;
   const height = 560;
@@ -109,16 +135,17 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
         role="img"
         aria-label={`Mapa de calor por município — ${ufs.join(", ")}`}
       >
-        {features.map((f, i) => (
-          <path
-            key={`outline-${i}`}
-            d={pathFn(f) ?? ""}
-            fill="none"
-            stroke="#000"
-            strokeWidth={1.2}
-            strokeLinejoin="round"
-          />
-        ))}
+        {!isArea &&
+          features.map((f, i) => (
+            <path
+              key={`outline-${i}`}
+              d={pathFn(f) ?? ""}
+              fill="none"
+              stroke="#000"
+              strokeWidth={1.2}
+              strokeLinejoin="round"
+            />
+          ))}
         {features.map((f, i) => {
           const name = f.properties?.name ?? "";
           const uf = f.properties._uf;
@@ -129,8 +156,8 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
               key={i}
               d={d}
               fill={colorFor(total)}
-              stroke="#4b5563"
-              strokeWidth={0.3}
+              stroke={isArea ? "none" : "#4b5563"}
+              strokeWidth={isArea ? 0 : 0.3}
               onMouseMove={(e) => {
                 const rect = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect();
                 setHover({
@@ -146,6 +173,18 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
             />
           );
         })}
+        {isArea &&
+          stateOutlines?.map((f, i) => (
+            <path
+              key={`state-outline-${i}`}
+              d={pathFn(f) ?? ""}
+              fill="none"
+              stroke="#000"
+              strokeWidth={1.5}
+              strokeLinejoin="round"
+              pointerEvents="none"
+            />
+          ))}
       </svg>
 
       {hover && (

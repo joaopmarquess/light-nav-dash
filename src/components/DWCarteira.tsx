@@ -431,7 +431,7 @@ function Dashboard({
                   });
                 })()}
               </div>
-              <div className="w-full h-[260px] flex flex-col">
+              <div className={`w-full flex flex-col ${mapSelection === "AREA" ? "h-[520px]" : "h-[260px]"}`}>
                 <div className="flex items-center justify-between mb-1 min-h-[20px]">
                   {mapSelection ? (
                     <button
