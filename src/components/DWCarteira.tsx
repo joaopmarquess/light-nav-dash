@@ -340,13 +340,13 @@ function Dashboard({
             </button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="h-[26rem]">
           {loading ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
               <Loader2 className="h-4 w-4 animate-spin" /> Calculando...
             </div>
           ) : chartView === "faixa" ? (
-            <div className="space-y-2">
+            <div className="h-full flex flex-col">
               <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
                 <span className="inline-flex items-center gap-1.5">
                   <span className="inline-block h-2.5 w-2.5 rounded-sm bg-pink-500" />
@@ -357,6 +357,7 @@ function Dashboard({
                   Masculino
                 </span>
               </div>
+              <div className="flex-1 min-h-0 flex flex-col justify-between">
               {(() => {
                 const max = Math.max(1, ...porFaixa.map((r) => r.total));
                 const totalAll = porFaixa.reduce((s, r) => s + r.total, 0);
@@ -390,9 +391,10 @@ function Dashboard({
                   );
                 });
               })()}
+              </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch h-full">
               <div className="space-y-2 self-center">
                 {(() => {
                   const max = Math.max(1, ...porUF.map((r) => r.total));
@@ -431,7 +433,7 @@ function Dashboard({
                   });
                 })()}
               </div>
-              <div className={`w-full flex flex-col ${mapSelection === "AREA" ? "h-[520px]" : "h-[260px]"}`}>
+              <div className="w-full h-full flex flex-col min-h-0">
                 <div className="flex items-center justify-between mb-1 min-h-[20px]">
                   {mapSelection ? (
                     <button
