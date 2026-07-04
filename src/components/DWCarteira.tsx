@@ -145,6 +145,8 @@ export default function DWCarteira() {
   const [statuses, setStatuses] = useState<string[]>([]);
   const [planoDeOpts, setPlanoDeOpts] = useState<string[]>([]);
   const [planoDe, setPlanoDe] = useState<string>("Saúde");
+  const [ocorrenciaOpts, setOcorrenciaOpts] = useState<string[]>([]);
+  const [ocorrencia, setOcorrencia] = useState<string>("Entrada");
   const [movFilter, setMovFilter] = useState<MovFilter>("Venda");
   const [loadingOpts, setLoadingOpts] = useState(true);
 
@@ -153,7 +155,7 @@ export default function DWCarteira() {
       setLoadingOpts(true);
       const { data, error } = await dw
         .from(TABLE)
-        .select('"NOME_PLANO","CIDADE_PLANO","STATUS","Plano_de"')
+        .select('"NOME_PLANO","CIDADE_PLANO","STATUS","Plano_de","Ocorrencia"')
         .limit(10000);
       if (error) console.error("Erro ao carregar filtros:", error);
       const uniq = (arr: (string | null | undefined)[]) =>
@@ -164,6 +166,7 @@ export default function DWCarteira() {
       setCidades(uniq(rows.map((r) => r.CIDADE_PLANO)));
       setStatuses(uniq(rows.map((r) => r.STATUS)));
       setPlanoDeOpts(uniq(rows.map((r) => r.Plano_de)));
+      setOcorrenciaOpts(uniq(rows.map((r) => r.Ocorrencia)));
       setLoadingOpts(false);
     })();
   }, []);
