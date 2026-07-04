@@ -340,7 +340,7 @@ function Dashboard({
             </button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="h-[26rem]">
           {loading ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
               <Loader2 className="h-4 w-4 animate-spin" /> Calculando...
