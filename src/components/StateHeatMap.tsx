@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import type { FeatureCollection, Feature, Geometry } from "geojson";
-import { Loader2, ZoomIn } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 // IBGE UF codes for municipality geojson from tbrugz/geodata-br
 const UF_CODE: Record<string, string> = { SP: "35", MG: "31", MS: "50" };
@@ -43,17 +43,11 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
   const [hover, setHover] = useState<{ name: string; uf: string; total: number; x: number; y: number } | null>(
     null,
   );
-  const [lens, setLens] = useState<{ cx: number; cy: number } | null>(null);
-  const [lensMode, setLensMode] = useState(false);
-  const [focused, setFocused] = useState<{ cx: number; cy: number; z: number } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setFeatures(null);
     setStateOutlines(null);
-    setLens(null);
-    setLensMode(false);
-    setFocused(null);
     (async () => {
       const results = await Promise.all(
         ufs.map(async (uf) => {
@@ -119,8 +113,9 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
 
   const colorFor = (total: number) => {
     if (!total || maxVal <= 0) return "hsl(var(--muted))";
-    const t = Math.pow(total / maxVal, 0.5);
-    const alpha = 0.15 + t * 0.85;
+    // Stronger ramp: higher floor + gentler curve so any city with heat pops.
+    const t = Math.pow(total / maxVal, 0.35);
+    const alpha = 0.55 + t * 0.45;
     return `hsl(var(--primary) / ${alpha.toFixed(3)})`;
   };
 
@@ -140,36 +135,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
         className="w-full h-full max-h-full"
         role="img"
         aria-label={`Mapa de calor por município — ${ufs.join(", ")}`}
-        style={{ cursor: focused ? "zoom-out" : lensMode ? "none" : "default" }}
-        onMouseMove={(e) => {
-          if (!lensMode || focused) return;
-          const svg = e.currentTarget;
-          const rect = svg.getBoundingClientRect();
-          const cx = ((e.clientX - rect.left) / rect.width) * width;
-          const cy = ((e.clientY - rect.top) / rect.height) * height;
-          setLens({ cx, cy });
-        }}
-        onMouseLeave={() => {
-          if (lensMode && !focused) setLens(null);
-        }}
-        onClick={() => {
-          if (lensMode && lens && !focused) {
-            setFocused({ cx: lens.cx, cy: lens.cy, z: 5 });
-            setLensMode(false);
-            setLens(null);
-          }
-        }}
-        onDoubleClick={() => {
-          if (focused) setFocused(null);
-        }}
       >
-        <g
-          transform={
-            focused
-              ? `translate(${focused.cx - focused.cx * focused.z}, ${focused.cy - focused.cy * focused.z}) scale(${focused.z})`
-              : undefined
-          }
-        >
         {!isArea &&
           features.map((f, i) => (
             <path
@@ -177,7 +143,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
               d={pathFn(f) ?? ""}
               fill="none"
               stroke="#000"
-              strokeWidth={focused ? 1.2 / focused.z : 1.2}
+              strokeWidth={1.2}
               strokeLinejoin="round"
             />
           ))}
@@ -191,8 +157,8 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
               key={i}
               d={d}
               fill={colorFor(total)}
-              stroke={focused ? "#1f2937" : isArea ? "none" : "#4b5563"}
-              strokeWidth={focused ? 0.3 / focused.z : isArea ? 0 : 0.3}
+              stroke={isArea ? "none" : "#4b5563"}
+              strokeWidth={isArea ? 0 : 0.3}
               onMouseMove={(e) => {
                 const rect = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect();
                 setHover({
@@ -215,59 +181,14 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
               d={pathFn(f) ?? ""}
               fill="none"
               stroke="#000"
-              strokeWidth={focused ? 1.5 / focused.z : 1.5}
+              strokeWidth={1.5}
               strokeLinejoin="round"
               pointerEvents="none"
             />
           ))}
-        </g>
-        {isArea && lens && !focused && (() => {
-          const Z = 5;
-          const R = 90;
-          const { cx, cy } = lens;
-          const clipId = `lens-clip-${Math.round(cx)}-${Math.round(cy)}`;
-          return (
-            <g>
-              <defs>
-                <clipPath id={clipId}>
-                  <circle cx={cx} cy={cy} r={R} />
-                </clipPath>
-              </defs>
-              <circle cx={cx} cy={cy} r={R} fill="hsl(var(--background))" opacity={0.4} />
-              <g
-                clipPath={`url(#${clipId})`}
-                transform={`translate(${cx - cx * Z}, ${cy - cy * Z}) scale(${Z})`}
-              >
-                {features.map((f, i) => {
-                  const n = f.properties?.name ?? "";
-                  const u = f.properties._uf;
-                  const t = normalizedByUF[u]?.[normalize(n)] ?? 0;
-                  return (
-                    <path
-                      key={`lens-${i}`}
-                      d={pathFn(f) ?? ""}
-                      fill={colorFor(t)}
-                      stroke="#1f2937"
-                      strokeWidth={0.3 / Z}
-                    />
-                  );
-                })}
-              </g>
-              <circle
-                cx={cx}
-                cy={cy}
-                r={R}
-                fill="none"
-                stroke="#0f172a"
-                strokeWidth={2}
-                pointerEvents="none"
-              />
-            </g>
-          );
-        })()}
       </svg>
 
-      {hover && !lens && (
+      {hover && (
         <div
           className="pointer-events-none absolute z-10 rounded-md border border-border bg-popover px-2 py-1 text-xs shadow-md"
           style={{ left: hover.x + 12, top: hover.y + 12 }}
@@ -279,37 +200,6 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
             {hover.total.toLocaleString("pt-BR")} vidas
           </div>
         </div>
-      )}
-
-      {isArea && (
-        <button
-          type="button"
-          onClick={() => {
-            if (focused) {
-              setFocused(null);
-              return;
-            }
-            setLensMode((v) => {
-              if (v) setLens(null);
-              return !v;
-            });
-          }}
-          aria-label={focused ? "Voltar ao mapa" : lensMode ? "Desativar lupa" : "Ativar lupa"}
-          title={
-            focused
-              ? "Voltar ao mapa (ou duplo clique)"
-              : lensMode
-                ? "Desativar lupa"
-                : "Ativar lupa (clique para focar)"
-          }
-          className={`absolute top-2 right-2 z-20 h-8 w-8 flex items-center justify-center rounded-md border border-border shadow-sm transition-colors ${
-            lensMode || focused
-              ? "bg-primary text-primary-foreground"
-              : "bg-background text-foreground hover:bg-accent"
-          }`}
-        >
-          <ZoomIn className="h-4 w-4" />
-        </button>
       )}
     </div>
   );
