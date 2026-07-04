@@ -210,7 +210,7 @@ function Dashboard({
   const [vidas, setVidas] = useState<number | null>(null);
   const [planosDistintos, setPlanosDistintos] = useState<number | null>(null);
   const [cidadesDistintas, setCidadesDistintas] = useState<number | null>(null);
-  const [porStatus, setPorStatus] = useState<{ status: string; total: number }[]>([]);
+  const [porFaixa, setPorFaixa] = useState<{ faixa: string; total: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -218,10 +218,25 @@ function Dashboard({
     (async () => {
       setLoading(true);
 
+      const FAIXAS = [
+        { label: "00 a 18", min: 0, max: 18 },
+        { label: "19 a 23", min: 19, max: 23 },
+        { label: "24 a 28", min: 24, max: 28 },
+        { label: "29 a 33", min: 29, max: 33 },
+        { label: "34 a 38", min: 34, max: 38 },
+        { label: "39 a 43", min: 39, max: 43 },
+        { label: "44 a 48", min: 44, max: 48 },
+        { label: "49 a 53", min: 49, max: 53 },
+        { label: "54 a 58", min: 54, max: 58 },
+        { label: "59 ou +", min: 59, max: Infinity },
+      ];
+      const faixaFor = (idade: number) =>
+        FAIXAS.find((f) => idade >= f.min && idade <= f.max)?.label ?? null;
+
       let totalRows = 0;
       const planoSet = new Set<string>();
       const cidadeSet = new Set<string>();
-      const perStatus = new Map<string, number>();
+      const perFaixa = new Map<string, number>(FAIXAS.map((f) => [f.label, 0]));
       const pageSize = 1000;
       let from = 0;
       const maxRows = 500000;
@@ -230,7 +245,7 @@ function Dashboard({
         const q = applyBase(
           dw
             .from(TABLE)
-            .select('"NOME_PLANO","CIDADE_OFICIAL","STATUS"'),
+            .select('"NOME_PLANO","CIDADE_OFICIAL","IDADE"'),
           planoDe,
         );
         const { data, error } = await q.range(from, from + pageSize - 1);
@@ -244,9 +259,12 @@ function Dashboard({
         for (const r of rows) {
           if (r.NOME_PLANO) planoSet.add(String(r.NOME_PLANO));
           if (r.CIDADE_OFICIAL) cidadeSet.add(String(r.CIDADE_OFICIAL));
-          if (r.STATUS) {
-            const s = String(r.STATUS);
-            perStatus.set(s, (perStatus.get(s) ?? 0) + 1);
+          if (r.IDADE != null) {
+            const idade = Number(r.IDADE);
+            if (!Number.isNaN(idade)) {
+              const f = faixaFor(idade);
+              if (f) perFaixa.set(f, (perFaixa.get(f) ?? 0) + 1);
+            }
           }
         }
         if (rows.length < pageSize) break;
@@ -257,10 +275,7 @@ function Dashboard({
       setVidas(totalRows);
       setPlanosDistintos(planoSet.size);
       setCidadesDistintas(cidadeSet.size);
-      const counts = Array.from(perStatus.entries())
-        .map(([status, total]) => ({ status, total }))
-        .sort((a, b) => b.total - a.total);
-      setPorStatus(counts);
+      setPorFaixa(FAIXAS.map((f) => ({ faixa: f.label, total: perFaixa.get(f.label) ?? 0 })));
       setLoading(false);
     })();
   }, [loadingOpts, planoDe]);
@@ -277,7 +292,7 @@ function Dashboard({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Vidas por Status</CardTitle>
+          <CardTitle className="text-base">Vidas por Faixa Etária</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -286,27 +301,30 @@ function Dashboard({
             </div>
           ) : (
             <div className="space-y-2">
-              {porStatus.map((r) => {
-                const max = porStatus[0]?.total || 1;
-                const pct = (r.total / max) * 100;
-                return (
-                  <div key={r.status}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-foreground">{r.status}</span>
-                      <span className="text-muted-foreground">
-                        {r.total.toLocaleString("pt-BR")}
-                      </span>
+              {(() => {
+                const max = Math.max(1, ...porFaixa.map((r) => r.total));
+                return porFaixa.map((r) => {
+                  const pct = (r.total / max) * 100;
+                  return (
+                    <div key={r.faixa}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-foreground">{r.faixa}</span>
+                        <span className="text-muted-foreground">
+                          {r.total.toLocaleString("pt-BR")}
+                        </span>
+                      </div>
+                      <div className="h-2 rounded-full bg-accent overflow-hidden">
+                        <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
+                      </div>
                     </div>
-                    <div className="h-2 rounded-full bg-accent overflow-hidden">
-                      <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                });
+              })()}
             </div>
           )}
         </CardContent>
       </Card>
+
     </div>
   );
 }
