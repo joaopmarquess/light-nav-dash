@@ -100,6 +100,17 @@ export function BrazilHeatMap({ ufTotals }: Props) {
         role="img"
         aria-label="Mapa de calor do Brasil por UF"
       >
+        {/* Country outline: thick black stroke drawn first, gets covered on internal borders by subsequent fills */}
+        {(geo.features as Feature<Geometry, { name: string }>[]).map((f, i) => (
+          <path
+            key={`outline-${i}`}
+            d={pathFn(f) ?? ""}
+            fill="none"
+            stroke="#000"
+            strokeWidth={2}
+            strokeLinejoin="round"
+          />
+        ))}
         {(geo.features as Feature<Geometry, { name: string }>[]).map((f, i) => {
           const uf = NAME_TO_UF[f.properties?.name] ?? "";
           const total = ufTotals[uf] ?? 0;
@@ -109,7 +120,7 @@ export function BrazilHeatMap({ ufTotals }: Props) {
               key={i}
               d={d}
               fill={colorFor(total)}
-              stroke="hsl(var(--border))"
+              stroke="#4b5563"
               strokeWidth={0.6}
               onMouseMove={(e) => {
                 const rect = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect();
@@ -138,19 +149,6 @@ export function BrazilHeatMap({ ufTotals }: Props) {
           </div>
         </div>
       )}
-
-      {/* Legend */}
-      <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
-        <span>0</span>
-        <div
-          className="h-2 flex-1 rounded-full"
-          style={{
-            background:
-              "linear-gradient(to right, hsl(var(--primary) / 0.15), hsl(var(--primary) / 1))",
-          }}
-        />
-        <span className="tabular-nums">{maxVal.toLocaleString("pt-BR")}</span>
-      </div>
     </div>
   );
 }
