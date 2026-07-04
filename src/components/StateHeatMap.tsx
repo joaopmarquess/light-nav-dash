@@ -285,15 +285,25 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
         <button
           type="button"
           onClick={() => {
+            if (focused) {
+              setFocused(null);
+              return;
+            }
             setLensMode((v) => {
               if (v) setLens(null);
               return !v;
             });
           }}
-          aria-label={lensMode ? "Desativar lupa" : "Ativar lupa"}
-          title={lensMode ? "Desativar lupa" : "Ativar lupa"}
+          aria-label={focused ? "Voltar ao mapa" : lensMode ? "Desativar lupa" : "Ativar lupa"}
+          title={
+            focused
+              ? "Voltar ao mapa (ou duplo clique)"
+              : lensMode
+                ? "Desativar lupa"
+                : "Ativar lupa (clique para focar)"
+          }
           className={`absolute top-2 right-2 z-20 h-8 w-8 flex items-center justify-center rounded-md border border-border shadow-sm transition-colors ${
-            lensMode
+            lensMode || focused
               ? "bg-primary text-primary-foreground"
               : "bg-background text-foreground hover:bg-accent"
           }`}
