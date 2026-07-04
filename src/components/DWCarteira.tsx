@@ -221,6 +221,7 @@ function Dashboard({
       );
       const UF_KEYS = ["SP", "MS", "MG", "Outros"] as const;
       const perUF = new Map<string, number>(UF_KEYS.map((u) => [u, 0]));
+      const perUFAll = new Map<string, number>();
       const pageSize = 1000;
       let from = 0;
       const maxRows = 500000;
