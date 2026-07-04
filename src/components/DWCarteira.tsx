@@ -102,6 +102,8 @@ export default function DWCarteira() {
   const [planos, setPlanos] = useState<string[]>([]);
   const [cidades, setCidades] = useState<string[]>([]);
   const [statuses, setStatuses] = useState<string[]>([]);
+  const [planoDeOpts, setPlanoDeOpts] = useState<string[]>([]);
+  const [planoDe, setPlanoDe] = useState<string>("Saúde");
   const [loadingOpts, setLoadingOpts] = useState(true);
 
   useEffect(() => {
@@ -109,7 +111,7 @@ export default function DWCarteira() {
       setLoadingOpts(true);
       const { data, error } = await dw
         .from(TABLE)
-        .select('"NOME_PLANO","CIDADE_PLANO","STATUS"')
+        .select('"NOME_PLANO","CIDADE_PLANO","STATUS","Plano_de"')
         .limit(10000);
       if (error) console.error("Erro ao carregar filtros:", error);
       const uniq = (arr: (string | null | undefined)[]) =>
@@ -119,12 +121,35 @@ export default function DWCarteira() {
       setPlanos(uniq(rows.map((r) => r.NOME_PLANO)));
       setCidades(uniq(rows.map((r) => r.CIDADE_PLANO)));
       setStatuses(uniq(rows.map((r) => r.STATUS)));
+      setPlanoDeOpts(uniq(rows.map((r) => r.Plano_de)));
       setLoadingOpts(false);
     })();
   }, []);
 
   return (
     <section className="space-y-6">
+      <div className="flex items-end gap-3 flex-wrap">
+        <div className="w-64">
+          <Label>Plano de</Label>
+          <Select value={planoDe} onValueChange={setPlanoDe}>
+            <SelectTrigger>
+              <SelectValue placeholder="Todos" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>Todos</SelectItem>
+              {planoDeOpts.map((p) => (
+                <SelectItem key={p} value={p}>
+                  {p}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <p className="text-xs text-muted-foreground pb-2">
+          Filtro aplicado a todas as consultas abaixo.
+        </p>
+      </div>
+
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="grid grid-cols-5 w-full max-w-3xl">
           <TabsTrigger value="dashboard" className="gap-2">
@@ -145,24 +170,40 @@ export default function DWCarteira() {
         </TabsList>
 
         <TabsContent value="dashboard" className="mt-6">
-          <Dashboard planos={planos} cidades={cidades} statuses={statuses} loadingOpts={loadingOpts} />
+          <Dashboard
+            planos={planos}
+            cidades={cidades}
+            statuses={statuses}
+            loadingOpts={loadingOpts}
+            planoDe={planoDe}
+          />
         </TabsContent>
         <TabsContent value="nome" className="mt-6">
-          <BuscaNome />
+          <BuscaNome planoDe={planoDe} />
         </TabsContent>
         <TabsContent value="cpf" className="mt-6">
-          <BuscaCPF />
+          <BuscaCPF planoDe={planoDe} />
         </TabsContent>
         <TabsContent value="cdregusr" className="mt-6">
-          <BuscaCDREGUSR />
+          <BuscaCDREGUSR planoDe={planoDe} />
         </TabsContent>
         <TabsContent value="filtros" className="mt-6">
-          <BuscaFiltros planos={planos} cidades={cidades} statuses={statuses} />
+          <BuscaFiltros
+            planos={planos}
+            cidades={cidades}
+            statuses={statuses}
+            planoDe={planoDe}
+          />
         </TabsContent>
       </Tabs>
     </section>
   );
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const applyPlanoDe = (q: any, planoDe: string) =>
+  planoDe === ALL ? q : q.eq("Plano_de", planoDe);
+
 
 function Dashboard({
   planos,
