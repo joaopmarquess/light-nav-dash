@@ -217,21 +217,28 @@ function Dashboard({
     if (loadingOpts) return;
     (async () => {
       setLoading(true);
-      const benefSet = new Set<string>();
+
+      // VIDAS = contagem de linhas (com filtros)
+      const { count: vidasCount, error: countErr } = await applyBase(
+        dw.from(TABLE).select("CDREGUSR", { count: "exact", head: true }),
+        planoDe,
+      );
+      if (countErr) console.error(countErr);
+      setVidas(vidasCount ?? 0);
+
+      // PLANOS e CIDADES distintos + Vidas por Status (paginado)
       const planoSet = new Set<string>();
       const cidadeSet = new Set<string>();
-      const perStatus = new Map<string, Set<string>>();
+      const perStatus = new Map<string, number>();
       const pageSize = 1000;
       let from = 0;
-      const maxRows = 200000;
+      const maxRows = 300000;
       // eslint-disable-next-line no-constant-condition
       while (true) {
         const q = applyBase(
           dw
             .from(TABLE)
-            .select(
-              '"NOME_BENEFICIARIO","NOME_PLANO","CIDADE_OFICIAL","STATUS"',
-            ),
+            .select('"NOME_PLANO","CIDADE_OFICIAL","STATUS"'),
           planoDe,
         );
         const { data, error } = await q.range(from, from + pageSize - 1);
@@ -242,13 +249,11 @@ function Dashboard({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rows = (data ?? []) as any[];
         for (const r of rows) {
-          if (r.NOME_BENEFICIARIO) benefSet.add(String(r.NOME_BENEFICIARIO));
           if (r.NOME_PLANO) planoSet.add(String(r.NOME_PLANO));
           if (r.CIDADE_OFICIAL) cidadeSet.add(String(r.CIDADE_OFICIAL));
-          if (r.STATUS && r.NOME_BENEFICIARIO) {
+          if (r.STATUS) {
             const s = String(r.STATUS);
-            if (!perStatus.has(s)) perStatus.set(s, new Set());
-            perStatus.get(s)!.add(String(r.NOME_BENEFICIARIO));
+            perStatus.set(s, (perStatus.get(s) ?? 0) + 1);
           }
         }
         if (rows.length < pageSize) break;
@@ -256,16 +261,16 @@ function Dashboard({
         if (from >= maxRows) break;
       }
 
-      setVidas(benefSet.size);
       setPlanosDistintos(planoSet.size);
       setCidadesDistintas(cidadeSet.size);
       const counts = Array.from(perStatus.entries())
-        .map(([status, set]) => ({ status, total: set.size }))
+        .map(([status, total]) => ({ status, total }))
         .sort((a, b) => b.total - a.total);
       setPorStatus(counts);
       setLoading(false);
     })();
   }, [loadingOpts, planoDe]);
+
 
   return (
     <div className="space-y-6">
