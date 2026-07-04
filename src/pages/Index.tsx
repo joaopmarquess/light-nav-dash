@@ -115,7 +115,7 @@ const Index = () => {
   }, [active, ativosDrillNome]);
 
   return (
-    <div className="min-h-screen flex w-full bg-background">
+    <div className="h-screen overflow-hidden flex w-full bg-background">
       <aside
         className={`${collapsed ? "w-16" : "w-64"} border-r border-border bg-card flex flex-col transition-all duration-200`}
       >
@@ -217,7 +217,7 @@ const Index = () => {
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0 min-w-0">
         <header className="h-16 border-b border-border bg-card flex items-center justify-between px-8">
           <div>
             <h1 className="text-xl font-semibold text-foreground">{active}</h1>
@@ -254,7 +254,7 @@ const Index = () => {
           </div>
         </header>
 
-        <main className="flex-1 p-8">
+        <main className="flex-1 min-h-0 p-8 overflow-hidden">
           {active === "Ativos em" ? (
             <AtivosEm dateValue={dateValue} initialDrillNome={ativosDrillNome} />
           ) : active === "DW Carteira" ? (
