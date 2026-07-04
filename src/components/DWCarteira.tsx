@@ -253,6 +253,7 @@ function Dashboard({
             const uf = String(r.UF_CIDADE_OFICIAL ?? "").trim().toUpperCase();
             const key = (["SP", "MS", "MG"] as const).includes(uf as never) ? uf : "Outros";
             perUF.set(key, (perUF.get(key) ?? 0) + 1);
+            if (uf) perUFAll.set(uf, (perUFAll.get(uf) ?? 0) + 1);
           }
           if (r.IDADE != null) {
             const idade = Number(r.IDADE);
