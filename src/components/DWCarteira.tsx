@@ -280,11 +280,11 @@ function StatCard({
 function useSearch() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
-  const run = async (build: () => ReturnType<typeof dw.from>) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const run = async (build: () => any) => {
     setLoading(true);
     const q = build();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (q as any).limit(PAGE_SIZE);
+    const { data, error } = await q.limit(PAGE_SIZE);
     if (error) console.error(error);
     setRows((data as Row[]) ?? []);
     setLoading(false);
