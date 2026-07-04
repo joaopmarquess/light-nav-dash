@@ -135,16 +135,17 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
         role="img"
         aria-label={`Mapa de calor por município — ${ufs.join(", ")}`}
       >
-        {features.map((f, i) => (
-          <path
-            key={`outline-${i}`}
-            d={pathFn(f) ?? ""}
-            fill="none"
-            stroke="#000"
-            strokeWidth={1.2}
-            strokeLinejoin="round"
-          />
-        ))}
+        {!isArea &&
+          features.map((f, i) => (
+            <path
+              key={`outline-${i}`}
+              d={pathFn(f) ?? ""}
+              fill="none"
+              stroke="#000"
+              strokeWidth={1.2}
+              strokeLinejoin="round"
+            />
+          ))}
         {features.map((f, i) => {
           const name = f.properties?.name ?? "";
           const uf = f.properties._uf;
@@ -155,8 +156,8 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
               key={i}
               d={d}
               fill={colorFor(total)}
-              stroke="#4b5563"
-              strokeWidth={0.3}
+              stroke={isArea ? "none" : "#4b5563"}
+              strokeWidth={isArea ? 0 : 0.3}
               onMouseMove={(e) => {
                 const rect = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect();
                 setHover({
@@ -172,6 +173,18 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
             />
           );
         })}
+        {isArea &&
+          stateOutlines?.map((f, i) => (
+            <path
+              key={`state-outline-${i}`}
+              d={pathFn(f) ?? ""}
+              fill="none"
+              stroke="#000"
+              strokeWidth={1.5}
+              strokeLinejoin="round"
+              pointerEvents="none"
+            />
+          ))}
       </svg>
 
       {hover && (
