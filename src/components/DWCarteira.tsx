@@ -205,7 +205,8 @@ function Dashboard({
         FAIXAS.find((f) => idade >= f.min && idade <= f.max)?.label ?? null;
 
       let totalRows = 0;
-      const planoSet = new Set<string>();
+      const pifSet = new Set<number>();
+      const empresasSet = new Set<number>();
       const cidadeSet = new Set<string>();
       const perFaixa = new Map<string, { F: number; M: number }>(
         FAIXAS.map((f) => [f.label, { F: 0, M: 0 }]),
