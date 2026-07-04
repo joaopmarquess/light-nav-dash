@@ -478,14 +478,7 @@ function Dashboard({
                 </div>
                 <div className="flex-1 min-h-0 flex items-center justify-center">
                   {mapSelection ? (
-                    <StateHeatMap
-                      ufs={
-                        mapSelection === "AREA"
-                          ? (["SP", "MG", "MS"] as const)
-                          : [mapSelection]
-                      }
-                      cityTotalsByUF={cityTotalsByUF}
-                    />
+                    <StateHeatMap ufs={[mapSelection]} cityTotalsByUF={cityTotalsByUF} />
                   ) : (
                     <BrazilHeatMap ufTotals={ufTotals} onSelectUF={setMapSelection} />
                   )}
