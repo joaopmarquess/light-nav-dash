@@ -432,23 +432,38 @@ function Dashboard({
                 })()}
               </div>
               <div className="w-full h-[260px] flex flex-col">
-                {selectedUF && (
-                  <button
-                    type="button"
-                    onClick={() => setSelectedUF(null)}
-                    className="self-start mb-1 text-xs text-muted-foreground hover:text-foreground underline"
-                  >
-                    ← Voltar ao Brasil
-                  </button>
-                )}
+                <div className="flex items-center justify-between mb-1 min-h-[20px]">
+                  {mapSelection ? (
+                    <button
+                      type="button"
+                      onClick={() => setMapSelection(null)}
+                      className="text-xs text-muted-foreground hover:text-foreground underline"
+                    >
+                      ← Voltar ao Brasil
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setMapSelection("AREA")}
+                      className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                      title="Ver Área de Abrangência"
+                    >
+                      <Map className="h-3.5 w-3.5" /> Área de Abrangência
+                    </button>
+                  )}
+                </div>
                 <div className="flex-1 min-h-0 flex items-center justify-center">
-                  {selectedUF ? (
+                  {mapSelection ? (
                     <StateHeatMap
-                      uf={selectedUF}
-                      cityTotals={cityTotalsByUF[selectedUF] ?? {}}
+                      ufs={
+                        mapSelection === "AREA"
+                          ? (["SP", "MG", "MS"] as const)
+                          : [mapSelection]
+                      }
+                      cityTotalsByUF={cityTotalsByUF}
                     />
                   ) : (
-                    <BrazilHeatMap ufTotals={ufTotals} onSelectUF={setSelectedUF} />
+                    <BrazilHeatMap ufTotals={ufTotals} onSelectUF={setMapSelection} />
                   )}
                 </div>
               </div>
