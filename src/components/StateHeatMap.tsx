@@ -151,8 +151,8 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
               key={i}
               d={d}
               fill={colorFor(total)}
-              stroke={isArea ? "none" : "#4b5563"}
-              strokeWidth={isArea ? 0 : 0.3}
+              stroke={isArea ? "none" : "#e5e7eb"}
+              strokeWidth={isArea ? 0 : 0.25}
               onMouseMove={(e) => {
                 const rect = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect();
                 setHover({
