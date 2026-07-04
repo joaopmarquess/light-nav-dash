@@ -145,6 +145,8 @@ export default function DWCarteira() {
   const [statuses, setStatuses] = useState<string[]>([]);
   const [planoDeOpts, setPlanoDeOpts] = useState<string[]>([]);
   const [planoDe, setPlanoDe] = useState<string>("Saúde");
+  const [ocorrenciaOpts, setOcorrenciaOpts] = useState<string[]>([]);
+  const [ocorrencia, setOcorrencia] = useState<string>("Entrada");
   const [movFilter, setMovFilter] = useState<MovFilter>("Venda");
   const [loadingOpts, setLoadingOpts] = useState(true);
 
@@ -153,7 +155,7 @@ export default function DWCarteira() {
       setLoadingOpts(true);
       const { data, error } = await dw
         .from(TABLE)
-        .select('"NOME_PLANO","CIDADE_PLANO","STATUS","Plano_de"')
+        .select('"NOME_PLANO","CIDADE_PLANO","STATUS","Plano_de","Ocorrencia"')
         .limit(10000);
       if (error) console.error("Erro ao carregar filtros:", error);
       const uniq = (arr: (string | null | undefined)[]) =>
@@ -164,6 +166,7 @@ export default function DWCarteira() {
       setCidades(uniq(rows.map((r) => r.CIDADE_PLANO)));
       setStatuses(uniq(rows.map((r) => r.STATUS)));
       setPlanoDeOpts(uniq(rows.map((r) => r.Plano_de)));
+      setOcorrenciaOpts(uniq(rows.map((r) => r.Ocorrencia)));
       setLoadingOpts(false);
     })();
   }, []);
@@ -201,6 +204,22 @@ export default function DWCarteira() {
             </SelectContent>
           </Select>
         </div>
+        <div className="w-56">
+          <Label>Ocorrência</Label>
+          <Select value={ocorrencia} onValueChange={setOcorrencia}>
+            <SelectTrigger>
+              <SelectValue placeholder="Todas" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>Todas</SelectItem>
+              {ocorrenciaOpts.map((o) => (
+                <SelectItem key={o} value={o}>
+                  {o}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <p className="text-xs text-muted-foreground pb-2">
           Filtros aplicados a todas as consultas abaixo.
         </p>
@@ -232,17 +251,18 @@ export default function DWCarteira() {
             statuses={statuses}
             loadingOpts={loadingOpts}
             planoDe={planoDe}
+            ocorrencia={ocorrencia}
             movFilter={movFilter}
           />
         </TabsContent>
         <TabsContent value="nome" className="mt-6">
-          <BuscaNome planoDe={planoDe} movFilter={movFilter} />
+          <BuscaNome planoDe={planoDe} ocorrencia={ocorrencia} movFilter={movFilter} />
         </TabsContent>
         <TabsContent value="cpf" className="mt-6">
-          <BuscaCPF planoDe={planoDe} movFilter={movFilter} />
+          <BuscaCPF planoDe={planoDe} ocorrencia={ocorrencia} movFilter={movFilter} />
         </TabsContent>
         <TabsContent value="cdregusr" className="mt-6">
-          <BuscaCDREGUSR planoDe={planoDe} movFilter={movFilter} />
+          <BuscaCDREGUSR planoDe={planoDe} ocorrencia={ocorrencia} movFilter={movFilter} />
         </TabsContent>
         <TabsContent value="filtros" className="mt-6">
           <BuscaFiltros
@@ -250,6 +270,7 @@ export default function DWCarteira() {
             cidades={cidades}
             statuses={statuses}
             planoDe={planoDe}
+            ocorrencia={ocorrencia}
             movFilter={movFilter}
           />
         </TabsContent>
@@ -262,6 +283,10 @@ export default function DWCarteira() {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const applyPlanoDe = (q: any, planoDe: string) =>
   planoDe === ALL ? q : q.eq("Plano_de", planoDe);
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const applyOcorrencia = (q: any, ocorrencia: string) =>
+  ocorrencia === ALL ? q : q.eq("Ocorrencia", ocorrencia);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const applyMov = (q: any, mov: MovFilter) => {
@@ -293,6 +318,7 @@ function Dashboard({
   statuses,
   loadingOpts,
   planoDe,
+  ocorrencia,
   movFilter,
 }: {
   planos: string[];
@@ -300,6 +326,7 @@ function Dashboard({
   statuses: string[];
   loadingOpts: boolean;
   planoDe: string;
+  ocorrencia: string;
   movFilter: MovFilter;
 }) {
   const [total, setTotal] = useState<number | null>(null);
@@ -313,9 +340,12 @@ function Dashboard({
       setLoading(true);
       const base = () =>
         applyMov(
-          applyPlanoDe(
-            dw.from(TABLE).select("CDREGUSR", { count: "exact", head: true }),
-            planoDe,
+          applyOcorrencia(
+            applyPlanoDe(
+              dw.from(TABLE).select("CDREGUSR", { count: "exact", head: true }),
+              planoDe,
+            ),
+            ocorrencia,
           ),
           movFilter,
         );
@@ -332,7 +362,7 @@ function Dashboard({
       setPorStatus(counts.sort((a, b) => b.total - a.total));
       setLoading(false);
     })();
-  }, [statuses, loadingOpts, planoDe, movFilter]);
+  }, [statuses, loadingOpts, planoDe, ocorrencia, movFilter]);
 
 
 
@@ -423,15 +453,18 @@ function useSearch() {
   return { rows, loading, run };
 }
 
-function BuscaNome({ planoDe, movFilter }: { planoDe: string; movFilter: MovFilter }) {
+function BuscaNome({ planoDe, ocorrencia, movFilter }: { planoDe: string; ocorrencia: string; movFilter: MovFilter }) {
   const [nome, setNome] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () =>
     run(() =>
       applyMov(
-        applyPlanoDe(
-          dw.from(TABLE).select(COLS).ilike("NOME_BENEFICIARIO", `%${nome}%`),
-          planoDe,
+        applyOcorrencia(
+          applyPlanoDe(
+            dw.from(TABLE).select(COLS).ilike("NOME_BENEFICIARIO", `%${nome}%`),
+            planoDe,
+          ),
+          ocorrencia,
         ),
         movFilter,
       ).order("NOME_BENEFICIARIO"),
@@ -462,13 +495,13 @@ function BuscaNome({ planoDe, movFilter }: { planoDe: string; movFilter: MovFilt
   );
 }
 
-function BuscaCPF({ planoDe, movFilter }: { planoDe: string; movFilter: MovFilter }) {
+function BuscaCPF({ planoDe, ocorrencia, movFilter }: { planoDe: string; ocorrencia: string; movFilter: MovFilter }) {
   const [cpf, setCpf] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () => {
     const digits = cpf.replace(/\D/g, "");
     if (!digits) return;
-    run(() => applyMov(applyPlanoDe(dw.from(TABLE).select(COLS).eq("CPF", digits), planoDe), movFilter));
+    run(() => applyMov(applyOcorrencia(applyPlanoDe(dw.from(TABLE).select(COLS).eq("CPF", digits), planoDe), ocorrencia), movFilter));
   };
   return (
     <Card>
@@ -496,13 +529,13 @@ function BuscaCPF({ planoDe, movFilter }: { planoDe: string; movFilter: MovFilte
   );
 }
 
-function BuscaCDREGUSR({ planoDe, movFilter }: { planoDe: string; movFilter: MovFilter }) {
+function BuscaCDREGUSR({ planoDe, ocorrencia, movFilter }: { planoDe: string; ocorrencia: string; movFilter: MovFilter }) {
   const [cd, setCd] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () => {
     const n = Number(cd.trim());
     if (!n) return;
-    run(() => applyMov(applyPlanoDe(dw.from(TABLE).select(COLS).eq("CDREGUSR", n), planoDe), movFilter));
+    run(() => applyMov(applyOcorrencia(applyPlanoDe(dw.from(TABLE).select(COLS).eq("CDREGUSR", n), planoDe), ocorrencia), movFilter));
   };
   return (
     <Card>
@@ -535,12 +568,14 @@ function BuscaFiltros({
   cidades,
   statuses,
   planoDe,
+  ocorrencia,
   movFilter,
 }: {
   planos: string[];
   cidades: string[];
   statuses: string[];
   planoDe: string;
+  ocorrencia: string;
   movFilter: MovFilter;
 }) {
   const [plano, setPlano] = useState<string>(ALL);
@@ -554,7 +589,7 @@ function BuscaFiltros({
       if (plano !== ALL) q = q.eq("NOME_PLANO", plano);
       if (cidade !== ALL) q = q.eq("CIDADE_PLANO", cidade);
       if (status !== ALL) q = q.eq("STATUS", status);
-      return applyMov(applyPlanoDe(q, planoDe), movFilter).order("NOME_BENEFICIARIO");
+      return applyMov(applyOcorrencia(applyPlanoDe(q, planoDe), ocorrencia), movFilter).order("NOME_BENEFICIARIO");
     });
 
   const anyFilter = useMemo(
