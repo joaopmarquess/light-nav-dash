@@ -462,13 +462,13 @@ function BuscaNome({ planoDe, movFilter }: { planoDe: string; movFilter: MovFilt
   );
 }
 
-function BuscaCPF({ planoDe }: { planoDe: string }) {
+function BuscaCPF({ planoDe, movFilter }: { planoDe: string; movFilter: MovFilter }) {
   const [cpf, setCpf] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () => {
     const digits = cpf.replace(/\D/g, "");
     if (!digits) return;
-    run(() => applyPlanoDe(dw.from(TABLE).select(COLS).eq("CPF", digits), planoDe));
+    run(() => applyMov(applyPlanoDe(dw.from(TABLE).select(COLS).eq("CPF", digits), planoDe), movFilter));
   };
   return (
     <Card>
