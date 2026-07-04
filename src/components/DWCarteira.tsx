@@ -210,7 +210,9 @@ function Dashboard({
   const [vidas, setVidas] = useState<number | null>(null);
   const [planosDistintos, setPlanosDistintos] = useState<number | null>(null);
   const [cidadesDistintas, setCidadesDistintas] = useState<number | null>(null);
-  const [porFaixa, setPorFaixa] = useState<{ faixa: string; total: number }[]>([]);
+  const [porFaixa, setPorFaixa] = useState<
+    { faixa: string; total: number; F: number; M: number }[]
+  >([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -236,7 +238,9 @@ function Dashboard({
       let totalRows = 0;
       const planoSet = new Set<string>();
       const cidadeSet = new Set<string>();
-      const perFaixa = new Map<string, number>(FAIXAS.map((f) => [f.label, 0]));
+      const perFaixa = new Map<string, { F: number; M: number }>(
+        FAIXAS.map((f) => [f.label, { F: 0, M: 0 }]),
+      );
       const pageSize = 1000;
       let from = 0;
       const maxRows = 500000;
@@ -245,7 +249,7 @@ function Dashboard({
         const q = applyBase(
           dw
             .from(TABLE)
-            .select('"NOME_PLANO","CIDADE_OFICIAL","IDADE"'),
+            .select('"NOME_PLANO","CIDADE_OFICIAL","IDADE","idsex"'),
           planoDe,
         );
         const { data, error } = await q.range(from, from + pageSize - 1);
@@ -263,7 +267,12 @@ function Dashboard({
             const idade = Number(r.IDADE);
             if (!Number.isNaN(idade)) {
               const f = faixaFor(idade);
-              if (f) perFaixa.set(f, (perFaixa.get(f) ?? 0) + 1);
+              if (f) {
+                const bucket = perFaixa.get(f)!;
+                const sex = String(r.idsex ?? "").trim().toUpperCase();
+                if (sex === "F") bucket.F += 1;
+                else if (sex === "M") bucket.M += 1;
+              }
             }
           }
         }
@@ -275,7 +284,12 @@ function Dashboard({
       setVidas(totalRows);
       setPlanosDistintos(planoSet.size);
       setCidadesDistintas(cidadeSet.size);
-      setPorFaixa(FAIXAS.map((f) => ({ faixa: f.label, total: perFaixa.get(f.label) ?? 0 })));
+      setPorFaixa(
+        FAIXAS.map((f) => {
+          const b = perFaixa.get(f.label) ?? { F: 0, M: 0 };
+          return { faixa: f.label, F: b.F, M: b.M, total: b.F + b.M };
+        }),
+      );
       setLoading(false);
     })();
   }, [loadingOpts, planoDe]);
@@ -301,12 +315,23 @@ function Dashboard({
             </div>
           ) : (
             <div className="space-y-2">
+              <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="inline-block h-2.5 w-2.5 rounded-sm bg-pink-500" />
+                  Feminino
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="inline-block h-2.5 w-2.5 rounded-sm bg-blue-500" />
+                  Masculino
+                </span>
+              </div>
               {(() => {
                 const max = Math.max(1, ...porFaixa.map((r) => r.total));
                 const totalAll = porFaixa.reduce((s, r) => s + r.total, 0);
                 return porFaixa.map((r) => {
-                  const pct = (r.total / max) * 100;
                   const share = totalAll > 0 ? (r.total / totalAll) * 100 : 0;
+                  const fPct = (r.F / max) * 100;
+                  const mPct = (r.M / max) * 100;
                   return (
                     <div key={r.faixa}>
                       <div className="flex justify-between text-sm mb-1">
@@ -318,10 +343,14 @@ function Dashboard({
                           <span className="text-xs text-muted-foreground tabular-nums">
                             ({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)
                           </span>
+                          <span className="ml-2 text-xs text-muted-foreground tabular-nums">
+                            F {r.F.toLocaleString("pt-BR")} · M {r.M.toLocaleString("pt-BR")}
+                          </span>
                         </span>
                       </div>
-                      <div className="h-2 rounded-full bg-accent overflow-hidden">
-                        <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
+                      <div className="flex h-2 rounded-full bg-accent overflow-hidden">
+                        <div className="h-full bg-pink-500" style={{ width: `${fPct}%` }} />
+                        <div className="h-full bg-blue-500" style={{ width: `${mPct}%` }} />
                       </div>
                     </div>
                   );
@@ -331,6 +360,7 @@ function Dashboard({
           )}
         </CardContent>
       </Card>
+
 
     </div>
   );
