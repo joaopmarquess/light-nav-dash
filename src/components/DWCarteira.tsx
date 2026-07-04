@@ -384,7 +384,6 @@ function BuscaNome() {
     run(() =>
       applyBase(
         dw.from(TABLE).select(COLS).ilike("NOME_BENEFICIARIO", `%${nome}%`),
-        planoDe,
       ).order("NOME_BENEFICIARIO"),
     );
   return (
