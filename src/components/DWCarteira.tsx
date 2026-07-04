@@ -210,11 +210,13 @@ function Dashboard({
   cidades,
   statuses,
   loadingOpts,
+  planoDe,
 }: {
   planos: string[];
   cidades: string[];
   statuses: string[];
   loadingOpts: boolean;
+  planoDe: string;
 }) {
   const [total, setTotal] = useState<number | null>(null);
   const [ativos, setAtivos] = useState<number | null>(null);
@@ -225,26 +227,30 @@ function Dashboard({
     if (loadingOpts) return;
     (async () => {
       setLoading(true);
-      const totalQ = await dw.from(TABLE).select("CDREGUSR", { count: "exact", head: true });
-      const ativosQ = await dw
-        .from(TABLE)
-        .select("CDREGUSR", { count: "exact", head: true })
-        .eq("STATUS", "A");
+      const totalQ = await applyPlanoDe(
+        dw.from(TABLE).select("CDREGUSR", { count: "exact", head: true }),
+        planoDe,
+      );
+      const ativosQ = await applyPlanoDe(
+        dw.from(TABLE).select("CDREGUSR", { count: "exact", head: true }).eq("STATUS", "A"),
+        planoDe,
+      );
       setTotal(totalQ.count ?? 0);
       setAtivos(ativosQ.count ?? 0);
 
       const counts: { status: string; total: number }[] = [];
       for (const s of statuses.slice(0, 10)) {
-        const { count } = await dw
-          .from(TABLE)
-          .select("CDREGUSR", { count: "exact", head: true })
-          .eq("STATUS", s);
+        const { count } = await applyPlanoDe(
+          dw.from(TABLE).select("CDREGUSR", { count: "exact", head: true }).eq("STATUS", s),
+          planoDe,
+        );
         counts.push({ status: s, total: count ?? 0 });
       }
       setPorStatus(counts.sort((a, b) => b.total - a.total));
       setLoading(false);
     })();
-  }, [statuses, loadingOpts]);
+  }, [statuses, loadingOpts, planoDe]);
+
 
   return (
     <div className="space-y-6">
