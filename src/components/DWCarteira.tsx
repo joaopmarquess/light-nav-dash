@@ -188,6 +188,7 @@ function Dashboard({
     { faixa: string; total: number; F: number; M: number }[]
   >([]);
   const [porUF, setPorUF] = useState<{ uf: string; total: number }[]>([]);
+  const [ufTotals, setUfTotals] = useState<Record<string, number>>({});
   const [chartView, setChartView] = useState<"faixa" | "uf">("faixa");
   const [loading, setLoading] = useState(true);
 
