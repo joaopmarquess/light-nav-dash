@@ -39,6 +39,11 @@ const COLS =
   '"CDREGUSR","STATUS","NOME_PLANO","NOME_BENEFICIARIO","NOME_RESPONSAVEL","CPF","CIDADE_PLANO","UF_PLANO","IDADE","VALOR_TMM"';
 const TABLE = "gd_ecarteira";
 const ALL = "__all__";
+const UF_FLAGS: Record<string, string> = {
+  SP: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Bandeira_do_estado_de_S%C3%A3o_Paulo.svg/40px-Bandeira_do_estado_de_S%C3%A3o_Paulo.svg.png",
+  MG: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Bandeira_de_Minas_Gerais.svg/40px-Bandeira_de_Minas_Gerais.svg.png",
+  MS: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Bandeira_de_Mato_Grosso_do_Sul.svg/40px-Bandeira_de_Mato_Grosso_do_Sul.svg.png",
+};
 const PAGE_SIZE = 100;
 
 function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
@@ -375,7 +380,17 @@ function Dashboard({
                   return (
                     <div key={r.uf}>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-foreground">{r.uf}</span>
+                        <span className="text-foreground inline-flex items-center gap-2">
+                          {UF_FLAGS[r.uf] && (
+                            <img
+                              src={UF_FLAGS[r.uf]}
+                              alt={`Bandeira ${r.uf}`}
+                              className="h-3.5 w-5 object-cover rounded-[2px] border border-border"
+                              loading="lazy"
+                            />
+                          )}
+                          {r.uf}
+                        </span>
                         <span>
                           <span className="font-semibold text-foreground tabular-nums">
                             {r.total.toLocaleString("pt-BR")}
