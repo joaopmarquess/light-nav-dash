@@ -149,5 +149,6 @@ export function BrazilHeatMap({ ufTotals }: Props) {
           </div>
         </div>
       )}
+    </div>
   );
 }
