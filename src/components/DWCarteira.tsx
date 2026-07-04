@@ -303,14 +303,19 @@ function Dashboard({
             <div className="space-y-2">
               {(() => {
                 const max = Math.max(1, ...porFaixa.map((r) => r.total));
+                const totalAll = porFaixa.reduce((s, r) => s + r.total, 0);
                 return porFaixa.map((r) => {
                   const pct = (r.total / max) * 100;
+                  const share = totalAll > 0 ? (r.total / totalAll) * 100 : 0;
                   return (
                     <div key={r.faixa}>
                       <div className="flex justify-between text-sm mb-1">
                         <span className="text-foreground">{r.faixa}</span>
                         <span className="text-muted-foreground">
-                          {r.total.toLocaleString("pt-BR")}
+                          {r.total.toLocaleString("pt-BR")}{" "}
+                          <span className="text-xs">
+                            ({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)
+                          </span>
                         </span>
                       </div>
                       <div className="h-2 rounded-full bg-accent overflow-hidden">
