@@ -414,7 +414,7 @@ function Dashboard({
                   });
                 })()}
               </div>
-              <div className="w-full md:w-[280px]">
+              <div className="w-full">
                 <BrazilHeatMap ufTotals={ufTotals} />
               </div>
             </div>
