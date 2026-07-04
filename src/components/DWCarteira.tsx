@@ -156,7 +156,7 @@ export default function DWCarteira() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="dashboard" className="mt-6">
+        <TabsContent value="dashboard" className="mt-6 flex-1 min-h-0">
           <Dashboard loadingOpts={loadingOpts} />
         </TabsContent>
         <TabsContent value="nome" className="mt-6">
