@@ -93,32 +93,43 @@ function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
             <TableHead>Plano</TableHead>
             <TableHead>Cidade/UF</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Movimentação</TableHead>
             <TableHead className="text-right">Idade</TableHead>
             <TableHead className="text-right">Valor TMM</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.map((r, i) => (
-            <TableRow key={`${r.CDREGUSR}-${i}`}>
-              <TableCell>{r.CDREGUSR ?? "-"}</TableCell>
-              <TableCell className="font-medium">{r.NOME_BENEFICIARIO ?? "-"}</TableCell>
-              <TableCell>{r.CPF ?? "-"}</TableCell>
-              <TableCell>{r.NOME_PLANO ?? "-"}</TableCell>
-              <TableCell>
-                {[r.CIDADE_PLANO, r.UF_PLANO].filter(Boolean).join(" / ") || "-"}
-              </TableCell>
-              <TableCell>{r.STATUS ?? "-"}</TableCell>
-              <TableCell className="text-right">{r.IDADE ?? "-"}</TableCell>
-              <TableCell className="text-right">
-                {r.VALOR_TMM != null
-                  ? r.VALOR_TMM.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })
-                  : "-"}
-              </TableCell>
-            </TableRow>
-          ))}
+          {rows.map((r, i) => {
+            const mov = movimentacao(r);
+            return (
+              <TableRow key={`${r.CDREGUSR}-${i}`}>
+                <TableCell>{r.CDREGUSR ?? "-"}</TableCell>
+                <TableCell className="font-medium">{r.NOME_BENEFICIARIO ?? "-"}</TableCell>
+                <TableCell>{r.CPF ?? "-"}</TableCell>
+                <TableCell>{r.NOME_PLANO ?? "-"}</TableCell>
+                <TableCell>
+                  {[r.CIDADE_PLANO, r.UF_PLANO].filter(Boolean).join(" / ") || "-"}
+                </TableCell>
+                <TableCell>{r.STATUS ?? "-"}</TableCell>
+                <TableCell>
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${movBadgeClass[mov]}`}
+                  >
+                    {mov}
+                  </span>
+                </TableCell>
+                <TableCell className="text-right">{r.IDADE ?? "-"}</TableCell>
+                <TableCell className="text-right">
+                  {r.VALOR_TMM != null
+                    ? r.VALOR_TMM.toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      })
+                    : "-"}
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>
