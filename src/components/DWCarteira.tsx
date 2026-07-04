@@ -263,6 +263,29 @@ export default function DWCarteira() {
 const applyPlanoDe = (q: any, planoDe: string) =>
   planoDe === ALL ? q : q.eq("Plano_de", planoDe);
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const applyMov = (q: any, mov: MovFilter) => {
+  if (mov === ALL) return q;
+  if (mov === "Venda") {
+    return q
+      .is("CANCELAMENTO", null)
+      .neq("STATUS", "C")
+      .or("VENDEDOR.is.null,VENDEDOR.not.ilike.*transfer*");
+  }
+  if (mov === "Cancelamento") {
+    return q
+      .or("CANCELAMENTO.not.is.null,STATUS.eq.C")
+      .or(
+        "MOTIVO_CANCELAMENTO.is.null,and(MOTIVO_CANCELAMENTO.not.ilike.*transfer*,MOTIVO_CANCELAMENTO.not.ilike.*troca*)",
+      );
+  }
+  // Transferência
+  return q.or(
+    "and(or(CANCELAMENTO.not.is.null,STATUS.eq.C),or(MOTIVO_CANCELAMENTO.ilike.*transfer*,MOTIVO_CANCELAMENTO.ilike.*troca*)),and(CANCELAMENTO.is.null,STATUS.neq.C,VENDEDOR.ilike.*transfer*)",
+  );
+};
+
+
 
 function Dashboard({
   planos,
