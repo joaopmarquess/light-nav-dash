@@ -33,13 +33,41 @@ type Row = {
   UF_PLANO: string | null;
   IDADE: number | null;
   VALOR_TMM: number | null;
+  VENDEDOR: string | null;
+  MOTIVO_CANCELAMENTO: string | null;
+  CANCELAMENTO: string | null;
 };
 
 const COLS =
-  '"CDREGUSR","STATUS","NOME_PLANO","NOME_BENEFICIARIO","NOME_RESPONSAVEL","CPF","CIDADE_PLANO","UF_PLANO","IDADE","VALOR_TMM"';
+  '"CDREGUSR","STATUS","NOME_PLANO","NOME_BENEFICIARIO","NOME_RESPONSAVEL","CPF","CIDADE_PLANO","UF_PLANO","IDADE","VALOR_TMM","VENDEDOR","MOTIVO_CANCELAMENTO","CANCELAMENTO"';
 const TABLE = "gd_ecarteira";
 const ALL = "__all__";
 const PAGE_SIZE = 100;
+
+const norm = (s: string | null | undefined) =>
+  (s ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+function movimentacao(r: Row): "Venda" | "Transferência" | "Cancelamento" {
+  const motivo = norm(r.MOTIVO_CANCELAMENTO);
+  const vendedor = norm(r.VENDEDOR);
+  const cancelado = !!r.CANCELAMENTO || r.STATUS === "C";
+
+  if (cancelado) {
+    if (motivo.includes("transferencia") || motivo.includes("troca")) return "Transferência";
+    return "Cancelamento";
+  }
+  if (vendedor.includes("transferencia")) return "Transferência";
+  return "Venda";
+}
+
+const movBadgeClass: Record<ReturnType<typeof movimentacao>, string> = {
+  Venda: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
+  Transferência: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+  Cancelamento: "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300",
+};
 
 function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
   if (loading) {
