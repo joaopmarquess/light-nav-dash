@@ -177,11 +177,19 @@ export default function DWCarteira() {
 }
 
 
-function Dashboard({
-  loadingOpts,
-}: {
-  loadingOpts: boolean;
-}) {
+export type DWCarteiraData = {
+  loading: boolean;
+  vidas: number | null;
+  pifDistintos: number | null;
+  empresasDistintas: number | null;
+  cidadesDistintas: number | null;
+  porFaixa: { faixa: string; total: number; F: number; M: number }[];
+  porUF: { uf: string; total: number }[];
+  ufTotals: Record<string, number>;
+  cityTotalsByUF: Record<string, Record<string, number>>;
+};
+
+export function useDWCarteira(enabled = true): DWCarteiraData {
   const [vidas, setVidas] = useState<number | null>(null);
   const [pifDistintos, setPifDistintos] = useState<number | null>(null);
   const [empresasDistintas, setEmpresasDistintas] = useState<number | null>(null);
@@ -192,15 +200,13 @@ function Dashboard({
   const [porUF, setPorUF] = useState<{ uf: string; total: number }[]>([]);
   const [ufTotals, setUfTotals] = useState<Record<string, number>>({});
   const [cityTotalsByUF, setCityTotalsByUF] = useState<Record<string, Record<string, number>>>({});
-  const [mapSelection, setMapSelection] = useState<"SP" | "MG" | "MS" | "AREA" | null>(null);
-  const [chartView, setChartView] = useState<"faixa" | "uf">("faixa");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (loadingOpts) return;
+    if (!enabled) return;
+    let cancelled = false;
     (async () => {
       setLoading(true);
-
       const FAIXAS = [
         { label: "00 a 18", min: 0, max: 18 },
         { label: "19 a 23", min: 19, max: 23 },
@@ -286,6 +292,7 @@ function Dashboard({
         if (from >= maxRows) break;
       }
 
+      if (cancelled) return;
       setVidas(totalRows);
       setPifDistintos(pifSet.size);
       setEmpresasDistintas(empresasSet.size);
@@ -305,7 +312,44 @@ function Dashboard({
       });
       setLoading(false);
     })();
-  }, [loadingOpts]);
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled]);
+
+  return {
+    loading,
+    vidas,
+    pifDistintos,
+    empresasDistintas,
+    cidadesDistintas,
+    porFaixa,
+    porUF,
+    ufTotals,
+    cityTotalsByUF,
+  };
+}
+
+function Dashboard({
+  loadingOpts,
+}: {
+  loadingOpts: boolean;
+}) {
+  const {
+    loading,
+    vidas,
+    pifDistintos,
+    empresasDistintas,
+    cidadesDistintas,
+    porFaixa,
+    porUF,
+    ufTotals,
+    cityTotalsByUF,
+  } = useDWCarteira(!loadingOpts);
+  const [mapSelection, setMapSelection] = useState<"SP" | "MG" | "MS" | "AREA" | null>(null);
+  const [chartView, setChartView] = useState<"faixa" | "uf">("faixa");
+
+
 
 
 
