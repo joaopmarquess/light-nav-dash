@@ -218,21 +218,13 @@ function Dashboard({
     (async () => {
       setLoading(true);
 
-      // VIDAS = contagem de linhas (com filtros)
-      const { count: vidasCount, error: countErr } = await applyBase(
-        dw.from(TABLE).select("CDREGUSR", { count: "exact", head: true }),
-        planoDe,
-      );
-      if (countErr) console.error(countErr);
-      setVidas(vidasCount ?? 0);
-
-      // PLANOS e CIDADES distintos + Vidas por Status (paginado)
+      let totalRows = 0;
       const planoSet = new Set<string>();
       const cidadeSet = new Set<string>();
       const perStatus = new Map<string, number>();
       const pageSize = 1000;
       let from = 0;
-      const maxRows = 300000;
+      const maxRows = 500000;
       // eslint-disable-next-line no-constant-condition
       while (true) {
         const q = applyBase(
@@ -248,6 +240,7 @@ function Dashboard({
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rows = (data ?? []) as any[];
+        totalRows += rows.length;
         for (const r of rows) {
           if (r.NOME_PLANO) planoSet.add(String(r.NOME_PLANO));
           if (r.CIDADE_OFICIAL) cidadeSet.add(String(r.CIDADE_OFICIAL));
@@ -261,6 +254,7 @@ function Dashboard({
         if (from >= maxRows) break;
       }
 
+      setVidas(totalRows);
       setPlanosDistintos(planoSet.size);
       setCidadesDistintas(cidadeSet.size);
       const counts = Array.from(perStatus.entries())
@@ -270,6 +264,7 @@ function Dashboard({
       setLoading(false);
     })();
   }, [loadingOpts, planoDe]);
+
 
 
   return (
