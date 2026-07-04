@@ -51,6 +51,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
     setFeatures(null);
     setStateOutlines(null);
     setLens(null);
+    setLensMode(false);
     (async () => {
       const results = await Promise.all(
         ufs.map(async (uf) => {
