@@ -357,6 +357,7 @@ function Dashboard({
                   Masculino
                 </span>
               </div>
+              <div className="flex-1 min-h-0 flex flex-col justify-between">
               {(() => {
                 const max = Math.max(1, ...porFaixa.map((r) => r.total));
                 const totalAll = porFaixa.reduce((s, r) => s + r.total, 0);
