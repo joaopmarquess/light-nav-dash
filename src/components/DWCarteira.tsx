@@ -259,7 +259,7 @@ function Dashboard({
       );
       setLoading(false);
     })();
-  }, [loadingOpts, planoDe]);
+  }, [loadingOpts]);
 
 
 
