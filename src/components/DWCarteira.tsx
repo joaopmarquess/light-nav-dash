@@ -330,8 +330,8 @@ function Dashboard({
                 const totalAll = porFaixa.reduce((s, r) => s + r.total, 0);
                 return porFaixa.map((r) => {
                   const share = totalAll > 0 ? (r.total / totalAll) * 100 : 0;
-                  const fPct = (r.F / max) * 100;
-                  const mPct = (r.M / max) * 100;
+                  const fPct = ((r.F ?? 0) / max) * 100;
+                  const mPct = ((r.M ?? 0) / max) * 100;
                   return (
                     <div key={r.faixa}>
                       <div className="flex justify-between text-sm mb-1">
