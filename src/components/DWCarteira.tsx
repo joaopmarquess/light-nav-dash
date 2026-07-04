@@ -213,6 +213,8 @@ function Dashboard({
       const perFaixa = new Map<string, { F: number; M: number }>(
         FAIXAS.map((f) => [f.label, { F: 0, M: 0 }]),
       );
+      const UF_KEYS = ["SP", "MS", "MG", "GO", "Outros"] as const;
+      const perUF = new Map<string, number>(UF_KEYS.map((u) => [u, 0]));
       const pageSize = 1000;
       let from = 0;
       const maxRows = 500000;
