@@ -309,12 +309,15 @@ function Dashboard({
 
 
 
-  if (mapSelection === "AREA") {
+  if (mapSelection) {
+    const isArea = mapSelection === "AREA";
+    const ufs = isArea ? (["SP", "MG", "MS"] as const) : ([mapSelection] as const);
     return (
       <div className="fixed inset-0 z-50 bg-background flex flex-col">
         <div className="flex items-center justify-between px-4 py-2 border-b border-border">
           <div className="text-sm font-semibold text-foreground inline-flex items-center gap-2">
-            <MapIcon className="h-4 w-4" /> Área de Abrangência — SP, MG e MS
+            <MapIcon className="h-4 w-4" />
+            {isArea ? "Área de Abrangência — SP, MG e MS" : `Mapa de ${mapSelection}`}
           </div>
           <button
             type="button"
@@ -325,7 +328,7 @@ function Dashboard({
           </button>
         </div>
         <div className="flex-1 min-h-0">
-          <StateHeatMap ufs={["SP", "MG", "MS"] as const} cityTotalsByUF={cityTotalsByUF} />
+          <StateHeatMap ufs={ufs as unknown as ("SP" | "MG" | "MS")[]} cityTotalsByUF={cityTotalsByUF} />
         </div>
       </div>
     );
