@@ -33,41 +33,13 @@ type Row = {
   UF_PLANO: string | null;
   IDADE: number | null;
   VALOR_TMM: number | null;
-  VENDEDOR: string | null;
-  MOTIVO_CANCELAMENTO: string | null;
-  CANCELAMENTO: string | null;
 };
 
 const COLS =
-  '"CDREGUSR","STATUS","NOME_PLANO","NOME_BENEFICIARIO","NOME_RESPONSAVEL","CPF","CIDADE_PLANO","UF_PLANO","IDADE","VALOR_TMM","VENDEDOR","MOTIVO_CANCELAMENTO","CANCELAMENTO"';
+  '"CDREGUSR","STATUS","NOME_PLANO","NOME_BENEFICIARIO","NOME_RESPONSAVEL","CPF","CIDADE_PLANO","UF_PLANO","IDADE","VALOR_TMM"';
 const TABLE = "gd_ecarteira";
 const ALL = "__all__";
 const PAGE_SIZE = 100;
-
-const norm = (s: string | null | undefined) =>
-  (s ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-
-function movimentacao(r: Row): "Venda" | "Transferência" | "Cancelamento" {
-  const motivo = norm(r.MOTIVO_CANCELAMENTO);
-  const vendedor = norm(r.VENDEDOR);
-  const cancelado = !!r.CANCELAMENTO || r.STATUS === "C";
-
-  if (cancelado) {
-    if (motivo.includes("transferencia") || motivo.includes("troca")) return "Transferência";
-    return "Cancelamento";
-  }
-  if (vendedor.includes("transferencia")) return "Transferência";
-  return "Venda";
-}
-
-const movBadgeClass: Record<ReturnType<typeof movimentacao>, string> = {
-  Venda: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
-  Transferência: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
-  Cancelamento: "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300",
-};
 
 function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
   if (loading) {
@@ -93,61 +65,51 @@ function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
             <TableHead>Plano</TableHead>
             <TableHead>Cidade/UF</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Movimentação</TableHead>
             <TableHead className="text-right">Idade</TableHead>
             <TableHead className="text-right">Valor TMM</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.map((r, i) => {
-            const mov = movimentacao(r);
-            return (
-              <TableRow key={`${r.CDREGUSR}-${i}`}>
-                <TableCell>{r.CDREGUSR ?? "-"}</TableCell>
-                <TableCell className="font-medium">{r.NOME_BENEFICIARIO ?? "-"}</TableCell>
-                <TableCell>{r.CPF ?? "-"}</TableCell>
-                <TableCell>{r.NOME_PLANO ?? "-"}</TableCell>
-                <TableCell>
-                  {[r.CIDADE_PLANO, r.UF_PLANO].filter(Boolean).join(" / ") || "-"}
-                </TableCell>
-                <TableCell>{r.STATUS ?? "-"}</TableCell>
-                <TableCell>
-                  <span
-                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${movBadgeClass[mov]}`}
-                  >
-                    {mov}
-                  </span>
-                </TableCell>
-                <TableCell className="text-right">{r.IDADE ?? "-"}</TableCell>
-                <TableCell className="text-right">
-                  {r.VALOR_TMM != null
-                    ? r.VALOR_TMM.toLocaleString("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      })
-                    : "-"}
-                </TableCell>
-              </TableRow>
-            );
-          })}
+          {rows.map((r, i) => (
+            <TableRow key={`${r.CDREGUSR}-${i}`}>
+              <TableCell>{r.CDREGUSR ?? "-"}</TableCell>
+              <TableCell className="font-medium">{r.NOME_BENEFICIARIO ?? "-"}</TableCell>
+              <TableCell>{r.CPF ?? "-"}</TableCell>
+              <TableCell>{r.NOME_PLANO ?? "-"}</TableCell>
+              <TableCell>
+                {[r.CIDADE_PLANO, r.UF_PLANO].filter(Boolean).join(" / ") || "-"}
+              </TableCell>
+              <TableCell>{r.STATUS ?? "-"}</TableCell>
+              <TableCell className="text-right">{r.IDADE ?? "-"}</TableCell>
+              <TableCell className="text-right">
+                {r.VALOR_TMM != null
+                  ? r.VALOR_TMM.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })
+                  : "-"}
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </div>
   );
 }
 
-type MovFilter = "Venda" | "Transferência" | "Cancelamento" | typeof ALL;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const applyBase = (q: any, planoDe: string) => {
+  let out = q.eq("TIPO_LINHA", "E").eq("STATUS", "A");
+  if (planoDe !== ALL) out = out.eq("Plano_de", planoDe);
+  return out;
+};
 
 export default function DWCarteira() {
   const [tab, setTab] = useState("dashboard");
   const [planos, setPlanos] = useState<string[]>([]);
   const [cidades, setCidades] = useState<string[]>([]);
-  const [statuses, setStatuses] = useState<string[]>([]);
   const [planoDeOpts, setPlanoDeOpts] = useState<string[]>([]);
   const [planoDe, setPlanoDe] = useState<string>("Saúde");
-  const [ocorrenciaOpts, setOcorrenciaOpts] = useState<string[]>([]);
-  const [ocorrencia, setOcorrencia] = useState<string>("Entrada");
-  const [movFilter, setMovFilter] = useState<MovFilter>("Venda");
   const [loadingOpts, setLoadingOpts] = useState(true);
 
   useEffect(() => {
@@ -155,7 +117,9 @@ export default function DWCarteira() {
       setLoadingOpts(true);
       const { data, error } = await dw
         .from(TABLE)
-        .select('"NOME_PLANO","CIDADE_PLANO","STATUS","Plano_de","Ocorrencia"')
+        .select('"NOME_PLANO","CIDADE_PLANO","Plano_de"')
+        .eq("TIPO_LINHA", "E")
+        .eq("STATUS", "A")
         .limit(10000);
       if (error) console.error("Erro ao carregar filtros:", error);
       const uniq = (arr: (string | null | undefined)[]) =>
@@ -164,9 +128,7 @@ export default function DWCarteira() {
       const rows = (data ?? []) as any[];
       setPlanos(uniq(rows.map((r) => r.NOME_PLANO)));
       setCidades(uniq(rows.map((r) => r.CIDADE_PLANO)));
-      setStatuses(uniq(rows.map((r) => r.STATUS)));
       setPlanoDeOpts(uniq(rows.map((r) => r.Plano_de)));
-      setOcorrenciaOpts(uniq(rows.map((r) => r.Ocorrencia)));
       setLoadingOpts(false);
     })();
   }, []);
@@ -185,36 +147,6 @@ export default function DWCarteira() {
               {planoDeOpts.map((p) => (
                 <SelectItem key={p} value={p}>
                   {p}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="w-56">
-          <Label>Movimentação</Label>
-          <Select value={movFilter} onValueChange={(v) => setMovFilter(v as MovFilter)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Todas" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>Todas</SelectItem>
-              <SelectItem value="Venda">Venda</SelectItem>
-              <SelectItem value="Transferência">Transferência</SelectItem>
-              <SelectItem value="Cancelamento">Cancelamento</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="w-56">
-          <Label>Ocorrência</Label>
-          <Select value={ocorrencia} onValueChange={setOcorrencia}>
-            <SelectTrigger>
-              <SelectValue placeholder="Todas" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>Todas</SelectItem>
-              {ocorrenciaOpts.map((o) => (
-                <SelectItem key={o} value={o}>
-                  {o}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -245,33 +177,22 @@ export default function DWCarteira() {
         </TabsList>
 
         <TabsContent value="dashboard" className="mt-6">
-          <Dashboard
-            planos={planos}
-            cidades={cidades}
-            statuses={statuses}
-            loadingOpts={loadingOpts}
-            planoDe={planoDe}
-            ocorrencia={ocorrencia}
-            movFilter={movFilter}
-          />
+          <Dashboard loadingOpts={loadingOpts} planoDe={planoDe} />
         </TabsContent>
         <TabsContent value="nome" className="mt-6">
-          <BuscaNome planoDe={planoDe} ocorrencia={ocorrencia} movFilter={movFilter} />
+          <BuscaNome planoDe={planoDe} />
         </TabsContent>
         <TabsContent value="cpf" className="mt-6">
-          <BuscaCPF planoDe={planoDe} ocorrencia={ocorrencia} movFilter={movFilter} />
+          <BuscaCPF planoDe={planoDe} />
         </TabsContent>
         <TabsContent value="cdregusr" className="mt-6">
-          <BuscaCDREGUSR planoDe={planoDe} ocorrencia={ocorrencia} movFilter={movFilter} />
+          <BuscaCDREGUSR planoDe={planoDe} />
         </TabsContent>
         <TabsContent value="filtros" className="mt-6">
           <BuscaFiltros
             planos={planos}
             cidades={cidades}
-            statuses={statuses}
             planoDe={planoDe}
-            ocorrencia={ocorrencia}
-            movFilter={movFilter}
           />
         </TabsContent>
       </Tabs>
@@ -279,91 +200,39 @@ export default function DWCarteira() {
   );
 }
 
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const applyPlanoDe = (q: any, planoDe: string) =>
-  planoDe === ALL ? q : q.eq("Plano_de", planoDe);
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const applyOcorrencia = (q: any, ocorrencia: string) =>
-  ocorrencia === ALL ? q : q.eq("Ocorrencia", ocorrencia);
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const applyMov = (q: any, mov: MovFilter) => {
-  if (mov === ALL) return q;
-  if (mov === "Venda") {
-    return q
-      .is("CANCELAMENTO", null)
-      .neq("STATUS", "C")
-      .or("VENDEDOR.is.null,VENDEDOR.not.ilike.*transfer*");
-  }
-  if (mov === "Cancelamento") {
-    return q
-      .or("CANCELAMENTO.not.is.null,STATUS.eq.C")
-      .or(
-        "MOTIVO_CANCELAMENTO.is.null,and(MOTIVO_CANCELAMENTO.not.ilike.*transfer*,MOTIVO_CANCELAMENTO.not.ilike.*troca*)",
-      );
-  }
-  // Transferência
-  return q.or(
-    "and(or(CANCELAMENTO.not.is.null,STATUS.eq.C),or(MOTIVO_CANCELAMENTO.ilike.*transfer*,MOTIVO_CANCELAMENTO.ilike.*troca*)),and(CANCELAMENTO.is.null,STATUS.neq.C,VENDEDOR.ilike.*transfer*)",
-  );
-};
-
-
-
 function Dashboard({
-  planos,
-  cidades,
-  statuses,
   loadingOpts,
   planoDe,
-  ocorrencia,
-  movFilter,
 }: {
-  planos: string[];
-  cidades: string[];
-  statuses: string[];
   loadingOpts: boolean;
   planoDe: string;
-  ocorrencia: string;
-  movFilter: MovFilter;
 }) {
   const [vidas, setVidas] = useState<number | null>(null);
   const [planosDistintos, setPlanosDistintos] = useState<number | null>(null);
   const [cidadesDistintas, setCidadesDistintas] = useState<number | null>(null);
   const [porStatus, setPorStatus] = useState<{ status: string; total: number }[]>([]);
   const [loading, setLoading] = useState(true);
-  const [totalGeralVidas, setTotalGeralVidas] = useState<number | null>(null);
 
   useEffect(() => {
     if (loadingOpts) return;
     (async () => {
       setLoading(true);
-      // paginate through filtered selection collecting distinct values
       const benefSet = new Set<string>();
       const planoSet = new Set<string>();
       const cidadeSet = new Set<string>();
       const perStatus = new Map<string, Set<string>>();
       const pageSize = 1000;
       let from = 0;
-      // safety cap
       const maxRows = 200000;
       // eslint-disable-next-line no-constant-condition
       while (true) {
-        const q = applyMov(
-          applyOcorrencia(
-            applyPlanoDe(
-              dw
-                .from(TABLE)
-                .select(
-                  '"NOME_BENEFICIARIO","NOME_PLANO","CIDADE_OFICIAL","STATUS"',
-                ),
-              planoDe,
+        const q = applyBase(
+          dw
+            .from(TABLE)
+            .select(
+              '"NOME_BENEFICIARIO","NOME_PLANO","CIDADE_OFICIAL","STATUS"',
             ),
-            ocorrencia,
-          ),
-          movFilter,
+          planoDe,
         );
         const { data, error } = await q.range(from, from + pageSize - 1);
         if (error) {
@@ -396,35 +265,7 @@ function Dashboard({
       setPorStatus(counts);
       setLoading(false);
     })();
-  }, [loadingOpts, planoDe, ocorrencia, movFilter]);
-
-  // total geral (unfiltered) distinct NOME_BENEFICIARIO
-  useEffect(() => {
-    (async () => {
-      const set = new Set<string>();
-      const pageSize = 1000;
-      let from = 0;
-      const maxRows = 500000;
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        const { data, error } = await dw
-          .from(TABLE)
-          .select('"NOME_BENEFICIARIO"')
-          .range(from, from + pageSize - 1);
-        if (error) {
-          console.error(error);
-          break;
-        }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const rows = (data ?? []) as any[];
-        for (const r of rows) if (r.NOME_BENEFICIARIO) set.add(String(r.NOME_BENEFICIARIO));
-        if (rows.length < pageSize) break;
-        from += pageSize;
-        if (from >= maxRows) break;
-      }
-      setTotalGeralVidas(set.size);
-    })();
-  }, []);
+  }, [loadingOpts, planoDe]);
 
   return (
     <div className="space-y-6">
@@ -464,14 +305,6 @@ function Dashboard({
               })}
             </div>
           )}
-          <div className="flex justify-end pt-3">
-            <span className="text-xs text-muted-foreground">
-              Total geral de vidas:{" "}
-              {totalGeralVidas === null
-                ? "—"
-                : totalGeralVidas.toLocaleString("pt-BR")}
-            </span>
-          </div>
         </CardContent>
       </Card>
     </div>
@@ -520,20 +353,14 @@ function useSearch() {
   return { rows, loading, run };
 }
 
-function BuscaNome({ planoDe, ocorrencia, movFilter }: { planoDe: string; ocorrencia: string; movFilter: MovFilter }) {
+function BuscaNome({ planoDe }: { planoDe: string }) {
   const [nome, setNome] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () =>
     run(() =>
-      applyMov(
-        applyOcorrencia(
-          applyPlanoDe(
-            dw.from(TABLE).select(COLS).ilike("NOME_BENEFICIARIO", `%${nome}%`),
-            planoDe,
-          ),
-          ocorrencia,
-        ),
-        movFilter,
+      applyBase(
+        dw.from(TABLE).select(COLS).ilike("NOME_BENEFICIARIO", `%${nome}%`),
+        planoDe,
       ).order("NOME_BENEFICIARIO"),
     );
   return (
@@ -562,13 +389,13 @@ function BuscaNome({ planoDe, ocorrencia, movFilter }: { planoDe: string; ocorre
   );
 }
 
-function BuscaCPF({ planoDe, ocorrencia, movFilter }: { planoDe: string; ocorrencia: string; movFilter: MovFilter }) {
+function BuscaCPF({ planoDe }: { planoDe: string }) {
   const [cpf, setCpf] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () => {
     const digits = cpf.replace(/\D/g, "");
     if (!digits) return;
-    run(() => applyMov(applyOcorrencia(applyPlanoDe(dw.from(TABLE).select(COLS).eq("CPF", digits), planoDe), ocorrencia), movFilter));
+    run(() => applyBase(dw.from(TABLE).select(COLS).eq("CPF", digits), planoDe));
   };
   return (
     <Card>
@@ -596,13 +423,13 @@ function BuscaCPF({ planoDe, ocorrencia, movFilter }: { planoDe: string; ocorren
   );
 }
 
-function BuscaCDREGUSR({ planoDe, ocorrencia, movFilter }: { planoDe: string; ocorrencia: string; movFilter: MovFilter }) {
+function BuscaCDREGUSR({ planoDe }: { planoDe: string }) {
   const [cd, setCd] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () => {
     const n = Number(cd.trim());
     if (!n) return;
-    run(() => applyMov(applyOcorrencia(applyPlanoDe(dw.from(TABLE).select(COLS).eq("CDREGUSR", n), planoDe), ocorrencia), movFilter));
+    run(() => applyBase(dw.from(TABLE).select(COLS).eq("CDREGUSR", n), planoDe));
   };
   return (
     <Card>
@@ -633,21 +460,14 @@ function BuscaCDREGUSR({ planoDe, ocorrencia, movFilter }: { planoDe: string; oc
 function BuscaFiltros({
   planos,
   cidades,
-  statuses,
   planoDe,
-  ocorrencia,
-  movFilter,
 }: {
   planos: string[];
   cidades: string[];
-  statuses: string[];
   planoDe: string;
-  ocorrencia: string;
-  movFilter: MovFilter;
 }) {
   const [plano, setPlano] = useState<string>(ALL);
   const [cidade, setCidade] = useState<string>(ALL);
-  const [status, setStatus] = useState<string>(ALL);
   const { rows, loading, run } = useSearch();
 
   const submit = () =>
@@ -655,13 +475,12 @@ function BuscaFiltros({
       let q = dw.from(TABLE).select(COLS);
       if (plano !== ALL) q = q.eq("NOME_PLANO", plano);
       if (cidade !== ALL) q = q.eq("CIDADE_PLANO", cidade);
-      if (status !== ALL) q = q.eq("STATUS", status);
-      return applyMov(applyOcorrencia(applyPlanoDe(q, planoDe), ocorrencia), movFilter).order("NOME_BENEFICIARIO");
+      return applyBase(q, planoDe).order("NOME_BENEFICIARIO");
     });
 
   const anyFilter = useMemo(
-    () => plano !== ALL || cidade !== ALL || status !== ALL,
-    [plano, cidade, status],
+    () => plano !== ALL || cidade !== ALL,
+    [plano, cidade],
   );
 
   return (
@@ -670,7 +489,7 @@ function BuscaFiltros({
         <CardTitle className="text-base">Filtros combinados</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
             <Label>Plano</Label>
             <Select value={plano} onValueChange={setPlano}>
@@ -698,22 +517,6 @@ function BuscaFiltros({
                 {cidades.map((c) => (
                   <SelectItem key={c} value={c}>
                     {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Status</Label>
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger>
-                <SelectValue placeholder="Todos" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ALL}>Todos</SelectItem>
-                {statuses.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
                   </SelectItem>
                 ))}
               </SelectContent>
