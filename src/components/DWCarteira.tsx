@@ -172,10 +172,8 @@ export default function DWCarteira() {
 
 function Dashboard({
   loadingOpts,
-  planoDe,
 }: {
   loadingOpts: boolean;
-  planoDe: string;
 }) {
   const [vidas, setVidas] = useState<number | null>(null);
   const [planosDistintos, setPlanosDistintos] = useState<number | null>(null);
