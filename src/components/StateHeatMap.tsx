@@ -36,8 +36,10 @@ interface Props {
 type FeatWithUF = Feature<Geometry, { name?: string; _uf: string }>;
 
 export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
+  const isArea = ufs.length > 1;
   const key = ufs.join("-");
   const [features, setFeatures] = useState<FeatWithUF[] | null>(null);
+  const [stateOutlines, setStateOutlines] = useState<Feature<Geometry>[] | null>(null);
   const [hover, setHover] = useState<{ name: string; uf: string; total: number; x: number; y: number } | null>(
     null,
   );
