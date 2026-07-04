@@ -254,7 +254,7 @@ const Index = () => {
           </div>
         </header>
 
-        <main className="flex-1 p-8">
+        <main className="flex-1 min-h-0 p-8 overflow-hidden">
           {active === "Ativos em" ? (
             <AtivosEm dateValue={dateValue} initialDrillNome={ativosDrillNome} />
           ) : active === "DW Carteira" ? (
