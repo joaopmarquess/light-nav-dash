@@ -377,7 +377,7 @@ function useSearch() {
   return { rows, loading, run };
 }
 
-function BuscaNome(()) {
+function BuscaNome() {
   const [nome, setNome] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () =>
@@ -413,7 +413,7 @@ function BuscaNome(()) {
   );
 }
 
-function BuscaCPF(()) {
+function BuscaCPF() {
   const [cpf, setCpf] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () => {
@@ -447,7 +447,7 @@ function BuscaCPF(()) {
   );
 }
 
-function BuscaCDREGUSR(()) {
+function BuscaCDREGUSR() {
   const [cd, setCd] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () => {
