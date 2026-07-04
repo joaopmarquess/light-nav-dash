@@ -251,17 +251,18 @@ export default function DWCarteira() {
             statuses={statuses}
             loadingOpts={loadingOpts}
             planoDe={planoDe}
+            ocorrencia={ocorrencia}
             movFilter={movFilter}
           />
         </TabsContent>
         <TabsContent value="nome" className="mt-6">
-          <BuscaNome planoDe={planoDe} movFilter={movFilter} />
+          <BuscaNome planoDe={planoDe} ocorrencia={ocorrencia} movFilter={movFilter} />
         </TabsContent>
         <TabsContent value="cpf" className="mt-6">
-          <BuscaCPF planoDe={planoDe} movFilter={movFilter} />
+          <BuscaCPF planoDe={planoDe} ocorrencia={ocorrencia} movFilter={movFilter} />
         </TabsContent>
         <TabsContent value="cdregusr" className="mt-6">
-          <BuscaCDREGUSR planoDe={planoDe} movFilter={movFilter} />
+          <BuscaCDREGUSR planoDe={planoDe} ocorrencia={ocorrencia} movFilter={movFilter} />
         </TabsContent>
         <TabsContent value="filtros" className="mt-6">
           <BuscaFiltros
@@ -269,6 +270,7 @@ export default function DWCarteira() {
             cidades={cidades}
             statuses={statuses}
             planoDe={planoDe}
+            ocorrencia={ocorrencia}
             movFilter={movFilter}
           />
         </TabsContent>
