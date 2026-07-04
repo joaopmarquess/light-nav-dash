@@ -318,6 +318,7 @@ function Dashboard({
   statuses,
   loadingOpts,
   planoDe,
+  ocorrencia,
   movFilter,
 }: {
   planos: string[];
@@ -325,6 +326,7 @@ function Dashboard({
   statuses: string[];
   loadingOpts: boolean;
   planoDe: string;
+  ocorrencia: string;
   movFilter: MovFilter;
 }) {
   const [total, setTotal] = useState<number | null>(null);
@@ -338,9 +340,12 @@ function Dashboard({
       setLoading(true);
       const base = () =>
         applyMov(
-          applyPlanoDe(
-            dw.from(TABLE).select("CDREGUSR", { count: "exact", head: true }),
-            planoDe,
+          applyOcorrencia(
+            applyPlanoDe(
+              dw.from(TABLE).select("CDREGUSR", { count: "exact", head: true }),
+              planoDe,
+            ),
+            ocorrencia,
           ),
           movFilter,
         );
@@ -357,7 +362,7 @@ function Dashboard({
       setPorStatus(counts.sort((a, b) => b.total - a.total));
       setLoading(false);
     })();
-  }, [statuses, loadingOpts, planoDe, movFilter]);
+  }, [statuses, loadingOpts, planoDe, ocorrencia, movFilter]);
 
 
 
