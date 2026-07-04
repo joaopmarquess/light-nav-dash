@@ -375,8 +375,8 @@ function Dashboard({
               })()}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center md:h-[380px]">
+              <div className="space-y-2 self-center">
                 {(() => {
                   const max = Math.max(1, ...porUF.map((r) => r.total));
                   const totalAll = porUF.reduce((s, r) => s + r.total, 0);
@@ -414,7 +414,7 @@ function Dashboard({
                   });
                 })()}
               </div>
-              <div className="w-full">
+              <div className="w-full h-full flex items-center justify-center">
                 <BrazilHeatMap ufTotals={ufTotals} />
               </div>
             </div>
