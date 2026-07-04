@@ -284,6 +284,7 @@ function Dashboard({
         }),
       );
       setPorUF(UF_KEYS.map((u) => ({ uf: u, total: perUF.get(u) ?? 0 })));
+      setUfTotals(Object.fromEntries(perUFAll));
       setLoading(false);
     })();
   }, [loadingOpts]);
