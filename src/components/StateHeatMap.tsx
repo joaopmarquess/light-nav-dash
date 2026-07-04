@@ -47,6 +47,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
   useEffect(() => {
     let cancelled = false;
     setFeatures(null);
+    setStateOutlines(null);
     (async () => {
       const results = await Promise.all(
         ufs.map(async (uf) => {
@@ -62,11 +63,25 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
       );
       if (cancelled) return;
       setFeatures(results.flat());
+
+      if (isArea) {
+        if (!statesCache) {
+          const res = await fetch(STATES_URL);
+          statesCache = await res.json();
+        }
+        if (cancelled) return;
+        const wanted = new Set(ufs as string[]);
+        setStateOutlines(
+          (statesCache!.features as Feature<Geometry, { name: string }>[]).filter(
+            (f) => wanted.has(NAME_TO_UF[f.properties?.name] ?? ""),
+          ),
+        );
+      }
     })().catch((e) => console.error("Falha ao carregar mapas", e));
     return () => {
       cancelled = true;
     };
-  }, [key]);
+  }, [key, isArea]);
 
   const width = 600;
   const height = 560;
