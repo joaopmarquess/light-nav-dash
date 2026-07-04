@@ -274,9 +274,10 @@ function Dashboard({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="VIDAS" value={vidas} loading={loading} />
-        <StatCard label="PLANOS" value={planosDistintos} loading={loading} />
+        <StatCard label="PIF" value={pifDistintos} loading={loading} />
+        <StatCard label="EMPRESAS" value={empresasDistintas} loading={loading} />
         <StatCard label="CIDADES" value={cidadesDistintas} loading={loading} />
       </div>
 
