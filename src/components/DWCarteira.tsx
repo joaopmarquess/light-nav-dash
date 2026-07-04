@@ -275,6 +275,7 @@ function Dashboard({
           return { faixa: f.label, F: b.F, M: b.M, total: b.F + b.M };
         }),
       );
+      setPorUF(UF_KEYS.map((u) => ({ uf: u, total: perUF.get(u) ?? 0 })));
       setLoading(false);
     })();
   }, [loadingOpts]);
