@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSinistralidade } from "@/components/SinistralidadeGraficos";
+import { useDWCarteira } from "@/components/DWCarteira";
+import { BrazilHeatMap } from "@/components/BrazilHeatMap";
+import { StateHeatMap } from "@/components/StateHeatMap";
 import { Maximize2, Minimize2 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -117,6 +120,7 @@ const BIOverview = () => {
   }, [rows]);
 
   const sin = useSinistralidade();
+  const dw = useDWCarteira(true);
 
   const slides = useMemo(() => {
     if (!data) return [];
@@ -270,13 +274,61 @@ const BIOverview = () => {
             },
           ]
         : []),
+      ...(!dw.loading && dw.porFaixa.length
+        ? [
+            {
+              title: "DW Carteira — Vidas por Faixa Etária",
+              subtitle: "Distribuição por faixa e sexo",
+              chart: (
+                <BarChart data={dw.porFaixa} margin={{ top: 20, right: 40, left: 20, bottom: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="faixa" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  <Bar dataKey="F" name="Feminino" stackId="s" fill="#ec4899" radius={[0, 0, 0, 0]} />
+                  <Bar dataKey="M" name="Masculino" stackId="s" fill="#3b82f6" radius={[6, 6, 0, 0]}>
+                    <LabelList dataKey="total" position="top" formatter={fmtCompact} style={{ fontSize: 10, fill: "hsl(var(--foreground))" }} />
+                  </Bar>
+                </BarChart>
+              ),
+            },
+            {
+              title: "DW Carteira — Vidas por UF",
+              subtitle: "SP, MS, MG e demais estados",
+              chart: (
+                <BarChart data={dw.porUF} margin={{ top: 20, right: 40, left: 20, bottom: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="uf" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis tickFormatter={fmtCompact} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+                  <Bar dataKey="total" name="Vidas" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]}>
+                    <LabelList dataKey="total" position="top" formatter={fmtCompact} style={{ fontSize: 11, fill: "hsl(var(--foreground))" }} />
+                  </Bar>
+                </BarChart>
+              ),
+            },
+            {
+              title: "DW Carteira — Mapa do Brasil",
+              subtitle: "Vidas por UF",
+              custom: <BrazilHeatMap ufTotals={dw.ufTotals} />,
+            } as any,
+            {
+              title: "DW Carteira — Área de Abrangência",
+              subtitle: "Mapa de calor por município — SP, MG e MS",
+              custom: (
+                <StateHeatMap ufs={["SP", "MG", "MS"]} cityTotalsByUF={dw.cityTotalsByUF} />
+              ),
+            } as any,
+          ]
+        : []),
       {
         title: "PBI U12",
         subtitle: "Relatório Power BI — Desenvolvimento Sinistralidade",
         iframe: "https://app.powerbi.com/view?r=eyJrIjoiYjJkNjQ3MTYtMjM0Ni00Y2I2LWJiOWItNTcyNWU0YWY0ZTc2IiwidCI6ImM0ZTU0ODgxLWQ1NDktNDQ2Ny1iOGFjLWQ0ZjI1MGM2NzhjNiJ9",
       } as any,
     ];
-  }, [data, sin]);
+  }, [data, sin, dw]);
 
   useEffect(() => {
     if (!slides.length || paused) return;
@@ -345,6 +397,10 @@ const BIOverview = () => {
               className="w-full h-full border-0 rounded-md"
               allowFullScreen
             />
+          ) : (current as any).custom ? (
+            <div className="w-full h-full flex items-center justify-center">
+              {(current as any).custom}
+            </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               {current.chart as any}
