@@ -375,7 +375,17 @@ function Dashboard({
                   return (
                     <div key={r.uf}>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-foreground">{r.uf}</span>
+                        <span className="text-foreground inline-flex items-center gap-2">
+                          {UF_FLAGS[r.uf] && (
+                            <img
+                              src={UF_FLAGS[r.uf]}
+                              alt={`Bandeira ${r.uf}`}
+                              className="h-3.5 w-5 object-cover rounded-[2px] border border-border"
+                              loading="lazy"
+                            />
+                          )}
+                          {r.uf}
+                        </span>
                         <span>
                           <span className="font-semibold text-foreground tabular-nums">
                             {r.total.toLocaleString("pt-BR")}
