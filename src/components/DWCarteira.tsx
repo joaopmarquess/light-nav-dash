@@ -496,13 +496,13 @@ function BuscaCPF({ planoDe, movFilter }: { planoDe: string; movFilter: MovFilte
   );
 }
 
-function BuscaCDREGUSR({ planoDe }: { planoDe: string }) {
+function BuscaCDREGUSR({ planoDe, movFilter }: { planoDe: string; movFilter: MovFilter }) {
   const [cd, setCd] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () => {
     const n = Number(cd.trim());
     if (!n) return;
-    run(() => applyPlanoDe(dw.from(TABLE).select(COLS).eq("CDREGUSR", n), planoDe));
+    run(() => applyMov(applyPlanoDe(dw.from(TABLE).select(COLS).eq("CDREGUSR", n), planoDe), movFilter));
   };
   return (
     <Card>
