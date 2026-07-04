@@ -375,59 +375,49 @@ function Dashboard({
               })()}
             </div>
           ) : (
-            <div className="space-y-2">
-              {(() => {
-                const max = Math.max(1, ...porUF.map((r) => r.total));
-                const totalAll = porUF.reduce((s, r) => s + r.total, 0);
-                return porUF.map((r) => {
-                  const share = totalAll > 0 ? (r.total / totalAll) * 100 : 0;
-                  const pct = (r.total / max) * 100;
-                  return (
-                    <div key={r.uf}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-foreground inline-flex items-center gap-2">
-                          {UF_FLAGS[r.uf] && (
-                            <img
-                              src={UF_FLAGS[r.uf]}
-                              alt={`Bandeira ${r.uf}`}
-                              className="h-3.5 w-5 object-cover rounded-[2px] border border-border"
-                              loading="lazy"
-                            />
-                          )}
-                          {r.uf}
-                        </span>
-                        <span>
-                          <span className="font-semibold text-foreground tabular-nums">
-                            {r.total.toLocaleString("pt-BR")}
-                          </span>{" "}
-                          <span className="text-xs text-muted-foreground tabular-nums">
-                            ({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-start">
+              <div className="space-y-2">
+                {(() => {
+                  const max = Math.max(1, ...porUF.map((r) => r.total));
+                  const totalAll = porUF.reduce((s, r) => s + r.total, 0);
+                  return porUF.map((r) => {
+                    const share = totalAll > 0 ? (r.total / totalAll) * 100 : 0;
+                    const pct = (r.total / max) * 100;
+                    return (
+                      <div key={r.uf}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-foreground inline-flex items-center gap-2">
+                            {UF_FLAGS[r.uf] && (
+                              <img
+                                src={UF_FLAGS[r.uf]}
+                                alt={`Bandeira ${r.uf}`}
+                                className="h-3.5 w-5 object-cover rounded-[2px] border border-border"
+                                loading="lazy"
+                              />
+                            )}
+                            {r.uf}
                           </span>
-                        </span>
+                          <span>
+                            <span className="font-semibold text-foreground tabular-nums">
+                              {r.total.toLocaleString("pt-BR")}
+                            </span>{" "}
+                            <span className="text-xs text-muted-foreground tabular-nums">
+                              ({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)
+                            </span>
+                          </span>
+                        </div>
+                        <div className="flex h-2 rounded-full bg-accent overflow-hidden">
+                          <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
+                        </div>
                       </div>
-                      <div className="flex h-2 rounded-full bg-accent overflow-hidden">
-                        <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
-                      </div>
-                    </div>
-                  );
-                });
-              })()}
+                    );
+                  });
+                })()}
+              </div>
+              <div className="w-full md:w-[280px]">
+                <BrazilHeatMap ufTotals={ufTotals} />
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Mapa de calor por UF</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
-              <Loader2 className="h-4 w-4 animate-spin" /> Calculando...
-            </div>
-          ) : (
-            <BrazilHeatMap ufTotals={ufTotals} />
           )}
         </CardContent>
       </Card>
