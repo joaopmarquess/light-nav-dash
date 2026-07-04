@@ -339,12 +339,15 @@ function useSearch() {
   return { rows, loading, run };
 }
 
-function BuscaNome() {
+function BuscaNome({ planoDe }: { planoDe: string }) {
   const [nome, setNome] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () =>
     run(() =>
-      dw.from(TABLE).select(COLS).ilike("NOME_BENEFICIARIO", `%${nome}%`).order("NOME_BENEFICIARIO"),
+      applyPlanoDe(
+        dw.from(TABLE).select(COLS).ilike("NOME_BENEFICIARIO", `%${nome}%`),
+        planoDe,
+      ).order("NOME_BENEFICIARIO"),
     );
   return (
     <Card>
