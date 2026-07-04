@@ -345,6 +345,23 @@ const BIOverview = () => {
     if (slides.length && idx >= slides.length) setIdx(0);
   }, [slides.length, idx]);
 
+  useEffect(() => {
+    if (!slides.length) return;
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        setIdx((i) => (i + 1) % slides.length);
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        setIdx((i) => (i - 1 + slides.length) % slides.length);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [slides.length]);
+
   if (!data || !slides.length) {
     return (
       <section className="h-[calc(100vh-8rem)] flex items-center justify-center text-muted-foreground text-sm bg-card rounded-xl border border-border">
