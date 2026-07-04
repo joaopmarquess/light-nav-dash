@@ -448,7 +448,7 @@ function Dashboard({
                       className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
                       title="Ver Área de Abrangência"
                     >
-                      <Map className="h-3.5 w-3.5" /> Área de Abrangência
+                      <MapIcon className="h-3.5 w-3.5" /> Área de Abrangência
                     </button>
                   )}
                 </div>
