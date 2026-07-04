@@ -136,6 +136,8 @@ function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
   );
 }
 
+type MovFilter = "Venda" | "Transferência" | "Cancelamento" | typeof ALL;
+
 export default function DWCarteira() {
   const [tab, setTab] = useState("dashboard");
   const [planos, setPlanos] = useState<string[]>([]);
@@ -143,6 +145,7 @@ export default function DWCarteira() {
   const [statuses, setStatuses] = useState<string[]>([]);
   const [planoDeOpts, setPlanoDeOpts] = useState<string[]>([]);
   const [planoDe, setPlanoDe] = useState<string>("Saúde");
+  const [movFilter, setMovFilter] = useState<MovFilter>("Venda");
   const [loadingOpts, setLoadingOpts] = useState(true);
 
   useEffect(() => {
@@ -184,8 +187,22 @@ export default function DWCarteira() {
             </SelectContent>
           </Select>
         </div>
+        <div className="w-56">
+          <Label>Movimentação</Label>
+          <Select value={movFilter} onValueChange={(v) => setMovFilter(v as MovFilter)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Todas" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>Todas</SelectItem>
+              <SelectItem value="Venda">Venda</SelectItem>
+              <SelectItem value="Transferência">Transferência</SelectItem>
+              <SelectItem value="Cancelamento">Cancelamento</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <p className="text-xs text-muted-foreground pb-2">
-          Filtro aplicado a todas as consultas abaixo.
+          Filtros aplicados a todas as consultas abaixo.
         </p>
       </div>
 
@@ -215,16 +232,17 @@ export default function DWCarteira() {
             statuses={statuses}
             loadingOpts={loadingOpts}
             planoDe={planoDe}
+            movFilter={movFilter}
           />
         </TabsContent>
         <TabsContent value="nome" className="mt-6">
-          <BuscaNome planoDe={planoDe} />
+          <BuscaNome planoDe={planoDe} movFilter={movFilter} />
         </TabsContent>
         <TabsContent value="cpf" className="mt-6">
-          <BuscaCPF planoDe={planoDe} />
+          <BuscaCPF planoDe={planoDe} movFilter={movFilter} />
         </TabsContent>
         <TabsContent value="cdregusr" className="mt-6">
-          <BuscaCDREGUSR planoDe={planoDe} />
+          <BuscaCDREGUSR planoDe={planoDe} movFilter={movFilter} />
         </TabsContent>
         <TabsContent value="filtros" className="mt-6">
           <BuscaFiltros
@@ -232,12 +250,14 @@ export default function DWCarteira() {
             cidades={cidades}
             statuses={statuses}
             planoDe={planoDe}
+            movFilter={movFilter}
           />
         </TabsContent>
       </Tabs>
     </section>
   );
 }
+
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const applyPlanoDe = (q: any, planoDe: string) =>
