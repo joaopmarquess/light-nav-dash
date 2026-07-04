@@ -397,6 +397,10 @@ const BIOverview = () => {
               className="w-full h-full border-0 rounded-md"
               allowFullScreen
             />
+          ) : (current as any).custom ? (
+            <div className="w-full h-full flex items-center justify-center">
+              {(current as any).custom}
+            </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               {current.chart as any}
