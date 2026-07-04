@@ -309,6 +309,28 @@ function Dashboard({
 
 
 
+  if (mapSelection === "AREA") {
+    return (
+      <div className="fixed inset-0 z-50 bg-background flex flex-col">
+        <div className="flex items-center justify-between px-4 py-2 border-b border-border">
+          <div className="text-sm font-semibold text-foreground inline-flex items-center gap-2">
+            <MapIcon className="h-4 w-4" /> Área de Abrangência — SP, MG e MS
+          </div>
+          <button
+            type="button"
+            onClick={() => setMapSelection(null)}
+            className="text-xs text-muted-foreground hover:text-foreground underline"
+          >
+            ← Voltar
+          </button>
+        </div>
+        <div className="flex-1 min-h-0">
+          <StateHeatMap ufs={["SP", "MG", "MS"] as const} cityTotalsByUF={cityTotalsByUF} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex flex-col gap-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
