@@ -43,11 +43,13 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
   const [hover, setHover] = useState<{ name: string; uf: string; total: number; x: number; y: number } | null>(
     null,
   );
+  const [lens, setLens] = useState<{ cx: number; cy: number } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setFeatures(null);
     setStateOutlines(null);
+    setLens(null);
     (async () => {
       const results = await Promise.all(
         ufs.map(async (uf) => {
@@ -169,7 +171,16 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
                 });
               }}
               onMouseLeave={() => setHover(null)}
-              style={{ transition: "fill 120ms" }}
+              onClick={() => {
+                if (!isArea) return;
+                const [cx, cy] = pathFn.centroid(f);
+                if (Number.isFinite(cx) && Number.isFinite(cy)) {
+                  setLens((prev) =>
+                    prev && Math.hypot(prev.cx - cx, prev.cy - cy) < 2 ? null : { cx, cy },
+                  );
+                }
+              }}
+              style={{ transition: "fill 120ms", cursor: isArea ? "zoom-in" : "default" }}
             />
           );
         })}
@@ -185,9 +196,72 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
               pointerEvents="none"
             />
           ))}
+        {isArea && lens && (() => {
+          const Z = 5;
+          const R = 90;
+          const { cx, cy } = lens;
+          const clipId = `lens-clip-${Math.round(cx)}-${Math.round(cy)}`;
+          return (
+            <g>
+              <defs>
+                <clipPath id={clipId}>
+                  <circle cx={cx} cy={cy} r={R} />
+                </clipPath>
+              </defs>
+              <circle cx={cx} cy={cy} r={R} fill="hsl(var(--background))" opacity={0.4} />
+              <g
+                clipPath={`url(#${clipId})`}
+                transform={`translate(${cx - cx * Z}, ${cy - cy * Z}) scale(${Z})`}
+              >
+                {features.map((f, i) => {
+                  const n = f.properties?.name ?? "";
+                  const u = f.properties._uf;
+                  const t = normalizedByUF[u]?.[normalize(n)] ?? 0;
+                  return (
+                    <path
+                      key={`lens-${i}`}
+                      d={pathFn(f) ?? ""}
+                      fill={colorFor(t)}
+                      stroke="#1f2937"
+                      strokeWidth={0.3 / Z}
+                    />
+                  );
+                })}
+                {features.map((f, i) => {
+                  const [tx, ty] = pathFn.centroid(f);
+                  if (!Number.isFinite(tx) || !Number.isFinite(ty)) return null;
+                  if (Math.hypot(tx - cx, ty - cy) * Z > R - 6) return null;
+                  return (
+                    <text
+                      key={`lens-t-${i}`}
+                      x={tx}
+                      y={ty}
+                      textAnchor="middle"
+                      fontSize={2.2}
+                      fill="#0f172a"
+                      style={{ paintOrder: "stroke", stroke: "#fff", strokeWidth: 0.6 }}
+                    >
+                      {f.properties?.name}
+                    </text>
+                  );
+                })}
+              </g>
+              <circle
+                cx={cx}
+                cy={cy}
+                r={R}
+                fill="none"
+                stroke="#0f172a"
+                strokeWidth={2}
+                onClick={() => setLens(null)}
+                style={{ cursor: "zoom-out" }}
+              />
+            </g>
+          );
+        })()}
       </svg>
 
-      {hover && (
+      {hover && !lens && (
         <div
           className="pointer-events-none absolute z-10 rounded-md border border-border bg-popover px-2 py-1 text-xs shadow-md"
           style={{ left: hover.x + 12, top: hover.y + 12 }}
