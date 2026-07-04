@@ -115,7 +115,7 @@ const Index = () => {
   }, [active, ativosDrillNome]);
 
   return (
-    <div className="min-h-screen flex w-full bg-background">
+    <div className="h-screen overflow-hidden flex w-full bg-background">
       <aside
         className={`${collapsed ? "w-16" : "w-64"} border-r border-border bg-card flex flex-col transition-all duration-200`}
       >
