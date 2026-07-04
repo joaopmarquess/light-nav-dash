@@ -138,6 +138,18 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
         className="w-full h-full max-h-full"
         role="img"
         aria-label={`Mapa de calor por município — ${ufs.join(", ")}`}
+        style={{ cursor: lensMode ? "none" : "default" }}
+        onMouseMove={(e) => {
+          if (!lensMode) return;
+          const svg = e.currentTarget;
+          const rect = svg.getBoundingClientRect();
+          const cx = ((e.clientX - rect.left) / rect.width) * width;
+          const cy = ((e.clientY - rect.top) / rect.height) * height;
+          setLens({ cx, cy });
+        }}
+        onMouseLeave={() => {
+          if (lensMode) setLens(null);
+        }}
       >
         {!isArea &&
           features.map((f, i) => (
