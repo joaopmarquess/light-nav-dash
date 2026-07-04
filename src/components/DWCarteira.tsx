@@ -136,8 +136,8 @@ export default function DWCarteira() {
   }, []);
 
   return (
-    <section className="space-y-6">
-      <Tabs value={tab} onValueChange={setTab} className="w-full">
+    <section className="h-full flex flex-col">
+      <Tabs value={tab} onValueChange={setTab} className="w-full flex-1 flex flex-col min-h-0">
         <TabsList className="grid grid-cols-5 w-full max-w-3xl">
           <TabsTrigger value="dashboard" className="gap-2">
             <LayoutDashboard className="h-4 w-4" /> Dashboard
@@ -156,7 +156,7 @@ export default function DWCarteira() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="dashboard" className="mt-6">
+        <TabsContent value="dashboard" className="mt-6 flex-1 min-h-0">
           <Dashboard loadingOpts={loadingOpts} />
         </TabsContent>
         <TabsContent value="nome" className="mt-6">
@@ -310,7 +310,7 @@ function Dashboard({
 
 
   return (
-    <div className="space-y-6">
+    <div className="h-full flex flex-col gap-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="VIDAS" value={vidas} loading={loading} />
         <StatCard label="PLANOS" value={pifDistintos} loading={loading} />
@@ -318,7 +318,7 @@ function Dashboard({
         <StatCard label="CIDADES" value={cidadesDistintas} loading={loading} />
       </div>
 
-      <Card>
+      <Card className="flex-1 flex flex-col min-h-0">
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-base">
             {chartView === "faixa" ? "Vidas por Faixa Etária" : "Vidas por UF"}
@@ -340,7 +340,7 @@ function Dashboard({
             </button>
           </div>
         </CardHeader>
-        <CardContent className="h-[26rem]">
+        <CardContent className="flex-1 min-h-0">
           {loading ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
               <Loader2 className="h-4 w-4 animate-spin" /> Calculando...
