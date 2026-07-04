@@ -176,7 +176,8 @@ function Dashboard({
   loadingOpts: boolean;
 }) {
   const [vidas, setVidas] = useState<number | null>(null);
-  const [planosDistintos, setPlanosDistintos] = useState<number | null>(null);
+  const [pifDistintos, setPifDistintos] = useState<number | null>(null);
+  const [empresasDistintas, setEmpresasDistintas] = useState<number | null>(null);
   const [cidadesDistintas, setCidadesDistintas] = useState<number | null>(null);
   const [porFaixa, setPorFaixa] = useState<
     { faixa: string; total: number; F: number; M: number }[]
