@@ -346,7 +346,7 @@ function Dashboard({
               <Loader2 className="h-4 w-4 animate-spin" /> Calculando...
             </div>
           ) : chartView === "faixa" ? (
-            <div className="space-y-2">
+            <div className="h-full flex flex-col">
               <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
                 <span className="inline-flex items-center gap-1.5">
                   <span className="inline-block h-2.5 w-2.5 rounded-sm bg-pink-500" />
