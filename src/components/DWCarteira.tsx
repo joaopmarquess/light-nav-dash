@@ -483,11 +483,9 @@ function BuscaCDREGUSR() {
 function BuscaFiltros({
   planos,
   cidades,
-  planoDe,
 }: {
   planos: string[];
   cidades: string[];
-  planoDe: string;
 }) {
   const [plano, setPlano] = useState<string>(ALL);
   const [cidade, setCidade] = useState<string>(ALL);
