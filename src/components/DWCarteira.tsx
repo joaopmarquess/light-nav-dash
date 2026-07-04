@@ -310,7 +310,7 @@ function Dashboard({
 
 
   return (
-    <div className="space-y-6">
+    <div className="h-full flex flex-col gap-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="VIDAS" value={vidas} loading={loading} />
         <StatCard label="PLANOS" value={pifDistintos} loading={loading} />
@@ -318,7 +318,7 @@ function Dashboard({
         <StatCard label="CIDADES" value={cidadesDistintas} loading={loading} />
       </div>
 
-      <Card>
+      <Card className="flex-1 flex flex-col min-h-0">
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-base">
             {chartView === "faixa" ? "Vidas por Faixa Etária" : "Vidas por UF"}
