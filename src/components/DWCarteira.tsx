@@ -285,6 +285,10 @@ const applyPlanoDe = (q: any, planoDe: string) =>
   planoDe === ALL ? q : q.eq("Plano_de", planoDe);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const applyOcorrencia = (q: any, ocorrencia: string) =>
+  ocorrencia === ALL ? q : q.eq("Ocorrencia", ocorrencia);
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const applyMov = (q: any, mov: MovFilter) => {
   if (mov === ALL) return q;
   if (mov === "Venda") {
