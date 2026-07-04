@@ -320,6 +320,11 @@ const BIOverview = () => {
                 <StateHeatMap ufs={["SP", "MG", "MS"]} cityTotalsByUF={dw.cityTotalsByUF} />
               ),
             } as any,
+            ...(["SP", "MG", "MS"] as const).map((uf) => ({
+              title: `DW Carteira — Mapa de ${uf}`,
+              subtitle: "Mapa de calor por município",
+              custom: <StateHeatMap ufs={[uf]} cityTotalsByUF={dw.cityTotalsByUF} />,
+            } as any)),
           ]
         : []),
       {
