@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Users, Search, IdCard, Hash, LayoutDashboard, Loader2 } from "lucide-react";
+import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 
 type Row = {
   CDREGUSR: number | null;
@@ -188,6 +189,7 @@ function Dashboard({
     { faixa: string; total: number; F: number; M: number }[]
   >([]);
   const [porUF, setPorUF] = useState<{ uf: string; total: number }[]>([]);
+  const [ufTotals, setUfTotals] = useState<Record<string, number>>({});
   const [chartView, setChartView] = useState<"faixa" | "uf">("faixa");
   const [loading, setLoading] = useState(true);
 
@@ -220,6 +222,7 @@ function Dashboard({
       );
       const UF_KEYS = ["SP", "MS", "MG", "Outros"] as const;
       const perUF = new Map<string, number>(UF_KEYS.map((u) => [u, 0]));
+      const perUFAll = new Map<string, number>();
       const pageSize = 1000;
       let from = 0;
       const maxRows = 500000;
@@ -251,6 +254,7 @@ function Dashboard({
             const uf = String(r.UF_CIDADE_OFICIAL ?? "").trim().toUpperCase();
             const key = (["SP", "MS", "MG"] as const).includes(uf as never) ? uf : "Outros";
             perUF.set(key, (perUF.get(key) ?? 0) + 1);
+            if (uf) perUFAll.set(uf, (perUFAll.get(uf) ?? 0) + 1);
           }
           if (r.IDADE != null) {
             const idade = Number(r.IDADE);
@@ -281,6 +285,7 @@ function Dashboard({
         }),
       );
       setPorUF(UF_KEYS.map((u) => ({ uf: u, total: perUF.get(u) ?? 0 })));
+      setUfTotals(Object.fromEntries(perUFAll));
       setLoading(false);
     })();
   }, [loadingOpts]);
@@ -408,6 +413,21 @@ function Dashboard({
                 });
               })()}
             </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Mapa de calor por UF</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
+              <Loader2 className="h-4 w-4 animate-spin" /> Calculando...
+            </div>
+          ) : (
+            <BrazilHeatMap ufTotals={ufTotals} />
           )}
         </CardContent>
       </Card>
