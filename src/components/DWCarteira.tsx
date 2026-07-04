@@ -329,50 +329,109 @@ function Dashboard({
   ocorrencia: string;
   movFilter: MovFilter;
 }) {
-  const [total, setTotal] = useState<number | null>(null);
-  const [ativos, setAtivos] = useState<number | null>(null);
+  const [vidas, setVidas] = useState<number | null>(null);
+  const [planosDistintos, setPlanosDistintos] = useState<number | null>(null);
+  const [cidadesDistintas, setCidadesDistintas] = useState<number | null>(null);
   const [porStatus, setPorStatus] = useState<{ status: string; total: number }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalGeralVidas, setTotalGeralVidas] = useState<number | null>(null);
 
   useEffect(() => {
     if (loadingOpts) return;
     (async () => {
       setLoading(true);
-      const base = () =>
-        applyMov(
+      // paginate through filtered selection collecting distinct values
+      const benefSet = new Set<string>();
+      const planoSet = new Set<string>();
+      const cidadeSet = new Set<string>();
+      const perStatus = new Map<string, Set<string>>();
+      const pageSize = 1000;
+      let from = 0;
+      // safety cap
+      const maxRows = 200000;
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const q = applyMov(
           applyOcorrencia(
             applyPlanoDe(
-              dw.from(TABLE).select("CDREGUSR", { count: "exact", head: true }),
+              dw
+                .from(TABLE)
+                .select(
+                  '"NOME_BENEFICIARIO","NOME_PLANO","CIDADE_OFICIAL","STATUS"',
+                ),
               planoDe,
             ),
             ocorrencia,
           ),
           movFilter,
         );
-      const totalQ = await base();
-      const ativosQ = await base().eq("STATUS", "A");
-      setTotal(totalQ.count ?? 0);
-      setAtivos(ativosQ.count ?? 0);
-
-      const counts: { status: string; total: number }[] = [];
-      for (const s of statuses.slice(0, 10)) {
-        const { count } = await base().eq("STATUS", s);
-        counts.push({ status: s, total: count ?? 0 });
+        const { data, error } = await q.range(from, from + pageSize - 1);
+        if (error) {
+          console.error(error);
+          break;
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const rows = (data ?? []) as any[];
+        for (const r of rows) {
+          if (r.NOME_BENEFICIARIO) benefSet.add(String(r.NOME_BENEFICIARIO));
+          if (r.NOME_PLANO) planoSet.add(String(r.NOME_PLANO));
+          if (r.CIDADE_OFICIAL) cidadeSet.add(String(r.CIDADE_OFICIAL));
+          if (r.STATUS && r.NOME_BENEFICIARIO) {
+            const s = String(r.STATUS);
+            if (!perStatus.has(s)) perStatus.set(s, new Set());
+            perStatus.get(s)!.add(String(r.NOME_BENEFICIARIO));
+          }
+        }
+        if (rows.length < pageSize) break;
+        from += pageSize;
+        if (from >= maxRows) break;
       }
-      setPorStatus(counts.sort((a, b) => b.total - a.total));
+
+      setVidas(benefSet.size);
+      setPlanosDistintos(planoSet.size);
+      setCidadesDistintas(cidadeSet.size);
+      const counts = Array.from(perStatus.entries())
+        .map(([status, set]) => ({ status, total: set.size }))
+        .sort((a, b) => b.total - a.total);
+      setPorStatus(counts);
       setLoading(false);
     })();
-  }, [statuses, loadingOpts, planoDe, ocorrencia, movFilter]);
+  }, [loadingOpts, planoDe, ocorrencia, movFilter]);
 
-
+  // total geral (unfiltered) distinct NOME_BENEFICIARIO
+  useEffect(() => {
+    (async () => {
+      const set = new Set<string>();
+      const pageSize = 1000;
+      let from = 0;
+      const maxRows = 500000;
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const { data, error } = await dw
+          .from(TABLE)
+          .select('"NOME_BENEFICIARIO"')
+          .range(from, from + pageSize - 1);
+        if (error) {
+          console.error(error);
+          break;
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const rows = (data ?? []) as any[];
+        for (const r of rows) if (r.NOME_BENEFICIARIO) set.add(String(r.NOME_BENEFICIARIO));
+        if (rows.length < pageSize) break;
+        from += pageSize;
+        if (from >= maxRows) break;
+      }
+      setTotalGeralVidas(set.size);
+    })();
+  }, []);
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard label="Total de Vidas" value={total} loading={loading} />
-        <StatCard label="Vidas Ativas (STATUS=A)" value={ativos} loading={loading} />
-        <StatCard label="Planos distintos" value={planos.length} loading={loadingOpts} />
-        <StatCard label="Cidades atendidas" value={cidades.length} loading={loadingOpts} />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatCard label="VIDAS" value={vidas} loading={loading} />
+        <StatCard label="PLANOS" value={planosDistintos} loading={loading} />
+        <StatCard label="CIDADES" value={cidadesDistintas} loading={loading} />
       </div>
 
       <Card>
@@ -405,6 +464,14 @@ function Dashboard({
               })}
             </div>
           )}
+          <div className="flex justify-end pt-3">
+            <span className="text-xs text-muted-foreground">
+              Total geral de vidas:{" "}
+              {totalGeralVidas === null
+                ? "—"
+                : totalGeralVidas.toLocaleString("pt-BR")}
+            </span>
+          </div>
         </CardContent>
       </Card>
     </div>
