@@ -44,6 +44,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
     null,
   );
   const [lens, setLens] = useState<{ cx: number; cy: number } | null>(null);
+  const [lensMode, setLensMode] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
