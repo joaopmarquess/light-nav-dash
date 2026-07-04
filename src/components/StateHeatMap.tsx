@@ -112,11 +112,16 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
   }, [features]);
 
   const colorFor = (total: number) => {
-    if (!total || maxVal <= 0) return "hsl(var(--muted))";
-    // Stronger ramp: higher floor + gentler curve so any city with heat pops.
-    const t = Math.pow(total / maxVal, 0.35);
-    const alpha = 0.55 + t * 0.45;
-    return `hsl(var(--primary) / ${alpha.toFixed(3)})`;
+    if (!total || total <= 0) return "hsl(var(--muted))";
+    // Discrete tiers by absolute number of lives.
+    // base < 300, +1 tone >=300, +2 >=1000, +3 >=3000, +4 >=5000
+    const alphas = [0.35, 0.55, 0.75, 0.9, 1];
+    let tier = 0;
+    if (total >= 5000) tier = 4;
+    else if (total >= 3000) tier = 3;
+    else if (total >= 1000) tier = 2;
+    else if (total >= 300) tier = 1;
+    return `hsl(var(--primary) / ${alphas[tier]})`;
   };
 
   if (!features || !pathFn) {
