@@ -98,18 +98,13 @@ function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const applyBase = (q: any, planoDe: string) => {
-  let out = q.eq("TIPO_LINHA", "E").eq("STATUS", "A");
-  if (planoDe !== ALL) out = out.eq("Plano_de", planoDe);
-  return out;
-};
+const applyBase = (q: any) =>
+  q.eq("TIPO_LINHA", "E").eq("STATUS", "A").eq("Plano_de", "Saúde");
 
 export default function DWCarteira() {
   const [tab, setTab] = useState("dashboard");
   const [planos, setPlanos] = useState<string[]>([]);
   const [cidades, setCidades] = useState<string[]>([]);
-  const [planoDeOpts, setPlanoDeOpts] = useState<string[]>([]);
-  const [planoDe, setPlanoDe] = useState<string>("Saúde");
   const [loadingOpts, setLoadingOpts] = useState(true);
 
   useEffect(() => {
@@ -117,9 +112,10 @@ export default function DWCarteira() {
       setLoadingOpts(true);
       const { data, error } = await dw
         .from(TABLE)
-        .select('"NOME_PLANO","CIDADE_PLANO","Plano_de"')
+        .select('"NOME_PLANO","CIDADE_PLANO"')
         .eq("TIPO_LINHA", "E")
         .eq("STATUS", "A")
+        .eq("Plano_de", "Saúde")
         .limit(10000);
       if (error) console.error("Erro ao carregar filtros:", error);
       const uniq = (arr: (string | null | undefined)[]) =>
@@ -128,35 +124,12 @@ export default function DWCarteira() {
       const rows = (data ?? []) as any[];
       setPlanos(uniq(rows.map((r) => r.NOME_PLANO)));
       setCidades(uniq(rows.map((r) => r.CIDADE_PLANO)));
-      setPlanoDeOpts(uniq(rows.map((r) => r.Plano_de)));
       setLoadingOpts(false);
     })();
   }, []);
 
   return (
     <section className="space-y-6">
-      <div className="flex items-end gap-3 flex-wrap">
-        <div className="w-64">
-          <Label>Plano de</Label>
-          <Select value={planoDe} onValueChange={setPlanoDe}>
-            <SelectTrigger>
-              <SelectValue placeholder="Todos" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>Todos</SelectItem>
-              {planoDeOpts.map((p) => (
-                <SelectItem key={p} value={p}>
-                  {p}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <p className="text-xs text-muted-foreground pb-2">
-          Filtros aplicados a todas as consultas abaixo.
-        </p>
-      </div>
-
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="grid grid-cols-5 w-full max-w-3xl">
           <TabsTrigger value="dashboard" className="gap-2">
@@ -177,35 +150,30 @@ export default function DWCarteira() {
         </TabsList>
 
         <TabsContent value="dashboard" className="mt-6">
-          <Dashboard loadingOpts={loadingOpts} planoDe={planoDe} />
+          <Dashboard loadingOpts={loadingOpts} />
         </TabsContent>
         <TabsContent value="nome" className="mt-6">
-          <BuscaNome planoDe={planoDe} />
+          <BuscaNome />
         </TabsContent>
         <TabsContent value="cpf" className="mt-6">
-          <BuscaCPF planoDe={planoDe} />
+          <BuscaCPF />
         </TabsContent>
         <TabsContent value="cdregusr" className="mt-6">
-          <BuscaCDREGUSR planoDe={planoDe} />
+          <BuscaCDREGUSR />
         </TabsContent>
         <TabsContent value="filtros" className="mt-6">
-          <BuscaFiltros
-            planos={planos}
-            cidades={cidades}
-            planoDe={planoDe}
-          />
+          <BuscaFiltros planos={planos} cidades={cidades} />
         </TabsContent>
       </Tabs>
     </section>
   );
 }
 
+
 function Dashboard({
   loadingOpts,
-  planoDe,
 }: {
   loadingOpts: boolean;
-  planoDe: string;
 }) {
   const [vidas, setVidas] = useState<number | null>(null);
   const [planosDistintos, setPlanosDistintos] = useState<number | null>(null);
@@ -250,7 +218,6 @@ function Dashboard({
           dw
             .from(TABLE)
             .select('"NOME_PLANO","CIDADE_OFICIAL","IDADE","idsex"'),
-          planoDe,
         );
         const { data, error } = await q.range(from, from + pageSize - 1);
         if (error) {
@@ -292,7 +259,7 @@ function Dashboard({
       );
       setLoading(false);
     })();
-  }, [loadingOpts, planoDe]);
+  }, [loadingOpts]);
 
 
 
@@ -410,14 +377,13 @@ function useSearch() {
   return { rows, loading, run };
 }
 
-function BuscaNome({ planoDe }: { planoDe: string }) {
+function BuscaNome() {
   const [nome, setNome] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () =>
     run(() =>
       applyBase(
         dw.from(TABLE).select(COLS).ilike("NOME_BENEFICIARIO", `%${nome}%`),
-        planoDe,
       ).order("NOME_BENEFICIARIO"),
     );
   return (
@@ -446,13 +412,13 @@ function BuscaNome({ planoDe }: { planoDe: string }) {
   );
 }
 
-function BuscaCPF({ planoDe }: { planoDe: string }) {
+function BuscaCPF() {
   const [cpf, setCpf] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () => {
     const digits = cpf.replace(/\D/g, "");
     if (!digits) return;
-    run(() => applyBase(dw.from(TABLE).select(COLS).eq("CPF", digits), planoDe));
+    run(() => applyBase(dw.from(TABLE).select(COLS).eq("CPF", digits)));
   };
   return (
     <Card>
@@ -480,13 +446,13 @@ function BuscaCPF({ planoDe }: { planoDe: string }) {
   );
 }
 
-function BuscaCDREGUSR({ planoDe }: { planoDe: string }) {
+function BuscaCDREGUSR() {
   const [cd, setCd] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () => {
     const n = Number(cd.trim());
     if (!n) return;
-    run(() => applyBase(dw.from(TABLE).select(COLS).eq("CDREGUSR", n), planoDe));
+    run(() => applyBase(dw.from(TABLE).select(COLS).eq("CDREGUSR", n)));
   };
   return (
     <Card>
@@ -517,11 +483,9 @@ function BuscaCDREGUSR({ planoDe }: { planoDe: string }) {
 function BuscaFiltros({
   planos,
   cidades,
-  planoDe,
 }: {
   planos: string[];
   cidades: string[];
-  planoDe: string;
 }) {
   const [plano, setPlano] = useState<string>(ALL);
   const [cidade, setCidade] = useState<string>(ALL);
@@ -532,7 +496,7 @@ function BuscaFiltros({
       let q = dw.from(TABLE).select(COLS);
       if (plano !== ALL) q = q.eq("NOME_PLANO", plano);
       if (cidade !== ALL) q = q.eq("CIDADE_PLANO", cidade);
-      return applyBase(q, planoDe).order("NOME_BENEFICIARIO");
+      return applyBase(q).order("NOME_BENEFICIARIO");
     });
 
   const anyFilter = useMemo(
