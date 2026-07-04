@@ -375,13 +375,13 @@ function BuscaNome({ planoDe }: { planoDe: string }) {
   );
 }
 
-function BuscaCPF() {
+function BuscaCPF({ planoDe }: { planoDe: string }) {
   const [cpf, setCpf] = useState("");
   const { rows, loading, run } = useSearch();
   const submit = () => {
     const digits = cpf.replace(/\D/g, "");
     if (!digits) return;
-    run(() => dw.from(TABLE).select(COLS).eq("CPF", digits));
+    run(() => applyPlanoDe(dw.from(TABLE).select(COLS).eq("CPF", digits), planoDe));
   };
   return (
     <Card>
