@@ -257,6 +257,8 @@ const Index = () => {
         <main className="flex-1 p-8">
           {active === "Ativos em" ? (
             <AtivosEm dateValue={dateValue} initialDrillNome={ativosDrillNome} />
+          ) : active === "DW Carteira" ? (
+            <DWCarteira />
           ) : active === "Vendas" ? (
             <Vendas />
           ) : active === "Consulta Beneficiário" ? (
