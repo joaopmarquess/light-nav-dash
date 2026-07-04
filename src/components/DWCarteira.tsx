@@ -568,12 +568,14 @@ function BuscaFiltros({
   cidades,
   statuses,
   planoDe,
+  ocorrencia,
   movFilter,
 }: {
   planos: string[];
   cidades: string[];
   statuses: string[];
   planoDe: string;
+  ocorrencia: string;
   movFilter: MovFilter;
 }) {
   const [plano, setPlano] = useState<string>(ALL);
@@ -587,7 +589,7 @@ function BuscaFiltros({
       if (plano !== ALL) q = q.eq("NOME_PLANO", plano);
       if (cidade !== ALL) q = q.eq("CIDADE_PLANO", cidade);
       if (status !== ALL) q = q.eq("STATUS", status);
-      return applyMov(applyPlanoDe(q, planoDe), movFilter).order("NOME_BENEFICIARIO");
+      return applyMov(applyOcorrencia(applyPlanoDe(q, planoDe), ocorrencia), movFilter).order("NOME_BENEFICIARIO");
     });
 
   const anyFilter = useMemo(
