@@ -141,17 +141,6 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
         role="img"
         aria-label={`Mapa de calor por município — ${ufs.join(", ")}`}
       >
-        {!isArea &&
-          features.map((f, i) => (
-            <path
-              key={`outline-${i}`}
-              d={pathFn(f) ?? ""}
-              fill="none"
-              stroke="#000"
-              strokeWidth={1.2}
-              strokeLinejoin="round"
-            />
-          ))}
         {features.map((f, i) => {
           const name = f.properties?.name ?? "";
           const uf = f.properties._uf;
@@ -179,6 +168,18 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
             />
           );
         })}
+        {!isArea &&
+          features.map((f, i) => (
+            <path
+              key={`outline-${i}`}
+              d={pathFn(f) ?? ""}
+              fill="none"
+              stroke="#000"
+              strokeWidth={1.2}
+              strokeLinejoin="round"
+              pointerEvents="none"
+            />
+          ))}
         {isArea &&
           stateOutlines?.map((f, i) => (
             <path
