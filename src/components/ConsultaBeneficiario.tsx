@@ -34,6 +34,7 @@ export default function ConsultaBeneficiario() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const consultar = async () => {
     const raw = termo.trim();
