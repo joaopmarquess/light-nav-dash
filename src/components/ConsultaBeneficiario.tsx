@@ -102,6 +102,8 @@ export default function ConsultaBeneficiario() {
       .eq("TIPO_LINHA", "E")
       .eq("Plano_de", "Saúde");
 
+    const filteredBase = incluirCancelados ? baseQuery : baseQuery.eq("STATUS", "A");
+
     const tokens = safeName.split(" ").filter((t) => t.length >= 2);
     let query = isCpfSearch
       ? baseQuery.eq("CPF", digits)
