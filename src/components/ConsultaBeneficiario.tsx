@@ -43,10 +43,10 @@ export default function ConsultaBeneficiario() {
   const consultar = async () => {
     setLoading(true);
     setErro(null);
-    let q = dw
+    let q: any = dw
       .from("sv_ecarteira")
       .select(
-        '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_PLANO","VALOR_TMM","STATUS"',
+        '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_PLANO","VALOR_TMM","STATUS","NASCIMENTO"',
       )
       .eq("TIPO_LINHA", "E")
       .eq("Plano_de", "Saúde");
@@ -61,19 +61,8 @@ export default function ConsultaBeneficiario() {
     addContains("CDREGUSR", f.CDREGUSR);
     addContains("NOME_RESPONSAVEL", f.NOME_RESPONSAVEL);
     addContains("NOME_BENEFICIARIO", f.NOME_BENEFICIARIO);
-
-    // Also fetch CPF and NASCIMENTO for client-side "contains" filtering
-    // (they are non-text columns; ilike is not supported at the DB layer).
-    const fullSelect =
-      '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_PLANO","VALOR_TMM","STATUS","NASCIMENTO"';
-    q = dw
-      .from("sv_ecarteira")
-      .select(fullSelect)
-      .eq("TIPO_LINHA", "E")
-      .eq("Plano_de", "Saúde");
-    addContains("CDREGUSR", f.CDREGUSR);
-    addContains("NOME_RESPONSAVEL", f.NOME_RESPONSAVEL);
-    addContains("NOME_BENEFICIARIO", f.NOME_BENEFICIARIO);
+    // CPF (bigint) and NASCIMENTO (date) não suportam ilike direto;
+    // filtramos "contém" no client após buscar.
 
     const { data, error } = await q.limit(1000);
     if (error) {
