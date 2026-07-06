@@ -47,6 +47,7 @@ export default function ConsultaBeneficiario() {
   const [sortKey, setSortKey] = useState<keyof Row | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [incluirCancelados, setIncluirCancelados] = useState(false);
+  const [ultimoTermo, setUltimoTermo] = useState("");
 
   const toggleSort = (k: keyof Row) => {
     if (sortKey === k) {
