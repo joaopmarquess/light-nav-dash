@@ -74,8 +74,7 @@ export default function ConsultaBeneficiario() {
     return arr;
   }, [rows, sortKey, sortDir]);
 
-  const consultar = async () => {
-    const raw = termo.trim();
+  const runQuery = async (raw: string, incCanc: boolean) => {
     if (!raw) return;
     if (raw.length < 3) {
       setErro("Digite pelo menos 3 caracteres.");
@@ -102,7 +101,7 @@ export default function ConsultaBeneficiario() {
       .eq("TIPO_LINHA", "E")
       .eq("Plano_de", "Saúde");
 
-    const filteredBase = incluirCancelados ? baseQuery : baseQuery.eq("STATUS", "A");
+    const filteredBase = incCanc ? baseQuery : baseQuery.eq("STATUS", "A");
 
     const tokens = safeName.split(" ").filter((t) => t.length >= 2);
     let query = isCpfSearch
@@ -123,8 +122,22 @@ export default function ConsultaBeneficiario() {
       setRows((data ?? []) as Row[]);
     }
     setLoading(false);
+  };
+
+  const consultar = async () => {
+    const raw = termo.trim();
+    if (!raw) return;
+    setUltimoTermo(raw);
+    await runQuery(raw, incluirCancelados);
     setTermo("");
     inputRef.current?.focus();
+  };
+
+  const toggleIncluirCancelados = async (checked: boolean) => {
+    setIncluirCancelados(checked);
+    if (ultimoTermo) {
+      await runQuery(ultimoTermo, checked);
+    }
   };
 
   return (
