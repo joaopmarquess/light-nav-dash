@@ -47,21 +47,15 @@ export default function ConsultaBeneficiario() {
     setErro(null);
 
     const digits = raw.replace(/\D/g, "");
-    const looksLikeDate = /^\d{4}-\d{2}-\d{2}$/.test(raw);
-    // escape vírgulas e parênteses no valor do .or()
     const safe = raw.replace(/[,()]/g, " ").trim();
 
     const orParts: string[] = [
-      `CDREGUSR.ilike.%${safe}%`,
-      `NOME_RESPONSAVEL.ilike.%${safe}%`,
       `NOME_BENEFICIARIO.ilike.%${safe}%`,
     ];
     if (digits && digits.length >= 3) {
       orParts.push(`CPF::text.ilike.%${digits}%`);
     }
-    if (looksLikeDate) {
-      orParts.push(`NASCIMENTO.eq.${raw}`);
-    }
+
 
     const { data, error } = await dw
       .from("sv_ecarteira")
