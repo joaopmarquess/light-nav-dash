@@ -159,7 +159,18 @@ export default function ConsultaBeneficiario() {
         </button>
       </div>
 
+      <label className="inline-flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={incluirCancelados}
+          onChange={(e) => setIncluirCancelados(e.target.checked)}
+          className="h-4 w-4 rounded border-border accent-primary"
+        />
+        Incluir Cancelados
+      </label>
+
       {erro && <div className="text-xs text-rose-600">Erro ao consultar: {erro}</div>}
+
 
       {rows && !loading && (
         <div className="text-xs text-muted-foreground">
