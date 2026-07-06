@@ -11,7 +11,9 @@ type Row = {
   CIDADE_OFICIAL: string | null;
   VALOR_TMM: number | null;
   STATUS: string | null;
-  NASCIMENTO?: string | null;
+  NASCIMENTO: string | null;
+  IDADE: number | null;
+  VIGENCIA_BENEFICIARIO: string | null;
 };
 
 const fmtMoney = (v: number | null) =>
@@ -26,8 +28,15 @@ const fmtCPF = (v: number | string | null) => {
   return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
 };
 
+const fmtDate = (v: string | null) => {
+  if (!v) return "—";
+  const d = String(v).slice(0, 10);
+  const [y, m, dd] = d.split("-");
+  return y && m && dd ? `${dd}/${m}/${y}` : String(v);
+};
+
 const SELECT_COLS =
-  '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_OFICIAL","VALOR_TMM","STATUS","NASCIMENTO"';
+  '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_OFICIAL","VALOR_TMM","STATUS","NASCIMENTO","IDADE","VIGENCIA_BENEFICIARIO"';
 
 export default function ConsultaBeneficiario() {
   const [termo, setTermo] = useState("");
