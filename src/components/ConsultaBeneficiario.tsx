@@ -35,6 +35,34 @@ export default function ConsultaBeneficiario() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [sortKey, setSortKey] = useState<keyof Row | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  const toggleSort = (k: keyof Row) => {
+    if (sortKey === k) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(k);
+      setSortDir("asc");
+    }
+  };
+
+  const sortedRows = useMemo(() => {
+    if (!rows) return rows;
+    if (!sortKey) return rows;
+    const arr = [...rows];
+    const mult = sortDir === "asc" ? 1 : -1;
+    arr.sort((a, b) => {
+      const av = a[sortKey];
+      const bv = b[sortKey];
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      if (typeof av === "number" && typeof bv === "number") return (av - bv) * mult;
+      return String(av).localeCompare(String(bv), "pt-BR", { numeric: true }) * mult;
+    });
+    return arr;
+  }, [rows, sortKey, sortDir]);
 
   const consultar = async () => {
     const raw = termo.trim();
