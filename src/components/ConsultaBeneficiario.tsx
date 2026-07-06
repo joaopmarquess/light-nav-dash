@@ -8,7 +8,7 @@ type Row = {
   CPF: number | string | null;
   NOME_RESPONSAVEL: string | null;
   ACOMODACAO: string | null;
-  CIDADE_PLANO: string | null;
+  CIDADE_OFICIAL: string | null;
   VALOR_TMM: number | null;
   STATUS: string | null;
   NASCIMENTO?: string | null;
@@ -27,7 +27,7 @@ const fmtCPF = (v: number | string | null) => {
 };
 
 const SELECT_COLS =
-  '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_PLANO","VALOR_TMM","STATUS","NASCIMENTO"';
+  '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_OFICIAL","VALOR_TMM","STATUS","NASCIMENTO"';
 
 export default function ConsultaBeneficiario() {
   const [termo, setTermo] = useState("");
@@ -128,7 +128,7 @@ export default function ConsultaBeneficiario() {
                 <th className="px-3 py-2 text-left">CPF</th>
                 <th className="px-3 py-2 text-left">NOME_RESPONSAVEL</th>
                 <th className="px-3 py-2 text-left">ACOMODACAO</th>
-                <th className="px-3 py-2 text-left">CIDADE_PLANO</th>
+                <th className="px-3 py-2 text-left">CIDADE_OFICIAL</th>
                 <th className="px-3 py-2 text-right">VALOR_TMM</th>
                 <th className="px-3 py-2 text-center">STATUS</th>
               </tr>
@@ -143,7 +143,7 @@ export default function ConsultaBeneficiario() {
                     <td className="px-3 py-2 tabular-nums">{fmtCPF(b.CPF)}</td>
                     <td className="px-3 py-2">{b.NOME_RESPONSAVEL ?? "—"}</td>
                     <td className="px-3 py-2">{b.ACOMODACAO ?? "—"}</td>
-                    <td className="px-3 py-2">{b.CIDADE_PLANO ?? "—"}</td>
+                    <td className="px-3 py-2">{b.CIDADE_OFICIAL ?? "—"}</td>
                     <td className="px-3 py-2 tabular-nums text-right">{fmtMoney(b.VALOR_TMM)}</td>
                     <td className="px-3 py-2 text-center">
                       <span
