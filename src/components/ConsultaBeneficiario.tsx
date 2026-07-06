@@ -46,6 +46,7 @@ export default function ConsultaBeneficiario() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [sortKey, setSortKey] = useState<keyof Row | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [incluirCancelados, setIncluirCancelados] = useState(false);
 
   const toggleSort = (k: keyof Row) => {
     if (sortKey === k) {
@@ -101,10 +102,12 @@ export default function ConsultaBeneficiario() {
       .eq("TIPO_LINHA", "E")
       .eq("Plano_de", "Saúde");
 
+    const filteredBase = incluirCancelados ? baseQuery : baseQuery.eq("STATUS", "A");
+
     const tokens = safeName.split(" ").filter((t) => t.length >= 2);
     let query = isCpfSearch
-      ? baseQuery.eq("CPF", digits)
-      : baseQuery;
+      ? filteredBase.eq("CPF", digits)
+      : filteredBase;
     if (!isCpfSearch) {
       for (const t of tokens) {
         query = query.ilike("NOME_BENEFICIARIO", `%${t}%`);
@@ -156,7 +159,18 @@ export default function ConsultaBeneficiario() {
         </button>
       </div>
 
+      <label className="inline-flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={incluirCancelados}
+          onChange={(e) => setIncluirCancelados(e.target.checked)}
+          className="h-4 w-4 rounded border-border accent-primary"
+        />
+        Incluir Cancelados
+      </label>
+
       {erro && <div className="text-xs text-rose-600">Erro ao consultar: {erro}</div>}
+
 
       {rows && !loading && (
         <div className="text-xs text-muted-foreground">
