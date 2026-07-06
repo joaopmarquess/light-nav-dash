@@ -1,14 +1,20 @@
-import { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
-import asset from "@/data/beneficiarios.json.asset.json";
+import { useMemo, useState } from "react";
+import { Search, Loader2 } from "lucide-react";
+import { dw } from "@/lib/dwClient";
 
-type Beneficiario = {
-  codigo: string;
-  nome: string;
-  vigencia: string | null;
-  reativacao: string | null;
-  cancelamento: string | null;
-  status: 0 | 1;
+type Row = {
+  CDREGUSR: number | string | null;
+  NOME_BENEFICIARIO: string | null;
+  VIGENCIA_BENEFICIARIO: string | null;
+  REATIVACAO: string | null;
+  CANCELAMENTO: string | null;
+  STATUS: string | null;
+};
+
+const fmtBR = (iso: string | null) => {
+  if (!iso) return null;
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
 };
 
 const hojeBR = () => {
@@ -18,35 +24,37 @@ const hojeBR = () => {
 
 export default function ConsultaBeneficiario() {
   const [termo, setTermo] = useState("");
-  const [consultado, setConsultado] = useState<string | null>(null);
-  const [dados, setDados] = useState<Beneficiario[] | null>(null);
+  const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const hoje = hojeBR();
 
-  useEffect(() => {
-    let cancel = false;
+  const consultar = async () => {
+    const q = termo.trim();
+    if (!q) return;
     setLoading(true);
-    fetch((asset as { url: string }).url)
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((j: Beneficiario[]) => { if (!cancel) setDados(j); })
-      .catch((e) => { if (!cancel) setErro(String(e)); })
-      .finally(() => { if (!cancel) setLoading(false); });
-    return () => { cancel = true; };
-  }, []);
+    setErro(null);
+    // Split into whitespace tokens; each token must appear in NOME_BENEFICIARIO
+    const tokens = q.split(/\s+/).filter(Boolean);
+    let query = dw
+      .from("sv_ecarteira")
+      .select(
+        '"CDREGUSR","NOME_BENEFICIARIO","VIGENCIA_BENEFICIARIO","REATIVACAO","CANCELAMENTO","STATUS"',
+      );
+    for (const t of tokens) {
+      query = query.ilike("NOME_BENEFICIARIO", `%${t}%`);
+    }
+    const { data, error } = await query.limit(1000);
+    if (error) {
+      setErro(error.message);
+      setRows([]);
+    } else {
+      setRows((data ?? []) as Row[]);
+    }
+    setLoading(false);
+  };
 
-  const resultados = useMemo(() => {
-    if (consultado === null || !dados) return [];
-    const q = consultado.trim().toUpperCase();
-    if (!q) return [];
-    const partes = q.split(/\s+/).filter(Boolean);
-    return dados.filter((b) => partes.every((p) => b.nome.includes(p))).slice(0, 1000);
-  }, [consultado, dados]);
-
-  const onConsultar = () => setConsultado(termo);
+  const resultados = useMemo(() => rows ?? [], [rows]);
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm p-6 space-y-5">
@@ -61,29 +69,30 @@ export default function ConsultaBeneficiario() {
               type="text"
               value={termo}
               onChange={(e) => setTermo(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") onConsultar(); }}
+              onKeyDown={(e) => { if (e.key === "Enter") consultar(); }}
               placeholder="Digite parte do nome (ex: ANA SILVA)"
-              className="h-10 w-full pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="h-10 w-full pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focs:ring-primary/30"
             />
           </div>
         </div>
         <button
           type="button"
-          onClick={onConsultar}
-          disabled={loading || !dados}
-          className="h-10 px-5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+          onClick={consultar}
+          disabled={loading}
+          className="h-10 px-5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 inline-flex items-center gap-2"
         >
-          {loading ? "Carregando..." : "Consultar"}
+          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+          {loading ? "Consultando..." : "Consultar"}
         </button>
       </div>
 
-      {erro && <div className="text-xs text-rose-600">Erro ao carregar dados: {erro}</div>}
+      {erro && <div className="text-xs text-rose-600">Erro ao consultar: {erro}</div>}
 
-      {consultado !== null && dados && (
+      {rows && !loading && (
         <div className="text-xs text-muted-foreground">
           {resultados.length === 0
             ? "Nenhum beneficiário encontrado."
-            : `${resultados.length} beneficiário(s) encontrado(s)${resultados.length === 1000 ? " (exibindo os primeiros 1000)" : ""}.`}
+            : `${resultados.length} beneficiário(s) encontrado(s)${resultados.length === 1000 ? " (limite de 1000)" : ""}.`}
         </div>
       )}
 
@@ -102,27 +111,28 @@ export default function ConsultaBeneficiario() {
               </tr>
             </thead>
             <tbody>
-              {resultados.map((b) => (
-                <tr key={b.codigo} className="border-t border-border hover:bg-accent/40">
-                  <td className="px-3 py-2 tabular-nums">{b.codigo}</td>
-                  <td className="px-3 py-2">{b.nome}</td>
-                  <td className="px-3 py-2 tabular-nums">{b.vigencia ?? "—"}</td>
-                  <td className="px-3 py-2 tabular-nums">{b.reativacao ?? "—"}</td>
-                  <td className="px-3 py-2 tabular-nums">{b.cancelamento ?? "—"}</td>
-                  <td className="px-3 py-2 tabular-nums">{hoje}</td>
-                  <td className="px-3 py-2 text-center">
-                    <span
-                      className={`inline-flex items-center justify-center px-2 h-6 rounded-full text-xs font-semibold ${
-                        b.status === 1
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-rose-100 text-rose-700"
-                      }`}
-                    >
-                      {b.status === 1 ? "ATIVO" : "CANCELADO"}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {resultados.map((b, i) => {
+                const ativo = (b.STATUS ?? "").toUpperCase() === "A";
+                return (
+                  <tr key={`${b.CDREGUSR}-${i}`} className="border-t border-border hover:bg-accent/40">
+                    <td className="px-3 py-2 tabular-nums">{b.CDREGUSR ?? "—"}</td>
+                    <td className="px-3 py-2">{b.NOME_BENEFICIARIO ?? "—"}</td>
+                    <td className="px-3 py-2 tabular-nums">{fmtBR(b.VIGENCIA_BENEFICIARIO) ?? "—"}</td>
+                    <td className="px-3 py-2 tabular-nums">{fmtBR(b.REATIVACAO) ?? "—"}</td>
+                    <td className="px-3 py-2 tabular-nums">{fmtBR(b.CANCELAMENTO) ?? "—"}</td>
+                    <td className="px-3 py-2 tabular-nums">{hoje}</td>
+                    <td className="px-3 py-2 text-center">
+                      <span
+                        className={`inline-flex items-center justify-center px-2 h-6 rounded-full text-xs font-semibold ${
+                          ativo ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+                        }`}
+                      >
+                        {ativo ? "ATIVO" : "CANCELADO"}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
