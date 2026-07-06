@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Loader2, Search } from "lucide-react";
 import { dw } from "@/lib/dwClient";
 
@@ -34,6 +34,7 @@ export default function ConsultaBeneficiario() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const consultar = async () => {
     const raw = termo.trim();
@@ -76,6 +77,8 @@ export default function ConsultaBeneficiario() {
       setRows((data ?? []) as Row[]);
     }
     setLoading(false);
+    setTermo("");
+    inputRef.current?.focus();
   };
 
   return (
@@ -88,7 +91,9 @@ export default function ConsultaBeneficiario() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <input
+              ref={inputRef}
               type="text"
+              autoFocus
               value={termo}
               onChange={(e) => setTermo(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") consultar(); }}
