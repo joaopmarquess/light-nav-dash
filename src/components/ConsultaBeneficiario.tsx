@@ -38,69 +38,45 @@ export default function ConsultaBeneficiario() {
   const consultar = async () => {
     const raw = termo.trim();
     if (!raw) return;
+    if (raw.length < 3) {
+      setErro("Digite pelo menos 3 caracteres.");
+      setRows([]);
+      return;
+    }
     setLoading(true);
     setErro(null);
 
     const digits = raw.replace(/\D/g, "");
     const looksLikeDate = /^\d{4}-\d{2}-\d{2}$/.test(raw);
+    // escape vírgulas e parênteses no valor do .or()
+    const safe = raw.replace(/[,()]/g, " ").trim();
 
-    // Busca em paralelo em cada coluna e une os resultados (OR entre colunas,
-    // AND entre tokens dentro das colunas de texto).
-    const base = () =>
-      dw
-        .from("sv_ecarteira")
-        .select(SELECT_COLS)
-        .eq("TIPO_LINHA", "E")
-        .eq("Plano_de", "Saúde");
-
-    const textCols = ["CDREGUSR", "NOME_RESPONSAVEL", "NOME_BENEFICIARIO"];
-    const tokens = raw.split(/\s+/).filter(Boolean);
-
-    const queries: Promise<{ data: Row[] | null; error: any }>[] = [];
-
-    for (const col of textCols) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let q: any = base();
-      for (const tok of tokens) q = q.ilike(col, `%${tok}%`);
-      queries.push(q.limit(1000));
-    }
-
-    // CPF: bigint — comparação exata quando os dígitos formam um número
+    const orParts: string[] = [
+      `CDREGUSR.ilike.%${safe}%`,
+      `NOME_RESPONSAVEL.ilike.%${safe}%`,
+      `NOME_BENEFICIARIO.ilike.%${safe}%`,
+    ];
     if (digits && digits.length >= 3) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const q: any = base();
-      // usa cast em texto via filter para permitir "contém"
-      queries.push(q.filter("CPF::text", "ilike", `%${digits}%`).limit(1000));
+      orParts.push(`CPF::text.ilike.%${digits}%`);
     }
-
-    // NASCIMENTO: date — só se o usuário digitou uma data completa
     if (looksLikeDate) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const q: any = base();
-      queries.push(q.eq("NASCIMENTO", raw).limit(1000));
+      orParts.push(`NASCIMENTO.eq.${raw}`);
     }
 
-    const results = await Promise.all(queries);
-    const firstErr = results.find((r) => r.error);
-    if (firstErr?.error) {
-      setErro(firstErr.error.message);
+    const { data, error } = await dw
+      .from("sv_ecarteira")
+      .select(SELECT_COLS)
+      .eq("TIPO_LINHA", "E")
+      .eq("Plano_de", "Saúde")
+      .or(orParts.join(","))
+      .limit(1000);
+
+    if (error) {
+      setErro(error.message);
       setRows([]);
-      setLoading(false);
-      return;
+    } else {
+      setRows((data ?? []) as Row[]);
     }
-
-    const seen = new Set<string>();
-    const merged: Row[] = [];
-    for (const r of results) {
-      for (const row of (r.data ?? []) as Row[]) {
-        const key = `${row.CDREGUSR ?? ""}|${row.CPF ?? ""}|${row.NOME_BENEFICIARIO ?? ""}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        merged.push(row);
-      }
-    }
-
-    setRows(merged);
     setLoading(false);
   };
 
