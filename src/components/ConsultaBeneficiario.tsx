@@ -106,8 +106,8 @@ export default function ConsultaBeneficiario() {
 
     const tokens = safeName.split(" ").filter((t) => t.length >= 2);
     let query = isCpfSearch
-      ? baseQuery.eq("CPF", digits)
-      : baseQuery;
+      ? filteredBase.eq("CPF", digits)
+      : filteredBase;
     if (!isCpfSearch) {
       for (const t of tokens) {
         query = query.ilike("NOME_BENEFICIARIO", `%${t}%`);
