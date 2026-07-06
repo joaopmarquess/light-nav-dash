@@ -61,20 +61,39 @@ export default function ConsultaBeneficiario() {
     addContains("CDREGUSR", f.CDREGUSR);
     addContains("NOME_RESPONSAVEL", f.NOME_RESPONSAVEL);
     addContains("NOME_BENEFICIARIO", f.NOME_BENEFICIARIO);
-    if (f.CPF.trim()) {
-      const digits = f.CPF.replace(/\D/g, "");
-      if (digits) q = q.ilike("CPF::text", `%${digits}%`);
-    }
-    if (f.NASCIMENTO.trim()) {
-      q = q.ilike("NASCIMENTO::text", `%${f.NASCIMENTO.trim()}%`);
-    }
+
+    // Also fetch CPF and NASCIMENTO for client-side "contains" filtering
+    // (they are non-text columns; ilike is not supported at the DB layer).
+    const fullSelect =
+      '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_PLANO","VALOR_TMM","STATUS","NASCIMENTO"';
+    q = dw
+      .from("sv_ecarteira")
+      .select(fullSelect)
+      .eq("TIPO_LINHA", "E")
+      .eq("Plano_de", "Saúde");
+    addContains("CDREGUSR", f.CDREGUSR);
+    addContains("NOME_RESPONSAVEL", f.NOME_RESPONSAVEL);
+    addContains("NOME_BENEFICIARIO", f.NOME_BENEFICIARIO);
 
     const { data, error } = await q.limit(1000);
     if (error) {
       setErro(error.message);
       setRows([]);
     } else {
-      setRows((data ?? []) as Row[]);
+      let list = (data ?? []) as (Row & { NASCIMENTO?: string | null })[];
+      const cpfDigits = f.CPF.replace(/\D/g, "");
+      if (cpfDigits) {
+        list = list.filter((r) =>
+          String(r.CPF ?? "").replace(/\D/g, "").includes(cpfDigits),
+        );
+      }
+      const nasc = f.NASCIMENTO.trim();
+      if (nasc) {
+        list = list.filter((r) =>
+          String(r.NASCIMENTO ?? "").includes(nasc),
+        );
+      }
+      setRows(list);
     }
     setLoading(false);
   };
