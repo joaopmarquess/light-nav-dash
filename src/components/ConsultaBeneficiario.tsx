@@ -177,7 +177,7 @@ export default function ConsultaBeneficiario() {
         <input
           type="checkbox"
           checked={incluirCancelados}
-          onChange={(e) => setIncluirCancelados(e.target.checked)}
+          onChange={(e) => toggleIncluirCancelados(e.target.checked)}
           className="h-4 w-4 rounded border-border accent-primary"
         />
         Incluir Cancelados
