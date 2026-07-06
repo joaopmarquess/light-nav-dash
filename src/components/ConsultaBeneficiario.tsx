@@ -162,18 +162,35 @@ export default function ConsultaBeneficiario() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-xs uppercase text-muted-foreground sticky top-0">
               <tr>
-                <th className="px-3 py-2 text-left">CDREGUSR</th>
-                <th className="px-3 py-2 text-left">NOME_BENEFICIARIO</th>
-                <th className="px-3 py-2 text-left">CPF</th>
-                <th className="px-3 py-2 text-left">NOME_RESPONSAVEL</th>
-                <th className="px-3 py-2 text-left">ACOMODACAO</th>
-                <th className="px-3 py-2 text-left">CIDADE_OFICIAL</th>
-                <th className="px-3 py-2 text-right">VALOR_TMM</th>
-                <th className="px-3 py-2 text-center">STATUS</th>
+                {([
+                  { k: "CDREGUSR", label: "CDREGUSR", align: "text-left" },
+                  { k: "NOME_BENEFICIARIO", label: "NOME_BENEFICIARIO", align: "text-left" },
+                  { k: "CPF", label: "CPF", align: "text-left" },
+                  { k: "NOME_RESPONSAVEL", label: "NOME_RESPONSAVEL", align: "text-left" },
+                  { k: "ACOMODACAO", label: "ACOMODACAO", align: "text-left" },
+                  { k: "CIDADE_OFICIAL", label: "CIDADE_OFICIAL", align: "text-left" },
+                  { k: "VALOR_TMM", label: "VALOR_TMM", align: "text-right" },
+                  { k: "STATUS", label: "STATUS", align: "text-center" },
+                ] as { k: keyof Row; label: string; align: string }[]).map((c) => {
+                  const active = sortKey === c.k;
+                  const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
+                  return (
+                    <th
+                      key={c.k as string}
+                      onClick={() => toggleSort(c.k)}
+                      className={`px-3 py-2 ${c.align} cursor-pointer select-none hover:text-foreground`}
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        {c.label}
+                        <Icon className={`h-3 w-3 ${active ? "text-foreground" : "opacity-50"}`} />
+                      </span>
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
-              {rows.map((b, i) => {
+              {(sortedRows ?? []).map((b, i) => {
                 const ativo = (b.STATUS ?? "").toUpperCase() === "A";
                 return (
                   <tr key={`${b.CDREGUSR}-${i}`} className="border-t border-border hover:bg-accent/40">
