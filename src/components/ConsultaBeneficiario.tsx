@@ -47,23 +47,27 @@ export default function ConsultaBeneficiario() {
     setErro(null);
 
     const digits = raw.replace(/\D/g, "");
-    const safe = raw.replace(/[,()]/g, " ").trim();
+    const isCpfSearch = digits.length > 0 && digits.length === raw.replace(/\s/g, "").length;
+    const safeName = raw.replace(/[%_*,()]/g, " ").replace(/\s+/g, " ").trim();
 
-    const orParts: string[] = [
-      `NOME_BENEFICIARIO.ilike.%${safe}%`,
-    ];
-    if (digits && digits.length >= 3) {
-      orParts.push(`CPF::text.ilike.%${digits}%`);
+    if (isCpfSearch && digits.length !== 11) {
+      setErro("Para CPF, digite os 11 números.");
+      setRows([]);
+      setLoading(false);
+      return;
     }
 
-
-    const { data, error } = await dw
+    const baseQuery = dw
       .from("sv_ecarteira")
       .select(SELECT_COLS)
       .eq("TIPO_LINHA", "E")
-      .eq("Plano_de", "Saúde")
-      .or(orParts.join(","))
-      .limit(1000);
+      .eq("Plano_de", "Saúde");
+
+    const query = isCpfSearch
+      ? baseQuery.eq("CPF", digits)
+      : baseQuery.ilike("NOME_BENEFICIARIO", `%${safeName}%`);
+
+    const { data, error } = await query.limit(100);
 
     if (error) {
       setErro(error.message);
