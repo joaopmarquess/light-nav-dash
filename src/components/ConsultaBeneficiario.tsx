@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import { dw } from "@/lib/dwClient";
 
 type Row = {
@@ -11,6 +11,7 @@ type Row = {
   CIDADE_PLANO: string | null;
   VALOR_TMM: number | null;
   STATUS: string | null;
+  NASCIMENTO?: string | null;
 };
 
 const fmtMoney = (v: number | null) =>
@@ -25,97 +26,103 @@ const fmtCPF = (v: number | string | null) => {
   return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
 };
 
+const SELECT_COLS =
+  '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_PLANO","VALOR_TMM","STATUS","NASCIMENTO"';
+
 export default function ConsultaBeneficiario() {
-  const [f, setF] = useState({
-    CDREGUSR: "",
-    NOME_RESPONSAVEL: "",
-    NOME_BENEFICIARIO: "",
-    CPF: "",
-    NASCIMENTO: "",
-  });
+  const [termo, setTermo] = useState("");
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  const upd = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setF((prev) => ({ ...prev, [k]: e.target.value }));
-
   const consultar = async () => {
+    const raw = termo.trim();
+    if (!raw) return;
     setLoading(true);
     setErro(null);
-    let q: any = dw
-      .from("sv_ecarteira")
-      .select(
-        '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_PLANO","VALOR_TMM","STATUS","NASCIMENTO"',
-      )
-      .eq("TIPO_LINHA", "E")
-      .eq("Plano_de", "Saúde");
 
-    const addContains = (col: string, val: string) => {
-      const v = val.trim();
-      if (!v) return;
-      for (const tok of v.split(/\s+/).filter(Boolean)) {
-        q = q.ilike(col, `%${tok}%`);
-      }
-    };
-    addContains("CDREGUSR", f.CDREGUSR);
-    addContains("NOME_RESPONSAVEL", f.NOME_RESPONSAVEL);
-    addContains("NOME_BENEFICIARIO", f.NOME_BENEFICIARIO);
-    // CPF (bigint) and NASCIMENTO (date) não suportam ilike direto;
-    // filtramos "contém" no client após buscar.
+    const digits = raw.replace(/\D/g, "");
+    const looksLikeDate = /^\d{4}-\d{2}-\d{2}$/.test(raw);
 
-    const { data, error } = await q.limit(1000);
-    if (error) {
-      setErro(error.message);
-      setRows([]);
-    } else {
-      let list = (data ?? []) as (Row & { NASCIMENTO?: string | null })[];
-      const cpfDigits = f.CPF.replace(/\D/g, "");
-      if (cpfDigits) {
-        list = list.filter((r) =>
-          String(r.CPF ?? "").replace(/\D/g, "").includes(cpfDigits),
-        );
-      }
-      const nasc = f.NASCIMENTO.trim();
-      if (nasc) {
-        list = list.filter((r) =>
-          String(r.NASCIMENTO ?? "").includes(nasc),
-        );
-      }
-      setRows(list);
+    // Busca em paralelo em cada coluna e une os resultados (OR entre colunas,
+    // AND entre tokens dentro das colunas de texto).
+    const base = () =>
+      dw
+        .from("sv_ecarteira")
+        .select(SELECT_COLS)
+        .eq("TIPO_LINHA", "E")
+        .eq("Plano_de", "Saúde");
+
+    const textCols = ["CDREGUSR", "NOME_RESPONSAVEL", "NOME_BENEFICIARIO"];
+    const tokens = raw.split(/\s+/).filter(Boolean);
+
+    const queries: Promise<{ data: Row[] | null; error: any }>[] = [];
+
+    for (const col of textCols) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let q: any = base();
+      for (const tok of tokens) q = q.ilike(col, `%${tok}%`);
+      queries.push(q.limit(1000));
     }
+
+    // CPF: bigint — comparação exata quando os dígitos formam um número
+    if (digits && digits.length >= 3) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const q: any = base();
+      // usa cast em texto via filter para permitir "contém"
+      queries.push(q.filter("CPF::text", "ilike", `%${digits}%`).limit(1000));
+    }
+
+    // NASCIMENTO: date — só se o usuário digitou uma data completa
+    if (looksLikeDate) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const q: any = base();
+      queries.push(q.eq("NASCIMENTO", raw).limit(1000));
+    }
+
+    const results = await Promise.all(queries);
+    const firstErr = results.find((r) => r.error);
+    if (firstErr?.error) {
+      setErro(firstErr.error.message);
+      setRows([]);
+      setLoading(false);
+      return;
+    }
+
+    const seen = new Set<string>();
+    const merged: Row[] = [];
+    for (const r of results) {
+      for (const row of (r.data ?? []) as Row[]) {
+        const key = `${row.CDREGUSR ?? ""}|${row.CPF ?? ""}|${row.NOME_BENEFICIARIO ?? ""}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        merged.push(row);
+      }
+    }
+
+    setRows(merged);
     setLoading(false);
   };
 
-  const fields: { key: keyof typeof f; label: string; placeholder?: string }[] = [
-    { key: "CDREGUSR", label: "CDREGUSR" },
-    { key: "NOME_RESPONSAVEL", label: "NOME_RESPONSAVEL" },
-    { key: "NOME_BENEFICIARIO", label: "NOME_BENEFICIARIO" },
-    { key: "CPF", label: "CPF" },
-    { key: "NASCIMENTO", label: "NASCIMENTO", placeholder: "AAAA-MM-DD" },
-  ];
-
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm p-6 space-y-5">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        {fields.map((fd) => (
-          <div key={fd.key}>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">
-              {fd.label}
-            </label>
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
+        <div className="flex-1">
+          <label className="block text-xs font-medium text-muted-foreground mb-1">
+            Buscar (CDREGUSR, NOME_RESPONSAVEL, NOME_BENEFICIARIO, CPF ou NASCIMENTO)
+          </label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <input
               type="text"
-              value={f[fd.key]}
-              onChange={upd(fd.key)}
+              value={termo}
+              onChange={(e) => setTermo(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") consultar(); }}
-              placeholder={fd.placeholder ?? "contém..."}
-              className="h-10 w-full px-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder="Digite parte de qualquer um dos campos..."
+              className="h-10 w-full pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
-        ))}
-      </div>
-
-      <div className="flex justify-end">
+        </div>
         <button
           type="button"
           onClick={consultar}
@@ -133,7 +140,7 @@ export default function ConsultaBeneficiario() {
         <div className="text-xs text-muted-foreground">
           {rows.length === 0
             ? "Nenhum beneficiário encontrado."
-            : `${rows.length} beneficiário(s) encontrado(s)${rows.length === 1000 ? " (limite de 1000)" : ""}.`}
+            : `${rows.length} beneficiário(s) encontrado(s).`}
         </div>
       )}
 
