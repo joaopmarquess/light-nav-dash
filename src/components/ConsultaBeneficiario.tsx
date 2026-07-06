@@ -77,6 +77,8 @@ export default function ConsultaBeneficiario() {
       setRows((data ?? []) as Row[]);
     }
     setLoading(false);
+    setTermo("");
+    inputRef.current?.focus();
   };
 
   return (
