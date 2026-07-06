@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Loader2, Search } from "lucide-react";
 import { dw } from "@/lib/dwClient";
 
