@@ -11,7 +11,9 @@ type Row = {
   CIDADE_OFICIAL: string | null;
   VALOR_TMM: number | null;
   STATUS: string | null;
-  NASCIMENTO?: string | null;
+  NASCIMENTO: string | null;
+  IDADE: number | null;
+  VIGENCIA_BENEFICIARIO: string | null;
 };
 
 const fmtMoney = (v: number | null) =>
@@ -26,8 +28,15 @@ const fmtCPF = (v: number | string | null) => {
   return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
 };
 
+const fmtDate = (v: string | null) => {
+  if (!v) return "—";
+  const d = String(v).slice(0, 10);
+  const [y, m, dd] = d.split("-");
+  return y && m && dd ? `${dd}/${m}/${y}` : String(v);
+};
+
 const SELECT_COLS =
-  '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_OFICIAL","VALOR_TMM","STATUS","NASCIMENTO"';
+  '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_OFICIAL","VALOR_TMM","STATUS","NASCIMENTO","IDADE","VIGENCIA_BENEFICIARIO"';
 
 export default function ConsultaBeneficiario() {
   const [termo, setTermo] = useState("");
@@ -159,16 +168,19 @@ export default function ConsultaBeneficiario() {
 
       {rows && rows.length > 0 && (
         <div className="overflow-auto border border-border rounded-lg max-h-[70vh]">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40 text-xs uppercase text-muted-foreground sticky top-0">
+          <table className="w-full text-xs">
+            <thead className="bg-muted/40 text-[10px] uppercase text-muted-foreground sticky top-0">
               <tr>
                 {([
                   { k: "CDREGUSR", label: "CDREGUSR", align: "text-left" },
                   { k: "NOME_BENEFICIARIO", label: "NOME_BENEFICIARIO", align: "text-left" },
                   { k: "CPF", label: "CPF", align: "text-left" },
+                  { k: "NASCIMENTO", label: "NASCIMENTO", align: "text-left" },
+                  { k: "IDADE", label: "IDADE", align: "text-right" },
                   { k: "NOME_RESPONSAVEL", label: "NOME_RESPONSAVEL", align: "text-left" },
                   { k: "ACOMODACAO", label: "ACOMODACAO", align: "text-left" },
                   { k: "CIDADE_OFICIAL", label: "CIDADE_OFICIAL", align: "text-left" },
+                  { k: "VIGENCIA_BENEFICIARIO", label: "VIGÊNCIA", align: "text-left" },
                   { k: "VALOR_TMM", label: "VALOR_TMM", align: "text-right" },
                   { k: "STATUS", label: "STATUS", align: "text-center" },
                 ] as { k: keyof Row; label: string; align: string }[]).map((c) => {
@@ -178,7 +190,7 @@ export default function ConsultaBeneficiario() {
                     <th
                       key={c.k as string}
                       onClick={() => toggleSort(c.k)}
-                      className={`px-3 py-2 ${c.align} cursor-pointer select-none hover:text-foreground`}
+                      className={`px-2 py-1.5 ${c.align} cursor-pointer select-none hover:text-foreground`}
                     >
                       <span className="inline-flex items-center gap-1">
                         {c.label}
@@ -194,16 +206,19 @@ export default function ConsultaBeneficiario() {
                 const ativo = (b.STATUS ?? "").toUpperCase() === "A";
                 return (
                   <tr key={`${b.CDREGUSR}-${i}`} className="border-t border-border hover:bg-accent/40">
-                    <td className="px-3 py-2 tabular-nums">{b.CDREGUSR ?? "—"}</td>
-                    <td className="px-3 py-2">{b.NOME_BENEFICIARIO ?? "—"}</td>
-                    <td className="px-3 py-2 tabular-nums">{fmtCPF(b.CPF)}</td>
-                    <td className="px-3 py-2">{b.NOME_RESPONSAVEL ?? "—"}</td>
-                    <td className="px-3 py-2">{b.ACOMODACAO ?? "—"}</td>
-                    <td className="px-3 py-2">{b.CIDADE_OFICIAL ?? "—"}</td>
-                    <td className="px-3 py-2 tabular-nums text-right">{fmtMoney(b.VALOR_TMM)}</td>
-                    <td className="px-3 py-2 text-center">
+                    <td className="px-2 py-1.5 tabular-nums">{b.CDREGUSR ?? "—"}</td>
+                    <td className="px-2 py-1.5">{b.NOME_BENEFICIARIO ?? "—"}</td>
+                    <td className="px-2 py-1.5 tabular-nums">{fmtCPF(b.CPF)}</td>
+                    <td className="px-2 py-1.5 tabular-nums">{fmtDate(b.NASCIMENTO)}</td>
+                    <td className="px-2 py-1.5 tabular-nums text-right">{b.IDADE ?? "—"}</td>
+                    <td className="px-2 py-1.5">{b.NOME_RESPONSAVEL ?? "—"}</td>
+                    <td className="px-2 py-1.5">{b.ACOMODACAO ?? "—"}</td>
+                    <td className="px-2 py-1.5">{b.CIDADE_OFICIAL ?? "—"}</td>
+                    <td className="px-2 py-1.5 tabular-nums">{fmtDate(b.VIGENCIA_BENEFICIARIO)}</td>
+                    <td className="px-2 py-1.5 tabular-nums text-right">{fmtMoney(b.VALOR_TMM)}</td>
+                    <td className="px-2 py-1.5 text-center">
                       <span
-                        className={`inline-flex items-center justify-center px-2 h-6 rounded-full text-xs font-semibold ${
+                        className={`inline-flex items-center justify-center px-2 h-5 rounded-full text-[10px] font-semibold ${
                           ativo ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
                         }`}
                       >
