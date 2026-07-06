@@ -39,7 +39,7 @@ type Row = {
 
 const COLS =
   '"CDREGUSR","STATUS","NOME_PLANO","NOME_BENEFICIARIO","NOME_RESPONSAVEL","CPF","CIDADE_PLANO","UF_PLANO","IDADE","VALOR_TMM"';
-const TABLE = "gd_ecarteira";
+const TABLE = "sv_ecarteira";
 const ALL = "__all__";
 const UF_FLAGS: Record<string, string> = {
   SP: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Bandeira_do_estado_de_S%C3%A3o_Paulo.svg/40px-Bandeira_do_estado_de_S%C3%A3o_Paulo.svg.png",
