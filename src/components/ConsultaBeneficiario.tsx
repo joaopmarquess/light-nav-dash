@@ -64,9 +64,15 @@ export default function ConsultaBeneficiario() {
       .eq("TIPO_LINHA", "E")
       .eq("Plano_de", "Saúde");
 
-    const query = isCpfSearch
+    const tokens = safeName.split(" ").filter((t) => t.length >= 2);
+    let query = isCpfSearch
       ? baseQuery.eq("CPF", digits)
-      : baseQuery.ilike("NOME_BENEFICIARIO", `%${safeName}%`);
+      : baseQuery;
+    if (!isCpfSearch) {
+      for (const t of tokens) {
+        query = query.ilike("NOME_BENEFICIARIO", `%${t}%`);
+      }
+    }
 
     const { data, error } = await query.limit(100);
 
