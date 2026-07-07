@@ -29,7 +29,7 @@ const todayBR = () => {
 import AtivosEm from "@/components/AtivosEm";
 import HomeView from "@/components/Home";
 import Vendas from "@/components/Vendas";
-import ConsultaBeneficiario from "@/components/ConsultaBeneficiario";
+
 import ConsultaBeneficiarioDenis from "@/components/ConsultaBeneficiarioDenis";
 import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
