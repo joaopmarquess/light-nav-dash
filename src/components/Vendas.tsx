@@ -93,8 +93,7 @@ const Vendas = () => {
         <>
           <div className="flex items-center justify-end text-xs text-muted-foreground mb-3">
             <span>
-              <span className="font-semibold text-foreground tabular-nums">{fmtInt(total)}</span> venda(s) em{" "}
-              <span className="font-semibold text-foreground">{data.split("-").reverse().join("/")}</span> ·{" "}
+              <span className="font-semibold text-foreground tabular-nums">{fmtInt(total)}</span> venda(s) ·{" "}
               <span className="font-semibold text-foreground tabular-nums">{fmtInt(grouped.length)}</span> tipo(s) de agente
             </span>
           </div>
