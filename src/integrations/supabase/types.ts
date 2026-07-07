@@ -14,7 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      Sinistralidade: {
+        Row: {
+          cd_plano: number | null
+          cd_vendedor: number | null
+          ds_faixa_etaria: string | null
+          ds_u12: string | null
+          nr_ano: number
+          nr_mes: number
+          qt_vidas: number | null
+          vl_pago_consulta: number | null
+          vl_pago_emergencia: number | null
+          vl_pago_exames: number | null
+          vl_pago_fisio: number | null
+          vl_pago_internacao: number | null
+          vl_pago_outros: number | null
+          vl_pago_terapia: number | null
+          vl_rec_copart: number | null
+          vl_rec_mensalidade: number | null
+          vl_rec_total: number | null
+        }
+        Insert: {
+          cd_plano?: number | null
+          cd_vendedor?: number | null
+          ds_faixa_etaria?: string | null
+          ds_u12?: string | null
+          nr_ano?: number
+          nr_mes: number
+          qt_vidas?: number | null
+          vl_pago_consulta?: number | null
+          vl_pago_emergencia?: number | null
+          vl_pago_exames?: number | null
+          vl_pago_fisio?: number | null
+          vl_pago_internacao?: number | null
+          vl_pago_outros?: number | null
+          vl_pago_terapia?: number | null
+          vl_rec_copart?: number | null
+          vl_rec_mensalidade?: number | null
+          vl_rec_total?: number | null
+        }
+        Update: {
+          cd_plano?: number | null
+          cd_vendedor?: number | null
+          ds_faixa_etaria?: string | null
+          ds_u12?: string | null
+          nr_ano?: number
+          nr_mes?: number
+          qt_vidas?: number | null
+          vl_pago_consulta?: number | null
+          vl_pago_emergencia?: number | null
+          vl_pago_exames?: number | null
+          vl_pago_fisio?: number | null
+          vl_pago_internacao?: number | null
+          vl_pago_outros?: number | null
+          vl_pago_terapia?: number | null
+          vl_rec_copart?: number | null
+          vl_rec_mensalidade?: number | null
+          vl_rec_total?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
