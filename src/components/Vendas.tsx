@@ -39,12 +39,9 @@ const Vendas = () => {
     setCheckLoading(false);
   };
 
-  const total = (grouped ?? []).reduce((s, g) => s + g.vidas, 0);
-  const max = grouped?.[0]?.vidas ?? 0;
   const list = grouped ?? [];
-
-  const total = useMemo(() => grouped.reduce((s, g) => s + g.vidas, 0), [grouped]);
-  const max = grouped[0]?.vidas ?? 0;
+  const total = list.reduce((s, g) => s + g.vidas, 0);
+  const max = list[0]?.vidas ?? 0;
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-8rem)] flex flex-col">
