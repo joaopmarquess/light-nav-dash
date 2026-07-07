@@ -34,9 +34,9 @@ const AtivosEm = ({ dateValue }: Props) => {
           const { data, error } = await dw
             .from("sv_ecarteira_lovable")
             .select("CDREGUSR,VIGENCIA_BENEFICIARIO,ULTIMA_REATIVACAO,ULTIMO_CANCELAMENTO")
-            .eq("Plano_de", "Saúde")
             .order("CDREGUSR", { ascending: true })
             .range(from, from + pageSize - 1);
+
           if (abort) return;
           if (error) throw error;
           if (!data || data.length === 0) break;
