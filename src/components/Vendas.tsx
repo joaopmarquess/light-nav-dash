@@ -45,14 +45,20 @@ const Vendas = () => {
 
   const loadCheck = async () => {
     setCheckLoading(true);
+    // Buscar entradas recentes e deduplicar por AGENTE, mantendo a mais recente
     const { data: batch, error } = await dw
       .from("sv_ecarteira")
       .select('"agente","Data_ocorrencia"')
       .like("Ocorrencia", "ENTRADA%")
       .order("Data_ocorrencia", { ascending: false })
-      .limit(100);
+      .limit(5000);
     if (error) { setError(error.message); setCheckLoading(false); return; }
-    setCheck((batch ?? []) as Row[]);
+    const seen = new Map<string, Row>();
+    for (const r of (batch ?? []) as Row[]) {
+      const k = (r.agente ?? "SEM AGENTE").toString().trim() || "SEM AGENTE";
+      if (!seen.has(k)) seen.set(k, { ...r, agente: k });
+    }
+    setCheck(Array.from(seen.values()).slice(0, 100));
     setCheckLoading(false);
   };
 
