@@ -103,15 +103,9 @@ export default function ConsultaBeneficiarioDenis() {
 
     const filteredBase = incCanc ? baseQuery : baseQuery.eq("STATUS", "A");
 
-    const tokens = safeName.split(" ").filter((t) => t.length >= 2);
     let query = isCpfSearch
       ? filteredBase.eq("CPF", digits)
-      : filteredBase;
-    if (!isCpfSearch) {
-      for (const t of tokens) {
-        query = query.ilike("NOME_BENEFICIARIO", `%${t}%`);
-      }
-    }
+      : filteredBase.ilike("NOME_BENEFICIARIO", `%${safeName}%`);
 
     const { data, error } = await query.limit(100);
 
