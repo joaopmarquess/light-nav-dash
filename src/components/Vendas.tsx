@@ -142,6 +142,41 @@ const Vendas = () => {
               </div>
             )}
           </div>
+
+          <div className="mt-4 border border-border rounded-lg">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30">
+              <span className="text-xs font-semibold text-foreground">Verificação · top 100 entradas (AGENTE × Data_Ocorrencia)</span>
+              <button
+                onClick={loadCheck}
+                disabled={checkLoading}
+                className="h-7 px-3 rounded-md border border-border bg-background text-xs hover:bg-accent disabled:opacity-50"
+              >
+                {checkLoading ? "Carregando…" : check ? "Recarregar" : "Carregar"}
+              </button>
+            </div>
+            {check && (
+              <div className="max-h-64 overflow-auto">
+                <table className="w-full text-xs">
+                  <thead className="bg-muted/40 sticky top-0">
+                    <tr>
+                      <th className="px-3 py-1.5 text-left w-10">#</th>
+                      <th className="px-3 py-1.5 text-left">AGENTE</th>
+                      <th className="px-3 py-1.5 text-left">Data_Ocorrencia</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {check.map((r, i) => (
+                      <tr key={i} className="border-t border-border/60">
+                        <td className="px-3 py-1 tabular-nums text-muted-foreground">{i + 1}</td>
+                        <td className="px-3 py-1">{(r.agente ?? "SEM AGENTE").toString().trim() || "SEM AGENTE"}</td>
+                        <td className="px-3 py-1 tabular-nums">{r.Data_ocorrencia ?? "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </>
       )}
     </section>
