@@ -69,6 +69,7 @@ const menuItems: MenuItem[] = [
     label: "Carteira",
     children: [
       { icon: Search, label: "Consulta Beneficiário" },
+      { icon: Search, label: "Consulta na view carteira Denis" },
       { icon: UserCheck, label: "Ativos em" },
       { icon: TrendingUp, label: "Vendas" },
       { icon: LayoutDashboard, label: "DW Carteira" },
