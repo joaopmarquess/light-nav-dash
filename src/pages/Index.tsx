@@ -68,7 +68,7 @@ const menuItems: MenuItem[] = [
     icon: Users,
     label: "Carteira",
     children: [
-      { icon: Search, label: "Consulta Beneficiário" },
+      
       { icon: Search, label: "Consulta Carteira" },
       { icon: UserCheck, label: "Ativos em" },
       { icon: TrendingUp, label: "Vendas" },
