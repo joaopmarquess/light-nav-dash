@@ -5,10 +5,8 @@ import { dw } from "@/lib/dwClient";
 type Row = { agente: string | null; Data_ocorrencia: string | null };
 
 const fmtInt = (n: number) => n.toLocaleString("pt-BR");
-const today = () => new Date().toISOString().slice(0, 10);
 
 const Vendas = () => {
-  const [data, setData] = useState<string>(today());
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +27,6 @@ const Vendas = () => {
           .from("sv_ecarteira")
           .select('"agente","Data_ocorrencia"')
           .like("Ocorrencia", "ENTRADA%")
-          .eq("Data_ocorrencia", data)
           .range(from, from + pageSize - 1);
         if (error) {
           if (!abort) { setError(error.message); setLoading(false); }
@@ -44,7 +41,7 @@ const Vendas = () => {
       if (!abort) { setRows(all); setLoading(false); }
     })();
     return () => { abort = true; };
-  }, [data]);
+  }, []);
 
   const loadCheck = async () => {
     setCheckLoading(true);
@@ -80,17 +77,8 @@ const Vendas = () => {
         <div>
           <h2 className="text-lg font-semibold text-foreground">Vendas por tipo de agente</h2>
           <p className="text-xs text-muted-foreground">
-            Ocorrências de <code>ENTRADA</code> em <code>sv_ecarteira</code> por <code>Data_ocorrencia</code>.
+            Todas as ocorrências de <code>ENTRADA</code> em <code>sv_ecarteira</code>.
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-muted-foreground">Data da venda</label>
-          <input
-            type="date"
-            value={data}
-            onChange={(e) => setData(e.target.value)}
-            className="h-9 px-2 rounded-md border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-          />
         </div>
       </div>
 
@@ -105,8 +93,7 @@ const Vendas = () => {
         <>
           <div className="flex items-center justify-end text-xs text-muted-foreground mb-3">
             <span>
-              <span className="font-semibold text-foreground tabular-nums">{fmtInt(total)}</span> venda(s) em{" "}
-              <span className="font-semibold text-foreground">{data.split("-").reverse().join("/")}</span> ·{" "}
+              <span className="font-semibold text-foreground tabular-nums">{fmtInt(total)}</span> venda(s) ·{" "}
               <span className="font-semibold text-foreground tabular-nums">{fmtInt(grouped.length)}</span> tipo(s) de agente
             </span>
           </div>
