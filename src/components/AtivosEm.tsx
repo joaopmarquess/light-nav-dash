@@ -9,8 +9,8 @@ type Row = {
   PLANO: string | number | null;
   NOME_PLANO: string | null;
   VIGENCIA_BENEFICIARIO: string | null;
-  REATIVACAO: string | null;
-  CANCELAMENTO: string | null;
+  ULTIMA_REATIVACAO: string | null;
+  ULTIMO_CANCELAMENTO: string | null;
 };
 
 function parseBR(s: string): Date | null {
@@ -63,9 +63,8 @@ const AtivosEm = ({ dateValue, initialDrillNome = null }: Props) => {
       // eslint-disable-next-line no-constant-condition
       while (true) {
         const { data, error } = await dw
-          .from("sv_ecarteira")
-          .select('"PLANO","NOME_PLANO","VIGENCIA_BENEFICIARIO","REATIVACAO","CANCELAMENTO"')
-          .eq("TIPO_LINHA", "E")
+          .from("sv_ecarteira_lovable")
+          .select('"PLANO","NOME_PLANO","VIGENCIA_BENEFICIARIO","ULTIMA_REATIVACAO","ULTIMO_CANCELAMENTO"')
           .eq("Plano_de", "Saúde")
           .range(from, from + pageSize - 1);
         if (error) {
@@ -98,8 +97,8 @@ const AtivosEm = ({ dateValue, initialDrillNome = null }: Props) => {
     for (const r of rows) {
       const vig = parseISO(r.VIGENCIA_BENEFICIARIO);
       if (vig === null || ref < vig) continue;
-      const reat = parseISO(r.REATIVACAO);
-      const canc = parseISO(r.CANCELAMENTO);
+      const reat = parseISO(r.ULTIMA_REATIVACAO);
+      const canc = parseISO(r.ULTIMO_CANCELAMENTO);
       const active = canc === null || (reat !== null && reat > canc) || ref < canc;
       if (!active) continue;
       const plano = (r.PLANO ?? "").toString();
