@@ -16,16 +16,6 @@ interface Props {
   dateValue: string;
 }
 
-type Row = {
-  CDREGUSR: number | null;
-  VIGENCIA_BENEFICIARIO: string | null;
-  ULTIMA_REATIVACAO: string | null;
-  ULTIMO_CANCELAMENTO: string | null;
-  Faixa_etaria: string | null;
-};
-
-const PAGE = 1000;
-
 const toISO = (s: string): string | null => {
   if (!s) return null;
   const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -35,7 +25,6 @@ const toISO = (s: string): string | null => {
   return null;
 };
 
-// Ordena as faixas etárias de forma lógica (pega o primeiro número)
 const faixaSortKey = (s: string) => {
   if (!s) return 999;
   if (/^sem/i.test(s)) return 1000;
@@ -46,8 +35,6 @@ const faixaSortKey = (s: string) => {
 const AtivosEm = ({ dateValue }: Props) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [progress, setProgress] = useState(0);
-  const [total, setTotal] = useState<number | null>(null);
   const [ativos, setAtivos] = useState<number | null>(null);
   const [porFaixa, setPorFaixa] = useState<{ faixa: string; ativos: number }[]>([]);
 
@@ -59,56 +46,22 @@ const AtivosEm = ({ dateValue }: Props) => {
       setError(null);
       setAtivos(null);
       setPorFaixa([]);
-      setProgress(0);
-      setTotal(null);
       try {
         const ref = toISO(dateValue);
         if (!ref) throw new Error(`Data de referência inválida: ${dateValue}`);
 
-        let count = 0;
-        let processed = 0;
-        let lastId: number | null = null;
-        const byFaixa = new Map<string, number>();
+        const { data, error } = await dw.rpc("fn_ativos_por_faixa", { ref });
+        if (error) throw error;
+        if (abort) return;
 
-        while (true) {
-          if (abort) return;
-          let q = dw
-            .from("sv_ecarteira_lovable")
-            .select(
-              "CDREGUSR,VIGENCIA_BENEFICIARIO,ULTIMA_REATIVACAO,ULTIMO_CANCELAMENTO,Faixa_etaria"
-            )
-            .order("CDREGUSR", { ascending: true })
-            .limit(PAGE);
-          if (lastId !== null) q = q.gt("CDREGUSR", lastId);
-          const { data, error } = await q;
-          if (error) throw error;
-          const rows = (data ?? []) as Row[];
-          if (rows.length === 0) break;
-          for (const r of rows) {
-            const vig = r.VIGENCIA_BENEFICIARIO;
-            if (!vig || vig > ref) continue;
-            const reat = r.ULTIMA_REATIVACAO;
-            const canc = r.ULTIMO_CANCELAMENTO;
-            if (!canc || (reat && reat > canc)) {
-              count++;
-              const f = r.Faixa_etaria || "Sem faixa";
-              byFaixa.set(f, (byFaixa.get(f) || 0) + 1);
-            }
-          }
-          processed += rows.length;
-          lastId = rows[rows.length - 1].CDREGUSR as number;
-          setProgress(processed);
-          setTotal(processed);
-          if (rows.length < PAGE) break;
-        }
-        if (!abort) {
-          const arr = Array.from(byFaixa.entries())
-            .map(([faixa, ativos]) => ({ faixa, ativos }))
-            .sort((a, b) => faixaSortKey(a.faixa) - faixaSortKey(b.faixa));
-          setPorFaixa(arr);
-          setAtivos(count);
-          setLoading(false);
-        }
+        const rows = (data ?? []) as { faixa: string; ativos: number }[];
+        const arr = rows
+          .map((r) => ({ faixa: r.faixa || "Sem faixa", ativos: Number(r.ativos) }))
+          .sort((a, b) => faixaSortKey(a.faixa) - faixaSortKey(b.faixa));
+        const total = arr.reduce((s, r) => s + r.ativos, 0);
+        setPorFaixa(arr);
+        setAtivos(total);
+        setLoading(false);
       } catch (e: any) {
         if (!abort) {
           setError(e?.message ?? String(e));
@@ -132,7 +85,7 @@ const AtivosEm = ({ dateValue }: Props) => {
       <div className="mb-4">
         <h2 className="text-lg font-semibold text-foreground">Beneficiários ativos</h2>
         <p className="text-xs text-muted-foreground">
-          Fonte: <code>sv_ecarteira_lovable</code> · Data de referência:{" "}
+          Fonte: <code>fn_ativos_por_faixa</code> · Data de referência:{" "}
           {dateValue ? fmtDateBR(dateValue) : "—"}
         </p>
       </div>
@@ -140,8 +93,7 @@ const AtivosEm = ({ dateValue }: Props) => {
       {loading ? (
         <div className="flex items-center text-muted-foreground text-sm py-8">
           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          Processando… {fmtInt(progress)}
-          {total ? ` / ${fmtInt(total)}` : ""}
+          Carregando…
         </div>
       ) : error ? (
         <div className="text-destructive text-sm">Erro: {error}</div>
@@ -150,9 +102,6 @@ const AtivosEm = ({ dateValue }: Props) => {
           <div>
             <div className="text-5xl font-bold tabular-nums text-foreground">
               {ativos !== null ? fmtInt(ativos) : "—"}
-            </div>
-            <div className="text-xs text-muted-foreground mt-2">
-              Total analisado: {total !== null ? fmtInt(total) : "—"}
             </div>
           </div>
 
