@@ -28,28 +28,50 @@ const AtivosEm = ({ dateValue }: Props) => {
       setLoading(true);
       setError(null);
       try {
-        const base = () =>
-          dw
-            .from("sv_ecarteira_lovable")
-            .select("*", { count: "exact", head: true })
-            .eq("Plano_de", "Saúde")
-            .lte("VIGENCIA_BENEFICIARIO", refISO);
-
         // Regra: SE(B<=ref; SE(C="" E D=""; 1; SE(C=""; 1; SE(C<D; 1; 0))); 0)
-        // => ativo quando VIGENCIA<=ref E (ULTIMA_REATIVACAO é nula OU ULTIMA_REATIVACAO < ULTIMO_CANCELAMENTO)
-        // A) ULTIMA_REATIVACAO nula
-        const qA = base().is("ULTIMA_REATIVACAO", null);
-        // B) ULTIMA_REATIVACAO < ULTIMO_CANCELAMENTO (ambas não-nulas por definição da comparação)
-        const qB = base().filter("ULTIMA_REATIVACAO", "lt", "ULTIMO_CANCELAMENTO");
+        // ativo = VIGENCIA<=ref E (ULTIMA_REATIVACAO nula OU ULTIMA_REATIVACAO<ULTIMO_CANCELAMENTO)
+        // PostgREST não compara coluna com coluna → parte B é feita em JS.
 
-        const [rA, rB] = await Promise.all([qA, qB]);
+        // A) count server-side: VIGENCIA<=ref E ULTIMA_REATIVACAO nula
+        const qA = dw
+          .from("sv_ecarteira_lovable")
+          .select("*", { count: "exact", head: true })
+          .eq("Plano_de", "Saúde")
+          .lte("VIGENCIA_BENEFICIARIO", refISO)
+          .is("ULTIMA_REATIVACAO", null);
+
+        // B) buscar linhas com reativação (subset pequeno) e comparar em JS
+        const pageSize = 1000;
+        let from = 0;
+        let countB = 0;
+        while (true) {
+          const { data, error } = await dw
+            .from("sv_ecarteira_lovable")
+            .select("ULTIMA_REATIVACAO,ULTIMO_CANCELAMENTO")
+            .eq("Plano_de", "Saúde")
+            .lte("VIGENCIA_BENEFICIARIO", refISO)
+            .not("ULTIMA_REATIVACAO", "is", null)
+            .range(from, from + pageSize - 1);
+          if (error) throw error;
+          if (!data || data.length === 0) break;
+          for (const r of data as Array<{ ULTIMA_REATIVACAO: string | null; ULTIMO_CANCELAMENTO: string | null }>) {
+            const c = r.ULTIMA_REATIVACAO;
+            const d = r.ULTIMO_CANCELAMENTO;
+            if (c && d && c < d) countB++;
+          }
+          if (data.length < pageSize) break;
+          from += pageSize;
+          if (abort) return;
+        }
+
+        const rA = await qA;
         if (rA.error) throw rA.error;
-        if (rB.error) throw rB.error;
 
         if (!abort) {
-          setCount((rA.count ?? 0) + (rB.count ?? 0));
+          setCount((rA.count ?? 0) + countB);
           setLoading(false);
         }
+
       } catch (e: any) {
         if (!abort) {
           setError(e?.message ?? String(e));
