@@ -35,32 +35,22 @@ const AtivosEm = ({ dateValue }: Props) => {
             .eq("Plano_de", "Saúde")
             .lte("VIGENCIA_BENEFICIARIO", refISO);
 
-        // A) nunca cancelados
-        const qA = base().is("ULTIMO_CANCELAMENTO", null);
-        // B) cancelamento futuro (> data ref)
-        const qB = base().gt("ULTIMO_CANCELAMENTO", refISO);
-        // C) cancelados até a data, porém reativados até a data
-        //    (assume ULTIMA_REATIVACAO > ULTIMO_CANCELAMENTO por definição)
-        const qC = base()
-          .lte("ULTIMO_CANCELAMENTO", refISO)
-          .not("ULTIMA_REATIVACAO", "is", null)
-          .lte("ULTIMA_REATIVACAO", refISO);
+        // Regra: SE(B<=ref; SE(C="" E D=""; 1; SE(C=""; 1; SE(C<D; 1; 0))); 0)
+        // => ativo quando VIGENCIA<=ref E (ULTIMA_REATIVACAO é nula OU ULTIMA_REATIVACAO < ULTIMO_CANCELAMENTO)
+        // A) ULTIMA_REATIVACAO nula
+        const qA = base().is("ULTIMA_REATIVACAO", null);
+        // B) ULTIMA_REATIVACAO < ULTIMO_CANCELAMENTO (ambas não-nulas por definição da comparação)
+        const qB = base().filter("ULTIMA_REATIVACAO", "lt", "ULTIMO_CANCELAMENTO");
 
-        const [rA, rB, rC] = await Promise.all([qA, qB, qC]);
+        const [rA, rB] = await Promise.all([qA, qB]);
         if (rA.error) throw rA.error;
         if (rB.error) throw rB.error;
-        if (rC.error) throw rC.error;
 
         if (!abort) {
-          setCount((rA.count ?? 0) + (rB.count ?? 0) + (rC.count ?? 0));
+          setCount((rA.count ?? 0) + (rB.count ?? 0));
           setLoading(false);
         }
-      } catch (e: any) {
-        if (!abort) {
-          setError(e?.message ?? String(e));
-          setLoading(false);
-        }
-      }
+
     })();
 
     return () => {
