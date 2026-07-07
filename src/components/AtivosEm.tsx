@@ -24,7 +24,6 @@ const toISO = (s: string): string | null => {
   return null;
 };
 
-const _PAGE_MARKER = 0;
 
 const AtivosEm = ({ dateValue }: Props) => {
   const [loading, setLoading] = useState(true);
