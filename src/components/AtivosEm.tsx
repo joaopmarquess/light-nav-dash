@@ -54,10 +54,14 @@ const AtivosEm = ({ dateValue, initialDrillNome = null }: Props) => {
   }, [initialDrillNome]);
 
   useEffect(() => {
+    const ref = parseBR(dateValue);
+    if (!ref) return;
+    const refISO = ref.toISOString().slice(0, 10);
     let abort = false;
     (async () => {
       setLoading(true);
-      const pageSize = 1000;
+      setError(null);
+      const pageSize = 500;
       let from = 0;
       const all: Row[] = [];
       // eslint-disable-next-line no-constant-condition
@@ -66,6 +70,8 @@ const AtivosEm = ({ dateValue, initialDrillNome = null }: Props) => {
           .from("sv_ecarteira_lovable")
           .select('"PLANO","NOME_PLANO","VIGENCIA_BENEFICIARIO","ULTIMA_REATIVACAO","ULTIMO_CANCELAMENTO"')
           .eq("Plano_de", "Saúde")
+          .lte("VIGENCIA_BENEFICIARIO", refISO)
+          .or(`ULTIMO_CANCELAMENTO.is.null,ULTIMO_CANCELAMENTO.gte.${refISO},ULTIMA_REATIVACAO.not.is.null`)
           .range(from, from + pageSize - 1);
         if (error) {
           if (!abort) { setError(error.message); setLoading(false); }
@@ -80,7 +86,7 @@ const AtivosEm = ({ dateValue, initialDrillNome = null }: Props) => {
       if (!abort) { setRows(all); setLoading(false); }
     })();
     return () => { abort = true; };
-  }, []);
+  }, [dateValue]);
 
   const refDate = parseBR(dateValue);
 
