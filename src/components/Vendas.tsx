@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { dw } from "@/lib/dwClient";
 
-type Row = { agente: string | null };
+type Row = { agente: string | null; Data_ocorrencia: string | null };
 
 const fmtInt = (n: number) => n.toLocaleString("pt-BR");
 const today = () => new Date().toISOString().slice(0, 10);
