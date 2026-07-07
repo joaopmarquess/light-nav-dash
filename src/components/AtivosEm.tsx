@@ -1,43 +1,81 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { dw } from "@/lib/dwClient";
 
 interface Props {
-  dateValue: string;
+  dateValue: string; // yyyy-mm-dd
 }
 
 type Row = {
-  CDREGUSR: number | string | null;
   VIGENCIA_BENEFICIARIO: string | null;
   ULTIMA_REATIVACAO: string | null;
   ULTIMO_CANCELAMENTO: string | null;
 };
 
+const PAGE = 1000;
+
 const AtivosEm = ({ dateValue }: Props) => {
-  const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [total, setTotal] = useState<number | null>(null);
+  const [ativos, setAtivos] = useState<number | null>(null);
 
   useEffect(() => {
+    if (!dateValue) return;
     let abort = false;
     (async () => {
       setLoading(true);
       setError(null);
-      setRows([]);
+      setAtivos(null);
       setProgress(0);
+      setTotal(null);
       try {
-        const { data, error } = await dw
-          .from("sv_ecarteira_lovable")
-          .select("CDREGUSR,VIGENCIA_BENEFICIARIO,ULTIMA_REATIVACAO,ULTIMO_CANCELAMENTO")
-          .limit(100);
-        if (abort) return;
-        if (error) throw error;
-        const all = (data ?? []) as Row[];
-        setProgress(all.length);
-
+        const ref = dateValue; // ISO string compares work for yyyy-mm-dd
+        let from = 0;
+        let count = 0;
+        let totalRows = 0;
+        // primeira página com count exato
+        // paginação
+        while (true) {
+          if (abort) return;
+          const { data, error, count: c } = await dw
+            .from("sv_ecarteira_lovable")
+            .select("VIGENCIA_BENEFICIARIO,ULTIMA_REATIVACAO,ULTIMO_CANCELAMENTO", {
+              count: from === 0 ? "exact" : undefined,
+            })
+            .range(from, from + PAGE - 1);
+          if (error) throw error;
+          if (from === 0 && typeof c === "number") {
+            totalRows = c;
+            setTotal(c);
+          }
+          const rows = (data ?? []) as Row[];
+          for (const r of rows) {
+            const vig = r.VIGENCIA_BENEFICIARIO;
+            if (!vig) continue;
+            if (vig > ref) continue; // regra 1 → 0
+            const reat = r.ULTIMA_REATIVACAO;
+            const canc = r.ULTIMO_CANCELAMENTO;
+            // 2.1 e 2.2
+            if (!reat) {
+              count++;
+              continue;
+            }
+            // 2.3
+            if (canc && reat < canc) {
+              count++;
+              continue;
+            }
+            // 2.4 → 0
+          }
+          from += rows.length;
+          setProgress(from);
+          if (rows.length < PAGE) break;
+          if (totalRows && from >= totalRows) break;
+        }
         if (!abort) {
-          setRows(all);
+          setAtivos(count);
           setLoading(false);
         }
       } catch (e: any) {
@@ -50,53 +88,40 @@ const AtivosEm = ({ dateValue }: Props) => {
     return () => {
       abort = true;
     };
-  }, []);
+  }, [dateValue]);
 
   const fmtInt = (n: number) => n.toLocaleString("pt-BR");
-  const fmtDate = (s: string | null) => {
-    if (!s) return "";
+  const fmtDateBR = (s: string) => {
     const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
     return m ? `${m[3]}/${m[2]}/${m[1]}` : s;
   };
 
   return (
-    <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-8rem)] flex flex-col">
-      <div className="mb-3">
-        <h2 className="text-lg font-semibold text-foreground">Beneficiários</h2>
+    <section className="bg-card rounded-xl border border-border shadow-sm p-6">
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold text-foreground">Beneficiários ativos</h2>
         <p className="text-xs text-muted-foreground">
-          Fonte: <code>sv_ecarteira_lovable</code> · Data de referência (input): {dateValue || "—"} · Total: {fmtInt(rows.length)}
-
+          Fonte: <code>sv_ecarteira_lovable</code> · Data de referência:{" "}
+          {dateValue ? fmtDateBR(dateValue) : "—"}
         </p>
       </div>
 
       {loading ? (
-        <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-          <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Carregando… {fmtInt(progress)}
+        <div className="flex items-center text-muted-foreground text-sm py-8">
+          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          Processando… {fmtInt(progress)}
+          {total ? ` / ${fmtInt(total)}` : ""}
         </div>
       ) : error ? (
         <div className="text-destructive text-sm">Erro: {error}</div>
       ) : (
-        <div className="flex-1 overflow-auto border border-border rounded-md">
-          <table className="w-full text-xs tabular-nums">
-            <thead className="bg-muted sticky top-0">
-              <tr className="text-left">
-                <th className="px-3 py-2 font-medium">CDREGUSR</th>
-                <th className="px-3 py-2 font-medium">VIGENCIA_BENEFICIARIO</th>
-                <th className="px-3 py-2 font-medium">ULTIMA_REATIVACAO</th>
-                <th className="px-3 py-2 font-medium">ULTIMO_CANCELAMENTO</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, i) => (
-                <tr key={i} className="border-t border-border hover:bg-muted/50">
-                  <td className="px-3 py-1">{r.CDREGUSR ?? ""}</td>
-                  <td className="px-3 py-1">{fmtDate(r.VIGENCIA_BENEFICIARIO)}</td>
-                  <td className="px-3 py-1">{fmtDate(r.ULTIMA_REATIVACAO)}</td>
-                  <td className="px-3 py-1">{fmtDate(r.ULTIMO_CANCELAMENTO)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="py-4">
+          <div className="text-5xl font-bold tabular-nums text-foreground">
+            {ativos !== null ? fmtInt(ativos) : "—"}
+          </div>
+          <div className="text-xs text-muted-foreground mt-2">
+            Total analisado: {total !== null ? fmtInt(total) : "—"}
+          </div>
         </div>
       )}
     </section>
