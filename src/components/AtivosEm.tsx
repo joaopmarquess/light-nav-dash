@@ -27,24 +27,15 @@ const AtivosEm = ({ dateValue }: Props) => {
       setRows([]);
       setProgress(0);
       try {
-        const pageSize = 1000;
-        let from = 0;
-        const all: Row[] = [];
-        while (true) {
-          const { data, error } = await dw
-            .from("sv_ecarteira_lovable")
-            .select("CDREGUSR,VIGENCIA_BENEFICIARIO,ULTIMA_REATIVACAO,ULTIMO_CANCELAMENTO")
-            .order("CDREGUSR", { ascending: true })
-            .range(from, from + pageSize - 1);
+        const { data, error } = await dw
+          .from("sv_ecarteira_lovable")
+          .select("CDREGUSR,VIGENCIA_BENEFICIARIO,ULTIMA_REATIVACAO,ULTIMO_CANCELAMENTO")
+          .limit(100);
+        if (abort) return;
+        if (error) throw error;
+        const all = (data ?? []) as Row[];
+        setProgress(all.length);
 
-          if (abort) return;
-          if (error) throw error;
-          if (!data || data.length === 0) break;
-          all.push(...(data as Row[]));
-          setProgress(all.length);
-          if (data.length < pageSize) break;
-          from += pageSize;
-        }
         if (!abort) {
           setRows(all);
           setLoading(false);
