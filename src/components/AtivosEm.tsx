@@ -63,9 +63,8 @@ const AtivosEm = ({ dateValue, initialDrillNome = null }: Props) => {
       // eslint-disable-next-line no-constant-condition
       while (true) {
         const { data, error } = await dw
-          .from("sv_ecarteira")
-          .select('"PLANO","NOME_PLANO","VIGENCIA_BENEFICIARIO","REATIVACAO","CANCELAMENTO"')
-          .eq("TIPO_LINHA", "E")
+          .from("sv_ecarteira_lovable")
+          .select('"PLANO","NOME_PLANO","VIGENCIA_BENEFICIARIO","ULTIMA_REATIVACAO","ULTIMO_CANCELAMENTO"')
           .eq("Plano_de", "Saúde")
           .range(from, from + pageSize - 1);
         if (error) {
