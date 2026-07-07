@@ -97,8 +97,8 @@ const AtivosEm = ({ dateValue, initialDrillNome = null }: Props) => {
     for (const r of rows) {
       const vig = parseISO(r.VIGENCIA_BENEFICIARIO);
       if (vig === null || ref < vig) continue;
-      const reat = parseISO(r.REATIVACAO);
-      const canc = parseISO(r.CANCELAMENTO);
+      const reat = parseISO(r.ULTIMA_REATIVACAO);
+      const canc = parseISO(r.ULTIMO_CANCELAMENTO);
       const active = canc === null || (reat !== null && reat > canc) || ref < canc;
       if (!active) continue;
       const plano = (r.PLANO ?? "").toString();
