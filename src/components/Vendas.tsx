@@ -12,6 +12,8 @@ const Vendas = () => {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [check, setCheck] = useState<Row[] | null>(null);
+  const [checkLoading, setCheckLoading] = useState(false);
 
   useEffect(() => {
     let abort = false;
