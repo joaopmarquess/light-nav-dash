@@ -7,10 +7,12 @@ interface Props {
 }
 
 type Row = {
+  CDREGUSR: number | null;
   VIGENCIA_BENEFICIARIO: string | null;
   ULTIMA_REATIVACAO: string | null;
   ULTIMO_CANCELAMENTO: string | null;
 };
+
 
 const PAGE = 1000;
 
@@ -45,39 +47,36 @@ const AtivosEm = ({ dateValue }: Props) => {
         const ref = toISO(dateValue); // normaliza para yyyy-mm-dd
         if (!ref) throw new Error(`Data de referência inválida: ${dateValue}`);
 
-        let from = 0;
         let count = 0;
-        let totalRows = 0;
-        // primeira página com count exato
-        // paginação
+        let processed = 0;
+        let lastId: number | null = null;
+        // Keyset pagination por CDREGUSR (evita timeout de OFFSET profundo)
         while (true) {
           if (abort) return;
-          const { data, error, count: c } = await dw
+          let q = dw
             .from("sv_ecarteira_lovable")
-            .select("VIGENCIA_BENEFICIARIO,ULTIMA_REATIVACAO,ULTIMO_CANCELAMENTO", {
-              count: from === 0 ? "exact" : undefined,
-            })
-            .range(from, from + PAGE - 1);
+            .select("CDREGUSR,VIGENCIA_BENEFICIARIO,ULTIMA_REATIVACAO,ULTIMO_CANCELAMENTO")
+            .order("CDREGUSR", { ascending: true })
+            .limit(PAGE);
+          if (lastId !== null) q = q.gt("CDREGUSR", lastId);
+          const { data, error } = await q;
           if (error) throw error;
-          if (from === 0 && typeof c === "number") {
-            totalRows = c;
-            setTotal(c);
-          }
           const rows = (data ?? []) as Row[];
+          if (rows.length === 0) break;
           for (const r of rows) {
             const vig = r.VIGENCIA_BENEFICIARIO;
             if (!vig || vig > ref) continue;
             const reat = r.ULTIMA_REATIVACAO;
             const canc = r.ULTIMO_CANCELAMENTO;
-            // Ativo = VIGENCIA ≤ ref E (CANC vazio OU REAT > CANC)
             if (!canc || (reat && reat > canc)) count++;
           }
-
-          from += rows.length;
-          setProgress(from);
+          processed += rows.length;
+          lastId = rows[rows.length - 1].CDREGUSR as number;
+          setProgress(processed);
+          setTotal(processed);
           if (rows.length < PAGE) break;
-          if (totalRows && from >= totalRows) break;
         }
+
         if (!abort) {
           setAtivos(count);
           setLoading(false);
