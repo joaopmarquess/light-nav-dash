@@ -27,7 +27,6 @@ const Vendas = () => {
           .from("sv_ecarteira")
           .select('"agente","Data_ocorrencia"')
           .like("Ocorrencia", "ENTRADA%")
-          .like("Ocorrencia", "ENTRADA%")
           .range(from, from + pageSize - 1);
         if (error) {
           if (!abort) { setError(error.message); setLoading(false); }
