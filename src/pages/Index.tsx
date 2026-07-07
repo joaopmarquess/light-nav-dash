@@ -30,6 +30,7 @@ import AtivosEm from "@/components/AtivosEm";
 import HomeView from "@/components/Home";
 import Vendas from "@/components/Vendas";
 import ConsultaBeneficiario from "@/components/ConsultaBeneficiario";
+import ConsultaBeneficiarioDenis from "@/components/ConsultaBeneficiarioDenis";
 import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
 import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
@@ -68,6 +69,7 @@ const menuItems: MenuItem[] = [
     label: "Carteira",
     children: [
       { icon: Search, label: "Consulta Beneficiário" },
+      { icon: Search, label: "Consulta na view carteira Denis" },
       { icon: UserCheck, label: "Ativos em" },
       { icon: TrendingUp, label: "Vendas" },
       { icon: LayoutDashboard, label: "DW Carteira" },
@@ -263,6 +265,8 @@ const Index = () => {
             <Vendas />
           ) : active === "Consulta Beneficiário" ? (
             <ConsultaBeneficiario />
+          ) : active === "Consulta na view carteira Denis" ? (
+            <ConsultaBeneficiarioDenis />
           ) : active === "DRE" ? (
             <DRE />
           ) : active === "Gráfico" ? (
