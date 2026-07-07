@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { dw } from "@/lib/dwClient";
 
-type Row = { agente: string | null };
+type Row = { agente: string | null; Data_ocorrencia: string | null };
 
 const fmtInt = (n: number) => n.toLocaleString("pt-BR");
 const today = () => new Date().toISOString().slice(0, 10);
@@ -12,6 +12,8 @@ const Vendas = () => {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [check, setCheck] = useState<Row[] | null>(null);
+  const [checkLoading, setCheckLoading] = useState(false);
 
   useEffect(() => {
     let abort = false;
@@ -25,7 +27,7 @@ const Vendas = () => {
       while (true) {
         const { data: batch, error } = await dw
           .from("sv_ecarteira")
-          .select('"agente"')
+          .select('"agente","Data_ocorrencia"')
           .like("Ocorrencia", "ENTRADA%")
           .eq("Data_ocorrencia", data)
           .range(from, from + pageSize - 1);
@@ -43,6 +45,19 @@ const Vendas = () => {
     })();
     return () => { abort = true; };
   }, [data]);
+
+  const loadCheck = async () => {
+    setCheckLoading(true);
+    const { data: batch, error } = await dw
+      .from("sv_ecarteira")
+      .select('"agente","Data_ocorrencia"')
+      .like("Ocorrencia", "ENTRADA%")
+      .order("Data_ocorrencia", { ascending: false })
+      .limit(100);
+    if (error) { setError(error.message); setCheckLoading(false); return; }
+    setCheck((batch ?? []) as Row[]);
+    setCheckLoading(false);
+  };
 
   const grouped = useMemo(() => {
     if (!rows) return [];
@@ -124,6 +139,41 @@ const Vendas = () => {
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 border border-border rounded-lg">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30">
+              <span className="text-xs font-semibold text-foreground">Verificação · top 100 entradas (AGENTE × Data_Ocorrencia)</span>
+              <button
+                onClick={loadCheck}
+                disabled={checkLoading}
+                className="h-7 px-3 rounded-md border border-border bg-background text-xs hover:bg-accent disabled:opacity-50"
+              >
+                {checkLoading ? "Carregando…" : check ? "Recarregar" : "Carregar"}
+              </button>
+            </div>
+            {check && (
+              <div className="max-h-64 overflow-auto">
+                <table className="w-full text-xs">
+                  <thead className="bg-muted/40 sticky top-0">
+                    <tr>
+                      <th className="px-3 py-1.5 text-left w-10">#</th>
+                      <th className="px-3 py-1.5 text-left">AGENTE</th>
+                      <th className="px-3 py-1.5 text-left">Data_Ocorrencia</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {check.map((r, i) => (
+                      <tr key={i} className="border-t border-border/60">
+                        <td className="px-3 py-1 tabular-nums text-muted-foreground">{i + 1}</td>
+                        <td className="px-3 py-1">{(r.agente ?? "SEM AGENTE").toString().trim() || "SEM AGENTE"}</td>
+                        <td className="px-3 py-1 tabular-nums">{r.Data_ocorrencia ?? "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
