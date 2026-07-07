@@ -69,7 +69,7 @@ const menuItems: MenuItem[] = [
     label: "Carteira",
     children: [
       { icon: Search, label: "Consulta Beneficiário" },
-      { icon: Search, label: "Consulta na view carteira Denis" },
+      { icon: Search, label: "Consulta Carteira" },
       { icon: UserCheck, label: "Ativos em" },
       { icon: TrendingUp, label: "Vendas" },
       { icon: LayoutDashboard, label: "DW Carteira" },
@@ -265,7 +265,7 @@ const Index = () => {
             <Vendas />
           ) : active === "Consulta Beneficiário" ? (
             <ConsultaBeneficiario />
-          ) : active === "Consulta na view carteira Denis" ? (
+          ) : active === "Consulta Carteira" ? (
             <ConsultaBeneficiarioDenis />
           ) : active === "DRE" ? (
             <DRE />
