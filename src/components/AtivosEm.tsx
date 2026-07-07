@@ -14,6 +14,18 @@ type Row = {
 
 const PAGE = 1000;
 
+// Converte "dd/mm/yyyy" ou "yyyy-mm-dd" para "yyyy-mm-dd"
+const toISO = (s: string): string | null => {
+  if (!s) return null;
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+  const br = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (br) return `${br[3]}-${br[2]}-${br[1]}`;
+  return null;
+};
+
+const _PAGE_MARKER = 0;
+
 const AtivosEm = ({ dateValue }: Props) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
