@@ -66,18 +66,18 @@ const Vendas = () => {
           <div className="flex items-center justify-end text-xs text-muted-foreground mb-3">
             <span>
               <span className="font-semibold text-foreground tabular-nums">{fmtInt(total)}</span> venda(s) ·{" "}
-              <span className="font-semibold text-foreground tabular-nums">{fmtInt(grouped.length)}</span> tipo(s) de agente
+              <span className="font-semibold text-foreground tabular-nums">{fmtInt(list.length)}</span> tipo(s) de agente
             </span>
           </div>
 
           <div className="flex-1 overflow-auto border border-border rounded-lg p-4">
-            {grouped.length === 0 ? (
+            {list.length === 0 ? (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
                 Nenhuma venda nesta data.
               </div>
             ) : (
               <div className="space-y-3">
-                {grouped.map((g) => {
+                {list.map((g) => {
                   const pct = max ? (g.vidas / max) * 100 : 0;
                   const share = total ? (g.vidas / total) * 100 : 0;
                   return (
@@ -128,7 +128,7 @@ const Vendas = () => {
                       <tr key={i} className="border-t border-border/60">
                         <td className="px-3 py-1 tabular-nums text-muted-foreground">{i + 1}</td>
                         <td className="px-3 py-1">{(r.agente ?? "SEM AGENTE").toString().trim() || "SEM AGENTE"}</td>
-                        <td className="px-3 py-1 tabular-nums">{r.Data_ocorrencia ?? "—"}</td>
+                        <td className="px-3 py-1 tabular-nums">{r.data_ocorrencia ?? "—"}</td>
                       </tr>
                     ))}
                   </tbody>
