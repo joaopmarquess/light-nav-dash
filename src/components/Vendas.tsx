@@ -77,17 +77,8 @@ const Vendas = () => {
         <div>
           <h2 className="text-lg font-semibold text-foreground">Vendas por tipo de agente</h2>
           <p className="text-xs text-muted-foreground">
-            Ocorrências de <code>ENTRADA</code> em <code>sv_ecarteira</code> por <code>Data_ocorrencia</code>.
+            Todas as ocorrências de <code>ENTRADA</code> em <code>sv_ecarteira</code>.
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-muted-foreground">Data da venda</label>
-          <input
-            type="date"
-            value={data}
-            onChange={(e) => setData(e.target.value)}
-            className="h-9 px-2 rounded-md border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-          />
         </div>
       </div>
 
