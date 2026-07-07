@@ -7,10 +7,12 @@ interface Props {
 }
 
 type Row = {
+  CDREGUSR: number | null;
   VIGENCIA_BENEFICIARIO: string | null;
   ULTIMA_REATIVACAO: string | null;
   ULTIMO_CANCELAMENTO: string | null;
 };
+
 
 const PAGE = 1000;
 
