@@ -9,8 +9,8 @@ type Row = {
   PLANO: string | number | null;
   NOME_PLANO: string | null;
   VIGENCIA_BENEFICIARIO: string | null;
-  REATIVACAO: string | null;
-  CANCELAMENTO: string | null;
+  ULTIMA_REATIVACAO: string | null;
+  ULTIMO_CANCELAMENTO: string | null;
 };
 
 function parseBR(s: string): Date | null {
