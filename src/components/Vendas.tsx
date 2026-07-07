@@ -5,10 +5,8 @@ import { dw } from "@/lib/dwClient";
 type Row = { agente: string | null; Data_ocorrencia: string | null };
 
 const fmtInt = (n: number) => n.toLocaleString("pt-BR");
-const today = () => new Date().toISOString().slice(0, 10);
 
 const Vendas = () => {
-  const [data, setData] = useState<string>(today());
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
