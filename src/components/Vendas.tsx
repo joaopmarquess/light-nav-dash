@@ -27,7 +27,7 @@ const Vendas = () => {
       while (true) {
         const { data: batch, error } = await dw
           .from("sv_ecarteira")
-          .select('"agente"')
+          .select('"agente","Data_ocorrencia"')
           .like("Ocorrencia", "ENTRADA%")
           .eq("Data_ocorrencia", data)
           .range(from, from + pageSize - 1);
