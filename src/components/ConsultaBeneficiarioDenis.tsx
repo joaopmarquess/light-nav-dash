@@ -99,7 +99,6 @@ export default function ConsultaBeneficiarioDenis() {
     const baseQuery = dw
       .from("sv_ecarteira_lovable")
       .select(SELECT_COLS)
-      .eq("TIPO_LINHA", "E")
       .eq("Plano_de", "Saúde");
 
     const filteredBase = incCanc ? baseQuery : baseQuery.eq("STATUS", "A");
