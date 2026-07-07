@@ -41,7 +41,7 @@ const Vendas = () => {
       if (!abort) { setRows(all); setLoading(false); }
     })();
     return () => { abort = true; };
-  }, [data]);
+  }, []);
 
   const loadCheck = async () => {
     setCheckLoading(true);
