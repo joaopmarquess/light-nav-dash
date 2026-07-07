@@ -66,22 +66,13 @@ const AtivosEm = ({ dateValue }: Props) => {
           const rows = (data ?? []) as Row[];
           for (const r of rows) {
             const vig = r.VIGENCIA_BENEFICIARIO;
-            if (!vig) continue;
-            if (vig > ref) continue; // regra 1 → 0
+            if (!vig || vig > ref) continue;
             const reat = r.ULTIMA_REATIVACAO;
             const canc = r.ULTIMO_CANCELAMENTO;
-            // 2.1 e 2.2
-            if (!reat) {
-              count++;
-              continue;
-            }
-            // 2.3
-            if (canc && reat < canc) {
-              count++;
-              continue;
-            }
-            // 2.4 → 0
+            // Ativo = VIGENCIA ≤ ref E (CANC vazio OU REAT > CANC)
+            if (!canc || (reat && reat > canc)) count++;
           }
+
           from += rows.length;
           setProgress(from);
           if (rows.length < PAGE) break;
