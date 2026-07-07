@@ -1,16 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { dw } from "@/lib/dwClient";
 
-type Row = { agente: string | null; Data_ocorrencia: string | null };
+type Grouped = { agente: string; vidas: number };
+type CheckRow = { agente: string; data_ocorrencia: string | null };
 
 const fmtInt = (n: number) => n.toLocaleString("pt-BR");
 
 const Vendas = () => {
-  const [rows, setRows] = useState<Row[] | null>(null);
+  const [grouped, setGrouped] = useState<Grouped[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [check, setCheck] = useState<Row[] | null>(null);
+  const [check, setCheck] = useState<CheckRow[] | null>(null);
   const [checkLoading, setCheckLoading] = useState(false);
 
   useEffect(() => {
@@ -18,61 +19,29 @@ const Vendas = () => {
     (async () => {
       setLoading(true);
       setError(null);
-      const pageSize = 1000;
-      let from = 0;
-      const all: Row[] = [];
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        const { data: batch, error } = await dw
-          .from("sv_ecarteira")
-          .select('"agente","Data_ocorrencia"')
-          .like("Ocorrencia", "ENTRADA%")
-          .range(from, from + pageSize - 1);
-        if (error) {
-          if (!abort) { setError(error.message); setLoading(false); }
-          return;
-        }
-        const b = (batch ?? []) as Row[];
-        all.push(...b);
-        if (b.length < pageSize) break;
-        from += pageSize;
-        if (from > 200000) break;
-      }
-      if (!abort) { setRows(all); setLoading(false); }
+      const { data, error } = await dw.rpc("fn_vendas_por_agente");
+      if (abort) return;
+      if (error) { setError(error.message); setLoading(false); return; }
+      const list = ((data ?? []) as { agente: string; vidas: number }[])
+        .map((r) => ({ agente: r.agente, vidas: Number(r.vidas) }))
+        .sort((a, b) => b.vidas - a.vidas);
+      setGrouped(list);
+      setLoading(false);
     })();
     return () => { abort = true; };
   }, []);
 
   const loadCheck = async () => {
     setCheckLoading(true);
-    // Buscar entradas recentes e deduplicar por AGENTE, mantendo a mais recente
-    const { data: batch, error } = await dw
-      .from("sv_ecarteira")
-      .select('"agente","Data_ocorrencia"')
-      .like("Ocorrencia", "ENTRADA%")
-      .order("Data_ocorrencia", { ascending: false })
-      .limit(5000);
+    const { data, error } = await dw.rpc("fn_vendas_ultima_por_agente", { _limit: 100 });
     if (error) { setError(error.message); setCheckLoading(false); return; }
-    const seen = new Map<string, Row>();
-    for (const r of (batch ?? []) as Row[]) {
-      const k = (r.agente ?? "SEM AGENTE").toString().trim() || "SEM AGENTE";
-      if (!seen.has(k)) seen.set(k, { ...r, agente: k });
-    }
-    setCheck(Array.from(seen.values()).slice(0, 100));
+    setCheck((data ?? []) as CheckRow[]);
     setCheckLoading(false);
   };
 
-  const grouped = useMemo(() => {
-    if (!rows) return [];
-    const m = new Map<string, number>();
-    for (const r of rows) {
-      const k = (r.agente ?? "SEM AGENTE").toString().trim() || "SEM AGENTE";
-      m.set(k, (m.get(k) ?? 0) + 1);
-    }
-    return Array.from(m.entries())
-      .map(([agente, vidas]) => ({ agente, vidas }))
-      .sort((a, b) => b.vidas - a.vidas);
-  }, [rows]);
+  const total = (grouped ?? []).reduce((s, g) => s + g.vidas, 0);
+  const max = grouped?.[0]?.vidas ?? 0;
+  const list = grouped ?? [];
 
   const total = useMemo(() => grouped.reduce((s, g) => s + g.vidas, 0), [grouped]);
   const max = grouped[0]?.vidas ?? 0;
