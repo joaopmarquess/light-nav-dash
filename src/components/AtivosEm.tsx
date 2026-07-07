@@ -50,8 +50,14 @@ const AtivosEm = ({ dateValue }: Props) => {
           setCount((rA.count ?? 0) + (rB.count ?? 0));
           setLoading(false);
         }
-
+      } catch (e: any) {
+        if (!abort) {
+          setError(e?.message ?? String(e));
+          setLoading(false);
+        }
+      }
     })();
+
 
     return () => {
       abort = true;
