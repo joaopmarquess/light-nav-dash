@@ -75,8 +75,9 @@ const AtivosEm = ({ dateValue }: Props) => {
           {refDate ? `Data de referência: ${dateValue}` : "Informe a data no formato dd/mm/aaaa no campo acima"} · fonte: <code>sv_ecarteira_lovable</code>
         </p>
         <p className="text-[11px] text-muted-foreground mt-1">
-          Regra: <code>Plano_de = 'Saúde'</code> · <code>VIGENCIA_BENEFICIARIO ≤ data</code> · ativo quando <code>ULTIMO_CANCELAMENTO</code> é nulo, ou <code>ULTIMO_CANCELAMENTO &gt; data</code>, ou (<code>ULTIMO_CANCELAMENTO ≤ data</code> e <code>ULTIMA_REATIVACAO ≤ data</code>).
+          Regra: <code>Plano_de = 'Saúde'</code> · <code>VIGENCIA_BENEFICIARIO ≤ data</code> · ativo quando <code>ULTIMA_REATIVACAO</code> é nula ou <code>ULTIMA_REATIVACAO &lt; ULTIMO_CANCELAMENTO</code>.
         </p>
+
       </div>
 
       <div className="flex-1 flex items-center justify-center">
