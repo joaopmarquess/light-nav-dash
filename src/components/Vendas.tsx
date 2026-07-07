@@ -46,6 +46,19 @@ const Vendas = () => {
     return () => { abort = true; };
   }, [data]);
 
+  const loadCheck = async () => {
+    setCheckLoading(true);
+    const { data: batch, error } = await dw
+      .from("sv_ecarteira")
+      .select('"agente","Data_ocorrencia"')
+      .like("Ocorrencia", "ENTRADA%")
+      .order("Data_ocorrencia", { ascending: false })
+      .limit(100);
+    if (error) { setError(error.message); setCheckLoading(false); return; }
+    setCheck((batch ?? []) as Row[]);
+    setCheckLoading(false);
+  };
+
   const grouped = useMemo(() => {
     if (!rows) return [];
     const m = new Map<string, number>();
