@@ -34,9 +34,9 @@ const AtivosEm = ({ dateValue }: Props) => {
           const { data, error } = await dw
             .from("sv_ecarteira_lovable")
             .select("CDREGUSR,VIGENCIA_BENEFICIARIO,ULTIMA_REATIVACAO,ULTIMO_CANCELAMENTO")
-            .eq("Plano_de", "Saúde")
             .order("CDREGUSR", { ascending: true })
             .range(from, from + pageSize - 1);
+
           if (abort) return;
           if (error) throw error;
           if (!data || data.length === 0) break;
@@ -71,9 +71,10 @@ const AtivosEm = ({ dateValue }: Props) => {
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-8rem)] flex flex-col">
       <div className="mb-3">
-        <h2 className="text-lg font-semibold text-foreground">Beneficiários (Plano_de = Saúde)</h2>
+        <h2 className="text-lg font-semibold text-foreground">Beneficiários</h2>
         <p className="text-xs text-muted-foreground">
           Fonte: <code>sv_ecarteira_lovable</code> · Data de referência (input): {dateValue || "—"} · Total: {fmtInt(rows.length)}
+
         </p>
       </div>
 
