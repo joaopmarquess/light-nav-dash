@@ -29,7 +29,7 @@ const todayBR = () => {
 import AtivosEm from "@/components/AtivosEm";
 import HomeView from "@/components/Home";
 import Vendas from "@/components/Vendas";
-import ConsultaBeneficiario from "@/components/ConsultaBeneficiario";
+
 import ConsultaBeneficiarioDenis from "@/components/ConsultaBeneficiarioDenis";
 import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
@@ -68,7 +68,7 @@ const menuItems: MenuItem[] = [
     icon: Users,
     label: "Carteira",
     children: [
-      { icon: Search, label: "Consulta Beneficiário" },
+      
       { icon: Search, label: "Consulta Carteira" },
       { icon: UserCheck, label: "Ativos em" },
       { icon: TrendingUp, label: "Vendas" },
@@ -263,8 +263,6 @@ const Index = () => {
             <DWCarteira />
           ) : active === "Vendas" ? (
             <Vendas />
-          ) : active === "Consulta Beneficiário" ? (
-            <ConsultaBeneficiario />
           ) : active === "Consulta Carteira" ? (
             <ConsultaBeneficiarioDenis />
           ) : active === "DRE" ? (
