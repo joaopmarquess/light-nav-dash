@@ -31,7 +31,9 @@ const AtivosEm = ({ dateValue }: Props) => {
       setProgress(0);
       setTotal(null);
       try {
-        const ref = dateValue; // ISO string compares work for yyyy-mm-dd
+        const ref = toISO(dateValue); // normaliza para yyyy-mm-dd
+        if (!ref) throw new Error(`Data de referência inválida: ${dateValue}`);
+
         let from = 0;
         let count = 0;
         let totalRows = 0;
