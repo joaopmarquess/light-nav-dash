@@ -265,6 +265,8 @@ const Index = () => {
             <Vendas />
           ) : active === "Consulta Beneficiário" ? (
             <ConsultaBeneficiario />
+          ) : active === "Consulta na view carteira Denis" ? (
+            <ConsultaBeneficiarioDenis />
           ) : active === "DRE" ? (
             <DRE />
           ) : active === "Gráfico" ? (
