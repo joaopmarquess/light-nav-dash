@@ -263,8 +263,6 @@ const Index = () => {
             <DWCarteira />
           ) : active === "Vendas" ? (
             <Vendas />
-          ) : active === "Consulta Beneficiário" ? (
-            <ConsultaBeneficiario />
           ) : active === "Consulta Carteira" ? (
             <ConsultaBeneficiarioDenis />
           ) : active === "DRE" ? (
