@@ -79,7 +79,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      dashboard_filtros: { Args: never; Returns: Json }
+      dashboard_kpis: {
+        Args: { p_ano?: number; p_faixa?: string; p_plano?: number }
+        Returns: {
+          qt_vidas: number
+          sinistralidade: number
+          vl_custo: number
+          vl_receita: number
+        }[]
+      }
+      dashboard_por_categoria: {
+        Args: { p_ano?: number; p_faixa?: string; p_plano?: number }
+        Returns: {
+          categoria: string
+          valor: number
+        }[]
+      }
+      dashboard_serie_mensal: {
+        Args: { p_ano?: number; p_faixa?: string; p_plano?: number }
+        Returns: {
+          nr_ano: number
+          nr_mes: number
+          sinistralidade: number
+          vl_custo: number
+          vl_receita: number
+        }[]
+      }
     }
     Enums: {
       DATA: "DD-MM-YYYY"
