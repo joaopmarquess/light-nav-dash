@@ -50,17 +50,37 @@ const AtivosEm = ({ dateValue }: Props) => {
         const ref = toISO(dateValue);
         if (!ref) throw new Error(`Data de referência inválida: ${dateValue}`);
 
-        const { data, error } = await dw.rpc("fn_ativos_por_faixa", { ref });
-        if (error) throw error;
+        // Consulta direta em public.sv_ecarteira_ativos (novo projeto DW).
+        // Paginação para superar o limite padrão de 1000 linhas.
+        const pageSize = 1000;
+        let from = 0;
+        const acc: { Faixa_etaria: string | null }[] = [];
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          const { data, error } = await dw
+            .from("sv_ecarteira_ativos")
+            .select("Faixa_etaria")
+            .eq("STATUS", "A")
+            .eq("Plano_de", "Saúde")
+            .or(`VIGENCIA_BENEFICIARIO.is.null,VIGENCIA_BENEFICIARIO.lte.${ref}`)
+            .range(from, from + pageSize - 1);
+          if (error) throw error;
+          const chunk = (data ?? []) as { Faixa_etaria: string | null }[];
+          acc.push(...chunk);
+          if (chunk.length < pageSize) break;
+          from += pageSize;
+        }
         if (abort) return;
 
-        const rows = (data ?? []) as { faixa: string; ativos: number }[];
-        const arr = rows
-          .map((r) => ({ faixa: r.faixa || "Sem faixa", ativos: Number(r.ativos) }))
+        const map = new Map<string, number>();
+        for (const r of acc) {
+          const k = r.Faixa_etaria || "Sem faixa";
+          map.set(k, (map.get(k) ?? 0) + 1);
+        }
+        const arr = Array.from(map, ([faixa, ativos]) => ({ faixa, ativos }))
           .sort((a, b) => faixaSortKey(a.faixa) - faixaSortKey(b.faixa));
-        const total = arr.reduce((s, r) => s + r.ativos, 0);
         setPorFaixa(arr);
-        setAtivos(total);
+        setAtivos(acc.length);
         setLoading(false);
       } catch (e: any) {
         if (!abort) {
@@ -85,10 +105,11 @@ const AtivosEm = ({ dateValue }: Props) => {
       <div className="mb-4">
         <h2 className="text-lg font-semibold text-foreground">Beneficiários ativos</h2>
         <p className="text-xs text-muted-foreground">
-          Fonte: <code>fn_ativos_por_faixa</code> · Data de referência:{" "}
+          Fonte: <code>public.sv_ecarteira_ativos</code> · Data de referência:{" "}
           {dateValue ? fmtDateBR(dateValue) : "—"}
         </p>
       </div>
+
 
       {loading ? (
         <div className="flex items-center text-muted-foreground text-sm py-8">

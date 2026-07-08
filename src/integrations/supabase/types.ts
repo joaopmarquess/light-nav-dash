@@ -481,6 +481,13 @@ export type Database = {
           vl_receita: number
         }[]
       }
+      fn_ativos_por_faixa: {
+        Args: { ref: string }
+        Returns: {
+          ativos: number
+          faixa: string
+        }[]
+      }
     }
     Enums: {
       DATA: "DD-MM-YYYY"
