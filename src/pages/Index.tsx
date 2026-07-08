@@ -71,7 +71,7 @@ const menuItems: MenuItem[] = [
       
       { icon: Search, label: "Consulta Carteira" },
       { icon: UserCheck, label: "Ativos em" },
-      { icon: TrendingUp, label: "Vendas" },
+      { icon: TrendingUp, label: "Entradas" },
       { icon: LayoutDashboard, label: "DW Carteira" },
     ],
   },
