@@ -103,9 +103,11 @@ export default function ConsultaBeneficiarioDenis() {
 
     const filteredBase = incCanc ? baseQuery : baseQuery.eq("STATUS", "A");
 
+    // Busca por prefixo (`termo%`) para permitir uso de índice btree em NOME_BENEFICIARIO
+    // e evitar "statement timeout" em varredura completa da tabela.
     let query = isCpfSearch
       ? filteredBase.eq("CPF", digits)
-      : filteredBase.ilike("NOME_BENEFICIARIO", `%${safeName}%`);
+      : filteredBase.ilike("NOME_BENEFICIARIO", `${safeName}%`);
 
     const { data, error } = await query.limit(100);
 
