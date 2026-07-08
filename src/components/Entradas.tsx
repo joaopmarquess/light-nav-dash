@@ -6,9 +6,9 @@ type Row = {
   CDREGUSR: number | string | null;
   NOME_BENEFICIARIO: string | null;
   AGENTE: string | null;
-  Data_Ocorrencia: string | null;
+  Data_ocorrencia: string | null;
   Plano_de: string | null;
-  Tipo_Linha: string | null;
+  TIPO_LINHA: string | null;
   Ocorrencia: string | null;
 };
 
@@ -64,14 +64,14 @@ const Entradas = () => {
       const { data, error } = await dw
         .from("sv_ecarteira_movimentacao")
         .select(
-          'CDREGUSR,NOME_BENEFICIARIO,AGENTE,Data_Ocorrencia,Plano_de,Tipo_Linha,Ocorrencia'
+          'CDREGUSR,NOME_BENEFICIARIO,AGENTE,Data_ocorrencia,Plano_de,TIPO_LINHA,Ocorrencia'
         )
-        .eq("Ocorrencia", "ENTRADA")
+        .like("Ocorrencia", "ENTRADA%")
         .eq("Plano_de", "Saúde")
-        .eq("Tipo_Linha", "E")
-        .gte("Data_Ocorrencia", deISO)
-        .lte("Data_Ocorrencia", ateISO)
-        .order("Data_Ocorrencia", { ascending: false })
+        .eq("TIPO_LINHA", "E")
+        .gte("Data_ocorrencia", deISO)
+        .lte("Data_ocorrencia", ateISO)
+        .order("Data_ocorrencia", { ascending: false })
         .range(from, from + PAGE - 1);
       if (error) {
         setError(error.message);
@@ -215,7 +215,7 @@ const Entradas = () => {
                               <tr>
                                 <th className="px-3 py-1.5 text-left">CDREGUSR</th>
                                 <th className="px-3 py-1.5 text-left">NOME</th>
-                                <th className="px-3 py-1.5 text-left">Data_Ocorrencia</th>
+                                <th className="px-3 py-1.5 text-left">Data_ocorrencia</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -223,7 +223,7 @@ const Entradas = () => {
                                 <tr key={i} className="border-t border-border/60">
                                   <td className="px-3 py-1 tabular-nums">{r.CDREGUSR ?? "—"}</td>
                                   <td className="px-3 py-1">{r.NOME_BENEFICIARIO ?? "—"}</td>
-                                  <td className="px-3 py-1 tabular-nums">{r.Data_Ocorrencia ?? "—"}</td>
+                                  <td className="px-3 py-1 tabular-nums">{r.Data_ocorrencia ?? "—"}</td>
                                 </tr>
                               ))}
                             </tbody>
