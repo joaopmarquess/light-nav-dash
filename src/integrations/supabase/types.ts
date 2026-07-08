@@ -14,6 +14,114 @@ export type Database = {
   }
   public: {
     Tables: {
+      icontabil: {
+        Row: {
+          _1D: number | null
+          _9D: number | null
+          cd_contabil: string | null
+          cd_grau: number | null
+          cd_reduzido: number | null
+          CONTA: number | null
+          ds_conta: string | null
+          G1: string | null
+          G2: string | null
+          G3: string | null
+          G4: string | null
+          N1: string | null
+          N2: string | null
+          N3: string | null
+          N4: string | null
+          N5: string | null
+          N6: string | null
+          N7: string | null
+          N8: string | null
+          N9: string | null
+          NC: number | null
+          nr_ano: number | null
+          nr_mes: number | null
+          nr_trimestre: number | null
+          O1: string | null
+          REALIZADO: number | null
+          SELE: number | null
+          tp_conta: string | null
+          vl_credito: number | null
+          vl_debito: number | null
+          vl_movimento: number | null
+          vl_saldo_final: number | null
+          vl_saldo_inicial: number | null
+        }
+        Insert: {
+          _1D?: number | null
+          _9D?: number | null
+          cd_contabil?: string | null
+          cd_grau?: number | null
+          cd_reduzido?: number | null
+          CONTA?: number | null
+          ds_conta?: string | null
+          G1?: string | null
+          G2?: string | null
+          G3?: string | null
+          G4?: string | null
+          N1?: string | null
+          N2?: string | null
+          N3?: string | null
+          N4?: string | null
+          N5?: string | null
+          N6?: string | null
+          N7?: string | null
+          N8?: string | null
+          N9?: string | null
+          NC?: number | null
+          nr_ano?: number | null
+          nr_mes?: number | null
+          nr_trimestre?: number | null
+          O1?: string | null
+          REALIZADO?: number | null
+          SELE?: number | null
+          tp_conta?: string | null
+          vl_credito?: number | null
+          vl_debito?: number | null
+          vl_movimento?: number | null
+          vl_saldo_final?: number | null
+          vl_saldo_inicial?: number | null
+        }
+        Update: {
+          _1D?: number | null
+          _9D?: number | null
+          cd_contabil?: string | null
+          cd_grau?: number | null
+          cd_reduzido?: number | null
+          CONTA?: number | null
+          ds_conta?: string | null
+          G1?: string | null
+          G2?: string | null
+          G3?: string | null
+          G4?: string | null
+          N1?: string | null
+          N2?: string | null
+          N3?: string | null
+          N4?: string | null
+          N5?: string | null
+          N6?: string | null
+          N7?: string | null
+          N8?: string | null
+          N9?: string | null
+          NC?: number | null
+          nr_ano?: number | null
+          nr_mes?: number | null
+          nr_trimestre?: number | null
+          O1?: string | null
+          REALIZADO?: number | null
+          SELE?: number | null
+          tp_conta?: string | null
+          vl_credito?: number | null
+          vl_debito?: number | null
+          vl_movimento?: number | null
+          vl_saldo_final?: number | null
+          vl_saldo_inicial?: number | null
+        }
+        Relationships: []
+      }
       Sinistralidade: {
         Row: {
           cd_plano: number | null
