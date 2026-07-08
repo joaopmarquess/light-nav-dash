@@ -136,6 +136,7 @@ const Entradas = () => {
                 type="text"
                 value={de}
                 onChange={(e) => setDe(e.target.value)}
+                onBlur={(e) => { const iso = toISO(e.target.value); if (iso) setDe(isoToBR(iso)); }}
                 placeholder="dd/mm/aaaa"
                 className="h-9 w-40 pl-9 pr-3 rounded-md border border-border bg-background text-sm"
               />
