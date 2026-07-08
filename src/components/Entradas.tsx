@@ -64,14 +64,14 @@ const Entradas = () => {
       const { data, error } = await dw
         .from("sv_ecarteira_movimentacao")
         .select(
-          'CDREGUSR,NOME_BENEFICIARIO,AGENTE,Data_Ocorrencia,Plano_de,Tipo_Linha,Ocorrencia'
+          'CDREGUSR,NOME_BENEFICIARIO,AGENTE,Data_ocorrencia,Plano_de,TIPO_LINHA,Ocorrencia'
         )
-        .eq("Ocorrencia", "ENTRADA")
+        .like("Ocorrencia", "ENTRADA%")
         .eq("Plano_de", "Saúde")
-        .eq("Tipo_Linha", "E")
-        .gte("Data_Ocorrencia", deISO)
-        .lte("Data_Ocorrencia", ateISO)
-        .order("Data_Ocorrencia", { ascending: false })
+        .eq("TIPO_LINHA", "E")
+        .gte("Data_ocorrencia", deISO)
+        .lte("Data_ocorrencia", ateISO)
+        .order("Data_ocorrencia", { ascending: false })
         .range(from, from + PAGE - 1);
       if (error) {
         setError(error.message);
