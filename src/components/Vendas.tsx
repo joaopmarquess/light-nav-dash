@@ -49,7 +49,7 @@ const Vendas = () => {
         <div>
           <h2 className="text-lg font-semibold text-foreground">Vendas por tipo de agente</h2>
           <p className="text-xs text-muted-foreground">
-            Todas as ocorrências de <code>ENTRADA</code> em <code>sv_ecarteira</code>.
+            Todas as ocorrências de <code>ENTRADA</code> em <code>sv_ecarteira_movimentacao</code>.
           </p>
         </div>
       </div>
