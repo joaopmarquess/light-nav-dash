@@ -261,8 +261,8 @@ const Index = () => {
             <AtivosEm dateValue={dateValue} />
           ) : active === "DW Carteira" ? (
             <DWCarteira />
-          ) : active === "Vendas" ? (
-            <Vendas />
+          ) : active === "Entradas" ? (
+            <Entradas />
           ) : active === "Consulta Carteira" ? (
             <ConsultaBeneficiarioDenis />
           ) : active === "DRE" ? (
