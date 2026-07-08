@@ -1,9 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
-
-// DW Supabase (somente leitura via anon key com RLS pública)
-const DW_URL = "https://sqirbbvoshleqcuabbtv.supabase.co";
-const DW_ANON_KEY = "sb_publishable_-jW8upk_dUYnlN8Qtt6nKQ_Z_lrHjem";
-
-export const dw = createClient(DW_URL, DW_ANON_KEY, {
-  auth: { persistSession: false, autoRefreshToken: false },
-});
+// DW agora é o mesmo projeto Supabase da aplicação (ref: yunyqyomnaztlzggnufk).
+// Reexporta o client principal para manter compatibilidade com imports existentes.
+export { supabase as dw } from "@/integrations/supabase/client";
