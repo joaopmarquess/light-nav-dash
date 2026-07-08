@@ -126,9 +126,6 @@ const Entradas = () => {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
         <div>
           <h2 className="text-lg font-semibold text-foreground">Entradas</h2>
-          <p className="text-xs text-muted-foreground">
-            <code>sv_ecarteira_movimentacao</code> · Ocorrencia=ENTRADA · Plano_de=Saúde · Tipo_Linha=E
-          </p>
         </div>
         <div className="flex flex-wrap items-end gap-2">
           <div>
