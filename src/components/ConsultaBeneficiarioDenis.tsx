@@ -97,7 +97,7 @@ export default function ConsultaBeneficiarioDenis() {
     }
 
     const baseQuery = dw
-      .from("sv_ecarteira_lovable")
+      .from("sv_ecarteira_ativos")
       .select(SELECT_COLS)
       .eq("Plano_de", "Saúde");
 
