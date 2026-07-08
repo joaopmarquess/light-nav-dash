@@ -126,9 +126,6 @@ const Entradas = () => {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
         <div>
           <h2 className="text-lg font-semibold text-foreground">Entradas</h2>
-          <p className="text-xs text-muted-foreground">
-            <code>sv_ecarteira_movimentacao</code> · Ocorrencia=ENTRADA · Plano_de=Saúde · Tipo_Linha=E
-          </p>
         </div>
         <div className="flex flex-wrap items-end gap-2">
           <div>
@@ -139,6 +136,7 @@ const Entradas = () => {
                 type="text"
                 value={de}
                 onChange={(e) => setDe(e.target.value)}
+                onBlur={(e) => { const iso = toISO(e.target.value); if (iso) setDe(isoToBR(iso)); }}
                 placeholder="dd/mm/aaaa"
                 className="h-9 w-40 pl-9 pr-3 rounded-md border border-border bg-background text-sm"
               />
@@ -152,6 +150,7 @@ const Entradas = () => {
                 type="text"
                 value={ate}
                 onChange={(e) => setAte(e.target.value)}
+                onBlur={(e) => { const iso = toISO(e.target.value); if (iso) setAte(isoToBR(iso)); }}
                 placeholder="dd/mm/aaaa"
                 className="h-9 w-40 pl-9 pr-3 rounded-md border border-border bg-background text-sm"
               />
