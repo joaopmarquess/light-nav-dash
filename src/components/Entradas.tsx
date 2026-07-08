@@ -6,9 +6,9 @@ type Row = {
   CDREGUSR: number | string | null;
   NOME_BENEFICIARIO: string | null;
   AGENTE: string | null;
-  Data_Ocorrencia: string | null;
+  Data_ocorrencia: string | null;
   Plano_de: string | null;
-  Tipo_Linha: string | null;
+  TIPO_LINHA: string | null;
   Ocorrencia: string | null;
 };
 
