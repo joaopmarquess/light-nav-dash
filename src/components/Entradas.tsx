@@ -50,6 +50,11 @@ const Entradas = () => {
   const [progress, setProgress] = useState(0);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
+  const isoToBR = (iso: string) => {
+    const [y, m, d] = iso.split("-");
+    return `${d}/${m}/${y}`;
+  };
+
   const consultar = async () => {
     const deISO = toISO(de);
     const ateISO = toISO(ate);
@@ -57,6 +62,10 @@ const Entradas = () => {
       setError("Datas inválidas. Use dd/mm/aaaa.");
       return;
     }
+    const deBR = isoToBR(deISO);
+    const ateBR = isoToBR(ateISO);
+    if (deBR !== de) setDe(deBR);
+    if (ateBR !== ate) setAte(ateBR);
     setError(null);
     setLoading(true);
     setRows(null);
