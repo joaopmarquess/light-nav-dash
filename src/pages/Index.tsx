@@ -28,7 +28,7 @@ const todayBR = () => {
 };
 import AtivosEm from "@/components/AtivosEm";
 import HomeView from "@/components/Home";
-import Vendas from "@/components/Vendas";
+import Entradas from "@/components/Entradas";
 
 import ConsultaBeneficiarioDenis from "@/components/ConsultaBeneficiarioDenis";
 import DRE from "@/components/DRE";
@@ -71,7 +71,7 @@ const menuItems: MenuItem[] = [
       
       { icon: Search, label: "Consulta Carteira" },
       { icon: UserCheck, label: "Ativos em" },
-      { icon: TrendingUp, label: "Vendas" },
+      { icon: TrendingUp, label: "Entradas" },
       { icon: LayoutDashboard, label: "DW Carteira" },
     ],
   },
@@ -261,8 +261,8 @@ const Index = () => {
             <AtivosEm dateValue={dateValue} />
           ) : active === "DW Carteira" ? (
             <DWCarteira />
-          ) : active === "Vendas" ? (
-            <Vendas />
+          ) : active === "Entradas" ? (
+            <Entradas />
           ) : active === "Consulta Carteira" ? (
             <ConsultaBeneficiarioDenis />
           ) : active === "DRE" ? (
