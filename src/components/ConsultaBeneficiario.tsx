@@ -97,7 +97,7 @@ export default function ConsultaBeneficiario() {
     }
 
     const baseQuery = dw
-      .from("sv_ecarteira")
+      .from("sv_ecarteira_movimentacao")
       .select(SELECT_COLS)
       .eq("TIPO_LINHA", "E")
       .eq("Plano_de", "Saúde");
