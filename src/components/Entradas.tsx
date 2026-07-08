@@ -17,7 +17,14 @@ const fmtInt = (n: number) => n.toLocaleString("pt-BR");
 const toISO = (br: string): string | null => {
   const m = br.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
   if (!m) return null;
-  return `${m[3]}-${m[2]}-${m[1]}`;
+  const dd = parseInt(m[1], 10);
+  const mm = parseInt(m[2], 10);
+  const yyyy = parseInt(m[3], 10);
+  if (mm < 1 || mm > 12 || dd < 1 || yyyy < 1900) return null;
+  // Último dia válido do mês
+  const lastDay = new Date(yyyy, mm, 0).getDate();
+  const day = Math.min(dd, lastDay);
+  return `${yyyy}-${String(mm).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 };
 
 const firstOfMonthBR = () => {
