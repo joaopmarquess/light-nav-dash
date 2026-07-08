@@ -215,7 +215,7 @@ const Entradas = () => {
                               <tr>
                                 <th className="px-3 py-1.5 text-left">CDREGUSR</th>
                                 <th className="px-3 py-1.5 text-left">NOME</th>
-                                <th className="px-3 py-1.5 text-left">Data_Ocorrencia</th>
+                                <th className="px-3 py-1.5 text-left">Data_ocorrencia</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -223,7 +223,7 @@ const Entradas = () => {
                                 <tr key={i} className="border-t border-border/60">
                                   <td className="px-3 py-1 tabular-nums">{r.CDREGUSR ?? "—"}</td>
                                   <td className="px-3 py-1">{r.NOME_BENEFICIARIO ?? "—"}</td>
-                                  <td className="px-3 py-1 tabular-nums">{r.Data_Ocorrencia ?? "—"}</td>
+                                  <td className="px-3 py-1 tabular-nums">{r.Data_ocorrencia ?? "—"}</td>
                                 </tr>
                               ))}
                             </tbody>
