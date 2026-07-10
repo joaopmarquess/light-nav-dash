@@ -60,9 +60,8 @@ const AtivosEm = ({ dateValue }: Props) => {
           const { data, error } = await dw
             .from("sv_ecarteira_ativos")
             .select("Faixa_etaria")
-            .eq("STATUS", "A")
-            .eq("Plano_de", "Saúde")
-            .or(`VIGENCIA_BENEFICIARIO.is.null,VIGENCIA_BENEFICIARIO.lte.${ref}`)
+            .lte("DATA_INICIO_ATIVO", ref)
+            .gte("DATA_FIM_ATIVO", ref)
             .range(from, from + pageSize - 1);
           if (error) throw error;
           const chunk = (data ?? []) as { Faixa_etaria: string | null }[];

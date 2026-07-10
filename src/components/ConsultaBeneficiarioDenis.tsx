@@ -10,7 +10,7 @@ type Row = {
   ACOMODACAO: string | null;
   CIDADE_OFICIAL: string | null;
   VALOR_TMM: number | null;
-  STATUS: string | null;
+  DATA_FIM_ATIVO: string | null;
   NASCIMENTO: string | null;
   IDADE: number | null;
   VIGENCIA_BENEFICIARIO: string | null;
@@ -36,7 +36,9 @@ const fmtDate = (v: string | null) => {
 };
 
 const SELECT_COLS =
-  '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_OFICIAL","VALOR_TMM","STATUS","NASCIMENTO","IDADE","VIGENCIA_BENEFICIARIO"';
+  '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_OFICIAL","VALOR_TMM","DATA_FIM_ATIVO","NASCIMENTO","IDADE","VIGENCIA_BENEFICIARIO"';
+
+const todayIso = () => new Date().toISOString().slice(0, 10);
 
 export default function ConsultaBeneficiarioDenis() {
   const [termo, setTermo] = useState("");
@@ -98,10 +100,9 @@ export default function ConsultaBeneficiarioDenis() {
 
     const baseQuery = dw
       .from("sv_ecarteira_ativos")
-      .select(SELECT_COLS)
-      .eq("Plano_de", "Saúde");
+      .select(SELECT_COLS);
 
-    const filteredBase = incCanc ? baseQuery : baseQuery.eq("STATUS", "A");
+    const filteredBase = incCanc ? baseQuery : baseQuery.gte("DATA_FIM_ATIVO", todayIso());
 
     let query = isCpfSearch
       ? filteredBase.eq("CPF", digits)
@@ -203,7 +204,7 @@ export default function ConsultaBeneficiarioDenis() {
                   { k: "CIDADE_OFICIAL", label: "CIDADE_OFICIAL", align: "text-left" },
                   { k: "VIGENCIA_BENEFICIARIO", label: "VIGÊNCIA", align: "text-left" },
                   { k: "VALOR_TMM", label: "VALOR_TMM", align: "text-right" },
-                  { k: "STATUS", label: "STATUS", align: "text-center" },
+                  { k: "DATA_FIM_ATIVO", label: "STATUS", align: "text-center" },
                 ] as { k: keyof Row; label: string; align: string }[]).map((c) => {
                   const active = sortKey === c.k;
                   const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
@@ -224,7 +225,7 @@ export default function ConsultaBeneficiarioDenis() {
             </thead>
             <tbody>
               {(sortedRows ?? []).map((b, i) => {
-                const ativo = (b.STATUS ?? "").toUpperCase() === "A";
+                const ativo = !!b.DATA_FIM_ATIVO && b.DATA_FIM_ATIVO.slice(0, 10) >= todayIso();
                 return (
                   <tr key={`${b.CDREGUSR}-${i}`} className="border-t border-border hover:bg-accent/40">
                     <td className="px-2 py-1.5 tabular-nums">{b.CDREGUSR ?? "—"}</td>

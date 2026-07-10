@@ -185,13 +185,21 @@ export type Database = {
       sv_ecarteira_ativos: {
         Row: {
           ACOMODACAO: string | null
+          AGENTE: string | null
+          atualizacao_a_cada_60min: string | null
+          CANCELAMENTO: string | null
           CDREGUSR: number | null
           CIDADE_OFICIAL: string | null
           CIDADE_PLANO: string | null
-          CNPJ_EMPRESA_ASSOC: number | null
+          CNPJ_EMPRESA_ASSOC: string | null
+          COD_TRANSF_DESTINO: string | null
+          COD_TRANSF_ORIGEM: string | null
+          codCampanhaMkt: string | null
           Contratacao: string | null
-          CPF: number | null
+          CPF: string | null
           DATA_CADASTRO: string | null
+          DATA_FIM_ATIVO: string | null
+          DATA_INICIO_ATIVO: string | null
           Faixa_etaria: string | null
           IDADE: number | null
           idsex: string | null
@@ -201,34 +209,43 @@ export type Database = {
           NOME_EMPRESA_ASSOC: string | null
           NOME_PLANO: string | null
           NOME_RESPONSAVEL: string | null
-          PLANO: string | null
-          Plano_de: string | null
+          NomeCampanhamkt: string | null
+          PLANO: number | null
           PME: string | null
+          Produto: string | null
+          REATIVACAO: string | null
           Recuperacao: string | null
-          STATUS: string | null
           tem_repasse: string | null
           TIPO_CONTRATACAO: string | null
+          TIPO_LINHA: string | null
           Tipo_Plano_Contratacao: string | null
           UF_CIDADE_OFICIAL: string | null
           UF_PLANO: string | null
-          ULTIMA_REATIVACAO: string | null
-          ULTIMO_CANCELAMENTO: string | null
           valor_maior: number | null
           VALOR_TMM: number | null
+          VALOR_TMM_NA_DATA: number | null
           VENDEDOR: string | null
-          Vida: string | null
           VIGENCIA_BENEFICIARIO: string | null
           VIGENCIA_CONTRATO: string | null
+          vrDescCampanha: string | null
         }
         Insert: {
           ACOMODACAO?: string | null
+          AGENTE?: string | null
+          atualizacao_a_cada_60min?: string | null
+          CANCELAMENTO?: string | null
           CDREGUSR?: number | null
           CIDADE_OFICIAL?: string | null
           CIDADE_PLANO?: string | null
-          CNPJ_EMPRESA_ASSOC?: number | null
+          CNPJ_EMPRESA_ASSOC?: string | null
+          COD_TRANSF_DESTINO?: string | null
+          COD_TRANSF_ORIGEM?: string | null
+          codCampanhaMkt?: string | null
           Contratacao?: string | null
-          CPF?: number | null
+          CPF?: string | null
           DATA_CADASTRO?: string | null
+          DATA_FIM_ATIVO?: string | null
+          DATA_INICIO_ATIVO?: string | null
           Faixa_etaria?: string | null
           IDADE?: number | null
           idsex?: string | null
@@ -238,34 +255,43 @@ export type Database = {
           NOME_EMPRESA_ASSOC?: string | null
           NOME_PLANO?: string | null
           NOME_RESPONSAVEL?: string | null
-          PLANO?: string | null
-          Plano_de?: string | null
+          NomeCampanhamkt?: string | null
+          PLANO?: number | null
           PME?: string | null
+          Produto?: string | null
+          REATIVACAO?: string | null
           Recuperacao?: string | null
-          STATUS?: string | null
           tem_repasse?: string | null
           TIPO_CONTRATACAO?: string | null
+          TIPO_LINHA?: string | null
           Tipo_Plano_Contratacao?: string | null
           UF_CIDADE_OFICIAL?: string | null
           UF_PLANO?: string | null
-          ULTIMA_REATIVACAO?: string | null
-          ULTIMO_CANCELAMENTO?: string | null
           valor_maior?: number | null
           VALOR_TMM?: number | null
+          VALOR_TMM_NA_DATA?: number | null
           VENDEDOR?: string | null
-          Vida?: string | null
           VIGENCIA_BENEFICIARIO?: string | null
           VIGENCIA_CONTRATO?: string | null
+          vrDescCampanha?: string | null
         }
         Update: {
           ACOMODACAO?: string | null
+          AGENTE?: string | null
+          atualizacao_a_cada_60min?: string | null
+          CANCELAMENTO?: string | null
           CDREGUSR?: number | null
           CIDADE_OFICIAL?: string | null
           CIDADE_PLANO?: string | null
-          CNPJ_EMPRESA_ASSOC?: number | null
+          CNPJ_EMPRESA_ASSOC?: string | null
+          COD_TRANSF_DESTINO?: string | null
+          COD_TRANSF_ORIGEM?: string | null
+          codCampanhaMkt?: string | null
           Contratacao?: string | null
-          CPF?: number | null
+          CPF?: string | null
           DATA_CADASTRO?: string | null
+          DATA_FIM_ATIVO?: string | null
+          DATA_INICIO_ATIVO?: string | null
           Faixa_etaria?: string | null
           IDADE?: number | null
           idsex?: string | null
@@ -275,24 +301,25 @@ export type Database = {
           NOME_EMPRESA_ASSOC?: string | null
           NOME_PLANO?: string | null
           NOME_RESPONSAVEL?: string | null
-          PLANO?: string | null
-          Plano_de?: string | null
+          NomeCampanhamkt?: string | null
+          PLANO?: number | null
           PME?: string | null
+          Produto?: string | null
+          REATIVACAO?: string | null
           Recuperacao?: string | null
-          STATUS?: string | null
           tem_repasse?: string | null
           TIPO_CONTRATACAO?: string | null
+          TIPO_LINHA?: string | null
           Tipo_Plano_Contratacao?: string | null
           UF_CIDADE_OFICIAL?: string | null
           UF_PLANO?: string | null
-          ULTIMA_REATIVACAO?: string | null
-          ULTIMO_CANCELAMENTO?: string | null
           valor_maior?: number | null
           VALOR_TMM?: number | null
+          VALOR_TMM_NA_DATA?: number | null
           VENDEDOR?: string | null
-          Vida?: string | null
           VIGENCIA_BENEFICIARIO?: string | null
           VIGENCIA_CONTRATO?: string | null
+          vrDescCampanha?: string | null
         }
         Relationships: []
       }
