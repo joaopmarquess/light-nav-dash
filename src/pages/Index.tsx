@@ -16,7 +16,7 @@ import {
   ChevronLeft,
   Plus,
   Calendar as CalendarIcon,
-  RotateCcw,
+  CalendarCheck,
   Search,
 } from "lucide-react";
 
@@ -241,6 +241,15 @@ const Index = () => {
           <div className="flex items-center gap-3">
             {active === "Ativo Em" && (
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDateValue(todayBR())}
+                  title="Voltar para hoje"
+                  aria-label="Voltar para hoje"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <CalendarCheck className="h-5 w-5" />
+                </button>
                 <div className="relative">
                   <Popover>
                     <PopoverTrigger asChild>
@@ -271,15 +280,6 @@ const Index = () => {
                     className="h-9 w-40 pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                   />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setDateValue(todayBR())}
-                  title="Voltar para hoje"
-                  aria-label="Voltar para hoje"
-                  className="h-9 w-9 flex items-center justify-center rounded-md border border-border bg-background text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                </button>
               </div>
             )}
             <span className="text-sm text-muted-foreground">Olá, Usuário</span>
