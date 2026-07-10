@@ -334,49 +334,10 @@ function Dashboard({
     empresasDistintas,
     cidadesDistintas,
     porFaixa,
-    porUF,
-    ufTotals,
-    cityTotalsByUF,
+    porContratacao,
+    porRecuperacao,
+    porAcomodacao,
   } = useDWCarteira(!loadingOpts);
-  const [mapSelection, setMapSelection] = useState<"SP" | "MG" | "MS" | "AREA" | "BRASIL" | null>(null);
-  const [chartView, setChartView] = useState<"faixa" | "uf">("faixa");
-
-  if (mapSelection) {
-    const isArea = mapSelection === "AREA";
-    const isBrasil = mapSelection === "BRASIL";
-    const title = isBrasil
-      ? "Mapa do Brasil — Vidas por UF"
-      : isArea
-      ? "Área de Abrangência — SP, MG e MS"
-      : `Mapa de ${mapSelection}`;
-    return (
-      <div className="fixed inset-0 z-50 bg-background flex flex-col">
-        <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-          <div className="text-sm font-semibold text-foreground inline-flex items-center gap-2">
-            <MapIcon className="h-4 w-4" />
-            {title}
-          </div>
-          <button
-            type="button"
-            onClick={() => setMapSelection(null)}
-            className="text-xs text-muted-foreground hover:text-foreground underline"
-          >
-            ← Voltar
-          </button>
-        </div>
-        <div className="flex-1 min-h-0">
-          {isBrasil ? (
-            <BrazilHeatMap ufTotals={ufTotals} />
-          ) : (
-            <StateHeatMap
-              ufs={(isArea ? ["SP", "MG", "MS"] : [mapSelection]) as ("SP" | "MG" | "MS")[]}
-              cityTotalsByUF={cityTotalsByUF}
-            />
-          )}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="h-full flex flex-col gap-6">
@@ -387,46 +348,46 @@ function Dashboard({
         <StatCard label="CIDADES" value={cidadesDistintas} loading={loading} />
       </div>
 
-      <Card className="flex-1 flex flex-col min-h-0">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-base">
-            {chartView === "faixa" ? "Vidas por Faixa Etária" : "Vidas por UF"}
-          </CardTitle>
-          <div className="inline-flex rounded-md border border-border overflow-hidden text-xs">
-            <button
-              type="button"
-              onClick={() => setChartView("faixa")}
-              className={`px-3 py-1 ${chartView === "faixa" ? "bg-accent text-foreground" : "bg-background text-muted-foreground hover:text-foreground"}`}
-            >
-              Faixa Etária
-            </button>
-            <button
-              type="button"
-              onClick={() => setChartView("uf")}
-              className={`px-3 py-1 border-l border-border ${chartView === "uf" ? "bg-accent text-foreground" : "bg-background text-muted-foreground hover:text-foreground"}`}
-            >
-              UF
-            </button>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <FaixaEtariaCard porFaixa={porFaixa} loading={loading} />
+        <CategoryCard title="Contratação" rows={porContratacao} loading={loading} />
+        <CategoryCard title="Recuperação" rows={porRecuperacao} loading={loading} />
+        <CategoryCard title="Acomodação" rows={porAcomodacao} loading={loading} />
+      </div>
+    </div>
+  );
+}
+
+function FaixaEtariaCard({
+  porFaixa,
+  loading,
+}: {
+  porFaixa: { faixa: string; total: number; F: number; M: number }[];
+  loading: boolean;
+}) {
+  return (
+    <Card className="flex flex-col">
+      <CardHeader>
+        <CardTitle className="text-base">Faixa Etária</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
+            <Loader2 className="h-4 w-4 animate-spin" /> Calculando...
           </div>
-        </CardHeader>
-        <CardContent className="flex-1 min-h-0">
-          {loading ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
-              <Loader2 className="h-4 w-4 animate-spin" /> Calculando...
+        ) : (
+          <div className="flex flex-col">
+            <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-pink-500" />
+                Feminino
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="inline-block h-2.5 w-2.5 rounded-sm bg-blue-500" />
+                Masculino
+              </span>
             </div>
-          ) : chartView === "faixa" ? (
-            <div className="h-full flex flex-col">
-              <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="inline-block h-2.5 w-2.5 rounded-sm bg-pink-500" />
-                  Feminino
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="inline-block h-2.5 w-2.5 rounded-sm bg-blue-500" />
-                  Masculino
-                </span>
-              </div>
-              <div className="flex-1 min-h-0 flex flex-col justify-between">
+            <div className="space-y-2">
               {(() => {
                 const max = Math.max(1, ...porFaixa.map((r) => r.total));
                 const totalAll = porFaixa.reduce((s, r) => s + r.total, 0);
@@ -445,11 +406,6 @@ function Dashboard({
                           <span className="text-xs text-muted-foreground tabular-nums">
                             ({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)
                           </span>
-                          <span className="ml-2 text-xs tabular-nums">
-                            <span className="text-pink-500">{(r.F ?? 0).toLocaleString("pt-BR")}</span>
-                            <span className="text-muted-foreground"> · </span>
-                            <span className="text-blue-500">{(r.M ?? 0).toLocaleString("pt-BR")}</span>
-                          </span>
                         </span>
                       </div>
                       <div className="flex h-2 rounded-full bg-accent overflow-hidden">
@@ -460,80 +416,65 @@ function Dashboard({
                   );
                 });
               })()}
-              </div>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch h-full">
-              <div className="space-y-2 self-center">
-                {(() => {
-                  const HIGHLIGHT = ["SP", "MS", "MG"] as const;
-                  const totalAll = porUF.reduce((s, r) => s + r.total, 0);
-                  const map = new Map(porUF.map((r) => [r.uf, r.total]));
-                  const rows = HIGHLIGHT.map((uf) => ({ uf, total: map.get(uf) ?? 0 }));
-                  const outros = porUF
-                    .filter((r) => !HIGHLIGHT.includes(r.uf as any))
-                    .reduce((s, r) => s + r.total, 0);
-                  const all = [...rows, { uf: "Outros", total: outros }];
-                  const max = Math.max(1, ...all.map((r) => r.total));
-                  return all.map((r) => {
-                    const share = totalAll > 0 ? (r.total / totalAll) * 100 : 0;
-                    const pct = (r.total / max) * 100;
-                    const isOutros = r.uf === "Outros";
-                    return (
-                      <button
-                        key={r.uf}
-                        type="button"
-                        onClick={() =>
-                          setMapSelection(isOutros ? "BRASIL" : (r.uf as "SP" | "MG" | "MS"))
-                        }
-                        className="w-full text-left rounded-md p-1 -m-1 hover:bg-accent/40 transition-colors cursor-pointer"
-                        title={isOutros ? "Ver mapa do Brasil" : `Ver mapa de ${r.uf}`}
-                      >
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-foreground inline-flex items-center gap-2">
-                            {!isOutros && UF_FLAGS[r.uf] && (
-                              <img
-                                src={UF_FLAGS[r.uf]}
-                                alt={`Bandeira ${r.uf}`}
-                                className="h-3.5 w-5 object-cover rounded-[2px] border border-border"
-                                loading="lazy"
-                              />
-                            )}
-                            {r.uf}
-                          </span>
-                          <span>
-                            <span className="font-semibold text-foreground tabular-nums">
-                              {r.total.toLocaleString("pt-BR")}
-                            </span>{" "}
-                            <span className="text-xs text-muted-foreground tabular-nums">
-                              ({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)
-                            </span>
-                          </span>
-                        </div>
-                        <div className="flex h-2 rounded-full bg-accent overflow-hidden">
-                          <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
-                        </div>
-                      </button>
-                    );
-                  });
-                })()}
-              </div>
-              <div className="w-full h-full flex flex-col min-h-0">
-                <div className="flex-1 min-h-0 flex items-center justify-center">
-                  <StateHeatMap
-                    ufs={["SP", "MG", "MS"]}
-                    cityTotalsByUF={cityTotalsByUF}
-                    onSelectUF={setMapSelection}
-                  />
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function CategoryCard({
+  title,
+  rows,
+  loading,
+}: {
+  title: string;
+  rows: CatRow[];
+  loading: boolean;
+}) {
+  const totalAll = rows.reduce((s, r) => s + r.total, 0);
+  const max = Math.max(1, ...rows.map((r) => r.total));
+  return (
+    <Card className="flex flex-col">
+      <CardHeader>
+        <CardTitle className="text-base">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
+            <Loader2 className="h-4 w-4 animate-spin" /> Calculando...
+          </div>
+        ) : rows.length === 0 ? (
+          <div className="text-sm text-muted-foreground py-6 text-center">Sem dados.</div>
+        ) : (
+          <div className="space-y-3">
+            {rows.map((r) => {
+              const share = totalAll > 0 ? (r.total / totalAll) * 100 : 0;
+              const pct = (r.total / max) * 100;
+              return (
+                <div key={r.label}>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-foreground">{r.label}</span>
+                    <span>
+                      <span className="font-semibold text-foreground tabular-nums">
+                        {r.total.toLocaleString("pt-BR")}
+                      </span>{" "}
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        ({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)
+                      </span>
+                    </span>
+                  </div>
+                  <div className="flex h-2 rounded-full bg-accent overflow-hidden">
+                    <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
+                  </div>
                 </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-
-    </div>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
