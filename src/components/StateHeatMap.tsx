@@ -31,11 +31,12 @@ function normalize(s: string): string {
 interface Props {
   ufs: ("SP" | "MG" | "MS")[];
   cityTotalsByUF: Record<string, Record<string, number>>;
+  onSelectUF?: (uf: "SP" | "MG" | "MS") => void;
 }
 
 type FeatWithUF = Feature<Geometry, { name?: string; _uf: string }>;
 
-export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
+export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF }: Props) {
   const isArea = ufs.length > 1;
   const key = ufs.join("-");
   const [features, setFeatures] = useState<FeatWithUF[] | null>(null);
@@ -162,7 +163,8 @@ export function StateHeatMap({ ufs, cityTotalsByUF }: Props) {
                 });
               }}
               onMouseLeave={() => setHover(null)}
-              style={{ transition: "fill 120ms" }}
+              onClick={() => onSelectUF?.(uf as "SP" | "MG" | "MS")}
+              style={{ transition: "fill 120ms", cursor: onSelectUF ? "pointer" : "default" }}
             />
           );
         })}
