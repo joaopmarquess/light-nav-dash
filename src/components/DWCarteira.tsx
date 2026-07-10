@@ -26,7 +26,7 @@ import { StateHeatMap } from "@/components/StateHeatMap";
 
 type Row = {
   CDREGUSR: number | null;
-  STATUS: string | null;
+  DATA_FIM_ATIVO: string | null;
   NOME_PLANO: string | null;
   NOME_BENEFICIARIO: string | null;
   NOME_RESPONSAVEL: string | null;
