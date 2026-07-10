@@ -109,35 +109,34 @@ const applyBase = (q: any, refDate?: string) =>
     ? q.lte("DATA_INICIO_ATIVO", refDate).gte("DATA_FIM_ATIVO", refDate)
     : q.eq("TIPO_LINHA", "E").gte("DATA_FIM_ATIVO", todayIso());
 
-export default function DWCarteira() {
-  const [tab, setTab] = useState("dashboard");
-  const [planos, setPlanos] = useState<string[]>([]);
-  const [cidades, setCidades] = useState<string[]>([]);
+const brToIso = (s?: string): string | undefined => {
+  if (!s) return undefined;
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+  const br = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (br) return `${br[3]}-${br[2]}-${br[1]}`;
+  return undefined;
+};
+
+export default function DWCarteira({ dateValue }: { dateValue?: string } = {}) {
   const [loadingOpts, setLoadingOpts] = useState(true);
+  const refIso = brToIso(dateValue);
 
   useEffect(() => {
     (async () => {
       setLoadingOpts(true);
-      const { data, error } = await dw
-        .from(TABLE)
-        .select('"NOME_PLANO","CIDADE_PLANO"')
-        .eq("TIPO_LINHA", "E")
-        .gte("DATA_FIM_ATIVO", todayIso())
-        .limit(10000);
+      const q = dw.from(TABLE).select('"NOME_PLANO","CIDADE_PLANO"');
+      const { error } = refIso
+        ? await q.lte("DATA_INICIO_ATIVO", refIso).gte("DATA_FIM_ATIVO", refIso).limit(1)
+        : await q.eq("TIPO_LINHA", "E").gte("DATA_FIM_ATIVO", todayIso()).limit(1);
       if (error) console.error("Erro ao carregar filtros:", error);
-      const uniq = (arr: (string | null | undefined)[]) =>
-        Array.from(new Set(arr.filter((x): x is string => !!x))).sort();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rows = (data ?? []) as any[];
-      setPlanos(uniq(rows.map((r) => r.NOME_PLANO)));
-      setCidades(uniq(rows.map((r) => r.CIDADE_PLANO)));
       setLoadingOpts(false);
     })();
-  }, []);
+  }, [refIso]);
 
   return (
-    <section className="h-full flex flex-col">
-      <Dashboard loadingOpts={loadingOpts} />
+    <section className="h-full flex flex-col min-h-0 relative">
+      <Dashboard loadingOpts={loadingOpts} refDate={refIso} />
     </section>
   );
 }
