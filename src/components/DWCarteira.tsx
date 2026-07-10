@@ -26,7 +26,7 @@ import { StateHeatMap } from "@/components/StateHeatMap";
 
 type Row = {
   CDREGUSR: number | null;
-  STATUS: string | null;
+  DATA_FIM_ATIVO: string | null;
   NOME_PLANO: string | null;
   NOME_BENEFICIARIO: string | null;
   NOME_RESPONSAVEL: string | null;
@@ -38,8 +38,9 @@ type Row = {
 };
 
 const COLS =
-  '"CDREGUSR","STATUS","NOME_PLANO","NOME_BENEFICIARIO","NOME_RESPONSAVEL","CPF","CIDADE_PLANO","UF_PLANO","IDADE","VALOR_TMM"';
-const TABLE = "sv_ecarteira_movimentacao";
+  '"CDREGUSR","DATA_FIM_ATIVO","NOME_PLANO","NOME_BENEFICIARIO","NOME_RESPONSAVEL","CPF","CIDADE_PLANO","UF_PLANO","IDADE","VALOR_TMM"';
+const TABLE = "sv_ecarteira_ativos";
+const todayIso = () => new Date().toISOString().slice(0, 10);
 const ALL = "__all__";
 const UF_FLAGS: Record<string, string> = {
   SP: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Bandeira_do_estado_de_S%C3%A3o_Paulo.svg/40px-Bandeira_do_estado_de_S%C3%A3o_Paulo.svg.png",
@@ -86,7 +87,7 @@ function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
               <TableCell>
                 {[r.CIDADE_PLANO, r.UF_PLANO].filter(Boolean).join(" / ") || "-"}
               </TableCell>
-              <TableCell>{r.STATUS ?? "-"}</TableCell>
+              <TableCell>{r.DATA_FIM_ATIVO && r.DATA_FIM_ATIVO.slice(0, 10) >= todayIso() ? "ATIVO" : "CANCELADO"}</TableCell>
               <TableCell className="text-right">{r.IDADE ?? "-"}</TableCell>
               <TableCell className="text-right">
                 {r.VALOR_TMM != null
@@ -106,7 +107,7 @@ function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const applyBase = (q: any) =>
-  q.eq("TIPO_LINHA", "E").eq("STATUS", "A").eq("Plano_de", "Saúde");
+  q.eq("TIPO_LINHA", "E").gte("DATA_FIM_ATIVO", todayIso());
 
 export default function DWCarteira() {
   const [tab, setTab] = useState("dashboard");
@@ -121,8 +122,7 @@ export default function DWCarteira() {
         .from(TABLE)
         .select('"NOME_PLANO","CIDADE_PLANO"')
         .eq("TIPO_LINHA", "E")
-        .eq("STATUS", "A")
-        .eq("Plano_de", "Saúde")
+        .gte("DATA_FIM_ATIVO", todayIso())
         .limit(10000);
       if (error) console.error("Erro ao carregar filtros:", error);
       const uniq = (arr: (string | null | undefined)[]) =>
