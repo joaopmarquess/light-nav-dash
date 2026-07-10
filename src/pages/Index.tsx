@@ -31,6 +31,7 @@ import HomeView from "@/components/Home";
 import Entradas from "@/components/Entradas";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
 const parseBR = (s: string): Date | undefined => {
