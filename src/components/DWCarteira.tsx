@@ -221,7 +221,7 @@ export function useDWCarteira(enabled = true): DWCarteiraData {
         const q = applyBase(
           dw
             .from(TABLE)
-            .select('"PLANO","CIDADE_OFICIAL","UF_CIDADE_OFICIAL","IDADE","idsex"'),
+            .select('"PLANO","CIDADE_OFICIAL","UF_CIDADE_OFICIAL","IDADE","idsex","Contratacao","Recuperacao","ACOMODACAO"'),
         );
         const { data, error } = await q.range(from, from + pageSize - 1);
         if (error) {
