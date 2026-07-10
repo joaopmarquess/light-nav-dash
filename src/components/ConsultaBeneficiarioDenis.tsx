@@ -100,10 +100,9 @@ export default function ConsultaBeneficiarioDenis() {
 
     const baseQuery = dw
       .from("sv_ecarteira_ativos")
-      .select(SELECT_COLS)
-      .eq("Plano_de", "Saúde");
+      .select(SELECT_COLS);
 
-    const filteredBase = incCanc ? baseQuery : baseQuery.eq("STATUS", "A");
+    const filteredBase = incCanc ? baseQuery : baseQuery.gte("DATA_FIM_ATIVO", todayIso());
 
     let query = isCpfSearch
       ? filteredBase.eq("CPF", digits)
