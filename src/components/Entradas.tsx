@@ -104,6 +104,14 @@ const Entradas = () => {
     setLoading(false);
   };
 
+  const didAutoRun = useRef(false);
+  useEffect(() => {
+    if (didAutoRun.current) return;
+    didAutoRun.current = true;
+    consultar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const grouped = (() => {
     if (!rows) return [] as { agente: string; vidas: number; itens: Row[] }[];
     const map = new Map<string, Row[]>();
