@@ -10,7 +10,7 @@ type Row = {
   ACOMODACAO: string | null;
   CIDADE_OFICIAL: string | null;
   VALOR_TMM: number | null;
-  STATUS: string | null;
+  DATA_FIM_ATIVO: string | null;
   NASCIMENTO: string | null;
   IDADE: number | null;
   VIGENCIA_BENEFICIARIO: string | null;
