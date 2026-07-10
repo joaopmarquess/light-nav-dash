@@ -83,7 +83,7 @@ const menuItems: MenuItem[] = [
     children: [
       
       { icon: Search, label: "Painel" },
-      { icon: UserCheck, label: "Ativo Em" },
+      { icon: UserCheck, label: "Ativos" },
       { icon: TrendingUp, label: "Vendas" },
       { icon: LayoutDashboard, label: "Dashboard" },
     ],
@@ -113,7 +113,7 @@ const Index = () => {
       const detail = (e as CustomEvent<{ nome: string }>).detail;
       if (detail?.nome) {
         setAtivosDrillNome(detail.nome);
-        setActive("Ativo Em");
+        setActive("Ativos");
       }
     };
     window.addEventListener("open-ativos-em", handler as EventListener);
@@ -126,7 +126,7 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    if (active !== "Ativo Em" && ativosDrillNome) setAtivosDrillNome(null);
+    if (active !== "Ativos" && ativosDrillNome) setAtivosDrillNome(null);
   }, [active, ativosDrillNome]);
 
   return (
@@ -239,7 +239,7 @@ const Index = () => {
             <p className="text-xs text-muted-foreground">Relatório Executivo</p>
           </div>
           <div className="flex items-center gap-3">
-            {active === "Ativo Em" && (
+            {active === "Ativos" && (
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <Popover>
@@ -289,8 +289,8 @@ const Index = () => {
           </div>
         </header>
 
-        <main className={`flex-1 min-h-0 overflow-hidden ${active === "Ativo Em" ? "" : "p-8"}`}>
-          {active === "Ativo Em" ? (
+        <main className={`flex-1 min-h-0 overflow-hidden ${active === "Ativos" ? "" : "p-8"}`}>
+          {active === "Ativos" ? (
             <AtivosEm dateValue={dateValue} />
           ) : active === "Dashboard" ? (
             <DWCarteira />
