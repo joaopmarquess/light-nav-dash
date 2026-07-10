@@ -289,11 +289,11 @@ const Index = () => {
           </div>
         </header>
 
-        <main className={`flex-1 min-h-0 overflow-hidden ${active === "Área Geográfica" ? "" : "p-8"}`}>
+        <main className={`flex-1 min-h-0 overflow-hidden ${active === "Área Geográfica" || active === "Dashboard" ? "" : "p-8"}`}>
           {active === "Área Geográfica" ? (
             <AtivosEm dateValue={dateValue} />
           ) : active === "Dashboard" ? (
-            <DWCarteira />
+            <DWCarteira dateValue={dateValue} />
           ) : active === "Vendas" ? (
             <Entradas />
           ) : active === "Painel" ? (
