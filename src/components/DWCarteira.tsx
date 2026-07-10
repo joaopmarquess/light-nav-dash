@@ -312,22 +312,23 @@ function Dashboard({
     ufTotals,
     cityTotalsByUF,
   } = useDWCarteira(!loadingOpts);
-  const [mapSelection, setMapSelection] = useState<"SP" | "MG" | "MS" | "AREA" | null>(null);
+  const [mapSelection, setMapSelection] = useState<"SP" | "MG" | "MS" | "AREA" | "BRASIL" | null>(null);
   const [chartView, setChartView] = useState<"faixa" | "uf">("faixa");
-
-
-
-
 
   if (mapSelection) {
     const isArea = mapSelection === "AREA";
-    const ufs = isArea ? (["SP", "MG", "MS"] as const) : ([mapSelection] as const);
+    const isBrasil = mapSelection === "BRASIL";
+    const title = isBrasil
+      ? "Mapa do Brasil — Vidas por UF"
+      : isArea
+      ? "Área de Abrangência — SP, MG e MS"
+      : `Mapa de ${mapSelection}`;
     return (
       <div className="fixed inset-0 z-50 bg-background flex flex-col">
         <div className="flex items-center justify-between px-4 py-2 border-b border-border">
           <div className="text-sm font-semibold text-foreground inline-flex items-center gap-2">
             <MapIcon className="h-4 w-4" />
-            {isArea ? "Área de Abrangência — SP, MG e MS" : `Mapa de ${mapSelection}`}
+            {title}
           </div>
           <button
             type="button"
@@ -338,7 +339,14 @@ function Dashboard({
           </button>
         </div>
         <div className="flex-1 min-h-0">
-          <StateHeatMap ufs={ufs as unknown as ("SP" | "MG" | "MS")[]} cityTotalsByUF={cityTotalsByUF} />
+          {isBrasil ? (
+            <BrazilHeatMap ufTotals={ufTotals} />
+          ) : (
+            <StateHeatMap
+              ufs={(isArea ? ["SP", "MG", "MS"] : [mapSelection]) as ("SP" | "MG" | "MS")[]}
+              cityTotalsByUF={cityTotalsByUF}
+            />
+          )}
         </div>
       </div>
     );
@@ -446,7 +454,15 @@ function Dashboard({
                     const pct = (r.total / max) * 100;
                     const isOutros = r.uf === "Outros";
                     return (
-                      <div key={r.uf}>
+                      <button
+                        key={r.uf}
+                        type="button"
+                        onClick={() =>
+                          setMapSelection(isOutros ? "BRASIL" : (r.uf as "SP" | "MG" | "MS"))
+                        }
+                        className="w-full text-left rounded-md p-1 -m-1 hover:bg-accent/40 transition-colors cursor-pointer"
+                        title={isOutros ? "Ver mapa do Brasil" : `Ver mapa de ${r.uf}`}
+                      >
                         <div className="flex justify-between text-sm mb-1">
                           <span className="text-foreground inline-flex items-center gap-2">
                             {!isOutros && UF_FLAGS[r.uf] && (
@@ -471,7 +487,7 @@ function Dashboard({
                         <div className="flex h-2 rounded-full bg-accent overflow-hidden">
                           <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
                         </div>
-                      </div>
+                      </button>
                     );
                   });
                 })()}
