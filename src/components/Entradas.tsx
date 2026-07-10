@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2, Calendar as CalendarIcon } from "lucide-react";
 import { dw } from "@/lib/dwClient";
 
@@ -27,10 +27,9 @@ const toISO = (br: string): string | null => {
   return `${yyyy}-${String(mm).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 };
 
-const firstOfMonthBR = () => {
+const firstOfYearBR = () => {
   const d = new Date();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  return `01/${mm}/${d.getFullYear()}`;
+  return `01/01/${d.getFullYear()}`;
 };
 const todayBR = () => {
   const d = new Date();
@@ -42,7 +41,7 @@ const todayBR = () => {
 const PAGE = 1000;
 
 const Entradas = () => {
-  const [de, setDe] = useState(firstOfMonthBR());
+  const [de, setDe] = useState(firstOfYearBR());
   const [ate, setAte] = useState(todayBR());
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -104,6 +103,14 @@ const Entradas = () => {
     setRows(all);
     setLoading(false);
   };
+
+  const didAutoRun = useRef(false);
+  useEffect(() => {
+    if (didAutoRun.current) return;
+    didAutoRun.current = true;
+    consultar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const grouped = (() => {
     if (!rows) return [] as { agente: string; vidas: number; itens: Row[] }[];
