@@ -20,9 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Users, Search, IdCard, Hash, LayoutDashboard, Loader2, Map as MapIcon } from "lucide-react";
-import { BrazilHeatMap } from "@/components/BrazilHeatMap";
-import { StateHeatMap } from "@/components/StateHeatMap";
+import { Search, Loader2 } from "lucide-react";
 
 type Row = {
   CDREGUSR: number | null;
