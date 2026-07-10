@@ -294,6 +294,11 @@ export function useDWCarteira(enabled = true): DWCarteiraData {
         MG: Object.fromEntries(perCityByUF.MG),
         MS: Object.fromEntries(perCityByUF.MS),
       });
+      const toSortedCat = (m: Map<string, number>): CatRow[] =>
+        Array.from(m, ([label, total]) => ({ label, total })).sort((a, b) => b.total - a.total);
+      setPorContratacao(toSortedCat(perContratacao));
+      setPorRecuperacao(toSortedCat(perRecuperacao));
+      setPorAcomodacao(toSortedCat(perAcomodacao));
       setLoading(false);
     })();
     return () => {
@@ -308,6 +313,9 @@ export function useDWCarteira(enabled = true): DWCarteiraData {
     empresasDistintas,
     cidadesDistintas,
     porFaixa,
+    porContratacao,
+    porRecuperacao,
+    porAcomodacao,
     porUF,
     ufTotals,
     cityTotalsByUF,
