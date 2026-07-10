@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Loader2, Map as MapIcon } from "lucide-react";
 import { dw } from "@/lib/dwClient";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 import { StateHeatMap } from "@/components/StateHeatMap";
 import { UF_FLAGS } from "@/components/DWCarteira";
@@ -139,91 +138,85 @@ const AtivosEm = ({ dateValue }: Props) => {
   }
 
   return (
-    <section className="bg-card rounded-xl border border-border shadow-sm p-6">
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold text-foreground">Beneficiários ativos</h2>
+    <section className="h-full flex flex-col min-h-0">
+      {/* Top strip — aligns bottom with the logo container (h-20 = 80px; header h-16 = 64px, so strip = 16px) */}
+      <div className="h-4 px-6 flex items-center justify-end border-b border-border bg-card">
+        <div className="text-[11px] text-muted-foreground tabular-nums leading-none">
+          Beneficiários ativos:{" "}
+          <span className="font-semibold text-foreground">
+            {ativos !== null ? fmtInt(ativos) : "—"}
+          </span>
+        </div>
       </div>
 
-      {loading ? (
-        <div className="flex items-center text-muted-foreground text-sm py-8">
-          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          Carregando…
-        </div>
-      ) : error ? (
-        <div className="text-destructive text-sm">Erro: {error}</div>
-      ) : (
-        <div className="py-4 space-y-6">
-          <div>
-            <div className="text-5xl font-bold tabular-nums text-foreground">
-              {ativos !== null ? fmtInt(ativos) : "—"}
+      {/* Main container — fills to bottom, no scroll */}
+      <div className="flex-1 min-h-0 p-4">
+        {loading ? (
+          <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            Carregando…
+          </div>
+        ) : error ? (
+          <div className="text-destructive text-sm">Erro: {error}</div>
+        ) : (
+          <div className="h-full grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+            <div className="flex flex-col justify-center space-y-2">
+              {(() => {
+                const totalAll = porUF.reduce((s, r) => s + r.total, 0);
+                const max = Math.max(1, ...porUF.map((r) => r.total));
+                return porUF.map((r) => {
+                  const share = totalAll > 0 ? (r.total / totalAll) * 100 : 0;
+                  const pct = (r.total / max) * 100;
+                  const isOutros = r.uf === "Outros";
+                  return (
+                    <button
+                      key={r.uf}
+                      type="button"
+                      onClick={() =>
+                        setMapSelection(isOutros ? "BRASIL" : (r.uf as "SP" | "MG" | "MS"))
+                      }
+                      className="w-full text-left rounded-md p-2 hover:bg-accent/40 transition-colors cursor-pointer"
+                      title={isOutros ? "Ver mapa do Brasil" : `Ver mapa de ${r.uf}`}
+                    >
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-foreground inline-flex items-center gap-2">
+                          {!isOutros && UF_FLAGS[r.uf] && (
+                            <img
+                              src={UF_FLAGS[r.uf]}
+                              alt={`Bandeira ${r.uf}`}
+                              className="h-3.5 w-5 object-cover rounded-[2px] border border-border"
+                              loading="lazy"
+                            />
+                          )}
+                          {r.uf}
+                        </span>
+                        <span>
+                          <span className="font-semibold text-foreground tabular-nums">
+                            {r.total.toLocaleString("pt-BR")}
+                          </span>{" "}
+                          <span className="text-xs text-muted-foreground tabular-nums">
+                            ({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)
+                          </span>
+                        </span>
+                      </div>
+                      <div className="flex h-2 rounded-full bg-accent overflow-hidden">
+                        <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
+                      </div>
+                    </button>
+                  );
+                });
+              })()}
+            </div>
+            <div className="w-full h-full flex items-center justify-center">
+              <StateHeatMap
+                ufs={["SP", "MG", "MS"]}
+                cityTotalsByUF={cityTotalsByUF}
+                onSelectUF={setMapSelection}
+              />
             </div>
           </div>
-
-          <Card className="flex flex-col">
-            <CardHeader>
-              <CardTitle className="text-base">Vidas por UF</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-                <div className="space-y-2 self-center">
-                  {(() => {
-                    const totalAll = porUF.reduce((s, r) => s + r.total, 0);
-                    const max = Math.max(1, ...porUF.map((r) => r.total));
-                    return porUF.map((r) => {
-                      const share = totalAll > 0 ? (r.total / totalAll) * 100 : 0;
-                      const pct = (r.total / max) * 100;
-                      const isOutros = r.uf === "Outros";
-                      return (
-                        <button
-                          key={r.uf}
-                          type="button"
-                          onClick={() =>
-                            setMapSelection(isOutros ? "BRASIL" : (r.uf as "SP" | "MG" | "MS"))
-                          }
-                          className="w-full text-left rounded-md p-1 -m-1 hover:bg-accent/40 transition-colors cursor-pointer"
-                          title={isOutros ? "Ver mapa do Brasil" : `Ver mapa de ${r.uf}`}
-                        >
-                          <div className="flex justify-between text-sm mb-1">
-                            <span className="text-foreground inline-flex items-center gap-2">
-                              {!isOutros && UF_FLAGS[r.uf] && (
-                                <img
-                                  src={UF_FLAGS[r.uf]}
-                                  alt={`Bandeira ${r.uf}`}
-                                  className="h-3.5 w-5 object-cover rounded-[2px] border border-border"
-                                  loading="lazy"
-                                />
-                              )}
-                              {r.uf}
-                            </span>
-                            <span>
-                              <span className="font-semibold text-foreground tabular-nums">
-                                {r.total.toLocaleString("pt-BR")}
-                              </span>{" "}
-                              <span className="text-xs text-muted-foreground tabular-nums">
-                                ({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)
-                              </span>
-                            </span>
-                          </div>
-                          <div className="flex h-2 rounded-full bg-accent overflow-hidden">
-                            <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
-                          </div>
-                        </button>
-                      );
-                    });
-                  })()}
-                </div>
-                <div className="w-full min-h-[360px] flex items-center justify-center">
-                  <StateHeatMap
-                    ufs={["SP", "MG", "MS"]}
-                    cityTotalsByUF={cityTotalsByUF}
-                    onSelectUF={setMapSelection}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+        )}
+      </div>
     </section>
   );
 };

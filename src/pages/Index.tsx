@@ -289,7 +289,7 @@ const Index = () => {
           </div>
         </header>
 
-        <main className="flex-1 min-h-0 p-8 overflow-hidden">
+        <main className={`flex-1 min-h-0 overflow-hidden ${active === "Ativo Em" ? "" : "p-8"}`}>
           {active === "Ativo Em" ? (
             <AtivosEm dateValue={dateValue} />
           ) : active === "Dashboard" ? (
