@@ -221,6 +221,7 @@ export function useDWCarteira(enabled = true, refDate?: string): DWCarteiraData 
           dw
             .from(TABLE)
             .select('"PLANO","CIDADE_OFICIAL","UF_CIDADE_OFICIAL","IDADE","idsex","Contratacao","Recuperacao","ACOMODACAO"'),
+          refDate,
         );
         const { data, error } = await q.range(from, from + pageSize - 1);
         if (error) {
