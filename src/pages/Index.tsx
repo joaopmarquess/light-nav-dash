@@ -82,10 +82,10 @@ const menuItems: MenuItem[] = [
     label: "Carteira",
     children: [
       
-      { icon: Search, label: "Consulta Carteira" },
-      { icon: UserCheck, label: "Ativos em" },
-      { icon: TrendingUp, label: "Entradas" },
-      { icon: LayoutDashboard, label: "DW Carteira" },
+      { icon: Search, label: "Painel" },
+      { icon: UserCheck, label: "Ativo Em" },
+      { icon: TrendingUp, label: "Vendas" },
+      { icon: LayoutDashboard, label: "Resumo Gráfico" },
     ],
   },
   {
