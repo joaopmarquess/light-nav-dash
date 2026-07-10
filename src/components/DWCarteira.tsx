@@ -304,7 +304,7 @@ export function useDWCarteira(enabled = true, refDate?: string): DWCarteiraData 
     return () => {
       cancelled = true;
     };
-  }, [enabled]);
+  }, [enabled, refDate]);
 
   return {
     loading,
@@ -324,30 +324,37 @@ export function useDWCarteira(enabled = true, refDate?: string): DWCarteiraData 
 
 function Dashboard({
   loadingOpts,
+  refDate,
 }: {
   loadingOpts: boolean;
+  refDate?: string;
 }) {
   const {
     loading,
     vidas,
-    pifDistintos,
-    empresasDistintas,
-    cidadesDistintas,
     porFaixa,
     porContratacao,
     porRecuperacao,
     porAcomodacao,
-  } = useDWCarteira(!loadingOpts);
+  } = useDWCarteira(!loadingOpts, refDate);
+
+  const fmtInt = (n: number) => n.toLocaleString("pt-BR");
 
   return (
-    <div className="h-full grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
-      <FaixaEtariaCard porFaixa={porFaixa} loading={loading} />
-      <div className="grid grid-rows-3 gap-6 min-h-0">
-        <CategoryCard title="Contratação" rows={porContratacao} loading={loading} />
-        <CategoryCard title="Recuperação" rows={porRecuperacao} loading={loading} />
-        <CategoryCard title="Acomodação" rows={porAcomodacao} loading={loading} />
+    <>
+      <div className="absolute top-2 left-4 z-10 text-xl font-semibold text-foreground tabular-nums">
+        Beneficiários ativos:{" "}
+        <span>{vidas !== null ? fmtInt(vidas) : "—"}</span>
       </div>
-    </div>
+      <div className="flex-1 min-h-0 p-4 pt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <FaixaEtariaCard porFaixa={porFaixa} loading={loading} />
+        <div className="grid grid-rows-3 gap-6 min-h-0">
+          <CategoryCard title="Contratação" rows={porContratacao} loading={loading} />
+          <CategoryCard title="Recuperação" rows={porRecuperacao} loading={loading} />
+          <CategoryCard title="Acomodação" rows={porAcomodacao} loading={loading} />
+        </div>
+      </div>
+    </>
   );
 }
 
