@@ -32,7 +32,7 @@ const shortcuts = [
   { icon: Percent, label: "Tabela Sinistralidade", desc: "Receita x despesa por dimensão" },
   { icon: BarChart3, label: "Gráfico Sinistralidade", desc: "Tendência mensal" },
   { icon: Search, label: "Consulta Beneficiário", desc: "Pesquisa individual" },
-  { icon: UserCheck, label: "Ativos em", desc: "Carteira por data" },
+  { icon: UserCheck, label: "Ativo Em", desc: "Carteira por data" },
   { icon: TrendingUp, label: "Vendas", desc: "Novas adesões" },
   { icon: LayoutDashboard, label: "B.I. Overview", desc: "Painel rotativo" },
   { icon: Stethoscope, label: "Assistencial", desc: "Indicadores de uso" },
