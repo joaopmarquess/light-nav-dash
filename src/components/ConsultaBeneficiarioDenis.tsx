@@ -36,7 +36,9 @@ const fmtDate = (v: string | null) => {
 };
 
 const SELECT_COLS =
-  '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_OFICIAL","VALOR_TMM","STATUS","NASCIMENTO","IDADE","VIGENCIA_BENEFICIARIO"';
+  '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_OFICIAL","VALOR_TMM","DATA_FIM_ATIVO","NASCIMENTO","IDADE","VIGENCIA_BENEFICIARIO"';
+
+const todayIso = () => new Date().toISOString().slice(0, 10);
 
 export default function ConsultaBeneficiarioDenis() {
   const [termo, setTermo] = useState("");
