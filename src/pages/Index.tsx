@@ -241,15 +241,6 @@ const Index = () => {
           <div className="flex items-center gap-3">
             {active === "Ativo Em" && (
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setDateValue(todayBR())}
-                  title="Voltar para hoje"
-                  aria-label="Voltar para hoje"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  <CalendarCheck className="h-5 w-5" />
-                </button>
                 <div className="relative">
                   <Popover>
                     <PopoverTrigger asChild>
@@ -270,6 +261,15 @@ const Index = () => {
                         initialFocus
                         className={cn("p-3 pointer-events-auto")}
                       />
+                      <div className="p-2 border-t border-border flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setDateValue(todayBR())}
+                          className="h-8 px-3 rounded-md border border-border bg-background text-sm text-foreground hover:bg-accent hover:text-primary transition-colors"
+                        >
+                          Hoje
+                        </button>
+                      </div>
                     </PopoverContent>
                   </Popover>
                   <input
