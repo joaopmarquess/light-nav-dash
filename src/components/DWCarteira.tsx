@@ -87,7 +87,7 @@ function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
               <TableCell>
                 {[r.CIDADE_PLANO, r.UF_PLANO].filter(Boolean).join(" / ") || "-"}
               </TableCell>
-              <TableCell>{r.STATUS ?? "-"}</TableCell>
+              <TableCell>{r.DATA_FIM_ATIVO && r.DATA_FIM_ATIVO.slice(0, 10) >= todayIso() ? "ATIVO" : "CANCELADO"}</TableCell>
               <TableCell className="text-right">{r.IDADE ?? "-"}</TableCell>
               <TableCell className="text-right">
                 {r.VALOR_TMM != null
