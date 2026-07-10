@@ -16,7 +16,7 @@ import {
   ChevronLeft,
   Plus,
   Calendar as CalendarIcon,
-  RotateCcw,
+  CalendarCheck,
   Search,
 } from "lucide-react";
 
