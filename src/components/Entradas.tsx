@@ -27,10 +27,9 @@ const toISO = (br: string): string | null => {
   return `${yyyy}-${String(mm).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 };
 
-const firstOfMonthBR = () => {
+const firstOfYearBR = () => {
   const d = new Date();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  return `01/${mm}/${d.getFullYear()}`;
+  return `01/01/${d.getFullYear()}`;
 };
 const todayBR = () => {
   const d = new Date();
@@ -42,7 +41,7 @@ const todayBR = () => {
 const PAGE = 1000;
 
 const Entradas = () => {
-  const [de, setDe] = useState(firstOfMonthBR());
+  const [de, setDe] = useState(firstOfYearBR());
   const [ate, setAte] = useState(todayBR());
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(false);
