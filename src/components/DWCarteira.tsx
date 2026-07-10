@@ -357,11 +357,12 @@ function FaixaEtariaCard({
   loading: boolean;
 }) {
   return (
-    <Card className="flex flex-col">
-      <CardHeader>
+    <Card className="flex flex-col min-h-0 overflow-hidden">
+      <CardHeader className="shrink-0">
         <CardTitle className="text-base">Faixa Etária</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 min-h-0 overflow-auto">
+
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
             <Loader2 className="h-4 w-4 animate-spin" /> Calculando...
