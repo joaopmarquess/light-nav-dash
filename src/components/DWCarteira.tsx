@@ -432,16 +432,24 @@ function Dashboard({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch h-full">
               <div className="space-y-2 self-center">
                 {(() => {
-                  const max = Math.max(1, ...porUF.map((r) => r.total));
+                  const HIGHLIGHT = ["SP", "MS", "MG"] as const;
                   const totalAll = porUF.reduce((s, r) => s + r.total, 0);
-                  return porUF.map((r) => {
+                  const map = new Map(porUF.map((r) => [r.uf, r.total]));
+                  const rows = HIGHLIGHT.map((uf) => ({ uf, total: map.get(uf) ?? 0 }));
+                  const outros = porUF
+                    .filter((r) => !HIGHLIGHT.includes(r.uf as any))
+                    .reduce((s, r) => s + r.total, 0);
+                  const all = [...rows, { uf: "Outros", total: outros }];
+                  const max = Math.max(1, ...all.map((r) => r.total));
+                  return all.map((r) => {
                     const share = totalAll > 0 ? (r.total / totalAll) * 100 : 0;
                     const pct = (r.total / max) * 100;
+                    const isOutros = r.uf === "Outros";
                     return (
                       <div key={r.uf}>
                         <div className="flex justify-between text-sm mb-1">
                           <span className="text-foreground inline-flex items-center gap-2">
-                            {UF_FLAGS[r.uf] && (
+                            {!isOutros && UF_FLAGS[r.uf] && (
                               <img
                                 src={UF_FLAGS[r.uf]}
                                 alt={`Bandeira ${r.uf}`}
@@ -469,28 +477,12 @@ function Dashboard({
                 })()}
               </div>
               <div className="w-full h-full flex flex-col min-h-0">
-                <div className="flex items-center justify-between mb-1 min-h-[20px]">
-                  {mapSelection ? (
-                    <button
-                      type="button"
-                      onClick={() => setMapSelection(null)}
-                      className="text-xs text-muted-foreground hover:text-foreground underline"
-                    >
-                      ← Voltar ao Brasil
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setMapSelection("AREA")}
-                      className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-                      title="Ver Área de Abrangência"
-                    >
-                      <MapIcon className="h-3.5 w-3.5" /> Área de Abrangência
-                    </button>
-                  )}
-                </div>
                 <div className="flex-1 min-h-0 flex items-center justify-center">
-                  <BrazilHeatMap ufTotals={ufTotals} onSelectUF={setMapSelection} />
+                  <StateHeatMap
+                    ufs={["SP", "MG", "MS"]}
+                    cityTotalsByUF={cityTotalsByUF}
+                    onSelectUF={setMapSelection}
+                  />
                 </div>
               </div>
             </div>
