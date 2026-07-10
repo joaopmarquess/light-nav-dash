@@ -104,38 +104,39 @@ function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const applyBase = (q: any) =>
-  q.eq("TIPO_LINHA", "E").gte("DATA_FIM_ATIVO", todayIso());
+const applyBase = (q: any, refDate?: string) =>
+  refDate
+    ? q.lte("DATA_INICIO_ATIVO", refDate).gte("DATA_FIM_ATIVO", refDate)
+    : q.eq("TIPO_LINHA", "E").gte("DATA_FIM_ATIVO", todayIso());
 
-export default function DWCarteira() {
-  const [tab, setTab] = useState("dashboard");
-  const [planos, setPlanos] = useState<string[]>([]);
-  const [cidades, setCidades] = useState<string[]>([]);
+const brToIso = (s?: string): string | undefined => {
+  if (!s) return undefined;
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+  const br = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (br) return `${br[3]}-${br[2]}-${br[1]}`;
+  return undefined;
+};
+
+export default function DWCarteira({ dateValue }: { dateValue?: string } = {}) {
   const [loadingOpts, setLoadingOpts] = useState(true);
+  const refIso = brToIso(dateValue);
 
   useEffect(() => {
     (async () => {
       setLoadingOpts(true);
-      const { data, error } = await dw
-        .from(TABLE)
-        .select('"NOME_PLANO","CIDADE_PLANO"')
-        .eq("TIPO_LINHA", "E")
-        .gte("DATA_FIM_ATIVO", todayIso())
-        .limit(10000);
+      const q = dw.from(TABLE).select('"NOME_PLANO","CIDADE_PLANO"');
+      const { error } = refIso
+        ? await q.lte("DATA_INICIO_ATIVO", refIso).gte("DATA_FIM_ATIVO", refIso).limit(1)
+        : await q.eq("TIPO_LINHA", "E").gte("DATA_FIM_ATIVO", todayIso()).limit(1);
       if (error) console.error("Erro ao carregar filtros:", error);
-      const uniq = (arr: (string | null | undefined)[]) =>
-        Array.from(new Set(arr.filter((x): x is string => !!x))).sort();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rows = (data ?? []) as any[];
-      setPlanos(uniq(rows.map((r) => r.NOME_PLANO)));
-      setCidades(uniq(rows.map((r) => r.CIDADE_PLANO)));
       setLoadingOpts(false);
     })();
-  }, []);
+  }, [refIso]);
 
   return (
-    <section className="h-full flex flex-col">
-      <Dashboard loadingOpts={loadingOpts} />
+    <section className="h-full flex flex-col min-h-0 relative">
+      <Dashboard loadingOpts={loadingOpts} refDate={refIso} />
     </section>
   );
 }
@@ -157,7 +158,7 @@ export type DWCarteiraData = {
   cityTotalsByUF: Record<string, Record<string, number>>;
 };
 
-export function useDWCarteira(enabled = true): DWCarteiraData {
+export function useDWCarteira(enabled = true, refDate?: string): DWCarteiraData {
   const [vidas, setVidas] = useState<number | null>(null);
   const [pifDistintos, setPifDistintos] = useState<number | null>(null);
   const [empresasDistintas, setEmpresasDistintas] = useState<number | null>(null);
@@ -220,6 +221,7 @@ export function useDWCarteira(enabled = true): DWCarteiraData {
           dw
             .from(TABLE)
             .select('"PLANO","CIDADE_OFICIAL","UF_CIDADE_OFICIAL","IDADE","idsex","Contratacao","Recuperacao","ACOMODACAO"'),
+          refDate,
         );
         const { data, error } = await q.range(from, from + pageSize - 1);
         if (error) {
@@ -302,7 +304,7 @@ export function useDWCarteira(enabled = true): DWCarteiraData {
     return () => {
       cancelled = true;
     };
-  }, [enabled]);
+  }, [enabled, refDate]);
 
   return {
     loading,
@@ -322,30 +324,37 @@ export function useDWCarteira(enabled = true): DWCarteiraData {
 
 function Dashboard({
   loadingOpts,
+  refDate,
 }: {
   loadingOpts: boolean;
+  refDate?: string;
 }) {
   const {
     loading,
     vidas,
-    pifDistintos,
-    empresasDistintas,
-    cidadesDistintas,
     porFaixa,
     porContratacao,
     porRecuperacao,
     porAcomodacao,
-  } = useDWCarteira(!loadingOpts);
+  } = useDWCarteira(!loadingOpts, refDate);
+
+  const fmtInt = (n: number) => n.toLocaleString("pt-BR");
 
   return (
-    <div className="h-full grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
-      <FaixaEtariaCard porFaixa={porFaixa} loading={loading} />
-      <div className="grid grid-rows-3 gap-6 min-h-0">
-        <CategoryCard title="Contratação" rows={porContratacao} loading={loading} />
-        <CategoryCard title="Recuperação" rows={porRecuperacao} loading={loading} />
-        <CategoryCard title="Acomodação" rows={porAcomodacao} loading={loading} />
+    <>
+      <div className="absolute top-2 left-4 z-10 text-xl font-semibold text-foreground tabular-nums">
+        Beneficiários ativos:{" "}
+        <span>{vidas !== null ? fmtInt(vidas) : "—"}</span>
       </div>
-    </div>
+      <div className="flex-1 min-h-0 p-4 pt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <FaixaEtariaCard porFaixa={porFaixa} loading={loading} />
+        <div className="grid grid-rows-3 gap-6 min-h-0">
+          <CategoryCard title="Contratação" rows={porContratacao} loading={loading} />
+          <CategoryCard title="Recuperação" rows={porRecuperacao} loading={loading} />
+          <CategoryCard title="Acomodação" rows={porAcomodacao} loading={loading} />
+        </div>
+      </div>
+    </>
   );
 }
 
