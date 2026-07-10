@@ -428,11 +428,12 @@ function CategoryCard({
   const totalAll = rows.reduce((s, r) => s + r.total, 0);
   const max = Math.max(1, ...rows.map((r) => r.total));
   return (
-    <Card className="flex flex-col">
-      <CardHeader>
+    <Card className="flex flex-col min-h-0 overflow-hidden">
+      <CardHeader className="shrink-0 py-3">
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 min-h-0 overflow-auto">
+
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
             <Loader2 className="h-4 w-4 animate-spin" /> Calculando...
