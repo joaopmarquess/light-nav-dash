@@ -122,8 +122,7 @@ export default function DWCarteira() {
         .from(TABLE)
         .select('"NOME_PLANO","CIDADE_PLANO"')
         .eq("TIPO_LINHA", "E")
-        .eq("STATUS", "A")
-        .eq("Plano_de", "Saúde")
+        .gte("DATA_FIM_ATIVO", todayIso())
         .limit(10000);
       if (error) console.error("Erro ao carregar filtros:", error);
       const uniq = (arr: (string | null | undefined)[]) =>
