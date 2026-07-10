@@ -338,16 +338,9 @@ function Dashboard({
   } = useDWCarteira(!loadingOpts);
 
   return (
-    <div className="h-full flex flex-col gap-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="VIDAS" value={vidas} loading={loading} />
-        <StatCard label="PLANOS" value={pifDistintos} loading={loading} />
-        <StatCard label="EMPRESAS" value={empresasDistintas} loading={loading} />
-        <StatCard label="CIDADES" value={cidadesDistintas} loading={loading} />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <FaixaEtariaCard porFaixa={porFaixa} loading={loading} />
+    <div className="h-full grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
+      <FaixaEtariaCard porFaixa={porFaixa} loading={loading} />
+      <div className="grid grid-rows-3 gap-6 min-h-0">
         <CategoryCard title="Contratação" rows={porContratacao} loading={loading} />
         <CategoryCard title="Recuperação" rows={porRecuperacao} loading={loading} />
         <CategoryCard title="Acomodação" rows={porAcomodacao} loading={loading} />
