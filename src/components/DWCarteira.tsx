@@ -262,6 +262,14 @@ export function useDWCarteira(enabled = true): DWCarteiraData {
               }
             }
           }
+          const addCat = (m: Map<string, number>, val: unknown) => {
+            const k = String(val ?? "").trim();
+            if (!k) return;
+            m.set(k, (m.get(k) ?? 0) + 1);
+          };
+          addCat(perContratacao, r.Contratacao);
+          addCat(perRecuperacao, r.Recuperacao);
+          addCat(perAcomodacao, r.ACOMODACAO);
         }
         if (rows.length < pageSize) break;
         from += pageSize;
