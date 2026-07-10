@@ -233,7 +233,7 @@ const Index = () => {
       </aside>
 
       <div className="flex-1 flex flex-col min-h-0 min-w-0">
-        <header className="h-16 border-b border-border bg-card flex items-center justify-between px-8">
+        <header className="h-20 border-b border-border bg-card flex items-center justify-between px-8">
           <div>
             <h1 className="text-xl font-semibold text-foreground">{active}</h1>
             <p className="text-xs text-muted-foreground">Relatório Executivo</p>
@@ -307,7 +307,7 @@ const Index = () => {
           ) : active === "Tabela Sinistralidade" ? (
             <Sinistralidade />
           ) : active === "PBI U12" ? (
-            <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-8rem)] overflow-hidden">
+            <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] overflow-hidden">
               <iframe
                 title="PBI U12"
                 src="https://app.powerbi.com/view?r=eyJrIjoiYjJkNjQ3MTYtMjM0Ni00Y2I2LWJiOWItNTcyNWU0YWY0ZTc2IiwidCI6ImM0ZTU0ODgxLWQ1NDktNDQ2Ny1iOGFjLWQ0ZjI1MGM2NzhjNiJ9"
@@ -316,7 +316,7 @@ const Index = () => {
               />
             </section>
           ) : active === "DRE PB" ? (
-            <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-8rem)] overflow-hidden">
+            <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] overflow-hidden">
               <iframe
                 title="DEX_DRE"
                 src="https://app.powerbi.com/view?r=eyJrIjoiMTBhYTQ4M2EtYWIzNy00NjBiLWFlOGItNGEyNDY5YTcwOTVhIiwidCI6ImM0ZTU0ODgxLWQ1NDktNDQ2Ny1iOGFjLWQ0ZjI1MGM2NzhjNiJ9"
@@ -331,7 +331,7 @@ const Index = () => {
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : (
-            <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-8rem)] flex items-center justify-center text-muted-foreground text-sm">
+            <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex items-center justify-center text-muted-foreground text-sm">
               Selecione uma opção no menu lateral.
             </section>
           )}
