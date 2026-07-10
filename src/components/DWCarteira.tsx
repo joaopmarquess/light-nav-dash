@@ -158,7 +158,7 @@ export type DWCarteiraData = {
   cityTotalsByUF: Record<string, Record<string, number>>;
 };
 
-export function useDWCarteira(enabled = true): DWCarteiraData {
+export function useDWCarteira(enabled = true, refDate?: string): DWCarteiraData {
   const [vidas, setVidas] = useState<number | null>(null);
   const [pifDistintos, setPifDistintos] = useState<number | null>(null);
   const [empresasDistintas, setEmpresasDistintas] = useState<number | null>(null);
