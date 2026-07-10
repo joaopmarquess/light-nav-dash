@@ -40,7 +40,7 @@ const COLS =
 const TABLE = "sv_ecarteira_ativos";
 const todayIso = () => new Date().toISOString().slice(0, 10);
 const ALL = "__all__";
-const UF_FLAGS: Record<string, string> = {
+export const UF_FLAGS: Record<string, string> = {
   SP: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Bandeira_do_estado_de_S%C3%A3o_Paulo.svg/40px-Bandeira_do_estado_de_S%C3%A3o_Paulo.svg.png",
   MG: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Bandeira_de_Minas_Gerais.svg/40px-Bandeira_de_Minas_Gerais.svg.png",
   MS: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Bandeira_de_Mato_Grosso_do_Sul.svg/40px-Bandeira_de_Mato_Grosso_do_Sul.svg.png",
