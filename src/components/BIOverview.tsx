@@ -364,7 +364,7 @@ const BIOverview = () => {
 
   if (!data || !slides.length) {
     return (
-      <section className="h-[calc(100vh-8rem)] flex items-center justify-center text-muted-foreground text-sm bg-card rounded-xl border border-border">
+      <section className="h-[calc(100vh-9rem)] flex items-center justify-center text-muted-foreground text-sm bg-card rounded-xl border border-border">
         Carregando...
       </section>
     );
@@ -375,7 +375,7 @@ const BIOverview = () => {
   return (
     <section
       ref={wrapRef}
-      className={`${isFull ? "fixed inset-0 z-50 h-screen w-screen rounded-none" : "h-[calc(100vh-8rem)] rounded-xl border border-border"} bg-card shadow-sm overflow-hidden flex flex-col`}
+      className={`${isFull ? "fixed inset-0 z-50 h-screen w-screen rounded-none" : "h-[calc(100vh-9rem)] rounded-xl border border-border"} bg-card shadow-sm overflow-hidden flex flex-col`}
     >
       <div className="px-6 py-4 border-b border-border flex items-center justify-between shrink-0">
         <div>

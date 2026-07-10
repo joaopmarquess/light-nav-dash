@@ -129,7 +129,7 @@ const Entradas = () => {
   const max = grouped[0]?.vidas ?? 0;
 
   return (
-    <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-8rem)] flex flex-col">
+    <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-9rem)] flex flex-col">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
         <div>
           <h2 className="text-lg font-semibold text-foreground">Entradas</h2>
