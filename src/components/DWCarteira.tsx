@@ -137,41 +137,7 @@ export default function DWCarteira() {
 
   return (
     <section className="h-full flex flex-col">
-      <Tabs value={tab} onValueChange={setTab} className="w-full flex-1 flex flex-col min-h-0">
-        <TabsList className="grid grid-cols-5 w-full max-w-3xl">
-          <TabsTrigger value="dashboard" className="gap-2">
-            <LayoutDashboard className="h-4 w-4" /> Dashboard
-          </TabsTrigger>
-          <TabsTrigger value="nome" className="gap-2">
-            <Search className="h-4 w-4" /> Nome
-          </TabsTrigger>
-          <TabsTrigger value="cpf" className="gap-2">
-            <IdCard className="h-4 w-4" /> CPF
-          </TabsTrigger>
-          <TabsTrigger value="cdregusr" className="gap-2">
-            <Hash className="h-4 w-4" /> CDREGUSR
-          </TabsTrigger>
-          <TabsTrigger value="filtros" className="gap-2">
-            <Users className="h-4 w-4" /> Filtros
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="dashboard" className="mt-6 flex-1 min-h-0">
-          <Dashboard loadingOpts={loadingOpts} />
-        </TabsContent>
-        <TabsContent value="nome" className="mt-6">
-          <BuscaNome />
-        </TabsContent>
-        <TabsContent value="cpf" className="mt-6">
-          <BuscaCPF />
-        </TabsContent>
-        <TabsContent value="cdregusr" className="mt-6">
-          <BuscaCDREGUSR />
-        </TabsContent>
-        <TabsContent value="filtros" className="mt-6">
-          <BuscaFiltros planos={planos} cidades={cidades} />
-        </TabsContent>
-      </Tabs>
+      <Dashboard loadingOpts={loadingOpts} />
     </section>
   );
 }
