@@ -170,6 +170,9 @@ export function useDWCarteira(enabled = true): DWCarteiraData {
   const [porUF, setPorUF] = useState<{ uf: string; total: number }[]>([]);
   const [ufTotals, setUfTotals] = useState<Record<string, number>>({});
   const [cityTotalsByUF, setCityTotalsByUF] = useState<Record<string, Record<string, number>>>({});
+  const [porContratacao, setPorContratacao] = useState<CatRow[]>([]);
+  const [porRecuperacao, setPorRecuperacao] = useState<CatRow[]>([]);
+  const [porAcomodacao, setPorAcomodacao] = useState<CatRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
