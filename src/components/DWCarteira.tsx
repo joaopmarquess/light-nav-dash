@@ -454,7 +454,15 @@ function Dashboard({
                     const pct = (r.total / max) * 100;
                     const isOutros = r.uf === "Outros";
                     return (
-                      <div key={r.uf}>
+                      <button
+                        key={r.uf}
+                        type="button"
+                        onClick={() =>
+                          setMapSelection(isOutros ? "BRASIL" : (r.uf as "SP" | "MG" | "MS"))
+                        }
+                        className="w-full text-left rounded-md p-1 -m-1 hover:bg-accent/40 transition-colors cursor-pointer"
+                        title={isOutros ? "Ver mapa do Brasil" : `Ver mapa de ${r.uf}`}
+                      >
                         <div className="flex justify-between text-sm mb-1">
                           <span className="text-foreground inline-flex items-center gap-2">
                             {!isOutros && UF_FLAGS[r.uf] && (
@@ -479,7 +487,7 @@ function Dashboard({
                         <div className="flex h-2 rounded-full bg-accent overflow-hidden">
                           <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
                         </div>
-                      </div>
+                      </button>
                     );
                   });
                 })()}
