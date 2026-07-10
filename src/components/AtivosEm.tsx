@@ -138,19 +138,16 @@ const AtivosEm = ({ dateValue }: Props) => {
   }
 
   return (
-    <section className="h-full flex flex-col min-h-0">
-      {/* Top strip — aligns bottom with the logo container (h-20 = 80px; header h-16 = 64px, so strip = 16px) */}
-      <div className="h-4 px-6 flex items-center justify-end border-b border-border bg-card">
-        <div className="text-[11px] text-muted-foreground tabular-nums leading-none">
-          Beneficiários ativos:{" "}
-          <span className="font-semibold text-foreground">
-            {ativos !== null ? fmtInt(ativos) : "—"}
-          </span>
-        </div>
+    <section className="h-full flex flex-col min-h-0 relative">
+      {/* Total discreto no canto superior esquerdo, sem container */}
+      <div className="absolute top-2 left-4 z-10 text-xl font-semibold text-foreground tabular-nums">
+        Beneficiários ativos:{" "}
+        <span>{ativos !== null ? fmtInt(ativos) : "—"}</span>
       </div>
 
       {/* Main container — fills to bottom, no scroll */}
-      <div className="flex-1 min-h-0 p-4">
+      <div className="flex-1 min-h-0 p-4 pt-12">
+
         {loading ? (
           <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
