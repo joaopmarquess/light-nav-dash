@@ -104,8 +104,10 @@ function ResultsTable({ rows, loading }: { rows: Row[]; loading: boolean }) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const applyBase = (q: any) =>
-  q.eq("TIPO_LINHA", "E").gte("DATA_FIM_ATIVO", todayIso());
+const applyBase = (q: any, refDate?: string) =>
+  refDate
+    ? q.lte("DATA_INICIO_ATIVO", refDate).gte("DATA_FIM_ATIVO", refDate)
+    : q.eq("TIPO_LINHA", "E").gte("DATA_FIM_ATIVO", todayIso());
 
 export default function DWCarteira() {
   const [tab, setTab] = useState("dashboard");
