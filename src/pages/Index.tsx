@@ -239,7 +239,7 @@ const Index = () => {
             <p className="text-xs text-muted-foreground">Relatório Executivo</p>
           </div>
           <div className="flex items-center gap-3">
-            {active === "Área Geográfica" && (
+            {(active === "Área Geográfica" || active === "Dashboard") && (
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <Popover>
