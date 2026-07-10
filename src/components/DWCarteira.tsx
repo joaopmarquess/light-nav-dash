@@ -338,16 +338,9 @@ function Dashboard({
   } = useDWCarteira(!loadingOpts);
 
   return (
-    <div className="h-full flex flex-col gap-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="VIDAS" value={vidas} loading={loading} />
-        <StatCard label="PLANOS" value={pifDistintos} loading={loading} />
-        <StatCard label="EMPRESAS" value={empresasDistintas} loading={loading} />
-        <StatCard label="CIDADES" value={cidadesDistintas} loading={loading} />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <FaixaEtariaCard porFaixa={porFaixa} loading={loading} />
+    <div className="h-full grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
+      <FaixaEtariaCard porFaixa={porFaixa} loading={loading} />
+      <div className="grid grid-rows-3 gap-6 min-h-0">
         <CategoryCard title="Contratação" rows={porContratacao} loading={loading} />
         <CategoryCard title="Recuperação" rows={porRecuperacao} loading={loading} />
         <CategoryCard title="Acomodação" rows={porAcomodacao} loading={loading} />
@@ -364,11 +357,12 @@ function FaixaEtariaCard({
   loading: boolean;
 }) {
   return (
-    <Card className="flex flex-col">
-      <CardHeader>
+    <Card className="flex flex-col min-h-0 overflow-hidden">
+      <CardHeader className="shrink-0">
         <CardTitle className="text-base">Faixa Etária</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 min-h-0 overflow-auto">
+
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
             <Loader2 className="h-4 w-4 animate-spin" /> Calculando...
@@ -434,11 +428,12 @@ function CategoryCard({
   const totalAll = rows.reduce((s, r) => s + r.total, 0);
   const max = Math.max(1, ...rows.map((r) => r.total));
   return (
-    <Card className="flex flex-col">
-      <CardHeader>
+    <Card className="flex flex-col min-h-0 overflow-hidden">
+      <CardHeader className="shrink-0 py-3">
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 min-h-0 overflow-auto">
+
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
             <Loader2 className="h-4 w-4 animate-spin" /> Calculando...
