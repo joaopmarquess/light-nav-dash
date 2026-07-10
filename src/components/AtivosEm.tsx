@@ -1,16 +1,10 @@
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Map as MapIcon } from "lucide-react";
 import { dw } from "@/lib/dwClient";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LabelList,
-} from "recharts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BrazilHeatMap } from "@/components/BrazilHeatMap";
+import { StateHeatMap } from "@/components/StateHeatMap";
+import { UF_FLAGS } from "@/components/DWCarteira";
 
 interface Props {
   dateValue: string;
@@ -25,18 +19,14 @@ const toISO = (s: string): string | null => {
   return null;
 };
 
-const faixaSortKey = (s: string) => {
-  if (!s) return 999;
-  if (/^sem/i.test(s)) return 1000;
-  const m = s.match(/(\d+)/);
-  return m ? parseInt(m[1], 10) : 998;
-};
-
 const AtivosEm = ({ dateValue }: Props) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [ativos, setAtivos] = useState<number | null>(null);
-  const [porFaixa, setPorFaixa] = useState<{ faixa: string; ativos: number }[]>([]);
+  const [porUF, setPorUF] = useState<{ uf: string; total: number }[]>([]);
+  const [ufTotals, setUfTotals] = useState<Record<string, number>>({});
+  const [cityTotalsByUF, setCityTotalsByUF] = useState<Record<string, Record<string, number>>>({});
+  const [mapSelection, setMapSelection] = useState<"SP" | "MG" | "MS" | "BRASIL" | null>(null);
 
   useEffect(() => {
     if (!dateValue) return;
@@ -45,41 +35,60 @@ const AtivosEm = ({ dateValue }: Props) => {
       setLoading(true);
       setError(null);
       setAtivos(null);
-      setPorFaixa([]);
+      setPorUF([]);
+      setUfTotals({});
+      setCityTotalsByUF({});
       try {
         const ref = toISO(dateValue);
         if (!ref) throw new Error(`Data de referência inválida: ${dateValue}`);
 
-        // Consulta direta em public.sv_ecarteira_ativos (novo projeto DW).
-        // Paginação para superar o limite padrão de 1000 linhas.
+        const UF_KEYS = ["SP", "MS", "MG", "Outros"] as const;
+        const perUF = new Map<string, number>(UF_KEYS.map((u) => [u, 0]));
+        const perUFAll = new Map<string, number>();
+        const perCityByUF: Record<string, Map<string, number>> = {
+          SP: new Map(),
+          MG: new Map(),
+          MS: new Map(),
+        };
+
         const pageSize = 1000;
         let from = 0;
-        const acc: { Faixa_etaria: string | null }[] = [];
+        let totalRows = 0;
         // eslint-disable-next-line no-constant-condition
         while (true) {
           const { data, error } = await dw
             .from("sv_ecarteira_ativos")
-            .select("Faixa_etaria")
+            .select('"UF_CIDADE_OFICIAL","CIDADE_OFICIAL"')
             .lte("DATA_INICIO_ATIVO", ref)
             .gte("DATA_FIM_ATIVO", ref)
             .range(from, from + pageSize - 1);
           if (error) throw error;
-          const chunk = (data ?? []) as { Faixa_etaria: string | null }[];
-          acc.push(...chunk);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const chunk = (data ?? []) as any[];
+          totalRows += chunk.length;
+          for (const r of chunk) {
+            const uf = String(r.UF_CIDADE_OFICIAL ?? "").trim().toUpperCase();
+            const key = (["SP", "MS", "MG"] as const).includes(uf as never) ? uf : "Outros";
+            perUF.set(key, (perUF.get(key) ?? 0) + 1);
+            if (uf) perUFAll.set(uf, (perUFAll.get(uf) ?? 0) + 1);
+            if (perCityByUF[uf] && r.CIDADE_OFICIAL) {
+              const city = String(r.CIDADE_OFICIAL);
+              perCityByUF[uf].set(city, (perCityByUF[uf].get(city) ?? 0) + 1);
+            }
+          }
           if (chunk.length < pageSize) break;
           from += pageSize;
         }
         if (abort) return;
 
-        const map = new Map<string, number>();
-        for (const r of acc) {
-          const k = r.Faixa_etaria || "Sem faixa";
-          map.set(k, (map.get(k) ?? 0) + 1);
-        }
-        const arr = Array.from(map, ([faixa, ativos]) => ({ faixa, ativos }))
-          .sort((a, b) => faixaSortKey(a.faixa) - faixaSortKey(b.faixa));
-        setPorFaixa(arr);
-        setAtivos(acc.length);
+        setAtivos(totalRows);
+        setPorUF(UF_KEYS.map((u) => ({ uf: u, total: perUF.get(u) ?? 0 })));
+        setUfTotals(Object.fromEntries(perUFAll));
+        setCityTotalsByUF({
+          SP: Object.fromEntries(perCityByUF.SP),
+          MG: Object.fromEntries(perCityByUF.MG),
+          MS: Object.fromEntries(perCityByUF.MS),
+        });
         setLoading(false);
       } catch (e: any) {
         if (!abort) {
@@ -94,21 +103,46 @@ const AtivosEm = ({ dateValue }: Props) => {
   }, [dateValue]);
 
   const fmtInt = (n: number) => n.toLocaleString("pt-BR");
-  const fmtDateBR = (s: string) => {
-    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    return m ? `${m[3]}/${m[2]}/${m[1]}` : s;
-  };
+
+  if (mapSelection) {
+    const isBrasil = mapSelection === "BRASIL";
+    const title = isBrasil
+      ? "Mapa do Brasil — Vidas por UF"
+      : `Mapa de ${mapSelection}`;
+    return (
+      <div className="fixed inset-0 z-50 bg-background flex flex-col">
+        <div className="flex items-center justify-between px-4 py-2 border-b border-border">
+          <div className="text-sm font-semibold text-foreground inline-flex items-center gap-2">
+            <MapIcon className="h-4 w-4" />
+            {title}
+          </div>
+          <button
+            type="button"
+            onClick={() => setMapSelection(null)}
+            className="text-xs text-muted-foreground hover:text-foreground underline"
+          >
+            ← Voltar
+          </button>
+        </div>
+        <div className="flex-1 min-h-0">
+          {isBrasil ? (
+            <BrazilHeatMap ufTotals={ufTotals} />
+          ) : (
+            <StateHeatMap
+              ufs={[mapSelection] as ("SP" | "MG" | "MS")[]}
+              cityTotalsByUF={cityTotalsByUF}
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm p-6">
       <div className="mb-4">
         <h2 className="text-lg font-semibold text-foreground">Beneficiários ativos</h2>
-        <p className="text-xs text-muted-foreground">
-          Fonte: <code>public.sv_ecarteira_ativos</code> · Data de referência:{" "}
-          {dateValue ? fmtDateBR(dateValue) : "—"}
-        </p>
       </div>
-
 
       {loading ? (
         <div className="flex items-center text-muted-foreground text-sm py-8">
@@ -125,45 +159,69 @@ const AtivosEm = ({ dateValue }: Props) => {
             </div>
           </div>
 
-          {porFaixa.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-foreground mb-2">
-                Ativos por faixa etária
-              </h3>
-              <div className="w-full h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={porFaixa}
-                    margin={{ top: 20, right: 16, left: 8, bottom: 8 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis
-                      dataKey="faixa"
-                      tick={{ fontSize: 11 }}
-                      interval={0}
-                      angle={-20}
-                      textAnchor="end"
-                      height={60}
-                    />
-                    <YAxis tick={{ fontSize: 11 }} tickFormatter={fmtInt} />
-                    <Tooltip
-                      formatter={(v: number) => [fmtInt(v), "Ativos"]}
-                      labelFormatter={(l) => `Faixa: ${l}`}
-                    />
-                    <Bar dataKey="ativos" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}>
-                      <LabelList
-                        dataKey="ativos"
-                        position="top"
-                        formatter={(v: number) => fmtInt(v)}
-                        className="fill-foreground"
-                        style={{ fontSize: 11 }}
-                      />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+          <Card className="flex flex-col">
+            <CardHeader>
+              <CardTitle className="text-base">Vidas por UF</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+                <div className="space-y-2 self-center">
+                  {(() => {
+                    const totalAll = porUF.reduce((s, r) => s + r.total, 0);
+                    const max = Math.max(1, ...porUF.map((r) => r.total));
+                    return porUF.map((r) => {
+                      const share = totalAll > 0 ? (r.total / totalAll) * 100 : 0;
+                      const pct = (r.total / max) * 100;
+                      const isOutros = r.uf === "Outros";
+                      return (
+                        <button
+                          key={r.uf}
+                          type="button"
+                          onClick={() =>
+                            setMapSelection(isOutros ? "BRASIL" : (r.uf as "SP" | "MG" | "MS"))
+                          }
+                          className="w-full text-left rounded-md p-1 -m-1 hover:bg-accent/40 transition-colors cursor-pointer"
+                          title={isOutros ? "Ver mapa do Brasil" : `Ver mapa de ${r.uf}`}
+                        >
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-foreground inline-flex items-center gap-2">
+                              {!isOutros && UF_FLAGS[r.uf] && (
+                                <img
+                                  src={UF_FLAGS[r.uf]}
+                                  alt={`Bandeira ${r.uf}`}
+                                  className="h-3.5 w-5 object-cover rounded-[2px] border border-border"
+                                  loading="lazy"
+                                />
+                              )}
+                              {r.uf}
+                            </span>
+                            <span>
+                              <span className="font-semibold text-foreground tabular-nums">
+                                {r.total.toLocaleString("pt-BR")}
+                              </span>{" "}
+                              <span className="text-xs text-muted-foreground tabular-nums">
+                                ({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)
+                              </span>
+                            </span>
+                          </div>
+                          <div className="flex h-2 rounded-full bg-accent overflow-hidden">
+                            <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
+                          </div>
+                        </button>
+                      );
+                    });
+                  })()}
+                </div>
+                <div className="w-full min-h-[360px] flex items-center justify-center">
+                  <StateHeatMap
+                    ufs={["SP", "MG", "MS"]}
+                    cityTotalsByUF={cityTotalsByUF}
+                    onSelectUF={setMapSelection}
+                  />
+                </div>
               </div>
-            </div>
-          )}
+            </CardContent>
+          </Card>
         </div>
       )}
     </section>
