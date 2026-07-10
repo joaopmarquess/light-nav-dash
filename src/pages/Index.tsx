@@ -85,7 +85,7 @@ const menuItems: MenuItem[] = [
       { icon: Search, label: "Painel" },
       { icon: UserCheck, label: "Ativo Em" },
       { icon: TrendingUp, label: "Vendas" },
-      { icon: LayoutDashboard, label: "Resumo Gráfico" },
+      { icon: LayoutDashboard, label: "Dashboard" },
     ],
   },
   {
@@ -292,7 +292,7 @@ const Index = () => {
         <main className="flex-1 min-h-0 p-8 overflow-hidden">
           {active === "Ativo Em" ? (
             <AtivosEm dateValue={dateValue} />
-          ) : active === "Resumo Gráfico" ? (
+          ) : active === "Dashboard" ? (
             <DWCarteira />
           ) : active === "Vendas" ? (
             <Entradas />
