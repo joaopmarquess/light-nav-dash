@@ -210,6 +210,9 @@ export function useDWCarteira(enabled = true): DWCarteiraData {
         MG: new Map(),
         MS: new Map(),
       };
+      const perContratacao = new Map<string, number>();
+      const perRecuperacao = new Map<string, number>();
+      const perAcomodacao = new Map<string, number>();
       const pageSize = 1000;
       let from = 0;
       const maxRows = 500000;
