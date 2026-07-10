@@ -163,7 +163,8 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF }: Props) {
                 });
               }}
               onMouseLeave={() => setHover(null)}
-              style={{ transition: "fill 120ms" }}
+              onClick={() => onSelectUF?.(uf as "SP" | "MG" | "MS")}
+              style={{ transition: "fill 120ms", cursor: onSelectUF ? "pointer" : "default" }}
             />
           );
         })}
