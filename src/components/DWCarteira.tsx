@@ -143,6 +143,7 @@ export default function DWCarteira() {
 }
 
 
+export type CatRow = { label: string; total: number };
 export type DWCarteiraData = {
   loading: boolean;
   vidas: number | null;
@@ -150,6 +151,9 @@ export type DWCarteiraData = {
   empresasDistintas: number | null;
   cidadesDistintas: number | null;
   porFaixa: { faixa: string; total: number; F: number; M: number }[];
+  porContratacao: CatRow[];
+  porRecuperacao: CatRow[];
+  porAcomodacao: CatRow[];
   porUF: { uf: string; total: number }[];
   ufTotals: Record<string, number>;
   cityTotalsByUF: Record<string, Record<string, number>>;
