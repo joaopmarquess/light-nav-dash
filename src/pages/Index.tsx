@@ -113,7 +113,7 @@ const Index = () => {
       const detail = (e as CustomEvent<{ nome: string }>).detail;
       if (detail?.nome) {
         setAtivosDrillNome(detail.nome);
-        setActive("Ativos em");
+        setActive("Ativo Em");
       }
     };
     window.addEventListener("open-ativos-em", handler as EventListener);
@@ -126,7 +126,7 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    if (active !== "Ativos em" && ativosDrillNome) setAtivosDrillNome(null);
+    if (active !== "Ativo Em" && ativosDrillNome) setAtivosDrillNome(null);
   }, [active, ativosDrillNome]);
 
   return (
@@ -239,7 +239,7 @@ const Index = () => {
             <p className="text-xs text-muted-foreground">Relatório Executivo</p>
           </div>
           <div className="flex items-center gap-3">
-            {active === "Ativos em" && (
+            {active === "Ativo Em" && (
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <Popover>
@@ -290,13 +290,13 @@ const Index = () => {
         </header>
 
         <main className="flex-1 min-h-0 p-8 overflow-hidden">
-          {active === "Ativos em" ? (
+          {active === "Ativo Em" ? (
             <AtivosEm dateValue={dateValue} />
-          ) : active === "DW Carteira" ? (
+          ) : active === "Resumo Gráfico" ? (
             <DWCarteira />
-          ) : active === "Entradas" ? (
+          ) : active === "Vendas" ? (
             <Entradas />
-          ) : active === "Consulta Carteira" ? (
+          ) : active === "Painel" ? (
             <ConsultaBeneficiarioDenis />
           ) : active === "DRE" ? (
             <DRE />
