@@ -255,6 +255,7 @@ const Index = () => {
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
+                        locale={ptBR}
                         selected={parseBR(dateValue)}
                         onSelect={(d) => d && setDateValue(formatBR(d))}
                         initialFocus
