@@ -70,6 +70,17 @@ export default function OdoLancamentos() {
     load();
   }, [mes]);
 
+  // Rehidrata anexos do localStorage para os fornecedores da competência atual
+  useEffect(() => {
+    const next: Record<string, OdoAnexo> = {};
+    fornecedores.forEach((f) => {
+      const p = buildProtocoloMensal(mes, f.id);
+      const a = readAnexo(p);
+      if (a) next[p] = a;
+    });
+    setAnexos(next);
+  }, [fornecedores, mes]);
+
   const logsPorFornecedor = useMemo(() => {
     const map = new Map<number, OdoLog[]>();
     logs.forEach((l) => {
