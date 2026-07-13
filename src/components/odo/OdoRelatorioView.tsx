@@ -60,7 +60,7 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
   const hoje = new Date().toLocaleDateString("pt-BR");
 
   const printBar = showPrintBar ? (
-    <div className="no-print bg-slate-100 border-b border-slate-300 px-6 py-3 flex items-center justify-between">
+    <div className="no-print bg-slate-100 border-b border-slate-300 px-6 py-3 pr-16 flex items-center justify-between gap-4">
       <span className="text-sm text-slate-600">
         Pré-visualização —{" "}
         {tipo === "folha"
