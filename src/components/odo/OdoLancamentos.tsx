@@ -102,25 +102,40 @@ export default function OdoLancamentos() {
 
   const emitirAcao = async (
     tipo: "Por lista" | "Global",
-    fornecedor: OdoFornecedor | null,
+    fornecedor: OdoFornecedor,
   ) => {
-    const protocolo = fornecedor ? buildProtocoloMensal(mes, fornecedor.id) : `${mes}-GLOBAL`;
+    const protocolo = buildProtocoloMensal(mes, fornecedor.id);
     const now = new Date().toISOString().replace("T", " ").slice(0, 19);
     const { error } = await odo.from("odo_log").insert({
       protocolo,
       ...OPERADOR,
       momento: now,
       acao: tipo,
-      descricao:
-        tipo === "Por lista"
-          ? `Emissão relatório por lista — ${fornecedor?.fornecedor} — ${mes}`
-          : `Emissão relatório global do mês ${mes}`,
+      descricao: `Emissão relatório ${tipo === "Por lista" ? "por lista" : "global"} — ${fornecedor.fornecedor} — ${mes}`,
     });
     if (error) {
       toast({ title: "Erro ao registrar ação", description: error.message, variant: "destructive" });
       return;
     }
     openReport(tipo === "Por lista" ? "lista" : "global", protocolo, mes);
+    load();
+  };
+
+  const emitirFolha = async () => {
+    const protocolo = `${mes}-FOLHA`;
+    const now = new Date().toISOString().replace("T", " ").slice(0, 19);
+    const { error } = await odo.from("odo_log").insert({
+      protocolo,
+      ...OPERADOR,
+      momento: now,
+      acao: "Folha",
+      descricao: `Emissão Folha ODO-NRPS — competência ${mes}`,
+    });
+    if (error) {
+      toast({ title: "Erro ao registrar ação", description: error.message, variant: "destructive" });
+      return;
+    }
+    openReport("folha", protocolo, mes);
     load();
   };
 
