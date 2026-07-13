@@ -57,7 +57,7 @@ import DWCarteira from "@/components/DWCarteira";
 import OdoFornecedores from "@/components/odo/OdoFornecedores";
 import OdoLancamentos from "@/components/odo/OdoLancamentos";
 import OdoAcoes from "@/components/odo/OdoAcoes";
-import OdoRelatoriosView from "@/components/odo/OdoRelatorios";
+
 
 
 import logoFull from "@/assets/bensaude-logo.svg.asset.json";
