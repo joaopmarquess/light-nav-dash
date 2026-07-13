@@ -175,6 +175,7 @@ export default function OdoLancamentos() {
               <tr>
                 <th className="text-left px-4 py-2 font-medium">Protocolo</th>
                 <th className="text-left px-4 py-2 font-medium">Fornecedor</th>
+                <th className="text-center px-4 py-2 font-medium">Tipo</th>
                 <th className="text-center px-4 py-2 font-medium">Dia</th>
                 <th className="text-right px-4 py-2 font-medium">Valor</th>
                 <th className="text-left px-4 py-2 font-medium">Status</th>
@@ -186,10 +187,24 @@ export default function OdoLancamentos() {
                 const protocolo = buildProtocoloMensal(mes, f.id);
                 const acoes = logsPorFornecedor.get(f.id) ?? [];
                 const gerado = acoes.some((a) => a.acao === "Lançamento");
+                const tipoRel: "Por lista" | "Global" | null =
+                  f.tp_relatorio === "Por lista" || f.tp_relatorio === "Global"
+                    ? (f.tp_relatorio as "Por lista" | "Global")
+                    : null;
+                const tipoNum = tipoRel === "Por lista" ? "1" : tipoRel === "Global" ? "2" : "-";
                 return (
                   <tr key={f.id} className="border-t border-border hover:bg-accent/40">
                     <td className="px-4 py-2 font-mono text-xs">{protocolo}</td>
                     <td className="px-4 py-2 font-medium">{f.fornecedor}</td>
+                    <td className="px-4 py-2 text-center">
+                      {tipoRel ? (
+                        <span className="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                          {tipoNum} · {tipoRel}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Não definido</span>
+                      )}
+                    </td>
                     <td className="px-4 py-2 text-center font-mono">
                       {diaDoVencimento(f.vencimento)?.toString().padStart(2, "0") ?? "-"}
                     </td>
@@ -207,20 +222,17 @@ export default function OdoLancamentos() {
                     </td>
                     <td className="px-4 py-2 text-right whitespace-nowrap">
                       <button
-                        onClick={() => emitirAcao("Por lista", f)}
-                        disabled={!gerado}
+                        onClick={() => tipoRel && emitirAcao(tipoRel, f)}
+                        disabled={!gerado || !tipoRel}
                         className="h-7 px-2 inline-flex items-center gap-1 rounded text-xs hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
-                        title="Emitir relatório por lista"
+                        title={tipoRel ? `Emitir relatório ${tipoNum} - ${tipoRel}` : "Defina o tipo no cadastro"}
                       >
-                        <FileText className="h-3.5 w-3.5" /> Por lista
-                      </button>
-                      <button
-                        onClick={() => emitirAcao("Global", f)}
-                        disabled={!gerado}
-                        className="h-7 px-2 inline-flex items-center gap-1 rounded text-xs hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
-                        title="Emitir relatório global do mês"
-                      >
-                        <Globe2 className="h-3.5 w-3.5" /> Global
+                        {tipoRel === "Global" ? (
+                          <Globe2 className="h-3.5 w-3.5" />
+                        ) : (
+                          <FileText className="h-3.5 w-3.5" />
+                        )}
+                        Emitir {tipoNum}
                       </button>
                     </td>
                   </tr>
@@ -228,7 +240,7 @@ export default function OdoLancamentos() {
               })}
               {fornecedores.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground text-sm">
+                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground text-sm">
                     Nenhum fornecedor cadastrado. Cadastre em ODO-NRPS → Fornecedores.
                   </td>
                 </tr>
