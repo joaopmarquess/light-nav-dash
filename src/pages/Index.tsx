@@ -18,6 +18,9 @@ import {
   Calendar as CalendarIcon,
   CalendarCheck,
   Search,
+  Receipt,
+  ClipboardList,
+  Printer,
 } from "lucide-react";
 
 const todayBR = () => {
