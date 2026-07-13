@@ -166,9 +166,7 @@ export default function OdoLancamentos() {
             title={
               gerados === 0
                 ? "Gera um lançamento previsto para cada fornecedor cadastrado, na competência selecionada"
-                : gerados < fornecedores.length
-                ? `Gera lançamentos apenas para os ${fornecedores.length - gerados} fornecedor(es) ainda pendente(s) nesta competência`
-                : "Todos os fornecedores já têm lançamento nesta competência — nada será regerado"
+                : `Re-gera os ${gerados} lançamento(s) já existente(s) e gera os ${fornecedores.length - gerados} ainda pendente(s) nesta competência`
             }
             className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 disabled:opacity-60"
           >
