@@ -30,6 +30,26 @@ export default function OdoLancamentos() {
   const [report, setReport] = useState<ReportDialogState>(null);
   const [loading, setLoading] = useState(true);
   const [gerando, setGerando] = useState(false);
+  const [anexos, setAnexos] = useState<Record<string, OdoAnexo>>({});
+  const fileInputRef = useState<{ el: HTMLInputElement | null; protocolo: string }>({ el: null, protocolo: "" })[0];
+
+  const handleUploadClick = (protocolo: string) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".xlsx,.xls";
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      try {
+        const anexo = await saveAnexo(protocolo, file);
+        setAnexos((s) => ({ ...s, [protocolo]: anexo }));
+        toast({ title: "Anexo carregado", description: `${anexo.filename} · ${anexo.rows.length} linha(s)` });
+      } catch (e: any) {
+        toast({ title: "Erro ao ler XLSX", description: e?.message ?? String(e), variant: "destructive" });
+      }
+    };
+    input.click();
+  };
 
   const load = async () => {
     setLoading(true);
