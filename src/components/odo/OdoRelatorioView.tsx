@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { odo, type OdoFornecedor } from "@/lib/odoClient";
 import { readAnexo, type OdoAnexo } from "@/lib/odoAnexo";
-import { Printer } from "lucide-react";
+import { Loader2, Printer } from "lucide-react";
 
 const brl = (n: number | null | undefined) =>
   (n ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -33,6 +33,8 @@ interface Props {
 export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintBar = true, autoPrint = false }: Props) {
   const [pagamentos, setPagamentos] = useState<OdoFornecedor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
   const anexo: OdoAnexo | null = useMemo(
     () => (tipo === "lista" && protocolo ? readAnexo(protocolo) : null),
     [tipo, protocolo],
@@ -72,9 +74,49 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
     return `/odo-relatorio?${params.toString()}`;
   }, [tipo, protocolo, mes]);
 
+  const exportPdf = useCallback(async () => {
+    const element = reportRef.current;
+    if (!element || loading || exportingPdf) return;
+    setExportingPdf(true);
+    try {
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
+
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pageWidthMm = 210;
+      const pageHeightMm = 297;
+      const marginMm = 14;
+      const contentWidthMm = pageWidthMm - marginMm * 2;
+      const contentHeightMm = pageHeightMm - marginMm * 2;
+      const sections = Array.from(element.querySelectorAll<HTMLElement>("[data-pdf-section]"));
+
+      for (let i = 0; i < sections.length; i += 1) {
+        const section = sections[i];
+        const canvas = await html2canvas(section, {
+          scale: 2,
+          backgroundColor: "#ffffff",
+          useCORS: true,
+          windowWidth: section.scrollWidth,
+          windowHeight: section.scrollHeight,
+        });
+        const imgData = canvas.toDataURL("image/png");
+        const sectionHeightMm = Math.min(contentHeightMm, (canvas.height * contentWidthMm) / canvas.width);
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, "PNG", marginMm, marginMm, contentWidthMm, sectionHeightMm, undefined, "FAST");
+      }
+
+      const safeName = protocolo || `${mes}-${tipo}`;
+      pdf.save(`odo-${safeName}.pdf`);
+    } finally {
+      setExportingPdf(false);
+    }
+  }, [exportingPdf, loading, mes, protocolo, tipo]);
+
   const handlePrint = () => {
     if (window.location.pathname === "/odo-relatorio") {
-      window.print();
+      exportPdf();
       return;
     }
     window.open(printUrl, "_blank", "noopener,noreferrer");
@@ -82,9 +124,9 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
 
   useEffect(() => {
     if (!autoPrint || loading) return;
-    const timeout = window.setTimeout(() => window.print(), 350);
+    const timeout = window.setTimeout(() => exportPdf(), 500);
     return () => window.clearTimeout(timeout);
-  }, [autoPrint, loading]);
+  }, [autoPrint, exportPdf, loading]);
 
   const printBar = showPrintBar ? (
     <div className="no-print bg-slate-100 border-b border-slate-300 px-6 py-3 pr-16 flex items-center justify-between gap-4">
@@ -98,9 +140,11 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
       </span>
       <button
         onClick={handlePrint}
+        disabled={loading || exportingPdf}
         className="h-9 px-4 rounded-md bg-slate-900 text-white text-sm font-medium flex items-center gap-2"
       >
-        <Printer className="h-4 w-4" /> Imprimir / Salvar PDF
+        {exportingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
+        {exportingPdf ? "Gerando PDF…" : "Gerar PDF"}
       </button>
     </div>
   ) : null;
@@ -125,7 +169,8 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
       <div className="bg-white text-black">
         {styleBlock}
         {printBar}
-        <div className="max-w-[210mm] mx-auto px-10 py-10">
+        <div ref={reportRef} className="max-w-[210mm] mx-auto px-10 py-10">
+          <section data-pdf-section className="bg-white p-6">
           <header className="mb-8">
             <div className="flex items-start justify-between">
               <div>
@@ -217,6 +262,7 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
               </footer>
             </>
           )}
+          </section>
         </div>
       </div>
     );
@@ -229,20 +275,21 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
     <div className="bg-white text-black">
       {styleBlock}
       {printBar}
-      <div className="max-w-[210mm] mx-auto px-10 py-10">
-        <header className="border-b-2 border-slate-800 pb-4 mb-6">
-          <p className="text-xs uppercase tracking-wider text-slate-500">ODO-NRPS</p>
-          <h1 className="text-2xl font-bold">{titulo}</h1>
-          <div className="mt-2 flex justify-between text-xs text-slate-600">
-            <span>Emitido em {hoje}</span>
-            {protocolo && <span className="font-mono">Protocolo: {protocolo}</span>}
-          </div>
-        </header>
-
+      <div ref={reportRef} className="max-w-[210mm] mx-auto px-10 py-10">
         {loading ? (
           <p className="text-slate-500">Carregando…</p>
         ) : (
           <>
+            <section data-pdf-section className="bg-white p-6">
+              <header className="border-b-2 border-slate-800 pb-4 mb-6">
+                <p className="text-xs uppercase tracking-wider text-slate-500">ODO-NRPS</p>
+                <h1 className="text-2xl font-bold">{titulo}</h1>
+                <div className="mt-2 flex justify-between text-xs text-slate-600">
+                  <span>Emitido em {hoje}</span>
+                  {protocolo && <span className="font-mono">Protocolo: {protocolo}</span>}
+                </div>
+              </header>
+
             <section className="mb-6 text-sm leading-relaxed text-slate-700">
               <p>{LOREM}</p>
             </section>
@@ -291,9 +338,10 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
               <div className="border-t border-slate-400 pt-2 text-center">Elaborado por</div>
               <div className="border-t border-slate-400 pt-2 text-center">Aprovado por</div>
             </footer>
+            </section>
 
             {tipo === "lista" && anexo && (
-              <section className="mt-16 pt-10 border-t-2 border-dashed border-slate-400 break-before-page">
+              <section data-pdf-section className="mt-16 pt-10 border-t-2 border-dashed border-slate-400 break-before-page bg-white p-6">
                 <div className="mb-6">
                   <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Anexo I</p>
                   <h2 className="text-xl font-bold mt-1">Lista de itens</h2>
