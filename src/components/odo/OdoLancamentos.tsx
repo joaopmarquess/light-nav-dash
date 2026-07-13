@@ -175,6 +175,17 @@ export default function OdoLancamentos() {
     () => fornecedores.filter((f) => (logsPorFornecedor.get(f.id) ?? []).some((l) => l.acao === "Lançamento")).length,
     [fornecedores, logsPorFornecedor],
   );
+  const totalPorLista = useMemo(
+    () => fornecedores.filter((f) => f.tp_relatorio === "Por lista").length,
+    [fornecedores],
+  );
+  const anexosCount = useMemo(
+    () => fornecedores.filter((f) => f.tp_relatorio === "Por lista" && anexos[buildProtocoloMensal(mes, f.id)]).length,
+    [fornecedores, anexos, mes],
+  );
+  const semAnexos = anexosCount === 0;
+  const bloquearRegerar = gerados > 0 && semAnexos;
+  const bloquearFolha = semAnexos;
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
