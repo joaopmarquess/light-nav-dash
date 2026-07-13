@@ -205,20 +205,28 @@ export default function OdoLancamentos() {
           />
           <button
             onClick={gerarLote}
-            disabled={gerando || loading}
+            disabled={gerando || loading || bloquearRegerar}
             title={
-              gerados === 0
+              bloquearRegerar
+                ? `Envie pelo menos 1 anexo XLSX (0/${totalPorLista} fornecedor(es) "Por lista") antes de re-gerar`
+                : gerados === 0
                 ? "Gera um lançamento previsto para cada fornecedor cadastrado, na competência selecionada"
                 : `Re-gera os ${gerados} lançamento(s) já existente(s) e gera os ${fornecedores.length - gerados} ainda pendente(s) nesta competência`
             }
-            className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 disabled:opacity-60"
+            className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {gerando ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
             {gerados === 0 ? "Gerar pagamentos" : "Re-gerar pagamentos"}
           </button>
           <button
             onClick={emitirFolha}
-            className="h-9 px-4 rounded-md border border-border text-sm font-medium flex items-center gap-2 hover:bg-accent"
+            disabled={bloquearFolha}
+            title={
+              bloquearFolha
+                ? `Envie pelo menos 1 anexo XLSX (0/${totalPorLista} fornecedor(es) "Por lista") antes de emitir a folha`
+                : `Emitir Folha ODO-NRPS — ${anexosCount}/${totalPorLista} anexo(s) enviado(s)`
+            }
+            className="h-9 px-4 rounded-md border border-border text-sm font-medium flex items-center gap-2 hover:bg-accent disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           >
             <Globe2 className="h-4 w-4" /> Folha ODO-NRPS
           </button>
