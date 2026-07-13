@@ -110,7 +110,8 @@ const menuItems: MenuItem[] = [
     icon: Receipt,
     label: "ODO-NRPS",
     children: [
-      { icon: FileText, label: "Pagamentos" },
+      { icon: Users, label: "Fornecedores" },
+      { icon: FileText, label: "Lançamentos" },
       { icon: ClipboardList, label: "Ações / Log" },
       { icon: Printer, label: "Relatórios" },
     ],
