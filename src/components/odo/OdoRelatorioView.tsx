@@ -32,6 +32,10 @@ interface Props {
 export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintBar = true }: Props) {
   const [pagamentos, setPagamentos] = useState<OdoFornecedor[]>([]);
   const [loading, setLoading] = useState(true);
+  const anexo: OdoAnexo | null = useMemo(
+    () => (tipo === "lista" && protocolo ? readAnexo(protocolo) : null),
+    [tipo, protocolo],
+  );
 
   useEffect(() => {
     let cancelled = false;
