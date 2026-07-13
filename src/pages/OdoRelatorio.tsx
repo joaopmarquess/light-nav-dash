@@ -10,13 +10,24 @@ const brDate = (iso: string | null) => {
   const [y, m, d] = iso.split("-");
   return `${d}/${m}/${y}`;
 };
+const diaOf = (iso: string | null) => (iso ? iso.split("-")[2] : "-");
 
 const LOREM =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
 
+const nomeMes = (mes: string) => {
+  if (!mes) return "";
+  const [y, m] = mes.split("-").map(Number);
+  const nomes = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+  ];
+  return `${nomes[(m ?? 1) - 1]}/${y}`;
+};
+
 export default function OdoRelatorio() {
   const [params] = useSearchParams();
-  const tipo = params.get("tipo") ?? "lista";
+  const tipo = (params.get("tipo") ?? "lista") as "lista" | "global" | "folha";
   const protocolo = params.get("protocolo") ?? "";
   const mes = params.get("mes") ?? "";
   const [pagamentos, setPagamentos] = useState<OdoFornecedor[]>([]);
@@ -25,16 +36,12 @@ export default function OdoRelatorio() {
   useEffect(() => {
     (async () => {
       let q = odo.from("odo_fornecedor").select("*").order("vencimento");
-      if (tipo === "lista" && protocolo) {
+      if ((tipo === "lista" || tipo === "global") && protocolo) {
         const parts = protocolo.split("-");
         const id = Number(parts[2] ?? 0);
         q = q.eq("id", id);
-      } else if (mes) {
-        const start = `${mes}-01`;
-        const [y, m] = mes.split("-").map(Number);
-        const end = new Date(y, m, 0).toISOString().slice(0, 10);
-        q = q.gte("vencimento", start).lte("vencimento", end);
       }
+      // Folha: sem filtro (todos os fornecedores do cadastro entram na competência)
       const { data } = await q;
       setPagamentos((data as OdoFornecedor[]) ?? []);
       setLoading(false);
@@ -47,30 +54,156 @@ export default function OdoRelatorio() {
   );
 
   const hoje = new Date().toLocaleDateString("pt-BR");
+
+  const printBar = (
+    <div className="no-print bg-slate-100 border-b border-slate-300 px-6 py-3 flex items-center justify-between">
+      <span className="text-sm text-slate-600">
+        Pré-visualização —{" "}
+        {tipo === "folha"
+          ? `Folha ODO-NRPS ${nomeMes(mes)}`
+          : tipo === "global"
+          ? "Relatório Global (por fornecedor)"
+          : "Relatório por Lista (por fornecedor)"}
+      </span>
+      <button
+        onClick={() => window.print()}
+        className="h-9 px-4 rounded-md bg-slate-900 text-white text-sm font-medium flex items-center gap-2"
+      >
+        <Printer className="h-4 w-4" /> Imprimir / Salvar PDF
+      </button>
+    </div>
+  );
+
+  const styleBlock = (
+    <style>{`
+      @media print {
+        .no-print { display: none !important; }
+        body { background: white; }
+      }
+      @page { size: A4; margin: 18mm; }
+    `}</style>
+  );
+
+  // ============================================================
+  // FOLHA ODO-NRPS — layout próprio (por mês de competência)
+  // ============================================================
+  if (tipo === "folha") {
+    return (
+      <div className="min-h-screen bg-white text-black">
+        {styleBlock}
+        {printBar}
+
+        <div className="max-w-[210mm] mx-auto px-10 py-10">
+          <header className="mb-8">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">ODO-NRPS</p>
+                <h1 className="text-3xl font-black tracking-tight mt-1">FOLHA DE PAGAMENTO</h1>
+                <p className="text-sm text-slate-600 mt-1">
+                  Competência{" "}
+                  <span className="font-semibold text-slate-800">{nomeMes(mes)}</span>
+                </p>
+              </div>
+              <div className="text-right text-[11px] text-slate-600 leading-relaxed">
+                <p>Emitido em</p>
+                <p className="font-semibold text-slate-800">{hoje}</p>
+                <p className="font-mono mt-1">{`${mes}-FOLHA`}</p>
+              </div>
+            </div>
+            <div className="mt-4 h-1 bg-slate-900 rounded" />
+          </header>
+
+          {loading ? (
+            <p className="text-slate-500">Carregando…</p>
+          ) : (
+            <>
+              {/* Resumo em blocos */}
+              <section className="grid grid-cols-3 gap-3 mb-8">
+                <div className="border border-slate-300 rounded-md p-4">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500">Fornecedores</p>
+                  <p className="text-2xl font-bold mt-1">{pagamentos.length}</p>
+                </div>
+                <div className="border border-slate-300 rounded-md p-4">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500">Total bruto</p>
+                  <p className="text-2xl font-bold mt-1">{brl(total)}</p>
+                </div>
+                <div className="border border-slate-300 rounded-md p-4">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500">Competência</p>
+                  <p className="text-2xl font-bold mt-1">{nomeMes(mes) || "-"}</p>
+                </div>
+              </section>
+
+              <section className="mb-4 text-xs leading-relaxed text-slate-700">
+                <p>{LOREM}</p>
+              </section>
+
+              <section>
+                <table className="w-full text-[11px] border-collapse">
+                  <thead>
+                    <tr className="bg-slate-900 text-white">
+                      <th className="text-left px-2 py-2">#</th>
+                      <th className="text-left px-2 py-2">Cód.</th>
+                      <th className="text-left px-2 py-2">Fornecedor</th>
+                      <th className="text-left px-2 py-2">Objeto</th>
+                      <th className="text-center px-2 py-2">Dia venc.</th>
+                      <th className="text-left px-2 py-2">Tipo rel.</th>
+                      <th className="text-right px-2 py-2">Valor bruto</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pagamentos.map((r, i) => (
+                      <tr key={r.id} className={i % 2 ? "bg-slate-50" : ""}>
+                        <td className="px-2 py-1.5 border-b border-slate-200">{i + 1}</td>
+                        <td className="px-2 py-1.5 border-b border-slate-200 font-mono">
+                          {r.cd_fornecedor ?? "-"}
+                        </td>
+                        <td className="px-2 py-1.5 border-b border-slate-200 font-medium">
+                          {r.fornecedor}
+                        </td>
+                        <td className="px-2 py-1.5 border-b border-slate-200">{r.objeto ?? "-"}</td>
+                        <td className="px-2 py-1.5 border-b border-slate-200 text-center font-mono">
+                          {diaOf(r.vencimento)}
+                        </td>
+                        <td className="px-2 py-1.5 border-b border-slate-200 text-[10px] uppercase tracking-wider">
+                          {r.tp_relatorio ?? "-"}
+                        </td>
+                        <td className="px-2 py-1.5 border-b border-slate-200 text-right">
+                          {brl(r.vl_bruto)}
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="bg-slate-900 text-white font-bold">
+                      <td colSpan={6} className="px-2 py-2 text-right">
+                        TOTAL DA FOLHA
+                      </td>
+                      <td className="px-2 py-2 text-right">{brl(total)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+
+              <footer className="mt-16 grid grid-cols-3 gap-6 text-[11px]">
+                <div className="border-t border-slate-800 pt-2 text-center">Elaborado por</div>
+                <div className="border-t border-slate-800 pt-2 text-center">Conferido por</div>
+                <div className="border-t border-slate-800 pt-2 text-center">Autorizado por</div>
+              </footer>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================================
+  // RELATÓRIO POR FORNECEDOR — Por Lista ou Global
+  // ============================================================
   const titulo =
-    tipo === "global"
-      ? `Relatório Global — Fornecedores ${mes || ""}`
-      : `Relatório por Lista — Vencimento`;
+    tipo === "global" ? "Relatório Global (por fornecedor)" : "Relatório por Lista";
 
   return (
     <div className="min-h-screen bg-white text-black">
-      <style>{`
-        @media print {
-          .no-print { display: none !important; }
-          body { background: white; }
-        }
-        @page { size: A4; margin: 18mm; }
-      `}</style>
-
-      <div className="no-print bg-slate-100 border-b border-slate-300 px-6 py-3 flex items-center justify-between">
-        <span className="text-sm text-slate-600">Pré-visualização do relatório — {titulo}</span>
-        <button
-          onClick={() => window.print()}
-          className="h-9 px-4 rounded-md bg-slate-900 text-white text-sm font-medium flex items-center gap-2"
-        >
-          <Printer className="h-4 w-4" /> Imprimir / Salvar PDF
-        </button>
-      </div>
+      {styleBlock}
+      {printBar}
 
       <div className="max-w-[210mm] mx-auto px-10 py-10">
         <header className="border-b-2 border-slate-800 pb-4 mb-6">
@@ -90,7 +223,7 @@ export default function OdoRelatorio() {
               <p>{LOREM}</p>
             </section>
 
-            {tipo === "lista" && pagamentos[0] ? (
+            {pagamentos[0] ? (
               <section className="mb-6 border border-slate-300 rounded-md p-4 text-sm">
                 <h2 className="font-semibold mb-3">Dados do lançamento</h2>
                 <div className="grid grid-cols-2 gap-3">
@@ -103,12 +236,20 @@ export default function OdoRelatorio() {
                     <p className="font-medium">{pagamentos[0].cd_fornecedor ?? "-"}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500">Vencimento</p>
-                    <p className="font-medium">{brDate(pagamentos[0].vencimento)}</p>
+                    <p className="text-xs text-slate-500">Dia do vencimento</p>
+                    <p className="font-medium">{diaOf(pagamentos[0].vencimento)}</p>
                   </div>
                   <div>
                     <p className="text-xs text-slate-500">Valor bruto</p>
                     <p className="font-medium">{brl(pagamentos[0].vl_bruto)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500">Competência</p>
+                    <p className="font-medium">{nomeMes(mes) || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500">Tipo de relatório</p>
+                    <p className="font-medium">{pagamentos[0].tp_relatorio ?? "-"}</p>
                   </div>
                   <div className="col-span-2">
                     <p className="text-xs text-slate-500">Objeto</p>
@@ -117,42 +258,6 @@ export default function OdoRelatorio() {
                 </div>
               </section>
             ) : null}
-
-            <section>
-              <h2 className="font-semibold mb-2 text-sm">
-                {tipo === "global" ? "Fornecedores do mês" : "Detalhamento"}
-              </h2>
-              <table className="w-full text-xs border-collapse">
-                <thead>
-                  <tr className="bg-slate-100">
-                    <th className="text-left px-2 py-1.5 border border-slate-300">Vencimento</th>
-                    <th className="text-left px-2 py-1.5 border border-slate-300">Fornecedor</th>
-                    <th className="text-left px-2 py-1.5 border border-slate-300">Objeto</th>
-                    <th className="text-right px-2 py-1.5 border border-slate-300">Valor</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pagamentos.map((r) => (
-                    <tr key={r.id}>
-                      <td className="px-2 py-1.5 border border-slate-300">{brDate(r.vencimento)}</td>
-                      <td className="px-2 py-1.5 border border-slate-300">{r.fornecedor}</td>
-                      <td className="px-2 py-1.5 border border-slate-300">{r.objeto}</td>
-                      <td className="px-2 py-1.5 border border-slate-300 text-right">
-                        {brl(r.vl_bruto)}
-                      </td>
-                    </tr>
-                  ))}
-                  <tr>
-                    <td colSpan={3} className="px-2 py-1.5 border border-slate-300 text-right font-semibold">
-                      Total
-                    </td>
-                    <td className="px-2 py-1.5 border border-slate-300 text-right font-semibold">
-                      {brl(total)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </section>
 
             <section className="mt-8 text-xs leading-relaxed text-slate-700">
               <p>{LOREM}</p>

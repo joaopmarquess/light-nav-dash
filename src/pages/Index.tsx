@@ -57,7 +57,7 @@ import DWCarteira from "@/components/DWCarteira";
 import OdoFornecedores from "@/components/odo/OdoFornecedores";
 import OdoLancamentos from "@/components/odo/OdoLancamentos";
 import OdoAcoes from "@/components/odo/OdoAcoes";
-import OdoRelatoriosView from "@/components/odo/OdoRelatorios";
+
 
 
 import logoFull from "@/assets/bensaude-logo.svg.asset.json";
@@ -113,7 +113,6 @@ const menuItems: MenuItem[] = [
       { icon: Users, label: "Fornecedores" },
       { icon: FileText, label: "Lançamentos" },
       { icon: ClipboardList, label: "Ações / Log" },
-      { icon: Printer, label: "Relatórios" },
     ],
   },
 ];
@@ -351,8 +350,6 @@ const Index = () => {
             <OdoLancamentos />
           ) : active === "Ações / Log" ? (
             <OdoAcoes />
-          ) : active === "Relatórios" ? (
-            <OdoRelatoriosView />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : (
