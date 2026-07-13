@@ -257,16 +257,16 @@ export default function OdoLancamentos() {
                     </td>
                     <td className="px-4 py-2 text-right whitespace-nowrap">
                       {(() => {
-                        const jaEmitido = acoes.some((a) => a.acao === "Por lista" || a.acao === "Global");
                         const emissoes = acoes.filter((a) => a.acao === "Por lista" || a.acao === "Global");
+                        const jaEmitido = emissoes.length > 0;
                         const ultima = emissoes[0];
                         const fmt = (m: string | null | undefined) =>
-                          m ? new Date(m.replace(" ", "T")).toLocaleString("pt-BR") : "-";
+                          m ? new Date(m.replace(" ", "T")).toLocaleDateString("pt-BR") : "-";
                         const label = jaEmitido ? "Re-emitir" : "Emitir";
                         const tip = !tipoRel
                           ? "Defina o tipo no cadastro"
                           : jaEmitido
-                          ? `Re-emitir relatório ${tipoNum} - ${tipoRel}\nÚltima: ${ultima?.operador ?? "-"} em ${fmt(ultima?.momento)} (${emissoes.length}x)`
+                          ? `Último em ${fmt(ultima?.momento)} | (${emissoes.length}x)`
                           : `Emitir relatório ${tipoNum} - ${tipoRel}`;
                         return (
                           <button
