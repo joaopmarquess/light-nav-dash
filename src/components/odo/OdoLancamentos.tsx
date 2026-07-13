@@ -240,7 +240,7 @@ export default function OdoLancamentos() {
               })}
               {fornecedores.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground text-sm">
+                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground text-sm">
                     Nenhum fornecedor cadastrado. Cadastre em ODO-NRPS → Fornecedores.
                   </td>
                 </tr>
