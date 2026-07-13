@@ -234,30 +234,61 @@ export default function OdoLancamentos() {
                     </td>
                     <td className="px-4 py-2 text-right">{brl(f.vl_bruto)}</td>
                     <td className="px-4 py-2">
-                      {gerado ? (
-                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
-                          Gerado
-                        </span>
-                      ) : (
+                      {gerado ? (() => {
+                        const lanc = acoes.find((a) => a.acao === "Lançamento");
+                        const emissoes = acoes.filter((a) => a.acao === "Por lista" || a.acao === "Global");
+                        const ultimaEmissao = emissoes[0];
+                        const fmt = (m: string | null | undefined) =>
+                          m ? new Date(m.replace(" ", "T")).toLocaleString("pt-BR") : "-";
+                        const tip = [
+                          `Gerado por ${lanc?.operador ?? "-"} em ${fmt(lanc?.momento)}`,
+                          emissoes.length
+                            ? `Última emissão: ${ultimaEmissao?.operador ?? "-"} em ${fmt(ultimaEmissao?.momento)} (${emissoes.length}x)`
+                            : "Ainda não emitido",
+                        ].join("\n");
+                        return (
+                          <span
+                            title={tip}
+                            className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 cursor-help"
+                          >
+                            Gerado
+                          </span>
+                        );
+                      })() : (
                         <span className="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                           Pendente
                         </span>
                       )}
                     </td>
                     <td className="px-4 py-2 text-right whitespace-nowrap">
-                      <button
-                        onClick={() => tipoRel && emitirAcao(tipoRel, f)}
-                        disabled={!gerado || !tipoRel}
-                        className="h-7 px-2 inline-flex items-center gap-1 rounded text-xs hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
-                        title={tipoRel ? `Emitir relatório ${tipoNum} - ${tipoRel}` : "Defina o tipo no cadastro"}
-                      >
-                        {tipoRel === "Global" ? (
-                          <Globe2 className="h-3.5 w-3.5" />
-                        ) : (
-                          <FileText className="h-3.5 w-3.5" />
-                        )}
-                        Emitir
-                      </button>
+                      {(() => {
+                        const jaEmitido = acoes.some((a) => a.acao === "Por lista" || a.acao === "Global");
+                        const emissoes = acoes.filter((a) => a.acao === "Por lista" || a.acao === "Global");
+                        const ultima = emissoes[0];
+                        const fmt = (m: string | null | undefined) =>
+                          m ? new Date(m.replace(" ", "T")).toLocaleString("pt-BR") : "-";
+                        const label = jaEmitido ? "Re-emitir" : "Emitir";
+                        const tip = !tipoRel
+                          ? "Defina o tipo no cadastro"
+                          : jaEmitido
+                          ? `Re-emitir relatório ${tipoNum} - ${tipoRel}\nÚltima: ${ultima?.operador ?? "-"} em ${fmt(ultima?.momento)} (${emissoes.length}x)`
+                          : `Emitir relatório ${tipoNum} - ${tipoRel}`;
+                        return (
+                          <button
+                            onClick={() => tipoRel && emitirAcao(tipoRel, f)}
+                            disabled={!gerado || !tipoRel}
+                            className="h-7 px-2 inline-flex items-center gap-1 rounded text-xs hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
+                            title={tip}
+                          >
+                            {tipoRel === "Global" ? (
+                              <Globe2 className="h-3.5 w-3.5" />
+                            ) : (
+                              <FileText className="h-3.5 w-3.5" />
+                            )}
+                            {label}
+                          </button>
+                        );
+                      })()}
                     </td>
                   </tr>
                 );
