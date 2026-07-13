@@ -6,7 +6,7 @@ import {
   type OdoFornecedor,
   type OdoLog,
 } from "@/lib/odoClient";
-import { Loader2, FileText, Globe2, PlayCircle, Upload, CheckCircle2 } from "lucide-react";
+import { Loader2, FileText, Globe2, PlayCircle, Upload } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import OdoRelatorioView, { type OdoRelatorioTipo } from "./OdoRelatorioView";
