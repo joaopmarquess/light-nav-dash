@@ -176,7 +176,7 @@ export default function OdoLancamentos() {
             className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 disabled:opacity-60"
           >
             {gerando ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
-            {gerados === 0 ? "Gerar pagamentos do mês" : "Gerar pagamentos"}
+            Re-gerar pagamentos
           </button>
           <button
             onClick={emitirFolha}
