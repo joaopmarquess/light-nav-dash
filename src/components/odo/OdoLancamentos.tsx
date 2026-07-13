@@ -303,6 +303,18 @@ export default function OdoLancamentos() {
           </table>
         )}
       </div>
+
+      <Dialog open={!!report} onOpenChange={(o) => !o && setReport(null)}>
+        <DialogContent className="max-w-[calc(210mm+4rem)] w-[95vw] p-0 max-h-[92vh] overflow-y-auto bg-white">
+          {report && (
+            <OdoRelatorioView
+              tipo={report.tipo}
+              protocolo={report.protocolo}
+              mes={report.mes}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
