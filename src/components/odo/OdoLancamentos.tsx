@@ -278,6 +278,30 @@ export default function OdoLancamentos() {
                         </span>
                       )}
                     </td>
+                    <td className="px-4 py-2 text-center">
+                      {tipoRel === "Por lista" ? (() => {
+                        const anexo = anexos[protocolo];
+                        return (
+                          <button
+                            onClick={() => handleUploadClick(protocolo)}
+                            className="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-accent"
+                            title={
+                              anexo
+                                ? `${anexo.filename} · ${anexo.rows.length} linha(s)\nEnviado em ${new Date(anexo.uploadedAt).toLocaleString("pt-BR")}\nClique para substituir`
+                                : "Enviar planilha XLSX (Anexo I do relatório Por Lista)"
+                            }
+                          >
+                            {anexo ? (
+                              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                            ) : (
+                              <Upload className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </button>
+                        );
+                      })() : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-2 text-right whitespace-nowrap">
                       {(() => {
                         const emissoes = acoes.filter((a) => a.acao === "Por lista" || a.acao === "Global");
