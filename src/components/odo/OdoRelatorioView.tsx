@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { odo, type OdoFornecedor } from "@/lib/odoClient";
+import { readAnexo, type OdoAnexo } from "@/lib/odoAnexo";
 import { Printer } from "lucide-react";
 
 const brl = (n: number | null | undefined) =>
