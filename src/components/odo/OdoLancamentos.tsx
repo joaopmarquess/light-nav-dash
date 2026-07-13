@@ -63,28 +63,25 @@ export default function OdoLancamentos() {
 
   const gerarLote = async () => {
     setGerando(true);
-    const protocolosExistentes = new Set(logs.map((l) => l.protocolo));
     const [y, m] = mes.split("-").map(Number);
     const ultimoDia = new Date(y, m, 0).getDate();
     const now = new Date().toISOString().replace("T", " ").slice(0, 19);
+    const isRegerar = gerados > 0;
 
-    const novos = fornecedores
-      .filter((f) => !protocolosExistentes.has(buildProtocoloMensal(mes, f.id)))
-      .map((f) => {
-        const dia = diaDoVencimento(f.vencimento) ?? 1;
-        const diaSeguro = Math.min(dia, ultimoDia);
-        const dataVenc = `${mes}-${String(diaSeguro).padStart(2, "0")}`;
-        return {
-          protocolo: buildProtocoloMensal(mes, f.id),
-          ...OPERADOR,
-          momento: now,
-          acao: "Lançamento",
-          descricao: `Pagamento previsto ${dataVenc} — ${f.fornecedor} — ${brl(f.vl_bruto)}`,
-        };
-      });
+    const novos = fornecedores.map((f) => {
+      const dia = diaDoVencimento(f.vencimento) ?? 1;
+      const diaSeguro = Math.min(dia, ultimoDia);
+      const dataVenc = `${mes}-${String(diaSeguro).padStart(2, "0")}`;
+      return {
+        protocolo: buildProtocoloMensal(mes, f.id),
+        ...OPERADOR,
+        momento: now,
+        acao: "Lançamento",
+        descricao: `${isRegerar ? "Re-geração" : "Pagamento previsto"} ${dataVenc} — ${f.fornecedor} — ${brl(f.vl_bruto)}`,
+      };
+    });
 
     if (novos.length === 0) {
-      toast({ title: "Nada a gerar", description: "Todos os fornecedores já têm lançamento neste mês." });
       setGerando(false);
       return;
     }
@@ -95,7 +92,7 @@ export default function OdoLancamentos() {
       toast({ title: "Erro ao gerar lote", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: `${novos.length} lançamento(s) gerado(s)` });
+    toast({ title: `${novos.length} lançamento(s) ${isRegerar ? "re-gerado(s)" : "gerado(s)"}` });
     load();
   };
 
@@ -169,14 +166,12 @@ export default function OdoLancamentos() {
             title={
               gerados === 0
                 ? "Gera um lançamento previsto para cada fornecedor cadastrado, na competência selecionada"
-                : gerados < fornecedores.length
-                ? `Gera lançamentos apenas para os ${fornecedores.length - gerados} fornecedor(es) ainda pendente(s) nesta competência`
-                : "Todos os fornecedores já têm lançamento nesta competência — nada será regerado"
+                : `Re-gera os ${gerados} lançamento(s) já existente(s) e gera os ${fornecedores.length - gerados} ainda pendente(s) nesta competência`
             }
             className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 disabled:opacity-60"
           >
             {gerando ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
-            Re-gerar pagamentos
+            {gerados === 0 ? "Gerar pagamentos" : "Re-gerar pagamentos"}
           </button>
           <button
             onClick={emitirFolha}
