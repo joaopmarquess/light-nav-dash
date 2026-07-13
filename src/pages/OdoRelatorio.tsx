@@ -6,9 +6,10 @@ export default function OdoRelatorio() {
   const tipo = (params.get("tipo") ?? "lista") as OdoRelatorioTipo;
   const protocolo = params.get("protocolo") ?? "";
   const mes = params.get("mes") ?? "";
+  const autoPrint = params.get("print") === "1";
   return (
     <div className="min-h-screen bg-white">
-      <OdoRelatorioView tipo={tipo} protocolo={protocolo} mes={mes} />
+      <OdoRelatorioView tipo={tipo} protocolo={protocolo} mes={mes} autoPrint={autoPrint} />
     </div>
   );
 }

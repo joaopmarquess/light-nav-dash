@@ -27,9 +27,10 @@ interface Props {
   protocolo?: string;
   mes: string;
   showPrintBar?: boolean;
+  autoPrint?: boolean;
 }
 
-export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintBar = true }: Props) {
+export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintBar = true, autoPrint = false }: Props) {
   const [pagamentos, setPagamentos] = useState<OdoFornecedor[]>([]);
   const [loading, setLoading] = useState(true);
   const anexo: OdoAnexo | null = useMemo(
@@ -64,6 +65,27 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
 
   const hoje = new Date().toLocaleDateString("pt-BR");
 
+  const printUrl = useMemo(() => {
+    const params = new URLSearchParams({ tipo, mes });
+    if (protocolo) params.set("protocolo", protocolo);
+    params.set("print", "1");
+    return `/odo-relatorio?${params.toString()}`;
+  }, [tipo, protocolo, mes]);
+
+  const handlePrint = () => {
+    if (window.location.pathname === "/odo-relatorio") {
+      window.print();
+      return;
+    }
+    window.open(printUrl, "_blank", "noopener,noreferrer");
+  };
+
+  useEffect(() => {
+    if (!autoPrint || loading) return;
+    const timeout = window.setTimeout(() => window.print(), 350);
+    return () => window.clearTimeout(timeout);
+  }, [autoPrint, loading]);
+
   const printBar = showPrintBar ? (
     <div className="no-print bg-slate-100 border-b border-slate-300 px-6 py-3 pr-16 flex items-center justify-between gap-4">
       <span className="text-sm text-slate-600">
@@ -75,7 +97,7 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
           : "Relatório por Lista (por fornecedor)"}
       </span>
       <button
-        onClick={() => window.print()}
+        onClick={handlePrint}
         className="h-9 px-4 rounded-md bg-slate-900 text-white text-sm font-medium flex items-center gap-2"
       >
         <Printer className="h-4 w-4" /> Imprimir / Salvar PDF
@@ -88,31 +110,10 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
       @media print {
         .no-print { display: none !important; }
         body { background: white; }
-        /* Quando impresso a partir do modal (Radix Dialog), neutralizar
-           os limites do portal para que o conteúdo do relatório flua em
-           várias páginas em vez de ser cortado numa única folha. */
-        body:has([role="dialog"]) > #root { display: none !important; }
-        [data-radix-dialog-overlay] { display: none !important; }
-        [role="dialog"] {
-          position: static !important;
-          inset: auto !important;
-          left: auto !important;
-          top: auto !important;
-          transform: none !important;
-          animation: none !important;
-          opacity: 1 !important;
-          display: block !important;
-          max-width: none !important;
-          width: 100% !important;
-          max-height: none !important;
-          overflow: visible !important;
-          box-shadow: none !important;
-          border: 0 !important;
-          padding: 0 !important;
-          background: white !important;
-          color: black !important;
-        }
-        [role="dialog"] * { animation: none !important; }
+        #root { min-height: auto !important; }
+        table { break-inside: auto; page-break-inside: auto; }
+        thead { display: table-header-group; }
+        tr { break-inside: avoid; page-break-inside: avoid; }
         .break-before-page { break-before: page; page-break-before: always; }
       }
       @page { size: A4; margin: 18mm; }
