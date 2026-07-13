@@ -236,17 +236,11 @@ export default function OdoLancamentos() {
                     <td className="px-4 py-2 text-right">{brl(f.vl_bruto)}</td>
                     <td className="px-4 py-2">
                       {gerado ? (() => {
-                        const lanc = acoes.find((a) => a.acao === "Lançamento");
-                        const emissoes = acoes.filter((a) => a.acao === "Por lista" || a.acao === "Global");
-                        const ultimaEmissao = emissoes[0];
+                        const lancs = acoes.filter((a) => a.acao === "Lançamento");
+                        const ultima = lancs[0];
                         const fmt = (m: string | null | undefined) =>
-                          m ? new Date(m.replace(" ", "T")).toLocaleString("pt-BR") : "-";
-                        const tip = [
-                          `Gerado por ${lanc?.operador ?? "-"} em ${fmt(lanc?.momento)}`,
-                          emissoes.length
-                            ? `Última emissão: ${ultimaEmissao?.operador ?? "-"} em ${fmt(ultimaEmissao?.momento)} (${emissoes.length}x)`
-                            : "Ainda não emitido",
-                        ].join("\n");
+                          m ? new Date(m.replace(" ", "T")).toLocaleDateString("pt-BR") : "-";
+                        const tip = `Último em ${fmt(ultima?.momento)} | (${lancs.length}x)`;
                         return (
                           <span
                             title={tip}
@@ -263,16 +257,16 @@ export default function OdoLancamentos() {
                     </td>
                     <td className="px-4 py-2 text-right whitespace-nowrap">
                       {(() => {
-                        const jaEmitido = acoes.some((a) => a.acao === "Por lista" || a.acao === "Global");
                         const emissoes = acoes.filter((a) => a.acao === "Por lista" || a.acao === "Global");
+                        const jaEmitido = emissoes.length > 0;
                         const ultima = emissoes[0];
                         const fmt = (m: string | null | undefined) =>
-                          m ? new Date(m.replace(" ", "T")).toLocaleString("pt-BR") : "-";
+                          m ? new Date(m.replace(" ", "T")).toLocaleDateString("pt-BR") : "-";
                         const label = jaEmitido ? "Re-emitir" : "Emitir";
                         const tip = !tipoRel
                           ? "Defina o tipo no cadastro"
                           : jaEmitido
-                          ? `Re-emitir relatório ${tipoNum} - ${tipoRel}\nÚltima: ${ultima?.operador ?? "-"} em ${fmt(ultima?.momento)} (${emissoes.length}x)`
+                          ? `Último em ${fmt(ultima?.momento)} | (${emissoes.length}x)`
                           : `Emitir relatório ${tipoNum} - ${tipoRel}`;
                         return (
                           <button
