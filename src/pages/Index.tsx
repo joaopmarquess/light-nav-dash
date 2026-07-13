@@ -350,8 +350,6 @@ const Index = () => {
             <OdoLancamentos />
           ) : active === "Ações / Log" ? (
             <OdoAcoes />
-          ) : active === "Relatórios" ? (
-            <OdoRelatoriosView />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : (
