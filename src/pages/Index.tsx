@@ -344,8 +344,10 @@ const Index = () => {
             <OrcamentoDW />
           ) : active === "B.I. Overview" ? (
             <BIOverview />
-          ) : active === "Pagamentos" ? (
-            <OdoPagamentos />
+          ) : active === "Fornecedores" ? (
+            <OdoFornecedores />
+          ) : active === "Lançamentos" ? (
+            <OdoLancamentos />
           ) : active === "Ações / Log" ? (
             <OdoAcoes />
           ) : active === "Relatórios" ? (
