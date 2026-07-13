@@ -113,7 +113,6 @@ const menuItems: MenuItem[] = [
       { icon: Users, label: "Fornecedores" },
       { icon: FileText, label: "Lançamentos" },
       { icon: ClipboardList, label: "Ações / Log" },
-      { icon: Printer, label: "Relatórios" },
     ],
   },
 ];
