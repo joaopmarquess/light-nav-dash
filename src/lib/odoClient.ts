@@ -31,10 +31,22 @@ export type OdoLog = {
   created_at: string;
 };
 
-/** Formata protocolo AAAA-MM-000042 a partir da data de vencimento + id. */
-export const buildProtocolo = (vencimento: string | null | undefined, id: number): string => {
-  const d = vencimento ? new Date(vencimento + "T00:00:00") : new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  return `${y}-${m}-${String(id).padStart(6, "0")}`;
+/** Protocolo mensal AAAA-MM-000042. AAAA-MM = competência do pagamento, 000042 = id do fornecedor. */
+export const buildProtocoloMensal = (yyyyMm: string, fornecedorId: number): string => {
+  const [y, m] = yyyyMm.split("-");
+  return `${y}-${m}-${String(fornecedorId).padStart(6, "0")}`;
 };
+
+/** Extrai o dia (1-31) de uma coluna `date` usada como "dia do vencimento". */
+export const diaDoVencimento = (iso: string | null | undefined): number | null => {
+  if (!iso) return null;
+  const d = Number(iso.split("-")[2]);
+  return Number.isFinite(d) ? d : null;
+};
+
+/** Serializa um dia (1-31) em data ISO usando ano/mês fixos, para gravar na coluna `date`. */
+export const diaParaDate = (dia: number): string => {
+  const dd = String(Math.max(1, Math.min(31, Math.floor(dia)))).padStart(2, "0");
+  return `2000-01-${dd}`;
+};
+
