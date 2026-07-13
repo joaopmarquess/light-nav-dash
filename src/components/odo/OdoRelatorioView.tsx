@@ -66,8 +66,8 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
   );
 
   const anexoPages = useMemo(() => {
-    if (!anexo) return [] as { rows: string[][]; start: number; intro: boolean }[];
-    const pages: { rows: string[][]; start: number; intro: boolean }[] = [];
+    if (!anexo) return [] as { rows: OdoAnexo["rows"]; start: number; intro: boolean }[];
+    const pages: { rows: OdoAnexo["rows"]; start: number; intro: boolean }[] = [];
     let cursor = 0;
     let first = true;
     while (cursor < anexo.rows.length) {
