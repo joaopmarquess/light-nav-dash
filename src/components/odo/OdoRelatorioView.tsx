@@ -88,6 +88,24 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
       @media print {
         .no-print { display: none !important; }
         body { background: white; }
+        /* Quando impresso a partir do modal (Radix Dialog), neutralizar
+           os limites do portal para que o conteúdo do relatório flua em
+           várias páginas em vez de ser cortado numa única folha. */
+        body:has([role="dialog"]) > #root { display: none !important; }
+        [data-radix-dialog-overlay] { display: none !important; }
+        [role="dialog"] {
+          position: static !important;
+          transform: none !important;
+          max-width: none !important;
+          width: 100% !important;
+          max-height: none !important;
+          overflow: visible !important;
+          box-shadow: none !important;
+          border: 0 !important;
+          padding: 0 !important;
+          background: white !important;
+        }
+        .break-before-page { break-before: page; page-break-before: always; }
       }
       @page { size: A4; margin: 18mm; }
     `}</style>
