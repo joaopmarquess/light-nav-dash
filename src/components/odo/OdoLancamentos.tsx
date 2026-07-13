@@ -225,10 +225,10 @@ export default function OdoLancamentos() {
               <tr>
                 <th className="text-left px-4 py-2 font-medium">Protocolo</th>
                 <th className="text-left px-4 py-2 font-medium">Fornecedor</th>
-                <th className="text-center px-4 py-2 font-medium">Tipo</th>
                 <th className="text-center px-4 py-2 font-medium">Dia</th>
                 <th className="text-right px-4 py-2 font-medium">Valor</th>
                 <th className="text-left px-4 py-2 font-medium">Status</th>
+                <th className="text-center px-4 py-2 font-medium">Anexo</th>
                 <th className="text-right px-4 py-2 font-medium">Ações</th>
               </tr>
             </thead>
