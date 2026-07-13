@@ -54,7 +54,8 @@ import Sinistralidade from "@/components/Sinistralidade";
 import BIOverview from "@/components/BIOverview";
 import OrcamentoDW from "@/components/OrcamentoDW";
 import DWCarteira from "@/components/DWCarteira";
-import OdoPagamentos from "@/components/odo/OdoPagamentos";
+import OdoFornecedores from "@/components/odo/OdoFornecedores";
+import OdoLancamentos from "@/components/odo/OdoLancamentos";
 import OdoAcoes from "@/components/odo/OdoAcoes";
 import OdoRelatoriosView from "@/components/odo/OdoRelatorios";
 

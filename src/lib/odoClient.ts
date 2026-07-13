@@ -9,13 +9,13 @@ export const odo = createClient(ODO_URL, ODO_PUBLISHABLE_KEY, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
-export type OdoPagamento = {
+export type OdoFornecedor = {
   id: number;
   cd_fornecedor: number | null;
   fornecedor: string | null;
   tp_relatorio: string | null;
   objeto: string | null;
-  vencimento: string | null; // YYYY-MM-DD
+  vencimento: string | null; // YYYY-MM-DD (dia é o "dia do vencimento")
   vl_bruto: number | null;
   created_at: string;
 };
