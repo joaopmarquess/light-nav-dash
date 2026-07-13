@@ -343,6 +343,12 @@ const Index = () => {
             <OrcamentoDW />
           ) : active === "B.I. Overview" ? (
             <BIOverview />
+          ) : active === "Pagamentos" ? (
+            <OdoPagamentos />
+          ) : active === "Ações / Log" ? (
+            <OdoAcoes />
+          ) : active === "Relatórios" ? (
+            <OdoRelatoriosView />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : (
