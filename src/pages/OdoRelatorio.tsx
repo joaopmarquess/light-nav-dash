@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { odo, type OdoPagamento } from "@/lib/odoClient";
+import { odo, type OdoFornecedor } from "@/lib/odoClient";
 import { Printer } from "lucide-react";
 
 const brl = (n: number | null | undefined) =>
@@ -19,7 +19,7 @@ export default function OdoRelatorio() {
   const tipo = params.get("tipo") ?? "lista";
   const protocolo = params.get("protocolo") ?? "";
   const mes = params.get("mes") ?? "";
-  const [pagamentos, setPagamentos] = useState<OdoPagamento[]>([]);
+  const [pagamentos, setPagamentos] = useState<OdoFornecedor[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function OdoRelatorio() {
         q = q.gte("vencimento", start).lte("vencimento", end);
       }
       const { data } = await q;
-      setPagamentos((data as OdoPagamento[]) ?? []);
+      setPagamentos((data as OdoFornecedor[]) ?? []);
       setLoading(false);
     })();
   }, [tipo, protocolo, mes]);

@@ -54,7 +54,8 @@ import Sinistralidade from "@/components/Sinistralidade";
 import BIOverview from "@/components/BIOverview";
 import OrcamentoDW from "@/components/OrcamentoDW";
 import DWCarteira from "@/components/DWCarteira";
-import OdoPagamentos from "@/components/odo/OdoPagamentos";
+import OdoFornecedores from "@/components/odo/OdoFornecedores";
+import OdoLancamentos from "@/components/odo/OdoLancamentos";
 import OdoAcoes from "@/components/odo/OdoAcoes";
 import OdoRelatoriosView from "@/components/odo/OdoRelatorios";
 
@@ -109,7 +110,8 @@ const menuItems: MenuItem[] = [
     icon: Receipt,
     label: "ODO-NRPS",
     children: [
-      { icon: FileText, label: "Pagamentos" },
+      { icon: Users, label: "Fornecedores" },
+      { icon: FileText, label: "Lançamentos" },
       { icon: ClipboardList, label: "Ações / Log" },
       { icon: Printer, label: "Relatórios" },
     ],
@@ -343,8 +345,10 @@ const Index = () => {
             <OrcamentoDW />
           ) : active === "B.I. Overview" ? (
             <BIOverview />
-          ) : active === "Pagamentos" ? (
-            <OdoPagamentos />
+          ) : active === "Fornecedores" ? (
+            <OdoFornecedores />
+          ) : active === "Lançamentos" ? (
+            <OdoLancamentos />
           ) : active === "Ações / Log" ? (
             <OdoAcoes />
           ) : active === "Relatórios" ? (

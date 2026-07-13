@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { odo, type OdoPagamento } from "@/lib/odoClient";
+import { odo, type OdoFornecedor } from "@/lib/odoClient";
 import { FileText, Globe2 } from "lucide-react";
 
 const brl = (n: number | null | undefined) =>
@@ -12,7 +12,7 @@ const brDate = (iso: string | null) => {
 
 export default function OdoRelatorios() {
   const [mes, setMes] = useState<string>(new Date().toISOString().slice(0, 7));
-  const [rows, setRows] = useState<OdoPagamento[]>([]);
+  const [rows, setRows] = useState<OdoFornecedor[]>([]);
   useEffect(() => {
     (async () => {
       const start = `${mes}-01`;
@@ -25,7 +25,7 @@ export default function OdoRelatorios() {
         .gte("vencimento", start)
         .lte("vencimento", end)
         .order("vencimento");
-      setRows((data as OdoPagamento[]) ?? []);
+      setRows((data as OdoFornecedor[]) ?? []);
     })();
   }, [mes]);
 
