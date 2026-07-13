@@ -31,7 +31,7 @@ export default function OdoLancamentos() {
   const [loading, setLoading] = useState(true);
   const [gerando, setGerando] = useState(false);
   const [anexos, setAnexos] = useState<Record<string, OdoAnexo>>({});
-  const fileInputRef = useState<{ el: HTMLInputElement | null; protocolo: string }>({ el: null, protocolo: "" })[0];
+  
 
   const handleUploadClick = (protocolo: string) => {
     const input = document.createElement("input");
