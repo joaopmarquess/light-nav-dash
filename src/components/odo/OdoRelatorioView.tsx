@@ -65,6 +65,20 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
     [pagamentos],
   );
 
+  const anexoPages = useMemo(() => {
+    if (!anexo) return [] as { rows: string[][]; start: number; intro: boolean }[];
+    const pages: { rows: string[][]; start: number; intro: boolean }[] = [];
+    let cursor = 0;
+    let first = true;
+    while (cursor < anexo.rows.length) {
+      const size = first ? 22 : 30;
+      pages.push({ rows: anexo.rows.slice(cursor, cursor + size), start: cursor, intro: first });
+      cursor += size;
+      first = false;
+    }
+    return pages.length ? pages : [{ rows: [], start: 0, intro: true }];
+  }, [anexo]);
+
   const hoje = new Date().toLocaleDateString("pt-BR");
 
   const printUrl = useMemo(() => {
@@ -340,19 +354,31 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
             </footer>
             </section>
 
-            {tipo === "lista" && anexo && (
-              <section data-pdf-section className="mt-16 pt-10 border-t-2 border-dashed border-slate-400 break-before-page bg-white p-6">
-                <div className="mb-6">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Anexo I</p>
-                  <h2 className="text-xl font-bold mt-1">Lista de itens</h2>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Origem: <span className="font-mono">{anexo.filename}</span> · aba{" "}
-                    <span className="font-mono">{anexo.sheet}</span> ·{" "}
-                    {anexo.rows.length} linha(s)
-                  </p>
-                </div>
+            {tipo === "lista" && anexo && anexoPages.map((page, pageIndex) => (
+              <section
+                key={pageIndex}
+                data-pdf-section
+                className={`${pageIndex === 0 ? "mt-16 pt-10 border-t-2 border-dashed border-slate-400 break-before-page" : "mt-8"} bg-white p-6`}
+              >
+                {page.intro ? (
+                  <>
+                    <div className="mb-6">
+                      <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Anexo I</p>
+                      <h2 className="text-xl font-bold mt-1">Lista de itens</h2>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Origem: <span className="font-mono">{anexo.filename}</span> · aba{" "}
+                        <span className="font-mono">{anexo.sheet}</span> ·{" "}
+                        {anexo.rows.length} linha(s)
+                      </p>
+                    </div>
 
-                <p className="text-sm leading-relaxed text-slate-700 mb-4">{LOREM}</p>
+                    <p className="text-sm leading-relaxed text-slate-700 mb-4">{LOREM}</p>
+                  </>
+                ) : (
+                  <div className="mb-4">
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Anexo I — continuação</p>
+                  </div>
+                )}
 
                 <table className="w-full text-[11px] border-collapse">
                   <thead>
@@ -365,8 +391,8 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
                     </tr>
                   </thead>
                   <tbody>
-                    {anexo.rows.map((r, i) => (
-                      <tr key={i} className={i % 2 ? "bg-slate-50" : ""}>
+                    {page.rows.map((r, i) => (
+                      <tr key={page.start + i} className={(page.start + i) % 2 ? "bg-slate-50" : ""}>
                         {anexo.headers.map((_, ci) => (
                           <td key={ci} className="px-2 py-1.5 border border-slate-200 align-top">
                             {r[ci] ?? ""}
@@ -377,7 +403,7 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
                   </tbody>
                 </table>
               </section>
-            )}
+            ))}
           </>
         )}
       </div>
