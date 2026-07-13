@@ -246,15 +246,6 @@ export default function OdoLancamentos() {
                   <tr key={f.id} className="border-t border-border hover:bg-accent/40">
                     <td className="px-4 py-2 font-mono text-xs">{protocolo}</td>
                     <td className="px-4 py-2 font-medium">{f.fornecedor}</td>
-                    <td className="px-4 py-2 text-center">
-                      {tipoRel ? (
-                        <span className="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                          {tipoNum} · {tipoRel}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">Não definido</span>
-                      )}
-                    </td>
                     <td className="px-4 py-2 text-center font-mono">
                       {(() => {
                         const dia = diaDoVencimento(f.vencimento);
