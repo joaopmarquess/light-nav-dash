@@ -8,26 +8,25 @@ import {
 } from "@/lib/odoClient";
 import { Loader2, FileText, Globe2, PlayCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import OdoRelatorioView, { type OdoRelatorioTipo } from "./OdoRelatorioView";
 
 const brl = (n: number | null | undefined) =>
   (n ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 const OPERADOR = { cd_operador: 1, operador: "Usuário" };
 
-const openReport = (tipo: "lista" | "global" | "folha", protocolo: string, mes: string) => {
-  const url =
-    tipo === "lista"
-      ? `/odo-relatorio?tipo=lista&protocolo=${encodeURIComponent(protocolo)}&mes=${mes}`
-      : tipo === "global"
-      ? `/odo-relatorio?tipo=global&protocolo=${encodeURIComponent(protocolo)}&mes=${mes}`
-      : `/odo-relatorio?tipo=folha&mes=${mes}`;
-  window.open(url, "_blank", "noopener,noreferrer");
-};
+type ReportDialogState = {
+  tipo: OdoRelatorioTipo;
+  protocolo: string;
+  mes: string;
+} | null;
 
 export default function OdoLancamentos() {
   const [mes, setMes] = useState<string>(new Date().toISOString().slice(0, 7));
   const [fornecedores, setFornecedores] = useState<OdoFornecedor[]>([]);
   const [logs, setLogs] = useState<OdoLog[]>([]);
+  const [report, setReport] = useState<ReportDialogState>(null);
   const [loading, setLoading] = useState(true);
   const [gerando, setGerando] = useState(false);
 
