@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { odo, type OdoFornecedor } from "@/lib/odoClient";
+import { readAnexo, type OdoAnexo } from "@/lib/odoAnexo";
 import { Printer } from "lucide-react";
 
 const brl = (n: number | null | undefined) =>
@@ -31,6 +32,10 @@ interface Props {
 export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintBar = true }: Props) {
   const [pagamentos, setPagamentos] = useState<OdoFornecedor[]>([]);
   const [loading, setLoading] = useState(true);
+  const anexo: OdoAnexo | null = useMemo(
+    () => (tipo === "lista" && protocolo ? readAnexo(protocolo) : null),
+    [tipo, protocolo],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -259,6 +264,45 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
               <div className="border-t border-slate-400 pt-2 text-center">Elaborado por</div>
               <div className="border-t border-slate-400 pt-2 text-center">Aprovado por</div>
             </footer>
+
+            {tipo === "lista" && anexo && (
+              <section className="mt-16 pt-10 border-t-2 border-dashed border-slate-400 break-before-page">
+                <div className="mb-6">
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">Anexo I</p>
+                  <h2 className="text-xl font-bold mt-1">Lista de itens</h2>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Origem: <span className="font-mono">{anexo.filename}</span> · aba{" "}
+                    <span className="font-mono">{anexo.sheet}</span> ·{" "}
+                    {anexo.rows.length} linha(s)
+                  </p>
+                </div>
+
+                <p className="text-sm leading-relaxed text-slate-700 mb-4">{LOREM}</p>
+
+                <table className="w-full text-[11px] border-collapse">
+                  <thead>
+                    <tr className="bg-slate-900 text-white">
+                      {anexo.headers.map((h, i) => (
+                        <th key={i} className="text-left px-2 py-2 border border-slate-700">
+                          {h || `Col ${i + 1}`}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {anexo.rows.map((r, i) => (
+                      <tr key={i} className={i % 2 ? "bg-slate-50" : ""}>
+                        {anexo.headers.map((_, ci) => (
+                          <td key={ci} className="px-2 py-1.5 border border-slate-200 align-top">
+                            {r[ci] ?? ""}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </section>
+            )}
           </>
         )}
       </div>

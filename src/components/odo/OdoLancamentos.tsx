@@ -6,10 +6,11 @@ import {
   type OdoFornecedor,
   type OdoLog,
 } from "@/lib/odoClient";
-import { Loader2, FileText, Globe2, PlayCircle } from "lucide-react";
+import { Loader2, FileText, Globe2, PlayCircle, Upload, CheckCircle2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import OdoRelatorioView, { type OdoRelatorioTipo } from "./OdoRelatorioView";
+import { saveAnexo, readAnexo, type OdoAnexo } from "@/lib/odoAnexo";
 
 const brl = (n: number | null | undefined) =>
   (n ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -29,6 +30,26 @@ export default function OdoLancamentos() {
   const [report, setReport] = useState<ReportDialogState>(null);
   const [loading, setLoading] = useState(true);
   const [gerando, setGerando] = useState(false);
+  const [anexos, setAnexos] = useState<Record<string, OdoAnexo>>({});
+  
+
+  const handleUploadClick = (protocolo: string) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".xlsx,.xls";
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      try {
+        const anexo = await saveAnexo(protocolo, file);
+        setAnexos((s) => ({ ...s, [protocolo]: anexo }));
+        toast({ title: "Anexo carregado", description: `${anexo.filename} · ${anexo.rows.length} linha(s)` });
+      } catch (e: any) {
+        toast({ title: "Erro ao ler XLSX", description: e?.message ?? String(e), variant: "destructive" });
+      }
+    };
+    input.click();
+  };
 
   const load = async () => {
     setLoading(true);
@@ -48,6 +69,17 @@ export default function OdoLancamentos() {
   useEffect(() => {
     load();
   }, [mes]);
+
+  // Rehidrata anexos do localStorage para os fornecedores da competência atual
+  useEffect(() => {
+    const next: Record<string, OdoAnexo> = {};
+    fornecedores.forEach((f) => {
+      const p = buildProtocoloMensal(mes, f.id);
+      const a = readAnexo(p);
+      if (a) next[p] = a;
+    });
+    setAnexos(next);
+  }, [fornecedores, mes]);
 
   const logsPorFornecedor = useMemo(() => {
     const map = new Map<number, OdoLog[]>();
@@ -193,10 +225,10 @@ export default function OdoLancamentos() {
               <tr>
                 <th className="text-left px-4 py-2 font-medium">Protocolo</th>
                 <th className="text-left px-4 py-2 font-medium">Fornecedor</th>
-                <th className="text-center px-4 py-2 font-medium">Tipo</th>
                 <th className="text-center px-4 py-2 font-medium">Dia</th>
                 <th className="text-right px-4 py-2 font-medium">Valor</th>
                 <th className="text-left px-4 py-2 font-medium">Status</th>
+                <th className="text-center px-4 py-2 font-medium">Anexo</th>
                 <th className="text-right px-4 py-2 font-medium">Ações</th>
               </tr>
             </thead>
@@ -214,15 +246,6 @@ export default function OdoLancamentos() {
                   <tr key={f.id} className="border-t border-border hover:bg-accent/40">
                     <td className="px-4 py-2 font-mono text-xs">{protocolo}</td>
                     <td className="px-4 py-2 font-medium">{f.fornecedor}</td>
-                    <td className="px-4 py-2 text-center">
-                      {tipoRel ? (
-                        <span className="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                          {tipoNum} · {tipoRel}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">Não definido</span>
-                      )}
-                    </td>
                     <td className="px-4 py-2 text-center font-mono">
                       {(() => {
                         const dia = diaDoVencimento(f.vencimento);
@@ -253,6 +276,30 @@ export default function OdoLancamentos() {
                         <span className="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                           Pendente
                         </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2 text-center">
+                      {tipoRel === "Por lista" ? (() => {
+                        const anexo = anexos[protocolo];
+                        return (
+                          <button
+                            onClick={() => handleUploadClick(protocolo)}
+                            className="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-accent"
+                            title={
+                              anexo
+                                ? `${anexo.filename} · ${anexo.rows.length} linha(s)\nEnviado em ${new Date(anexo.uploadedAt).toLocaleString("pt-BR")}\nClique para substituir`
+                                : "Enviar planilha XLSX (Anexo I do relatório Por Lista)"
+                            }
+                          >
+                            {anexo ? (
+                              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                            ) : (
+                              <Upload className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </button>
+                        );
+                      })() : (
+                        <span className="text-xs text-muted-foreground">—</span>
                       )}
                     </td>
                     <td className="px-4 py-2 text-right whitespace-nowrap">
