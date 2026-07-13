@@ -116,7 +116,7 @@ export default function OdoLancamentos() {
       toast({ title: "Erro ao registrar ação", description: error.message, variant: "destructive" });
       return;
     }
-    openReport(tipo === "Por lista" ? "lista" : "global", protocolo, mes);
+    setReport({ tipo: tipo === "Por lista" ? "lista" : "global", protocolo, mes });
     load();
   };
 
@@ -134,7 +134,7 @@ export default function OdoLancamentos() {
       toast({ title: "Erro ao registrar ação", description: error.message, variant: "destructive" });
       return;
     }
-    openReport("folha", protocolo, mes);
+    setReport({ tipo: "folha", protocolo, mes });
     load();
   };
 
