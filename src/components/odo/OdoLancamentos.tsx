@@ -14,7 +14,7 @@ const brl = (n: number | null | undefined) =>
 
 const OPERADOR = { cd_operador: 1, operador: "Usuário" };
 
-const openReport = (tipo: "lista" | "global", protocolo: string, mes: string) => {
+const openReport = (tipo: "lista" | "global" | "folha", protocolo: string, mes: string) => {
   const url =
     tipo === "lista"
       ? `/odo-relatorio?tipo=lista&protocolo=${encodeURIComponent(protocolo)}&mes=${mes}`
