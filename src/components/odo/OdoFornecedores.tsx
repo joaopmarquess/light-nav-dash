@@ -244,12 +244,15 @@ export default function OdoFornecedores() {
               </label>
               <label className="text-sm">
                 <span className="text-foreground/70">Tipo de relatório</span>
-                <input
+                <select
                   value={form.tp_relatorio}
                   onChange={(e) => setForm({ ...form, tp_relatorio: e.target.value })}
-                  maxLength={50}
                   className="mt-1 w-full h-9 px-3 rounded-md border border-border bg-background"
-                />
+                >
+                  <option value="">Selecione…</option>
+                  <option value="Por lista">Por lista</option>
+                  <option value="Global">Global</option>
+                </select>
               </label>
               <label className="text-sm">
                 <span className="text-foreground/70">Dia do vencimento (1–31)</span>
