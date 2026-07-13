@@ -6,10 +6,11 @@ import {
   type OdoFornecedor,
   type OdoLog,
 } from "@/lib/odoClient";
-import { Loader2, FileText, Globe2, PlayCircle } from "lucide-react";
+import { Loader2, FileText, Globe2, PlayCircle, Upload, CheckCircle2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import OdoRelatorioView, { type OdoRelatorioTipo } from "./OdoRelatorioView";
+import { saveAnexo, readAnexo, type OdoAnexo } from "@/lib/odoAnexo";
 
 const brl = (n: number | null | undefined) =>
   (n ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
