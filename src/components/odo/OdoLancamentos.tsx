@@ -173,10 +173,10 @@ export default function OdoLancamentos() {
             Gerar pagamentos do mês
           </button>
           <button
-            onClick={() => emitirAcao("Global", null)}
+            onClick={emitirFolha}
             className="h-9 px-4 rounded-md border border-border text-sm font-medium flex items-center gap-2 hover:bg-accent"
           >
-            <Globe2 className="h-4 w-4" /> Relatório global
+            <Globe2 className="h-4 w-4" /> Folha ODO-NRPS
           </button>
         </div>
       </div>
