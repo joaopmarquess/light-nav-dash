@@ -303,17 +303,21 @@ export default function OdoLancamentos() {
                         return (
                           <button
                             onClick={() => handleUploadClick(protocolo)}
-                            className="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-accent"
+                            className={
+                              anexo
+                                ? "h-7 w-7 inline-flex items-center justify-center rounded hover:bg-accent"
+                                : "h-7 w-7 inline-flex items-center justify-center rounded ring-2 ring-amber-500/60 bg-amber-500/10 hover:bg-amber-500/20 animate-pulse"
+                            }
                             title={
                               anexo
-                                ? `${anexo.filename} · ${anexo.rows.length} linha(s)\nEnviado em ${new Date(anexo.uploadedAt).toLocaleString("pt-BR")}\nClique para substituir`
-                                : "Enviar planilha XLSX (Anexo I do relatório Por Lista)"
+                                ? `Refazer upload — ${anexo.filename} · ${anexo.rows.length} linha(s)\nEnviado em ${new Date(anexo.uploadedAt).toLocaleString("pt-BR")}`
+                                : "Upload pendente — envie a planilha XLSX (Anexo I do relatório Por Lista)"
                             }
                           >
                             {anexo ? (
-                              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                              <Upload className="h-4 w-4 text-muted-foreground/60" strokeWidth={1.5} />
                             ) : (
-                              <Upload className="h-4 w-4 text-muted-foreground" />
+                              <Upload className="h-4 w-4 text-amber-600" strokeWidth={2.75} />
                             )}
                           </button>
                         );
