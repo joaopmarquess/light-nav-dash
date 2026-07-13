@@ -6,7 +6,7 @@ import {
   type OdoFornecedor,
   type OdoLog,
 } from "@/lib/odoClient";
-import { Loader2, FileText, Globe2, PlayCircle, Upload, CheckCircle2 } from "lucide-react";
+import { Loader2, FileText, Globe2, PlayCircle, Upload } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import OdoRelatorioView, { type OdoRelatorioTipo } from "./OdoRelatorioView";
@@ -175,6 +175,17 @@ export default function OdoLancamentos() {
     () => fornecedores.filter((f) => (logsPorFornecedor.get(f.id) ?? []).some((l) => l.acao === "Lançamento")).length,
     [fornecedores, logsPorFornecedor],
   );
+  const totalPorLista = useMemo(
+    () => fornecedores.filter((f) => f.tp_relatorio === "Por lista").length,
+    [fornecedores],
+  );
+  const anexosCount = useMemo(
+    () => fornecedores.filter((f) => f.tp_relatorio === "Por lista" && anexos[buildProtocoloMensal(mes, f.id)]).length,
+    [fornecedores, anexos, mes],
+  );
+  const semAnexos = anexosCount === 0;
+  const bloquearRegerar = gerados > 0 && semAnexos;
+  const bloquearFolha = semAnexos;
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
@@ -194,20 +205,28 @@ export default function OdoLancamentos() {
           />
           <button
             onClick={gerarLote}
-            disabled={gerando || loading}
+            disabled={gerando || loading || bloquearRegerar}
             title={
-              gerados === 0
+              bloquearRegerar
+                ? `Envie pelo menos 1 anexo XLSX (0/${totalPorLista} fornecedor(es) "Por lista") antes de re-gerar`
+                : gerados === 0
                 ? "Gera um lançamento previsto para cada fornecedor cadastrado, na competência selecionada"
                 : `Re-gera os ${gerados} lançamento(s) já existente(s) e gera os ${fornecedores.length - gerados} ainda pendente(s) nesta competência`
             }
-            className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 disabled:opacity-60"
+            className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {gerando ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
             {gerados === 0 ? "Gerar pagamentos" : "Re-gerar pagamentos"}
           </button>
           <button
             onClick={emitirFolha}
-            className="h-9 px-4 rounded-md border border-border text-sm font-medium flex items-center gap-2 hover:bg-accent"
+            disabled={bloquearFolha}
+            title={
+              bloquearFolha
+                ? `Envie pelo menos 1 anexo XLSX (0/${totalPorLista} fornecedor(es) "Por lista") antes de emitir a folha`
+                : `Emitir Folha ODO-NRPS — ${anexosCount}/${totalPorLista} anexo(s) enviado(s)`
+            }
+            className="h-9 px-4 rounded-md border border-border text-sm font-medium flex items-center gap-2 hover:bg-accent disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           >
             <Globe2 className="h-4 w-4" /> Folha ODO-NRPS
           </button>
@@ -284,17 +303,21 @@ export default function OdoLancamentos() {
                         return (
                           <button
                             onClick={() => handleUploadClick(protocolo)}
-                            className="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-accent"
+                            className={
+                              anexo
+                                ? "h-7 w-7 inline-flex items-center justify-center rounded hover:bg-accent"
+                                : "h-7 w-7 inline-flex items-center justify-center rounded ring-2 ring-amber-500/60 bg-amber-500/10 hover:bg-amber-500/20 animate-pulse"
+                            }
                             title={
                               anexo
-                                ? `${anexo.filename} · ${anexo.rows.length} linha(s)\nEnviado em ${new Date(anexo.uploadedAt).toLocaleString("pt-BR")}\nClique para substituir`
-                                : "Enviar planilha XLSX (Anexo I do relatório Por Lista)"
+                                ? `Refazer upload — ${anexo.filename} · ${anexo.rows.length} linha(s)\nEnviado em ${new Date(anexo.uploadedAt).toLocaleString("pt-BR")}`
+                                : "Upload pendente — envie a planilha XLSX (Anexo I do relatório Por Lista)"
                             }
                           >
                             {anexo ? (
-                              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                              <Upload className="h-4 w-4 text-muted-foreground/60" strokeWidth={1.5} />
                             ) : (
-                              <Upload className="h-4 w-4 text-muted-foreground" />
+                              <Upload className="h-4 w-4 text-amber-600" strokeWidth={2.75} />
                             )}
                           </button>
                         );
