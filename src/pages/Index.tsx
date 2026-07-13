@@ -18,6 +18,9 @@ import {
   Calendar as CalendarIcon,
   CalendarCheck,
   Search,
+  Receipt,
+  ClipboardList,
+  Printer,
 } from "lucide-react";
 
 const todayBR = () => {
@@ -51,6 +54,9 @@ import Sinistralidade from "@/components/Sinistralidade";
 import BIOverview from "@/components/BIOverview";
 import OrcamentoDW from "@/components/OrcamentoDW";
 import DWCarteira from "@/components/DWCarteira";
+import OdoPagamentos from "@/components/odo/OdoPagamentos";
+import OdoAcoes from "@/components/odo/OdoAcoes";
+import OdoRelatoriosView from "@/components/odo/OdoRelatorios";
 
 
 import logoFull from "@/assets/bensaude-logo.svg.asset.json";
@@ -99,6 +105,15 @@ const menuItems: MenuItem[] = [
   },
   { icon: Stethoscope, label: "Assistencial" },
   { icon: LayoutDashboard, label: "B.I. Overview" },
+  {
+    icon: Receipt,
+    label: "ODO-NRPS",
+    children: [
+      { icon: FileText, label: "Pagamentos" },
+      { icon: ClipboardList, label: "Ações / Log" },
+      { icon: Printer, label: "Relatórios" },
+    ],
+  },
 ];
 
 const Index = () => {
@@ -328,6 +343,12 @@ const Index = () => {
             <OrcamentoDW />
           ) : active === "B.I. Overview" ? (
             <BIOverview />
+          ) : active === "Pagamentos" ? (
+            <OdoPagamentos />
+          ) : active === "Ações / Log" ? (
+            <OdoAcoes />
+          ) : active === "Relatórios" ? (
+            <OdoRelatoriosView />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : (
