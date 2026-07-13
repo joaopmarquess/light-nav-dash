@@ -95,7 +95,13 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
         [data-radix-dialog-overlay] { display: none !important; }
         [role="dialog"] {
           position: static !important;
+          inset: auto !important;
+          left: auto !important;
+          top: auto !important;
           transform: none !important;
+          animation: none !important;
+          opacity: 1 !important;
+          display: block !important;
           max-width: none !important;
           width: 100% !important;
           max-height: none !important;
@@ -104,7 +110,9 @@ export default function OdoRelatorioView({ tipo, protocolo = "", mes, showPrintB
           border: 0 !important;
           padding: 0 !important;
           background: white !important;
+          color: black !important;
         }
+        [role="dialog"] * { animation: none !important; }
         .break-before-page { break-before: page; page-break-before: always; }
       }
       @page { size: A4; margin: 18mm; }
