@@ -18,7 +18,9 @@ const openReport = (tipo: "lista" | "global", protocolo: string, mes: string) =>
   const url =
     tipo === "lista"
       ? `/odo-relatorio?tipo=lista&protocolo=${encodeURIComponent(protocolo)}&mes=${mes}`
-      : `/odo-relatorio?tipo=global&mes=${mes}`;
+      : tipo === "global"
+      ? `/odo-relatorio?tipo=global&protocolo=${encodeURIComponent(protocolo)}&mes=${mes}`
+      : `/odo-relatorio?tipo=folha&mes=${mes}`;
   window.open(url, "_blank", "noopener,noreferrer");
 };
 
