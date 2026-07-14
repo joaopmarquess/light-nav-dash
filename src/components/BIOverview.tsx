@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSinistralidade } from "@/components/SinistralidadeGraficos";
+
 import { useDWCarteira } from "@/components/DWCarteira";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 import { StateHeatMap } from "@/components/StateHeatMap";
@@ -119,7 +119,7 @@ const BIOverview = () => {
     return { byMes, despPie: top, admByMes, admCats };
   }, [rows]);
 
-  const sin = useSinistralidade();
+  const sin: any = null;
   const dw = useDWCarteira(true);
 
   const slides = useMemo(() => {
