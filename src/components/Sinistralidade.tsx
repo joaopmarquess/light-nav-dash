@@ -37,6 +37,7 @@ const sumBy = <T,>(arr: T[], k: (t: T) => number) =>
   arr.reduce((a, t) => a + k(t), 0);
 
 type Agg = {
+  rec_tm: number;
   rec_cpa: number;
   rec_total: number;
   internacao: number;
@@ -50,19 +51,24 @@ type Agg = {
   saldo: number;
 };
 
-const aggregate = (rs: Row[]): Agg => ({
-  rec_cpa: sumBy(rs, (r) => r.rec_cpa),
-  rec_total: sumBy(rs, (r) => r.rec_total),
-  internacao: sumBy(rs, (r) => r.internacao),
-  emergencia: sumBy(rs, (r) => r.emergencia),
-  consulta: sumBy(rs, (r) => r.consulta),
-  exame: sumBy(rs, (r) => r.exame),
-  terapia: sumBy(rs, (r) => r.terapia),
-  fisioterap: sumBy(rs, (r) => r.fisioterap),
-  outros: sumBy(rs, (r) => r.outros),
-  despesa: sumBy(rs, (r) => r.despesa),
-  saldo: sumBy(rs, (r) => r.saldo),
-});
+const aggregate = (rs: Row[]): Agg => {
+  const rec_tm = sumBy(rs, (r) => r.rec_tm);
+  const despesa = sumBy(rs, (r) => r.despesa);
+  return {
+    rec_tm,
+    rec_cpa: sumBy(rs, (r) => r.rec_cpa),
+    rec_total: sumBy(rs, (r) => r.rec_total),
+    internacao: sumBy(rs, (r) => r.internacao),
+    emergencia: sumBy(rs, (r) => r.emergencia),
+    consulta: sumBy(rs, (r) => r.consulta),
+    exame: sumBy(rs, (r) => r.exame),
+    terapia: sumBy(rs, (r) => r.terapia),
+    fisioterap: sumBy(rs, (r) => r.fisioterap),
+    outros: sumBy(rs, (r) => r.outros),
+    despesa,
+    saldo: rec_tm - despesa,
+  };
+};
 
 const NUM_COLS: { key: keyof Agg; label: string }[] = [
   { key: "rec_cpa", label: "Rec. Copa" },
@@ -281,7 +287,7 @@ const Sinistralidade = () => {
                                     </span>
                                     {b.nmcli}
                                   </td>
-                                  <NumCells a={b as unknown as Agg} sin={sinB} />
+                                  <NumCells a={{ ...(b as unknown as Agg), saldo: b.rec_tm - b.despesa }} sin={sinB} />
                                 </tr>
                               );
                             })}
