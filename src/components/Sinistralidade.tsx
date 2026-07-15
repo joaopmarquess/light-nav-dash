@@ -287,7 +287,7 @@ const Sinistralidade = () => {
                                     </span>
                                     {b.nmcli}
                                   </td>
-                                  <NumCells a={b as unknown as Agg} sin={sinB} />
+                                  <NumCells a={{ ...(b as unknown as Agg), saldo: b.rec_tm - b.despesa }} sin={sinB} />
                                 </tr>
                               );
                             })}
