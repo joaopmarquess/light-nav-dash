@@ -24,7 +24,7 @@ const SinistralidadeConsulta = () => {
       setLoading(true);
       setError(null);
       const { data, error } = await (supabase as any)
-        .from("vw_sinistralidade")
+        .from("sinistralidade")
         .select("*")
         .limit(5000);
       if (cancel) return;
