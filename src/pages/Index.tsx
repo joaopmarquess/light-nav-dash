@@ -55,6 +55,7 @@ import DWCarteira from "@/components/DWCarteira";
 import OdoFornecedores from "@/components/odo/OdoFornecedores";
 import OdoLancamentos from "@/components/odo/OdoLancamentos";
 import OdoAcoes from "@/components/odo/OdoAcoes";
+import SinistralidadeConsulta from "@/components/SinistralidadeConsulta";
 
 
 
@@ -97,6 +98,7 @@ const menuItems: MenuItem[] = [
     icon: Percent,
     label: "Sinistralidade",
     children: [
+      { icon: Search, label: "Consulta" },
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
   },
@@ -317,6 +319,8 @@ const Index = () => {
           ) : active === "__removed_sin__" ? (
             <div />
 
+          ) : active === "Consulta" ? (
+            <SinistralidadeConsulta />
           ) : active === "PBI U12" ? (
             <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] overflow-hidden">
               <iframe
