@@ -29,8 +29,6 @@ const labelMes = (k: number) => {
 
 const shortcuts = [
   { icon: FileText, label: "DRE", desc: "Demonstrativo de resultados" },
-  { icon: Percent, label: "Tabela Sinistralidade", desc: "Receita x despesa por dimensão" },
-  { icon: BarChart3, label: "Gráfico Sinistralidade", desc: "Tendência mensal" },
   { icon: Search, label: "Consulta Beneficiário", desc: "Pesquisa individual" },
   { icon: UserCheck, label: "Área Geográfica", desc: "Carteira por data" },
   { icon: TrendingUp, label: "Vendas", desc: "Novas adesões" },
