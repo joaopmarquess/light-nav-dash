@@ -5,18 +5,10 @@ type Row = {
   periodo: string;
   cdpln: string;
   dspln: string;
-  rec_tm: number;
-  rec_cpa: number;
+  cdregusr: string;
+  nmcli: string;
   rec_total: number;
-  internacao: number;
-  emergencia: number;
-  consulta: number;
-  exame: number;
-  terapia: number;
-  outros: number;
-  fisioterap: number;
   despesa: number;
-  saldo: number;
 };
 
 const HIDE_PERIODO = "06/2021 a 05/2022";
@@ -30,6 +22,9 @@ const fmtBRL = (v: number) =>
 
 const fmtPct = (v: number) =>
   isFinite(v) ? `${(v * 100).toFixed(1)}%` : "—";
+
+const sumBy = <T,>(arr: T[], k: (t: T) => number) =>
+  arr.reduce((a, t) => a + k(t), 0);
 
 const Sinistralidade = () => {
   const [rows, setRows] = useState<Row[]>([]);
@@ -54,8 +49,8 @@ const Sinistralidade = () => {
     () =>
       periodos.map((p) => {
         const rs = rows.filter((r) => r.periodo === p);
-        const rec = rs.reduce((a, r) => a + r.rec_total, 0);
-        const desp = rs.reduce((a, r) => a + r.despesa, 0);
+        const rec = sumBy(rs, (r) => r.rec_total);
+        const desp = sumBy(rs, (r) => r.despesa);
         return { periodo: p, rec, desp, saldo: rec - desp, sin: desp / rec };
       }),
     [periodos, rows]
@@ -103,7 +98,7 @@ const Sinistralidade = () => {
           <p className="text-xs text-muted-foreground mt-1">{dspln}</p>
         </div>
         <span className="text-xs text-muted-foreground">
-          {periodos.length} períodos
+          {periodos.length} períodos · {rows.length.toLocaleString("pt-BR")} beneficiários-linha
         </span>
       </div>
 
@@ -111,7 +106,7 @@ const Sinistralidade = () => {
         <table className="w-full text-sm">
           <thead>
             <tr className="text-xs uppercase tracking-wide text-muted-foreground border-b border-border">
-              <th className="text-left py-2 pr-4">Período / Plano</th>
+              <th className="text-left py-2 pr-4">Período / Plano / Beneficiário</th>
               <th className="text-right py-2 px-3">Receita</th>
               <th className="text-right py-2 px-3">Despesa</th>
               <th className="text-right py-2 px-3">Saldo</th>
@@ -121,7 +116,10 @@ const Sinistralidade = () => {
           <tbody>
             {totaisPorPeriodo.map((t) => {
               const perOpen = openPer.has(t.periodo);
-              const planos = rows.filter((r) => r.periodo === t.periodo);
+              const planosPer = rows.filter((r) => r.periodo === t.periodo);
+              const planosCodes = Array.from(
+                new Set(planosPer.map((r) => r.cdpln))
+              ).sort();
               return (
                 <>
                   <tr
@@ -162,10 +160,16 @@ const Sinistralidade = () => {
                   </tr>
 
                   {perOpen &&
-                    planos.map((p) => {
-                      const key = `${p.periodo}|${p.cdpln}`;
+                    planosCodes.map((cd) => {
+                      const key = `${t.periodo}|${cd}`;
                       const planoOpen = openPlano.has(key);
-                      const sin = p.despesa / p.rec_total;
+                      const rsPl = planosPer.filter((r) => r.cdpln === cd);
+                      const rec = sumBy(rsPl, (r) => r.rec_total);
+                      const desp = sumBy(rsPl, (r) => r.despesa);
+                      const sin = desp / rec;
+                      const benefs = [...rsPl].sort(
+                        (a, b) => b.despesa - a.despesa
+                      );
                       return (
                         <>
                           <tr
@@ -180,23 +184,26 @@ const Sinistralidade = () => {
                                     planoOpen ? "rotate-90" : ""
                                   }`}
                                 />
-                                Plano {p.cdpln}
+                                Plano {cd}
+                                <span className="text-muted-foreground ml-1">
+                                  ({rsPl.length})
+                                </span>
                               </span>
                             </td>
                             <td className="py-1.5 px-3 text-right tabular-nums text-xs">
-                              {fmtBRL(p.rec_total)}
+                              {fmtBRL(rec)}
                             </td>
                             <td className="py-1.5 px-3 text-right tabular-nums text-xs">
-                              {fmtBRL(p.despesa)}
+                              {fmtBRL(desp)}
                             </td>
                             <td
                               className={`py-1.5 px-3 text-right tabular-nums text-xs ${
-                                p.saldo >= 0
+                                rec - desp >= 0
                                   ? "text-emerald-700"
                                   : "text-rose-700"
                               }`}
                             >
-                              {fmtBRL(p.rec_total - p.despesa)}
+                              {fmtBRL(rec - desp)}
                             </td>
                             <td
                               className={`py-1.5 pl-3 text-right tabular-nums text-xs font-medium ${
@@ -209,20 +216,49 @@ const Sinistralidade = () => {
                             </td>
                           </tr>
 
-                          {planoOpen && (
-                            <tr
-                              key={`${key}-benef`}
-                              className="border-b border-border/40 bg-accent/5"
-                            >
-                              <td
-                                colSpan={5}
-                                className="py-3 pl-12 pr-4 text-xs text-muted-foreground italic"
-                              >
-                                Detalhe por beneficiário indisponível — a fonte
-                                atual não contém essa granularidade.
-                              </td>
-                            </tr>
-                          )}
+                          {planoOpen &&
+                            benefs.map((b) => {
+                              const bsin = b.rec_total
+                                ? b.despesa / b.rec_total
+                                : 0;
+                              return (
+                                <tr
+                                  key={`${key}|${b.cdregusr}`}
+                                  className="border-b border-border/30 bg-accent/5"
+                                >
+                                  <td className="py-1 pr-4 pl-12 text-xs text-foreground truncate max-w-[420px]">
+                                    <span className="text-muted-foreground mr-2 tabular-nums">
+                                      {b.cdregusr}
+                                    </span>
+                                    {b.nmcli}
+                                  </td>
+                                  <td className="py-1 px-3 text-right tabular-nums text-xs">
+                                    {fmtBRL(b.rec_total)}
+                                  </td>
+                                  <td className="py-1 px-3 text-right tabular-nums text-xs">
+                                    {fmtBRL(b.despesa)}
+                                  </td>
+                                  <td
+                                    className={`py-1 px-3 text-right tabular-nums text-xs ${
+                                      b.rec_total - b.despesa >= 0
+                                        ? "text-emerald-700"
+                                        : "text-rose-700"
+                                    }`}
+                                  >
+                                    {fmtBRL(b.rec_total - b.despesa)}
+                                  </td>
+                                  <td
+                                    className={`py-1 pl-3 text-right tabular-nums text-xs ${
+                                      bsin <= 0.8
+                                        ? "text-emerald-700"
+                                        : "text-rose-700"
+                                    }`}
+                                  >
+                                    {fmtPct(bsin)}
+                                  </td>
+                                </tr>
+                              );
+                            })}
                         </>
                       );
                     })}
