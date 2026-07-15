@@ -7,8 +7,18 @@ type Row = {
   dspln: string;
   cdregusr: string;
   nmcli: string;
+  rec_tm: number;
+  rec_cpa: number;
   rec_total: number;
+  internacao: number;
+  emergencia: number;
+  consulta: number;
+  exame: number;
+  terapia: number;
+  outros: number;
+  fisioterap: number;
   despesa: number;
+  saldo: number;
 };
 
 const HIDE_PERIODO = "06/2021 a 05/2022";
@@ -25,6 +35,48 @@ const fmtPct = (v: number) =>
 
 const sumBy = <T,>(arr: T[], k: (t: T) => number) =>
   arr.reduce((a, t) => a + k(t), 0);
+
+type Agg = {
+  rec_cpa: number;
+  rec_total: number;
+  internacao: number;
+  emergencia: number;
+  consulta: number;
+  exame: number;
+  terapia: number;
+  fisioterap: number;
+  outros: number;
+  despesa: number;
+  saldo: number;
+};
+
+const aggregate = (rs: Row[]): Agg => ({
+  rec_cpa: sumBy(rs, (r) => r.rec_cpa),
+  rec_total: sumBy(rs, (r) => r.rec_total),
+  internacao: sumBy(rs, (r) => r.internacao),
+  emergencia: sumBy(rs, (r) => r.emergencia),
+  consulta: sumBy(rs, (r) => r.consulta),
+  exame: sumBy(rs, (r) => r.exame),
+  terapia: sumBy(rs, (r) => r.terapia),
+  fisioterap: sumBy(rs, (r) => r.fisioterap),
+  outros: sumBy(rs, (r) => r.outros),
+  despesa: sumBy(rs, (r) => r.despesa),
+  saldo: sumBy(rs, (r) => r.saldo),
+});
+
+const NUM_COLS: { key: keyof Agg; label: string }[] = [
+  { key: "rec_cpa", label: "Rec. Copa" },
+  { key: "rec_total", label: "Rec. Total" },
+  { key: "internacao", label: "Internação" },
+  { key: "emergencia", label: "Emergência" },
+  { key: "consulta", label: "Consulta" },
+  { key: "exame", label: "Exame" },
+  { key: "terapia", label: "Terapia" },
+  { key: "fisioterap", label: "Fisio" },
+  { key: "outros", label: "Outros" },
+  { key: "despesa", label: "vrDespesas" },
+  { key: "saldo", label: "Saldo" },
+];
 
 const Sinistralidade = () => {
   const [rows, setRows] = useState<Row[]>([]);
@@ -45,13 +97,11 @@ const Sinistralidade = () => {
     [rows]
   );
 
-  const totaisPorPeriodo = useMemo(
+  const porPeriodo = useMemo(
     () =>
       periodos.map((p) => {
         const rs = rows.filter((r) => r.periodo === p);
-        const rec = sumBy(rs, (r) => r.rec_total);
-        const desp = sumBy(rs, (r) => r.despesa);
-        return { periodo: p, rec, desp, saldo: rec - desp, sin: desp / rec };
+        return { periodo: p, rows: rs, agg: aggregate(rs) };
       }),
     [periodos, rows]
   );
@@ -88,6 +138,39 @@ const Sinistralidade = () => {
 
   const dspln = rows[0]?.dspln ?? "";
 
+  const NumCells = ({ a, sin }: { a: Agg; sin: number }) => (
+    <>
+      {NUM_COLS.map((c) => {
+        const v = a[c.key];
+        const color =
+          c.key === "saldo"
+            ? v >= 0
+              ? "text-emerald-700"
+              : "text-rose-700"
+            : c.key === "rec_total" || c.key === "rec_cpa"
+            ? "text-emerald-700"
+            : c.key === "despesa"
+            ? "text-rose-700"
+            : "text-foreground";
+        return (
+          <td
+            key={c.key}
+            className={`py-1.5 px-2 text-right tabular-nums ${color}`}
+          >
+            {fmtBRL(v)}
+          </td>
+        );
+      })}
+      <td
+        className={`py-1.5 pl-2 text-right tabular-nums font-medium ${
+          sin <= 0.8 ? "text-emerald-700" : "text-rose-700"
+        }`}
+      >
+        {fmtPct(sin)}
+      </td>
+    </>
+  );
+
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm p-6">
       <div className="flex items-baseline justify-between gap-4 flex-wrap">
@@ -98,75 +181,64 @@ const Sinistralidade = () => {
           <p className="text-xs text-muted-foreground mt-1">{dspln}</p>
         </div>
         <span className="text-xs text-muted-foreground">
-          {periodos.length} períodos · {rows.length.toLocaleString("pt-BR")} beneficiários-linha
+          {periodos.length} períodos · {rows.length.toLocaleString("pt-BR")} linhas
         </span>
       </div>
 
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-xs">
           <thead>
-            <tr className="text-xs uppercase tracking-wide text-muted-foreground border-b border-border">
-              <th className="text-left py-2 pr-4">Período / Plano / Beneficiário</th>
-              <th className="text-right py-2 px-3">Receita</th>
-              <th className="text-right py-2 px-3">Despesa</th>
-              <th className="text-right py-2 px-3">Saldo</th>
-              <th className="text-right py-2 pl-3">Sinistralidade</th>
+            <tr className="uppercase tracking-wide text-muted-foreground border-b border-border">
+              <th className="text-left py-2 pr-3 whitespace-nowrap">
+                Período / Plano / Beneficiário
+              </th>
+              {NUM_COLS.map((c) => (
+                <th
+                  key={c.key}
+                  className="text-right py-2 px-2 whitespace-nowrap"
+                >
+                  {c.label}
+                </th>
+              ))}
+              <th className="text-right py-2 pl-2 whitespace-nowrap">
+                Sinistr.
+              </th>
             </tr>
           </thead>
           <tbody>
-            {totaisPorPeriodo.map((t) => {
-              const perOpen = openPer.has(t.periodo);
-              const planosPer = rows.filter((r) => r.periodo === t.periodo);
+            {porPeriodo.map(({ periodo, rows: rsP, agg }) => {
+              const perOpen = openPer.has(periodo);
+              const sinP = agg.despesa / agg.rec_total;
               const planosCodes = Array.from(
-                new Set(planosPer.map((r) => r.cdpln))
+                new Set(rsP.map((r) => r.cdpln))
               ).sort();
               return (
                 <>
                   <tr
-                    key={t.periodo}
-                    className="border-b border-border/50 hover:bg-accent/30 cursor-pointer"
-                    onClick={() => togglePer(t.periodo)}
+                    key={periodo}
+                    className="border-b border-border/50 hover:bg-accent/30 cursor-pointer text-sm"
+                    onClick={() => togglePer(periodo)}
                   >
-                    <td className="py-2 pr-4 font-medium text-foreground">
+                    <td className="py-2 pr-3 font-medium text-foreground whitespace-nowrap">
                       <span className="inline-flex items-center gap-1">
                         <ChevronRight
                           className={`h-3.5 w-3.5 transition-transform ${
                             perOpen ? "rotate-90" : ""
                           }`}
                         />
-                        {t.periodo}
+                        {periodo}
                       </span>
                     </td>
-                    <td className="py-2 px-3 text-right tabular-nums text-emerald-700">
-                      {fmtBRL(t.rec)}
-                    </td>
-                    <td className="py-2 px-3 text-right tabular-nums text-rose-700">
-                      {fmtBRL(t.desp)}
-                    </td>
-                    <td
-                      className={`py-2 px-3 text-right tabular-nums ${
-                        t.saldo >= 0 ? "text-emerald-700" : "text-rose-700"
-                      }`}
-                    >
-                      {fmtBRL(t.saldo)}
-                    </td>
-                    <td
-                      className={`py-2 pl-3 text-right tabular-nums font-medium ${
-                        t.sin <= 0.8 ? "text-emerald-700" : "text-rose-700"
-                      }`}
-                    >
-                      {fmtPct(t.sin)}
-                    </td>
+                    <NumCells a={agg} sin={sinP} />
                   </tr>
 
                   {perOpen &&
                     planosCodes.map((cd) => {
-                      const key = `${t.periodo}|${cd}`;
+                      const key = `${periodo}|${cd}`;
                       const planoOpen = openPlano.has(key);
-                      const rsPl = planosPer.filter((r) => r.cdpln === cd);
-                      const rec = sumBy(rsPl, (r) => r.rec_total);
-                      const desp = sumBy(rsPl, (r) => r.despesa);
-                      const sin = desp / rec;
+                      const rsPl = rsP.filter((r) => r.cdpln === cd);
+                      const aggPl = aggregate(rsPl);
+                      const sinPl = aggPl.despesa / aggPl.rec_total;
                       const benefs = [...rsPl].sort(
                         (a, b) => b.despesa - a.despesa
                       );
@@ -177,8 +249,8 @@ const Sinistralidade = () => {
                             className="border-b border-border/40 bg-accent/10 hover:bg-accent/30 cursor-pointer"
                             onClick={() => togglePlano(key)}
                           >
-                            <td className="py-1.5 pr-4 pl-6 text-foreground">
-                              <span className="inline-flex items-center gap-1 text-xs">
+                            <td className="py-1.5 pr-3 pl-6 text-foreground whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1">
                                 <ChevronRight
                                   className={`h-3 w-3 transition-transform ${
                                     planoOpen ? "rotate-90" : ""
@@ -190,35 +262,12 @@ const Sinistralidade = () => {
                                 </span>
                               </span>
                             </td>
-                            <td className="py-1.5 px-3 text-right tabular-nums text-xs">
-                              {fmtBRL(rec)}
-                            </td>
-                            <td className="py-1.5 px-3 text-right tabular-nums text-xs">
-                              {fmtBRL(desp)}
-                            </td>
-                            <td
-                              className={`py-1.5 px-3 text-right tabular-nums text-xs ${
-                                rec - desp >= 0
-                                  ? "text-emerald-700"
-                                  : "text-rose-700"
-                              }`}
-                            >
-                              {fmtBRL(rec - desp)}
-                            </td>
-                            <td
-                              className={`py-1.5 pl-3 text-right tabular-nums text-xs font-medium ${
-                                sin <= 0.8
-                                  ? "text-emerald-700"
-                                  : "text-rose-700"
-                              }`}
-                            >
-                              {fmtPct(sin)}
-                            </td>
+                            <NumCells a={aggPl} sin={sinPl} />
                           </tr>
 
                           {planoOpen &&
                             benefs.map((b) => {
-                              const bsin = b.rec_total
+                              const sinB = b.rec_total
                                 ? b.despesa / b.rec_total
                                 : 0;
                               return (
@@ -226,36 +275,13 @@ const Sinistralidade = () => {
                                   key={`${key}|${b.cdregusr}`}
                                   className="border-b border-border/30 bg-accent/5"
                                 >
-                                  <td className="py-1 pr-4 pl-12 text-xs text-foreground truncate max-w-[420px]">
+                                  <td className="py-1 pr-3 pl-12 text-foreground whitespace-nowrap max-w-[360px] truncate">
                                     <span className="text-muted-foreground mr-2 tabular-nums">
                                       {b.cdregusr}
                                     </span>
                                     {b.nmcli}
                                   </td>
-                                  <td className="py-1 px-3 text-right tabular-nums text-xs">
-                                    {fmtBRL(b.rec_total)}
-                                  </td>
-                                  <td className="py-1 px-3 text-right tabular-nums text-xs">
-                                    {fmtBRL(b.despesa)}
-                                  </td>
-                                  <td
-                                    className={`py-1 px-3 text-right tabular-nums text-xs ${
-                                      b.rec_total - b.despesa >= 0
-                                        ? "text-emerald-700"
-                                        : "text-rose-700"
-                                    }`}
-                                  >
-                                    {fmtBRL(b.rec_total - b.despesa)}
-                                  </td>
-                                  <td
-                                    className={`py-1 pl-3 text-right tabular-nums text-xs ${
-                                      bsin <= 0.8
-                                        ? "text-emerald-700"
-                                        : "text-rose-700"
-                                    }`}
-                                  >
-                                    {fmtPct(bsin)}
-                                  </td>
+                                  <NumCells a={b as unknown as Agg} sin={sinB} />
                                 </tr>
                               );
                             })}
