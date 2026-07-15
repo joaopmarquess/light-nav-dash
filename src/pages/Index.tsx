@@ -49,8 +49,6 @@ const formatBR = (d: Date) =>
 import ConsultaBeneficiarioDenis from "@/components/ConsultaBeneficiarioDenis";
 import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
-import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
-import Sinistralidade from "@/components/Sinistralidade";
 import BIOverview from "@/components/BIOverview";
 import OrcamentoDW from "@/components/OrcamentoDW";
 import DWCarteira from "@/components/DWCarteira";
@@ -99,8 +97,6 @@ const menuItems: MenuItem[] = [
     icon: Percent,
     label: "Sinistralidade",
     children: [
-      { icon: FileText, label: "Tabela Sinistralidade" },
-      { icon: BarChart3, label: "Gráfico Sinistralidade" },
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
   },
@@ -318,10 +314,9 @@ const Index = () => {
             <DRE />
           ) : active === "Gráfico" ? (
             <DREGraficos />
-          ) : active === "Gráfico Sinistralidade" ? (
-            <SinistralidadeGraficos />
-          ) : active === "Tabela Sinistralidade" ? (
-            <Sinistralidade />
+          ) : active === "__removed_sin__" ? (
+            <div />
+
           ) : active === "PBI U12" ? (
             <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] overflow-hidden">
               <iframe
