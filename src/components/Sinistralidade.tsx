@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { ChevronRight } from "lucide-react";
 
 type Row = {
   periodo: string;
@@ -18,6 +19,8 @@ type Row = {
   saldo: number;
 };
 
+const HIDE_PERIODO = "06/2021 a 05/2022";
+
 const fmtBRL = (v: number) =>
   new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -31,11 +34,13 @@ const fmtPct = (v: number) =>
 const Sinistralidade = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openPer, setOpenPer] = useState<Set<string>>(new Set());
+  const [openPlano, setOpenPlano] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetch("/data/apb-sinistralidade.json")
       .then((r) => r.json())
-      .then((d: Row[]) => setRows(d))
+      .then((d: Row[]) => setRows(d.filter((r) => r.periodo !== HIDE_PERIODO)))
       .catch(() => setRows([]))
       .finally(() => setLoading(false));
   }, []);
@@ -56,6 +61,20 @@ const Sinistralidade = () => {
     [periodos, rows]
   );
 
+  const togglePer = (p: string) =>
+    setOpenPer((s) => {
+      const n = new Set(s);
+      n.has(p) ? n.delete(p) : n.add(p);
+      return n;
+    });
+
+  const togglePlano = (key: string) =>
+    setOpenPlano((s) => {
+      const n = new Set(s);
+      n.has(key) ? n.delete(key) : n.add(key);
+      return n;
+    });
+
   if (loading) {
     return (
       <section className="bg-card rounded-xl border border-border shadow-sm p-6">
@@ -75,151 +94,145 @@ const Sinistralidade = () => {
   const dspln = rows[0]?.dspln ?? "";
 
   return (
-    <div className="space-y-6">
-      <section className="bg-card rounded-xl border border-border shadow-sm p-6">
-        <div className="flex items-baseline justify-between gap-4 flex-wrap">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">
-              Tabela Sinistralidade
-            </h2>
-            <p className="text-xs text-muted-foreground mt-1">{dspln}</p>
-          </div>
-          <span className="text-xs text-muted-foreground">
-            {rows.length} linhas · {periodos.length} períodos
-          </span>
+    <section className="bg-card rounded-xl border border-border shadow-sm p-6">
+      <div className="flex items-baseline justify-between gap-4 flex-wrap">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">
+            Tabela Sinistralidade
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">{dspln}</p>
         </div>
+        <span className="text-xs text-muted-foreground">
+          {periodos.length} períodos
+        </span>
+      </div>
 
-        {/* Resumo por período */}
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-xs uppercase tracking-wide text-muted-foreground border-b border-border">
-                <th className="text-left py-2 pr-4">Período</th>
-                <th className="text-right py-2 px-3">Receita</th>
-                <th className="text-right py-2 px-3">Despesa</th>
-                <th className="text-right py-2 px-3">Saldo</th>
-                <th className="text-right py-2 pl-3">Sinistralidade</th>
-              </tr>
-            </thead>
-            <tbody>
-              {totaisPorPeriodo.map((t) => (
-                <tr
-                  key={t.periodo}
-                  className="border-b border-border/50 hover:bg-accent/30"
-                >
-                  <td className="py-2 pr-4 font-medium text-foreground">
-                    {t.periodo}
-                  </td>
-                  <td className="py-2 px-3 text-right tabular-nums text-emerald-700">
-                    {fmtBRL(t.rec)}
-                  </td>
-                  <td className="py-2 px-3 text-right tabular-nums text-rose-700">
-                    {fmtBRL(t.desp)}
-                  </td>
-                  <td
-                    className={`py-2 px-3 text-right tabular-nums ${
-                      t.saldo >= 0 ? "text-emerald-700" : "text-rose-700"
-                    }`}
-                  >
-                    {fmtBRL(t.saldo)}
-                  </td>
-                  <td
-                    className={`py-2 pl-3 text-right tabular-nums font-medium ${
-                      t.sin <= 0.8 ? "text-emerald-700" : "text-rose-700"
-                    }`}
-                  >
-                    {fmtPct(t.sin)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* Detalhe por plano */}
-      <section className="bg-card rounded-xl border border-border shadow-sm p-6">
-        <h3 className="text-sm font-semibold text-foreground mb-3">
-          Detalhe por plano
-        </h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="uppercase tracking-wide text-muted-foreground border-b border-border">
-                <th className="text-left py-2 pr-3">Período</th>
-                <th className="text-left py-2 pr-3">Plano</th>
-                <th className="text-right py-2 px-2">Rec. TM</th>
-                <th className="text-right py-2 px-2">Rec. Copa</th>
-                <th className="text-right py-2 px-2">Rec. Total</th>
-                <th className="text-right py-2 px-2">Internação</th>
-                <th className="text-right py-2 px-2">Emergência</th>
-                <th className="text-right py-2 px-2">Consulta</th>
-                <th className="text-right py-2 px-2">Exame</th>
-                <th className="text-right py-2 px-2">Terapia</th>
-                <th className="text-right py-2 px-2">Fisio</th>
-                <th className="text-right py-2 px-2">Despesa</th>
-                <th className="text-right py-2 pl-2">Sin.</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, i) => {
-                const sin = r.despesa / r.rec_total;
-                return (
+      <div className="mt-4 overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-xs uppercase tracking-wide text-muted-foreground border-b border-border">
+              <th className="text-left py-2 pr-4">Período / Plano</th>
+              <th className="text-right py-2 px-3">Receita</th>
+              <th className="text-right py-2 px-3">Despesa</th>
+              <th className="text-right py-2 px-3">Saldo</th>
+              <th className="text-right py-2 pl-3">Sinistralidade</th>
+            </tr>
+          </thead>
+          <tbody>
+            {totaisPorPeriodo.map((t) => {
+              const perOpen = openPer.has(t.periodo);
+              const planos = rows.filter((r) => r.periodo === t.periodo);
+              return (
+                <>
                   <tr
-                    key={i}
-                    className="border-b border-border/50 hover:bg-accent/30"
+                    key={t.periodo}
+                    className="border-b border-border/50 hover:bg-accent/30 cursor-pointer"
+                    onClick={() => togglePer(t.periodo)}
                   >
-                    <td className="py-1.5 pr-3 whitespace-nowrap text-foreground">
-                      {r.periodo}
+                    <td className="py-2 pr-4 font-medium text-foreground">
+                      <span className="inline-flex items-center gap-1">
+                        <ChevronRight
+                          className={`h-3.5 w-3.5 transition-transform ${
+                            perOpen ? "rotate-90" : ""
+                          }`}
+                        />
+                        {t.periodo}
+                      </span>
                     </td>
-                    <td className="py-1.5 pr-3 text-muted-foreground">
-                      {r.cdpln}
+                    <td className="py-2 px-3 text-right tabular-nums text-emerald-700">
+                      {fmtBRL(t.rec)}
                     </td>
-                    <td className="py-1.5 px-2 text-right tabular-nums">
-                      {fmtBRL(r.rec_tm)}
-                    </td>
-                    <td className="py-1.5 px-2 text-right tabular-nums">
-                      {fmtBRL(r.rec_cpa)}
-                    </td>
-                    <td className="py-1.5 px-2 text-right tabular-nums font-medium">
-                      {fmtBRL(r.rec_total)}
-                    </td>
-                    <td className="py-1.5 px-2 text-right tabular-nums">
-                      {fmtBRL(r.internacao)}
-                    </td>
-                    <td className="py-1.5 px-2 text-right tabular-nums">
-                      {fmtBRL(r.emergencia)}
-                    </td>
-                    <td className="py-1.5 px-2 text-right tabular-nums">
-                      {fmtBRL(r.consulta)}
-                    </td>
-                    <td className="py-1.5 px-2 text-right tabular-nums">
-                      {fmtBRL(r.exame)}
-                    </td>
-                    <td className="py-1.5 px-2 text-right tabular-nums">
-                      {fmtBRL(r.terapia)}
-                    </td>
-                    <td className="py-1.5 px-2 text-right tabular-nums">
-                      {fmtBRL(r.fisioterap)}
-                    </td>
-                    <td className="py-1.5 px-2 text-right tabular-nums font-medium">
-                      {fmtBRL(r.despesa)}
+                    <td className="py-2 px-3 text-right tabular-nums text-rose-700">
+                      {fmtBRL(t.desp)}
                     </td>
                     <td
-                      className={`py-1.5 pl-2 text-right tabular-nums font-medium ${
-                        sin <= 0.8 ? "text-emerald-700" : "text-rose-700"
+                      className={`py-2 px-3 text-right tabular-nums ${
+                        t.saldo >= 0 ? "text-emerald-700" : "text-rose-700"
                       }`}
                     >
-                      {fmtPct(sin)}
+                      {fmtBRL(t.saldo)}
+                    </td>
+                    <td
+                      className={`py-2 pl-3 text-right tabular-nums font-medium ${
+                        t.sin <= 0.8 ? "text-emerald-700" : "text-rose-700"
+                      }`}
+                    >
+                      {fmtPct(t.sin)}
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </div>
+
+                  {perOpen &&
+                    planos.map((p) => {
+                      const key = `${p.periodo}|${p.cdpln}`;
+                      const planoOpen = openPlano.has(key);
+                      const sin = p.despesa / p.rec_total;
+                      return (
+                        <>
+                          <tr
+                            key={key}
+                            className="border-b border-border/40 bg-accent/10 hover:bg-accent/30 cursor-pointer"
+                            onClick={() => togglePlano(key)}
+                          >
+                            <td className="py-1.5 pr-4 pl-6 text-foreground">
+                              <span className="inline-flex items-center gap-1 text-xs">
+                                <ChevronRight
+                                  className={`h-3 w-3 transition-transform ${
+                                    planoOpen ? "rotate-90" : ""
+                                  }`}
+                                />
+                                Plano {p.cdpln}
+                              </span>
+                            </td>
+                            <td className="py-1.5 px-3 text-right tabular-nums text-xs">
+                              {fmtBRL(p.rec_total)}
+                            </td>
+                            <td className="py-1.5 px-3 text-right tabular-nums text-xs">
+                              {fmtBRL(p.despesa)}
+                            </td>
+                            <td
+                              className={`py-1.5 px-3 text-right tabular-nums text-xs ${
+                                p.saldo >= 0
+                                  ? "text-emerald-700"
+                                  : "text-rose-700"
+                              }`}
+                            >
+                              {fmtBRL(p.rec_total - p.despesa)}
+                            </td>
+                            <td
+                              className={`py-1.5 pl-3 text-right tabular-nums text-xs font-medium ${
+                                sin <= 0.8
+                                  ? "text-emerald-700"
+                                  : "text-rose-700"
+                              }`}
+                            >
+                              {fmtPct(sin)}
+                            </td>
+                          </tr>
+
+                          {planoOpen && (
+                            <tr
+                              key={`${key}-benef`}
+                              className="border-b border-border/40 bg-accent/5"
+                            >
+                              <td
+                                colSpan={5}
+                                className="py-3 pl-12 pr-4 text-xs text-muted-foreground italic"
+                              >
+                                Detalhe por beneficiário indisponível — a fonte
+                                atual não contém essa granularidade.
+                              </td>
+                            </tr>
+                          )}
+                        </>
+                      );
+                    })}
+                </>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 };
 
