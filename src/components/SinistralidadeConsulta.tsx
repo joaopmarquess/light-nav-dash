@@ -21,6 +21,7 @@ type NumCol = (typeof NUM_COLS)[number];
 type Row = { PERIODO: string; GRUPO: string | null; cdpln: number | string; codigo: string | null; nmcli: string | null } & Record<NumCol, number | string | null>;
 type SubGroup = { cdpln: string; children: Row[]; vida: number } & Record<NumCol, number>;
 type Group = { GRUPO: string; subgroups: SubGroup[]; vida: number } & Record<NumCol, number>;
+type Benef = { codigo: string; nmcli: string; vida: number } & Record<NumCol, number>;
 type CellSrc = Record<NumCol, number> & { vida: number };
 
 type SortKey = "GRUPO" | NumCol | "SIN" | "VIDA";
