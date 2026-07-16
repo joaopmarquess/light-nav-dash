@@ -172,7 +172,7 @@ const SinistralidadeConsulta = () => {
             Sem dados.
           </div>
         ) : (
-          <table className="w-full text-[11px]">
+          <table className="w-full text-sm">
             <thead className="sticky top-0 bg-card border-b border-border">
               <tr>
                 <th className="font-medium text-muted-foreground px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate">dspln</th>
