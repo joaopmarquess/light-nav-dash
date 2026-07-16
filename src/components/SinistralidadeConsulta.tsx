@@ -37,7 +37,7 @@ const fmtPeriodo = (mabas: number) => {
 };
 
 const SinistralidadeConsulta = () => {
-  const [rows, setRows] = useState<Row[]>([]);
+  const [rows, setRows] = useState<Grouped[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
