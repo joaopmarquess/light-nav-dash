@@ -93,6 +93,7 @@ const SinistralidadeConsulta = () => {
   const displayCols = view === "curta" ? COLS_CURTA : COLS_COMPLETA;
   const nameColCls = view === "curta" ? "w-[30ch] max-w-[30ch]" : "w-[18ch] max-w-[18ch]";
   const numCellCls = view === "curta" ? "px-0.5 py-0.5 w-[8ch] whitespace-nowrap text-right tabular-nums" : "px-0.5 py-0.5 w-[7ch] whitespace-nowrap text-right tabular-nums";
+  const boldFor = (k: ColDef["key"]) => (k === "rec_total" || k === "vrdespesas" ? " font-semibold" : "");
 
   // Load distinct PERIODO values
   useEffect(() => {
@@ -347,7 +348,7 @@ const SinistralidadeConsulta = () => {
                   <th
                     key={c.key}
                     onClick={() => toggleSort(c.key)}
-                    className={`font-medium text-muted-foreground cursor-pointer select-none ${numCellCls}`}
+                    className={`font-medium text-muted-foreground cursor-pointer select-none ${numCellCls}${boldFor(c.key)}`}
                   >
                     {c.label}<SortIcon k={c.key} />
                   </th>
@@ -375,7 +376,7 @@ const SinistralidadeConsulta = () => {
                         </span>
                       </td>
                       {displayCols.map((c) => (
-                        <td key={c.key} className={numCellCls}>
+                        <td key={c.key} className={`${numCellCls}${boldFor(c.key)}`}>
                           {fmtCell(g, c)}
                         </td>
                       ))}
@@ -403,7 +404,7 @@ const SinistralidadeConsulta = () => {
                               </span>
                             </td>
                             {displayCols.map((c) => (
-                              <td key={c.key} className={numCellCls}>
+                              <td key={c.key} className={`${numCellCls}${boldFor(c.key)}`}>
                                 {fmtCell(sgSrc, c)}
                               </td>
                             ))}
@@ -418,7 +419,7 @@ const SinistralidadeConsulta = () => {
                                   {label}
                                 </td>
                                 {displayCols.map((c) => (
-                                  <td key={c.key} className={`${numCellCls} text-muted-foreground`}>
+                                  <td key={c.key} className={`${numCellCls} text-muted-foreground${boldFor(c.key)}`}>
                                     {fmtCell(rSrc, c)}
                                   </td>
                                 ))}
@@ -436,7 +437,7 @@ const SinistralidadeConsulta = () => {
               <tr>
                 <td className="px-1 py-0.5 text-left">Total</td>
                 {displayCols.map((c) => (
-                  <td key={c.key} className={numCellCls}>
+                  <td key={c.key} className={`${numCellCls}${boldFor(c.key)}`}>
                     {fmtCell(totals, c)}
                   </td>
                 ))}
