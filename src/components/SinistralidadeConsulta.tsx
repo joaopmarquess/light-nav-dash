@@ -18,15 +18,17 @@ const NUM_COLS = [
 
 type NumCol = (typeof NUM_COLS)[number];
 type Row = { PERIODO: string; GRUPO: string | null; cdpln: number | string; codigo: string | null; nmcli: string | null } & Record<NumCol, number | string | null>;
-type SubGroup = { cdpln: string; children: Row[] } & Record<NumCol, number>;
-type Group = { GRUPO: string; subgroups: SubGroup[] } & Record<NumCol, number>;
+type SubGroup = { cdpln: string; children: Row[]; vida: number } & Record<NumCol, number>;
+type Group = { GRUPO: string; subgroups: SubGroup[]; vida: number } & Record<NumCol, number>;
+type CellSrc = Record<NumCol, number> & { vida: number };
 
-type SortKey = "GRUPO" | NumCol | "SIN";
+type SortKey = "GRUPO" | NumCol | "SIN" | "VIDA";
 type ViewMode = "curta" | "completa";
 
-type ColDef = { key: NumCol | "SIN"; label: string; kind?: "ratio" };
+type ColDef = { key: NumCol | "SIN" | "VIDA"; label: string; kind?: "ratio" | "int" };
 
 const COLS_COMPLETA: ColDef[] = [
+  { key: "VIDA", label: "Vidas", kind: "int" },
   { key: "rec_tm", label: "TMM" },
   { key: "rec_cpa", label: "Copart." },
   { key: "rec_total", label: "Total Receita" },
@@ -42,6 +44,7 @@ const COLS_COMPLETA: ColDef[] = [
 ];
 
 const COLS_CURTA: ColDef[] = [
+  { key: "VIDA", label: "Vidas", kind: "int" },
   { key: "rec_tm", label: "TMM" },
   { key: "rec_cpa", label: "Copart." },
   { key: "rec_total", label: "Total Receita" },
@@ -53,17 +56,22 @@ const COLS_CURTA: ColDef[] = [
 const fmtPct = (n: number) =>
   Number.isFinite(n) ? `${(n * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%` : "-";
 
-const cellValue = (src: Record<NumCol, number>, col: ColDef): number => {
+const fmtInt = (n: number) => Math.round(n).toLocaleString("pt-BR");
+
+const cellValue = (src: CellSrc, col: ColDef): number => {
   if (col.key === "SIN") {
     const rt = src.rec_total || 0;
     return rt ? (src.vrdespesas || 0) / rt : 0;
   }
+  if (col.key === "VIDA") return src.vida || 0;
   return src[col.key] || 0;
 };
 
-const fmtCell = (src: Record<NumCol, number>, col: ColDef): string => {
+const fmtCell = (src: CellSrc, col: ColDef): string => {
   const v = cellValue(src, col);
-  return col.kind === "ratio" ? fmtPct(v) : fmtNum(v);
+  if (col.kind === "ratio") return fmtPct(v);
+  if (col.kind === "int") return fmtInt(v);
+  return fmtNum(v);
 };
 
 const fmtNum = (n: number) =>
@@ -83,8 +91,8 @@ const SinistralidadeConsulta = () => {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [view, setView] = useState<ViewMode>("curta");
   const displayCols = view === "curta" ? COLS_CURTA : COLS_COMPLETA;
-  const nameColCls = view === "curta" ? "w-[40ch] max-w-[40ch]" : "w-[22ch] max-w-[22ch]";
-  const numColCls = view === "curta" ? "px-0.5 py-0.5 w-[10ch]" : "px-0.5 py-0.5";
+  const nameColCls = view === "curta" ? "w-[30ch] max-w-[30ch]" : "w-[18ch] max-w-[18ch]";
+  const numCellCls = view === "curta" ? "px-0.5 py-0.5 w-[8ch] whitespace-nowrap text-right tabular-nums" : "px-0.5 py-0.5 w-[7ch] whitespace-nowrap text-right tabular-nums";
 
   // Load distinct PERIODO values
   useEffect(() => {
@@ -161,21 +169,29 @@ const SinistralidadeConsulta = () => {
   // Group by dspln, then by cdpln
   const groups = useMemo(() => {
     const map = new Map<string, Group>();
+    const groupCodes = new Map<string, Set<string>>();
     for (const r of rows) {
       const key = (r.GRUPO ?? "").trim();
       let g = map.get(key);
       if (!g) {
-        g = { GRUPO: key, subgroups: [] } as Group;
+        g = { GRUPO: key, subgroups: [], vida: 0 } as Group;
         for (const c of NUM_COLS) g[c] = 0;
         map.set(key, g);
+        groupCodes.set(key, new Set());
       }
+      if (r.codigo != null) groupCodes.get(key)!.add(String(r.codigo));
       for (const c of NUM_COLS) {
         const n = Number(r[c]);
         if (Number.isFinite(n)) g[c] += n;
       }
     }
+    for (const [k, s] of groupCodes) {
+      const g = map.get(k);
+      if (g) g.vida = s.size;
+    }
     // build subgroups per dspln
     const subMap = new Map<string, Map<string, SubGroup>>();
+    const subCodes = new Map<string, Set<string>>();
     for (const r of rows) {
       const dk = (r.GRUPO ?? "").trim();
       const ck = String(r.cdpln ?? "");
@@ -183,10 +199,12 @@ const SinistralidadeConsulta = () => {
       if (!inner) { inner = new Map(); subMap.set(dk, inner); }
       let sg = inner.get(ck);
       if (!sg) {
-        sg = { cdpln: ck, children: [] } as SubGroup;
+        sg = { cdpln: ck, children: [], vida: 0 } as SubGroup;
         for (const c of NUM_COLS) sg[c] = 0;
         inner.set(ck, sg);
+        subCodes.set(`${dk}||${ck}`, new Set());
       }
+      if (r.codigo != null) subCodes.get(`${dk}||${ck}`)!.add(String(r.codigo));
       sg.children.push(r);
       for (const c of NUM_COLS) {
         const n = Number(r[c]);
@@ -194,6 +212,7 @@ const SinistralidadeConsulta = () => {
       }
     }
     for (const [dk, inner] of subMap) {
+      for (const [ck, sg] of inner) sg.vida = subCodes.get(`${dk}||${ck}`)?.size ?? 0;
       const g = map.get(dk);
       if (g) g.subgroups = Array.from(inner.values());
     }
@@ -219,6 +238,7 @@ const SinistralidadeConsulta = () => {
       let cmp = 0;
       if (sortKey === "GRUPO") cmp = a.GRUPO.localeCompare(b.GRUPO, "pt-BR");
       else if (sortKey === "SIN") cmp = sinOf(a) - sinOf(b);
+      else if (sortKey === "VIDA") cmp = a.vida - b.vida;
       else cmp = (a[sortKey] || 0) - (b[sortKey] || 0);
       return sortDir === "asc" ? cmp : -cmp;
     });
@@ -226,9 +246,14 @@ const SinistralidadeConsulta = () => {
   }, [groups, q, sortKey, sortDir]);
 
   const totals = useMemo(() => {
-    const t = {} as Record<NumCol, number>;
+    const t = { vida: 0 } as CellSrc;
     for (const c of NUM_COLS) t[c] = 0;
-    for (const g of filtered) for (const c of NUM_COLS) t[c] += g[c];
+    const codes = new Set<string>();
+    for (const g of filtered) {
+      for (const c of NUM_COLS) t[c] += g[c];
+      for (const sg of g.subgroups) for (const r of sg.children) if (r.codigo != null) codes.add(String(r.codigo));
+    }
+    t.vida = codes.size;
     return t;
   }, [filtered]);
 
@@ -328,7 +353,7 @@ const SinistralidadeConsulta = () => {
                   <th
                     key={c.key}
                     onClick={() => toggleSort(c.key)}
-                    className="font-medium text-muted-foreground px-0.5 py-0.5 whitespace-nowrap text-right cursor-pointer select-none"
+                    className={`font-medium text-muted-foreground cursor-pointer select-none ${numCellCls}`}
                   >
                     {c.label}<SortIcon k={c.key} />
                   </th>
@@ -356,7 +381,7 @@ const SinistralidadeConsulta = () => {
                         </span>
                       </td>
                       {displayCols.map((c) => (
-                        <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums">
+                        <td key={c.key} className={numCellCls}>
                           {fmtCell(g, c)}
                         </td>
                       ))}
@@ -365,7 +390,7 @@ const SinistralidadeConsulta = () => {
                       const subKey = `${g.GRUPO}||${sg.cdpln}`;
                       const subOpen = expanded.has(subKey);
                       const subHasChildren = sg.children.length > 0;
-                      const sgSrc = {} as Record<NumCol, number>;
+                      const sgSrc = { vida: sg.vida } as CellSrc;
                       for (const c of NUM_COLS) sgSrc[c] = sg[c];
                       return (
                         <Fragment key={subKey}>
@@ -384,13 +409,13 @@ const SinistralidadeConsulta = () => {
                               </span>
                             </td>
                             {displayCols.map((c) => (
-                              <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums">
+                              <td key={c.key} className={numCellCls}>
                                 {fmtCell(sgSrc, c)}
                               </td>
                             ))}
                           </tr>
                           {subOpen && sg.children.map((r, i) => {
-                            const rSrc = {} as Record<NumCol, number>;
+                            const rSrc = { vida: 1 } as CellSrc;
                             for (const c of NUM_COLS) rSrc[c] = Number(r[c]) || 0;
                             const label = `${r.codigo ?? ""}${r.codigo && r.nmcli ? " " : ""}${r.nmcli ?? ""}`.trim();
                             return (
@@ -399,7 +424,7 @@ const SinistralidadeConsulta = () => {
                                   {label}
                                 </td>
                                 {displayCols.map((c) => (
-                                  <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums text-muted-foreground">
+                                  <td key={c.key} className={`${numCellCls} text-muted-foreground`}>
                                     {fmtCell(rSrc, c)}
                                   </td>
                                 ))}
@@ -417,7 +442,7 @@ const SinistralidadeConsulta = () => {
               <tr>
                 <td className="px-1 py-0.5 text-left">Total</td>
                 {displayCols.map((c) => (
-                  <td key={c.key} className="px-0.5 py-0.5 text-right tabular-nums">
+                  <td key={c.key} className={numCellCls}>
                     {fmtCell(totals, c)}
                   </td>
                 ))}
