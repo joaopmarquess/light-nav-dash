@@ -289,7 +289,7 @@ const SinistralidadeConsulta = () => {
                       </td>
                       {displayCols.map((c) => (
                         <td key={c.key} className="px-1 py-1 whitespace-nowrap text-right tabular-nums">
-                          {fmtNum(g[c.key])}
+                          {fmtCell(g, c)}
                         </td>
                       ))}
                     </tr>
