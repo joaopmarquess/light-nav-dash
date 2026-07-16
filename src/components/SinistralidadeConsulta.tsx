@@ -239,9 +239,8 @@ const SinistralidadeConsulta = () => {
               {filtered.map((g) => {
                 const isOpen = expanded.has(g.dspln);
                 return (
-                  <>
+                  <Fragment key={g.dspln}>
                     <tr
-                      key={g.dspln}
                       onClick={() => g.children.length > 1 && toggleExpand(g.dspln)}
                       className={`border-b border-border/60 hover:bg-accent/40 ${g.children.length > 1 ? "cursor-pointer" : ""}`}
                     >
@@ -273,7 +272,8 @@ const SinistralidadeConsulta = () => {
                         ))}
                       </tr>
                     ))}
-                  </>
+                  </Fragment>
+
                 );
               })}
             </tbody>
