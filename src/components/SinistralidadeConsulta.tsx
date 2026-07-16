@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
-import { Loader2, Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown } from "lucide-react";
+import { Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown } from "lucide-react";
+import FunLoader from "@/components/FunLoader";
 
 const NUM_COLS = [
   "rec_tm",
@@ -343,7 +344,7 @@ const SinistralidadeConsulta = () => {
       <div className="flex-1 overflow-y-auto overflow-x-hidden">
         {loading ? (
           <div className="h-full flex items-center justify-center text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin mr-2" /> Carregando...
+            <FunLoader />
           </div>
         ) : error ? (
           <div className="p-6 text-sm text-destructive">Erro: {error}</div>
