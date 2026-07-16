@@ -70,8 +70,8 @@ const SinistralidadeConsulta = () => {
   useEffect(() => {
     (async () => {
       const [{ data: maxRow }, { data: minRow }] = await Promise.all([
-        hostinger.from("vw_sinistralidade_periodo2").select("Periodo2").order("Periodo2", { ascending: false }).limit(1),
-        hostinger.from("vw_sinistralidade_periodo2").select("Periodo2").order("Periodo2", { ascending: true }).limit(1),
+        hostinger.from("vw_sinistralidade").select("Periodo2").order("Periodo2", { ascending: false }).limit(1),
+        hostinger.from("vw_sinistralidade").select("Periodo2").order("Periodo2", { ascending: true }).limit(1),
       ]);
       const max = (maxRow?.[0]?.Periodo2 as number) ?? null;
       const min = (minRow?.[0]?.Periodo2 as number) ?? max;
@@ -103,7 +103,7 @@ const SinistralidadeConsulta = () => {
       let from = 0;
       for (let i = 0; i < maxPages; i++) {
         const { data, error } = await hostinger
-          .from("vw_sinistralidade_periodo2")
+          .from("vw_sinistralidade")
           .select(COLS.join(","))
           .eq("Periodo2", periodo)
           .range(from, from + pageSize - 1);
