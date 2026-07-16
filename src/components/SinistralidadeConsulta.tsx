@@ -93,23 +93,19 @@ const SinistralidadeConsulta = () => {
   const nameColCls = view === "curta" ? "w-[40ch] max-w-[40ch]" : "w-[22ch] max-w-[22ch]";
   const numColCls = view === "curta" ? "px-0.5 py-0.5 w-[10ch]" : "px-0.5 py-0.5";
 
-  // Load distinct PERIODO values
+  // Load recent PERIODO values without scanning the whole view
   useEffect(() => {
     (async () => {
-      const pageSize = 1000;
       const set = new Set<string>();
-      let from = 0;
-      for (let i = 0; i < 200; i++) {
-        const { data, error } = await hostinger
-          .from("vw_sinistralidade")
-          .select("PERIODO")
-          .range(from, from + pageSize - 1);
-        if (error) { setError(error.message); return; }
-        const batch = (data as { PERIODO: string }[]) ?? [];
-        for (const r of batch) if (r.PERIODO) set.add(r.PERIODO);
-        if (batch.length < pageSize) break;
-        from += pageSize;
-      }
+      const { data, error } = await hostinger
+        .from("vw_sinistralidade")
+        .select("PERIODO")
+        .not("PERIODO", "is", null)
+        .order("PERIODO", { ascending: false })
+        .limit(1000);
+      if (error) { setError(error.message); return; }
+      const batch = (data as { PERIODO: string }[]) ?? [];
+      for (const r of batch) if (r.PERIODO) set.add(r.PERIODO);
       const list = Array.from(set).sort((a, b) => {
         const endA = a.split(" a ")[1] ?? a;
         const endB = b.split(" a ")[1] ?? b;
