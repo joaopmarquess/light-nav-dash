@@ -238,13 +238,7 @@ const SinistralidadeConsulta = () => {
       ? groups
       : groups.filter((g) =>
           g.GRUPO.toLowerCase().includes(term) ||
-          g.subgroups.some((s) =>
-            String(s.cdpln).toLowerCase().includes(term) ||
-            s.children.some((r) =>
-              String(r.codigo ?? "").toLowerCase().includes(term) ||
-              String(r.nmcli ?? "").toLowerCase().includes(term)
-            )
-          )
+          g.subgroups.some((s) => String(s.cdpln).toLowerCase().includes(term))
         );
     const sinOf = (g: Group) => (g.rec_total ? g.vrdespesas / g.rec_total : 0);
     const sorted = [...base].sort((a, b) => {
