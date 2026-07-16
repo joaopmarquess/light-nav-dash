@@ -337,50 +337,23 @@ const SinistralidadeConsulta = () => {
                     </tr>
                     {isOpen && g.plans.map((p) => {
                       const planKey = `${g.dspln}::${p.cdpln}`;
-                      const planOpen = expanded.has(planKey);
-                      const planHasDetails = p.children.length > 0;
                       return (
-                        <Fragment key={planKey}>
-                          <tr
-                            onClick={() => planHasDetails && toggleExpand(planKey)}
-                            className={`border-b border-border/40 bg-accent/20 text-[0.92em] ${planHasDetails ? "cursor-pointer" : ""}`}
-                          >
-                            <td className={`px-1 py-0.5 text-left ${nameColCls} truncate pl-6 text-muted-foreground`} title={p.cdpln}>
-                              <span className="inline-flex items-center gap-1">
-                                {planHasDetails ? (
-                                  planOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />
-                                ) : (
-                                  <span className="w-3.5" />
-                                )}
-                                <span className="truncate">{p.cdpln}</span>
-                              </span>
+                        <tr
+                          key={planKey}
+                          className="border-b border-border/40 bg-accent/20 text-[0.92em]"
+                        >
+                          <td className={`px-1 py-0.5 text-left ${nameColCls} truncate pl-6 text-muted-foreground`} title={p.cdpln}>
+                            <span className="inline-flex items-center gap-1">
+                              <span className="w-3.5" />
+                              <span className="truncate">{p.cdpln}</span>
+                            </span>
+                          </td>
+                          {displayCols.map((c) => (
+                            <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums text-muted-foreground">
+                              {fmtCell(p, c)}
                             </td>
-                            {displayCols.map((c) => (
-                              <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums text-muted-foreground">
-                                {fmtCell(p, c)}
-                              </td>
-                            ))}
-                          </tr>
-                          {planOpen && p.children.map((r, i) => {
-                            const rSrc = {} as Record<NumCol, number>;
-                            for (const c of NUM_COLS) rSrc[c] = Number(r[c]) || 0;
-                            const label = [r.codigo, r.nmcli, r.cdpdrcft]
-                              .map((v) => (v == null || v === "" ? "-" : String(v)))
-                              .join(" | ");
-                            return (
-                              <tr key={`${planKey}-${i}`} className="border-b border-border/30 bg-accent/10 text-[0.85em]">
-                                <td className={`px-1 py-0.5 text-left ${nameColCls} truncate pl-12 text-muted-foreground`} title={label}>
-                                  {label}
-                                </td>
-                                {displayCols.map((c) => (
-                                  <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums text-muted-foreground">
-                                    {fmtCell(rSrc, c)}
-                                  </td>
-                                ))}
-                              </tr>
-                            );
-                          })}
-                        </Fragment>
+                          ))}
+                        </tr>
                       );
                     })}
                   </Fragment>
