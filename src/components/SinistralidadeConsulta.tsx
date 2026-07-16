@@ -62,31 +62,32 @@ const SinistralidadeConsulta = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
-  const [periodos, setPeriodos] = useState<string[]>([]);
-  const [periodo, setPeriodo] = useState<string | null>(null);
+  const [periodos, setPeriodos] = useState<number[]>([]);
+  const [periodo, setPeriodo] = useState<number | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("dspln");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
     (async () => {
-      const pageSize = 1000;
-      const set = new Set<string>();
-      let from = 0;
-      for (let i = 0; i < 2000; i++) {
-        const { data, error } = await hostinger
-          .from("vw_sinistralidade_periodo")
-          .select("periodo2")
-          .order("periodo2", { ascending: false })
-          .range(from, from + pageSize - 1);
-        if (error) break;
-        const batch = (data as unknown as { periodo2: string | number | null }[]) ?? [];
-        for (const r of batch) if (r.periodo2 != null) set.add(String(r.periodo2));
-        if (batch.length < pageSize) break;
-        from += pageSize;
+      const [{ data: maxRow }, { data: minRow }] = await Promise.all([
+        hostinger.from("vw_sinistralidade_periodo").select("mabas").order("mabas", { ascending: false }).limit(1),
+        hostinger.from("vw_sinistralidade_periodo").select("mabas").order("mabas", { ascending: true }).limit(1),
+      ]);
+      const max = (maxRow?.[0]?.mabas as number) ?? null;
+      const min = (minRow?.[0]?.mabas as number) ?? max;
+      if (!max || !min) return;
+      const list: number[] = [];
+      let y = Math.floor(min / 100);
+      let m = min % 100;
+      const ymEnd = max;
+      while (y * 100 + m <= ymEnd) {
+        list.push(y * 100 + m);
+        m += 1;
+        if (m > 12) { m = 1; y += 1; }
       }
-      const list = Array.from(set).sort((a, b) => b.localeCompare(a, "pt-BR", { numeric: true }));
+      list.reverse();
       setPeriodos(list);
-      if (list.length) setPeriodo(list[0]);
+      setPeriodo(max);
     })();
   }, []);
 
@@ -104,7 +105,7 @@ const SinistralidadeConsulta = () => {
         const { data, error } = await hostinger
           .from("vw_sinistralidade_periodo")
           .select(COLS.join(","))
-          .eq("periodo2", periodo)
+          .eq("mabas", periodo)
           .range(from, from + pageSize - 1);
         if (cancel) return;
         if (error) { setError(error.message); break; }
@@ -187,11 +188,11 @@ const SinistralidadeConsulta = () => {
           <label className="text-sm text-muted-foreground">Base</label>
           <select
             value={periodo ?? ""}
-            onChange={(e) => setPeriodo(e.target.value)}
+            onChange={(e) => setPeriodo(Number(e.target.value))}
             className="h-9 px-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
           >
             {periodos.map((p) => (
-              <option key={p} value={p}>{p}</option>
+              <option key={p} value={p}>{fmtPeriodo(p)}</option>
             ))}
           </select>
           <div className="text-sm text-muted-foreground">
