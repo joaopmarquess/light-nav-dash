@@ -22,7 +22,9 @@ type Group = { dspln: string; children: Row[] } & Record<NumCol, number>;
 
 type SortKey = "dspln" | NumCol;
 
-const DISPLAY_COLS: { key: NumCol; label: string }[] = [
+type ColDef = { key: NumCol | "SIN"; label: string; kind?: "ratio" };
+
+const COLS_COMPLETA: ColDef[] = [
   { key: "rec_tm", label: "TMM" },
   { key: "rec_cpa", label: "Copart." },
   { key: "rec_total", label: "Total Receita" },
@@ -34,7 +36,33 @@ const DISPLAY_COLS: { key: NumCol; label: string }[] = [
   { key: "DEMAIS", label: "Demais" },
   { key: "vrdespesas", label: "Total Despesa" },
   { key: "SALDO", label: "Saldo" },
+  { key: "SIN", label: "SIN.", kind: "ratio" },
 ];
+
+const COLS_CURTA: ColDef[] = [
+  { key: "rec_tm", label: "TMM" },
+  { key: "rec_cpa", label: "Copart." },
+  { key: "rec_total", label: "Total Receita" },
+  { key: "vrdespesas", label: "Total Despesa" },
+  { key: "SALDO", label: "Saldo" },
+  { key: "SIN", label: "SIN.", kind: "ratio" },
+];
+
+const fmtPct = (n: number) =>
+  Number.isFinite(n) ? `${(n * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%` : "-";
+
+const cellValue = (src: Record<NumCol, number>, col: ColDef): number => {
+  if (col.key === "SIN") {
+    const rt = src.rec_total || 0;
+    return rt ? (src.vrdespesas || 0) / rt : 0;
+  }
+  return src[col.key] || 0;
+};
+
+const fmtCell = (src: Record<NumCol, number>, col: ColDef): string => {
+  const v = cellValue(src, col);
+  return col.kind === "ratio" ? fmtPct(v) : fmtNum(v);
+};
 
 const fmtNum = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
