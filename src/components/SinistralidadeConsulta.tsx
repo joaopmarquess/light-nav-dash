@@ -256,7 +256,7 @@ const SinistralidadeConsulta = () => {
 
 
 
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
         {loading ? (
           <div className="h-full flex items-center justify-center text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin mr-2" /> Carregando...
@@ -268,12 +268,12 @@ const SinistralidadeConsulta = () => {
             Sem dados.
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full table-fixed text-[11px] leading-tight">
             <thead className="sticky top-0 bg-card border-b border-border">
               <tr>
                 <th
                   onClick={() => toggleSort("dspln")}
-                  className="font-medium text-muted-foreground px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate cursor-pointer select-none"
+                  className="font-medium text-muted-foreground px-1 py-0.5 text-left w-[22ch] max-w-[22ch] truncate cursor-pointer select-none"
                 >
                   Nome Plano|Empresa<SortIcon k="dspln" />
                 </th>
@@ -281,7 +281,7 @@ const SinistralidadeConsulta = () => {
                   <th
                     key={c.key}
                     onClick={() => toggleSort(c.key)}
-                    className="font-medium text-muted-foreground px-1 py-1 whitespace-nowrap text-right cursor-pointer select-none"
+                    className="font-medium text-muted-foreground px-0.5 py-0.5 whitespace-nowrap text-right cursor-pointer select-none"
                   >
                     {c.label}<SortIcon k={c.key} />
                   </th>
@@ -297,7 +297,7 @@ const SinistralidadeConsulta = () => {
                       onClick={() => g.children.length > 1 && toggleExpand(g.dspln)}
                       className={`border-b border-border/60 hover:bg-accent/40 ${g.children.length > 1 ? "cursor-pointer" : ""}`}
                     >
-                      <td className="px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate" title={g.dspln}>
+                      <td className="px-1 py-0.5 text-left w-[22ch] max-w-[22ch] truncate" title={g.dspln}>
                         <span className="inline-flex items-center gap-1">
                           {g.children.length > 1 ? (
                             isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />
@@ -308,7 +308,7 @@ const SinistralidadeConsulta = () => {
                         </span>
                       </td>
                       {displayCols.map((c) => (
-                        <td key={c.key} className="px-1 py-1 whitespace-nowrap text-right tabular-nums">
+                        <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums">
                           {fmtCell(g, c)}
                         </td>
                       ))}
@@ -318,11 +318,11 @@ const SinistralidadeConsulta = () => {
                       for (const c of NUM_COLS) rSrc[c] = Number(r[c]) || 0;
                       return (
                         <tr key={`${g.dspln}-${r.cdpln}-${i}`} className="border-b border-border/40 bg-accent/20 text-[0.92em]">
-                          <td className="px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate pl-8 text-muted-foreground" title={String(r.cdpln)}>
+                          <td className="px-1 py-0.5 text-left w-[22ch] max-w-[22ch] truncate pl-8 text-muted-foreground" title={String(r.cdpln)}>
                             cdpln {String(r.cdpln)}
                           </td>
                           {displayCols.map((c) => (
-                            <td key={c.key} className="px-1 py-1 whitespace-nowrap text-right tabular-nums text-muted-foreground">
+                            <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums text-muted-foreground">
                               {fmtCell(rSrc, c)}
                             </td>
                           ))}
@@ -336,9 +336,9 @@ const SinistralidadeConsulta = () => {
             </tbody>
             <tfoot className="sticky bottom-0 bg-card border-t border-border font-semibold">
               <tr>
-                <td className="px-1.5 py-1 text-left">Total</td>
+                <td className="px-1 py-0.5 text-left">Total</td>
                 {displayCols.map((c) => (
-                  <td key={c.key} className="px-1 py-1 text-right tabular-nums">
+                  <td key={c.key} className="px-0.5 py-0.5 text-right tabular-nums">
                     {fmtCell(totals, c)}
                   </td>
                 ))}
