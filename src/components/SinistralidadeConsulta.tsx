@@ -28,16 +28,16 @@ type SortKey = "dspln" | "vidas" | Exclude<NumCol, "fisioterap" | "outros"> | De
 
 const DISPLAY_COLS: { key: SortKey; label: string }[] = [
   { key: "vidas", label: "Vidas" },
-  { key: "rec_tm", label: "rec_tm" },
-  { key: "rec_cpa", label: "rec_cpa" },
-  { key: "rec_total", label: "rec_total" },
-  { key: "consulta", label: "consulta" },
-  { key: "emergencia", label: "emergencia" },
-  { key: "exame", label: "exame" },
-  { key: "terapia", label: "terapia" },
-  { key: "internacao", label: "internacao" },
+  { key: "rec_tm", label: "TMM" },
+  { key: "rec_cpa", label: "Copart." },
+  { key: "rec_total", label: "Total Receita" },
+  { key: "consulta", label: "Consulta" },
+  { key: "emergencia", label: "Emergência" },
+  { key: "exame", label: "Exame" },
+  { key: "terapia", label: "Terapia" },
+  { key: "internacao", label: "Internação" },
   { key: "demais", label: "Demais" },
-  { key: "vrdespesas", label: "vrdespesas" },
+  { key: "vrdespesas", label: "Total Despesa" },
   { key: "saldo", label: "Saldo" },
 ];
 
