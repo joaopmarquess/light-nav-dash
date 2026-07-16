@@ -21,10 +21,12 @@ type Row = {
   PERIODO: string;
   cdpln: number | string;
   dspln: string;
+  codigo: number | string | null;
+  nmcli: string | null;
+  cdpdrcft: number | string | null;
 } & Record<NumCol, number | string | null>;
-type PlanGroup = { cdpln: string } & Record<NumCol, number>;
+type PlanGroup = { cdpln: string; children: Row[] } & Record<NumCol, number>;
 type Group = { dspln: string; plans: PlanGroup[] } & Record<NumCol, number>;
-
 
 type SortKey = "dspln" | NumCol | "SIN";
 type ViewMode = "curta" | "completa";
@@ -74,7 +76,7 @@ const fmtCell = (src: Record<NumCol, number>, col: ColDef): string => {
 const fmtNum = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const SELECT = ["PERIODO", "cdpln", "dspln", ...NUM_COLS].join(",");
+const SELECT = ["PERIODO", "cdpln", "dspln", "codigo", "nmcli", "cdpdrcft", ...NUM_COLS].join(",");
 
 const SinistralidadeConsulta = () => {
   const [rows, setRows] = useState<Row[]>([]);
@@ -91,19 +93,23 @@ const SinistralidadeConsulta = () => {
   const nameColCls = view === "curta" ? "w-[40ch] max-w-[40ch]" : "w-[22ch] max-w-[22ch]";
   const numColCls = view === "curta" ? "px-0.5 py-0.5 w-[10ch]" : "px-0.5 py-0.5";
 
-  // Load recent PERIODO values without scanning the whole view
+  // Load distinct PERIODO values
   useEffect(() => {
     (async () => {
+      const pageSize = 1000;
       const set = new Set<string>();
-      const { data, error } = await hostinger
-        .from("vw_sinistralidade")
-        .select("PERIODO")
-        .not("PERIODO", "is", null)
-        .order("PERIODO", { ascending: false })
-        .limit(1000);
-      if (error) { setError(error.message); return; }
-      const batch = (data as { PERIODO: string }[]) ?? [];
-      for (const r of batch) if (r.PERIODO) set.add(r.PERIODO);
+      let from = 0;
+      for (let i = 0; i < 200; i++) {
+        const { data, error } = await hostinger
+          .from("vw_sinistralidade")
+          .select("PERIODO")
+          .range(from, from + pageSize - 1);
+        if (error) { setError(error.message); return; }
+        const batch = (data as { PERIODO: string }[]) ?? [];
+        for (const r of batch) if (r.PERIODO) set.add(r.PERIODO);
+        if (batch.length < pageSize) break;
+        from += pageSize;
+      }
       const list = Array.from(set).sort((a, b) => {
         const endA = a.split(" a ")[1] ?? a;
         const endB = b.split(" a ")[1] ?? b;
@@ -132,7 +138,6 @@ const SinistralidadeConsulta = () => {
           .from("vw_sinistralidade")
           .select(SELECT)
           .eq("PERIODO", periodo)
-          .order("cdpln", { ascending: true })
           .range(from, from + pageSize - 1);
         if (cancel) return;
         if (error) { setError(error.message); break; }
@@ -162,10 +167,11 @@ const SinistralidadeConsulta = () => {
       const planKey = String(r.cdpln ?? "");
       let p = g.plans.find((x) => x.cdpln === planKey);
       if (!p) {
-        p = { cdpln: planKey } as PlanGroup;
+        p = { cdpln: planKey, children: [] } as PlanGroup;
         for (const c of NUM_COLS) p[c] = 0;
         g.plans.push(p);
       }
+      p.children.push(r);
       for (const c of NUM_COLS) {
         const n = Number(r[c]);
         if (Number.isFinite(n)) {
@@ -309,7 +315,7 @@ const SinistralidadeConsulta = () => {
             <tbody>
               {filtered.map((g) => {
                 const isOpen = expanded.has(g.dspln);
-                const hasChildren = g.plans.length > 1;
+                const hasChildren = g.plans.length > 1 || (g.plans[0] && g.plans[0].children.length > 1);
                 return (
                   <Fragment key={g.dspln}>
                     <tr
@@ -334,23 +340,50 @@ const SinistralidadeConsulta = () => {
                     </tr>
                     {isOpen && g.plans.map((p) => {
                       const planKey = `${g.dspln}::${p.cdpln}`;
+                      const planOpen = expanded.has(planKey);
+                      const planHasDetails = p.children.length > 0;
                       return (
-                        <tr
-                          key={planKey}
-                          className="border-b border-border/40 bg-accent/20 text-[0.92em]"
-                        >
-                          <td className={`px-1 py-0.5 text-left ${nameColCls} truncate pl-6 text-muted-foreground`} title={p.cdpln}>
-                            <span className="inline-flex items-center gap-1">
-                              <span className="w-3.5" />
-                              <span className="truncate">{p.cdpln}</span>
-                            </span>
-                          </td>
-                          {displayCols.map((c) => (
-                            <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums text-muted-foreground">
-                              {fmtCell(p, c)}
+                        <Fragment key={planKey}>
+                          <tr
+                            onClick={() => planHasDetails && toggleExpand(planKey)}
+                            className={`border-b border-border/40 bg-accent/20 text-[0.92em] ${planHasDetails ? "cursor-pointer" : ""}`}
+                          >
+                            <td className={`px-1 py-0.5 text-left ${nameColCls} truncate pl-6 text-muted-foreground`} title={p.cdpln}>
+                              <span className="inline-flex items-center gap-1">
+                                {planHasDetails ? (
+                                  planOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />
+                                ) : (
+                                  <span className="w-3.5" />
+                                )}
+                                <span className="truncate">{p.cdpln}</span>
+                              </span>
                             </td>
-                          ))}
-                        </tr>
+                            {displayCols.map((c) => (
+                              <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums text-muted-foreground">
+                                {fmtCell(p, c)}
+                              </td>
+                            ))}
+                          </tr>
+                          {planOpen && p.children.map((r, i) => {
+                            const rSrc = {} as Record<NumCol, number>;
+                            for (const c of NUM_COLS) rSrc[c] = Number(r[c]) || 0;
+                            const label = [r.codigo, r.nmcli, r.cdpdrcft]
+                              .map((v) => (v == null || v === "" ? "-" : String(v)))
+                              .join(" | ");
+                            return (
+                              <tr key={`${planKey}-${i}`} className="border-b border-border/30 bg-accent/10 text-[0.85em]">
+                                <td className={`px-1 py-0.5 text-left ${nameColCls} truncate pl-12 text-muted-foreground`} title={label}>
+                                  {label}
+                                </td>
+                                {displayCols.map((c) => (
+                                  <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums text-muted-foreground">
+                                    {fmtCell(rSrc, c)}
+                                  </td>
+                                ))}
+                              </tr>
+                            );
+                          })}
+                        </Fragment>
                       );
                     })}
                   </Fragment>
