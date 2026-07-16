@@ -142,7 +142,17 @@ const SinistralidadeConsulta = () => {
         from += pageSize;
       }
       if (cancel) return;
-      setRows(all);
+      // Dedupe por (cdpln, codigo) — mesma pessoa pode aparecer com nomes diferentes.
+      // Verdade: código distinto. Mantemos a primeira ocorrência.
+      const seen = new Set<string>();
+      const deduped: Row[] = [];
+      for (const r of all) {
+        const k = `${r.cdpln ?? ""}||${r.codigo ?? ""}`;
+        if (r.codigo != null && seen.has(k)) continue;
+        if (r.codigo != null) seen.add(k);
+        deduped.push(r);
+      }
+      setRows(deduped);
       setLoading(false);
     })();
     return () => { cancel = true; };
