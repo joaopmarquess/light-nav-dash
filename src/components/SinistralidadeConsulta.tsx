@@ -21,6 +21,7 @@ type NumCol = (typeof NUM_COLS)[number];
 type Row = { PERIODO: string; GRUPO: string | null; cdpln: number | string; codigo: string | null; nmcli: string | null } & Record<NumCol, number | string | null>;
 type SubGroup = { cdpln: string; children: Row[]; vida: number } & Record<NumCol, number>;
 type Group = { GRUPO: string; subgroups: SubGroup[]; vida: number } & Record<NumCol, number>;
+type Benef = { codigo: string; nmcli: string; vida: number } & Record<NumCol, number>;
 type CellSrc = Record<NumCol, number> & { vida: number };
 
 type SortKey = "GRUPO" | NumCol | "SIN" | "VIDA";
@@ -80,7 +81,7 @@ const fmtNum = (n: number) =>
 
 const SELECT = ["PERIODO", "cdpln", "GRUPO", "codigo", "nmcli", ...NUM_COLS].join(",");
 
-const SinistralidadeConsulta = () => {
+const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "beneficiario" } = {}) => {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -232,7 +233,34 @@ const SinistralidadeConsulta = () => {
     return Array.from(map.values());
   }, [rows]);
 
+  // Aggregate per beneficiary (codigo + nmcli)
+  const benefs = useMemo(() => {
+    if (mode !== "beneficiario") return [] as Benef[];
+    const map = new Map<string, Benef>();
+    for (const r of rows) {
+      if (r.codigo == null) continue;
+      const codigo = String(r.codigo);
+      const nmcli = r.nmcli ?? "";
+      const key = `${codigo}||${nmcli}`;
+      let b = map.get(key);
+      if (!b) {
+        b = { codigo, nmcli, vida: 1 } as Benef;
+        for (const c of NUM_COLS) b[c] = 0;
+        map.set(key, b);
+      }
+      for (const c of NUM_COLS) {
+        const n = Number(r[c]);
+        if (Number.isFinite(n)) b[c] += n;
+      }
+    }
+    return Array.from(map.values());
+  }, [rows, mode]);
+
+  const sinOfNums = (x: { rec_total: number; vrdespesas: number }) =>
+    x.rec_total ? x.vrdespesas / x.rec_total : 0;
+
   const filtered = useMemo(() => {
+    if (mode === "beneficiario") return [] as Group[];
     const term = q.trim().toLowerCase();
     const base = !term
       ? groups
@@ -240,8 +268,6 @@ const SinistralidadeConsulta = () => {
           g.GRUPO.toLowerCase().includes(term) ||
           g.subgroups.some((s) => String(s.cdpln).toLowerCase().includes(term))
         );
-    const sinOfNums = (x: { rec_total: number; vrdespesas: number }) =>
-      x.rec_total ? x.vrdespesas / x.rec_total : 0;
     const dir = sortDir === "asc" ? 1 : -1;
 
     const cmpGroup = (a: Group, b: Group) => {
@@ -280,11 +306,43 @@ const SinistralidadeConsulta = () => {
       }))
       .sort(cmpGroup);
     return sorted;
-  }, [groups, q, sortKey, sortDir]);
+  }, [groups, q, sortKey, sortDir, mode]);
+
+  const filteredBenefs = useMemo(() => {
+    if (mode !== "beneficiario") return [] as Benef[];
+    const term = q.trim().toLowerCase();
+    const base = !term
+      ? benefs
+      : benefs.filter((b) =>
+          b.codigo.toLowerCase().includes(term) ||
+          b.nmcli.toLowerCase().includes(term)
+        );
+    const dir = sortDir === "asc" ? 1 : -1;
+    const cmp = (a: Benef, b: Benef) => {
+      if (sortKey === "GRUPO") {
+        const la = `${a.codigo} ${a.nmcli}`.trim();
+        const lb = `${b.codigo} ${b.nmcli}`.trim();
+        return la.localeCompare(lb, "pt-BR") * dir;
+      }
+      if (sortKey === "VIDA") return 0;
+      if (sortKey === "SIN") return (sinOfNums(a) - sinOfNums(b)) * dir;
+      return ((a[sortKey] || 0) - (b[sortKey] || 0)) * dir;
+    };
+    return [...base].sort(cmp);
+  }, [benefs, q, sortKey, sortDir, mode]);
 
   const totals = useMemo(() => {
     const t = { vida: 0 } as CellSrc;
     for (const c of NUM_COLS) t[c] = 0;
+    if (mode === "beneficiario") {
+      const codes = new Set<string>();
+      for (const b of filteredBenefs) {
+        for (const c of NUM_COLS) t[c] += b[c];
+        codes.add(b.codigo);
+      }
+      t.vida = codes.size;
+      return t;
+    }
     const codes = new Set<string>();
     for (const g of filtered) {
       for (const c of NUM_COLS) t[c] += g[c];
@@ -292,7 +350,9 @@ const SinistralidadeConsulta = () => {
     }
     t.vida = codes.size;
     return t;
-  }, [filtered]);
+  }, [filtered, filteredBenefs, mode]);
+
+
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -331,8 +391,13 @@ const SinistralidadeConsulta = () => {
             ))}
           </select>
           <div className="text-sm text-muted-foreground">
-            {loading ? "Carregando..." : `${filtered.length.toLocaleString("pt-BR")} plano(s)`}
+            {loading
+              ? "Carregando..."
+              : mode === "beneficiario"
+                ? `${filteredBenefs.length.toLocaleString("pt-BR")} beneficiário(s)`
+                : `${filtered.length.toLocaleString("pt-BR")} plano(s)`}
           </div>
+
         </div>
         <div className="flex items-center gap-3">
           <div className="inline-flex rounded-md border border-border overflow-hidden text-sm">
@@ -372,7 +437,7 @@ const SinistralidadeConsulta = () => {
           </div>
         ) : error ? (
           <div className="p-6 text-sm text-destructive">Erro: {error}</div>
-        ) : filtered.length === 0 ? (
+        ) : (mode === "beneficiario" ? filteredBenefs.length : filtered.length) === 0 ? (
           <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
             Sem dados.
           </div>
@@ -384,7 +449,7 @@ const SinistralidadeConsulta = () => {
                   onClick={() => toggleSort("GRUPO")}
                   className={`font-medium text-muted-foreground px-1 py-0.5 text-left ${nameColCls} truncate cursor-pointer select-none`}
                 >
-                  Nome Plano|Empresa<SortIcon k="GRUPO" />
+                  {mode === "beneficiario" ? "Beneficiário" : "Nome Plano|Empresa"}<SortIcon k="GRUPO" />
                 </th>
                 {displayCols.map((c) => (
                   <th
@@ -398,7 +463,27 @@ const SinistralidadeConsulta = () => {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((g) => {
+              {mode === "beneficiario" ? (
+                filteredBenefs.map((b, i) => {
+                  const label = `${b.codigo}${b.codigo && b.nmcli ? " " : ""}${b.nmcli}`.trim();
+                  return (
+                    <tr key={`${b.codigo}-${i}`} className="border-b border-border/50 hover:bg-accent/40">
+                      <td className={`px-1 py-0.5 text-left ${nameColCls} truncate`} title={label}>
+                        <span className="inline-flex items-center gap-1">
+                          <span className="w-3.5" />
+                          <span className="truncate">{label}</span>
+                        </span>
+                      </td>
+                      {displayCols.map((c) => (
+                        <td key={c.key} className={`${numCellCls}${boldFor(c.key)}`}>
+                          {fmtCell(b, c)}
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })
+              ) : (
+                filtered.map((g) => {
                 const isOpen = expanded.has(g.GRUPO);
                 const hasSubs = g.subgroups.length > 1 || (g.subgroups[0]?.children.length ?? 0) > 0;
                 return (
@@ -473,7 +558,8 @@ const SinistralidadeConsulta = () => {
                     })}
                   </Fragment>
                 );
-              })}
+                })
+              )}
             </tbody>
             <tfoot className="sticky bottom-0 bg-card border-t border-border font-semibold">
               <tr>
