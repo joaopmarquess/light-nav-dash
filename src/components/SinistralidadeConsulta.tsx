@@ -387,7 +387,7 @@ const SinistralidadeConsulta = () => {
                     <th
                       key={c.key}
                       onClick={() => toggleSort(c.key)}
-                      className={`font-medium text-muted-foreground cursor-pointer select-none ${numCellCls} ${tintOf(c.key)}`}
+                      className={`font-medium text-muted-foreground cursor-pointer select-none ${numCellCls} ${tintOf(c.key)} ${weightOf(c.key)}`}
                     >
                       {toggle && (
                         <button
