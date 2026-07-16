@@ -319,7 +319,7 @@ const SinistralidadeConsulta = () => {
                 <td className="px-1.5 py-1 text-left">Total</td>
                 {displayCols.map((c) => (
                   <td key={c.key} className="px-1 py-1 text-right tabular-nums">
-                    {fmtNum(totals[c.key])}
+                    {fmtCell(totals, c)}
                   </td>
                 ))}
               </tr>
