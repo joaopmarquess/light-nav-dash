@@ -146,22 +146,44 @@ const SinistralidadeConsulta = () => {
     return () => { cancel = true; };
   }, [periodo]);
 
-  // Group by dspln
+  // Group by dspln, then by cdpln
   const groups = useMemo(() => {
     const map = new Map<string, Group>();
     for (const r of rows) {
       const key = (r.dspln ?? "").trim();
       let g = map.get(key);
       if (!g) {
-        g = { dspln: key, children: [] } as Group;
+        g = { dspln: key, subgroups: [] } as Group;
         for (const c of NUM_COLS) g[c] = 0;
         map.set(key, g);
       }
-      g.children.push(r);
       for (const c of NUM_COLS) {
         const n = Number(r[c]);
         if (Number.isFinite(n)) g[c] += n;
       }
+    }
+    // build subgroups per dspln
+    const subMap = new Map<string, Map<string, SubGroup>>();
+    for (const r of rows) {
+      const dk = (r.dspln ?? "").trim();
+      const ck = String(r.cdpln ?? "");
+      let inner = subMap.get(dk);
+      if (!inner) { inner = new Map(); subMap.set(dk, inner); }
+      let sg = inner.get(ck);
+      if (!sg) {
+        sg = { cdpln: ck, children: [] } as SubGroup;
+        for (const c of NUM_COLS) sg[c] = 0;
+        inner.set(ck, sg);
+      }
+      sg.children.push(r);
+      for (const c of NUM_COLS) {
+        const n = Number(r[c]);
+        if (Number.isFinite(n)) sg[c] += n;
+      }
+    }
+    for (const [dk, inner] of subMap) {
+      const g = map.get(dk);
+      if (g) g.subgroups = Array.from(inner.values());
     }
     return Array.from(map.values());
   }, [rows]);
@@ -172,7 +194,13 @@ const SinistralidadeConsulta = () => {
       ? groups
       : groups.filter((g) =>
           g.dspln.toLowerCase().includes(term) ||
-          g.children.some((r) => String(r.cdpln ?? "").toLowerCase().includes(term))
+          g.subgroups.some((s) =>
+            String(s.cdpln).toLowerCase().includes(term) ||
+            s.children.some((r) =>
+              String(r.codigo ?? "").toLowerCase().includes(term) ||
+              String(r.nmcli ?? "").toLowerCase().includes(term)
+            )
+          )
         );
     const sinOf = (g: Group) => (g.rec_total ? g.vrdespesas / g.rec_total : 0);
     const sorted = [...base].sort((a, b) => {
