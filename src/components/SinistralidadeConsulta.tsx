@@ -93,7 +93,7 @@ const SinistralidadeConsulta = () => {
       let from = 0;
       for (let i = 0; i < 200; i++) {
         const { data, error } = await hostinger
-          .from("vw_sinistralidade")
+          .from("mv_sinistralidade")
           .select("PERIODO")
           .range(from, from + pageSize - 1);
         if (error) { setError(error.message); return; }
@@ -127,7 +127,7 @@ const SinistralidadeConsulta = () => {
       let from = 0;
       for (let i = 0; i < 2000; i++) {
         const { data, error } = await hostinger
-          .from("vw_sinistralidade")
+          .from("mv_sinistralidade")
           .select(SELECT)
           .eq("PERIODO", periodo)
           .range(from, from + pageSize - 1);
