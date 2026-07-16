@@ -386,10 +386,11 @@ const SinistralidadeConsulta = () => {
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); toggle.set(!toggle.collapsed); }}
-                          className="inline-flex items-center align-middle mr-0.5 text-muted-foreground hover:text-foreground"
-                          title={toggle.collapsed ? "Expandir" : "Recolher"}
+                          className="inline-flex items-center justify-center align-middle mr-1 h-4 w-4 rounded border border-border bg-background text-muted-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
+                          title={toggle.collapsed ? "Expandir colunas de detalhe" : "Recolher colunas de detalhe"}
+                          aria-label={toggle.collapsed ? "Expandir" : "Recolher"}
                         >
-                          {toggle.collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
+                          {toggle.collapsed ? <ChevronsRight className="h-3 w-3" /> : <ChevronsLeft className="h-3 w-3" />}
                         </button>
                       )}
                       {c.label}<SortIcon k={c.key} />
