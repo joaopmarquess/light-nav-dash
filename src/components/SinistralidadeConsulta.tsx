@@ -390,7 +390,7 @@ const SinistralidadeConsulta = () => {
                       const subKey = `${g.GRUPO}||${sg.cdpln}`;
                       const subOpen = expanded.has(subKey);
                       const subHasChildren = sg.children.length > 0;
-                      const sgSrc = {} as Record<NumCol, number>;
+                      const sgSrc = { vida: sg.vida } as CellSrc;
                       for (const c of NUM_COLS) sgSrc[c] = sg[c];
                       return (
                         <Fragment key={subKey}>
