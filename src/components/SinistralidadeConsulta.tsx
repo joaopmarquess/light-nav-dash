@@ -187,7 +187,7 @@ const SinistralidadeConsulta = () => {
             <tbody>
               {filtered.map((r, i) => (
                 <tr key={i} className="border-b border-border/60 hover:bg-accent/40">
-                  <td className="px-1.5 py-1 whitespace-nowrap text-left">{r.dspln.trim()}</td>
+                  <td className="px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate" title={r.dspln.trim()}>{r.dspln.trim()}</td>
                   <td className="px-1.5 py-1 whitespace-nowrap text-right tabular-nums">
                     {r.vidas.toLocaleString("pt-BR")}
                   </td>
