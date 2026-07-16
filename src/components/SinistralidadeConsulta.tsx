@@ -175,11 +175,10 @@ const SinistralidadeConsulta = () => {
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-card border-b border-border">
               <tr>
-                {COLS.map((c) => (
-                  <th
-                    key={c}
-                    className={`font-medium text-muted-foreground px-3 py-2 whitespace-nowrap ${c === "dspln" ? "text-left" : "text-right"}`}
-                  >
+                <th className="font-medium text-muted-foreground px-3 py-2 whitespace-nowrap text-left">dspln</th>
+                <th className="font-medium text-muted-foreground px-3 py-2 whitespace-nowrap text-right">Vidas</th>
+                {NUM_COLS.map((c) => (
+                  <th key={c} className="font-medium text-muted-foreground px-3 py-2 whitespace-nowrap text-right">
                     {c}
                   </th>
                 ))}
@@ -188,18 +187,29 @@ const SinistralidadeConsulta = () => {
             <tbody>
               {filtered.map((r, i) => (
                 <tr key={i} className="border-b border-border/60 hover:bg-accent/40">
-                  {COLS.map((c) => (
-                    <td
-                      key={c}
-                      className={`px-3 py-1.5 whitespace-nowrap ${c === "dspln" ? "text-left" : "text-right tabular-nums"}`}
-                    >
+                  <td className="px-3 py-1.5 whitespace-nowrap text-left">{r.dspln}</td>
+                  <td className="px-3 py-1.5 whitespace-nowrap text-right tabular-nums">
+                    {r.vidas.toLocaleString("pt-BR")}
+                  </td>
+                  {NUM_COLS.map((c) => (
+                    <td key={c} className="px-3 py-1.5 whitespace-nowrap text-right tabular-nums">
                       {fmt(r[c], c)}
                     </td>
                   ))}
                 </tr>
               ))}
             </tbody>
+            <tfoot className="sticky bottom-0 bg-card border-t border-border font-semibold">
+              <tr>
+                <td className="px-3 py-2 text-left">Total</td>
+                <td className="px-3 py-2 text-right tabular-nums">{totals.vidas.toLocaleString("pt-BR")}</td>
+                {NUM_COLS.map((c) => (
+                  <td key={c} className="px-3 py-2 text-right tabular-nums">{fmt(totals[c], c)}</td>
+                ))}
+              </tr>
+            </tfoot>
           </table>
+
         )}
       </div>
     </section>
