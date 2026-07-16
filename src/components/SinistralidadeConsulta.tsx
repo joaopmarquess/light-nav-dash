@@ -166,7 +166,20 @@ const SinistralidadeConsulta = () => {
       setLoading(false);
     })();
     return () => { cancel = true; };
-  }, [periodo]);
+  }, [periodo, reloadKey]);
+
+  const handleRefresh = async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    setError(null);
+    const { error } = await hostinger.rpc("refresh_mv_sinistralidade");
+    setRefreshing(false);
+    if (error) {
+      setError(`Falha ao atualizar a view: ${error.message}`);
+      return;
+    }
+    setReloadKey((k) => k + 1);
+  };
 
   // Group by dspln, then by cdpln
   const groups = useMemo(() => {
