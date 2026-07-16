@@ -153,21 +153,31 @@ const SinistralidadeConsulta = () => {
     return () => { cancel = true; };
   }, [periodo]);
 
-  // Group by dspln
+  // Group by dspln > cdpln
   const groups = useMemo(() => {
     const map = new Map<string, Group>();
     for (const r of rows) {
       const key = (r.dspln ?? "").trim();
       let g = map.get(key);
       if (!g) {
-        g = { dspln: key, children: [] } as Group;
+        g = { dspln: key, plans: [] } as Group;
         for (const c of NUM_COLS) g[c] = 0;
         map.set(key, g);
       }
-      g.children.push(r);
+      const planKey = String(r.cdpln ?? "");
+      let p = g.plans.find((x) => x.cdpln === planKey);
+      if (!p) {
+        p = { cdpln: planKey, children: [] } as PlanGroup;
+        for (const c of NUM_COLS) p[c] = 0;
+        g.plans.push(p);
+      }
+      p.children.push(r);
       for (const c of NUM_COLS) {
         const n = Number(r[c]);
-        if (Number.isFinite(n)) g[c] += n;
+        if (Number.isFinite(n)) {
+          g[c] += n;
+          p[c] += n;
+        }
       }
     }
     return Array.from(map.values());
@@ -179,7 +189,7 @@ const SinistralidadeConsulta = () => {
       ? groups
       : groups.filter((g) =>
           g.dspln.toLowerCase().includes(term) ||
-          g.children.some((r) => String(r.cdpln ?? "").toLowerCase().includes(term))
+          g.plans.some((p) => p.cdpln.toLowerCase().includes(term))
         );
     const sinOf = (g: Group) => (g.rec_total ? g.vrdespesas / g.rec_total : 0);
     const sorted = [...base].sort((a, b) => {
