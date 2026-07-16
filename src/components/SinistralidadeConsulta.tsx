@@ -437,7 +437,7 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
           </div>
         ) : error ? (
           <div className="p-6 text-sm text-destructive">Erro: {error}</div>
-        ) : filtered.length === 0 ? (
+        ) : (mode === "beneficiario" ? filteredBenefs.length : filtered.length) === 0 ? (
           <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
             Sem dados.
           </div>
@@ -449,7 +449,7 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
                   onClick={() => toggleSort("GRUPO")}
                   className={`font-medium text-muted-foreground px-1 py-0.5 text-left ${nameColCls} truncate cursor-pointer select-none`}
                 >
-                  Nome Plano|Empresa<SortIcon k="GRUPO" />
+                  {mode === "beneficiario" ? "Beneficiário" : "Nome Plano|Empresa"}<SortIcon k="GRUPO" />
                 </th>
                 {displayCols.map((c) => (
                   <th
