@@ -169,21 +169,29 @@ const SinistralidadeConsulta = () => {
   // Group by dspln, then by cdpln
   const groups = useMemo(() => {
     const map = new Map<string, Group>();
+    const groupCodes = new Map<string, Set<string>>();
     for (const r of rows) {
       const key = (r.GRUPO ?? "").trim();
       let g = map.get(key);
       if (!g) {
-        g = { GRUPO: key, subgroups: [] } as Group;
+        g = { GRUPO: key, subgroups: [], vida: 0 } as Group;
         for (const c of NUM_COLS) g[c] = 0;
         map.set(key, g);
+        groupCodes.set(key, new Set());
       }
+      if (r.codigo != null) groupCodes.get(key)!.add(String(r.codigo));
       for (const c of NUM_COLS) {
         const n = Number(r[c]);
         if (Number.isFinite(n)) g[c] += n;
       }
     }
+    for (const [k, s] of groupCodes) {
+      const g = map.get(k);
+      if (g) g.vida = s.size;
+    }
     // build subgroups per dspln
     const subMap = new Map<string, Map<string, SubGroup>>();
+    const subCodes = new Map<string, Set<string>>();
     for (const r of rows) {
       const dk = (r.GRUPO ?? "").trim();
       const ck = String(r.cdpln ?? "");
@@ -191,10 +199,12 @@ const SinistralidadeConsulta = () => {
       if (!inner) { inner = new Map(); subMap.set(dk, inner); }
       let sg = inner.get(ck);
       if (!sg) {
-        sg = { cdpln: ck, children: [] } as SubGroup;
+        sg = { cdpln: ck, children: [], vida: 0 } as SubGroup;
         for (const c of NUM_COLS) sg[c] = 0;
         inner.set(ck, sg);
+        subCodes.set(`${dk}||${ck}`, new Set());
       }
+      if (r.codigo != null) subCodes.get(`${dk}||${ck}`)!.add(String(r.codigo));
       sg.children.push(r);
       for (const c of NUM_COLS) {
         const n = Number(r[c]);
@@ -202,6 +212,7 @@ const SinistralidadeConsulta = () => {
       }
     }
     for (const [dk, inner] of subMap) {
+      for (const [ck, sg] of inner) sg.vida = subCodes.get(`${dk}||${ck}`)?.size ?? 0;
       const g = map.get(dk);
       if (g) g.subgroups = Array.from(inner.values());
     }
@@ -227,6 +238,7 @@ const SinistralidadeConsulta = () => {
       let cmp = 0;
       if (sortKey === "GRUPO") cmp = a.GRUPO.localeCompare(b.GRUPO, "pt-BR");
       else if (sortKey === "SIN") cmp = sinOf(a) - sinOf(b);
+      else if (sortKey === "VIDA") cmp = a.vida - b.vida;
       else cmp = (a[sortKey] || 0) - (b[sortKey] || 0);
       return sortDir === "asc" ? cmp : -cmp;
     });
@@ -234,9 +246,14 @@ const SinistralidadeConsulta = () => {
   }, [groups, q, sortKey, sortDir]);
 
   const totals = useMemo(() => {
-    const t = {} as Record<NumCol, number>;
+    const t = { vida: 0 } as CellSrc;
     for (const c of NUM_COLS) t[c] = 0;
-    for (const g of filtered) for (const c of NUM_COLS) t[c] += g[c];
+    const codes = new Set<string>();
+    for (const g of filtered) {
+      for (const c of NUM_COLS) t[c] += g[c];
+      for (const sg of g.subgroups) for (const r of sg.children) if (r.codigo != null) codes.add(String(r.codigo));
+    }
+    t.vida = codes.size;
     return t;
   }, [filtered]);
 
