@@ -415,7 +415,7 @@ const SinistralidadeConsulta = () => {
                             ))}
                           </tr>
                           {subOpen && sg.children.map((r, i) => {
-                            const rSrc = {} as Record<NumCol, number>;
+                            const rSrc = { vida: 1 } as CellSrc;
                             for (const c of NUM_COLS) rSrc[c] = Number(r[c]) || 0;
                             const label = `${r.codigo ?? ""}${r.codigo && r.nmcli ? " " : ""}${r.nmcli ?? ""}`.trim();
                             return (
