@@ -8,26 +8,20 @@ const NUM_COLS = [
   "rec_total",
   "consulta",
   "emergencia",
-  "fisioterap",
   "exame",
   "terapia",
   "internacao",
-  "outros",
+  "DEMAIS",
   "vrdespesas",
+  "SALDO",
 ] as const;
 
-const COLS = ["dspln", ...NUM_COLS] as const;
-
 type NumCol = (typeof NUM_COLS)[number];
-type Row = Record<(typeof COLS)[number], unknown>;
-type Grouped = { dspln: string; vidas: number } & Record<NumCol, number>;
+type Row = { PERIODO: string; dspln: string } & Record<NumCol, number | string | null>;
 
-// Derived columns shown in the grid (fisioterap merged into "Demais", plus "Saldo")
-type DerivedCol = "demais" | "saldo";
-type SortKey = "dspln" | "vidas" | Exclude<NumCol, "fisioterap" | "outros"> | DerivedCol;
+type SortKey = "dspln" | NumCol;
 
-const DISPLAY_COLS: { key: SortKey; label: string }[] = [
-  { key: "vidas", label: "Vidas" },
+const DISPLAY_COLS: { key: NumCol; label: string }[] = [
   { key: "rec_tm", label: "TMM" },
   { key: "rec_cpa", label: "Copart." },
   { key: "rec_total", label: "Total Receita" },
@@ -36,61 +30,57 @@ const DISPLAY_COLS: { key: SortKey; label: string }[] = [
   { key: "exame", label: "Exame" },
   { key: "terapia", label: "Terapia" },
   { key: "internacao", label: "Internação" },
-  { key: "demais", label: "Demais" },
+  { key: "DEMAIS", label: "Demais" },
   { key: "vrdespesas", label: "Total Despesa" },
-  { key: "saldo", label: "Saldo" },
+  { key: "SALDO", label: "Saldo" },
 ];
-
-const getVal = (r: Grouped, key: SortKey): number | string => {
-  if (key === "dspln") return r.dspln;
-  if (key === "vidas") return r.vidas;
-  if (key === "demais") return (r.fisioterap ?? 0) + (r.outros ?? 0);
-  if (key === "saldo") return (r.rec_total ?? 0) - (r.vrdespesas ?? 0);
-  return r[key as NumCol];
-};
 
 const fmtNum = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const fmtPeriodo = (mabas: number) => {
-  const s = String(mabas);
-  return `${s.slice(4, 6)}/${s.slice(0, 4)}`;
-};
+const SELECT = ["PERIODO", "dspln", ...NUM_COLS].join(",");
 
 const SinistralidadeConsulta = () => {
-  const [rows, setRows] = useState<Grouped[]>([]);
+  const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
-  const [periodos, setPeriodos] = useState<number[]>([]);
-  const [periodo, setPeriodo] = useState<number | null>(null);
+  const [periodos, setPeriodos] = useState<string[]>([]);
+  const [periodo, setPeriodo] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("dspln");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
+  // Load distinct PERIODO values
   useEffect(() => {
     (async () => {
-      const [{ data: maxRow }, { data: minRow }] = await Promise.all([
-        hostinger.from("vw_sinistralidade").select("PERIODO").order("PERIODO", { ascending: false }).limit(1),
-        hostinger.from("vw_sinistralidade").select("PERIODO").order("PERIODO", { ascending: true }).limit(1),
-      ]);
-      const max = (maxRow?.[0]?.PERIODO as number) ?? null;
-      const min = (minRow?.[0]?.PERIODO as number) ?? max;
-      if (!max || !min) return;
-      const list: number[] = [];
-      let y = Math.floor(min / 100);
-      let m = min % 100;
-      const ymEnd = max;
-      while (y * 100 + m <= ymEnd) {
-        list.push(y * 100 + m);
-        m += 1;
-        if (m > 12) { m = 1; y += 1; }
+      const pageSize = 1000;
+      const set = new Set<string>();
+      let from = 0;
+      for (let i = 0; i < 200; i++) {
+        const { data, error } = await hostinger
+          .from("vw_sinistralidade")
+          .select("PERIODO")
+          .range(from, from + pageSize - 1);
+        if (error) { setError(error.message); return; }
+        const batch = (data as { PERIODO: string }[]) ?? [];
+        for (const r of batch) if (r.PERIODO) set.add(r.PERIODO);
+        if (batch.length < pageSize) break;
+        from += pageSize;
       }
-      list.reverse();
+      const list = Array.from(set).sort((a, b) => {
+        // sort by end date "MM/AAAA a MM/AAAA" -> use second date desc
+        const endA = a.split(" a ")[1] ?? a;
+        const endB = b.split(" a ")[1] ?? b;
+        const [ma, ya] = endA.split("/").map(Number);
+        const [mb, yb] = endB.split("/").map(Number);
+        return (yb * 100 + mb) - (ya * 100 + ma);
+      });
       setPeriodos(list);
-      setPeriodo(max);
+      setPeriodo(list[0] ?? null);
     })();
   }, []);
 
+  // Load rows for selected PERIODO
   useEffect(() => {
     if (!periodo) return;
     let cancel = false;
@@ -98,38 +88,23 @@ const SinistralidadeConsulta = () => {
       setLoading(true);
       setError(null);
       const pageSize = 1000;
-      const maxPages = 2000;
-      const acc = new Map<string, Grouped>();
+      const all: Row[] = [];
       let from = 0;
-      for (let i = 0; i < maxPages; i++) {
+      for (let i = 0; i < 2000; i++) {
         const { data, error } = await hostinger
           .from("vw_sinistralidade")
-          .select(COLS.join(","))
+          .select(SELECT)
           .eq("PERIODO", periodo)
           .range(from, from + pageSize - 1);
         if (cancel) return;
         if (error) { setError(error.message); break; }
         const batch = (data as unknown as Row[]) ?? [];
-        for (const r of batch) {
-          const key = String(r.dspln ?? "");
-          let g = acc.get(key);
-          if (!g) {
-            g = { dspln: key, vidas: 0 } as Grouped;
-            for (const c of NUM_COLS) g[c] = 0;
-            acc.set(key, g);
-          }
-          g.vidas += 1;
-          for (const c of NUM_COLS) {
-            const n = Number(r[c]);
-            if (Number.isFinite(n)) g[c] += n;
-          }
-        }
+        all.push(...batch);
         if (batch.length < pageSize) break;
         from += pageSize;
       }
       if (cancel) return;
-      const list = Array.from(acc.values());
-      setRows(list);
+      setRows(all);
       setLoading(false);
     })();
     return () => { cancel = true; };
@@ -138,15 +113,13 @@ const SinistralidadeConsulta = () => {
   const filtered = useMemo(() => {
     const base = !q.trim()
       ? rows
-      : rows.filter((r) => r.dspln.toLowerCase().includes(q.toLowerCase()));
+      : rows.filter((r) => (r.dspln ?? "").toLowerCase().includes(q.toLowerCase()));
     const sorted = [...base].sort((a, b) => {
-      const va = getVal(a, sortKey);
-      const vb = getVal(b, sortKey);
       let cmp = 0;
-      if (typeof va === "string" || typeof vb === "string") {
-        cmp = String(va).localeCompare(String(vb), "pt-BR");
+      if (sortKey === "dspln") {
+        cmp = String(a.dspln ?? "").localeCompare(String(b.dspln ?? ""), "pt-BR");
       } else {
-        cmp = (va as number) - (vb as number);
+        cmp = (Number(a[sortKey]) || 0) - (Number(b[sortKey]) || 0);
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
@@ -154,19 +127,20 @@ const SinistralidadeConsulta = () => {
   }, [rows, q, sortKey, sortDir]);
 
   const totals = useMemo(() => {
-    const t: { vidas: number } & Record<NumCol, number> = { vidas: 0 } as { vidas: number } & Record<NumCol, number>;
+    const t = {} as Record<NumCol, number>;
     for (const c of NUM_COLS) t[c] = 0;
     for (const r of filtered) {
-      t.vidas += r.vidas;
-      for (const c of NUM_COLS) t[c] += r[c];
+      for (const c of NUM_COLS) {
+        const n = Number(r[c]);
+        if (Number.isFinite(n)) t[c] += n;
+      }
     }
     return t;
   }, [filtered]);
 
   const toggleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
+    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
       setSortKey(key);
       setSortDir(key === "dspln" ? "asc" : "desc");
     }
@@ -188,11 +162,11 @@ const SinistralidadeConsulta = () => {
           <label className="text-sm text-muted-foreground">Base</label>
           <select
             value={periodo ?? ""}
-            onChange={(e) => setPeriodo(Number(e.target.value))}
+            onChange={(e) => setPeriodo(e.target.value)}
             className="h-9 px-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
           >
             {periodos.map((p) => (
-              <option key={p} value={p}>{fmtPeriodo(p)}</option>
+              <option key={p} value={p}>{p}</option>
             ))}
           </select>
           <div className="text-sm text-muted-foreground">
@@ -245,33 +219,25 @@ const SinistralidadeConsulta = () => {
             <tbody>
               {filtered.map((r, i) => (
                 <tr key={i} className="border-b border-border/60 hover:bg-accent/40">
-                  <td className="px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate" title={r.dspln.trim()}>{r.dspln.trim()}</td>
-                  {DISPLAY_COLS.map((c) => {
-                    const v = getVal(r, c.key);
-                    return (
-                      <td key={c.key} className="px-1 py-1 whitespace-nowrap text-right tabular-nums">
-                        {c.key === "vidas" ? (v as number).toLocaleString("pt-BR") : fmtNum(v as number)}
-                      </td>
-                    );
-                  })}
+                  <td className="px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate" title={(r.dspln ?? "").trim()}>
+                    {(r.dspln ?? "").trim()}
+                  </td>
+                  {DISPLAY_COLS.map((c) => (
+                    <td key={c.key} className="px-1 py-1 whitespace-nowrap text-right tabular-nums">
+                      {fmtNum(Number(r[c.key]) || 0)}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>
             <tfoot className="sticky bottom-0 bg-card border-t border-border font-semibold">
               <tr>
                 <td className="px-1.5 py-1 text-left">Total</td>
-                {DISPLAY_COLS.map((c) => {
-                  let v: number;
-                  if (c.key === "vidas") v = totals.vidas;
-                  else if (c.key === "demais") v = totals.fisioterap + totals.outros;
-                  else if (c.key === "saldo") v = totals.rec_total - totals.vrdespesas;
-                  else v = totals[c.key as NumCol];
-                  return (
-                    <td key={c.key} className="px-1 py-1 text-right tabular-nums">
-                      {c.key === "vidas" ? v.toLocaleString("pt-BR") : fmtNum(v)}
-                    </td>
-                  );
-                })}
+                {DISPLAY_COLS.map((c) => (
+                  <td key={c.key} className="px-1 py-1 text-right tabular-nums">
+                    {fmtNum(totals[c.key])}
+                  </td>
+                ))}
               </tr>
             </tfoot>
           </table>
