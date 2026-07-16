@@ -320,7 +320,7 @@ const SinistralidadeConsulta = () => {
                       for (const c of NUM_COLS) rSrc[c] = Number(r[c]) || 0;
                       return (
                         <tr key={`${g.dspln}-${r.cdpln}-${i}`} className="border-b border-border/40 bg-accent/20 text-[0.92em]">
-                          <td className="px-1 py-0.5 text-left ${nameColCls} truncate pl-8 text-muted-foreground" title={String(r.cdpln)}>
+                          <td className={`px-1 py-0.5 text-left ${nameColCls} truncate pl-8 text-muted-foreground`} title={String(r.cdpln)}>
                             cdpln {String(r.cdpln)}
                           </td>
                           {displayCols.map((c) => (
