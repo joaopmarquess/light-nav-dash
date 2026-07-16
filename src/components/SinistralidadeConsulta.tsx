@@ -86,6 +86,11 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
+  const [qDebounced, setQDebounced] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => setQDebounced(q), 200);
+    return () => clearTimeout(t);
+  }, [q]);
   const [periodos, setPeriodos] = useState<string[]>([]);
   const [periodo, setPeriodo] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("GRUPO");
@@ -143,7 +148,7 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
     })();
   }, []);
 
-  // Load rows for selected PERIODO
+  // Load rows for selected PERIODO — paginação em paralelo para reduzir latência
   useEffect(() => {
     if (!periodo) return;
     let cancel = false;
@@ -151,30 +156,47 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
       setLoading(true);
       setError(null);
       setExpanded(new Set());
-      const pageSize = 1000;
-      const all: Row[] = [];
-      let from = 0;
-      for (let i = 0; i < 2000; i++) {
-        const { data, error } = await hostinger
-          .from("mv_sinistralidade")
-          .select(SELECT)
-          .eq("PERIODO", periodo)
-          .order("cdpln", { ascending: true })
-          .order("codigo", { ascending: true, nullsFirst: false })
-          .range(from, from + pageSize - 1);
-        if (cancel) return;
-        if (error) { setError(error.message); break; }
-        const batch = (data as unknown as Row[]) ?? [];
-        all.push(...batch);
-        if (batch.length < pageSize) break;
-        from += pageSize;
-      }
+      const pageSize = 2000;
+
+      // 1) contar total para paralelizar
+      const { count, error: countErr } = await hostinger
+        .from("mv_sinistralidade")
+        .select("PERIODO", { count: "exact", head: true })
+        .eq("PERIODO", periodo);
       if (cancel) return;
-      // Não dedupe por valor: a paginação pode devolver duplicatas em ordem
-      // não-determinística, mudando o "primeiro" a cada carregamento e alterando
-      // somas (ex.: SALDO). Somamos todas as linhas; VIDA usa contagem distinta
-      // de `codigo`, então duplicatas não inflam vidas.
-      setRows(all);
+      if (countErr) { setError(countErr.message); setLoading(false); return; }
+      const total = count ?? 0;
+      if (total === 0) { setRows([]); setLoading(false); return; }
+
+      // 2) disparar todas as páginas em paralelo (limite razoável de concorrência)
+      const numPages = Math.ceil(total / pageSize);
+      const CONCURRENCY = 6;
+      const all: Row[] = new Array(total);
+      let cursor = 0;
+      let failed: string | null = null;
+
+      const worker = async () => {
+        while (!cancel && failed === null) {
+          const idx = cursor++;
+          if (idx >= numPages) return;
+          const from = idx * pageSize;
+          const to = Math.min(from + pageSize, total) - 1;
+          const { data, error } = await hostinger
+            .from("mv_sinistralidade")
+            .select(SELECT)
+            .eq("PERIODO", periodo)
+            .range(from, to);
+          if (cancel) return;
+          if (error) { failed = error.message; return; }
+          const batch = (data as unknown as Row[]) ?? [];
+          for (let i = 0; i < batch.length; i++) all[from + i] = batch[i];
+        }
+      };
+      await Promise.all(Array.from({ length: CONCURRENCY }, worker));
+      if (cancel) return;
+      if (failed) { setError(failed); setLoading(false); return; }
+      // filtra buracos por segurança
+      setRows(all.filter(Boolean));
       setLoading(false);
     })();
     return () => { cancel = true; };
@@ -261,7 +283,7 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
 
   const filtered = useMemo(() => {
     if (mode === "beneficiario") return [] as Group[];
-    const term = q.trim().toLowerCase();
+    const term = qDebounced.trim().toLowerCase();
     const base = !term
       ? groups
       : groups.filter((g) =>
@@ -297,20 +319,29 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
       return ((Number(a[sortKey]) || 0) - (Number(b[sortKey]) || 0)) * dir;
     };
 
+    // Só ordena subgrupos/filhos dos grupos que estão expandidos — evita
+    // sort O(n log n) sobre centenas de milhares de linhas quando tudo está fechado.
     const sorted = [...base]
-      .map((g) => ({
-        ...g,
-        subgroups: [...g.subgroups]
-          .map((s) => ({ ...s, children: [...s.children].sort(cmpRow) }))
-          .sort(cmpSub),
-      }))
+      .map((g) => {
+        if (!expanded.has(g.GRUPO)) return g;
+        return {
+          ...g,
+          subgroups: [...g.subgroups]
+            .map((s) => {
+              const subKey = `${g.GRUPO}||${s.cdpln}`;
+              if (!expanded.has(subKey)) return s;
+              return { ...s, children: [...s.children].sort(cmpRow) };
+            })
+            .sort(cmpSub),
+        };
+      })
       .sort(cmpGroup);
     return sorted;
-  }, [groups, q, sortKey, sortDir, mode]);
+  }, [groups, qDebounced, sortKey, sortDir, mode, expanded]);
 
   const filteredBenefs = useMemo(() => {
     if (mode !== "beneficiario") return [] as Benef[];
-    const term = q.trim().toLowerCase();
+    const term = qDebounced.trim().toLowerCase();
     const base = !term
       ? benefs
       : benefs.filter((b) =>
@@ -329,7 +360,7 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
       return ((a[sortKey] || 0) - (b[sortKey] || 0)) * dir;
     };
     return [...base].sort(cmp);
-  }, [benefs, q, sortKey, sortDir, mode]);
+  }, [benefs, qDebounced, sortKey, sortDir, mode]);
 
   const totals = useMemo(() => {
     const t = { vida: 0 } as CellSrc;
