@@ -17,11 +17,11 @@ const NUM_COLS = [
 ] as const;
 
 type NumCol = (typeof NUM_COLS)[number];
-type Row = { PERIODO: string; cdpln: number | string; dspln: string; codigo: string | null; nmcli: string | null } & Record<NumCol, number | string | null>;
+type Row = { PERIODO: string; GRUPO: string | null; cdpln: number | string; codigo: string | null; nmcli: string | null } & Record<NumCol, number | string | null>;
 type SubGroup = { cdpln: string; children: Row[] } & Record<NumCol, number>;
-type Group = { dspln: string; subgroups: SubGroup[] } & Record<NumCol, number>;
+type Group = { GRUPO: string; subgroups: SubGroup[] } & Record<NumCol, number>;
 
-type SortKey = "dspln" | NumCol | "SIN";
+type SortKey = "GRUPO" | NumCol | "SIN";
 type ViewMode = "curta" | "completa";
 
 type ColDef = { key: NumCol | "SIN"; label: string; kind?: "ratio" };
@@ -69,7 +69,7 @@ const fmtCell = (src: Record<NumCol, number>, col: ColDef): string => {
 const fmtNum = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const SELECT = ["PERIODO", "cdpln", "dspln", "codigo", "nmcli", ...NUM_COLS].join(",");
+const SELECT = ["PERIODO", "cdpln", "GRUPO", "codigo", "nmcli", ...NUM_COLS].join(",");
 
 const SinistralidadeConsulta = () => {
   const [rows, setRows] = useState<Row[]>([]);
@@ -78,7 +78,7 @@ const SinistralidadeConsulta = () => {
   const [q, setQ] = useState("");
   const [periodos, setPeriodos] = useState<string[]>([]);
   const [periodo, setPeriodo] = useState<string | null>(null);
-  const [sortKey, setSortKey] = useState<SortKey>("dspln");
+  const [sortKey, setSortKey] = useState<SortKey>("GRUPO");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [view, setView] = useState<ViewMode>("curta");
@@ -150,10 +150,10 @@ const SinistralidadeConsulta = () => {
   const groups = useMemo(() => {
     const map = new Map<string, Group>();
     for (const r of rows) {
-      const key = (r.dspln ?? "").trim();
+      const key = (r.GRUPO ?? "").trim();
       let g = map.get(key);
       if (!g) {
-        g = { dspln: key, subgroups: [] } as Group;
+        g = { GRUPO: key, subgroups: [] } as Group;
         for (const c of NUM_COLS) g[c] = 0;
         map.set(key, g);
       }
@@ -165,7 +165,7 @@ const SinistralidadeConsulta = () => {
     // build subgroups per dspln
     const subMap = new Map<string, Map<string, SubGroup>>();
     for (const r of rows) {
-      const dk = (r.dspln ?? "").trim();
+      const dk = (r.GRUPO ?? "").trim();
       const ck = String(r.cdpln ?? "");
       let inner = subMap.get(dk);
       if (!inner) { inner = new Map(); subMap.set(dk, inner); }
@@ -193,7 +193,7 @@ const SinistralidadeConsulta = () => {
     const base = !term
       ? groups
       : groups.filter((g) =>
-          g.dspln.toLowerCase().includes(term) ||
+          g.GRUPO.toLowerCase().includes(term) ||
           g.subgroups.some((s) =>
             String(s.cdpln).toLowerCase().includes(term) ||
             s.children.some((r) =>
@@ -205,7 +205,7 @@ const SinistralidadeConsulta = () => {
     const sinOf = (g: Group) => (g.rec_total ? g.vrdespesas / g.rec_total : 0);
     const sorted = [...base].sort((a, b) => {
       let cmp = 0;
-      if (sortKey === "dspln") cmp = a.dspln.localeCompare(b.dspln, "pt-BR");
+      if (sortKey === "GRUPO") cmp = a.GRUPO.localeCompare(b.GRUPO, "pt-BR");
       else if (sortKey === "SIN") cmp = sinOf(a) - sinOf(b);
       else cmp = (a[sortKey] || 0) - (b[sortKey] || 0);
       return sortDir === "asc" ? cmp : -cmp;
@@ -224,7 +224,7 @@ const SinistralidadeConsulta = () => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
       setSortKey(key);
-      setSortDir(key === "dspln" ? "asc" : "desc");
+      setSortDir(key === "GRUPO" ? "asc" : "desc");
     }
   };
 
@@ -307,10 +307,10 @@ const SinistralidadeConsulta = () => {
             <thead className="sticky top-0 bg-card border-b border-border">
               <tr>
                 <th
-                  onClick={() => toggleSort("dspln")}
+                  onClick={() => toggleSort("GRUPO")}
                   className={`font-medium text-muted-foreground px-1 py-0.5 text-left ${nameColCls} truncate cursor-pointer select-none`}
                 >
-                  Nome Plano|Empresa<SortIcon k="dspln" />
+                  Nome Plano|Empresa<SortIcon k="GRUPO" />
                 </th>
                 {displayCols.map((c) => (
                   <th
@@ -325,22 +325,22 @@ const SinistralidadeConsulta = () => {
             </thead>
             <tbody>
               {filtered.map((g) => {
-                const isOpen = expanded.has(g.dspln);
+                const isOpen = expanded.has(g.GRUPO);
                 const hasSubs = g.subgroups.length > 1 || (g.subgroups[0]?.children.length ?? 0) > 0;
                 return (
-                  <Fragment key={g.dspln}>
+                  <Fragment key={g.GRUPO}>
                     <tr
-                      onClick={() => hasSubs && toggleExpand(g.dspln)}
+                      onClick={() => hasSubs && toggleExpand(g.GRUPO)}
                       className={`border-b border-border/60 hover:bg-accent/40 ${hasSubs ? "cursor-pointer" : ""}`}
                     >
-                      <td className={`px-1 py-0.5 text-left ${nameColCls} truncate`} title={g.dspln}>
+                      <td className={`px-1 py-0.5 text-left ${nameColCls} truncate`} title={g.GRUPO}>
                         <span className="inline-flex items-center gap-1">
                           {hasSubs ? (
                             isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />
                           ) : (
                             <span className="w-3.5" />
                           )}
-                          <span className="truncate">{g.dspln}</span>
+                          <span className="truncate">{g.GRUPO}</span>
                         </span>
                       </td>
                       {displayCols.map((c) => (
@@ -350,7 +350,7 @@ const SinistralidadeConsulta = () => {
                       ))}
                     </tr>
                     {isOpen && g.subgroups.map((sg) => {
-                      const subKey = `${g.dspln}||${sg.cdpln}`;
+                      const subKey = `${g.GRUPO}||${sg.cdpln}`;
                       const subOpen = expanded.has(subKey);
                       const subHasChildren = sg.children.length > 0;
                       const sgSrc = {} as Record<NumCol, number>;
