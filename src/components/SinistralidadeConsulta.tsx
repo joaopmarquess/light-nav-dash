@@ -21,12 +21,10 @@ type Row = {
   PERIODO: string;
   cdpln: number | string;
   dspln: string;
-  codigo: number | string | null;
-  nmcli: string | null;
-  cdpdrcft: number | string | null;
 } & Record<NumCol, number | string | null>;
-type PlanGroup = { cdpln: string; children: Row[] } & Record<NumCol, number>;
+type PlanGroup = { cdpln: string } & Record<NumCol, number>;
 type Group = { dspln: string; plans: PlanGroup[] } & Record<NumCol, number>;
+
 
 type SortKey = "dspln" | NumCol | "SIN";
 type ViewMode = "curta" | "completa";
@@ -76,7 +74,7 @@ const fmtCell = (src: Record<NumCol, number>, col: ColDef): string => {
 const fmtNum = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const SELECT = ["PERIODO", "cdpln", "dspln", "codigo", "nmcli", "cdpdrcft", ...NUM_COLS].join(",");
+const SELECT = ["PERIODO", "cdpln", "dspln", ...NUM_COLS].join(",");
 
 const SinistralidadeConsulta = () => {
   const [rows, setRows] = useState<Row[]>([]);
@@ -164,11 +162,10 @@ const SinistralidadeConsulta = () => {
       const planKey = String(r.cdpln ?? "");
       let p = g.plans.find((x) => x.cdpln === planKey);
       if (!p) {
-        p = { cdpln: planKey, children: [] } as PlanGroup;
+        p = { cdpln: planKey } as PlanGroup;
         for (const c of NUM_COLS) p[c] = 0;
         g.plans.push(p);
       }
-      p.children.push(r);
       for (const c of NUM_COLS) {
         const n = Number(r[c]);
         if (Number.isFinite(n)) {
@@ -312,7 +309,7 @@ const SinistralidadeConsulta = () => {
             <tbody>
               {filtered.map((g) => {
                 const isOpen = expanded.has(g.dspln);
-                const hasChildren = g.plans.length > 1 || (g.plans[0] && g.plans[0].children.length > 1);
+                const hasChildren = g.plans.length > 1;
                 return (
                   <Fragment key={g.dspln}>
                     <tr
