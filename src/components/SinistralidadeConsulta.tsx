@@ -166,9 +166,13 @@ const SinistralidadeConsulta = () => {
   }, [rows]);
 
   const filtered = useMemo(() => {
-    const base = !q.trim()
+    const term = q.trim().toLowerCase();
+    const base = !term
       ? groups
-      : groups.filter((g) => g.dspln.toLowerCase().includes(q.toLowerCase()));
+      : groups.filter((g) =>
+          g.dspln.toLowerCase().includes(term) ||
+          g.children.some((r) => String(r.cdpln ?? "").toLowerCase().includes(term))
+        );
     const sinOf = (g: Group) => (g.rec_total ? g.vrdespesas / g.rec_total : 0);
     const sorted = [...base].sort((a, b) => {
       let cmp = 0;
