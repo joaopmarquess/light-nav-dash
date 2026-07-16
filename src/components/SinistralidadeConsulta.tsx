@@ -427,7 +427,7 @@ const SinistralidadeConsulta = () => {
                         </span>
                       </td>
                       {displayCols.map((c) => (
-                        <td key={c.key} className={`${numCellCls} ${tintOf(c.key)}`}>
+                        <td key={c.key} className={`${numCellCls} ${tintOf(c.key)} ${weightOf(c.key)}`}>
                           {fmtCell(g, c)}
                         </td>
                       ))}
@@ -455,7 +455,7 @@ const SinistralidadeConsulta = () => {
                               </span>
                             </td>
                             {displayCols.map((c) => (
-                              <td key={c.key} className={`${numCellCls} ${tintOf(c.key)}`}>
+                              <td key={c.key} className={`${numCellCls} ${tintOf(c.key)} ${weightOf(c.key)}`}>
                                 {fmtCell(sgSrc, c)}
                               </td>
                             ))}
@@ -470,7 +470,7 @@ const SinistralidadeConsulta = () => {
                                   {label}
                                 </td>
                                 {displayCols.map((c) => (
-                                  <td key={c.key} className={`${numCellCls} text-muted-foreground ${tintOf(c.key)}`}>
+                                  <td key={c.key} className={`${numCellCls} text-muted-foreground ${tintOf(c.key)} ${weightOf(c.key)}`}>
                                     {fmtCell(rSrc, c)}
                                   </td>
                                 ))}
@@ -488,7 +488,7 @@ const SinistralidadeConsulta = () => {
               <tr>
                 <td className="px-1 py-0.5 text-left">Total</td>
                 {displayCols.map((c) => (
-                  <td key={c.key} className={`${numCellCls} ${tintOf(c.key)}`}>
+                  <td key={c.key} className={`${numCellCls} ${tintOf(c.key)} ${weightOf(c.key)}`}>
                     {fmtCell(totals, c)}
                   </td>
                 ))}
