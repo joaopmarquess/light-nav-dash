@@ -81,7 +81,7 @@ const fmtNum = (n: number) =>
 
 const SELECT = ["PERIODO", "cdpln", "GRUPO", "codigo", "nmcli", ...NUM_COLS].join(",");
 
-const SinistralidadeConsulta = () => {
+const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "beneficiario" } = {}) => {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
