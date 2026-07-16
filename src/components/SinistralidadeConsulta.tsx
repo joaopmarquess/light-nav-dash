@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
-import { Loader2, Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown } from "lucide-react";
+import { Loader2, Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown, RefreshCw } from "lucide-react";
 
 const NUM_COLS = [
   "rec_tm",
@@ -90,6 +90,8 @@ const SinistralidadeConsulta = () => {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [view, setView] = useState<ViewMode>("curta");
+  const [reloadKey, setReloadKey] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
   const displayCols = view === "curta" ? COLS_CURTA : COLS_COMPLETA;
   const nameColCls = view === "curta" ? "w-[30ch] max-w-[30ch]" : "w-[18ch] max-w-[18ch]";
   const numCellCls = view === "curta" ? "px-0.5 py-0.5 w-[8ch] whitespace-nowrap text-right tabular-nums" : "px-0.5 py-0.5 w-[7ch] whitespace-nowrap text-right tabular-nums";
@@ -164,7 +166,20 @@ const SinistralidadeConsulta = () => {
       setLoading(false);
     })();
     return () => { cancel = true; };
-  }, [periodo]);
+  }, [periodo, reloadKey]);
+
+  const handleRefresh = async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    setError(null);
+    const { error } = await hostinger.rpc("refresh_mv_sinistralidade");
+    setRefreshing(false);
+    if (error) {
+      setError(`Falha ao atualizar a view: ${error.message}`);
+      return;
+    }
+    setReloadKey((k) => k + 1);
+  };
 
   // Group by dspln, then by cdpln
   const groups = useMemo(() => {
@@ -323,6 +338,16 @@ const SinistralidadeConsulta = () => {
               className="h-9 w-64 pl-8 pr-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={refreshing || loading}
+            title="Atualizar materialized view e recarregar"
+            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md border border-border bg-background text-sm hover:bg-accent/40 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+            Atualizar
+          </button>
         </div>
       </div>
 
