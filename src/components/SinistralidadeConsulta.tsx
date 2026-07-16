@@ -18,15 +18,17 @@ const NUM_COLS = [
 
 type NumCol = (typeof NUM_COLS)[number];
 type Row = { PERIODO: string; GRUPO: string | null; cdpln: number | string; codigo: string | null; nmcli: string | null } & Record<NumCol, number | string | null>;
-type SubGroup = { cdpln: string; children: Row[] } & Record<NumCol, number>;
-type Group = { GRUPO: string; subgroups: SubGroup[] } & Record<NumCol, number>;
+type SubGroup = { cdpln: string; children: Row[]; vida: number } & Record<NumCol, number>;
+type Group = { GRUPO: string; subgroups: SubGroup[]; vida: number } & Record<NumCol, number>;
+type CellSrc = Record<NumCol, number> & { vida: number };
 
-type SortKey = "GRUPO" | NumCol | "SIN";
+type SortKey = "GRUPO" | NumCol | "SIN" | "VIDA";
 type ViewMode = "curta" | "completa";
 
-type ColDef = { key: NumCol | "SIN"; label: string; kind?: "ratio" };
+type ColDef = { key: NumCol | "SIN" | "VIDA"; label: string; kind?: "ratio" | "int" };
 
 const COLS_COMPLETA: ColDef[] = [
+  { key: "VIDA", label: "Vidas", kind: "int" },
   { key: "rec_tm", label: "TMM" },
   { key: "rec_cpa", label: "Copart." },
   { key: "rec_total", label: "Total Receita" },
@@ -42,6 +44,7 @@ const COLS_COMPLETA: ColDef[] = [
 ];
 
 const COLS_CURTA: ColDef[] = [
+  { key: "VIDA", label: "Vidas", kind: "int" },
   { key: "rec_tm", label: "TMM" },
   { key: "rec_cpa", label: "Copart." },
   { key: "rec_total", label: "Total Receita" },
@@ -53,17 +56,22 @@ const COLS_CURTA: ColDef[] = [
 const fmtPct = (n: number) =>
   Number.isFinite(n) ? `${(n * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%` : "-";
 
-const cellValue = (src: Record<NumCol, number>, col: ColDef): number => {
+const fmtInt = (n: number) => Math.round(n).toLocaleString("pt-BR");
+
+const cellValue = (src: CellSrc, col: ColDef): number => {
   if (col.key === "SIN") {
     const rt = src.rec_total || 0;
     return rt ? (src.vrdespesas || 0) / rt : 0;
   }
+  if (col.key === "VIDA") return src.vida || 0;
   return src[col.key] || 0;
 };
 
-const fmtCell = (src: Record<NumCol, number>, col: ColDef): string => {
+const fmtCell = (src: CellSrc, col: ColDef): string => {
   const v = cellValue(src, col);
-  return col.kind === "ratio" ? fmtPct(v) : fmtNum(v);
+  if (col.kind === "ratio") return fmtPct(v);
+  if (col.kind === "int") return fmtInt(v);
+  return fmtNum(v);
 };
 
 const fmtNum = (n: number) =>
