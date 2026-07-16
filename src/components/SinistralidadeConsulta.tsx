@@ -82,6 +82,8 @@ const SinistralidadeConsulta = () => {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [view, setView] = useState<ViewMode>("curta");
   const displayCols = view === "curta" ? COLS_CURTA : COLS_COMPLETA;
+  const nameColCls = view === "curta" ? "w-[40ch] max-w-[40ch]" : "w-[22ch] max-w-[22ch]";
+  const numColCls = view === "curta" ? "px-0.5 py-0.5 w-[10ch]" : "px-0.5 py-0.5";
 
   // Load distinct PERIODO values
   useEffect(() => {
@@ -273,7 +275,7 @@ const SinistralidadeConsulta = () => {
               <tr>
                 <th
                   onClick={() => toggleSort("dspln")}
-                  className="font-medium text-muted-foreground px-1 py-0.5 text-left w-[22ch] max-w-[22ch] truncate cursor-pointer select-none"
+                  className={`font-medium text-muted-foreground px-1 py-0.5 text-left ${nameColCls} truncate cursor-pointer select-none`}
                 >
                   Nome Plano|Empresa<SortIcon k="dspln" />
                 </th>
@@ -297,7 +299,7 @@ const SinistralidadeConsulta = () => {
                       onClick={() => g.children.length > 1 && toggleExpand(g.dspln)}
                       className={`border-b border-border/60 hover:bg-accent/40 ${g.children.length > 1 ? "cursor-pointer" : ""}`}
                     >
-                      <td className="px-1 py-0.5 text-left w-[22ch] max-w-[22ch] truncate" title={g.dspln}>
+                      <td className={`px-1 py-0.5 text-left ${nameColCls} truncate`} title={g.dspln}>
                         <span className="inline-flex items-center gap-1">
                           {g.children.length > 1 ? (
                             isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />
@@ -318,7 +320,7 @@ const SinistralidadeConsulta = () => {
                       for (const c of NUM_COLS) rSrc[c] = Number(r[c]) || 0;
                       return (
                         <tr key={`${g.dspln}-${r.cdpln}-${i}`} className="border-b border-border/40 bg-accent/20 text-[0.92em]">
-                          <td className="px-1 py-0.5 text-left w-[22ch] max-w-[22ch] truncate pl-8 text-muted-foreground" title={String(r.cdpln)}>
+                          <td className={`px-1 py-0.5 text-left ${nameColCls} truncate pl-8 text-muted-foreground`} title={String(r.cdpln)}>
                             cdpln {String(r.cdpln)}
                           </td>
                           {displayCols.map((c) => (
