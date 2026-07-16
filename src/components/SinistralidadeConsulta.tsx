@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
-import { Loader2, Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown } from "lucide-react";
+import { Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown } from "lucide-react";
+import FunLoader from "@/components/FunLoader";
 
 const NUM_COLS = [
   "rec_tm",
