@@ -320,10 +320,11 @@ const Index = () => {
           ) : active === "__removed_sin__" ? (
             <div />
 
-          ) : active === "Consulta por Plano/Empresa" ? (
+          ) : active === "Plano/Empresa" ? (
             <SinistralidadeConsulta mode="plano" />
-          ) : active === "Consulta por Beneficiário" ? (
+          ) : active === "Beneficiário" ? (
             <SinistralidadeConsulta mode="beneficiario" />
+
 
           ) : active === "PBI U12" ? (
             <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] overflow-hidden">
