@@ -103,9 +103,9 @@ const SinistralidadeConsulta = () => {
       let from = 0;
       for (let i = 0; i < maxPages; i++) {
         const { data, error } = await hostinger
-          .from("vw_sinistralidade_periodo")
+          .from("vw_sinistralidade_periodo2")
           .select(COLS.join(","))
-          .eq("mabas", periodo)
+          .eq("Periodo2", periodo)
           .range(from, from + pageSize - 1);
         if (cancel) return;
         if (error) { setError(error.message); break; }
