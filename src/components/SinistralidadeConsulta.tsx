@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
-import { Loader2, Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { Loader2, Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown, ChevronLeft } from "lucide-react";
 
 const NUM_COLS = [
   "rec_tm",
@@ -102,44 +102,33 @@ const SinistralidadeConsulta = () => {
   });
   const nameColCls = view === "curta" ? "w-[30ch] max-w-[30ch]" : "w-[18ch] max-w-[18ch]";
   const numCellCls = view === "curta" ? "px-0.5 py-0.5 w-[8ch] whitespace-nowrap text-right tabular-nums" : "px-0.5 py-0.5 w-[7ch] whitespace-nowrap text-right tabular-nums";
-  const tintOf = (key: string) => (REC_HIDE.has(key) ? "bg-sky-100/70 dark:bg-sky-900/30" : DESP_HIDE.has(key) ? "bg-sky-100/70 dark:bg-sky-900/30" : "");
 
-  // Load distinct PERIODO values (progressive — set current period ASAP so rows load in parallel)
+  // Load distinct PERIODO values
   useEffect(() => {
     (async () => {
       const pageSize = 1000;
       const set = new Set<string>();
       let from = 0;
-      let firstSet = false;
-      const sortList = (arr: string[]) =>
-        [...arr].sort((a, b) => {
-          const endA = a.split(" a ")[1] ?? a;
-          const endB = b.split(" a ")[1] ?? b;
-          const [ma, ya] = endA.split("/").map(Number);
-          const [mb, yb] = endB.split("/").map(Number);
-          return (yb * 100 + mb) - (ya * 100 + ma);
-        });
-      for (let i = 0; i < 500; i++) {
+      for (let i = 0; i < 200; i++) {
         const { data, error } = await hostinger
           .from("mv_sinistralidade")
           .select("PERIODO")
-          .order("PERIODO", { ascending: false })
           .range(from, from + pageSize - 1);
         if (error) { setError(error.message); return; }
         const batch = (data as { PERIODO: string }[]) ?? [];
-        const before = set.size;
         for (const r of batch) if (r.PERIODO) set.add(r.PERIODO);
-        if (set.size !== before) {
-          const list = sortList(Array.from(set));
-          setPeriodos(list);
-          if (!firstSet && list.length > 0) {
-            setPeriodo(list[0]);
-            firstSet = true;
-          }
-        }
         if (batch.length < pageSize) break;
         from += pageSize;
       }
+      const list = Array.from(set).sort((a, b) => {
+        const endA = a.split(" a ")[1] ?? a;
+        const endB = b.split(" a ")[1] ?? b;
+        const [ma, ya] = endA.split("/").map(Number);
+        const [mb, yb] = endB.split("/").map(Number);
+        return (yb * 100 + mb) - (ya * 100 + ma);
+      });
+      setPeriodos(list);
+      setPeriodo(list[0] ?? null);
     })();
   }, []);
 
@@ -381,17 +370,16 @@ const SinistralidadeConsulta = () => {
                     <th
                       key={c.key}
                       onClick={() => toggleSort(c.key)}
-                      className={`font-medium text-muted-foreground cursor-pointer select-none ${numCellCls} ${tintOf(c.key)}`}
+                      className={`font-medium text-muted-foreground cursor-pointer select-none ${numCellCls}`}
                     >
                       {toggle && (
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); toggle.set(!toggle.collapsed); }}
-                          className="inline-flex items-center justify-center align-middle mr-1 h-4 w-4 rounded border border-border bg-background text-muted-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
-                          title={toggle.collapsed ? "Expandir colunas de detalhe" : "Recolher colunas de detalhe"}
-                          aria-label={toggle.collapsed ? "Expandir" : "Recolher"}
+                          className="inline-flex items-center align-middle mr-0.5 text-muted-foreground hover:text-foreground"
+                          title={toggle.collapsed ? "Expandir" : "Recolher"}
                         >
-                          {toggle.collapsed ? <ChevronsRight className="h-3 w-3" /> : <ChevronsLeft className="h-3 w-3" />}
+                          {toggle.collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
                         </button>
                       )}
                       {c.label}<SortIcon k={c.key} />
@@ -421,7 +409,7 @@ const SinistralidadeConsulta = () => {
                         </span>
                       </td>
                       {displayCols.map((c) => (
-                        <td key={c.key} className={`${numCellCls} ${tintOf(c.key)}`}>
+                        <td key={c.key} className={numCellCls}>
                           {fmtCell(g, c)}
                         </td>
                       ))}
@@ -449,7 +437,7 @@ const SinistralidadeConsulta = () => {
                               </span>
                             </td>
                             {displayCols.map((c) => (
-                              <td key={c.key} className={`${numCellCls} ${tintOf(c.key)}`}>
+                              <td key={c.key} className={numCellCls}>
                                 {fmtCell(sgSrc, c)}
                               </td>
                             ))}
@@ -464,7 +452,7 @@ const SinistralidadeConsulta = () => {
                                   {label}
                                 </td>
                                 {displayCols.map((c) => (
-                                  <td key={c.key} className={`${numCellCls} text-muted-foreground ${tintOf(c.key)}`}>
+                                  <td key={c.key} className={`${numCellCls} text-muted-foreground`}>
                                     {fmtCell(rSrc, c)}
                                   </td>
                                 ))}
@@ -482,7 +470,7 @@ const SinistralidadeConsulta = () => {
               <tr>
                 <td className="px-1 py-0.5 text-left">Total</td>
                 {displayCols.map((c) => (
-                  <td key={c.key} className={`${numCellCls} ${tintOf(c.key)}`}>
+                  <td key={c.key} className={numCellCls}>
                     {fmtCell(totals, c)}
                   </td>
                 ))}
