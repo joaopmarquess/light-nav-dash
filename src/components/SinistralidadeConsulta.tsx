@@ -175,7 +175,7 @@ const SinistralidadeConsulta = () => {
           <table className="w-full text-[11px]">
             <thead className="sticky top-0 bg-card border-b border-border">
               <tr>
-                <th className="font-medium text-muted-foreground px-1.5 py-1 whitespace-nowrap text-left">dspln</th>
+                <th className="font-medium text-muted-foreground px-1.5 py-1 whitespace-nowrap text-left w-[32ch] max-w-[32ch]">dspln</th>
                 <th className="font-medium text-muted-foreground px-1.5 py-1 whitespace-nowrap text-right">Vidas</th>
                 {NUM_COLS.map((c) => (
                   <th key={c} className="font-medium text-muted-foreground px-1.5 py-1 whitespace-nowrap text-right">
