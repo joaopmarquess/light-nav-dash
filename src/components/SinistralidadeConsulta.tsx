@@ -102,6 +102,7 @@ const SinistralidadeConsulta = () => {
   });
   const nameColCls = view === "curta" ? "w-[30ch] max-w-[30ch]" : "w-[18ch] max-w-[18ch]";
   const numCellCls = view === "curta" ? "px-0.5 py-0.5 w-[8ch] whitespace-nowrap text-right tabular-nums" : "px-0.5 py-0.5 w-[7ch] whitespace-nowrap text-right tabular-nums";
+  const tintOf = (key: string) => (REC_HIDE.has(key) ? "bg-sky-100/70 dark:bg-sky-900/30" : DESP_HIDE.has(key) ? "bg-sky-100/70 dark:bg-sky-900/30" : "");
 
   // Load distinct PERIODO values (progressive — set current period ASAP so rows load in parallel)
   useEffect(() => {
