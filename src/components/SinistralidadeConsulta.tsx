@@ -256,7 +256,7 @@ const SinistralidadeConsulta = () => {
 
 
 
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
         {loading ? (
           <div className="h-full flex items-center justify-center text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin mr-2" /> Carregando...
@@ -268,7 +268,7 @@ const SinistralidadeConsulta = () => {
             Sem dados.
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full table-fixed text-[11px] leading-tight">
             <thead className="sticky top-0 bg-card border-b border-border">
               <tr>
                 <th
