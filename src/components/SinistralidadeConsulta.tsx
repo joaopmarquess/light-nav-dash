@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { hostinger } from "@/lib/hostingerClient";
 import { Loader2, Search } from "lucide-react";
 
 const fmt = (v: unknown): string => {
@@ -23,7 +23,7 @@ const SinistralidadeConsulta = () => {
     (async () => {
       setLoading(true);
       setError(null);
-      const { data, error } = await (supabase as any)
+      const { data, error } = await hostinger
         .from("sinistralidade")
         .select("*")
         .limit(5000);
