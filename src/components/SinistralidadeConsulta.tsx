@@ -130,10 +130,10 @@ const SinistralidadeConsulta = () => {
       setLoading(true);
       setError(null);
       setExpanded(new Set());
-      const pageSize = 500;
+      const pageSize = 1000;
       const all: Row[] = [];
       let from = 0;
-      for (let i = 0; i < 4000; i++) {
+      for (let i = 0; i < 2000; i++) {
         const { data, error } = await hostinger
           .from("vw_sinistralidade")
           .select(SELECT)
