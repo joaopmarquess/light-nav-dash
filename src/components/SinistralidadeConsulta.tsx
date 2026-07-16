@@ -82,6 +82,8 @@ const SinistralidadeConsulta = () => {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [view, setView] = useState<ViewMode>("curta");
   const displayCols = view === "curta" ? COLS_CURTA : COLS_COMPLETA;
+  const nameColCls = view === "curta" ? "w-[40ch] max-w-[40ch]" : "w-[22ch] max-w-[22ch]";
+  const numColCls = view === "curta" ? "px-0.5 py-0.5 w-[10ch]" : "px-0.5 py-0.5";
 
   // Load distinct PERIODO values
   useEffect(() => {
