@@ -391,8 +391,13 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
             ))}
           </select>
           <div className="text-sm text-muted-foreground">
-            {loading ? "Carregando..." : `${filtered.length.toLocaleString("pt-BR")} plano(s)`}
+            {loading
+              ? "Carregando..."
+              : mode === "beneficiario"
+                ? `${filteredBenefs.length.toLocaleString("pt-BR")} beneficiário(s)`
+                : `${filtered.length.toLocaleString("pt-BR")} plano(s)`}
           </div>
+
         </div>
         <div className="flex items-center gap-3">
           <div className="inline-flex rounded-md border border-border overflow-hidden text-sm">
