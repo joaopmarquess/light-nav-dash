@@ -98,8 +98,6 @@ const menuItems: MenuItem[] = [
     icon: Percent,
     label: "Sinistralidade",
     children: [
-      { icon: Search, label: "Plano/Empresa" },
-      { icon: UserCheck, label: "Beneficiário" },
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
   },
@@ -320,10 +318,14 @@ const Index = () => {
           ) : active === "__removed_sin__" ? (
             <div />
 
-          ) : active === "Plano/Empresa" ? (
-            <SinistralidadeConsulta mode="plano" />
-          ) : active === "Beneficiário" ? (
-            <SinistralidadeConsulta mode="beneficiario" />
+          ) : active === "oculto.Empresa" ? (
+            <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex items-center justify-center text-muted-foreground text-sm">
+              Submenu oculto — processamento suspenso.
+            </section>
+          ) : active === "oculto.Beneficiário" ? (
+            <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex items-center justify-center text-muted-foreground text-sm">
+              Submenu oculto — processamento suspenso.
+            </section>
 
 
           ) : active === "PBI U12" ? (
