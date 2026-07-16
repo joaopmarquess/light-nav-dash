@@ -257,7 +257,7 @@ const SinistralidadeConsulta = () => {
                 >
                   Nome Plano|Empresa<SortIcon k="dspln" />
                 </th>
-                {DISPLAY_COLS.map((c) => (
+                {displayCols.map((c) => (
                   <th
                     key={c.key}
                     onClick={() => toggleSort(c.key)}
@@ -287,7 +287,7 @@ const SinistralidadeConsulta = () => {
                           <span className="truncate">{g.dspln}</span>
                         </span>
                       </td>
-                      {DISPLAY_COLS.map((c) => (
+                      {displayCols.map((c) => (
                         <td key={c.key} className="px-1 py-1 whitespace-nowrap text-right tabular-nums">
                           {fmtNum(g[c.key])}
                         </td>
@@ -298,7 +298,7 @@ const SinistralidadeConsulta = () => {
                         <td className="px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate pl-8 text-muted-foreground" title={String(r.cdpln)}>
                           cdpln {String(r.cdpln)}
                         </td>
-                        {DISPLAY_COLS.map((c) => (
+                        {displayCols.map((c) => (
                           <td key={c.key} className="px-1 py-1 whitespace-nowrap text-right tabular-nums text-muted-foreground">
                             {fmtNum(Number(r[c.key]) || 0)}
                           </td>
@@ -313,7 +313,7 @@ const SinistralidadeConsulta = () => {
             <tfoot className="sticky bottom-0 bg-card border-t border-border font-semibold">
               <tr>
                 <td className="px-1.5 py-1 text-left">Total</td>
-                {DISPLAY_COLS.map((c) => (
+                {displayCols.map((c) => (
                   <td key={c.key} className="px-1 py-1 text-right tabular-nums">
                     {fmtNum(totals[c.key])}
                   </td>
