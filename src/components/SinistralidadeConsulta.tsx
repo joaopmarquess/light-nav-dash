@@ -353,7 +353,7 @@ const SinistralidadeConsulta = () => {
                   <th
                     key={c.key}
                     onClick={() => toggleSort(c.key)}
-                    className="font-medium text-muted-foreground px-0.5 py-0.5 whitespace-nowrap text-right cursor-pointer select-none"
+                    className={`font-medium text-muted-foreground cursor-pointer select-none ${numCellCls}`}
                   >
                     {c.label}<SortIcon k={c.key} />
                   </th>
