@@ -381,7 +381,7 @@ const SinistralidadeConsulta = () => {
                         </span>
                       </td>
                       {displayCols.map((c) => (
-                        <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums">
+                        <td key={c.key} className=numCellCls>
                           {fmtCell(g, c)}
                         </td>
                       ))}
@@ -409,7 +409,7 @@ const SinistralidadeConsulta = () => {
                               </span>
                             </td>
                             {displayCols.map((c) => (
-                              <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums">
+                              <td key={c.key} className=numCellCls>
                                 {fmtCell(sgSrc, c)}
                               </td>
                             ))}
@@ -424,7 +424,7 @@ const SinistralidadeConsulta = () => {
                                   {label}
                                 </td>
                                 {displayCols.map((c) => (
-                                  <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums text-muted-foreground">
+                                  <td key={c.key} className=`${numCellCls} text-muted-foreground`>
                                     {fmtCell(rSrc, c)}
                                   </td>
                                 ))}
@@ -442,7 +442,7 @@ const SinistralidadeConsulta = () => {
               <tr>
                 <td className="px-1 py-0.5 text-left">Total</td>
                 {displayCols.map((c) => (
-                  <td key={c.key} className="px-0.5 py-0.5 text-right tabular-nums">
+                  <td key={c.key} className=numCellCls>
                     {fmtCell(totals, c)}
                   </td>
                 ))}
