@@ -95,20 +95,14 @@ const SinistralidadeConsulta = () => {
   const REC_HIDE = new Set<string>(["rec_tm", "rec_cpa"]);
   const DESP_HIDE = new Set<string>(["consulta", "emergencia", "exame", "terapia", "internacao", "DEMAIS"]);
   const baseCols = view === "curta" ? COLS_CURTA : COLS_COMPLETA;
-  const isHidden = (key: string) =>
-    (recCollapsed && REC_HIDE.has(key)) || (despCollapsed && DESP_HIDE.has(key));
-  // Keep all columns in the layout so "fixed" columns (rec_total, vrdespesas, SALDO, SIN, VIDA)
-  // don't jump around when the user collapses/expands detail groups.
-  const displayCols = baseCols;
+  const displayCols = baseCols.filter((c) => {
+    if (recCollapsed && REC_HIDE.has(c.key)) return false;
+    if (despCollapsed && DESP_HIDE.has(c.key)) return false;
+    return true;
+  });
   const nameColCls = view === "curta" ? "w-[30ch] max-w-[30ch]" : "w-[18ch] max-w-[18ch]";
   const numCellCls = view === "curta" ? "px-0.5 py-0.5 w-[8ch] whitespace-nowrap text-right tabular-nums" : "px-0.5 py-0.5 w-[7ch] whitespace-nowrap text-right tabular-nums";
-  const BOLD_KEYS = new Set<string>(["rec_total", "vrdespesas"]);
-  const tintOf = (key: string) => {
-    if (isHidden(key)) return "bg-sky-50/60 dark:bg-sky-950/30 text-transparent";
-    if (REC_HIDE.has(key) || DESP_HIDE.has(key)) return "bg-sky-50/60 dark:bg-sky-950/30";
-    return "";
-  };
-  const weightOf = (key: string) => (BOLD_KEYS.has(key) ? "font-semibold" : "");
+  const tintOf = (key: string) => (REC_HIDE.has(key) ? "bg-sky-100/70 dark:bg-sky-900/30" : DESP_HIDE.has(key) ? "bg-sky-100/70 dark:bg-sky-900/30" : "");
 
   // Load distinct PERIODO values (progressive — set current period ASAP so rows load in parallel)
   useEffect(() => {
@@ -387,7 +381,7 @@ const SinistralidadeConsulta = () => {
                     <th
                       key={c.key}
                       onClick={() => toggleSort(c.key)}
-                      className={`font-medium text-muted-foreground cursor-pointer select-none ${numCellCls} ${tintOf(c.key)} ${weightOf(c.key)}`}
+                      className={`font-medium text-muted-foreground cursor-pointer select-none ${numCellCls} ${tintOf(c.key)}`}
                     >
                       {toggle && (
                         <button
@@ -427,7 +421,7 @@ const SinistralidadeConsulta = () => {
                         </span>
                       </td>
                       {displayCols.map((c) => (
-                        <td key={c.key} className={`${numCellCls} ${tintOf(c.key)} ${weightOf(c.key)}`}>
+                        <td key={c.key} className={`${numCellCls} ${tintOf(c.key)}`}>
                           {fmtCell(g, c)}
                         </td>
                       ))}
@@ -455,7 +449,7 @@ const SinistralidadeConsulta = () => {
                               </span>
                             </td>
                             {displayCols.map((c) => (
-                              <td key={c.key} className={`${numCellCls} ${tintOf(c.key)} ${weightOf(c.key)}`}>
+                              <td key={c.key} className={`${numCellCls} ${tintOf(c.key)}`}>
                                 {fmtCell(sgSrc, c)}
                               </td>
                             ))}
@@ -470,7 +464,7 @@ const SinistralidadeConsulta = () => {
                                   {label}
                                 </td>
                                 {displayCols.map((c) => (
-                                  <td key={c.key} className={`${numCellCls} text-muted-foreground ${tintOf(c.key)} ${weightOf(c.key)}`}>
+                                  <td key={c.key} className={`${numCellCls} text-muted-foreground ${tintOf(c.key)}`}>
                                     {fmtCell(rSrc, c)}
                                   </td>
                                 ))}
@@ -488,7 +482,7 @@ const SinistralidadeConsulta = () => {
               <tr>
                 <td className="px-1 py-0.5 text-left">Total</td>
                 {displayCols.map((c) => (
-                  <td key={c.key} className={`${numCellCls} ${tintOf(c.key)} ${weightOf(c.key)}`}>
+                  <td key={c.key} className={`${numCellCls} ${tintOf(c.key)}`}>
                     {fmtCell(totals, c)}
                   </td>
                 ))}
