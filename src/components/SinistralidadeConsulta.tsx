@@ -309,7 +309,7 @@ const SinistralidadeConsulta = () => {
             <tbody>
               {filtered.map((g) => {
                 const isOpen = expanded.has(g.dspln);
-                const hasChildren = g.plans.length > 1 || (g.plans[0] && g.plans[0].children.length > 1);
+                const hasChildren = g.plans.length > 1;
                 return (
                   <Fragment key={g.dspln}>
                     <tr
