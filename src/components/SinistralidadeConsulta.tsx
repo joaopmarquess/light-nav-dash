@@ -70,11 +70,11 @@ const SinistralidadeConsulta = () => {
   useEffect(() => {
     (async () => {
       const [{ data: maxRow }, { data: minRow }] = await Promise.all([
-        hostinger.from("vw_sinistralidade").select("Periodo2").order("Periodo2", { ascending: false }).limit(1),
-        hostinger.from("vw_sinistralidade").select("Periodo2").order("Periodo2", { ascending: true }).limit(1),
+        hostinger.from("vw_sinistralidade").select("PERIODO").order("PERIODO", { ascending: false }).limit(1),
+        hostinger.from("vw_sinistralidade").select("PERIODO").order("PERIODO", { ascending: true }).limit(1),
       ]);
-      const max = (maxRow?.[0]?.Periodo2 as number) ?? null;
-      const min = (minRow?.[0]?.Periodo2 as number) ?? max;
+      const max = (maxRow?.[0]?.PERIODO as number) ?? null;
+      const min = (minRow?.[0]?.PERIODO as number) ?? max;
       if (!max || !min) return;
       const list: number[] = [];
       let y = Math.floor(min / 100);
@@ -105,7 +105,7 @@ const SinistralidadeConsulta = () => {
         const { data, error } = await hostinger
           .from("vw_sinistralidade")
           .select(COLS.join(","))
-          .eq("Periodo2", periodo)
+          .eq("PERIODO", periodo)
           .range(from, from + pageSize - 1);
         if (cancel) return;
         if (error) { setError(error.message); break; }
