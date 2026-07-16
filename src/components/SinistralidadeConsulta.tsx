@@ -175,7 +175,7 @@ const SinistralidadeConsulta = () => {
           <table className="w-full text-[11px]">
             <thead className="sticky top-0 bg-card border-b border-border">
               <tr>
-                <th className="font-medium text-muted-foreground px-1.5 py-1 whitespace-nowrap text-left">dspln</th>
+                <th className="font-medium text-muted-foreground px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate">dspln</th>
                 <th className="font-medium text-muted-foreground px-1.5 py-1 whitespace-nowrap text-right">Vidas</th>
                 {NUM_COLS.map((c) => (
                   <th key={c} className="font-medium text-muted-foreground px-1.5 py-1 whitespace-nowrap text-right">
@@ -187,7 +187,7 @@ const SinistralidadeConsulta = () => {
             <tbody>
               {filtered.map((r, i) => (
                 <tr key={i} className="border-b border-border/60 hover:bg-accent/40">
-                  <td className="px-1.5 py-1 whitespace-nowrap text-left">{r.dspln.trim()}</td>
+                  <td className="px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate" title={r.dspln.trim()}>{r.dspln.trim()}</td>
                   <td className="px-1.5 py-1 whitespace-nowrap text-right tabular-nums">
                     {r.vidas.toLocaleString("pt-BR")}
                   </td>
