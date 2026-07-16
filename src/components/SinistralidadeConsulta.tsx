@@ -167,9 +167,11 @@ const SinistralidadeConsulta = () => {
     const base = !q.trim()
       ? groups
       : groups.filter((g) => g.dspln.toLowerCase().includes(q.toLowerCase()));
+    const sinOf = (g: Group) => (g.rec_total ? g.vrdespesas / g.rec_total : 0);
     const sorted = [...base].sort((a, b) => {
       let cmp = 0;
       if (sortKey === "dspln") cmp = a.dspln.localeCompare(b.dspln, "pt-BR");
+      else if (sortKey === "SIN") cmp = sinOf(a) - sinOf(b);
       else cmp = (a[sortKey] || 0) - (b[sortKey] || 0);
       return sortDir === "asc" ? cmp : -cmp;
     });
