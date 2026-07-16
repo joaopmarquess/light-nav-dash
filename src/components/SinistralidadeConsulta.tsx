@@ -2,8 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { Loader2, Search } from "lucide-react";
 
-const COLS = [
-  "dspln",
+const NUM_COLS = [
   "rec_tm",
   "rec_cpa",
   "rec_total",
@@ -17,7 +16,12 @@ const COLS = [
   "vrdespesas",
 ] as const;
 
+const COLS = ["dspln", ...NUM_COLS] as const;
+
+type NumCol = (typeof NUM_COLS)[number];
 type Row = Record<(typeof COLS)[number], unknown>;
+type Grouped = { dspln: string; vidas: number } & Record<NumCol, number>;
+
 
 const fmt = (v: unknown, col: string): string => {
   if (v === null || v === undefined || v === "") return "";
