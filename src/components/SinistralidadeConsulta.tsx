@@ -283,7 +283,7 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
 
   const filtered = useMemo(() => {
     if (mode === "beneficiario") return [] as Group[];
-    const term = q.trim().toLowerCase();
+    const term = qDebounced.trim().toLowerCase();
     const base = !term
       ? groups
       : groups.filter((g) =>
@@ -319,20 +319,29 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
       return ((Number(a[sortKey]) || 0) - (Number(b[sortKey]) || 0)) * dir;
     };
 
+    // Só ordena subgrupos/filhos dos grupos que estão expandidos — evita
+    // sort O(n log n) sobre centenas de milhares de linhas quando tudo está fechado.
     const sorted = [...base]
-      .map((g) => ({
-        ...g,
-        subgroups: [...g.subgroups]
-          .map((s) => ({ ...s, children: [...s.children].sort(cmpRow) }))
-          .sort(cmpSub),
-      }))
+      .map((g) => {
+        if (!expanded.has(g.GRUPO)) return g;
+        return {
+          ...g,
+          subgroups: [...g.subgroups]
+            .map((s) => {
+              const subKey = `${g.GRUPO}||${s.cdpln}`;
+              if (!expanded.has(subKey)) return s;
+              return { ...s, children: [...s.children].sort(cmpRow) };
+            })
+            .sort(cmpSub),
+        };
+      })
       .sort(cmpGroup);
     return sorted;
-  }, [groups, q, sortKey, sortDir, mode]);
+  }, [groups, qDebounced, sortKey, sortDir, mode, expanded]);
 
   const filteredBenefs = useMemo(() => {
     if (mode !== "beneficiario") return [] as Benef[];
-    const term = q.trim().toLowerCase();
+    const term = qDebounced.trim().toLowerCase();
     const base = !term
       ? benefs
       : benefs.filter((b) =>
@@ -351,7 +360,7 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
       return ((a[sortKey] || 0) - (b[sortKey] || 0)) * dir;
     };
     return [...base].sort(cmp);
-  }, [benefs, q, sortKey, sortDir, mode]);
+  }, [benefs, qDebounced, sortKey, sortDir, mode]);
 
   const totals = useMemo(() => {
     const t = { vida: 0 } as CellSrc;
