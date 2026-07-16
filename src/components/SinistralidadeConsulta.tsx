@@ -90,16 +90,7 @@ const SinistralidadeConsulta = () => {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [view, setView] = useState<ViewMode>("curta");
-  const [recCollapsed, setRecCollapsed] = useState(false);
-  const [despCollapsed, setDespCollapsed] = useState(false);
-  const REC_HIDE = new Set<string>(["rec_tm", "rec_cpa"]);
-  const DESP_HIDE = new Set<string>(["consulta", "emergencia", "exame", "terapia", "internacao", "DEMAIS"]);
-  const baseCols = view === "curta" ? COLS_CURTA : COLS_COMPLETA;
-  const displayCols = baseCols.filter((c) => {
-    if (recCollapsed && REC_HIDE.has(c.key)) return false;
-    if (despCollapsed && DESP_HIDE.has(c.key)) return false;
-    return true;
-  });
+  const displayCols = view === "curta" ? COLS_CURTA : COLS_COMPLETA;
   const nameColCls = view === "curta" ? "w-[30ch] max-w-[30ch]" : "w-[18ch] max-w-[18ch]";
   const numCellCls = view === "curta" ? "px-0.5 py-0.5 w-[8ch] whitespace-nowrap text-right tabular-nums" : "px-0.5 py-0.5 w-[7ch] whitespace-nowrap text-right tabular-nums";
 
