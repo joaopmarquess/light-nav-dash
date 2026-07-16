@@ -338,6 +338,16 @@ const SinistralidadeConsulta = () => {
               className="h-9 w-64 pl-8 pr-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={refreshing || loading}
+            title="Atualizar materialized view e recarregar"
+            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md border border-border bg-background text-sm hover:bg-accent/40 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+            Atualizar
+          </button>
         </div>
       </div>
 
