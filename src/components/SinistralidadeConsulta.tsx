@@ -17,8 +17,16 @@ const NUM_COLS = [
 ] as const;
 
 type NumCol = (typeof NUM_COLS)[number];
-type Row = { PERIODO: string; cdpln: number | string; dspln: string } & Record<NumCol, number | string | null>;
-type Group = { dspln: string; children: Row[] } & Record<NumCol, number>;
+type Row = {
+  PERIODO: string;
+  cdpln: number | string;
+  dspln: string;
+  codigo: number | string | null;
+  nmcli: string | null;
+  cdpdrcft: number | string | null;
+} & Record<NumCol, number | string | null>;
+type PlanGroup = { cdpln: string; children: Row[] } & Record<NumCol, number>;
+type Group = { dspln: string; plans: PlanGroup[] } & Record<NumCol, number>;
 
 type SortKey = "dspln" | NumCol | "SIN";
 type ViewMode = "curta" | "completa";
