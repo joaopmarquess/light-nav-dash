@@ -104,7 +104,7 @@ const SinistralidadeConsulta = () => {
         const { data, error } = await hostinger
           .from("vw_sinistralidade_periodo")
           .select(COLS.join(","))
-          .eq("mabas", periodo)
+          .eq("periodo2", periodo)
           .range(from, from + pageSize - 1);
         if (cancel) return;
         if (error) { setError(error.message); break; }
