@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
-import { Loader2, Search } from "lucide-react";
+import { Loader2, Search, ArrowUp, ArrowDown } from "lucide-react";
 
 const NUM_COLS = [
   "rec_tm",
@@ -22,14 +22,35 @@ type NumCol = (typeof NUM_COLS)[number];
 type Row = Record<(typeof COLS)[number], unknown>;
 type Grouped = { dspln: string; vidas: number } & Record<NumCol, number>;
 
+// Derived columns shown in the grid (fisioterap merged into "Demais", plus "Saldo")
+type DerivedCol = "demais" | "saldo";
+type SortKey = "dspln" | "vidas" | Exclude<NumCol, "fisioterap" | "outros"> | DerivedCol;
 
-const fmt = (v: unknown, col: string): string => {
-  if (v === null || v === undefined || v === "") return "";
-  if (col === "dspln") return String(v);
-  const n = typeof v === "number" ? v : Number(v);
-  if (!Number.isFinite(n)) return String(v);
-  return n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const DISPLAY_COLS: { key: SortKey; label: string }[] = [
+  { key: "vidas", label: "Vidas" },
+  { key: "rec_tm", label: "rec_tm" },
+  { key: "rec_cpa", label: "rec_cpa" },
+  { key: "rec_total", label: "rec_total" },
+  { key: "consulta", label: "consulta" },
+  { key: "emergencia", label: "emergencia" },
+  { key: "exame", label: "exame" },
+  { key: "terapia", label: "terapia" },
+  { key: "internacao", label: "internacao" },
+  { key: "demais", label: "Demais" },
+  { key: "vrdespesas", label: "vrdespesas" },
+  { key: "saldo", label: "Saldo" },
+];
+
+const getVal = (r: Grouped, key: SortKey): number | string => {
+  if (key === "dspln") return r.dspln;
+  if (key === "vidas") return r.vidas;
+  if (key === "demais") return (r.fisioterap ?? 0) + (r.outros ?? 0);
+  if (key === "saldo") return (r.rec_total ?? 0) - (r.vrdespesas ?? 0);
+  return r[key as NumCol];
 };
+
+const fmtNum = (n: number) =>
+  n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const fmtPeriodo = (mabas: number) => {
   const s = String(mabas);
@@ -43,8 +64,9 @@ const SinistralidadeConsulta = () => {
   const [q, setQ] = useState("");
   const [periodos, setPeriodos] = useState<number[]>([]);
   const [periodo, setPeriodo] = useState<number | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("dspln");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
-  // Load available periods (min/max mabas) and default to latest
   useEffect(() => {
     (async () => {
       const [{ data: maxRow }, { data: minRow }] = await Promise.all([
@@ -69,7 +91,6 @@ const SinistralidadeConsulta = () => {
     })();
   }, []);
 
-  // Load rows for selected period (paginated) and aggregate by dspln
   useEffect(() => {
     if (!periodo) return;
     let cancel = false;
@@ -107,7 +128,7 @@ const SinistralidadeConsulta = () => {
         from += pageSize;
       }
       if (cancel) return;
-      const list = Array.from(acc.values()).sort((a, b) => a.dspln.localeCompare(b.dspln, "pt-BR"));
+      const list = Array.from(acc.values());
       setRows(list);
       setLoading(false);
     })();
@@ -115,10 +136,22 @@ const SinistralidadeConsulta = () => {
   }, [periodo]);
 
   const filtered = useMemo(() => {
-    if (!q.trim()) return rows;
-    const s = q.toLowerCase();
-    return rows.filter((r) => r.dspln.toLowerCase().includes(s));
-  }, [rows, q]);
+    const base = !q.trim()
+      ? rows
+      : rows.filter((r) => r.dspln.toLowerCase().includes(q.toLowerCase()));
+    const sorted = [...base].sort((a, b) => {
+      const va = getVal(a, sortKey);
+      const vb = getVal(b, sortKey);
+      let cmp = 0;
+      if (typeof va === "string" || typeof vb === "string") {
+        cmp = String(va).localeCompare(String(vb), "pt-BR");
+      } else {
+        cmp = (va as number) - (vb as number);
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return sorted;
+  }, [rows, q, sortKey, sortDir]);
 
   const totals = useMemo(() => {
     const t: { vidas: number } & Record<NumCol, number> = { vidas: 0 } as { vidas: number } & Record<NumCol, number>;
@@ -130,6 +163,23 @@ const SinistralidadeConsulta = () => {
     return t;
   }, [filtered]);
 
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir(key === "dspln" ? "asc" : "desc");
+    }
+  };
+
+  const SortIcon = ({ k }: { k: SortKey }) =>
+    sortKey === k ? (
+      sortDir === "asc" ? (
+        <ArrowUp className="inline h-3 w-3 ml-0.5" />
+      ) : (
+        <ArrowDown className="inline h-3 w-3 ml-0.5" />
+      )
+    ) : null;
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
@@ -175,11 +225,19 @@ const SinistralidadeConsulta = () => {
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-card border-b border-border">
               <tr>
-                <th className="font-medium text-muted-foreground px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate">dspln</th>
-                <th className="font-medium text-muted-foreground px-1.5 py-1 whitespace-nowrap text-right">Vidas</th>
-                {NUM_COLS.map((c) => (
-                  <th key={c} className="font-medium text-muted-foreground px-1.5 py-1 whitespace-nowrap text-right">
-                    {c}
+                <th
+                  onClick={() => toggleSort("dspln")}
+                  className="font-medium text-muted-foreground px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate cursor-pointer select-none"
+                >
+                  dspln<SortIcon k="dspln" />
+                </th>
+                {DISPLAY_COLS.map((c) => (
+                  <th
+                    key={c.key}
+                    onClick={() => toggleSort(c.key)}
+                    className="font-medium text-muted-foreground px-1 py-1 whitespace-nowrap text-right cursor-pointer select-none"
+                  >
+                    {c.label}<SortIcon k={c.key} />
                   </th>
                 ))}
               </tr>
@@ -188,28 +246,35 @@ const SinistralidadeConsulta = () => {
               {filtered.map((r, i) => (
                 <tr key={i} className="border-b border-border/60 hover:bg-accent/40">
                   <td className="px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate" title={r.dspln.trim()}>{r.dspln.trim()}</td>
-                  <td className="px-1.5 py-1 whitespace-nowrap text-right tabular-nums">
-                    {r.vidas.toLocaleString("pt-BR")}
-                  </td>
-                  {NUM_COLS.map((c) => (
-                    <td key={c} className="px-1.5 py-1 whitespace-nowrap text-right tabular-nums">
-                      {fmt(r[c], c)}
-                    </td>
-                  ))}
+                  {DISPLAY_COLS.map((c) => {
+                    const v = getVal(r, c.key);
+                    return (
+                      <td key={c.key} className="px-1 py-1 whitespace-nowrap text-right tabular-nums">
+                        {c.key === "vidas" ? (v as number).toLocaleString("pt-BR") : fmtNum(v as number)}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
             <tfoot className="sticky bottom-0 bg-card border-t border-border font-semibold">
               <tr>
                 <td className="px-1.5 py-1 text-left">Total</td>
-                <td className="px-1.5 py-1 text-right tabular-nums">{totals.vidas.toLocaleString("pt-BR")}</td>
-                {NUM_COLS.map((c) => (
-                  <td key={c} className="px-1.5 py-1 text-right tabular-nums">{fmt(totals[c], c)}</td>
-                ))}
+                {DISPLAY_COLS.map((c) => {
+                  let v: number;
+                  if (c.key === "vidas") v = totals.vidas;
+                  else if (c.key === "demais") v = totals.fisioterap + totals.outros;
+                  else if (c.key === "saldo") v = totals.rec_total - totals.vrdespesas;
+                  else v = totals[c.key as NumCol];
+                  return (
+                    <td key={c.key} className="px-1 py-1 text-right tabular-nums">
+                      {c.key === "vidas" ? v.toLocaleString("pt-BR") : fmtNum(v)}
+                    </td>
+                  );
+                })}
               </tr>
             </tfoot>
           </table>
-
         )}
       </div>
     </section>
