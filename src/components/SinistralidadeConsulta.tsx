@@ -381,7 +381,7 @@ const SinistralidadeConsulta = () => {
                     <th
                       key={c.key}
                       onClick={() => toggleSort(c.key)}
-                      className={`font-medium text-muted-foreground cursor-pointer select-none ${numCellCls}`}
+                      className={`font-medium text-muted-foreground cursor-pointer select-none ${numCellCls} ${tintOf(c.key)}`}
                     >
                       {toggle && (
                         <button
@@ -421,7 +421,7 @@ const SinistralidadeConsulta = () => {
                         </span>
                       </td>
                       {displayCols.map((c) => (
-                        <td key={c.key} className={numCellCls}>
+                        <td key={c.key} className={`${numCellCls} ${tintOf(c.key)}`}>
                           {fmtCell(g, c)}
                         </td>
                       ))}
@@ -449,7 +449,7 @@ const SinistralidadeConsulta = () => {
                               </span>
                             </td>
                             {displayCols.map((c) => (
-                              <td key={c.key} className={numCellCls}>
+                              <td key={c.key} className={`${numCellCls} ${tintOf(c.key)}`}>
                                 {fmtCell(sgSrc, c)}
                               </td>
                             ))}
@@ -464,7 +464,7 @@ const SinistralidadeConsulta = () => {
                                   {label}
                                 </td>
                                 {displayCols.map((c) => (
-                                  <td key={c.key} className={`${numCellCls} text-muted-foreground`}>
+                                  <td key={c.key} className={`${numCellCls} text-muted-foreground ${tintOf(c.key)}`}>
                                     {fmtCell(rSrc, c)}
                                   </td>
                                 ))}
@@ -482,7 +482,7 @@ const SinistralidadeConsulta = () => {
               <tr>
                 <td className="px-1 py-0.5 text-left">Total</td>
                 {displayCols.map((c) => (
-                  <td key={c.key} className={numCellCls}>
+                  <td key={c.key} className={`${numCellCls} ${tintOf(c.key)}`}>
                     {fmtCell(totals, c)}
                   </td>
                 ))}
