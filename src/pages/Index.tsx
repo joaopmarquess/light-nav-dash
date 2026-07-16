@@ -98,7 +98,8 @@ const menuItems: MenuItem[] = [
     icon: Percent,
     label: "Sinistralidade",
     children: [
-      { icon: Search, label: "Consulta" },
+      { icon: Search, label: "Consulta por Plano/Empresa" },
+      { icon: UserCheck, label: "Consulta por Beneficiário" },
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
   },
