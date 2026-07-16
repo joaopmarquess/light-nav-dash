@@ -162,11 +162,10 @@ const SinistralidadeConsulta = () => {
       const planKey = String(r.cdpln ?? "");
       let p = g.plans.find((x) => x.cdpln === planKey);
       if (!p) {
-        p = { cdpln: planKey, children: [] } as PlanGroup;
+        p = { cdpln: planKey } as PlanGroup;
         for (const c of NUM_COLS) p[c] = 0;
         g.plans.push(p);
       }
-      p.children.push(r);
       for (const c of NUM_COLS) {
         const n = Number(r[c]);
         if (Number.isFinite(n)) {
