@@ -185,7 +185,7 @@ const SinistralidadeConsulta = () => {
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
       <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border">
         <div className="flex items-center gap-3">
-          <label className="text-sm text-muted-foreground">Período</label>
+          <label className="text-sm text-muted-foreground">Base</label>
           <select
             value={periodo ?? ""}
             onChange={(e) => setPeriodo(Number(e.target.value))}
