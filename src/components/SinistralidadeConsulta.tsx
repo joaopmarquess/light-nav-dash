@@ -17,8 +17,9 @@ const NUM_COLS = [
 ] as const;
 
 type NumCol = (typeof NUM_COLS)[number];
-type Row = { PERIODO: string; cdpln: number | string; dspln: string } & Record<NumCol, number | string | null>;
-type Group = { dspln: string; children: Row[] } & Record<NumCol, number>;
+type Row = { PERIODO: string; cdpln: number | string; dspln: string; codigo: string | null; nmcli: string | null } & Record<NumCol, number | string | null>;
+type SubGroup = { cdpln: string; children: Row[] } & Record<NumCol, number>;
+type Group = { dspln: string; subgroups: SubGroup[] } & Record<NumCol, number>;
 
 type SortKey = "dspln" | NumCol | "SIN";
 type ViewMode = "curta" | "completa";
