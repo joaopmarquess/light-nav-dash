@@ -293,18 +293,22 @@ const SinistralidadeConsulta = () => {
                         </td>
                       ))}
                     </tr>
-                    {isOpen && g.children.map((r, i) => (
-                      <tr key={`${g.dspln}-${r.cdpln}-${i}`} className="border-b border-border/40 bg-accent/20 text-[0.92em]">
-                        <td className="px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate pl-8 text-muted-foreground" title={String(r.cdpln)}>
-                          cdpln {String(r.cdpln)}
-                        </td>
-                        {displayCols.map((c) => (
-                          <td key={c.key} className="px-1 py-1 whitespace-nowrap text-right tabular-nums text-muted-foreground">
-                            {fmtNum(Number(r[c.key]) || 0)}
+                    {isOpen && g.children.map((r, i) => {
+                      const rSrc = {} as Record<NumCol, number>;
+                      for (const c of NUM_COLS) rSrc[c] = Number(r[c]) || 0;
+                      return (
+                        <tr key={`${g.dspln}-${r.cdpln}-${i}`} className="border-b border-border/40 bg-accent/20 text-[0.92em]">
+                          <td className="px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate pl-8 text-muted-foreground" title={String(r.cdpln)}>
+                            cdpln {String(r.cdpln)}
                           </td>
-                        ))}
-                      </tr>
-                    ))}
+                          {displayCols.map((c) => (
+                            <td key={c.key} className="px-1 py-1 whitespace-nowrap text-right tabular-nums text-muted-foreground">
+                              {fmtCell(rSrc, c)}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
                   </Fragment>
 
                 );
