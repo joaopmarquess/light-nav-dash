@@ -80,6 +80,8 @@ const SinistralidadeConsulta = () => {
   const [sortKey, setSortKey] = useState<SortKey>("dspln");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [view, setView] = useState<ViewMode>("curta");
+  const displayCols = view === "curta" ? COLS_CURTA : COLS_COMPLETA;
 
   // Load distinct PERIODO values
   useEffect(() => {
