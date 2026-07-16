@@ -321,7 +321,7 @@ const SinistralidadeConsulta = () => {
                       return (
                         <tr key={`${g.dspln}-${r.cdpln}-${i}`} className="border-b border-border/40 bg-accent/20 text-[0.92em]">
                           <td className={`px-1 py-0.5 text-left ${nameColCls} truncate pl-8 text-muted-foreground`} title={String(r.cdpln)}>
-                            cdpln {String(r.cdpln)}
+                            {String(r.cdpln)}
                           </td>
                           {displayCols.map((c) => (
                             <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums text-muted-foreground">
