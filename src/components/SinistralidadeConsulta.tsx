@@ -95,9 +95,31 @@ const SinistralidadeConsulta = () => {
   const numCellCls = view === "curta" ? "px-0.5 py-0.5 w-[8ch] whitespace-nowrap text-right tabular-nums" : "px-0.5 py-0.5 w-[7ch] whitespace-nowrap text-right tabular-nums";
   const boldFor = (k: ColDef["key"]) => (k === "rec_total" || k === "vrdespesas" ? " font-semibold" : "");
 
-  // Load distinct PERIODO values
+  // Load distinct PERIODO values (RPC rápida com fallback paginado)
   useEffect(() => {
     (async () => {
+      const sortPeriodos = (list: string[]) =>
+        list.sort((a, b) => {
+          const endA = a.split(" a ")[1] ?? a;
+          const endB = b.split(" a ")[1] ?? b;
+          const [ma, ya] = endA.split("/").map(Number);
+          const [mb, yb] = endB.split("/").map(Number);
+          return (yb * 100 + mb) - (ya * 100 + ma);
+        });
+
+      // 1) tenta RPC
+      const { data: rpcData, error: rpcErr } = await hostinger.rpc("sinistralidade_periodos");
+      if (!rpcErr && Array.isArray(rpcData)) {
+        const list = sortPeriodos(
+          Array.from(new Set((rpcData as { PERIODO: string }[]).map((r) => r.PERIODO).filter(Boolean)))
+        );
+        setPeriodos(list);
+        setPeriodo(list[0] ?? null);
+        if (list.length === 0) setLoading(false);
+        return;
+      }
+
+      // 2) fallback: paginar
       const pageSize = 1000;
       const set = new Set<string>();
       let from = 0;
@@ -106,21 +128,16 @@ const SinistralidadeConsulta = () => {
           .from("mv_sinistralidade")
           .select("PERIODO")
           .range(from, from + pageSize - 1);
-        if (error) { setError(error.message); return; }
+        if (error) { setError(error.message); setLoading(false); return; }
         const batch = (data as { PERIODO: string }[]) ?? [];
         for (const r of batch) if (r.PERIODO) set.add(r.PERIODO);
         if (batch.length < pageSize) break;
         from += pageSize;
       }
-      const list = Array.from(set).sort((a, b) => {
-        const endA = a.split(" a ")[1] ?? a;
-        const endB = b.split(" a ")[1] ?? b;
-        const [ma, ya] = endA.split("/").map(Number);
-        const [mb, yb] = endB.split("/").map(Number);
-        return (yb * 100 + mb) - (ya * 100 + ma);
-      });
+      const list = sortPeriodos(Array.from(set));
       setPeriodos(list);
       setPeriodo(list[0] ?? null);
+      if (list.length === 0) setLoading(false);
     })();
   }, []);
 
