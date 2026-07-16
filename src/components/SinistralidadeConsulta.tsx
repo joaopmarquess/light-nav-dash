@@ -225,16 +225,33 @@ const SinistralidadeConsulta = () => {
             {loading ? "Carregando..." : `${filtered.length.toLocaleString("pt-BR")} plano(s)`}
           </div>
         </div>
-        <div className="relative">
-          <Search className="h-4 w-4 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Filtrar..."
-            className="h-9 w-64 pl-8 pr-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-          />
+        <div className="flex items-center gap-3">
+          <div className="inline-flex rounded-md border border-border overflow-hidden text-sm">
+            <button
+              type="button"
+              onClick={() => setView("curta")}
+              className={`px-3 h-9 ${view === "curta" ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-accent/40"}`}
+            >
+              Curta
+            </button>
+            <button
+              type="button"
+              onClick={() => setView("completa")}
+              className={`px-3 h-9 border-l border-border ${view === "completa" ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-accent/40"}`}
+            >
+              Completa
+            </button>
+          </div>
+          <div className="relative">
+            <Search className="h-4 w-4 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Filtrar..."
+              className="h-9 w-64 pl-8 pr-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+          </div>
         </div>
-      </div>
 
       <div className="flex-1 overflow-auto">
         {loading ? (
