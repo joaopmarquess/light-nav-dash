@@ -28,16 +28,16 @@ type SortKey = "dspln" | "vidas" | Exclude<NumCol, "fisioterap" | "outros"> | De
 
 const DISPLAY_COLS: { key: SortKey; label: string }[] = [
   { key: "vidas", label: "Vidas" },
-  { key: "rec_tm", label: "rec_tm" },
-  { key: "rec_cpa", label: "rec_cpa" },
-  { key: "rec_total", label: "rec_total" },
-  { key: "consulta", label: "consulta" },
-  { key: "emergencia", label: "emergencia" },
-  { key: "exame", label: "exame" },
-  { key: "terapia", label: "terapia" },
-  { key: "internacao", label: "internacao" },
+  { key: "rec_tm", label: "TMM" },
+  { key: "rec_cpa", label: "Copart." },
+  { key: "rec_total", label: "Total Receita" },
+  { key: "consulta", label: "Consulta" },
+  { key: "emergencia", label: "Emergência" },
+  { key: "exame", label: "Exame" },
+  { key: "terapia", label: "Terapia" },
+  { key: "internacao", label: "Internação" },
   { key: "demais", label: "Demais" },
-  { key: "vrdespesas", label: "vrdespesas" },
+  { key: "vrdespesas", label: "Total Despesa" },
   { key: "saldo", label: "Saldo" },
 ];
 
@@ -185,7 +185,7 @@ const SinistralidadeConsulta = () => {
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
       <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border">
         <div className="flex items-center gap-3">
-          <label className="text-sm text-muted-foreground">Período</label>
+          <label className="text-sm text-muted-foreground">Base</label>
           <select
             value={periodo ?? ""}
             onChange={(e) => setPeriodo(Number(e.target.value))}
@@ -229,7 +229,7 @@ const SinistralidadeConsulta = () => {
                   onClick={() => toggleSort("dspln")}
                   className="font-medium text-muted-foreground px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate cursor-pointer select-none"
                 >
-                  dspln<SortIcon k="dspln" />
+                  Nome Plano|Empresa<SortIcon k="dspln" />
                 </th>
                 {DISPLAY_COLS.map((c) => (
                   <th
