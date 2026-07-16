@@ -229,7 +229,7 @@ const SinistralidadeConsulta = () => {
                   onClick={() => toggleSort("dspln")}
                   className="font-medium text-muted-foreground px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate cursor-pointer select-none"
                 >
-                  dspln<SortIcon k="dspln" />
+                  Nome Plano|Empresa<SortIcon k="dspln" />
                 </th>
                 {DISPLAY_COLS.map((c) => (
                   <th
