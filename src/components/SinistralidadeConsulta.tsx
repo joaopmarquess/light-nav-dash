@@ -69,21 +69,46 @@ const SinistralidadeConsulta = () => {
     })();
   }, []);
 
-  // Load rows for selected period
+  // Load rows for selected period (paginated) and aggregate by dspln
   useEffect(() => {
     if (!periodo) return;
     let cancel = false;
     (async () => {
       setLoading(true);
       setError(null);
-      const { data, error } = await hostinger
-        .from("sinistralidade")
-        .select(COLS.join(","))
-        .eq("mabas", periodo)
-        .limit(10000);
+      const pageSize = 1000;
+      const maxPages = 2000;
+      const acc = new Map<string, Grouped>();
+      let from = 0;
+      for (let i = 0; i < maxPages; i++) {
+        const { data, error } = await hostinger
+          .from("sinistralidade")
+          .select(COLS.join(","))
+          .eq("mabas", periodo)
+          .range(from, from + pageSize - 1);
+        if (cancel) return;
+        if (error) { setError(error.message); break; }
+        const batch = (data as unknown as Row[]) ?? [];
+        for (const r of batch) {
+          const key = String(r.dspln ?? "");
+          let g = acc.get(key);
+          if (!g) {
+            g = { dspln: key, vidas: 0 } as Grouped;
+            for (const c of NUM_COLS) g[c] = 0;
+            acc.set(key, g);
+          }
+          g.vidas += 1;
+          for (const c of NUM_COLS) {
+            const n = Number(r[c]);
+            if (Number.isFinite(n)) g[c] += n;
+          }
+        }
+        if (batch.length < pageSize) break;
+        from += pageSize;
+      }
       if (cancel) return;
-      if (error) setError(error.message);
-      else setRows(((data as unknown) as Row[]) ?? []);
+      const list = Array.from(acc.values()).sort((a, b) => a.dspln.localeCompare(b.dspln, "pt-BR"));
+      setRows(list);
       setLoading(false);
     })();
     return () => { cancel = true; };
@@ -92,8 +117,19 @@ const SinistralidadeConsulta = () => {
   const filtered = useMemo(() => {
     if (!q.trim()) return rows;
     const s = q.toLowerCase();
-    return rows.filter((r) => COLS.some((c) => String(r[c] ?? "").toLowerCase().includes(s)));
+    return rows.filter((r) => r.dspln.toLowerCase().includes(s));
   }, [rows, q]);
+
+  const totals = useMemo(() => {
+    const t: { vidas: number } & Record<NumCol, number> = { vidas: 0 } as { vidas: number } & Record<NumCol, number>;
+    for (const c of NUM_COLS) t[c] = 0;
+    for (const r of filtered) {
+      t.vidas += r.vidas;
+      for (const c of NUM_COLS) t[c] += r[c];
+    }
+    return t;
+  }, [filtered]);
+
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
