@@ -74,7 +74,7 @@ const fmtCell = (src: Record<NumCol, number>, col: ColDef): string => {
 const fmtNum = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const SELECT = ["PERIODO", "cdpln", "dspln", "codigo", "nmcli", "cdpdrcft", ...NUM_COLS].join(",");
+const SELECT = ["PERIODO", "cdpln", "dspln", ...NUM_COLS].join(",");
 
 const SinistralidadeConsulta = () => {
   const [rows, setRows] = useState<Row[]>([]);
