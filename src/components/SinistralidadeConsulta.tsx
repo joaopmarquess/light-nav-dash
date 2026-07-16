@@ -240,15 +240,45 @@ const SinistralidadeConsulta = () => {
           g.GRUPO.toLowerCase().includes(term) ||
           g.subgroups.some((s) => String(s.cdpln).toLowerCase().includes(term))
         );
-    const sinOf = (g: Group) => (g.rec_total ? g.vrdespesas / g.rec_total : 0);
-    const sorted = [...base].sort((a, b) => {
-      let cmp = 0;
-      if (sortKey === "GRUPO") cmp = a.GRUPO.localeCompare(b.GRUPO, "pt-BR");
-      else if (sortKey === "SIN") cmp = sinOf(a) - sinOf(b);
-      else if (sortKey === "VIDA") cmp = a.vida - b.vida;
-      else cmp = (a[sortKey] || 0) - (b[sortKey] || 0);
-      return sortDir === "asc" ? cmp : -cmp;
-    });
+    const sinOfNums = (x: { rec_total: number; vrdespesas: number }) =>
+      x.rec_total ? x.vrdespesas / x.rec_total : 0;
+    const dir = sortDir === "asc" ? 1 : -1;
+
+    const cmpGroup = (a: Group, b: Group) => {
+      if (sortKey === "GRUPO") return a.GRUPO.localeCompare(b.GRUPO, "pt-BR") * dir;
+      if (sortKey === "SIN") return (sinOfNums(a) - sinOfNums(b)) * dir;
+      if (sortKey === "VIDA") return (a.vida - b.vida) * dir;
+      return ((a[sortKey] || 0) - (b[sortKey] || 0)) * dir;
+    };
+    const cmpSub = (a: SubGroup, b: SubGroup) => {
+      if (sortKey === "GRUPO") return String(a.cdpln).localeCompare(String(b.cdpln), "pt-BR") * dir;
+      if (sortKey === "SIN") return (sinOfNums(a) - sinOfNums(b)) * dir;
+      if (sortKey === "VIDA") return (a.vida - b.vida) * dir;
+      return ((a[sortKey] || 0) - (b[sortKey] || 0)) * dir;
+    };
+    const cmpRow = (a: Row, b: Row) => {
+      if (sortKey === "GRUPO") {
+        const la = `${a.codigo ?? ""} ${a.nmcli ?? ""}`.trim();
+        const lb = `${b.codigo ?? ""} ${b.nmcli ?? ""}`.trim();
+        return la.localeCompare(lb, "pt-BR") * dir;
+      }
+      if (sortKey === "VIDA") return 0;
+      if (sortKey === "SIN") {
+        const sa = sinOfNums({ rec_total: Number(a.rec_total) || 0, vrdespesas: Number(a.vrdespesas) || 0 });
+        const sb = sinOfNums({ rec_total: Number(b.rec_total) || 0, vrdespesas: Number(b.vrdespesas) || 0 });
+        return (sa - sb) * dir;
+      }
+      return ((Number(a[sortKey]) || 0) - (Number(b[sortKey]) || 0)) * dir;
+    };
+
+    const sorted = [...base]
+      .map((g) => ({
+        ...g,
+        subgroups: [...g.subgroups]
+          .map((s) => ({ ...s, children: [...s.children].sort(cmpRow) }))
+          .sort(cmpSub),
+      }))
+      .sort(cmpGroup);
     return sorted;
   }, [groups, q, sortKey, sortDir]);
 
