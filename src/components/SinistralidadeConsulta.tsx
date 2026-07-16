@@ -79,7 +79,7 @@ const SinistralidadeConsulta = () => {
         .limit(10000);
       if (cancel) return;
       if (error) setError(error.message);
-      else setRows((data as Row[]) ?? []);
+      else setRows(((data as unknown) as Row[]) ?? []);
       setLoading(false);
     })();
     return () => { cancel = true; };
