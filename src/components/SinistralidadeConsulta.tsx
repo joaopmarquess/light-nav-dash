@@ -2,8 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { Loader2, Search } from "lucide-react";
 
-const COLS = [
-  "dspln",
+const NUM_COLS = [
   "rec_tm",
   "rec_cpa",
   "rec_total",
@@ -17,7 +16,12 @@ const COLS = [
   "vrdespesas",
 ] as const;
 
+const COLS = ["dspln", ...NUM_COLS] as const;
+
+type NumCol = (typeof NUM_COLS)[number];
 type Row = Record<(typeof COLS)[number], unknown>;
+type Grouped = { dspln: string; vidas: number } & Record<NumCol, number>;
+
 
 const fmt = (v: unknown, col: string): string => {
   if (v === null || v === undefined || v === "") return "";
@@ -33,7 +37,7 @@ const fmtPeriodo = (mabas: number) => {
 };
 
 const SinistralidadeConsulta = () => {
-  const [rows, setRows] = useState<Row[]>([]);
+  const [rows, setRows] = useState<Grouped[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
@@ -65,21 +69,46 @@ const SinistralidadeConsulta = () => {
     })();
   }, []);
 
-  // Load rows for selected period
+  // Load rows for selected period (paginated) and aggregate by dspln
   useEffect(() => {
     if (!periodo) return;
     let cancel = false;
     (async () => {
       setLoading(true);
       setError(null);
-      const { data, error } = await hostinger
-        .from("sinistralidade")
-        .select(COLS.join(","))
-        .eq("mabas", periodo)
-        .limit(10000);
+      const pageSize = 1000;
+      const maxPages = 2000;
+      const acc = new Map<string, Grouped>();
+      let from = 0;
+      for (let i = 0; i < maxPages; i++) {
+        const { data, error } = await hostinger
+          .from("sinistralidade")
+          .select(COLS.join(","))
+          .eq("mabas", periodo)
+          .range(from, from + pageSize - 1);
+        if (cancel) return;
+        if (error) { setError(error.message); break; }
+        const batch = (data as unknown as Row[]) ?? [];
+        for (const r of batch) {
+          const key = String(r.dspln ?? "");
+          let g = acc.get(key);
+          if (!g) {
+            g = { dspln: key, vidas: 0 } as Grouped;
+            for (const c of NUM_COLS) g[c] = 0;
+            acc.set(key, g);
+          }
+          g.vidas += 1;
+          for (const c of NUM_COLS) {
+            const n = Number(r[c]);
+            if (Number.isFinite(n)) g[c] += n;
+          }
+        }
+        if (batch.length < pageSize) break;
+        from += pageSize;
+      }
       if (cancel) return;
-      if (error) setError(error.message);
-      else setRows(((data as unknown) as Row[]) ?? []);
+      const list = Array.from(acc.values()).sort((a, b) => a.dspln.localeCompare(b.dspln, "pt-BR"));
+      setRows(list);
       setLoading(false);
     })();
     return () => { cancel = true; };
@@ -88,8 +117,19 @@ const SinistralidadeConsulta = () => {
   const filtered = useMemo(() => {
     if (!q.trim()) return rows;
     const s = q.toLowerCase();
-    return rows.filter((r) => COLS.some((c) => String(r[c] ?? "").toLowerCase().includes(s)));
+    return rows.filter((r) => r.dspln.toLowerCase().includes(s));
   }, [rows, q]);
+
+  const totals = useMemo(() => {
+    const t: { vidas: number } & Record<NumCol, number> = { vidas: 0 } as { vidas: number } & Record<NumCol, number>;
+    for (const c of NUM_COLS) t[c] = 0;
+    for (const r of filtered) {
+      t.vidas += r.vidas;
+      for (const c of NUM_COLS) t[c] += r[c];
+    }
+    return t;
+  }, [filtered]);
+
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
@@ -135,11 +175,10 @@ const SinistralidadeConsulta = () => {
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-card border-b border-border">
               <tr>
-                {COLS.map((c) => (
-                  <th
-                    key={c}
-                    className={`font-medium text-muted-foreground px-3 py-2 whitespace-nowrap ${c === "dspln" ? "text-left" : "text-right"}`}
-                  >
+                <th className="font-medium text-muted-foreground px-3 py-2 whitespace-nowrap text-left">dspln</th>
+                <th className="font-medium text-muted-foreground px-3 py-2 whitespace-nowrap text-right">Vidas</th>
+                {NUM_COLS.map((c) => (
+                  <th key={c} className="font-medium text-muted-foreground px-3 py-2 whitespace-nowrap text-right">
                     {c}
                   </th>
                 ))}
@@ -148,18 +187,29 @@ const SinistralidadeConsulta = () => {
             <tbody>
               {filtered.map((r, i) => (
                 <tr key={i} className="border-b border-border/60 hover:bg-accent/40">
-                  {COLS.map((c) => (
-                    <td
-                      key={c}
-                      className={`px-3 py-1.5 whitespace-nowrap ${c === "dspln" ? "text-left" : "text-right tabular-nums"}`}
-                    >
+                  <td className="px-3 py-1.5 whitespace-nowrap text-left">{r.dspln}</td>
+                  <td className="px-3 py-1.5 whitespace-nowrap text-right tabular-nums">
+                    {r.vidas.toLocaleString("pt-BR")}
+                  </td>
+                  {NUM_COLS.map((c) => (
+                    <td key={c} className="px-3 py-1.5 whitespace-nowrap text-right tabular-nums">
                       {fmt(r[c], c)}
                     </td>
                   ))}
                 </tr>
               ))}
             </tbody>
+            <tfoot className="sticky bottom-0 bg-card border-t border-border font-semibold">
+              <tr>
+                <td className="px-3 py-2 text-left">Total</td>
+                <td className="px-3 py-2 text-right tabular-nums">{totals.vidas.toLocaleString("pt-BR")}</td>
+                {NUM_COLS.map((c) => (
+                  <td key={c} className="px-3 py-2 text-right tabular-nums">{fmt(totals[c], c)}</td>
+                ))}
+              </tr>
+            </tfoot>
           </table>
+
         )}
       </div>
     </section>
