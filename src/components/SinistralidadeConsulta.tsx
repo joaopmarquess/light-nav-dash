@@ -131,6 +131,8 @@ const SinistralidadeConsulta = () => {
           .from("mv_sinistralidade")
           .select(SELECT)
           .eq("PERIODO", periodo)
+          .order("cdpln", { ascending: true })
+          .order("codigo", { ascending: true, nullsFirst: false })
           .range(from, from + pageSize - 1);
         if (cancel) return;
         if (error) { setError(error.message); break; }
