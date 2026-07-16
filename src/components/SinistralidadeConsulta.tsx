@@ -315,15 +315,16 @@ const SinistralidadeConsulta = () => {
             <tbody>
               {filtered.map((g) => {
                 const isOpen = expanded.has(g.dspln);
+                const hasChildren = g.plans.length > 1 || (g.plans[0] && g.plans[0].children.length > 1);
                 return (
                   <Fragment key={g.dspln}>
                     <tr
-                      onClick={() => g.children.length > 1 && toggleExpand(g.dspln)}
-                      className={`border-b border-border/60 hover:bg-accent/40 ${g.children.length > 1 ? "cursor-pointer" : ""}`}
+                      onClick={() => hasChildren && toggleExpand(g.dspln)}
+                      className={`border-b border-border/60 hover:bg-accent/40 ${hasChildren ? "cursor-pointer" : ""}`}
                     >
                       <td className={`px-1 py-0.5 text-left ${nameColCls} truncate`} title={g.dspln}>
                         <span className="inline-flex items-center gap-1">
-                          {g.children.length > 1 ? (
+                          {hasChildren ? (
                             isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />
                           ) : (
                             <span className="w-3.5" />
@@ -337,20 +338,52 @@ const SinistralidadeConsulta = () => {
                         </td>
                       ))}
                     </tr>
-                    {isOpen && g.children.map((r, i) => {
-                      const rSrc = {} as Record<NumCol, number>;
-                      for (const c of NUM_COLS) rSrc[c] = Number(r[c]) || 0;
+                    {isOpen && g.plans.map((p) => {
+                      const planKey = `${g.dspln}::${p.cdpln}`;
+                      const planOpen = expanded.has(planKey);
+                      const planHasDetails = p.children.length > 0;
                       return (
-                        <tr key={`${g.dspln}-${r.cdpln}-${i}`} className="border-b border-border/40 bg-accent/20 text-[0.92em]">
-                          <td className={`px-1 py-0.5 text-left ${nameColCls} truncate pl-8 text-muted-foreground`} title={String(r.cdpln)}>
-                            {String(r.cdpln)}
-                          </td>
-                          {displayCols.map((c) => (
-                            <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums text-muted-foreground">
-                              {fmtCell(rSrc, c)}
+                        <Fragment key={planKey}>
+                          <tr
+                            onClick={() => planHasDetails && toggleExpand(planKey)}
+                            className={`border-b border-border/40 bg-accent/20 text-[0.92em] ${planHasDetails ? "cursor-pointer" : ""}`}
+                          >
+                            <td className={`px-1 py-0.5 text-left ${nameColCls} truncate pl-6 text-muted-foreground`} title={p.cdpln}>
+                              <span className="inline-flex items-center gap-1">
+                                {planHasDetails ? (
+                                  planOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />
+                                ) : (
+                                  <span className="w-3.5" />
+                                )}
+                                <span className="truncate">{p.cdpln}</span>
+                              </span>
                             </td>
-                          ))}
-                        </tr>
+                            {displayCols.map((c) => (
+                              <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums text-muted-foreground">
+                                {fmtCell(p, c)}
+                              </td>
+                            ))}
+                          </tr>
+                          {planOpen && p.children.map((r, i) => {
+                            const rSrc = {} as Record<NumCol, number>;
+                            for (const c of NUM_COLS) rSrc[c] = Number(r[c]) || 0;
+                            const label = [r.codigo, r.nmcli, r.cdpdrcft]
+                              .map((v) => (v == null || v === "" ? "-" : String(v)))
+                              .join(" | ");
+                            return (
+                              <tr key={`${planKey}-${i}`} className="border-b border-border/30 bg-accent/10 text-[0.85em]">
+                                <td className={`px-1 py-0.5 text-left ${nameColCls} truncate pl-12 text-muted-foreground`} title={label}>
+                                  {label}
+                                </td>
+                                {displayCols.map((c) => (
+                                  <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums text-muted-foreground">
+                                    {fmtCell(rSrc, c)}
+                                  </td>
+                                ))}
+                              </tr>
+                            );
+                          })}
+                        </Fragment>
                       );
                     })}
                   </Fragment>
