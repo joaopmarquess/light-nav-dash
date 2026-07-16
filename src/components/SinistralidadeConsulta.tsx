@@ -20,9 +20,12 @@ type NumCol = (typeof NUM_COLS)[number];
 type Row = { PERIODO: string; cdpln: number | string; dspln: string } & Record<NumCol, number | string | null>;
 type Group = { dspln: string; children: Row[] } & Record<NumCol, number>;
 
-type SortKey = "dspln" | NumCol;
+type SortKey = "dspln" | NumCol | "SIN";
+type ViewMode = "curta" | "completa";
 
-const DISPLAY_COLS: { key: NumCol; label: string }[] = [
+type ColDef = { key: NumCol | "SIN"; label: string; kind?: "ratio" };
+
+const COLS_COMPLETA: ColDef[] = [
   { key: "rec_tm", label: "TMM" },
   { key: "rec_cpa", label: "Copart." },
   { key: "rec_total", label: "Total Receita" },
@@ -34,7 +37,33 @@ const DISPLAY_COLS: { key: NumCol; label: string }[] = [
   { key: "DEMAIS", label: "Demais" },
   { key: "vrdespesas", label: "Total Despesa" },
   { key: "SALDO", label: "Saldo" },
+  { key: "SIN", label: "SIN.", kind: "ratio" },
 ];
+
+const COLS_CURTA: ColDef[] = [
+  { key: "rec_tm", label: "TMM" },
+  { key: "rec_cpa", label: "Copart." },
+  { key: "rec_total", label: "Total Receita" },
+  { key: "vrdespesas", label: "Total Despesa" },
+  { key: "SALDO", label: "Saldo" },
+  { key: "SIN", label: "SIN.", kind: "ratio" },
+];
+
+const fmtPct = (n: number) =>
+  Number.isFinite(n) ? `${(n * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%` : "-";
+
+const cellValue = (src: Record<NumCol, number>, col: ColDef): number => {
+  if (col.key === "SIN") {
+    const rt = src.rec_total || 0;
+    return rt ? (src.vrdespesas || 0) / rt : 0;
+  }
+  return src[col.key] || 0;
+};
+
+const fmtCell = (src: Record<NumCol, number>, col: ColDef): string => {
+  const v = cellValue(src, col);
+  return col.kind === "ratio" ? fmtPct(v) : fmtNum(v);
+};
 
 const fmtNum = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -51,6 +80,8 @@ const SinistralidadeConsulta = () => {
   const [sortKey, setSortKey] = useState<SortKey>("dspln");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [view, setView] = useState<ViewMode>("curta");
+  const displayCols = view === "curta" ? COLS_CURTA : COLS_COMPLETA;
 
   // Load distinct PERIODO values
   useEffect(() => {
@@ -136,9 +167,11 @@ const SinistralidadeConsulta = () => {
     const base = !q.trim()
       ? groups
       : groups.filter((g) => g.dspln.toLowerCase().includes(q.toLowerCase()));
+    const sinOf = (g: Group) => (g.rec_total ? g.vrdespesas / g.rec_total : 0);
     const sorted = [...base].sort((a, b) => {
       let cmp = 0;
       if (sortKey === "dspln") cmp = a.dspln.localeCompare(b.dspln, "pt-BR");
+      else if (sortKey === "SIN") cmp = sinOf(a) - sinOf(b);
       else cmp = (a[sortKey] || 0) - (b[sortKey] || 0);
       return sortDir === "asc" ? cmp : -cmp;
     });
@@ -192,16 +225,36 @@ const SinistralidadeConsulta = () => {
             {loading ? "Carregando..." : `${filtered.length.toLocaleString("pt-BR")} plano(s)`}
           </div>
         </div>
-        <div className="relative">
-          <Search className="h-4 w-4 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Filtrar..."
-            className="h-9 w-64 pl-8 pr-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-          />
+        <div className="flex items-center gap-3">
+          <div className="inline-flex rounded-md border border-border overflow-hidden text-sm">
+            <button
+              type="button"
+              onClick={() => setView("curta")}
+              className={`px-3 h-9 ${view === "curta" ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-accent/40"}`}
+            >
+              Curta
+            </button>
+            <button
+              type="button"
+              onClick={() => setView("completa")}
+              className={`px-3 h-9 border-l border-border ${view === "completa" ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-accent/40"}`}
+            >
+              Completa
+            </button>
+          </div>
+          <div className="relative">
+            <Search className="h-4 w-4 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Filtrar..."
+              className="h-9 w-64 pl-8 pr-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+          </div>
         </div>
       </div>
+
+
 
       <div className="flex-1 overflow-auto">
         {loading ? (
@@ -224,7 +277,7 @@ const SinistralidadeConsulta = () => {
                 >
                   Nome Plano|Empresa<SortIcon k="dspln" />
                 </th>
-                {DISPLAY_COLS.map((c) => (
+                {displayCols.map((c) => (
                   <th
                     key={c.key}
                     onClick={() => toggleSort(c.key)}
@@ -254,24 +307,28 @@ const SinistralidadeConsulta = () => {
                           <span className="truncate">{g.dspln}</span>
                         </span>
                       </td>
-                      {DISPLAY_COLS.map((c) => (
+                      {displayCols.map((c) => (
                         <td key={c.key} className="px-1 py-1 whitespace-nowrap text-right tabular-nums">
-                          {fmtNum(g[c.key])}
+                          {fmtCell(g, c)}
                         </td>
                       ))}
                     </tr>
-                    {isOpen && g.children.map((r, i) => (
-                      <tr key={`${g.dspln}-${r.cdpln}-${i}`} className="border-b border-border/40 bg-accent/20 text-[0.92em]">
-                        <td className="px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate pl-8 text-muted-foreground" title={String(r.cdpln)}>
-                          cdpln {String(r.cdpln)}
-                        </td>
-                        {DISPLAY_COLS.map((c) => (
-                          <td key={c.key} className="px-1 py-1 whitespace-nowrap text-right tabular-nums text-muted-foreground">
-                            {fmtNum(Number(r[c.key]) || 0)}
+                    {isOpen && g.children.map((r, i) => {
+                      const rSrc = {} as Record<NumCol, number>;
+                      for (const c of NUM_COLS) rSrc[c] = Number(r[c]) || 0;
+                      return (
+                        <tr key={`${g.dspln}-${r.cdpln}-${i}`} className="border-b border-border/40 bg-accent/20 text-[0.92em]">
+                          <td className="px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate pl-8 text-muted-foreground" title={String(r.cdpln)}>
+                            cdpln {String(r.cdpln)}
                           </td>
-                        ))}
-                      </tr>
-                    ))}
+                          {displayCols.map((c) => (
+                            <td key={c.key} className="px-1 py-1 whitespace-nowrap text-right tabular-nums text-muted-foreground">
+                              {fmtCell(rSrc, c)}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
                   </Fragment>
 
                 );
@@ -280,9 +337,9 @@ const SinistralidadeConsulta = () => {
             <tfoot className="sticky bottom-0 bg-card border-t border-border font-semibold">
               <tr>
                 <td className="px-1.5 py-1 text-left">Total</td>
-                {DISPLAY_COLS.map((c) => (
+                {displayCols.map((c) => (
                   <td key={c.key} className="px-1 py-1 text-right tabular-nums">
-                    {fmtNum(totals[c.key])}
+                    {fmtCell(totals, c)}
                   </td>
                 ))}
               </tr>
