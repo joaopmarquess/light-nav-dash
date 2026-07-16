@@ -130,14 +130,15 @@ const SinistralidadeConsulta = () => {
       setLoading(true);
       setError(null);
       setExpanded(new Set());
-      const pageSize = 1000;
+      const pageSize = 500;
       const all: Row[] = [];
       let from = 0;
-      for (let i = 0; i < 2000; i++) {
+      for (let i = 0; i < 4000; i++) {
         const { data, error } = await hostinger
           .from("vw_sinistralidade")
           .select(SELECT)
           .eq("PERIODO", periodo)
+          .order("cdpln", { ascending: true })
           .range(from, from + pageSize - 1);
         if (cancel) return;
         if (error) { setError(error.message); break; }
