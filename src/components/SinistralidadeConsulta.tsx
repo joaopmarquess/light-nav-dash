@@ -86,6 +86,11 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
+  const [qDebounced, setQDebounced] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => setQDebounced(q), 200);
+    return () => clearTimeout(t);
+  }, [q]);
   const [periodos, setPeriodos] = useState<string[]>([]);
   const [periodo, setPeriodo] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("GRUPO");
