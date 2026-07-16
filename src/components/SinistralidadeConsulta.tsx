@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
-import { Loader2, Search, ArrowUp, ArrowDown } from "lucide-react";
+import { Loader2, Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown } from "lucide-react";
 
 const NUM_COLS = [
   "rec_tm",
@@ -17,7 +17,8 @@ const NUM_COLS = [
 ] as const;
 
 type NumCol = (typeof NUM_COLS)[number];
-type Row = { PERIODO: string; dspln: string } & Record<NumCol, number | string | null>;
+type Row = { PERIODO: string; cdpln: number | string; dspln: string } & Record<NumCol, number | string | null>;
+type Group = { dspln: string; children: Row[] } & Record<NumCol, number>;
 
 type SortKey = "dspln" | NumCol;
 
@@ -38,7 +39,7 @@ const DISPLAY_COLS: { key: NumCol; label: string }[] = [
 const fmtNum = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const SELECT = ["PERIODO", "dspln", ...NUM_COLS].join(",");
+const SELECT = ["PERIODO", "cdpln", "dspln", ...NUM_COLS].join(",");
 
 const SinistralidadeConsulta = () => {
   const [rows, setRows] = useState<Row[]>([]);
@@ -49,6 +50,7 @@ const SinistralidadeConsulta = () => {
   const [periodo, setPeriodo] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("dspln");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   // Load distinct PERIODO values
   useEffect(() => {
@@ -68,7 +70,6 @@ const SinistralidadeConsulta = () => {
         from += pageSize;
       }
       const list = Array.from(set).sort((a, b) => {
-        // sort by end date "MM/AAAA a MM/AAAA" -> use second date desc
         const endA = a.split(" a ")[1] ?? a;
         const endB = b.split(" a ")[1] ?? b;
         const [ma, ya] = endA.split("/").map(Number);
@@ -87,6 +88,7 @@ const SinistralidadeConsulta = () => {
     (async () => {
       setLoading(true);
       setError(null);
+      setExpanded(new Set());
       const pageSize = 1000;
       const all: Row[] = [];
       let from = 0;
@@ -110,31 +112,43 @@ const SinistralidadeConsulta = () => {
     return () => { cancel = true; };
   }, [periodo]);
 
+  // Group by dspln
+  const groups = useMemo(() => {
+    const map = new Map<string, Group>();
+    for (const r of rows) {
+      const key = (r.dspln ?? "").trim();
+      let g = map.get(key);
+      if (!g) {
+        g = { dspln: key, children: [] } as Group;
+        for (const c of NUM_COLS) g[c] = 0;
+        map.set(key, g);
+      }
+      g.children.push(r);
+      for (const c of NUM_COLS) {
+        const n = Number(r[c]);
+        if (Number.isFinite(n)) g[c] += n;
+      }
+    }
+    return Array.from(map.values());
+  }, [rows]);
+
   const filtered = useMemo(() => {
     const base = !q.trim()
-      ? rows
-      : rows.filter((r) => (r.dspln ?? "").toLowerCase().includes(q.toLowerCase()));
+      ? groups
+      : groups.filter((g) => g.dspln.toLowerCase().includes(q.toLowerCase()));
     const sorted = [...base].sort((a, b) => {
       let cmp = 0;
-      if (sortKey === "dspln") {
-        cmp = String(a.dspln ?? "").localeCompare(String(b.dspln ?? ""), "pt-BR");
-      } else {
-        cmp = (Number(a[sortKey]) || 0) - (Number(b[sortKey]) || 0);
-      }
+      if (sortKey === "dspln") cmp = a.dspln.localeCompare(b.dspln, "pt-BR");
+      else cmp = (a[sortKey] || 0) - (b[sortKey] || 0);
       return sortDir === "asc" ? cmp : -cmp;
     });
     return sorted;
-  }, [rows, q, sortKey, sortDir]);
+  }, [groups, q, sortKey, sortDir]);
 
   const totals = useMemo(() => {
     const t = {} as Record<NumCol, number>;
     for (const c of NUM_COLS) t[c] = 0;
-    for (const r of filtered) {
-      for (const c of NUM_COLS) {
-        const n = Number(r[c]);
-        if (Number.isFinite(n)) t[c] += n;
-      }
-    }
+    for (const g of filtered) for (const c of NUM_COLS) t[c] += g[c];
     return t;
   }, [filtered]);
 
@@ -146,13 +160,18 @@ const SinistralidadeConsulta = () => {
     }
   };
 
+  const toggleExpand = (key: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
   const SortIcon = ({ k }: { k: SortKey }) =>
     sortKey === k ? (
-      sortDir === "asc" ? (
-        <ArrowUp className="inline h-3 w-3 ml-0.5" />
-      ) : (
-        <ArrowDown className="inline h-3 w-3 ml-0.5" />
-      )
+      sortDir === "asc" ? <ArrowUp className="inline h-3 w-3 ml-0.5" /> : <ArrowDown className="inline h-3 w-3 ml-0.5" />
     ) : null;
 
   return (
@@ -170,7 +189,7 @@ const SinistralidadeConsulta = () => {
             ))}
           </select>
           <div className="text-sm text-muted-foreground">
-            {loading ? "Carregando..." : `${filtered.length.toLocaleString("pt-BR")} registro(s)`}
+            {loading ? "Carregando..." : `${filtered.length.toLocaleString("pt-BR")} plano(s)`}
           </div>
         </div>
         <div className="relative">
@@ -217,18 +236,46 @@ const SinistralidadeConsulta = () => {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((r, i) => (
-                <tr key={i} className="border-b border-border/60 hover:bg-accent/40">
-                  <td className="px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate" title={(r.dspln ?? "").trim()}>
-                    {(r.dspln ?? "").trim()}
-                  </td>
-                  {DISPLAY_COLS.map((c) => (
-                    <td key={c.key} className="px-1 py-1 whitespace-nowrap text-right tabular-nums">
-                      {fmtNum(Number(r[c.key]) || 0)}
-                    </td>
-                  ))}
-                </tr>
-              ))}
+              {filtered.map((g) => {
+                const isOpen = expanded.has(g.dspln);
+                return (
+                  <Fragment key={g.dspln}>
+                    <tr
+                      onClick={() => g.children.length > 1 && toggleExpand(g.dspln)}
+                      className={`border-b border-border/60 hover:bg-accent/40 ${g.children.length > 1 ? "cursor-pointer" : ""}`}
+                    >
+                      <td className="px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate" title={g.dspln}>
+                        <span className="inline-flex items-center gap-1">
+                          {g.children.length > 1 ? (
+                            isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />
+                          ) : (
+                            <span className="w-3.5" />
+                          )}
+                          <span className="truncate">{g.dspln}</span>
+                        </span>
+                      </td>
+                      {DISPLAY_COLS.map((c) => (
+                        <td key={c.key} className="px-1 py-1 whitespace-nowrap text-right tabular-nums">
+                          {fmtNum(g[c.key])}
+                        </td>
+                      ))}
+                    </tr>
+                    {isOpen && g.children.map((r, i) => (
+                      <tr key={`${g.dspln}-${r.cdpln}-${i}`} className="border-b border-border/40 bg-accent/20 text-[0.92em]">
+                        <td className="px-1.5 py-1 text-left w-[30ch] max-w-[30ch] truncate pl-8 text-muted-foreground" title={String(r.cdpln)}>
+                          cdpln {String(r.cdpln)}
+                        </td>
+                        {DISPLAY_COLS.map((c) => (
+                          <td key={c.key} className="px-1 py-1 whitespace-nowrap text-right tabular-nums text-muted-foreground">
+                            {fmtNum(Number(r[c.key]) || 0)}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </Fragment>
+
+                );
+              })}
             </tbody>
             <tfoot className="sticky bottom-0 bg-card border-t border-border font-semibold">
               <tr>
