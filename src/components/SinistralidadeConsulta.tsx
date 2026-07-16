@@ -233,7 +233,34 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
     return Array.from(map.values());
   }, [rows]);
 
+  // Aggregate per beneficiary (codigo + nmcli)
+  const benefs = useMemo(() => {
+    if (mode !== "beneficiario") return [] as Benef[];
+    const map = new Map<string, Benef>();
+    for (const r of rows) {
+      if (r.codigo == null) continue;
+      const codigo = String(r.codigo);
+      const nmcli = r.nmcli ?? "";
+      const key = `${codigo}||${nmcli}`;
+      let b = map.get(key);
+      if (!b) {
+        b = { codigo, nmcli, vida: 1 } as Benef;
+        for (const c of NUM_COLS) b[c] = 0;
+        map.set(key, b);
+      }
+      for (const c of NUM_COLS) {
+        const n = Number(r[c]);
+        if (Number.isFinite(n)) b[c] += n;
+      }
+    }
+    return Array.from(map.values());
+  }, [rows, mode]);
+
+  const sinOfNums = (x: { rec_total: number; vrdespesas: number }) =>
+    x.rec_total ? x.vrdespesas / x.rec_total : 0;
+
   const filtered = useMemo(() => {
+    if (mode === "beneficiario") return [] as Group[];
     const term = q.trim().toLowerCase();
     const base = !term
       ? groups
@@ -241,8 +268,6 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
           g.GRUPO.toLowerCase().includes(term) ||
           g.subgroups.some((s) => String(s.cdpln).toLowerCase().includes(term))
         );
-    const sinOfNums = (x: { rec_total: number; vrdespesas: number }) =>
-      x.rec_total ? x.vrdespesas / x.rec_total : 0;
     const dir = sortDir === "asc" ? 1 : -1;
 
     const cmpGroup = (a: Group, b: Group) => {
@@ -281,11 +306,43 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
       }))
       .sort(cmpGroup);
     return sorted;
-  }, [groups, q, sortKey, sortDir]);
+  }, [groups, q, sortKey, sortDir, mode]);
+
+  const filteredBenefs = useMemo(() => {
+    if (mode !== "beneficiario") return [] as Benef[];
+    const term = q.trim().toLowerCase();
+    const base = !term
+      ? benefs
+      : benefs.filter((b) =>
+          b.codigo.toLowerCase().includes(term) ||
+          b.nmcli.toLowerCase().includes(term)
+        );
+    const dir = sortDir === "asc" ? 1 : -1;
+    const cmp = (a: Benef, b: Benef) => {
+      if (sortKey === "GRUPO") {
+        const la = `${a.codigo} ${a.nmcli}`.trim();
+        const lb = `${b.codigo} ${b.nmcli}`.trim();
+        return la.localeCompare(lb, "pt-BR") * dir;
+      }
+      if (sortKey === "VIDA") return 0;
+      if (sortKey === "SIN") return (sinOfNums(a) - sinOfNums(b)) * dir;
+      return ((a[sortKey] || 0) - (b[sortKey] || 0)) * dir;
+    };
+    return [...base].sort(cmp);
+  }, [benefs, q, sortKey, sortDir, mode]);
 
   const totals = useMemo(() => {
     const t = { vida: 0 } as CellSrc;
     for (const c of NUM_COLS) t[c] = 0;
+    if (mode === "beneficiario") {
+      const codes = new Set<string>();
+      for (const b of filteredBenefs) {
+        for (const c of NUM_COLS) t[c] += b[c];
+        codes.add(b.codigo);
+      }
+      t.vida = codes.size;
+      return t;
+    }
     const codes = new Set<string>();
     for (const g of filtered) {
       for (const c of NUM_COLS) t[c] += g[c];
@@ -293,7 +350,9 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
     }
     t.vida = codes.size;
     return t;
-  }, [filtered]);
+  }, [filtered, filteredBenefs, mode]);
+
+
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
