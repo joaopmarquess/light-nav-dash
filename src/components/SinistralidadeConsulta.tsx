@@ -21,12 +21,10 @@ type Row = {
   PERIODO: string;
   cdpln: number | string;
   dspln: string;
-  codigo: number | string | null;
-  nmcli: string | null;
-  cdpdrcft: number | string | null;
 } & Record<NumCol, number | string | null>;
-type PlanGroup = { cdpln: string; children: Row[] } & Record<NumCol, number>;
+type PlanGroup = { cdpln: string } & Record<NumCol, number>;
 type Group = { dspln: string; plans: PlanGroup[] } & Record<NumCol, number>;
+
 
 type SortKey = "dspln" | NumCol | "SIN";
 type ViewMode = "curta" | "completa";
