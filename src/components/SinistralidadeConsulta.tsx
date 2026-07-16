@@ -70,11 +70,11 @@ const SinistralidadeConsulta = () => {
   useEffect(() => {
     (async () => {
       const [{ data: maxRow }, { data: minRow }] = await Promise.all([
-        hostinger.from("vw_sinistralidade_periodo").select("mabas").order("mabas", { ascending: false }).limit(1),
-        hostinger.from("vw_sinistralidade_periodo").select("mabas").order("mabas", { ascending: true }).limit(1),
+        hostinger.from("vw_sinistralidade_periodo2").select("Periodo2").order("Periodo2", { ascending: false }).limit(1),
+        hostinger.from("vw_sinistralidade_periodo2").select("Periodo2").order("Periodo2", { ascending: true }).limit(1),
       ]);
-      const max = (maxRow?.[0]?.mabas as number) ?? null;
-      const min = (minRow?.[0]?.mabas as number) ?? max;
+      const max = (maxRow?.[0]?.Periodo2 as number) ?? null;
+      const min = (minRow?.[0]?.Periodo2 as number) ?? max;
       if (!max || !min) return;
       const list: number[] = [];
       let y = Math.floor(min / 100);
@@ -103,9 +103,9 @@ const SinistralidadeConsulta = () => {
       let from = 0;
       for (let i = 0; i < maxPages; i++) {
         const { data, error } = await hostinger
-          .from("vw_sinistralidade_periodo")
+          .from("vw_sinistralidade_periodo2")
           .select(COLS.join(","))
-          .eq("mabas", periodo)
+          .eq("Periodo2", periodo)
           .range(from, from + pageSize - 1);
         if (cancel) return;
         if (error) { setError(error.message); break; }
