@@ -275,7 +275,7 @@ const SinistralidadeConsulta = () => {
               <tr>
                 <th
                   onClick={() => toggleSort("dspln")}
-                  className="font-medium text-muted-foreground px-1 py-0.5 text-left ${nameColCls} truncate cursor-pointer select-none"
+                  className={`font-medium text-muted-foreground px-1 py-0.5 text-left ${nameColCls} truncate cursor-pointer select-none`}
                 >
                   Nome Plano|Empresa<SortIcon k="dspln" />
                 </th>
