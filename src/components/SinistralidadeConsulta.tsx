@@ -463,7 +463,27 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
               </tr>
             </thead>
             <tbody>
-              {filtered.map((g) => {
+              {mode === "beneficiario" ? (
+                filteredBenefs.map((b, i) => {
+                  const label = `${b.codigo}${b.codigo && b.nmcli ? " " : ""}${b.nmcli}`.trim();
+                  return (
+                    <tr key={`${b.codigo}-${i}`} className="border-b border-border/50 hover:bg-accent/40">
+                      <td className={`px-1 py-0.5 text-left ${nameColCls} truncate`} title={label}>
+                        <span className="inline-flex items-center gap-1">
+                          <span className="w-3.5" />
+                          <span className="truncate">{label}</span>
+                        </span>
+                      </td>
+                      {displayCols.map((c) => (
+                        <td key={c.key} className={`${numCellCls}${boldFor(c.key)}`}>
+                          {fmtCell(b, c)}
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })
+              ) : (
+                filtered.map((g) => {
                 const isOpen = expanded.has(g.GRUPO);
                 const hasSubs = g.subgroups.length > 1 || (g.subgroups[0]?.children.length ?? 0) > 0;
                 return (
@@ -538,7 +558,8 @@ const SinistralidadeConsulta = ({ mode = "plano" }: { mode?: "plano" | "benefici
                     })}
                   </Fragment>
                 );
-              })}
+                })
+              )}
             </tbody>
             <tfoot className="sticky bottom-0 bg-card border-t border-border font-semibold">
               <tr>
