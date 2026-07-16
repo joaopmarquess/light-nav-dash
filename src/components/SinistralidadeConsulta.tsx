@@ -299,7 +299,7 @@ const SinistralidadeConsulta = () => {
                       onClick={() => g.children.length > 1 && toggleExpand(g.dspln)}
                       className={`border-b border-border/60 hover:bg-accent/40 ${g.children.length > 1 ? "cursor-pointer" : ""}`}
                     >
-                      <td className="px-1 py-0.5 text-left ${nameColCls} truncate" title={g.dspln}>
+                      <td className={`px-1 py-0.5 text-left ${nameColCls} truncate`} title={g.dspln}>
                         <span className="inline-flex items-center gap-1">
                           {g.children.length > 1 ? (
                             isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />
