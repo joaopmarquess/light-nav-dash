@@ -81,7 +81,7 @@ const SELECT = ["PERIODO", "cdpln", "GRUPO", "codigo", "nmcli", ...NUM_COLS].joi
 
 const SinistralidadeConsulta = () => {
   const [rows, setRows] = useState<Row[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [periodos, setPeriodos] = useState<string[]>([]);
