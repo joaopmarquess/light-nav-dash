@@ -17,8 +17,9 @@ const NUM_COLS = [
 ] as const;
 
 type NumCol = (typeof NUM_COLS)[number];
-type Row = { PERIODO: string; cdpln: number | string; dspln: string } & Record<NumCol, number | string | null>;
-type Group = { dspln: string; children: Row[] } & Record<NumCol, number>;
+type Row = { PERIODO: string; cdpln: number | string; dspln: string; codigo: string | null; nmcli: string | null } & Record<NumCol, number | string | null>;
+type SubGroup = { cdpln: string; children: Row[] } & Record<NumCol, number>;
+type Group = { dspln: string; subgroups: SubGroup[] } & Record<NumCol, number>;
 
 type SortKey = "dspln" | NumCol | "SIN";
 type ViewMode = "curta" | "completa";
@@ -68,7 +69,7 @@ const fmtCell = (src: Record<NumCol, number>, col: ColDef): string => {
 const fmtNum = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const SELECT = ["PERIODO", "cdpln", "dspln", ...NUM_COLS].join(",");
+const SELECT = ["PERIODO", "cdpln", "dspln", "codigo", "nmcli", ...NUM_COLS].join(",");
 
 const SinistralidadeConsulta = () => {
   const [rows, setRows] = useState<Row[]>([]);
@@ -145,22 +146,44 @@ const SinistralidadeConsulta = () => {
     return () => { cancel = true; };
   }, [periodo]);
 
-  // Group by dspln
+  // Group by dspln, then by cdpln
   const groups = useMemo(() => {
     const map = new Map<string, Group>();
     for (const r of rows) {
       const key = (r.dspln ?? "").trim();
       let g = map.get(key);
       if (!g) {
-        g = { dspln: key, children: [] } as Group;
+        g = { dspln: key, subgroups: [] } as Group;
         for (const c of NUM_COLS) g[c] = 0;
         map.set(key, g);
       }
-      g.children.push(r);
       for (const c of NUM_COLS) {
         const n = Number(r[c]);
         if (Number.isFinite(n)) g[c] += n;
       }
+    }
+    // build subgroups per dspln
+    const subMap = new Map<string, Map<string, SubGroup>>();
+    for (const r of rows) {
+      const dk = (r.dspln ?? "").trim();
+      const ck = String(r.cdpln ?? "");
+      let inner = subMap.get(dk);
+      if (!inner) { inner = new Map(); subMap.set(dk, inner); }
+      let sg = inner.get(ck);
+      if (!sg) {
+        sg = { cdpln: ck, children: [] } as SubGroup;
+        for (const c of NUM_COLS) sg[c] = 0;
+        inner.set(ck, sg);
+      }
+      sg.children.push(r);
+      for (const c of NUM_COLS) {
+        const n = Number(r[c]);
+        if (Number.isFinite(n)) sg[c] += n;
+      }
+    }
+    for (const [dk, inner] of subMap) {
+      const g = map.get(dk);
+      if (g) g.subgroups = Array.from(inner.values());
     }
     return Array.from(map.values());
   }, [rows]);
@@ -171,7 +194,13 @@ const SinistralidadeConsulta = () => {
       ? groups
       : groups.filter((g) =>
           g.dspln.toLowerCase().includes(term) ||
-          g.children.some((r) => String(r.cdpln ?? "").toLowerCase().includes(term))
+          g.subgroups.some((s) =>
+            String(s.cdpln).toLowerCase().includes(term) ||
+            s.children.some((r) =>
+              String(r.codigo ?? "").toLowerCase().includes(term) ||
+              String(r.nmcli ?? "").toLowerCase().includes(term)
+            )
+          )
         );
     const sinOf = (g: Group) => (g.rec_total ? g.vrdespesas / g.rec_total : 0);
     const sorted = [...base].sort((a, b) => {
@@ -297,15 +326,16 @@ const SinistralidadeConsulta = () => {
             <tbody>
               {filtered.map((g) => {
                 const isOpen = expanded.has(g.dspln);
+                const hasSubs = g.subgroups.length > 1 || (g.subgroups[0]?.children.length ?? 0) > 0;
                 return (
                   <Fragment key={g.dspln}>
                     <tr
-                      onClick={() => g.children.length > 1 && toggleExpand(g.dspln)}
-                      className={`border-b border-border/60 hover:bg-accent/40 ${g.children.length > 1 ? "cursor-pointer" : ""}`}
+                      onClick={() => hasSubs && toggleExpand(g.dspln)}
+                      className={`border-b border-border/60 hover:bg-accent/40 ${hasSubs ? "cursor-pointer" : ""}`}
                     >
                       <td className={`px-1 py-0.5 text-left ${nameColCls} truncate`} title={g.dspln}>
                         <span className="inline-flex items-center gap-1">
-                          {g.children.length > 1 ? (
+                          {hasSubs ? (
                             isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />
                           ) : (
                             <span className="w-3.5" />
@@ -319,24 +349,55 @@ const SinistralidadeConsulta = () => {
                         </td>
                       ))}
                     </tr>
-                    {isOpen && g.children.map((r, i) => {
-                      const rSrc = {} as Record<NumCol, number>;
-                      for (const c of NUM_COLS) rSrc[c] = Number(r[c]) || 0;
+                    {isOpen && g.subgroups.map((sg) => {
+                      const subKey = `${g.dspln}||${sg.cdpln}`;
+                      const subOpen = expanded.has(subKey);
+                      const subHasChildren = sg.children.length > 0;
+                      const sgSrc = {} as Record<NumCol, number>;
+                      for (const c of NUM_COLS) sgSrc[c] = sg[c];
                       return (
-                        <tr key={`${g.dspln}-${r.cdpln}-${i}`} className="border-b border-border/40 bg-accent/20 text-[0.92em]">
-                          <td className={`px-1 py-0.5 text-left ${nameColCls} truncate pl-8 text-muted-foreground`} title={String(r.cdpln)}>
-                            {String(r.cdpln)}
-                          </td>
-                          {displayCols.map((c) => (
-                            <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums text-muted-foreground">
-                              {fmtCell(rSrc, c)}
+                        <Fragment key={subKey}>
+                          <tr
+                            onClick={() => subHasChildren && toggleExpand(subKey)}
+                            className={`border-b border-border/50 bg-accent/20 hover:bg-accent/40 ${subHasChildren ? "cursor-pointer" : ""}`}
+                          >
+                            <td className={`px-1 py-0.5 text-left ${nameColCls} truncate pl-6`} title={sg.cdpln}>
+                              <span className="inline-flex items-center gap-1">
+                                {subHasChildren ? (
+                                  subOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />
+                                ) : (
+                                  <span className="w-3.5" />
+                                )}
+                                <span className="truncate">{sg.cdpln}</span>
+                              </span>
                             </td>
-                          ))}
-                        </tr>
+                            {displayCols.map((c) => (
+                              <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums">
+                                {fmtCell(sgSrc, c)}
+                              </td>
+                            ))}
+                          </tr>
+                          {subOpen && sg.children.map((r, i) => {
+                            const rSrc = {} as Record<NumCol, number>;
+                            for (const c of NUM_COLS) rSrc[c] = Number(r[c]) || 0;
+                            const label = `${r.codigo ?? ""}${r.codigo && r.nmcli ? " " : ""}${r.nmcli ?? ""}`.trim();
+                            return (
+                              <tr key={`${subKey}-${r.codigo ?? ""}-${i}`} className="border-b border-border/40 bg-accent/10 text-[0.92em]">
+                                <td className={`px-1 py-0.5 text-left ${nameColCls} truncate pl-12 text-muted-foreground`} title={label}>
+                                  {label}
+                                </td>
+                                {displayCols.map((c) => (
+                                  <td key={c.key} className="px-0.5 py-0.5 whitespace-nowrap text-right tabular-nums text-muted-foreground">
+                                    {fmtCell(rSrc, c)}
+                                  </td>
+                                ))}
+                              </tr>
+                            );
+                          })}
+                        </Fragment>
                       );
                     })}
                   </Fragment>
-
                 );
               })}
             </tbody>
