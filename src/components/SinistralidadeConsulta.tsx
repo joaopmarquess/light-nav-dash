@@ -187,11 +187,11 @@ const SinistralidadeConsulta = () => {
           <label className="text-sm text-muted-foreground">Base</label>
           <select
             value={periodo ?? ""}
-            onChange={(e) => setPeriodo(Number(e.target.value))}
+            onChange={(e) => setPeriodo(e.target.value)}
             className="h-9 px-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
           >
             {periodos.map((p) => (
-              <option key={p} value={p}>{fmtPeriodo(p)}</option>
+              <option key={p} value={p}>{p}</option>
             ))}
           </select>
           <div className="text-sm text-muted-foreground">
