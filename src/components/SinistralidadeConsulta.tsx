@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
-import { Loader2, Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown, ChevronLeft } from "lucide-react";
+import { Loader2, Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown } from "lucide-react";
 
 const NUM_COLS = [
   "rec_tm",
@@ -90,16 +90,7 @@ const SinistralidadeConsulta = () => {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [view, setView] = useState<ViewMode>("curta");
-  const [recCollapsed, setRecCollapsed] = useState(false);
-  const [despCollapsed, setDespCollapsed] = useState(false);
-  const REC_HIDE = new Set<string>(["rec_tm", "rec_cpa"]);
-  const DESP_HIDE = new Set<string>(["consulta", "emergencia", "exame", "terapia", "internacao", "DEMAIS"]);
-  const baseCols = view === "curta" ? COLS_CURTA : COLS_COMPLETA;
-  const displayCols = baseCols.filter((c) => {
-    if (recCollapsed && REC_HIDE.has(c.key)) return false;
-    if (despCollapsed && DESP_HIDE.has(c.key)) return false;
-    return true;
-  });
+  const displayCols = view === "curta" ? COLS_CURTA : COLS_COMPLETA;
   const nameColCls = view === "curta" ? "w-[30ch] max-w-[30ch]" : "w-[18ch] max-w-[18ch]";
   const numCellCls = view === "curta" ? "px-0.5 py-0.5 w-[8ch] whitespace-nowrap text-right tabular-nums" : "px-0.5 py-0.5 w-[7ch] whitespace-nowrap text-right tabular-nums";
 
@@ -358,34 +349,15 @@ const SinistralidadeConsulta = () => {
                 >
                   Nome Plano|Empresa<SortIcon k="GRUPO" />
                 </th>
-                {displayCols.map((c) => {
-                  const isRec = c.key === "rec_total";
-                  const isDesp = c.key === "vrdespesas";
-                  const toggle = isRec
-                    ? { collapsed: recCollapsed, set: setRecCollapsed }
-                    : isDesp
-                    ? { collapsed: despCollapsed, set: setDespCollapsed }
-                    : null;
-                  return (
-                    <th
-                      key={c.key}
-                      onClick={() => toggleSort(c.key)}
-                      className={`font-medium text-muted-foreground cursor-pointer select-none ${numCellCls}`}
-                    >
-                      {toggle && (
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); toggle.set(!toggle.collapsed); }}
-                          className="inline-flex items-center align-middle mr-0.5 text-muted-foreground hover:text-foreground"
-                          title={toggle.collapsed ? "Expandir" : "Recolher"}
-                        >
-                          {toggle.collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
-                        </button>
-                      )}
-                      {c.label}<SortIcon k={c.key} />
-                    </th>
-                  );
-                })}
+                {displayCols.map((c) => (
+                  <th
+                    key={c.key}
+                    onClick={() => toggleSort(c.key)}
+                    className={`font-medium text-muted-foreground cursor-pointer select-none ${numCellCls}`}
+                  >
+                    {c.label}<SortIcon k={c.key} />
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
