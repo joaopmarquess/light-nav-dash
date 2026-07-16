@@ -20,7 +20,8 @@ type NumCol = (typeof NUM_COLS)[number];
 type Row = { PERIODO: string; cdpln: number | string; dspln: string } & Record<NumCol, number | string | null>;
 type Group = { dspln: string; children: Row[] } & Record<NumCol, number>;
 
-type SortKey = "dspln" | NumCol;
+type SortKey = "dspln" | NumCol | "SIN";
+type ViewMode = "curta" | "completa";
 
 type ColDef = { key: NumCol | "SIN"; label: string; kind?: "ratio" };
 
