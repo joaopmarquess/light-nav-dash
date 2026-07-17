@@ -98,6 +98,8 @@ const menuItems: MenuItem[] = [
     icon: Percent,
     label: "Sinistralidade",
     children: [
+      { icon: Building2, label: "Empresa" },
+      { icon: UserCheck, label: "Beneficiário" },
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
   },
