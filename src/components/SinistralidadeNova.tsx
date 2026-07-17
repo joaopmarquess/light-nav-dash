@@ -356,7 +356,7 @@ export default function SinistralidadeNova({ mode }: Props) {
                               </tr>
                             );
                           })}
-                      </>
+                      </Fragment>
                     );
                   })
                 : sortedFlat.map((r, i) => {
