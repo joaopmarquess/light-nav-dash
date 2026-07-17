@@ -330,7 +330,7 @@ export default function SinistralidadeNova({ mode }: Props) {
                     const children = Array.from(g.children.values());
                     const sortedChildren = [...children].sort((a, b) => cmpAgg(a, b));
                     return (
-                      <>
+                      <Fragment key={g.key}>
                         <tr
                           key={g.key}
                           className="border-b border-border/50 hover:bg-accent/40 cursor-pointer font-semibold"
