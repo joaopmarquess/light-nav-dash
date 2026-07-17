@@ -321,6 +321,10 @@ const Index = () => {
           ) : active === "__removed_sin__" ? (
             <div />
 
+          ) : active === "Empresa" ? (
+            <SinistralidadeNova mode="empresa" />
+          ) : active === "Beneficiário" ? (
+            <SinistralidadeNova mode="beneficiario" />
           ) : active === "oculto.Empresa" ? (
             <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex items-center justify-center text-muted-foreground text-sm">
               Submenu oculto — processamento suspenso.
