@@ -342,7 +342,8 @@ export default function SinistralidadeNova({ mode }: Props) {
     const tipo = agg("Tipo_Plano_Contratacao").sort((a, b) => b.VIDAS - a.VIDAS);
     const contratacao = agg("Contratacao").sort((a, b) => b.VIDAS - a.VIDAS);
     return { recuperacao, tipo, contratacao };
-  }, [rows, mode]);
+  }, [aggRows]);
+
 
 
   const containerCls =
