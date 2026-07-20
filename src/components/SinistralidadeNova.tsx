@@ -192,28 +192,25 @@ export default function SinistralidadeNova({ mode }: Props) {
         setTotalCount(all.length);
         setLoading(false);
       } else {
-        // Server-side paginated for beneficiario
-        const sortCol =
-          sortKey === "NAME" ? "nmcli" : sortKey === "VIDA" ? "VIDAS" : (sortKey as string);
-        let qb = hostinger
-          .from(table)
-          .select("*", { count: "exact" })
-          .order(sortCol, { ascending: sortDir === "asc" })
-          .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
-        if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
-        if (debouncedQ) {
-          const like = `%${debouncedQ}%`;
-          qb = qb.or(`nmcli.ilike.${like},codigo.ilike.${like},cdpln::text.ilike.${like}`);
+        // Load ALL rows for beneficiario (client-side scroll, no pagination)
+        const all: Row[] = [];
+        const pageSize = 1000;
+        for (let from = 0; ; from += pageSize) {
+          let qb = hostinger.from(table).select("*").range(from, from + pageSize - 1);
+          if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
+          if (debouncedQ) {
+            const like = `%${debouncedQ}%`;
+            qb = qb.or(`nmcli.ilike.${like},codigo.ilike.${like},cdpln::text.ilike.${like}`);
+          }
+          const { data, error } = await qb;
+          if (!alive) return;
+          if (error) break;
+          all.push(...((data ?? []) as Row[]));
+          if (!data || data.length < pageSize) break;
         }
-        const { data, count, error } = await qb;
         if (!alive) return;
-        if (error) {
-          setRows([]);
-          setTotalCount(0);
-        } else {
-          setRows((data ?? []) as Row[]);
-          setTotalCount(count ?? 0);
-        }
+        setRows(all);
+        setTotalCount(all.length);
         setLoading(false);
       }
     })();
