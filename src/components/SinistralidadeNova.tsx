@@ -293,7 +293,7 @@ export default function SinistralidadeNova({ mode }: Props) {
 
   // Aggregations for bar charts (empresa mode)
   const chartData = useMemo(() => {
-    if (mode !== "empresa") return { recuperacao: [], tipo: [], cidade: [] };
+    if (mode !== "empresa") return { recuperacao: [], tipo: [], contratacao: [] };
     const agg = (field: string) => {
       const m = new Map<string, { name: string; VIDAS: number; SALDO: number }>();
       for (const r of rows) {
