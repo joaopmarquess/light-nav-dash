@@ -84,6 +84,8 @@ export default function SinistralidadeNova({ mode }: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+  const [aggRows, setAggRows] = useState<Row[]>([]);
+
 
   // Debounce search
   useEffect(() => {
@@ -114,7 +116,33 @@ export default function SinistralidadeNova({ mode }: Props) {
     };
   }, [table]);
 
-  // Load rows
+  // Load aggregation source (empresa table) filtered by periodo — feeds matrices in both modes
+  useEffect(() => {
+    if (periodo === null) return;
+    let alive = true;
+    (async () => {
+      const all: Row[] = [];
+      const pageSize = 1000;
+      for (let from = 0; ; from += pageSize) {
+        let qb = hostinger
+          .from("sinistralidade_empresa")
+          .select("Recuperacao,Tipo_Plano_Contratacao,Contratacao,VIDAS,SALDO")
+          .range(from, from + pageSize - 1);
+        if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
+        const { data, error } = await qb;
+        if (error || !data || data.length === 0) break;
+        all.push(...(data as Row[]));
+        if (data.length < pageSize) break;
+      }
+      if (!alive) return;
+      setAggRows(all);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [periodo]);
+
+
   useEffect(() => {
     if (periodo === null) return;
     let alive = true;
@@ -293,10 +321,12 @@ export default function SinistralidadeNova({ mode }: Props) {
 
   // Aggregations for bar charts (empresa mode)
   const chartData = useMemo(() => {
-    if (mode !== "empresa") return { recuperacao: [], tipo: [], cidade: [] };
+    const source = aggRows;
+
     const agg = (field: string) => {
       const m = new Map<string, { name: string; VIDAS: number; SALDO: number }>();
-      for (const r of rows) {
+      for (const r of source) {
+
         const key = String((r as any)[field] ?? "(N/D)") || "(N/D)";
         let e = m.get(key);
         if (!e) {
@@ -312,7 +342,8 @@ export default function SinistralidadeNova({ mode }: Props) {
     const tipo = agg("Tipo_Plano_Contratacao").sort((a, b) => b.VIDAS - a.VIDAS);
     const contratacao = agg("Contratacao").sort((a, b) => b.VIDAS - a.VIDAS);
     return { recuperacao, tipo, contratacao };
-  }, [rows, mode]);
+  }, [aggRows]);
+
 
 
   const containerCls =
