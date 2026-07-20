@@ -84,6 +84,8 @@ export default function SinistralidadeNova({ mode }: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+  const [aggRows, setAggRows] = useState<Row[]>([]);
+
 
   // Debounce search
   useEffect(() => {
