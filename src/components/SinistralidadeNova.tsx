@@ -77,8 +77,9 @@ export default function SinistralidadeNova({ mode }: Props) {
       const { data } = await hostinger.rpc("sinistralidade_periodos");
       if (!alive) return;
       const uniq: string[] = Array.from(
-        new Set((data ?? []).map((r: any) => String(r.PERIODO ?? "")).filter(Boolean)),
-      ).sort().reverse();
+        new Set(((data ?? []) as any[]).map((r) => String(r.PERIODO ?? "")).filter(Boolean)),
+      );
+      uniq.sort().reverse();
       setPeriodos(uniq);
       setPeriodo(uniq[0] ?? "__ALL__");
     })();
