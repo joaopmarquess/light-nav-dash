@@ -232,7 +232,7 @@ export default function SinistralidadeNova({ mode }: Props) {
       t.vida = totalCount;
     }
     return t;
-  }, [filteredGroups, rows, mode]);
+  }, [filteredGroups, rows, mode, totalCount]);
 
   const onSort = (k: ColDef["key"] | "NAME") => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
