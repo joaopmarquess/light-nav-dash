@@ -322,7 +322,7 @@ export default function SinistralidadeNova({ mode }: Props) {
             <thead className="sticky top-0 bg-card z-10">
               <tr className="border-b border-border">
                 <th
-                  className="px-2 py-1.5 text-left font-semibold cursor-pointer select-none"
+                  className="px-2 py-1.5 text-left font-semibold cursor-pointer select-none w-[220px] max-w-[220px]"
                   onClick={() => onSort("NAME")}
                 >
                   {firstColLabel} {arrow("NAME")}
