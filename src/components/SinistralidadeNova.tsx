@@ -512,20 +512,27 @@ export default function SinistralidadeNova({ mode }: Props) {
 
   const cidadeData = useMemo(() => {
     const m = new Map<string, { name: string; VIDAS: number }>();
+    let noneVidas = 0;
     for (const r of cidadeRows) {
-      const key = String((r as any).CIDADE_OFICIAL ?? "(N/D)") || "(N/D)";
+      const raw = (r as any).CIDADE_OFICIAL;
+      const key = String(raw ?? "(N/D)") || "(N/D)";
+      const v = Number((r as any).VIDAS) || 0;
+      if (raw == null || key === "None" || key === "(N/D)") {
+        noneVidas += v;
+        continue;
+      }
       let e = m.get(key);
       if (!e) {
         e = { name: key, VIDAS: 0 };
         m.set(key, e);
       }
-      e.VIDAS += Number((r as any).VIDAS) || 0;
+      e.VIDAS += v;
     }
     const arr = Array.from(m.values()).sort((a, b) => b.VIDAS - a.VIDAS);
     const top = arr.slice(0, 5);
-    const rest = arr.slice(5);
-    if (rest.length > 0) {
-      top.push({ name: "DEMAIS", VIDAS: rest.reduce((s, r) => s + r.VIDAS, 0) });
+    const restVidas = arr.slice(5).reduce((s, r) => s + r.VIDAS, 0) + noneVidas;
+    if (restVidas > 0) {
+      top.push({ name: "DEMAIS", VIDAS: restVidas });
     }
     return top;
   }, [cidadeRows]);
