@@ -38,6 +38,15 @@ const METRIC_COLS: ColDef[] = [
   { key: "SIN", label: "SIN.", kind: "ratio" },
 ];
 
+const FILTER_COLS = [
+  "TIPO_CONTRATACAO",
+  "CIDADE_PLANO",
+  "UF_PLANO",
+  "Contratacao",
+  "Tipo_Plano_Contratacao",
+  "Recuperacao",
+] as const;
+
 const fmtNum = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtInt = (n: number) => Math.round(n).toLocaleString("pt-BR");
@@ -74,6 +83,7 @@ export default function SinistralidadeNova({ mode }: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+  const [filters, setFilters] = useState<Record<string, string>>({});
 
   // Debounce search
   useEffect(() => {
@@ -157,11 +167,33 @@ export default function SinistralidadeNova({ mode }: Props) {
     };
   }, [periodo, table, mode, page, sortKey, sortDir, debouncedQ]);
 
+  // Distinct values for each filter dropdown (from currently loaded rows)
+  const filterOptions = useMemo(() => {
+    const map: Record<string, Set<string>> = {};
+    for (const c of FILTER_COLS) map[c] = new Set();
+    for (const r of rows) {
+      for (const c of FILTER_COLS) {
+        const v = r[c];
+        if (v !== null && v !== undefined && String(v).trim() !== "") map[c].add(String(v));
+      }
+    }
+    const out: Record<string, string[]> = {};
+    for (const c of FILTER_COLS) out[c] = Array.from(map[c]).sort((a, b) => a.localeCompare(b, "pt-BR"));
+    return out;
+  }, [rows]);
+
+  // Apply column filters to rows before aggregation
+  const filteredRows = useMemo(() => {
+    const active = Object.entries(filters).filter(([, v]) => v);
+    if (active.length === 0) return rows;
+    return rows.filter((r) => active.every(([k, v]) => String(r[k] ?? "") === v));
+  }, [rows, filters]);
+
   // Empresa: aggregate by GRUPO (parent) with cdpln children
   const groups = useMemo(() => {
     if (mode !== "empresa") return [];
     const map = new Map<string, Agg & { children: Map<string, Agg & { dspln: string }> }>();
-    for (const r of rows) {
+    for (const r of filteredRows) {
       const g = String(r.GRUPO ?? "(sem grupo)");
       const cd = String(r.cdpln ?? "");
       const vidas = Number(r.VIDAS) || 0;
@@ -183,7 +215,7 @@ export default function SinistralidadeNova({ mode }: Props) {
       for (const c of NUM_COLS) child.nums[c] += Number(r[c]) || 0;
     }
     return Array.from(map.values());
-  }, [rows, mode]);
+  }, [filteredRows, mode]);
 
   const term = debouncedQ.toLowerCase();
 
@@ -283,7 +315,7 @@ export default function SinistralidadeNova({ mode }: Props) {
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
-      <div className="flex items-center gap-3 p-3 border-b border-border">
+      <div className="flex flex-wrap items-center gap-2 p-3 border-b border-border">
         <select
           value={periodo ?? ""}
           onChange={(e) => setPeriodo(e.target.value)}
@@ -296,7 +328,26 @@ export default function SinistralidadeNova({ mode }: Props) {
             </option>
           ))}
         </select>
-        <div className="relative flex-1 max-w-md">
+        {mode === "empresa" &&
+          FILTER_COLS.map((c) => (
+            <select
+              key={c}
+              value={filters[c] ?? ""}
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, [c]: e.target.value }))
+              }
+              className="h-9 px-2 rounded-md border border-border bg-background text-xs max-w-[160px]"
+              title={c}
+            >
+              <option value="">{c}</option>
+              {(filterOptions[c] ?? []).map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+          ))}
+        <div className="relative flex-1 min-w-[180px] max-w-md">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             value={q}
@@ -309,6 +360,7 @@ export default function SinistralidadeNova({ mode }: Props) {
           {rowCount.toLocaleString("pt-BR")} {mode === "empresa" ? "grupos" : "linhas"}
         </span>
       </div>
+
 
       <div className="flex-1 overflow-auto">
         {loading ? (
