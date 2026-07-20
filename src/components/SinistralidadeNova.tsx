@@ -65,6 +65,8 @@ export default function SinistralidadeNova({ mode }: Props) {
   const table = TABLE[mode];
   const [periodos, setPeriodos] = useState<string[]>([]);
   const [periodo, setPeriodo] = useState<string | null>(null);
+  const [tipos, setTipos] = useState<string[]>([]);
+  const [tipo, setTipo] = useState<string>("__ALL__");
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
