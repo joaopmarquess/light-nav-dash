@@ -507,41 +507,6 @@ export default function SinistralidadeNova({ mode }: Props) {
         )}
       </div>
 
-      {mode === "beneficiario" && !loading && totalCount > 0 && (
-        <div className="flex items-center justify-end gap-2 p-2 border-t border-border text-xs">
-          <span className="text-muted-foreground mr-2">
-            Página {page + 1} de {totalPages.toLocaleString("pt-BR")} · {totalCount.toLocaleString("pt-BR")} linhas
-          </span>
-          <button
-            onClick={() => setPage(0)}
-            disabled={page === 0}
-            className="h-7 w-7 flex items-center justify-center rounded border border-border disabled:opacity-40"
-          >
-            <ChevronsLeft className="h-3 w-3" />
-          </button>
-          <button
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
-            className="h-7 w-7 flex items-center justify-center rounded border border-border disabled:opacity-40"
-          >
-            <ChevronLeft className="h-3 w-3" />
-          </button>
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-            disabled={page >= totalPages - 1}
-            className="h-7 w-7 flex items-center justify-center rounded border border-border disabled:opacity-40"
-          >
-            <ChevronRight className="h-3 w-3" />
-          </button>
-          <button
-            onClick={() => setPage(totalPages - 1)}
-            disabled={page >= totalPages - 1}
-            className="h-7 w-7 flex items-center justify-center rounded border border-border disabled:opacity-40"
-          >
-            <ChevronsRight className="h-3 w-3" />
-          </button>
-        </div>
-      )}
     </section>
   );
 
