@@ -498,4 +498,66 @@ export default function SinistralidadeNova({ mode }: Props) {
       )}
     </section>
   );
+
+  if (mode !== "empresa") return mainSection;
+
+  const fmtCompact = (n: number) => {
+    const abs = Math.abs(n);
+    if (abs >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+    if (abs >= 1_000) return `${(n / 1_000).toFixed(0)}k`;
+    return String(Math.round(n));
+  };
+
+  const ChartCard = ({
+    title,
+    data,
+  }: {
+    title: string;
+    data: { name: string; VIDAS: number; SALDO: number }[];
+  }) => (
+    <div className="bg-card rounded-xl border border-border shadow-sm flex flex-col overflow-hidden">
+      <div className="px-3 py-2 border-b border-border text-xs font-semibold">{title}</div>
+      <div className="flex-1 p-2 min-h-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 30 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis
+              dataKey="name"
+              tick={{ fontSize: 10 }}
+              angle={-25}
+              textAnchor="end"
+              interval={0}
+              height={40}
+            />
+            <YAxis yAxisId="left" tick={{ fontSize: 10 }} tickFormatter={fmtCompact} />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              tick={{ fontSize: 10 }}
+              tickFormatter={fmtCompact}
+            />
+            <Tooltip
+              formatter={(v: number, name: string) =>
+                name === "VIDAS" ? fmtInt(v) : fmtNum(v)
+              }
+            />
+            <Legend wrapperStyle={{ fontSize: 10 }} />
+            <Bar yAxisId="left" dataKey="VIDAS" fill="hsl(var(--primary))" />
+            <Bar yAxisId="right" dataKey="SALDO" fill="hsl(var(--chart-2, 210 80% 50%))" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-3 h-[calc(100vh-9rem)]">
+      {mainSection}
+      <div className="grid grid-cols-3 gap-3 flex-1 min-h-0">
+        <ChartCard title="Recuperação — VIDAS e SALDO" data={chartData.recuperacao} />
+        <ChartCard title="Tipo Plano Contratação — VIDAS e SALDO" data={chartData.tipo} />
+        <ChartCard title="Cidade Plano (Top 4 + Demais) — VIDAS e SALDO" data={chartData.cidade} />
+      </div>
+    </div>
+  );
 }
