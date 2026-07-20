@@ -227,12 +227,12 @@ export default function SinistralidadeNova({ mode }: Props) {
       }
     } else {
       for (const r of rows) {
-        t.vida += Number(r.VIDAS) || 0;
         for (const c of NUM_COLS) t[c] += Number(r[c]) || 0;
       }
+      t.vida = totalCount;
     }
     return t;
-  }, [filteredGroups, rows, mode]);
+  }, [filteredGroups, rows, mode, totalCount]);
 
   const onSort = (k: ColDef["key"] | "NAME") => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
