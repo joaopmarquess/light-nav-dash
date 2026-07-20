@@ -617,7 +617,7 @@ export default function SinistralidadeNova({ mode }: Props) {
     return (
       <div className="flex flex-col gap-3 h-[calc(100vh-9rem)]">
         {mainSection}
-        <div className="flex-1 min-h-0 max-w-2xl">
+        <div className="flex-1 min-h-0">
           <CidadeCard />
         </div>
       </div>
