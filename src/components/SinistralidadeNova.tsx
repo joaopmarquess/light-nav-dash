@@ -183,7 +183,7 @@ export default function SinistralidadeNova({ mode }: Props) {
     return () => {
       alive = false;
     };
-  }, [periodo, table, mode, page, sortKey, sortDir, debouncedQ]);
+  }, [periodo, tipo, table, mode, page, sortKey, sortDir, debouncedQ]);
 
   // Empresa: aggregate by GRUPO (parent) with cdpln children
   const groups = useMemo(() => {
