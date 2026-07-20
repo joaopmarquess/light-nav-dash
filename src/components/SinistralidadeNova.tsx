@@ -143,6 +143,7 @@ export default function SinistralidadeNova({ mode }: Props) {
         for (let from = 0; ; from += pageSize) {
           let qb = hostinger.from(table).select("*").range(from, from + pageSize - 1);
           if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
+          if (tipo !== "__ALL__") qb = qb.eq("TIPO_CONTRATACAO", tipo);
           const { data, error } = await qb;
           if (error || !data || data.length === 0) break;
           all.push(...(data as Row[]));
