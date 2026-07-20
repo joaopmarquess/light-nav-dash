@@ -85,6 +85,7 @@ export default function SinistralidadeNova({ mode }: Props) {
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [aggRows, setAggRows] = useState<Row[]>([]);
+  const [cidadeRows, setCidadeRows] = useState<Row[]>([]);
 
 
   // Debounce search
@@ -141,6 +142,32 @@ export default function SinistralidadeNova({ mode }: Props) {
       alive = false;
     };
   }, [periodo]);
+
+  // Load CIDADE_OFICIAL aggregation for beneficiario mode
+  useEffect(() => {
+    if (mode !== "beneficiario" || periodo === null) return;
+    let alive = true;
+    (async () => {
+      const all: Row[] = [];
+      const pageSize = 1000;
+      for (let from = 0; ; from += pageSize) {
+        let qb = hostinger
+          .from("sinistralidade_beneficiario")
+          .select("CIDADE_OFICIAL,VIDAS")
+          .range(from, from + pageSize - 1);
+        if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
+        const { data, error } = await qb;
+        if (error || !data || data.length === 0) break;
+        all.push(...(data as Row[]));
+        if (data.length < pageSize) break;
+      }
+      if (!alive) return;
+      setCidadeRows(all);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [periodo, mode]);
 
 
   useEffect(() => {
