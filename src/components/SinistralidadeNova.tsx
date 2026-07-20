@@ -376,7 +376,7 @@ export default function SinistralidadeNova({ mode }: Props) {
   const containerCls =
     mode === "empresa"
       ? "bg-card rounded-xl border border-border shadow-sm h-[55vh] flex flex-col overflow-hidden"
-      : "bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden";
+      : "bg-card rounded-xl border border-border shadow-sm h-[65vh] flex flex-col overflow-hidden";
 
   const mainSection = (
     <section className={containerCls}>
@@ -548,7 +548,25 @@ export default function SinistralidadeNova({ mode }: Props) {
     </section>
   );
 
-  if (mode !== "empresa") return mainSection;
+  const cidadeData = useMemo(() => {
+    const m = new Map<string, { name: string; VIDAS: number }>();
+    for (const r of cidadeRows) {
+      const key = String((r as any).CIDADE_OFICIAL ?? "(N/D)") || "(N/D)";
+      let e = m.get(key);
+      if (!e) {
+        e = { name: key, VIDAS: 0 };
+        m.set(key, e);
+      }
+      e.VIDAS += Number((r as any).VIDAS) || 0;
+    }
+    const arr = Array.from(m.values()).sort((a, b) => b.VIDAS - a.VIDAS);
+    const top = arr.slice(0, 5);
+    const rest = arr.slice(5);
+    if (rest.length > 0) {
+      top.push({ name: "DEMAIS", VIDAS: rest.reduce((s, r) => s + r.VIDAS, 0) });
+    }
+    return top;
+  }, [cidadeRows]);
 
   const fmtCompact = (n: number) => {
     const abs = Math.abs(n);
