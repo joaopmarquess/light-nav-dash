@@ -324,6 +324,16 @@ export default function SinistralidadeNova({ mode }: Props) {
             </option>
           ))}
         </select>
+        <select
+          value={tipo}
+          onChange={(e) => setTipo(e.target.value)}
+          className="h-9 px-2 rounded-md border border-border bg-background text-sm"
+        >
+          <option value="__ALL__">Todos os tipos</option>
+          {tipos.map((t) => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
