@@ -315,7 +315,7 @@ export default function SinistralidadeNova({ mode }: Props) {
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
-      <div className="flex items-center gap-3 p-3 border-b border-border">
+      <div className="flex flex-wrap items-center gap-2 p-3 border-b border-border">
         <select
           value={periodo ?? ""}
           onChange={(e) => setPeriodo(e.target.value)}
@@ -328,7 +328,26 @@ export default function SinistralidadeNova({ mode }: Props) {
             </option>
           ))}
         </select>
-        <div className="relative flex-1 max-w-md">
+        {mode === "empresa" &&
+          FILTER_COLS.map((c) => (
+            <select
+              key={c}
+              value={filters[c] ?? ""}
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, [c]: e.target.value }))
+              }
+              className="h-9 px-2 rounded-md border border-border bg-background text-xs max-w-[160px]"
+              title={c}
+            >
+              <option value="">{c}</option>
+              {(filterOptions[c] ?? []).map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+          ))}
+        <div className="relative flex-1 min-w-[180px] max-w-md">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             value={q}
@@ -341,6 +360,7 @@ export default function SinistralidadeNova({ mode }: Props) {
           {rowCount.toLocaleString("pt-BR")} {mode === "empresa" ? "grupos" : "linhas"}
         </span>
       </div>
+
 
       <div className="flex-1 overflow-auto">
         {loading ? (
