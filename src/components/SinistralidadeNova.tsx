@@ -116,7 +116,33 @@ export default function SinistralidadeNova({ mode }: Props) {
     };
   }, [table]);
 
-  // Load rows
+  // Load aggregation source (empresa table) filtered by periodo — feeds matrices in both modes
+  useEffect(() => {
+    if (periodo === null) return;
+    let alive = true;
+    (async () => {
+      const all: Row[] = [];
+      const pageSize = 1000;
+      for (let from = 0; ; from += pageSize) {
+        let qb = hostinger
+          .from("sinistralidade_empresa")
+          .select("Recuperacao,Tipo_Plano_Contratacao,Contratacao,VIDAS,SALDO")
+          .range(from, from + pageSize - 1);
+        if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
+        const { data, error } = await qb;
+        if (error || !data || data.length === 0) break;
+        all.push(...(data as Row[]));
+        if (data.length < pageSize) break;
+      }
+      if (!alive) return;
+      setAggRows(all);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [periodo]);
+
+
   useEffect(() => {
     if (periodo === null) return;
     let alive = true;
