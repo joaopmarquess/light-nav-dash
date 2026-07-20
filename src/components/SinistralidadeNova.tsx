@@ -65,8 +65,6 @@ export default function SinistralidadeNova({ mode }: Props) {
   const table = TABLE[mode];
   const [periodos, setPeriodos] = useState<string[]>([]);
   const [periodo, setPeriodo] = useState<string | null>(null);
-  const [tipos, setTipos] = useState<string[]>([]);
-  const [tipo, setTipo] = useState<string>("__ALL__");
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
@@ -86,31 +84,7 @@ export default function SinistralidadeNova({ mode }: Props) {
   // Reset page when filter changes
   useEffect(() => {
     setPage(0);
-  }, [periodo, tipo, debouncedQ, sortKey, sortDir, mode]);
-
-  // Load distinct TIPO_CONTRATACAO
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      const seen = new Set<string>();
-      const pageSize = 1000;
-      for (let from = 0; from < 20000; from += pageSize) {
-        const { data, error } = await hostinger
-          .from(table)
-          .select("TIPO_CONTRATACAO")
-          .range(from, from + pageSize - 1);
-        if (error || !data || data.length === 0) break;
-        for (const r of data as any[]) {
-          const v = r.TIPO_CONTRATACAO;
-          if (v) seen.add(String(v));
-        }
-        if (data.length < pageSize) break;
-      }
-      if (!alive) return;
-      setTipos(Array.from(seen).sort());
-    })();
-    return () => { alive = false; };
-  }, [table]);
+  }, [periodo, debouncedQ, sortKey, sortDir, mode]);
 
   // Load distinct PERIODOs via RPC
   useEffect(() => {
@@ -143,7 +117,6 @@ export default function SinistralidadeNova({ mode }: Props) {
         for (let from = 0; ; from += pageSize) {
           let qb = hostinger.from(table).select("*").range(from, from + pageSize - 1);
           if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
-          if (tipo !== "__ALL__") qb = qb.eq("TIPO_CONTRATACAO", tipo);
           const { data, error } = await qb;
           if (error || !data || data.length === 0) break;
           all.push(...(data as Row[]));
@@ -163,7 +136,6 @@ export default function SinistralidadeNova({ mode }: Props) {
           .order(sortCol, { ascending: sortDir === "asc" })
           .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
         if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
-        if (tipo !== "__ALL__") qb = qb.eq("TIPO_CONTRATACAO", tipo);
         if (debouncedQ) {
           const like = `%${debouncedQ}%`;
           qb = qb.or(`nmcli.ilike.${like},codigo.ilike.${like},cdpln::text.ilike.${like}`);
@@ -183,7 +155,7 @@ export default function SinistralidadeNova({ mode }: Props) {
     return () => {
       alive = false;
     };
-  }, [periodo, tipo, table, mode, page, sortKey, sortDir, debouncedQ]);
+  }, [periodo, table, mode, page, sortKey, sortDir, debouncedQ]);
 
   // Empresa: aggregate by GRUPO (parent) with cdpln children
   const groups = useMemo(() => {
@@ -322,16 +294,6 @@ export default function SinistralidadeNova({ mode }: Props) {
             <option key={p} value={p}>
               {p}
             </option>
-          ))}
-        </select>
-        <select
-          value={tipo}
-          onChange={(e) => setTipo(e.target.value)}
-          className="h-9 px-2 rounded-md border border-border bg-background text-sm"
-        >
-          <option value="__ALL__">Todos os tipos</option>
-          {tipos.map((t) => (
-            <option key={t} value={t}>{t}</option>
           ))}
         </select>
         <div className="relative flex-1 max-w-md">
