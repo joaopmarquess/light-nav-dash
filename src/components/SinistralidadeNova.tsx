@@ -2,6 +2,16 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown, ChevronLeft, ChevronsLeft, ChevronsRight } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  Legend,
+} from "recharts";
 
 const NUM_COLS = [
   "rec_tm",
@@ -281,9 +291,48 @@ export default function SinistralidadeNova({ mode }: Props) {
     });
   };
 
-  return (
-    <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
+  // Aggregations for bar charts (empresa mode)
+  const chartData = useMemo(() => {
+    if (mode !== "empresa") return { recuperacao: [], tipo: [], cidade: [] };
+    const agg = (field: string) => {
+      const m = new Map<string, { name: string; VIDAS: number; SALDO: number }>();
+      for (const r of rows) {
+        const key = String((r as any)[field] ?? "(N/D)") || "(N/D)";
+        let e = m.get(key);
+        if (!e) {
+          e = { name: key, VIDAS: 0, SALDO: 0 };
+          m.set(key, e);
+        }
+        e.VIDAS += Number(r.VIDAS) || 0;
+        e.SALDO += Number(r.SALDO) || 0;
+      }
+      return Array.from(m.values());
+    };
+    const recuperacao = agg("Recuperacao").sort((a, b) => b.VIDAS - a.VIDAS);
+    const tipo = agg("Tipo_Plano_Contratacao").sort((a, b) => b.VIDAS - a.VIDAS);
+    const cidadeAll = agg("CIDADE_PLANO").sort((a, b) => b.VIDAS - a.VIDAS);
+    const top4 = cidadeAll.slice(0, 4);
+    const rest = cidadeAll.slice(4);
+    const cidade = [...top4];
+    if (rest.length) {
+      cidade.push({
+        name: "DEMAIS",
+        VIDAS: rest.reduce((s, x) => s + x.VIDAS, 0),
+        SALDO: rest.reduce((s, x) => s + x.SALDO, 0),
+      });
+    }
+    return { recuperacao, tipo, cidade };
+  }, [rows, mode]);
+
+  const containerCls =
+    mode === "empresa"
+      ? "bg-card rounded-xl border border-border shadow-sm h-[55vh] flex flex-col overflow-hidden"
+      : "bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden";
+
+  const mainSection = (
+    <section className={containerCls}>
       <div className="flex items-center gap-3 p-3 border-b border-border">
+
         <select
           value={periodo ?? ""}
           onChange={(e) => setPeriodo(e.target.value)}
@@ -448,5 +497,67 @@ export default function SinistralidadeNova({ mode }: Props) {
         </div>
       )}
     </section>
+  );
+
+  if (mode !== "empresa") return mainSection;
+
+  const fmtCompact = (n: number) => {
+    const abs = Math.abs(n);
+    if (abs >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+    if (abs >= 1_000) return `${(n / 1_000).toFixed(0)}k`;
+    return String(Math.round(n));
+  };
+
+  const ChartCard = ({
+    title,
+    data,
+  }: {
+    title: string;
+    data: { name: string; VIDAS: number; SALDO: number }[];
+  }) => (
+    <div className="bg-card rounded-xl border border-border shadow-sm flex flex-col overflow-hidden">
+      <div className="px-3 py-2 border-b border-border text-xs font-semibold">{title}</div>
+      <div className="flex-1 p-2 min-h-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 30 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis
+              dataKey="name"
+              tick={{ fontSize: 10 }}
+              angle={-25}
+              textAnchor="end"
+              interval={0}
+              height={40}
+            />
+            <YAxis yAxisId="left" tick={{ fontSize: 10 }} tickFormatter={fmtCompact} />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              tick={{ fontSize: 10 }}
+              tickFormatter={fmtCompact}
+            />
+            <Tooltip
+              formatter={(v: number, name: string) =>
+                name === "VIDAS" ? fmtInt(v) : fmtNum(v)
+              }
+            />
+            <Legend wrapperStyle={{ fontSize: 10 }} />
+            <Bar yAxisId="left" dataKey="VIDAS" fill="hsl(var(--primary))" />
+            <Bar yAxisId="right" dataKey="SALDO" fill="hsl(var(--chart-2, 210 80% 50%))" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-3 h-[calc(100vh-9rem)]">
+      {mainSection}
+      <div className="grid grid-cols-3 gap-3 flex-1 min-h-0">
+        <ChartCard title="Recuperação — VIDAS e SALDO" data={chartData.recuperacao} />
+        <ChartCard title="Tipo Plano Contratação — VIDAS e SALDO" data={chartData.tipo} />
+        <ChartCard title="Cidade Plano (Top 4 + Demais) — VIDAS e SALDO" data={chartData.cidade} />
+      </div>
+    </div>
   );
 }
