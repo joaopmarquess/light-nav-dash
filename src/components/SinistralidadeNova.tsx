@@ -214,8 +214,13 @@ export default function SinistralidadeNova({ mode }: Props) {
         for (const c of NUM_COLS) t[c] += g.nums[c] || 0;
       }
     } else {
-      t.vida = filteredFlat.length;
-      for (const r of filteredFlat) for (const c of NUM_COLS) t[c] += Number(r[c]) || 0;
+      const names = new Set<string>();
+      for (const r of filteredFlat) {
+        const nm = String(r.nmcli ?? "").trim();
+        if (nm) names.add(nm);
+        for (const c of NUM_COLS) t[c] += Number(r[c]) || 0;
+      }
+      t.vida = names.size;
     }
     return t;
   }, [filteredGroups, filteredFlat, mode]);
