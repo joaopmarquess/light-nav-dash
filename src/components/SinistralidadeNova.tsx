@@ -85,6 +85,7 @@ export default function SinistralidadeNova({ mode }: Props) {
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [aggRows, setAggRows] = useState<Row[]>([]);
+  const [cidadeRows, setCidadeRows] = useState<Row[]>([]);
 
 
   // Debounce search
@@ -141,6 +142,32 @@ export default function SinistralidadeNova({ mode }: Props) {
       alive = false;
     };
   }, [periodo]);
+
+  // Load CIDADE_OFICIAL aggregation for beneficiario mode
+  useEffect(() => {
+    if (mode !== "beneficiario" || periodo === null) return;
+    let alive = true;
+    (async () => {
+      const all: Row[] = [];
+      const pageSize = 1000;
+      for (let from = 0; ; from += pageSize) {
+        let qb = hostinger
+          .from("sinistralidade_beneficiario")
+          .select("CIDADE_OFICIAL,VIDAS")
+          .range(from, from + pageSize - 1);
+        if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
+        const { data, error } = await qb;
+        if (error || !data || data.length === 0) break;
+        all.push(...(data as Row[]));
+        if (data.length < pageSize) break;
+      }
+      if (!alive) return;
+      setCidadeRows(all);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [periodo, mode]);
 
 
   useEffect(() => {
@@ -349,7 +376,7 @@ export default function SinistralidadeNova({ mode }: Props) {
   const containerCls =
     mode === "empresa"
       ? "bg-card rounded-xl border border-border shadow-sm h-[55vh] flex flex-col overflow-hidden"
-      : "bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden";
+      : "bg-card rounded-xl border border-border shadow-sm h-[65vh] flex flex-col overflow-hidden";
 
   const mainSection = (
     <section className={containerCls}>
@@ -521,7 +548,25 @@ export default function SinistralidadeNova({ mode }: Props) {
     </section>
   );
 
-  if (mode !== "empresa") return mainSection;
+  const cidadeData = useMemo(() => {
+    const m = new Map<string, { name: string; VIDAS: number }>();
+    for (const r of cidadeRows) {
+      const key = String((r as any).CIDADE_OFICIAL ?? "(N/D)") || "(N/D)";
+      let e = m.get(key);
+      if (!e) {
+        e = { name: key, VIDAS: 0 };
+        m.set(key, e);
+      }
+      e.VIDAS += Number((r as any).VIDAS) || 0;
+    }
+    const arr = Array.from(m.values()).sort((a, b) => b.VIDAS - a.VIDAS);
+    const top = arr.slice(0, 5);
+    const rest = arr.slice(5);
+    if (rest.length > 0) {
+      top.push({ name: "DEMAIS", VIDAS: rest.reduce((s, r) => s + r.VIDAS, 0) });
+    }
+    return top;
+  }, [cidadeRows]);
 
   const fmtCompact = (n: number) => {
     const abs = Math.abs(n);
@@ -572,6 +617,50 @@ export default function SinistralidadeNova({ mode }: Props) {
       </div>
     );
   };
+
+  const CidadeCard = () => {
+    const total = cidadeData.reduce((s, r) => s + r.VIDAS, 0);
+    return (
+      <div className="bg-card rounded-xl border border-border shadow-sm flex flex-col overflow-hidden">
+        <div className="px-3 py-2 border-b border-border text-xs font-semibold">CIDADE / UF</div>
+        <div className="flex-1 overflow-auto">
+          <table className="w-full text-[11px]">
+            <thead className="bg-muted/50 sticky top-0">
+              <tr>
+                <th className="text-left px-2 py-1 font-semibold">Cidade</th>
+                <th className="text-right px-2 py-1 font-semibold">Vidas</th>
+              </tr>
+            </thead>
+            <tbody>
+              {cidadeData.map((r) => (
+                <tr key={r.name} className="border-t border-border/50 hover:bg-muted/30">
+                  <td className="px-2 py-1 truncate max-w-[240px]" title={r.name}>{r.name}</td>
+                  <td className="px-2 py-1 text-right tabular-nums">{fmtInt(r.VIDAS)}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot className="bg-muted/70 sticky bottom-0">
+              <tr className="font-semibold">
+                <td className="px-2 py-1">Total</td>
+                <td className="px-2 py-1 text-right tabular-nums">{fmtInt(total)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+  if (mode === "beneficiario") {
+    return (
+      <div className="flex flex-col gap-3 h-[calc(100vh-9rem)]">
+        {mainSection}
+        <div className="grid grid-cols-3 gap-3 flex-1 min-h-0">
+          <CidadeCard />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-3 h-[calc(100vh-9rem)]">
