@@ -373,7 +373,7 @@ export default function SinistralidadeNova({ mode }: Props) {
   const containerCls =
     mode === "empresa"
       ? "bg-card rounded-xl border border-border shadow-sm h-[55vh] flex flex-col overflow-hidden"
-      : "bg-card rounded-xl border border-border shadow-sm h-[65vh] flex flex-col overflow-hidden";
+      : "bg-card rounded-xl border border-border shadow-sm h-[48vh] flex flex-col overflow-hidden";
 
   const mainSection = (
     <section className={containerCls}>
