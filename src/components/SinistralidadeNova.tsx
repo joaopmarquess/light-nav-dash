@@ -38,6 +38,15 @@ const METRIC_COLS: ColDef[] = [
   { key: "SIN", label: "SIN.", kind: "ratio" },
 ];
 
+const FILTER_COLS = [
+  "TIPO_CONTRATACAO",
+  "CIDADE_PLANO",
+  "UF_PLANO",
+  "Contratacao",
+  "Tipo_Plano_Contratacao",
+  "Recuperacao",
+] as const;
+
 const fmtNum = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtInt = (n: number) => Math.round(n).toLocaleString("pt-BR");
