@@ -291,9 +291,48 @@ export default function SinistralidadeNova({ mode }: Props) {
     });
   };
 
-  return (
-    <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
+  // Aggregations for bar charts (empresa mode)
+  const chartData = useMemo(() => {
+    if (mode !== "empresa") return { recuperacao: [], tipo: [], cidade: [] };
+    const agg = (field: string) => {
+      const m = new Map<string, { name: string; VIDAS: number; SALDO: number }>();
+      for (const r of rows) {
+        const key = String((r as any)[field] ?? "(N/D)") || "(N/D)";
+        let e = m.get(key);
+        if (!e) {
+          e = { name: key, VIDAS: 0, SALDO: 0 };
+          m.set(key, e);
+        }
+        e.VIDAS += Number(r.VIDAS) || 0;
+        e.SALDO += Number(r.SALDO) || 0;
+      }
+      return Array.from(m.values());
+    };
+    const recuperacao = agg("Recuperacao").sort((a, b) => b.VIDAS - a.VIDAS);
+    const tipo = agg("Tipo_Plano_Contratacao").sort((a, b) => b.VIDAS - a.VIDAS);
+    const cidadeAll = agg("CIDADE_PLANO").sort((a, b) => b.VIDAS - a.VIDAS);
+    const top4 = cidadeAll.slice(0, 4);
+    const rest = cidadeAll.slice(4);
+    const cidade = [...top4];
+    if (rest.length) {
+      cidade.push({
+        name: "DEMAIS",
+        VIDAS: rest.reduce((s, x) => s + x.VIDAS, 0),
+        SALDO: rest.reduce((s, x) => s + x.SALDO, 0),
+      });
+    }
+    return { recuperacao, tipo, cidade };
+  }, [rows, mode]);
+
+  const containerCls =
+    mode === "empresa"
+      ? "bg-card rounded-xl border border-border shadow-sm h-[55vh] flex flex-col overflow-hidden"
+      : "bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden";
+
+  const mainSection = (
+    <section className={containerCls}>
       <div className="flex items-center gap-3 p-3 border-b border-border">
+
         <select
           value={periodo ?? ""}
           onChange={(e) => setPeriodo(e.target.value)}
