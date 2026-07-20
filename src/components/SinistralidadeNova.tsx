@@ -325,7 +325,8 @@ export default function SinistralidadeNova({ mode }: Props) {
 
     const agg = (field: string) => {
       const m = new Map<string, { name: string; VIDAS: number; SALDO: number }>();
-      for (const r of rows) {
+      for (const r of source) {
+
         const key = String((r as any)[field] ?? "(N/D)") || "(N/D)";
         let e = m.get(key);
         if (!e) {
