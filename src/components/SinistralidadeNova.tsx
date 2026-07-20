@@ -487,7 +487,7 @@ export default function SinistralidadeNova({ mode }: Props) {
             <tfoot className="sticky bottom-0 bg-card">
               <tr className="border-t-2 border-border font-bold">
                 <td className="px-2 py-1.5">
-                  {mode === "beneficiario" ? "TOTAL (página)" : "TOTAL"}
+                  TOTAL
                 </td>
                 {METRIC_COLS.map((c) => {
                   let v: number;
