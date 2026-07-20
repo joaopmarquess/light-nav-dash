@@ -163,6 +163,7 @@ export default function SinistralidadeNova({ mode }: Props) {
           .order(sortCol, { ascending: sortDir === "asc" })
           .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
         if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
+        if (tipo !== "__ALL__") qb = qb.eq("TIPO_CONTRATACAO", tipo);
         if (debouncedQ) {
           const like = `%${debouncedQ}%`;
           qb = qb.or(`nmcli.ilike.${like},codigo.ilike.${like},cdpln::text.ilike.${like}`);
