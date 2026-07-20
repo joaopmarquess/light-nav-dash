@@ -2,6 +2,16 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown, ChevronLeft, ChevronsLeft, ChevronsRight } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  Legend,
+} from "recharts";
 
 const NUM_COLS = [
   "rec_tm",
