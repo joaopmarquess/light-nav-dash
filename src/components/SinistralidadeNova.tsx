@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
-import { Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown } from "lucide-react";
+import { Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown, ChevronLeft, ChevronsLeft, ChevronsRight } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
 
 const NUM_COLS = [
@@ -59,6 +59,8 @@ const TABLE: Record<Mode, string> = {
 
 type Agg = { name: string; key: string; vida: number; nums: Record<string, number> };
 
+const PAGE_SIZE = 200;
+
 export default function SinistralidadeNova({ mode }: Props) {
   const table = TABLE[mode];
   const [periodos, setPeriodos] = useState<string[]>([]);
@@ -66,11 +68,25 @@ export default function SinistralidadeNova({ mode }: Props) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
+  const [debouncedQ, setDebouncedQ] = useState("");
   const [sortKey, setSortKey] = useState<ColDef["key"] | "NAME">("NAME");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
 
-  // Load distinct PERIODOs via RPC (works for both tables)
+  // Debounce search
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(q.trim()), 300);
+    return () => clearTimeout(t);
+  }, [q]);
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setPage(0);
+  }, [periodo, debouncedQ, sortKey, sortDir, mode]);
+
+  // Load distinct PERIODOs via RPC
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -88,45 +104,74 @@ export default function SinistralidadeNova({ mode }: Props) {
     };
   }, [table]);
 
-  // Load rows for period
+  // Load rows
   useEffect(() => {
     if (periodo === null) return;
     let alive = true;
     setLoading(true);
     (async () => {
-      const all: Row[] = [];
-      const pageSize = 1000;
-      for (let from = 0; ; from += pageSize) {
-        let q = hostinger.from(table).select("*").range(from, from + pageSize - 1);
-        if (periodo !== "__ALL__") q = q.eq("PERIODO", periodo);
-        const { data, error } = await q;
-        if (error || !data || data.length === 0) break;
-        all.push(...(data as Row[]));
-        if (data.length < pageSize) break;
+      if (mode === "empresa") {
+        // Full load: ~2k rows total, per period much less
+        const all: Row[] = [];
+        const pageSize = 1000;
+        for (let from = 0; ; from += pageSize) {
+          let qb = hostinger.from(table).select("*").range(from, from + pageSize - 1);
+          if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
+          const { data, error } = await qb;
+          if (error || !data || data.length === 0) break;
+          all.push(...(data as Row[]));
+          if (data.length < pageSize) break;
+        }
+        if (!alive) return;
+        setRows(all);
+        setTotalCount(all.length);
+        setLoading(false);
+      } else {
+        // Server-side paginated for beneficiario
+        const sortCol =
+          sortKey === "NAME" ? "nmcli" : sortKey === "VIDA" ? "VIDAS" : (sortKey as string);
+        let qb = hostinger
+          .from(table)
+          .select("*", { count: "exact" })
+          .order(sortCol, { ascending: sortDir === "asc" })
+          .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+        if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
+        if (debouncedQ) {
+          const like = `%${debouncedQ}%`;
+          qb = qb.or(`nmcli.ilike.${like},codigo.ilike.${like},cdpln::text.ilike.${like}`);
+        }
+        const { data, count, error } = await qb;
+        if (!alive) return;
+        if (error) {
+          setRows([]);
+          setTotalCount(0);
+        } else {
+          setRows((data ?? []) as Row[]);
+          setTotalCount(count ?? 0);
+        }
+        setLoading(false);
       }
-      if (!alive) return;
-      setRows(all);
-      setLoading(false);
     })();
     return () => {
       alive = false;
     };
-  }, [periodo, table]);
+  }, [periodo, table, mode, page, sortKey, sortDir, debouncedQ]);
 
-  // For empresa mode: aggregate by GRUPO (parent) with cdpln children
+  // Empresa: aggregate by GRUPO (parent) with cdpln children
   const groups = useMemo(() => {
     if (mode !== "empresa") return [];
     const map = new Map<string, Agg & { children: Map<string, Agg & { dspln: string }> }>();
     for (const r of rows) {
       const g = String(r.GRUPO ?? "(sem grupo)");
       const cd = String(r.cdpln ?? "");
+      const vidas = Number(r.VIDAS) || 0;
       let parent = map.get(g);
       if (!parent) {
         parent = { name: g, key: g, vida: 0, nums: {}, children: new Map() };
         for (const c of NUM_COLS) parent.nums[c] = 0;
         map.set(g, parent);
       }
-      parent.vida += 1;
+      parent.vida += vidas;
       for (const c of NUM_COLS) parent.nums[c] += Number(r[c]) || 0;
       let child = parent.children.get(cd);
       if (!child) {
@@ -134,43 +179,25 @@ export default function SinistralidadeNova({ mode }: Props) {
         for (const c of NUM_COLS) child.nums[c] = 0;
         parent.children.set(cd, child);
       }
-      child.vida += 1;
+      child.vida += vidas;
       for (const c of NUM_COLS) child.nums[c] += Number(r[c]) || 0;
     }
     return Array.from(map.values());
   }, [rows, mode]);
 
-  // For beneficiario: flat rows
-  const flat = useMemo(() => {
-    if (mode !== "beneficiario") return [];
-    return rows;
-  }, [rows, mode]);
-
-  const term = q.trim().toLowerCase();
+  const term = debouncedQ.toLowerCase();
 
   const filteredGroups = useMemo(() => {
     if (mode !== "empresa") return [];
-    const arr = groups.filter((g) => {
-      if (!term) return true;
+    if (!term) return groups;
+    return groups.filter((g) => {
       if (g.name.toLowerCase().includes(term)) return true;
       for (const c of g.children.values()) {
         if (c.name.toLowerCase().includes(term) || c.dspln.toLowerCase().includes(term)) return true;
       }
       return false;
     });
-    return arr;
   }, [groups, term, mode]);
-
-  const filteredFlat = useMemo(() => {
-    if (mode !== "beneficiario") return [];
-    if (!term) return flat;
-    return flat.filter(
-      (r) =>
-        String(r.cdpln ?? "").toLowerCase().includes(term) ||
-        String(r.codigo ?? "").toLowerCase().includes(term) ||
-        String(r.nmcli ?? "").toLowerCase().includes(term),
-    );
-  }, [flat, term, mode]);
 
   const dir = sortDir === "asc" ? 1 : -1;
 
@@ -185,24 +212,10 @@ export default function SinistralidadeNova({ mode }: Props) {
     return ((a.nums[sortKey] || 0) - (b.nums[sortKey] || 0)) * dir;
   };
 
-  const sortedGroups = useMemo(() => [...filteredGroups].sort(cmpAgg), [filteredGroups, sortKey, sortDir]);
-
-  const sortedFlat = useMemo(() => {
-    const arr = [...filteredFlat];
-    arr.sort((a, b) => {
-      if (sortKey === "NAME") {
-        return String(a.nmcli ?? "").localeCompare(String(b.nmcli ?? ""), "pt-BR") * dir;
-      }
-      if (sortKey === "VIDA") return 0;
-      if (sortKey === "SIN") {
-        const av = Number(a.rec_total) ? Number(a.vrdespesas) / Number(a.rec_total) : 0;
-        const bv = Number(b.rec_total) ? Number(b.vrdespesas) / Number(b.rec_total) : 0;
-        return (av - bv) * dir;
-      }
-      return ((Number(a[sortKey as string]) || 0) - (Number(b[sortKey as string]) || 0)) * dir;
-    });
-    return arr;
-  }, [filteredFlat, sortKey, sortDir]);
+  const sortedGroups = useMemo(
+    () => [...filteredGroups].sort(cmpAgg),
+    [filteredGroups, sortKey, sortDir],
+  );
 
   const totals = useMemo(() => {
     const t: Record<string, number> = { vida: 0 };
@@ -213,16 +226,13 @@ export default function SinistralidadeNova({ mode }: Props) {
         for (const c of NUM_COLS) t[c] += g.nums[c] || 0;
       }
     } else {
-      const names = new Set<string>();
-      for (const r of filteredFlat) {
-        const nm = String(r.nmcli ?? "").trim();
-        if (nm) names.add(nm);
+      for (const r of rows) {
+        t.vida += Number(r.VIDAS) || 0;
         for (const c of NUM_COLS) t[c] += Number(r[c]) || 0;
       }
-      t.vida = names.size;
     }
     return t;
-  }, [filteredGroups, filteredFlat, mode]);
+  }, [filteredGroups, rows, mode]);
 
   const onSort = (k: ColDef["key"] | "NAME") => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -247,7 +257,8 @@ export default function SinistralidadeNova({ mode }: Props) {
   };
 
   const firstColLabel = mode === "empresa" ? "GRUPO / Plano" : "Beneficiário";
-  const rowCount = mode === "empresa" ? sortedGroups.length : sortedFlat.length;
+  const rowCount = mode === "empresa" ? sortedGroups.length : totalCount;
+  const totalPages = mode === "beneficiario" ? Math.max(1, Math.ceil(totalCount / PAGE_SIZE)) : 1;
 
   const renderMetrics = (nums: Record<string, number>, vida: number) => {
     const rt = nums.rec_total || 0;
@@ -294,7 +305,9 @@ export default function SinistralidadeNova({ mode }: Props) {
             className="h-9 w-full pl-8 pr-3 rounded-md border border-border bg-background text-sm"
           />
         </div>
-        <span className="text-xs text-muted-foreground ml-auto">{rowCount.toLocaleString("pt-BR")} linhas</span>
+        <span className="text-xs text-muted-foreground ml-auto">
+          {rowCount.toLocaleString("pt-BR")} {mode === "empresa" ? "grupos" : "linhas"}
+        </span>
       </div>
 
       <div className="flex-1 overflow-auto">
@@ -336,7 +349,6 @@ export default function SinistralidadeNova({ mode }: Props) {
                     return (
                       <Fragment key={g.key}>
                         <tr
-                          key={g.key}
                           className="border-b border-border/50 hover:bg-accent/40 cursor-pointer font-semibold"
                           onClick={() => toggle(g.key)}
                         >
@@ -363,7 +375,7 @@ export default function SinistralidadeNova({ mode }: Props) {
                       </Fragment>
                     );
                   })
-                : sortedFlat.map((r, i) => {
+                : rows.map((r, i) => {
                     const nums: Record<string, number> = {};
                     for (const c of NUM_COLS) nums[c] = Number(r[c]) || 0;
                     const name = `${r.codigo ?? ""} — ${r.nmcli ?? ""}`;
@@ -372,14 +384,16 @@ export default function SinistralidadeNova({ mode }: Props) {
                         <td className="px-2 py-1 truncate max-w-[420px]" title={name}>
                           {name}
                         </td>
-                        {renderMetrics(nums, 1)}
+                        {renderMetrics(nums, Number(r.VIDAS) || 0)}
                       </tr>
                     );
                   })}
             </tbody>
             <tfoot className="sticky bottom-0 bg-card">
               <tr className="border-t-2 border-border font-bold">
-                <td className="px-2 py-1.5">TOTAL</td>
+                <td className="px-2 py-1.5">
+                  {mode === "beneficiario" ? "TOTAL (página)" : "TOTAL"}
+                </td>
                 {METRIC_COLS.map((c) => {
                   let v: number;
                   if (c.key === "VIDA") v = totals.vida;
@@ -397,6 +411,42 @@ export default function SinistralidadeNova({ mode }: Props) {
           </table>
         )}
       </div>
+
+      {mode === "beneficiario" && !loading && totalCount > 0 && (
+        <div className="flex items-center justify-end gap-2 p-2 border-t border-border text-xs">
+          <span className="text-muted-foreground mr-2">
+            Página {page + 1} de {totalPages.toLocaleString("pt-BR")} · {totalCount.toLocaleString("pt-BR")} linhas
+          </span>
+          <button
+            onClick={() => setPage(0)}
+            disabled={page === 0}
+            className="h-7 w-7 flex items-center justify-center rounded border border-border disabled:opacity-40"
+          >
+            <ChevronsLeft className="h-3 w-3" />
+          </button>
+          <button
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+            className="h-7 w-7 flex items-center justify-center rounded border border-border disabled:opacity-40"
+          >
+            <ChevronLeft className="h-3 w-3" />
+          </button>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page >= totalPages - 1}
+            className="h-7 w-7 flex items-center justify-center rounded border border-border disabled:opacity-40"
+          >
+            <ChevronRight className="h-3 w-3" />
+          </button>
+          <button
+            onClick={() => setPage(totalPages - 1)}
+            disabled={page >= totalPages - 1}
+            className="h-7 w-7 flex items-center justify-center rounded border border-border disabled:opacity-40"
+          >
+            <ChevronsRight className="h-3 w-3" />
+          </button>
+        </div>
+      )}
     </section>
   );
 }
