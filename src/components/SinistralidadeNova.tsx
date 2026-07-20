@@ -70,17 +70,15 @@ export default function SinistralidadeNova({ mode }: Props) {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-  // Load distinct PERIODOs
+  // Load distinct PERIODOs via RPC (works for both tables)
   useEffect(() => {
     let alive = true;
     (async () => {
-      const { data } = await hostinger
-        .from(table)
-        .select("PERIODO")
-        .not("PERIODO", "is", null)
-        .limit(5000);
+      const { data } = await hostinger.rpc("sinistralidade_periodos");
       if (!alive) return;
-      const uniq = Array.from(new Set((data ?? []).map((r: any) => r.PERIODO as string))).sort().reverse();
+      const uniq = Array.from(
+        new Set((data ?? []).map((r: any) => r.PERIODO as string).filter(Boolean)),
+      ).sort().reverse();
       setPeriodos(uniq);
       setPeriodo(uniq[0] ?? "__ALL__");
     })();
