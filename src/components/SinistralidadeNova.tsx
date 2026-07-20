@@ -310,19 +310,10 @@ export default function SinistralidadeNova({ mode }: Props) {
     };
     const recuperacao = agg("Recuperacao").sort((a, b) => b.VIDAS - a.VIDAS);
     const tipo = agg("Tipo_Plano_Contratacao").sort((a, b) => b.VIDAS - a.VIDAS);
-    const cidadeAll = agg("CIDADE_PLANO").sort((a, b) => b.VIDAS - a.VIDAS);
-    const top4 = cidadeAll.slice(0, 4);
-    const rest = cidadeAll.slice(4);
-    const cidade = [...top4];
-    if (rest.length) {
-      cidade.push({
-        name: "DEMAIS",
-        VIDAS: rest.reduce((s, x) => s + x.VIDAS, 0),
-        SALDO: rest.reduce((s, x) => s + x.SALDO, 0),
-      });
-    }
-    return { recuperacao, tipo, cidade };
+    const contratacao = agg("Contratacao").sort((a, b) => b.VIDAS - a.VIDAS);
+    return { recuperacao, tipo, contratacao };
   }, [rows, mode]);
+
 
   const containerCls =
     mode === "empresa"
