@@ -86,7 +86,31 @@ export default function SinistralidadeNova({ mode }: Props) {
   // Reset page when filter changes
   useEffect(() => {
     setPage(0);
-  }, [periodo, debouncedQ, sortKey, sortDir, mode]);
+  }, [periodo, tipo, debouncedQ, sortKey, sortDir, mode]);
+
+  // Load distinct TIPO_CONTRATACAO
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const seen = new Set<string>();
+      const pageSize = 1000;
+      for (let from = 0; from < 20000; from += pageSize) {
+        const { data, error } = await hostinger
+          .from(table)
+          .select("TIPO_CONTRATACAO")
+          .range(from, from + pageSize - 1);
+        if (error || !data || data.length === 0) break;
+        for (const r of data as any[]) {
+          const v = r.TIPO_CONTRATACAO;
+          if (v) seen.add(String(v));
+        }
+        if (data.length < pageSize) break;
+      }
+      if (!alive) return;
+      setTipos(Array.from(seen).sort());
+    })();
+    return () => { alive = false; };
+  }, [table]);
 
   // Load distinct PERIODOs via RPC
   useEffect(() => {
