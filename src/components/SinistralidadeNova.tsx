@@ -227,9 +227,9 @@ export default function SinistralidadeNova({ mode }: Props) {
       }
     } else {
       for (const r of rows) {
-        t.vida += Number(r.VIDAS) || 0;
         for (const c of NUM_COLS) t[c] += Number(r[c]) || 0;
       }
+      t.vida = totalCount;
     }
     return t;
   }, [filteredGroups, rows, mode]);
