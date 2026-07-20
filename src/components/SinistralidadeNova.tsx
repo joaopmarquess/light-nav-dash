@@ -548,7 +548,7 @@ export default function SinistralidadeNova({ mode }: Props) {
       <div className="grid grid-cols-3 gap-3 flex-1 min-h-0">
         <MatrixCard title="Recuperação" data={chartData.recuperacao} />
         <MatrixCard title="Tipo Plano Contratação" data={chartData.tipo} />
-        <MatrixCard title="Cidade Plano (Top 4 + Demais)" data={chartData.cidade} />
+        <MatrixCard title="Contratação" data={chartData.contratacao} />
       </div>
 
     </div>
