@@ -167,11 +167,33 @@ export default function SinistralidadeNova({ mode }: Props) {
     };
   }, [periodo, table, mode, page, sortKey, sortDir, debouncedQ]);
 
+  // Distinct values for each filter dropdown (from currently loaded rows)
+  const filterOptions = useMemo(() => {
+    const map: Record<string, Set<string>> = {};
+    for (const c of FILTER_COLS) map[c] = new Set();
+    for (const r of rows) {
+      for (const c of FILTER_COLS) {
+        const v = r[c];
+        if (v !== null && v !== undefined && String(v).trim() !== "") map[c].add(String(v));
+      }
+    }
+    const out: Record<string, string[]> = {};
+    for (const c of FILTER_COLS) out[c] = Array.from(map[c]).sort((a, b) => a.localeCompare(b, "pt-BR"));
+    return out;
+  }, [rows]);
+
+  // Apply column filters to rows before aggregation
+  const filteredRows = useMemo(() => {
+    const active = Object.entries(filters).filter(([, v]) => v);
+    if (active.length === 0) return rows;
+    return rows.filter((r) => active.every(([k, v]) => String(r[k] ?? "") === v));
+  }, [rows, filters]);
+
   // Empresa: aggregate by GRUPO (parent) with cdpln children
   const groups = useMemo(() => {
     if (mode !== "empresa") return [];
     const map = new Map<string, Agg & { children: Map<string, Agg & { dspln: string }> }>();
-    for (const r of rows) {
+    for (const r of filteredRows) {
       const g = String(r.GRUPO ?? "(sem grupo)");
       const cd = String(r.cdpln ?? "");
       const vidas = Number(r.VIDAS) || 0;
@@ -193,7 +215,7 @@ export default function SinistralidadeNova({ mode }: Props) {
       for (const c of NUM_COLS) child.nums[c] += Number(r[c]) || 0;
     }
     return Array.from(map.values());
-  }, [rows, mode]);
+  }, [filteredRows, mode]);
 
   const term = debouncedQ.toLowerCase();
 
