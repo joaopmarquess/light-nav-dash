@@ -322,7 +322,7 @@ export default function SinistralidadeNova({ mode }: Props) {
             <thead className="sticky top-0 bg-card z-10">
               <tr className="border-b border-border">
                 <th
-                  className="px-2 py-1.5 text-left font-semibold cursor-pointer select-none"
+                  className="px-2 py-1.5 text-left font-semibold cursor-pointer select-none w-[220px] max-w-[220px]"
                   onClick={() => onSort("NAME")}
                 >
                   {firstColLabel} {arrow("NAME")}
@@ -352,7 +352,7 @@ export default function SinistralidadeNova({ mode }: Props) {
                           className="border-b border-border/50 hover:bg-accent/40 cursor-pointer font-semibold"
                           onClick={() => toggle(g.key)}
                         >
-                          <td className="px-2 py-1 truncate max-w-[420px]" title={g.name}>
+                          <td className="px-2 py-1 truncate w-[220px] max-w-[220px]" title={g.name}>
                             <span className="inline-flex items-center gap-1">
                               {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
                               {g.name}
@@ -365,7 +365,7 @@ export default function SinistralidadeNova({ mode }: Props) {
                             const label = `${c.name} — ${(c as any).dspln}`;
                             return (
                               <tr key={c.key} className="border-b border-border/30 hover:bg-accent/30 bg-muted/20">
-                                <td className="px-2 py-1 truncate max-w-[420px] pl-8" title={label}>
+                                <td className="px-2 py-1 truncate w-[220px] max-w-[220px] pl-8" title={label}>
                                   {label}
                                 </td>
                                 {renderMetrics(c.nums, c.vida)}
@@ -381,7 +381,7 @@ export default function SinistralidadeNova({ mode }: Props) {
                     const name = `${r.codigo ?? ""} — ${r.nmcli ?? ""}`;
                     return (
                       <tr key={i} className="border-b border-border/50 hover:bg-accent/40">
-                        <td className="px-2 py-1 truncate max-w-[420px]" title={name}>
+                        <td className="px-2 py-1 truncate w-[220px] max-w-[220px]" title={name}>
                           {name}
                         </td>
                         {renderMetrics(nums, Number(r.VIDAS) || 0)}
