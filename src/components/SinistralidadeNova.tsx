@@ -266,6 +266,12 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                 </th>
                 <th
                   className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none"
+                  onClick={() => onSort("vidas")}
+                >
+                  Vidas {arrow("vidas")}
+                </th>
+                <th
+                  className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none"
                   onClick={() => onSort("rec_total")}
                 >
                   Total Receita {arrow("rec_total")}
