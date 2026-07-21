@@ -109,6 +109,12 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
           vrdespesas: Number(r.vrdespesas) || 0,
           saldo: Number(r.saldo) || 0,
           vidas: Number(r.vidas) || 0,
+          internacao: Number(r.internacao) || 0,
+          terapia: Number(r.terapia) || 0,
+          exame: Number(r.exame) || 0,
+          consulta: Number(r.consulta) || 0,
+          emergencia: Number(r.emergencia) || 0,
+          demais: Number(r.demais) || 0,
         }));
         setAggRows(mapped);
       }
