@@ -414,5 +414,6 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
         )}
       </div>
     </section>
+    </TooltipProvider>
   );
 }
