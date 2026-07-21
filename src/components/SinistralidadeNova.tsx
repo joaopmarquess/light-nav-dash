@@ -137,35 +137,37 @@ export default function SinistralidadeNova({ mode }: Props) {
         setTotalCount(all.length);
         setLoading(false);
       } else {
-        // Server-side paginated for beneficiario
+        // Load all rows (chunked) for beneficiario — no pagination, vertical scroll only
         const sortCol =
           sortKey === "NAME" ? "nmcli" : sortKey === "VIDA" ? "VIDAS" : (sortKey as string);
-        let qb = hostinger
-          .from(table)
-          .select("*", { count: "exact" })
-          .order(sortCol, { ascending: sortDir === "asc" })
-          .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
-        if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
-        if (debouncedQ) {
-          const like = `%${debouncedQ}%`;
-          qb = qb.or(`nmcli.ilike.${like},codigo.ilike.${like}`);
+        const all: Row[] = [];
+        const chunk = 1000;
+        for (let from = 0; ; from += chunk) {
+          let qb = hostinger
+            .from(table)
+            .select("*")
+            .order(sortCol, { ascending: sortDir === "asc" })
+            .range(from, from + chunk - 1);
+          if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
+          if (debouncedQ) {
+            const like = `%${debouncedQ}%`;
+            qb = qb.or(`nmcli.ilike.${like},codigo.ilike.${like}`);
+          }
+          const { data, error } = await qb;
+          if (error || !data || data.length === 0) break;
+          all.push(...(data as Row[]));
+          if (data.length < chunk) break;
         }
-        const { data, count, error } = await qb;
         if (!alive) return;
-        if (error) {
-          setRows([]);
-          setTotalCount(0);
-        } else {
-          setRows((data ?? []) as Row[]);
-          setTotalCount(count ?? 0);
-        }
+        setRows(all);
+        setTotalCount(all.length);
         setLoading(false);
       }
     })();
     return () => {
       alive = false;
     };
-  }, [periodo, table, mode, page, sortKey, sortDir, debouncedQ]);
+  }, [periodo, table, mode, sortKey, sortDir, debouncedQ]);
 
   // Empresa: aggregate by GRUPO (parent) with cdpln children
   const groups = useMemo(() => {
