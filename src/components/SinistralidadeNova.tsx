@@ -222,6 +222,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
   };
 
   return (
+    <TooltipProvider delayDuration={100}>
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
       <div className="flex items-center gap-3 p-3 border-b border-border flex-wrap">
         <div className="flex items-center gap-2">
