@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
-import { Search, ArrowUp, ArrowDown } from "lucide-react";
+import { Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown, Loader2 } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
 
 type Mode = "empresa" | "beneficiario";
@@ -11,6 +11,15 @@ interface Props {
 
 type Agg = {
   grupo: string;
+  rec_total: number;
+  vrdespesas: number;
+  saldo: number;
+  vidas: number;
+};
+
+type ChildRow = {
+  cdpln: string;
+  dspln: string;
   rec_total: number;
   vrdespesas: number;
   saldo: number;
@@ -36,6 +45,9 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
   const [loadingRows, setLoadingRows] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("SALDO");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [children, setChildren] = useState<Record<string, ChildRow[]>>({});
+  const [loadingChild, setLoadingChild] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q.trim()), 300);
@@ -74,6 +86,8 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     if (!periodo) return;
     let alive = true;
     setLoadingRows(true);
+    setExpanded({});
+    setChildren({});
     (async () => {
       const { data, error } = await hostinger.rpc("sin_por_grupo", {
         p_periodo: periodo,
@@ -141,6 +155,61 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     sortKey === k ? (
       sortDir === "asc" ? <ArrowUp className="inline h-3 w-3" /> : <ArrowDown className="inline h-3 w-3" />
     ) : null;
+
+  const loadChildren = async (grupo: string) => {
+    if (children[grupo] || loadingChild[grupo]) return;
+    setLoadingChild((s) => ({ ...s, [grupo]: true }));
+    const chunk = 1000;
+    let from = 0;
+    const map = new Map<string, ChildRow>();
+    while (true) {
+      const { data, error } = await hostinger
+        .from("sinistralidade")
+        .select("cdpln,dspln,rec_total,vrdespesas,VIDAS")
+        .eq("PERIODO", periodo)
+        .eq("GRUPO", grupo)
+        .range(from, from + chunk - 1);
+      if (error) {
+        console.error("children fetch error", error);
+        break;
+      }
+      const rows = (data ?? []) as any[];
+      for (const r of rows) {
+        const cd = String(r.cdpln ?? "");
+        const ds = String(r.dspln ?? "");
+        const key = `${cd}||${ds}`;
+        const cur = map.get(key) ?? {
+          cdpln: cd,
+          dspln: ds,
+          rec_total: 0,
+          vrdespesas: 0,
+          saldo: 0,
+          vidas: 0,
+        };
+        cur.rec_total += Number(r.rec_total) || 0;
+        cur.vrdespesas += Number(r.vrdespesas) || 0;
+        cur.vidas += Number(r.VIDAS) || 0;
+        map.set(key, cur);
+      }
+      if (rows.length < chunk) break;
+      from += chunk;
+    }
+    const arr = Array.from(map.values()).map((c) => ({
+      ...c,
+      saldo: c.rec_total - c.vrdespesas,
+    }));
+    arr.sort((a, b) => b.saldo - a.saldo);
+    setChildren((s) => ({ ...s, [grupo]: arr }));
+    setLoadingChild((s) => ({ ...s, [grupo]: false }));
+  };
+
+  const toggle = (grupo: string) => {
+    setExpanded((s) => {
+      const next = { ...s, [grupo]: !s[grupo] };
+      if (next[grupo]) void loadChildren(grupo);
+      return next;
+    });
+  };
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
@@ -227,16 +296,64 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
             <tbody>
               {sorted.map((a) => {
                 const sin = a.rec_total ? a.vrdespesas / a.rec_total : 0;
+                const isOpen = !!expanded[a.grupo];
+                const kids = children[a.grupo];
+                const isLoadingKids = !!loadingChild[a.grupo];
                 return (
-                  <tr key={a.grupo} className="border-b border-border/40 hover:bg-accent/30">
-                    <td className="px-2 py-1 truncate max-w-[320px]" title={a.grupo}>
-                      {a.grupo}
-                    </td>
-                    <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.rec_total)}</td>
-                    <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.vrdespesas)}</td>
-                    <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.saldo)}</td>
-                    <td className="px-2 py-1 text-right tabular-nums">{fmtPct(sin)}</td>
-                  </tr>
+                  <Fragment key={a.grupo}>
+                    <tr className="border-b border-border/40 hover:bg-accent/30">
+                      <td className="px-2 py-1 truncate max-w-[320px]" title={a.grupo}>
+                        <button
+                          onClick={() => toggle(a.grupo)}
+                          className="inline-flex items-center gap-1 hover:text-primary"
+                        >
+                          {isOpen ? (
+                            <ChevronDown className="h-3 w-3" />
+                          ) : (
+                            <ChevronRight className="h-3 w-3" />
+                          )}
+                          <span>{a.grupo}</span>
+                        </button>
+                      </td>
+                      <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.rec_total)}</td>
+                      <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.vrdespesas)}</td>
+                      <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.saldo)}</td>
+                      <td className="px-2 py-1 text-right tabular-nums">{fmtPct(sin)}</td>
+                    </tr>
+                    {isOpen && isLoadingKids && (
+                      <tr className="bg-muted/20">
+                        <td colSpan={5} className="px-8 py-2 text-muted-foreground">
+                          <Loader2 className="inline h-3 w-3 animate-spin mr-2" />
+                          Carregando planos...
+                        </td>
+                      </tr>
+                    )}
+                    {isOpen && !isLoadingKids && kids && kids.length === 0 && (
+                      <tr className="bg-muted/20">
+                        <td colSpan={5} className="px-8 py-2 text-muted-foreground">
+                          Sem planos.
+                        </td>
+                      </tr>
+                    )}
+                    {isOpen && !isLoadingKids && kids && kids.map((c) => {
+                      const csin = c.rec_total ? c.vrdespesas / c.rec_total : 0;
+                      return (
+                        <tr
+                          key={`${a.grupo}::${c.cdpln}::${c.dspln}`}
+                          className="border-b border-border/30 bg-muted/10"
+                        >
+                          <td className="px-2 py-1 pl-8 truncate max-w-[320px]" title={`${c.cdpln} ${c.dspln}`}>
+                            <span className="text-muted-foreground">{c.cdpln}</span>{" "}
+                            <span>{c.dspln}</span>
+                          </td>
+                          <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.rec_total)}</td>
+                          <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.vrdespesas)}</td>
+                          <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.saldo)}</td>
+                          <td className="px-2 py-1 text-right tabular-nums">{fmtPct(csin)}</td>
+                        </tr>
+                      );
+                    })}
+                  </Fragment>
                 );
               })}
             </tbody>
