@@ -175,7 +175,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
         </div>
 
         <span className="text-xs text-muted-foreground ml-auto">
-          {sorted.length.toLocaleString("pt-BR")} grupos · {rows.length.toLocaleString("pt-BR")} linhas
+          {sorted.length.toLocaleString("pt-BR")} grupos
         </span>
       </div>
 
