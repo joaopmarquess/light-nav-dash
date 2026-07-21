@@ -293,7 +293,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                 const isLoadingKids = !!loadingChild[a.grupo];
                 return (
                   <Fragment key={a.grupo}>
-                    <tr className="border-b border-border/40 hover:bg-accent/30">
+                    <tr className={`border-b border-border/40 hover:bg-accent/30 ${isOpen ? "font-bold" : ""}`}>
                       <td className="px-2 py-1 truncate max-w-[320px]" title={a.grupo}>
                         <button
                           onClick={() => toggle(a.grupo)}
