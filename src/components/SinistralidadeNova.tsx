@@ -333,7 +333,32 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                       </td>
                       <td className="px-2 py-1 text-right tabular-nums">{a.vidas.toLocaleString("pt-BR")}</td>
                       <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.rec_total)}</td>
-                      <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.vrdespesas)}</td>
+                      <td className="px-2 py-1 text-right tabular-nums">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help underline decoration-dotted decoration-muted-foreground/50 underline-offset-2">
+                              {fmtNum(a.vrdespesas)}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="p-0">
+                            <div className="min-w-[220px] p-2">
+                              <div className="text-xs font-semibold mb-1.5 border-b border-border pb-1">
+                                Composição da Despesa
+                              </div>
+                              <table className="text-[11px] w-full">
+                                <tbody>
+                                  <tr><td className="pr-3 py-0.5">Internação</td><td className="text-right tabular-nums">{fmtNum(a.internacao)}</td></tr>
+                                  <tr><td className="pr-3 py-0.5">Terapia</td><td className="text-right tabular-nums">{fmtNum(a.terapia)}</td></tr>
+                                  <tr><td className="pr-3 py-0.5">Exame</td><td className="text-right tabular-nums">{fmtNum(a.exame)}</td></tr>
+                                  <tr><td className="pr-3 py-0.5">Consulta</td><td className="text-right tabular-nums">{fmtNum(a.consulta)}</td></tr>
+                                  <tr><td className="pr-3 py-0.5">Emergência</td><td className="text-right tabular-nums">{fmtNum(a.emergencia)}</td></tr>
+                                  <tr><td className="pr-3 py-0.5">Demais</td><td className="text-right tabular-nums">{fmtNum(a.demais)}</td></tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </td>
                       <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.saldo)}</td>
                       <td className="px-2 py-1 text-right tabular-nums">{fmtPct(sin)}</td>
                     </tr>
