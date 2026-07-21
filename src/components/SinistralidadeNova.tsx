@@ -326,7 +326,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                     </tr>
                     {isOpen && isLoadingKids && (
                       <tr className="bg-muted/20">
-                        <td colSpan={5} className="px-8 py-2 text-muted-foreground">
+                        <td colSpan={6} className="px-8 py-2 text-muted-foreground">
                           <Loader2 className="inline h-3 w-3 animate-spin mr-2" />
                           Carregando planos...
                         </td>
@@ -334,7 +334,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                     )}
                     {isOpen && !isLoadingKids && kids && kids.length === 0 && (
                       <tr className="bg-muted/20">
-                        <td colSpan={5} className="px-8 py-2 text-muted-foreground">
+                        <td colSpan={6} className="px-8 py-2 text-muted-foreground">
                           Sem planos.
                         </td>
                       </tr>
@@ -349,6 +349,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                           <td className="px-2 py-1 pl-8 truncate max-w-[320px]" title={c.cdpln}>
                             {c.cdpln}
                           </td>
+                          <td className="px-2 py-1 text-right tabular-nums">{c.vidas.toLocaleString("pt-BR")}</td>
                           <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.rec_total)}</td>
                           <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.vrdespesas)}</td>
                           <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.saldo)}</td>
@@ -363,6 +364,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
             <tfoot className="sticky bottom-0 bg-card">
               <tr className="border-t-2 border-border font-bold">
                 <td className="px-2 py-1.5">TOTAL</td>
+                <td className="px-2 py-1.5 text-right tabular-nums">{totals.vid.toLocaleString("pt-BR")}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums">{fmtNum(totals.rec)}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums">{fmtNum(totals.desp)}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums">{fmtNum(totals.sal)}</td>
