@@ -47,8 +47,8 @@ const fmtPct = (n: number) =>
     ? `${(n * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
     : "-";
 const fmtShare = (v: number, total: number) => {
-  if (!total) return "0%";
-  return `${Math.round((v / total) * 100)}%`;
+  if (!total) return "0,00%";
+  return `${((v / total) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 };
 
 export default function SinistralidadeNova({ mode: _mode }: Props) {
