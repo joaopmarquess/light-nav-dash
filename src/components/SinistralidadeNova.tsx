@@ -137,35 +137,37 @@ export default function SinistralidadeNova({ mode }: Props) {
         setTotalCount(all.length);
         setLoading(false);
       } else {
-        // Server-side paginated for beneficiario
+        // Load all rows (chunked) for beneficiario — no pagination, vertical scroll only
         const sortCol =
           sortKey === "NAME" ? "nmcli" : sortKey === "VIDA" ? "VIDAS" : (sortKey as string);
-        let qb = hostinger
-          .from(table)
-          .select("*", { count: "exact" })
-          .order(sortCol, { ascending: sortDir === "asc" })
-          .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
-        if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
-        if (debouncedQ) {
-          const like = `%${debouncedQ}%`;
-          qb = qb.or(`nmcli.ilike.${like},codigo.ilike.${like}`);
+        const all: Row[] = [];
+        const chunk = 1000;
+        for (let from = 0; ; from += chunk) {
+          let qb = hostinger
+            .from(table)
+            .select("*")
+            .order(sortCol, { ascending: sortDir === "asc" })
+            .range(from, from + chunk - 1);
+          if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
+          if (debouncedQ) {
+            const like = `%${debouncedQ}%`;
+            qb = qb.or(`nmcli.ilike.${like},codigo.ilike.${like}`);
+          }
+          const { data, error } = await qb;
+          if (error || !data || data.length === 0) break;
+          all.push(...(data as Row[]));
+          if (data.length < chunk) break;
         }
-        const { data, count, error } = await qb;
         if (!alive) return;
-        if (error) {
-          setRows([]);
-          setTotalCount(0);
-        } else {
-          setRows((data ?? []) as Row[]);
-          setTotalCount(count ?? 0);
-        }
+        setRows(all);
+        setTotalCount(all.length);
         setLoading(false);
       }
     })();
     return () => {
       alive = false;
     };
-  }, [periodo, table, mode, page, sortKey, sortDir, debouncedQ]);
+  }, [periodo, table, mode, sortKey, sortDir, debouncedQ]);
 
   // Empresa: aggregate by GRUPO (parent) with cdpln children
   const groups = useMemo(() => {
@@ -440,9 +442,7 @@ export default function SinistralidadeNova({ mode }: Props) {
             </tbody>
             <tfoot className="sticky bottom-0 bg-card">
               <tr className="border-t-2 border-border font-bold">
-                <td className="px-2 py-1.5">
-                  {mode === "beneficiario" ? "TOTAL (página)" : "TOTAL"}
-                </td>
+                <td className="px-2 py-1.5">TOTAL</td>
                 {METRIC_COLS.map((c) => {
                   let v: number;
                   if (c.key === "VIDA") v = totals.vida;
@@ -461,41 +461,6 @@ export default function SinistralidadeNova({ mode }: Props) {
         )}
       </div>
 
-      {mode === "beneficiario" && !loading && totalCount > 0 && (
-        <div className="flex items-center justify-end gap-2 p-2 border-t border-border text-xs">
-          <span className="text-muted-foreground mr-2">
-            Página {page + 1} de {totalPages.toLocaleString("pt-BR")} · {totalCount.toLocaleString("pt-BR")} linhas
-          </span>
-          <button
-            onClick={() => setPage(0)}
-            disabled={page === 0}
-            className="h-7 w-7 flex items-center justify-center rounded border border-border disabled:opacity-40"
-          >
-            <ChevronsLeft className="h-3 w-3" />
-          </button>
-          <button
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
-            className="h-7 w-7 flex items-center justify-center rounded border border-border disabled:opacity-40"
-          >
-            <ChevronLeft className="h-3 w-3" />
-          </button>
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-            disabled={page >= totalPages - 1}
-            className="h-7 w-7 flex items-center justify-center rounded border border-border disabled:opacity-40"
-          >
-            <ChevronRight className="h-3 w-3" />
-          </button>
-          <button
-            onClick={() => setPage(totalPages - 1)}
-            disabled={page >= totalPages - 1}
-            className="h-7 w-7 flex items-center justify-center rounded border border-border disabled:opacity-40"
-          >
-            <ChevronsRight className="h-3 w-3" />
-          </button>
-        </div>
-      )}
     </section>
   );
 
