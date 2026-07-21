@@ -133,13 +133,14 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
   }, [aggregated, sortKey, sortDir]);
 
   const totals = useMemo(() => {
-    let rec = 0, desp = 0, sal = 0;
+    let rec = 0, desp = 0, sal = 0, vid = 0;
     for (const a of aggregated) {
       rec += a.rec_total;
       desp += a.vrdespesas;
       sal += a.saldo;
+      vid += a.vidas;
     }
-    return { rec, desp, sal, sin: rec ? desp / rec : 0 };
+    return { rec, desp, sal, vid, sin: rec ? desp / rec : 0 };
   }, [aggregated]);
 
   const onSort = (k: SortKey) => {
