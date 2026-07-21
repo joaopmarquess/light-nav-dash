@@ -75,49 +75,35 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     let alive = true;
     setLoadingRows(true);
     (async () => {
-      const all: Row[] = [];
-      const chunk = 1000;
-      for (let from = 0; ; from += chunk) {
-        let qb = hostinger
-          .from("sinistralidade")
-          .select('GRUPO,rec_total,vrdespesas,"SALDO",nmcli,codigo')
-          .eq("PERIODO", periodo)
-          .order("codigo", { ascending: true })
-          .order("nmcli", { ascending: true })
-          .range(from, from + chunk - 1);
-        if (debouncedQ) {
-          const t = debouncedQ.replace(/[%,]/g, "");
-          qb = qb.or(`nmcli.ilike.%${t}%,codigo.ilike.%${t}%`);
-        }
-        const { data, error } = await qb;
-        if (error || !data || data.length === 0) break;
-        all.push(...(data as Row[]));
-        if (data.length < chunk) break;
-      }
+      const { data, error } = await hostinger.rpc("sin_por_grupo", {
+        p_periodo: periodo,
+      });
       if (!alive) return;
-      setRows(all);
+      if (error) {
+        console.error("sin_por_grupo error", error);
+        setAggRows([]);
+      } else {
+        const mapped: Agg[] = ((data ?? []) as any[]).map((r) => ({
+          grupo: String(r.grupo ?? "(sem grupo)") || "(sem grupo)",
+          rec_total: Number(r.rec_total) || 0,
+          vrdespesas: Number(r.vrdespesas) || 0,
+          saldo: Number(r.saldo) || 0,
+          vidas: Number(r.vidas) || 0,
+        }));
+        setAggRows(mapped);
+      }
       setLoadingRows(false);
     })();
     return () => {
       alive = false;
     };
-  }, [periodo, debouncedQ]);
+  }, [periodo]);
 
   const aggregated = useMemo<Agg[]>(() => {
-    const map = new Map<string, Agg>();
-    for (const r of rows) {
-      const g = String(r.GRUPO ?? "(sem grupo)") || "(sem grupo)";
-      let a = map.get(g);
-      if (!a) {
-        a = { grupo: g, rec_total: 0, vrdespesas: 0, saldo: 0 };
-        map.set(g, a);
-      }
-      a.rec_total += Number(r.rec_total) || 0;
-      a.vrdespesas += Number(r.vrdespesas) || 0;
-      a.saldo += Number(r.SALDO) || 0;
-    }
-    return Array.from(map.values());
-  }, [rows]);
+    const t = debouncedQ.toLowerCase();
+    if (!t) return aggRows;
+    return aggRows.filter((a) => a.grupo.toLowerCase().includes(t));
+  }, [aggRows, debouncedQ]);
 
   const sorted = useMemo(() => {
     const dir = sortDir === "asc" ? 1 : -1;
