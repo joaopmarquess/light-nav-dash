@@ -9,18 +9,12 @@ interface Props {
   mode: Mode;
 }
 
-type Row = {
-  GRUPO: string | null;
-  rec_total: number | null;
-  vrdespesas: number | null;
-  SALDO: number | null;
-};
-
 type Agg = {
   grupo: string;
   rec_total: number;
   vrdespesas: number;
   saldo: number;
+  vidas: number;
 };
 
 type SortKey = "GRUPO" | "rec_total" | "vrdespesas" | "SALDO" | "sin";
