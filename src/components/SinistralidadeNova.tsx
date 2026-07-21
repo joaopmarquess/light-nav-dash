@@ -508,58 +508,56 @@ export default function SinistralidadeNova({ mode }: Props) {
     return String(Math.round(n));
   };
 
-  const MatrixCard = ({
+  const ChartCard = ({
     title,
     data,
   }: {
     title: string;
     data: { name: string; VIDAS: number; SALDO: number }[];
-  }) => {
-    const totalVidas = data.reduce((s, r) => s + (r.VIDAS || 0), 0);
-    const totalSaldo = data.reduce((s, r) => s + (r.SALDO || 0), 0);
-    return (
-      <div className="bg-card rounded-xl border border-border shadow-sm flex flex-col overflow-hidden">
-        <div className="px-3 py-2 border-b border-border text-xs font-semibold">{title}</div>
-        <div className="flex-1 overflow-auto">
-          <table className="w-full text-[11px]">
-            <thead className="bg-muted/50 sticky top-0">
-              <tr>
-                <th className="text-left px-2 py-1 font-semibold">Categoria</th>
-                <th className="text-right px-2 py-1 font-semibold">Vidas</th>
-                <th className="text-right px-2 py-1 font-semibold">Saldo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((r) => (
-                <tr key={r.name} className="border-t border-border/50 hover:bg-muted/30">
-                  <td className="px-2 py-1 truncate max-w-[140px]" title={r.name}>{r.name}</td>
-                  <td className="px-2 py-1 text-right tabular-nums">{fmtInt(r.VIDAS)}</td>
-                  <td className="px-2 py-1 text-right tabular-nums">{fmtNum(r.SALDO)}</td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot className="bg-muted/70 sticky bottom-0">
-              <tr className="font-semibold">
-                <td className="px-2 py-1">Total</td>
-                <td className="px-2 py-1 text-right tabular-nums">{fmtInt(totalVidas)}</td>
-                <td className="px-2 py-1 text-right tabular-nums">{fmtNum(totalSaldo)}</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+  }) => (
+    <div className="bg-card rounded-xl border border-border shadow-sm flex flex-col overflow-hidden">
+      <div className="px-3 py-2 border-b border-border text-xs font-semibold">{title}</div>
+      <div className="flex-1 p-2 min-h-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 30 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis
+              dataKey="name"
+              tick={{ fontSize: 10 }}
+              angle={-25}
+              textAnchor="end"
+              interval={0}
+              height={40}
+            />
+            <YAxis yAxisId="left" tick={{ fontSize: 10 }} tickFormatter={fmtCompact} />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              tick={{ fontSize: 10 }}
+              tickFormatter={fmtCompact}
+            />
+            <Tooltip
+              formatter={(v: number, name: string) =>
+                name === "VIDAS" ? fmtInt(v) : fmtNum(v)
+              }
+            />
+            <Legend wrapperStyle={{ fontSize: 10 }} />
+            <Bar yAxisId="left" dataKey="VIDAS" fill="hsl(var(--primary))" />
+            <Bar yAxisId="right" dataKey="SALDO" fill="hsl(var(--chart-2, 210 80% 50%))" />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
-    );
-  };
+    </div>
+  );
 
   return (
     <div className="flex flex-col gap-3 h-[calc(100vh-9rem)]">
       {mainSection}
       <div className="grid grid-cols-3 gap-3 flex-1 min-h-0">
-        <MatrixCard title="Recuperação" data={chartData.recuperacao} />
-        <MatrixCard title="Tipo Plano Contratação" data={chartData.tipo} />
-        <MatrixCard title="Cidade Plano (Top 4 + Demais)" data={chartData.cidade} />
+        <ChartCard title="Recuperação — VIDAS e SALDO" data={chartData.recuperacao} />
+        <ChartCard title="Tipo Plano Contratação — VIDAS e SALDO" data={chartData.tipo} />
+        <ChartCard title="Cidade Plano (Top 4 + Demais) — VIDAS e SALDO" data={chartData.cidade} />
       </div>
-
     </div>
   );
 }
