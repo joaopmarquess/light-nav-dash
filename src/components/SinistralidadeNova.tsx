@@ -84,8 +84,6 @@ export default function SinistralidadeNova({ mode }: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
-  const [aggRows, setAggRows] = useState<Row[]>([]);
-
 
   // Debounce search
   useEffect(() => {
@@ -116,33 +114,7 @@ export default function SinistralidadeNova({ mode }: Props) {
     };
   }, [table]);
 
-  // Load aggregation source (empresa table) filtered by periodo — feeds matrices in both modes
-  useEffect(() => {
-    if (periodo === null) return;
-    let alive = true;
-    (async () => {
-      const all: Row[] = [];
-      const pageSize = 1000;
-      for (let from = 0; ; from += pageSize) {
-        let qb = hostinger
-          .from("sinistralidade_empresa")
-          .select("Recuperacao,Tipo_Plano_Contratacao,Contratacao,VIDAS,SALDO")
-          .range(from, from + pageSize - 1);
-        if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
-        const { data, error } = await qb;
-        if (error || !data || data.length === 0) break;
-        all.push(...(data as Row[]));
-        if (data.length < pageSize) break;
-      }
-      if (!alive) return;
-      setAggRows(all);
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [periodo]);
-
-
+  // Load rows
   useEffect(() => {
     if (periodo === null) return;
     let alive = true;
@@ -321,12 +293,10 @@ export default function SinistralidadeNova({ mode }: Props) {
 
   // Aggregations for bar charts (empresa mode)
   const chartData = useMemo(() => {
-    const source = aggRows;
-
+    if (mode !== "empresa") return { recuperacao: [], tipo: [], cidade: [] };
     const agg = (field: string) => {
       const m = new Map<string, { name: string; VIDAS: number; SALDO: number }>();
-      for (const r of source) {
-
+      for (const r of rows) {
         const key = String((r as any)[field] ?? "(N/D)") || "(N/D)";
         let e = m.get(key);
         if (!e) {
@@ -340,11 +310,19 @@ export default function SinistralidadeNova({ mode }: Props) {
     };
     const recuperacao = agg("Recuperacao").sort((a, b) => b.VIDAS - a.VIDAS);
     const tipo = agg("Tipo_Plano_Contratacao").sort((a, b) => b.VIDAS - a.VIDAS);
-    const contratacao = agg("Contratacao").sort((a, b) => b.VIDAS - a.VIDAS);
-    return { recuperacao, tipo, contratacao };
-  }, [aggRows]);
-
-
+    const cidadeAll = agg("CIDADE_PLANO").sort((a, b) => b.VIDAS - a.VIDAS);
+    const top4 = cidadeAll.slice(0, 4);
+    const rest = cidadeAll.slice(4);
+    const cidade = [...top4];
+    if (rest.length) {
+      cidade.push({
+        name: "DEMAIS",
+        VIDAS: rest.reduce((s, x) => s + x.VIDAS, 0),
+        SALDO: rest.reduce((s, x) => s + x.SALDO, 0),
+      });
+    }
+    return { recuperacao, tipo, cidade };
+  }, [rows, mode]);
 
   const containerCls =
     mode === "empresa"
@@ -579,7 +557,7 @@ export default function SinistralidadeNova({ mode }: Props) {
       <div className="grid grid-cols-3 gap-3 flex-1 min-h-0">
         <MatrixCard title="Recuperação" data={chartData.recuperacao} />
         <MatrixCard title="Tipo Plano Contratação" data={chartData.tipo} />
-        <MatrixCard title="Contratação" data={chartData.contratacao} />
+        <MatrixCard title="Cidade Plano (Top 4 + Demais)" data={chartData.cidade} />
       </div>
 
     </div>
