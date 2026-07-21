@@ -344,7 +344,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                           <TooltipContent side="left" className="p-0">
                             <div className="min-w-[220px] p-2">
                               <div className="text-xs font-semibold mb-1.5 border-b border-border pb-1">
-                                Composição da Despesa
+                                {a.grupo}
                               </div>
                               <table className="text-[11px] w-full">
                                 <tbody>
@@ -354,8 +354,10 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                                   <tr><td className="pr-3 py-0.5">Consulta</td><td className="text-right tabular-nums">{fmtNum(a.consulta)}</td></tr>
                                   <tr><td className="pr-3 py-0.5">Emergência</td><td className="text-right tabular-nums">{fmtNum(a.emergencia)}</td></tr>
                                   <tr><td className="pr-3 py-0.5">Demais</td><td className="text-right tabular-nums">{fmtNum(a.demais)}</td></tr>
+                                  <tr className="border-t border-border font-semibold"><td className="pr-3 pt-1">Total</td><td className="text-right tabular-nums pt-1">{fmtNum(a.vrdespesas)}</td></tr>
                                 </tbody>
                               </table>
+
                             </div>
                           </TooltipContent>
                         </Tooltip>
