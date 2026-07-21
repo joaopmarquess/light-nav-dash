@@ -313,24 +313,17 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                         </td>
                       </tr>
                     )}
-                    {isOpen && !isLoadingKids && kids && kids.map((c) => {
-                      const csin = c.rec_total ? c.vrdespesas / c.rec_total : 0;
-                      return (
-                        <tr
-                          key={`${a.grupo}::${c.cdpln}::${c.dspln}`}
-                          className="border-b border-border/30 bg-muted/10"
-                        >
-                          <td className="px-2 py-1 pl-8 truncate max-w-[320px]" title={`${c.cdpln} ${c.dspln}`}>
-                            <span className="text-muted-foreground">{c.cdpln}</span>{" "}
-                            <span>{c.dspln}</span>
-                          </td>
-                          <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.rec_total)}</td>
-                          <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.vrdespesas)}</td>
-                          <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.saldo)}</td>
-                          <td className="px-2 py-1 text-right tabular-nums">{fmtPct(csin)}</td>
-                        </tr>
-                      );
-                    })}
+                    {isOpen && !isLoadingKids && kids && kids.map((c) => (
+                      <tr
+                        key={`${a.grupo}::${c.cdpln}`}
+                        className="border-b border-border/30 bg-muted/10"
+                      >
+                        <td className="px-2 py-1 pl-8 truncate max-w-[320px]" title={c.cdpln}>
+                          {c.cdpln}
+                        </td>
+                        <td colSpan={4} />
+                      </tr>
+                    ))}
                   </Fragment>
                 );
               })}
