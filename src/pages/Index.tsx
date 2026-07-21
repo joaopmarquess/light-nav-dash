@@ -57,6 +57,7 @@ import OdoLancamentos from "@/components/odo/OdoLancamentos";
 import OdoAcoes from "@/components/odo/OdoAcoes";
 import SinistralidadeConsulta from "@/components/SinistralidadeConsulta";
 import SinistralidadeNova from "@/components/SinistralidadeNova";
+import SinistralidadeCidades from "@/components/SinistralidadeCidades";
 
 
 
