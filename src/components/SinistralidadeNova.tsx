@@ -30,6 +30,12 @@ type ChildRow = {
   rec_total: number;
   vrdespesas: number;
   saldo: number;
+  internacao: number;
+  terapia: number;
+  exame: number;
+  consulta: number;
+  emergencia: number;
+  demais: number;
 };
 
 type SortKey = "GRUPO" | "vidas" | "rec_total" | "vrdespesas" | "SALDO" | "sin";
