@@ -204,7 +204,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
         cur.exame += Number(r.exame) || 0;
         cur.consulta += Number(r.consulta) || 0;
         cur.emergencia += Number(r.emergencia) || 0;
-        cur.demais += Number(r.demais) || 0;
+        cur.demais += Number(r.DEMAIS) || 0;
         const nm = String(r.nmcli ?? "");
         if (nm) cur.nmclis.add(nm);
         map.set(cd, cur);
