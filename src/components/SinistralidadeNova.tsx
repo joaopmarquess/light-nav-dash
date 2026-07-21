@@ -31,7 +31,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
   const [periodo, setPeriodo] = useState<string>("");
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
-  const [rows, setRows] = useState<Row[]>([]);
+  const [aggRows, setAggRows] = useState<Agg[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingRows, setLoadingRows] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("SALDO");
