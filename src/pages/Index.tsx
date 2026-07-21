@@ -100,7 +100,7 @@ const menuItems: MenuItem[] = [
     icon: Percent,
     label: "Sinistralidade",
     children: [
-      { icon: UserCheck, label: "Beneficiário" },
+      { icon: UserCheck, label: "Planos/Empresas" },
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
   },
@@ -321,8 +321,9 @@ const Index = () => {
           ) : active === "__removed_sin__" ? (
             <div />
 
-          ) : active === "Beneficiário" ? (
+          ) : active === "Planos/Empresas" ? (
             <SinistralidadeNova mode="beneficiario" />
+
 
           ) : active === "oculto.Empresa" ? (
             <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex items-center justify-center text-muted-foreground text-sm">
