@@ -52,29 +52,19 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     let alive = true;
     (async () => {
       setLoading(true);
-      const uniqSet = new Set<string>();
-      const chunk = 1000;
-      let err: any = null;
-      for (let from = 0; ; from += chunk) {
-        const { data, error } = await hostinger
-          .from("sinistralidade")
-          .select("PERIODO")
-          .order("PERIODO", { ascending: false })
-          .range(from, from + chunk - 1);
-        if (error) { err = error; break; }
-        if (!data || data.length === 0) break;
-        for (const r of data as any[]) {
-          const v = String(r.PERIODO ?? "");
-          if (v) uniqSet.add(v);
-        }
-        if (data.length < chunk) break;
-      }
+      const { data, error } = await hostinger.rpc("sin_periodos");
       if (!alive) return;
-      if (err) {
-        console.error("PERIODO load error", err);
+      if (error) {
+        console.error("PERIODO load error", error);
         setPeriodos([]);
       } else {
-        const uniq = Array.from(uniqSet);
+        const uniq = Array.from(
+          new Set(
+            ((data ?? []) as any[])
+              .map((r) => String(r.periodo ?? r.PERIODO ?? ""))
+              .filter(Boolean),
+          ),
+        );
         uniq.sort().reverse();
         setPeriodos(uniq);
         setPeriodo(uniq[0] ?? "");
