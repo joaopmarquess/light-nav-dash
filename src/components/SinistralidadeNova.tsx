@@ -427,7 +427,7 @@ export default function SinistralidadeNova({ mode }: Props) {
                 : rows.map((r, i) => {
                     const nums: Record<string, number> = {};
                     for (const c of NUM_COLS) nums[c] = Number(r[c]) || 0;
-                    const name = `${r.codigo ?? ""} — ${r.nmcli ?? ""}`;
+                    const name = `${r.nmcli ?? ""} (${r.codigo ?? ""})`;
                     return (
                       <tr key={i} className="border-b border-border/50 hover:bg-accent/40">
                         <td className="px-2 py-1 truncate w-[220px] max-w-[220px]" title={name}>
