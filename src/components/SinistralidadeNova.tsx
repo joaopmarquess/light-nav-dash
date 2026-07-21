@@ -192,25 +192,28 @@ export default function SinistralidadeNova({ mode }: Props) {
         setTotalCount(all.length);
         setLoading(false);
       } else {
-        // Load ALL rows for beneficiario (client-side scroll, no pagination)
-        const all: Row[] = [];
-        const pageSize = 1000;
-        for (let from = 0; ; from += pageSize) {
-          let qb = hostinger.from(table).select("*").range(from, from + pageSize - 1);
-          if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
-          if (debouncedQ) {
-            const like = `%${debouncedQ}%`;
-            qb = qb.or(`nmcli.ilike.${like},codigo.ilike.${like},cdpln::text.ilike.${like}`);
-          }
-          const { data, error } = await qb;
-          if (!alive) return;
-          if (error) break;
-          all.push(...((data ?? []) as Row[]));
-          if (!data || data.length < pageSize) break;
+        // Server-side paginated for beneficiario
+        const sortCol =
+          sortKey === "NAME" ? "nmcli" : sortKey === "VIDA" ? "VIDAS" : (sortKey as string);
+        let qb = hostinger
+          .from(table)
+          .select("*", { count: "exact" })
+          .order(sortCol, { ascending: sortDir === "asc" })
+          .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+        if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
+        if (debouncedQ) {
+          const like = `%${debouncedQ}%`;
+          qb = qb.or(`nmcli.ilike.${like},codigo.ilike.${like},cdpln::text.ilike.${like}`);
         }
+        const { data, count, error } = await qb;
         if (!alive) return;
-        setRows(all);
-        setTotalCount(all.length);
+        if (error) {
+          setRows([]);
+          setTotalCount(0);
+        } else {
+          setRows((data ?? []) as Row[]);
+          setTotalCount(count ?? 0);
+        }
         setLoading(false);
       }
     })();
@@ -373,7 +376,7 @@ export default function SinistralidadeNova({ mode }: Props) {
   const containerCls =
     mode === "empresa"
       ? "bg-card rounded-xl border border-border shadow-sm h-[55vh] flex flex-col overflow-hidden"
-      : "bg-card rounded-xl border border-border shadow-sm h-[48vh] flex flex-col overflow-hidden";
+      : "bg-card rounded-xl border border-border shadow-sm h-[65vh] flex flex-col overflow-hidden";
 
   const mainSection = (
     <section className={containerCls}>
@@ -487,7 +490,7 @@ export default function SinistralidadeNova({ mode }: Props) {
             <tfoot className="sticky bottom-0 bg-card">
               <tr className="border-t-2 border-border font-bold">
                 <td className="px-2 py-1.5">
-                  TOTAL
+                  {mode === "beneficiario" ? "TOTAL (página)" : "TOTAL"}
                 </td>
                 {METRIC_COLS.map((c) => {
                   let v: number;
@@ -507,32 +510,60 @@ export default function SinistralidadeNova({ mode }: Props) {
         )}
       </div>
 
+      {mode === "beneficiario" && !loading && totalCount > 0 && (
+        <div className="flex items-center justify-end gap-2 p-2 border-t border-border text-xs">
+          <span className="text-muted-foreground mr-2">
+            Página {page + 1} de {totalPages.toLocaleString("pt-BR")} · {totalCount.toLocaleString("pt-BR")} linhas
+          </span>
+          <button
+            onClick={() => setPage(0)}
+            disabled={page === 0}
+            className="h-7 w-7 flex items-center justify-center rounded border border-border disabled:opacity-40"
+          >
+            <ChevronsLeft className="h-3 w-3" />
+          </button>
+          <button
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+            className="h-7 w-7 flex items-center justify-center rounded border border-border disabled:opacity-40"
+          >
+            <ChevronLeft className="h-3 w-3" />
+          </button>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page >= totalPages - 1}
+            className="h-7 w-7 flex items-center justify-center rounded border border-border disabled:opacity-40"
+          >
+            <ChevronRight className="h-3 w-3" />
+          </button>
+          <button
+            onClick={() => setPage(totalPages - 1)}
+            disabled={page >= totalPages - 1}
+            className="h-7 w-7 flex items-center justify-center rounded border border-border disabled:opacity-40"
+          >
+            <ChevronsRight className="h-3 w-3" />
+          </button>
+        </div>
+      )}
     </section>
   );
 
   const cidadeData = useMemo(() => {
     const m = new Map<string, { name: string; VIDAS: number }>();
-    let noneVidas = 0;
     for (const r of cidadeRows) {
-      const raw = (r as any).CIDADE_OFICIAL;
-      const key = String(raw ?? "(N/D)") || "(N/D)";
-      const v = Number((r as any).VIDAS) || 0;
-      if (raw == null || key === "None" || key === "(N/D)") {
-        noneVidas += v;
-        continue;
-      }
+      const key = String((r as any).CIDADE_OFICIAL ?? "(N/D)") || "(N/D)";
       let e = m.get(key);
       if (!e) {
         e = { name: key, VIDAS: 0 };
         m.set(key, e);
       }
-      e.VIDAS += v;
+      e.VIDAS += Number((r as any).VIDAS) || 0;
     }
     const arr = Array.from(m.values()).sort((a, b) => b.VIDAS - a.VIDAS);
     const top = arr.slice(0, 5);
-    const restVidas = arr.slice(5).reduce((s, r) => s + r.VIDAS, 0) + noneVidas;
-    if (restVidas > 0) {
-      top.push({ name: "DEMAIS", VIDAS: restVidas });
+    const rest = arr.slice(5);
+    if (rest.length > 0) {
+      top.push({ name: "DEMAIS", VIDAS: rest.reduce((s, r) => s + r.VIDAS, 0) });
     }
     return top;
   }, [cidadeRows]);
@@ -624,7 +655,7 @@ export default function SinistralidadeNova({ mode }: Props) {
     return (
       <div className="flex flex-col gap-3 h-[calc(100vh-9rem)]">
         {mainSection}
-        <div className="flex-1 min-h-0">
+        <div className="grid grid-cols-3 gap-3 flex-1 min-h-0">
           <CidadeCard />
         </div>
       </div>
