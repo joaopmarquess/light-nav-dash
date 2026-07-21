@@ -87,7 +87,7 @@ export default function SinistralidadeCidades() {
     };
   }, []);
 
-  // Load rows (chunked) from sinistralidade_beneficiario, selecting only needed columns
+  // Load rows (chunked) from sinistralidade, selecting only needed columns
   useEffect(() => {
     if (periodo === null) return;
     let alive = true;
@@ -99,7 +99,7 @@ export default function SinistralidadeCidades() {
       const chunk = 1000;
       for (let from = 0; ; from += chunk) {
         let qb = hostinger
-          .from("sinistralidade_beneficiario")
+          .from("sinistralidade")
           .select(cols)
           .range(from, from + chunk - 1);
         if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
