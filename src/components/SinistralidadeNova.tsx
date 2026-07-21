@@ -19,11 +19,6 @@ type Agg = {
 
 type ChildRow = {
   cdpln: string;
-  dspln: string;
-  rec_total: number;
-  vrdespesas: number;
-  saldo: number;
-  vidas: number;
 };
 
 type SortKey = "GRUPO" | "rec_total" | "vrdespesas" | "SALDO" | "sin";
@@ -161,11 +156,11 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     setLoadingChild((s) => ({ ...s, [grupo]: true }));
     const chunk = 1000;
     let from = 0;
-    const map = new Map<string, ChildRow>();
+    const set = new Set<string>();
     while (true) {
       const { data, error } = await hostinger
         .from("sinistralidade")
-        .select("cdpln,dspln,rec_total,vrdespesas,vidas")
+        .select("cdpln")
         .eq("PERIODO", periodo)
         .eq("GRUPO", grupo)
         .range(from, from + chunk - 1);
@@ -176,29 +171,12 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
       const rows = (data ?? []) as any[];
       for (const r of rows) {
         const cd = String(r.cdpln ?? "");
-        const ds = String(r.dspln ?? "");
-        const key = `${cd}||${ds}`;
-        const cur = map.get(key) ?? {
-          cdpln: cd,
-          dspln: ds,
-          rec_total: 0,
-          vrdespesas: 0,
-          saldo: 0,
-          vidas: 0,
-        };
-        cur.rec_total += Number(r.rec_total) || 0;
-        cur.vrdespesas += Number(r.vrdespesas) || 0;
-        cur.vidas += Number(r.vidas) || 0;
-        map.set(key, cur);
+        if (cd) set.add(cd);
       }
       if (rows.length < chunk) break;
       from += chunk;
     }
-    const arr = Array.from(map.values()).map((c) => ({
-      ...c,
-      saldo: c.rec_total - c.vrdespesas,
-    }));
-    arr.sort((a, b) => b.saldo - a.saldo);
+    const arr: ChildRow[] = Array.from(set).sort().map((cdpln) => ({ cdpln }));
     setChildren((s) => ({ ...s, [grupo]: arr }));
     setLoadingChild((s) => ({ ...s, [grupo]: false }));
   };
@@ -335,24 +313,17 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                         </td>
                       </tr>
                     )}
-                    {isOpen && !isLoadingKids && kids && kids.map((c) => {
-                      const csin = c.rec_total ? c.vrdespesas / c.rec_total : 0;
-                      return (
-                        <tr
-                          key={`${a.grupo}::${c.cdpln}::${c.dspln}`}
-                          className="border-b border-border/30 bg-muted/10"
-                        >
-                          <td className="px-2 py-1 pl-8 truncate max-w-[320px]" title={`${c.cdpln} ${c.dspln}`}>
-                            <span className="text-muted-foreground">{c.cdpln}</span>{" "}
-                            <span>{c.dspln}</span>
-                          </td>
-                          <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.rec_total)}</td>
-                          <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.vrdespesas)}</td>
-                          <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.saldo)}</td>
-                          <td className="px-2 py-1 text-right tabular-nums">{fmtPct(csin)}</td>
-                        </tr>
-                      );
-                    })}
+                    {isOpen && !isLoadingKids && kids && kids.map((c) => (
+                      <tr
+                        key={`${a.grupo}::${c.cdpln}`}
+                        className="border-b border-border/30 bg-muted/10"
+                      >
+                        <td className="px-2 py-1 pl-8 truncate max-w-[320px]" title={c.cdpln}>
+                          {c.cdpln}
+                        </td>
+                        <td colSpan={4} />
+                      </tr>
+                    ))}
                   </Fragment>
                 );
               })}
