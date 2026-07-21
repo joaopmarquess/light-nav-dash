@@ -318,6 +318,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                           <span>{a.grupo}</span>
                         </button>
                       </td>
+                      <td className="px-2 py-1 text-right tabular-nums">{a.vidas.toLocaleString("pt-BR")}</td>
                       <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.rec_total)}</td>
                       <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.vrdespesas)}</td>
                       <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.saldo)}</td>
