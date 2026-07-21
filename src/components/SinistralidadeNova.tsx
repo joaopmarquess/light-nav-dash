@@ -184,7 +184,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     while (true) {
       const { data, error } = await hostinger
         .from("sinistralidade")
-        .select("cdpln,nmcli,rec_total,vrdespesas,internacao,terapia,exame,consulta,emergencia,demais")
+        .select('cdpln,nmcli,rec_total,vrdespesas,internacao,terapia,exame,consulta,emergencia,"DEMAIS"')
         .eq("PERIODO", periodo)
         .eq("GRUPO", grupo)
         .range(from, from + chunk - 1);
