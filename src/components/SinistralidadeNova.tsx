@@ -46,6 +46,10 @@ const fmtPct = (n: number) =>
   Number.isFinite(n)
     ? `${(n * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
     : "-";
+const fmtShare = (v: number, total: number) => {
+  if (!total) return "0%";
+  return `${Math.round((v / total) * 100)}%`;
+};
 
 export default function SinistralidadeNova({ mode: _mode }: Props) {
   const [periodos, setPeriodos] = useState<string[]>([]);
@@ -367,12 +371,12 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                               </div>
                               <table className="text-[11px] w-full">
                                 <tbody>
-                                  <tr><td className="pr-3 py-0.5">Internação</td><td className="text-right tabular-nums">{fmtNum(a.internacao)}</td></tr>
-                                  <tr><td className="pr-3 py-0.5">Terapia</td><td className="text-right tabular-nums">{fmtNum(a.terapia)}</td></tr>
-                                  <tr><td className="pr-3 py-0.5">Exame</td><td className="text-right tabular-nums">{fmtNum(a.exame)}</td></tr>
-                                  <tr><td className="pr-3 py-0.5">Consulta</td><td className="text-right tabular-nums">{fmtNum(a.consulta)}</td></tr>
-                                  <tr><td className="pr-3 py-0.5">Emergência</td><td className="text-right tabular-nums">{fmtNum(a.emergencia)}</td></tr>
-                                  <tr><td className="pr-3 py-0.5">Demais</td><td className="text-right tabular-nums">{fmtNum(a.demais)}</td></tr>
+                                  <tr><td className="pr-3 py-0.5">Internação</td><td className="text-right tabular-nums">{fmtNum(a.internacao)} <span className="text-muted-foreground">({fmtShare(a.internacao, a.vrdespesas)})</span></td></tr>
+                                  <tr><td className="pr-3 py-0.5">Terapia</td><td className="text-right tabular-nums">{fmtNum(a.terapia)} <span className="text-muted-foreground">({fmtShare(a.terapia, a.vrdespesas)})</span></td></tr>
+                                  <tr><td className="pr-3 py-0.5">Exame</td><td className="text-right tabular-nums">{fmtNum(a.exame)} <span className="text-muted-foreground">({fmtShare(a.exame, a.vrdespesas)})</span></td></tr>
+                                  <tr><td className="pr-3 py-0.5">Consulta</td><td className="text-right tabular-nums">{fmtNum(a.consulta)} <span className="text-muted-foreground">({fmtShare(a.consulta, a.vrdespesas)})</span></td></tr>
+                                  <tr><td className="pr-3 py-0.5">Emergência</td><td className="text-right tabular-nums">{fmtNum(a.emergencia)} <span className="text-muted-foreground">({fmtShare(a.emergencia, a.vrdespesas)})</span></td></tr>
+                                  <tr><td className="pr-3 py-0.5">Demais</td><td className="text-right tabular-nums">{fmtNum(a.demais)} <span className="text-muted-foreground">({fmtShare(a.demais, a.vrdespesas)})</span></td></tr>
                                   <tr className="border-t border-border font-semibold"><td className="pr-3 pt-1">Total</td><td className="text-right tabular-nums pt-1">{fmtNum(a.vrdespesas)}</td></tr>
                                 </tbody>
                               </table>
@@ -425,12 +429,12 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                                   </div>
                                   <table className="text-[11px] w-full">
                                     <tbody>
-                                      <tr><td className="pr-3 py-0.5">Internação</td><td className="text-right tabular-nums">{fmtNum(c.internacao)}</td></tr>
-                                      <tr><td className="pr-3 py-0.5">Terapia</td><td className="text-right tabular-nums">{fmtNum(c.terapia)}</td></tr>
-                                      <tr><td className="pr-3 py-0.5">Exame</td><td className="text-right tabular-nums">{fmtNum(c.exame)}</td></tr>
-                                      <tr><td className="pr-3 py-0.5">Consulta</td><td className="text-right tabular-nums">{fmtNum(c.consulta)}</td></tr>
-                                      <tr><td className="pr-3 py-0.5">Emergência</td><td className="text-right tabular-nums">{fmtNum(c.emergencia)}</td></tr>
-                                      <tr><td className="pr-3 py-0.5">Demais</td><td className="text-right tabular-nums">{fmtNum(c.demais)}</td></tr>
+                                      <tr><td className="pr-3 py-0.5">Internação</td><td className="text-right tabular-nums">{fmtNum(c.internacao)} <span className="text-muted-foreground">({fmtShare(c.internacao, c.vrdespesas)})</span></td></tr>
+                                      <tr><td className="pr-3 py-0.5">Terapia</td><td className="text-right tabular-nums">{fmtNum(c.terapia)} <span className="text-muted-foreground">({fmtShare(c.terapia, c.vrdespesas)})</span></td></tr>
+                                      <tr><td className="pr-3 py-0.5">Exame</td><td className="text-right tabular-nums">{fmtNum(c.exame)} <span className="text-muted-foreground">({fmtShare(c.exame, c.vrdespesas)})</span></td></tr>
+                                      <tr><td className="pr-3 py-0.5">Consulta</td><td className="text-right tabular-nums">{fmtNum(c.consulta)} <span className="text-muted-foreground">({fmtShare(c.consulta, c.vrdespesas)})</span></td></tr>
+                                      <tr><td className="pr-3 py-0.5">Emergência</td><td className="text-right tabular-nums">{fmtNum(c.emergencia)} <span className="text-muted-foreground">({fmtShare(c.emergencia, c.vrdespesas)})</span></td></tr>
+                                      <tr><td className="pr-3 py-0.5">Demais</td><td className="text-right tabular-nums">{fmtNum(c.demais)} <span className="text-muted-foreground">({fmtShare(c.demais, c.vrdespesas)})</span></td></tr>
                                       <tr className="border-t border-border font-semibold"><td className="pr-3 pt-1">Total</td><td className="text-right tabular-nums pt-1">{fmtNum(c.vrdespesas)}</td></tr>
                                     </tbody>
                                   </table>
