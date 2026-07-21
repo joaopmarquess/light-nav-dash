@@ -148,7 +148,7 @@ export default function SinistralidadeNova({ mode }: Props) {
         if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
         if (debouncedQ) {
           const like = `%${debouncedQ}%`;
-          qb = qb.or(`nmcli.ilike.${like},codigo.ilike.${like},cdpln::text.ilike.${like}`);
+          qb = qb.or(`nmcli.ilike.${like},codigo.ilike.${like}`);
         }
         const { data, count, error } = await qb;
         if (!alive) return;
