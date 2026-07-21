@@ -161,11 +161,11 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     setLoadingChild((s) => ({ ...s, [grupo]: true }));
     const chunk = 1000;
     let from = 0;
-    const map = new Map<string, { rec_total: number; vrdespesas: number }>();
+    const map = new Map<string, { rec_total: number; vrdespesas: number; nmclis: Set<string> }>();
     while (true) {
       const { data, error } = await hostinger
         .from("sinistralidade")
-        .select("cdpln,rec_total,vrdespesas")
+        .select("cdpln,nmcli,rec_total,vrdespesas")
         .eq("PERIODO", periodo)
         .eq("GRUPO", grupo)
         .range(from, from + chunk - 1);
@@ -177,9 +177,11 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
       for (const r of rows) {
         const cd = String(r.cdpln ?? "");
         if (!cd) continue;
-        const cur = map.get(cd) ?? { rec_total: 0, vrdespesas: 0 };
+        const cur = map.get(cd) ?? { rec_total: 0, vrdespesas: 0, nmclis: new Set<string>() };
         cur.rec_total += Number(r.rec_total) || 0;
         cur.vrdespesas += Number(r.vrdespesas) || 0;
+        const nm = String(r.nmcli ?? "");
+        if (nm) cur.nmclis.add(nm);
         map.set(cd, cur);
       }
       if (rows.length < chunk) break;
@@ -188,6 +190,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     const arr: ChildRow[] = Array.from(map.entries())
       .map(([cdpln, v]) => ({
         cdpln,
+        vidas: v.nmclis.size,
         rec_total: v.rec_total,
         vrdespesas: v.vrdespesas,
         saldo: v.rec_total - v.vrdespesas,
