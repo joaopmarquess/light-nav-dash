@@ -19,6 +19,9 @@ type Agg = {
 
 type ChildRow = {
   cdpln: string;
+  rec_total: number;
+  vrdespesas: number;
+  saldo: number;
 };
 
 type SortKey = "GRUPO" | "rec_total" | "vrdespesas" | "SALDO" | "sin";
