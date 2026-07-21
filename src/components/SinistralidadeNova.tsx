@@ -63,8 +63,8 @@ interface Props {
 }
 
 const TABLE: Record<Mode, string> = {
-  empresa: "sinistralidade_empresa",
-  beneficiario: "sinistralidade_beneficiario",
+  empresa: "sinistralidade",
+  beneficiario: "sinistralidade",
 };
 
 type Agg = { name: string; key: string; vida: number; nums: Record<string, number> };
