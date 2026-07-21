@@ -30,6 +30,12 @@ type ChildRow = {
   rec_total: number;
   vrdespesas: number;
   saldo: number;
+  internacao: number;
+  terapia: number;
+  exame: number;
+  consulta: number;
+  emergencia: number;
+  demais: number;
 };
 
 type SortKey = "GRUPO" | "vidas" | "rec_total" | "vrdespesas" | "SALDO" | "sin";
@@ -174,11 +180,11 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     setLoadingChild((s) => ({ ...s, [grupo]: true }));
     const chunk = 1000;
     let from = 0;
-    const map = new Map<string, { rec_total: number; vrdespesas: number; nmclis: Set<string> }>();
+    const map = new Map<string, { rec_total: number; vrdespesas: number; internacao: number; terapia: number; exame: number; consulta: number; emergencia: number; demais: number; nmclis: Set<string> }>();
     while (true) {
       const { data, error } = await hostinger
         .from("sinistralidade")
-        .select("cdpln,nmcli,rec_total,vrdespesas")
+        .select("cdpln,nmcli,rec_total,vrdespesas,internacao,terapia,exame,consulta,emergencia,demais")
         .eq("PERIODO", periodo)
         .eq("GRUPO", grupo)
         .range(from, from + chunk - 1);
@@ -190,9 +196,15 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
       for (const r of rows) {
         const cd = String(r.cdpln ?? "");
         if (!cd) continue;
-        const cur = map.get(cd) ?? { rec_total: 0, vrdespesas: 0, nmclis: new Set<string>() };
+        const cur = map.get(cd) ?? { rec_total: 0, vrdespesas: 0, internacao: 0, terapia: 0, exame: 0, consulta: 0, emergencia: 0, demais: 0, nmclis: new Set<string>() };
         cur.rec_total += Number(r.rec_total) || 0;
         cur.vrdespesas += Number(r.vrdespesas) || 0;
+        cur.internacao += Number(r.internacao) || 0;
+        cur.terapia += Number(r.terapia) || 0;
+        cur.exame += Number(r.exame) || 0;
+        cur.consulta += Number(r.consulta) || 0;
+        cur.emergencia += Number(r.emergencia) || 0;
+        cur.demais += Number(r.demais) || 0;
         const nm = String(r.nmcli ?? "");
         if (nm) cur.nmclis.add(nm);
         map.set(cd, cur);
@@ -207,8 +219,15 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
         rec_total: v.rec_total,
         vrdespesas: v.vrdespesas,
         saldo: v.rec_total - v.vrdespesas,
+        internacao: v.internacao,
+        terapia: v.terapia,
+        exame: v.exame,
+        consulta: v.consulta,
+        emergencia: v.emergencia,
+        demais: v.demais,
       }))
       .sort((a, b) => b.saldo - a.saldo);
+
     setChildren((s) => ({ ...s, [grupo]: arr }));
     setLoadingChild((s) => ({ ...s, [grupo]: false }));
   };
@@ -392,7 +411,33 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                           </td>
                           <td className="px-2 py-1 text-right tabular-nums">{c.vidas.toLocaleString("pt-BR")}</td>
                           <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.rec_total)}</td>
-                          <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.vrdespesas)}</td>
+                          <td className="px-2 py-1 text-right tabular-nums">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="cursor-help underline decoration-dotted decoration-muted-foreground/50 underline-offset-2">
+                                  {fmtNum(c.vrdespesas)}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="left" className="p-0">
+                                <div className="min-w-[220px] p-2">
+                                  <div className="text-xs font-semibold mb-1.5 border-b border-border pb-1">
+                                    {c.cdpln}
+                                  </div>
+                                  <table className="text-[11px] w-full">
+                                    <tbody>
+                                      <tr><td className="pr-3 py-0.5">Internação</td><td className="text-right tabular-nums">{fmtNum(c.internacao)}</td></tr>
+                                      <tr><td className="pr-3 py-0.5">Terapia</td><td className="text-right tabular-nums">{fmtNum(c.terapia)}</td></tr>
+                                      <tr><td className="pr-3 py-0.5">Exame</td><td className="text-right tabular-nums">{fmtNum(c.exame)}</td></tr>
+                                      <tr><td className="pr-3 py-0.5">Consulta</td><td className="text-right tabular-nums">{fmtNum(c.consulta)}</td></tr>
+                                      <tr><td className="pr-3 py-0.5">Emergência</td><td className="text-right tabular-nums">{fmtNum(c.emergencia)}</td></tr>
+                                      <tr><td className="pr-3 py-0.5">Demais</td><td className="text-right tabular-nums">{fmtNum(c.demais)}</td></tr>
+                                      <tr className="border-t border-border font-semibold"><td className="pr-3 pt-1">Total</td><td className="text-right tabular-nums pt-1">{fmtNum(c.vrdespesas)}</td></tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </td>
                           <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.saldo)}</td>
                           <td className="px-2 py-1 text-right tabular-nums">{fmtPct(csin)}</td>
                         </tr>
