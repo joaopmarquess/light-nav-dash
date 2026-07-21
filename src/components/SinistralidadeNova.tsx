@@ -19,7 +19,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     (async () => {
       setLoading(true);
       const { data, error } = await hostinger
-        .from("Sinistralidade")
+        .from("sinistralidade")
         .select("PERIODO");
       if (!alive) return;
       if (error) {
