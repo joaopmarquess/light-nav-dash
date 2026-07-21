@@ -2,6 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown, Loader2 } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Mode = "empresa" | "beneficiario";
 
@@ -15,6 +16,12 @@ type Agg = {
   vrdespesas: number;
   saldo: number;
   vidas: number;
+  internacao: number;
+  terapia: number;
+  exame: number;
+  consulta: number;
+  emergencia: number;
+  demais: number;
 };
 
 type ChildRow = {
