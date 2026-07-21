@@ -90,6 +90,8 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
           .from("sinistralidade")
           .select('GRUPO,rec_total,vrdespesas,"SALDO",nmcli,codigo')
           .eq("PERIODO", periodo)
+          .order("codigo", { ascending: true })
+          .order("nmcli", { ascending: true })
           .range(from, from + chunk - 1);
         if (debouncedQ) {
           const t = debouncedQ.replace(/[%,]/g, "");
