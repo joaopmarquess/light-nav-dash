@@ -102,6 +102,7 @@ const menuItems: MenuItem[] = [
     children: [
       { icon: Building2, label: "Empresa" },
       { icon: UserCheck, label: "Beneficiário" },
+      { icon: Building2, label: "Cidades" },
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
   },
