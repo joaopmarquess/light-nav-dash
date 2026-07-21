@@ -1,18 +1,12 @@
 import { useEffect, useState } from "react";
 
 const MESSAGES = [
-  "Convocando as vidas seguradas...",
-  "Somando sinistros com carinho...",
-  "Perseguindo copart. fujona...",
-  "Contando internações nos dedos...",
-  "Negociando com a planilha...",
-  "Alinhando decimais teimosos...",
-  "Empilhando terapias e exames...",
-  "Passando pano no vrdespesas...",
-  "Cochichando com o Postgres...",
-  "Espiando a materialized view...",
-  "Domando o SALDO instável...",
-  "Fazendo as vidas darem tchau...",
+  "Carregando dados...",
+  "Consultando o banco...",
+  "Agregando resultados...",
+  "Processando informações...",
+  "Preparando visualização...",
+  "Calculando totais...",
 ];
 
 const FunLoader = ({ label }: { label?: string }) => {
