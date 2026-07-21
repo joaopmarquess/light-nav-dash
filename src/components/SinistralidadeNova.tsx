@@ -2,6 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown, Loader2 } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Mode = "empresa" | "beneficiario";
 
@@ -15,6 +16,12 @@ type Agg = {
   vrdespesas: number;
   saldo: number;
   vidas: number;
+  internacao: number;
+  terapia: number;
+  exame: number;
+  consulta: number;
+  emergencia: number;
+  demais: number;
 };
 
 type ChildRow = {
@@ -102,6 +109,12 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
           vrdespesas: Number(r.vrdespesas) || 0,
           saldo: Number(r.saldo) || 0,
           vidas: Number(r.vidas) || 0,
+          internacao: Number(r.internacao) || 0,
+          terapia: Number(r.terapia) || 0,
+          exame: Number(r.exame) || 0,
+          consulta: Number(r.consulta) || 0,
+          emergencia: Number(r.emergencia) || 0,
+          demais: Number(r.demais) || 0,
         }));
         setAggRows(mapped);
       }
@@ -209,6 +222,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
   };
 
   return (
+    <TooltipProvider delayDuration={100}>
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
       <div className="flex items-center gap-3 p-3 border-b border-border flex-wrap">
         <div className="flex items-center gap-2">
@@ -320,7 +334,32 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                       </td>
                       <td className="px-2 py-1 text-right tabular-nums">{a.vidas.toLocaleString("pt-BR")}</td>
                       <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.rec_total)}</td>
-                      <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.vrdespesas)}</td>
+                      <td className="px-2 py-1 text-right tabular-nums">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help underline decoration-dotted decoration-muted-foreground/50 underline-offset-2">
+                              {fmtNum(a.vrdespesas)}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="p-0">
+                            <div className="min-w-[220px] p-2">
+                              <div className="text-xs font-semibold mb-1.5 border-b border-border pb-1">
+                                Composição da Despesa
+                              </div>
+                              <table className="text-[11px] w-full">
+                                <tbody>
+                                  <tr><td className="pr-3 py-0.5">Internação</td><td className="text-right tabular-nums">{fmtNum(a.internacao)}</td></tr>
+                                  <tr><td className="pr-3 py-0.5">Terapia</td><td className="text-right tabular-nums">{fmtNum(a.terapia)}</td></tr>
+                                  <tr><td className="pr-3 py-0.5">Exame</td><td className="text-right tabular-nums">{fmtNum(a.exame)}</td></tr>
+                                  <tr><td className="pr-3 py-0.5">Consulta</td><td className="text-right tabular-nums">{fmtNum(a.consulta)}</td></tr>
+                                  <tr><td className="pr-3 py-0.5">Emergência</td><td className="text-right tabular-nums">{fmtNum(a.emergencia)}</td></tr>
+                                  <tr><td className="pr-3 py-0.5">Demais</td><td className="text-right tabular-nums">{fmtNum(a.demais)}</td></tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </td>
                       <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.saldo)}</td>
                       <td className="px-2 py-1 text-right tabular-nums">{fmtPct(sin)}</td>
                     </tr>
@@ -375,5 +414,6 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
         )}
       </div>
     </section>
+    </TooltipProvider>
   );
 }
