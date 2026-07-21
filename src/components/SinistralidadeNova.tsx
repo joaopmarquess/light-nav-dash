@@ -165,7 +165,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     while (true) {
       const { data, error } = await hostinger
         .from("sinistralidade")
-        .select("cdpln,dspln,rec_total,vrdespesas,VIDAS")
+        .select("cdpln,dspln,rec_total,vrdespesas,vidas")
         .eq("PERIODO", periodo)
         .eq("GRUPO", grupo)
         .range(from, from + chunk - 1);
@@ -188,7 +188,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
         };
         cur.rec_total += Number(r.rec_total) || 0;
         cur.vrdespesas += Number(r.vrdespesas) || 0;
-        cur.vidas += Number(r.VIDAS) || 0;
+        cur.vidas += Number(r.vidas) || 0;
         map.set(key, cur);
       }
       if (rows.length < chunk) break;
