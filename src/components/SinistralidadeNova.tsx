@@ -19,12 +19,13 @@ type Agg = {
 
 type ChildRow = {
   cdpln: string;
+  vidas: number;
   rec_total: number;
   vrdespesas: number;
   saldo: number;
 };
 
-type SortKey = "GRUPO" | "rec_total" | "vrdespesas" | "SALDO" | "sin";
+type SortKey = "GRUPO" | "vidas" | "rec_total" | "vrdespesas" | "SALDO" | "sin";
 
 const fmtNum = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
