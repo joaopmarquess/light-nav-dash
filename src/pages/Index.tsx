@@ -57,6 +57,7 @@ import OdoLancamentos from "@/components/odo/OdoLancamentos";
 import OdoAcoes from "@/components/odo/OdoAcoes";
 import SinistralidadeConsulta from "@/components/SinistralidadeConsulta";
 import SinistralidadeNova from "@/components/SinistralidadeNova";
+import SinistralidadeCidades from "@/components/SinistralidadeCidades";
 
 
 
@@ -101,6 +102,7 @@ const menuItems: MenuItem[] = [
     children: [
       { icon: Building2, label: "Empresa" },
       { icon: UserCheck, label: "Beneficiário" },
+      { icon: Building2, label: "Cidades" },
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
   },
@@ -325,6 +327,8 @@ const Index = () => {
             <SinistralidadeNova mode="empresa" />
           ) : active === "Beneficiário" ? (
             <SinistralidadeNova mode="beneficiario" />
+          ) : active === "Cidades" ? (
+            <SinistralidadeCidades />
           ) : active === "oculto.Empresa" ? (
             <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex items-center justify-center text-muted-foreground text-sm">
               Submenu oculto — processamento suspenso.
