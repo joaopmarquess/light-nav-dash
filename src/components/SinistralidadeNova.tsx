@@ -19,12 +19,13 @@ type Agg = {
 
 type ChildRow = {
   cdpln: string;
+  vidas: number;
   rec_total: number;
   vrdespesas: number;
   saldo: number;
 };
 
-type SortKey = "GRUPO" | "rec_total" | "vrdespesas" | "SALDO" | "sin";
+type SortKey = "GRUPO" | "vidas" | "rec_total" | "vrdespesas" | "SALDO" | "sin";
 
 const fmtNum = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -132,13 +133,14 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
   }, [aggregated, sortKey, sortDir]);
 
   const totals = useMemo(() => {
-    let rec = 0, desp = 0, sal = 0;
+    let rec = 0, desp = 0, sal = 0, vid = 0;
     for (const a of aggregated) {
       rec += a.rec_total;
       desp += a.vrdespesas;
       sal += a.saldo;
+      vid += a.vidas;
     }
-    return { rec, desp, sal, sin: rec ? desp / rec : 0 };
+    return { rec, desp, sal, vid, sin: rec ? desp / rec : 0 };
   }, [aggregated]);
 
   const onSort = (k: SortKey) => {
@@ -159,11 +161,11 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     setLoadingChild((s) => ({ ...s, [grupo]: true }));
     const chunk = 1000;
     let from = 0;
-    const map = new Map<string, { rec_total: number; vrdespesas: number }>();
+    const map = new Map<string, { rec_total: number; vrdespesas: number; nmclis: Set<string> }>();
     while (true) {
       const { data, error } = await hostinger
         .from("sinistralidade")
-        .select("cdpln,rec_total,vrdespesas")
+        .select("cdpln,nmcli,rec_total,vrdespesas")
         .eq("PERIODO", periodo)
         .eq("GRUPO", grupo)
         .range(from, from + chunk - 1);
@@ -175,9 +177,11 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
       for (const r of rows) {
         const cd = String(r.cdpln ?? "");
         if (!cd) continue;
-        const cur = map.get(cd) ?? { rec_total: 0, vrdespesas: 0 };
+        const cur = map.get(cd) ?? { rec_total: 0, vrdespesas: 0, nmclis: new Set<string>() };
         cur.rec_total += Number(r.rec_total) || 0;
         cur.vrdespesas += Number(r.vrdespesas) || 0;
+        const nm = String(r.nmcli ?? "");
+        if (nm) cur.nmclis.add(nm);
         map.set(cd, cur);
       }
       if (rows.length < chunk) break;
@@ -186,6 +190,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     const arr: ChildRow[] = Array.from(map.entries())
       .map(([cdpln, v]) => ({
         cdpln,
+        vidas: v.nmclis.size,
         rec_total: v.rec_total,
         vrdespesas: v.vrdespesas,
         saldo: v.rec_total - v.vrdespesas,
@@ -261,6 +266,12 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                 </th>
                 <th
                   className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none"
+                  onClick={() => onSort("vidas")}
+                >
+                  Vidas {arrow("vidas")}
+                </th>
+                <th
+                  className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none"
                   onClick={() => onSort("rec_total")}
                 >
                   Total Receita {arrow("rec_total")}
@@ -307,6 +318,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                           <span>{a.grupo}</span>
                         </button>
                       </td>
+                      <td className="px-2 py-1 text-right tabular-nums">{a.vidas.toLocaleString("pt-BR")}</td>
                       <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.rec_total)}</td>
                       <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.vrdespesas)}</td>
                       <td className="px-2 py-1 text-right tabular-nums">{fmtNum(a.saldo)}</td>
@@ -314,7 +326,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                     </tr>
                     {isOpen && isLoadingKids && (
                       <tr className="bg-muted/20">
-                        <td colSpan={5} className="px-8 py-2 text-muted-foreground">
+                        <td colSpan={6} className="px-8 py-2 text-muted-foreground">
                           <Loader2 className="inline h-3 w-3 animate-spin mr-2" />
                           Carregando planos...
                         </td>
@@ -322,7 +334,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                     )}
                     {isOpen && !isLoadingKids && kids && kids.length === 0 && (
                       <tr className="bg-muted/20">
-                        <td colSpan={5} className="px-8 py-2 text-muted-foreground">
+                        <td colSpan={6} className="px-8 py-2 text-muted-foreground">
                           Sem planos.
                         </td>
                       </tr>
@@ -337,6 +349,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                           <td className="px-2 py-1 pl-8 truncate max-w-[320px]" title={c.cdpln}>
                             {c.cdpln}
                           </td>
+                          <td className="px-2 py-1 text-right tabular-nums">{c.vidas.toLocaleString("pt-BR")}</td>
                           <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.rec_total)}</td>
                           <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.vrdespesas)}</td>
                           <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.saldo)}</td>
@@ -351,6 +364,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
             <tfoot className="sticky bottom-0 bg-card">
               <tr className="border-t-2 border-border font-bold">
                 <td className="px-2 py-1.5">TOTAL</td>
+                <td className="px-2 py-1.5 text-right tabular-nums">{totals.vid.toLocaleString("pt-BR")}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums">{fmtNum(totals.rec)}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums">{fmtNum(totals.desp)}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums">{fmtNum(totals.sal)}</td>
