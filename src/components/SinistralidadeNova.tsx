@@ -120,12 +120,15 @@ export default function SinistralidadeNova({ mode }: Props) {
     let alive = true;
     setLoading(true);
     (async () => {
+      const empresaCols =
+        'PERIODO,GRUPO,cdpln,dspln,VIDAS,Recuperacao,Tipo_Plano_Contratacao,CIDADE_PLANO,rec_tm,rec_cpa,rec_total,consulta,emergencia,exame,terapia,internacao,"DEMAIS",vrdespesas,"SALDO"';
+      const benefCols =
+        'PERIODO,nmcli,codigo,VIDAS,rec_tm,rec_cpa,rec_total,consulta,emergencia,exame,terapia,internacao,"DEMAIS",vrdespesas,"SALDO"';
       if (mode === "empresa") {
-        // Full load: ~2k rows total, per period much less
         const all: Row[] = [];
         const pageSize = 1000;
         for (let from = 0; ; from += pageSize) {
-          let qb = hostinger.from(table).select("*").range(from, from + pageSize - 1);
+          let qb = hostinger.from(table).select(empresaCols).range(from, from + pageSize - 1);
           if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
           const { data, error } = await qb;
           if (error || !data || data.length === 0) break;
@@ -145,7 +148,7 @@ export default function SinistralidadeNova({ mode }: Props) {
         for (let from = 0; ; from += chunk) {
           let qb = hostinger
             .from(table)
-            .select("*")
+            .select(benefCols)
             .order(sortCol, { ascending: sortDir === "asc" })
             .range(from, from + chunk - 1);
           if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
