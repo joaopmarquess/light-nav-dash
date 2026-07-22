@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown, Loader2, Search } from "lucide-react";
-import { dw } from "@/lib/dwClient";
+import { hostinger } from "@/lib/hostingerClient";
 
 type Row = {
   CDREGUSR: string | number | null;
@@ -10,10 +10,12 @@ type Row = {
   ACOMODACAO: string | null;
   CIDADE_OFICIAL: string | null;
   VALOR_TMM: number | null;
-  DATA_FIM_ATIVO: string | null;
   NASCIMENTO: string | null;
   IDADE: number | null;
   VIGENCIA_BENEFICIARIO: string | null;
+  ultimo_cancelamento: string | null;
+  ultima_reativacao: string | null;
+  ATIVO?: boolean;
 };
 
 const fmtMoney = (v: number | null) =>
@@ -36,7 +38,27 @@ const fmtDate = (v: string | null) => {
 };
 
 const SELECT_COLS =
-  '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_OFICIAL","VALOR_TMM","DATA_FIM_ATIVO","NASCIMENTO","IDADE","VIGENCIA_BENEFICIARIO"';
+  '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_OFICIAL","VALOR_TMM","NASCIMENTO","VIGENCIA_BENEFICIARIO","ultimo_cancelamento","ultima_reativacao"';
+
+const calcIdade = (nasc: string | null): number | null => {
+  if (!nasc) return null;
+  const d = new Date(String(nasc).slice(0, 10));
+  if (isNaN(d.getTime())) return null;
+  const now = new Date();
+  let a = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) a--;
+  return a;
+};
+
+const isAtivo = (r: { ultimo_cancelamento: string | null; ultima_reativacao: string | null }, ref: string) => {
+  const canc = r.ultimo_cancelamento ? r.ultimo_cancelamento.slice(0, 10) : null;
+  const reat = r.ultima_reativacao ? r.ultima_reativacao.slice(0, 10) : null;
+  if (!canc) return true;
+  if (canc > ref) return true;
+  if (reat && reat >= canc && reat <= ref) return true;
+  return false;
+};
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
@@ -98,23 +120,29 @@ export default function ConsultaBeneficiarioDenis() {
       return;
     }
 
-    const baseQuery = dw
-      .from("sv_ecarteira_ativos")
+    const baseQuery = hostinger
+      .from("carteira_beneficiario")
       .select(SELECT_COLS);
 
-    const filteredBase = incCanc ? baseQuery : baseQuery.gte("DATA_FIM_ATIVO", todayIso());
+    const today = todayIso();
 
-    let query = isCpfSearch
-      ? filteredBase.eq("CPF", digits)
-      : filteredBase.ilike("NOME_BENEFICIARIO", `%${safeName}%`);
+    const query = isCpfSearch
+      ? baseQuery.eq("CPF", digits)
+      : baseQuery.ilike("NOME_BENEFICIARIO", `%${safeName}%`);
 
-    const { data, error } = await query.limit(100);
+    const { data, error } = await query.limit(500);
 
     if (error) {
       setErro(error.message);
       setRows([]);
     } else {
-      setRows((data ?? []) as Row[]);
+      const enriched = (data ?? []).map((r: any) => ({
+        ...r,
+        IDADE: calcIdade(r.NASCIMENTO),
+        ATIVO: isAtivo(r, today),
+      })) as Row[];
+      const filtered = incCanc ? enriched : enriched.filter((r) => r.ATIVO);
+      setRows(filtered.slice(0, 100));
     }
     setLoading(false);
   };
@@ -204,7 +232,7 @@ export default function ConsultaBeneficiarioDenis() {
                   { k: "CIDADE_OFICIAL", label: "CIDADE_OFICIAL", align: "text-left" },
                   { k: "VIGENCIA_BENEFICIARIO", label: "VIGÊNCIA", align: "text-left" },
                   { k: "VALOR_TMM", label: "VALOR_TMM", align: "text-right" },
-                  { k: "DATA_FIM_ATIVO", label: "STATUS", align: "text-center" },
+                  { k: "ATIVO", label: "STATUS", align: "text-center" },
                 ] as { k: keyof Row; label: string; align: string }[]).map((c) => {
                   const active = sortKey === c.k;
                   const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
@@ -225,7 +253,7 @@ export default function ConsultaBeneficiarioDenis() {
             </thead>
             <tbody>
               {(sortedRows ?? []).map((b, i) => {
-                const ativo = !!b.DATA_FIM_ATIVO && b.DATA_FIM_ATIVO.slice(0, 10) >= todayIso();
+                const ativo = b.ATIVO ?? false;
                 return (
                   <tr key={`${b.CDREGUSR}-${i}`} className="border-t border-border hover:bg-accent/40">
                     <td className="px-2 py-1.5 tabular-nums">{b.CDREGUSR ?? "—"}</td>

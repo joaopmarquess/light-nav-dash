@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Loader2, Map as MapIcon } from "lucide-react";
-import { dw } from "@/lib/dwClient";
+import { hostinger } from "@/lib/hostingerClient";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 import { StateHeatMap } from "@/components/StateHeatMap";
 import { UF_FLAGS } from "@/components/DWCarteira";
@@ -55,11 +55,11 @@ const AtivosEm = ({ dateValue }: Props) => {
         let totalRows = 0;
         // eslint-disable-next-line no-constant-condition
         while (true) {
-          const { data, error } = await dw
-            .from("sv_ecarteira_ativos")
+          const { data, error } = await hostinger
+            .from("carteira_beneficiario")
             .select('"UF_CIDADE_OFICIAL","CIDADE_OFICIAL"')
-            .lte("DATA_INICIO_ATIVO", ref)
-            .gte("DATA_FIM_ATIVO", ref)
+            .lte("primeira_vigencia", ref)
+            .or(`ultimo_cancelamento.is.null,ultimo_cancelamento.gt.${ref}`)
             .range(from, from + pageSize - 1);
           if (error) throw error;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
