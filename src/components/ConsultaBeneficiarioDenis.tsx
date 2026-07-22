@@ -168,7 +168,7 @@ export default function ConsultaBeneficiarioDenis() {
       <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
         <div className="flex-1">
           <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Buscar por NOME_BENEFICIARIO ou CPF (view carteira Denis)
+            Buscar por NOME_BENEFICIARIO ou CPF
           </label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
