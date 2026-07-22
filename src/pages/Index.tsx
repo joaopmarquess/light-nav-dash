@@ -32,6 +32,7 @@ const todayBR = () => {
 import AtivosEm from "@/components/AtivosEm";
 import HomeView from "@/components/Home";
 import Entradas from "@/components/Entradas";
+import Cancelamentos from "@/components/Cancelamentos";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { ptBR } from "date-fns/locale";
