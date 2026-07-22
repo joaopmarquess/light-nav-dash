@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Loader2, Map as MapIcon } from "lucide-react";
-import { dw } from "@/lib/dwClient";
+import { hostinger } from "@/lib/hostingerClient";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 import { StateHeatMap } from "@/components/StateHeatMap";
 import { UF_FLAGS } from "@/components/DWCarteira";
