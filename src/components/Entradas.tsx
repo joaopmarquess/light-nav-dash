@@ -117,7 +117,7 @@ const Entradas = () => {
     if (!rows) return [] as { agente: string; vidas: number; itens: Row[] }[];
     const map = new Map<string, Row[]>();
     for (const r of rows) {
-      const key = (r.AGENTE ?? "").toString().trim() || "SEM AGENTE";
+      const key = (r.Ds_Agente_Comercial ?? r.VENDEDOR ?? "").toString().trim() || "SEM AGENTE";
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(r);
     }
