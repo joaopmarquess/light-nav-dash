@@ -77,16 +77,16 @@ const Entradas = () => {
     // paginação
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const { data, error } = await dw
-        .from("sv_ecarteira_movimentacao")
+      const { data, error } = await hostinger
+        .from("carteira_movimentacao")
         .select(
-          'CDREGUSR,NOME_BENEFICIARIO,AGENTE,Data_ocorrencia,Plano_de,TIPO_LINHA,Ocorrencia'
+          'CDREGUSR,NOME_BENEFICIARIO,Ds_Agente_Comercial,VENDEDOR,Data_ocorrencia,Plano_de,TIPO_LINHA,Ocorrencia'
         )
         .like("Ocorrencia", "ENTRADA%")
         .eq("Plano_de", "Saúde")
         .eq("TIPO_LINHA", "E")
         .gte("Data_ocorrencia", deISO)
-        .lte("Data_ocorrencia", ateISO)
+        .lte("Data_ocorrencia", `${ateISO} 23:59:59`)
         .order("Data_ocorrencia", { ascending: false })
         .range(from, from + PAGE - 1);
       if (error) {
