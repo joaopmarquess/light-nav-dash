@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown, Loader2, Search } from "lucide-react";
-import { dw } from "@/lib/dwClient";
+import { hostinger } from "@/lib/hostingerClient";
 
 type Row = {
   CDREGUSR: string | number | null;
@@ -10,10 +10,12 @@ type Row = {
   ACOMODACAO: string | null;
   CIDADE_OFICIAL: string | null;
   VALOR_TMM: number | null;
-  DATA_FIM_ATIVO: string | null;
   NASCIMENTO: string | null;
   IDADE: number | null;
   VIGENCIA_BENEFICIARIO: string | null;
+  ultimo_cancelamento: string | null;
+  ultima_reativacao: string | null;
+  ATIVO?: boolean;
 };
 
 const fmtMoney = (v: number | null) =>
