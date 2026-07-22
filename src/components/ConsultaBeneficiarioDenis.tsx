@@ -234,7 +234,7 @@ export default function ConsultaBeneficiarioDenis() {
                   { k: "CIDADE_OFICIAL", label: "CIDADE_OFICIAL", align: "text-left" },
                   { k: "VIGENCIA_BENEFICIARIO", label: "VIGÊNCIA", align: "text-left" },
                   { k: "VALOR_TMM", label: "VALOR_TMM", align: "text-right" },
-                  { k: "DATA_FIM_ATIVO", label: "STATUS", align: "text-center" },
+                  { k: "ATIVO", label: "STATUS", align: "text-center" },
                 ] as { k: keyof Row; label: string; align: string }[]).map((c) => {
                   const active = sortKey === c.k;
                   const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
