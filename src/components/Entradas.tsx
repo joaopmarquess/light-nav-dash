@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2, Calendar as CalendarIcon } from "lucide-react";
-import { dw } from "@/lib/dwClient";
+import { hostinger } from "@/lib/hostingerClient";
 
 type Row = {
   CDREGUSR: number | string | null;
   NOME_BENEFICIARIO: string | null;
-  AGENTE: string | null;
+  Ds_Agente_Comercial: string | null;
+  VENDEDOR: string | null;
   Data_ocorrencia: string | null;
   Plano_de: string | null;
   TIPO_LINHA: string | null;
