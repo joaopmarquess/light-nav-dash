@@ -99,7 +99,7 @@ export default function ConsultaBeneficiarioDenis() {
     }
 
     const baseQuery = dw
-      .from("sv_ecarteira_ativos")
+      .from("carteira_beneficiario")
       .select(SELECT_COLS);
 
     const filteredBase = incCanc ? baseQuery : baseQuery.gte("DATA_FIM_ATIVO", todayIso());
