@@ -255,7 +255,7 @@ export default function ConsultaBeneficiarioDenis() {
             </thead>
             <tbody>
               {(sortedRows ?? []).map((b, i) => {
-                const ativo = !!b.DATA_FIM_ATIVO && b.DATA_FIM_ATIVO.slice(0, 10) >= todayIso();
+                const ativo = b.ATIVO ?? false;
                 return (
                   <tr key={`${b.CDREGUSR}-${i}`} className="border-t border-border hover:bg-accent/40">
                     <td className="px-2 py-1.5 tabular-nums">{b.CDREGUSR ?? "—"}</td>
