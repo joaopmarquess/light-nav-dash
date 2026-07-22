@@ -246,7 +246,7 @@ const Entradas = () => {
                                 <tr key={i} className="border-t border-border/60">
                                   <td className="px-3 py-1 tabular-nums">{r.CDREGUSR ?? "—"}</td>
                                   <td className="px-3 py-1">{r.NOME_BENEFICIARIO ?? "—"}</td>
-                                  <td className="px-3 py-1 tabular-nums">{r.Data_ocorrencia ?? "—"}</td>
+                                  <td className="px-3 py-1 tabular-nums">{r.Data_ocorrencia ? isoToBR(String(r.Data_ocorrencia).slice(0, 10)) : "—"}</td>
                                 </tr>
                               ))}
                             </tbody>
