@@ -38,7 +38,27 @@ const fmtDate = (v: string | null) => {
 };
 
 const SELECT_COLS =
-  '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_OFICIAL","VALOR_TMM","DATA_FIM_ATIVO","NASCIMENTO","IDADE","VIGENCIA_BENEFICIARIO"';
+  '"CDREGUSR","NOME_BENEFICIARIO","CPF","NOME_RESPONSAVEL","ACOMODACAO","CIDADE_OFICIAL","VALOR_TMM","NASCIMENTO","VIGENCIA_BENEFICIARIO","ultimo_cancelamento","ultima_reativacao"';
+
+const calcIdade = (nasc: string | null): number | null => {
+  if (!nasc) return null;
+  const d = new Date(String(nasc).slice(0, 10));
+  if (isNaN(d.getTime())) return null;
+  const now = new Date();
+  let a = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) a--;
+  return a;
+};
+
+const isAtivo = (r: { ultimo_cancelamento: string | null; ultima_reativacao: string | null }, ref: string) => {
+  const canc = r.ultimo_cancelamento ? r.ultimo_cancelamento.slice(0, 10) : null;
+  const reat = r.ultima_reativacao ? r.ultima_reativacao.slice(0, 10) : null;
+  if (!canc) return true;
+  if (canc > ref) return true;
+  if (reat && reat >= canc && reat <= ref) return true;
+  return false;
+};
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
