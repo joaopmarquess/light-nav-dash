@@ -94,6 +94,7 @@ const menuItems: MenuItem[] = [
       { icon: Search, label: "Painel" },
       { icon: UserCheck, label: "Área Geográfica" },
       { icon: TrendingUp, label: "Vendas" },
+      { icon: TrendingUp, label: "Cancelamentos" },
       { icon: LayoutDashboard, label: "Dashboard" },
     ],
   },
