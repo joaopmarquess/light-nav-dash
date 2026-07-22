@@ -120,13 +120,16 @@ export default function ConsultaBeneficiarioDenis() {
       return;
     }
 
-    const baseQuery = dw
+    const baseQuery = hostinger
       .from("carteira_beneficiario")
       .select(SELECT_COLS);
 
-    const filteredBase = incCanc ? baseQuery : baseQuery.gte("DATA_FIM_ATIVO", todayIso());
+    const today = todayIso();
+    const filteredBase = incCanc
+      ? baseQuery
+      : baseQuery.or(`ultimo_cancelamento.is.null,ultimo_cancelamento.gt.${today},ultima_reativacao.gte.ultimo_cancelamento`);
 
-    let query = isCpfSearch
+    const query = isCpfSearch
       ? filteredBase.eq("CPF", digits)
       : filteredBase.ilike("NOME_BENEFICIARIO", `%${safeName}%`);
 
@@ -136,7 +139,12 @@ export default function ConsultaBeneficiarioDenis() {
       setErro(error.message);
       setRows([]);
     } else {
-      setRows((data ?? []) as Row[]);
+      const enriched = (data ?? []).map((r: any) => ({
+        ...r,
+        IDADE: calcIdade(r.NASCIMENTO),
+        ATIVO: isAtivo(r, today),
+      })) as Row[];
+      setRows(enriched);
     }
     setLoading(false);
   };
