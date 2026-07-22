@@ -125,15 +125,12 @@ export default function ConsultaBeneficiarioDenis() {
       .select(SELECT_COLS);
 
     const today = todayIso();
-    const filteredBase = incCanc
-      ? baseQuery
-      : baseQuery.or(`ultimo_cancelamento.is.null,ultimo_cancelamento.gt.${today},ultima_reativacao.gte.ultimo_cancelamento`);
 
     const query = isCpfSearch
-      ? filteredBase.eq("CPF", digits)
-      : filteredBase.ilike("NOME_BENEFICIARIO", `%${safeName}%`);
+      ? baseQuery.eq("CPF", digits)
+      : baseQuery.ilike("NOME_BENEFICIARIO", `%${safeName}%`);
 
-    const { data, error } = await query.limit(100);
+    const { data, error } = await query.limit(500);
 
     if (error) {
       setErro(error.message);
@@ -144,7 +141,8 @@ export default function ConsultaBeneficiarioDenis() {
         IDADE: calcIdade(r.NASCIMENTO),
         ATIVO: isAtivo(r, today),
       })) as Row[];
-      setRows(enriched);
+      const filtered = incCanc ? enriched : enriched.filter((r) => r.ATIVO);
+      setRows(filtered.slice(0, 100));
     }
     setLoading(false);
   };
