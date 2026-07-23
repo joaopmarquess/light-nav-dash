@@ -104,6 +104,7 @@ const menuItems: MenuItem[] = [
     label: "Sinistralidade",
     children: [
       { icon: UserCheck, label: "Planos/Empresas" },
+      { icon: CalendarCheck, label: "Período" },
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
   },
