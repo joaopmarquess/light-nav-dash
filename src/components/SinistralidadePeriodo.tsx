@@ -99,6 +99,7 @@ export default function SinistralidadePeriodo() {
   const [expandedCdpln, setExpandedCdpln] = useState<Record<string, boolean>>({});
   const [benefs, setBenefs] = useState<Record<string, BenefRow[]>>({});
   const [loadingBenef, setLoadingBenef] = useState<Record<string, boolean>>({});
+  const [filter, setFilter] = useState("");
 
   useEffect(() => {
     let alive = true;
