@@ -347,6 +347,27 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
     });
   };
 
+  // When user types a filter, eagerly load children of all groups so cdpln/dspln
+  // matches surface even for groups that were never manually expanded.
+  useEffect(() => {
+    const fq = filter.trim();
+    if (fq.length < 2) return;
+    let cancelled = false;
+    (async () => {
+      for (const [periodo, aggs] of Object.entries(aggByPeriodo)) {
+        for (const a of aggs) {
+          if (cancelled) return;
+          const key = `${periodo}::${a.grupo}`;
+          if (children[key] || loadingChild[key]) continue;
+          await loadChildren(periodo, a.grupo);
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter, aggByPeriodo]);
+
+
   return (
     <TooltipProvider delayDuration={100}>
       <section className={`bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col ${embedded ? "h-full" : "h-[calc(100vh-9rem)]"}`}>
