@@ -45,11 +45,19 @@ const PAGE = 1000;
 
 type GroupBy = "agente" | "plano";
 
-const Entradas = () => {
-  const [de, setDe] = useState(firstOfYearBR());
-  const [ate, setAte] = useState(todayBR());
-  const [planoDe, setPlanoDe] = useState<string>("Saúde");
-  const [groupBy, setGroupBy] = useState<GroupBy>("agente");
+interface EntradasProps {
+  embedded?: boolean;
+  initialDe?: string;
+  initialAte?: string;
+  initialGroupBy?: GroupBy;
+  initialPlanoDe?: string;
+}
+
+const Entradas = ({ embedded = false, initialDe, initialAte, initialGroupBy, initialPlanoDe }: EntradasProps = {}) => {
+  const [de, setDe] = useState(initialDe ?? firstOfYearBR());
+  const [ate, setAte] = useState(initialAte ?? todayBR());
+  const [planoDe, setPlanoDe] = useState<string>(initialPlanoDe ?? "Saúde");
+  const [groupBy, setGroupBy] = useState<GroupBy>(initialGroupBy ?? "agente");
   const [filtro, setFiltro] = useState("");
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -148,7 +156,8 @@ const Entradas = () => {
   const max = grouped[0]?.qtd ?? 0;
 
   return (
-    <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-9rem)] flex flex-col">
+    <section className={embedded ? "h-full w-full flex flex-col" : "bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-9rem)] flex flex-col"}>
+      {!embedded && (
       <div className="flex flex-wrap items-end gap-2 mb-4">
         <div>
           <label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">De</label>
@@ -225,6 +234,7 @@ const Entradas = () => {
           )}
         </button>
       </div>
+      )}
 
       {error && <div className="mb-3 text-sm text-destructive">Erro: {error}</div>}
 
