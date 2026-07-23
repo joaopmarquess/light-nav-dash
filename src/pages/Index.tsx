@@ -59,6 +59,7 @@ import OdoAcoes from "@/components/odo/OdoAcoes";
 import SinistralidadeConsulta from "@/components/SinistralidadeConsulta";
 import SinistralidadeNova from "@/components/SinistralidadeNova";
 import SinistralidadeCidades from "@/components/SinistralidadeCidades";
+import SinistralidadePeriodo from "@/components/SinistralidadePeriodo";
 
 
 
@@ -103,6 +104,7 @@ const menuItems: MenuItem[] = [
     label: "Sinistralidade",
     children: [
       { icon: UserCheck, label: "Planos/Empresas" },
+      { icon: CalendarCheck, label: "Período" },
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
   },
@@ -327,6 +329,9 @@ const Index = () => {
 
           ) : active === "Planos/Empresas" ? (
             <SinistralidadeNova mode="beneficiario" />
+          ) : active === "Período" ? (
+            <SinistralidadePeriodo />
+
 
 
           ) : active === "oculto.Empresa" ? (
