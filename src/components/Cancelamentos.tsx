@@ -83,29 +83,40 @@ const Cancelamentos = ({ embedded = false, initialDe, initialAte, initialGroupBy
 
     const all: Row[] = [];
     let from = 0;
+    const pageSize = embedded ? 500 : PAGE;
     while (true) {
-      let q = hostinger
-        .from("carteira_movimentacao")
-        .select(
-          'CDREGUSR,NOME_BENEFICIARIO,NOME_PLANO,Plano_de,Ds_Agente_Comercial,VENDEDOR,Ds_Motivo_Cancelamento,MOTIVO_CANCELAMENTO,CANCELAMENTO,Data_ocorrencia,TIPO_LINHA,Ocorrencia'
-        )
-        .eq("TIPO_LINHA", "S")
-        .gte("Data_ocorrencia", deISO)
-        .lte("Data_ocorrencia", `${ateISO} 23:59:59`)
-        .order("Data_ocorrencia", { ascending: false })
-        .range(from, from + PAGE - 1);
-      if (planoDe && planoDe !== "Todos") q = q.eq("Plano_de", planoDe);
-      const { data, error } = await q;
-      if (error) {
-        setError(error.message);
+      let lastErr: string | null = null;
+      let batch: Row[] | null = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        let q = hostinger
+          .from("carteira_movimentacao")
+          .select(
+            'CDREGUSR,NOME_BENEFICIARIO,NOME_PLANO,Plano_de,Ds_Agente_Comercial,VENDEDOR,Ds_Motivo_Cancelamento,MOTIVO_CANCELAMENTO,CANCELAMENTO,Data_ocorrencia,TIPO_LINHA,Ocorrencia'
+          )
+          .eq("TIPO_LINHA", "S")
+          .gte("Data_ocorrencia", deISO)
+          .lte("Data_ocorrencia", `${ateISO} 23:59:59`)
+          .range(from, from + pageSize - 1);
+        if (!embedded) q = q.order("Data_ocorrencia", { ascending: false });
+        if (planoDe && planoDe !== "Todos") q = q.eq("Plano_de", planoDe);
+        const { data, error } = await q;
+        if (!error) {
+          batch = (data ?? []) as Row[];
+          lastErr = null;
+          break;
+        }
+        lastErr = error.message;
+        await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+      }
+      if (batch === null) {
+        setError(lastErr ?? "Erro ao consultar");
         setLoading(false);
         return;
       }
-      const batch = (data ?? []) as Row[];
       all.push(...batch);
       setProgress(all.length);
-      if (batch.length < PAGE) break;
-      from += PAGE;
+      if (batch.length < pageSize) break;
+      from += pageSize;
     }
 
     setRows(all);
