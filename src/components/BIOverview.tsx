@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Maximize2, Minimize2, ChevronLeft, ChevronRight } from "lucide-react";
 import AtivosEm from "@/components/AtivosEm";
+import Entradas from "@/components/Entradas";
+import Cancelamentos from "@/components/Cancelamentos";
 import {
   ResponsiveContainer,
   BarChart,
