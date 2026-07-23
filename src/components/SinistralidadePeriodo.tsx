@@ -20,6 +20,7 @@ type Agg = {
 
 type ChildRow = {
   cdpln: string;
+  dspln: string;
   vidas: number;
   rec_total: number;
   vrdespesas: number;
@@ -203,6 +204,7 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
     const map = new Map<
       string,
       {
+        dspln: string;
         rec_total: number;
         vrdespesas: number;
         internacao: number;
@@ -217,7 +219,7 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
     while (true) {
       const { data, error } = await hostinger
         .from("sinistralidade")
-        .select('cdpln,nmcli,rec_total,vrdespesas,internacao,terapia,exame,consulta,emergencia,"DEMAIS"')
+        .select('cdpln,dspln,nmcli,rec_total,vrdespesas,internacao,terapia,exame,consulta,emergencia,"DEMAIS"')
         .eq("PERIODO", periodo)
         .eq("GRUPO", grupo)
         .range(from, from + chunk - 1);
@@ -230,9 +232,11 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
         const cd = String(r.cdpln ?? "");
         if (!cd) continue;
         const cur = map.get(cd) ?? {
+          dspln: "",
           rec_total: 0, vrdespesas: 0, internacao: 0, terapia: 0, exame: 0,
           consulta: 0, emergencia: 0, demais: 0, nmclis: new Set<string>(),
         };
+        if (!cur.dspln && r.dspln) cur.dspln = String(r.dspln);
         cur.rec_total += Number(r.rec_total) || 0;
         cur.vrdespesas += Number(r.vrdespesas) || 0;
         cur.internacao += Number(r.internacao) || 0;
@@ -251,6 +255,7 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
     const arr: ChildRow[] = Array.from(map.entries())
       .map(([cdpln, v]) => ({
         cdpln,
+        dspln: v.dspln,
         vidas: v.nmclis.size,
         rec_total: v.rec_total,
         vrdespesas: v.vrdespesas,
@@ -353,7 +358,7 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
             type="text"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            placeholder="Filtrar por Grupo, Plano (cdpln) ou Beneficiário (nome)"
+            placeholder="Filtrar por Grupo, Plano (cdpln) ou Descrição do Plano (dspln)"
             className="flex-1 max-w-md h-8 px-2 rounded border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <span className="shrink-0">
@@ -391,27 +396,25 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
                   const kk = children[`${t.periodo}::${grupoName}`];
                   if (!kk) return { visible: false, allChildren: false };
                   for (const c of kk) {
-                    if (c.cdpln.toLowerCase().includes(fq)) return { visible: true, allChildren: false };
-                    const b = benefs[`${t.periodo}::${grupoName}::${c.cdpln}`];
-                    if (b?.some((x) => x.nmcli.toLowerCase().includes(fq) || x.codigo.toLowerCase().includes(fq)))
+                    if (
+                      c.cdpln.toLowerCase().includes(fq) ||
+                      (c.dspln ?? "").toLowerCase().includes(fq)
+                    )
                       return { visible: true, allChildren: false };
                   }
                   return { visible: false, allChildren: false };
                 };
                 const cdplnInfo = (grupoName: string, c: ChildRow) => {
                   if (!fq) return { visible: true, allBenefs: true };
-                  if (grupoName.toLowerCase().includes(fq) || c.cdpln.toLowerCase().includes(fq))
+                  if (
+                    grupoName.toLowerCase().includes(fq) ||
+                    c.cdpln.toLowerCase().includes(fq) ||
+                    (c.dspln ?? "").toLowerCase().includes(fq)
+                  )
                     return { visible: true, allBenefs: true };
-                  const b = benefs[`${t.periodo}::${grupoName}::${c.cdpln}`];
-                  if (b?.some((x) => x.nmcli.toLowerCase().includes(fq) || x.codigo.toLowerCase().includes(fq)))
-                    return { visible: true, allBenefs: false };
                   return { visible: false, allBenefs: false };
                 };
-                const benefMatches = (grupoName: string, cdpln: string, b: BenefRow) => {
-                  if (!fq) return true;
-                  if (grupoName.toLowerCase().includes(fq) || cdpln.toLowerCase().includes(fq)) return true;
-                  return b.nmcli.toLowerCase().includes(fq) || b.codigo.toLowerCase().includes(fq);
-                };
+                const benefMatches = (_grupoName: string, _cdpln: string, _b: BenefRow) => true;
                 const visibleSorted = fq ? sorted.filter((a) => grupoInfo(a.grupo).visible) : sorted;
                 if (fq && visibleSorted.length === 0) return null;
                 const isOpen = fq ? true : !!expanded[t.periodo];
