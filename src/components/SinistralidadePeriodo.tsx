@@ -344,7 +344,7 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
 
   return (
     <TooltipProvider delayDuration={100}>
-      <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-9rem)] flex flex-col">
+      <section className={`bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col ${embedded ? "h-full" : "h-[calc(100vh-9rem)]"}`}>
         <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground mb-3">
           <span className="shrink-0">
             Comparativo por PERÍODO · métrica: <span className="text-foreground font-medium">Sinistralidade (%)</span>
