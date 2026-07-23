@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Maximize2, Minimize2, ChevronLeft, ChevronRight } from "lucide-react";
 import AtivosEm from "@/components/AtivosEm";
+import DWCarteira from "@/components/DWCarteira";
 import Entradas from "@/components/Entradas";
 import Cancelamentos from "@/components/Cancelamentos";
 import SinistralidadePeriodo from "@/components/SinistralidadePeriodo";
@@ -263,6 +264,11 @@ const BIOverview = () => {
         title: "Área Geográfica — Beneficiários ativos hoje",
         subtitle: "Distribuição por UF na data de hoje",
         custom: <AtivosEm dateValue={new Date().toISOString().slice(0, 10)} />,
+      },
+      {
+        title: "Carteira — Dashboard (hoje)",
+        subtitle: "Faixa etária, Contratação, Recuperação e Acomodação",
+        custom: <DWCarteira dateValue={new Date().toISOString().slice(0, 10)} />,
       },
       {
         title: "Vendas — por Agente Comercial",
