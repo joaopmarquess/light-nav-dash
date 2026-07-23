@@ -586,7 +586,31 @@ export default function SinistralidadePeriodo() {
                                                 </td>
                                                 <td className="px-2 py-1 text-right tabular-nums">-</td>
                                                 <td className="px-2 py-1 text-right tabular-nums">{fmtNum(b.rec_total)}</td>
-                                                <td className="px-2 py-1 text-right tabular-nums">{fmtNum(b.vrdespesas)}</td>
+                                                <td className="px-2 py-1 text-right tabular-nums">
+                                                  <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                      <span className="cursor-help underline decoration-dotted decoration-muted-foreground/50 underline-offset-2">
+                                                        {fmtNum(b.vrdespesas)}
+                                                      </span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side="left" className="p-0">
+                                                      <div className="min-w-[220px] p-2">
+                                                        <div className="text-xs font-semibold mb-1.5 border-b border-border pb-1">{b.nmcli} ({b.codigo})</div>
+                                                        <table className="text-[11px] w-full">
+                                                          <tbody>
+                                                            <tr><td className="pr-3 py-0.5">Internação</td><td className="text-right tabular-nums">{fmtNum(b.internacao)} <span className="text-muted-foreground">({fmtShare(b.internacao, b.vrdespesas)})</span></td></tr>
+                                                            <tr><td className="pr-3 py-0.5">Terapia</td><td className="text-right tabular-nums">{fmtNum(b.terapia)} <span className="text-muted-foreground">({fmtShare(b.terapia, b.vrdespesas)})</span></td></tr>
+                                                            <tr><td className="pr-3 py-0.5">Exame</td><td className="text-right tabular-nums">{fmtNum(b.exame)} <span className="text-muted-foreground">({fmtShare(b.exame, b.vrdespesas)})</span></td></tr>
+                                                            <tr><td className="pr-3 py-0.5">Consulta</td><td className="text-right tabular-nums">{fmtNum(b.consulta)} <span className="text-muted-foreground">({fmtShare(b.consulta, b.vrdespesas)})</span></td></tr>
+                                                            <tr><td className="pr-3 py-0.5">Emergência</td><td className="text-right tabular-nums">{fmtNum(b.emergencia)} <span className="text-muted-foreground">({fmtShare(b.emergencia, b.vrdespesas)})</span></td></tr>
+                                                            <tr><td className="pr-3 py-0.5">Demais</td><td className="text-right tabular-nums">{fmtNum(b.demais)} <span className="text-muted-foreground">({fmtShare(b.demais, b.vrdespesas)})</span></td></tr>
+                                                            <tr className="border-t border-border font-semibold"><td className="pr-3 pt-1">Total</td><td className="text-right tabular-nums pt-1">{fmtNum(b.vrdespesas)}</td></tr>
+                                                          </tbody>
+                                                        </table>
+                                                      </div>
+                                                    </TooltipContent>
+                                                  </Tooltip>
+                                                </td>
                                                 <td className="px-2 py-1 text-right tabular-nums">{fmtNum(b.saldo)}</td>
                                                 <td className="px-2 py-1 text-right tabular-nums">{fmtPct(bsin)}</td>
                                               </tr>
