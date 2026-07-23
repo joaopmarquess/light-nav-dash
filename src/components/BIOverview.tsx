@@ -332,11 +332,10 @@ const BIOverview = () => {
       className={`${isFull ? "fixed inset-0 z-50 h-screen w-screen rounded-none" : "h-[calc(100vh-9rem)] rounded-xl border border-border"} bg-card shadow-sm overflow-hidden flex flex-col relative`}
     >
       {showCurtain && <LudicCurtain />}
-      {current && (
       <div className="px-6 py-4 border-b border-border flex items-center justify-between shrink-0">
         <div>
-          <h2 className="text-lg font-semibold text-foreground">{current.title}</h2>
-          <p className="text-xs text-muted-foreground">{current.subtitle}</p>
+          <h2 className="text-lg font-semibold text-foreground">{current?.title ?? ""}</h2>
+          <p className="text-xs text-muted-foreground">{current?.subtitle ?? ""}</p>
         </div>
         <div className="flex items-center gap-3">
           <button
