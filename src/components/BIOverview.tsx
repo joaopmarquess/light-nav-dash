@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Maximize2, Minimize2, ChevronLeft, ChevronRight } from "lucide-react";
+import AtivosEm from "@/components/AtivosEm";
 import {
   ResponsiveContainer,
   BarChart,
