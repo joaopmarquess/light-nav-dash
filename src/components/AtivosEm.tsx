@@ -139,14 +139,8 @@ const AtivosEm = ({ dateValue }: Props) => {
 
   return (
     <section className="h-full flex flex-col min-h-0 relative">
-      {/* Total discreto no canto superior esquerdo, sem container */}
-      <div className="absolute top-2 left-4 z-10 text-xl font-semibold text-foreground tabular-nums">
-        Beneficiários ativos:{" "}
-        <span>{ativos !== null ? fmtInt(ativos) : "—"}</span>
-      </div>
-
       {/* Main container — fills to bottom, no scroll */}
-      <div className="flex-1 min-h-0 p-4 pt-12">
+      <div className="flex-1 min-h-0 p-4">
 
         {loading ? (
           <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
@@ -158,6 +152,10 @@ const AtivosEm = ({ dateValue }: Props) => {
         ) : (
           <div className="h-full grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
             <div className="flex flex-col justify-center space-y-2">
+              <div className="text-lg font-semibold text-foreground tabular-nums mb-1">
+                Beneficiários ativos:{" "}
+                <span>{ativos !== null ? fmtInt(ativos) : "—"}</span>
+              </div>
               {(() => {
                 const totalAll = porUF.reduce((s, r) => s + r.total, 0);
                 const max = Math.max(1, ...porUF.map((r) => r.total));
