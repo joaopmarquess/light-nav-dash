@@ -90,6 +90,9 @@ export default function SinistralidadePeriodo() {
   const [loadingChild, setLoadingChild] = useState<Record<string, boolean>>({});
   const [sortKey, setSortKey] = useState<SortKey>("SALDO");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [expandedCdpln, setExpandedCdpln] = useState<Record<string, boolean>>({});
+  const [benefs, setBenefs] = useState<Record<string, BenefRow[]>>({});
+  const [loadingBenef, setLoadingBenef] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     let alive = true;
