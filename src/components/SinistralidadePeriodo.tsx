@@ -615,7 +615,7 @@ export default function SinistralidadePeriodo() {
                                               <td colSpan={6} className="px-14 py-2 text-muted-foreground">Sem beneficiários.</td>
                                             </tr>
                                           )}
-                                          {cOpen && !bLoading && bRows && bRows.map((b) => {
+                                          {cOpen && !bLoading && bRows && bRows.filter((b) => benefMatches(a.grupo, c.cdpln, b)).map((b) => {
                                             const bsin = b.rec_total ? b.vrdespesas / b.rec_total : 0;
                                             return (
                                               <tr key={`${ckey}::${b.codigo}`} className="border-b border-border/20 bg-muted/5">
