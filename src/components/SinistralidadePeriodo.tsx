@@ -492,7 +492,7 @@ export default function SinistralidadePeriodo() {
                                 {visibleSorted.map((a) => {
                                   const sin = a.rec_total ? a.vrdespesas / a.rec_total : 0;
                                   const gkey = `${t.periodo}::${a.grupo}`;
-                                  const gOpen = !!expandedGrupo[gkey];
+                                  const gOpen = fq ? true : !!expandedGrupo[gkey];
                                   const kids = children[gkey];
                                   const isLoadingKids = !!loadingChild[gkey];
                                   return (
