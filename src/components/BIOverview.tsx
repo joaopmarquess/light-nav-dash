@@ -50,15 +50,78 @@ const COLORS = ["#3b82f6", "#f59e0b", "#a855f7", "#ef4444", "#06b6d4", "#ec4899"
 
 const ROTATE_MS = 12_000;
 
+const WARMUP_MS = 9_000;
+
+const LudicCurtain = () => (
+  <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-8 bg-gradient-to-br from-card via-card to-accent/30">
+    <div className="flex items-end gap-3 h-40">
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <div
+          key={i}
+          className="w-6 rounded-t-md bg-gradient-to-t from-primary/70 to-primary"
+          style={{
+            animation: `bi-bar-grow 1.4s ${i * 0.12}s ease-in-out infinite alternate`,
+            transformOrigin: "bottom",
+          }}
+        />
+      ))}
+    </div>
+    <svg viewBox="0 0 220 60" className="w-64 h-16 text-primary">
+      <polyline
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeDasharray="600"
+        strokeDashoffset="600"
+        points="0,45 30,30 60,38 90,20 120,28 150,12 180,22 220,6"
+        style={{ animation: "bi-line-draw 2.4s ease-in-out infinite" }}
+      />
+    </svg>
+    <div className="flex items-center gap-4">
+      <div
+        className="h-10 w-10 rounded-full border-4 border-primary/30 border-t-primary"
+        style={{ animation: "bi-spin 1s linear infinite" }}
+      />
+      <div className="text-center">
+        <div className="text-sm font-semibold text-foreground">Preparando indicadores…</div>
+        <div className="text-xs text-muted-foreground">Carregando gráficos em segundo plano</div>
+      </div>
+    </div>
+    <div className="flex gap-2">
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="h-2 w-2 rounded-full bg-primary/60"
+          style={{ animation: `bi-dot-pulse 1.2s ${i * 0.2}s ease-in-out infinite` }}
+        />
+      ))}
+    </div>
+    <style>{`
+      @keyframes bi-bar-grow { from { height: 15% } to { height: 100% } }
+      @keyframes bi-line-draw { 0% { stroke-dashoffset: 600 } 60% { stroke-dashoffset: 0 } 100% { stroke-dashoffset: 0; opacity: 0.4 } }
+      @keyframes bi-spin { to { transform: rotate(360deg) } }
+      @keyframes bi-dot-pulse { 0%, 100% { opacity: 0.3; transform: scale(0.8) } 50% { opacity: 1; transform: scale(1.3) } }
+    `}</style>
+  </div>
+);
+
 const BIOverview = () => {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const [isFull, setIsFull] = useState(false);
+  const [ready, setReady] = useState(false);
   const wrapRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     fetch("/data/dre.json").then((r) => r.json()).then(setRows).catch(() => setRows([]));
+  }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => setReady(true), WARMUP_MS);
+    return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {
