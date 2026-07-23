@@ -240,6 +240,8 @@ const Cancelamentos = ({ embedded = false, initialDe, initialAte, initialGroupBy
           )}
         </button>
       </div>
+      )}
+
 
       {error && <div className="mb-3 text-sm text-destructive">Erro: {error}</div>}
 
