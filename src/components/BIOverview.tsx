@@ -225,6 +225,11 @@ const BIOverview = () => {
           />
         ),
       },
+      {
+        title: "Sinistralidade — por Período",
+        subtitle: "Comparativo por PERÍODO · métrica: Sinistralidade (%)",
+        custom: <SinistralidadePeriodo embedded />,
+      },
     ];
   }, [data]);
 
