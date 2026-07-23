@@ -47,7 +47,7 @@ const fmtBRL = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(v);
 const COLORS = ["#3b82f6", "#f59e0b", "#a855f7", "#ef4444", "#06b6d4", "#ec4899", "#f97316", "#eab308", "#8b5cf6", "#14b8a6"];
 
-const ROTATE_MS = 7_000;
+const ROTATE_MS = 12_000;
 
 const BIOverview = () => {
   const [rows, setRows] = useState<Row[] | null>(null);
