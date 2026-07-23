@@ -84,7 +84,7 @@ const mapAgg = (data: any[]): Agg[] =>
     demais: Number(r.demais) || 0,
   }));
 
-export default function SinistralidadePeriodo() {
+export default function SinistralidadePeriodo({ embedded = false }: { embedded?: boolean } = {}) {
   const [periodos, setPeriodos] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
