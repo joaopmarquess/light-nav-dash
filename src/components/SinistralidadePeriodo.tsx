@@ -218,7 +218,7 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
     while (true) {
       const { data, error } = await hostinger
         .from("sinistralidade")
-        .select('cdpln,nmcli,rec_total,vrdespesas,internacao,terapia,exame,consulta,emergencia,"DEMAIS"')
+        .select('cdpln,dspln,nmcli,rec_total,vrdespesas,internacao,terapia,exame,consulta,emergencia,"DEMAIS"')
         .eq("PERIODO", periodo)
         .eq("GRUPO", grupo)
         .range(from, from + chunk - 1);
@@ -231,9 +231,11 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
         const cd = String(r.cdpln ?? "");
         if (!cd) continue;
         const cur = map.get(cd) ?? {
+          dspln: "",
           rec_total: 0, vrdespesas: 0, internacao: 0, terapia: 0, exame: 0,
           consulta: 0, emergencia: 0, demais: 0, nmclis: new Set<string>(),
         };
+        if (!cur.dspln && r.dspln) cur.dspln = String(r.dspln);
         cur.rec_total += Number(r.rec_total) || 0;
         cur.vrdespesas += Number(r.vrdespesas) || 0;
         cur.internacao += Number(r.internacao) || 0;
@@ -252,6 +254,7 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
     const arr: ChildRow[] = Array.from(map.entries())
       .map(([cdpln, v]) => ({
         cdpln,
+        dspln: v.dspln,
         vidas: v.nmclis.size,
         rec_total: v.rec_total,
         vrdespesas: v.vrdespesas,
