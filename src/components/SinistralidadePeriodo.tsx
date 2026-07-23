@@ -32,6 +32,14 @@ type ChildRow = {
   demais: number;
 };
 
+type BenefRow = {
+  codigo: string;
+  nmcli: string;
+  rec_total: number;
+  vrdespesas: number;
+  saldo: number;
+};
+
 type PeriodoTot = {
   periodo: string;
   rec_total: number;
