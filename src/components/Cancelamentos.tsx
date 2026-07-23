@@ -295,7 +295,7 @@ const Cancelamentos = () => {
                                   <td className="px-3 py-1">{r.NOME_BENEFICIARIO ?? "—"}</td>
                                   <td className="px-3 py-1">{r.NOME_PLANO ?? "—"}</td>
                                   <td className="px-3 py-1">{r.Ds_Motivo_Cancelamento ?? r.MOTIVO_CANCELAMENTO ?? "—"}</td>
-                                  <td className="px-3 py-1">{r.Ds_Agente_Comercial ?? r.VENDEDOR ?? "—"}</td>
+                                  <td className="px-3 py-1" title={r.VENDEDOR ? `Vendedor: ${r.VENDEDOR}` : undefined}>{r.Ds_Agente_Comercial ?? r.VENDEDOR ?? "—"}</td>
                                   <td className="px-3 py-1 tabular-nums">
                                     {r.Data_ocorrencia ? isoToBR(String(r.Data_ocorrencia).slice(0, 10)) : "—"}
                                   </td>
