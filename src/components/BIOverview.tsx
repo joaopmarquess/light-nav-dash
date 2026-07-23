@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Maximize2, Minimize2, ChevronLeft, ChevronRight } from "lucide-react";
+import AtivosEm from "@/components/AtivosEm";
 import {
   ResponsiveContainer,
   BarChart,
@@ -192,6 +193,11 @@ const BIOverview = () => {
           </LineChart>
         ),
       },
+      {
+        title: "Área Geográfica — Beneficiários ativos hoje",
+        subtitle: "Distribuição por UF na data de hoje",
+        custom: <AtivosEm dateValue={new Date().toISOString().slice(0, 10)} />,
+      },
     ];
   }, [data]);
 
@@ -296,7 +302,7 @@ const BIOverview = () => {
               allowFullScreen
             />
           ) : (current as any).custom ? (
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="w-full h-full">
               {(current as any).custom}
             </div>
           ) : (
