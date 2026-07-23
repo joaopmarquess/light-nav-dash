@@ -500,10 +500,21 @@ export default function SinistralidadePeriodo() {
                                       )}
                                       {gOpen && !isLoadingKids && kids && kids.map((c) => {
                                         const csin = c.rec_total ? c.vrdespesas / c.rec_total : 0;
+                                        const ckey = `${t.periodo}::${a.grupo}::${c.cdpln}`;
+                                        const cOpen = !!expandedCdpln[ckey];
+                                        const bRows = benefs[ckey];
+                                        const bLoading = !!loadingBenef[ckey];
                                         return (
-                                          <tr key={`${gkey}::${c.cdpln}`} className="border-b border-border/30 bg-muted/10">
+                                          <Fragment key={ckey}>
+                                          <tr className={`border-b border-border/30 bg-muted/10 ${cOpen ? "font-semibold" : ""}`}>
                                             <td className="px-2 py-1 pl-8 truncate max-w-[320px]" title={c.cdpln}>
-                                              {c.cdpln}
+                                              <button
+                                                onClick={() => toggleCdpln(t.periodo, a.grupo, c.cdpln)}
+                                                className="inline-flex items-center gap-1 hover:text-primary"
+                                              >
+                                                {cOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                                                <span>{c.cdpln}</span>
+                                              </button>
                                             </td>
                                             <td className="px-2 py-1 text-right tabular-nums">{fmtInt(c.vidas)}</td>
                                             <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.rec_total)}</td>
@@ -511,6 +522,35 @@ export default function SinistralidadePeriodo() {
                                             <td className="px-2 py-1 text-right tabular-nums">{fmtNum(c.saldo)}</td>
                                             <td className="px-2 py-1 text-right tabular-nums">{fmtPct(csin)}</td>
                                           </tr>
+                                          {cOpen && bLoading && (
+                                            <tr className="bg-muted/5">
+                                              <td colSpan={6} className="px-14 py-2 text-muted-foreground">
+                                                <Loader2 className="inline h-3 w-3 animate-spin mr-2" />
+                                                Carregando beneficiários...
+                                              </td>
+                                            </tr>
+                                          )}
+                                          {cOpen && !bLoading && bRows && bRows.length === 0 && (
+                                            <tr className="bg-muted/5">
+                                              <td colSpan={6} className="px-14 py-2 text-muted-foreground">Sem beneficiários.</td>
+                                            </tr>
+                                          )}
+                                          {cOpen && !bLoading && bRows && bRows.map((b) => {
+                                            const bsin = b.rec_total ? b.vrdespesas / b.rec_total : 0;
+                                            return (
+                                              <tr key={`${ckey}::${b.codigo}`} className="border-b border-border/20 bg-muted/5">
+                                                <td className="px-2 py-1 pl-14 truncate max-w-[360px]" title={`${b.nmcli} (${b.codigo})`}>
+                                                  {b.nmcli} <span className="text-muted-foreground">({b.codigo})</span>
+                                                </td>
+                                                <td className="px-2 py-1 text-right tabular-nums">-</td>
+                                                <td className="px-2 py-1 text-right tabular-nums">{fmtNum(b.rec_total)}</td>
+                                                <td className="px-2 py-1 text-right tabular-nums">{fmtNum(b.vrdespesas)}</td>
+                                                <td className="px-2 py-1 text-right tabular-nums">{fmtNum(b.saldo)}</td>
+                                                <td className="px-2 py-1 text-right tabular-nums">{fmtPct(bsin)}</td>
+                                              </tr>
+                                            );
+                                          })}
+                                          </Fragment>
                                         );
                                       })}
                                     </Fragment>
