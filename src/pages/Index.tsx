@@ -329,6 +329,9 @@ const Index = () => {
 
           ) : active === "Planos/Empresas" ? (
             <SinistralidadeNova mode="beneficiario" />
+          ) : active === "Período" ? (
+            <SinistralidadePeriodo />
+
 
 
           ) : active === "oculto.Empresa" ? (
