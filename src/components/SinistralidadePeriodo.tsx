@@ -38,6 +38,12 @@ type BenefRow = {
   rec_total: number;
   vrdespesas: number;
   saldo: number;
+  internacao: number;
+  terapia: number;
+  exame: number;
+  consulta: number;
+  emergencia: number;
+  demais: number;
 };
 
 type PeriodoTot = {
