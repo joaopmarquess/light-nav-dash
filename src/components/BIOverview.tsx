@@ -116,8 +116,6 @@ const BIOverview = () => {
     return { byMes, despPie: top, admByMes, admCats };
   }, [rows]);
 
-  const sin: any = null;
-  const dw = useDWCarteira(true);
 
   const slides = useMemo(() => {
     if (!data) return [];
