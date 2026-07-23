@@ -45,11 +45,19 @@ const PAGE = 1000;
 
 type GroupBy = "agente" | "plano";
 
-const Entradas = () => {
-  const [de, setDe] = useState(firstOfYearBR());
-  const [ate, setAte] = useState(todayBR());
-  const [planoDe, setPlanoDe] = useState<string>("Saúde");
-  const [groupBy, setGroupBy] = useState<GroupBy>("agente");
+interface EntradasProps {
+  embedded?: boolean;
+  initialDe?: string;
+  initialAte?: string;
+  initialGroupBy?: GroupBy;
+  initialPlanoDe?: string;
+}
+
+const Entradas = ({ embedded = false, initialDe, initialAte, initialGroupBy, initialPlanoDe }: EntradasProps = {}) => {
+  const [de, setDe] = useState(initialDe ?? firstOfYearBR());
+  const [ate, setAte] = useState(initialAte ?? todayBR());
+  const [planoDe, setPlanoDe] = useState<string>(initialPlanoDe ?? "Saúde");
+  const [groupBy, setGroupBy] = useState<GroupBy>(initialGroupBy ?? "agente");
   const [filtro, setFiltro] = useState("");
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(false);
