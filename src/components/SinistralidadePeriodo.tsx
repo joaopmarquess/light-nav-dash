@@ -554,7 +554,7 @@ export default function SinistralidadePeriodo() {
                                           </td>
                                         </tr>
                                       )}
-                                      {gOpen && !isLoadingKids && kids && kids.map((c) => {
+                                      {gOpen && !isLoadingKids && kids && kids.filter((c) => cdplnInfo(a.grupo, c).visible).map((c) => {
                                         const csin = c.rec_total ? c.vrdespesas / c.rec_total : 0;
                                         const ckey = `${t.periodo}::${a.grupo}::${c.cdpln}`;
                                         const cOpen = !!expandedCdpln[ckey];
