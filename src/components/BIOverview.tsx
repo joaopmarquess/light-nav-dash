@@ -266,6 +266,11 @@ const BIOverview = () => {
         custom: <AtivosEm dateValue={new Date().toISOString().slice(0, 10)} />,
       },
       {
+        title: "Carteira — Dashboard (hoje)",
+        subtitle: "Faixa etária, Contratação, Recuperação e Acomodação",
+        custom: <DWCarteira dateValue={new Date().toISOString().slice(0, 10)} />,
+      },
+      {
         title: "Vendas — por Agente Comercial",
         subtitle: "01/01/2026 até hoje",
         custom: (
