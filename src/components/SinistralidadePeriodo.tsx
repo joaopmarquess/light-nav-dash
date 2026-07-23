@@ -20,6 +20,7 @@ type Agg = {
 
 type ChildRow = {
   cdpln: string;
+  dspln: string;
   vidas: number;
   rec_total: number;
   vrdespesas: number;
