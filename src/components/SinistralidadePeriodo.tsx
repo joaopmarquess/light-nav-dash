@@ -99,6 +99,7 @@ export default function SinistralidadePeriodo() {
   const [expandedCdpln, setExpandedCdpln] = useState<Record<string, boolean>>({});
   const [benefs, setBenefs] = useState<Record<string, BenefRow[]>>({});
   const [loadingBenef, setLoadingBenef] = useState<Record<string, boolean>>({});
+  const [filter, setFilter] = useState("");
 
   useEffect(() => {
     let alive = true;
@@ -344,11 +345,18 @@ export default function SinistralidadePeriodo() {
   return (
     <TooltipProvider delayDuration={100}>
       <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-9rem)] flex flex-col">
-        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
-          <span>
+        <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground mb-3">
+          <span className="shrink-0">
             Comparativo por PERÍODO · métrica: <span className="text-foreground font-medium">Sinistralidade (%)</span>
           </span>
-          <span>
+          <input
+            type="text"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder="Filtrar por Grupo, Plano (cdpln) ou Beneficiário (nome)"
+            className="flex-1 max-w-md h-8 px-2 rounded border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+          <span className="shrink-0">
             {loading ? (
               <span className="inline-flex items-center gap-2">
                 <Loader2 className="h-3 w-3 animate-spin" /> {fmtInt(progress)}/{fmtInt(periodos.length)} períodos
@@ -374,9 +382,39 @@ export default function SinistralidadePeriodo() {
             <div className="space-y-2">
               {totals.map((t) => {
                 const pct = maxSin ? (t.sin / maxSin) * 100 : 0;
-                const isOpen = !!expanded[t.periodo];
                 const agg = aggByPeriodo[t.periodo] ?? [];
                 const sorted = sortAgg(agg);
+                const fq = filter.trim().toLowerCase();
+                const grupoInfo = (grupoName: string) => {
+                  if (!fq) return { visible: true, allChildren: true };
+                  if (grupoName.toLowerCase().includes(fq)) return { visible: true, allChildren: true };
+                  const kk = children[`${t.periodo}::${grupoName}`];
+                  if (!kk) return { visible: false, allChildren: false };
+                  for (const c of kk) {
+                    if (c.cdpln.toLowerCase().includes(fq)) return { visible: true, allChildren: false };
+                    const b = benefs[`${t.periodo}::${grupoName}::${c.cdpln}`];
+                    if (b?.some((x) => x.nmcli.toLowerCase().includes(fq) || x.codigo.toLowerCase().includes(fq)))
+                      return { visible: true, allChildren: false };
+                  }
+                  return { visible: false, allChildren: false };
+                };
+                const cdplnInfo = (grupoName: string, c: ChildRow) => {
+                  if (!fq) return { visible: true, allBenefs: true };
+                  if (grupoName.toLowerCase().includes(fq) || c.cdpln.toLowerCase().includes(fq))
+                    return { visible: true, allBenefs: true };
+                  const b = benefs[`${t.periodo}::${grupoName}::${c.cdpln}`];
+                  if (b?.some((x) => x.nmcli.toLowerCase().includes(fq) || x.codigo.toLowerCase().includes(fq)))
+                    return { visible: true, allBenefs: false };
+                  return { visible: false, allBenefs: false };
+                };
+                const benefMatches = (grupoName: string, cdpln: string, b: BenefRow) => {
+                  if (!fq) return true;
+                  if (grupoName.toLowerCase().includes(fq) || cdpln.toLowerCase().includes(fq)) return true;
+                  return b.nmcli.toLowerCase().includes(fq) || b.codigo.toLowerCase().includes(fq);
+                };
+                const visibleSorted = fq ? sorted.filter((a) => grupoInfo(a.grupo).visible) : sorted;
+                if (fq && visibleSorted.length === 0) return null;
+                const isOpen = fq ? true : !!expanded[t.periodo];
                 return (
                   <div key={t.periodo} className="border border-border/60 rounded-md">
                     <button
@@ -451,10 +489,10 @@ export default function SinistralidadePeriodo() {
                                 </tr>
                               </thead>
                               <tbody>
-                                {sorted.map((a) => {
+                                {visibleSorted.map((a) => {
                                   const sin = a.rec_total ? a.vrdespesas / a.rec_total : 0;
                                   const gkey = `${t.periodo}::${a.grupo}`;
-                                  const gOpen = !!expandedGrupo[gkey];
+                                  const gOpen = fq ? true : !!expandedGrupo[gkey];
                                   const kids = children[gkey];
                                   const isLoadingKids = !!loadingChild[gkey];
                                   return (
@@ -516,10 +554,10 @@ export default function SinistralidadePeriodo() {
                                           </td>
                                         </tr>
                                       )}
-                                      {gOpen && !isLoadingKids && kids && kids.map((c) => {
+                                      {gOpen && !isLoadingKids && kids && kids.filter((c) => cdplnInfo(a.grupo, c).visible).map((c) => {
                                         const csin = c.rec_total ? c.vrdespesas / c.rec_total : 0;
                                         const ckey = `${t.periodo}::${a.grupo}::${c.cdpln}`;
-                                        const cOpen = !!expandedCdpln[ckey];
+                                        const cOpen = fq ? true : !!expandedCdpln[ckey];
                                         const bRows = benefs[ckey];
                                         const bLoading = !!loadingBenef[ckey];
                                         return (
@@ -577,7 +615,7 @@ export default function SinistralidadePeriodo() {
                                               <td colSpan={6} className="px-14 py-2 text-muted-foreground">Sem beneficiários.</td>
                                             </tr>
                                           )}
-                                          {cOpen && !bLoading && bRows && bRows.map((b) => {
+                                          {cOpen && !bLoading && bRows && bRows.filter((b) => benefMatches(a.grupo, c.cdpln, b)).map((b) => {
                                             const bsin = b.rec_total ? b.vrdespesas / b.rec_total : 0;
                                             return (
                                               <tr key={`${ckey}::${b.codigo}`} className="border-b border-border/20 bg-muted/5">
