@@ -154,87 +154,82 @@ const Cancelamentos = () => {
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-9rem)] flex flex-col">
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
+      <div className="flex flex-wrap items-end gap-2 mb-4">
         <div>
-          <h2 className="text-lg font-semibold text-foreground">Cancelamentos</h2>
+          <label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">De</label>
+          <div className="relative">
+            <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <input
+              type="text"
+              value={de}
+              onChange={(e) => setDe(e.target.value)}
+              onBlur={(e) => { const iso = toISO(e.target.value); if (iso) setDe(isoToBR(iso)); }}
+              placeholder="dd/mm/aaaa"
+              className="h-9 w-36 pl-9 pr-3 rounded-md border border-border bg-background text-sm"
+            />
+          </div>
         </div>
-        <div className="flex flex-wrap items-end gap-2">
-          <div>
-            <label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">De</label>
-            <div className="relative">
-              <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-              <input
-                type="text"
-                value={de}
-                onChange={(e) => setDe(e.target.value)}
-                onBlur={(e) => { const iso = toISO(e.target.value); if (iso) setDe(isoToBR(iso)); }}
-                placeholder="dd/mm/aaaa"
-                className="h-9 w-36 pl-9 pr-3 rounded-md border border-border bg-background text-sm"
-              />
-            </div>
+        <div>
+          <label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Até</label>
+          <div className="relative">
+            <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <input
+              type="text"
+              value={ate}
+              onChange={(e) => setAte(e.target.value)}
+              onBlur={(e) => { const iso = toISO(e.target.value); if (iso) setAte(isoToBR(iso)); }}
+              placeholder="dd/mm/aaaa"
+              className="h-9 w-36 pl-9 pr-3 rounded-md border border-border bg-background text-sm"
+            />
           </div>
-          <div>
-            <label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Até</label>
-            <div className="relative">
-              <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-              <input
-                type="text"
-                value={ate}
-                onChange={(e) => setAte(e.target.value)}
-                onBlur={(e) => { const iso = toISO(e.target.value); if (iso) setAte(isoToBR(iso)); }}
-                placeholder="dd/mm/aaaa"
-                className="h-9 w-36 pl-9 pr-3 rounded-md border border-border bg-background text-sm"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Plano de</label>
-            <select
-              value={planoDe}
-              onChange={(e) => setPlanoDe(e.target.value)}
-              className="h-9 rounded-md border border-border bg-background text-sm px-2"
-            >
-              <option value="Todos">Todos</option>
-              <option value="Saúde">Saúde</option>
-              <option value="Odonto">Odonto</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Agrupar por</label>
-            <select
-              value={groupBy}
-              onChange={(e) => setGroupBy(e.target.value as GroupBy)}
-              className="h-9 rounded-md border border-border bg-background text-sm px-2"
-            >
-              <option value="motivo">Motivo</option>
-              <option value="agente">Agente Comercial</option>
-              <option value="plano">Plano</option>
-            </select>
-          </div>
-          <button
-            onClick={consultar}
-            disabled={loading}
-            className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50"
+        </div>
+        <div>
+          <label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Plano de</label>
+          <select
+            value={planoDe}
+            onChange={(e) => setPlanoDe(e.target.value)}
+            className="h-9 rounded-md border border-border bg-background text-sm px-2"
           >
-            {loading ? (
-              <span className="inline-flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" /> {fmtInt(progress)}…
-              </span>
-            ) : (
-              "Consultar"
-            )}
-          </button>
+            <option value="Todos">Todos</option>
+            <option value="Saúde">Saúde</option>
+            <option value="Odonto">Odonto</option>
+          </select>
         </div>
-      </div>
-
-      <div className="mb-3">
-        <input
-          type="text"
-          value={filtro}
-          onChange={(e) => setFiltro(e.target.value)}
-          placeholder="Filtrar por nome, motivo, agente, plano…"
-          className="h-9 w-full max-w-md px-3 rounded-md border border-border bg-background text-sm"
-        />
+        <div>
+          <label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Agrupar por</label>
+          <select
+            value={groupBy}
+            onChange={(e) => setGroupBy(e.target.value as GroupBy)}
+            className="h-9 rounded-md border border-border bg-background text-sm px-2"
+          >
+            <option value="motivo">Motivo</option>
+            <option value="agente">Agente Comercial</option>
+            <option value="plano">Plano</option>
+          </select>
+        </div>
+        <div className="flex-1 min-w-[200px]">
+          <label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Filtrar</label>
+          <input
+            type="text"
+            value={filtro}
+            onChange={(e) => setFiltro(e.target.value)}
+            placeholder="Filtrar por nome, motivo, agente, plano…"
+            className="h-9 w-full px-3 rounded-md border border-border bg-background text-sm"
+          />
+        </div>
+        <button
+          onClick={consultar}
+          disabled={loading}
+          className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50"
+        >
+          {loading ? (
+            <span className="inline-flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" /> {fmtInt(progress)}…
+            </span>
+          ) : (
+            "Consultar"
+          )}
+        </button>
       </div>
 
       {error && <div className="mb-3 text-sm text-destructive">Erro: {error}</div>}
