@@ -204,6 +204,7 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
     const map = new Map<
       string,
       {
+        dspln: string;
         rec_total: number;
         vrdespesas: number;
         internacao: number;
