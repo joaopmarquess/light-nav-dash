@@ -269,6 +269,60 @@ export default function SinistralidadePeriodo() {
     });
   };
 
+  const loadBenefs = async (periodo: string, grupo: string, cdpln: string) => {
+    const key = `${periodo}::${grupo}::${cdpln}`;
+    if (benefs[key] || loadingBenef[key]) return;
+    setLoadingBenef((s) => ({ ...s, [key]: true }));
+    const chunk = 1000;
+    let from = 0;
+    const map = new Map<string, { nmcli: string; rec_total: number; vrdespesas: number }>();
+    while (true) {
+      const { data, error } = await hostinger
+        .from("sinistralidade")
+        .select("codigo,nmcli,rec_total,vrdespesas")
+        .eq("PERIODO", periodo)
+        .eq("GRUPO", grupo)
+        .eq("cdpln", cdpln)
+        .range(from, from + chunk - 1);
+      if (error) {
+        console.error("benef fetch error", error);
+        break;
+      }
+      const rows = (data ?? []) as any[];
+      for (const r of rows) {
+        const cd = String(r.codigo ?? "");
+        if (!cd) continue;
+        const cur = map.get(cd) ?? { nmcli: String(r.nmcli ?? ""), rec_total: 0, vrdespesas: 0 };
+        cur.rec_total += Number(r.rec_total) || 0;
+        cur.vrdespesas += Number(r.vrdespesas) || 0;
+        if (!cur.nmcli && r.nmcli) cur.nmcli = String(r.nmcli);
+        map.set(cd, cur);
+      }
+      if (rows.length < chunk) break;
+      from += chunk;
+    }
+    const arr: BenefRow[] = Array.from(map.entries())
+      .map(([codigo, v]) => ({
+        codigo,
+        nmcli: v.nmcli,
+        rec_total: v.rec_total,
+        vrdespesas: v.vrdespesas,
+        saldo: v.rec_total - v.vrdespesas,
+      }))
+      .sort((a, b) => b.saldo - a.saldo);
+    setBenefs((s) => ({ ...s, [key]: arr }));
+    setLoadingBenef((s) => ({ ...s, [key]: false }));
+  };
+
+  const toggleCdpln = (periodo: string, grupo: string, cdpln: string) => {
+    const key = `${periodo}::${grupo}::${cdpln}`;
+    setExpandedCdpln((s) => {
+      const next = { ...s, [key]: !s[key] };
+      if (next[key]) void loadBenefs(periodo, grupo, cdpln);
+      return next;
+    });
+  };
+
   return (
     <TooltipProvider delayDuration={100}>
       <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-9rem)] flex flex-col">
