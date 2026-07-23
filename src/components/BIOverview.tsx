@@ -200,6 +200,30 @@ const BIOverview = () => {
         subtitle: "Distribuição por UF na data de hoje",
         custom: <AtivosEm dateValue={new Date().toISOString().slice(0, 10)} />,
       },
+      {
+        title: "Vendas — por Agente Comercial",
+        subtitle: "01/01/2026 até hoje",
+        custom: (
+          <Entradas
+            embedded
+            initialDe="01/01/2026"
+            initialGroupBy="agente"
+            initialPlanoDe="Todos"
+          />
+        ),
+      },
+      {
+        title: "Cancelamentos — por Motivo",
+        subtitle: "01/01/2026 até hoje",
+        custom: (
+          <Cancelamentos
+            embedded
+            initialDe="01/01/2026"
+            initialGroupBy="motivo"
+            initialPlanoDe="Todos"
+          />
+        ),
+      },
     ];
   }, [data]);
 
