@@ -297,17 +297,17 @@ const BIOverview = () => {
   }, [data]);
 
   useEffect(() => {
-    if (!slides.length || paused) return;
+    if (!slides.length || paused || !ready) return;
     const t = setInterval(() => setIdx((i) => (i + 1) % slides.length), ROTATE_MS);
     return () => clearInterval(t);
-  }, [slides.length, paused]);
+  }, [slides.length, paused, ready]);
 
   useEffect(() => {
     if (slides.length && idx >= slides.length) setIdx(0);
   }, [slides.length, idx]);
 
   useEffect(() => {
-    if (!slides.length) return;
+    if (!slides.length || !ready) return;
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
@@ -321,23 +321,18 @@ const BIOverview = () => {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [slides.length]);
+  }, [slides.length, ready]);
 
-  if (!data || !slides.length) {
-    return (
-      <section className="h-[calc(100vh-9rem)] flex items-center justify-center text-muted-foreground text-sm bg-card rounded-xl border border-border">
-        Carregando...
-      </section>
-    );
-  }
-
+  const showCurtain = !ready || !data || !slides.length;
   const current = slides[idx];
 
   return (
     <section
       ref={wrapRef}
-      className={`${isFull ? "fixed inset-0 z-50 h-screen w-screen rounded-none" : "h-[calc(100vh-9rem)] rounded-xl border border-border"} bg-card shadow-sm overflow-hidden flex flex-col`}
+      className={`${isFull ? "fixed inset-0 z-50 h-screen w-screen rounded-none" : "h-[calc(100vh-9rem)] rounded-xl border border-border"} bg-card shadow-sm overflow-hidden flex flex-col relative`}
     >
+      {showCurtain && <LudicCurtain />}
+      {current && (
       <div className="px-6 py-4 border-b border-border flex items-center justify-between shrink-0">
         <div>
           <h2 className="text-lg font-semibold text-foreground">{current.title}</h2>
