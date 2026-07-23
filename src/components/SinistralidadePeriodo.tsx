@@ -358,7 +358,7 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
             type="text"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            placeholder="Filtrar por Grupo, Plano (cdpln) ou Beneficiário (nome)"
+            placeholder="Filtrar por Grupo, Plano (cdpln) ou Descrição do Plano (dspln)"
             className="flex-1 max-w-md h-8 px-2 rounded border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <span className="shrink-0">
