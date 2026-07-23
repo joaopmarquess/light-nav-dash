@@ -345,11 +345,18 @@ export default function SinistralidadePeriodo() {
   return (
     <TooltipProvider delayDuration={100}>
       <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-9rem)] flex flex-col">
-        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
-          <span>
+        <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground mb-3">
+          <span className="shrink-0">
             Comparativo por PERÍODO · métrica: <span className="text-foreground font-medium">Sinistralidade (%)</span>
           </span>
-          <span>
+          <input
+            type="text"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder="Filtrar por Grupo, Plano (cdpln) ou Beneficiário (nome)"
+            className="flex-1 max-w-md h-8 px-2 rounded border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+          <span className="shrink-0">
             {loading ? (
               <span className="inline-flex items-center gap-2">
                 <Loader2 className="h-3 w-3 animate-spin" /> {fmtInt(progress)}/{fmtInt(periodos.length)} períodos
