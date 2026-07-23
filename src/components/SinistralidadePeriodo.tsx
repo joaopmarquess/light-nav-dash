@@ -396,9 +396,10 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
                   const kk = children[`${t.periodo}::${grupoName}`];
                   if (!kk) return { visible: false, allChildren: false };
                   for (const c of kk) {
-                    if (c.cdpln.toLowerCase().includes(fq)) return { visible: true, allChildren: false };
-                    const b = benefs[`${t.periodo}::${grupoName}::${c.cdpln}`];
-                    if (b?.some((x) => x.nmcli.toLowerCase().includes(fq) || x.codigo.toLowerCase().includes(fq)))
+                    if (
+                      c.cdpln.toLowerCase().includes(fq) ||
+                      (c.dspln ?? "").toLowerCase().includes(fq)
+                    )
                       return { visible: true, allChildren: false };
                   }
                   return { visible: false, allChildren: false };
