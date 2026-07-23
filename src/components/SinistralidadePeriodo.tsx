@@ -406,18 +406,15 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
                 };
                 const cdplnInfo = (grupoName: string, c: ChildRow) => {
                   if (!fq) return { visible: true, allBenefs: true };
-                  if (grupoName.toLowerCase().includes(fq) || c.cdpln.toLowerCase().includes(fq))
+                  if (
+                    grupoName.toLowerCase().includes(fq) ||
+                    c.cdpln.toLowerCase().includes(fq) ||
+                    (c.dspln ?? "").toLowerCase().includes(fq)
+                  )
                     return { visible: true, allBenefs: true };
-                  const b = benefs[`${t.periodo}::${grupoName}::${c.cdpln}`];
-                  if (b?.some((x) => x.nmcli.toLowerCase().includes(fq) || x.codigo.toLowerCase().includes(fq)))
-                    return { visible: true, allBenefs: false };
                   return { visible: false, allBenefs: false };
                 };
-                const benefMatches = (grupoName: string, cdpln: string, b: BenefRow) => {
-                  if (!fq) return true;
-                  if (grupoName.toLowerCase().includes(fq) || cdpln.toLowerCase().includes(fq)) return true;
-                  return b.nmcli.toLowerCase().includes(fq) || b.codigo.toLowerCase().includes(fq);
-                };
+                const benefMatches = (_grupoName: string, _cdpln: string, _b: BenefRow) => true;
                 const visibleSorted = fq ? sorted.filter((a) => grupoInfo(a.grupo).visible) : sorted;
                 if (fq && visibleSorted.length === 0) return null;
                 const isOpen = fq ? true : !!expanded[t.periodo];
