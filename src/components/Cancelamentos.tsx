@@ -48,11 +48,19 @@ const PAGE = 1000;
 
 type GroupBy = "motivo" | "agente" | "plano";
 
-const Cancelamentos = () => {
-  const [de, setDe] = useState(firstOfYearBR());
-  const [ate, setAte] = useState(todayBR());
-  const [planoDe, setPlanoDe] = useState<string>("Saúde");
-  const [groupBy, setGroupBy] = useState<GroupBy>("motivo");
+interface CancelamentosProps {
+  embedded?: boolean;
+  initialDe?: string;
+  initialAte?: string;
+  initialGroupBy?: GroupBy;
+  initialPlanoDe?: string;
+}
+
+const Cancelamentos = ({ embedded = false, initialDe, initialAte, initialGroupBy, initialPlanoDe }: CancelamentosProps = {}) => {
+  const [de, setDe] = useState(initialDe ?? firstOfYearBR());
+  const [ate, setAte] = useState(initialAte ?? todayBR());
+  const [planoDe, setPlanoDe] = useState<string>(initialPlanoDe ?? "Saúde");
+  const [groupBy, setGroupBy] = useState<GroupBy>(initialGroupBy ?? "motivo");
   const [filtro, setFiltro] = useState("");
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(false);
