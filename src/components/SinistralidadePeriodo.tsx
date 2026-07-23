@@ -382,9 +382,39 @@ export default function SinistralidadePeriodo() {
             <div className="space-y-2">
               {totals.map((t) => {
                 const pct = maxSin ? (t.sin / maxSin) * 100 : 0;
-                const isOpen = !!expanded[t.periodo];
                 const agg = aggByPeriodo[t.periodo] ?? [];
                 const sorted = sortAgg(agg);
+                const fq = filter.trim().toLowerCase();
+                const grupoInfo = (grupoName: string) => {
+                  if (!fq) return { visible: true, allChildren: true };
+                  if (grupoName.toLowerCase().includes(fq)) return { visible: true, allChildren: true };
+                  const kk = children[`${t.periodo}::${grupoName}`];
+                  if (!kk) return { visible: false, allChildren: false };
+                  for (const c of kk) {
+                    if (c.cdpln.toLowerCase().includes(fq)) return { visible: true, allChildren: false };
+                    const b = benefs[`${t.periodo}::${grupoName}::${c.cdpln}`];
+                    if (b?.some((x) => x.nmcli.toLowerCase().includes(fq) || x.codigo.toLowerCase().includes(fq)))
+                      return { visible: true, allChildren: false };
+                  }
+                  return { visible: false, allChildren: false };
+                };
+                const cdplnInfo = (grupoName: string, c: ChildRow) => {
+                  if (!fq) return { visible: true, allBenefs: true };
+                  if (grupoName.toLowerCase().includes(fq) || c.cdpln.toLowerCase().includes(fq))
+                    return { visible: true, allBenefs: true };
+                  const b = benefs[`${t.periodo}::${grupoName}::${c.cdpln}`];
+                  if (b?.some((x) => x.nmcli.toLowerCase().includes(fq) || x.codigo.toLowerCase().includes(fq)))
+                    return { visible: true, allBenefs: false };
+                  return { visible: false, allBenefs: false };
+                };
+                const benefMatches = (grupoName: string, cdpln: string, b: BenefRow) => {
+                  if (!fq) return true;
+                  if (grupoName.toLowerCase().includes(fq) || cdpln.toLowerCase().includes(fq)) return true;
+                  return b.nmcli.toLowerCase().includes(fq) || b.codigo.toLowerCase().includes(fq);
+                };
+                const visibleSorted = fq ? sorted.filter((a) => grupoInfo(a.grupo).visible) : sorted;
+                if (fq && visibleSorted.length === 0) return null;
+                const isOpen = fq ? true : !!expanded[t.periodo];
                 return (
                   <div key={t.periodo} className="border border-border/60 rounded-md">
                     <button
