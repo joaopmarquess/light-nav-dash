@@ -557,7 +557,7 @@ export default function SinistralidadePeriodo() {
                                       {gOpen && !isLoadingKids && kids && kids.filter((c) => cdplnInfo(a.grupo, c).visible).map((c) => {
                                         const csin = c.rec_total ? c.vrdespesas / c.rec_total : 0;
                                         const ckey = `${t.periodo}::${a.grupo}::${c.cdpln}`;
-                                        const cOpen = !!expandedCdpln[ckey];
+                                        const cOpen = fq ? true : !!expandedCdpln[ckey];
                                         const bRows = benefs[ckey];
                                         const bLoading = !!loadingBenef[ckey];
                                         return (
