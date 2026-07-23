@@ -489,7 +489,7 @@ export default function SinistralidadePeriodo() {
                                 </tr>
                               </thead>
                               <tbody>
-                                {sorted.map((a) => {
+                                {visibleSorted.map((a) => {
                                   const sin = a.rec_total ? a.vrdespesas / a.rec_total : 0;
                                   const gkey = `${t.periodo}::${a.grupo}`;
                                   const gOpen = !!expandedGrupo[gkey];
