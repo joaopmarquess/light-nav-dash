@@ -192,6 +192,10 @@ const BIOverview = () => {
             ))}
           </LineChart>
         ),
+      {
+        title: "Área Geográfica — Beneficiários ativos hoje",
+        subtitle: "Distribuição por UF na data de hoje",
+        custom: <AtivosEm dateValue={new Date().toISOString().slice(0, 10)} />,
       },
     ];
   }, [data]);
