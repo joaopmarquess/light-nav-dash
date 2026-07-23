@@ -193,7 +193,7 @@ const BIOverview = () => {
         ),
       },
     ];
-  }, [data, sin, dw]);
+  }, [data]);
 
   useEffect(() => {
     if (!slides.length || paused) return;
