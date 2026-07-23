@@ -318,26 +318,36 @@ const BIOverview = () => {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 p-6">
-        <div key={idx} className="h-full w-full animate-fade-in">
-          {(current as any).iframe ? (
-            <iframe
-              title={current.title}
-              src={(current as any).iframe}
-              className="w-full h-full border-0 rounded-md"
-              allowFullScreen
-            />
-          ) : (current as any).custom ? (
-            <div className="w-full h-full">
-              {(current as any).custom}
+      <div className="flex-1 min-h-0 p-6 relative">
+        {slides.map((slide, i) => {
+          const active = i === idx;
+          return (
+            <div
+              key={i}
+              className={`absolute inset-6 h-[calc(100%-3rem)] w-[calc(100%-3rem)] transition-opacity duration-500 ${
+                active ? "opacity-100 z-10 animate-fade-in" : "opacity-0 z-0 pointer-events-none"
+              }`}
+              aria-hidden={!active}
+            >
+              {(slide as any).iframe ? (
+                <iframe
+                  title={slide.title}
+                  src={(slide as any).iframe}
+                  className="w-full h-full border-0 rounded-md"
+                  allowFullScreen
+                />
+              ) : (slide as any).custom ? (
+                <div className="w-full h-full">{(slide as any).custom}</div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  {slide.chart as any}
+                </ResponsiveContainer>
+              )}
             </div>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              {current.chart as any}
-            </ResponsiveContainer>
-          )}
-        </div>
+          );
+        })}
       </div>
+
 
       {!paused && (
         <div className="h-0.5 bg-muted/30 shrink-0 overflow-hidden">
