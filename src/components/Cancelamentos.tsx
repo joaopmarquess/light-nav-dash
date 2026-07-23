@@ -161,7 +161,8 @@ const Cancelamentos = ({ embedded = false, initialDe, initialAte, initialGroupBy
   const max = grouped[0]?.qtd ?? 0;
 
   return (
-    <section className="bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-9rem)] flex flex-col">
+    <section className={embedded ? "h-full w-full flex flex-col" : "bg-card rounded-xl border border-border shadow-sm p-6 h-[calc(100vh-9rem)] flex flex-col"}>
+      {!embedded && (
       <div className="flex flex-wrap items-end gap-2 mb-4">
         <div>
           <label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">De</label>
