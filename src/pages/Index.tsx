@@ -80,6 +80,7 @@ const menuItems: MenuItem[] = [
     icon: TrendingUp,
     label: "Contabilidade",
     children: [
+      { icon: FileText, label: "DRE" },
       { icon: LayoutDashboard, label: "Visão Geral" },
       { icon: FileText, label: "Balancete" },
       { icon: FileText, label: "Plano de Contas" },
