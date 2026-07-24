@@ -60,7 +60,13 @@ export default function ContabilidadeShell({ active }: { active: string }) {
         const { data, error } = await q;
         if (cancelled) return;
         if (error) throw error;
-        setRows((data || []) as ContabRow[]);
+        const filtered = ((data || []) as ContabRow[]).filter((r) => {
+          const n2 = (r.N2 as string | null) || "";
+          const code = parseInt(n2.split("|")[0], 10);
+          if (!Number.isFinite(code)) return false;
+          return (code >= 31 && code <= 49) || code === 61;
+        });
+        setRows(filtered);
       } catch (e: any) {
         if (!cancelled) setError(e?.message || String(e));
       } finally {

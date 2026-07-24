@@ -6,29 +6,35 @@ type Node = {
   key: string;
   code: string;
   label: string;
-  level: number;
+  level: number; // 0=G1..3=G4, 4=CONTA
   realizado: number;
   saldo_final: number;
   children: Map<string, Node>;
   leafCount: number;
 };
 
-const LEVELS: (keyof ContabRow)[] = ["N1", "N2", "N3", "N4", "N5", "N6", "N7", "N8", "N9"];
+const GROUPS: (keyof ContabRow)[] = ["G1", "G2", "G3", "G4"];
 
 function splitNode(v: string | null | undefined): { code: string; label: string } | null {
-  if (!v || v === "0" || v === "-") return null;
-  const i = v.indexOf("|");
-  if (i < 0) return { code: v, label: v };
-  return { code: v.slice(0, i), label: v.slice(i + 1) };
+  if (v === null || v === undefined) return null;
+  const s = String(v).trim();
+  if (!s || s === "0" || s === "-") return null;
+  const i = s.indexOf("|");
+  if (i < 0) return { code: s, label: s };
+  return { code: s.slice(0, i), label: s.slice(i + 1) };
 }
 
 function buildTree(rows: ContabRow[]): Node {
-  const root: Node = { key: "root", code: "", label: "Plano de Contas", level: -1, realizado: 0, saldo_final: 0, children: new Map(), leafCount: 0 };
+  const root: Node = {
+    key: "root", code: "", label: "DRE", level: -1,
+    realizado: 0, saldo_final: 0, children: new Map(), leafCount: 0,
+  };
   for (const r of rows) {
     let parent = root;
-    for (let i = 0; i < LEVELS.length; i++) {
-      const parsed = splitNode(r[LEVELS[i]] as string | null);
-      if (!parsed) break;
+    let ok = true;
+    for (let i = 0; i < GROUPS.length; i++) {
+      const parsed = splitNode(r[GROUPS[i]] as string | null);
+      if (!parsed) { ok = false; break; }
       const key = parsed.code;
       let node = parent.children.get(key);
       if (!node) {
@@ -40,6 +46,20 @@ function buildTree(rows: ContabRow[]): Node {
       node.leafCount += 1;
       parent = node;
     }
+    if (!ok) continue;
+    // CONTA & DESCRICAO (folha)
+    const code = String(r.cd_contabil ?? "").trim();
+    const desc = String(r.ds_conta ?? "").trim();
+    if (!code) continue;
+    const key = code;
+    let node = parent.children.get(key);
+    if (!node) {
+      node = { key: parent.key + "/" + key, code, label: desc, level: GROUPS.length, realizado: 0, saldo_final: 0, children: new Map(), leafCount: 0 };
+      parent.children.set(key, node);
+    }
+    node.realizado += Number(r.REALIZADO) || 0;
+    node.saldo_final += Number(r.vl_saldo_final) || 0;
+    node.leafCount += 1;
   }
   return root;
 }
@@ -47,7 +67,7 @@ function buildTree(rows: ContabRow[]): Node {
 function Row({ node, expanded, toggle }: { node: Node; expanded: Set<string>; toggle: (k: string) => void }) {
   const open = expanded.has(node.key);
   const hasChildren = node.children.size > 0;
-  const kids = [...node.children.values()].sort((a, b) => a.code.localeCompare(b.code));
+  const kids = [...node.children.values()].sort((a, b) => a.code.localeCompare(b.code, "pt-BR", { numeric: true }));
   return (
     <>
       <tr className="border-t border-border/60 hover:bg-accent/30">
@@ -74,7 +94,7 @@ export default function PlanoContas({ rows }: { rows: ContabRow[] }) {
   const tree = useMemo(() => buildTree(rows), [rows]);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const toggle = (k: string) => setExpanded((s) => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n; });
-  const top = [...tree.children.values()].sort((a, b) => a.code.localeCompare(b.code));
+  const top = [...tree.children.values()].sort((a, b) => a.code.localeCompare(b.code, "pt-BR", { numeric: true }));
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
@@ -82,7 +102,7 @@ export default function PlanoContas({ rows }: { rows: ContabRow[] }) {
         <table className="w-full text-sm">
           <thead className="bg-muted/40 sticky top-0">
             <tr>
-              <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">Nível / Conta</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">G1 / G2 / G3 / G4 / Conta &amp; Descrição</th>
               <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">Lançamentos</th>
               <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">Realizado</th>
               <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">Saldo Final</th>
