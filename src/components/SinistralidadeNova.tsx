@@ -275,6 +275,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                 {p}
               </option>
             ))}
+            {!loading && periodos.length > 0 && <option value="__ALL__">Todos</option>}
           </select>
         </div>
 
