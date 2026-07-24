@@ -6,6 +6,7 @@ import DWCarteira from "@/components/DWCarteira";
 import Entradas from "@/components/Entradas";
 import Cancelamentos from "@/components/Cancelamentos";
 import SinistralidadePeriodo from "@/components/SinistralidadePeriodo";
+import { useDreGraficosData } from "@/lib/dreGraficosData";
 import {
   ResponsiveContainer,
   BarChart,
@@ -24,23 +25,6 @@ import {
   LabelList,
 } from "recharts";
 
-type Row = { g1: string; g2: string; g3: string; g4: string; valor: number; mes: number };
-
-const MONTHS = [
-  { n: 1, label: "Jan/26" },
-  { n: 2, label: "Fev/26" },
-  { n: 3, label: "Mar/26" },
-  { n: 4, label: "Abr/26" },
-];
-const ACRONYMS = ["EBITDA", "TI"];
-const toSentence = (s: string) => {
-  if (!s) return s;
-  let r = s.toLowerCase();
-  r = r.charAt(0).toUpperCase() + r.slice(1);
-  for (const a of ACRONYMS) r = r.replace(new RegExp(`\\b${a.toLowerCase()}\\b`, "gi"), a);
-  return r;
-};
-const strip = (s: string) => toSentence(s.replace(/^\d+\|/, ""));
 const fmtCompact = (v: number) => {
   const a = Math.abs(v);
   return a >= 1_000_000 ? (v / 1_000_000).toFixed(1) + "M" : a >= 1_000 ? (v / 1_000).toFixed(0) + "k" : v.toFixed(0);
@@ -109,16 +93,12 @@ const LudicCurtain = () => (
 );
 
 const BIOverview = () => {
-  const [rows, setRows] = useState<Row[] | null>(null);
+  const data = useDreGraficosData();
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const [isFull, setIsFull] = useState(false);
   const [ready, setReady] = useState(false);
   const wrapRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    fetch("/data/dre.json").then((r) => r.json()).then(setRows).catch(() => setRows([]));
-  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => setReady(true), WARMUP_MS);
@@ -140,49 +120,6 @@ const BIOverview = () => {
     }
   };
 
-  const data = useMemo(() => {
-    if (!rows) return null;
-    const byMes = MONTHS.map((m) => {
-      const mr = rows.filter((r) => r.mes === m.n);
-      const ebitda = mr.filter((r) => r.g1 === "1|EBITDA").reduce((s, r) => s + r.valor, 0);
-      const financeiro = mr.filter((r) => r.g1 === "2|FINANCEIRO").reduce((s, r) => s + r.valor, 0);
-      return {
-        mes: m.label,
-        Receitas: mr.filter((r) => r.valor > 0).reduce((s, r) => s + r.valor, 0),
-        Despesas: Math.abs(mr.filter((r) => r.valor < 0).reduce((s, r) => s + r.valor, 0)),
-        EBITDA: ebitda,
-        Financeiro: financeiro,
-        Resultado: ebitda + financeiro,
-      };
-    });
-    const sumAbs = (pred: (r: Row) => boolean) =>
-      rows.filter((r) => r.valor < 0 && pred(r)).reduce((s, r) => s + Math.abs(r.valor), 0);
-    const buckets: { name: string; value: number }[] = [
-      { name: "Despesa Assistencial", value: sumAbs((r) => r.g3 === "1|PRINCIPAL" && r.g4 === "3|DESP. ASSISTENCIAL") },
-      { name: "Secundária", value: sumAbs((r) => r.g3 === "2|SECUNDÁRIA") },
-      { name: "Provisões", value: sumAbs((r) => r.g3 === "3|PROVISÕES") },
-      { name: "Comercialização", value: sumAbs((r) => r.g3 === "4|COMERCIALIZAÇÃO") },
-      { name: "Impostos Diretos", value: sumAbs((r) => r.g3 === "5|IMPOSTOS DIRETOS") },
-      { name: "Despesas Administrativas", value: sumAbs((r) => r.g2 === "2|ADMINISTRATIVO") },
-    ];
-    const top = buckets.filter((b) => b.value > 0);
-
-    const admRows = rows.filter((r) => r.g2 === "2|ADMINISTRATIVO");
-    const cats = Array.from(new Set(admRows.map((r) => strip(r.g3))));
-    const admCats = cats
-      .map((c) => ({ c, t: admRows.filter((r) => strip(r.g3) === c).reduce((s, r) => s + Math.abs(r.valor), 0) }))
-      .sort((a, b) => b.t - a.t)
-      .slice(0, 5)
-      .map((x) => x.c);
-    const admByMes = MONTHS.map((m) => {
-      const row: any = { mes: m.label };
-      admCats.forEach((c) => {
-        row[c] = admRows.filter((r) => r.mes === m.n && strip(r.g3) === c).reduce((s, r) => s + Math.abs(r.valor), 0);
-      });
-      return row;
-    });
-    return { byMes, despPie: top, admByMes, admCats };
-  }, [rows]);
 
 
   const slides = useMemo(() => {
