@@ -48,10 +48,7 @@ const formatBR = (d: Date) =>
   `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
 
 import ConsultaBeneficiarioDenis from "@/components/ConsultaBeneficiarioDenis";
-import DRE from "@/components/DRE";
-import DREGraficos from "@/components/DREGraficos";
 import BIOverview from "@/components/BIOverview";
-import OrcamentoDW from "@/components/OrcamentoDW";
 import DWCarteira from "@/components/DWCarteira";
 import OdoFornecedores from "@/components/odo/OdoFornecedores";
 import OdoLancamentos from "@/components/odo/OdoLancamentos";
@@ -60,6 +57,7 @@ import SinistralidadeConsulta from "@/components/SinistralidadeConsulta";
 import SinistralidadeNova from "@/components/SinistralidadeNova";
 import SinistralidadeCidades from "@/components/SinistralidadeCidades";
 import SinistralidadePeriodo from "@/components/SinistralidadePeriodo";
+import ContabilidadeShell, { CONTAB_SUBMENUS } from "@/components/contabilidade/ContabilidadeShell";
 
 
 
