@@ -48,10 +48,7 @@ const formatBR = (d: Date) =>
   `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
 
 import ConsultaBeneficiarioDenis from "@/components/ConsultaBeneficiarioDenis";
-import DRE from "@/components/DRE";
-import DREGraficos from "@/components/DREGraficos";
 import BIOverview from "@/components/BIOverview";
-import OrcamentoDW from "@/components/OrcamentoDW";
 import DWCarteira from "@/components/DWCarteira";
 import OdoFornecedores from "@/components/odo/OdoFornecedores";
 import OdoLancamentos from "@/components/odo/OdoLancamentos";
@@ -60,6 +57,7 @@ import SinistralidadeConsulta from "@/components/SinistralidadeConsulta";
 import SinistralidadeNova from "@/components/SinistralidadeNova";
 import SinistralidadeCidades from "@/components/SinistralidadeCidades";
 import SinistralidadePeriodo from "@/components/SinistralidadePeriodo";
+import ContabilidadeShell, { CONTAB_SUBMENUS } from "@/components/contabilidade/ContabilidadeShell";
 
 
 
@@ -81,10 +79,12 @@ const menuItems: MenuItem[] = [
     icon: TrendingUp,
     label: "Contabilidade",
     children: [
-      { icon: FileText, label: "DRE" },
-      { icon: BarChart3, label: "Gráfico" },
+      { icon: LayoutDashboard, label: "Visão Geral" },
+      { icon: FileText, label: "Balancete" },
+      { icon: FileText, label: "Plano de Contas" },
+      { icon: BarChart3, label: "Análises Gerenciais" },
+      { icon: BarChart3, label: "Evolução Temporal" },
       { icon: LayoutDashboard, label: "DRE PB" },
-      { icon: FileText, label: "Orçamento DW" },
     ],
   },
   {
@@ -320,10 +320,11 @@ const Index = () => {
             <Cancelamentos />
           ) : active === "Painel" ? (
             <ConsultaBeneficiarioDenis />
-          ) : active === "DRE" ? (
-            <DRE />
-          ) : active === "Gráfico" ? (
-            <DREGraficos />
+          ) : (CONTAB_SUBMENUS as readonly string[]).includes(active) ? (
+            <ContabilidadeShell active={active} />
+          ) : active === "__removed_dre__" ? (
+            <div />
+
           ) : active === "__removed_sin__" ? (
             <div />
 
@@ -362,8 +363,9 @@ const Index = () => {
                 allowFullScreen
               />
             </section>
-          ) : active === "Orçamento DW" ? (
-            <OrcamentoDW />
+          ) : active === "__removed_orc_dw__" ? (
+            <div />
+
           ) : active === "B.I. Overview" ? (
             <BIOverview />
           ) : active === "Fornecedores" ? (
