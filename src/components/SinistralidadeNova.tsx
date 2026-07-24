@@ -196,12 +196,14 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     let from = 0;
     const map = new Map<string, { rec_total: number; vrdespesas: number; internacao: number; terapia: number; exame: number; consulta: number; emergencia: number; demais: number; nmclis: Set<string> }>();
     while (true) {
-      const { data, error } = await hostinger
+      let qb = hostinger
         .from("sinistralidade")
         .select('cdpln,nmcli,rec_total,vrdespesas,internacao,terapia,exame,consulta,emergencia,"DEMAIS"')
-        .eq("PERIODO", periodo)
         .eq("GRUPO", grupo)
+        .order("codigo", { ascending: true, nullsFirst: true })
         .range(from, from + chunk - 1);
+      if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
+      const { data, error } = await qb;
       if (error) {
         console.error("children fetch error", error);
         break;
