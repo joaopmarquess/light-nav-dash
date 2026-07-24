@@ -241,7 +241,7 @@ const Index = () => {
           </TooltipProvider>
         </nav>
 
-        <div className="p-3 border-t border-border flex justify-start">
+        <div className="p-3 border-t border-border flex justify-between items-center gap-2">
           <button
             onClick={() => setCollapsed((c) => !c)}
             className="h-8 w-8 flex items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
@@ -249,6 +249,16 @@ const Index = () => {
           >
             <ChevronLeft className={`h-4 w-4 transition-transform ${collapsed ? "rotate-180" : ""}`} />
           </button>
+          {!collapsed && Object.values(openGroups).some(Boolean) && (
+            <button
+              onClick={() => setOpenGroups({})}
+              className="h-8 w-8 flex items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
+              aria-label="Recolher todos os grupos"
+              title="Recolher todos os grupos"
+            >
+              <ChevronsDownUp className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </aside>
 
