@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
 import { Monitor } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -17,35 +16,15 @@ import {
   ComposedChart,
   LabelList,
 } from "recharts";
-
-type Row = { g1: string; g2: string; g3: string; g4: string; valor: number; mes: number };
-
-const MONTHS = [
-  { n: 1, label: "Jan/26" },
-  { n: 2, label: "Fev/26" },
-  { n: 3, label: "Mar/26" },
-  { n: 4, label: "Abr/26" },
-];
-
-const ACRONYMS = ["EBITDA", "TI"];
-const toSentence = (s: string) => {
-  if (!s) return s;
-  let r = s.toLowerCase();
-  r = r.charAt(0).toUpperCase() + r.slice(1);
-  for (const a of ACRONYMS) r = r.replace(new RegExp(`\\b${a.toLowerCase()}\\b`, "gi"), a);
-  return r;
-};
-const strip = (s: string) => toSentence(s.replace(/^\d+\|/, ""));
+import { useDreGraficosData } from "@/lib/dreGraficosData";
 
 const fmtCompact = (v: number) => {
   const abs = Math.abs(v);
-  const s =
-    abs >= 1_000_000
-      ? (v / 1_000_000).toFixed(1) + "M"
-      : abs >= 1_000
-      ? (v / 1_000).toFixed(0) + "k"
-      : v.toFixed(0);
-  return s;
+  return abs >= 1_000_000
+    ? (v / 1_000_000).toFixed(1) + "M"
+    : abs >= 1_000
+    ? (v / 1_000).toFixed(0) + "k"
+    : v.toFixed(0);
 };
 const fmtBRL = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(v);
@@ -67,66 +46,7 @@ const ChartCard = ({ title, subtitle, children }: { title: string; subtitle?: st
 );
 
 const DREGraficos = () => {
-  const [rows, setRows] = useState<Row[] | null>(null);
-
-  useEffect(() => {
-    fetch("/data/dre.json").then((r) => r.json()).then(setRows).catch(() => setRows([]));
-  }, []);
-
-  const data = useMemo(() => {
-    if (!rows) return null;
-
-    // Por mês: receitas, despesas, resultado
-    const byMes = MONTHS.map((m) => {
-      const mr = rows.filter((r) => r.mes === m.n);
-      const receitas = mr.filter((r) => r.valor > 0).reduce((s, r) => s + r.valor, 0);
-      const despesas = mr.filter((r) => r.valor < 0).reduce((s, r) => s + r.valor, 0);
-      const ebitda = mr.filter((r) => r.g1 === "1|EBITDA").reduce((s, r) => s + r.valor, 0);
-      const financeiro = mr.filter((r) => r.g1 === "2|FINANCEIRO").reduce((s, r) => s + r.valor, 0);
-      const resultado = ebitda + financeiro;
-      return {
-        mes: m.label,
-        Receitas: receitas,
-        Despesas: Math.abs(despesas),
-        EBITDA: ebitda,
-        Financeiro: financeiro,
-        Resultado: resultado,
-      };
-    });
-
-    // Composição de despesas em buckets fixos
-    const sumAbs = (pred: (r: Row) => boolean) =>
-      rows.filter((r) => r.valor < 0 && pred(r)).reduce((s, r) => s + Math.abs(r.valor), 0);
-    const buckets: { name: string; value: number }[] = [
-      { name: "Despesa Assistencial", value: sumAbs((r) => r.g3 === "1|PRINCIPAL" && r.g4 === "3|DESP. ASSISTENCIAL") },
-      { name: "Secundária", value: sumAbs((r) => r.g3 === "2|SECUNDÁRIA") },
-      { name: "Provisões", value: sumAbs((r) => r.g3 === "3|PROVISÕES") },
-      { name: "Comercialização", value: sumAbs((r) => r.g3 === "4|COMERCIALIZAÇÃO") },
-      { name: "Impostos Diretos", value: sumAbs((r) => r.g3 === "5|IMPOSTOS DIRETOS") },
-      { name: "Despesas Administrativas", value: sumAbs((r) => r.g2 === "2|ADMINISTRATIVO") },
-    ];
-    const top = buckets.filter((b) => b.value > 0);
-
-    // Administrativo por categoria ao longo dos meses (top 5 categorias)
-    const admRows = rows.filter((r) => r.g2 === "2|ADMINISTRATIVO");
-    const cats = Array.from(new Set(admRows.map((r) => strip(r.g3))));
-    const admTotals = cats
-      .map((c) => ({ c, total: admRows.filter((r) => strip(r.g3) === c).reduce((s, r) => s + Math.abs(r.valor), 0) }))
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 5)
-      .map((x) => x.c);
-    const admByMes = MONTHS.map((m) => {
-      const row: any = { mes: m.label };
-      admTotals.forEach((c) => {
-        row[c] = admRows
-          .filter((r) => r.mes === m.n && strip(r.g3) === c)
-          .reduce((s, r) => s + Math.abs(r.valor), 0);
-      });
-      return row;
-    });
-
-    return { byMes, despPie: top, admByMes, admCats: admTotals };
-  }, [rows]);
+  const data = useDreGraficosData();
 
   if (!data) {
     return (
