@@ -106,7 +106,7 @@ const DRE = () => {
         setRows([]);
       }
     })();
-  }, []);
+  }, [mesDe, mesAte]);
 
 
   const tree = useMemo<Node[]>(() => {
