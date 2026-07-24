@@ -4,11 +4,19 @@ import { hostinger } from "@/lib/hostingerClient";
 
 type Row = { g1: string; g2: string; g3: string; g4: string; valor: number; mes: number };
 
-const MONTHS = [
+const ALL_MONTHS = [
   { n: 1, label: "Jan/26" },
   { n: 2, label: "Fev/26" },
   { n: 3, label: "Mar/26" },
   { n: 4, label: "Abr/26" },
+  { n: 5, label: "Mai/26" },
+  { n: 6, label: "Jun/26" },
+  { n: 7, label: "Jul/26" },
+  { n: 8, label: "Ago/26" },
+  { n: 9, label: "Set/26" },
+  { n: 10, label: "Out/26" },
+  { n: 11, label: "Nov/26" },
+  { n: 12, label: "Dez/26" },
 ];
 const YEAR = 2026;
 
@@ -56,6 +64,13 @@ const DRE = () => {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
+  const [mesDe, setMesDe] = useState<number>(1);
+  const [mesAte, setMesAte] = useState<number>(5);
+
+  const MONTHS = useMemo(
+    () => ALL_MONTHS.filter((m) => m.n >= mesDe && m.n <= mesAte),
+    [mesDe, mesAte]
+  );
 
   useEffect(() => {
     (async () => {
@@ -91,7 +106,7 @@ const DRE = () => {
         setRows([]);
       }
     })();
-  }, []);
+  }, [mesDe, mesAte]);
 
 
   const tree = useMemo<Node[]>(() => {
@@ -162,9 +177,43 @@ const DRE = () => {
       <div className="px-6 py-4 border-b border-border flex items-center justify-between">
         <div>
           <h2 className="text-base font-semibold text-foreground">Demonstrativo de Resultado (DRE)</h2>
-          <p className="text-xs text-muted-foreground">Janeiro a Abril de 2026 — valores em R${error ? ` — erro: ${error}` : ""}</p>
+          <p className="text-xs text-muted-foreground">
+            {MONTHS.length ? `${MONTHS[0].label} a ${MONTHS[MONTHS.length - 1].label}` : "Selecione o período"} — valores em R${error ? ` — erro: ${error}` : ""}
+          </p>
         </div>
-        <div className="flex gap-2 text-xs">
+        <div className="flex items-center gap-2 text-xs">
+          <label className="flex items-center gap-1">
+            <span className="text-muted-foreground">De</span>
+            <select
+              value={mesDe}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                setMesDe(v);
+                if (v > mesAte) setMesAte(v);
+              }}
+              className="px-2 py-1.5 rounded-md border border-border bg-background"
+            >
+              {ALL_MONTHS.map((m) => (
+                <option key={m.n} value={m.n}>{m.label}</option>
+              ))}
+            </select>
+          </label>
+          <label className="flex items-center gap-1">
+            <span className="text-muted-foreground">Até</span>
+            <select
+              value={mesAte}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                setMesAte(v);
+                if (v < mesDe) setMesDe(v);
+              }}
+              className="px-2 py-1.5 rounded-md border border-border bg-background"
+            >
+              {ALL_MONTHS.map((m) => (
+                <option key={m.n} value={m.n}>{m.label}</option>
+              ))}
+            </select>
+          </label>
           <button
             onClick={() => {
               const all: Record<string, boolean> = {};
