@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChevronRight } from "lucide-react";
+import { hostinger } from "@/lib/hostingerClient";
 
 type Row = { g1: string; g2: string; g3: string; g4: string; valor: number; mes: number };
 
@@ -9,6 +10,7 @@ const MONTHS = [
   { n: 3, label: "Mar/26" },
   { n: 4, label: "Abr/26" },
 ];
+const YEAR = 2026;
 
 const fmt = (v: number) => {
   if (Math.abs(v) < 0.005) return "-";
@@ -53,13 +55,44 @@ function addValue(n: Node, mes: number, v: number) {
 const DRE = () => {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [open, setOpen] = useState<Record<string, boolean>>({});
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/data/dre.json")
-      .then((r) => r.json())
-      .then(setRows)
-      .catch(() => setRows([]));
+    (async () => {
+      try {
+        const monthsList = MONTHS.map((m) => m.n);
+        const { data, error } = await hostinger
+          .from("contabilidade")
+          .select("G1,G2,G3,G4,N2,nr_mes,nr_ano,REALIZADO")
+          .eq("nr_ano", YEAR)
+          .in("nr_mes", monthsList)
+          .limit(100000);
+        if (error) throw error;
+        const filtered: Row[] = [];
+        for (const r of (data || []) as any[]) {
+          const n2 = (r.N2 as string | null) || "";
+          const code = parseInt(n2.split("|")[0], 10);
+          if (!Number.isFinite(code)) continue;
+          if (!((code >= 31 && code <= 49) || code === 61)) continue;
+          const g1 = r.G1 || "";
+          const g2 = r.G2 || "";
+          const g3 = r.G3 || "";
+          const g4 = r.G4 || "";
+          if (!g1) continue;
+          filtered.push({
+            g1, g2, g3, g4,
+            valor: Number(r.REALIZADO) || 0,
+            mes: Number(r.nr_mes) || 0,
+          });
+        }
+        setRows(filtered);
+      } catch (e: any) {
+        setError(e?.message || String(e));
+        setRows([]);
+      }
+    })();
   }, []);
+
 
   const tree = useMemo<Node[]>(() => {
     if (!rows) return [];
