@@ -338,6 +338,8 @@ const Index = () => {
             <SinistralidadeNova mode="beneficiario" />
           ) : active === "Período" ? (
             <SinistralidadePeriodo />
+          ) : active === "Cidades" ? (
+            <SinistralidadeCidade />
 
 
 
