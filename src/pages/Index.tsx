@@ -58,8 +58,8 @@ import SinistralidadeNova from "@/components/SinistralidadeNova";
 import SinistralidadeCidades from "@/components/SinistralidadeCidades";
 import SinistralidadePeriodo from "@/components/SinistralidadePeriodo";
 import SinistralidadeCidade from "@/components/SinistralidadeCidade";
-import ContabilidadeShell, { CONTAB_SUBMENUS } from "@/components/contabilidade/ContabilidadeShell";
 import DRE from "@/components/DRE";
+import DREGraficos from "@/components/DREGraficos";
 
 
 
