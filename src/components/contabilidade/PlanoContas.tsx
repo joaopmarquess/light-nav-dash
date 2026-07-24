@@ -83,7 +83,7 @@ function Row({ node, expanded, toggle }: { node: Node; expanded: Set<string>; to
         </td>
         <td className="px-3 py-1.5 text-right tabular-nums text-xs text-muted-foreground">{node.leafCount}</td>
         <td className="px-3 py-1.5 text-right tabular-nums">{fmtBR(node.realizado)}</td>
-        <td className="px-3 py-1.5 text-right tabular-nums">{fmtBR(node.saldo_final)}</td>
+
       </tr>
       {open && kids.map((c) => <Row key={c.key} node={c} expanded={expanded} toggle={toggle} />)}
     </>
