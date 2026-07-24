@@ -322,8 +322,8 @@ const Index = () => {
             <ConsultaBeneficiarioDenis />
           ) : active === "DRE" ? (
             <DRE />
-          ) : (CONTAB_SUBMENUS as readonly string[]).includes(active) ? (
-            <ContabilidadeShell active={active} />
+          ) : active === "Gráfico" ? (
+            <DREGraficos />
           ) : active === "__removed_dre__" ? (
             <div />
 
