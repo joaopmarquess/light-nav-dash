@@ -76,13 +76,24 @@ const DRE = () => {
     (async () => {
       try {
         const monthsList = MONTHS.map((m) => m.n);
-        const { data, error } = await hostinger
-          .from("contabilidade")
-          .select("G1,G2,G3,G4,N2,nr_mes,nr_ano,REALIZADO")
-          .eq("nr_ano", YEAR)
-          .in("nr_mes", monthsList)
-          .limit(100000);
-        if (error) throw error;
+        const PAGE = 1000;
+        let from = 0;
+        const data: any[] = [];
+        // paginate — PostgREST caps each response at 1000 rows regardless of limit
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          const { data: chunk, error } = await hostinger
+            .from("contabilidade")
+            .select("G1,G2,G3,G4,N2,nr_mes,nr_ano,REALIZADO")
+            .eq("nr_ano", YEAR)
+            .in("nr_mes", monthsList)
+            .range(from, from + PAGE - 1);
+          if (error) throw error;
+          const arr = (chunk || []) as any[];
+          data.push(...arr);
+          if (arr.length < PAGE) break;
+          from += PAGE;
+        }
         const filtered: Row[] = [];
         for (const r of (data || []) as any[]) {
           const n2 = (r.N2 as string | null) || "";
