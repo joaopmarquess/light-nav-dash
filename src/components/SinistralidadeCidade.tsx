@@ -83,8 +83,10 @@ async function loadPeriodoAgg(periodo: string): Promise<{
   while (true) {
     const { data, error } = await hostinger
       .from("sinistralidade")
-      .select('nmcli,REGIONAL,CIDADE,rec_total,vrdespesas,internacao,terapia,exame,consulta,emergencia,"DEMAIS"')
+      .select('codigo,nmcli,REGIONAL,CIDADE,rec_total,vrdespesas,internacao,terapia,exame,consulta,emergencia,"DEMAIS"')
       .eq("PERIODO", periodo)
+      .order("codigo", { ascending: true, nullsFirst: true })
+      .order("nmcli", { ascending: true, nullsFirst: true })
       .range(from, from + chunk - 1);
     if (error) {
       console.error("cidade fetch error", error);
