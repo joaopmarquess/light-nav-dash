@@ -14,6 +14,7 @@ import {
   Stethoscope,
   ChevronDown,
   ChevronLeft,
+  ChevronsDownUp,
   Plus,
   Calendar as CalendarIcon,
   CalendarCheck,
