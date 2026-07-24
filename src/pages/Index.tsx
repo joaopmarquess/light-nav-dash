@@ -58,8 +58,8 @@ import SinistralidadeNova from "@/components/SinistralidadeNova";
 import SinistralidadeCidades from "@/components/SinistralidadeCidades";
 import SinistralidadePeriodo from "@/components/SinistralidadePeriodo";
 import SinistralidadeCidade from "@/components/SinistralidadeCidade";
-import ContabilidadeShell, { CONTAB_SUBMENUS } from "@/components/contabilidade/ContabilidadeShell";
 import DRE from "@/components/DRE";
+import DREGraficos from "@/components/DREGraficos";
 
 
 
@@ -82,11 +82,7 @@ const menuItems: MenuItem[] = [
     label: "Contabilidade",
     children: [
       { icon: FileText, label: "DRE" },
-      { icon: LayoutDashboard, label: "Visão Geral" },
-      { icon: FileText, label: "Balancete" },
-      { icon: FileText, label: "Plano de Contas" },
-      { icon: BarChart3, label: "Análises Gerenciais" },
-      { icon: BarChart3, label: "Evolução Temporal" },
+      { icon: BarChart3, label: "Gráfico" },
       { icon: LayoutDashboard, label: "DRE PB" },
     ],
   },
@@ -326,8 +322,8 @@ const Index = () => {
             <ConsultaBeneficiarioDenis />
           ) : active === "DRE" ? (
             <DRE />
-          ) : (CONTAB_SUBMENUS as readonly string[]).includes(active) ? (
-            <ContabilidadeShell active={active} />
+          ) : active === "Gráfico" ? (
+            <DREGraficos />
           ) : active === "__removed_dre__" ? (
             <div />
 
