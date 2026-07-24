@@ -19,9 +19,6 @@ import {
   Calendar as CalendarIcon,
   CalendarCheck,
   Search,
-  Receipt,
-  ClipboardList,
-  Printer,
 } from "lucide-react";
 
 const todayBR = () => {
@@ -51,9 +48,8 @@ const formatBR = (d: Date) =>
 import ConsultaBeneficiarioDenis from "@/components/ConsultaBeneficiarioDenis";
 import BIOverview from "@/components/BIOverview";
 import DWCarteira from "@/components/DWCarteira";
-import OdoFornecedores from "@/components/odo/OdoFornecedores";
-import OdoLancamentos from "@/components/odo/OdoLancamentos";
-import OdoAcoes from "@/components/odo/OdoAcoes";
+import CarteiraGraficos from "@/components/CarteiraGraficos";
+import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
 import SinistralidadeConsulta from "@/components/SinistralidadeConsulta";
 import SinistralidadeNova from "@/components/SinistralidadeNova";
 import SinistralidadeCidades from "@/components/SinistralidadeCidades";
@@ -91,12 +87,12 @@ const menuItems: MenuItem[] = [
     icon: Users,
     label: "Carteira",
     children: [
-      
       { icon: Search, label: "Painel" },
       { icon: UserCheck, label: "Área Geográfica" },
       { icon: TrendingUp, label: "Vendas" },
       { icon: TrendingUp, label: "Cancelamentos" },
       { icon: LayoutDashboard, label: "Dashboard" },
+      { icon: BarChart3, label: "Gráfico Carteira" },
     ],
   },
   {
@@ -106,20 +102,12 @@ const menuItems: MenuItem[] = [
       { icon: UserCheck, label: "Planos/Empresas" },
       { icon: CalendarCheck, label: "Período" },
       { icon: LayoutDashboard, label: "Cidades" },
+      { icon: BarChart3, label: "Gráfico Sinistralidade" },
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
   },
   { icon: Stethoscope, label: "Assistencial" },
   { icon: LayoutDashboard, label: "B.I. Overview" },
-  {
-    icon: Receipt,
-    label: "ODO-NRPS",
-    children: [
-      { icon: Users, label: "Fornecedores" },
-      { icon: FileText, label: "Lançamentos" },
-      { icon: ClipboardList, label: "Ações / Log" },
-    ],
-  },
 ];
 
 const Index = () => {
@@ -383,12 +371,10 @@ const Index = () => {
 
           ) : active === "B.I. Overview" ? (
             <BIOverview />
-          ) : active === "Fornecedores" ? (
-            <OdoFornecedores />
-          ) : active === "Lançamentos" ? (
-            <OdoLancamentos />
-          ) : active === "Ações / Log" ? (
-            <OdoAcoes />
+          ) : active === "Gráfico Carteira" ? (
+            <CarteiraGraficos />
+          ) : active === "Gráfico Sinistralidade" ? (
+            <SinistralidadeGraficos />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : (
