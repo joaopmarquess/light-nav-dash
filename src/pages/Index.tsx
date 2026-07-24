@@ -363,8 +363,9 @@ const Index = () => {
                 allowFullScreen
               />
             </section>
-          ) : active === "Orçamento DW" ? (
-            <OrcamentoDW />
+          ) : active === "__removed_orc_dw__" ? (
+            <div />
+
           ) : active === "B.I. Overview" ? (
             <BIOverview />
           ) : active === "Fornecedores" ? (
