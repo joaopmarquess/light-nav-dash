@@ -320,10 +320,11 @@ const Index = () => {
             <Cancelamentos />
           ) : active === "Painel" ? (
             <ConsultaBeneficiarioDenis />
-          ) : active === "DRE" ? (
-            <DRE />
-          ) : active === "Gráfico" ? (
-            <DREGraficos />
+          ) : (CONTAB_SUBMENUS as readonly string[]).includes(active) ? (
+            <ContabilidadeShell active={active} />
+          ) : active === "__removed_dre__" ? (
+            <div />
+
           ) : active === "__removed_sin__" ? (
             <div />
 
