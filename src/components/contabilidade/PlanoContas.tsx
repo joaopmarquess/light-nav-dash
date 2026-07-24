@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { ChevronRight, ChevronDown } from "lucide-react";
 import { ContabRow, fmtBR } from "./types";
+import { toSentence } from "./groupings";
 
 type Node = {
   key: string;
