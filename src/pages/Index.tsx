@@ -58,6 +58,7 @@ import SinistralidadeNova from "@/components/SinistralidadeNova";
 import SinistralidadeCidades from "@/components/SinistralidadeCidades";
 import SinistralidadePeriodo from "@/components/SinistralidadePeriodo";
 import ContabilidadeShell, { CONTAB_SUBMENUS } from "@/components/contabilidade/ContabilidadeShell";
+import DRE from "@/components/DRE";
 
 
 
@@ -79,6 +80,7 @@ const menuItems: MenuItem[] = [
     icon: TrendingUp,
     label: "Contabilidade",
     children: [
+      { icon: FileText, label: "DRE" },
       { icon: LayoutDashboard, label: "Visão Geral" },
       { icon: FileText, label: "Balancete" },
       { icon: FileText, label: "Plano de Contas" },
@@ -320,6 +322,8 @@ const Index = () => {
             <Cancelamentos />
           ) : active === "Painel" ? (
             <ConsultaBeneficiarioDenis />
+          ) : active === "DRE" ? (
+            <DRE />
           ) : (CONTAB_SUBMENUS as readonly string[]).includes(active) ? (
             <ContabilidadeShell active={active} />
           ) : active === "__removed_dre__" ? (
