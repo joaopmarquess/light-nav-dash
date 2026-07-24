@@ -29,11 +29,10 @@ const labelMes = (k: number) => {
 
 const shortcuts = [
   { icon: FileText, label: "DRE", desc: "Demonstrativo de resultados" },
-  { icon: Search, label: "Consulta Beneficiário", desc: "Pesquisa individual" },
+  { icon: Search, label: "Painel", desc: "Consulta beneficiário" },
   { icon: UserCheck, label: "Área Geográfica", desc: "Carteira por data" },
   { icon: TrendingUp, label: "Vendas", desc: "Novas adesões" },
   { icon: LayoutDashboard, label: "B.I. Overview", desc: "Painel rotativo" },
-  { icon: Stethoscope, label: "Assistencial", desc: "Indicadores de uso" },
 ];
 
 const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
