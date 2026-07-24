@@ -1,12 +1,19 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, Search } from "lucide-react";
 import { ContabRow, fmtBR } from "./types";
+import { stripPrefix } from "./groupings";
 
-type SortKey =
-  | "cd_contabil" | "ds_conta" | "tp_conta"
-  | "vl_saldo_inicial" | "vl_debito" | "vl_credito" | "vl_movimento" | "vl_saldo_final";
+type SortKey = "cd_contabil" | "ds_conta" | "g1" | "realizado";
 
 const PAGE = 100;
+
+type AggRow = {
+  cd_contabil: string;
+  ds_conta: string;
+  g1: string;
+  realizado: number;
+  lancamentos: number;
+};
 
 export default function Balancete({ rows }: { rows: ContabRow[] }) {
   const [q, setQ] = useState("");
@@ -14,15 +21,35 @@ export default function Balancete({ rows }: { rows: ContabRow[] }) {
   const [asc, setAsc] = useState(true);
   const [page, setPage] = useState(0);
 
+  const aggregated = useMemo<AggRow[]>(() => {
+    const map = new Map<string, AggRow>();
+    for (const r of rows) {
+      const code = String(r.cd_contabil ?? "").trim();
+      if (!code) continue;
+      const cur = map.get(code) ?? {
+        cd_contabil: code,
+        ds_conta: String(r.ds_conta ?? "").trim(),
+        g1: stripPrefix(r.G1),
+        realizado: 0,
+        lancamentos: 0,
+      };
+      cur.realizado += Number(r.REALIZADO) || 0;
+      cur.lancamentos += 1;
+      map.set(code, cur);
+    }
+    return [...map.values()];
+  }, [rows]);
+
   const filtered = useMemo(() => {
     const t = q.trim().toLowerCase();
     const base = t
-      ? rows.filter(
+      ? aggregated.filter(
           (r) =>
-            r.cd_contabil?.toLowerCase().includes(t) ||
-            r.ds_conta?.toLowerCase().includes(t)
+            r.cd_contabil.toLowerCase().includes(t) ||
+            r.ds_conta.toLowerCase().includes(t) ||
+            r.g1.toLowerCase().includes(t)
         )
-      : rows;
+      : aggregated;
     const sorted = [...base].sort((a, b) => {
       const va = a[sortKey] as any;
       const vb = b[sortKey] as any;
@@ -32,11 +59,12 @@ export default function Balancete({ rows }: { rows: ContabRow[] }) {
         : String(vb ?? "").localeCompare(String(va ?? ""));
     });
     return sorted;
-  }, [rows, q, sortKey, asc]);
+  }, [aggregated, q, sortKey, asc]);
 
   const total = filtered.length;
   const pageRows = filtered.slice(page * PAGE, page * PAGE + PAGE);
   const totalPages = Math.max(1, Math.ceil(total / PAGE));
+  const totalRealizado = filtered.reduce((a, r) => a + r.realizado, 0);
 
   const th = (label: string, k: SortKey, align: "left" | "right" = "left") => (
     <th
@@ -64,12 +92,13 @@ export default function Balancete({ rows }: { rows: ContabRow[] }) {
           <input
             value={q}
             onChange={(e) => { setQ(e.target.value); setPage(0); }}
-            placeholder="Buscar por conta ou descrição…"
+            placeholder="Buscar por conta, descrição ou G1…"
             className="h-9 w-80 pl-8 pr-3 rounded-md border border-border bg-background text-sm"
           />
         </div>
         <div className="text-xs text-muted-foreground">
-          {total.toLocaleString("pt-BR")} lançamentos
+          {total.toLocaleString("pt-BR")} contas · Total realizado:{" "}
+          <span className={`font-medium ${totalRealizado < 0 ? "text-destructive" : "text-foreground"}`}>{fmtBR(totalRealizado)}</span>
         </div>
       </div>
       <div className="overflow-auto">
@@ -78,29 +107,21 @@ export default function Balancete({ rows }: { rows: ContabRow[] }) {
             <tr>
               {th("Conta", "cd_contabil")}
               {th("Descrição", "ds_conta")}
-              {th("Tipo", "tp_conta")}
-              {th("Saldo Inicial", "vl_saldo_inicial", "right")}
-              {th("Débito", "vl_debito", "right")}
-              {th("Crédito", "vl_credito", "right")}
-              {th("Movimento", "vl_movimento", "right")}
-              {th("Saldo Final", "vl_saldo_final", "right")}
+              {th("G1", "g1")}
+              {th("Realizado", "realizado", "right")}
             </tr>
           </thead>
           <tbody>
-            {pageRows.map((r, i) => (
-              <tr key={`${r.cd_contabil}-${i}`} className="border-t border-border/60 hover:bg-accent/30">
+            {pageRows.map((r) => (
+              <tr key={r.cd_contabil} className="border-t border-border/60 hover:bg-accent/30">
                 <td className="px-3 py-1.5 font-mono text-xs">{r.cd_contabil}</td>
                 <td className="px-3 py-1.5">{r.ds_conta}</td>
-                <td className="px-3 py-1.5">{r.tp_conta}</td>
-                <td className="px-3 py-1.5 text-right tabular-nums">{fmtBR(r.vl_saldo_inicial)}</td>
-                <td className="px-3 py-1.5 text-right tabular-nums">{fmtBR(r.vl_debito)}</td>
-                <td className="px-3 py-1.5 text-right tabular-nums">{fmtBR(r.vl_credito)}</td>
-                <td className="px-3 py-1.5 text-right tabular-nums">{fmtBR(r.vl_movimento)}</td>
-                <td className="px-3 py-1.5 text-right tabular-nums">{fmtBR(r.vl_saldo_final)}</td>
+                <td className="px-3 py-1.5">{r.g1}</td>
+                <td className={`px-3 py-1.5 text-right tabular-nums ${r.realizado < 0 ? "text-destructive" : ""}`}>{fmtBR(r.realizado)}</td>
               </tr>
             ))}
             {pageRows.length === 0 && (
-              <tr><td colSpan={8} className="text-center text-muted-foreground py-8">Sem dados.</td></tr>
+              <tr><td colSpan={4} className="text-center text-muted-foreground py-8">Sem dados.</td></tr>
             )}
           </tbody>
         </table>

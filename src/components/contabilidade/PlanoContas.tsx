@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { ChevronRight, ChevronDown } from "lucide-react";
 import { ContabRow, fmtBR } from "./types";
+import { toSentence } from "./groupings";
 
 type Node = {
   key: string;
@@ -20,8 +21,8 @@ function splitNode(v: string | null | undefined): { code: string; label: string 
   const s = String(v).trim();
   if (!s || s === "0" || s === "-") return null;
   const i = s.indexOf("|");
-  if (i < 0) return { code: s, label: s };
-  return { code: s.slice(0, i), label: s.slice(i + 1) };
+  if (i < 0) return { code: s, label: toSentence(s) };
+  return { code: s.slice(0, i), label: toSentence(s.slice(i + 1)) };
 }
 
 function buildTree(rows: ContabRow[]): Node {
