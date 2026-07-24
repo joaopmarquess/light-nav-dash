@@ -105,35 +105,45 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     setExpanded({});
     setChildren({});
     (async () => {
-      const { data, error } = await hostinger.rpc("sin_por_grupo", {
-        p_periodo: periodo,
-      });
-      if (!alive) return;
-      if (error) {
-        console.error("sin_por_grupo error", error);
-        setAggRows([]);
-      } else {
-        const mapped: Agg[] = ((data ?? []) as any[]).map((r) => ({
-          grupo: String(r.grupo ?? "(sem grupo)") || "(sem grupo)",
-          rec_total: Number(r.rec_total) || 0,
-          vrdespesas: Number(r.vrdespesas) || 0,
-          saldo: Number(r.saldo) || 0,
-          vidas: Number(r.vidas) || 0,
-          internacao: Number(r.internacao) || 0,
-          terapia: Number(r.terapia) || 0,
-          exame: Number(r.exame) || 0,
-          consulta: Number(r.consulta) || 0,
-          emergencia: Number(r.emergencia) || 0,
-          demais: Number(r.demais) || 0,
-        }));
-        setAggRows(mapped);
+      const targets = periodo === "__ALL__" ? periodos : [periodo];
+      const acc = new Map<string, Agg>();
+      let hadError = false;
+      for (const p of targets) {
+        const { data, error } = await hostinger.rpc("sin_por_grupo", { p_periodo: p });
+        if (!alive) return;
+        if (error) {
+          console.error("sin_por_grupo error", error);
+          hadError = true;
+          continue;
+        }
+        for (const r of (data ?? []) as any[]) {
+          const key = String(r.grupo ?? "(sem grupo)") || "(sem grupo)";
+          const cur = acc.get(key) ?? {
+            grupo: key, rec_total: 0, vrdespesas: 0, saldo: 0, vidas: 0,
+            internacao: 0, terapia: 0, exame: 0, consulta: 0, emergencia: 0, demais: 0,
+          };
+          cur.rec_total += Number(r.rec_total) || 0;
+          cur.vrdespesas += Number(r.vrdespesas) || 0;
+          cur.saldo += Number(r.saldo) || 0;
+          cur.vidas += Number(r.vidas) || 0;
+          cur.internacao += Number(r.internacao) || 0;
+          cur.terapia += Number(r.terapia) || 0;
+          cur.exame += Number(r.exame) || 0;
+          cur.consulta += Number(r.consulta) || 0;
+          cur.emergencia += Number(r.emergencia) || 0;
+          cur.demais += Number(r.demais) || 0;
+          acc.set(key, cur);
+        }
       }
+      if (!alive) return;
+      setAggRows(hadError && acc.size === 0 ? [] : Array.from(acc.values()));
       setLoadingRows(false);
     })();
     return () => {
       alive = false;
     };
-  }, [periodo]);
+  }, [periodo, periodos]);
+
 
   const aggregated = useMemo<Agg[]>(() => {
     const t = debouncedQ.toLowerCase();
@@ -186,12 +196,14 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     let from = 0;
     const map = new Map<string, { rec_total: number; vrdespesas: number; internacao: number; terapia: number; exame: number; consulta: number; emergencia: number; demais: number; nmclis: Set<string> }>();
     while (true) {
-      const { data, error } = await hostinger
+      let qb = hostinger
         .from("sinistralidade")
         .select('cdpln,nmcli,rec_total,vrdespesas,internacao,terapia,exame,consulta,emergencia,"DEMAIS"')
-        .eq("PERIODO", periodo)
         .eq("GRUPO", grupo)
+        .order("codigo", { ascending: true, nullsFirst: true })
         .range(from, from + chunk - 1);
+      if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
+      const { data, error } = await qb;
       if (error) {
         console.error("children fetch error", error);
         break;
@@ -263,6 +275,7 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
                 {p}
               </option>
             ))}
+            {!loading && periodos.length > 0 && <option value="__ALL__">Todos</option>}
           </select>
         </div>
 
