@@ -111,7 +111,7 @@ export default function PlanoContas({ rows }: { rows: ContabRow[] }) {
           <tbody>
             {top.map((n) => <Row key={n.key} node={n} expanded={expanded} toggle={toggle} />)}
             {top.length === 0 && (
-              <tr><td colSpan={4} className="text-center text-muted-foreground py-8">Sem dados.</td></tr>
+              <tr><td colSpan={3} className="text-center text-muted-foreground py-8">Sem dados.</td></tr>
             )}
           </tbody>
         </table>
