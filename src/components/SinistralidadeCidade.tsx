@@ -83,7 +83,7 @@ async function loadPeriodoAgg(periodo: string): Promise<{
   while (true) {
     const { data, error } = await hostinger
       .from("sinistralidade")
-      .select('nmcli,REGIONAL,CIDADE_OFICIAL,UF_CIDADE_OFICIAL,rec_total,vrdespesas,internacao,terapia,exame,consulta,emergencia,"DEMAIS"')
+      .select('nmcli,REGIONAL,dscid,rec_total,vrdespesas,internacao,terapia,exame,consulta,emergencia,"DEMAIS"')
       .eq("PERIODO", periodo)
       .range(from, from + chunk - 1);
     if (error) {
@@ -93,9 +93,9 @@ async function loadPeriodoAgg(periodo: string): Promise<{
     const rows = (data ?? []) as any[];
     for (const r of rows) {
       const reg = String(r.REGIONAL ?? "(sem regional)") || "(sem regional)";
-      const cidNome = String(r.CIDADE_OFICIAL ?? "(sem cidade)") || "(sem cidade)";
-      const uf = String(r.UF_CIDADE_OFICIAL ?? "");
-      const cidKey = `${cidNome}|${uf}`;
+      const cidNome = String(r.dscid ?? "(sem cidade)") || "(sem cidade)";
+      const uf = "";
+      const cidKey = cidNome;
       const nm = String(r.nmcli ?? "");
 
       const rec = Number(r.rec_total) || 0;
