@@ -19,9 +19,6 @@ import {
   Calendar as CalendarIcon,
   CalendarCheck,
   Search,
-  Receipt,
-  ClipboardList,
-  Printer,
 } from "lucide-react";
 
 const todayBR = () => {
@@ -51,9 +48,8 @@ const formatBR = (d: Date) =>
 import ConsultaBeneficiarioDenis from "@/components/ConsultaBeneficiarioDenis";
 import BIOverview from "@/components/BIOverview";
 import DWCarteira from "@/components/DWCarteira";
-import OdoFornecedores from "@/components/odo/OdoFornecedores";
-import OdoLancamentos from "@/components/odo/OdoLancamentos";
-import OdoAcoes from "@/components/odo/OdoAcoes";
+import CarteiraGraficos from "@/components/CarteiraGraficos";
+import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
 import SinistralidadeConsulta from "@/components/SinistralidadeConsulta";
 import SinistralidadeNova from "@/components/SinistralidadeNova";
 import SinistralidadeCidades from "@/components/SinistralidadeCidades";
