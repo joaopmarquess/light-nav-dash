@@ -162,7 +162,7 @@ const DRE = () => {
       <div className="px-6 py-4 border-b border-border flex items-center justify-between">
         <div>
           <h2 className="text-base font-semibold text-foreground">Demonstrativo de Resultado (DRE)</h2>
-          <p className="text-xs text-muted-foreground">Janeiro a Abril de 2026 — valores em R$</p>
+          <p className="text-xs text-muted-foreground">Janeiro a Abril de 2026 — valores em R${error ? ` — erro: ${error}` : ""}</p>
         </div>
         <div className="flex gap-2 text-xs">
           <button
