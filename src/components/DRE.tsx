@@ -4,11 +4,19 @@ import { hostinger } from "@/lib/hostingerClient";
 
 type Row = { g1: string; g2: string; g3: string; g4: string; valor: number; mes: number };
 
-const MONTHS = [
+const ALL_MONTHS = [
   { n: 1, label: "Jan/26" },
   { n: 2, label: "Fev/26" },
   { n: 3, label: "Mar/26" },
   { n: 4, label: "Abr/26" },
+  { n: 5, label: "Mai/26" },
+  { n: 6, label: "Jun/26" },
+  { n: 7, label: "Jul/26" },
+  { n: 8, label: "Ago/26" },
+  { n: 9, label: "Set/26" },
+  { n: 10, label: "Out/26" },
+  { n: 11, label: "Nov/26" },
+  { n: 12, label: "Dez/26" },
 ];
 const YEAR = 2026;
 
