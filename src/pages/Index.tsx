@@ -57,6 +57,7 @@ import SinistralidadeConsulta from "@/components/SinistralidadeConsulta";
 import SinistralidadeNova from "@/components/SinistralidadeNova";
 import SinistralidadeCidades from "@/components/SinistralidadeCidades";
 import SinistralidadePeriodo from "@/components/SinistralidadePeriodo";
+import SinistralidadeCidade from "@/components/SinistralidadeCidade";
 import ContabilidadeShell, { CONTAB_SUBMENUS } from "@/components/contabilidade/ContabilidadeShell";
 import DRE from "@/components/DRE";
 
@@ -107,6 +108,7 @@ const menuItems: MenuItem[] = [
     children: [
       { icon: UserCheck, label: "Planos/Empresas" },
       { icon: CalendarCheck, label: "Período" },
+      { icon: LayoutDashboard, label: "Cidades" },
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
   },
@@ -336,6 +338,8 @@ const Index = () => {
             <SinistralidadeNova mode="beneficiario" />
           ) : active === "Período" ? (
             <SinistralidadePeriodo />
+          ) : active === "Cidades" ? (
+            <SinistralidadeCidade />
 
 
 
