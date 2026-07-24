@@ -79,10 +79,12 @@ const menuItems: MenuItem[] = [
     icon: TrendingUp,
     label: "Contabilidade",
     children: [
-      { icon: FileText, label: "DRE" },
-      { icon: BarChart3, label: "Gráfico" },
+      { icon: LayoutDashboard, label: "Visão Geral" },
+      { icon: FileText, label: "Balancete" },
+      { icon: FileText, label: "Plano de Contas" },
+      { icon: BarChart3, label: "Análises Gerenciais" },
+      { icon: BarChart3, label: "Evolução Temporal" },
       { icon: LayoutDashboard, label: "DRE PB" },
-      { icon: FileText, label: "Orçamento DW" },
     ],
   },
   {
