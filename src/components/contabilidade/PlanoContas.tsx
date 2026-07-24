@@ -83,7 +83,7 @@ function Row({ node, expanded, toggle }: { node: Node; expanded: Set<string>; to
         </td>
         <td className="px-3 py-1.5 text-right tabular-nums text-xs text-muted-foreground">{node.leafCount}</td>
         <td className="px-3 py-1.5 text-right tabular-nums">{fmtBR(node.realizado)}</td>
-        <td className="px-3 py-1.5 text-right tabular-nums">{fmtBR(node.saldo_final)}</td>
+
       </tr>
       {open && kids.map((c) => <Row key={c.key} node={c} expanded={expanded} toggle={toggle} />)}
     </>
@@ -105,13 +105,13 @@ export default function PlanoContas({ rows }: { rows: ContabRow[] }) {
               <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">G1 / G2 / G3 / G4 / Conta &amp; Descrição</th>
               <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">Lançamentos</th>
               <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">Realizado</th>
-              <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">Saldo Final</th>
+
             </tr>
           </thead>
           <tbody>
             {top.map((n) => <Row key={n.key} node={n} expanded={expanded} toggle={toggle} />)}
             {top.length === 0 && (
-              <tr><td colSpan={4} className="text-center text-muted-foreground py-8">Sem dados.</td></tr>
+              <tr><td colSpan={3} className="text-center text-muted-foreground py-8">Sem dados.</td></tr>
             )}
           </tbody>
         </table>
