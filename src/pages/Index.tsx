@@ -87,12 +87,12 @@ const menuItems: MenuItem[] = [
     icon: Users,
     label: "Carteira",
     children: [
-      
       { icon: Search, label: "Painel" },
       { icon: UserCheck, label: "Área Geográfica" },
       { icon: TrendingUp, label: "Vendas" },
       { icon: TrendingUp, label: "Cancelamentos" },
       { icon: LayoutDashboard, label: "Dashboard" },
+      { icon: BarChart3, label: "Gráfico Carteira" },
     ],
   },
   {
@@ -102,20 +102,12 @@ const menuItems: MenuItem[] = [
       { icon: UserCheck, label: "Planos/Empresas" },
       { icon: CalendarCheck, label: "Período" },
       { icon: LayoutDashboard, label: "Cidades" },
+      { icon: BarChart3, label: "Gráfico Sinistralidade" },
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
   },
   { icon: Stethoscope, label: "Assistencial" },
   { icon: LayoutDashboard, label: "B.I. Overview" },
-  {
-    icon: Receipt,
-    label: "ODO-NRPS",
-    children: [
-      { icon: Users, label: "Fornecedores" },
-      { icon: FileText, label: "Lançamentos" },
-      { icon: ClipboardList, label: "Ações / Log" },
-    ],
-  },
 ];
 
 const Index = () => {
