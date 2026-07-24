@@ -66,8 +66,8 @@ const DREGraficos = () => {
       <div className="flex items-stretch gap-3 shrink-0">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 flex-1">
         {[
-          { l: "Receitas (Jan-Abr)", v: fmtBRL(totalReceitas), c: "text-foreground" },
-          { l: "Despesas (Jan-Abr)", v: fmtBRL(totalDespesas), c: "text-destructive" },
+          { l: "Receitas (Jan-Mai)", v: fmtBRL(totalReceitas), c: "text-foreground" },
+          { l: "Despesas (Jan-Mai)", v: fmtBRL(totalDespesas), c: "text-destructive" },
           { l: "Resultado do Período", v: fmtBRL(totalResultado), c: totalResultado < 0 ? "text-destructive" : "text-green-500" },
           { l: "Margem Líquida", v: `${margem.toFixed(1)}%`, c: margem < 0 ? "text-destructive" : "text-green-500" },
         ].map((k) => (
