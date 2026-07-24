@@ -371,12 +371,10 @@ const Index = () => {
 
           ) : active === "B.I. Overview" ? (
             <BIOverview />
-          ) : active === "Fornecedores" ? (
-            <OdoFornecedores />
-          ) : active === "Lançamentos" ? (
-            <OdoLancamentos />
-          ) : active === "Ações / Log" ? (
-            <OdoAcoes />
+          ) : active === "Gráfico Carteira" ? (
+            <CarteiraGraficos />
+          ) : active === "Gráfico Sinistralidade" ? (
+            <SinistralidadeGraficos />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : (
