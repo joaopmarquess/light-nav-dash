@@ -105,7 +105,7 @@ export default function PlanoContas({ rows }: { rows: ContabRow[] }) {
               <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">G1 / G2 / G3 / G4 / Conta &amp; Descrição</th>
               <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">Lançamentos</th>
               <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">Realizado</th>
-              <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">Saldo Final</th>
+
             </tr>
           </thead>
           <tbody>
