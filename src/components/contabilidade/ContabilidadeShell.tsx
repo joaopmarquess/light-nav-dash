@@ -51,21 +51,28 @@ export default function ContabilidadeShell({ active }: { active: string }) {
       setLoading(true);
       setError(null);
       try {
-        let q = hostinger.from("contabilidade").select("*").limit(50000);
-        if (!isEvolucao) {
-          if (ano !== null) q = q.eq("nr_ano", ano);
-          if (mes !== null) q = q.eq("nr_mes", mes);
-          if (trimestre !== null) q = q.eq("nr_trimestre", trimestre);
+        // Paginação manual — PostgREST retorna no máx. 1000 linhas por chamada.
+        const PAGE = 1000;
+        let from = 0;
+        const all: any[] = [];
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          let q = hostinger.from("contabilidade").select("*");
+          if (!isEvolucao) {
+            if (ano !== null) q = q.eq("nr_ano", ano);
+            if (mes !== null) q = q.eq("nr_mes", mes);
+            if (trimestre !== null) q = q.eq("nr_trimestre", trimestre);
+          }
+          const { data, error } = await q.range(from, from + PAGE - 1);
+          if (error) throw error;
+          const arr = (data || []) as any[];
+          all.push(...arr);
+          if (arr.length < PAGE) break;
+          from += PAGE;
+          if (cancelled) return;
         }
-        const { data, error } = await q;
         if (cancelled) return;
-        if (error) throw error;
-        const filtered = ((data || []) as ContabRow[]).filter((r) => {
-          const n2 = (r.N2 as string | null) || "";
-          const code = parseInt(n2.split("|")[0], 10);
-          if (!Number.isFinite(code)) return false;
-          return (code >= 31 && code <= 49) || code === 61;
-        });
+        const filtered = (all as ContabRow[]).filter(isDreRow);
         setRows(filtered);
       } catch (e: any) {
         if (!cancelled) setError(e?.message || String(e));
