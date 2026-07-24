@@ -8,6 +8,7 @@ import PlanoContas from "./PlanoContas";
 import AnalisesGerenciais from "./AnalisesGerenciais";
 import EvolucaoTemporal from "./EvolucaoTemporal";
 import { ContabRow } from "./types";
+import { isDreRow } from "./groupings";
 
 export const CONTAB_SUBMENUS = [
   "Visão Geral",
