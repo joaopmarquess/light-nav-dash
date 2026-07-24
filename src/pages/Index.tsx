@@ -108,6 +108,7 @@ const menuItems: MenuItem[] = [
     children: [
       { icon: UserCheck, label: "Planos/Empresas" },
       { icon: CalendarCheck, label: "Período" },
+      { icon: LayoutDashboard, label: "Cidades" },
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
   },
