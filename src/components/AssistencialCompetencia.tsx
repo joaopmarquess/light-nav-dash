@@ -262,14 +262,14 @@ export default function AssistencialCompetencia() {
 
             <tbody>
               {tree.map((g) => {
-                const gOpen = expGrp[g.grp] !== false;
+                const gOpen = !!expGrp[g.grp];
                 return (
                   <>
                     <tr key={`g:${g.grp}`} className="border-b border-border bg-accent/30 hover:bg-accent/50 font-semibold">
                       <td className="px-3 py-1.5">
                         <button
                           className="inline-flex items-center gap-1"
-                          onClick={() => setExpGrp((p) => ({ ...p, [g.grp]: !(p[g.grp] !== false) }))}
+                          onClick={() => setExpGrp((p) => ({ ...p, [g.grp]: !p[g.grp] }))}
                         >
                           <ChevronRight className={`h-3.5 w-3.5 transition-transform ${gOpen ? "rotate-90" : ""}`} />
                           <span>{g.grp}</span>
