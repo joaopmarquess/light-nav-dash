@@ -25,6 +25,9 @@ const addAgg = (a: Agg, r: Row) => {
   a.custo += Number(r.custo ?? 0);
 };
 
+type SortKey = "name" | "vidas" | "guias" | "custo";
+type SortDir = "asc" | "desc";
+
 export default function AssistencialCompetencia() {
   const [periodo, setPeriodo] = useState<string>("");
   const [periodoInput, setPeriodoInput] = useState<string>("");
@@ -34,6 +37,19 @@ export default function AssistencialCompetencia() {
   const [error, setError] = useState<string | null>(null);
   const [expGrp, setExpGrp] = useState<Record<string, boolean>>({});
   const [expExe, setExpExe] = useState<Record<string, boolean>>({});
+  const [sortKey, setSortKey] = useState<SortKey>("custo");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  const toggleSort = (k: SortKey) => {
+    if (sortKey === k) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(k);
+      setSortDir(k === "name" ? "asc" : "desc");
+    }
+  };
+  const sortIndicator = (k: SortKey) => (sortKey === k ? (sortDir === "asc" ? " ▲" : " ▼") : "");
+
 
   // Default period = MAX(bscmp) from aggregated table
   useEffect(() => {
