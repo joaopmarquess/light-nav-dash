@@ -186,17 +186,25 @@ export default function AssistencialCompetencia() {
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col">
       <div className="p-4 border-b border-border flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
-          <label className="text-xs text-muted-foreground">Período</label>
-          <select
-            value={periodo}
-            onChange={(e) => setPeriodo(e.target.value)}
-            className="h-9 w-32 px-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-          >
-            {periodos.length === 0 && <option value="">Carregando…</option>}
-            {periodos.map((p) => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </select>
+          <label className="text-xs text-muted-foreground">Ano</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={ano}
+            onChange={(e) => setAno(e.target.value.replace(/\D/g, "").slice(0, 4))}
+            placeholder="AAAA"
+            className="h-9 w-20 px-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          <label className="text-xs text-muted-foreground ml-2">Mês</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={mes}
+            onChange={(e) => setMes(e.target.value.replace(/\D/g, "").slice(0, 2))}
+            onBlur={() => setMes((m) => (m ? m.padStart(2, "0") : m))}
+            placeholder="MM"
+            className="h-9 w-16 px-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
         </div>
         <div className="relative flex-1 min-w-[240px]">
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
