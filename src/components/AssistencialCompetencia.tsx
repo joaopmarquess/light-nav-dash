@@ -240,10 +240,27 @@ export default function AssistencialCompetencia() {
           <table className="w-full text-xs">
             <thead className="sticky top-0 bg-card border-b border-border z-10">
               <tr className="text-left text-muted-foreground">
-                <th className="px-3 py-2">Grupo / Prestador Executante / Solicitante</th>
-                <th className="px-3 py-2 text-right">Vidas</th>
-                <th className="px-3 py-2 text-right">Guias</th>
-                <th className="px-3 py-2 text-right">R$ Custo</th>
+                <th className="px-3 py-2">
+                  <button className="hover:text-foreground" onClick={() => toggleSort("name")}>
+                    Prestador{sortIndicator("name")}
+                  </button>
+                </th>
+                <th className="px-3 py-2 text-right">
+                  <button className="hover:text-foreground" onClick={() => toggleSort("vidas")}>
+                    Vidas{sortIndicator("vidas")}
+                  </button>
+                </th>
+                <th className="px-3 py-2 text-right">
+                  <button className="hover:text-foreground" onClick={() => toggleSort("guias")}>
+                    Guias{sortIndicator("guias")}
+                  </button>
+                </th>
+                <th className="px-3 py-2 text-right">
+                  <button className="hover:text-foreground" onClick={() => toggleSort("custo")}>
+                    R$ Custo{sortIndicator("custo")}
+                  </button>
+                </th>
+
               </tr>
             </thead>
             <tbody>
