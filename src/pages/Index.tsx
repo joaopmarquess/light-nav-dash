@@ -58,6 +58,7 @@ import SinistralidadeCidade from "@/components/SinistralidadeCidade";
 import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
 import Assistencial from "@/components/Assistencial";
+import AssistencialCompetencia from "@/components/AssistencialCompetencia";
 
 
 
