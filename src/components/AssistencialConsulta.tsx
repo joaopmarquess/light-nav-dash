@@ -146,7 +146,7 @@ export default function AssistencialConsulta() {
     return () => {
       alive = false;
     };
-  }, [periodo]);
+  }, [periodo, triggered]);
 
   const filtered = useMemo(() => {
     const q = filtro.trim().toLowerCase();
