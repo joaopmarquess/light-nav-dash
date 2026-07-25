@@ -15,15 +15,11 @@ type Row = {
   vrevt: number | string | null;
 };
 
-const PAGE = 1000;
+const PAGE = 500;
+const IDTIPFOL_FILTER = "%conta%m%dica%"; // matches "Contas Medicas" / "Contas Médicas"
 
 const fmtBRL = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-const currentPeriod = () => {
-  const d = new Date();
-  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}`;
-};
 
 type Agg = {
   vidas: Set<string>;
