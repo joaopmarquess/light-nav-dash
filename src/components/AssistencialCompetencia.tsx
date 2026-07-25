@@ -15,15 +15,11 @@ type Row = {
   vrevt: number | string | null;
 };
 
-const PAGE = 1000;
+const PAGE = 500;
+const IDTIPFOL_FILTER = "%conta%m%dica%"; // matches "Contas Medicas" / "Contas Médicas"
 
 const fmtBRL = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-const currentPeriod = () => {
-  const d = new Date();
-  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}`;
-};
 
 type Agg = {
   vidas: Set<string>;
@@ -38,8 +34,8 @@ const addAgg = (a: Agg, r: Row) => {
 };
 
 export default function AssistencialCompetencia() {
-  const [periodo, setPeriodo] = useState<string>(currentPeriod());
-  const [periodoInput, setPeriodoInput] = useState<string>(currentPeriod());
+  const [periodo, setPeriodo] = useState<string>("");
+  const [periodoInput, setPeriodoInput] = useState<string>("");
   const [filtro, setFiltro] = useState("");
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
@@ -48,7 +44,35 @@ export default function AssistencialCompetencia() {
   const [expExe, setExpExe] = useState<Record<string, boolean>>({});
   const [expSol, setExpSol] = useState<Record<string, boolean>>({});
 
+  // Resolve default period = MAX(bscmp) for idtipfol like Contas Medicas
   useEffect(() => {
+    let alive = true;
+    (async () => {
+      const { data, error } = await hostinger
+        .from("assistencial")
+        .select("bscmp")
+        .ilike("idtipfol", IDTIPFOL_FILTER)
+        .order("bscmp", { ascending: false })
+        .limit(1);
+      if (!alive) return;
+      if (error) {
+        setError(error.message);
+        return;
+      }
+      const bs = data?.[0]?.bscmp;
+      if (bs != null) {
+        const s = String(bs);
+        setPeriodo(s);
+        setPeriodoInput(s);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!periodo) return;
     let alive = true;
     setLoading(true);
     setError(null);
@@ -64,26 +88,43 @@ export default function AssistencialCompetencia() {
       const acc: Row[] = [];
       // eslint-disable-next-line no-constant-condition
       while (true) {
-        const { data, error } = await hostinger
-          .from("assistencial")
-          .select("ideAssist,bscmp,nrgui,nmcli,cdregusr,dscrdexe,dscrdsol,dscrdrec,vrevt")
-          .eq("bscmp", bs)
-          .order("ideAssist", { ascending: true })
-          .range(from, from + PAGE - 1);
-        if (!alive) return;
-        if (error) {
-          setError(error.message);
-          break;
+        let attempt = 0;
+        let chunk: Row[] | null = null;
+        // retry on timeout with smaller ranges
+        while (attempt < 4) {
+          const size = Math.max(100, PAGE >> attempt);
+          const { data, error } = await hostinger
+            .from("assistencial")
+            .select("ideAssist,bscmp,nrgui,nmcli,cdregusr,dscrdexe,dscrdsol,dscrdrec,vrevt")
+            .eq("bscmp", bs)
+            .ilike("idtipfol", IDTIPFOL_FILTER)
+            .order("ideAssist", { ascending: true })
+            .range(from, from + size - 1);
+          if (!alive) return;
+          if (!error) {
+            chunk = (data ?? []) as Row[];
+            // adjust PAGE for the remainder of this loop pass
+            if (chunk.length < size) {
+              acc.push(...chunk);
+              setRows([...acc]);
+              setReachedEnd(true);
+              if (alive) setLoading(false);
+              return;
+            }
+            from += size;
+            break;
+          }
+          if (!/timeout/i.test(error.message) || attempt === 3) {
+            setError(error.message);
+            if (alive) setLoading(false);
+            return;
+          }
+          attempt++;
         }
-        const chunk = (data ?? []) as Row[];
+        if (!chunk) break;
         acc.push(...chunk);
         setRows([...acc]);
-        if (chunk.length < PAGE) {
-          setReachedEnd(true);
-          break;
-        }
-        from += PAGE;
-        if (from > 200000) break;
+        if (from > 500000) break;
       }
       if (alive) setLoading(false);
     })();
