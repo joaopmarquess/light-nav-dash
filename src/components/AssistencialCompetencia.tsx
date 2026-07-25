@@ -272,6 +272,10 @@ export default function AssistencialCompetencia() {
             <div className="text-xs text-muted-foreground">
               Isso pode levar algum tempo... por favor, aguarde.
             </div>
+            <div className="text-xs tabular-nums text-muted-foreground">
+              {Math.floor(elapsed / 60).toString().padStart(2, "0")}:
+              {(elapsed % 60).toString().padStart(2, "0")}
+            </div>
           </div>
         ) : (
           <table className="w-full text-xs">
