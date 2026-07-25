@@ -260,7 +260,7 @@ export default function AssistencialCompetencia() {
           <div className="h-full flex flex-col items-center justify-center gap-3">
             <FunLoader />
             <div className="text-xs text-muted-foreground">
-              Preparando dados do período {periodo || "..."}. Isso pode levar alguns segundos.
+              Isso pode levar algum tempo... por favor, aguarde.
             </div>
           </div>
         ) : (
