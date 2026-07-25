@@ -151,6 +151,10 @@ const Index = () => {
     if (active !== "Área Geográfica" && ativosDrillNome) setAtivosDrillNome(null);
   }, [active, ativosDrillNome]);
 
+  const consulta = useConsultaState();
+  const showConsultaBadge =
+    active !== "Consulta" && (consulta.loading || (consulta.triggered && !consulta.revealed && !!consulta.periodo));
+
   return (
     <div className="h-screen overflow-hidden flex w-full bg-background">
       <aside
