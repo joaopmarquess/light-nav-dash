@@ -35,8 +35,16 @@ const addAgg = (a: Agg, r: Row) => {
 };
 
 export default function AssistencialConsulta() {
+  // Default: Ano = current year, Mês = current month - 2 (clamped 01..12, adjust year if needed)
+  const now = new Date();
+  const defY = now.getFullYear();
+  const rawM = now.getMonth() + 1 - 2; // JS month is 0-based
+  const defYear = rawM <= 0 ? defY - 1 : defY;
+  const defMonth = ((rawM - 1 + 12) % 12) + 1;
+
+  const [anoInput, setAnoInput] = useState<string>(String(defYear));
+  const [mesInput, setMesInput] = useState<string>(String(defMonth).padStart(2, "0"));
   const [periodo, setPeriodo] = useState<string>("");
-  const [periodoInput, setPeriodoInput] = useState<string>("");
   const [filtro, setFiltro] = useState("");
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
@@ -48,6 +56,15 @@ export default function AssistencialConsulta() {
   const [revealed, setRevealed] = useState(false);
   const [triggered, setTriggered] = useState(false);
 
+  const periodoInput = useMemo(() => {
+    const y = anoInput.replace(/\D/g, "").slice(0, 4);
+    const m = mesInput.replace(/\D/g, "").slice(0, 2).padStart(2, "0");
+    if (y.length !== 4 || m.length !== 2) return "";
+    const mn = Number(m);
+    if (mn < 1 || mn > 12) return "";
+    return `${y}${m}`;
+  }, [anoInput, mesInput]);
+
   // Simple elapsed-time counter while loading (1s tick, cheap). Freezes when loading ends.
   useEffect(() => {
     if (!loading) return;
@@ -57,32 +74,6 @@ export default function AssistencialConsulta() {
     return () => clearInterval(id);
   }, [loading]);
 
-  // Resolve default period = MAX(bscmp) for idtipfol like Contas Medicas
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      const { data, error } = await hostinger
-        .from("assistencial")
-        .select("bscmp")
-        .ilike("idtipfol", IDTIPFOL_FILTER)
-        .order("bscmp", { ascending: false })
-        .limit(1);
-      if (!alive) return;
-      if (error) {
-        setError(error.message);
-        return;
-      }
-      const bs = data?.[0]?.bscmp;
-      if (bs != null) {
-        const s = String(bs);
-        setPeriodo(s);
-        setPeriodoInput(s);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
 
   useEffect(() => {
     if (!periodo || !triggered) return;
@@ -232,7 +223,7 @@ export default function AssistencialConsulta() {
 
   const showCurtain = !triggered || loading || !periodo || !revealed;
   const readyToReveal = triggered && !loading && !!periodo && !revealed;
-  const canLoad = !!periodo && periodoInput.length === 6 && !loading;
+  const canLoad = !!periodoInput && periodoInput.length === 6 && !loading;
 
   const handleCarregar = () => {
     if (!canLoad) return;
@@ -245,19 +236,36 @@ export default function AssistencialConsulta() {
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col">
       <div className="p-4 border-b border-border flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
-          <label className="text-xs text-muted-foreground">Período (AAAAMM)</label>
+          <label className="text-xs text-muted-foreground">Ano</label>
           <input
             type="text"
-            value={periodoInput}
+            value={anoInput}
             onChange={(e) => {
-              setPeriodoInput(e.target.value.replace(/\D/g, "").slice(0, 6));
+              setAnoInput(e.target.value.replace(/\D/g, "").slice(0, 4));
               setTriggered(false);
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") handleCarregar();
             }}
-            placeholder="202606"
-            className="h-9 w-28 px-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            placeholder="2026"
+            className="h-9 w-20 px-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          <label className="text-xs text-muted-foreground">Mês</label>
+          <input
+            type="text"
+            value={mesInput}
+            onChange={(e) => {
+              setMesInput(e.target.value.replace(/\D/g, "").slice(0, 2));
+              setTriggered(false);
+            }}
+            onBlur={() => {
+              if (mesInput && mesInput.length === 1) setMesInput(mesInput.padStart(2, "0"));
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleCarregar();
+            }}
+            placeholder="05"
+            className="h-9 w-16 px-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
           <button
             onClick={handleCarregar}
@@ -267,6 +275,7 @@ export default function AssistencialConsulta() {
             Carregar
           </button>
         </div>
+
         <div className="relative flex-1 min-w-[240px]">
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
