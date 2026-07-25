@@ -34,16 +34,6 @@ export default function AssistencialCompetencia() {
   const [error, setError] = useState<string | null>(null);
   const [expGrp, setExpGrp] = useState<Record<string, boolean>>({});
   const [expExe, setExpExe] = useState<Record<string, boolean>>({});
-  const [elapsed, setElapsed] = useState(0);
-  const [revealed, setRevealed] = useState(false);
-
-  useEffect(() => {
-    if (!loading) return;
-    setElapsed(0);
-    const start = Date.now();
-    const id = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000);
-    return () => clearInterval(id);
-  }, [loading]);
 
   // Default period = MAX(bscmp) from aggregated table
   useEffect(() => {
