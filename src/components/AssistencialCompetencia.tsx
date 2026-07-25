@@ -29,8 +29,18 @@ type SortKey = "name" | "vidas" | "guias" | "custo";
 type SortDir = "asc" | "desc";
 
 export default function AssistencialCompetencia() {
-  const [periodo, setPeriodo] = useState<string>("");
-  const [periodos, setPeriodos] = useState<string[]>([]);
+  const now = new Date();
+  const defMonth = now.getMonth() + 1 - 2; // mês atual - 2 (JS getMonth é 0-based)
+  const defAno = defMonth <= 0 ? now.getFullYear() - 1 : now.getFullYear();
+  const defMes = ((defMonth <= 0 ? defMonth + 12 : defMonth));
+  const [ano, setAno] = useState<string>(String(defAno));
+  const [mes, setMes] = useState<string>(String(defMes).padStart(2, "0"));
+  const periodo = useMemo(() => {
+    if (ano.length !== 4 || mes.length === 0) return "";
+    const m = mes.padStart(2, "0");
+    if (Number(m) < 1 || Number(m) > 12) return "";
+    return `${ano}${m}`;
+  }, [ano, mes]);
   const [filtro, setFiltro] = useState("");
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
