@@ -85,7 +85,7 @@ export default function AssistencialConsulta() {
   }, []);
 
   useEffect(() => {
-    if (!periodo) return;
+    if (!periodo || !triggered) return;
     let alive = true;
     setLoading(true);
     setError(null);
