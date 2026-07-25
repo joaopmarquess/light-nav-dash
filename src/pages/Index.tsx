@@ -388,7 +388,7 @@ const Index = () => {
             <SinistralidadeGraficos />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
-          ) : active === "Assistencial" || active === "Por Guia" ? (
+          ) : active === "Assistencial" ? (
             <Assistencial />
           ) : active === "Por Competência" ? (
             <AssistencialCompetencia />
