@@ -171,8 +171,7 @@ export default function AssistencialCompetencia() {
       .sort((a, b) => grpOrder(a.grp) - grpOrder(b.grp));
   }, [filtered]);
 
-  const showCurtain = loading || !periodo || !revealed;
-  const readyToReveal = !loading && !!periodo && !revealed;
+  const showCurtain = loading || !periodo;
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col">
@@ -212,27 +211,8 @@ export default function AssistencialCompetencia() {
 
       <div className="flex-1 min-h-0 overflow-auto">
         {showCurtain ? (
-          <div className="h-full flex flex-col items-center justify-center gap-3">
-            {!readyToReveal && <FunLoader />}
-            <div className="text-xs text-muted-foreground">
-              {readyToReveal
-                ? "Concluído. Clique em Pronto para abrir o grid."
-                : "Isso pode levar algum tempo... por favor, aguarde."}
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="text-sm tabular-nums font-medium text-foreground">
-                {Math.floor(elapsed / 60).toString().padStart(2, "0")}:
-                {(elapsed % 60).toString().padStart(2, "0")}
-              </div>
-              {readyToReveal && (
-                <button
-                  onClick={() => setRevealed(true)}
-                  className="h-8 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/30"
-                >
-                  Pronto
-                </button>
-              )}
-            </div>
+          <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+            Carregando...
           </div>
         ) : (
           <table className="w-full text-xs">
