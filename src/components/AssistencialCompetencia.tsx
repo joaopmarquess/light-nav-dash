@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { ChevronRight, Search } from "lucide-react";
-import FunLoader from "@/components/FunLoader";
 
 type Row = {
   bscmp: number | null;
