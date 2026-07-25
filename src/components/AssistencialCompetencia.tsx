@@ -229,7 +229,8 @@ export default function AssistencialCompetencia() {
       .sort((a, b) => grpOrder(a.grp) - grpOrder(b.grp));
   }, [filtered]);
 
-  const showCurtain = loading || !periodo;
+  const showCurtain = loading || !periodo || !revealed;
+  const readyToReveal = !loading && !!periodo && !revealed;
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col">
