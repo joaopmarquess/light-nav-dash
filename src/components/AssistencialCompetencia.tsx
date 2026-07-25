@@ -44,6 +44,16 @@ export default function AssistencialCompetencia() {
   const [expGrp, setExpGrp] = useState<Record<string, boolean>>({});
   const [expExe, setExpExe] = useState<Record<string, boolean>>({});
   const [expSol, setExpSol] = useState<Record<string, boolean>>({});
+  const [elapsed, setElapsed] = useState(0);
+
+  // Simple elapsed-time counter while loading (1s tick, cheap)
+  useEffect(() => {
+    if (!loading) return;
+    setElapsed(0);
+    const start = Date.now();
+    const id = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000);
+    return () => clearInterval(id);
+  }, [loading]);
 
   // Resolve default period = MAX(bscmp) for idtipfol like Contas Medicas
   useEffect(() => {
