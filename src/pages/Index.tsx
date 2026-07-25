@@ -408,6 +408,30 @@ const Index = () => {
 
         </main>
       </div>
+
+      {showConsultaBadge && (
+        <button
+          onClick={() => setActive("Consulta")}
+          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 px-3 py-2 rounded-full shadow-lg border border-border bg-card hover:bg-accent transition-colors text-xs"
+          title="Voltar para Consulta Assistencial"
+        >
+          {consulta.loading ? (
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          ) : (
+            <span className="h-2 w-2 rounded-full bg-primary" />
+          )}
+          <span className="font-medium text-foreground">
+            Consulta {consulta.periodo}
+          </span>
+          <span className="tabular-nums text-muted-foreground">
+            {Math.floor(consulta.elapsed / 60).toString().padStart(2, "0")}:
+            {(consulta.elapsed % 60).toString().padStart(2, "0")}
+          </span>
+          {!consulta.loading && (
+            <span className="text-primary font-medium">Pronto</span>
+          )}
+        </button>
+      )}
     </div>
   );
 };
