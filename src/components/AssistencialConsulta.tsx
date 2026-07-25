@@ -46,6 +46,7 @@ export default function AssistencialConsulta() {
   const [expSol, setExpSol] = useState<Record<string, boolean>>({});
   const [elapsed, setElapsed] = useState(0);
   const [revealed, setRevealed] = useState(false);
+  const [triggered, setTriggered] = useState(false);
 
   // Simple elapsed-time counter while loading (1s tick, cheap). Freezes when loading ends.
   useEffect(() => {
@@ -84,7 +85,7 @@ export default function AssistencialConsulta() {
   }, []);
 
   useEffect(() => {
-    if (!periodo) return;
+    if (!periodo || !triggered) return;
     let alive = true;
     setLoading(true);
     setError(null);
@@ -145,7 +146,7 @@ export default function AssistencialConsulta() {
     return () => {
       alive = false;
     };
-  }, [periodo]);
+  }, [periodo, triggered]);
 
   const filtered = useMemo(() => {
     const q = filtro.trim().toLowerCase();
@@ -229,8 +230,16 @@ export default function AssistencialConsulta() {
       .sort((a, b) => grpOrder(a.grp) - grpOrder(b.grp));
   }, [filtered]);
 
-  const showCurtain = loading || !periodo || !revealed;
-  const readyToReveal = !loading && !!periodo && !revealed;
+  const showCurtain = !triggered || loading || !periodo || !revealed;
+  const readyToReveal = triggered && !loading && !!periodo && !revealed;
+  const canLoad = !!periodo && periodoInput.length === 6 && !loading;
+
+  const handleCarregar = () => {
+    if (!canLoad) return;
+    if (periodoInput !== periodo) setPeriodo(periodoInput);
+    setRevealed(false);
+    setTriggered(true);
+  };
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col">
@@ -240,14 +249,23 @@ export default function AssistencialConsulta() {
           <input
             type="text"
             value={periodoInput}
-            onChange={(e) => setPeriodoInput(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            onBlur={() => periodoInput.length === 6 && setPeriodo(periodoInput)}
+            onChange={(e) => {
+              setPeriodoInput(e.target.value.replace(/\D/g, "").slice(0, 6));
+              setTriggered(false);
+            }}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && periodoInput.length === 6) setPeriodo(periodoInput);
+              if (e.key === "Enter") handleCarregar();
             }}
             placeholder="202606"
             className="h-9 w-28 px-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
+          <button
+            onClick={handleCarregar}
+            disabled={!canLoad}
+            className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Carregar
+          </button>
         </div>
         <div className="relative flex-1 min-w-[240px]">
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -260,7 +278,7 @@ export default function AssistencialConsulta() {
           />
         </div>
         <div className="text-xs text-muted-foreground flex gap-4">
-          <span>{showCurtain ? "Carregando..." : `${totalVidas.toLocaleString("pt-BR")} vidas`}</span>
+          <span>{showCurtain ? "" : `${totalVidas.toLocaleString("pt-BR")} vidas`}</span>
           <span>{showCurtain ? "" : `${totalGuias.toLocaleString("pt-BR")} guias`}</span>
           <span>{showCurtain ? "" : `R$ ${fmtBRL(totalCusto)}`}</span>
         </div>
@@ -270,28 +288,34 @@ export default function AssistencialConsulta() {
 
       <div className="flex-1 min-h-0 overflow-auto">
         {showCurtain ? (
-          <div className="h-full flex flex-col items-center justify-center gap-3">
-            {!readyToReveal && <FunLoader />}
-            <div className="text-xs text-muted-foreground">
-              {readyToReveal
-                ? "Concluído. Clique em Pronto para abrir o grid."
-                : "Isso pode levar algum tempo... por favor, aguarde."}
+          !triggered ? (
+            <div className="h-full flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground">
+              <div>Informe o período e clique em <span className="font-medium text-foreground">Carregar</span>.</div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-sm tabular-nums font-medium text-foreground">
-                {Math.floor(elapsed / 60).toString().padStart(2, "0")}:
-                {(elapsed % 60).toString().padStart(2, "0")}
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center gap-3">
+              {!readyToReveal && <FunLoader />}
+              <div className="text-xs text-muted-foreground">
+                {readyToReveal
+                  ? "Concluído. Clique em Pronto para abrir o grid."
+                  : "Isso pode levar algum tempo... por favor, aguarde."}
               </div>
-              {readyToReveal && (
-                <button
-                  onClick={() => setRevealed(true)}
-                  className="h-8 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/30"
-                >
-                  Pronto
-                </button>
-              )}
+              <div className="flex items-center gap-3">
+                <div className="text-sm tabular-nums font-medium text-foreground">
+                  {Math.floor(elapsed / 60).toString().padStart(2, "0")}:
+                  {(elapsed % 60).toString().padStart(2, "0")}
+                </div>
+                {readyToReveal && (
+                  <button
+                    onClick={() => setRevealed(true)}
+                    className="h-8 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  >
+                    Pronto
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          )
         ) : (
           <table className="w-full text-xs">
             <thead className="sticky top-0 bg-card border-b border-border z-10">

@@ -113,7 +113,7 @@ const menuItems: MenuItem[] = [
     icon: Stethoscope,
     label: "Assistencial",
     children: [
-      { icon: FileText, label: "Por Guia" },
+      
       { icon: CalendarCheck, label: "Por Competência" },
       { icon: Search, label: "Consulta" },
     ],
@@ -388,7 +388,7 @@ const Index = () => {
             <SinistralidadeGraficos />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
-          ) : active === "Assistencial" || active === "Por Guia" ? (
+          ) : active === "Assistencial" ? (
             <Assistencial />
           ) : active === "Por Competência" ? (
             <AssistencialCompetencia />
