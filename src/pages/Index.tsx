@@ -60,6 +60,8 @@ import DREGraficos from "@/components/DREGraficos";
 import Assistencial from "@/components/Assistencial";
 import AssistencialCompetencia from "@/components/AssistencialCompetencia";
 import AssistencialConsulta from "@/components/AssistencialConsulta";
+import { useConsultaState } from "@/lib/assistencialConsultaStore";
+import { Loader2 } from "lucide-react";
 
 
 
