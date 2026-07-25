@@ -223,7 +223,7 @@ export default function AssistencialConsulta() {
 
   const showCurtain = !triggered || loading || !periodo || !revealed;
   const readyToReveal = triggered && !loading && !!periodo && !revealed;
-  const canLoad = !!periodo && periodoInput.length === 6 && !loading;
+  const canLoad = !!periodoInput && periodoInput.length === 6 && !loading;
 
   const handleCarregar = () => {
     if (!canLoad) return;
@@ -236,19 +236,36 @@ export default function AssistencialConsulta() {
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col">
       <div className="p-4 border-b border-border flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
-          <label className="text-xs text-muted-foreground">Período (AAAAMM)</label>
+          <label className="text-xs text-muted-foreground">Ano</label>
           <input
             type="text"
-            value={periodoInput}
+            value={anoInput}
             onChange={(e) => {
-              setPeriodoInput(e.target.value.replace(/\D/g, "").slice(0, 6));
+              setAnoInput(e.target.value.replace(/\D/g, "").slice(0, 4));
               setTriggered(false);
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") handleCarregar();
             }}
-            placeholder="202606"
-            className="h-9 w-28 px-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            placeholder="2026"
+            className="h-9 w-20 px-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          <label className="text-xs text-muted-foreground">Mês</label>
+          <input
+            type="text"
+            value={mesInput}
+            onChange={(e) => {
+              setMesInput(e.target.value.replace(/\D/g, "").slice(0, 2));
+              setTriggered(false);
+            }}
+            onBlur={() => {
+              if (mesInput && mesInput.length === 1) setMesInput(mesInput.padStart(2, "0"));
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleCarregar();
+            }}
+            placeholder="05"
+            className="h-9 w-16 px-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
           <button
             onClick={handleCarregar}
@@ -258,6 +275,7 @@ export default function AssistencialConsulta() {
             Carregar
           </button>
         </div>
+
         <div className="relative flex-1 min-w-[240px]">
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
