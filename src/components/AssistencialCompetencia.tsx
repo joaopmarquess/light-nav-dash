@@ -89,6 +89,7 @@ export default function AssistencialCompetencia() {
     setLoading(true);
     setError(null);
     setRows([]);
+    setRevealed(false);
     (async () => {
       const bs = Number(periodo);
       if (!Number.isFinite(bs)) {
