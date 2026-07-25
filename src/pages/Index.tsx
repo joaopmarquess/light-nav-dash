@@ -58,6 +58,7 @@ import SinistralidadeCidade from "@/components/SinistralidadeCidade";
 import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
 import Assistencial from "@/components/Assistencial";
+import AssistencialCompetencia from "@/components/AssistencialCompetencia";
 
 
 
@@ -107,7 +108,14 @@ const menuItems: MenuItem[] = [
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
   },
-  { icon: Stethoscope, label: "Assistencial" },
+  {
+    icon: Stethoscope,
+    label: "Assistencial",
+    children: [
+      { icon: FileText, label: "Por Guia" },
+      { icon: CalendarCheck, label: "Por Competência" },
+    ],
+  },
   { icon: LayoutDashboard, label: "B.I. Overview" },
 ];
 
@@ -378,8 +386,10 @@ const Index = () => {
             <SinistralidadeGraficos />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
-          ) : active === "Assistencial" ? (
+          ) : active === "Assistencial" || active === "Por Guia" ? (
             <Assistencial />
+          ) : active === "Por Competência" ? (
+            <AssistencialCompetencia />
           ) : (
             <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex items-center justify-center text-muted-foreground text-sm">
               Selecione uma opção no menu lateral.
