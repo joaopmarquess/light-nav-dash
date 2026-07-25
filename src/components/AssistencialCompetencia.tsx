@@ -29,8 +29,18 @@ type SortKey = "name" | "vidas" | "guias" | "custo";
 type SortDir = "asc" | "desc";
 
 export default function AssistencialCompetencia() {
-  const [periodo, setPeriodo] = useState<string>("");
-  const [periodos, setPeriodos] = useState<string[]>([]);
+  const now = new Date();
+  const defMonth = now.getMonth() + 1 - 2; // mês atual - 2 (JS getMonth é 0-based)
+  const defAno = defMonth <= 0 ? now.getFullYear() - 1 : now.getFullYear();
+  const defMes = ((defMonth <= 0 ? defMonth + 12 : defMonth));
+  const [ano, setAno] = useState<string>(String(defAno));
+  const [mes, setMes] = useState<string>(String(defMes).padStart(2, "0"));
+  const periodo = useMemo(() => {
+    if (ano.length !== 4 || mes.length === 0) return "";
+    const m = mes.padStart(2, "0");
+    if (Number(m) < 1 || Number(m) > 12) return "";
+    return `${ano}${m}`;
+  }, [ano, mes]);
   const [filtro, setFiltro] = useState("");
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
@@ -51,40 +61,7 @@ export default function AssistencialCompetencia() {
   const sortIndicator = (k: SortKey) => (sortKey === k ? (sortDir === "asc" ? " ▲" : " ▼") : "");
 
 
-  // Load distinct bscmp periods; default = MAX (paginado para contornar limite do PostgREST)
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      const uniqSet = new Set<string>();
-      const CHUNK = 1000;
-      let from = 0;
-      // paginação em chunks até esgotar
-      for (let i = 0; i < 200; i++) {
-        const { data, error } = await hostinger
-          .from("assistencial_003_competencia")
-          .select("bscmp")
-          .order("bscmp", { ascending: false })
-          .range(from, from + CHUNK - 1);
-        if (!alive) return;
-        if (error) {
-          setError(error.message);
-          return;
-        }
-        const rows = data ?? [];
-        for (const d of rows as any[]) {
-          if (d.bscmp != null) uniqSet.add(String(d.bscmp));
-        }
-        if (rows.length < CHUNK) break;
-        from += CHUNK;
-      }
-      const uniq = Array.from(uniqSet).sort((a, b) => Number(b) - Number(a));
-      setPeriodos(uniq);
-      if (uniq[0]) setPeriodo(uniq[0]);
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
+
 
 
   useEffect(() => {
@@ -209,17 +186,25 @@ export default function AssistencialCompetencia() {
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col">
       <div className="p-4 border-b border-border flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
-          <label className="text-xs text-muted-foreground">Período</label>
-          <select
-            value={periodo}
-            onChange={(e) => setPeriodo(e.target.value)}
-            className="h-9 w-32 px-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-          >
-            {periodos.length === 0 && <option value="">Carregando…</option>}
-            {periodos.map((p) => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </select>
+          <label className="text-xs text-muted-foreground">Ano</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={ano}
+            onChange={(e) => setAno(e.target.value.replace(/\D/g, "").slice(0, 4))}
+            placeholder="AAAA"
+            className="h-9 w-20 px-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          <label className="text-xs text-muted-foreground ml-2">Mês</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={mes}
+            onChange={(e) => setMes(e.target.value.replace(/\D/g, "").slice(0, 2))}
+            onBlur={() => setMes((m) => (m ? m.padStart(2, "0") : m))}
+            placeholder="MM"
+            className="h-9 w-16 px-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
         </div>
         <div className="relative flex-1 min-w-[240px]">
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
