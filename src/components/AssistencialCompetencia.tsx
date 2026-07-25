@@ -258,7 +258,14 @@ export default function AssistencialCompetencia() {
                 </th>
 
               </tr>
+              <tr className="text-xs font-semibold bg-accent/50 border-b border-border">
+                <td className="px-3 py-1.5">Total</td>
+                <td className="px-3 py-1.5 text-right">{totalVidas.toLocaleString("pt-BR")}</td>
+                <td className="px-3 py-1.5 text-right">{totalGuias.toLocaleString("pt-BR")}</td>
+                <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(totalCusto)}</td>
+              </tr>
             </thead>
+
             <tbody>
               {tree.map((g) => {
                 const gOpen = expGrp[g.grp] !== false;
