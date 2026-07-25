@@ -108,7 +108,14 @@ const menuItems: MenuItem[] = [
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
   },
-  { icon: Stethoscope, label: "Assistencial" },
+  {
+    icon: Stethoscope,
+    label: "Assistencial",
+    children: [
+      { icon: FileText, label: "Por Guia" },
+      { icon: CalendarCheck, label: "Por Competência" },
+    ],
+  },
   { icon: LayoutDashboard, label: "B.I. Overview" },
 ];
 
