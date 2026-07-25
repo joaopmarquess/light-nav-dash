@@ -200,18 +200,17 @@ export default function AssistencialCompetencia() {
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col">
       <div className="p-4 border-b border-border flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
-          <label className="text-xs text-muted-foreground">Período (AAAAMM)</label>
-          <input
-            type="text"
-            value={periodoInput}
-            onChange={(e) => setPeriodoInput(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            onBlur={() => periodoInput.length === 6 && setPeriodo(periodoInput)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && periodoInput.length === 6) setPeriodo(periodoInput);
-            }}
-            placeholder="202606"
-            className="h-9 w-28 px-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-          />
+          <label className="text-xs text-muted-foreground">Período</label>
+          <select
+            value={periodo}
+            onChange={(e) => setPeriodo(e.target.value)}
+            className="h-9 w-32 px-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          >
+            {periodos.length === 0 && <option value="">—</option>}
+            {periodos.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
         </div>
         <div className="relative flex-1 min-w-[240px]">
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -223,12 +222,8 @@ export default function AssistencialCompetencia() {
             className="h-9 w-full pl-9 pr-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
         </div>
-        <div className="text-xs text-muted-foreground flex gap-4">
-          <span>{showCurtain ? "Carregando..." : `${totalVidas.toLocaleString("pt-BR")} vidas`}</span>
-          <span>{showCurtain ? "" : `${totalGuias.toLocaleString("pt-BR")} guias`}</span>
-          <span>{showCurtain ? "" : `R$ ${fmtBRL(totalCusto)}`}</span>
-        </div>
       </div>
+
 
       {error && <div className="p-4 text-sm text-destructive">Erro ao carregar: {error}</div>}
 
