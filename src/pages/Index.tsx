@@ -115,6 +115,7 @@ const menuItems: MenuItem[] = [
     children: [
       { icon: FileText, label: "Por Guia" },
       { icon: CalendarCheck, label: "Por Competência" },
+      { icon: Search, label: "Consulta" },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
