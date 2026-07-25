@@ -59,6 +59,7 @@ import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
 import Assistencial from "@/components/Assistencial";
 import AssistencialCompetencia from "@/components/AssistencialCompetencia";
+import AssistencialConsulta from "@/components/AssistencialConsulta";
 
 
 
@@ -114,6 +115,7 @@ const menuItems: MenuItem[] = [
     children: [
       { icon: FileText, label: "Por Guia" },
       { icon: CalendarCheck, label: "Por Competência" },
+      { icon: Search, label: "Consulta" },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
@@ -390,6 +392,8 @@ const Index = () => {
             <Assistencial />
           ) : active === "Por Competência" ? (
             <AssistencialCompetencia />
+          ) : active === "Consulta" ? (
+            <AssistencialConsulta />
           ) : (
             <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex items-center justify-center text-muted-foreground text-sm">
               Selecione uma opção no menu lateral.

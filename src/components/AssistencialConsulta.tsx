@@ -4,29 +4,37 @@ import { ChevronRight, Search } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
 
 type Row = {
+  ideAssist: number;
   bscmp: number | null;
+  nrgui: string | number | null;
+  nmcli: string | null;
+  cdregusr: string | number | null;
   dscrdexe: string | null;
   dscrdsol: string | null;
-  vidas: number | string | null;
-  guias: number | string | null;
-  custo: number | string | null;
+  dscrdrec: string | null;
+  vrevt: number | string | null;
 };
 
-const PAGE = 1000;
+const PAGE = 500;
+const IDTIPFOL_FILTER = "%conta%m%dica%"; // matches "Contas Medicas" / "Contas Médicas"
 const HOSP_PORTUGUESA = "HOSP BENEF PORTUGUESA DE S J RIO PRETO";
 
 const fmtBRL = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-type Agg = { vidas: number; guias: number; custo: number };
-const emptyAgg = (): Agg => ({ vidas: 0, guias: 0, custo: 0 });
+type Agg = {
+  vidas: Set<string>;
+  guias: Set<string>;
+  custo: number;
+};
+const emptyAgg = (): Agg => ({ vidas: new Set(), guias: new Set(), custo: 0 });
 const addAgg = (a: Agg, r: Row) => {
-  a.vidas += Number(r.vidas ?? 0);
-  a.guias += Number(r.guias ?? 0);
-  a.custo += Number(r.custo ?? 0);
+  if (r.nmcli) a.vidas.add(r.nmcli);
+  if (r.nrgui != null) a.guias.add(String(r.nrgui));
+  a.custo += Number(r.vrevt ?? 0);
 };
 
-export default function AssistencialCompetencia() {
+export default function AssistencialConsulta() {
   const [periodo, setPeriodo] = useState<string>("");
   const [periodoInput, setPeriodoInput] = useState<string>("");
   const [filtro, setFiltro] = useState("");
@@ -35,9 +43,11 @@ export default function AssistencialCompetencia() {
   const [error, setError] = useState<string | null>(null);
   const [expGrp, setExpGrp] = useState<Record<string, boolean>>({});
   const [expExe, setExpExe] = useState<Record<string, boolean>>({});
+  const [expSol, setExpSol] = useState<Record<string, boolean>>({});
   const [elapsed, setElapsed] = useState(0);
   const [revealed, setRevealed] = useState(false);
 
+  // Simple elapsed-time counter while loading (1s tick, cheap). Freezes when loading ends.
   useEffect(() => {
     if (!loading) return;
     setElapsed(0);
@@ -46,13 +56,14 @@ export default function AssistencialCompetencia() {
     return () => clearInterval(id);
   }, [loading]);
 
-  // Default period = MAX(bscmp) from aggregated table
+  // Resolve default period = MAX(bscmp) for idtipfol like Contas Medicas
   useEffect(() => {
     let alive = true;
     (async () => {
       const { data, error } = await hostinger
-        .from("assistencial_003_competencia")
+        .from("assistencial")
         .select("bscmp")
+        .ilike("idtipfol", IDTIPFOL_FILTER)
         .order("bscmp", { ascending: false })
         .limit(1);
       if (!alive) return;
@@ -89,21 +100,41 @@ export default function AssistencialCompetencia() {
       const acc: Row[] = [];
       // eslint-disable-next-line no-constant-condition
       while (true) {
-        const { data, error } = await hostinger
-          .from("assistencial_003_competencia")
-          .select("bscmp,dscrdexe,dscrdsol,vidas,guias,custo")
-          .eq("bscmp", bs)
-          .range(from, from + PAGE - 1);
-        if (!alive) return;
-        if (error) {
-          setError(error.message);
-          setLoading(false);
-          return;
+        let attempt = 0;
+        let chunk: Row[] | null = null;
+        // retry on timeout with smaller ranges
+        while (attempt < 4) {
+          const size = Math.max(100, PAGE >> attempt);
+          const { data, error } = await hostinger
+            .from("assistencial")
+            .select("ideAssist,bscmp,nrgui,nmcli,cdregusr,dscrdexe,dscrdsol,dscrdrec,vrevt")
+            .eq("bscmp", bs)
+            .ilike("idtipfol", IDTIPFOL_FILTER)
+            .order("ideAssist", { ascending: true })
+            .range(from, from + size - 1);
+          if (!alive) return;
+          if (!error) {
+            chunk = (data ?? []) as Row[];
+            if (chunk.length < size) {
+              acc.push(...chunk);
+              if (alive) {
+                setRows(acc);
+                setLoading(false);
+              }
+              return;
+            }
+            from += size;
+            break;
+          }
+          if (!/timeout/i.test(error.message) || attempt === 3) {
+            setError(error.message);
+            if (alive) setLoading(false);
+            return;
+          }
+          attempt++;
         }
-        const chunk = (data ?? []) as Row[];
+        if (!chunk) break;
         acc.push(...chunk);
-        if (chunk.length < PAGE) break;
-        from += PAGE;
         if (from > 500000) break;
       }
       if (alive) {
@@ -120,7 +151,7 @@ export default function AssistencialCompetencia() {
     const q = filtro.trim().toLowerCase();
     if (!q) return rows;
     return rows.filter((r) =>
-      [r.dscrdsol, r.dscrdexe]
+      [r.dscrdsol, r.dscrdexe, r.dscrdrec]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q)),
     );
@@ -129,12 +160,13 @@ export default function AssistencialCompetencia() {
   const { totalCusto, totalVidas, totalGuias } = useMemo(() => {
     const tot = emptyAgg();
     for (const r of filtered) addAgg(tot, r);
-    return { totalCusto: tot.custo, totalVidas: tot.vidas, totalGuias: tot.guias };
+    return { totalCusto: tot.custo, totalVidas: tot.vidas.size, totalGuias: tot.guias.size };
   }, [filtered]);
 
-  // Hierarchy: grupo0 (HOSP PORTUGUESA | REDE) > dscrdexe > dscrdsol
+  // Hierarchy: grupo0 (HOSP PORTUGUESA | REDE) > dscrdexe > dscrdsol > (nmcli | cdregusr)
   const tree = useMemo(() => {
-    type SolNode = { sol: string; agg: Agg };
+    type BenefNode = { key: string; sample: Row; agg: Agg };
+    type SolNode = { sol: string; agg: Agg; benefs: Map<string, BenefNode> };
     type ExeNode = { exe: string; agg: Agg; sol: Map<string, SolNode> };
     type GrpNode = { grp: string; agg: Agg; exe: Map<string, ExeNode> };
 
@@ -143,6 +175,7 @@ export default function AssistencialCompetencia() {
       const exe = r.dscrdexe ?? "(sem prestador executante)";
       const grp = exe === HOSP_PORTUGUESA ? HOSP_PORTUGUESA : "REDE";
       const sol = r.dscrdsol ?? "(sem prestador solicitante)";
+      const benefKey = `${r.nmcli ?? "-"}|${r.cdregusr ?? ""}`;
 
       let g = grupos.get(grp);
       if (!g) {
@@ -160,12 +193,20 @@ export default function AssistencialCompetencia() {
 
       let s = e.sol.get(sol);
       if (!s) {
-        s = { sol, agg: emptyAgg() };
+        s = { sol, agg: emptyAgg(), benefs: new Map() };
         e.sol.set(sol, s);
       }
       addAgg(s.agg, r);
+
+      let b = s.benefs.get(benefKey);
+      if (!b) {
+        b = { key: benefKey, sample: r, agg: emptyAgg() };
+        s.benefs.set(benefKey, b);
+      }
+      addAgg(b.agg, r);
     }
 
+    // Materialize + order (HOSP PORTUGUESA first, then REDE)
     const grpOrder = (k: string) => (k === HOSP_PORTUGUESA ? 0 : 1);
     return Array.from(grupos.values())
       .map((g) => ({
@@ -175,7 +216,13 @@ export default function AssistencialCompetencia() {
           .map((e) => ({
             exe: e.exe,
             agg: e.agg,
-            sol: Array.from(e.sol.values()).sort((a, b) => b.agg.custo - a.agg.custo),
+            sol: Array.from(e.sol.values())
+              .map((s) => ({
+                sol: s.sol,
+                agg: s.agg,
+                benefs: Array.from(s.benefs.values()).sort((a, b) => b.agg.custo - a.agg.custo),
+              }))
+              .sort((a, b) => b.agg.custo - a.agg.custo),
           }))
           .sort((a, b) => b.agg.custo - a.agg.custo),
       }))
@@ -208,7 +255,7 @@ export default function AssistencialCompetencia() {
             type="text"
             value={filtro}
             onChange={(e) => setFiltro(e.target.value)}
-            placeholder="Filtrar por prestador executante ou solicitante..."
+            placeholder="Filtrar por prestador solicitante, executante ou receptor..."
             className="h-9 w-full pl-9 pr-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
         </div>
@@ -249,7 +296,7 @@ export default function AssistencialCompetencia() {
           <table className="w-full text-xs">
             <thead className="sticky top-0 bg-card border-b border-border z-10">
               <tr className="text-left text-muted-foreground">
-                <th className="px-3 py-2">Grupo / Prestador Executante / Solicitante</th>
+                <th className="px-3 py-2">Grupo / Prestador Executante / Solicitante / Beneficiário</th>
                 <th className="px-3 py-2 text-right">Vidas</th>
                 <th className="px-3 py-2 text-right">Guias</th>
                 <th className="px-3 py-2 text-right">R$ Custo</th>
@@ -257,7 +304,7 @@ export default function AssistencialCompetencia() {
             </thead>
             <tbody>
               {tree.map((g) => {
-                const gOpen = expGrp[g.grp] !== false;
+                const gOpen = expGrp[g.grp] !== false; // default open
                 return (
                   <>
                     <tr key={`g:${g.grp}`} className="border-b border-border bg-accent/30 hover:bg-accent/50 font-semibold">
@@ -270,8 +317,8 @@ export default function AssistencialCompetencia() {
                           <span>{g.grp}</span>
                         </button>
                       </td>
-                      <td className="px-3 py-1.5 text-right">{g.agg.vidas.toLocaleString("pt-BR")}</td>
-                      <td className="px-3 py-1.5 text-right">{g.agg.guias.toLocaleString("pt-BR")}</td>
+                      <td className="px-3 py-1.5 text-right">{g.agg.vidas.size.toLocaleString("pt-BR")}</td>
+                      <td className="px-3 py-1.5 text-right">{g.agg.guias.size.toLocaleString("pt-BR")}</td>
                       <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(g.agg.custo)}</td>
                     </tr>
                     {gOpen &&
@@ -290,19 +337,44 @@ export default function AssistencialCompetencia() {
                                   <span>{e.exe}</span>
                                 </button>
                               </td>
-                              <td className="px-3 py-1.5 text-right">{e.agg.vidas.toLocaleString("pt-BR")}</td>
-                              <td className="px-3 py-1.5 text-right">{e.agg.guias.toLocaleString("pt-BR")}</td>
+                              <td className="px-3 py-1.5 text-right">{e.agg.vidas.size.toLocaleString("pt-BR")}</td>
+                              <td className="px-3 py-1.5 text-right">{e.agg.guias.size.toLocaleString("pt-BR")}</td>
                               <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(e.agg.custo)}</td>
                             </tr>
                             {eOpen &&
-                              e.sol.map((s) => (
-                                <tr key={`s:${eKey}||${s.sol}`} className="border-b border-border/40 hover:bg-accent/30 text-muted-foreground">
-                                  <td className="px-3 py-1.5 pl-14">{s.sol}</td>
-                                  <td className="px-3 py-1.5 text-right">{s.agg.vidas.toLocaleString("pt-BR")}</td>
-                                  <td className="px-3 py-1.5 text-right">{s.agg.guias.toLocaleString("pt-BR")}</td>
-                                  <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(s.agg.custo)}</td>
-                                </tr>
-                              ))}
+                              e.sol.map((s) => {
+                                const sKey = `${eKey}||${s.sol}`;
+                                const sOpen = !!expSol[sKey];
+                                return (
+                                  <>
+                                    <tr key={`s:${sKey}`} className="border-b border-border/40 hover:bg-accent/30">
+                                      <td className="px-3 py-1.5 pl-14">
+                                        <button
+                                          className="inline-flex items-center gap-1"
+                                          onClick={() => setExpSol((p) => ({ ...p, [sKey]: !p[sKey] }))}
+                                        >
+                                          <ChevronRight className={`h-3.5 w-3.5 transition-transform ${sOpen ? "rotate-90" : ""}`} />
+                                          <span>{s.sol}</span>
+                                        </button>
+                                      </td>
+                                      <td className="px-3 py-1.5 text-right">{s.agg.vidas.size.toLocaleString("pt-BR")}</td>
+                                      <td className="px-3 py-1.5 text-right">{s.agg.guias.size.toLocaleString("pt-BR")}</td>
+                                      <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(s.agg.custo)}</td>
+                                    </tr>
+                                    {sOpen &&
+                                      s.benefs.map((b) => (
+                                        <tr key={`b:${sKey}||${b.key}`} className="border-b border-border/30 hover:bg-accent/20 text-muted-foreground">
+                                          <td className="px-3 py-1.5 pl-20">
+                                            {b.sample.nmcli ?? "-"} {b.sample.cdregusr ? `(${b.sample.cdregusr})` : ""}
+                                          </td>
+                                          <td className="px-3 py-1.5 text-right">{b.agg.vidas.size.toLocaleString("pt-BR")}</td>
+                                          <td className="px-3 py-1.5 text-right">{b.agg.guias.size.toLocaleString("pt-BR")}</td>
+                                          <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(b.agg.custo)}</td>
+                                        </tr>
+                                      ))}
+                                  </>
+                                );
+                              })}
                           </>
                         );
                       })}
