@@ -46,6 +46,7 @@ export default function AssistencialConsulta() {
   const [expSol, setExpSol] = useState<Record<string, boolean>>({});
   const [elapsed, setElapsed] = useState(0);
   const [revealed, setRevealed] = useState(false);
+  const [triggered, setTriggered] = useState(false);
 
   // Simple elapsed-time counter while loading (1s tick, cheap). Freezes when loading ends.
   useEffect(() => {
