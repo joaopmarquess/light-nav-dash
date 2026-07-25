@@ -25,6 +25,9 @@ const addAgg = (a: Agg, r: Row) => {
   a.custo += Number(r.custo ?? 0);
 };
 
+type SortKey = "name" | "vidas" | "guias" | "custo";
+type SortDir = "asc" | "desc";
+
 export default function AssistencialCompetencia() {
   const [periodo, setPeriodo] = useState<string>("");
   const [periodoInput, setPeriodoInput] = useState<string>("");
@@ -34,6 +37,19 @@ export default function AssistencialCompetencia() {
   const [error, setError] = useState<string | null>(null);
   const [expGrp, setExpGrp] = useState<Record<string, boolean>>({});
   const [expExe, setExpExe] = useState<Record<string, boolean>>({});
+  const [sortKey, setSortKey] = useState<SortKey>("custo");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  const toggleSort = (k: SortKey) => {
+    if (sortKey === k) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(k);
+      setSortDir(k === "name" ? "asc" : "desc");
+    }
+  };
+  const sortIndicator = (k: SortKey) => (sortKey === k ? (sortDir === "asc" ? " ▲" : " ▼") : "");
+
 
   // Default period = MAX(bscmp) from aggregated table
   useEffect(() => {
@@ -156,6 +172,11 @@ export default function AssistencialCompetencia() {
     }
 
     const grpOrder = (k: string) => (k === HOSP_PORTUGUESA ? 0 : 1);
+    const cmpSol = (a: SolNode, b: SolNode) => {
+      const mul = sortDir === "asc" ? 1 : -1;
+      if (sortKey === "name") return a.sol.localeCompare(b.sol, "pt-BR") * mul;
+      return (a.agg[sortKey] - b.agg[sortKey]) * mul;
+    };
     return Array.from(grupos.values())
       .map((g) => ({
         grp: g.grp,
@@ -164,12 +185,13 @@ export default function AssistencialCompetencia() {
           .map((e) => ({
             exe: e.exe,
             agg: e.agg,
-            sol: Array.from(e.sol.values()).sort((a, b) => b.agg.custo - a.agg.custo),
+            sol: Array.from(e.sol.values()).sort(cmpSol),
           }))
           .sort((a, b) => b.agg.custo - a.agg.custo),
       }))
       .sort((a, b) => grpOrder(a.grp) - grpOrder(b.grp));
-  }, [filtered]);
+  }, [filtered, sortKey, sortDir]);
+
 
   const showCurtain = loading || !periodo;
 
@@ -218,10 +240,27 @@ export default function AssistencialCompetencia() {
           <table className="w-full text-xs">
             <thead className="sticky top-0 bg-card border-b border-border z-10">
               <tr className="text-left text-muted-foreground">
-                <th className="px-3 py-2">Grupo / Prestador Executante / Solicitante</th>
-                <th className="px-3 py-2 text-right">Vidas</th>
-                <th className="px-3 py-2 text-right">Guias</th>
-                <th className="px-3 py-2 text-right">R$ Custo</th>
+                <th className="px-3 py-2">
+                  <button className="hover:text-foreground" onClick={() => toggleSort("name")}>
+                    Prestador{sortIndicator("name")}
+                  </button>
+                </th>
+                <th className="px-3 py-2 text-right">
+                  <button className="hover:text-foreground" onClick={() => toggleSort("vidas")}>
+                    Vidas{sortIndicator("vidas")}
+                  </button>
+                </th>
+                <th className="px-3 py-2 text-right">
+                  <button className="hover:text-foreground" onClick={() => toggleSort("guias")}>
+                    Guias{sortIndicator("guias")}
+                  </button>
+                </th>
+                <th className="px-3 py-2 text-right">
+                  <button className="hover:text-foreground" onClick={() => toggleSort("custo")}>
+                    R$ Custo{sortIndicator("custo")}
+                  </button>
+                </th>
+
               </tr>
             </thead>
             <tbody>
