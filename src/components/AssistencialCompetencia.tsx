@@ -34,8 +34,8 @@ const addAgg = (a: Agg, r: Row) => {
 };
 
 export default function AssistencialCompetencia() {
-  const [periodo, setPeriodo] = useState<string>(currentPeriod());
-  const [periodoInput, setPeriodoInput] = useState<string>(currentPeriod());
+  const [periodo, setPeriodo] = useState<string>("");
+  const [periodoInput, setPeriodoInput] = useState<string>("");
   const [filtro, setFiltro] = useState("");
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,7 +44,35 @@ export default function AssistencialCompetencia() {
   const [expExe, setExpExe] = useState<Record<string, boolean>>({});
   const [expSol, setExpSol] = useState<Record<string, boolean>>({});
 
+  // Resolve default period = MAX(bscmp) for idtipfol like Contas Medicas
   useEffect(() => {
+    let alive = true;
+    (async () => {
+      const { data, error } = await hostinger
+        .from("assistencial")
+        .select("bscmp")
+        .ilike("idtipfol", IDTIPFOL_FILTER)
+        .order("bscmp", { ascending: false })
+        .limit(1);
+      if (!alive) return;
+      if (error) {
+        setError(error.message);
+        return;
+      }
+      const bs = data?.[0]?.bscmp;
+      if (bs != null) {
+        const s = String(bs);
+        setPeriodo(s);
+        setPeriodoInput(s);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!periodo) return;
     let alive = true;
     setLoading(true);
     setError(null);
