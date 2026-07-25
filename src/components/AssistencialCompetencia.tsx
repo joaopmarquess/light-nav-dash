@@ -45,8 +45,9 @@ export default function AssistencialCompetencia() {
   const [expExe, setExpExe] = useState<Record<string, boolean>>({});
   const [expSol, setExpSol] = useState<Record<string, boolean>>({});
   const [elapsed, setElapsed] = useState(0);
+  const [revealed, setRevealed] = useState(false);
 
-  // Simple elapsed-time counter while loading (1s tick, cheap)
+  // Simple elapsed-time counter while loading (1s tick, cheap). Freezes when loading ends.
   useEffect(() => {
     if (!loading) return;
     setElapsed(0);
