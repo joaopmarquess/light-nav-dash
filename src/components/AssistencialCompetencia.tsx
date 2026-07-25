@@ -172,6 +172,11 @@ export default function AssistencialCompetencia() {
     }
 
     const grpOrder = (k: string) => (k === HOSP_PORTUGUESA ? 0 : 1);
+    const cmpSol = (a: SolNode, b: SolNode) => {
+      const mul = sortDir === "asc" ? 1 : -1;
+      if (sortKey === "name") return a.sol.localeCompare(b.sol, "pt-BR") * mul;
+      return (a.agg[sortKey] - b.agg[sortKey]) * mul;
+    };
     return Array.from(grupos.values())
       .map((g) => ({
         grp: g.grp,
@@ -180,12 +185,13 @@ export default function AssistencialCompetencia() {
           .map((e) => ({
             exe: e.exe,
             agg: e.agg,
-            sol: Array.from(e.sol.values()).sort((a, b) => b.agg.custo - a.agg.custo),
+            sol: Array.from(e.sol.values()).sort(cmpSol),
           }))
           .sort((a, b) => b.agg.custo - a.agg.custo),
       }))
       .sort((a, b) => grpOrder(a.grp) - grpOrder(b.grp));
-  }, [filtered]);
+  }, [filtered, sortKey, sortDir]);
+
 
   const showCurtain = loading || !periodo;
 
