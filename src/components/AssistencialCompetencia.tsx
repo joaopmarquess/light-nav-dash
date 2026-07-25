@@ -51,24 +51,33 @@ export default function AssistencialCompetencia() {
   const sortIndicator = (k: SortKey) => (sortKey === k ? (sortDir === "asc" ? " ▲" : " ▼") : "");
 
 
-  // Load distinct bscmp periods; default = MAX
+  // Load distinct bscmp periods; default = MAX (paginado para contornar limite do PostgREST)
   useEffect(() => {
     let alive = true;
     (async () => {
-      const { data, error } = await hostinger
-        .from("assistencial_003_competencia")
-        .select("bscmp")
-        .order("bscmp", { ascending: false })
-        .limit(5000);
-      if (!alive) return;
-      if (error) {
-        setError(error.message);
-        return;
+      const uniqSet = new Set<string>();
+      const CHUNK = 1000;
+      let from = 0;
+      // paginação em chunks até esgotar
+      for (let i = 0; i < 200; i++) {
+        const { data, error } = await hostinger
+          .from("assistencial_003_competencia")
+          .select("bscmp")
+          .order("bscmp", { ascending: false })
+          .range(from, from + CHUNK - 1);
+        if (!alive) return;
+        if (error) {
+          setError(error.message);
+          return;
+        }
+        const rows = data ?? [];
+        for (const d of rows as any[]) {
+          if (d.bscmp != null) uniqSet.add(String(d.bscmp));
+        }
+        if (rows.length < CHUNK) break;
+        from += CHUNK;
       }
-      const uniq = Array.from(
-        new Set((data ?? []).map((d: any) => d.bscmp).filter((v: any) => v != null).map(String)),
-      );
-      uniq.sort((a, b) => Number(b) - Number(a));
+      const uniq = Array.from(uniqSet).sort((a, b) => Number(b) - Number(a));
       setPeriodos(uniq);
       if (uniq[0]) setPeriodo(uniq[0]);
     })();
