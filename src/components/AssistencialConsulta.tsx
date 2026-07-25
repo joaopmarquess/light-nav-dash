@@ -35,8 +35,16 @@ const addAgg = (a: Agg, r: Row) => {
 };
 
 export default function AssistencialConsulta() {
+  // Default: Ano = current year, Mês = current month - 2 (clamped 01..12, adjust year if needed)
+  const now = new Date();
+  const defY = now.getFullYear();
+  const rawM = now.getMonth() + 1 - 2; // JS month is 0-based
+  const defYear = rawM <= 0 ? defY - 1 : defY;
+  const defMonth = ((rawM - 1 + 12) % 12) + 1;
+
+  const [anoInput, setAnoInput] = useState<string>(String(defYear));
+  const [mesInput, setMesInput] = useState<string>(String(defMonth).padStart(2, "0"));
   const [periodo, setPeriodo] = useState<string>("");
-  const [periodoInput, setPeriodoInput] = useState<string>("");
   const [filtro, setFiltro] = useState("");
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
@@ -48,6 +56,15 @@ export default function AssistencialConsulta() {
   const [revealed, setRevealed] = useState(false);
   const [triggered, setTriggered] = useState(false);
 
+  const periodoInput = useMemo(() => {
+    const y = anoInput.replace(/\D/g, "").slice(0, 4);
+    const m = mesInput.replace(/\D/g, "").slice(0, 2).padStart(2, "0");
+    if (y.length !== 4 || m.length !== 2) return "";
+    const mn = Number(m);
+    if (mn < 1 || mn > 12) return "";
+    return `${y}${m}`;
+  }, [anoInput, mesInput]);
+
   // Simple elapsed-time counter while loading (1s tick, cheap). Freezes when loading ends.
   useEffect(() => {
     if (!loading) return;
@@ -57,32 +74,6 @@ export default function AssistencialConsulta() {
     return () => clearInterval(id);
   }, [loading]);
 
-  // Resolve default period = MAX(bscmp) for idtipfol like Contas Medicas
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      const { data, error } = await hostinger
-        .from("assistencial")
-        .select("bscmp")
-        .ilike("idtipfol", IDTIPFOL_FILTER)
-        .order("bscmp", { ascending: false })
-        .limit(1);
-      if (!alive) return;
-      if (error) {
-        setError(error.message);
-        return;
-      }
-      const bs = data?.[0]?.bscmp;
-      if (bs != null) {
-        const s = String(bs);
-        setPeriodo(s);
-        setPeriodoInput(s);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
 
   useEffect(() => {
     if (!periodo || !triggered) return;
