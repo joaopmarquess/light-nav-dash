@@ -586,18 +586,24 @@ type ReportData = {
 
 function buildPdf({
   cdpln,
+  dspln,
   mabasIni,
   mabasFim,
   report,
   exeLabel,
   filterCd,
+  logoDataUrl,
+  logoAspect,
 }: {
   cdpln: string;
+  dspln: string;
   mabasIni: string;
   mabasFim: string;
   report: ReportData;
   exeLabel: (exe: string) => string;
   filterCd?: string;
+  logoDataUrl?: string;
+  logoAspect?: number;
 }): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
