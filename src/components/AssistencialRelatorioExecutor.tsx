@@ -9,6 +9,7 @@ type Row = {
   ideAssist: number | string | null;
   bscmp: number | string | null;
   cdpln: number | string | null;
+  dspln: string | null;
   catipgui: string | null;
   cdcrdexe: string | number | null;
   dscrdexe: string | null;
