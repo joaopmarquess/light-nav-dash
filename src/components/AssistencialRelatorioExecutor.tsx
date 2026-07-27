@@ -726,7 +726,8 @@ function buildPdf({
 
   let s3Y = marginT + 10;
   let s3Grand = 0;
-  for (const exe of report.exeSortedS3) {
+  const s3ExeList = filterExe ? [filterExe] : report.exeSortedS3;
+  for (const exe of s3ExeList) {
     const list = report.s3.get(exe)!
       .slice()
       .sort((a, b) => String(a.bscmp).localeCompare(String(b.bscmp)));
