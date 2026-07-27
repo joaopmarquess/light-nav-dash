@@ -61,6 +61,7 @@ import Assistencial from "@/components/Assistencial";
 import AssistencialCompetencia from "@/components/AssistencialCompetencia";
 import AssistencialConsulta from "@/components/AssistencialConsulta";
 import AssistencialAuditoriaSSPMJR from "@/components/AssistencialAuditoriaSSPMJR";
+import AssistencialRelatorioExecutor from "@/components/AssistencialRelatorioExecutor";
 import { useConsultaState } from "@/lib/assistencialConsultaStore";
 import { Loader2 } from "lucide-react";
 
@@ -119,7 +120,8 @@ const menuItems: MenuItem[] = [
       
       { icon: CalendarCheck, label: "Por Competência" },
       { icon: Search, label: "Consulta" },
-      { icon: Stethoscope, label: "Auditoria SSPMJR" },
+      { icon: Stethoscope, label: "Relatório (Por Competência)" },
+      { icon: Stethoscope, label: "Relatório (Por Executor)" },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
@@ -402,6 +404,10 @@ const Index = () => {
             <AssistencialCompetencia />
           ) : active === "Consulta" ? (
             <AssistencialConsulta />
+          ) : active === "Relatório (Por Competência)" ? (
+            <AssistencialAuditoriaSSPMJR />
+          ) : active === "Relatório (Por Executor)" ? (
+            <AssistencialRelatorioExecutor />
           ) : active === "Auditoria SSPMJR" ? (
             <AssistencialAuditoriaSSPMJR />
           ) : (
