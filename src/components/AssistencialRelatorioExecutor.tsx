@@ -830,7 +830,7 @@ function buildPdf({
       if (curRes === null) return;
       const grp = Math.floor((Number(curResCd) || 0) / 100);
       body.push([
-        { content: `Sub: (${grp})`, colSpan: 6, styles: { halign: "left", fontStyle: "bold", fillColor: [245, 245, 245] } },
+        { content: `Subtotal de ${curRes} (${grp})`, colSpan: 6, styles: { halign: "left", fontStyle: "bold", fillColor: [245, 245, 245] } },
         { content: money(curResSum), styles: { halign: "right", fontStyle: "bold", fillColor: [245, 245, 245] } },
       ]);
       curRes = null;
