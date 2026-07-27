@@ -395,8 +395,8 @@ export default function AssistencialRelatorioExecutor() {
               {tree.map((t) => {
                 const tOpen = !!expTipo[t.tipo];
                 return (
-                  <>
-                    <tr key={`t:${t.tipo}`} className="border-b border-border bg-accent/50 hover:bg-accent/70 font-bold">
+                  <Fragment key={`t:${t.tipo}`}>
+                    <tr className="border-b border-border bg-accent/50 hover:bg-accent/70 font-bold">
                       <td className="px-3 py-1.5">
                         <button
                           className="inline-flex items-center gap-1"
@@ -415,8 +415,8 @@ export default function AssistencialRelatorioExecutor() {
                         const eKey = `${t.tipo}||${e.exe}`;
                         const eOpen = !!expExe[eKey];
                         return (
-                          <>
-                            <tr key={`e:${eKey}`} className="border-b border-border/50 hover:bg-accent/40 font-medium">
+                          <Fragment key={`e:${eKey}`}>
+                            <tr className="border-b border-border/50 hover:bg-accent/40 font-medium">
                               <td className="px-3 py-1.5 pl-6">
                                 <button
                                   className="inline-flex items-center gap-1"
@@ -435,8 +435,8 @@ export default function AssistencialRelatorioExecutor() {
                                 const bKey = `${eKey}||${b.key}`;
                                 const bOpen = !!expBenef[bKey];
                                 return (
-                                  <>
-                                    <tr key={`b:${bKey}`} className="border-b border-border/40 hover:bg-accent/30">
+                                  <Fragment key={`b:${bKey}`}>
+                                    <tr className="border-b border-border/40 hover:bg-accent/30">
                                       <td className="px-3 py-1.5 pl-12">
                                         <button
                                           className="inline-flex items-center gap-1"
@@ -461,13 +461,13 @@ export default function AssistencialRelatorioExecutor() {
                                           <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(g.valor)}</td>
                                         </tr>
                                       ))}
-                                  </>
+                                  </Fragment>
                                 );
                               })}
-                          </>
+                          </Fragment>
                         );
                       })}
-                  </>
+                  </Fragment>
                 );
               })}
               {tree.length === 0 && (
