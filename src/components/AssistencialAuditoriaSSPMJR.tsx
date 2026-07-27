@@ -100,7 +100,7 @@ export default function AssistencialAuditoriaSSPMJR() {
           const size = Math.max(100, PAGE >> attempt);
           const { data, error } = await hostinger
             .from("assistencial")
-            .select("ideAssist,bscmp,cdpln,dscrdexe,nmcli,cdregusr,nrgui,dtexe,vrevt")
+            .select("ideAssist,bscmp,cdpln,idtipgui,dscrdexe,nmcli,cdregusr,nrgui,dtexe,vrevt")
             .eq("cdpln", cd)
             .eq("bscmp", bscmp)
             .range(from, from + size - 1);
