@@ -750,7 +750,10 @@ function buildPdf({
         ["bscmp", "Total"],
       ],
       body,
-      foot: [[{ content: `Subtotal do Executor (${exe})`, styles: { halign: "left" } }, { content: money(sub), styles: { halign: "right" } }]],
+      foot: [[
+        { content: `Subtotal de ${exe}`, styles: { halign: "left", lineWidth: 0, fillColor: [255, 255, 255] } },
+        { content: money(sub), styles: { halign: "right" } },
+      ]],
       columnStyles: {
         0: { cellWidth: usableW * 0.4, halign: "center" },
         1: { cellWidth: usableW * 0.6, halign: "right" },
