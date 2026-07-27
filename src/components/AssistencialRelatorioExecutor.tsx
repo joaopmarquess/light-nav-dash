@@ -9,6 +9,7 @@ type Row = {
   bscmp: number | string | null;
   cdpln: number | string | null;
   catipgui: string | null;
+  cdcrdexe: string | number | null;
   dscrdexe: string | null;
   dsesp: string | null;
   nmclires: string | null;
