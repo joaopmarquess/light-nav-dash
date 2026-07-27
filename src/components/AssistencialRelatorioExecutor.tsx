@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
-import { ChevronRight, Search, Loader2 } from "lucide-react";
+import { ChevronRight, Search, Loader2, FileDown } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 type Row = {
   ideAssist: number | string | null;
@@ -8,6 +10,7 @@ type Row = {
   cdpln: number | string | null;
   catipgui: string | null;
   dscrdexe: string | null;
+  nmclires: string | null;
   nmcli: string | null;
   cdregusr: string | number | null;
   nrgui: string | number | null;
