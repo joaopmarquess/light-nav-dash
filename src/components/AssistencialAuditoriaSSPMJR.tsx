@@ -3,13 +3,13 @@ import { hostinger } from "@/lib/hostingerClient";
 import { ChevronRight, Search, Loader2 } from "lucide-react";
 
 type Row = {
-  mabas: number | string | null;
+  bscmp: number | string | null;
   cdpln: number | string | null;
   dscrdexe: string | null;
   nmcli: string | null;
   cdregusr: string | number | null;
   nrgui: string | number | null;
-  dtexec: string | null;
+  dtexe: string | null;
   vrevt: number | string | null;
 };
 
@@ -65,11 +65,11 @@ export default function AssistencialAuditoriaSSPMJR() {
     while (true) {
       const { data, error } = await hostinger
         .from("assistencial")
-        .select("mabas,cdpln,dscrdexe,nmcli,cdregusr,nrgui,dtexec,vrevt")
+        .select("bscmp,cdpln,dscrdexe,nmcli,cdregusr,nrgui,dtexe,vrevt")
         .eq("cdpln", cd)
-        .gte("mabas", ini)
-        .lte("mabas", fim)
-        .order("mabas", { ascending: true })
+        .gte("bscmp", ini)
+        .lte("bscmp", fim)
+        .order("bscmp", { ascending: true })
         .range(from, from + PAGE - 1);
       if (error) {
         setError(error.message);
@@ -96,74 +96,74 @@ export default function AssistencialAuditoriaSSPMJR() {
     );
   }, [rows, filtro]);
 
-  type GuiaNode = { nrgui: string; dtexec: string | null; valor: number };
+  type GuiaNode = { nrgui: string; dtexe: string | null; valor: number };
   type BenefNode = {
     key: string;
     nmcli: string;
     cdregusr: string;
     guias: Map<string, GuiaNode>;
     valor: number;
-    dtexec: string | null;
+    dtexe: string | null;
   };
   type ExeNode = {
     exe: string;
     benef: Map<string, BenefNode>;
     guias: Set<string>;
     valor: number;
-    dtexec: string | null;
+    dtexe: string | null;
   };
   type MabasNode = {
-    mabas: string;
+    bscmp: string;
     exe: Map<string, ExeNode>;
     guias: Set<string>;
     valor: number;
-    dtexec: string | null;
+    dtexe: string | null;
   };
 
   const tree = useMemo(() => {
     const roots = new Map<string, MabasNode>();
     for (const r of filtered) {
-      const mabas = String(r.mabas ?? "-");
+      const bscmp = String(r.bscmp ?? "-");
       const exe = r.dscrdexe ?? "(sem prestador executante)";
       const nm = r.nmcli ?? "-";
       const cd = String(r.cdregusr ?? "");
       const bkey = `${nm}|${cd}`;
       const nr = String(r.nrgui ?? "-");
       const valor = Number(r.vrevt ?? 0) || 0;
-      const dt = r.dtexec ?? null;
+      const dt = r.dtexe ?? null;
 
-      let m = roots.get(mabas);
+      let m = roots.get(bscmp);
       if (!m) {
-        m = { mabas, exe: new Map(), guias: new Set(), valor: 0, dtexec: null };
-        roots.set(mabas, m);
+        m = { bscmp, exe: new Map(), guias: new Set(), valor: 0, dtexe: null };
+        roots.set(bscmp, m);
       }
       m.guias.add(nr);
       m.valor += valor;
-      m.dtexec = minDate(m.dtexec, dt);
+      m.dtexe = minDate(m.dtexe, dt);
 
       let e = m.exe.get(exe);
       if (!e) {
-        e = { exe, benef: new Map(), guias: new Set(), valor: 0, dtexec: null };
+        e = { exe, benef: new Map(), guias: new Set(), valor: 0, dtexe: null };
         m.exe.set(exe, e);
       }
       e.guias.add(nr);
       e.valor += valor;
-      e.dtexec = minDate(e.dtexec, dt);
+      e.dtexe = minDate(e.dtexe, dt);
 
       let b = e.benef.get(bkey);
       if (!b) {
-        b = { key: bkey, nmcli: nm, cdregusr: cd, guias: new Map(), valor: 0, dtexec: null };
+        b = { key: bkey, nmcli: nm, cdregusr: cd, guias: new Map(), valor: 0, dtexe: null };
         e.benef.set(bkey, b);
       }
       b.valor += valor;
-      b.dtexec = minDate(b.dtexec, dt);
+      b.dtexe = minDate(b.dtexe, dt);
 
       let g = b.guias.get(nr);
       if (!g) {
-        g = { nrgui: nr, dtexec: dt, valor: 0 };
+        g = { nrgui: nr, dtexe: dt, valor: 0 };
         b.guias.set(nr, g);
       }
-      g.dtexec = minDate(g.dtexec, dt);
+      g.dtexe = minDate(g.dtexe, dt);
       g.valor += valor;
     }
     return Array.from(roots.values())
@@ -181,7 +181,7 @@ export default function AssistencialAuditoriaSSPMJR() {
           }))
           .sort((a, b) => b.valor - a.valor),
       }))
-      .sort((a, b) => a.mabas.localeCompare(b.mabas));
+      .sort((a, b) => a.bscmp.localeCompare(b.bscmp));
   }, [filtered]);
 
   const totals = useMemo(() => {
@@ -191,9 +191,9 @@ export default function AssistencialAuditoriaSSPMJR() {
     for (const r of filtered) {
       g.add(String(r.nrgui ?? "-"));
       v += Number(r.vrevt ?? 0) || 0;
-      dt = minDate(dt, r.dtexec ?? null);
+      dt = minDate(dt, r.dtexe ?? null);
     }
-    return { guias: g.size, valor: v, dtexec: dt };
+    return { guias: g.size, valor: v, dtexe: dt };
   }, [filtered]);
 
   return (
@@ -208,7 +208,7 @@ export default function AssistencialAuditoriaSSPMJR() {
             onChange={(e) => setCdpln(e.target.value.replace(/\D/g, "").slice(0, 8))}
             className="h-9 w-24 px-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
-          <label className="text-xs text-muted-foreground ml-2">mabas de</label>
+          <label className="text-xs text-muted-foreground ml-2">bscmp de</label>
           <input
             type="text"
             inputMode="numeric"
@@ -271,32 +271,32 @@ export default function AssistencialAuditoriaSSPMJR() {
               <tr className="text-xs font-semibold bg-accent/50 border-b border-border">
                 <td className="px-3 py-1.5">Total</td>
                 <td className="px-3 py-1.5 text-right">{totals.guias.toLocaleString("pt-BR")}</td>
-                <td className="px-3 py-1.5 text-right">{fmtDateBR(totals.dtexec)}</td>
+                <td className="px-3 py-1.5 text-right">{fmtDateBR(totals.dtexe)}</td>
                 <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(totals.valor)}</td>
               </tr>
             </thead>
             <tbody>
               {tree.map((m) => {
-                const mOpen = !!expMabas[m.mabas];
+                const mOpen = !!expMabas[m.bscmp];
                 return (
                   <>
-                    <tr key={`m:${m.mabas}`} className="border-b border-border bg-accent/30 hover:bg-accent/50 font-semibold">
+                    <tr key={`m:${m.bscmp}`} className="border-b border-border bg-accent/30 hover:bg-accent/50 font-semibold">
                       <td className="px-3 py-1.5">
                         <button
                           className="inline-flex items-center gap-1"
-                          onClick={() => setExpMabas((p) => ({ ...p, [m.mabas]: !p[m.mabas] }))}
+                          onClick={() => setExpMabas((p) => ({ ...p, [m.bscmp]: !p[m.bscmp] }))}
                         >
                           <ChevronRight className={`h-3.5 w-3.5 transition-transform ${mOpen ? "rotate-90" : ""}`} />
-                          <span>{m.mabas}</span>
+                          <span>{m.bscmp}</span>
                         </button>
                       </td>
                       <td className="px-3 py-1.5 text-right">{m.guias.size.toLocaleString("pt-BR")}</td>
-                      <td className="px-3 py-1.5 text-right">{fmtDateBR(m.dtexec)}</td>
+                      <td className="px-3 py-1.5 text-right">{fmtDateBR(m.dtexe)}</td>
                       <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(m.valor)}</td>
                     </tr>
                     {mOpen &&
                       m.exeArr.map((e) => {
-                        const eKey = `${m.mabas}||${e.exe}`;
+                        const eKey = `${m.bscmp}||${e.exe}`;
                         const eOpen = !!expExe[eKey];
                         return (
                           <>
@@ -311,7 +311,7 @@ export default function AssistencialAuditoriaSSPMJR() {
                                 </button>
                               </td>
                               <td className="px-3 py-1.5 text-right">{e.guias.size.toLocaleString("pt-BR")}</td>
-                              <td className="px-3 py-1.5 text-right">{fmtDateBR(e.dtexec)}</td>
+                              <td className="px-3 py-1.5 text-right">{fmtDateBR(e.dtexe)}</td>
                               <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(e.valor)}</td>
                             </tr>
                             {eOpen &&
@@ -333,7 +333,7 @@ export default function AssistencialAuditoriaSSPMJR() {
                                         </button>
                                       </td>
                                       <td className="px-3 py-1.5 text-right">{b.guias.size.toLocaleString("pt-BR")}</td>
-                                      <td className="px-3 py-1.5 text-right">{fmtDateBR(b.dtexec)}</td>
+                                      <td className="px-3 py-1.5 text-right">{fmtDateBR(b.dtexe)}</td>
                                       <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(b.valor)}</td>
                                     </tr>
                                     {bOpen &&
@@ -341,7 +341,7 @@ export default function AssistencialAuditoriaSSPMJR() {
                                         <tr key={`g:${bKey}||${g.nrgui}`} className="border-b border-border/30 hover:bg-accent/20 text-muted-foreground">
                                           <td className="px-3 py-1.5 pl-20">{g.nrgui}</td>
                                           <td className="px-3 py-1.5 text-right">1</td>
-                                          <td className="px-3 py-1.5 text-right">{fmtDateBR(g.dtexec)}</td>
+                                          <td className="px-3 py-1.5 text-right">{fmtDateBR(g.dtexe)}</td>
                                           <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(g.valor)}</td>
                                         </tr>
                                       ))}
