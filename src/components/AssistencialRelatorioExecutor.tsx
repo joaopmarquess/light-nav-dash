@@ -584,6 +584,33 @@ type ReportData = {
   exeSortedS3: string[];
 };
 
+async function loadLogoAsPng(url: string): Promise<{ dataUrl: string; aspect: number }> {
+  const res = await fetch(url);
+  const svgText = await res.text();
+  const blob = new Blob([svgText], { type: "image/svg+xml" });
+  const objUrl = URL.createObjectURL(blob);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = reject;
+      i.src = objUrl;
+    });
+    const w = img.naturalWidth || 300;
+    const h = img.naturalHeight || 100;
+    const scale = 600 / w;
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(w * scale);
+    canvas.height = Math.round(h * scale);
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return { dataUrl: canvas.toDataURL("image/png"), aspect: w / h };
+  } finally {
+    URL.revokeObjectURL(objUrl);
+  }
+}
+
+
 function buildPdf({
   cdpln,
   dspln,
