@@ -227,6 +227,7 @@ export default function AssistencialRelatorioExecutor() {
   };
   type ExeNode = {
     exe: string;
+    cdcrdexe: string;
     benef: Map<string, BenefNode>;
     guias: Set<string>;
     valor: number;
@@ -247,6 +248,7 @@ export default function AssistencialRelatorioExecutor() {
       const tipo = isInt ? "I" : "O";
       const label = isInt ? "Internação" : "Demais Tipos de Guia";
       const exe = r.dscrdexe ?? "(sem prestador executante)";
+      const cdExe = String(r.cdcrdexe ?? "");
       const nm = r.nmcli ?? "-";
       const cd = String(r.cdregusr ?? "");
       const bkey = `${nm}|${cd}`;
@@ -264,8 +266,10 @@ export default function AssistencialRelatorioExecutor() {
 
       let e = t.exe.get(exe);
       if (!e) {
-        e = { exe, benef: new Map(), guias: new Set(), valor: 0 };
+        e = { exe, cdcrdexe: cdExe, benef: new Map(), guias: new Set(), valor: 0 };
         t.exe.set(exe, e);
+      } else if (!e.cdcrdexe && cdExe) {
+        e.cdcrdexe = cdExe;
       }
       e.guias.add(nr);
       e.valor += valor;
