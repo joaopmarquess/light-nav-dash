@@ -649,12 +649,13 @@ function buildPdf({
     : null;
 
   const header = () => {
-    // Logo (esquerda)
+    const line1Y = 10;
+    // Logo (esquerda) — centralizado verticalmente na linha 1
     if (logoDataUrl) {
       const h = 10;
       const w = h * (logoAspect ?? 3);
       try {
-        doc.addImage(logoDataUrl, "PNG", marginL, 4, w, h);
+        doc.addImage(logoDataUrl, "PNG", marginL, line1Y - h / 2, w, h);
       } catch {
         // ignore
       }
@@ -664,19 +665,13 @@ function buildPdf({
     doc.setFontSize(11);
     doc.setTextColor(20);
     const titulo = `Relatório de Contas Médicas | ${mabasIni} a ${mabasFim}`;
-    doc.text(titulo, pageW / 2, 10, { align: "center" });
+    doc.text(titulo, pageW / 2, line1Y, { align: "center", baseline: "middle" });
     // Linha 2 esquerda: cdpln | dspln
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(60);
     const line2 = `${cdpln}${dspln ? ` | ${dspln}` : ""}`;
     doc.text(line2, marginL, 17);
-    // Sub-linha (filtro Seção 3), se houver
-    if (filterExe) {
-      doc.setFontSize(7);
-      doc.setTextColor(90);
-      doc.text(`Executor (Seção 3): ${filterCd} - ${filterExe}`, pageW - marginR, 17, { align: "right" });
-    }
     doc.setTextColor(0);
   };
 
