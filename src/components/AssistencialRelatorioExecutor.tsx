@@ -651,10 +651,10 @@ function buildPdf({
     money(o.int + o.dem),
   ]);
   const s1Foot = [[
-    "Total",
-    money(report.s1Tot.int),
-    money(report.s1Tot.dem),
-    money(report.s1Tot.int + report.s1Tot.dem),
+    { content: "Total", styles: { halign: "left" as const } },
+    { content: money(report.s1Tot.int), styles: { halign: "right" as const } },
+    { content: money(report.s1Tot.dem), styles: { halign: "right" as const } },
+    { content: money(report.s1Tot.int + report.s1Tot.dem), styles: { halign: "right" as const } },
   ]];
   autoTable(doc, {
     ...commonTableOpts,
