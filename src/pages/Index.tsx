@@ -239,7 +239,7 @@ const Index = () => {
                           }`}
                         >
                           <child.icon className="h-4 w-4 shrink-0" />
-                          <span>{child.label}</span>
+                          <span className="whitespace-nowrap">{child.label}</span>
                         </button>
                       );
                     })}
