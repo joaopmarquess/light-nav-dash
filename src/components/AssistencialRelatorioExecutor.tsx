@@ -732,9 +732,8 @@ function ReportPreview({
       docRef.current = doc;
       // Render each page as PNG via pdf.js — evita bloqueios de blob/data no Edge.
       const pdfjs = await import("pdfjs-dist");
-      // @ts-expect-error worker sem tipos
-      const workerSrc = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
-      pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+      const workerMod: { default: string } = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
+      pdfjs.GlobalWorkerOptions.workerSrc = workerMod.default;
       const data = doc.output("arraybuffer");
       const pdf = await pdfjs.getDocument({ data }).promise;
       const imgs: string[] = [];
