@@ -430,6 +430,15 @@ export default function AssistencialRelatorioExecutor() {
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             Carregar
           </button>
+          <button
+            onClick={generatePDF}
+            disabled={loading || rows.length === 0}
+            title="Gerar PDF"
+            className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent disabled:opacity-50 inline-flex items-center gap-2"
+          >
+            <FileDown className="h-4 w-4" />
+            Gerar PDF
+          </button>
         </div>
         <div className="relative flex-1 min-w-[240px]">
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
