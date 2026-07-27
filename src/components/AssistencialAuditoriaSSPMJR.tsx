@@ -3,6 +3,7 @@ import { hostinger } from "@/lib/hostingerClient";
 import { ChevronRight, Search, Loader2 } from "lucide-react";
 
 type Row = {
+  ideAssist: number | string | null;
   bscmp: number | string | null;
   cdpln: number | string | null;
   dscrdexe: string | null;
@@ -13,7 +14,7 @@ type Row = {
   vrevt: number | string | null;
 };
 
-const PAGE = 1000;
+const PAGE = 500;
 
 const fmtBRL = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -36,6 +37,27 @@ const minDate = (a: string | null, b: string | null): string | null => {
   return a < b ? a : b;
 };
 
+const getBscmpRange = (ini: number, fim: number): number[] => {
+  const startYear = Math.floor(ini / 100);
+  const startMonth = ini % 100;
+  const endYear = Math.floor(fim / 100);
+  const endMonth = fim % 100;
+  if (startMonth < 1 || startMonth > 12 || endMonth < 1 || endMonth > 12 || ini > fim) return [];
+
+  const months: number[] = [];
+  let year = startYear;
+  let month = startMonth;
+  while (year * 100 + month <= fim && months.length < 240) {
+    months.push(year * 100 + month);
+    month += 1;
+    if (month > 12) {
+      month = 1;
+      year += 1;
+    }
+  }
+  return months;
+};
+
 export default function AssistencialAuditoriaSSPMJR() {
   const [cdpln, setCdpln] = useState("2518");
   const [mabasIni, setMabasIni] = useState("202407");
@@ -55,33 +77,61 @@ export default function AssistencialAuditoriaSSPMJR() {
     const ini = Number(mabasIni);
     const fim = Number(mabasFim);
     if (!Number.isFinite(cd) || !Number.isFinite(ini) || !Number.isFinite(fim)) return;
+    const months = getBscmpRange(ini, fim);
+    if (months.length === 0) {
+      setError("Período inválido.");
+      setTriggered(true);
+      return;
+    }
     setLoading(true);
     setError(null);
     setRows([]);
     setTriggered(true);
-    let from = 0;
     const acc: Row[] = [];
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const { data, error } = await hostinger
-        .from("assistencial")
-        .select("bscmp,cdpln,dscrdexe,nmcli,cdregusr,nrgui,dtexe,vrevt")
-        .eq("cdpln", cd)
-        .gte("bscmp", ini)
-        .lte("bscmp", fim)
-        .order("bscmp", { ascending: true })
-        .range(from, from + PAGE - 1);
-      if (error) {
-        setError(error.message);
-        setLoading(false);
-        return;
+
+    for (const bscmp of months) {
+      let from = 0;
+      while (true) {
+        let attempt = 0;
+        let chunk: Row[] | null = null;
+        let lastError: string | null = null;
+        while (attempt < 4) {
+          const size = Math.max(100, PAGE >> attempt);
+          const { data, error } = await hostinger
+            .from("assistencial")
+            .select("ideAssist,bscmp,cdpln,dscrdexe,nmcli,cdregusr,nrgui,dtexe,vrevt")
+            .eq("cdpln", cd)
+            .eq("bscmp", bscmp)
+            .range(from, from + size - 1);
+          if (!error) {
+            chunk = (data ?? []) as Row[];
+            from += size;
+            break;
+          }
+          lastError = error.message;
+          if (!/timeout/i.test(error.message)) break;
+          attempt += 1;
+        }
+
+        if (!chunk) {
+          setError(lastError ?? "Erro ao carregar dados.");
+          setLoading(false);
+          return;
+        }
+
+        acc.push(...chunk);
+        if (chunk.length < Math.max(100, PAGE >> attempt)) break;
+
+        if (from > 100000) break;
       }
-      const chunk = (data ?? []) as Row[];
-      acc.push(...chunk);
-      if (chunk.length < PAGE) break;
-      from += PAGE;
-      if (from > 500000) break;
     }
+
+    acc.sort((a, b) => {
+      const aBscmp = String(a.bscmp ?? "");
+      const bBscmp = String(b.bscmp ?? "");
+      if (aBscmp !== bBscmp) return aBscmp.localeCompare(bBscmp);
+      return Number(a.ideAssist ?? 0) - Number(b.ideAssist ?? 0);
+    });
     setRows(acc);
     setLoading(false);
   };
