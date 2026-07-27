@@ -722,7 +722,7 @@ function ReportPreview({
   exeLabel: (exe: string) => string;
 }) {
   const [url, setUrl] = useState<string | null>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const objectRef = useRef<HTMLObjectElement>(null);
 
   useEffect(() => {
     const doc = buildPdf({ cdpln, mabasIni, mabasFim, report, exeLabel });
@@ -734,14 +734,22 @@ function ReportPreview({
   }, []);
 
   const doPrint = () => {
-    const w = iframeRef.current?.contentWindow;
-    if (!w) return;
+    const el = objectRef.current as unknown as { contentWindow?: Window } | null;
+    const w = el?.contentWindow;
     try {
-      w.focus();
-      w.print();
+      if (w) {
+        w.focus();
+        w.print();
+        return;
+      }
     } catch {
-      // ignore
+      // fall through
     }
+    if (url) window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const openNewTab = () => {
+    if (url) window.open(url, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -749,6 +757,13 @@ function ReportPreview({
       <div className="bg-card border-b border-border p-3 flex items-center justify-between gap-2">
         <div className="text-sm font-medium">Pré-visualização do Relatório (PDF)</div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={openNewTab}
+            disabled={!url}
+            className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent disabled:opacity-50 inline-flex items-center gap-2"
+          >
+            <FileDown className="h-4 w-4" /> Abrir em nova aba
+          </button>
           <button
             onClick={doPrint}
             disabled={!url}
@@ -766,12 +781,25 @@ function ReportPreview({
       </div>
       <div className="flex-1 bg-neutral-800">
         {url ? (
-          <iframe
-            ref={iframeRef}
-            src={url}
-            className="w-full h-full border-0"
-            title="Relatório PDF"
-          />
+          <object
+            ref={objectRef}
+            data={url}
+            type="application/pdf"
+            className="w-full h-full"
+            aria-label="Relatório PDF"
+          >
+            <div className="h-full flex flex-col items-center justify-center gap-3 text-white text-sm p-6 text-center">
+              <p>
+                Seu navegador bloqueou a pré-visualização embutida do PDF.
+              </p>
+              <button
+                onClick={openNewTab}
+                className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 inline-flex items-center gap-2"
+              >
+                <FileDown className="h-4 w-4" /> Abrir PDF em nova aba
+              </button>
+            </div>
+          </object>
         ) : (
           <div className="h-full flex items-center justify-center text-white text-sm">
             Gerando PDF...
