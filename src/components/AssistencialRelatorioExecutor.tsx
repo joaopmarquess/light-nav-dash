@@ -559,6 +559,7 @@ export default function AssistencialRelatorioExecutor() {
         <ReportPreview
           onClose={() => setPreview(false)}
           cdpln={cdpln}
+          dspln={dspln}
           mabasIni={mabasIni}
           mabasFim={mabasFim}
           report={report}
