@@ -60,6 +60,7 @@ import DREGraficos from "@/components/DREGraficos";
 import Assistencial from "@/components/Assistencial";
 import AssistencialCompetencia from "@/components/AssistencialCompetencia";
 import AssistencialConsulta from "@/components/AssistencialConsulta";
+import AssistencialAuditoriaSSPMJR from "@/components/AssistencialAuditoriaSSPMJR";
 import { useConsultaState } from "@/lib/assistencialConsultaStore";
 import { Loader2 } from "lucide-react";
 
@@ -118,6 +119,7 @@ const menuItems: MenuItem[] = [
       
       { icon: CalendarCheck, label: "Por Competência" },
       { icon: Search, label: "Consulta" },
+      { icon: Stethoscope, label: "Auditoria SSPMJR" },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
@@ -400,6 +402,8 @@ const Index = () => {
             <AssistencialCompetencia />
           ) : active === "Consulta" ? (
             <AssistencialConsulta />
+          ) : active === "Auditoria SSPMJR" ? (
+            <AssistencialAuditoriaSSPMJR />
           ) : (
             <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex items-center justify-center text-muted-foreground text-sm">
               Selecione uma opção no menu lateral.

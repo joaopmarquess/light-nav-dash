@@ -1,0 +1,370 @@
+import { useMemo, useState } from "react";
+import { hostinger } from "@/lib/hostingerClient";
+import { ChevronRight, Search, Loader2 } from "lucide-react";
+
+type Row = {
+  mabas: number | string | null;
+  cdpln: number | string | null;
+  dscrdexe: string | null;
+  nmcli: string | null;
+  cdregusr: string | number | null;
+  nrgui: string | number | null;
+  dtexec: string | null;
+  vrevt: number | string | null;
+};
+
+const PAGE = 1000;
+
+const fmtBRL = (n: number) =>
+  n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const fmtDateBR = (s: string | null): string => {
+  if (!s) return "-";
+  const d = new Date(s);
+  if (isNaN(d.getTime())) {
+    // try YYYY-MM-DD raw
+    const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[3]}/${m[2]}/${m[1]}`;
+    return String(s);
+  }
+  return `${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCMonth() + 1).padStart(2, "0")}/${d.getUTCFullYear()}`;
+};
+
+const minDate = (a: string | null, b: string | null): string | null => {
+  if (!a) return b;
+  if (!b) return a;
+  return a < b ? a : b;
+};
+
+export default function AssistencialAuditoriaSSPMJR() {
+  const [cdpln, setCdpln] = useState("2518");
+  const [mabasIni, setMabasIni] = useState("202407");
+  const [mabasFim, setMabasFim] = useState("202506");
+  const [filtro, setFiltro] = useState("");
+  const [rows, setRows] = useState<Row[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [triggered, setTriggered] = useState(false);
+
+  const [expMabas, setExpMabas] = useState<Record<string, boolean>>({});
+  const [expExe, setExpExe] = useState<Record<string, boolean>>({});
+  const [expBenef, setExpBenef] = useState<Record<string, boolean>>({});
+
+  const load = async () => {
+    const cd = Number(cdpln);
+    const ini = Number(mabasIni);
+    const fim = Number(mabasFim);
+    if (!Number.isFinite(cd) || !Number.isFinite(ini) || !Number.isFinite(fim)) return;
+    setLoading(true);
+    setError(null);
+    setRows([]);
+    setTriggered(true);
+    let from = 0;
+    const acc: Row[] = [];
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const { data, error } = await hostinger
+        .from("assistencial")
+        .select("mabas,cdpln,dscrdexe,nmcli,cdregusr,nrgui,dtexec,vrevt")
+        .eq("cdpln", cd)
+        .gte("mabas", ini)
+        .lte("mabas", fim)
+        .order("mabas", { ascending: true })
+        .range(from, from + PAGE - 1);
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+        return;
+      }
+      const chunk = (data ?? []) as Row[];
+      acc.push(...chunk);
+      if (chunk.length < PAGE) break;
+      from += PAGE;
+      if (from > 500000) break;
+    }
+    setRows(acc);
+    setLoading(false);
+  };
+
+  const filtered = useMemo(() => {
+    const q = filtro.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((r) =>
+      [r.dscrdexe, r.nmcli, r.cdregusr, r.nrgui]
+        .filter((v) => v != null)
+        .some((v) => String(v).toLowerCase().includes(q)),
+    );
+  }, [rows, filtro]);
+
+  type GuiaNode = { nrgui: string; dtexec: string | null; valor: number };
+  type BenefNode = {
+    key: string;
+    nmcli: string;
+    cdregusr: string;
+    guias: Map<string, GuiaNode>;
+    valor: number;
+    dtexec: string | null;
+  };
+  type ExeNode = {
+    exe: string;
+    benef: Map<string, BenefNode>;
+    guias: Set<string>;
+    valor: number;
+    dtexec: string | null;
+  };
+  type MabasNode = {
+    mabas: string;
+    exe: Map<string, ExeNode>;
+    guias: Set<string>;
+    valor: number;
+    dtexec: string | null;
+  };
+
+  const tree = useMemo(() => {
+    const roots = new Map<string, MabasNode>();
+    for (const r of filtered) {
+      const mabas = String(r.mabas ?? "-");
+      const exe = r.dscrdexe ?? "(sem prestador executante)";
+      const nm = r.nmcli ?? "-";
+      const cd = String(r.cdregusr ?? "");
+      const bkey = `${nm}|${cd}`;
+      const nr = String(r.nrgui ?? "-");
+      const valor = Number(r.vrevt ?? 0) || 0;
+      const dt = r.dtexec ?? null;
+
+      let m = roots.get(mabas);
+      if (!m) {
+        m = { mabas, exe: new Map(), guias: new Set(), valor: 0, dtexec: null };
+        roots.set(mabas, m);
+      }
+      m.guias.add(nr);
+      m.valor += valor;
+      m.dtexec = minDate(m.dtexec, dt);
+
+      let e = m.exe.get(exe);
+      if (!e) {
+        e = { exe, benef: new Map(), guias: new Set(), valor: 0, dtexec: null };
+        m.exe.set(exe, e);
+      }
+      e.guias.add(nr);
+      e.valor += valor;
+      e.dtexec = minDate(e.dtexec, dt);
+
+      let b = e.benef.get(bkey);
+      if (!b) {
+        b = { key: bkey, nmcli: nm, cdregusr: cd, guias: new Map(), valor: 0, dtexec: null };
+        e.benef.set(bkey, b);
+      }
+      b.valor += valor;
+      b.dtexec = minDate(b.dtexec, dt);
+
+      let g = b.guias.get(nr);
+      if (!g) {
+        g = { nrgui: nr, dtexec: dt, valor: 0 };
+        b.guias.set(nr, g);
+      }
+      g.dtexec = minDate(g.dtexec, dt);
+      g.valor += valor;
+    }
+    return Array.from(roots.values())
+      .map((m) => ({
+        ...m,
+        exeArr: Array.from(m.exe.values())
+          .map((e) => ({
+            ...e,
+            benefArr: Array.from(e.benef.values())
+              .map((b) => ({
+                ...b,
+                guiaArr: Array.from(b.guias.values()).sort((x, y) => x.nrgui.localeCompare(y.nrgui)),
+              }))
+              .sort((a, b) => b.valor - a.valor),
+          }))
+          .sort((a, b) => b.valor - a.valor),
+      }))
+      .sort((a, b) => a.mabas.localeCompare(b.mabas));
+  }, [filtered]);
+
+  const totals = useMemo(() => {
+    const g = new Set<string>();
+    let v = 0;
+    let dt: string | null = null;
+    for (const r of filtered) {
+      g.add(String(r.nrgui ?? "-"));
+      v += Number(r.vrevt ?? 0) || 0;
+      dt = minDate(dt, r.dtexec ?? null);
+    }
+    return { guias: g.size, valor: v, dtexec: dt };
+  }, [filtered]);
+
+  return (
+    <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col">
+      <div className="p-4 border-b border-border flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-muted-foreground">cdpln</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={cdpln}
+            onChange={(e) => setCdpln(e.target.value.replace(/\D/g, "").slice(0, 8))}
+            className="h-9 w-24 px-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          <label className="text-xs text-muted-foreground ml-2">mabas de</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={mabasIni}
+            onChange={(e) => setMabasIni(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            placeholder="AAAAMM"
+            className="h-9 w-24 px-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          <label className="text-xs text-muted-foreground">até</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={mabasFim}
+            onChange={(e) => setMabasFim(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            placeholder="AAAAMM"
+            className="h-9 w-24 px-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          <button
+            onClick={load}
+            disabled={loading}
+            className="ml-2 h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50 inline-flex items-center gap-2"
+          >
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            Carregar
+          </button>
+        </div>
+        <div className="relative flex-1 min-w-[240px]">
+          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            value={filtro}
+            onChange={(e) => setFiltro(e.target.value)}
+            placeholder="Filtrar por prestador, beneficiário ou guia..."
+            className="h-9 w-full pl-9 pr-3 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+        </div>
+      </div>
+
+      {error && <div className="p-4 text-sm text-destructive">Erro ao carregar: {error}</div>}
+
+      <div className="flex-1 min-h-0 overflow-auto">
+        {!triggered ? (
+          <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+            Configure os filtros e clique em Carregar.
+          </div>
+        ) : loading ? (
+          <div className="h-full flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            Carregando...
+          </div>
+        ) : (
+          <table className="w-full text-xs">
+            <thead className="sticky top-0 bg-card border-b border-border z-10">
+              <tr className="text-left text-muted-foreground">
+                <th className="px-3 py-2">Prestador / Beneficiário / Guia</th>
+                <th className="px-3 py-2 text-right">Guias</th>
+                <th className="px-3 py-2 text-right">Data Execução</th>
+                <th className="px-3 py-2 text-right">Valor</th>
+              </tr>
+              <tr className="text-xs font-semibold bg-accent/50 border-b border-border">
+                <td className="px-3 py-1.5">Total</td>
+                <td className="px-3 py-1.5 text-right">{totals.guias.toLocaleString("pt-BR")}</td>
+                <td className="px-3 py-1.5 text-right">{fmtDateBR(totals.dtexec)}</td>
+                <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(totals.valor)}</td>
+              </tr>
+            </thead>
+            <tbody>
+              {tree.map((m) => {
+                const mOpen = !!expMabas[m.mabas];
+                return (
+                  <>
+                    <tr key={`m:${m.mabas}`} className="border-b border-border bg-accent/30 hover:bg-accent/50 font-semibold">
+                      <td className="px-3 py-1.5">
+                        <button
+                          className="inline-flex items-center gap-1"
+                          onClick={() => setExpMabas((p) => ({ ...p, [m.mabas]: !p[m.mabas] }))}
+                        >
+                          <ChevronRight className={`h-3.5 w-3.5 transition-transform ${mOpen ? "rotate-90" : ""}`} />
+                          <span>{m.mabas}</span>
+                        </button>
+                      </td>
+                      <td className="px-3 py-1.5 text-right">{m.guias.size.toLocaleString("pt-BR")}</td>
+                      <td className="px-3 py-1.5 text-right">{fmtDateBR(m.dtexec)}</td>
+                      <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(m.valor)}</td>
+                    </tr>
+                    {mOpen &&
+                      m.exeArr.map((e) => {
+                        const eKey = `${m.mabas}||${e.exe}`;
+                        const eOpen = !!expExe[eKey];
+                        return (
+                          <>
+                            <tr key={`e:${eKey}`} className="border-b border-border/50 hover:bg-accent/40 font-medium">
+                              <td className="px-3 py-1.5 pl-8">
+                                <button
+                                  className="inline-flex items-center gap-1"
+                                  onClick={() => setExpExe((p) => ({ ...p, [eKey]: !p[eKey] }))}
+                                >
+                                  <ChevronRight className={`h-3.5 w-3.5 transition-transform ${eOpen ? "rotate-90" : ""}`} />
+                                  <span>{e.exe}</span>
+                                </button>
+                              </td>
+                              <td className="px-3 py-1.5 text-right">{e.guias.size.toLocaleString("pt-BR")}</td>
+                              <td className="px-3 py-1.5 text-right">{fmtDateBR(e.dtexec)}</td>
+                              <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(e.valor)}</td>
+                            </tr>
+                            {eOpen &&
+                              e.benefArr.map((b) => {
+                                const bKey = `${eKey}||${b.key}`;
+                                const bOpen = !!expBenef[bKey];
+                                return (
+                                  <>
+                                    <tr key={`b:${bKey}`} className="border-b border-border/40 hover:bg-accent/30">
+                                      <td className="px-3 py-1.5 pl-14">
+                                        <button
+                                          className="inline-flex items-center gap-1"
+                                          onClick={() => setExpBenef((p) => ({ ...p, [bKey]: !p[bKey] }))}
+                                        >
+                                          <ChevronRight className={`h-3.5 w-3.5 transition-transform ${bOpen ? "rotate-90" : ""}`} />
+                                          <span>
+                                            {b.nmcli} {b.cdregusr ? `(${b.cdregusr})` : ""}
+                                          </span>
+                                        </button>
+                                      </td>
+                                      <td className="px-3 py-1.5 text-right">{b.guias.size.toLocaleString("pt-BR")}</td>
+                                      <td className="px-3 py-1.5 text-right">{fmtDateBR(b.dtexec)}</td>
+                                      <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(b.valor)}</td>
+                                    </tr>
+                                    {bOpen &&
+                                      b.guiaArr.map((g) => (
+                                        <tr key={`g:${bKey}||${g.nrgui}`} className="border-b border-border/30 hover:bg-accent/20 text-muted-foreground">
+                                          <td className="px-3 py-1.5 pl-20">{g.nrgui}</td>
+                                          <td className="px-3 py-1.5 text-right">1</td>
+                                          <td className="px-3 py-1.5 text-right">{fmtDateBR(g.dtexec)}</td>
+                                          <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(g.valor)}</td>
+                                        </tr>
+                                      ))}
+                                  </>
+                                );
+                              })}
+                          </>
+                        );
+                      })}
+                  </>
+                );
+              })}
+              {tree.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-3 py-8 text-center text-muted-foreground">
+                    Nenhum registro encontrado.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </section>
+  );
+}
