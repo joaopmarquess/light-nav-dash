@@ -349,7 +349,7 @@ export default function AssistencialAuditoriaSSPMJR() {
               <tr className="text-xs font-semibold bg-accent/50 border-b border-border">
                 <td className="px-3 py-1.5">Total</td>
                 <td className="px-3 py-1.5 text-right">{totals.guias.toLocaleString("pt-BR")}</td>
-                <td className="px-3 py-1.5 text-right">{fmtDateBR(totals.dtexe)}</td>
+                <td className="px-3 py-1.5 text-right"></td>
                 <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(totals.valor)}</td>
               </tr>
             </thead>
@@ -369,7 +369,7 @@ export default function AssistencialAuditoriaSSPMJR() {
                         </button>
                       </td>
                       <td className="px-3 py-1.5 text-right">{t.guias.size.toLocaleString("pt-BR")}</td>
-                      <td className="px-3 py-1.5 text-right">{fmtDateBR(t.dtexe)}</td>
+                      <td className="px-3 py-1.5 text-right"></td>
                       <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(t.valor)}</td>
                     </tr>
                     {tOpen &&
@@ -389,7 +389,7 @@ export default function AssistencialAuditoriaSSPMJR() {
                                 </button>
                               </td>
                               <td className="px-3 py-1.5 text-right">{m.guias.size.toLocaleString("pt-BR")}</td>
-                              <td className="px-3 py-1.5 text-right">{fmtDateBR(m.dtexe)}</td>
+                              <td className="px-3 py-1.5 text-right"></td>
                               <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(m.valor)}</td>
                             </tr>
                             {mOpen &&
@@ -409,7 +409,7 @@ export default function AssistencialAuditoriaSSPMJR() {
                                         </button>
                                       </td>
                                       <td className="px-3 py-1.5 text-right">{e.guias.size.toLocaleString("pt-BR")}</td>
-                                      <td className="px-3 py-1.5 text-right">{fmtDateBR(e.dtexe)}</td>
+                                      <td className="px-3 py-1.5 text-right"></td>
                                       <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(e.valor)}</td>
                                     </tr>
                                     {eOpen &&
@@ -431,7 +431,7 @@ export default function AssistencialAuditoriaSSPMJR() {
                                                 </button>
                                               </td>
                                               <td className="px-3 py-1.5 text-right">{b.guias.size.toLocaleString("pt-BR")}</td>
-                                              <td className="px-3 py-1.5 text-right">{fmtDateBR(b.dtexe)}</td>
+                                              <td className="px-3 py-1.5 text-right"></td>
                                               <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(b.valor)}</td>
                                             </tr>
                                             {bOpen &&
