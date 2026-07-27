@@ -549,11 +549,11 @@ function buildPdf({
   };
 
   // Reserve room for the header on every page via didDrawPage.
-  const commonTableOpts = {
+  const commonTableOpts: Parameters<typeof autoTable>[1] = {
     styles: { font: "helvetica", fontSize: 7, cellPadding: 1.2, lineColor: [140, 140, 140], lineWidth: 0.1, textColor: 20 },
     headStyles: { fillColor: [60, 90, 150], textColor: 255, fontStyle: "bold", halign: "center" },
     footStyles: { fillColor: [230, 230, 230], textColor: 20, fontStyle: "bold" },
-    theme: "grid" as const,
+    theme: "grid",
     margin: { left: marginL, right: marginR, top: marginT + 4, bottom: marginB },
     didDrawPage: () => header(),
   };
