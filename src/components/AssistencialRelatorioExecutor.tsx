@@ -1,8 +1,6 @@
 import { useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
-import { ChevronRight, Search, Loader2, FileDown } from "lucide-react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { ChevronRight, Search, Loader2, FileDown, Printer, X } from "lucide-react";
 
 type Row = {
   ideAssist: number | string | null;
@@ -10,6 +8,7 @@ type Row = {
   cdpln: number | string | null;
   catipgui: string | null;
   dscrdexe: string | null;
+  dsesp: string | null;
   nmclires: string | null;
   nmcli: string | null;
   cdregusr: string | number | null;
@@ -40,6 +39,9 @@ const minDate = (a: string | null, b: string | null): string | null => {
   return a < b ? a : b;
 };
 
+const isHospital = (dsesp: string | null | undefined) =>
+  String(dsesp ?? "").trim().toLowerCase().startsWith("hospita");
+
 const getBscmpRange = (ini: number, fim: number): number[] => {
   const startYear = Math.floor(ini / 100);
   const startMonth = ini % 100;
@@ -65,6 +67,7 @@ export default function AssistencialRelatorioExecutor() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [triggered, setTriggered] = useState(false);
+  const [preview, setPreview] = useState(false);
 
   const [expTipo, setExpTipo] = useState<Record<string, boolean>>({});
   const [expExe, setExpExe] = useState<Record<string, boolean>>({});
@@ -97,7 +100,7 @@ export default function AssistencialRelatorioExecutor() {
           const size = Math.max(100, PAGE >> attempt);
           const { data, error } = await hostinger
             .from("assistencial")
-            .select("ideAssist,bscmp,cdpln,catipgui,dscrdexe,nmclires,nmcli,cdregusr,nrgui,dtexe,vrevt")
+            .select("ideAssist,bscmp,cdpln,catipgui,dscrdexe,dsesp,nmclires,nmcli,cdregusr,nrgui,dtexe,vrevt")
             .eq("cdpln", cd)
             .eq("bscmp", bscmp)
             .order("ideAssist", { ascending: true })
@@ -125,168 +128,6 @@ export default function AssistencialRelatorioExecutor() {
     setLoading(false);
   };
 
-  const generatePDF = () => {
-    if (filtered.length === 0) return;
-    const isInt = (c: string | null) => String(c ?? "").trim().toLowerCase().startsWith("interna");
-
-    // Section 1: totals by bscmp x tipo (all executors)
-    const s1 = new Map<string, { int: number; dem: number }>();
-    for (const r of filtered) {
-      const k = String(r.bscmp ?? "");
-      const v = Number(r.vrevt ?? 0) || 0;
-      const o = s1.get(k) ?? { int: 0, dem: 0 };
-      if (isInt(r.catipgui)) o.int += v; else o.dem += v;
-      s1.set(k, o);
-    }
-    const s1Rows = Array.from(s1.entries()).sort(([a], [b]) => a.localeCompare(b));
-
-    // Section 2: per dscrdexe -> by bscmp x tipo
-    const s2 = new Map<string, Map<string, { int: number; dem: number }>>();
-    for (const r of filtered) {
-      const exe = r.dscrdexe ?? "(sem prestador)";
-      const k = String(r.bscmp ?? "");
-      const v = Number(r.vrevt ?? 0) || 0;
-      let m = s2.get(exe);
-      if (!m) { m = new Map(); s2.set(exe, m); }
-      const o = m.get(k) ?? { int: 0, dem: 0 };
-      if (isInt(r.catipgui)) o.int += v; else o.dem += v;
-      m.set(k, o);
-    }
-
-    // Section 3: per dscrdexe -> row list
-    const s3 = new Map<string, Row[]>();
-    for (const r of filtered) {
-      const exe = r.dscrdexe ?? "(sem prestador)";
-      const arr = s3.get(exe) ?? [];
-      arr.push(r);
-      s3.set(exe, arr);
-    }
-
-    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
-    const money = (n: number) => fmtBRL(n);
-
-    // Title
-    doc.setFontSize(14);
-    doc.text("Relatório Assistencial (Por Executor)", 40, 40);
-    doc.setFontSize(9);
-    doc.text(`cdpln: ${cdpln}  |  Período: ${mabasIni} a ${mabasFim}`, 40, 56);
-
-    // Section 1
-    doc.setFontSize(11);
-    doc.text("Seção 1 - Competência (todos os executores)", 40, 78);
-    let totIntS1 = 0, totDemS1 = 0;
-    const s1Body = s1Rows.map(([k, o]) => {
-      totIntS1 += o.int; totDemS1 += o.dem;
-      return [k, money(o.int), money(o.dem), money(o.int + o.dem)];
-    });
-    s1Body.push(["Total", money(totIntS1), money(totDemS1), money(totIntS1 + totDemS1)]);
-    autoTable(doc, {
-      startY: 84,
-      head: [["bscmp", "Internação", "Demais Tipos de Guia", "Total"]],
-      body: s1Body,
-      styles: { fontSize: 8, halign: "right" },
-      headStyles: { fillColor: [60, 90, 150], halign: "center" },
-      columnStyles: { 0: { halign: "center" } },
-      didParseCell: (data) => {
-        if (data.section === "body" && data.row.index === s1Body.length - 1) {
-          data.cell.styles.fontStyle = "bold";
-          data.cell.styles.fillColor = [230, 230, 230];
-        }
-      },
-    });
-
-    // Section 2
-    doc.addPage();
-    doc.setFontSize(11);
-    doc.text("Seção 2 - Executor", 40, 40);
-    let y = 56;
-    let gInt = 0, gDem = 0;
-    const exeSorted = Array.from(s2.keys()).sort();
-    for (const exe of exeSorted) {
-      const m = s2.get(exe)!;
-      const rows = Array.from(m.entries()).sort(([a], [b]) => a.localeCompare(b));
-      let sInt = 0, sDem = 0;
-      const body = rows.map(([k, o]) => {
-        sInt += o.int; sDem += o.dem;
-        return [k, money(o.int), money(o.dem), money(o.int + o.dem)];
-      });
-      body.push([`Subtotal ${exe}`, money(sInt), money(sDem), money(sInt + sDem)]);
-      gInt += sInt; gDem += sDem;
-
-      autoTable(doc, {
-        startY: y,
-        head: [[{ content: exe, colSpan: 4, styles: { halign: "left", fillColor: [90, 110, 160] } }],
-               ["bscmp", "Internação", "Demais Tipos de Guia", "Total"]],
-        body,
-        styles: { fontSize: 8, halign: "right" },
-        headStyles: { fillColor: [60, 90, 150], halign: "center" },
-        columnStyles: { 0: { halign: "center" } },
-        didParseCell: (data) => {
-          if (data.section === "body" && data.row.index === body.length - 1) {
-            data.cell.styles.fontStyle = "bold";
-            data.cell.styles.fillColor = [230, 230, 230];
-            if (data.column.index === 0) data.cell.styles.halign = "left";
-          }
-        },
-      });
-      y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 14;
-      if (y > 500) { doc.addPage(); y = 40; }
-    }
-    autoTable(doc, {
-      startY: y,
-      body: [["Total Geral", money(gInt), money(gDem), money(gInt + gDem)]],
-      styles: { fontSize: 9, halign: "right", fontStyle: "bold", fillColor: [200, 210, 230] },
-      columnStyles: { 0: { halign: "left" } },
-    });
-
-    // Section 3
-    doc.addPage();
-    doc.setFontSize(11);
-    doc.text("Seção 3 - Geral", 40, 40);
-    let y3 = 56;
-    let gTot = 0;
-    const exe3 = Array.from(s3.keys()).sort();
-    for (const exe of exe3) {
-      const list = s3.get(exe)!.slice().sort((a, b) => String(a.bscmp).localeCompare(String(b.bscmp)));
-      let sub = 0;
-      const body = list.map((r) => {
-        const v = Number(r.vrevt ?? 0) || 0;
-        sub += v;
-        return [
-          r.nmclires ?? "-",
-          r.nmcli ?? "-",
-          String(r.cdregusr ?? ""),
-          String(r.nrgui ?? ""),
-          fmtDateBR(r.dtexe),
-          String(r.bscmp ?? ""),
-          r.catipgui ?? "",
-          money(v),
-        ];
-      });
-      body.push([{ content: `Subtotal ${exe}`, colSpan: 7, styles: { halign: "left", fontStyle: "bold", fillColor: [230, 230, 230] } } as never, { content: money(sub), styles: { fontStyle: "bold", fillColor: [230, 230, 230] } } as never]);
-      gTot += sub;
-
-      autoTable(doc, {
-        startY: y3,
-        head: [[{ content: exe, colSpan: 8, styles: { halign: "left", fillColor: [90, 110, 160] } }],
-               ["nmclires", "nmcli", "cdregusr", "nrgui", "dtexe", "bscmp", "catipgui", "Total"]],
-        body,
-        styles: { fontSize: 7, halign: "left" },
-        headStyles: { fillColor: [60, 90, 150], halign: "center", textColor: 255 },
-        columnStyles: { 7: { halign: "right" }, 2: { halign: "center" }, 3: { halign: "center" }, 4: { halign: "center" }, 5: { halign: "center" } },
-      });
-      y3 = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 14;
-      if (y3 > 500) { doc.addPage(); y3 = 40; }
-    }
-    autoTable(doc, {
-      startY: y3,
-      body: [[{ content: "Total Geral", colSpan: 7, styles: { halign: "left" } } as never, money(gTot)]],
-      styles: { fontSize: 9, fontStyle: "bold", fillColor: [200, 210, 230] },
-    });
-
-    doc.save(`relatorio-executor-${cdpln}-${mabasIni}-${mabasFim}.pdf`);
-  };
-
   const filtered = useMemo(() => {
     const q = filtro.trim().toLowerCase();
     if (!q) return rows;
@@ -296,6 +137,73 @@ export default function AssistencialRelatorioExecutor() {
         .some((v) => String(v).toLowerCase().includes(q)),
     );
   }, [rows, filtro]);
+
+  // Build report data
+  const report = useMemo(() => {
+    const isInt = (c: string | null) => String(c ?? "").trim().toLowerCase().startsWith("interna");
+
+    // exe -> dsesp (first non-null)
+    const exeEsp = new Map<string, string | null>();
+    for (const r of filtered) {
+      const exe = r.dscrdexe ?? "(sem prestador)";
+      if (!exeEsp.has(exe) || (exeEsp.get(exe) == null && r.dsesp)) {
+        exeEsp.set(exe, r.dsesp ?? exeEsp.get(exe) ?? null);
+      }
+    }
+
+    // Section 1: bscmp -> {int, dem}
+    const s1 = new Map<string, { int: number; dem: number }>();
+    for (const r of filtered) {
+      const k = String(r.bscmp ?? "");
+      const v = Number(r.vrevt ?? 0) || 0;
+      const o = s1.get(k) ?? { int: 0, dem: 0 };
+      if (isInt(r.catipgui)) o.int += v; else o.dem += v;
+      s1.set(k, o);
+    }
+    const s1Rows = Array.from(s1.entries()).sort(([a], [b]) => a.localeCompare(b));
+    const s1Tot = s1Rows.reduce(
+      (acc, [, o]) => ({ int: acc.int + o.int, dem: acc.dem + o.dem }),
+      { int: 0, dem: 0 },
+    );
+
+    // Section 2: exe -> (bscmp -> total)
+    const s2 = new Map<string, Map<string, number>>();
+    for (const r of filtered) {
+      const exe = r.dscrdexe ?? "(sem prestador)";
+      const k = String(r.bscmp ?? "");
+      const v = Number(r.vrevt ?? 0) || 0;
+      let m = s2.get(exe);
+      if (!m) { m = new Map(); s2.set(exe, m); }
+      m.set(k, (m.get(k) ?? 0) + v);
+    }
+
+    // Section 3: exe -> rows
+    const s3 = new Map<string, Row[]>();
+    for (const r of filtered) {
+      const exe = r.dscrdexe ?? "(sem prestador)";
+      const arr = s3.get(exe) ?? [];
+      arr.push(r);
+      s3.set(exe, arr);
+    }
+
+    // Sort executors: hospitais first (alpha), then others (alpha)
+    const sortExe = (arr: string[]) => {
+      const hosp = arr.filter((e) => isHospital(exeEsp.get(e))).sort((a, b) => a.localeCompare(b));
+      const rest = arr.filter((e) => !isHospital(exeEsp.get(e))).sort((a, b) => a.localeCompare(b));
+      return [...hosp, ...rest];
+    };
+    const exeSortedS2 = sortExe(Array.from(s2.keys()));
+    const exeSortedS3 = sortExe(Array.from(s3.keys()));
+
+    return { exeEsp, s1Rows, s1Tot, s2, s3, exeSortedS2, exeSortedS3 };
+  }, [filtered]);
+
+  const exeLabel = (exe: string) => {
+    const esp = report.exeEsp.get(exe);
+    return esp ? `${exe} (${esp})` : exe;
+  };
+
+  const doPrint = () => window.print();
 
   type GuiaNode = { nrgui: string; dtexe: string | null; valor: number };
   type BenefNode = {
@@ -395,7 +303,7 @@ export default function AssistencialRelatorioExecutor() {
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col">
-      <div className="p-4 border-b border-border flex flex-wrap items-center gap-3">
+      <div className="p-4 border-b border-border flex flex-wrap items-center gap-3 no-print">
         <div className="flex items-center gap-2">
           <label className="text-xs text-muted-foreground">cdpln</label>
           <input
@@ -432,9 +340,9 @@ export default function AssistencialRelatorioExecutor() {
             Carregar
           </button>
           <button
-            onClick={generatePDF}
+            onClick={() => setPreview(true)}
             disabled={loading || rows.length === 0}
-            title="Gerar PDF"
+            title="Gerar relatório"
             className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent disabled:opacity-50 inline-flex items-center gap-2"
           >
             <FileDown className="h-4 w-4" />
@@ -455,7 +363,7 @@ export default function AssistencialRelatorioExecutor() {
 
       {error && <div className="p-4 text-sm text-destructive">Erro ao carregar: {error}</div>}
 
-      <div className="flex-1 min-h-0 overflow-auto">
+      <div className="flex-1 min-h-0 overflow-auto no-print">
         {!triggered ? (
           <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
             Configure os filtros e clique em Carregar.
@@ -571,6 +479,300 @@ export default function AssistencialRelatorioExecutor() {
           </table>
         )}
       </div>
+
+      {preview && (
+        <ReportPreview
+          onClose={() => setPreview(false)}
+          onPrint={doPrint}
+          cdpln={cdpln}
+          mabasIni={mabasIni}
+          mabasFim={mabasFim}
+          report={report}
+          exeLabel={exeLabel}
+        />
+      )}
     </section>
+  );
+}
+
+// ============ Report Preview Modal ============
+
+type ReportData = {
+  exeEsp: Map<string, string | null>;
+  s1Rows: [string, { int: number; dem: number }][];
+  s1Tot: { int: number; dem: number };
+  s2: Map<string, Map<string, number>>;
+  s3: Map<string, Row[]>;
+  exeSortedS2: string[];
+  exeSortedS3: string[];
+};
+
+function ReportPreview({
+  onClose,
+  onPrint,
+  cdpln,
+  mabasIni,
+  mabasFim,
+  report,
+  exeLabel,
+}: {
+  onClose: () => void;
+  onPrint: () => void;
+  cdpln: string;
+  mabasIni: string;
+  mabasFim: string;
+  report: ReportData;
+  exeLabel: (exe: string) => string;
+}) {
+  const money = fmtBRL;
+
+  return (
+    <>
+      <style>{`
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 12mm 10mm 14mm 10mm;
+            @bottom-right {
+              content: "Página " counter(page) " de " counter(pages);
+              font-family: Arial, sans-serif;
+              font-size: 8pt;
+              color: #555;
+            }
+          }
+          body * { visibility: hidden !important; }
+          .print-root, .print-root * { visibility: visible !important; }
+          .print-root {
+            position: absolute !important;
+            inset: 0 !important;
+            background: white !important;
+            padding: 0 !important;
+            overflow: visible !important;
+            width: auto !important;
+            height: auto !important;
+          }
+          .print-toolbar { display: none !important; }
+          .print-page { box-shadow: none !important; margin: 0 !important; padding: 0 !important; width: auto !important; min-height: 0 !important; page-break-after: always; }
+          .print-page:last-child { page-break-after: auto; }
+          .no-print { display: none !important; }
+        }
+        .print-root { font-family: Arial, Helvetica, sans-serif; color: #111; }
+        .print-page { background: white; padding: 14mm 12mm; margin: 0 auto 12px; box-shadow: 0 1px 6px rgba(0,0,0,.15); width: 210mm; min-height: 297mm; box-sizing: border-box; }
+        .print-root table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .print-root th, .print-root td { border: 1px solid #999; padding: 2px 4px; font-size: 8pt; overflow: hidden; word-wrap: break-word; }
+        .print-root th { background: #3c5a96; color: white; text-align: center; font-weight: 600; }
+        .print-root .sec-title { font-size: 12pt; font-weight: 700; margin: 10px 0 6px; }
+        .print-root .doc-title { font-size: 14pt; font-weight: 700; margin: 0 0 4px; }
+        .print-root .doc-sub { font-size: 9pt; color: #444; margin-bottom: 8px; }
+        .print-root .exe-hdr { background: #5a6ea0; color: white; text-align: left; font-weight: 600; padding: 3px 4px; font-size: 8pt; }
+        .print-root .num { text-align: right; }
+        .print-root .ctr { text-align: center; }
+        .print-root .total-row td { background: #e6e6e6; font-weight: 700; }
+        .print-root .grand-row td { background: #c8d2e6; font-weight: 700; }
+      `}</style>
+
+      <div className="fixed inset-0 z-50 bg-black/60 flex flex-col print-root">
+        <div className="print-toolbar bg-card border-b border-border p-3 flex items-center justify-between gap-2 no-print">
+          <div className="text-sm font-medium">Pré-visualização do Relatório</div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onPrint}
+              className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 inline-flex items-center gap-2"
+            >
+              <Printer className="h-4 w-4" /> Imprimir
+            </button>
+            <button
+              onClick={onClose}
+              className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent inline-flex items-center gap-2"
+            >
+              <X className="h-4 w-4" /> Fechar
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-auto bg-neutral-200 p-4">
+          {/* PAGE 1 - Section 1 */}
+          <div className="print-page">
+            <div className="doc-title">Relatório Assistencial (Por Executor)</div>
+            <div className="doc-sub">cdpln: {cdpln} &nbsp;|&nbsp; Período: {mabasIni} a {mabasFim}</div>
+
+            <div className="sec-title">Seção 1 - Competência (todos os executores)</div>
+            <table>
+              <colgroup>
+                <col style={{ width: "22%" }} />
+                <col style={{ width: "26%" }} />
+                <col style={{ width: "26%" }} />
+                <col style={{ width: "26%" }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>bscmp</th>
+                  <th>Internação</th>
+                  <th>Demais Tipos de Guia</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {report.s1Rows.map(([k, o]) => (
+                  <tr key={k}>
+                    <td className="ctr">{k}</td>
+                    <td className="num">{money(o.int)}</td>
+                    <td className="num">{money(o.dem)}</td>
+                    <td className="num">{money(o.int + o.dem)}</td>
+                  </tr>
+                ))}
+                <tr className="total-row">
+                  <td className="ctr">Total</td>
+                  <td className="num">{money(report.s1Tot.int)}</td>
+                  <td className="num">{money(report.s1Tot.dem)}</td>
+                  <td className="num">{money(report.s1Tot.int + report.s1Tot.dem)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* PAGE 2 - Section 2 */}
+          <div className="print-page">
+            <div className="sec-title">Seção 2 - Executor</div>
+            {(() => {
+              let gTot = 0;
+              return (
+                <>
+                  {report.exeSortedS2.map((exe) => {
+                    const m = report.s2.get(exe)!;
+                    const rows = Array.from(m.entries()).sort(([a], [b]) => a.localeCompare(b));
+                    let sub = 0;
+                    return (
+                      <table key={exe} style={{ marginBottom: 8 }}>
+                        <colgroup>
+                          <col style={{ width: "40%" }} />
+                          <col style={{ width: "60%" }} />
+                        </colgroup>
+                        <thead>
+                          <tr>
+                            <th colSpan={2} className="exe-hdr">{exeLabel(exe)}</th>
+                          </tr>
+                          <tr>
+                            <th>bscmp</th>
+                            <th>Total</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rows.map(([k, v]) => {
+                            sub += v;
+                            return (
+                              <tr key={k}>
+                                <td className="ctr">{k}</td>
+                                <td className="num">{money(v)}</td>
+                              </tr>
+                            );
+                          })}
+                          <tr className="total-row">
+                            <td>Subtotal</td>
+                            <td className="num">{money(sub)}</td>
+                          </tr>
+                          {(() => { gTot += sub; return null; })()}
+                        </tbody>
+                      </table>
+                    );
+                  })}
+                  <table>
+                    <colgroup>
+                      <col style={{ width: "40%" }} />
+                      <col style={{ width: "60%" }} />
+                    </colgroup>
+                    <tbody>
+                      <tr className="grand-row">
+                        <td>Total Geral</td>
+                        <td className="num">{money(gTot)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </>
+              );
+            })()}
+          </div>
+
+          {/* PAGE 3+ - Section 3 */}
+          <div className="print-page">
+            <div className="sec-title">Seção 3 - Geral</div>
+            {(() => {
+              let gTot = 0;
+              return (
+                <>
+                  {report.exeSortedS3.map((exe) => {
+                    const list = report.s3.get(exe)!.slice().sort((a, b) =>
+                      String(a.bscmp).localeCompare(String(b.bscmp)),
+                    );
+                    let sub = 0;
+                    return (
+                      <table key={exe} style={{ marginBottom: 8 }}>
+                        <colgroup>
+                          <col style={{ width: "22%" }} />
+                          <col style={{ width: "22%" }} />
+                          <col style={{ width: "9%" }} />
+                          <col style={{ width: "9%" }} />
+                          <col style={{ width: "9%" }} />
+                          <col style={{ width: "9%" }} />
+                          <col style={{ width: "20%" }} />
+                        </colgroup>
+                        <thead>
+                          <tr>
+                            <th colSpan={7} className="exe-hdr">{exeLabel(exe)}</th>
+                          </tr>
+                          <tr>
+                            <th>nmclires</th>
+                            <th>nmcli</th>
+                            <th>cdregusr</th>
+                            <th>nrgui</th>
+                            <th>dtexe</th>
+                            <th>bscmp</th>
+                            <th>Total</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {list.map((r, i) => {
+                            const v = Number(r.vrevt ?? 0) || 0;
+                            sub += v;
+                            return (
+                              <tr key={i}>
+                                <td>{r.nmclires ?? "-"}</td>
+                                <td>{r.nmcli ?? "-"}</td>
+                                <td className="ctr">{String(r.cdregusr ?? "")}</td>
+                                <td className="ctr">{String(r.nrgui ?? "")}</td>
+                                <td className="ctr">{fmtDateBR(r.dtexe)}</td>
+                                <td className="ctr">{String(r.bscmp ?? "")}</td>
+                                <td className="num">{money(v)}</td>
+                              </tr>
+                            );
+                          })}
+                          <tr className="total-row">
+                            <td colSpan={6}>Subtotal</td>
+                            <td className="num">{money(sub)}</td>
+                          </tr>
+                          {(() => { gTot += sub; return null; })()}
+                        </tbody>
+                      </table>
+                    );
+                  })}
+                  <table>
+                    <colgroup>
+                      <col style={{ width: "80%" }} />
+                      <col style={{ width: "20%" }} />
+                    </colgroup>
+                    <tbody>
+                      <tr className="grand-row">
+                        <td>Total Geral</td>
+                        <td className="num">{money(gTot)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </>
+              );
+            })()}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
