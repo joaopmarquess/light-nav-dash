@@ -567,6 +567,7 @@ export default function AssistencialRelatorioExecutor() {
 
 type ReportData = {
   exeEsp: Map<string, string | null>;
+  exeCd: Map<string, string>;
   s1Rows: [string, { int: number; dem: number }][];
   s1Tot: { int: number; dem: number };
   s2: Map<string, Map<string, number>>;
@@ -581,12 +582,14 @@ function buildPdf({
   mabasFim,
   report,
   exeLabel,
+  filterCd,
 }: {
   cdpln: string;
   mabasIni: string;
   mabasFim: string;
   report: ReportData;
   exeLabel: (exe: string) => string;
+  filterCd?: string;
 }): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
@@ -599,6 +602,10 @@ function buildPdf({
 
   const money = fmtBRL;
 
+  const filterExe = filterCd
+    ? report.exeSortedS3.find((e) => report.exeCd.get(e) === filterCd) ?? null
+    : null;
+
   const header = () => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
@@ -607,11 +614,10 @@ function buildPdf({
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(80);
-    doc.text(
-      `cdpln: ${cdpln}   |   Período: ${mabasIni} a ${mabasFim}`,
-      marginL,
-      marginT,
-    );
+    const line1 = `cdpln: ${cdpln}   |   Período: ${mabasIni} a ${mabasFim}`;
+    const line2 = filterExe ? `Executor (Seção 3): ${filterCd} - ${filterExe}` : "";
+    doc.text(line1, marginL, marginT);
+    if (line2) doc.text(line2, marginL, marginT + 4);
     doc.setTextColor(0);
   };
 
