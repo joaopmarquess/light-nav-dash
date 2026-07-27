@@ -404,6 +404,10 @@ const Index = () => {
             <AssistencialCompetencia />
           ) : active === "Consulta" ? (
             <AssistencialConsulta />
+          ) : active === "Relatório (Por Competência)" ? (
+            <AssistencialAuditoriaSSPMJR />
+          ) : active === "Relatório (Por Executor)" ? (
+            <AssistencialRelatorioExecutor />
           ) : active === "Auditoria SSPMJR" ? (
             <AssistencialAuditoriaSSPMJR />
           ) : (
