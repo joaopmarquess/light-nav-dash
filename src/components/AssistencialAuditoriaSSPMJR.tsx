@@ -14,7 +14,7 @@ type Row = {
   vrevt: number | string | null;
 };
 
-const PAGE = 750;
+const PAGE = 500;
 
 const fmtBRL = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -90,29 +90,48 @@ export default function AssistencialAuditoriaSSPMJR() {
     const acc: Row[] = [];
 
     for (const bscmp of months) {
-      let lastId = 0;
+      let from = 0;
       while (true) {
-        const { data, error } = await hostinger
-          .from("assistencial")
-          .select("ideAssist,bscmp,cdpln,dscrdexe,nmcli,cdregusr,nrgui,dtexe,vrevt")
-          .eq("cdpln", cd)
-          .eq("bscmp", bscmp)
-          .gt("ideAssist", lastId)
-          .order("ideAssist", { ascending: true })
-          .limit(PAGE);
-        if (error) {
-          setError(error.message);
+        let attempt = 0;
+        let chunk: Row[] | null = null;
+        let lastError: string | null = null;
+        while (attempt < 4) {
+          const size = Math.max(100, PAGE >> attempt);
+          const { data, error } = await hostinger
+            .from("assistencial")
+            .select("ideAssist,bscmp,cdpln,dscrdexe,nmcli,cdregusr,nrgui,dtexe,vrevt")
+            .eq("cdpln", cd)
+            .eq("bscmp", bscmp)
+            .range(from, from + size - 1);
+          if (!error) {
+            chunk = (data ?? []) as Row[];
+            from += size;
+            break;
+          }
+          lastError = error.message;
+          if (!/timeout/i.test(error.message)) break;
+          attempt += 1;
+        }
+
+        if (!chunk) {
+          setError(lastError ?? "Erro ao carregar dados.");
           setLoading(false);
           return;
         }
-        const chunk = (data ?? []) as Row[];
+
         acc.push(...chunk);
-        if (chunk.length < PAGE) break;
-        const nextId = Number(chunk[chunk.length - 1]?.ideAssist ?? lastId);
-        if (!Number.isFinite(nextId) || nextId <= lastId) break;
-        lastId = nextId;
+        if (chunk.length < Math.max(100, PAGE >> attempt)) break;
+
+        if (from > 100000) break;
       }
     }
+
+    acc.sort((a, b) => {
+      const aBscmp = String(a.bscmp ?? "");
+      const bBscmp = String(b.bscmp ?? "");
+      if (aBscmp !== bBscmp) return aBscmp.localeCompare(bBscmp);
+      return Number(a.ideAssist ?? 0) - Number(b.ideAssist ?? 0);
+    });
     setRows(acc);
     setLoading(false);
   };
