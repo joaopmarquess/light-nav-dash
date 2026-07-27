@@ -900,6 +900,7 @@ function buildPdf({
 function ReportPreview({
   onClose,
   cdpln,
+  dspln,
   mabasIni,
   mabasFim,
   report,
@@ -908,6 +909,7 @@ function ReportPreview({
 }: {
   onClose: () => void;
   cdpln: string;
+  dspln: string;
   mabasIni: string;
   mabasFim: string;
   report: ReportData;
@@ -921,7 +923,18 @@ function ReportPreview({
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const doc = buildPdf({ cdpln, mabasIni, mabasFim, report, exeLabel, filterCd });
+      const logo = await loadLogoAsPng(bensaudeLogoUrl).catch(() => null);
+      const doc = buildPdf({
+        cdpln,
+        dspln,
+        mabasIni,
+        mabasFim,
+        report,
+        exeLabel,
+        filterCd,
+        logoDataUrl: logo?.dataUrl,
+        logoAspect: logo?.aspect,
+      });
       docRef.current = doc;
       // Render each page as PNG via pdf.js — evita bloqueios de blob/data no Edge.
       const pdfjs = await import("pdfjs-dist");
