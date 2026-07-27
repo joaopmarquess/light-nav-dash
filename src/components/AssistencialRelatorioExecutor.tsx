@@ -205,7 +205,7 @@ export default function AssistencialRelatorioExecutor() {
     return esp ? `${exe} (${esp})` : exe;
   };
 
-  const doPrint = () => window.print();
+  
 
   type GuiaNode = { nrgui: string; dtexe: string | null; valor: number };
   type BenefNode = {
