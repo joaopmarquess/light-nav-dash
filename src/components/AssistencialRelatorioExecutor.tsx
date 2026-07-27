@@ -727,24 +727,81 @@ function buildPdf({
   let s3Y = marginT + 10;
   let s3Grand = 0;
   const s3ExeList = filterExe ? [filterExe] : report.exeSortedS3;
+
+  // Column widths (fractions of usableW) for Section 3
+  const s3W = {
+    nmclires: usableW * 0.28,
+    nmcli: usableW * 0.28,
+    cdregusr: usableW * 0.10,
+    nrgui: usableW * 0.09,
+    dtexe: usableW * 0.09,
+    bscmp: usableW * 0.08,
+    total: usableW * 0.08,
+  };
+  const cellPad = 1.2;
+  const truncFront = (s: string, colW: number) => {
+    const maxW = colW - 2 * cellPad;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    if (!s) return s;
+    if (doc.getTextWidth(s) <= maxW) return s;
+    let out = s;
+    while (out.length > 1 && doc.getTextWidth("..." + out) > maxW) {
+      out = out.slice(1);
+    }
+    return "..." + out;
+  };
+
   for (const exe of s3ExeList) {
     const list = report.s3.get(exe)!
       .slice()
-      .sort((a, b) => String(a.bscmp).localeCompare(String(b.bscmp)));
+      .sort((a, b) => {
+        const nr = String(a.nmclires ?? "").localeCompare(String(b.nmclires ?? ""));
+        if (nr !== 0) return nr;
+        const nc = String(a.nmcli ?? "").localeCompare(String(b.nmcli ?? ""));
+        if (nc !== 0) return nc;
+        return String(a.bscmp ?? "").localeCompare(String(b.bscmp ?? ""));
+      });
+
     let sub = 0;
-    const body = list.map((r) => {
+    const body: (string | { content: string; colSpan?: number; styles?: Record<string, unknown> })[][] = [];
+
+    let curRes: string | null = null;
+    let curResSum = 0;
+    let curResCd = "";
+    const flushRes = () => {
+      if (curRes === null) return;
+      const grp = Math.floor((Number(curResCd) || 0) / 100);
+      body.push([
+        { content: `Sub: (${grp})`, colSpan: 6, styles: { halign: "left", fontStyle: "bold", fillColor: [245, 245, 245] } },
+        { content: money(curResSum), styles: { halign: "right", fontStyle: "bold", fillColor: [245, 245, 245] } },
+      ]);
+      curRes = null;
+      curResSum = 0;
+      curResCd = "";
+    };
+
+    for (const r of list) {
       const v = Number(r.vrevt ?? 0) || 0;
       sub += v;
-      return [
-        r.nmclires ?? "-",
-        r.nmcli ?? "-",
+      const resKey = String(r.nmclires ?? "-");
+      if (curRes !== null && curRes !== resKey) flushRes();
+      if (curRes === null) {
+        curRes = resKey;
+        curResCd = String(r.cdregusr ?? "");
+      }
+      curResSum += v;
+      body.push([
+        truncFront(r.nmclires ?? "-", s3W.nmclires),
+        truncFront(r.nmcli ?? "-", s3W.nmcli),
         String(r.cdregusr ?? ""),
         String(r.nrgui ?? ""),
         fmtDateBR(r.dtexe),
         String(r.bscmp ?? ""),
         money(v),
-      ];
-    });
+      ]);
+    }
+    flushRes();
     s3Grand += sub;
 
     autoTable(doc, {
@@ -757,17 +814,17 @@ function buildPdf({
       ],
       body,
       foot: [[
-        { content: "Subtotal", colSpan: 6, styles: { halign: "left" } },
+        { content: `Subtotal do Executor (${exe})`, colSpan: 6, styles: { halign: "left" } },
         { content: money(sub), styles: { halign: "right" } },
       ]],
       columnStyles: {
-        0: { cellWidth: usableW * 0.22 },
-        1: { cellWidth: usableW * 0.22 },
-        2: { cellWidth: usableW * 0.11, halign: "center", overflow: "visible" },
-        3: { cellWidth: usableW * 0.09, halign: "center" },
-        4: { cellWidth: usableW * 0.08, halign: "center" },
-        5: { cellWidth: usableW * 0.08, halign: "center" },
-        6: { cellWidth: usableW * 0.20, halign: "right" },
+        0: { cellWidth: s3W.nmclires },
+        1: { cellWidth: s3W.nmcli },
+        2: { cellWidth: s3W.cdregusr, halign: "center", overflow: "visible" },
+        3: { cellWidth: s3W.nrgui, halign: "center" },
+        4: { cellWidth: s3W.dtexe, halign: "center" },
+        5: { cellWidth: s3W.bscmp, halign: "center" },
+        6: { cellWidth: s3W.total, halign: "right" },
       },
     });
     s3Y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 3;
@@ -782,13 +839,13 @@ function buildPdf({
     ]],
     bodyStyles: { fillColor: [235, 235, 235] },
     columnStyles: {
-      0: { cellWidth: usableW * 0.22 },
-      1: { cellWidth: usableW * 0.22 },
-      2: { cellWidth: usableW * 0.11 },
-      3: { cellWidth: usableW * 0.09 },
-      4: { cellWidth: usableW * 0.08 },
-      5: { cellWidth: usableW * 0.08 },
-      6: { cellWidth: usableW * 0.20, halign: "right" },
+      0: { cellWidth: s3W.nmclires },
+      1: { cellWidth: s3W.nmcli },
+      2: { cellWidth: s3W.cdregusr },
+      3: { cellWidth: s3W.nrgui },
+      4: { cellWidth: s3W.dtexe },
+      5: { cellWidth: s3W.bscmp },
+      6: { cellWidth: s3W.total, halign: "right" },
     },
   });
   markSectionPages("Seção 3 - Geral", sec3Start);
