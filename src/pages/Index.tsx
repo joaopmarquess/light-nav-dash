@@ -118,6 +118,7 @@ const menuItems: MenuItem[] = [
       
       { icon: CalendarCheck, label: "Por Competência" },
       { icon: Search, label: "Consulta" },
+      { icon: Stethoscope, label: "Auditoria SSPMJR" },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
