@@ -70,7 +70,10 @@ export default function AssistencialRelatorioExecutor() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [triggered, setTriggered] = useState(false);
+  const [pdfDialog, setPdfDialog] = useState(false);
+  const [pdfCdFilter, setPdfCdFilter] = useState("");
   const [preview, setPreview] = useState(false);
+  const [previewFilter, setPreviewFilter] = useState<string>("");
 
   const [expTipo, setExpTipo] = useState<Record<string, boolean>>({});
   const [expExe, setExpExe] = useState<Record<string, boolean>>({});
