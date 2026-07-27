@@ -150,10 +150,14 @@ export default function AssistencialRelatorioExecutor() {
 
     // exe -> dsesp (first non-null)
     const exeEsp = new Map<string, string | null>();
+    const exeCd = new Map<string, string>();
     for (const r of filtered) {
       const exe = r.dscrdexe ?? "(sem prestador)";
       if (!exeEsp.has(exe) || (exeEsp.get(exe) == null && r.dsesp)) {
         exeEsp.set(exe, r.dsesp ?? exeEsp.get(exe) ?? null);
+      }
+      if (r.cdcrdexe != null && !exeCd.has(exe)) {
+        exeCd.set(exe, String(r.cdcrdexe));
       }
     }
 
@@ -201,12 +205,14 @@ export default function AssistencialRelatorioExecutor() {
     const exeSortedS2 = sortExe(Array.from(s2.keys()));
     const exeSortedS3 = sortExe(Array.from(s3.keys()));
 
-    return { exeEsp, s1Rows, s1Tot, s2, s3, exeSortedS2, exeSortedS3 };
+    return { exeEsp, exeCd, s1Rows, s1Tot, s2, s3, exeSortedS2, exeSortedS3 };
   }, [filtered]);
 
   const exeLabel = (exe: string) => {
     const esp = report.exeEsp.get(exe);
-    return esp ? `${exe} (${esp})` : exe;
+    const cd = report.exeCd.get(exe);
+    const base = cd ? `${cd} - ${exe}` : exe;
+    return esp ? `${base} (${esp})` : base;
   };
 
   
