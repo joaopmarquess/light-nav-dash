@@ -551,12 +551,20 @@ function buildPdf({
   // Reserve room for the header on every page via didDrawPage.
   const commonTableOpts: Parameters<typeof autoTable>[1] = {
     styles: { font: "helvetica", fontSize: 7, cellPadding: 1.2, lineColor: [140, 140, 140], lineWidth: 0.1, textColor: 20 },
-    headStyles: { fillColor: [60, 90, 150], textColor: 255, fontStyle: "bold", halign: "center" },
-    footStyles: { fillColor: [230, 230, 230], textColor: 20, fontStyle: "bold" },
+    headStyles: { fillColor: [255, 255, 255], textColor: 20, fontStyle: "bold", halign: "center", lineColor: [140, 140, 140], lineWidth: 0.1 },
+    footStyles: { fillColor: [245, 245, 245], textColor: 20, fontStyle: "bold" },
     theme: "grid",
     margin: { left: marginL, right: marginR, top: marginT + 4, bottom: marginB },
     didDrawPage: () => header(),
   };
+
+  // Section page tracking for footer labels
+  const sectionByPage: Record<number, string> = {};
+  const markSectionPages = (label: string, fromPage: number) => {
+    const to = doc.getNumberOfPages();
+    for (let p = fromPage; p <= to; p++) sectionByPage[p] = label;
+  };
+  let sec1Start = doc.getNumberOfPages();
 
   // ---------- Section 1 ----------
   doc.setFont("helvetica", "bold");
@@ -590,7 +598,9 @@ function buildPdf({
   });
 
   // ---------- Section 2 ----------
+  markSectionPages("Seção 1 - Competência", sec1Start);
   doc.addPage();
+  const sec2Start = doc.getNumberOfPages();
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.text("Seção 2 - Executor", marginL, marginT + 8);
@@ -607,12 +617,13 @@ function buildPdf({
     autoTable(doc, {
       ...commonTableOpts,
       startY: s2Y,
+      showFoot: "lastPage",
       head: [
-        [{ content: exeLabel(exe), colSpan: 2, styles: { fillColor: [90, 110, 160], halign: "left" } }],
+        [{ content: exeLabel(exe), colSpan: 2, styles: { halign: "left", fontStyle: "bold" } }],
         ["bscmp", "Total"],
       ],
       body,
-      foot: [["Subtotal", money(sub)]],
+      foot: [[{ content: "Subtotal", styles: { halign: "left" } }, { content: money(sub), styles: { halign: "right" } }]],
       columnStyles: {
         0: { cellWidth: usableW * 0.4, halign: "center" },
         1: { cellWidth: usableW * 0.6, halign: "right" },
@@ -624,8 +635,8 @@ function buildPdf({
   autoTable(doc, {
     ...commonTableOpts,
     startY: s2Y,
-    body: [[{ content: "Total Geral", styles: { fontStyle: "bold" } }, { content: money(s2Grand), styles: { halign: "right", fontStyle: "bold" } }]],
-    bodyStyles: { fillColor: [200, 210, 230] },
+    body: [[{ content: "Total Geral", styles: { fontStyle: "bold", halign: "left" } }, { content: money(s2Grand), styles: { halign: "right", fontStyle: "bold" } }]],
+    bodyStyles: { fillColor: [235, 235, 235] },
     columnStyles: {
       0: { cellWidth: usableW * 0.4 },
       1: { cellWidth: usableW * 0.6, halign: "right" },
@@ -633,7 +644,9 @@ function buildPdf({
   });
 
   // ---------- Section 3 ----------
+  markSectionPages("Seção 2 - Executor", sec2Start);
   doc.addPage();
+  const sec3Start = doc.getNumberOfPages();
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.text("Seção 3 - Geral", marginL, marginT + 8);
@@ -663,19 +676,23 @@ function buildPdf({
     autoTable(doc, {
       ...commonTableOpts,
       startY: s3Y,
+      showFoot: "lastPage",
       head: [
-        [{ content: exeLabel(exe), colSpan: 7, styles: { fillColor: [90, 110, 160], halign: "left" } }],
+        [{ content: exeLabel(exe), colSpan: 7, styles: { halign: "left", fontStyle: "bold" } }],
         ["nmclires", "nmcli", "cdregusr", "nrgui", "dtexe", "bscmp", "Total"],
       ],
       body,
-      foot: [[{ content: "Subtotal", colSpan: 6, styles: { halign: "left" } }, money(sub)]],
+      foot: [[
+        { content: "Subtotal", colSpan: 6, styles: { halign: "left" } },
+        { content: money(sub), styles: { halign: "right" } },
+      ]],
       columnStyles: {
         0: { cellWidth: usableW * 0.22 },
         1: { cellWidth: usableW * 0.22 },
-        2: { cellWidth: usableW * 0.09, halign: "center" },
+        2: { cellWidth: usableW * 0.11, halign: "center", overflow: "visible" },
         3: { cellWidth: usableW * 0.09, halign: "center" },
-        4: { cellWidth: usableW * 0.09, halign: "center" },
-        5: { cellWidth: usableW * 0.09, halign: "center" },
+        4: { cellWidth: usableW * 0.08, halign: "center" },
+        5: { cellWidth: usableW * 0.08, halign: "center" },
         6: { cellWidth: usableW * 0.20, halign: "right" },
       },
     });
@@ -685,13 +702,22 @@ function buildPdf({
   autoTable(doc, {
     ...commonTableOpts,
     startY: s3Y,
-    body: [[{ content: "Total Geral", styles: { fontStyle: "bold" } }, { content: money(s3Grand), styles: { halign: "right", fontStyle: "bold" } }]],
-    bodyStyles: { fillColor: [200, 210, 230] },
+    body: [[
+      { content: "Total Geral", colSpan: 6, styles: { fontStyle: "bold", halign: "left" } },
+      { content: money(s3Grand), styles: { halign: "right", fontStyle: "bold" } },
+    ]],
+    bodyStyles: { fillColor: [235, 235, 235] },
     columnStyles: {
-      0: { cellWidth: usableW * 0.8 },
-      1: { cellWidth: usableW * 0.2, halign: "right" },
+      0: { cellWidth: usableW * 0.22 },
+      1: { cellWidth: usableW * 0.22 },
+      2: { cellWidth: usableW * 0.11 },
+      3: { cellWidth: usableW * 0.09 },
+      4: { cellWidth: usableW * 0.08 },
+      5: { cellWidth: usableW * 0.08 },
+      6: { cellWidth: usableW * 0.20, halign: "right" },
     },
   });
+  markSectionPages("Seção 3 - Geral", sec3Start);
 
   // ---------- Page numbers ----------
   const total = doc.getNumberOfPages();
@@ -700,11 +726,14 @@ function buildPdf({
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(90);
+    const sec = sectionByPage[i] ?? "";
+    if (sec) doc.text(sec, marginL, pageH - 6, { align: "left" });
     doc.text(`Página ${i} de ${total}`, pageW - marginR, pageH - 6, { align: "right" });
   }
 
   return doc;
 }
+
 
 function ReportPreview({
   onClose,
