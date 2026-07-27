@@ -551,12 +551,20 @@ function buildPdf({
   // Reserve room for the header on every page via didDrawPage.
   const commonTableOpts: Parameters<typeof autoTable>[1] = {
     styles: { font: "helvetica", fontSize: 7, cellPadding: 1.2, lineColor: [140, 140, 140], lineWidth: 0.1, textColor: 20 },
-    headStyles: { fillColor: [60, 90, 150], textColor: 255, fontStyle: "bold", halign: "center" },
-    footStyles: { fillColor: [230, 230, 230], textColor: 20, fontStyle: "bold" },
+    headStyles: { fillColor: [255, 255, 255], textColor: 20, fontStyle: "bold", halign: "center", lineColor: [140, 140, 140], lineWidth: 0.1 },
+    footStyles: { fillColor: [245, 245, 245], textColor: 20, fontStyle: "bold" },
     theme: "grid",
     margin: { left: marginL, right: marginR, top: marginT + 4, bottom: marginB },
     didDrawPage: () => header(),
   };
+
+  // Section page tracking for footer labels
+  const sectionByPage: Record<number, string> = {};
+  const markSectionPages = (label: string, fromPage: number) => {
+    const to = doc.getNumberOfPages();
+    for (let p = fromPage; p <= to; p++) sectionByPage[p] = label;
+  };
+  let sec1Start = doc.getNumberOfPages();
 
   // ---------- Section 1 ----------
   doc.setFont("helvetica", "bold");
