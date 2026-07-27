@@ -124,6 +124,168 @@ export default function AssistencialRelatorioExecutor() {
     setLoading(false);
   };
 
+  const generatePDF = () => {
+    if (filtered.length === 0) return;
+    const isInt = (c: string | null) => String(c ?? "").trim().toLowerCase().startsWith("interna");
+
+    // Section 1: totals by bscmp x tipo (all executors)
+    const s1 = new Map<string, { int: number; dem: number }>();
+    for (const r of filtered) {
+      const k = String(r.bscmp ?? "");
+      const v = Number(r.vrevt ?? 0) || 0;
+      const o = s1.get(k) ?? { int: 0, dem: 0 };
+      if (isInt(r.catipgui)) o.int += v; else o.dem += v;
+      s1.set(k, o);
+    }
+    const s1Rows = Array.from(s1.entries()).sort(([a], [b]) => a.localeCompare(b));
+
+    // Section 2: per dscrdexe -> by bscmp x tipo
+    const s2 = new Map<string, Map<string, { int: number; dem: number }>>();
+    for (const r of filtered) {
+      const exe = r.dscrdexe ?? "(sem prestador)";
+      const k = String(r.bscmp ?? "");
+      const v = Number(r.vrevt ?? 0) || 0;
+      let m = s2.get(exe);
+      if (!m) { m = new Map(); s2.set(exe, m); }
+      const o = m.get(k) ?? { int: 0, dem: 0 };
+      if (isInt(r.catipgui)) o.int += v; else o.dem += v;
+      m.set(k, o);
+    }
+
+    // Section 3: per dscrdexe -> row list
+    const s3 = new Map<string, Row[]>();
+    for (const r of filtered) {
+      const exe = r.dscrdexe ?? "(sem prestador)";
+      const arr = s3.get(exe) ?? [];
+      arr.push(r);
+      s3.set(exe, arr);
+    }
+
+    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+    const money = (n: number) => fmtBRL(n);
+
+    // Title
+    doc.setFontSize(14);
+    doc.text("Relatório Assistencial (Por Executor)", 40, 40);
+    doc.setFontSize(9);
+    doc.text(`cdpln: ${cdpln}  |  Período: ${mabasIni} a ${mabasFim}`, 40, 56);
+
+    // Section 1
+    doc.setFontSize(11);
+    doc.text("Seção 1 - Competência (todos os executores)", 40, 78);
+    let totIntS1 = 0, totDemS1 = 0;
+    const s1Body = s1Rows.map(([k, o]) => {
+      totIntS1 += o.int; totDemS1 += o.dem;
+      return [k, money(o.int), money(o.dem), money(o.int + o.dem)];
+    });
+    s1Body.push(["Total", money(totIntS1), money(totDemS1), money(totIntS1 + totDemS1)]);
+    autoTable(doc, {
+      startY: 84,
+      head: [["bscmp", "Internação", "Demais Tipos de Guia", "Total"]],
+      body: s1Body,
+      styles: { fontSize: 8, halign: "right" },
+      headStyles: { fillColor: [60, 90, 150], halign: "center" },
+      columnStyles: { 0: { halign: "center" } },
+      didParseCell: (data) => {
+        if (data.section === "body" && data.row.index === s1Body.length - 1) {
+          data.cell.styles.fontStyle = "bold";
+          data.cell.styles.fillColor = [230, 230, 230];
+        }
+      },
+    });
+
+    // Section 2
+    doc.addPage();
+    doc.setFontSize(11);
+    doc.text("Seção 2 - Executor", 40, 40);
+    let y = 56;
+    let gInt = 0, gDem = 0;
+    const exeSorted = Array.from(s2.keys()).sort();
+    for (const exe of exeSorted) {
+      const m = s2.get(exe)!;
+      const rows = Array.from(m.entries()).sort(([a], [b]) => a.localeCompare(b));
+      let sInt = 0, sDem = 0;
+      const body = rows.map(([k, o]) => {
+        sInt += o.int; sDem += o.dem;
+        return [k, money(o.int), money(o.dem), money(o.int + o.dem)];
+      });
+      body.push([`Subtotal ${exe}`, money(sInt), money(sDem), money(sInt + sDem)]);
+      gInt += sInt; gDem += sDem;
+
+      autoTable(doc, {
+        startY: y,
+        head: [[{ content: exe, colSpan: 4, styles: { halign: "left", fillColor: [90, 110, 160] } }],
+               ["bscmp", "Internação", "Demais Tipos de Guia", "Total"]],
+        body,
+        styles: { fontSize: 8, halign: "right" },
+        headStyles: { fillColor: [60, 90, 150], halign: "center" },
+        columnStyles: { 0: { halign: "center" } },
+        didParseCell: (data) => {
+          if (data.section === "body" && data.row.index === body.length - 1) {
+            data.cell.styles.fontStyle = "bold";
+            data.cell.styles.fillColor = [230, 230, 230];
+            if (data.column.index === 0) data.cell.styles.halign = "left";
+          }
+        },
+      });
+      y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 14;
+      if (y > 500) { doc.addPage(); y = 40; }
+    }
+    autoTable(doc, {
+      startY: y,
+      body: [["Total Geral", money(gInt), money(gDem), money(gInt + gDem)]],
+      styles: { fontSize: 9, halign: "right", fontStyle: "bold", fillColor: [200, 210, 230] },
+      columnStyles: { 0: { halign: "left" } },
+    });
+
+    // Section 3
+    doc.addPage();
+    doc.setFontSize(11);
+    doc.text("Seção 3 - Geral", 40, 40);
+    let y3 = 56;
+    let gTot = 0;
+    const exe3 = Array.from(s3.keys()).sort();
+    for (const exe of exe3) {
+      const list = s3.get(exe)!.slice().sort((a, b) => String(a.bscmp).localeCompare(String(b.bscmp)));
+      let sub = 0;
+      const body = list.map((r) => {
+        const v = Number(r.vrevt ?? 0) || 0;
+        sub += v;
+        return [
+          r.nmclires ?? "-",
+          r.nmcli ?? "-",
+          String(r.cdregusr ?? ""),
+          String(r.nrgui ?? ""),
+          fmtDateBR(r.dtexe),
+          String(r.bscmp ?? ""),
+          r.catipgui ?? "",
+          money(v),
+        ];
+      });
+      body.push([{ content: `Subtotal ${exe}`, colSpan: 7, styles: { halign: "left", fontStyle: "bold", fillColor: [230, 230, 230] } } as never, { content: money(sub), styles: { fontStyle: "bold", fillColor: [230, 230, 230] } } as never]);
+      gTot += sub;
+
+      autoTable(doc, {
+        startY: y3,
+        head: [[{ content: exe, colSpan: 8, styles: { halign: "left", fillColor: [90, 110, 160] } }],
+               ["nmclires", "nmcli", "cdregusr", "nrgui", "dtexe", "bscmp", "catipgui", "Total"]],
+        body,
+        styles: { fontSize: 7, halign: "left" },
+        headStyles: { fillColor: [60, 90, 150], halign: "center", textColor: 255 },
+        columnStyles: { 7: { halign: "right" }, 2: { halign: "center" }, 3: { halign: "center" }, 4: { halign: "center" }, 5: { halign: "center" } },
+      });
+      y3 = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 14;
+      if (y3 > 500) { doc.addPage(); y3 = 40; }
+    }
+    autoTable(doc, {
+      startY: y3,
+      body: [[{ content: "Total Geral", colSpan: 7, styles: { halign: "left" } } as never, money(gTot)]],
+      styles: { fontSize: 9, fontStyle: "bold", fillColor: [200, 210, 230] },
+    });
+
+    doc.save(`relatorio-executor-${cdpln}-${mabasIni}-${mabasFim}.pdf`);
+  };
+
   const filtered = useMemo(() => {
     const q = filtro.trim().toLowerCase();
     if (!q) return rows;
