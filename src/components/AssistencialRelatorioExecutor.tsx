@@ -833,7 +833,7 @@ function ReportPreview({
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const doc = buildPdf({ cdpln, mabasIni, mabasFim, report, exeLabel });
+      const doc = buildPdf({ cdpln, mabasIni, mabasFim, report, exeLabel, filterCd });
       docRef.current = doc;
       // Render each page as PNG via pdf.js — evita bloqueios de blob/data no Edge.
       const pdfjs = await import("pdfjs-dist");
