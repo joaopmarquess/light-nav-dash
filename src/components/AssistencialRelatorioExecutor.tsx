@@ -721,52 +721,95 @@ function ReportPreview({
   report: ReportData;
   exeLabel: (exe: string) => string;
 }) {
-  const [url, setUrl] = useState<string | null>(null);
-  const objectRef = useRef<HTMLObjectElement>(null);
+  const [pages, setPages] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const docRef = useRef<jsPDF | null>(null);
 
   useEffect(() => {
-    const doc = buildPdf({ cdpln, mabasIni, mabasFim, report, exeLabel });
-    const blob = doc.output("blob");
-    const objUrl = URL.createObjectURL(blob);
-    setUrl(objUrl);
-    return () => URL.revokeObjectURL(objUrl);
+    let cancelled = false;
+    (async () => {
+      const doc = buildPdf({ cdpln, mabasIni, mabasFim, report, exeLabel });
+      docRef.current = doc;
+      // Render each page as PNG via pdf.js — evita bloqueios de blob/data no Edge.
+      const pdfjs = await import("pdfjs-dist");
+      // @ts-expect-error worker sem tipos
+      const workerSrc = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
+      pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+      const data = doc.output("arraybuffer");
+      const pdf = await pdfjs.getDocument({ data }).promise;
+      const imgs: string[] = [];
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1.6 });
+        const canvas = document.createElement("canvas");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext("2d")!;
+        await page.render({ canvasContext: ctx, viewport, canvas }).promise;
+        imgs.push(canvas.toDataURL("image/png"));
+        if (cancelled) return;
+      }
+      if (!cancelled) {
+        setPages(imgs);
+        setLoading(false);
+      }
+    })().catch((err) => {
+      console.error("[ReportPreview] falha ao renderizar PDF:", err);
+      if (!cancelled) setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const doPrint = () => {
-    const el = objectRef.current as unknown as { contentWindow?: Window } | null;
-    const w = el?.contentWindow;
-    try {
-      if (w) {
-        w.focus();
-        w.print();
-        return;
-      }
-    } catch {
-      // fall through
-    }
-    if (url) window.open(url, "_blank", "noopener,noreferrer");
+  const doDownload = () => {
+    if (!docRef.current) return;
+    docRef.current.save(`relatorio_executor_${cdpln}_${mabasIni}_${mabasFim}.pdf`);
   };
 
-  const openNewTab = () => {
-    if (url) window.open(url, "_blank", "noopener,noreferrer");
+  const doPrint = () => {
+    if (pages.length === 0) return;
+    const w = window.open("", "_blank");
+    if (!w) {
+      // popup bloqueado — fallback: baixar
+      doDownload();
+      return;
+    }
+    const imgsHtml = pages
+      .map(
+        (src) =>
+          `<img src="${src}" style="display:block;width:100%;page-break-after:always;" />`
+      )
+      .join("");
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Relatório</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  img { max-width: 100%; }
+  @media print { img { page-break-after: always; } }
+</style>
+</head><body>${imgsHtml}<script>window.onload=function(){setTimeout(function(){window.focus();window.print();},250);};</script></body></html>`);
+    w.document.close();
   };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex flex-col">
       <div className="bg-card border-b border-border p-3 flex items-center justify-between gap-2">
-        <div className="text-sm font-medium">Pré-visualização do Relatório (PDF)</div>
+        <div className="text-sm font-medium">
+          Pré-visualização do Relatório (PDF) {pages.length > 0 && `— ${pages.length} página(s)`}
+        </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={openNewTab}
-            disabled={!url}
+            onClick={doDownload}
+            disabled={loading}
             className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent disabled:opacity-50 inline-flex items-center gap-2"
           >
-            <FileDown className="h-4 w-4" /> Abrir em nova aba
+            <FileDown className="h-4 w-4" /> Baixar PDF
           </button>
           <button
             onClick={doPrint}
-            disabled={!url}
+            disabled={loading || pages.length === 0}
             className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50 inline-flex items-center gap-2"
           >
             <Printer className="h-4 w-4" /> Imprimir
@@ -779,30 +822,25 @@ function ReportPreview({
           </button>
         </div>
       </div>
-      <div className="flex-1 bg-neutral-800">
-        {url ? (
-          <object
-            ref={objectRef}
-            data={url}
-            type="application/pdf"
-            className="w-full h-full"
-            aria-label="Relatório PDF"
-          >
-            <div className="h-full flex flex-col items-center justify-center gap-3 text-white text-sm p-6 text-center">
-              <p>
-                Seu navegador bloqueou a pré-visualização embutida do PDF.
-              </p>
-              <button
-                onClick={openNewTab}
-                className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 inline-flex items-center gap-2"
-              >
-                <FileDown className="h-4 w-4" /> Abrir PDF em nova aba
-              </button>
-            </div>
-          </object>
-        ) : (
+      <div className="flex-1 overflow-auto bg-neutral-800 p-4">
+        {loading ? (
           <div className="h-full flex items-center justify-center text-white text-sm">
-            Gerando PDF...
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Gerando PDF...
+          </div>
+        ) : pages.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-white text-sm">
+            Não foi possível gerar a pré-visualização.
+          </div>
+        ) : (
+          <div className="mx-auto max-w-4xl flex flex-col gap-4">
+            {pages.map((src, i) => (
+              <img
+                key={i}
+                src={src}
+                alt={`Página ${i + 1}`}
+                className="w-full bg-white shadow-lg"
+              />
+            ))}
           </div>
         )}
       </div>
