@@ -353,75 +353,98 @@ export default function AssistencialAuditoriaSSPMJR() {
               </tr>
             </thead>
             <tbody>
-              {tree.map((m) => {
-                const mOpen = !!expMabas[m.bscmp];
+              {tree.map((t) => {
+                const tOpen = !!expTipo[t.tipo];
                 return (
                   <>
-                    <tr key={`m:${m.bscmp}`} className="border-b border-border bg-accent/30 hover:bg-accent/50 font-semibold">
+                    <tr key={`t:${t.tipo}`} className="border-b border-border bg-accent/50 hover:bg-accent/70 font-bold">
                       <td className="px-3 py-1.5">
                         <button
                           className="inline-flex items-center gap-1"
-                          onClick={() => setExpMabas((p) => ({ ...p, [m.bscmp]: !p[m.bscmp] }))}
+                          onClick={() => setExpTipo((p) => ({ ...p, [t.tipo]: !p[t.tipo] }))}
                         >
-                          <ChevronRight className={`h-3.5 w-3.5 transition-transform ${mOpen ? "rotate-90" : ""}`} />
-                          <span>{m.bscmp}</span>
+                          <ChevronRight className={`h-3.5 w-3.5 transition-transform ${tOpen ? "rotate-90" : ""}`} />
+                          <span>{t.label}</span>
                         </button>
                       </td>
-                      <td className="px-3 py-1.5 text-right">{m.guias.size.toLocaleString("pt-BR")}</td>
-                      <td className="px-3 py-1.5 text-right">{fmtDateBR(m.dtexe)}</td>
-                      <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(m.valor)}</td>
+                      <td className="px-3 py-1.5 text-right">{t.guias.size.toLocaleString("pt-BR")}</td>
+                      <td className="px-3 py-1.5 text-right">{fmtDateBR(t.dtexe)}</td>
+                      <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(t.valor)}</td>
                     </tr>
-                    {mOpen &&
-                      m.exeArr.map((e) => {
-                        const eKey = `${m.bscmp}||${e.exe}`;
-                        const eOpen = !!expExe[eKey];
+                    {tOpen &&
+                      t.mabasArr.map((m) => {
+                        const mKey = `${t.tipo}||${m.bscmp}`;
+                        const mOpen = !!expMabas[mKey];
                         return (
                           <>
-                            <tr key={`e:${eKey}`} className="border-b border-border/50 hover:bg-accent/40 font-medium">
-                              <td className="px-3 py-1.5 pl-8">
+                            <tr key={`m:${mKey}`} className="border-b border-border bg-accent/30 hover:bg-accent/50 font-semibold">
+                              <td className="px-3 py-1.5 pl-6">
                                 <button
                                   className="inline-flex items-center gap-1"
-                                  onClick={() => setExpExe((p) => ({ ...p, [eKey]: !p[eKey] }))}
+                                  onClick={() => setExpMabas((p) => ({ ...p, [mKey]: !p[mKey] }))}
                                 >
-                                  <ChevronRight className={`h-3.5 w-3.5 transition-transform ${eOpen ? "rotate-90" : ""}`} />
-                                  <span>{e.exe}</span>
+                                  <ChevronRight className={`h-3.5 w-3.5 transition-transform ${mOpen ? "rotate-90" : ""}`} />
+                                  <span>{m.bscmp}</span>
                                 </button>
                               </td>
-                              <td className="px-3 py-1.5 text-right">{e.guias.size.toLocaleString("pt-BR")}</td>
-                              <td className="px-3 py-1.5 text-right">{fmtDateBR(e.dtexe)}</td>
-                              <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(e.valor)}</td>
+                              <td className="px-3 py-1.5 text-right">{m.guias.size.toLocaleString("pt-BR")}</td>
+                              <td className="px-3 py-1.5 text-right">{fmtDateBR(m.dtexe)}</td>
+                              <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(m.valor)}</td>
                             </tr>
-                            {eOpen &&
-                              e.benefArr.map((b) => {
-                                const bKey = `${eKey}||${b.key}`;
-                                const bOpen = !!expBenef[bKey];
+                            {mOpen &&
+                              m.exeArr.map((e) => {
+                                const eKey = `${mKey}||${e.exe}`;
+                                const eOpen = !!expExe[eKey];
                                 return (
                                   <>
-                                    <tr key={`b:${bKey}`} className="border-b border-border/40 hover:bg-accent/30">
-                                      <td className="px-3 py-1.5 pl-14">
+                                    <tr key={`e:${eKey}`} className="border-b border-border/50 hover:bg-accent/40 font-medium">
+                                      <td className="px-3 py-1.5 pl-12">
                                         <button
                                           className="inline-flex items-center gap-1"
-                                          onClick={() => setExpBenef((p) => ({ ...p, [bKey]: !p[bKey] }))}
+                                          onClick={() => setExpExe((p) => ({ ...p, [eKey]: !p[eKey] }))}
                                         >
-                                          <ChevronRight className={`h-3.5 w-3.5 transition-transform ${bOpen ? "rotate-90" : ""}`} />
-                                          <span>
-                                            {b.nmcli} {b.cdregusr ? `(${b.cdregusr})` : ""}
-                                          </span>
+                                          <ChevronRight className={`h-3.5 w-3.5 transition-transform ${eOpen ? "rotate-90" : ""}`} />
+                                          <span>{e.exe}</span>
                                         </button>
                                       </td>
-                                      <td className="px-3 py-1.5 text-right">{b.guias.size.toLocaleString("pt-BR")}</td>
-                                      <td className="px-3 py-1.5 text-right">{fmtDateBR(b.dtexe)}</td>
-                                      <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(b.valor)}</td>
+                                      <td className="px-3 py-1.5 text-right">{e.guias.size.toLocaleString("pt-BR")}</td>
+                                      <td className="px-3 py-1.5 text-right">{fmtDateBR(e.dtexe)}</td>
+                                      <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(e.valor)}</td>
                                     </tr>
-                                    {bOpen &&
-                                      b.guiaArr.map((g) => (
-                                        <tr key={`g:${bKey}||${g.nrgui}`} className="border-b border-border/30 hover:bg-accent/20 text-muted-foreground">
-                                          <td className="px-3 py-1.5 pl-20">{g.nrgui}</td>
-                                          <td className="px-3 py-1.5 text-right">1</td>
-                                          <td className="px-3 py-1.5 text-right">{fmtDateBR(g.dtexe)}</td>
-                                          <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(g.valor)}</td>
-                                        </tr>
-                                      ))}
+                                    {eOpen &&
+                                      e.benefArr.map((b) => {
+                                        const bKey = `${eKey}||${b.key}`;
+                                        const bOpen = !!expBenef[bKey];
+                                        return (
+                                          <>
+                                            <tr key={`b:${bKey}`} className="border-b border-border/40 hover:bg-accent/30">
+                                              <td className="px-3 py-1.5 pl-18">
+                                                <button
+                                                  className="inline-flex items-center gap-1"
+                                                  onClick={() => setExpBenef((p) => ({ ...p, [bKey]: !p[bKey] }))}
+                                                >
+                                                  <ChevronRight className={`h-3.5 w-3.5 transition-transform ${bOpen ? "rotate-90" : ""}`} />
+                                                  <span>
+                                                    {b.nmcli} {b.cdregusr ? `(${b.cdregusr})` : ""}
+                                                  </span>
+                                                </button>
+                                              </td>
+                                              <td className="px-3 py-1.5 text-right">{b.guias.size.toLocaleString("pt-BR")}</td>
+                                              <td className="px-3 py-1.5 text-right">{fmtDateBR(b.dtexe)}</td>
+                                              <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(b.valor)}</td>
+                                            </tr>
+                                            {bOpen &&
+                                              b.guiaArr.map((g) => (
+                                                <tr key={`g:${bKey}||${g.nrgui}`} className="border-b border-border/30 hover:bg-accent/20 text-muted-foreground">
+                                                  <td className="px-3 py-1.5 pl-24">{g.nrgui}</td>
+                                                  <td className="px-3 py-1.5 text-right">1</td>
+                                                  <td className="px-3 py-1.5 text-right">{fmtDateBR(g.dtexe)}</td>
+                                                  <td className="px-3 py-1.5 text-right whitespace-nowrap">{fmtBRL(g.valor)}</td>
+                                                </tr>
+                                              ))}
+                                          </>
+                                        );
+                                      })}
                                   </>
                                 );
                               })}
