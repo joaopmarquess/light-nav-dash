@@ -6,7 +6,7 @@ type Row = {
   ideAssist: number | string | null;
   bscmp: number | string | null;
   cdpln: number | string | null;
-  idtipgui: string | null;
+  catipgui: string | null;
   dscrdexe: string | null;
   nmcli: string | null;
   cdregusr: string | number | null;
@@ -101,7 +101,7 @@ export default function AssistencialAuditoriaSSPMJR() {
           const size = Math.max(100, PAGE >> attempt);
           const { data, error } = await hostinger
             .from("assistencial")
-            .select("ideAssist,bscmp,cdpln,idtipgui,dscrdexe,nmcli,cdregusr,nrgui,dtexe,vrevt")
+            .select("ideAssist,bscmp,cdpln,catipgui,dscrdexe,nmcli,cdregusr,nrgui,dtexe,vrevt")
             .eq("cdpln", cd)
             .eq("bscmp", bscmp)
             .range(from, from + size - 1);
@@ -183,7 +183,8 @@ export default function AssistencialAuditoriaSSPMJR() {
   const tree = useMemo(() => {
     const tipos = new Map<string, TipoNode>();
     for (const r of filtered) {
-      const isInt = String(r.idtipgui ?? "").trim().toUpperCase() === "I";
+      const cat = String(r.catipgui ?? "").trim();
+      const isInt = cat.toLowerCase().startsWith("interna");
       const tipo = isInt ? "I" : "O";
       const label = isInt ? "Internação" : "Demais Tipos de Guia";
       const bscmp = String(r.bscmp ?? "-");
