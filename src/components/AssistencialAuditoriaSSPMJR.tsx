@@ -69,6 +69,7 @@ export default function AssistencialAuditoriaSSPMJR() {
   const [error, setError] = useState<string | null>(null);
   const [triggered, setTriggered] = useState(false);
 
+  const [expTipo, setExpTipo] = useState<Record<string, boolean>>({});
   const [expMabas, setExpMabas] = useState<Record<string, boolean>>({});
   const [expExe, setExpExe] = useState<Record<string, boolean>>({});
   const [expBenef, setExpBenef] = useState<Record<string, boolean>>({});
