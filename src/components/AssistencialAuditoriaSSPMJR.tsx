@@ -183,7 +183,8 @@ export default function AssistencialAuditoriaSSPMJR() {
   const tree = useMemo(() => {
     const tipos = new Map<string, TipoNode>();
     for (const r of filtered) {
-      const isInt = String(r.idtipgui ?? "").trim().toUpperCase() === "I";
+      const cat = String(r.catipgui ?? "").trim();
+      const isInt = cat.toLowerCase().startsWith("interna");
       const tipo = isInt ? "I" : "O";
       const label = isInt ? "Internação" : "Demais Tipos de Guia";
       const bscmp = String(r.bscmp ?? "-");
