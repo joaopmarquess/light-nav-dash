@@ -356,7 +356,7 @@ export default function AssistencialRelatorioExecutor() {
             Carregar
           </button>
           <button
-            onClick={() => setPreview(true)}
+            onClick={() => { setPdfCdFilter(""); setPdfDialog(true); }}
             disabled={loading || rows.length === 0}
             title="Gerar relatório"
             className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent disabled:opacity-50 inline-flex items-center gap-2"
