@@ -496,7 +496,7 @@ export default function AssistencialRelatorioExecutor() {
   );
 }
 
-// ============ Report Preview Modal ============
+// ============ Report Preview (real PDF in iframe) ============
 
 type ReportData = {
   exeEsp: Map<string, string | null>;
@@ -508,9 +508,206 @@ type ReportData = {
   exeSortedS3: string[];
 };
 
+function buildPdf({
+  cdpln,
+  mabasIni,
+  mabasFim,
+  report,
+  exeLabel,
+}: {
+  cdpln: string;
+  mabasIni: string;
+  mabasFim: string;
+  report: ReportData;
+  exeLabel: (exe: string) => string;
+}): jsPDF {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const marginL = 10;
+  const marginR = 10;
+  const marginT = 12;
+  const marginB = 14;
+  const usableW = pageW - marginL - marginR;
+
+  const money = fmtBRL;
+
+  const header = () => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(20);
+    doc.text("Relatório Assistencial (Por Executor)", marginL, marginT - 4);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(80);
+    doc.text(
+      `cdpln: ${cdpln}   |   Período: ${mabasIni} a ${mabasFim}`,
+      marginL,
+      marginT,
+    );
+    doc.setTextColor(0);
+  };
+
+  // Reserve room for the header on every page via didDrawPage.
+  const commonTableOpts = {
+    styles: { font: "helvetica", fontSize: 7, cellPadding: 1.2, lineColor: [140, 140, 140], lineWidth: 0.1, textColor: 20 },
+    headStyles: { fillColor: [60, 90, 150], textColor: 255, fontStyle: "bold", halign: "center" },
+    footStyles: { fillColor: [230, 230, 230], textColor: 20, fontStyle: "bold" },
+    theme: "grid" as const,
+    margin: { left: marginL, right: marginR, top: marginT + 4, bottom: marginB },
+    didDrawPage: () => header(),
+  };
+
+  // ---------- Section 1 ----------
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("Seção 1 - Competência (todos os executores)", marginL, marginT + 8);
+
+  const s1Body = report.s1Rows.map(([k, o]) => [
+    k,
+    money(o.int),
+    money(o.dem),
+    money(o.int + o.dem),
+  ]);
+  const s1Foot = [[
+    "Total",
+    money(report.s1Tot.int),
+    money(report.s1Tot.dem),
+    money(report.s1Tot.int + report.s1Tot.dem),
+  ]];
+  autoTable(doc, {
+    ...commonTableOpts,
+    startY: marginT + 10,
+    head: [["bscmp", "Internação", "Demais Tipos de Guia", "Total"]],
+    body: s1Body,
+    foot: s1Foot,
+    columnStyles: {
+      0: { cellWidth: usableW * 0.22, halign: "center" },
+      1: { cellWidth: usableW * 0.26, halign: "right" },
+      2: { cellWidth: usableW * 0.26, halign: "right" },
+      3: { cellWidth: usableW * 0.26, halign: "right" },
+    },
+  });
+
+  // ---------- Section 2 ----------
+  doc.addPage();
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("Seção 2 - Executor", marginL, marginT + 8);
+
+  let s2Y = marginT + 10;
+  let s2Grand = 0;
+  for (const exe of report.exeSortedS2) {
+    const m = report.s2.get(exe)!;
+    const rows = Array.from(m.entries()).sort(([a], [b]) => a.localeCompare(b));
+    let sub = 0;
+    const body = rows.map(([k, v]) => { sub += v; return [k, money(v)]; });
+    s2Grand += sub;
+
+    autoTable(doc, {
+      ...commonTableOpts,
+      startY: s2Y,
+      head: [
+        [{ content: exeLabel(exe), colSpan: 2, styles: { fillColor: [90, 110, 160], halign: "left" } }],
+        ["bscmp", "Total"],
+      ],
+      body,
+      foot: [["Subtotal", money(sub)]],
+      columnStyles: {
+        0: { cellWidth: usableW * 0.4, halign: "center" },
+        1: { cellWidth: usableW * 0.6, halign: "right" },
+      },
+    });
+    s2Y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 3;
+    if (s2Y > pageH - marginB - 20) { doc.addPage(); s2Y = marginT + 6; }
+  }
+  autoTable(doc, {
+    ...commonTableOpts,
+    startY: s2Y,
+    body: [[{ content: "Total Geral", styles: { fontStyle: "bold" } }, { content: money(s2Grand), styles: { halign: "right", fontStyle: "bold" } }]],
+    bodyStyles: { fillColor: [200, 210, 230] },
+    columnStyles: {
+      0: { cellWidth: usableW * 0.4 },
+      1: { cellWidth: usableW * 0.6, halign: "right" },
+    },
+  });
+
+  // ---------- Section 3 ----------
+  doc.addPage();
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("Seção 3 - Geral", marginL, marginT + 8);
+
+  let s3Y = marginT + 10;
+  let s3Grand = 0;
+  for (const exe of report.exeSortedS3) {
+    const list = report.s3.get(exe)!
+      .slice()
+      .sort((a, b) => String(a.bscmp).localeCompare(String(b.bscmp)));
+    let sub = 0;
+    const body = list.map((r) => {
+      const v = Number(r.vrevt ?? 0) || 0;
+      sub += v;
+      return [
+        r.nmclires ?? "-",
+        r.nmcli ?? "-",
+        String(r.cdregusr ?? ""),
+        String(r.nrgui ?? ""),
+        fmtDateBR(r.dtexe),
+        String(r.bscmp ?? ""),
+        money(v),
+      ];
+    });
+    s3Grand += sub;
+
+    autoTable(doc, {
+      ...commonTableOpts,
+      startY: s3Y,
+      head: [
+        [{ content: exeLabel(exe), colSpan: 7, styles: { fillColor: [90, 110, 160], halign: "left" } }],
+        ["nmclires", "nmcli", "cdregusr", "nrgui", "dtexe", "bscmp", "Total"],
+      ],
+      body,
+      foot: [[{ content: "Subtotal", colSpan: 6, styles: { halign: "left" } }, money(sub)]],
+      columnStyles: {
+        0: { cellWidth: usableW * 0.22 },
+        1: { cellWidth: usableW * 0.22 },
+        2: { cellWidth: usableW * 0.09, halign: "center" },
+        3: { cellWidth: usableW * 0.09, halign: "center" },
+        4: { cellWidth: usableW * 0.09, halign: "center" },
+        5: { cellWidth: usableW * 0.09, halign: "center" },
+        6: { cellWidth: usableW * 0.20, halign: "right" },
+      },
+    });
+    s3Y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 3;
+    if (s3Y > pageH - marginB - 20) { doc.addPage(); s3Y = marginT + 6; }
+  }
+  autoTable(doc, {
+    ...commonTableOpts,
+    startY: s3Y,
+    body: [[{ content: "Total Geral", styles: { fontStyle: "bold" } }, { content: money(s3Grand), styles: { halign: "right", fontStyle: "bold" } }]],
+    bodyStyles: { fillColor: [200, 210, 230] },
+    columnStyles: {
+      0: { cellWidth: usableW * 0.8 },
+      1: { cellWidth: usableW * 0.2, halign: "right" },
+    },
+  });
+
+  // ---------- Page numbers ----------
+  const total = doc.getNumberOfPages();
+  for (let i = 1; i <= total; i++) {
+    doc.setPage(i);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(90);
+    doc.text(`Página ${i} de ${total}`, pageW - marginR, pageH - 6, { align: "right" });
+  }
+
+  return doc;
+}
+
 function ReportPreview({
   onClose,
-  onPrint,
   cdpln,
   mabasIni,
   mabasFim,
@@ -518,262 +715,70 @@ function ReportPreview({
   exeLabel,
 }: {
   onClose: () => void;
-  onPrint: () => void;
   cdpln: string;
   mabasIni: string;
   mabasFim: string;
   report: ReportData;
   exeLabel: (exe: string) => string;
 }) {
-  const money = fmtBRL;
+  const [url, setUrl] = useState<string | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    const doc = buildPdf({ cdpln, mabasIni, mabasFim, report, exeLabel });
+    const blob = doc.output("blob");
+    const objUrl = URL.createObjectURL(blob);
+    setUrl(objUrl);
+    return () => URL.revokeObjectURL(objUrl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const doPrint = () => {
+    const w = iframeRef.current?.contentWindow;
+    if (!w) return;
+    try {
+      w.focus();
+      w.print();
+    } catch {
+      // ignore
+    }
+  };
 
   return (
-    <>
-      <style>{`
-        @media print {
-          @page {
-            size: A4 portrait;
-            margin: 12mm 10mm 14mm 10mm;
-            @bottom-right {
-              content: "Página " counter(page) " de " counter(pages);
-              font-family: Arial, sans-serif;
-              font-size: 8pt;
-              color: #555;
-            }
-          }
-          body * { visibility: hidden !important; }
-          .print-root, .print-root * { visibility: visible !important; }
-          .print-root {
-            position: absolute !important;
-            inset: 0 !important;
-            background: white !important;
-            padding: 0 !important;
-            overflow: visible !important;
-            width: auto !important;
-            height: auto !important;
-          }
-          .print-toolbar { display: none !important; }
-          .print-page { box-shadow: none !important; margin: 0 !important; padding: 0 !important; width: auto !important; min-height: 0 !important; page-break-after: always; }
-          .print-page:last-child { page-break-after: auto; }
-          .no-print { display: none !important; }
-        }
-        .print-root { font-family: Arial, Helvetica, sans-serif; color: #111; }
-        .print-page { background: white; padding: 14mm 12mm; margin: 0 auto 12px; box-shadow: 0 1px 6px rgba(0,0,0,.15); width: 210mm; min-height: 297mm; box-sizing: border-box; }
-        .print-root table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .print-root th, .print-root td { border: 1px solid #999; padding: 2px 4px; font-size: 8pt; overflow: hidden; word-wrap: break-word; }
-        .print-root th { background: #3c5a96; color: white; text-align: center; font-weight: 600; }
-        .print-root .sec-title { font-size: 12pt; font-weight: 700; margin: 10px 0 6px; }
-        .print-root .doc-title { font-size: 14pt; font-weight: 700; margin: 0 0 4px; }
-        .print-root .doc-sub { font-size: 9pt; color: #444; margin-bottom: 8px; }
-        .print-root .exe-hdr { background: #5a6ea0; color: white; text-align: left; font-weight: 600; padding: 3px 4px; font-size: 8pt; }
-        .print-root .num { text-align: right; }
-        .print-root .ctr { text-align: center; }
-        .print-root .total-row td { background: #e6e6e6; font-weight: 700; }
-        .print-root .grand-row td { background: #c8d2e6; font-weight: 700; }
-      `}</style>
-
-      <div className="fixed inset-0 z-50 bg-black/60 flex flex-col print-root">
-        <div className="print-toolbar bg-card border-b border-border p-3 flex items-center justify-between gap-2 no-print">
-          <div className="text-sm font-medium">Pré-visualização do Relatório</div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onPrint}
-              className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 inline-flex items-center gap-2"
-            >
-              <Printer className="h-4 w-4" /> Imprimir
-            </button>
-            <button
-              onClick={onClose}
-              className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent inline-flex items-center gap-2"
-            >
-              <X className="h-4 w-4" /> Fechar
-            </button>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-auto bg-neutral-200 p-4">
-          {/* PAGE 1 - Section 1 */}
-          <div className="print-page">
-            <div className="doc-title">Relatório Assistencial (Por Executor)</div>
-            <div className="doc-sub">cdpln: {cdpln} &nbsp;|&nbsp; Período: {mabasIni} a {mabasFim}</div>
-
-            <div className="sec-title">Seção 1 - Competência (todos os executores)</div>
-            <table>
-              <colgroup>
-                <col style={{ width: "22%" }} />
-                <col style={{ width: "26%" }} />
-                <col style={{ width: "26%" }} />
-                <col style={{ width: "26%" }} />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th>bscmp</th>
-                  <th>Internação</th>
-                  <th>Demais Tipos de Guia</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {report.s1Rows.map(([k, o]) => (
-                  <tr key={k}>
-                    <td className="ctr">{k}</td>
-                    <td className="num">{money(o.int)}</td>
-                    <td className="num">{money(o.dem)}</td>
-                    <td className="num">{money(o.int + o.dem)}</td>
-                  </tr>
-                ))}
-                <tr className="total-row">
-                  <td className="ctr">Total</td>
-                  <td className="num">{money(report.s1Tot.int)}</td>
-                  <td className="num">{money(report.s1Tot.dem)}</td>
-                  <td className="num">{money(report.s1Tot.int + report.s1Tot.dem)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          {/* PAGE 2 - Section 2 */}
-          <div className="print-page">
-            <div className="sec-title">Seção 2 - Executor</div>
-            {(() => {
-              let gTot = 0;
-              return (
-                <>
-                  {report.exeSortedS2.map((exe) => {
-                    const m = report.s2.get(exe)!;
-                    const rows = Array.from(m.entries()).sort(([a], [b]) => a.localeCompare(b));
-                    let sub = 0;
-                    return (
-                      <table key={exe} style={{ marginBottom: 8 }}>
-                        <colgroup>
-                          <col style={{ width: "40%" }} />
-                          <col style={{ width: "60%" }} />
-                        </colgroup>
-                        <thead>
-                          <tr>
-                            <th colSpan={2} className="exe-hdr">{exeLabel(exe)}</th>
-                          </tr>
-                          <tr>
-                            <th>bscmp</th>
-                            <th>Total</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {rows.map(([k, v]) => {
-                            sub += v;
-                            return (
-                              <tr key={k}>
-                                <td className="ctr">{k}</td>
-                                <td className="num">{money(v)}</td>
-                              </tr>
-                            );
-                          })}
-                          <tr className="total-row">
-                            <td>Subtotal</td>
-                            <td className="num">{money(sub)}</td>
-                          </tr>
-                          {(() => { gTot += sub; return null; })()}
-                        </tbody>
-                      </table>
-                    );
-                  })}
-                  <table>
-                    <colgroup>
-                      <col style={{ width: "40%" }} />
-                      <col style={{ width: "60%" }} />
-                    </colgroup>
-                    <tbody>
-                      <tr className="grand-row">
-                        <td>Total Geral</td>
-                        <td className="num">{money(gTot)}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </>
-              );
-            })()}
-          </div>
-
-          {/* PAGE 3+ - Section 3 */}
-          <div className="print-page">
-            <div className="sec-title">Seção 3 - Geral</div>
-            {(() => {
-              let gTot = 0;
-              return (
-                <>
-                  {report.exeSortedS3.map((exe) => {
-                    const list = report.s3.get(exe)!.slice().sort((a, b) =>
-                      String(a.bscmp).localeCompare(String(b.bscmp)),
-                    );
-                    let sub = 0;
-                    return (
-                      <table key={exe} style={{ marginBottom: 8 }}>
-                        <colgroup>
-                          <col style={{ width: "22%" }} />
-                          <col style={{ width: "22%" }} />
-                          <col style={{ width: "9%" }} />
-                          <col style={{ width: "9%" }} />
-                          <col style={{ width: "9%" }} />
-                          <col style={{ width: "9%" }} />
-                          <col style={{ width: "20%" }} />
-                        </colgroup>
-                        <thead>
-                          <tr>
-                            <th colSpan={7} className="exe-hdr">{exeLabel(exe)}</th>
-                          </tr>
-                          <tr>
-                            <th>nmclires</th>
-                            <th>nmcli</th>
-                            <th>cdregusr</th>
-                            <th>nrgui</th>
-                            <th>dtexe</th>
-                            <th>bscmp</th>
-                            <th>Total</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {list.map((r, i) => {
-                            const v = Number(r.vrevt ?? 0) || 0;
-                            sub += v;
-                            return (
-                              <tr key={i}>
-                                <td>{r.nmclires ?? "-"}</td>
-                                <td>{r.nmcli ?? "-"}</td>
-                                <td className="ctr">{String(r.cdregusr ?? "")}</td>
-                                <td className="ctr">{String(r.nrgui ?? "")}</td>
-                                <td className="ctr">{fmtDateBR(r.dtexe)}</td>
-                                <td className="ctr">{String(r.bscmp ?? "")}</td>
-                                <td className="num">{money(v)}</td>
-                              </tr>
-                            );
-                          })}
-                          <tr className="total-row">
-                            <td colSpan={6}>Subtotal</td>
-                            <td className="num">{money(sub)}</td>
-                          </tr>
-                          {(() => { gTot += sub; return null; })()}
-                        </tbody>
-                      </table>
-                    );
-                  })}
-                  <table>
-                    <colgroup>
-                      <col style={{ width: "80%" }} />
-                      <col style={{ width: "20%" }} />
-                    </colgroup>
-                    <tbody>
-                      <tr className="grand-row">
-                        <td>Total Geral</td>
-                        <td className="num">{money(gTot)}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </>
-              );
-            })()}
-          </div>
+    <div className="fixed inset-0 z-50 bg-black/60 flex flex-col">
+      <div className="bg-card border-b border-border p-3 flex items-center justify-between gap-2">
+        <div className="text-sm font-medium">Pré-visualização do Relatório (PDF)</div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={doPrint}
+            disabled={!url}
+            className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50 inline-flex items-center gap-2"
+          >
+            <Printer className="h-4 w-4" /> Imprimir
+          </button>
+          <button
+            onClick={onClose}
+            className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent inline-flex items-center gap-2"
+          >
+            <X className="h-4 w-4" /> Fechar
+          </button>
         </div>
       </div>
-    </>
+      <div className="flex-1 bg-neutral-800">
+        {url ? (
+          <iframe
+            ref={iframeRef}
+            src={url}
+            className="w-full h-full border-0"
+            title="Relatório PDF"
+          />
+        ) : (
+          <div className="h-full flex items-center justify-center text-white text-sm">
+            Gerando PDF...
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
+
