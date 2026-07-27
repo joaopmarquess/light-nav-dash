@@ -9,6 +9,7 @@ type Row = {
   bscmp: number | string | null;
   cdpln: number | string | null;
   catipgui: string | null;
+  cdcrdexe: string | number | null;
   dscrdexe: string | null;
   dsesp: string | null;
   nmclires: string | null;
@@ -69,7 +70,10 @@ export default function AssistencialRelatorioExecutor() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [triggered, setTriggered] = useState(false);
+  const [pdfDialog, setPdfDialog] = useState(false);
+  const [pdfCdFilter, setPdfCdFilter] = useState("");
   const [preview, setPreview] = useState(false);
+  const [previewFilter, setPreviewFilter] = useState<string>("");
 
   const [expTipo, setExpTipo] = useState<Record<string, boolean>>({});
   const [expExe, setExpExe] = useState<Record<string, boolean>>({});
@@ -102,7 +106,7 @@ export default function AssistencialRelatorioExecutor() {
           const size = Math.max(100, PAGE >> attempt);
           const { data, error } = await hostinger
             .from("assistencial")
-            .select("ideAssist,bscmp,cdpln,catipgui,dscrdexe,dsesp,nmclires,nmcli,cdregusr,nrgui,dtexe,vrevt")
+            .select("ideAssist,bscmp,cdpln,catipgui,cdcrdexe,dscrdexe,dsesp,nmclires,nmcli,cdregusr,nrgui,dtexe,vrevt")
             .eq("cdpln", cd)
             .eq("bscmp", bscmp)
             .order("ideAssist", { ascending: true })
@@ -146,10 +150,14 @@ export default function AssistencialRelatorioExecutor() {
 
     // exe -> dsesp (first non-null)
     const exeEsp = new Map<string, string | null>();
+    const exeCd = new Map<string, string>();
     for (const r of filtered) {
       const exe = r.dscrdexe ?? "(sem prestador)";
       if (!exeEsp.has(exe) || (exeEsp.get(exe) == null && r.dsesp)) {
         exeEsp.set(exe, r.dsesp ?? exeEsp.get(exe) ?? null);
+      }
+      if (r.cdcrdexe != null && !exeCd.has(exe)) {
+        exeCd.set(exe, String(r.cdcrdexe));
       }
     }
 
@@ -197,12 +205,14 @@ export default function AssistencialRelatorioExecutor() {
     const exeSortedS2 = sortExe(Array.from(s2.keys()));
     const exeSortedS3 = sortExe(Array.from(s3.keys()));
 
-    return { exeEsp, s1Rows, s1Tot, s2, s3, exeSortedS2, exeSortedS3 };
+    return { exeEsp, exeCd, s1Rows, s1Tot, s2, s3, exeSortedS2, exeSortedS3 };
   }, [filtered]);
 
   const exeLabel = (exe: string) => {
     const esp = report.exeEsp.get(exe);
-    return esp ? `${exe} (${esp})` : exe;
+    const cd = report.exeCd.get(exe);
+    const base = cd ? `${cd} - ${exe}` : exe;
+    return esp ? `${base} (${esp})` : base;
   };
 
   
@@ -217,6 +227,7 @@ export default function AssistencialRelatorioExecutor() {
   };
   type ExeNode = {
     exe: string;
+    cdcrdexe: string;
     benef: Map<string, BenefNode>;
     guias: Set<string>;
     valor: number;
@@ -237,6 +248,7 @@ export default function AssistencialRelatorioExecutor() {
       const tipo = isInt ? "I" : "O";
       const label = isInt ? "Internação" : "Demais Tipos de Guia";
       const exe = r.dscrdexe ?? "(sem prestador executante)";
+      const cdExe = String(r.cdcrdexe ?? "");
       const nm = r.nmcli ?? "-";
       const cd = String(r.cdregusr ?? "");
       const bkey = `${nm}|${cd}`;
@@ -254,8 +266,10 @@ export default function AssistencialRelatorioExecutor() {
 
       let e = t.exe.get(exe);
       if (!e) {
-        e = { exe, benef: new Map(), guias: new Set(), valor: 0 };
+        e = { exe, cdcrdexe: cdExe, benef: new Map(), guias: new Set(), valor: 0 };
         t.exe.set(exe, e);
+      } else if (!e.cdcrdexe && cdExe) {
+        e.cdcrdexe = cdExe;
       }
       e.guias.add(nr);
       e.valor += valor;
@@ -342,7 +356,7 @@ export default function AssistencialRelatorioExecutor() {
             Carregar
           </button>
           <button
-            onClick={() => setPreview(true)}
+            onClick={() => { setPdfCdFilter(""); setPdfDialog(true); }}
             disabled={loading || rows.length === 0}
             title="Gerar relatório"
             className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent disabled:opacity-50 inline-flex items-center gap-2"
@@ -423,7 +437,7 @@ export default function AssistencialRelatorioExecutor() {
                                   onClick={() => setExpExe((p) => ({ ...p, [eKey]: !p[eKey] }))}
                                 >
                                   <ChevronRight className={`h-3.5 w-3.5 transition-transform ${eOpen ? "rotate-90" : ""}`} />
-                                  <span>{e.exe}</span>
+                                  <span>{e.cdcrdexe ? `${e.cdcrdexe} - ` : ""}{e.exe}</span>
                                 </button>
                               </td>
                               <td className="px-3 py-1.5 text-right">{e.guias.size.toLocaleString("pt-BR")}</td>
@@ -482,6 +496,58 @@ export default function AssistencialRelatorioExecutor() {
         )}
       </div>
 
+      {pdfDialog && (() => {
+        const cdTrim = pdfCdFilter.trim();
+        const matchExe = cdTrim
+          ? report.exeSortedS3.find((e) => report.exeCd.get(e) === cdTrim) ?? null
+          : null;
+        return (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+            <div className="bg-card border border-border rounded-lg shadow-xl w-[420px] p-5 space-y-4">
+              <div className="text-sm font-medium">Gerar PDF</div>
+              <div className="space-y-2">
+                <label className="text-xs text-muted-foreground">
+                  Filtrar por cdcrdexe (opcional — aplica apenas à Seção 3)
+                </label>
+                <input
+                  type="text"
+                  value={pdfCdFilter}
+                  onChange={(e) => setPdfCdFilter(e.target.value.replace(/\D/g, "").slice(0, 12))}
+                  placeholder="Deixe em branco para todos"
+                  className="h-9 w-full px-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+                {cdTrim && (
+                  <div className="text-xs text-muted-foreground">
+                    {matchExe
+                      ? <>Executor: <span className="font-medium text-foreground">{matchExe}</span></>
+                      : <span className="text-destructive">Nenhum executor encontrado com esse cdcrdexe.</span>}
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  onClick={() => setPdfDialog(false)}
+                  className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => {
+                    setPreviewFilter(cdTrim);
+                    setPdfDialog(false);
+                    setPreview(true);
+                  }}
+                  disabled={!!cdTrim && !matchExe}
+                  className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {preview && (
         <ReportPreview
           onClose={() => setPreview(false)}
@@ -490,6 +556,7 @@ export default function AssistencialRelatorioExecutor() {
           mabasFim={mabasFim}
           report={report}
           exeLabel={exeLabel}
+          filterCd={previewFilter}
         />
       )}
     </section>
@@ -500,6 +567,7 @@ export default function AssistencialRelatorioExecutor() {
 
 type ReportData = {
   exeEsp: Map<string, string | null>;
+  exeCd: Map<string, string>;
   s1Rows: [string, { int: number; dem: number }][];
   s1Tot: { int: number; dem: number };
   s2: Map<string, Map<string, number>>;
@@ -514,12 +582,14 @@ function buildPdf({
   mabasFim,
   report,
   exeLabel,
+  filterCd,
 }: {
   cdpln: string;
   mabasIni: string;
   mabasFim: string;
   report: ReportData;
   exeLabel: (exe: string) => string;
+  filterCd?: string;
 }): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
@@ -532,6 +602,10 @@ function buildPdf({
 
   const money = fmtBRL;
 
+  const filterExe = filterCd
+    ? report.exeSortedS3.find((e) => report.exeCd.get(e) === filterCd) ?? null
+    : null;
+
   const header = () => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
@@ -540,11 +614,10 @@ function buildPdf({
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(80);
-    doc.text(
-      `cdpln: ${cdpln}   |   Período: ${mabasIni} a ${mabasFim}`,
-      marginL,
-      marginT,
-    );
+    const line1 = `cdpln: ${cdpln}   |   Período: ${mabasIni} a ${mabasFim}`;
+    const line2 = filterExe ? `Executor (Seção 3): ${filterCd} - ${filterExe}` : "";
+    doc.text(line1, marginL, marginT);
+    if (line2) doc.text(line2, marginL, marginT + 4);
     doc.setTextColor(0);
   };
 
@@ -653,7 +726,8 @@ function buildPdf({
 
   let s3Y = marginT + 10;
   let s3Grand = 0;
-  for (const exe of report.exeSortedS3) {
+  const s3ExeList = filterExe ? [filterExe] : report.exeSortedS3;
+  for (const exe of s3ExeList) {
     const list = report.s3.get(exe)!
       .slice()
       .sort((a, b) => String(a.bscmp).localeCompare(String(b.bscmp)));
@@ -742,6 +816,7 @@ function ReportPreview({
   mabasFim,
   report,
   exeLabel,
+  filterCd,
 }: {
   onClose: () => void;
   cdpln: string;
@@ -749,6 +824,7 @@ function ReportPreview({
   mabasFim: string;
   report: ReportData;
   exeLabel: (exe: string) => string;
+  filterCd?: string;
 }) {
   const [pages, setPages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -757,7 +833,7 @@ function ReportPreview({
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const doc = buildPdf({ cdpln, mabasIni, mabasFim, report, exeLabel });
+      const doc = buildPdf({ cdpln, mabasIni, mabasFim, report, exeLabel, filterCd });
       docRef.current = doc;
       // Render each page as PNG via pdf.js — evita bloqueios de blob/data no Edge.
       const pdfjs = await import("pdfjs-dist");
