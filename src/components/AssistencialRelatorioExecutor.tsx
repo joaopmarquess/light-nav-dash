@@ -3,6 +3,7 @@ import { hostinger } from "@/lib/hostingerClient";
 import { ChevronRight, Search, Loader2, FileDown, Printer, X } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import bensaudeLogoUrl from "@/assets/bensaude-logo.svg";
 
 type Row = {
   ideAssist: number | string | null;
