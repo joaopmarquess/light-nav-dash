@@ -810,15 +810,44 @@ function buildPdf({
   };
 
   for (const exe of s3ExeList) {
-    const list = report.s3.get(exe)!
-      .slice()
-      .sort((a, b) => {
-        const nr = String(a.nmclires ?? "").localeCompare(String(b.nmclires ?? ""));
-        if (nr !== 0) return nr;
-        const nc = String(a.nmcli ?? "").localeCompare(String(b.nmcli ?? ""));
-        if (nc !== 0) return nc;
-        return String(a.bscmp ?? "").localeCompare(String(b.bscmp ?? ""));
-      });
+    // Aggregate rows by nrgui within each executor
+    type GAgg = {
+      nrgui: string;
+      nmclires: string;
+      nmcli: string;
+      cdregusr: string;
+      dtexe: string | null;
+      bscmp: string;
+      valor: number;
+    };
+    const guiaMap = new Map<string, GAgg>();
+    for (const r of report.s3.get(exe)!) {
+      const key = String(r.nrgui ?? "-");
+      const v = Number(r.vrevt ?? 0) || 0;
+      const cur = guiaMap.get(key);
+      if (!cur) {
+        guiaMap.set(key, {
+          nrgui: key,
+          nmclires: String(r.nmclires ?? "-"),
+          nmcli: String(r.nmcli ?? "-"),
+          cdregusr: String(r.cdregusr ?? ""),
+          dtexe: r.dtexe ?? null,
+          bscmp: String(r.bscmp ?? ""),
+          valor: v,
+        });
+      } else {
+        cur.valor += v;
+        // keep earliest dtexe
+        if (r.dtexe && (!cur.dtexe || String(r.dtexe) < String(cur.dtexe))) cur.dtexe = r.dtexe;
+      }
+    }
+    const list = Array.from(guiaMap.values()).sort((a, b) => {
+      const nr = a.nmclires.localeCompare(b.nmclires);
+      if (nr !== 0) return nr;
+      const nc = a.nmcli.localeCompare(b.nmcli);
+      if (nc !== 0) return nc;
+      return a.nrgui.localeCompare(b.nrgui);
+    });
 
     let sub = 0;
     const body: (string | { content: string; colSpan?: number; styles?: Record<string, unknown> })[][] = [];
@@ -839,22 +868,22 @@ function buildPdf({
     };
 
     for (const r of list) {
-      const v = Number(r.vrevt ?? 0) || 0;
+      const v = r.valor;
       sub += v;
-      const resKey = String(r.nmclires ?? "-");
+      const resKey = r.nmclires;
       if (curRes !== null && curRes !== resKey) flushRes();
       if (curRes === null) {
         curRes = resKey;
-        curResCd = String(r.cdregusr ?? "");
+        curResCd = r.cdregusr;
       }
       curResSum += v;
       body.push([
-        truncFront(r.nmclires ?? "-", s3W.nmclires),
-        truncFront(r.nmcli ?? "-", s3W.nmcli),
-        String(r.cdregusr ?? ""),
-        String(r.nrgui ?? ""),
+        truncFront(r.nmclires, s3W.nmclires),
+        truncFront(r.nmcli, s3W.nmcli),
+        r.cdregusr,
+        r.nrgui,
         fmtDateBR(r.dtexe),
-        String(r.bscmp ?? ""),
+        r.bscmp,
         money(v),
       ]);
     }
