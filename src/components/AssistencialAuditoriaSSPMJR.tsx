@@ -104,6 +104,7 @@ export default function AssistencialAuditoriaSSPMJR() {
             .select("ideAssist,bscmp,cdpln,catipgui,dscrdexe,nmcli,cdregusr,nrgui,dtexe,vrevt")
             .eq("cdpln", cd)
             .eq("bscmp", bscmp)
+            .order("ideAssist", { ascending: true })
             .range(from, from + size - 1);
           if (!error) {
             chunk = (data ?? []) as Row[];
