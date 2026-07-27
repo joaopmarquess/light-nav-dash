@@ -437,7 +437,7 @@ export default function AssistencialRelatorioExecutor() {
                                   onClick={() => setExpExe((p) => ({ ...p, [eKey]: !p[eKey] }))}
                                 >
                                   <ChevronRight className={`h-3.5 w-3.5 transition-transform ${eOpen ? "rotate-90" : ""}`} />
-                                  <span>{e.exe}</span>
+                                  <span>{e.cdcrdexe ? `${e.cdcrdexe} - ` : ""}{e.exe}</span>
                                 </button>
                               </td>
                               <td className="px-3 py-1.5 text-right">{e.guias.size.toLocaleString("pt-BR")}</td>
