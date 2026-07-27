@@ -621,17 +621,34 @@ function buildPdf({
     : null;
 
   const header = () => {
+    // Logo (esquerda)
+    if (logoDataUrl) {
+      const h = 10;
+      const w = h * (logoAspect ?? 3);
+      try {
+        doc.addImage(logoDataUrl, "PNG", marginL, 4, w, h);
+      } catch {
+        // ignore
+      }
+    }
+    // Linha 1 centro: título | período
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.setTextColor(20);
-    doc.text("Relatório Assistencial (Por Executor)", marginL, marginT - 4);
+    const titulo = `Relatório de Contas Médicas | ${mabasIni} a ${mabasFim}`;
+    doc.text(titulo, pageW / 2, 10, { align: "center" });
+    // Linha 2 esquerda: cdpln | dspln
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(80);
-    const line1 = `cdpln: ${cdpln}   |   Período: ${mabasIni} a ${mabasFim}`;
-    const line2 = filterExe ? `Executor (Seção 3): ${filterCd} - ${filterExe}` : "";
-    doc.text(line1, marginL, marginT);
-    if (line2) doc.text(line2, marginL, marginT + 4);
+    doc.setFontSize(9);
+    doc.setTextColor(60);
+    const line2 = `${cdpln}${dspln ? ` | ${dspln}` : ""}`;
+    doc.text(line2, marginL, 17);
+    // Sub-linha (filtro Seção 3), se houver
+    if (filterExe) {
+      doc.setFontSize(7);
+      doc.setTextColor(90);
+      doc.text(`Executor (Seção 3): ${filterCd} - ${filterExe}`, pageW - marginR, 17, { align: "right" });
+    }
     doc.setTextColor(0);
   };
 
