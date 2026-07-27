@@ -816,6 +816,7 @@ function ReportPreview({
   mabasFim,
   report,
   exeLabel,
+  filterCd,
 }: {
   onClose: () => void;
   cdpln: string;
@@ -823,6 +824,7 @@ function ReportPreview({
   mabasFim: string;
   report: ReportData;
   exeLabel: (exe: string) => string;
+  filterCd?: string;
 }) {
   const [pages, setPages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
