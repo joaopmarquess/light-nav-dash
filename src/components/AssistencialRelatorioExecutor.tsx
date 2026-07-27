@@ -496,6 +496,58 @@ export default function AssistencialRelatorioExecutor() {
         )}
       </div>
 
+      {pdfDialog && (() => {
+        const cdTrim = pdfCdFilter.trim();
+        const matchExe = cdTrim
+          ? report.exeSortedS3.find((e) => report.exeCd.get(e) === cdTrim) ?? null
+          : null;
+        return (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+            <div className="bg-card border border-border rounded-lg shadow-xl w-[420px] p-5 space-y-4">
+              <div className="text-sm font-medium">Gerar PDF</div>
+              <div className="space-y-2">
+                <label className="text-xs text-muted-foreground">
+                  Filtrar por cdcrdexe (opcional — aplica apenas à Seção 3)
+                </label>
+                <input
+                  type="text"
+                  value={pdfCdFilter}
+                  onChange={(e) => setPdfCdFilter(e.target.value.replace(/\D/g, "").slice(0, 12))}
+                  placeholder="Deixe em branco para todos"
+                  className="h-9 w-full px-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+                {cdTrim && (
+                  <div className="text-xs text-muted-foreground">
+                    {matchExe
+                      ? <>Executor: <span className="font-medium text-foreground">{matchExe}</span></>
+                      : <span className="text-destructive">Nenhum executor encontrado com esse cdcrdexe.</span>}
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  onClick={() => setPdfDialog(false)}
+                  className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => {
+                    setPreviewFilter(cdTrim);
+                    setPdfDialog(false);
+                    setPreview(true);
+                  }}
+                  disabled={!!cdTrim && !matchExe}
+                  className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {preview && (
         <ReportPreview
           onClose={() => setPreview(false)}
@@ -504,6 +556,7 @@ export default function AssistencialRelatorioExecutor() {
           mabasFim={mabasFim}
           report={report}
           exeLabel={exeLabel}
+          filterCd={previewFilter}
         />
       )}
     </section>
