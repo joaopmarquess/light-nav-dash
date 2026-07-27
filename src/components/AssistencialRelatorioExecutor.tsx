@@ -485,7 +485,6 @@ export default function AssistencialRelatorioExecutor() {
       {preview && (
         <ReportPreview
           onClose={() => setPreview(false)}
-          onPrint={doPrint}
           cdpln={cdpln}
           mabasIni={mabasIni}
           mabasFim={mabasFim}
