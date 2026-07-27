@@ -3,11 +3,13 @@ import { hostinger } from "@/lib/hostingerClient";
 import { ChevronRight, Search, Loader2, FileDown, Printer, X } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import bensaudeLogoUrl from "@/assets/bensaude-logo.svg";
 
 type Row = {
   ideAssist: number | string | null;
   bscmp: number | string | null;
   cdpln: number | string | null;
+  dspln: string | null;
   catipgui: string | null;
   cdcrdexe: string | number | null;
   dscrdexe: string | null;
@@ -106,7 +108,7 @@ export default function AssistencialRelatorioExecutor() {
           const size = Math.max(100, PAGE >> attempt);
           const { data, error } = await hostinger
             .from("assistencial")
-            .select("ideAssist,bscmp,cdpln,catipgui,cdcrdexe,dscrdexe,dsesp,nmclires,nmcli,cdregusr,nrgui,dtexe,vrevt")
+            .select("ideAssist,bscmp,cdpln,dspln,catipgui,cdcrdexe,dscrdexe,dsesp,nmclires,nmcli,cdregusr,nrgui,dtexe,vrevt")
             .eq("cdpln", cd)
             .eq("bscmp", bscmp)
             .order("ideAssist", { ascending: true })
@@ -143,6 +145,11 @@ export default function AssistencialRelatorioExecutor() {
         .some((v) => String(v).toLowerCase().includes(q)),
     );
   }, [rows, filtro]);
+
+  const dspln = useMemo(() => {
+    const found = rows.find((r) => r.dspln != null && String(r.dspln).trim() !== "");
+    return found ? String(found.dspln) : "";
+  }, [rows]);
 
   // Build report data
   const report = useMemo(() => {
@@ -552,6 +559,7 @@ export default function AssistencialRelatorioExecutor() {
         <ReportPreview
           onClose={() => setPreview(false)}
           cdpln={cdpln}
+          dspln={dspln}
           mabasIni={mabasIni}
           mabasFim={mabasFim}
           report={report}
@@ -576,27 +584,60 @@ type ReportData = {
   exeSortedS3: string[];
 };
 
+async function loadLogoAsPng(url: string): Promise<{ dataUrl: string; aspect: number }> {
+  const res = await fetch(url);
+  const svgText = await res.text();
+  const blob = new Blob([svgText], { type: "image/svg+xml" });
+  const objUrl = URL.createObjectURL(blob);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = reject;
+      i.src = objUrl;
+    });
+    const w = img.naturalWidth || 300;
+    const h = img.naturalHeight || 100;
+    const scale = 600 / w;
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(w * scale);
+    canvas.height = Math.round(h * scale);
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return { dataUrl: canvas.toDataURL("image/png"), aspect: w / h };
+  } finally {
+    URL.revokeObjectURL(objUrl);
+  }
+}
+
+
 function buildPdf({
   cdpln,
+  dspln,
   mabasIni,
   mabasFim,
   report,
   exeLabel,
   filterCd,
+  logoDataUrl,
+  logoAspect,
 }: {
   cdpln: string;
+  dspln: string;
   mabasIni: string;
   mabasFim: string;
   report: ReportData;
   exeLabel: (exe: string) => string;
   filterCd?: string;
+  logoDataUrl?: string;
+  logoAspect?: number;
 }): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
   const marginL = 10;
   const marginR = 10;
-  const marginT = 12;
+  const marginT = 22;
   const marginB = 14;
   const usableW = pageW - marginL - marginR;
 
@@ -607,17 +648,34 @@ function buildPdf({
     : null;
 
   const header = () => {
+    // Logo (esquerda)
+    if (logoDataUrl) {
+      const h = 10;
+      const w = h * (logoAspect ?? 3);
+      try {
+        doc.addImage(logoDataUrl, "PNG", marginL, 4, w, h);
+      } catch {
+        // ignore
+      }
+    }
+    // Linha 1 centro: título | período
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.setTextColor(20);
-    doc.text("Relatório Assistencial (Por Executor)", marginL, marginT - 4);
+    const titulo = `Relatório de Contas Médicas | ${mabasIni} a ${mabasFim}`;
+    doc.text(titulo, pageW / 2, 10, { align: "center" });
+    // Linha 2 esquerda: cdpln | dspln
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(80);
-    const line1 = `cdpln: ${cdpln}   |   Período: ${mabasIni} a ${mabasFim}`;
-    const line2 = filterExe ? `Executor (Seção 3): ${filterCd} - ${filterExe}` : "";
-    doc.text(line1, marginL, marginT);
-    if (line2) doc.text(line2, marginL, marginT + 4);
+    doc.setFontSize(9);
+    doc.setTextColor(60);
+    const line2 = `${cdpln}${dspln ? ` | ${dspln}` : ""}`;
+    doc.text(line2, marginL, 17);
+    // Sub-linha (filtro Seção 3), se houver
+    if (filterExe) {
+      doc.setFontSize(7);
+      doc.setTextColor(90);
+      doc.text(`Executor (Seção 3): ${filterCd} - ${filterExe}`, pageW - marginR, 17, { align: "right" });
+    }
     doc.setTextColor(0);
   };
 
@@ -869,6 +927,7 @@ function buildPdf({
 function ReportPreview({
   onClose,
   cdpln,
+  dspln,
   mabasIni,
   mabasFim,
   report,
@@ -877,6 +936,7 @@ function ReportPreview({
 }: {
   onClose: () => void;
   cdpln: string;
+  dspln: string;
   mabasIni: string;
   mabasFim: string;
   report: ReportData;
@@ -890,7 +950,18 @@ function ReportPreview({
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const doc = buildPdf({ cdpln, mabasIni, mabasFim, report, exeLabel, filterCd });
+      const logo = await loadLogoAsPng(bensaudeLogoUrl).catch(() => null);
+      const doc = buildPdf({
+        cdpln,
+        dspln,
+        mabasIni,
+        mabasFim,
+        report,
+        exeLabel,
+        filterCd,
+        logoDataUrl: logo?.dataUrl,
+        logoAspect: logo?.aspect,
+      });
       docRef.current = doc;
       // Render each page as PNG via pdf.js — evita bloqueios de blob/data no Edge.
       const pdfjs = await import("pdfjs-dist");
