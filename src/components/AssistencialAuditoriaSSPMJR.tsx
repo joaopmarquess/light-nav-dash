@@ -171,10 +171,21 @@ export default function AssistencialAuditoriaSSPMJR() {
     valor: number;
     dtexe: string | null;
   };
+  type TipoNode = {
+    tipo: string;
+    label: string;
+    mabas: Map<string, MabasNode>;
+    guias: Set<string>;
+    valor: number;
+    dtexe: string | null;
+  };
 
   const tree = useMemo(() => {
-    const roots = new Map<string, MabasNode>();
+    const tipos = new Map<string, TipoNode>();
     for (const r of filtered) {
+      const isInt = String(r.idtipgui ?? "").trim().toUpperCase() === "I";
+      const tipo = isInt ? "I" : "O";
+      const label = isInt ? "Internação" : "Demais Tipos de Guia";
       const bscmp = String(r.bscmp ?? "-");
       const exe = r.dscrdexe ?? "(sem prestador executante)";
       const nm = r.nmcli ?? "-";
@@ -184,10 +195,19 @@ export default function AssistencialAuditoriaSSPMJR() {
       const valor = Number(r.vrevt ?? 0) || 0;
       const dt = r.dtexe ?? null;
 
-      let m = roots.get(bscmp);
+      let t = tipos.get(tipo);
+      if (!t) {
+        t = { tipo, label, mabas: new Map(), guias: new Set(), valor: 0, dtexe: null };
+        tipos.set(tipo, t);
+      }
+      t.guias.add(nr);
+      t.valor += valor;
+      t.dtexe = minDate(t.dtexe, dt);
+
+      let m = t.mabas.get(bscmp);
       if (!m) {
         m = { bscmp, exe: new Map(), guias: new Set(), valor: 0, dtexe: null };
-        roots.set(bscmp, m);
+        t.mabas.set(bscmp, m);
       }
       m.guias.add(nr);
       m.valor += valor;
@@ -218,22 +238,27 @@ export default function AssistencialAuditoriaSSPMJR() {
       g.dtexe = minDate(g.dtexe, dt);
       g.valor += valor;
     }
-    return Array.from(roots.values())
-      .map((m) => ({
-        ...m,
-        exeArr: Array.from(m.exe.values())
-          .map((e) => ({
-            ...e,
-            benefArr: Array.from(e.benef.values())
-              .map((b) => ({
-                ...b,
-                guiaArr: Array.from(b.guias.values()).sort((x, y) => x.nrgui.localeCompare(y.nrgui)),
+    return Array.from(tipos.values())
+      .map((t) => ({
+        ...t,
+        mabasArr: Array.from(t.mabas.values())
+          .map((m) => ({
+            ...m,
+            exeArr: Array.from(m.exe.values())
+              .map((e) => ({
+                ...e,
+                benefArr: Array.from(e.benef.values())
+                  .map((b) => ({
+                    ...b,
+                    guiaArr: Array.from(b.guias.values()).sort((x, y) => x.nrgui.localeCompare(y.nrgui)),
+                  }))
+                  .sort((a, b) => b.valor - a.valor),
               }))
               .sort((a, b) => b.valor - a.valor),
           }))
-          .sort((a, b) => b.valor - a.valor),
+          .sort((a, b) => a.bscmp.localeCompare(b.bscmp)),
       }))
-      .sort((a, b) => a.bscmp.localeCompare(b.bscmp));
+      .sort((a, b) => (a.tipo === "I" ? -1 : b.tipo === "I" ? 1 : 0));
   }, [filtered]);
 
   const totals = useMemo(() => {
