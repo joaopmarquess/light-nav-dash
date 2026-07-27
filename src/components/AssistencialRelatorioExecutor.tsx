@@ -146,6 +146,11 @@ export default function AssistencialRelatorioExecutor() {
     );
   }, [rows, filtro]);
 
+  const dspln = useMemo(() => {
+    const found = rows.find((r) => r.dspln != null && String(r.dspln).trim() !== "");
+    return found ? String(found.dspln) : "";
+  }, [rows]);
+
   // Build report data
   const report = useMemo(() => {
     const isInt = (c: string | null) => String(c ?? "").trim().toLowerCase().startsWith("interna");
