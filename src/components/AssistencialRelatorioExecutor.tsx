@@ -133,6 +133,7 @@ export default function AssistencialRelatorioExecutor({ source = "db" }: { sourc
       const iBscmp = idx("bscmp");
       const iCdreg = idx("cdregusr");
       const iDsctr = idx("dsctr");
+      const iCdcontrato = idx("cdcontrato");
       const iNmcli = idx("nmcli");
       const iCdcrdexe = idx("cdcrdexe");
       const iDscrdexe = idx("dscrdexe");
