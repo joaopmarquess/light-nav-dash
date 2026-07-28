@@ -993,7 +993,7 @@ function buildPdf({
       showFoot: "lastPage",
       head: [
         [{ content: exeLabel(exe), colSpan: 7, styles: { halign: "left", fontStyle: "bold" } }],
-        ["nmclires", "nmcli", "cdregusr", "nrgui", "dtexe", "bscmp", "Total"],
+        ["nmclires", "nmcli", "cdregusr", "nrgui", "dtexe", "bscmp", { content: "Total", styles: { halign: "right" } }],
       ],
       body,
       foot: [[
