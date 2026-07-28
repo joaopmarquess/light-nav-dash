@@ -200,7 +200,7 @@ export default function AssistencialRelatorioExecutor({ source = "db" }: { sourc
           const size = Math.max(100, PAGE >> attempt);
           const { data, error } = await hostinger
             .from("assistencial")
-            .select("ideAssist,bscmp,cdpln,dspln,catipgui,cdcrdexe,dscrdexe,dsesp,nmclires,nmcli,cdregusr,nrgui,dtexe,vrevt")
+            .select("ideAssist,bscmp,cdpln,dspln,catipgui,cdcrdexe,dscrdexe,dsesp,nmclires,nmcli,cdcontrato,cdregusr,nrgui,dtexe,vrevt")
             .eq("cdpln", cd)
             .eq("bscmp", bscmp)
             .order("ideAssist", { ascending: true })
