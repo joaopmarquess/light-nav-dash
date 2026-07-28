@@ -1,6 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, ChevronDown } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronRight, ChevronDown, FileDown, Printer, X, Loader2 } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import FunLoader from "@/components/FunLoader";
+import bensaudeLogoAsset from "@/assets/bensaude-logo.svg.asset.json";
+
+const bensaudeLogoUrl = bensaudeLogoAsset.url;
 
 type Row = {
   bscmp: string;
@@ -36,10 +41,223 @@ function parseCsv(text: string): Row[] {
   return out;
 }
 
+async function loadLogoAsPng(url: string): Promise<{ dataUrl: string; aspect: number }> {
+  const res = await fetch(url);
+  const svgText = await res.text();
+  const blob = new Blob([svgText], { type: "image/svg+xml" });
+  const objUrl = URL.createObjectURL(blob);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = reject;
+      i.src = objUrl;
+    });
+    const w = img.naturalWidth || 300;
+    const h = img.naturalHeight || 100;
+    const scale = 600 / w;
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(w * scale);
+    canvas.height = Math.round(h * scale);
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return { dataUrl: canvas.toDataURL("image/png"), aspect: w / h };
+  } finally {
+    URL.revokeObjectURL(objUrl);
+  }
+}
+
+function buildPdf({
+  grouped,
+  totalGeral,
+  logoDataUrl,
+  logoAspect,
+}: {
+  grouped: { bscmp: string; total: number }[];
+  totalGeral: number;
+  logoDataUrl?: string;
+  logoAspect?: number;
+}): jsPDF {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const pageW = doc.internal.pageSize.getWidth();
+  const marginL = 10;
+  const marginR = 10;
+  const marginT = 22;
+  const marginB = 14;
+  const usableW = pageW - marginL - marginR;
+
+  const bsIni = grouped.length ? grouped[0].bscmp : "";
+  const bsFim = grouped.length ? grouped[grouped.length - 1].bscmp : "";
+
+  const header = () => {
+    const line1Y = 10;
+    if (logoDataUrl) {
+      const h = 10;
+      const w = h * (logoAspect ?? 3);
+      try {
+        doc.addImage(logoDataUrl, "PNG", marginL, line1Y - h / 2, w, h);
+      } catch {
+        // ignore
+      }
+    }
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(20);
+    const titulo = `Relatório de Receitas 2518${bsIni ? ` | ${bsIni} a ${bsFim}` : ""}`;
+    doc.text(titulo, pageW / 2, line1Y, { align: "center", baseline: "middle" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(60);
+    doc.text("2518 Processo Rec.", marginL, 17);
+    doc.setTextColor(0);
+  };
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("Seção 1 - Competência", marginL, marginT + 8);
+
+  autoTable(doc, {
+    styles: { font: "helvetica", fontSize: 8, cellPadding: 1.5, lineColor: [140, 140, 140], lineWidth: 0.1, textColor: 20 },
+    headStyles: { fillColor: [255, 255, 255], textColor: 20, fontStyle: "bold", lineColor: [140, 140, 140], lineWidth: 0.1 },
+    footStyles: { fillColor: [235, 235, 235], textColor: 20, fontStyle: "bold" },
+    theme: "grid",
+    margin: { left: marginL, right: marginR, top: marginT + 4, bottom: marginB },
+    startY: marginT + 10,
+    head: [[
+      { content: "bscmp", styles: { halign: "center" } },
+      { content: "Valor", styles: { halign: "right" } },
+    ]],
+    body: grouped.map((g) => [
+      { content: g.bscmp, styles: { halign: "center" } },
+      { content: fmtBRL(g.total), styles: { halign: "right" } },
+    ]),
+    foot: [[
+      { content: "Total", styles: { halign: "left" } },
+      { content: fmtBRL(totalGeral), styles: { halign: "right" } },
+    ]],
+    columnStyles: {
+      0: { cellWidth: usableW * 0.5 },
+      1: { cellWidth: usableW * 0.5 },
+    },
+    didDrawPage: () => header(),
+  });
+
+  return doc;
+}
+
+function ReportPreview({
+  grouped,
+  totalGeral,
+  onClose,
+}: {
+  grouped: { bscmp: string; total: number }[];
+  totalGeral: number;
+  onClose: () => void;
+}) {
+  const [pages, setPages] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const docRef = useRef<jsPDF | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const logo = await loadLogoAsPng(bensaudeLogoUrl).catch(() => null);
+      const doc = buildPdf({
+        grouped,
+        totalGeral,
+        logoDataUrl: logo?.dataUrl,
+        logoAspect: logo?.aspect,
+      });
+      docRef.current = doc;
+      const pdfjs = await import("pdfjs-dist");
+      const workerMod: { default: string } = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
+      pdfjs.GlobalWorkerOptions.workerSrc = workerMod.default;
+      const data = doc.output("arraybuffer");
+      const pdf = await pdfjs.getDocument({ data }).promise;
+      const imgs: string[] = [];
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1.6 });
+        const canvas = document.createElement("canvas");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext("2d")!;
+        await page.render({ canvasContext: ctx, viewport, canvas }).promise;
+        imgs.push(canvas.toDataURL("image/png"));
+        if (cancelled) return;
+      }
+      if (!cancelled) {
+        setPages(imgs);
+        setLoading(false);
+      }
+    })().catch((err) => {
+      console.error("[ReceitasReport] falha:", err);
+      if (!cancelled) setLoading(false);
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const doDownload = () => {
+    docRef.current?.save("receitas_2518.pdf");
+  };
+  const doPrint = () => {
+    if (!pages.length) return;
+    const w = window.open("", "_blank");
+    if (!w) { doDownload(); return; }
+    const imgsHtml = pages
+      .map((src) => `<img src="${src}" style="display:block;width:100%;page-break-after:always;" />`)
+      .join("");
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Relatório</title>
+<style>@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff}img{max-width:100%}@media print{img{page-break-after:always}}</style>
+</head><body>${imgsHtml}<script>window.onload=function(){setTimeout(function(){window.focus();window.print();},250);};</script></body></html>`);
+    w.document.close();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 flex flex-col">
+      <div className="bg-card border-b border-border p-3 flex items-center justify-between gap-2">
+        <div className="text-sm font-medium">
+          Pré-visualização do Relatório (PDF) {pages.length > 0 && `— ${pages.length} página(s)`}
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={doDownload} disabled={loading} className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent disabled:opacity-50 inline-flex items-center gap-2">
+            <FileDown className="h-4 w-4" /> Baixar PDF
+          </button>
+          <button onClick={doPrint} disabled={loading || !pages.length} className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50 inline-flex items-center gap-2">
+            <Printer className="h-4 w-4" /> Imprimir
+          </button>
+          <button onClick={onClose} className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent inline-flex items-center gap-2">
+            <X className="h-4 w-4" /> Fechar
+          </button>
+        </div>
+      </div>
+      <div className="flex-1 overflow-auto bg-neutral-800 p-4">
+        {loading ? (
+          <div className="h-full flex items-center justify-center text-white text-sm">
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Gerando PDF...
+          </div>
+        ) : !pages.length ? (
+          <div className="h-full flex items-center justify-center text-white text-sm">
+            Não foi possível gerar a pré-visualização.
+          </div>
+        ) : (
+          <div className="mx-auto max-w-4xl flex flex-col gap-4">
+            {pages.map((src, i) => (
+              <img key={i} src={src} alt={`Página ${i + 1}`} className="w-full bg-white shadow-lg" />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function AssistencialReceitas2518() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState<Record<string, boolean>>({});
+  const [showPdf, setShowPdf] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -47,7 +265,6 @@ export default function AssistencialReceitas2518() {
         const res = await fetch("/data/2518_receitas.csv");
         if (!res.ok) throw new Error("Falha ao ler CSV");
         const buf = await res.arrayBuffer();
-        // Try UTF-8 then fallback ISO-8859-1
         let text = new TextDecoder("utf-8").decode(buf);
         if (text.includes("\uFFFD")) text = new TextDecoder("iso-8859-1").decode(buf);
         setRows(parseCsv(text));
@@ -82,6 +299,11 @@ export default function AssistencialReceitas2518() {
     [grouped]
   );
 
+  const s1 = useMemo(
+    () => grouped.map(({ bscmp, total }) => ({ bscmp, total })),
+    [grouped]
+  );
+
   if (error)
     return (
       <section className="bg-card rounded-xl border border-border shadow-sm p-6 text-sm text-destructive">
@@ -97,10 +319,20 @@ export default function AssistencialReceitas2518() {
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] overflow-hidden flex flex-col">
-      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-3">
         <h2 className="text-sm font-semibold text-foreground">2518 Processo Rec.</h2>
-        <div className="text-xs text-muted-foreground">
-          Total Geral: <span className="font-semibold text-foreground tabular-nums">{fmtBRL(totalGeral)}</span>
+        <div className="flex items-center gap-3">
+          <div className="text-xs text-muted-foreground">
+            Total Geral: <span className="font-semibold text-foreground tabular-nums">{fmtBRL(totalGeral)}</span>
+          </div>
+          <button
+            onClick={() => setShowPdf(true)}
+            disabled={!grouped.length}
+            className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent disabled:opacity-50 inline-flex items-center gap-2"
+          >
+            <FileDown className="h-4 w-4" />
+            Gerar PDF
+          </button>
         </div>
       </div>
       <div className="flex-1 overflow-auto">
@@ -142,6 +374,14 @@ export default function AssistencialReceitas2518() {
           </tbody>
         </table>
       </div>
+
+      {showPdf && (
+        <ReportPreview
+          grouped={s1}
+          totalGeral={totalGeral}
+          onClose={() => setShowPdf(false)}
+        />
+      )}
     </section>
   );
 }
