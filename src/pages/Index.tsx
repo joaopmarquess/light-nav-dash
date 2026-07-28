@@ -122,6 +122,7 @@ const menuItems: MenuItem[] = [
       { icon: Search, label: "Consulta" },
       { icon: Stethoscope, label: "Relatório Plano Executor" },
       { icon: Stethoscope, label: "2518 Processo" },
+      { icon: Stethoscope, label: "2518 Processo Rec." },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
