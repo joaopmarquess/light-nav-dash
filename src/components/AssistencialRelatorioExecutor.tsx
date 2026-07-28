@@ -128,11 +128,14 @@ export default function AssistencialRelatorioExecutor({ source = "db" }: { sourc
       const header = parseCsvRow(lines[0]);
       const idx = (name: string) => header.findIndex((h) => h.toLowerCase() === name.toLowerCase());
       const iTG = idx("TG");
+      const iDspln = idx("dspln");
       const iBscmp = idx("bscmp");
       const iCdreg = idx("cdregusr");
       const iDsctr = idx("dsctr");
       const iNmcli = idx("nmcli");
+      const iCdcrdexe = idx("cdcrdexe");
       const iDscrdexe = idx("dscrdexe");
+      const iDsesp = idx("dsesp");
       const iDhexe = idx("dhexe");
       const iNrgui = idx("nrgui");
       const iTotal = idx("Total");
@@ -141,16 +144,16 @@ export default function AssistencialRelatorioExecutor({ source = "db" }: { sourc
         const c = parseCsvRow(lines[li]);
         const bscmp = Number(c[iBscmp]);
         if (!Number.isFinite(bscmp) || bscmp < ini || bscmp > fim) continue;
-        const tg = c[iTG] ?? "";
+        const tg = String(c[iTG] ?? "").trim();
         acc.push({
           ideAssist: li,
           bscmp,
           cdpln: "2518",
-          dspln: "",
+          dspln: c[iDspln] ?? "",
           catipgui: /^i/i.test(tg) ? "Internacao" : "Demais Tipos de Guia",
-          cdcrdexe: "",
+          cdcrdexe: c[iCdcrdexe] ?? "",
           dscrdexe: c[iDscrdexe] ?? "",
-          dsesp: "",
+          dsesp: c[iDsesp] ?? "",
           nmclires: c[iDsctr] ?? "",
           nmcli: c[iNmcli] ?? "",
           cdregusr: c[iCdreg] ?? "",
