@@ -1026,17 +1026,13 @@ function buildPdf({
     ...commonTableOpts,
     startY: s3Y,
     body: [[
-      { content: filterExe ? `Subtotal ${filterExe}` : "Total Geral", colSpan: 5, styles: { fontStyle: "bold", halign: "left" } },
-      { content: `${filterExe ? "Total do " + filterExe + ": " : ""}${money(s3Grand)}`, styles: { halign: "right", fontStyle: "bold" } },
+      { content: `TOTAL:  ${filterExe || "GERAL"}`, styles: { fontStyle: "bold", halign: "left" } },
+      { content: money(s3Grand), styles: { halign: "right", fontStyle: "bold" } },
     ]],
     bodyStyles: { fillColor: [235, 235, 235] },
     columnStyles: {
-      0: { cellWidth: s3W.nmcli },
-      1: { cellWidth: s3W.dp },
-      2: { cellWidth: s3W.nrgui },
-      3: { cellWidth: s3W.dtexe },
-      4: { cellWidth: s3W.bscmp },
-      5: { cellWidth: s3W.total, halign: "right" },
+      0: { cellWidth: s3W.nmcli + s3W.dp + s3W.nrgui + s3W.dtexe + s3W.bscmp },
+      1: { cellWidth: s3W.total, halign: "right" },
     },
   });
   markSectionPages("Seção 3 - Geral", sec3Start);
