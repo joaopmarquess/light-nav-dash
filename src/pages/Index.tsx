@@ -62,6 +62,7 @@ import AssistencialCompetencia from "@/components/AssistencialCompetencia";
 import AssistencialConsulta from "@/components/AssistencialConsulta";
 import AssistencialAuditoriaSSPMJR from "@/components/AssistencialAuditoriaSSPMJR";
 import AssistencialRelatorioExecutor from "@/components/AssistencialRelatorioExecutor";
+import AssistencialReceitas2518 from "@/components/AssistencialReceitas2518";
 import { useConsultaState } from "@/lib/assistencialConsultaStore";
 import { Loader2 } from "lucide-react";
 
