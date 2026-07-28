@@ -852,17 +852,18 @@ function buildPdf({
       startY: s2Y,
       showFoot: "lastPage",
       head: [
-        [{ content: exeLabel(exe, false), colSpan: 2, styles: { halign: "left", fontStyle: "bold" } }],
-        ["bscmp", { content: "Total", styles: { halign: "right" } }],
+        [{ content: exeLabel(exe, false), colSpan: 3, styles: { halign: "left", fontStyle: "bold" } }],
+        [{ content: "bscmp", colSpan: 2, styles: { halign: "center" } }, { content: "Total", styles: { halign: "right" } }],
       ],
-      body,
+      body: body.map(([k, v]) => [{ content: k, colSpan: 2, styles: { halign: "center" } }, v]),
       foot: [[
-        { content: `Subtotal de ${exe}`, styles: { halign: "left", fontStyle: "bold", fillColor: [245, 245, 245], overflow: "ellipsize" } },
+        { content: `Subtotal do Executor (${exe})`, colSpan: 2, styles: { halign: "left", fontStyle: "bold", fillColor: [245, 245, 245] } },
         { content: money(sub), styles: { halign: "right", fontStyle: "bold", fillColor: [245, 245, 245] } },
       ]],
       columnStyles: {
-        0: { cellWidth: usableW * 0.4, halign: "center" },
-        1: { cellWidth: usableW * 0.6, halign: "right" },
+        0: { cellWidth: usableW * 0.5 },
+        1: { cellWidth: usableW * 0.3, halign: "center" },
+        2: { cellWidth: usableW * 0.2, halign: "right" },
       },
     });
     s2Y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 3;
