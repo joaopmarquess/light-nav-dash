@@ -805,7 +805,12 @@ function buildPdf({
   autoTable(doc, {
     ...commonTableOpts,
     startY: marginT + 10,
-    head: [["bscmp", "Internação", "Demais Tipos de Guia", "Total"]],
+    head: [[
+      "bscmp",
+      { content: "Internação", styles: { halign: "right" } },
+      { content: "Demais Tipos de Guia", styles: { halign: "right" } },
+      { content: "Total", styles: { halign: "right" } },
+    ]],
     body: s1Body,
     foot: s1Foot,
     columnStyles: {
