@@ -997,7 +997,7 @@ function buildPdf({
       head: [
         [{ content: headerLabel, colSpan: 6, styles: { halign: "left", fontStyle: "bold", fillColor: [230, 230, 230] } }],
         [
-          "NOME DO BENEFICIARIO",
+          "Nome Beneficiário",
           { content: "dp", styles: { halign: "center" } },
           { content: "Guia", styles: { halign: "center" } },
           { content: "Execução", styles: { halign: "center" } },
