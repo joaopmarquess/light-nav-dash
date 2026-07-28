@@ -723,7 +723,7 @@ function buildPdf({
   mabasIni: string;
   mabasFim: string;
   report: ReportData;
-  exeLabel: (exe: string) => string;
+  exeLabel: (exe: string, includeEsp?: boolean) => string;
   filterCd?: string;
   logoDataUrl?: string;
   logoAspect?: number;
@@ -1074,7 +1074,7 @@ function ReportPreview({
   mabasIni: string;
   mabasFim: string;
   report: ReportData;
-  exeLabel: (exe: string) => string;
+  exeLabel: (exe: string, includeEsp?: boolean) => string;
   filterCd?: string;
 }) {
   const [pages, setPages] = useState<string[]>([]);
