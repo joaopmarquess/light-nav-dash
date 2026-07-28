@@ -1026,8 +1026,8 @@ function buildPdf({
     ...commonTableOpts,
     startY: s3Y,
     body: [[
-      { content: "Total Geral", colSpan: 5, styles: { fontStyle: "bold", halign: "left" } },
-      { content: money(s3Grand), styles: { halign: "right", fontStyle: "bold" } },
+      { content: filterExe ? `Subtotal ${filterExe}` : "Total Geral", colSpan: 5, styles: { fontStyle: "bold", halign: "left" } },
+      { content: `${filterExe ? "Total do " + filterExe + ": " : ""}${money(s3Grand)}`, styles: { halign: "right", fontStyle: "bold" } },
     ]],
     bodyStyles: { fillColor: [235, 235, 235] },
     columnStyles: {
