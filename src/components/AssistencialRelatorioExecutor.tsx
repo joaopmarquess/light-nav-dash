@@ -17,6 +17,7 @@ type Row = {
   dsesp: string | null;
   nmclires: string | null;
   nmcli: string | null;
+  cdcontrato: string | number | null;
   cdregusr: string | number | null;
   nrgui: string | number | null;
   dtexe: string | null;
@@ -132,6 +133,7 @@ export default function AssistencialRelatorioExecutor({ source = "db" }: { sourc
       const iBscmp = idx("bscmp");
       const iCdreg = idx("cdregusr");
       const iDsctr = idx("dsctr");
+      const iCdcontrato = idx("cdcontrato");
       const iNmcli = idx("nmcli");
       const iCdcrdexe = idx("cdcrdexe");
       const iDscrdexe = idx("dscrdexe");
@@ -156,6 +158,7 @@ export default function AssistencialRelatorioExecutor({ source = "db" }: { sourc
           dsesp: c[iDsesp] ?? "",
           nmclires: c[iDsctr] ?? "",
           nmcli: c[iNmcli] ?? "",
+          cdcontrato: iCdcontrato >= 0 ? (c[iCdcontrato] ?? "") : "",
           cdregusr: c[iCdreg] ?? "",
           nrgui: String(c[iNrgui] ?? "").trim(),
           dtexe: brDateToIso(c[iDhexe] ?? ""),
@@ -197,7 +200,7 @@ export default function AssistencialRelatorioExecutor({ source = "db" }: { sourc
           const size = Math.max(100, PAGE >> attempt);
           const { data, error } = await hostinger
             .from("assistencial")
-            .select("ideAssist,bscmp,cdpln,dspln,catipgui,cdcrdexe,dscrdexe,dsesp,nmclires,nmcli,cdregusr,nrgui,dtexe,vrevt")
+            .select("ideAssist,bscmp,cdpln,dspln,catipgui,cdcrdexe,dscrdexe,dsesp,nmclires,nmcli,cdcontrato,cdregusr,nrgui,dtexe,vrevt")
             .eq("cdpln", cd)
             .eq("bscmp", bscmp)
             .order("ideAssist", { ascending: true })
@@ -308,11 +311,11 @@ export default function AssistencialRelatorioExecutor({ source = "db" }: { sourc
 
 
 
-  const exeLabel = (exe: string) => {
+  const exeLabel = (exe: string, includeEsp = true) => {
     const esp = report.exeEsp.get(exe);
     const cd = report.exeCd.get(exe);
     const base = cd ? `${cd} - ${exe}` : exe;
-    return esp ? `${base} (${esp})` : base;
+    return includeEsp && esp ? `${base} (${esp})` : base;
   };
 
   
@@ -720,7 +723,7 @@ function buildPdf({
   mabasIni: string;
   mabasFim: string;
   report: ReportData;
-  exeLabel: (exe: string) => string;
+  exeLabel: (exe: string, includeEsp?: boolean) => string;
   filterCd?: string;
   logoDataUrl?: string;
   logoAspect?: number;
@@ -849,12 +852,12 @@ function buildPdf({
       startY: s2Y,
       showFoot: "lastPage",
       head: [
-        [{ content: exeLabel(exe), colSpan: 2, styles: { halign: "left", fontStyle: "bold" } }],
+        [{ content: exeLabel(exe, false), colSpan: 2, styles: { halign: "left", fontStyle: "bold" } }],
         ["bscmp", { content: "Total", styles: { halign: "right" } }],
       ],
       body,
       foot: [[
-        { content: `Subtotal de ${exe}`, styles: { halign: "left", fontStyle: "bold", fillColor: [245, 245, 245] } },
+        { content: `Subtotal de ${exe}`, styles: { halign: "left", fontStyle: "bold", fillColor: [245, 245, 245], overflow: "ellipsize" } },
         { content: money(sub), styles: { halign: "right", fontStyle: "bold", fillColor: [245, 245, 245] } },
       ]],
       columnStyles: {
@@ -918,6 +921,7 @@ function buildPdf({
       nrgui: string;
       nmclires: string;
       nmcli: string;
+      cdcontrato: string;
       cdregusr: string;
       dtexe: string | null;
       bscmp: string;
@@ -933,6 +937,7 @@ function buildPdf({
           nrgui: key,
           nmclires: String(r.nmclires ?? "-"),
           nmcli: String(r.nmcli ?? "-"),
+          cdcontrato: String(r.cdcontrato ?? ""),
           cdregusr: String(r.cdregusr ?? ""),
           dtexe: r.dtexe ?? null,
           bscmp: String(r.bscmp ?? ""),
@@ -940,6 +945,7 @@ function buildPdf({
         });
       } else {
         cur.valor += v;
+        if (!cur.cdcontrato && r.cdcontrato) cur.cdcontrato = String(r.cdcontrato);
         // keep earliest dtexe
         if (r.dtexe && (!cur.dtexe || String(r.dtexe) < String(cur.dtexe))) cur.dtexe = r.dtexe;
       }
@@ -958,16 +964,19 @@ function buildPdf({
     let curRes: string | null = null;
     let curResSum = 0;
     let curResCd = "";
+    let curResContrato = "";
     const flushRes = () => {
       if (curRes === null) return;
       const grp = Math.floor((Number(curResCd) || 0) / 100);
+      const label = curResContrato ? `(${curResContrato}) ${curRes}` : curRes;
       body.push([
-        { content: `Subtotal de ${curRes} (${grp})`, colSpan: 6, styles: { halign: "left", fontStyle: "bold", fillColor: [245, 245, 245] } },
+        { content: `Subtotal de ${label} (${grp})`, colSpan: 6, styles: { halign: "left", fontStyle: "bold", fillColor: [245, 245, 245] } },
         { content: money(curResSum), styles: { halign: "right", fontStyle: "bold", fillColor: [245, 245, 245] } },
       ]);
       curRes = null;
       curResSum = 0;
       curResCd = "";
+      curResContrato = "";
     };
 
     for (const r of list) {
@@ -978,10 +987,12 @@ function buildPdf({
       if (curRes === null) {
         curRes = resKey;
         curResCd = r.cdregusr;
+        curResContrato = r.cdcontrato;
       }
       curResSum += v;
+      const nmcliresDisp = r.cdcontrato ? `(${r.cdcontrato}) ${r.nmclires}` : r.nmclires;
       body.push([
-        truncFront(r.nmclires, s3W.nmclires),
+        truncFront(nmcliresDisp, s3W.nmclires),
         truncFront(r.nmcli, s3W.nmcli),
         r.cdregusr,
         r.nrgui,
@@ -1071,7 +1082,7 @@ function ReportPreview({
   mabasIni: string;
   mabasFim: string;
   report: ReportData;
-  exeLabel: (exe: string) => string;
+  exeLabel: (exe: string, includeEsp?: boolean) => string;
   filterCd?: string;
 }) {
   const [pages, setPages] = useState<string[]>([]);
