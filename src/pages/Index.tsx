@@ -62,6 +62,7 @@ import AssistencialCompetencia from "@/components/AssistencialCompetencia";
 import AssistencialConsulta from "@/components/AssistencialConsulta";
 import AssistencialAuditoriaSSPMJR from "@/components/AssistencialAuditoriaSSPMJR";
 import AssistencialRelatorioExecutor from "@/components/AssistencialRelatorioExecutor";
+import AssistencialReceitas2518 from "@/components/AssistencialReceitas2518";
 import { useConsultaState } from "@/lib/assistencialConsultaStore";
 import { Loader2 } from "lucide-react";
 
@@ -122,6 +123,7 @@ const menuItems: MenuItem[] = [
       { icon: Search, label: "Consulta" },
       { icon: Stethoscope, label: "Relatório Plano Executor" },
       { icon: Stethoscope, label: "2518 Processo" },
+      { icon: Stethoscope, label: "2518 Processo Rec." },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
@@ -408,6 +410,10 @@ const Index = () => {
             <AssistencialRelatorioExecutor />
           ) : active === "2518 Processo" ? (
             <AssistencialRelatorioExecutor source="csv2518" />
+          ) : active === "2518 Processo Rec." ? (
+            <AssistencialReceitas2518 />
+
+
 
           ) : active === "Auditoria SSPMJR" ? (
             <AssistencialAuditoriaSSPMJR />
