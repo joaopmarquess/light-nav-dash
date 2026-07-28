@@ -17,6 +17,7 @@ type Row = {
   dsesp: string | null;
   nmclires: string | null;
   nmcli: string | null;
+  cdcontrato: string | number | null;
   cdregusr: string | number | null;
   nrgui: string | number | null;
   dtexe: string | null;
