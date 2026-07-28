@@ -844,12 +844,12 @@ function buildPdf({
       showFoot: "lastPage",
       head: [
         [{ content: exeLabel(exe), colSpan: 2, styles: { halign: "left", fontStyle: "bold" } }],
-        ["bscmp", "Total"],
+        ["bscmp", { content: "Total", styles: { halign: "right" } }],
       ],
       body,
       foot: [[
-        { content: `Subtotal de ${exe}`, styles: { halign: "left", lineWidth: 0, fillColor: [255, 255, 255] } },
-        { content: money(sub), styles: { halign: "right" } },
+        { content: `Subtotal de ${exe}`, styles: { halign: "left", fontStyle: "bold", fillColor: [245, 245, 245] } },
+        { content: money(sub), styles: { halign: "right", fontStyle: "bold", fillColor: [245, 245, 245] } },
       ]],
       columnStyles: {
         0: { cellWidth: usableW * 0.4, halign: "center" },
