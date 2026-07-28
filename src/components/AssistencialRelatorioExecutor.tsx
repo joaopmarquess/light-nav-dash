@@ -921,6 +921,7 @@ function buildPdf({
       nrgui: string;
       nmclires: string;
       nmcli: string;
+      cdcontrato: string;
       cdregusr: string;
       dtexe: string | null;
       bscmp: string;
@@ -936,6 +937,7 @@ function buildPdf({
           nrgui: key,
           nmclires: String(r.nmclires ?? "-"),
           nmcli: String(r.nmcli ?? "-"),
+          cdcontrato: String(r.cdcontrato ?? ""),
           cdregusr: String(r.cdregusr ?? ""),
           dtexe: r.dtexe ?? null,
           bscmp: String(r.bscmp ?? ""),
@@ -943,6 +945,7 @@ function buildPdf({
         });
       } else {
         cur.valor += v;
+        if (!cur.cdcontrato && r.cdcontrato) cur.cdcontrato = String(r.cdcontrato);
         // keep earliest dtexe
         if (r.dtexe && (!cur.dtexe || String(r.dtexe) < String(cur.dtexe))) cur.dtexe = r.dtexe;
       }
@@ -961,16 +964,19 @@ function buildPdf({
     let curRes: string | null = null;
     let curResSum = 0;
     let curResCd = "";
+    let curResContrato = "";
     const flushRes = () => {
       if (curRes === null) return;
       const grp = Math.floor((Number(curResCd) || 0) / 100);
+      const label = curResContrato ? `(${curResContrato}) ${curRes}` : curRes;
       body.push([
-        { content: `Subtotal de ${curRes} (${grp})`, colSpan: 6, styles: { halign: "left", fontStyle: "bold", fillColor: [245, 245, 245] } },
+        { content: `Subtotal de ${label} (${grp})`, colSpan: 6, styles: { halign: "left", fontStyle: "bold", fillColor: [245, 245, 245] } },
         { content: money(curResSum), styles: { halign: "right", fontStyle: "bold", fillColor: [245, 245, 245] } },
       ]);
       curRes = null;
       curResSum = 0;
       curResCd = "";
+      curResContrato = "";
     };
 
     for (const r of list) {
@@ -981,10 +987,12 @@ function buildPdf({
       if (curRes === null) {
         curRes = resKey;
         curResCd = r.cdregusr;
+        curResContrato = r.cdcontrato;
       }
       curResSum += v;
+      const nmcliresDisp = r.cdcontrato ? `(${r.cdcontrato}) ${r.nmclires}` : r.nmclires;
       body.push([
-        truncFront(r.nmclires, s3W.nmclires),
+        truncFront(nmcliresDisp, s3W.nmclires),
         truncFront(r.nmcli, s3W.nmcli),
         r.cdregusr,
         r.nrgui,
