@@ -120,8 +120,8 @@ const menuItems: MenuItem[] = [
       
       { icon: CalendarCheck, label: "Por Competência" },
       { icon: Search, label: "Consulta" },
-      { icon: Stethoscope, label: "Relatório (Por Competência)" },
-      { icon: Stethoscope, label: "Relatório (Por Executor)" },
+      { icon: Stethoscope, label: "Relatório Plano Executor" },
+      { icon: Stethoscope, label: "2518 Processo" },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
@@ -404,9 +404,9 @@ const Index = () => {
             <AssistencialCompetencia />
           ) : active === "Consulta" ? (
             <AssistencialConsulta />
-          ) : active === "Relatório (Por Competência)" ? (
-            <AssistencialAuditoriaSSPMJR />
-          ) : active === "Relatório (Por Executor)" ? (
+          ) : active === "Relatório Plano Executor" ? (
+            <AssistencialRelatorioExecutor />
+          ) : active === "2518 Processo" ? (
             <AssistencialRelatorioExecutor />
           ) : active === "Auditoria SSPMJR" ? (
             <AssistencialAuditoriaSSPMJR />
