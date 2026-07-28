@@ -889,6 +889,13 @@ function buildPdf({
   doc.text("Seção 3 - Geral", marginL, marginT + 8);
 
   let s3Y = marginT + 10;
+  if (filterExe) {
+    const cdExe = report.exeCd.get(filterExe) ?? "";
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(`${cdExe} - ${filterExe}`, marginL, s3Y + 3);
+    s3Y += 5;
+  }
   let s3Grand = 0;
   const s3ExeList = filterExe ? [filterExe] : report.exeSortedS3;
 
