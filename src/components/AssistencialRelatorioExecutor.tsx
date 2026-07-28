@@ -303,8 +303,11 @@ export default function AssistencialRelatorioExecutor({ source = "db" }: { sourc
     const exeSortedS2 = sortExe(Array.from(s2.keys()));
     const exeSortedS3 = sortExe(Array.from(s3.keys()));
 
+    // eslint-disable-next-line no-console
+    console.log("[DBG report]", { rowsLen: filtered.length, s1Tot, s2Keys: s2.size, s3Keys: s3.size, s1EntriesSum: s1Rows.reduce((a,[,o])=>a+o.int+o.dem,0) });
     return { exeEsp, exeCd, s1Rows, s1Tot, s2, s3, exeSortedS2, exeSortedS3 };
   }, [filtered]);
+
 
   const exeLabel = (exe: string) => {
     const esp = report.exeEsp.get(exe);
