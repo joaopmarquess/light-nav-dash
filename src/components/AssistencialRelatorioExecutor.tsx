@@ -64,7 +64,33 @@ const getBscmpRange = (ini: number, fim: number): number[] => {
   return months;
 };
 
-export default function AssistencialRelatorioExecutor() {
+const parseCsvRow = (line: string): string[] => {
+  const out: string[] = [];
+  let cur = "";
+  let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; continue; }
+    if (c === ";" && !inQ) { out.push(cur); cur = ""; continue; }
+    cur += c;
+  }
+  out.push(cur);
+  return out.map((s) => s.trim());
+};
+
+const brDateToIso = (s: string): string | null => {
+  const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (!m) return null;
+  return `${m[3]}-${m[2]}-${m[1]}`;
+};
+
+const parseBRNum = (s: string): number => {
+  const clean = String(s ?? "").replace(/\s/g, "").replace(/\./g, "").replace(",", ".");
+  const n = Number(clean);
+  return Number.isFinite(n) ? n : 0;
+};
+
+export default function AssistencialRelatorioExecutor({ source = "db" }: { source?: "db" | "csv2518" } = {}) {
   const [cdpln, setCdpln] = useState("2518");
   const [mabasIni, setMabasIni] = useState("202407");
   const [mabasFim, setMabasFim] = useState("202506");
@@ -82,7 +108,66 @@ export default function AssistencialRelatorioExecutor() {
   const [expExe, setExpExe] = useState<Record<string, boolean>>({});
   const [expBenef, setExpBenef] = useState<Record<string, boolean>>({});
 
-  const load = async () => {
+  const loadCsv = async () => {
+    const ini = Number(mabasIni);
+    const fim = Number(mabasFim);
+    if (!Number.isFinite(ini) || !Number.isFinite(fim) || ini > fim) {
+      setError("Período inválido.");
+      setTriggered(true);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setRows([]);
+    setTriggered(true);
+    try {
+      const res = await fetch("/data/2518_assistencial_processo.csv");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      const lines = text.split(/\r?\n/).filter((l) => l.length > 0);
+      const header = parseCsvRow(lines[0]);
+      const idx = (name: string) => header.findIndex((h) => h.toLowerCase() === name.toLowerCase());
+      const iTG = idx("TG");
+      const iBscmp = idx("bscmp");
+      const iCdreg = idx("cdregusr");
+      const iDsctr = idx("dsctr");
+      const iNmcli = idx("nmcli");
+      const iDscrdexe = idx("dscrdexe");
+      const iDhexe = idx("dhexe");
+      const iNrgui = idx("nrgui");
+      const iTotal = idx("Total");
+      const acc: Row[] = [];
+      for (let li = 1; li < lines.length; li++) {
+        const c = parseCsvRow(lines[li]);
+        const bscmp = Number(c[iBscmp]);
+        if (!Number.isFinite(bscmp) || bscmp < ini || bscmp > fim) continue;
+        const tg = c[iTG] ?? "";
+        acc.push({
+          ideAssist: li,
+          bscmp,
+          cdpln: "2518",
+          dspln: "",
+          catipgui: /^i/i.test(tg) ? "Internacao" : "Demais Tipos de Guia",
+          cdcrdexe: "",
+          dscrdexe: c[iDscrdexe] ?? "",
+          dsesp: "",
+          nmclires: c[iDsctr] ?? "",
+          nmcli: c[iNmcli] ?? "",
+          cdregusr: c[iCdreg] ?? "",
+          nrgui: String(c[iNrgui] ?? "").trim(),
+          dtexe: brDateToIso(c[iDhexe] ?? ""),
+          vrevt: parseBRNum(c[iTotal] ?? "0"),
+        });
+      }
+      setRows(acc);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro ao carregar CSV.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadDb = async () => {
     const cd = Number(cdpln);
     const ini = Number(mabasIni);
     const fim = Number(mabasFim);
@@ -136,6 +221,8 @@ export default function AssistencialRelatorioExecutor() {
     setRows(acc);
     setLoading(false);
   };
+
+  const load = source === "csv2518" ? loadCsv : loadDb;
 
   const filtered = useMemo(() => {
     const q = filtro.trim().toLowerCase();
