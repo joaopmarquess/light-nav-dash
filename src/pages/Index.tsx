@@ -120,8 +120,8 @@ const menuItems: MenuItem[] = [
       
       { icon: CalendarCheck, label: "Por Competência" },
       { icon: Search, label: "Consulta" },
-      { icon: Stethoscope, label: "Relatório (Por Competência)" },
-      { icon: Stethoscope, label: "Relatório (Por Executor)" },
+      { icon: Stethoscope, label: "Relatório Plano Executor" },
+      { icon: Stethoscope, label: "2518 Processo" },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
