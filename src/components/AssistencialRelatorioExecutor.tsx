@@ -894,13 +894,12 @@ function buildPdf({
 
   // Column widths (fractions of usableW) for Section 3
   const s3W = {
-    nmclires: usableW * 0.28,
-    nmcli: usableW * 0.28,
-    cdregusr: usableW * 0.10,
-    nrgui: usableW * 0.09,
-    dtexe: usableW * 0.09,
-    bscmp: usableW * 0.08,
-    total: usableW * 0.08,
+    nmcli: usableW * 0.42,
+    dp: usableW * 0.06,
+    nrgui: usableW * 0.16,
+    dtexe: usableW * 0.12,
+    bscmp: usableW * 0.12,
+    total: usableW * 0.12,
   };
   const cellPad = 1.2;
   const truncFront = (s: string, colW: number) => {
@@ -916,29 +915,37 @@ function buildPdf({
     return "..." + out;
   };
 
+  // Aggregate all executors' rows by contract -> guia
+  type GAgg = {
+    nrgui: string;
+    nmcli: string;
+    cdregusr: string;
+    dtexe: string | null;
+    bscmp: string;
+    valor: number;
+  };
+  type CtAgg = {
+    cdcontrato: string;
+    nmclires: string;
+    guias: Map<string, GAgg>;
+  };
+  const contratoMap = new Map<string, CtAgg>();
   for (const exe of s3ExeList) {
-    // Aggregate rows by nrgui within each executor
-    type GAgg = {
-      nrgui: string;
-      nmclires: string;
-      nmcli: string;
-      cdcontrato: string;
-      cdregusr: string;
-      dtexe: string | null;
-      bscmp: string;
-      valor: number;
-    };
-    const guiaMap = new Map<string, GAgg>();
-    for (const r of report.s3.get(exe)!) {
+    for (const r of report.s3.get(exe) ?? []) {
+      const ct = String(r.cdcontrato ?? "-");
+      let cg = contratoMap.get(ct);
+      if (!cg) {
+        cg = { cdcontrato: ct, nmclires: String(r.nmclires ?? "-"), guias: new Map() };
+        contratoMap.set(ct, cg);
+      }
+      if (!cg.nmclires || cg.nmclires === "-") cg.nmclires = String(r.nmclires ?? cg.nmclires);
       const key = String(r.nrgui ?? "-");
       const v = Number(r.vrevt ?? 0) || 0;
-      const cur = guiaMap.get(key);
+      const cur = cg.guias.get(key);
       if (!cur) {
-        guiaMap.set(key, {
+        cg.guias.set(key, {
           nrgui: key,
-          nmclires: String(r.nmclires ?? "-"),
           nmcli: String(r.nmcli ?? "-"),
-          cdcontrato: String(r.cdcontrato ?? ""),
           cdregusr: String(r.cdregusr ?? ""),
           dtexe: r.dtexe ?? null,
           bscmp: String(r.bscmp ?? ""),
@@ -946,86 +953,63 @@ function buildPdf({
         });
       } else {
         cur.valor += v;
-        if (!cur.cdcontrato && r.cdcontrato) cur.cdcontrato = String(r.cdcontrato);
-        // keep earliest dtexe
         if (r.dtexe && (!cur.dtexe || String(r.dtexe) < String(cur.dtexe))) cur.dtexe = r.dtexe;
       }
     }
-    const list = Array.from(guiaMap.values()).sort((a, b) => {
-      const nr = a.nmclires.localeCompare(b.nmclires);
-      if (nr !== 0) return nr;
-      const nc = a.nmcli.localeCompare(b.nmcli);
-      if (nc !== 0) return nc;
-      return a.nrgui.localeCompare(b.nrgui);
-    });
+  }
 
+  const contratoList = Array.from(contratoMap.values()).sort((a, b) => {
+    const n = a.nmclires.localeCompare(b.nmclires);
+    if (n !== 0) return n;
+    return a.cdcontrato.localeCompare(b.cdcontrato);
+  });
+
+  for (const cg of contratoList) {
+    const guias = Array.from(cg.guias.values()).sort((a, b) => a.nrgui.localeCompare(b.nrgui));
     let sub = 0;
     const body: (string | { content: string; colSpan?: number; styles?: Record<string, unknown> })[][] = [];
-
-    let curRes: string | null = null;
-    let curResSum = 0;
-    let curResCd = "";
-    let curResContrato = "";
-    const flushRes = () => {
-      if (curRes === null) return;
-      const grp = Math.floor((Number(curResCd) || 0) / 100);
-      const label = curResContrato ? `(${curResContrato}) ${curRes}` : curRes;
+    for (const g of guias) {
+      sub += g.valor;
+      const cd = String(g.cdregusr ?? "");
+      const dp = cd ? String(Number(cd.slice(-2)) || 0) : "";
       body.push([
-        { content: `Subtotal de ${label} (${grp})`, colSpan: 6, styles: { halign: "left", fontStyle: "bold", fillColor: [245, 245, 245] } },
-        { content: money(curResSum), styles: { halign: "right", fontStyle: "bold", fillColor: [245, 245, 245] } },
-      ]);
-      curRes = null;
-      curResSum = 0;
-      curResCd = "";
-      curResContrato = "";
-    };
-
-    for (const r of list) {
-      const v = r.valor;
-      sub += v;
-      const resKey = r.nmclires;
-      if (curRes !== null && curRes !== resKey) flushRes();
-      if (curRes === null) {
-        curRes = resKey;
-        curResCd = r.cdregusr;
-        curResContrato = r.cdcontrato;
-      }
-      curResSum += v;
-      const nmcliresDisp = r.cdcontrato ? `(${r.cdcontrato}) ${r.nmclires}` : r.nmclires;
-      body.push([
-        truncFront(nmcliresDisp, s3W.nmclires),
-        truncFront(r.nmcli, s3W.nmcli),
-        r.cdregusr,
-        r.nrgui,
-        fmtDateBR(r.dtexe),
-        r.bscmp,
-        money(v),
+        truncFront(g.nmcli, s3W.nmcli),
+        dp,
+        g.nrgui,
+        fmtDateBR(g.dtexe),
+        g.bscmp,
+        money(g.valor),
       ]);
     }
-    flushRes();
     s3Grand += sub;
 
+    const headerLabel = `${cg.nmclires} (${cg.cdcontrato})`;
     autoTable(doc, {
       ...commonTableOpts,
       startY: s3Y,
-      showFoot: "lastPage",
       head: [
-        [{ content: exeLabel(exe), colSpan: 7, styles: { halign: "left", fontStyle: "bold" } }],
-        ["nmclires", "nmcli", "cdregusr", "nrgui", "dtexe", "bscmp", { content: "Total", styles: { halign: "right" } }],
+        [{ content: headerLabel, colSpan: 6, styles: { halign: "left", fontStyle: "bold", fillColor: [230, 230, 230] } }],
+        [
+          "NOME DO BENEFICIARIO",
+          { content: "dp", styles: { halign: "center" } },
+          { content: "Guia", styles: { halign: "center" } },
+          { content: "Execução", styles: { halign: "center" } },
+          { content: "Competência", styles: { halign: "center" } },
+          { content: "Total", styles: { halign: "right" } },
+        ],
       ],
       body,
       foot: [[
-        { content: `Subtotal do Executor (${exe})`, colSpan: 6, styles: { halign: "left" } },
-        { content: money(sub), styles: { halign: "right" } },
+        { content: `Subtotal (Contrato: ${cg.cdcontrato})`, colSpan: 5, styles: { halign: "left", fontStyle: "bold", fillColor: [245, 245, 245] } },
+        { content: money(sub), styles: { halign: "right", fontStyle: "bold", fillColor: [245, 245, 245] } },
       ]],
       columnStyles: {
-        0: { cellWidth: s3W.nmclires },
-        1: { cellWidth: s3W.nmcli },
-        2: { cellWidth: s3W.cdregusr, halign: "center", overflow: "visible" },
-        3: { cellWidth: s3W.nrgui, halign: "center" },
-        4: { cellWidth: s3W.dtexe, halign: "center" },
-        5: { cellWidth: s3W.bscmp, halign: "center" },
-        6: { cellWidth: s3W.total, halign: "right" },
+        0: { cellWidth: s3W.nmcli },
+        1: { cellWidth: s3W.dp, halign: "center" },
+        2: { cellWidth: s3W.nrgui, halign: "center" },
+        3: { cellWidth: s3W.dtexe, halign: "center" },
+        4: { cellWidth: s3W.bscmp, halign: "center" },
+        5: { cellWidth: s3W.total, halign: "right" },
       },
     });
     s3Y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 3;
@@ -1035,18 +1019,17 @@ function buildPdf({
     ...commonTableOpts,
     startY: s3Y,
     body: [[
-      { content: "Total Geral", colSpan: 6, styles: { fontStyle: "bold", halign: "left" } },
+      { content: "Total Geral", colSpan: 5, styles: { fontStyle: "bold", halign: "left" } },
       { content: money(s3Grand), styles: { halign: "right", fontStyle: "bold" } },
     ]],
     bodyStyles: { fillColor: [235, 235, 235] },
     columnStyles: {
-      0: { cellWidth: s3W.nmclires },
-      1: { cellWidth: s3W.nmcli },
-      2: { cellWidth: s3W.cdregusr },
-      3: { cellWidth: s3W.nrgui },
-      4: { cellWidth: s3W.dtexe },
-      5: { cellWidth: s3W.bscmp },
-      6: { cellWidth: s3W.total, halign: "right" },
+      0: { cellWidth: s3W.nmcli },
+      1: { cellWidth: s3W.dp },
+      2: { cellWidth: s3W.nrgui },
+      3: { cellWidth: s3W.dtexe },
+      4: { cellWidth: s3W.bscmp },
+      5: { cellWidth: s3W.total, halign: "right" },
     },
   });
   markSectionPages("Seção 3 - Geral", sec3Start);
