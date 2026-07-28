@@ -889,6 +889,13 @@ function buildPdf({
   doc.text("Seção 3 - Geral", marginL, marginT + 8);
 
   let s3Y = marginT + 10;
+  if (filterExe) {
+    const cdExe = report.exeCd.get(filterExe) ?? "";
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(`${cdExe} - ${filterExe}`, marginL, s3Y + 3);
+    s3Y += 5;
+  }
   let s3Grand = 0;
   const s3ExeList = filterExe ? [filterExe] : report.exeSortedS3;
 
@@ -990,7 +997,7 @@ function buildPdf({
       head: [
         [{ content: headerLabel, colSpan: 6, styles: { halign: "left", fontStyle: "bold", fillColor: [230, 230, 230] } }],
         [
-          "NOME DO BENEFICIARIO",
+          "Nome Beneficiário",
           { content: "dp", styles: { halign: "center" } },
           { content: "Guia", styles: { halign: "center" } },
           { content: "Execução", styles: { halign: "center" } },
@@ -1019,8 +1026,8 @@ function buildPdf({
     ...commonTableOpts,
     startY: s3Y,
     body: [[
-      { content: "Total Geral", colSpan: 5, styles: { fontStyle: "bold", halign: "left" } },
-      { content: money(s3Grand), styles: { halign: "right", fontStyle: "bold" } },
+      { content: filterExe ? `Subtotal ${filterExe}` : "Total Geral", colSpan: 5, styles: { fontStyle: "bold", halign: "left" } },
+      { content: `${filterExe ? "Total do " + filterExe + ": " : ""}${money(s3Grand)}`, styles: { halign: "right", fontStyle: "bold" } },
     ]],
     bodyStyles: { fillColor: [235, 235, 235] },
     columnStyles: {
