@@ -805,7 +805,12 @@ function buildPdf({
   autoTable(doc, {
     ...commonTableOpts,
     startY: marginT + 10,
-    head: [["bscmp", "Internação", "Demais Tipos de Guia", "Total"]],
+    head: [[
+      "bscmp",
+      { content: "Internação", styles: { halign: "right" } },
+      { content: "Demais Tipos de Guia", styles: { halign: "right" } },
+      { content: "Total", styles: { halign: "right" } },
+    ]],
     body: s1Body,
     foot: s1Foot,
     columnStyles: {
@@ -839,12 +844,12 @@ function buildPdf({
       showFoot: "lastPage",
       head: [
         [{ content: exeLabel(exe), colSpan: 2, styles: { halign: "left", fontStyle: "bold" } }],
-        ["bscmp", "Total"],
+        ["bscmp", { content: "Total", styles: { halign: "right" } }],
       ],
       body,
       foot: [[
-        { content: `Subtotal de ${exe}`, styles: { halign: "left", lineWidth: 0, fillColor: [255, 255, 255] } },
-        { content: money(sub), styles: { halign: "right" } },
+        { content: `Subtotal de ${exe}`, styles: { halign: "left", fontStyle: "bold", fillColor: [245, 245, 245] } },
+        { content: money(sub), styles: { halign: "right", fontStyle: "bold", fillColor: [245, 245, 245] } },
       ]],
       columnStyles: {
         0: { cellWidth: usableW * 0.4, halign: "center" },
@@ -988,7 +993,7 @@ function buildPdf({
       showFoot: "lastPage",
       head: [
         [{ content: exeLabel(exe), colSpan: 7, styles: { halign: "left", fontStyle: "bold" } }],
-        ["nmclires", "nmcli", "cdregusr", "nrgui", "dtexe", "bscmp", "Total"],
+        ["nmclires", "nmcli", "cdregusr", "nrgui", "dtexe", "bscmp", { content: "Total", styles: { halign: "right" } }],
       ],
       body,
       foot: [[
