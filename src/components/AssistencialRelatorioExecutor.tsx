@@ -311,11 +311,11 @@ export default function AssistencialRelatorioExecutor({ source = "db" }: { sourc
 
 
 
-  const exeLabel = (exe: string) => {
+  const exeLabel = (exe: string, includeEsp = true) => {
     const esp = report.exeEsp.get(exe);
     const cd = report.exeCd.get(exe);
     const base = cd ? `${cd} - ${exe}` : exe;
-    return esp ? `${base} (${esp})` : base;
+    return includeEsp && esp ? `${base} (${esp})` : base;
   };
 
   
