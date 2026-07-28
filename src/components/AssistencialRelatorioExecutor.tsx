@@ -158,6 +158,7 @@ export default function AssistencialRelatorioExecutor({ source = "db" }: { sourc
           dsesp: c[iDsesp] ?? "",
           nmclires: c[iDsctr] ?? "",
           nmcli: c[iNmcli] ?? "",
+          cdcontrato: iCdcontrato >= 0 ? (c[iCdcontrato] ?? "") : "",
           cdregusr: c[iCdreg] ?? "",
           nrgui: String(c[iNrgui] ?? "").trim(),
           dtexe: brDateToIso(c[iDhexe] ?? ""),
