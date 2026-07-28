@@ -306,6 +306,8 @@ export default function AssistencialRelatorioExecutor({ source = "db" }: { sourc
     return { exeEsp, exeCd, s1Rows, s1Tot, s2, s3, exeSortedS2, exeSortedS3 };
   }, [filtered]);
 
+
+
   const exeLabel = (exe: string) => {
     const esp = report.exeEsp.get(exe);
     const cd = report.exeCd.get(exe);
