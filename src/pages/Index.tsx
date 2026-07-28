@@ -407,7 +407,8 @@ const Index = () => {
           ) : active === "Relatório Plano Executor" ? (
             <AssistencialRelatorioExecutor />
           ) : active === "2518 Processo" ? (
-            <AssistencialRelatorioExecutor />
+            <AssistencialRelatorioExecutor source="csv2518" />
+
           ) : active === "Auditoria SSPMJR" ? (
             <AssistencialAuditoriaSSPMJR />
           ) : (
