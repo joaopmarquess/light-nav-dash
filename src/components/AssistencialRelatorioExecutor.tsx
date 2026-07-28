@@ -831,7 +831,13 @@ function buildPdf({
 
   let s2Y = marginT + 10;
   let s2Grand = 0;
-  for (const exe of report.exeSortedS2) {
+  const selectedExe = filterCd
+    ? report.exeSortedS2.find((e) => report.exeCd.get(e) === filterCd) ?? null
+    : null;
+  const s2Order = selectedExe
+    ? [selectedExe, ...report.exeSortedS2.filter((e) => e !== selectedExe)]
+    : report.exeSortedS2;
+  for (const exe of s2Order) {
     const m = report.s2.get(exe)!;
     const rows = Array.from(m.entries()).sort(([a], [b]) => a.localeCompare(b));
     let sub = 0;
