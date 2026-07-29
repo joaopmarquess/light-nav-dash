@@ -9,6 +9,10 @@ const bensaudeLogoUrl = bensaudeLogoAsset.url;
 
 type Row = {
   bscmp: string;
+  nmctr: string;
+  cdcontrato: string;
+  dp: string;
+  beneficiario: string;
   dsevento: string;
   valor: number;
 };
@@ -20,6 +24,11 @@ const parseNum = (s: string) => {
   if (!s) return 0;
   const n = parseFloat(s.replace(/\./g, "").replace(",", "."));
   return isNaN(n) ? 0 : n;
+};
+
+const fmtBscmp = (s: string) => {
+  if (/^\d{6}$/.test(s)) return `${s.slice(4, 6)}/${s.slice(0, 4)}`;
+  return s;
 };
 
 const EVENT_MAP: Record<string, { order: number; label: string }> = {
@@ -43,16 +52,25 @@ function parseCsv(text: string): Row[] {
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length);
   if (!lines.length) return [];
   const header = lines[0].split(";").map((h) => h.trim());
-  const idxBs = header.indexOf("bscmp");
-  const idxEv = header.indexOf("dsevento");
-  const idxVl = header.indexOf("valor");
+  const idx = (n: string) => header.indexOf(n);
+  const iBs = idx("bscmp");
+  const iEv = idx("dsevento");
+  const iVl = idx("valor");
+  const iNm = idx("nmctr");
+  const iCd = idx("cdcontrato");
+  const iDp = idx("dp");
+  const iBn = idx("beneficiario");
   const out: Row[] = [];
   for (let i = 1; i < lines.length; i++) {
     const c = lines[i].split(";");
     out.push({
-      bscmp: (c[idxBs] || "").trim(),
-      dsevento: (c[idxEv] || "").trim(),
-      valor: parseNum(c[idxVl] || "0"),
+      bscmp: (c[iBs] || "").trim(),
+      nmctr: (c[iNm] || "").trim(),
+      cdcontrato: (c[iCd] || "").trim(),
+      dp: (c[iDp] || "").trim(),
+      beneficiario: (c[iBn] || "").trim(),
+      dsevento: (c[iEv] || "").trim(),
+      valor: parseNum(c[iVl] || "0"),
     });
   }
   return out;
