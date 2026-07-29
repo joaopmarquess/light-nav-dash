@@ -176,6 +176,7 @@ function buildPdf({
   };
 
   // ===================== Seção 1 =====================
+  const sec1Start = doc.getNumberOfPages();
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.text("Seção 1 - Competência", marginL, marginT + 8);
@@ -205,10 +206,14 @@ function buildPdf({
     },
     didDrawPage: () => header(),
   });
+  const sec1End = doc.getNumberOfPages();
 
   // ===================== Seção 2 =====================
+  let sec2Start = 0;
+  let sec2End = 0;
   if (rowsV2.length) {
     doc.addPage();
+    sec2Start = doc.getNumberOfPages();
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.text("Seção 2 - Competência / Contrato / Beneficiário", marginL, marginT + 8);
