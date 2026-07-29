@@ -351,7 +351,7 @@ function buildPdf({
     } else if (sec2End && p >= sec2Start && p <= sec2End) {
       label = `Seção 2 | ${p - sec2Start + 1} de ${sec2Total}`;
     }
-    if (label) doc.text(label, marginL, pageH - 6);
+    if (label) doc.text(label, pageW - marginR, pageH - 6, { align: "right" });
     doc.setTextColor(0);
   }
 
