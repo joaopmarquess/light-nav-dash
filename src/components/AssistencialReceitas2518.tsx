@@ -541,6 +541,7 @@ export default function AssistencialReceitas2518() {
 
       {showPdf && (
         <ReportPreview
+          rows={rows}
           grouped={s1}
           totalGeral={totalGeral}
           onClose={() => setShowPdf(false)}
