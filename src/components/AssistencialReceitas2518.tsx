@@ -254,7 +254,7 @@ function buildPdf({
       bsTotal += cTotal;
     }
     body.push([
-      { content: `${fmtBscmp(bs)} Total`, colSpan: 5, styles: { halign: "left", fontStyle: "bold", fillColor: bscmpFill } },
+      { content: `${fmtBscmp(bs)} (${bs}) Total`, colSpan: 5, styles: { halign: "left", fontStyle: "bold", fillColor: bscmpFill } },
       { content: fmtBRL(bsTotal), styles: { halign: "right", fontStyle: "bold", fillColor: bscmpFill } },
     ]);
   }
