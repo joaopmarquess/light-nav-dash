@@ -260,10 +260,10 @@ function buildPdf({
   }
 
   autoTable(doc, {
-    styles: { font: "helvetica", fontSize: 7, cellPadding: 1.2, lineColor: [180, 180, 180], lineWidth: 0.1, textColor: 20, overflow: "linebreak" },
-    headStyles: { fillColor: [255, 255, 255], textColor: 20, fontStyle: "bold", lineColor: [140, 140, 140], lineWidth: 0.1 },
+    styles: { font: "helvetica", fontSize: 7, cellPadding: 1.2, lineColor: [180, 180, 180], lineWidth: { top: 0, right: 0, bottom: 0.1, left: 0 } as any, textColor: 20, overflow: "visible" },
+    headStyles: { fillColor: [255, 255, 255], textColor: 20, fontStyle: "bold", lineColor: [140, 140, 140], lineWidth: { top: 0, right: 0, bottom: 0.2, left: 0 } as any },
     footStyles: { fillColor: [180, 200, 220], textColor: 20, fontStyle: "bold" },
-    theme: "grid",
+    theme: "plain",
     margin: { left: marginL, right: marginR, top: marginT + 4, bottom: marginB },
     startY: marginT + 10,
     head: [[
