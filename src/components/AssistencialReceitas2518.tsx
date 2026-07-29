@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronRight, ChevronDown, FileDown, Printer, X, Loader2 } from "lucide-react";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import autoTable, { RowInput } from "jspdf-autotable";
 import FunLoader from "@/components/FunLoader";
 import bensaudeLogoAsset from "@/assets/bensaude-logo.svg.asset.json";
 
@@ -13,6 +13,16 @@ type Row = {
   valor: number;
 };
 
+type RowV2 = {
+  bscmp: string;
+  nmctr: string;
+  cdcontrato: string;
+  dp: string;
+  nmcli: string;
+  dsevento: string;
+  valor: number;
+};
+
 const fmtBRL = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -20,6 +30,12 @@ const parseNum = (s: string) => {
   if (!s) return 0;
   const n = parseFloat(s.replace(/\./g, "").replace(",", "."));
   return isNaN(n) ? 0 : n;
+};
+
+const fmtBscmp = (s: string) => {
+  const t = (s || "").trim();
+  if (/^\d{6}$/.test(t)) return `${t.slice(4, 6)}|${t.slice(0, 4)}`;
+  return t;
 };
 
 const EVENT_MAP: Record<string, { order: number; label: string }> = {
@@ -58,6 +74,34 @@ function parseCsv(text: string): Row[] {
   return out;
 }
 
+function parseCsvV2(text: string): RowV2[] {
+  const lines = text.split(/\r?\n/).filter((l) => l.trim().length);
+  if (!lines.length) return [];
+  const header = lines[0].split(";").map((h) => h.trim());
+  const idx = (n: string) => header.indexOf(n);
+  const iBs = idx("bscmp");
+  const iNc = idx("nmctr");
+  const iCd = idx("cdcontrato");
+  const iDp = idx("dp");
+  const iBn = idx("beneficiario");
+  const iEv = idx("dsevento");
+  const iVl = idx("valor");
+  const out: RowV2[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const c = lines[i].split(";");
+    out.push({
+      bscmp: (c[iBs] || "").trim(),
+      nmctr: (c[iNc] || "").trim(),
+      cdcontrato: (c[iCd] || "").trim(),
+      dp: (c[iDp] || "").trim(),
+      nmcli: (c[iBn] || "").trim(),
+      dsevento: (c[iEv] || "").trim(),
+      valor: parseNum(c[iVl] || "0"),
+    });
+  }
+  return out;
+}
+
 async function loadLogoAsPng(url: string): Promise<{ dataUrl: string; aspect: number }> {
   const res = await fetch(url);
   const svgText = await res.text();
@@ -87,11 +131,13 @@ async function loadLogoAsPng(url: string): Promise<{ dataUrl: string; aspect: nu
 function buildPdf({
   grouped,
   totalGeral,
+  rowsV2,
   logoDataUrl,
   logoAspect,
 }: {
   grouped: { bscmp: string; total: number }[];
   totalGeral: number;
+  rowsV2: RowV2[];
   logoDataUrl?: string;
   logoAspect?: number;
 }): jsPDF {
@@ -129,6 +175,7 @@ function buildPdf({
     doc.setTextColor(0);
   };
 
+  // ===================== Seção 1 =====================
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.text("Seção 1 - Competência", marginL, marginT + 8);
@@ -159,16 +206,141 @@ function buildPdf({
     didDrawPage: () => header(),
   });
 
+  // ===================== Seção 2 =====================
+  if (rowsV2.length) {
+    doc.addPage();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("Seção 2 - Competência / Contrato / Beneficiário", marginL, marginT + 8);
+
+    // Agrupamento
+    type Detail = { dp: string; nmcli: string; dsevento: string; order: number; valor: number };
+    type Contrato = { nmctr: string; cdcontrato: string; total: number; details: Detail[] };
+    type Compe = { bscmp: string; total: number; contratos: Map<string, Contrato> };
+    const byBs = new Map<string, Compe>();
+
+    for (const r of rowsV2) {
+      const { order, label } = mapEvento(r.dsevento);
+      if (!byBs.has(r.bscmp)) byBs.set(r.bscmp, { bscmp: r.bscmp, total: 0, contratos: new Map() });
+      const c = byBs.get(r.bscmp)!;
+      const ckey = r.cdcontrato + "||" + r.nmctr;
+      if (!c.contratos.has(ckey))
+        c.contratos.set(ckey, { nmctr: r.nmctr, cdcontrato: r.cdcontrato, total: 0, details: [] });
+      const ct = c.contratos.get(ckey)!;
+      ct.details.push({ dp: r.dp, nmcli: r.nmcli, dsevento: label, order, valor: r.valor });
+      ct.total += r.valor;
+      c.total += r.valor;
+    }
+
+    const compesArr = Array.from(byBs.values()).sort((a, b) => a.bscmp.localeCompare(b.bscmp));
+
+    const body: RowInput[] = [];
+    const grayFill: [number, number, number] = [235, 235, 235];
+    const lightFill: [number, number, number] = [245, 245, 245];
+
+    for (const c of compesArr) {
+      // header bscmp
+      body.push([
+        {
+          content: fmtBscmp(c.bscmp),
+          colSpan: 2,
+          styles: { fillColor: grayFill, fontStyle: "bold", halign: "left" },
+        },
+      ]);
+
+      const contratosArr = Array.from(c.contratos.values()).sort((a, b) =>
+        a.nmctr.localeCompare(b.nmctr) || a.cdcontrato.localeCompare(b.cdcontrato)
+      );
+
+      for (const ct of contratosArr) {
+        // header contrato
+        body.push([
+          {
+            content: `${ct.nmctr} (${ct.cdcontrato})`,
+            colSpan: 2,
+            styles: { fillColor: lightFill, fontStyle: "bold", halign: "left", overflow: "ellipsize" },
+          },
+        ]);
+
+        const details = [...ct.details].sort(
+          (a, b) =>
+            a.dp.localeCompare(b.dp) ||
+            a.nmcli.localeCompare(b.nmcli) ||
+            a.order - b.order ||
+            a.dsevento.localeCompare(b.dsevento),
+        );
+
+        for (const d of details) {
+          body.push([
+            { content: `${d.dp} - ${d.nmcli} - ${d.dsevento}`, styles: { halign: "left", overflow: "ellipsize" } },
+            { content: fmtBRL(d.valor), styles: { halign: "right", overflow: "ellipsize" } },
+          ]);
+        }
+
+        // subtotal contrato
+        body.push([
+          {
+            content: `Subtotal ${ct.nmctr} (${ct.cdcontrato})`,
+            styles: { fillColor: lightFill, fontStyle: "bold", halign: "left", overflow: "ellipsize" },
+          },
+          {
+            content: fmtBRL(ct.total),
+            styles: { fillColor: lightFill, fontStyle: "bold", halign: "right", overflow: "ellipsize" },
+          },
+        ]);
+      }
+
+      // subtotal bscmp
+      body.push([
+        {
+          content: `Subtotal ${fmtBscmp(c.bscmp)}`,
+          styles: { fillColor: grayFill, fontStyle: "bold", halign: "left", overflow: "ellipsize" },
+        },
+        {
+          content: fmtBRL(c.total),
+          styles: { fillColor: grayFill, fontStyle: "bold", halign: "right", overflow: "ellipsize" },
+        },
+      ]);
+    }
+
+    const totalV2 = compesArr.reduce((s, c) => s + c.total, 0);
+
+    autoTable(doc, {
+      styles: { font: "helvetica", fontSize: 7.5, cellPadding: 1.2, lineColor: [180, 180, 180], lineWidth: 0.1, textColor: 20, overflow: "ellipsize" },
+      headStyles: { fillColor: [255, 255, 255], textColor: 20, fontStyle: "bold", lineColor: [140, 140, 140], lineWidth: 0.1 },
+      footStyles: { fillColor: grayFill, textColor: 20, fontStyle: "bold" },
+      theme: "grid",
+      margin: { left: marginL, right: marginR, top: marginT + 4, bottom: marginB },
+      startY: marginT + 10,
+      head: [[
+        { content: "Competência / Contrato / (dp - Beneficiário - Evento)", styles: { halign: "left" } },
+        { content: "Valor", styles: { halign: "right" } },
+      ]],
+      body,
+      foot: [[
+        { content: "TOTAL GERAL", styles: { halign: "left" } },
+        { content: fmtBRL(totalV2), styles: { halign: "right" } },
+      ]],
+      columnStyles: {
+        0: { cellWidth: usableW * 0.78 },
+        1: { cellWidth: usableW * 0.22 },
+      },
+      didDrawPage: () => header(),
+    });
+  }
+
   return doc;
 }
 
 function ReportPreview({
   grouped,
   totalGeral,
+  rowsV2,
   onClose,
 }: {
   grouped: { bscmp: string; total: number }[];
   totalGeral: number;
+  rowsV2: RowV2[];
   onClose: () => void;
 }) {
   const [pages, setPages] = useState<string[]>([]);
@@ -182,6 +354,7 @@ function ReportPreview({
       const doc = buildPdf({
         grouped,
         totalGeral,
+        rowsV2,
         logoDataUrl: logo?.dataUrl,
         logoAspect: logo?.aspect,
       });
@@ -272,6 +445,7 @@ function ReportPreview({
 
 export default function AssistencialReceitas2518() {
   const [rows, setRows] = useState<Row[] | null>(null);
+  const [rowsV2, setRowsV2] = useState<RowV2[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [showPdf, setShowPdf] = useState(false);
@@ -279,12 +453,22 @@ export default function AssistencialReceitas2518() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("/data/2518_receitas.csv");
-        if (!res.ok) throw new Error("Falha ao ler CSV");
-        const buf = await res.arrayBuffer();
-        let text = new TextDecoder("utf-8").decode(buf);
-        if (text.includes("\uFFFD")) text = new TextDecoder("iso-8859-1").decode(buf);
-        setRows(parseCsv(text));
+        const [res1, res2] = await Promise.all([
+          fetch("/data/2518_receitas.csv"),
+          fetch("/data/2518_receitas_v2.csv"),
+        ]);
+        if (!res1.ok) throw new Error("Falha ao ler CSV");
+        const buf1 = await res1.arrayBuffer();
+        let text1 = new TextDecoder("utf-8").decode(buf1);
+        if (text1.includes("\uFFFD")) text1 = new TextDecoder("iso-8859-1").decode(buf1);
+        setRows(parseCsv(text1));
+
+        if (res2.ok) {
+          const buf2 = await res2.arrayBuffer();
+          let text2 = new TextDecoder("utf-8").decode(buf2);
+          if (text2.includes("\uFFFD")) text2 = new TextDecoder("iso-8859-1").decode(buf2);
+          setRowsV2(parseCsvV2(text2));
+        }
       } catch (e: any) {
         setError(e?.message || String(e));
       }
@@ -399,6 +583,7 @@ export default function AssistencialReceitas2518() {
         <ReportPreview
           grouped={s1}
           totalGeral={totalGeral}
+          rowsV2={rowsV2}
           onClose={() => setShowPdf(false)}
         />
       )}
