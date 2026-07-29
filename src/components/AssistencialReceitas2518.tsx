@@ -9,6 +9,10 @@ const bensaudeLogoUrl = bensaudeLogoAsset.url;
 
 type Row = {
   bscmp: string;
+  nmctr: string;
+  cdcontrato: string;
+  dp: string;
+  beneficiario: string;
   dsevento: string;
   valor: number;
 };
@@ -20,6 +24,11 @@ const parseNum = (s: string) => {
   if (!s) return 0;
   const n = parseFloat(s.replace(/\./g, "").replace(",", "."));
   return isNaN(n) ? 0 : n;
+};
+
+const fmtBscmp = (s: string) => {
+  if (/^\d{6}$/.test(s)) return `${s.slice(4, 6)}/${s.slice(0, 4)}`;
+  return s;
 };
 
 const EVENT_MAP: Record<string, { order: number; label: string }> = {
@@ -43,16 +52,25 @@ function parseCsv(text: string): Row[] {
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length);
   if (!lines.length) return [];
   const header = lines[0].split(";").map((h) => h.trim());
-  const idxBs = header.indexOf("bscmp");
-  const idxEv = header.indexOf("dsevento");
-  const idxVl = header.indexOf("valor");
+  const idx = (n: string) => header.indexOf(n);
+  const iBs = idx("bscmp");
+  const iEv = idx("dsevento");
+  const iVl = idx("valor");
+  const iNm = idx("nmctr");
+  const iCd = idx("cdcontrato");
+  const iDp = idx("dp");
+  const iBn = idx("beneficiario");
   const out: Row[] = [];
   for (let i = 1; i < lines.length; i++) {
     const c = lines[i].split(";");
     out.push({
-      bscmp: (c[idxBs] || "").trim(),
-      dsevento: (c[idxEv] || "").trim(),
-      valor: parseNum(c[idxVl] || "0"),
+      bscmp: (c[iBs] || "").trim(),
+      nmctr: (c[iNm] || "").trim(),
+      cdcontrato: (c[iCd] || "").trim(),
+      dp: (c[iDp] || "").trim(),
+      beneficiario: (c[iBn] || "").trim(),
+      dsevento: (c[iEv] || "").trim(),
+      valor: parseNum(c[iVl] || "0"),
     });
   }
   return out;
@@ -85,11 +103,13 @@ async function loadLogoAsPng(url: string): Promise<{ dataUrl: string; aspect: nu
 }
 
 function buildPdf({
+  rows,
   grouped,
   totalGeral,
   logoDataUrl,
   logoAspect,
 }: {
+  rows: Row[];
   grouped: { bscmp: string; total: number }[];
   totalGeral: number;
   logoDataUrl?: string;
@@ -103,8 +123,8 @@ function buildPdf({
   const marginB = 14;
   const usableW = pageW - marginL - marginR;
 
-  const bsIni = grouped.length ? grouped[0].bscmp : "";
-  const bsFim = grouped.length ? grouped[grouped.length - 1].bscmp : "";
+  const bsIni = grouped.length ? fmtBscmp(grouped[0].bscmp) : "";
+  const bsFim = grouped.length ? fmtBscmp(grouped[grouped.length - 1].bscmp) : "";
 
   const header = () => {
     const line1Y = 10;
@@ -145,7 +165,7 @@ function buildPdf({
       { content: "Valor", styles: { halign: "right" } },
     ]],
     body: grouped.map((g) => [
-      { content: g.bscmp, styles: { halign: "center" } },
+      { content: fmtBscmp(g.bscmp), styles: { halign: "center" } },
       { content: fmtBRL(g.total), styles: { halign: "right" } },
     ]),
     foot: [[
@@ -159,14 +179,137 @@ function buildPdf({
     didDrawPage: () => header(),
   });
 
+  // ============ Seção 2 ============
+  doc.addPage();
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(20);
+  doc.text("Seção 2 - Detalhado por Contrato / Beneficiário", marginL, marginT + 8);
+
+  // Build hierarchical body
+  type Body = (string | { content: string; colSpan?: number; styles?: any })[];
+  const body: Body[] = [];
+  const subFill: [number, number, number] = [242, 242, 242];
+  const contractFill: [number, number, number] = [225, 225, 225];
+  const bscmpFill: [number, number, number] = [205, 215, 230];
+
+  // Group rows
+  const byBs = new Map<string, Map<string, { nmctr: string; cdcontrato: string; dps: Map<string, Map<string, Row[]>> }>>();
+  for (const r of rows) {
+    if (!byBs.has(r.bscmp)) byBs.set(r.bscmp, new Map());
+    const bMap = byBs.get(r.bscmp)!;
+    const key = `${r.cdcontrato}||${r.nmctr}`;
+    if (!bMap.has(key)) bMap.set(key, { nmctr: r.nmctr, cdcontrato: r.cdcontrato, dps: new Map() });
+    const c = bMap.get(key)!;
+    if (!c.dps.has(r.dp)) c.dps.set(r.dp, new Map());
+    const dpMap = c.dps.get(r.dp)!;
+    if (!dpMap.has(r.beneficiario)) dpMap.set(r.beneficiario, []);
+    dpMap.get(r.beneficiario)!.push(r);
+  }
+
+  const bscmpKeys = Array.from(byBs.keys()).sort();
+  for (const bs of bscmpKeys) {
+    const bMap = byBs.get(bs)!;
+    let bsTotal = 0;
+    const contracts = Array.from(bMap.entries()).sort((a, b) =>
+      a[1].nmctr.localeCompare(b[1].nmctr, "pt-BR")
+    );
+    for (const [, c] of contracts) {
+      let cTotal = 0;
+      const dps = Array.from(c.dps.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+      for (const [dp, benMap] of dps) {
+        let dpTotal = 0;
+        const bens = Array.from(benMap.entries()).sort((a, b) => a[0].localeCompare(b[0], "pt-BR"));
+        for (const [ben, rs] of bens) {
+          const evMap = new Map<string, { order: number; valor: number }>();
+          for (const r of rs) {
+            const { order, label } = mapEvento(r.dsevento);
+            const cur = evMap.get(label) ?? { order, valor: 0 };
+            cur.valor += r.valor;
+            evMap.set(label, cur);
+          }
+          const evs = Array.from(evMap.entries())
+            .map(([label, v]) => ({ label, ...v }))
+            .sort((a, b) => a.order - b.order || a.label.localeCompare(b.label));
+          for (const e of evs) {
+            body.push([
+              "", "", "", ben, e.label,
+              { content: fmtBRL(e.valor), styles: { halign: "right" } },
+            ]);
+            dpTotal += e.valor;
+          }
+        }
+        body.push([
+          "", "",
+          { content: `${dp} Total`, colSpan: 3, styles: { halign: "left", fontStyle: "bold", fillColor: subFill } },
+          { content: fmtBRL(dpTotal), styles: { halign: "right", fontStyle: "bold", fillColor: subFill } },
+        ]);
+        cTotal += dpTotal;
+      }
+      body.push([
+        "",
+        { content: `${c.nmctr} (${c.cdcontrato}) Total`, colSpan: 4, styles: { halign: "left", fontStyle: "bold", fillColor: contractFill } },
+        { content: fmtBRL(cTotal), styles: { halign: "right", fontStyle: "bold", fillColor: contractFill } },
+      ]);
+      bsTotal += cTotal;
+    }
+    body.push([
+      { content: `${fmtBscmp(bs)} Total`, colSpan: 5, styles: { halign: "left", fontStyle: "bold", fillColor: bscmpFill } },
+      { content: fmtBRL(bsTotal), styles: { halign: "right", fontStyle: "bold", fillColor: bscmpFill } },
+    ]);
+  }
+
+  autoTable(doc, {
+    styles: { font: "helvetica", fontSize: 7, cellPadding: 1.2, lineColor: [180, 180, 180], lineWidth: 0.1, textColor: 20, overflow: "linebreak" },
+    headStyles: { fillColor: [255, 255, 255], textColor: 20, fontStyle: "bold", lineColor: [140, 140, 140], lineWidth: 0.1 },
+    footStyles: { fillColor: [180, 200, 220], textColor: 20, fontStyle: "bold" },
+    theme: "grid",
+    margin: { left: marginL, right: marginR, top: marginT + 4, bottom: marginB },
+    startY: marginT + 10,
+    head: [[
+      { content: "bscmp", styles: { halign: "center" } },
+      { content: "nmctr", styles: { halign: "left" } },
+      { content: "dp", styles: { halign: "center" } },
+      { content: "beneficiário", styles: { halign: "left" } },
+      { content: "dsevento", styles: { halign: "left" } },
+      { content: "Total", styles: { halign: "right" } },
+    ]],
+    body: body as any,
+    foot: [[
+      { content: "Total Geral", colSpan: 5, styles: { halign: "left" } },
+      { content: fmtBRL(totalGeral), styles: { halign: "right" } },
+    ]],
+    columnStyles: {
+      0: { cellWidth: usableW * 0.10, halign: "center" },
+      1: { cellWidth: usableW * 0.28 },
+      2: { cellWidth: usableW * 0.06, halign: "center" },
+      3: { cellWidth: usableW * 0.28 },
+      4: { cellWidth: usableW * 0.16 },
+      5: { cellWidth: usableW * 0.12, halign: "right" },
+    },
+    didDrawPage: () => header(),
+  });
+
+  // Numeração de páginas
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(90);
+    doc.text(`${i} de ${totalPages}`, pageW - marginR, doc.internal.pageSize.getHeight() - 6, { align: "right" });
+  }
+
   return doc;
 }
 
 function ReportPreview({
+  rows,
   grouped,
   totalGeral,
   onClose,
 }: {
+  rows: Row[];
   grouped: { bscmp: string; total: number }[];
   totalGeral: number;
   onClose: () => void;
@@ -180,6 +323,7 @@ function ReportPreview({
     (async () => {
       const logo = await loadLogoAsPng(bensaudeLogoUrl).catch(() => null);
       const doc = buildPdf({
+        rows,
         grouped,
         totalGeral,
         logoDataUrl: logo?.dataUrl,
@@ -397,6 +541,7 @@ export default function AssistencialReceitas2518() {
 
       {showPdf && (
         <ReportPreview
+          rows={rows}
           grouped={s1}
           totalGeral={totalGeral}
           onClose={() => setShowPdf(false)}
