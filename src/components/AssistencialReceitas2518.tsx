@@ -293,17 +293,20 @@ export default function AssistencialReceitas2518() {
 
   const grouped = useMemo(() => {
     if (!rows) return [];
-    const byBs = new Map<string, Map<string, number>>();
+    const byBs = new Map<string, Map<string, { order: number; valor: number }>>();
     for (const r of rows) {
+      const { order, label } = mapEvento(r.dsevento);
       if (!byBs.has(r.bscmp)) byBs.set(r.bscmp, new Map());
       const m = byBs.get(r.bscmp)!;
-      m.set(r.dsevento, (m.get(r.dsevento) || 0) + r.valor);
+      const cur = m.get(label) ?? { order, valor: 0 };
+      cur.valor += r.valor;
+      m.set(label, cur);
     }
     const arr = Array.from(byBs.entries())
       .map(([bscmp, m]) => {
         const eventos = Array.from(m.entries())
-          .map(([dsevento, valor]) => ({ dsevento, valor }))
-          .sort((a, b) => b.valor - a.valor);
+          .map(([dsevento, v]) => ({ dsevento, valor: v.valor, order: v.order }))
+          .sort((a, b) => a.order - b.order || a.dsevento.localeCompare(b.dsevento));
         const total = eventos.reduce((s, e) => s + e.valor, 0);
         return { bscmp, total, eventos };
       })
