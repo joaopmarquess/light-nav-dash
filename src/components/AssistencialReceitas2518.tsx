@@ -22,6 +22,23 @@ const parseNum = (s: string) => {
   return isNaN(n) ? 0 : n;
 };
 
+const EVENT_MAP: Record<string, { order: number; label: string }> = {
+  "CARTEIRINHA": { order: 3, label: "Cartão|Inscrição" },
+  "COPARTICIPACAO - VARIAVEL": { order: 2, label: "Coparticipação" },
+  "COPARTICIPACAO PROCEDIMENTOS": { order: 2, label: "Coparticipação" },
+  "CPP - CONTRAPRESTACAO PECUNIARIA": { order: 1, label: "Mensalidade" },
+  "NEGOCIAÇÃO EM TMM": { order: 1, label: "Mensalidade" },
+  "TAXA DE INSCRICAO": { order: 3, label: "Cartão|Inscrição" },
+};
+
+const mapEvento = (raw: string): { order: number; label: string } => {
+  const key = (raw || "").trim().toUpperCase();
+  for (const k of Object.keys(EVENT_MAP)) {
+    if (k.toUpperCase() === key) return EVENT_MAP[k];
+  }
+  return { order: 99, label: raw || "(sem evento)" };
+};
+
 function parseCsv(text: string): Row[] {
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length);
   if (!lines.length) return [];
@@ -276,17 +293,20 @@ export default function AssistencialReceitas2518() {
 
   const grouped = useMemo(() => {
     if (!rows) return [];
-    const byBs = new Map<string, Map<string, number>>();
+    const byBs = new Map<string, Map<string, { order: number; valor: number }>>();
     for (const r of rows) {
+      const { order, label } = mapEvento(r.dsevento);
       if (!byBs.has(r.bscmp)) byBs.set(r.bscmp, new Map());
       const m = byBs.get(r.bscmp)!;
-      m.set(r.dsevento, (m.get(r.dsevento) || 0) + r.valor);
+      const cur = m.get(label) ?? { order, valor: 0 };
+      cur.valor += r.valor;
+      m.set(label, cur);
     }
     const arr = Array.from(byBs.entries())
       .map(([bscmp, m]) => {
         const eventos = Array.from(m.entries())
-          .map(([dsevento, valor]) => ({ dsevento, valor }))
-          .sort((a, b) => b.valor - a.valor);
+          .map(([dsevento, v]) => ({ dsevento, valor: v.valor, order: v.order }))
+          .sort((a, b) => a.order - b.order || a.dsevento.localeCompare(b.dsevento));
         const total = eventos.reduce((s, e) => s + e.valor, 0);
         return { bscmp, total, eventos };
       })
