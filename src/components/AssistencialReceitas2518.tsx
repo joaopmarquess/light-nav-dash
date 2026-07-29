@@ -171,7 +171,7 @@ function buildPdf({
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(60);
-    doc.text("2518 Processo Rec.", marginL, 17);
+    doc.text("2518 Receitas", marginL, 17);
     doc.setTextColor(0);
   };
 
@@ -550,7 +550,7 @@ export default function AssistencialReceitas2518() {
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] overflow-hidden flex flex-col">
       <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-foreground">2518 Processo Rec.</h2>
+        <h2 className="text-sm font-semibold text-foreground">2518 Receitas</h2>
         <div className="flex items-center gap-3">
           <div className="text-xs text-muted-foreground">
             Total Geral: <span className="font-semibold text-foreground tabular-nums">{fmtBRL(totalGeral)}</span>
