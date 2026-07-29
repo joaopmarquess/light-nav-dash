@@ -304,10 +304,12 @@ function buildPdf({
 }
 
 function ReportPreview({
+  rows,
   grouped,
   totalGeral,
   onClose,
 }: {
+  rows: Row[];
   grouped: { bscmp: string; total: number }[];
   totalGeral: number;
   onClose: () => void;
@@ -321,6 +323,7 @@ function ReportPreview({
     (async () => {
       const logo = await loadLogoAsPng(bensaudeLogoUrl).catch(() => null);
       const doc = buildPdf({
+        rows,
         grouped,
         totalGeral,
         logoDataUrl: logo?.dataUrl,
