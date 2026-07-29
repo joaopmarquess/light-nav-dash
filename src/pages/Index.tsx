@@ -122,8 +122,8 @@ const menuItems: MenuItem[] = [
       { icon: CalendarCheck, label: "Por Competência" },
       { icon: Search, label: "Consulta" },
       { icon: Stethoscope, label: "Relatório Plano Executor" },
-      { icon: Stethoscope, label: "2518 Processo" },
-      { icon: Stethoscope, label: "2518 Processo Rec." },
+      { icon: Stethoscope, label: "2518 Despesas" },
+      { icon: Stethoscope, label: "2518 Receitas" },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
@@ -408,9 +408,9 @@ const Index = () => {
             <AssistencialConsulta />
           ) : active === "Relatório Plano Executor" ? (
             <AssistencialRelatorioExecutor />
-          ) : active === "2518 Processo" ? (
+          ) : active === "2518 Despesas" ? (
             <AssistencialRelatorioExecutor source="csv2518" />
-          ) : active === "2518 Processo Rec." ? (
+          ) : active === "2518 Receitas" ? (
             <AssistencialReceitas2518 />
 
 

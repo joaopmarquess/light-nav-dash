@@ -171,7 +171,7 @@ function buildPdf({
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(60);
-    doc.text("2518 Processo Rec.", marginL, 17);
+    doc.text("2518 Receitas", marginL, 17);
     doc.setTextColor(0);
   };
 
@@ -335,23 +335,15 @@ function buildPdf({
     sec2End = doc.getNumberOfPages();
   }
 
-  // ===== Rodapé de paginação por seção =====
+  // ===== Rodapé de paginação sequencial =====
   const pageH = doc.internal.pageSize.getHeight();
   const totalPages = doc.getNumberOfPages();
-  const sec1Total = Math.max(0, sec1End - sec1Start + 1);
-  const sec2Total = sec2End ? sec2End - sec2Start + 1 : 0;
   for (let p = 1; p <= totalPages; p++) {
     doc.setPage(p);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(80);
-    let label = "";
-    if (p >= sec1Start && p <= sec1End) {
-      label = `Seção 1 | ${p - sec1Start + 1} de ${sec1Total}`;
-    } else if (sec2End && p >= sec2Start && p <= sec2End) {
-      label = `Seção 2 | ${p - sec2Start + 1} de ${sec2Total}`;
-    }
-    if (label) doc.text(label, pageW - marginR, pageH - 6, { align: "right" });
+    doc.text(`${p} de ${totalPages}`, marginL, pageH - 6, { align: "left" });
     doc.setTextColor(0);
   }
 
@@ -550,7 +542,7 @@ export default function AssistencialReceitas2518() {
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] overflow-hidden flex flex-col">
       <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-foreground">2518 Processo Rec.</h2>
+        <h2 className="text-sm font-semibold text-foreground">2518 Receitas</h2>
         <div className="flex items-center gap-3">
           <div className="text-xs text-muted-foreground">
             Total Geral: <span className="font-semibold text-foreground tabular-nums">{fmtBRL(totalGeral)}</span>
