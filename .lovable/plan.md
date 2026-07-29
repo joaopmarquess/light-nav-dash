@@ -1,57 +1,43 @@
-## Objetivo
+## Alterações no submenu "2518 Processo Rec."
 
-Ter dois submenus dentro de "Sinistralidade":
+### I) Agrupamento de dsevento (só na Seção 2 do PDF)
+Manter tabela em tela e Seção 1 exatamente como estão hoje (dsevento bruto agrupado por Mensalidade / Coparticipação / Cartão|Inscrição já existe na tela — permanece igual).
 
-- **Consulta por Plano/Empresa** — a tela atual, sem mudanças de comportamento.
-- **Consulta por Beneficiário** — mesma tela, mas cada linha é um beneficiário (`codigo` + `nmcli`), sem agrupamentos, e o filtro busca por `codigo` e `nmcli`.
+### II) Formato de bscmp (só na Seção 2)
+Exibir `bscmp` como `MM|YYYY` (ex.: `202407` → `07|2024`). Tela e Seção 1 seguem com o formato atual.
 
-Tudo o mais (seletor de base/período, colunas Curta/Completa, ordenação em todas as colunas, colunas em negrito, loader divertido, rodapé de totais) continua idêntico nas duas.
+### III) Nova Seção 2 no PDF
 
-## Mudanças
+**Fonte de dados:** novo CSV `2518_receitas-2.csv` (será copiado para `public/data/2518_receitas_v2.csv`).
+Colunas usadas: `bscmp`, `nmctr`, `cdcontrato`, `dp`, `beneficiario` (nmcli), `dsevento`, `valor`.
 
-### 1. Menu lateral (`src/pages/Index.tsx`)
+**Cabeçalho do PDF:** igual ao PDF de Despesas (2518 Processo) — logo Bensaúde à esquerda, título centralizado "Relatório de Receitas 2518 | Período", subtítulo "2518 Processo Rec." Reaproveita `drawHeader` do padrão existente.
 
-Substituir o item filho "Consulta" do grupo "Sinistralidade" por dois itens:
+**Grid hierárquico da Seção 2 (linhas sem quebra de texto):**
 
 ```text
-Sinistralidade
-├─ Consulta por Plano/Empresa   (Search icon)
-├─ Consulta por Beneficiário    (UserCheck icon)
-└─ PBI U12
+[bscmp em formato MM|YYYY]                                             (cabeçalho de grupo mesclado)
+  nmctr (cdcontrato)                                                    (cabeçalho de sub-grupo mesclado)
+    dp - nmcli - dsevento(mapeado) ..................  valor
+    dp - nmcli - dsevento(mapeado) ..................  valor
+  Subtotal nmctr (cdcontrato) ......................  soma
+  ...
+Subtotal bscmp MM|YYYY ............................  soma da competência
+---
+TOTAL GERAL ......................................  soma de todas as bscmp
 ```
 
-Adicionar dois `active === ...` no roteador do `<main>`:
+- `dsevento` na linha detalhe usa o rótulo agrupado (Mensalidade / Coparticipação / Cartão|Inscrição), ordenado por `order` do mapa.
+- Ordenação: bscmp asc → nmctr asc → dp asc → nmcli asc → order do evento.
+- Todas as linhas com `noWrap: true` / `overflow: 'ellipsize'` em autoTable para garantir linha única.
+- Subtotais e Total Geral com fundo cinza claro `[235,235,235]` e negrito, mesmo padrão dos subtotais atuais da Seção 3 do outro relatório.
 
-- `"Consulta por Plano/Empresa"` → renderiza `<SinistralidadeConsulta mode="plano" />`
-- `"Consulta por Beneficiário"` → renderiza `<SinistralidadeConsulta mode="beneficiario" />`
+### Arquivos afetados
+- `src/components/AssistencialReceitas2518.tsx`
+  - novo `loadCsvV2()` para o CSV detalhado (fetch em paralelo ao atual)
+  - helper `fmtBscmp(s)` → `MM|YYYY`
+  - novo builder `buildSection2()` chamado dentro de `buildPdf`
+  - `buildPdf` passa a produzir Seção 1 + Seção 2 no mesmo documento
+- `public/data/2518_receitas_v2.csv` — novo arquivo (cópia do upload)
 
-Remover o antigo `active === "Consulta"`.
-
-### 2. Componente `SinistralidadeConsulta` (`src/components/SinistralidadeConsulta.tsx`)
-
-Aceitar prop opcional `mode: "plano" | "beneficiario"` (default `"plano"`).
-
-Em `mode === "beneficiario"`:
-
-- Cabeçalho da primeira coluna vira **"Beneficiário"** (label `"codigo nmcli"`).
-- A agregação vira uma lista plana: uma linha por chave `codigo`+`nmcli`, somando as métricas de todas as linhas do período com aquele beneficiário (mesmo raciocínio que hoje faz para os grupos, mas na granularidade beneficiário). `VIDA` = 1 por linha; o total no rodapé continua sendo a contagem distinta de `codigo`.
-- Sem chevrons, sem `expanded`, sem subgrupos e sem filhos — apenas o corpo da tabela com essas linhas.
-- Filtro do topo busca em `codigo` **ou** `nmcli` (case-insensitive, `includes`).
-- Ordenação nas colunas funciona sobre essa lista plana usando exatamente as mesmas regras já implementadas para `cmpRow` (texto para "Beneficiário", numérico/ratio para as demais, `VIDA` neutro).
-
-Em `mode === "plano"`: comportamento atual permanece intacto (grupo → cdpln → filhos, filtro por GRUPO/cdpln, ordenação nos 3 níveis).
-
-Ambos os modos continuam usando a RPC `sinistralidade_periodos()` para a lista de bases e a mesma query de linhas por `PERIODO`.
-
-### Detalhes técnicos
-
-- Um único componente com branch por `mode` mantém o custo baixo: a lógica de fetch, seleção de período, view Curta/Completa, formatação, negrito, loader e totais é compartilhada.
-- A agregação por beneficiário reaproveita o mesmo padrão do `useMemo` de grupos: `Map<chave, Acc>` somando `NUM_COLS`, onde `chave = ${codigo}||${nmcli}`. Ignora linhas sem `codigo`.
-- O tipo `SortKey` continua igual. `cmpRow` já existente cobre a ordenação da lista plana; para o `mode === "beneficiario"`, o `filtered` retorna diretamente o array ordenado por `cmpRow` sem o mapeamento de subgroups/children.
-- Renderização condicional: se `mode === "beneficiario"`, o `<tbody>` mapeia direto sobre `filtered` e emite uma `<tr>` por beneficiário, sem os dois `Fragment` aninhados; se `plano`, mantém o render atual.
-- Nome do estado ativo do menu passa a ser `"Consulta por Plano/Empresa"` / `"Consulta por Beneficiário"` — usados nos comparativos do `Index.tsx` e como título mostrado no header (`{active}`).
-
-### Fora do escopo
-
-- Não alterar `mv_sinistralidade`, nem a RPC, nem o schema.
-- Não mudar a Consulta original (Plano/Empresa) — só renomear o rótulo do submenu.
+Tela do submenu permanece inalterada.
