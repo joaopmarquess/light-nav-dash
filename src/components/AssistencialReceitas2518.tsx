@@ -176,6 +176,7 @@ function buildPdf({
   };
 
   // ===================== Seção 1 =====================
+  const sec1Start = doc.getNumberOfPages();
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.text("Seção 1 - Competência", marginL, marginT + 8);
@@ -205,10 +206,14 @@ function buildPdf({
     },
     didDrawPage: () => header(),
   });
+  const sec1End = doc.getNumberOfPages();
 
   // ===================== Seção 2 =====================
+  let sec2Start = 0;
+  let sec2End = 0;
   if (rowsV2.length) {
     doc.addPage();
+    sec2Start = doc.getNumberOfPages();
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.text("Seção 2 - Competência / Contrato / Beneficiário", marginL, marginT + 8);
@@ -327,6 +332,27 @@ function buildPdf({
       },
       didDrawPage: () => header(),
     });
+    sec2End = doc.getNumberOfPages();
+  }
+
+  // ===== Rodapé de paginação por seção =====
+  const pageH = doc.internal.pageSize.getHeight();
+  const totalPages = doc.getNumberOfPages();
+  const sec1Total = Math.max(0, sec1End - sec1Start + 1);
+  const sec2Total = sec2End ? sec2End - sec2Start + 1 : 0;
+  for (let p = 1; p <= totalPages; p++) {
+    doc.setPage(p);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(80);
+    let label = "";
+    if (p >= sec1Start && p <= sec1End) {
+      label = `Seção 1 | ${p - sec1Start + 1} de ${sec1Total}`;
+    } else if (sec2End && p >= sec2Start && p <= sec2End) {
+      label = `Seção 2 | ${p - sec2Start + 1} de ${sec2Total}`;
+    }
+    if (label) doc.text(label, marginL, pageH - 6);
+    doc.setTextColor(0);
   }
 
   return doc;
