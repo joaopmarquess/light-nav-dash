@@ -22,6 +22,23 @@ const parseNum = (s: string) => {
   return isNaN(n) ? 0 : n;
 };
 
+const EVENT_MAP: Record<string, { order: number; label: string }> = {
+  "CARTEIRINHA": { order: 3, label: "Cartão|Inscrição" },
+  "COPARTICIPACAO - VARIAVEL": { order: 2, label: "Coparticipação" },
+  "COPARTICIPACAO PROCEDIMENTOS": { order: 2, label: "Coparticipação" },
+  "CPP - CONTRAPRESTACAO PECUNIARIA": { order: 1, label: "Mensalidade" },
+  "NEGOCIAÇÃO EM TMM": { order: 1, label: "Mensalidade" },
+  "TAXA DE INSCRICAO": { order: 3, label: "Cartão|Inscrição" },
+};
+
+const mapEvento = (raw: string): { order: number; label: string } => {
+  const key = (raw || "").trim().toUpperCase();
+  for (const k of Object.keys(EVENT_MAP)) {
+    if (k.toUpperCase() === key) return EVENT_MAP[k];
+  }
+  return { order: 99, label: raw || "(sem evento)" };
+};
+
 function parseCsv(text: string): Row[] {
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length);
   if (!lines.length) return [];
