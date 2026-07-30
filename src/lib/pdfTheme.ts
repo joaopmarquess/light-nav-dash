@@ -100,3 +100,32 @@ export const negativeRed = (data: any) => {
   const raw = String(data.cell.raw?.content ?? data.cell.raw ?? "");
   if (/^-\s?[\d.]/.test(raw.trim())) data.cell.styles.textColor = PDF_COLORS.negative;
 };
+
+/** Bloco de cabeçalho de seção: título, faixa do plano e rótulo da seção (centralizados). */
+export function drawReportHeading(
+  doc: jsPDF,
+  opts: { title: string; plano: string; secao: string; marginL: number; marginR: number },
+) {
+  const { title, plano, secao, marginL, marginR } = opts;
+  const pageW = doc.internal.pageSize.getWidth();
+  const cx = pageW / 2;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11.5);
+  doc.setTextColor(...PDF_COLORS.navy);
+  doc.text(title, cx, 33, { align: "center", baseline: "middle" });
+
+  doc.setFillColor(...PDF_COLORS.groupFill);
+  doc.rect(marginL, 35.6, pageW - marginL - marginR, 6, "F");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...PDF_COLORS.navy);
+  doc.text(plano, cx, 38.7, { align: "center", baseline: "middle" });
+
+  doc.setFontSize(9.5);
+  doc.setTextColor(...PDF_COLORS.text);
+  doc.text(secao, cx, 45.5, { align: "center", baseline: "middle" });
+
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...PDF_COLORS.text);
+  return 48;
+}
