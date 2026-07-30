@@ -92,3 +92,11 @@ export const totalRowStyles = {
   fontSize: 9,
   overflow: "ellipsize" as const,
 };
+
+/** Hook autoTable: pinta valores negativos em vermelho. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const negativeRed = (data: any) => {
+  if (data.section !== "body") return;
+  const raw = String(data.cell.raw?.content ?? data.cell.raw ?? "");
+  if (/^-\s?[\d.]/.test(raw.trim())) data.cell.styles.textColor = PDF_COLORS.negative;
+};

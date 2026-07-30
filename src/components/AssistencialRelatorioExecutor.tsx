@@ -9,6 +9,7 @@ import {
   baseTableStyles,
   drawSectionTitle,
   groupRowStyles,
+  negativeRed,
   subtotalRowStyles,
   totalRowStyles,
 } from "@/lib/pdfTheme";
@@ -752,6 +753,7 @@ function buildPdf({
     headStyles: { ...baseTableStyles(7).headStyles, halign: "center" },
     footStyles: { ...baseTableStyles(7).footStyles, ...subtotalRowStyles },
     margin: { left: marginL, right: marginR, top: marginT + 4, bottom: marginB },
+    didParseCell: negativeRed,
     didDrawPage: () => header(),
   };
 

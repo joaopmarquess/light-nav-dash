@@ -9,6 +9,7 @@ import {
   baseTableStyles,
   drawSectionTitle,
   groupRowStyles,
+  negativeRed,
   subtotalRowStyles,
   totalRowStyles,
 } from "@/lib/pdfTheme";
@@ -173,6 +174,7 @@ function buildPdf({
       0: { cellWidth: usableW * 0.5 },
       1: { cellWidth: usableW * 0.5 },
     },
+    didParseCell: negativeRed,
     didDrawPage: () => header(),
   });
   const sec1End = doc.getNumberOfPages();
@@ -296,7 +298,8 @@ function buildPdf({
         0: { cellWidth: usableW * 0.78 },
         1: { cellWidth: usableW * 0.22 },
       },
-      didDrawPage: () => header(),
+      didParseCell: negativeRed,
+    didDrawPage: () => header(),
     });
     sec2End = doc.getNumberOfPages();
   }
