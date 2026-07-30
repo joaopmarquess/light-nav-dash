@@ -3,9 +3,8 @@ import { ChevronRight, ChevronDown, FileDown, Printer, X, Loader2 } from "lucide
 import jsPDF from "jspdf";
 import autoTable, { RowInput } from "jspdf-autotable";
 import FunLoader from "@/components/FunLoader";
-import bensaudeLogoAsset from "@/assets/bensaude-logo.svg.asset.json";
+import { attachTimbrado, loadTimbrado } from "@/lib/pdfTimbrado";
 
-const bensaudeLogoUrl = bensaudeLogoAsset.url;
 
 type Row = {
   bscmp: string;
