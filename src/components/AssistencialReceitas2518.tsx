@@ -306,17 +306,33 @@ function buildPdf({
     sec2End = doc.getNumberOfPages();
   }
 
-  // ===== Rodapé de paginação sequencial =====
+  // ===== Rodapé de paginação =====
   const pageH = doc.internal.pageSize.getHeight();
   const totalPages = doc.getNumberOfPages();
+  const sectionByPage: Record<number, string> = {};
+  for (let p = sec1Start; p <= sec1End; p++) sectionByPage[p] = "Seção 1";
+  if (sec2Start) for (let p = sec2Start; p <= sec2End; p++) sectionByPage[p] = "Seção 2";
+  const secTotals: Record<string, number> = {};
+  for (let p = 1; p <= totalPages; p++) {
+    const s = sectionByPage[p];
+    if (s) secTotals[s] = (secTotals[s] ?? 0) + 1;
+  }
+  const secSeen: Record<string, number> = {};
+  const footY = pageH - 31.5;
   for (let p = 1; p <= totalPages; p++) {
     doc.setPage(p);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(80);
-    doc.text(`${p} de ${totalPages}`, marginL, pageH - 33, { align: "left" });
+    doc.text(`${p} de ${totalPages}`, marginL, footY, { align: "left" });
+    const sec = sectionByPage[p];
+    if (sec) {
+      secSeen[sec] = (secSeen[sec] ?? 0) + 1;
+      doc.text(`${sec} | ${secSeen[sec]} de ${secTotals[sec]}`, pageW - marginR, footY, { align: "right" });
+    }
     doc.setTextColor(0);
   }
+
 
   return doc;
 }
