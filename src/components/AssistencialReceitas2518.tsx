@@ -332,14 +332,14 @@ function ReportPreview({
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const logo = await loadLogoAsPng(bensaudeLogoUrl).catch(() => null);
+      const timbrado = await loadTimbrado();
       const doc = buildPdf({
         grouped,
         totalGeral,
         rowsV2,
-        logoDataUrl: logo?.dataUrl,
-        logoAspect: logo?.aspect,
+        timbradoDataUrl: timbrado,
       });
+
       docRef.current = doc;
       const pdfjs = await import("pdfjs-dist");
       const workerMod: { default: string } = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
