@@ -718,7 +718,7 @@ function buildPdf({
   const pageH = doc.internal.pageSize.getHeight();
   const marginL = 12;
   const marginR = 12;
-  const marginT = 54;
+  const marginT = 56;
   const marginB = 16;
   const usableW = pageW - marginL - marginR;
 
