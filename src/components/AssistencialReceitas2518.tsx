@@ -208,8 +208,8 @@ function buildPdf({
     const compesArr = Array.from(byBs.values()).sort((a, b) => a.bscmp.localeCompare(b.bscmp));
 
     const body: RowInput[] = [];
-    const grayFill: [number, number, number] = [235, 235, 235];
-    const lightFill: [number, number, number] = [245, 245, 245];
+    const grayFill = PDF_COLORS.groupFill;
+    const lightFill = PDF_COLORS.subtotalFill;
 
     for (const c of compesArr) {
       // header bscmp
