@@ -12,6 +12,7 @@ import {
   negativeRed,
   subtotalRowStyles,
   totalRowStyles,
+  fmtCompetencia,
 } from "@/lib/pdfTheme";
 
 
@@ -776,7 +777,7 @@ function buildPdf({
     ...commonTableOpts,
     startY: marginT,
     head: [[
-      "bscmp",
+      "Competência",
       { content: "Internação", styles: { halign: "right" } },
       { content: "Demais Tipos de Guia", styles: { halign: "right" } },
       { content: "Total", styles: { halign: "right" } },
@@ -820,9 +821,9 @@ function buildPdf({
       showFoot: "lastPage",
       head: [
         [{ content: exeLabel(exe, false), colSpan: 3, styles: { ...groupRowStyles, halign: "left" } }],
-        [{ content: "bscmp", colSpan: 2, styles: { halign: "center" } }, { content: "Total", styles: { halign: "right" } }],
+        [{ content: "Competência", colSpan: 2, styles: { halign: "center" } }, { content: "Total", styles: { halign: "right" } }],
       ],
-      body: body.map(([k, v]) => [{ content: k, colSpan: 2, styles: { halign: "center" } }, v]),
+      body: body.map(([k, v]) => [{ content: fmtCompetencia(k), colSpan: 2, styles: { halign: "center" } }, v]),
       foot: [[
         { content: `Subtotal do Executor (${exe})`, colSpan: 2, styles: { ...subtotalRowStyles, halign: "left", lineWidth: { top: 0.1, bottom: 0.8, left: 0.1, right: 0 }, lineColor: PDF_COLORS.navy } },
         { content: money(sub), styles: { ...subtotalRowStyles, halign: "right", lineWidth: { top: 0.1, bottom: 0.8, left: 0, right: 0.1 }, lineColor: PDF_COLORS.navy } },
@@ -948,7 +949,7 @@ function buildPdf({
         dp,
         g.nrgui,
         fmtDateBR(g.dtexe),
-        g.bscmp,
+        fmtCompetencia(g.bscmp),
         money(g.valor),
       ]);
     }

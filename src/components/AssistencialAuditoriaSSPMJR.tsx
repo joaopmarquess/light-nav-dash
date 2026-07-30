@@ -386,7 +386,7 @@ export default function AssistencialAuditoriaSSPMJR() {
                                   onClick={() => setExpMabas((p) => ({ ...p, [mKey]: !p[mKey] }))}
                                 >
                                   <ChevronRight className={`h-3.5 w-3.5 transition-transform ${mOpen ? "rotate-90" : ""}`} />
-                                  <span>{m.bscmp}</span>
+                                  <span>{fmtCompetencia(m.bscmp)}</span>
                                 </button>
                               </td>
                               <td className="px-3 py-1.5 text-right">{m.guias.size.toLocaleString("pt-BR")}</td>

@@ -12,6 +12,7 @@ import {
   negativeRed,
   subtotalRowStyles,
   totalRowStyles,
+  fmtCompetencia,
 } from "@/lib/pdfTheme";
 
 
@@ -40,11 +41,7 @@ const parseNum = (s: string) => {
   return isNaN(n) ? 0 : n;
 };
 
-const fmtBscmp = (s: string) => {
-  const t = (s || "").trim();
-  if (/^\d{6}$/.test(t)) return `${t.slice(4, 6)}|${t.slice(0, 4)}`;
-  return t;
-};
+const fmtBscmp = (s: string) => fmtCompetencia(s);
 
 const EVENT_MAP: Record<string, { order: number; label: string }> = {
   "CARTEIRINHA": { order: 3, label: "Cartão|Inscrição" },
@@ -155,11 +152,11 @@ function buildPdf({
     margin: { left: marginL, right: marginR, top: marginT, bottom: marginB },
     startY: marginT,
     head: [[
-      { content: "bscmp", styles: { halign: "center" } },
+      { content: "Competência", styles: { halign: "center" } },
       { content: "Valor", styles: { halign: "right" } },
     ]],
     body: grouped.map((g) => [
-      { content: g.bscmp, styles: { halign: "center" } },
+      { content: fmtBscmp(g.bscmp), styles: { halign: "center" } },
       { content: fmtBRL(g.total), styles: { halign: "right" } },
     ]),
     showFoot: "lastPage",
@@ -579,7 +576,7 @@ export default function AssistencialReceitas2518() {
                     <td className="px-3 py-2 font-medium">
                       <span className="inline-flex items-center gap-1">
                         {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                        {g.bscmp}
+                        {fmtBscmp(g.bscmp)}
                       </span>
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums font-medium">{fmtBRL(g.total)}</td>
