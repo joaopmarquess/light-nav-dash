@@ -1,5 +1,5 @@
 import type jsPDF from "jspdf";
-import timbradoAsset from "@/assets/timbrado.png.asset.json";
+import timbradoAsset from "@/assets/timbrado2.png.asset.json";
 
 export const TIMBRADO_URL = timbradoAsset.url;
 
