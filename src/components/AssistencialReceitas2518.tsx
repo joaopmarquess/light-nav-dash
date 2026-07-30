@@ -308,7 +308,7 @@ function buildPdf({
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(80);
-    doc.text(`${p} de ${totalPages}`, marginL, pageH - 6, { align: "left" });
+    doc.text(`${p} de ${totalPages}`, marginL, pageH - 33, { align: "left" });
     doc.setTextColor(0);
   }
 

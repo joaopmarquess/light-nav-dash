@@ -1013,8 +1013,8 @@ function buildPdf({
     doc.setFontSize(8);
     doc.setTextColor(90);
     const sec = sectionByPage[i] ?? "";
-    if (sec) doc.text(sec, marginL, pageH - 6, { align: "left" });
-    doc.text(`Página ${i} de ${total}`, pageW - marginR, pageH - 6, { align: "right" });
+    if (sec) doc.text(sec, marginL, pageH - 33, { align: "left" });
+    doc.text(`Página ${i} de ${total}`, pageW - marginR, pageH - 33, { align: "right" });
   }
 
   return doc;
