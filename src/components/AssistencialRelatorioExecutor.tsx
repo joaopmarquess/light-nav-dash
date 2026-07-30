@@ -762,7 +762,7 @@ function buildPdf({
   // ---------- Section 1 ----------
 
   const s1Body = report.s1Rows.map(([k, o]) => [
-    k,
+    fmtCompetencia(k),
     money(o.int),
     money(o.dem),
     money(o.int + o.dem),

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { fmtCompetencia } from "@/lib/pdfTheme";
 import { hostinger } from "@/lib/hostingerClient";
 import { ChevronRight, Search, Loader2 } from "lucide-react";
 
