@@ -136,31 +136,27 @@ function buildPdf({
     const line1Y = 35;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
-    doc.setTextColor(20);
+    doc.setTextColor(...PDF_COLORS.navy);
     const titulo = `Relatório de Receitas 2518${bsIni ? ` | ${bsIni} a ${bsFim}` : ""}`;
     doc.text(titulo, pageW / 2, line1Y, { align: "center", baseline: "middle" });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.setTextColor(60);
+    doc.setTextColor(...PDF_COLORS.muted);
     doc.text("2518 Receitas", marginL, 41);
-    doc.setTextColor(0);
+    doc.setTextColor(...PDF_COLORS.text);
   };
 
-
+  const base = baseTableStyles(8);
 
   // ===================== Seção 1 =====================
   const sec1Start = doc.getNumberOfPages();
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.text("Seção 1 - Competência", marginL, marginT + 8);
+  drawSectionTitle(doc, "Seção 1 - Competência", marginL, marginT + 8, pageW - marginR);
 
   autoTable(doc, {
-    styles: { font: "helvetica", fontSize: 8, cellPadding: 1.5, lineColor: [140, 140, 140], lineWidth: 0.1, textColor: 20 },
-    headStyles: { fillColor: [255, 255, 255], textColor: 20, fontStyle: "bold", lineColor: [140, 140, 140], lineWidth: 0.1 },
-    footStyles: { fillColor: [235, 235, 235], textColor: 20, fontStyle: "bold" },
-    theme: "grid",
+    ...base,
+    footStyles: { ...base.footStyles, ...totalRowStyles },
     margin: { left: marginL, right: marginR, top: marginT + 4, bottom: marginB },
-    startY: marginT + 10,
+    startY: marginT + 12,
     head: [[
       { content: "bscmp", styles: { halign: "center" } },
       { content: "Valor", styles: { halign: "right" } },
@@ -170,7 +166,7 @@ function buildPdf({
       { content: fmtBRL(g.total), styles: { halign: "right" } },
     ]),
     foot: [[
-      { content: "Total", styles: { halign: "left" } },
+      { content: "TOTAL GERAL", styles: { halign: "left" } },
       { content: fmtBRL(totalGeral), styles: { halign: "right" } },
     ]],
     columnStyles: {
@@ -180,6 +176,7 @@ function buildPdf({
     didDrawPage: () => header(),
   });
   const sec1End = doc.getNumberOfPages();
+
 
   // ===================== Seção 2 =====================
   let sec2Start = 0;
