@@ -68,6 +68,8 @@ export function baseTableStyles(fontSize = 7.5) {
       lineWidth: 0.1,
     },
     alternateRowStyles: { fillColor: PDF_COLORS.zebra },
+    tableLineColor: PDF_COLORS.outerLine,
+    tableLineWidth: 0.5,
     theme: "grid" as const,
   };
 }
