@@ -4,6 +4,14 @@ import jsPDF from "jspdf";
 import autoTable, { RowInput } from "jspdf-autotable";
 import FunLoader from "@/components/FunLoader";
 import { attachTimbrado, loadTimbrado } from "@/lib/pdfTimbrado";
+import {
+  PDF_COLORS,
+  baseTableStyles,
+  drawSectionTitle,
+  groupRowStyles,
+  subtotalRowStyles,
+  totalRowStyles,
+} from "@/lib/pdfTheme";
 
 
 type Row = {
