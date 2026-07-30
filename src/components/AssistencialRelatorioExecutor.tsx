@@ -3,8 +3,8 @@ import { hostinger } from "@/lib/hostingerClient";
 import { ChevronRight, Search, Loader2, FileDown, Printer, X } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import bensaudeLogoAsset from "@/assets/bensaude-logo.svg.asset.json";
-const bensaudeLogoUrl = bensaudeLogoAsset.url;
+import { attachTimbrado, loadTimbrado } from "@/lib/pdfTimbrado";
+
 
 type Row = {
   ideAssist: number | string | null;
