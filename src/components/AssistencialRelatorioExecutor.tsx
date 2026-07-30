@@ -978,6 +978,7 @@ function buildPdf({
         ],
       ],
       body,
+      showFoot: "lastPage",
       foot: [[
         { content: `Subtotal (Contrato: ${cg.cdcontrato})`, colSpan: 5, styles: { ...subtotalRowStyles, halign: "left" } },
         { content: money(sub), styles: { ...subtotalRowStyles, halign: "right" } },
