@@ -290,6 +290,7 @@ function buildPdf({
         { content: "Valor", styles: { halign: "right" } },
       ]],
       body,
+      showFoot: "lastPage",
       foot: [[
         { content: "TOTAL GERAL", styles: { halign: "left" } },
         { content: fmtBRL(totalV2), styles: { halign: "right" } },
