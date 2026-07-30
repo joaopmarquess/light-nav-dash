@@ -314,7 +314,7 @@ function buildPdf({
     if (s) secTotals[s] = (secTotals[s] ?? 0) + 1;
   }
   const secSeen: Record<string, number> = {};
-  const footY = pageH - 22;
+  const footY = pageH - 14;
   for (let p = 1; p <= totalPages; p++) {
     doc.setPage(p);
     doc.setFont("helvetica", "normal");
