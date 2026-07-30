@@ -1101,7 +1101,7 @@ function ReportPreview({
 
   const doDownload = () => {
     if (!docRef.current) return;
-    docRef.current.save(`relatorio_executor_${cdpln}_${mabasIni}_${mabasFim}.pdf`);
+    docRef.current.save("2518_SSPMJR-Despesas.pdf");
   };
 
   const doPrint = () => {

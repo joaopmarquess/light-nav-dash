@@ -408,7 +408,7 @@ function ReportPreview({
   }, []);
 
   const doDownload = () => {
-    docRef.current?.save("receitas_2518.pdf");
+    docRef.current?.save("2518_SSPMJR_Receitas.pdf");
   };
   const doPrint = () => {
     if (!pages.length) return;
