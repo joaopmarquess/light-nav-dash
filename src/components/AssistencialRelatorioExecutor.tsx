@@ -718,7 +718,7 @@ function buildPdf({
   const pageH = doc.internal.pageSize.getHeight();
   const marginL = 12;
   const marginR = 12;
-  const marginT = 44;
+  const marginT = 50;
   const marginB = 40;
   const usableW = pageW - marginL - marginR;
 
@@ -728,22 +728,15 @@ function buildPdf({
     ? report.exeSortedS3.find((e) => report.exeCd.get(e) === filterCd) ?? null
     : null;
 
+  let currentSecao = "Seção 1 | Tipo de Guia de Procedimentos";
   const header = () => {
-    const line1Y = 35;
-    // Linha 1 centro: título | período
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(...PDF_COLORS.navy);
-    const titulo = `Relatório de Contas Médicas | ${mabasIni} a ${mabasFim}`;
-    doc.text(titulo, pageW / 2, line1Y, { align: "center", baseline: "middle" });
-    // Linha 2 esquerda: cdpln | dspln
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(...PDF_COLORS.muted);
-    const line2 = `${cdpln}${dspln ? ` | ${dspln}` : ""}`;
-    doc.text(line2, marginL, 41);
-
-    doc.setTextColor(...PDF_COLORS.text);
+    drawReportHeading(doc, {
+      title: "Relatório Despesas Assistenciais",
+      plano: `Plano: ${cdpln}${dspln ? ` - ${dspln}` : ""}`,
+      secao: currentSecao,
+      marginL,
+      marginR,
+    });
   };
 
 
