@@ -251,11 +251,11 @@ function buildPdf({
         body.push([
           {
             content: `Subtotal ${ct.nmctr} (${ct.cdcontrato})`,
-            styles: { ...subtotalRowStyles, halign: "left", lineWidth: { top: 0.1, bottom: 0.6, left: 0.1, right: 0 }, lineColor: PDF_COLORS.primary },
+            styles: { ...subtotalRowStyles, halign: "left", lineWidth: { top: 0.1, bottom: 0.6, left: 0.1, right: 0 }, lineColor: PDF_COLORS.navy },
           },
           {
             content: fmtBRL(ct.total),
-            styles: { ...subtotalRowStyles, halign: "right", lineWidth: { top: 0.1, bottom: 0.6, left: 0, right: 0.1 }, lineColor: PDF_COLORS.primary },
+            styles: { ...subtotalRowStyles, halign: "right", lineWidth: { top: 0.1, bottom: 0.6, left: 0, right: 0.1 }, lineColor: PDF_COLORS.navy },
           },
         ]);
 
