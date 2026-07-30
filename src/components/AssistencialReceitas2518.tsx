@@ -101,67 +101,31 @@ function parseCsvV2(text: string): RowV2[] {
   return out;
 }
 
-async function loadLogoAsPng(url: string): Promise<{ dataUrl: string; aspect: number }> {
-  const res = await fetch(url);
-  const svgText = await res.text();
-  const blob = new Blob([svgText], { type: "image/svg+xml" });
-  const objUrl = URL.createObjectURL(blob);
-  try {
-    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const i = new Image();
-      i.onload = () => resolve(i);
-      i.onerror = reject;
-      i.src = objUrl;
-    });
-    const w = img.naturalWidth || 300;
-    const h = img.naturalHeight || 100;
-    const scale = 600 / w;
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.round(w * scale);
-    canvas.height = Math.round(h * scale);
-    const ctx = canvas.getContext("2d")!;
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    return { dataUrl: canvas.toDataURL("image/png"), aspect: w / h };
-  } finally {
-    URL.revokeObjectURL(objUrl);
-  }
-}
-
 function buildPdf({
   grouped,
   totalGeral,
   rowsV2,
-  logoDataUrl,
-  logoAspect,
+  timbradoDataUrl,
 }: {
   grouped: { bscmp: string; total: number }[];
   totalGeral: number;
   rowsV2: RowV2[];
-  logoDataUrl?: string;
-  logoAspect?: number;
+  timbradoDataUrl?: string | null;
 }): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  attachTimbrado(doc, timbradoDataUrl);
   const pageW = doc.internal.pageSize.getWidth();
-  const marginL = 10;
-  const marginR = 10;
-  const marginT = 22;
-  const marginB = 14;
+  const marginL = 12;
+  const marginR = 12;
+  const marginT = 34;
+  const marginB = 34;
   const usableW = pageW - marginL - marginR;
 
   const bsIni = grouped.length ? grouped[0].bscmp : "";
   const bsFim = grouped.length ? grouped[grouped.length - 1].bscmp : "";
 
   const header = () => {
-    const line1Y = 10;
-    if (logoDataUrl) {
-      const h = 10;
-      const w = h * (logoAspect ?? 3);
-      try {
-        doc.addImage(logoDataUrl, "PNG", marginL, line1Y - h / 2, w, h);
-      } catch {
-        // ignore
-      }
-    }
+    const line1Y = 30;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(20);
@@ -170,9 +134,10 @@ function buildPdf({
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(60);
-    doc.text("2518 Receitas", marginL, 17);
+    doc.text("2518 Receitas", marginL, 36);
     doc.setTextColor(0);
   };
+
 
   // ===================== Seção 1 =====================
   const sec1Start = doc.getNumberOfPages();
