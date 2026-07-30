@@ -14,7 +14,8 @@ export const PDF_COLORS = {
   totalFill: [23, 72, 122] as RGB,
   totalText: [255, 255, 255] as RGB,
   zebra: [246, 248, 250] as RGB,
-  gridLine: [205, 213, 222] as RGB,
+  gridLine: [168, 180, 192] as RGB,
+  outerLine: [23, 72, 122] as RGB,
   text: [33, 37, 41] as RGB,
   muted: [110, 120, 130] as RGB,
   negative: [178, 34, 34] as RGB,
@@ -67,6 +68,8 @@ export function baseTableStyles(fontSize = 7.5) {
       lineWidth: 0.1,
     },
     alternateRowStyles: { fillColor: PDF_COLORS.zebra },
+    tableLineColor: PDF_COLORS.outerLine,
+    tableLineWidth: 0.5,
     theme: "grid" as const,
   };
 }

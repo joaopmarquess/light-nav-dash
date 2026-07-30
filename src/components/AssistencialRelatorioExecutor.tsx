@@ -718,8 +718,8 @@ function buildPdf({
   const pageH = doc.internal.pageSize.getHeight();
   const marginL = 12;
   const marginR = 12;
-  const marginT = 50;
-  const marginB = 40;
+  const marginT = 54;
+  const marginB = 16;
   const usableW = pageW - marginL - marginR;
 
   const money = fmtBRL;
