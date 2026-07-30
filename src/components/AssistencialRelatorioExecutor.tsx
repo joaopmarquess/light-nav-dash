@@ -715,8 +715,7 @@ function buildPdf({
   report,
   exeLabel,
   filterCd,
-  logoDataUrl,
-  logoAspect,
+  timbradoDataUrl,
 }: {
   cdpln: string;
   dspln: string;
@@ -725,16 +724,16 @@ function buildPdf({
   report: ReportData;
   exeLabel: (exe: string, includeEsp?: boolean) => string;
   filterCd?: string;
-  logoDataUrl?: string;
-  logoAspect?: number;
+  timbradoDataUrl?: string | null;
 }): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  attachTimbrado(doc, timbradoDataUrl);
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
-  const marginL = 10;
-  const marginR = 10;
-  const marginT = 22;
-  const marginB = 14;
+  const marginL = 12;
+  const marginR = 12;
+  const marginT = 34;
+  const marginB = 34;
   const usableW = pageW - marginL - marginR;
 
   const money = fmtBRL;
@@ -744,17 +743,7 @@ function buildPdf({
     : null;
 
   const header = () => {
-    const line1Y = 10;
-    // Logo (esquerda) — centralizado verticalmente na linha 1
-    if (logoDataUrl) {
-      const h = 10;
-      const w = h * (logoAspect ?? 3);
-      try {
-        doc.addImage(logoDataUrl, "PNG", marginL, line1Y - h / 2, w, h);
-      } catch {
-        // ignore
-      }
-    }
+    const line1Y = 30;
     // Linha 1 centro: título | período
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
@@ -766,9 +755,10 @@ function buildPdf({
     doc.setFontSize(9);
     doc.setTextColor(60);
     const line2 = `${cdpln}${dspln ? ` | ${dspln}` : ""}`;
-    doc.text(line2, marginL, 17);
+    doc.text(line2, marginL, 36);
     doc.setTextColor(0);
   };
+
 
   // Reserve room for the header on every page via didDrawPage.
   const commonTableOpts: Parameters<typeof autoTable>[1] = {
