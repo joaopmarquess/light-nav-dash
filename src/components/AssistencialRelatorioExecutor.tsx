@@ -791,6 +791,7 @@ function buildPdf({
     ]],
     body: s1Body,
     foot: s1Foot,
+    showFoot: "lastPage",
     footStyles: { ...baseTableStyles(7).footStyles, ...totalRowStyles },
     columnStyles: {
       0: { cellWidth: usableW * 0.22, halign: "center" },
