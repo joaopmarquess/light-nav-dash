@@ -1069,7 +1069,7 @@ function ReportPreview({
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const logo = await loadLogoAsPng(bensaudeLogoUrl).catch(() => null);
+      const timbrado = await loadTimbrado();
       const doc = buildPdf({
         cdpln,
         dspln,
@@ -1078,9 +1078,9 @@ function ReportPreview({
         report,
         exeLabel,
         filterCd,
-        logoDataUrl: logo?.dataUrl,
-        logoAspect: logo?.aspect,
+        timbradoDataUrl: timbrado,
       });
+
       docRef.current = doc;
       // Render each page as PNG via pdf.js — evita bloqueios de blob/data no Edge.
       const pdfjs = await import("pdfjs-dist");
