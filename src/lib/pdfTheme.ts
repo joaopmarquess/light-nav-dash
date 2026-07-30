@@ -16,7 +16,7 @@ export const PDF_COLORS = {
   zebra: [246, 248, 250] as RGB,
   gridLine: [168, 180, 192] as RGB,
   outerLine: [23, 72, 122] as RGB,
-  text: [33, 37, 41] as RGB,
+  text: [0, 0, 0] as RGB,
   muted: [110, 120, 130] as RGB,
   negative: [178, 34, 34] as RGB,
 };
