@@ -709,7 +709,7 @@ function buildPdf({
   const pageH = doc.internal.pageSize.getHeight();
   const marginL = 12;
   const marginR = 12;
-  const marginT = 34;
+  const marginT = 44;
   const marginB = 34;
   const usableW = pageW - marginL - marginR;
 
@@ -720,7 +720,7 @@ function buildPdf({
     : null;
 
   const header = () => {
-    const line1Y = 30;
+    const line1Y = 35;
     // Linha 1 centro: título | período
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
@@ -732,7 +732,8 @@ function buildPdf({
     doc.setFontSize(9);
     doc.setTextColor(60);
     const line2 = `${cdpln}${dspln ? ` | ${dspln}` : ""}`;
-    doc.text(line2, marginL, 36);
+    doc.text(line2, marginL, 41);
+
     doc.setTextColor(0);
   };
 

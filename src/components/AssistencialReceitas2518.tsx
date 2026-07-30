@@ -117,7 +117,7 @@ function buildPdf({
   const pageW = doc.internal.pageSize.getWidth();
   const marginL = 12;
   const marginR = 12;
-  const marginT = 34;
+  const marginT = 44;
   const marginB = 34;
   const usableW = pageW - marginL - marginR;
 
@@ -125,7 +125,7 @@ function buildPdf({
   const bsFim = grouped.length ? grouped[grouped.length - 1].bscmp : "";
 
   const header = () => {
-    const line1Y = 30;
+    const line1Y = 35;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(20);
@@ -134,9 +134,10 @@ function buildPdf({
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(60);
-    doc.text("2518 Receitas", marginL, 36);
+    doc.text("2518 Receitas", marginL, 41);
     doc.setTextColor(0);
   };
+
 
 
   // ===================== Seção 1 =====================
