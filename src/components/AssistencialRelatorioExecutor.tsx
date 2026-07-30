@@ -742,9 +742,9 @@ function buildPdf({
 
   // Reserve room for the header on every page via didDrawPage.
   const commonTableOpts: Parameters<typeof autoTable>[1] = {
-    ...baseTableStyles(7),
-    headStyles: { ...baseTableStyles(7).headStyles, halign: "center" },
-    footStyles: { ...baseTableStyles(7).footStyles, ...subtotalRowStyles },
+    ...baseTableStyles(8.5),
+    headStyles: { ...baseTableStyles(8.5).headStyles, halign: "center" },
+    footStyles: { ...baseTableStyles(8.5).footStyles, ...subtotalRowStyles },
     margin: { left: marginL, right: marginR, top: marginT, bottom: marginB },
     didParseCell: negativeRed,
     didDrawPage: () => header(),
@@ -784,7 +784,7 @@ function buildPdf({
     body: s1Body,
     foot: s1Foot,
     showFoot: "lastPage",
-    footStyles: { ...baseTableStyles(7).footStyles, ...totalRowStyles },
+    footStyles: { ...baseTableStyles(8.5).footStyles, ...totalRowStyles },
     columnStyles: {
       0: { cellWidth: usableW * 0.22, halign: "center" },
       1: { cellWidth: usableW * 0.26, halign: "right" },
@@ -1012,9 +1012,9 @@ function buildPdf({
   const footY = pageH - 14;
   for (let i = 1; i <= total; i++) {
     doc.setPage(i);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(...PDF_COLORS.muted);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.5);
+    doc.setTextColor(0, 0, 0);
     doc.text(`${i}`, marginL, footY, { align: "left" });
     const sec = sectionByPage[i];
     if (sec) {

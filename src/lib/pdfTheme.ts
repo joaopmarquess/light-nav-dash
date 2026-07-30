@@ -16,7 +16,7 @@ export const PDF_COLORS = {
   zebra: [246, 248, 250] as RGB,
   gridLine: [168, 180, 192] as RGB,
   outerLine: [23, 72, 122] as RGB,
-  text: [33, 37, 41] as RGB,
+  text: [0, 0, 0] as RGB,
   muted: [110, 120, 130] as RGB,
   negative: [178, 34, 34] as RGB,
 };
@@ -42,7 +42,7 @@ export function drawSectionTitle(
 }
 
 /** Estilos base compartilhados pelas tabelas dos relatórios. */
-export function baseTableStyles(fontSize = 7.5) {
+export function baseTableStyles(fontSize = 8.5) {
   return {
     styles: {
       font: "helvetica" as const,
@@ -76,14 +76,14 @@ export function baseTableStyles(fontSize = 7.5) {
 
 export const groupRowStyles = {
   fillColor: PDF_COLORS.groupFill,
-  textColor: PDF_COLORS.navy,
+  textColor: [0, 0, 0] as RGB,
   fontStyle: "bold" as const,
   overflow: "ellipsize" as const,
 };
 
 export const subtotalRowStyles = {
   fillColor: PDF_COLORS.subtotalFill,
-  textColor: PDF_COLORS.text,
+  textColor: [0, 0, 0] as RGB,
   fontStyle: "bold" as const,
   overflow: "ellipsize" as const,
 };
@@ -92,7 +92,7 @@ export const totalRowStyles = {
   fillColor: PDF_COLORS.totalFill,
   textColor: PDF_COLORS.totalText,
   fontStyle: "bold" as const,
-  fontSize: 9,
+  fontSize: 9.5,
   overflow: "ellipsize" as const,
 };
 
