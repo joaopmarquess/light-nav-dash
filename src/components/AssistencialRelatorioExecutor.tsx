@@ -7,7 +7,7 @@ import { attachTimbrado, loadTimbrado } from "@/lib/pdfTimbrado";
 import {
   PDF_COLORS,
   baseTableStyles,
-  drawSectionTitle,
+  drawReportHeading,
   groupRowStyles,
   negativeRed,
   subtotalRowStyles,
@@ -718,7 +718,7 @@ function buildPdf({
   const pageH = doc.internal.pageSize.getHeight();
   const marginL = 12;
   const marginR = 12;
-  const marginT = 44;
+  const marginT = 50;
   const marginB = 40;
   const usableW = pageW - marginL - marginR;
 
@@ -728,22 +728,15 @@ function buildPdf({
     ? report.exeSortedS3.find((e) => report.exeCd.get(e) === filterCd) ?? null
     : null;
 
+  let currentSecao = "Seção 1 | Tipo de Guia de Procedimentos";
   const header = () => {
-    const line1Y = 35;
-    // Linha 1 centro: título | período
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(...PDF_COLORS.navy);
-    const titulo = `Relatório de Contas Médicas | ${mabasIni} a ${mabasFim}`;
-    doc.text(titulo, pageW / 2, line1Y, { align: "center", baseline: "middle" });
-    // Linha 2 esquerda: cdpln | dspln
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(...PDF_COLORS.muted);
-    const line2 = `${cdpln}${dspln ? ` | ${dspln}` : ""}`;
-    doc.text(line2, marginL, 41);
-
-    doc.setTextColor(...PDF_COLORS.text);
+    drawReportHeading(doc, {
+      title: "Relatório Despesas Assistenciais",
+      plano: `Plano: ${cdpln}${dspln ? ` - ${dspln}` : ""}`,
+      secao: currentSecao,
+      marginL,
+      marginR,
+    });
   };
 
 
@@ -752,7 +745,7 @@ function buildPdf({
     ...baseTableStyles(7),
     headStyles: { ...baseTableStyles(7).headStyles, halign: "center" },
     footStyles: { ...baseTableStyles(7).footStyles, ...subtotalRowStyles },
-    margin: { left: marginL, right: marginR, top: marginT + 4, bottom: marginB },
+    margin: { left: marginL, right: marginR, top: marginT, bottom: marginB },
     didParseCell: negativeRed,
     didDrawPage: () => header(),
   };
@@ -766,7 +759,6 @@ function buildPdf({
   let sec1Start = doc.getNumberOfPages();
 
   // ---------- Section 1 ----------
-  drawSectionTitle(doc, "Seção 1 - Competência (todos os executores)", marginL, marginT + 8, pageW - marginR);
 
   const s1Body = report.s1Rows.map(([k, o]) => [
     k,
@@ -782,7 +774,7 @@ function buildPdf({
   ]];
   autoTable(doc, {
     ...commonTableOpts,
-    startY: marginT + 12,
+    startY: marginT,
     head: [[
       "bscmp",
       { content: "Internação", styles: { halign: "right" } },
@@ -805,9 +797,9 @@ function buildPdf({
   markSectionPages("Seção 1 - Competência", sec1Start);
   doc.addPage();
   const sec2Start = doc.getNumberOfPages();
-  drawSectionTitle(doc, "Seção 2 - Executor", marginL, marginT + 8, pageW - marginR);
+  currentSecao = "Seção 2 | Credenciado Executor";
 
-  let s2Y = marginT + 12;
+  let s2Y = marginT;
   let s2Grand = 0;
   const selectedExe = filterCd
     ? report.exeSortedS2.find((e) => report.exeCd.get(e) === filterCd) ?? null
@@ -858,9 +850,9 @@ function buildPdf({
   markSectionPages("Seção 2 - Executor", sec2Start);
   doc.addPage();
   const sec3Start = doc.getNumberOfPages();
-  drawSectionTitle(doc, "Seção 3 - Geral", marginL, marginT + 8, pageW - marginR);
+  currentSecao = "Seção 3 | Credenciado Executor Selecionado";
 
-  let s3Y = marginT + 12;
+  let s3Y = marginT;
   if (filterExe) {
     const cdExe = report.exeCd.get(filterExe) ?? "";
     doc.setFont("helvetica", "bold");
