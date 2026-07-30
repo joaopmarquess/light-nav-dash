@@ -1009,7 +1009,7 @@ function buildPdf({
     if (s) secTotals[s] = (secTotals[s] ?? 0) + 1;
   }
   const secSeen: Record<string, number> = {};
-  const footY = pageH - 22;
+  const footY = pageH - 14;
   for (let i = 1; i <= total; i++) {
     doc.setPage(i);
     doc.setFont("helvetica", "normal");
