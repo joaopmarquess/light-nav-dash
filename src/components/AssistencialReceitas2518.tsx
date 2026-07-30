@@ -144,7 +144,7 @@ function buildPdf({
     });
   };
 
-  const base = baseTableStyles(8);
+  const base = baseTableStyles(9);
 
   // ===================== Seção 1 =====================
   const sec1Start = doc.getNumberOfPages();
@@ -294,10 +294,10 @@ function buildPdf({
     const totalV2 = compesArr.reduce((s, c) => s + c.total, 0);
 
     autoTable(doc, {
-      ...baseTableStyles(7.5),
-      styles: { ...baseTableStyles(7.5).styles, overflow: "ellipsize" },
+      ...baseTableStyles(8.5),
+      styles: { ...baseTableStyles(8.5).styles, overflow: "ellipsize" },
       alternateRowStyles: {},
-      footStyles: { ...baseTableStyles(7.5).footStyles, ...totalRowStyles },
+      footStyles: { ...baseTableStyles(8.5).footStyles, ...totalRowStyles },
       margin: { left: marginL, right: marginR, top: marginT, bottom: marginB },
       startY: marginT,
       head: [[
