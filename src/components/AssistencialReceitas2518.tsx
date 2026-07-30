@@ -166,6 +166,7 @@ function buildPdf({
       { content: g.bscmp, styles: { halign: "center" } },
       { content: fmtBRL(g.total), styles: { halign: "right" } },
     ]),
+    showFoot: "lastPage",
     foot: [[
       { content: "TOTAL GERAL", styles: { halign: "left" } },
       { content: fmtBRL(totalGeral), styles: { halign: "right" } },
