@@ -76,14 +76,14 @@ export function baseTableStyles(fontSize = 8.5) {
 
 export const groupRowStyles = {
   fillColor: PDF_COLORS.groupFill,
-  textColor: PDF_COLORS.navy,
+  textColor: [0, 0, 0] as RGB,
   fontStyle: "bold" as const,
   overflow: "ellipsize" as const,
 };
 
 export const subtotalRowStyles = {
   fillColor: PDF_COLORS.subtotalFill,
-  textColor: PDF_COLORS.text,
+  textColor: [0, 0, 0] as RGB,
   fontStyle: "bold" as const,
   overflow: "ellipsize" as const,
 };
@@ -92,7 +92,7 @@ export const totalRowStyles = {
   fillColor: PDF_COLORS.totalFill,
   textColor: PDF_COLORS.totalText,
   fontStyle: "bold" as const,
-  fontSize: 9,
+  fontSize: 9.5,
   overflow: "ellipsize" as const,
 };
 
