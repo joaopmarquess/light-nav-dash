@@ -4,6 +4,15 @@ import jsPDF from "jspdf";
 import autoTable, { RowInput } from "jspdf-autotable";
 import FunLoader from "@/components/FunLoader";
 import { attachTimbrado, loadTimbrado } from "@/lib/pdfTimbrado";
+import {
+  PDF_COLORS,
+  baseTableStyles,
+  drawSectionTitle,
+  groupRowStyles,
+  negativeRed,
+  subtotalRowStyles,
+  totalRowStyles,
+} from "@/lib/pdfTheme";
 
 
 type Row = {
@@ -118,7 +127,7 @@ function buildPdf({
   const marginL = 12;
   const marginR = 12;
   const marginT = 44;
-  const marginB = 34;
+  const marginB = 40;
   const usableW = pageW - marginL - marginR;
 
   const bsIni = grouped.length ? grouped[0].bscmp : "";
@@ -128,31 +137,27 @@ function buildPdf({
     const line1Y = 35;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
-    doc.setTextColor(20);
+    doc.setTextColor(...PDF_COLORS.navy);
     const titulo = `Relatório de Receitas 2518${bsIni ? ` | ${bsIni} a ${bsFim}` : ""}`;
     doc.text(titulo, pageW / 2, line1Y, { align: "center", baseline: "middle" });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.setTextColor(60);
+    doc.setTextColor(...PDF_COLORS.muted);
     doc.text("2518 Receitas", marginL, 41);
-    doc.setTextColor(0);
+    doc.setTextColor(...PDF_COLORS.text);
   };
 
-
+  const base = baseTableStyles(8);
 
   // ===================== Seção 1 =====================
   const sec1Start = doc.getNumberOfPages();
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.text("Seção 1 - Competência", marginL, marginT + 8);
+  drawSectionTitle(doc, "Seção 1 - Competência", marginL, marginT + 8, pageW - marginR);
 
   autoTable(doc, {
-    styles: { font: "helvetica", fontSize: 8, cellPadding: 1.5, lineColor: [140, 140, 140], lineWidth: 0.1, textColor: 20 },
-    headStyles: { fillColor: [255, 255, 255], textColor: 20, fontStyle: "bold", lineColor: [140, 140, 140], lineWidth: 0.1 },
-    footStyles: { fillColor: [235, 235, 235], textColor: 20, fontStyle: "bold" },
-    theme: "grid",
+    ...base,
+    footStyles: { ...base.footStyles, ...totalRowStyles },
     margin: { left: marginL, right: marginR, top: marginT + 4, bottom: marginB },
-    startY: marginT + 10,
+    startY: marginT + 12,
     head: [[
       { content: "bscmp", styles: { halign: "center" } },
       { content: "Valor", styles: { halign: "right" } },
@@ -161,17 +166,20 @@ function buildPdf({
       { content: g.bscmp, styles: { halign: "center" } },
       { content: fmtBRL(g.total), styles: { halign: "right" } },
     ]),
+    showFoot: "lastPage",
     foot: [[
-      { content: "Total", styles: { halign: "left" } },
+      { content: "TOTAL GERAL", styles: { halign: "left" } },
       { content: fmtBRL(totalGeral), styles: { halign: "right" } },
     ]],
     columnStyles: {
       0: { cellWidth: usableW * 0.5 },
       1: { cellWidth: usableW * 0.5 },
     },
+    didParseCell: negativeRed,
     didDrawPage: () => header(),
   });
   const sec1End = doc.getNumberOfPages();
+
 
   // ===================== Seção 2 =====================
   let sec2Start = 0;
@@ -179,9 +187,7 @@ function buildPdf({
   if (rowsV2.length) {
     doc.addPage();
     sec2Start = doc.getNumberOfPages();
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.text("Seção 2 - Competência / Contrato / Beneficiário", marginL, marginT + 8);
+    drawSectionTitle(doc, "Seção 2 - Competência / Contrato / Beneficiário", marginL, marginT + 8, pageW - marginR);
 
     // Agrupamento
     type Detail = { dp: string; nmcli: string; dsevento: string; order: number; valor: number };
@@ -205,8 +211,6 @@ function buildPdf({
     const compesArr = Array.from(byBs.values()).sort((a, b) => a.bscmp.localeCompare(b.bscmp));
 
     const body: RowInput[] = [];
-    const grayFill: [number, number, number] = [235, 235, 235];
-    const lightFill: [number, number, number] = [245, 245, 245];
 
     for (const c of compesArr) {
       // header bscmp
@@ -214,7 +218,7 @@ function buildPdf({
         {
           content: fmtBscmp(c.bscmp),
           colSpan: 2,
-          styles: { fillColor: grayFill, fontStyle: "bold", halign: "left" },
+          styles: { ...groupRowStyles, halign: "left" },
         },
       ]);
 
@@ -228,7 +232,7 @@ function buildPdf({
           {
             content: `${ct.nmctr} (${ct.cdcontrato})`,
             colSpan: 2,
-            styles: { fillColor: lightFill, fontStyle: "bold", halign: "left", overflow: "ellipsize" },
+            styles: { ...subtotalRowStyles, halign: "left" },
           },
         ]);
 
@@ -251,11 +255,11 @@ function buildPdf({
         body.push([
           {
             content: `Subtotal ${ct.nmctr} (${ct.cdcontrato})`,
-            styles: { fillColor: lightFill, fontStyle: "bold", halign: "left", overflow: "ellipsize" },
+            styles: { ...subtotalRowStyles, halign: "left" },
           },
           {
             content: fmtBRL(ct.total),
-            styles: { fillColor: lightFill, fontStyle: "bold", halign: "right", overflow: "ellipsize" },
+            styles: { ...subtotalRowStyles, halign: "right" },
           },
         ]);
       }
@@ -264,11 +268,11 @@ function buildPdf({
       body.push([
         {
           content: `Subtotal ${fmtBscmp(c.bscmp)}`,
-          styles: { fillColor: grayFill, fontStyle: "bold", halign: "left", overflow: "ellipsize" },
+          styles: { ...groupRowStyles, halign: "left" },
         },
         {
           content: fmtBRL(c.total),
-          styles: { fillColor: grayFill, fontStyle: "bold", halign: "right", overflow: "ellipsize" },
+          styles: { ...groupRowStyles, halign: "right" },
         },
       ]);
     }
@@ -276,17 +280,18 @@ function buildPdf({
     const totalV2 = compesArr.reduce((s, c) => s + c.total, 0);
 
     autoTable(doc, {
-      styles: { font: "helvetica", fontSize: 7.5, cellPadding: 1.2, lineColor: [180, 180, 180], lineWidth: 0.1, textColor: 20, overflow: "ellipsize" },
-      headStyles: { fillColor: [255, 255, 255], textColor: 20, fontStyle: "bold", lineColor: [140, 140, 140], lineWidth: 0.1 },
-      footStyles: { fillColor: grayFill, textColor: 20, fontStyle: "bold" },
-      theme: "grid",
+      ...baseTableStyles(7.5),
+      styles: { ...baseTableStyles(7.5).styles, overflow: "ellipsize" },
+      alternateRowStyles: {},
+      footStyles: { ...baseTableStyles(7.5).footStyles, ...totalRowStyles },
       margin: { left: marginL, right: marginR, top: marginT + 4, bottom: marginB },
-      startY: marginT + 10,
+      startY: marginT + 12,
       head: [[
         { content: "Competência / Contrato / (dp - Beneficiário - Evento)", styles: { halign: "left" } },
         { content: "Valor", styles: { halign: "right" } },
       ]],
       body,
+      showFoot: "lastPage",
       foot: [[
         { content: "TOTAL GERAL", styles: { halign: "left" } },
         { content: fmtBRL(totalV2), styles: { halign: "right" } },
@@ -295,7 +300,8 @@ function buildPdf({
         0: { cellWidth: usableW * 0.78 },
         1: { cellWidth: usableW * 0.22 },
       },
-      didDrawPage: () => header(),
+      didParseCell: negativeRed,
+    didDrawPage: () => header(),
     });
     sec2End = doc.getNumberOfPages();
   }
