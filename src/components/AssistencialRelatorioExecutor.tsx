@@ -1011,15 +1011,26 @@ function buildPdf({
 
   // ---------- Page numbers ----------
   const total = doc.getNumberOfPages();
+  const secTotals: Record<string, number> = {};
+  for (let i = 1; i <= total; i++) {
+    const s = sectionByPage[i];
+    if (s) secTotals[s] = (secTotals[s] ?? 0) + 1;
+  }
+  const secSeen: Record<string, number> = {};
+  const footY = pageH - 31.5;
   for (let i = 1; i <= total; i++) {
     doc.setPage(i);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(...PDF_COLORS.muted);
-    const sec = sectionByPage[i] ?? "";
-    if (sec) doc.text(sec, marginL, pageH - 33, { align: "left" });
-    doc.text(`Página ${i} de ${total}`, pageW - marginR, pageH - 33, { align: "right" });
+    doc.text(`${i} de ${total}`, marginL, footY, { align: "left" });
+    const sec = sectionByPage[i];
+    if (sec) {
+      secSeen[sec] = (secSeen[sec] ?? 0) + 1;
+      doc.text(`${sec} | ${secSeen[sec]} de ${secTotals[sec]}`, pageW - marginR, footY, { align: "right" });
+    }
   }
+
 
   return doc;
 }
