@@ -719,7 +719,7 @@ function buildPdf({
   const marginL = 12;
   const marginR = 12;
   const marginT = 44;
-  const marginB = 34;
+  const marginB = 40;
   const usableW = pageW - marginL - marginR;
 
   const money = fmtBRL;
