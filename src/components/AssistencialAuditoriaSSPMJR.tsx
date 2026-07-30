@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { fmtCompetencia } from "@/lib/pdfTheme";
 import { hostinger } from "@/lib/hostingerClient";
 import { ChevronRight, Search, Loader2 } from "lucide-react";
 
@@ -386,7 +387,7 @@ export default function AssistencialAuditoriaSSPMJR() {
                                   onClick={() => setExpMabas((p) => ({ ...p, [mKey]: !p[mKey] }))}
                                 >
                                   <ChevronRight className={`h-3.5 w-3.5 transition-transform ${mOpen ? "rotate-90" : ""}`} />
-                                  <span>{m.bscmp}</span>
+                                  <span>{fmtCompetencia(m.bscmp)}</span>
                                 </button>
                               </td>
                               <td className="px-3 py-1.5 text-right">{m.guias.size.toLocaleString("pt-BR")}</td>

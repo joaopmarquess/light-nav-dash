@@ -132,3 +132,10 @@ export function drawReportHeading(
   doc.setTextColor(...PDF_COLORS.text);
   return 50;
 }
+
+/** Formata competência 202407 -> 07/2024 */
+export function fmtCompetencia(v: string | number | null | undefined): string {
+  const t = String(v ?? "").trim();
+  if (/^\d{6}$/.test(t)) return `${t.slice(4, 6)}/${t.slice(0, 4)}`;
+  return t;
+}
