@@ -4,6 +4,14 @@ import { ChevronRight, Search, Loader2, FileDown, Printer, X } from "lucide-reac
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { attachTimbrado, loadTimbrado } from "@/lib/pdfTimbrado";
+import {
+  PDF_COLORS,
+  baseTableStyles,
+  drawSectionTitle,
+  groupRowStyles,
+  subtotalRowStyles,
+  totalRowStyles,
+} from "@/lib/pdfTheme";
 
 
 type Row = {
@@ -724,26 +732,25 @@ function buildPdf({
     // Linha 1 centro: título | período
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
-    doc.setTextColor(20);
+    doc.setTextColor(...PDF_COLORS.navy);
     const titulo = `Relatório de Contas Médicas | ${mabasIni} a ${mabasFim}`;
     doc.text(titulo, pageW / 2, line1Y, { align: "center", baseline: "middle" });
     // Linha 2 esquerda: cdpln | dspln
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.setTextColor(60);
+    doc.setTextColor(...PDF_COLORS.muted);
     const line2 = `${cdpln}${dspln ? ` | ${dspln}` : ""}`;
     doc.text(line2, marginL, 41);
 
-    doc.setTextColor(0);
+    doc.setTextColor(...PDF_COLORS.text);
   };
 
 
   // Reserve room for the header on every page via didDrawPage.
   const commonTableOpts: Parameters<typeof autoTable>[1] = {
-    styles: { font: "helvetica", fontSize: 7, cellPadding: 1.2, lineColor: [140, 140, 140], lineWidth: 0.1, textColor: 20 },
-    headStyles: { fillColor: [255, 255, 255], textColor: 20, fontStyle: "bold", halign: "center", lineColor: [140, 140, 140], lineWidth: 0.1 },
-    footStyles: { fillColor: [245, 245, 245], textColor: 20, fontStyle: "bold" },
-    theme: "grid",
+    ...baseTableStyles(7),
+    headStyles: { ...baseTableStyles(7).headStyles, halign: "center" },
+    footStyles: { ...baseTableStyles(7).footStyles, ...subtotalRowStyles },
     margin: { left: marginL, right: marginR, top: marginT + 4, bottom: marginB },
     didDrawPage: () => header(),
   };
@@ -757,9 +764,7 @@ function buildPdf({
   let sec1Start = doc.getNumberOfPages();
 
   // ---------- Section 1 ----------
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.text("Seção 1 - Competência (todos os executores)", marginL, marginT + 8);
+  drawSectionTitle(doc, "Seção 1 - Competência (todos os executores)", marginL, marginT + 8, pageW - marginR);
 
   const s1Body = report.s1Rows.map(([k, o]) => [
     k,
@@ -768,14 +773,14 @@ function buildPdf({
     money(o.int + o.dem),
   ]);
   const s1Foot = [[
-    { content: "Total", styles: { halign: "left" as const } },
+    { content: "TOTAL GERAL", styles: { halign: "left" as const } },
     { content: money(report.s1Tot.int), styles: { halign: "right" as const } },
     { content: money(report.s1Tot.dem), styles: { halign: "right" as const } },
     { content: money(report.s1Tot.int + report.s1Tot.dem), styles: { halign: "right" as const } },
   ]];
   autoTable(doc, {
     ...commonTableOpts,
-    startY: marginT + 10,
+    startY: marginT + 12,
     head: [[
       "bscmp",
       { content: "Internação", styles: { halign: "right" } },
@@ -784,6 +789,7 @@ function buildPdf({
     ]],
     body: s1Body,
     foot: s1Foot,
+    footStyles: { ...baseTableStyles(7).footStyles, ...totalRowStyles },
     columnStyles: {
       0: { cellWidth: usableW * 0.22, halign: "center" },
       1: { cellWidth: usableW * 0.26, halign: "right" },
@@ -796,11 +802,9 @@ function buildPdf({
   markSectionPages("Seção 1 - Competência", sec1Start);
   doc.addPage();
   const sec2Start = doc.getNumberOfPages();
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.text("Seção 2 - Executor", marginL, marginT + 8);
+  drawSectionTitle(doc, "Seção 2 - Executor", marginL, marginT + 8, pageW - marginR);
 
-  let s2Y = marginT + 10;
+  let s2Y = marginT + 12;
   let s2Grand = 0;
   const selectedExe = filterCd
     ? report.exeSortedS2.find((e) => report.exeCd.get(e) === filterCd) ?? null
@@ -820,13 +824,13 @@ function buildPdf({
       startY: s2Y,
       showFoot: "lastPage",
       head: [
-        [{ content: exeLabel(exe, false), colSpan: 3, styles: { halign: "left", fontStyle: "bold" } }],
+        [{ content: exeLabel(exe, false), colSpan: 3, styles: { ...groupRowStyles, halign: "left" } }],
         [{ content: "bscmp", colSpan: 2, styles: { halign: "center" } }, { content: "Total", styles: { halign: "right" } }],
       ],
       body: body.map(([k, v]) => [{ content: k, colSpan: 2, styles: { halign: "center" } }, v]),
       foot: [[
-        { content: `Subtotal do Executor (${exe})`, colSpan: 2, styles: { halign: "left", fontStyle: "bold", fillColor: [245, 245, 245] } },
-        { content: money(sub), styles: { halign: "right", fontStyle: "bold", fillColor: [245, 245, 245] } },
+        { content: `Subtotal do Executor (${exe})`, colSpan: 2, styles: { ...subtotalRowStyles, halign: "left" } },
+        { content: money(sub), styles: { ...subtotalRowStyles, halign: "right" } },
       ]],
       columnStyles: {
         0: { cellWidth: usableW * 0.5 },
@@ -840,8 +844,7 @@ function buildPdf({
   autoTable(doc, {
     ...commonTableOpts,
     startY: s2Y,
-    body: [[{ content: "Total Geral", styles: { fontStyle: "bold", halign: "left" } }, { content: money(s2Grand), styles: { halign: "right", fontStyle: "bold" } }]],
-    bodyStyles: { fillColor: [235, 235, 235] },
+    body: [[{ content: "TOTAL GERAL", styles: { ...totalRowStyles, halign: "left" } }, { content: money(s2Grand), styles: { ...totalRowStyles, halign: "right" } }]],
     columnStyles: {
       0: { cellWidth: usableW * 0.4 },
       1: { cellWidth: usableW * 0.6, halign: "right" },
@@ -852,11 +855,9 @@ function buildPdf({
   markSectionPages("Seção 2 - Executor", sec2Start);
   doc.addPage();
   const sec3Start = doc.getNumberOfPages();
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.text("Seção 3 - Geral", marginL, marginT + 8);
+  drawSectionTitle(doc, "Seção 3 - Geral", marginL, marginT + 8, pageW - marginR);
 
-  let s3Y = marginT + 10;
+  let s3Y = marginT + 12;
   if (filterExe) {
     const cdExe = report.exeCd.get(filterExe) ?? "";
     doc.setFont("helvetica", "bold");
@@ -963,7 +964,7 @@ function buildPdf({
       ...commonTableOpts,
       startY: s3Y,
       head: [
-        [{ content: headerLabel, colSpan: 6, styles: { halign: "left", fontStyle: "bold", fillColor: [230, 230, 230] } }],
+        [{ content: headerLabel, colSpan: 6, styles: { ...groupRowStyles, halign: "left" } }],
         [
           "Nome Beneficiário",
           { content: "dp", styles: { halign: "center" } },
@@ -975,8 +976,8 @@ function buildPdf({
       ],
       body,
       foot: [[
-        { content: `Subtotal (Contrato: ${cg.cdcontrato})`, colSpan: 5, styles: { halign: "left", fontStyle: "bold", fillColor: [245, 245, 245] } },
-        { content: money(sub), styles: { halign: "right", fontStyle: "bold", fillColor: [245, 245, 245] } },
+        { content: `Subtotal (Contrato: ${cg.cdcontrato})`, colSpan: 5, styles: { ...subtotalRowStyles, halign: "left" } },
+        { content: money(sub), styles: { ...subtotalRowStyles, halign: "right" } },
       ]],
       columnStyles: {
         0: { cellWidth: s3W.nmcli },
@@ -994,10 +995,9 @@ function buildPdf({
     ...commonTableOpts,
     startY: s3Y,
     body: [[
-      { content: `TOTAL:  ${filterExe || "GERAL"}`, styles: { fontStyle: "bold", halign: "left" } },
-      { content: money(s3Grand), styles: { halign: "right", fontStyle: "bold" } },
+      { content: `TOTAL:  ${filterExe || "GERAL"}`, styles: { ...totalRowStyles, halign: "left" } },
+      { content: money(s3Grand), styles: { ...totalRowStyles, halign: "right" } },
     ]],
-    bodyStyles: { fillColor: [235, 235, 235] },
     columnStyles: {
       0: { cellWidth: s3W.nmcli + s3W.dp + s3W.nrgui + s3W.dtexe + s3W.bscmp },
       1: { cellWidth: s3W.total, halign: "right" },
@@ -1011,7 +1011,7 @@ function buildPdf({
     doc.setPage(i);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.setTextColor(90);
+    doc.setTextColor(...PDF_COLORS.muted);
     const sec = sectionByPage[i] ?? "";
     if (sec) doc.text(sec, marginL, pageH - 33, { align: "left" });
     doc.text(`Página ${i} de ${total}`, pageW - marginR, pageH - 33, { align: "right" });
