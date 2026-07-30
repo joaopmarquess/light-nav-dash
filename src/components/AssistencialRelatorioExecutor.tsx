@@ -1009,17 +1009,17 @@ function buildPdf({
     if (s) secTotals[s] = (secTotals[s] ?? 0) + 1;
   }
   const secSeen: Record<string, number> = {};
-  const footY = pageH - 31.5;
+  const footY = pageH - 22;
   for (let i = 1; i <= total; i++) {
     doc.setPage(i);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(...PDF_COLORS.muted);
-    doc.text(`${i} de ${total}`, marginL, footY, { align: "left" });
+    doc.text(`${i}`, marginL, footY, { align: "left" });
     const sec = sectionByPage[i];
     if (sec) {
       secSeen[sec] = (secSeen[sec] ?? 0) + 1;
-      doc.text(`${sec} | ${secSeen[sec]} de ${secTotals[sec]}`, pageW - marginR, footY, { align: "right" });
+      doc.text(`${secSeen[sec]} de ${secTotals[sec]}`, pageW - marginR, footY, { align: "right" });
     }
   }
 
