@@ -972,8 +972,8 @@ function buildPdf({
       body,
       showFoot: "lastPage",
       foot: [[
-        { content: `Subtotal (Contrato: ${cg.cdcontrato})`, colSpan: 5, styles: { ...subtotalRowStyles, halign: "left" } },
-        { content: money(sub), styles: { ...subtotalRowStyles, halign: "right" } },
+        { content: `Subtotal (Contrato: ${cg.cdcontrato})`, colSpan: 5, styles: { ...subtotalRowStyles, halign: "left", lineWidth: { top: 0.1, bottom: 0.8, left: 0.1, right: 0 }, lineColor: PDF_COLORS.navy } },
+        { content: money(sub), styles: { ...subtotalRowStyles, halign: "right", lineWidth: { top: 0.1, bottom: 0.8, left: 0, right: 0.1 }, lineColor: PDF_COLORS.navy } },
       ]],
       columnStyles: {
         0: { cellWidth: s3W.nmcli },
