@@ -824,8 +824,8 @@ function buildPdf({
       ],
       body: body.map(([k, v]) => [{ content: k, colSpan: 2, styles: { halign: "center" } }, v]),
       foot: [[
-        { content: `Subtotal do Executor (${exe})`, colSpan: 2, styles: { ...subtotalRowStyles, halign: "left" } },
-        { content: money(sub), styles: { ...subtotalRowStyles, halign: "right" } },
+        { content: `Subtotal do Executor (${exe})`, colSpan: 2, styles: { ...subtotalRowStyles, halign: "left", lineWidth: { top: 0.1, bottom: 0.8, left: 0.1, right: 0 }, lineColor: PDF_COLORS.navy } },
+        { content: money(sub), styles: { ...subtotalRowStyles, halign: "right", lineWidth: { top: 0.1, bottom: 0.8, left: 0, right: 0.1 }, lineColor: PDF_COLORS.navy } },
       ]],
       columnStyles: {
         0: { cellWidth: usableW * 0.5 },
