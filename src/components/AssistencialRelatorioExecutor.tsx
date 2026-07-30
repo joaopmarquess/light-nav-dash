@@ -7,7 +7,7 @@ import { attachTimbrado, loadTimbrado } from "@/lib/pdfTimbrado";
 import {
   PDF_COLORS,
   baseTableStyles,
-  drawSectionTitle,
+  drawReportHeading,
   groupRowStyles,
   negativeRed,
   subtotalRowStyles,
@@ -745,7 +745,7 @@ function buildPdf({
     ...baseTableStyles(7),
     headStyles: { ...baseTableStyles(7).headStyles, halign: "center" },
     footStyles: { ...baseTableStyles(7).footStyles, ...subtotalRowStyles },
-    margin: { left: marginL, right: marginR, top: marginT + 4, bottom: marginB },
+    margin: { left: marginL, right: marginR, top: marginT, bottom: marginB },
     didParseCell: negativeRed,
     didDrawPage: () => header(),
   };
@@ -759,7 +759,6 @@ function buildPdf({
   let sec1Start = doc.getNumberOfPages();
 
   // ---------- Section 1 ----------
-  drawSectionTitle(doc, "Seção 1 - Competência (todos os executores)", marginL, marginT + 8, pageW - marginR);
 
   const s1Body = report.s1Rows.map(([k, o]) => [
     k,
@@ -775,7 +774,7 @@ function buildPdf({
   ]];
   autoTable(doc, {
     ...commonTableOpts,
-    startY: marginT + 12,
+    startY: marginT,
     head: [[
       "bscmp",
       { content: "Internação", styles: { halign: "right" } },
@@ -798,9 +797,9 @@ function buildPdf({
   markSectionPages("Seção 1 - Competência", sec1Start);
   doc.addPage();
   const sec2Start = doc.getNumberOfPages();
-  drawSectionTitle(doc, "Seção 2 - Executor", marginL, marginT + 8, pageW - marginR);
+  currentSecao = "Seção 2 | Credenciado Executor";
 
-  let s2Y = marginT + 12;
+  let s2Y = marginT;
   let s2Grand = 0;
   const selectedExe = filterCd
     ? report.exeSortedS2.find((e) => report.exeCd.get(e) === filterCd) ?? null
@@ -851,9 +850,9 @@ function buildPdf({
   markSectionPages("Seção 2 - Executor", sec2Start);
   doc.addPage();
   const sec3Start = doc.getNumberOfPages();
-  drawSectionTitle(doc, "Seção 3 - Geral", marginL, marginT + 8, pageW - marginR);
+  currentSecao = "Seção 3 | Credenciado Executor Selecionado";
 
-  let s3Y = marginT + 12;
+  let s3Y = marginT;
   if (filterExe) {
     const cdExe = report.exeCd.get(filterExe) ?? "";
     doc.setFont("helvetica", "bold");

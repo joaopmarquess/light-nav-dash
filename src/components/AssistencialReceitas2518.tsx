@@ -7,7 +7,7 @@ import { attachTimbrado, loadTimbrado } from "@/lib/pdfTimbrado";
 import {
   PDF_COLORS,
   baseTableStyles,
-  drawSectionTitle,
+  drawReportHeading,
   groupRowStyles,
   negativeRed,
   subtotalRowStyles,
@@ -126,38 +126,34 @@ function buildPdf({
   const pageW = doc.internal.pageSize.getWidth();
   const marginL = 12;
   const marginR = 12;
-  const marginT = 44;
+  const marginT = 50;
   const marginB = 40;
   const usableW = pageW - marginL - marginR;
 
   const bsIni = grouped.length ? grouped[0].bscmp : "";
   const bsFim = grouped.length ? grouped[grouped.length - 1].bscmp : "";
 
+  let currentSecao = "Seção 1 | Mês de Competência";
   const header = () => {
-    const line1Y = 35;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(...PDF_COLORS.navy);
-    const titulo = `Relatório de Receitas 2518${bsIni ? ` | ${bsIni} a ${bsFim}` : ""}`;
-    doc.text(titulo, pageW / 2, line1Y, { align: "center", baseline: "middle" });
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(...PDF_COLORS.muted);
-    doc.text("2518 Receitas", marginL, 41);
-    doc.setTextColor(...PDF_COLORS.text);
+    drawReportHeading(doc, {
+      title: "Relatório Receitas",
+      plano: "Plano: 2518 - SINDICATO DOS SERVIDORES PÚBLICOS MUNICIPAIS DE JALES E REGIÃO",
+      secao: currentSecao,
+      marginL,
+      marginR,
+    });
   };
 
   const base = baseTableStyles(8);
 
   // ===================== Seção 1 =====================
   const sec1Start = doc.getNumberOfPages();
-  drawSectionTitle(doc, "Seção 1 - Competência", marginL, marginT + 8, pageW - marginR);
 
   autoTable(doc, {
     ...base,
     footStyles: { ...base.footStyles, ...totalRowStyles },
-    margin: { left: marginL, right: marginR, top: marginT + 4, bottom: marginB },
-    startY: marginT + 12,
+    margin: { left: marginL, right: marginR, top: marginT, bottom: marginB },
+    startY: marginT,
     head: [[
       { content: "bscmp", styles: { halign: "center" } },
       { content: "Valor", styles: { halign: "right" } },
@@ -187,7 +183,7 @@ function buildPdf({
   if (rowsV2.length) {
     doc.addPage();
     sec2Start = doc.getNumberOfPages();
-    drawSectionTitle(doc, "Seção 2 - Competência / Contrato / Beneficiário", marginL, marginT + 8, pageW - marginR);
+    currentSecao = "Seção 2 | Beneficiários";
 
     // Agrupamento
     type Detail = { dp: string; nmcli: string; dsevento: string; order: number; valor: number };
@@ -284,8 +280,8 @@ function buildPdf({
       styles: { ...baseTableStyles(7.5).styles, overflow: "ellipsize" },
       alternateRowStyles: {},
       footStyles: { ...baseTableStyles(7.5).footStyles, ...totalRowStyles },
-      margin: { left: marginL, right: marginR, top: marginT + 4, bottom: marginB },
-      startY: marginT + 12,
+      margin: { left: marginL, right: marginR, top: marginT, bottom: marginB },
+      startY: marginT,
       head: [[
         { content: "Competência / Contrato / (dp - Beneficiário - Evento)", styles: { halign: "left" } },
         { content: "Valor", styles: { halign: "right" } },
