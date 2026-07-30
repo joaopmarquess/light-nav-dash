@@ -1012,9 +1012,9 @@ function buildPdf({
   const footY = pageH - 14;
   for (let i = 1; i <= total; i++) {
     doc.setPage(i);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(...PDF_COLORS.muted);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.5);
+    doc.setTextColor(0, 0, 0);
     doc.text(`${i}`, marginL, footY, { align: "left" });
     const sec = sectionByPage[i];
     if (sec) {
