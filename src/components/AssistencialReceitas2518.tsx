@@ -273,11 +273,20 @@ function buildPdf({
       body.push([
         {
           content: `Subtotal ${fmtBscmp(c.bscmp)}`,
-          styles: { ...groupRowStyles, halign: "left" },
+          styles: { ...groupRowStyles, halign: "left", lineWidth: { top: 0.1, bottom: 0.8, left: 0.1, right: 0 }, lineColor: PDF_COLORS.navy },
         },
         {
           content: fmtBRL(c.total),
-          styles: { ...groupRowStyles, halign: "right" },
+          styles: { ...groupRowStyles, halign: "right", lineWidth: { top: 0.1, bottom: 0.8, left: 0, right: 0.1 }, lineColor: PDF_COLORS.navy },
+        },
+      ]);
+
+      // espaçador entre competências
+      body.push([
+        {
+          content: "",
+          colSpan: 2,
+          styles: { minCellHeight: 3, cellPadding: 0, fillColor: [255, 255, 255], lineWidth: 0 },
         },
       ]);
     }
