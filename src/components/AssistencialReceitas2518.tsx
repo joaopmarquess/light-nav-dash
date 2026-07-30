@@ -184,9 +184,7 @@ function buildPdf({
   if (rowsV2.length) {
     doc.addPage();
     sec2Start = doc.getNumberOfPages();
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.text("Seção 2 - Competência / Contrato / Beneficiário", marginL, marginT + 8);
+    drawSectionTitle(doc, "Seção 2 - Competência / Contrato / Beneficiário", marginL, marginT + 8, pageW - marginR);
 
     // Agrupamento
     type Detail = { dp: string; nmcli: string; dsevento: string; order: number; valor: number };
