@@ -42,7 +42,7 @@ export function drawSectionTitle(
 }
 
 /** Estilos base compartilhados pelas tabelas dos relatórios. */
-export function baseTableStyles(fontSize = 7.5) {
+export function baseTableStyles(fontSize = 8.5) {
   return {
     styles: {
       font: "helvetica" as const,
