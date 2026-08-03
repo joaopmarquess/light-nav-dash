@@ -3,10 +3,12 @@ import { ChevronDown, ChevronRight, ArrowUp, ArrowDown } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number];
+type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number];
 
 type Metrics = {
   rec_total: number;
+  rec_tm: number;
+  rec_cpa: number;
   vrdespesas: number;
   internacao: number;
   terapia: number;
@@ -37,7 +39,7 @@ const fmtComp = (mabas: string) =>
   mabas && mabas.length === 6 ? `${mabas.slice(4, 6)}/${mabas.slice(0, 4)}` : mabas;
 
 const zero = (): Metrics => ({
-  rec_total: 0, vrdespesas: 0, internacao: 0, terapia: 0, exame: 0,
+  rec_total: 0, rec_tm: 0, rec_cpa: 0, vrdespesas: 0, internacao: 0, terapia: 0, exame: 0,
   consulta: 0, emergencia: 0, demais: 0,
 });
 const add = (t: Metrics, r: Raw) => {
@@ -49,7 +51,10 @@ const add = (t: Metrics, r: Raw) => {
   t.consulta += r[10];
   t.emergencia += r[11];
   t.demais += r[12];
+  t.rec_tm += r[14] ?? 0;
+  t.rec_cpa += r[15] ?? 0;
 };
+
 
 const saldoOf = (m: Metrics) => m.rec_total - m.vrdespesas;
 const sinOf = (m: Metrics) => (m.rec_total ? m.vrdespesas / m.rec_total : 0);
