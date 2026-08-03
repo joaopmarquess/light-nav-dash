@@ -299,8 +299,10 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
   }, [rows, mIni, mFim, filter]);
 
   const CHART_COLORS = [
-    "#3b82f6", "#0ea5e9", "#6366f1", "#a855f7", "#06b6d4", "#f59e0b",
-    "#84cc16", "#14b8a6", "#eab308", "#8b5cf6", "#0891b2", "#65a30d",
+    "#f97316", "#a855f7", "#d4af37", // laranja, roxo, ouro
+    "#fb923c", "#c084fc", "#eab308",
+    "#ea580c", "#7e22ce", "#b8860b",
+    "#fdba74", "#d8b4fe", "#facc15",
   ];
 
 
