@@ -354,7 +354,16 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
               placeholder="202606"
               className={inputCls}
             />
+            <button
+              onClick={() => setShowChart(true)}
+              className="h-8 px-3 inline-flex items-center gap-1.5 rounded border border-border bg-background text-xs text-foreground hover:bg-accent"
+              title="Gráfico de sinistralidade por plano"
+            >
+              <LineChartIcon className="h-3.5 w-3.5" /> Gráfico
+            </button>
           </div>
+
+
 
 
           <input
