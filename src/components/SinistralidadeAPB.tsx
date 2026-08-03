@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, ArrowUp, ArrowDown } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -17,9 +17,10 @@ type Metrics = {
 };
 
 type Benef = Metrics & { codigo: string; nome: string };
-type Periodo = Metrics & { periodo: string; vidas: number; sin: number; benefs: Benef[] };
+type Plano = Metrics & { plano: string; vidas: number; benefs: Benef[] };
+type Periodo = Metrics & { periodo: string; vidas: number; sin: number; planos: Plano[] };
 
-type SortKey = "BENEF" | "rec_total" | "vrdespesas" | "SALDO" | "sin";
+type SortKey = "PLANO" | "vidas" | "rec_total" | "vrdespesas" | "SALDO" | "sin";
 
 const fmtNum = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -98,6 +99,7 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
   const [mFim, setMFim] = useState("202606");
   const [filter, setFilter] = useState("");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [expandedPlano, setExpandedPlano] = useState<Record<string, boolean>>({});
   const [sortKey, setSortKey] = useState<SortKey>("SALDO");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
@@ -123,6 +125,7 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
     const fim = mFim.trim();
     const fq = filter.trim().toLowerCase();
     const byPeriodo = new Map<string, Periodo>();
+    const plMaps = new Map<string, Map<string, Plano>>();
     const bMaps = new Map<string, Map<string, Benef>>();
 
     for (const r of rows) {
@@ -143,24 +146,38 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
 
       let p = byPeriodo.get(ciclo);
       if (!p) {
-        p = { periodo: ciclo, vidas: 0, sin: 0, benefs: [], ...zero() };
+        p = { periodo: ciclo, vidas: 0, sin: 0, planos: [], ...zero() };
         byPeriodo.set(ciclo, p);
-        bMaps.set(ciclo, new Map());
+        plMaps.set(ciclo, new Map());
       }
       add(p, r);
 
-      const bm = bMaps.get(ciclo)!;
+      const pm = plMaps.get(ciclo)!;
+      let pl = pm.get(r[1]);
+      if (!pl) {
+        pl = { plano: r[1], vidas: 0, benefs: [], ...zero() };
+        pm.set(r[1], pl);
+        p.planos.push(pl);
+        bMaps.set(`${ciclo}|${r[1]}`, new Map());
+      }
+      add(pl, r);
+
+      const bm = bMaps.get(`${ciclo}|${r[1]}`)!;
       let b = bm.get(r[3]);
       if (!b) {
         b = { codigo: r[3], nome: r[4], ...zero() };
         bm.set(r[3], b);
-        p.benefs.push(b);
+        pl.benefs.push(b);
+        pl.vidas += 1;
         p.vidas += 1;
       }
       add(b, r);
     }
     const arr = Array.from(byPeriodo.values());
-    for (const p of arr) p.sin = sinOf(p);
+    for (const p of arr) {
+      p.sin = sinOf(p);
+      for (const pl of p.planos) pl.benefs.sort((a, b) => saldoOf(a) - saldoOf(b));
+    }
     arr.sort((a, b) => b.periodo.localeCompare(a.periodo));
     return arr;
   }, [rows, mIni, mFim, filter]);
@@ -178,7 +195,7 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
       setSortKey(k);
-      setSortDir(k === "BENEF" ? "asc" : "desc");
+      setSortDir(k === "PLANO" ? "asc" : "desc");
     }
   };
   const arrow = (k: SortKey) =>
@@ -186,10 +203,10 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
       sortDir === "asc" ? <ArrowUp className="inline h-3 w-3" /> : <ArrowDown className="inline h-3 w-3" />
     ) : null;
 
-  const sortBenefs = (list: Benef[]) => {
+  const sortPlanos = (list: Plano[]) => {
     const dir = sortDir === "asc" ? 1 : -1;
     return [...list].sort((a, b) => {
-      if (sortKey === "BENEF") return a.nome.localeCompare(b.nome, "pt-BR") * dir;
+      if (sortKey === "PLANO") return a.plano.localeCompare(b.plano, "pt-BR") * dir;
       if (sortKey === "sin") return (sinOf(a) - sinOf(b)) * dir;
       if (sortKey === "SALDO") return (saldoOf(a) - saldoOf(b)) * dir;
       return ((a as any)[sortKey] - (b as any)[sortKey]) * dir;
@@ -251,7 +268,7 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
               {periodos.map((t) => {
                 const pct = maxSin ? (t.sin / maxSin) * 100 : 0;
                 const isOpen = !!expanded[t.periodo];
-                const benefs = sortBenefs(t.benefs);
+                const planos = sortPlanos(t.planos);
                 return (
                   <div key={t.periodo} className="border border-border/60 rounded-md">
                     <button
@@ -285,7 +302,8 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
                           <table className="w-full text-[11px]">
                             <thead className="sticky top-0 bg-muted/40 z-10">
                               <tr>
-                                <th className="px-2 py-1.5 text-left font-semibold cursor-pointer select-none" onClick={() => onSort("BENEF")}>BENEFICIÁRIO {arrow("BENEF")}</th>
+                                <th className="px-2 py-1.5 text-left font-semibold cursor-pointer select-none" onClick={() => onSort("PLANO")}>PLANO {arrow("PLANO")}</th>
+                                <th className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none" onClick={() => onSort("vidas")}>Vidas {arrow("vidas")}</th>
                                 <th className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none" onClick={() => onSort("rec_total")}>Total Receita {arrow("rec_total")}</th>
                                 <th className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none" onClick={() => onSort("vrdespesas")}>Total Despesa {arrow("vrdespesas")}</th>
                                 <th className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none" onClick={() => onSort("SALDO")}>Saldo {arrow("SALDO")}</th>
@@ -293,17 +311,42 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
                               </tr>
                             </thead>
                             <tbody>
-                              {benefs.map((b, i) => (
-                                <tr key={`${t.periodo}::${b.codigo}::${i}`} className="border-b border-border/30 hover:bg-accent/30">
-                                  <td className="px-2 py-1 truncate max-w-[360px]" title={`${b.nome} (${b.codigo})`}>
-                                    {b.nome} <span className="text-muted-foreground">({b.codigo})</span>
-                                  </td>
-                                  <td className="px-2 py-1 text-right tabular-nums">{fmtNum(b.rec_total)}</td>
-                                  <td className="px-2 py-1 text-right tabular-nums"><DespTooltip title={`${b.nome} (${b.codigo})`} m={b} /></td>
-                                  <td className="px-2 py-1 text-right tabular-nums">{fmtNum(saldoOf(b))}</td>
-                                  <td className="px-2 py-1 text-right tabular-nums">{fmtPct(sinOf(b))}</td>
-                                </tr>
-                              ))}
+                              {planos.map((pl) => {
+                                const pkey = `${t.periodo}::${pl.plano}`;
+                                const pOpen = !!expandedPlano[pkey];
+                                return (
+                                  <Fragment key={pkey}>
+                                    <tr className={`border-b border-border/40 hover:bg-accent/30 ${pOpen ? "font-bold" : ""}`}>
+                                      <td className="px-2 py-1 truncate max-w-[320px]" title={pl.plano}>
+                                        <button
+                                          onClick={() => setExpandedPlano((s) => ({ ...s, [pkey]: !s[pkey] }))}
+                                          className="inline-flex items-center gap-1 hover:text-primary"
+                                        >
+                                          {pOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                                          <span>{pl.plano}</span>
+                                        </button>
+                                      </td>
+                                      <td className="px-2 py-1 text-right tabular-nums">{fmtInt(pl.vidas)}</td>
+                                      <td className="px-2 py-1 text-right tabular-nums">{fmtNum(pl.rec_total)}</td>
+                                      <td className="px-2 py-1 text-right tabular-nums"><DespTooltip title={pl.plano} m={pl} /></td>
+                                      <td className="px-2 py-1 text-right tabular-nums">{fmtNum(saldoOf(pl))}</td>
+                                      <td className="px-2 py-1 text-right tabular-nums">{fmtPct(sinOf(pl))}</td>
+                                    </tr>
+                                    {pOpen && pl.benefs.map((b, i) => (
+                                      <tr key={`${pkey}::${b.codigo}::${i}`} className="border-b border-border/20 bg-muted/5">
+                                        <td className="px-2 py-1 pl-8 truncate max-w-[360px]" title={`${b.nome} (${b.codigo})`}>
+                                          {b.nome} <span className="text-muted-foreground">({b.codigo})</span>
+                                        </td>
+                                        <td className="px-2 py-1 text-right tabular-nums">-</td>
+                                        <td className="px-2 py-1 text-right tabular-nums">{fmtNum(b.rec_total)}</td>
+                                        <td className="px-2 py-1 text-right tabular-nums"><DespTooltip title={`${b.nome} (${b.codigo})`} m={b} /></td>
+                                        <td className="px-2 py-1 text-right tabular-nums">{fmtNum(saldoOf(b))}</td>
+                                        <td className="px-2 py-1 text-right tabular-nums">{fmtPct(sinOf(b))}</td>
+                                      </tr>
+                                    ))}
+                                  </Fragment>
+                                );
+                              })}
                             </tbody>
                           </table>
                         </div>
