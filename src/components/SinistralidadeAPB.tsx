@@ -94,7 +94,9 @@ const DespTooltip = ({ title, m }: { title: string; m: Metrics }) => (
         </table>
       </div>
     </TooltipContent>
+  </Tooltip>
 );
+
 
 const RecTooltip = ({ title, m }: { title: string; m: Metrics }) => (
   <Tooltip>
