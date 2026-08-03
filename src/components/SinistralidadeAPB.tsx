@@ -3,10 +3,12 @@ import { ChevronDown, ChevronRight, ArrowUp, ArrowDown } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number];
+type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number];
 
 type Metrics = {
   rec_total: number;
+  rec_tm: number;
+  rec_cpa: number;
   vrdespesas: number;
   internacao: number;
   terapia: number;
@@ -37,7 +39,7 @@ const fmtComp = (mabas: string) =>
   mabas && mabas.length === 6 ? `${mabas.slice(4, 6)}/${mabas.slice(0, 4)}` : mabas;
 
 const zero = (): Metrics => ({
-  rec_total: 0, vrdespesas: 0, internacao: 0, terapia: 0, exame: 0,
+  rec_total: 0, rec_tm: 0, rec_cpa: 0, vrdespesas: 0, internacao: 0, terapia: 0, exame: 0,
   consulta: 0, emergencia: 0, demais: 0,
 });
 const add = (t: Metrics, r: Raw) => {
@@ -49,7 +51,10 @@ const add = (t: Metrics, r: Raw) => {
   t.consulta += r[10];
   t.emergencia += r[11];
   t.demais += r[12];
+  t.rec_tm += r[14] ?? 0;
+  t.rec_cpa += r[15] ?? 0;
 };
+
 
 const saldoOf = (m: Metrics) => m.rec_total - m.vrdespesas;
 const sinOf = (m: Metrics) => (m.rec_total ? m.vrdespesas / m.rec_total : 0);
@@ -91,6 +96,39 @@ const DespTooltip = ({ title, m }: { title: string; m: Metrics }) => (
     </TooltipContent>
   </Tooltip>
 );
+
+
+const RecTooltip = ({ title, m }: { title: string; m: Metrics }) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <span className="cursor-help underline decoration-dotted decoration-muted-foreground/50 underline-offset-2">
+        {fmtNum(m.rec_total)}
+      </span>
+    </TooltipTrigger>
+    <TooltipContent side="left" className="p-0">
+      <div className="min-w-[200px] p-2">
+        <div className="text-xs font-semibold mb-1.5 border-b border-border pb-1">{title}</div>
+        <table className="text-[11px] w-full">
+          <tbody>
+            {([["TM", m.rec_tm], ["CPA", m.rec_cpa]] as [string, number][]).map(([label, v]) => (
+              <tr key={label}>
+                <td className="pr-3 py-0.5">{label}</td>
+                <td className="text-right tabular-nums">
+                  {fmtNum(v)} <span className="text-muted-foreground">({fmtShare(v, m.rec_total)})</span>
+                </td>
+              </tr>
+            ))}
+            <tr className="border-t border-border font-semibold">
+              <td className="pr-3 pt-1">Total</td>
+              <td className="text-right tabular-nums pt-1">{fmtNum(m.rec_total)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </TooltipContent>
+  </Tooltip>
+);
+
 
 export default function SinistralidadeAPB({ embedded = false }: { embedded?: boolean } = {}) {
   const [rows, setRows] = useState<Raw[]>([]);
@@ -190,6 +228,25 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
 
   const maxSin = useMemo(() => periodos.reduce((m, t) => Math.max(m, t.sin), 0), [periodos]);
 
+  const totais = useMemo(() => {
+    const t = { ...zero(), vidas: 0 };
+    for (const p of periodos) {
+      t.vidas += p.vidas;
+      t.rec_total += p.rec_total;
+      t.rec_tm += p.rec_tm;
+      t.rec_cpa += p.rec_cpa;
+      t.vrdespesas += p.vrdespesas;
+      t.internacao += p.internacao;
+      t.terapia += p.terapia;
+      t.exame += p.exame;
+      t.consulta += p.consulta;
+      t.emergencia += p.emergencia;
+      t.demais += p.demais;
+    }
+    return t;
+  }, [periodos]);
+
+
 
   const onSort = (k: SortKey) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -265,6 +322,20 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
             </div>
           ) : (
             <div className="space-y-2">
+              <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-muted/60 border border-border text-xs font-semibold text-foreground">
+                <div className="w-6 shrink-0" />
+                <div className="w-40 shrink-0 text-left">TOTAL GERAL</div>
+                <div className="flex-1 grid grid-cols-4 gap-2 text-right tabular-nums">
+                  <span>{fmtInt(totais.vidas)} vidas</span>
+                  <span><RecTooltip title="TOTAL GERAL · Receita" m={totais} /></span>
+                  <span><DespTooltip title="TOTAL GERAL · Despesa" m={totais} /></span>
+                  <span>{fmtNum(saldoOf(totais))}</span>
+                </div>
+                <div className="w-56 shrink-0 text-right tabular-nums">
+                  SIN. {fmtPct(sinOf(totais))}
+                </div>
+              </div>
+
               {periodos.map((t) => {
                 const pct = maxSin ? (t.sin / maxSin) * 100 : 0;
                 const isOpen = !!expanded[t.periodo];
@@ -327,7 +398,7 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
                                         </button>
                                       </td>
                                       <td className="px-2 py-1 text-right tabular-nums">{fmtInt(pl.vidas)}</td>
-                                      <td className="px-2 py-1 text-right tabular-nums">{fmtNum(pl.rec_total)}</td>
+                                      <td className="px-2 py-1 text-right tabular-nums"><RecTooltip title={pl.plano} m={pl} /></td>
                                       <td className="px-2 py-1 text-right tabular-nums"><DespTooltip title={pl.plano} m={pl} /></td>
                                       <td className="px-2 py-1 text-right tabular-nums">{fmtNum(saldoOf(pl))}</td>
                                       <td className="px-2 py-1 text-right tabular-nums">{fmtPct(sinOf(pl))}</td>
@@ -338,7 +409,7 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
                                           {b.nome} <span className="text-muted-foreground">({b.codigo})</span>
                                         </td>
                                         <td className="px-2 py-1 text-right tabular-nums">-</td>
-                                        <td className="px-2 py-1 text-right tabular-nums">{fmtNum(b.rec_total)}</td>
+                                        <td className="px-2 py-1 text-right tabular-nums"><RecTooltip title={`${b.nome} (${b.codigo})`} m={b} /></td>
                                         <td className="px-2 py-1 text-right tabular-nums"><DespTooltip title={`${b.nome} (${b.codigo})`} m={b} /></td>
                                         <td className="px-2 py-1 text-right tabular-nums">{fmtNum(saldoOf(b))}</td>
                                         <td className="px-2 py-1 text-right tabular-nums">{fmtPct(sinOf(b))}</td>
