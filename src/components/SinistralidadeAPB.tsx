@@ -201,32 +201,31 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
   };
 
   const inputCls =
-    "h-8 w-24 px-2 rounded border border-border bg-background text-xs text-foreground tabular-nums focus:outline-none focus:ring-1 focus:ring-primary";
+    "h-8 px-2 rounded border border-border bg-background text-xs text-foreground tabular-nums focus:outline-none focus:ring-1 focus:ring-primary";
 
   return (
     <TooltipProvider delayDuration={100}>
       <section className={`bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col ${embedded ? "h-full" : "h-[calc(100vh-9rem)]"}`}>
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground mb-3">
           <div className="flex items-center gap-2">
-            <span className="shrink-0">APB · mabas de</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={mIni}
-              onChange={(e) => setMIni(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="202507"
+            <span className="shrink-0">APB · período</span>
+            <select
+              value={`${mIni}-${mFim}`}
+              onChange={(e) => {
+                const [i, f] = e.target.value.split("-");
+                setMIni(i);
+                setMFim(f);
+              }}
               className={inputCls}
-            />
-            <span>até</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={mFim}
-              onChange={(e) => setMFim(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="202606"
-              className={inputCls}
-            />
+            >
+              {ciclos.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
           </div>
+
           <input
             type="text"
             value={filter}
