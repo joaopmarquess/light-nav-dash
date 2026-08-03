@@ -127,6 +127,10 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
     const fim = mFim.trim();
     const fq = filter.trim().toLowerCase();
     const byPeriodo = new Map<string, Periodo>();
+    const gMaps = new Map<string, Map<string, Grupo>>();
+    const cMaps = new Map<string, Map<string, Contrato>>();
+    const bMaps = new Map<string, Map<string, Benef>>();
+
     for (const r of rows) {
       const mabas = r[0];
       if (ini && mabas < ini) continue;
@@ -138,31 +142,50 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
         r[4].toLowerCase().includes(fq)
       )) continue;
 
-      let p = byPeriodo.get(mabas);
+      const y = Number(mabas.slice(0, 4));
+      const m = Number(mabas.slice(4, 6));
+      const base = m >= 7 ? y : y - 1;
+      const ciclo = `${base}07-${base + 1}06`;
+
+      let p = byPeriodo.get(ciclo);
       if (!p) {
-        p = { periodo: mabas, vidas: 0, sin: 0, grupos: [], ...zero() };
-        byPeriodo.set(mabas, p);
+        p = { periodo: ciclo, vidas: 0, sin: 0, grupos: [], ...zero() };
+        byPeriodo.set(ciclo, p);
+        gMaps.set(ciclo, new Map());
       }
       add(p, r);
-      let g = p.grupos.find((x) => x.grupo === r[1]);
+
+      const gm = gMaps.get(ciclo)!;
+      let g = gm.get(r[1]);
       if (!g) {
         g = { grupo: r[1], vidas: 0, contratos: [], ...zero() };
+        gm.set(r[1], g);
         p.grupos.push(g);
+        cMaps.set(`${ciclo}|${r[1]}`, new Map());
       }
       add(g, r);
-      let c = g.contratos.find((x) => x.contrato === r[2]);
+
+      const cm = cMaps.get(`${ciclo}|${r[1]}`)!;
+      let c = cm.get(r[2]);
       if (!c) {
         c = { contrato: r[2], vidas: 0, benefs: [], ...zero() };
+        cm.set(r[2], c);
         g.contratos.push(c);
+        bMaps.set(`${ciclo}|${r[1]}|${r[2]}`, new Map());
       }
       add(c, r);
-      c.benefs.push({ codigo: r[3], nome: r[4], ...zero(), ...{
-        rec_total: r[5], vrdespesas: r[6], internacao: r[7], terapia: r[8],
-        exame: r[9], consulta: r[10], emergencia: r[11], demais: r[12],
-      } });
-      c.vidas += 1;
-      g.vidas += 1;
-      p.vidas += 1;
+
+      const bm = bMaps.get(`${ciclo}|${r[1]}|${r[2]}`)!;
+      let b = bm.get(r[3]);
+      if (!b) {
+        b = { codigo: r[3], nome: r[4], ...zero() };
+        bm.set(r[3], b);
+        c.benefs.push(b);
+        c.vidas += 1;
+        g.vidas += 1;
+        p.vidas += 1;
+      }
+      add(b, r);
     }
     const arr = Array.from(byPeriodo.values());
     for (const p of arr) {
@@ -176,21 +199,11 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
     return arr;
   }, [rows, mIni, mFim, filter]);
 
-  const ciclos = useMemo(() => {
-    const years = new Set<number>();
-    for (const r of rows) {
-      const y = Number(r[0].slice(0, 4));
-      const m = Number(r[0].slice(4, 6));
-      years.add(m >= 7 ? y : y - 1);
-    }
-    if (years.size === 0) years.add(2025);
-    return Array.from(years)
-      .sort((a, b) => b - a)
-      .map((y) => ({
-        value: `${y}07-${y + 1}06`,
-        label: `07/${y} a 06/${y + 1}`,
-      }));
-  }, [rows]);
+  const fmtCiclo = (ciclo: string) => {
+    const [a, b] = ciclo.split("-");
+    return `${fmtComp(a)} a ${fmtComp(b)}`;
+  };
+
 
   const maxSin = useMemo(() => periodos.reduce((m, t) => Math.max(m, t.sin), 0), [periodos]);
 
@@ -218,30 +231,33 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
   };
 
   const inputCls =
-    "h-8 px-2 rounded border border-border bg-background text-xs text-foreground tabular-nums focus:outline-none focus:ring-1 focus:ring-primary";
+    "h-8 w-24 px-2 rounded border border-border bg-background text-xs text-foreground tabular-nums focus:outline-none focus:ring-1 focus:ring-primary";
 
   return (
     <TooltipProvider delayDuration={100}>
       <section className={`bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col ${embedded ? "h-full" : "h-[calc(100vh-9rem)]"}`}>
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground mb-3">
           <div className="flex items-center gap-2">
-            <span className="shrink-0">APB · período</span>
-            <select
-              value={`${mIni}-${mFim}`}
-              onChange={(e) => {
-                const [i, f] = e.target.value.split("-");
-                setMIni(i);
-                setMFim(f);
-              }}
+            <span className="shrink-0">APB · mabas de</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={mIni}
+              onChange={(e) => setMIni(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              placeholder="202507"
               className={inputCls}
-            >
-              {ciclos.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
+            />
+            <span>até</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={mFim}
+              onChange={(e) => setMFim(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              placeholder="202606"
+              className={inputCls}
+            />
           </div>
+
 
           <input
             type="text"
@@ -280,7 +296,8 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
                         {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                       </div>
                       <div className="w-40 shrink-0 text-xs font-medium text-foreground text-left">
-                        {fmtComp(t.periodo)}
+                        {fmtCiclo(t.periodo)}
+
                       </div>
                       <div className="flex-1 h-5 bg-muted/40 rounded overflow-hidden">
                         <div
