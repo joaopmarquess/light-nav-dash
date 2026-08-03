@@ -376,7 +376,7 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
                                           {b.nome} <span className="text-muted-foreground">({b.codigo})</span>
                                         </td>
                                         <td className="px-2 py-1 text-right tabular-nums">-</td>
-                                        <td className="px-2 py-1 text-right tabular-nums">{fmtNum(b.rec_total)}</td>
+                                        <td className="px-2 py-1 text-right tabular-nums"><RecTooltip title={`${b.nome} (${b.codigo})`} m={b} /></td>
                                         <td className="px-2 py-1 text-right tabular-nums"><DespTooltip title={`${b.nome} (${b.codigo})`} m={b} /></td>
                                         <td className="px-2 py-1 text-right tabular-nums">{fmtNum(saldoOf(b))}</td>
                                         <td className="px-2 py-1 text-right tabular-nums">{fmtPct(sinOf(b))}</td>
