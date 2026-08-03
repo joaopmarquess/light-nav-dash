@@ -1,7 +1,12 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, ArrowUp, ArrowDown } from "lucide-react";
+import { ChevronDown, ChevronRight, ArrowUp, ArrowDown, LineChart as LineChartIcon } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Legend,
+  Tooltip as RTooltip, ResponsiveContainer,
+} from "recharts";
 
 type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number];
 
@@ -246,6 +251,59 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
     return t;
   }, [periodos]);
 
+  const [showChart, setShowChart] = useState(false);
+
+  const chart = useMemo(() => {
+    const ini = mIni.trim();
+    const fim = mFim.trim();
+    const fq = filter.trim().toLowerCase();
+    const meses = new Set<string>();
+    const acc = new Map<string, Map<string, { rec: number; desp: number }>>();
+    const planoTot = new Map<string, number>();
+
+    for (const r of rows) {
+      const mabas = r[0];
+      if (ini && mabas < ini) continue;
+      if (fim && mabas > fim) continue;
+      if (fq && !(
+        r[1].toLowerCase().includes(fq) ||
+        r[2].toLowerCase().includes(fq) ||
+        r[3].toLowerCase().includes(fq) ||
+        r[4].toLowerCase().includes(fq)
+      )) continue;
+      meses.add(mabas);
+      let pm = acc.get(r[1]);
+      if (!pm) { pm = new Map(); acc.set(r[1], pm); }
+      const cur = pm.get(mabas) ?? { rec: 0, desp: 0 };
+      cur.rec += r[5];
+      cur.desp += r[6];
+      pm.set(mabas, cur);
+      planoTot.set(r[1], (planoTot.get(r[1]) ?? 0) + r[6]);
+    }
+
+    const mesesArr = Array.from(meses).sort();
+    const planos = Array.from(planoTot.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12)
+      .map(([p]) => p);
+
+    const data = mesesArr.map((mb) => {
+      const row: Record<string, any> = { mes: fmtComp(mb) };
+      for (const p of planos) {
+        const v = acc.get(p)?.get(mb);
+        row[p] = v && v.rec ? (v.desp / v.rec) * 100 : null;
+      }
+      return row;
+    });
+    return { data, planos };
+  }, [rows, mIni, mFim, filter]);
+
+  const CHART_COLORS = [
+    "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#a855f7", "#06b6d4",
+    "#ec4899", "#84cc16", "#f97316", "#6366f1", "#14b8a6", "#eab308",
+  ];
+
+
 
 
   const onSort = (k: SortKey) => {
@@ -296,7 +354,16 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
               placeholder="202606"
               className={inputCls}
             />
+            <button
+              onClick={() => setShowChart(true)}
+              className="h-8 px-3 inline-flex items-center gap-1.5 rounded border border-border bg-background text-xs text-foreground hover:bg-accent"
+              title="Gráfico de sinistralidade por plano"
+            >
+              <LineChartIcon className="h-3.5 w-3.5" /> Gráfico
+            </button>
           </div>
+
+
 
 
           <input
@@ -430,6 +497,53 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
           )}
         </div>
       </section>
+
+      <Dialog open={showChart} onOpenChange={setShowChart}>
+        <DialogContent className="max-w-6xl">
+          <DialogHeader>
+            <DialogTitle className="text-sm">
+              Sinistralidade (%) por Plano · {fmtComp(mIni)} a {fmtComp(mFim)}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="h-[60vh]">
+            {chart.data.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+                Sem dados para o intervalo informado.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chart.data} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="mes" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis
+                    tick={{ fontSize: 10 }}
+                    stroke="hsl(var(--muted-foreground))"
+                    tickFormatter={(v) => `${Number(v).toFixed(0)}%`}
+                  />
+                  <RTooltip
+                    formatter={(v: any, n: any) => [v == null ? "-" : `${Number(v).toFixed(2)}%`, n]}
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  {chart.planos.map((p, i) => (
+                    <Line
+                      key={p}
+                      type="monotone"
+                      dataKey={p}
+                      name={p}
+                      stroke={CHART_COLORS[i % CHART_COLORS.length]}
+                      strokeWidth={2}
+                      dot={{ r: 2 }}
+                      connectNulls
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
+
   );
 }
