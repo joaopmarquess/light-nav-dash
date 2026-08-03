@@ -228,6 +228,25 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
 
   const maxSin = useMemo(() => periodos.reduce((m, t) => Math.max(m, t.sin), 0), [periodos]);
 
+  const totais = useMemo(() => {
+    const t = { ...zero(), vidas: 0 };
+    for (const p of periodos) {
+      t.vidas += p.vidas;
+      t.rec_total += p.rec_total;
+      t.rec_tm += p.rec_tm;
+      t.rec_cpa += p.rec_cpa;
+      t.vrdespesas += p.vrdespesas;
+      t.internacao += p.internacao;
+      t.terapia += p.terapia;
+      t.exame += p.exame;
+      t.consulta += p.consulta;
+      t.emergencia += p.emergencia;
+      t.demais += p.demais;
+    }
+    return t;
+  }, [periodos]);
+
+
 
   const onSort = (k: SortKey) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
