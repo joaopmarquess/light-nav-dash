@@ -296,7 +296,8 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
                         {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                       </div>
                       <div className="w-40 shrink-0 text-xs font-medium text-foreground text-left">
-                        {fmtComp(t.periodo)}
+                        {fmtCiclo(t.periodo)}
+
                       </div>
                       <div className="flex-1 h-5 bg-muted/40 rounded overflow-hidden">
                         <div
