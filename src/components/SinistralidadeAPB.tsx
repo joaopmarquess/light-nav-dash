@@ -176,7 +176,24 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
     return arr;
   }, [rows, mIni, mFim, filter]);
 
+  const ciclos = useMemo(() => {
+    const years = new Set<number>();
+    for (const r of rows) {
+      const y = Number(r[0].slice(0, 4));
+      const m = Number(r[0].slice(4, 6));
+      years.add(m >= 7 ? y : y - 1);
+    }
+    if (years.size === 0) years.add(2025);
+    return Array.from(years)
+      .sort((a, b) => b - a)
+      .map((y) => ({
+        value: `${y}07-${y + 1}06`,
+        label: `07/${y} a 06/${y + 1}`,
+      }));
+  }, [rows]);
+
   const maxSin = useMemo(() => periodos.reduce((m, t) => Math.max(m, t.sin), 0), [periodos]);
+
 
   const onSort = (k: SortKey) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
