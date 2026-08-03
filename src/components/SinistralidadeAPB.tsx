@@ -176,7 +176,24 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
     return arr;
   }, [rows, mIni, mFim, filter]);
 
+  const ciclos = useMemo(() => {
+    const years = new Set<number>();
+    for (const r of rows) {
+      const y = Number(r[0].slice(0, 4));
+      const m = Number(r[0].slice(4, 6));
+      years.add(m >= 7 ? y : y - 1);
+    }
+    if (years.size === 0) years.add(2025);
+    return Array.from(years)
+      .sort((a, b) => b - a)
+      .map((y) => ({
+        value: `${y}07-${y + 1}06`,
+        label: `07/${y} a 06/${y + 1}`,
+      }));
+  }, [rows]);
+
   const maxSin = useMemo(() => periodos.reduce((m, t) => Math.max(m, t.sin), 0), [periodos]);
+
 
   const onSort = (k: SortKey) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -201,32 +218,31 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
   };
 
   const inputCls =
-    "h-8 w-24 px-2 rounded border border-border bg-background text-xs text-foreground tabular-nums focus:outline-none focus:ring-1 focus:ring-primary";
+    "h-8 px-2 rounded border border-border bg-background text-xs text-foreground tabular-nums focus:outline-none focus:ring-1 focus:ring-primary";
 
   return (
     <TooltipProvider delayDuration={100}>
       <section className={`bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col ${embedded ? "h-full" : "h-[calc(100vh-9rem)]"}`}>
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground mb-3">
           <div className="flex items-center gap-2">
-            <span className="shrink-0">APB · mabas de</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={mIni}
-              onChange={(e) => setMIni(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="202507"
+            <span className="shrink-0">APB · período</span>
+            <select
+              value={`${mIni}-${mFim}`}
+              onChange={(e) => {
+                const [i, f] = e.target.value.split("-");
+                setMIni(i);
+                setMFim(f);
+              }}
               className={inputCls}
-            />
-            <span>até</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={mFim}
-              onChange={(e) => setMFim(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="202606"
-              className={inputCls}
-            />
+            >
+              {ciclos.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
           </div>
+
           <input
             type="text"
             value={filter}
