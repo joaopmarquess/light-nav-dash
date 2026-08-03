@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Legend,
-  Tooltip as RTooltip, ResponsiveContainer,
+  Tooltip as RTooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts";
 
 type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number];
@@ -525,6 +525,20 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
                     contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
                   />
                   <Legend wrapperStyle={{ fontSize: 10 }} />
+                  <ReferenceLine
+                    y={80}
+                    stroke="#10b981"
+                    strokeDasharray="6 4"
+                    strokeWidth={2}
+                    label={{ value: "Ideal 80%", position: "right", fill: "#10b981", fontSize: 10 }}
+                  />
+                  <ReferenceLine
+                    y={100}
+                    stroke="#ef4444"
+                    strokeDasharray="6 4"
+                    strokeWidth={2}
+                    label={{ value: "Crítica 100%", position: "right", fill: "#ef4444", fontSize: 10 }}
+                  />
                   {chart.planos.map((p, i) => (
                     <Line
                       key={p}
