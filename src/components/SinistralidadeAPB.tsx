@@ -497,6 +497,53 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
           )}
         </div>
       </section>
+
+      <Dialog open={showChart} onOpenChange={setShowChart}>
+        <DialogContent className="max-w-6xl">
+          <DialogHeader>
+            <DialogTitle className="text-sm">
+              Sinistralidade (%) por Plano · {fmtComp(mIni)} a {fmtComp(mFim)}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="h-[60vh]">
+            {chart.data.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+                Sem dados para o intervalo informado.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chart.data} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="mes" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis
+                    tick={{ fontSize: 10 }}
+                    stroke="hsl(var(--muted-foreground))"
+                    tickFormatter={(v) => `${Number(v).toFixed(0)}%`}
+                  />
+                  <RTooltip
+                    formatter={(v: any, n: any) => [v == null ? "-" : `${Number(v).toFixed(2)}%`, n]}
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  {chart.planos.map((p, i) => (
+                    <Line
+                      key={p}
+                      type="monotone"
+                      dataKey={p}
+                      name={p}
+                      stroke={CHART_COLORS[i % CHART_COLORS.length]}
+                      strokeWidth={2}
+                      dot={{ r: 2 }}
+                      connectNulls
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
+
   );
 }
