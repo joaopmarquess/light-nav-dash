@@ -251,6 +251,59 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
     return t;
   }, [periodos]);
 
+  const [showChart, setShowChart] = useState(false);
+
+  const chart = useMemo(() => {
+    const ini = mIni.trim();
+    const fim = mFim.trim();
+    const fq = filter.trim().toLowerCase();
+    const meses = new Set<string>();
+    const acc = new Map<string, Map<string, { rec: number; desp: number }>>();
+    const planoTot = new Map<string, number>();
+
+    for (const r of rows) {
+      const mabas = r[0];
+      if (ini && mabas < ini) continue;
+      if (fim && mabas > fim) continue;
+      if (fq && !(
+        r[1].toLowerCase().includes(fq) ||
+        r[2].toLowerCase().includes(fq) ||
+        r[3].toLowerCase().includes(fq) ||
+        r[4].toLowerCase().includes(fq)
+      )) continue;
+      meses.add(mabas);
+      let pm = acc.get(r[1]);
+      if (!pm) { pm = new Map(); acc.set(r[1], pm); }
+      const cur = pm.get(mabas) ?? { rec: 0, desp: 0 };
+      cur.rec += r[5];
+      cur.desp += r[6];
+      pm.set(mabas, cur);
+      planoTot.set(r[1], (planoTot.get(r[1]) ?? 0) + r[6]);
+    }
+
+    const mesesArr = Array.from(meses).sort();
+    const planos = Array.from(planoTot.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12)
+      .map(([p]) => p);
+
+    const data = mesesArr.map((mb) => {
+      const row: Record<string, any> = { mes: fmtComp(mb) };
+      for (const p of planos) {
+        const v = acc.get(p)?.get(mb);
+        row[p] = v && v.rec ? (v.desp / v.rec) * 100 : null;
+      }
+      return row;
+    });
+    return { data, planos };
+  }, [rows, mIni, mFim, filter]);
+
+  const CHART_COLORS = [
+    "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#a855f7", "#06b6d4",
+    "#ec4899", "#84cc16", "#f97316", "#6366f1", "#14b8a6", "#eab308",
+  ];
+
+
 
 
   const onSort = (k: SortKey) => {
