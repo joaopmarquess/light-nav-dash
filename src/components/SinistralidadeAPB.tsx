@@ -94,8 +94,39 @@ const DespTooltip = ({ title, m }: { title: string; m: Metrics }) => (
         </table>
       </div>
     </TooltipContent>
+);
+
+const RecTooltip = ({ title, m }: { title: string; m: Metrics }) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <span className="cursor-help underline decoration-dotted decoration-muted-foreground/50 underline-offset-2">
+        {fmtNum(m.rec_total)}
+      </span>
+    </TooltipTrigger>
+    <TooltipContent side="left" className="p-0">
+      <div className="min-w-[200px] p-2">
+        <div className="text-xs font-semibold mb-1.5 border-b border-border pb-1">{title}</div>
+        <table className="text-[11px] w-full">
+          <tbody>
+            {([["TM", m.rec_tm], ["CPA", m.rec_cpa]] as [string, number][]).map(([label, v]) => (
+              <tr key={label}>
+                <td className="pr-3 py-0.5">{label}</td>
+                <td className="text-right tabular-nums">
+                  {fmtNum(v)} <span className="text-muted-foreground">({fmtShare(v, m.rec_total)})</span>
+                </td>
+              </tr>
+            ))}
+            <tr className="border-t border-border font-semibold">
+              <td className="pr-3 pt-1">Total</td>
+              <td className="text-right tabular-nums pt-1">{fmtNum(m.rec_total)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </TooltipContent>
   </Tooltip>
 );
+
 
 export default function SinistralidadeAPB({ embedded = false }: { embedded?: boolean } = {}) {
   const [rows, setRows] = useState<Raw[]>([]);
