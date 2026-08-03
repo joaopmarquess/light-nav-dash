@@ -322,6 +322,20 @@ export default function SinistralidadeAPB({ embedded = false }: { embedded?: boo
             </div>
           ) : (
             <div className="space-y-2">
+              <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-muted/60 border border-border text-xs font-semibold text-foreground">
+                <div className="w-6 shrink-0" />
+                <div className="w-40 shrink-0 text-left">TOTAL GERAL</div>
+                <div className="flex-1 grid grid-cols-4 gap-2 text-right tabular-nums">
+                  <span>{fmtInt(totais.vidas)} vidas</span>
+                  <span><RecTooltip title="TOTAL GERAL · Receita" m={totais} /></span>
+                  <span><DespTooltip title="TOTAL GERAL · Despesa" m={totais} /></span>
+                  <span>{fmtNum(saldoOf(totais))}</span>
+                </div>
+                <div className="w-56 shrink-0 text-right tabular-nums">
+                  SIN. {fmtPct(sinOf(totais))}
+                </div>
+              </div>
+
               {periodos.map((t) => {
                 const pct = maxSin ? (t.sin / maxSin) * 100 : 0;
                 const isOpen = !!expanded[t.periodo];
