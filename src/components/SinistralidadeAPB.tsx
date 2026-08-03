@@ -1,7 +1,12 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, ArrowUp, ArrowDown } from "lucide-react";
+import { ChevronDown, ChevronRight, ArrowUp, ArrowDown, LineChart as LineChartIcon } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Legend,
+  Tooltip as RTooltip, ResponsiveContainer,
+} from "recharts";
 
 type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number];
 
