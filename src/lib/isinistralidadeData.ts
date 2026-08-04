@@ -1,4 +1,5 @@
 import { hostinger } from "@/lib/hostingerClient";
+import { fetchCarteiraDim, type CarteiraDim } from "@/lib/carteiraDimData";
 
 /**
  * Fonte única de dados do menu Sinistralidade: public.isinistralidade.
@@ -35,7 +36,7 @@ export const DEFAULT_MABAS_FIM = "202606";
 /** Nova fonte: public.ardmensal (granularidade beneficiário x mabas). */
 const TABLE = "ardmensal";
 const COLS =
-  "mabas,cdpln,dspln,codigo,nmcli,dscid,rec_total,rec_tm,rec_cpa,vrdespesas,internacao,terapia,exame,consulta,emergencia,fisioterap,outros";
+  "mabas,cdregusr,cdpln,dspln,codigo,nmcli,dscid,rec_total,rec_tm,rec_cpa,vrdespesas,internacao,terapia,exame,consulta,emergencia,fisioterap,outros";
 
 /** Ciclo móvel de 12 meses (jul→jun) ao qual um mabas pertence. Ex.: "202507-202606" */
 export const cicloOf = (mabas: string): string => {
@@ -64,15 +65,16 @@ const str = (v: unknown, fallback = "") => {
   return s || fallback;
 };
 
-const mapRow = (r: any): ISinRow => ({
+const mapRow = (r: any, dim?: CarteiraDim): ISinRow => ({
   mabas: String(r.mabas ?? ""),
-  // ardmensal não possui GRUPO / REGIONAL / MACROREGIAO
-  GRUPO: "(não disponível)",
+  // GRUPO vem de carteira_beneficiario (NOME_EMPRESA_ASSOC) via cdregusr
+  GRUPO: dim?.grupo || "(sem grupo)",
   cdpln: str(r.cdpln),
   dspln: str(r.dspln),
   codigo: str(r.codigo),
   nmcli: str(r.nmcli),
-  CIDADE: str(r.dscid, "(sem cidade)"),
+  // Cidade/UF vem de carteira_beneficiario; fallback dscid (sem UF)
+  CIDADE: dim?.cidade || str(r.dscid, "(sem cidade)"),
   REGIONAL: "(não disponível)",
   MACROREGIAO: "(não disponível)",
   rec_total: num(r.rec_total),
@@ -94,6 +96,7 @@ const CONCURRENCY = 6;
 const cache = new Map<string, Promise<ISinRow[]>>();
 
 async function loadRange(mIni: string, mFim: string): Promise<ISinRow[]> {
+  const dim = await fetchCarteiraDim();
   const ini = Number(mIni);
   const fim = Number(mFim);
   if (!ini || !fim || fim < ini) return [];
@@ -131,7 +134,8 @@ async function loadRange(mIni: string, mFim: string): Promise<ISinRow[]> {
         console.error("isinistralidade fetch error", error);
         return;
       }
-      for (const r of (data ?? []) as any[]) out.push(mapRow(r));
+      for (const r of (data ?? []) as any[])
+        out.push(mapRow(r, dim.get(String(r.cdregusr ?? ""))));
     }
   };
   await Promise.all(Array.from({ length: CONCURRENCY }, worker));
