@@ -1,5 +1,6 @@
 import { hostinger } from "@/lib/hostingerClient";
 import { fetchCarteiraDim, type CarteiraDim } from "@/lib/carteiraDimData";
+import { fetchRegionalDim, normCidade, type RegionalDim, type RegionalMaps } from "@/lib/regionalDimData";
 
 /**
  * Fonte única de dados do menu Sinistralidade: public.isinistralidade.
@@ -65,7 +66,7 @@ const str = (v: unknown, fallback = "") => {
   return s || fallback;
 };
 
-const mapRow = (r: any, dim?: CarteiraDim): ISinRow => ({
+const mapRow = (r: any, dim?: CarteiraDim, reg?: RegionalDim): ISinRow => ({
   mabas: String(r.mabas ?? ""),
   // GRUPO vem de carteira_beneficiario (NOME_EMPRESA_ASSOC) via cdregusr
   GRUPO: dim?.grupo || "(sem grupo)",
@@ -75,8 +76,9 @@ const mapRow = (r: any, dim?: CarteiraDim): ISinRow => ({
   nmcli: str(r.nmcli),
   // Cidade/UF vem de carteira_beneficiario; fallback dscid (sem UF)
   CIDADE: dim?.cidade || str(r.dscid, "(sem cidade)"),
-  REGIONAL: "(não disponível)",
-  MACROREGIAO: "(não disponível)",
+  // REGIONAL / MACROREGIAO vêm de public.sinistralidade (de-para por cdregusr, fallback cidade)
+  REGIONAL: reg?.regional || "(sem regional)",
+  MACROREGIAO: reg?.macro || "(sem macrorregião)",
   rec_total: num(r.rec_total),
   rec_tm: num(r.rec_tm),
   rec_cpa: num(r.rec_cpa),
@@ -89,6 +91,15 @@ const mapRow = (r: any, dim?: CarteiraDim): ISinRow => ({
   demais: num(r.outros) + num(r.fisioterap),
 });
 
+const lookupRegional = (
+  maps: RegionalMaps,
+  r: any,
+  d?: CarteiraDim,
+): RegionalDim | undefined =>
+  maps.byReg.get(String(r.cdregusr ?? "")) ??
+  maps.byCidade.get(normCidade(d?.cidade)) ??
+  maps.byCidade.get(normCidade(r.dscid));
+
 // PostgREST limita respostas a 1000 linhas: páginas maiores perdiam dados silenciosamente.
 const PAGE = 1000;
 const CONCURRENCY = 6;
@@ -96,7 +107,7 @@ const CONCURRENCY = 6;
 const cache = new Map<string, Promise<ISinRow[]>>();
 
 async function loadRange(mIni: string, mFim: string): Promise<ISinRow[]> {
-  const dim = await fetchCarteiraDim();
+  const [dim, regMaps] = await Promise.all([fetchCarteiraDim(), fetchRegionalDim()]);
   const ini = Number(mIni);
   const fim = Number(mFim);
   if (!ini || !fim || fim < ini) return [];
@@ -134,8 +145,10 @@ async function loadRange(mIni: string, mFim: string): Promise<ISinRow[]> {
         console.error("isinistralidade fetch error", error);
         return;
       }
-      for (const r of (data ?? []) as any[])
-        out.push(mapRow(r, dim.get(String(r.cdregusr ?? ""))));
+      for (const r of (data ?? []) as any[]) {
+        const d = dim.get(String(r.cdregusr ?? ""));
+        out.push(mapRow(r, d, lookupRegional(regMaps, r, d)));
+      }
     }
   };
   await Promise.all(Array.from({ length: CONCURRENCY }, worker));
