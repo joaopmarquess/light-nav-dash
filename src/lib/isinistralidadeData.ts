@@ -32,9 +32,10 @@ export type ISinRow = {
 export const DEFAULT_MABAS_INI = "202507";
 export const DEFAULT_MABAS_FIM = "202606";
 
-const TABLE = "isinistralidade";
+/** Nova fonte: public.ardmensal (granularidade beneficiário x mabas). */
+const TABLE = "ardmensal";
 const COLS =
-  'mabas,"GRUPO",cdpln,dspln,codigo,nmcli,"CIDADE","REGIONAL","MACROREGIAO",rec_total,rec_tm,rec_cpa,vrdespesas,internacao,terapia,exame,consulta,emergencia,"DEMAIS"';
+  "mabas,cdpln,dspln,codigo,nmcli,dscid,rec_total,rec_tm,rec_cpa,vrdespesas,internacao,terapia,exame,consulta,emergencia,fisioterap,outros";
 
 /** Ciclo móvel de 12 meses (jul→jun) ao qual um mabas pertence. Ex.: "202507-202606" */
 export const cicloOf = (mabas: string): string => {
@@ -65,14 +66,15 @@ const str = (v: unknown, fallback = "") => {
 
 const mapRow = (r: any): ISinRow => ({
   mabas: String(r.mabas ?? ""),
-  GRUPO: str(r.GRUPO, "(sem grupo)"),
+  // ardmensal não possui GRUPO / REGIONAL / MACROREGIAO
+  GRUPO: "(não disponível)",
   cdpln: str(r.cdpln),
   dspln: str(r.dspln),
   codigo: str(r.codigo),
   nmcli: str(r.nmcli),
-  CIDADE: str(r.CIDADE, "(sem cidade)"),
-  REGIONAL: str(r.REGIONAL, "(sem regional)"),
-  MACROREGIAO: str(r.MACROREGIAO, "(sem macrorregião)"),
+  CIDADE: str(r.dscid, "(sem cidade)"),
+  REGIONAL: "(não disponível)",
+  MACROREGIAO: "(não disponível)",
   rec_total: num(r.rec_total),
   rec_tm: num(r.rec_tm),
   rec_cpa: num(r.rec_cpa),
@@ -82,11 +84,12 @@ const mapRow = (r: any): ISinRow => ({
   exame: num(r.exame),
   consulta: num(r.consulta),
   emergencia: num(r.emergencia),
-  demais: num(r.DEMAIS),
+  demais: num(r.outros) + num(r.fisioterap),
 });
 
-const PAGE = 5000;
-const CONCURRENCY = 8;
+// PostgREST limita respostas a 1000 linhas: páginas maiores perdiam dados silenciosamente.
+const PAGE = 1000;
+const CONCURRENCY = 6;
 
 const cache = new Map<string, Promise<ISinRow[]>>();
 
