@@ -230,7 +230,7 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
         .sort((a, b) => b.saldo - a.saldo);
     }
     return { totals, aggByPeriodo, children, benefs };
-  }, [rows]);
+  }, [rows, cfg]);
 
   const { totals, aggByPeriodo, children, benefs } = derived;
   const loadingChild: Record<string, boolean> = {};
@@ -278,8 +278,6 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
     setExpandedCdpln((s) => ({ ...s, [key]: !s[key] }));
   };
 
-  const inputCls =
-    "h-8 w-24 px-2 rounded border border-border bg-background text-xs text-foreground tabular-nums focus:outline-none focus:ring-1 focus:ring-primary";
 
   return (
     <TooltipProvider delayDuration={100}>
