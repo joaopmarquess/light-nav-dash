@@ -54,8 +54,10 @@ const fmtShare = (v: number, total: number) => {
 };
 
 export default function SinistralidadeNova({ mode: _mode }: Props) {
-  const [mIni, setMIni] = useState(DEFAULT_MABAS_INI);
-  const [mFim, setMFim] = useState(DEFAULT_MABAS_FIM);
+  const cfg = useSinPeriodo();
+  const periodos = cfg?.periodos ?? [];
+  const [periodo, setPeriodo] = useState(periodos[0]?.label ?? "");
+  const sel = periodos.find((p) => p.label === periodo) ?? periodos[0];
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
   const [rows, setRows] = useState<ISinRow[]>([]);
@@ -70,12 +72,12 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
   }, [q]);
 
   useEffect(() => {
-    if (mIni.length !== 6 || mFim.length !== 6) return;
+    if (!sel) return;
     let alive = true;
     setLoadingRows(true);
     setExpanded({});
     (async () => {
-      const data = await fetchISinRows(mIni, mFim);
+      const data = await fetchISinRows(sel.mIni, sel.mFim);
       if (!alive) return;
       setRows(data);
       setLoadingRows(false);
@@ -83,14 +85,8 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     return () => {
       alive = false;
     };
-  }, [mIni, mFim]);
+  }, [sel?.mIni, sel?.mFim]);
 
-  // PERIODO derivado (ciclos móveis de 12 meses) presente no intervalo selecionado
-  const periodosDerivados = useMemo(() => {
-    const set = new Set<string>();
-    for (const r of rows) if (r.mabas) set.add(cicloOf(r.mabas));
-    return Array.from(set).sort().reverse().map(fmtCiclo);
-  }, [rows]);
 
   const aggRows = useMemo<Agg[]>(() => {
     const map = new Map<string, Agg & { codigos: Set<string> }>();
