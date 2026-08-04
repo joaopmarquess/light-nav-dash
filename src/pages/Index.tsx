@@ -54,6 +54,7 @@ import SinistralidadeNova from "@/components/SinistralidadeNova";
 import SinistralidadePeriodo from "@/components/SinistralidadePeriodo";
 import SinistralidadeAPB from "@/components/SinistralidadeAPB";
 import SinistralidadeCidade from "@/components/SinistralidadeCidade";
+import SinistralidadeConsultaNiveis from "@/components/SinistralidadeConsultaNiveis";
 import SinistralidadeDefinirPeriodo from "@/components/SinistralidadeDefinirPeriodo";
 import SinPeriodoGuard from "@/components/SinPeriodoGuard";
 import DRE from "@/components/DRE";
@@ -109,6 +110,7 @@ const menuItems: MenuItem[] = [
     label: "Sinistralidade",
     children: [
       { icon: CalendarIcon, label: "Definir Período" },
+      { icon: Search, label: "Consulta", key: "Consulta Sinistralidade" },
       { icon: UserCheck, label: "Planos/Empresas" },
       { icon: CalendarCheck, label: "Período" },
       { icon: LayoutDashboard, label: "Cidades" },
@@ -238,11 +240,12 @@ const Index = () => {
                 {hasChildren && isOpen && !collapsed && (
                   <div className="mt-1 space-y-1">
                     {item.children!.map((child) => {
-                      const childActive = active === child.label;
+                      const childKey = (child as { key?: string }).key ?? child.label;
+                      const childActive = active === childKey;
                       return (
                         <button
-                          key={child.label}
-                          onClick={() => setActive(child.label)}
+                          key={childKey}
+                          onClick={() => setActive(childKey)}
                           className={`w-full flex items-center gap-3 pl-9 pr-3 py-2 rounded-lg text-sm transition-colors ${
                             childActive
                               ? "bg-accent text-primary font-medium"
@@ -363,6 +366,10 @@ const Index = () => {
 
           ) : active === "Definir Período" ? (
             <SinistralidadeDefinirPeriodo />
+          ) : active === "Consulta Sinistralidade" ? (
+            <SinPeriodoGuard onDefinir={() => setActive("Definir Período")}>
+              <SinistralidadeConsultaNiveis />
+            </SinPeriodoGuard>
           ) : active === "Planos/Empresas" ? (
             <SinPeriodoGuard onDefinir={() => setActive("Definir Período")}>
               <SinistralidadeNova mode="beneficiario" />
