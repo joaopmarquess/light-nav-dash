@@ -1,11 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
 import { CalendarCheck, Loader2, Check } from "lucide-react";
-import { addMonths, fmtComp, fetchMabasBounds } from "@/lib/isinistralidadeData";
+import {
+  addMonths,
+  fmtComp,
+  fetchMabasBounds,
+  fetchISinRows,
+} from "@/lib/isinistralidadeData";
 import {
   buildPeriodos,
   setSinPeriodo,
   useSinPeriodo,
 } from "@/lib/sinistralidadePeriodoStore";
+
+const brl = (v: number) =>
+  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+const pct = (v: number) => `${(v * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
+
 
 export default function SinistralidadeDefinirPeriodo() {
   const cfg = useSinPeriodo();
@@ -14,6 +24,9 @@ export default function SinistralidadeDefinirPeriodo() {
   const [bounds, setBounds] = useState<{ min: string; max: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
+  const [calcLoading, setCalcLoading] = useState(false);
+  const [tot, setTot] = useState<Record<string, { rec: number; desp: number }> | null>(null);
+
 
   useEffect(() => {
     let alive = true;
@@ -41,12 +54,30 @@ export default function SinistralidadeDefinirPeriodo() {
     [baseFim, nMeses, bounds?.min],
   );
 
-  const gerar = () => {
+  const gerar = async () => {
     if (!preview.length) return;
     setSinPeriodo({ baseFim, meses: nMeses, baseIni, periodos: preview });
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
+
+    setCalcLoading(true);
+    setTot(null);
+    const mIni = preview[preview.length - 1].mIni;
+    const mFim = preview[0].mFim;
+    const rows = await fetchISinRows(mIni, mFim);
+    const acc: Record<string, { rec: number; desp: number }> = {};
+    for (const p of preview) acc[p.label] = { rec: 0, desp: 0 };
+    for (const r of rows) {
+      const n = Number(r.mabas);
+      const p = preview.find((x) => n >= Number(x.mIni) && n <= Number(x.mFim));
+      if (!p) continue;
+      acc[p.label].rec += r.rec_total;
+      acc[p.label].desp += r.vrdespesas;
+    }
+    setTot(acc);
+    setCalcLoading(false);
   };
+
 
   const inputCls =
     "h-9 w-28 px-2 rounded-md border border-border bg-background text-sm text-foreground tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/30";
@@ -155,20 +186,44 @@ export default function SinistralidadeDefinirPeriodo() {
                 <th className="text-left px-3 py-2">#</th>
                 <th className="text-left px-3 py-2">Período</th>
                 <th className="text-left px-3 py-2">mabas</th>
+                <th className="text-right px-3 py-2">
+                  Saldo {calcLoading && <Loader2 className="inline h-3 w-3 animate-spin" />}
+                </th>
+                <th className="text-right px-3 py-2">Sin.</th>
               </tr>
             </thead>
             <tbody>
-              {preview.map((p) => (
-                <tr key={p.idx} className="border-t border-border">
-                  <td className="px-3 py-2 text-muted-foreground">Período {p.idx}</td>
-                  <td className="px-3 py-2 font-medium text-foreground">{p.label}</td>
-                  <td className="px-3 py-2 tabular-nums text-muted-foreground">
-                    {p.mIni} – {p.mFim}
-                  </td>
-                </tr>
-              ))}
+              {preview.map((p) => {
+                const t = tot?.[p.label];
+                const saldo = t ? t.rec - t.desp : null;
+                const sin = t && t.rec ? t.desp / t.rec : null;
+                return (
+                  <tr key={p.idx} className="border-t border-border">
+                    <td className="px-3 py-2 text-muted-foreground">Período {p.idx}</td>
+                    <td className="px-3 py-2 font-medium text-foreground">{p.label}</td>
+                    <td className="px-3 py-2 tabular-nums text-muted-foreground">
+                      {p.mIni} – {p.mFim}
+                    </td>
+                    <td
+                      className={`px-3 py-2 text-right tabular-nums ${
+                        saldo != null && saldo < 0 ? "text-destructive" : "text-foreground"
+                      }`}
+                    >
+                      {saldo != null ? brl(saldo) : "-"}
+                    </td>
+                    <td
+                      className={`px-3 py-2 text-right tabular-nums ${
+                        sin != null && sin > 1 ? "text-destructive" : "text-foreground"
+                      }`}
+                    >
+                      {sin != null ? pct(sin) : "-"}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
+
         )}
       </div>
     </section>
