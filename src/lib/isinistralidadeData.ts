@@ -85,8 +85,9 @@ const mapRow = (r: any): ISinRow => ({
   demais: num(r.DEMAIS),
 });
 
-const PAGE = 1000;
-const CONCURRENCY = 6;
+const PAGE = 5000;
+const CONCURRENCY = 8;
+
 const cache = new Map<string, Promise<ISinRow[]>>();
 
 async function loadRange(mIni: string, mFim: string): Promise<ISinRow[]> {
