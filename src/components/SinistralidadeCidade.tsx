@@ -248,30 +248,20 @@ export default function SinistralidadeCidade() {
       <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
         <div className="flex items-center gap-3 p-3 border-b border-border flex-wrap">
           <div className="flex items-center gap-2">
-            <label className="text-sm text-muted-foreground">mabas de</label>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={mIni}
-              onChange={(e) => setMIni(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="202507"
-              className="h-9 w-24 px-2 rounded-md border border-border bg-background text-sm text-foreground tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
-            <span className="text-sm text-muted-foreground">até</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={mFim}
-              onChange={(e) => setMFim(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="202606"
-              className="h-9 w-24 px-2 rounded-md border border-border bg-background text-sm text-foreground tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
-            {periodosDerivados.length > 0 && (
-              <span className="text-xs text-muted-foreground">
-                Período: {periodosDerivados.join(" · ")}
-              </span>
-            )}
+            <label className="text-sm text-muted-foreground">Período</label>
+            <select
+              value={sel?.label ?? ""}
+              onChange={(e) => setPeriodo(e.target.value)}
+              className="h-9 px-2 rounded-md border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              {periodos.map((p) => (
+                <option key={p.label} value={p.label}>
+                  Período {p.idx} — {p.label}
+                </option>
+              ))}
+            </select>
           </div>
+
 
 
           <div className="relative">
