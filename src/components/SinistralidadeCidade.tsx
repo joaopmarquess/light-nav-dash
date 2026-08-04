@@ -129,13 +129,14 @@ function finalize(
 }
 
 export default function SinistralidadeCidade() {
-  const [mIni, setMIni] = useState(DEFAULT_MABAS_INI);
-  const [mFim, setMFim] = useState(DEFAULT_MABAS_FIM);
+  const cfg = useSinPeriodo();
+  const periodos = cfg?.periodos ?? [];
+  const [periodo, setPeriodo] = useState(periodos[0]?.label ?? "");
+  const sel = periodos.find((p) => p.label === periodo) ?? periodos[0];
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
   const [aggRows, setAggRows] = useState<Agg[]>([]);
   const [cidByReg, setCidByReg] = useState<Record<string, ChildRow[]>>({});
-  const [periodosDerivados, setPeriodosDerivados] = useState<string[]>([]);
   const [loadingRows, setLoadingRows] = useState(true);
   const [sortKey, setSortKey] = useState<SortKey>("SALDO");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
@@ -147,25 +148,21 @@ export default function SinistralidadeCidade() {
   }, [q]);
 
   useEffect(() => {
-    if (mIni.length !== 6 || mFim.length !== 6) return;
+    if (!sel) return;
     let alive = true;
     setLoadingRows(true);
     setExpanded({});
     (async () => {
-      const rows = await fetchISinRows(mIni, mFim);
+      const rows = await fetchISinRows(sel.mIni, sel.mFim);
       if (!alive) return;
       const { regionais, cidadesByReg } = aggregate(rows);
-      const ciclos = Array.from(new Set(rows.map((r) => cicloOf(r.mabas)).filter(Boolean)))
-        .sort()
-        .reverse()
-        .map(fmtCiclo);
       setAggRows(regionais);
       setCidByReg(cidadesByReg);
-      setPeriodosDerivados(ciclos);
       setLoadingRows(false);
     })();
     return () => { alive = false; };
-  }, [mIni, mFim]);
+  }, [sel?.mIni, sel?.mFim]);
+
 
 
   const aggregated = useMemo<Agg[]>(() => {
