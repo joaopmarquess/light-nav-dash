@@ -92,8 +92,8 @@ const mapAgg = (data: any[]): Agg[] =>
   }));
 
 export default function SinistralidadePeriodo({ embedded = false }: { embedded?: boolean } = {}) {
-  const [mIni, setMIni] = useState(DEFAULT_MABAS_INI);
-  const [mFim, setMFim] = useState(DEFAULT_MABAS_FIM);
+  const cfg = useSinPeriodo();
+  const range = cfg ? fullRange(cfg) : null;
   const [rows, setRows] = useState<ISinRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -104,14 +104,14 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
   const [filter, setFilter] = useState("");
 
   useEffect(() => {
-    if (mIni.length !== 6 || mFim.length !== 6) return;
+    if (!range) return;
     let alive = true;
     setLoading(true);
     setExpanded({});
     setExpandedGrupo({});
     setExpandedCdpln({});
     (async () => {
-      const data = await fetchISinRows(mIni, mFim);
+      const data = await fetchISinRows(range.mIni, range.mFim);
       if (!alive) return;
       setRows(data);
       setLoading(false);
@@ -119,10 +119,11 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
     return () => {
       alive = false;
     };
-  }, [mIni, mFim]);
+  }, [range?.mIni, range?.mFim]);
 
   /**
-   * PERIODO é derivado: ciclo móvel de 12 meses (jul→jun) calculado a partir de `mabas`.
+   * PERIODO é derivado da definição feita no submenu "Definir Período"
+   * (base final + quantidade de meses), calculado a partir de `mabas`.
    * Toda a hierarquia (Período > Grupo > Plano > Beneficiário) é agregada na aplicação.
    */
   const derived = useMemo(() => {
@@ -133,8 +134,10 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
     const bMaps = new Map<string, Map<string, BenefRow>>();
 
     for (const r of rows) {
-      if (!r.mabas) continue;
-      const periodo = fmtCiclo(cicloOf(r.mabas));
+      if (!r.mabas || !cfg) continue;
+      const periodo = periodoLabelOf(r.mabas, cfg);
+      if (!periodo) continue;
+
       const grupo = r.GRUPO || "(sem grupo)";
       const cd = r.cdpln || "(sem plano)";
       const id = r.codigo || r.nmcli;
