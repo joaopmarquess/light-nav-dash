@@ -113,7 +113,7 @@ const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
           <div>
             <h2 className="text-2xl font-semibold text-foreground">Bem-vindo ao Dex Bensaúde</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Visão executiva da operação{ultimo ? ` — referência ${labelMes(ultimo.k)}` : ""}.
+              Visão executiva da operação{loading ? " — carregando dados…" : ultimo ? ` — referência ${ultimo.label}` : ""}.
             </p>
           </div>
           {meses.length >= 2 && (
