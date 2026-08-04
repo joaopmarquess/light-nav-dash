@@ -285,26 +285,18 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
     <TooltipProvider delayDuration={100}>
       <section className={`bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col ${embedded ? "h-full" : "h-[calc(100vh-9rem)]"}`}>
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground mb-3">
-          <div className="flex items-center gap-2">
-            <span className="shrink-0">mabas de</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={mIni}
-              onChange={(e) => setMIni(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="202507"
-              className={inputCls}
-            />
-            <span>até</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={mFim}
-              onChange={(e) => setMFim(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="202606"
-              className={inputCls}
-            />
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="shrink-0">Períodos definidos:</span>
+            {(cfg?.periodos ?? []).map((p) => (
+              <span
+                key={p.label}
+                className="px-2 py-0.5 rounded border border-border bg-muted/40 text-foreground tabular-nums"
+              >
+                {p.idx}. {p.label}
+              </span>
+            ))}
           </div>
+
           <input
             type="text"
             value={filter}
