@@ -153,7 +153,7 @@ const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
                   k.delta === 0 ? "text-muted-foreground" : positive ? "text-emerald-600" : "text-rose-600"
                 }`}
               >
-                {deltaTxt} <span className="text-muted-foreground font-normal">vs. mês anterior</span>
+                {deltaTxt} <span className="text-muted-foreground font-normal">vs. período anterior</span>
               </div>
             </div>
           );
