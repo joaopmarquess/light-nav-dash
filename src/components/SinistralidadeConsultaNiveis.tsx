@@ -1,38 +1,23 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { fetchISinRows, type ISinRow } from "@/lib/isinistralidadeData";
 import { useSinPeriodo, fullRange, periodoLabelOf, sortPeriodos } from "@/lib/sinistralidadePeriodoStore";
-import { Search, ChevronRight, ChevronDown } from "lucide-react";
+import { Search, ChevronRight, ChevronDown, X } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-type Mode = "grupo" | "regional" | "periodo";
+type DimKey = "periodo" | "regional" | "grupo" | "cidade" | "dspln" | "cdpln" | "beneficiario";
 
-const MODES: { key: Mode; label: string; hint: string }[] = [
-  { key: "grupo", label: "Por Grupo", hint: "Período › Grupo › Plano (dspln) › cdpln › Beneficiário" },
-  { key: "regional", label: "Por Regional", hint: "Período › Regional › Cidade/UF › Plano (dspln) › cdpln › Beneficiário" },
-  { key: "periodo", label: "Apenas por Período", hint: "Período › Plano (dspln) › cdpln › Beneficiário" },
+const DIMS: { key: DimKey; label: string; get: (r: ISinRow) => string }[] = [
+  { key: "periodo", label: "Período", get: () => "" },
+  { key: "regional", label: "Regional", get: (r) => r.REGIONAL },
+  { key: "grupo", label: "Grupo", get: (r) => r.GRUPO },
+  { key: "cidade", label: "Cidade/UF", get: (r) => r.CIDADE },
+  { key: "dspln", label: "Plano (dspln)", get: (r) => r.dspln },
+  { key: "cdpln", label: "cdpln", get: (r) => r.cdpln },
+  { key: "beneficiario", label: "Beneficiário", get: (r) => `${r.nmcli} (${r.codigo})` },
 ];
 
-const LEVELS: Record<Mode, ((r: ISinRow) => string)[]> = {
-  grupo: [
-    (r) => r.GRUPO,
-    (r) => r.dspln,
-    (r) => r.cdpln,
-    (r) => `${r.nmcli} (${r.codigo})`,
-  ],
-  regional: [
-    (r) => r.REGIONAL,
-    (r) => r.CIDADE,
-    (r) => r.dspln,
-    (r) => r.cdpln,
-    (r) => `${r.nmcli} (${r.codigo})`,
-  ],
-  periodo: [
-    (r) => r.dspln,
-    (r) => r.cdpln,
-    (r) => `${r.nmcli} (${r.codigo})`,
-  ],
-};
+const dimOf = (k: DimKey) => DIMS.find((d) => d.key === k)!;
 
 type Node = {
   key: string;
@@ -76,7 +61,11 @@ const fmtShare = (v: number, total: number) =>
 
 export default function SinistralidadeConsultaNiveis() {
   const cfg = useSinPeriodo();
-  const [mode, setMode] = useState<Mode>("grupo");
+  const periodos = cfg?.periodos ?? [];
+  const [periodo, setPeriodo] = useState<string>("__all__");
+  const sel = periodos.find((p) => p.label === periodo);
+
+  const [levels, setLevels] = useState<DimKey[]>(["periodo", "regional", "grupo"]);
   const [rows, setRows] = useState<ISinRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
@@ -92,41 +81,50 @@ export default function SinistralidadeConsultaNiveis() {
     if (!cfg) return;
     let alive = true;
     setLoading(true);
-    const { mIni, mFim } = fullRange(cfg);
+    setExpanded({});
+    const range = sel ? { mIni: sel.mIni, mFim: sel.mFim } : fullRange(cfg);
     (async () => {
-      const data = await fetchISinRows(mIni, mFim);
+      const data = await fetchISinRows(range.mIni, range.mFim);
       if (!alive) return;
       setRows(data);
       setLoading(false);
     })();
     return () => { alive = false; };
-  }, [cfg?.baseFim, cfg?.meses]);
+  }, [cfg?.baseFim, cfg?.meses, sel?.mIni, sel?.mFim]);
 
-  useEffect(() => setExpanded({}), [mode]);
+  useEffect(() => setExpanded({}), [levels]);
+
+  const addLevel = (k: DimKey) => setLevels((s) => (s.includes(k) ? s : [...s, k]));
+  const removeLevel = (k: DimKey) => setLevels((s) => s.filter((x) => x !== k));
 
   const tree = useMemo<Node[]>(() => {
-    if (!cfg) return [];
+    if (!cfg || levels.length === 0) return [];
     const roots = new Map<string, Node>();
-    const getters = LEVELS[mode];
     for (const r of rows) {
       const per = periodoLabelOf(r.mabas, cfg);
       if (!per) continue;
-      let node = roots.get(per);
-      if (!node) { node = newNode(per, per, 0); roots.set(per, node); }
-      acc(node, r);
-      let parent = node;
-      for (let i = 0; i < getters.length; i++) {
-        const label = getters[i](r) || "(sem informação)";
-        const key = `${parent.key}||${label}`;
-        let child = parent.children.get(key);
-        if (!child) { child = newNode(key, label, i + 1); parent.children.set(key, child); }
-        acc(child, r);
-        parent = child;
+      let parent: Node | null = null;
+      for (let i = 0; i < levels.length; i++) {
+        const dim = dimOf(levels[i]);
+        const label = (levels[i] === "periodo" ? per : dim.get(r)) || "(sem informação)";
+        if (i === 0) {
+          let node = roots.get(label);
+          if (!node) { node = newNode(label, label, 0); roots.set(label, node); }
+          acc(node, r);
+          parent = node;
+        } else {
+          const key = `${parent!.key}||${label}`;
+          let child = parent!.children.get(key);
+          if (!child) { child = newNode(key, label, i); parent!.children.set(key, child); }
+          acc(child, r);
+          parent = child;
+        }
       }
     }
-    const order = sortPeriodos(Array.from(roots.keys()), cfg);
+    const keys = Array.from(roots.keys());
+    const order = levels[0] === "periodo" ? sortPeriodos(keys, cfg) : keys.sort();
     return order.map((k) => roots.get(k)!);
-  }, [rows, cfg, mode]);
+  }, [rows, cfg, levels]);
 
   const matches = (n: Node): boolean => {
     if (!debouncedQ) return true;
@@ -211,40 +209,68 @@ export default function SinistralidadeConsultaNiveis() {
     );
   };
 
+  const disponiveis = DIMS.filter((d) => !levels.includes(d.key));
+
   return (
     <TooltipProvider delayDuration={100}>
       <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
-        <div className="flex items-center gap-3 p-3 border-b border-border flex-wrap">
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-muted-foreground">Níveis</label>
+        <div className="flex items-start gap-4 p-3 border-b border-border flex-wrap">
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Período</label>
             <select
-              value={mode}
-              onChange={(e) => setMode(e.target.value as Mode)}
+              value={periodo}
+              onChange={(e) => setPeriodo(e.target.value)}
               className="h-9 px-2 rounded-md border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
             >
-              {MODES.map((m) => (
-                <option key={m.key} value={m.key}>{m.label}</option>
+              <option value="__all__">Todos os períodos</option>
+              {periodos.map((p) => (
+                <option key={p.idx} value={p.label}>Período {p.idx} — {p.label}</option>
               ))}
             </select>
           </div>
 
-          <span className="text-xs text-muted-foreground">
-            {MODES.find((m) => m.key === mode)?.hint}
-          </span>
-
-          <div className="relative">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Buscar em qualquer nível"
-              className="h-9 w-64 pl-8 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
+          <div className="flex flex-col gap-1 min-w-[320px]">
+            <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Agrupar por</label>
+            <div className="min-h-9 flex items-center gap-1.5 flex-wrap px-2 py-1 rounded-md border border-border bg-background">
+              {levels.map((k, i) => (
+                <span key={k} className="inline-flex items-center gap-1 h-6 pl-2 pr-1 rounded bg-muted text-xs text-foreground">
+                  <span className="text-muted-foreground">{i + 1})</span> {dimOf(k).label}
+                  <button onClick={() => removeLevel(k)} className="hover:text-destructive">
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+              {disponiveis.length > 0 && (
+                <select
+                  value=""
+                  onChange={(e) => e.target.value && addLevel(e.target.value as DimKey)}
+                  className="h-6 text-xs bg-transparent text-muted-foreground focus:outline-none"
+                >
+                  <option value="">+ nível</option>
+                  {disponiveis.map((d) => (
+                    <option key={d.key} value={d.key}>{d.label}</option>
+                  ))}
+                </select>
+              )}
+            </div>
           </div>
 
-          <span className="text-xs text-muted-foreground ml-auto">
-            {tree.length.toLocaleString("pt-BR")} períodos
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Filtrar</label>
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Filtrar por nome, agente, plano..."
+                className="h-9 w-64 pl-8 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            </div>
+          </div>
+
+          <span className="text-xs text-muted-foreground ml-auto self-end pb-2">
+            {tree.length.toLocaleString("pt-BR")} linhas no nível 1
           </span>
         </div>
 
@@ -252,12 +278,16 @@ export default function SinistralidadeConsultaNiveis() {
           {loading ? (
             <div className="h-full flex items-center justify-center"><FunLoader /></div>
           ) : tree.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Sem dados.</div>
+            <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+              {levels.length === 0 ? "Escolha ao menos um nível em Agrupar por." : "Sem dados."}
+            </div>
           ) : (
             <table className="w-full text-[11px]">
               <thead className="sticky top-0 bg-card z-10">
                 <tr className="border-b border-border">
-                  <th className="px-2 py-1.5 text-left font-semibold">PERÍODO / NÍVEIS</th>
+                  <th className="px-2 py-1.5 text-left font-semibold">
+                    {levels.map((k) => dimOf(k).label).join(" › ").toUpperCase()}
+                  </th>
                   <th className="px-2 py-1.5 text-right font-semibold">Vidas</th>
                   <th className="px-2 py-1.5 text-right font-semibold">Total Receita</th>
                   <th className="px-2 py-1.5 text-right font-semibold">Total Despesa</th>
