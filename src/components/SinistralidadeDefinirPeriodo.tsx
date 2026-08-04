@@ -186,20 +186,44 @@ export default function SinistralidadeDefinirPeriodo() {
                 <th className="text-left px-3 py-2">#</th>
                 <th className="text-left px-3 py-2">Período</th>
                 <th className="text-left px-3 py-2">mabas</th>
+                <th className="text-right px-3 py-2">
+                  Saldo {calcLoading && <Loader2 className="inline h-3 w-3 animate-spin" />}
+                </th>
+                <th className="text-right px-3 py-2">Sin.</th>
               </tr>
             </thead>
             <tbody>
-              {preview.map((p) => (
-                <tr key={p.idx} className="border-t border-border">
-                  <td className="px-3 py-2 text-muted-foreground">Período {p.idx}</td>
-                  <td className="px-3 py-2 font-medium text-foreground">{p.label}</td>
-                  <td className="px-3 py-2 tabular-nums text-muted-foreground">
-                    {p.mIni} – {p.mFim}
-                  </td>
-                </tr>
-              ))}
+              {preview.map((p) => {
+                const t = tot?.[p.label];
+                const saldo = t ? t.rec - t.desp : null;
+                const sin = t && t.rec ? t.desp / t.rec : null;
+                return (
+                  <tr key={p.idx} className="border-t border-border">
+                    <td className="px-3 py-2 text-muted-foreground">Período {p.idx}</td>
+                    <td className="px-3 py-2 font-medium text-foreground">{p.label}</td>
+                    <td className="px-3 py-2 tabular-nums text-muted-foreground">
+                      {p.mIni} – {p.mFim}
+                    </td>
+                    <td
+                      className={`px-3 py-2 text-right tabular-nums ${
+                        saldo != null && saldo < 0 ? "text-destructive" : "text-foreground"
+                      }`}
+                    >
+                      {saldo != null ? brl(saldo) : "-"}
+                    </td>
+                    <td
+                      className={`px-3 py-2 text-right tabular-nums ${
+                        sin != null && sin > 1 ? "text-destructive" : "text-foreground"
+                      }`}
+                    >
+                      {sin != null ? pct(sin) : "-"}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
+
         )}
       </div>
     </section>
