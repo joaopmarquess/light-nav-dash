@@ -64,9 +64,9 @@ export default function SinistralidadeDefinirPeriodo() {
         </p>
       </div>
 
-      <div className="p-4 flex items-end gap-4 flex-wrap border-b border-border">
+      <div className="p-4 flex flex-wrap items-start gap-4 border-b border-border">
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground">Base final (AAAAMM)</label>
+          <label className="text-xs text-muted-foreground h-4 leading-4">Base final (AAAAMM)</label>
           <input
             type="text"
             inputMode="numeric"
@@ -75,13 +75,13 @@ export default function SinistralidadeDefinirPeriodo() {
             placeholder="202606"
             className={inputCls}
           />
-          {baseFim.length === 6 && (
-            <span className="text-[11px] text-muted-foreground">{fmtComp(baseFim)}</span>
-          )}
+          <span className="text-[11px] text-muted-foreground h-4 leading-4">
+            {baseFim.length === 6 ? fmtComp(baseFim) : ""}
+          </span>
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground">Quantos meses</label>
+          <label className="text-xs text-muted-foreground h-4 leading-4">Quantos meses</label>
           <input
             type="text"
             inputMode="numeric"
@@ -90,44 +90,58 @@ export default function SinistralidadeDefinirPeriodo() {
             placeholder="12"
             className={inputCls}
           />
+          <span className="text-[11px] h-4 leading-4" />
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground">Base inicial (calculada)</label>
+          <label className="text-xs text-muted-foreground h-4 leading-4">
+            Base inicial (calculada)
+          </label>
           <div className="h-9 w-28 px-2 rounded-md border border-dashed border-border bg-muted/40 text-sm text-foreground tabular-nums flex items-center">
             {baseIni || "-"}
           </div>
-          {baseIni && (
-            <span className="text-[11px] text-muted-foreground">{fmtComp(baseIni)}</span>
-          )}
+          <span className="text-[11px] text-muted-foreground h-4 leading-4">
+            {baseIni ? fmtComp(baseIni) : ""}
+          </span>
         </div>
 
-        <button
-          type="button"
-          onClick={gerar}
-          disabled={!preview.length}
-          className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-40 transition"
-        >
-          Gerar
-        </button>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs h-4 leading-4" aria-hidden="true" />
+          <button
+            type="button"
+            onClick={gerar}
+            disabled={!preview.length}
+            className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-40 transition"
+          >
+            Gerar
+          </button>
+          <span className="text-[11px] h-4 leading-4" />
+        </div>
 
-        {saved && (
-          <span className="text-xs text-primary flex items-center gap-1">
-            <Check className="h-3.5 w-3.5" /> Períodos definidos
-          </span>
-        )}
+        <div className="flex flex-col gap-1 min-w-0">
+          <span className="text-xs h-4 leading-4" aria-hidden="true" />
+          <div className="h-9 flex items-center gap-3 flex-wrap">
+            {saved && (
+              <span className="text-xs text-primary flex items-center gap-1">
+                <Check className="h-3.5 w-3.5" /> Períodos definidos
+              </span>
+            )}
 
-        {loading && (
-          <span className="text-xs text-muted-foreground flex items-center gap-1">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" /> lendo mabas disponíveis
-          </span>
-        )}
-        {!loading && bounds && (
-          <span className="text-xs text-muted-foreground">
-            Base disponível: {fmtComp(bounds.min)} a {fmtComp(bounds.max)}
-          </span>
-        )}
+            {loading && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> lendo mabas disponíveis
+              </span>
+            )}
+            {!loading && bounds && (
+              <span className="text-xs text-muted-foreground">
+                Base disponível: {fmtComp(bounds.min)} a {fmtComp(bounds.max)}
+              </span>
+            )}
+          </div>
+          <span className="text-[11px] h-4 leading-4" />
+        </div>
       </div>
+
 
       <div className="flex-1 overflow-auto p-4">
         {preview.length === 0 ? (
