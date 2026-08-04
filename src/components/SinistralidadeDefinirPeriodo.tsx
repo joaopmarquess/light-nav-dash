@@ -54,12 +54,30 @@ export default function SinistralidadeDefinirPeriodo() {
     [baseFim, nMeses, bounds?.min],
   );
 
-  const gerar = () => {
+  const gerar = async () => {
     if (!preview.length) return;
     setSinPeriodo({ baseFim, meses: nMeses, baseIni, periodos: preview });
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
+
+    setCalcLoading(true);
+    setTot(null);
+    const mIni = preview[preview.length - 1].mIni;
+    const mFim = preview[0].mFim;
+    const rows = await fetchISinRows(mIni, mFim);
+    const acc: Record<string, { rec: number; desp: number }> = {};
+    for (const p of preview) acc[p.label] = { rec: 0, desp: 0 };
+    for (const r of rows) {
+      const n = Number(r.mabas);
+      const p = preview.find((x) => n >= Number(x.mIni) && n <= Number(x.mFim));
+      if (!p) continue;
+      acc[p.label].rec += r.rec_total;
+      acc[p.label].desp += r.vrdespesas;
+    }
+    setTot(acc);
+    setCalcLoading(false);
   };
+
 
   const inputCls =
     "h-9 w-28 px-2 rounded-md border border-border bg-background text-sm text-foreground tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/30";
