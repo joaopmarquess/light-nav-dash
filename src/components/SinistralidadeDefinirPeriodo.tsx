@@ -1,11 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
 import { CalendarCheck, Loader2, Check } from "lucide-react";
-import { addMonths, fmtComp, fetchMabasBounds } from "@/lib/isinistralidadeData";
+import {
+  addMonths,
+  fmtComp,
+  fetchMabasBounds,
+  fetchISinRows,
+} from "@/lib/isinistralidadeData";
 import {
   buildPeriodos,
   setSinPeriodo,
   useSinPeriodo,
 } from "@/lib/sinistralidadePeriodoStore";
+
+const brl = (v: number) =>
+  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+const pct = (v: number) => `${(v * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
+
 
 export default function SinistralidadeDefinirPeriodo() {
   const cfg = useSinPeriodo();
