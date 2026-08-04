@@ -65,7 +65,9 @@ export default function SinistralidadeConsultaNiveis() {
   const [periodo, setPeriodo] = useState<string>("__all__");
   const sel = periodos.find((p) => p.label === periodo);
 
-  const [levels, setLevels] = useState<DimKey[]>(["periodo", "regional", "grupo"]);
+  const [levels, setLevels] = useState<DimKey[]>([
+    "periodo", "regional", "grupo", "dspln", "cdpln", "beneficiario",
+  ]);
   const [rows, setRows] = useState<ISinRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
