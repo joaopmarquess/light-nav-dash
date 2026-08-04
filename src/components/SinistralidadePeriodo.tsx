@@ -1,12 +1,10 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { fetchISinRows, type ISinRow } from "@/lib/isinistralidadeData";
 import {
-  DEFAULT_MABAS_FIM,
-  DEFAULT_MABAS_INI,
-  cicloOf,
-  fetchISinRows,
-  fmtCiclo,
-  type ISinRow,
-} from "@/lib/isinistralidadeData";
+  fullRange,
+  periodoLabelOf,
+  useSinPeriodo,
+} from "@/lib/sinistralidadePeriodoStore";
 import { ChevronDown, ChevronRight, Loader2, ArrowUp, ArrowDown } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -94,8 +92,8 @@ const mapAgg = (data: any[]): Agg[] =>
   }));
 
 export default function SinistralidadePeriodo({ embedded = false }: { embedded?: boolean } = {}) {
-  const [mIni, setMIni] = useState(DEFAULT_MABAS_INI);
-  const [mFim, setMFim] = useState(DEFAULT_MABAS_FIM);
+  const cfg = useSinPeriodo();
+  const range = cfg ? fullRange(cfg) : null;
   const [rows, setRows] = useState<ISinRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -106,14 +104,14 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
   const [filter, setFilter] = useState("");
 
   useEffect(() => {
-    if (mIni.length !== 6 || mFim.length !== 6) return;
+    if (!range) return;
     let alive = true;
     setLoading(true);
     setExpanded({});
     setExpandedGrupo({});
     setExpandedCdpln({});
     (async () => {
-      const data = await fetchISinRows(mIni, mFim);
+      const data = await fetchISinRows(range.mIni, range.mFim);
       if (!alive) return;
       setRows(data);
       setLoading(false);
@@ -121,10 +119,11 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
     return () => {
       alive = false;
     };
-  }, [mIni, mFim]);
+  }, [range?.mIni, range?.mFim]);
 
   /**
-   * PERIODO é derivado: ciclo móvel de 12 meses (jul→jun) calculado a partir de `mabas`.
+   * PERIODO é derivado da definição feita no submenu "Definir Período"
+   * (base final + quantidade de meses), calculado a partir de `mabas`.
    * Toda a hierarquia (Período > Grupo > Plano > Beneficiário) é agregada na aplicação.
    */
   const derived = useMemo(() => {
@@ -135,8 +134,10 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
     const bMaps = new Map<string, Map<string, BenefRow>>();
 
     for (const r of rows) {
-      if (!r.mabas) continue;
-      const periodo = fmtCiclo(cicloOf(r.mabas));
+      if (!r.mabas || !cfg) continue;
+      const periodo = periodoLabelOf(r.mabas, cfg);
+      if (!periodo) continue;
+
       const grupo = r.GRUPO || "(sem grupo)";
       const cd = r.cdpln || "(sem plano)";
       const id = r.codigo || r.nmcli;
@@ -229,7 +230,7 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
         .sort((a, b) => b.saldo - a.saldo);
     }
     return { totals, aggByPeriodo, children, benefs };
-  }, [rows]);
+  }, [rows, cfg]);
 
   const { totals, aggByPeriodo, children, benefs } = derived;
   const loadingChild: Record<string, boolean> = {};
@@ -277,33 +278,23 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
     setExpandedCdpln((s) => ({ ...s, [key]: !s[key] }));
   };
 
-  const inputCls =
-    "h-8 w-24 px-2 rounded border border-border bg-background text-xs text-foreground tabular-nums focus:outline-none focus:ring-1 focus:ring-primary";
 
   return (
     <TooltipProvider delayDuration={100}>
       <section className={`bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col ${embedded ? "h-full" : "h-[calc(100vh-9rem)]"}`}>
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground mb-3">
-          <div className="flex items-center gap-2">
-            <span className="shrink-0">mabas de</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={mIni}
-              onChange={(e) => setMIni(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="202507"
-              className={inputCls}
-            />
-            <span>até</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={mFim}
-              onChange={(e) => setMFim(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="202606"
-              className={inputCls}
-            />
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="shrink-0">Períodos definidos:</span>
+            {(cfg?.periodos ?? []).map((p) => (
+              <span
+                key={p.label}
+                className="px-2 py-0.5 rounded border border-border bg-muted/40 text-foreground tabular-nums"
+              >
+                {p.idx}. {p.label}
+              </span>
+            ))}
           </div>
+
           <input
             type="text"
             value={filter}

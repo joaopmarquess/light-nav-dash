@@ -1,12 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import {
-  DEFAULT_MABAS_FIM,
-  DEFAULT_MABAS_INI,
-  cicloOf,
-  fetchISinRows,
-  fmtCiclo,
-  type ISinRow,
-} from "@/lib/isinistralidadeData";
+import { fetchISinRows, type ISinRow } from "@/lib/isinistralidadeData";
+import { useSinPeriodo } from "@/lib/sinistralidadePeriodoStore";
 import { Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown, Loader2 } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -60,8 +54,10 @@ const fmtShare = (v: number, total: number) => {
 };
 
 export default function SinistralidadeNova({ mode: _mode }: Props) {
-  const [mIni, setMIni] = useState(DEFAULT_MABAS_INI);
-  const [mFim, setMFim] = useState(DEFAULT_MABAS_FIM);
+  const cfg = useSinPeriodo();
+  const periodos = cfg?.periodos ?? [];
+  const [periodo, setPeriodo] = useState(periodos[0]?.label ?? "");
+  const sel = periodos.find((p) => p.label === periodo) ?? periodos[0];
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
   const [rows, setRows] = useState<ISinRow[]>([]);
@@ -76,12 +72,12 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
   }, [q]);
 
   useEffect(() => {
-    if (mIni.length !== 6 || mFim.length !== 6) return;
+    if (!sel) return;
     let alive = true;
     setLoadingRows(true);
     setExpanded({});
     (async () => {
-      const data = await fetchISinRows(mIni, mFim);
+      const data = await fetchISinRows(sel.mIni, sel.mFim);
       if (!alive) return;
       setRows(data);
       setLoadingRows(false);
@@ -89,14 +85,8 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     return () => {
       alive = false;
     };
-  }, [mIni, mFim]);
+  }, [sel?.mIni, sel?.mFim]);
 
-  // PERIODO derivado (ciclos móveis de 12 meses) presente no intervalo selecionado
-  const periodosDerivados = useMemo(() => {
-    const set = new Set<string>();
-    for (const r of rows) if (r.mabas) set.add(cicloOf(r.mabas));
-    return Array.from(set).sort().reverse().map(fmtCiclo);
-  }, [rows]);
 
   const aggRows = useMemo<Agg[]>(() => {
     const map = new Map<string, Agg & { codigos: Set<string> }>();
@@ -218,38 +208,28 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
     setExpanded((s) => ({ ...s, [grupo]: !s[grupo] }));
   };
 
-  const inputCls =
-    "h-9 w-24 px-2 rounded-md border border-border bg-background text-sm text-foreground tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/30";
+  const selectCls =
+    "h-9 px-2 rounded-md border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30";
 
   return (
     <TooltipProvider delayDuration={100}>
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
       <div className="flex items-center gap-3 p-3 border-b border-border flex-wrap">
         <div className="flex items-center gap-2">
-          <label className="text-sm text-muted-foreground">mabas de</label>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={mIni}
-            onChange={(e) => setMIni(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            placeholder="202507"
-            className={inputCls}
-          />
-          <span className="text-sm text-muted-foreground">até</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={mFim}
-            onChange={(e) => setMFim(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            placeholder="202606"
-            className={inputCls}
-          />
-          {periodosDerivados.length > 0 && (
-            <span className="text-xs text-muted-foreground">
-              Período: {periodosDerivados.join(" · ")}
-            </span>
-          )}
+          <label className="text-sm text-muted-foreground">Período</label>
+          <select
+            value={sel?.label ?? ""}
+            onChange={(e) => setPeriodo(e.target.value)}
+            className={selectCls}
+          >
+            {periodos.map((p) => (
+              <option key={p.label} value={p.label}>
+                Período {p.idx} — {p.label}
+              </option>
+            ))}
+          </select>
         </div>
+
 
 
         <div className="relative">

@@ -54,6 +54,8 @@ import SinistralidadeNova from "@/components/SinistralidadeNova";
 import SinistralidadePeriodo from "@/components/SinistralidadePeriodo";
 import SinistralidadeAPB from "@/components/SinistralidadeAPB";
 import SinistralidadeCidade from "@/components/SinistralidadeCidade";
+import SinistralidadeDefinirPeriodo from "@/components/SinistralidadeDefinirPeriodo";
+import SinPeriodoGuard from "@/components/SinPeriodoGuard";
 import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
 import Assistencial from "@/components/Assistencial";
@@ -106,6 +108,7 @@ const menuItems: MenuItem[] = [
     icon: Percent,
     label: "Sinistralidade",
     children: [
+      { icon: CalendarIcon, label: "Definir Período" },
       { icon: UserCheck, label: "Planos/Empresas" },
       { icon: CalendarCheck, label: "Período" },
       { icon: LayoutDashboard, label: "Cidades" },
@@ -358,14 +361,22 @@ const Index = () => {
           ) : active === "__removed_sin__" ? (
             <div />
 
+          ) : active === "Definir Período" ? (
+            <SinistralidadeDefinirPeriodo />
           ) : active === "Planos/Empresas" ? (
-            <SinistralidadeNova mode="beneficiario" />
+            <SinPeriodoGuard onDefinir={() => setActive("Definir Período")}>
+              <SinistralidadeNova mode="beneficiario" />
+            </SinPeriodoGuard>
           ) : active === "Período" ? (
-            <SinistralidadePeriodo />
+            <SinPeriodoGuard onDefinir={() => setActive("Definir Período")}>
+              <SinistralidadePeriodo />
+            </SinPeriodoGuard>
           ) : active === "APB" ? (
             <SinistralidadeAPB />
           ) : active === "Cidades" ? (
-            <SinistralidadeCidade />
+            <SinPeriodoGuard onDefinir={() => setActive("Definir Período")}>
+              <SinistralidadeCidade />
+            </SinPeriodoGuard>
 
 
 
@@ -405,7 +416,9 @@ const Index = () => {
           ) : active === "Gráfico Carteira" ? (
             <CarteiraGraficos />
           ) : active === "Gráfico Sinistralidade" ? (
-            <SinistralidadeGraficos />
+            <SinPeriodoGuard onDefinir={() => setActive("Definir Período")}>
+              <SinistralidadeGraficos />
+            </SinPeriodoGuard>
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : active === "Assistencial" ? (
