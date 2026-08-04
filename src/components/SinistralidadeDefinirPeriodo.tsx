@@ -24,6 +24,9 @@ export default function SinistralidadeDefinirPeriodo() {
   const [bounds, setBounds] = useState<{ min: string; max: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
+  const [calcLoading, setCalcLoading] = useState(false);
+  const [tot, setTot] = useState<Record<string, { rec: number; desp: number }> | null>(null);
+
 
   useEffect(() => {
     let alive = true;
