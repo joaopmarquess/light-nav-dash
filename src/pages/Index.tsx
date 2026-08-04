@@ -110,7 +110,6 @@ const menuItems: MenuItem[] = [
     children: [
       { icon: UserCheck, label: "Planos/Empresas" },
       { icon: CalendarCheck, label: "Período" },
-      { icon: CalendarCheck, label: "APB" },
       { icon: LayoutDashboard, label: "Cidades" },
       { icon: BarChart3, label: "Gráfico Sinistralidade" },
       { icon: LayoutDashboard, label: "PBI U12" },
@@ -124,6 +123,13 @@ const menuItems: MenuItem[] = [
       { icon: CalendarCheck, label: "Por Competência" },
       { icon: Search, label: "Consulta" },
       { icon: Stethoscope, label: "Relatório Plano Executor" },
+    ],
+  },
+  {
+    icon: Settings2,
+    label: "Outros",
+    children: [
+      { icon: CalendarCheck, label: "APB" },
       { icon: Stethoscope, label: "2518 Despesas" },
       { icon: Stethoscope, label: "2518 Receitas" },
     ],
