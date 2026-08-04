@@ -1,8 +1,16 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { hostinger } from "@/lib/hostingerClient";
+import {
+  DEFAULT_MABAS_FIM,
+  DEFAULT_MABAS_INI,
+  cicloOf,
+  fetchISinRows,
+  fmtCiclo,
+  type ISinRow,
+} from "@/lib/isinistralidadeData";
 import { Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown, Loader2 } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 
 type Mode = "empresa" | "beneficiario";
 
@@ -52,18 +60,15 @@ const fmtShare = (v: number, total: number) => {
 };
 
 export default function SinistralidadeNova({ mode: _mode }: Props) {
-  const [periodos, setPeriodos] = useState<string[]>([]);
-  const [periodo, setPeriodo] = useState<string>("");
+  const [mIni, setMIni] = useState(DEFAULT_MABAS_INI);
+  const [mFim, setMFim] = useState(DEFAULT_MABAS_FIM);
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
-  const [aggRows, setAggRows] = useState<Agg[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingRows, setLoadingRows] = useState(false);
+  const [rows, setRows] = useState<ISinRow[]>([]);
+  const [loadingRows, setLoadingRows] = useState(true);
   const [sortKey, setSortKey] = useState<SortKey>("SALDO");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const [children, setChildren] = useState<Record<string, ChildRow[]>>({});
-  const [loadingChild, setLoadingChild] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q.trim()), 300);
@@ -71,78 +76,98 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
   }, [q]);
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      setLoading(true);
-      const { data, error } = await hostinger.rpc("sin_periodos");
-      if (!alive) return;
-      if (error) {
-        console.error("PERIODO load error", error);
-        setPeriodos([]);
-      } else {
-        const uniq = Array.from(
-          new Set(
-            ((data ?? []) as any[])
-              .map((r) => String(r.periodo ?? r.PERIODO ?? ""))
-              .filter(Boolean),
-          ),
-        );
-        uniq.sort().reverse();
-        setPeriodos(uniq);
-        setPeriodo(uniq[0] ?? "");
-      }
-      setLoading(false);
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!periodo) return;
+    if (mIni.length !== 6 || mFim.length !== 6) return;
     let alive = true;
     setLoadingRows(true);
     setExpanded({});
-    setChildren({});
     (async () => {
-      const targets = periodo === "__ALL__" ? periodos : [periodo];
-      const acc = new Map<string, Agg>();
-      let hadError = false;
-      for (const p of targets) {
-        const { data, error } = await hostinger.rpc("sin_por_grupo", { p_periodo: p });
-        if (!alive) return;
-        if (error) {
-          console.error("sin_por_grupo error", error);
-          hadError = true;
-          continue;
-        }
-        for (const r of (data ?? []) as any[]) {
-          const key = String(r.grupo ?? "(sem grupo)") || "(sem grupo)";
-          const cur = acc.get(key) ?? {
-            grupo: key, rec_total: 0, vrdespesas: 0, saldo: 0, vidas: 0,
-            internacao: 0, terapia: 0, exame: 0, consulta: 0, emergencia: 0, demais: 0,
-          };
-          cur.rec_total += Number(r.rec_total) || 0;
-          cur.vrdespesas += Number(r.vrdespesas) || 0;
-          cur.saldo += Number(r.saldo) || 0;
-          cur.vidas += Number(r.vidas) || 0;
-          cur.internacao += Number(r.internacao) || 0;
-          cur.terapia += Number(r.terapia) || 0;
-          cur.exame += Number(r.exame) || 0;
-          cur.consulta += Number(r.consulta) || 0;
-          cur.emergencia += Number(r.emergencia) || 0;
-          cur.demais += Number(r.demais) || 0;
-          acc.set(key, cur);
-        }
-      }
+      const data = await fetchISinRows(mIni, mFim);
       if (!alive) return;
-      setAggRows(hadError && acc.size === 0 ? [] : Array.from(acc.values()));
+      setRows(data);
       setLoadingRows(false);
     })();
     return () => {
       alive = false;
     };
-  }, [periodo, periodos]);
+  }, [mIni, mFim]);
+
+  // PERIODO derivado (ciclos móveis de 12 meses) presente no intervalo selecionado
+  const periodosDerivados = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of rows) if (r.mabas) set.add(cicloOf(r.mabas));
+    return Array.from(set).sort().reverse().map(fmtCiclo);
+  }, [rows]);
+
+  const aggRows = useMemo<Agg[]>(() => {
+    const map = new Map<string, Agg & { codigos: Set<string> }>();
+    for (const r of rows) {
+      const key = r.GRUPO || "(sem grupo)";
+      let cur = map.get(key);
+      if (!cur) {
+        cur = {
+          grupo: key, rec_total: 0, vrdespesas: 0, saldo: 0, vidas: 0,
+          internacao: 0, terapia: 0, exame: 0, consulta: 0, emergencia: 0, demais: 0,
+          codigos: new Set<string>(),
+        };
+        map.set(key, cur);
+      }
+      cur.rec_total += r.rec_total;
+      cur.vrdespesas += r.vrdespesas;
+      cur.internacao += r.internacao;
+      cur.terapia += r.terapia;
+      cur.exame += r.exame;
+      cur.consulta += r.consulta;
+      cur.emergencia += r.emergencia;
+      cur.demais += r.demais;
+      const id = r.codigo || r.nmcli;
+      if (id) cur.codigos.add(id);
+    }
+    return Array.from(map.values()).map((a) => ({
+      ...a,
+      saldo: a.rec_total - a.vrdespesas,
+      vidas: a.codigos.size,
+    }));
+  }, [rows]);
+
+  const children = useMemo<Record<string, ChildRow[]>>(() => {
+    const byGrupo = new Map<string, Map<string, ChildRow & { codigos: Set<string> }>>();
+    for (const r of rows) {
+      const g = r.GRUPO || "(sem grupo)";
+      let inner = byGrupo.get(g);
+      if (!inner) { inner = new Map(); byGrupo.set(g, inner); }
+      const cd = r.cdpln || "(sem plano)";
+      let cur = inner.get(cd);
+      if (!cur) {
+        cur = {
+          cdpln: r.dspln ? `${cd} · ${r.dspln}` : cd,
+          vidas: 0, rec_total: 0, vrdespesas: 0, saldo: 0,
+          internacao: 0, terapia: 0, exame: 0, consulta: 0, emergencia: 0, demais: 0,
+          codigos: new Set<string>(),
+        };
+        inner.set(cd, cur);
+      }
+      cur.rec_total += r.rec_total;
+      cur.vrdespesas += r.vrdespesas;
+      cur.internacao += r.internacao;
+      cur.terapia += r.terapia;
+      cur.exame += r.exame;
+      cur.consulta += r.consulta;
+      cur.emergencia += r.emergencia;
+      cur.demais += r.demais;
+      const id = r.codigo || r.nmcli;
+      if (id) cur.codigos.add(id);
+    }
+    const out: Record<string, ChildRow[]> = {};
+    for (const [g, inner] of byGrupo.entries()) {
+      out[g] = Array.from(inner.values())
+        .map((c) => ({ ...c, vidas: c.codigos.size, saldo: c.rec_total - c.vrdespesas }))
+        .sort((a, b) => b.saldo - a.saldo);
+    }
+    return out;
+  }, [rows]);
+
+  const loadingChild: Record<string, boolean> = {};
+
 
 
   const aggregated = useMemo<Agg[]>(() => {
@@ -189,95 +214,43 @@ export default function SinistralidadeNova({ mode: _mode }: Props) {
       sortDir === "asc" ? <ArrowUp className="inline h-3 w-3" /> : <ArrowDown className="inline h-3 w-3" />
     ) : null;
 
-  const loadChildren = async (grupo: string) => {
-    if (children[grupo] || loadingChild[grupo]) return;
-    setLoadingChild((s) => ({ ...s, [grupo]: true }));
-    const chunk = 1000;
-    let from = 0;
-    const map = new Map<string, { rec_total: number; vrdespesas: number; internacao: number; terapia: number; exame: number; consulta: number; emergencia: number; demais: number; nmclis: Set<string> }>();
-    while (true) {
-      let qb = hostinger
-        .from("sinistralidade")
-        .select('cdpln,nmcli,rec_total,vrdespesas,internacao,terapia,exame,consulta,emergencia,"DEMAIS"')
-        .eq("GRUPO", grupo)
-        .order("codigo", { ascending: true, nullsFirst: true })
-        .range(from, from + chunk - 1);
-      if (periodo !== "__ALL__") qb = qb.eq("PERIODO", periodo);
-      const { data, error } = await qb;
-      if (error) {
-        console.error("children fetch error", error);
-        break;
-      }
-      const rows = (data ?? []) as any[];
-      for (const r of rows) {
-        const cd = String(r.cdpln ?? "");
-        if (!cd) continue;
-        const cur = map.get(cd) ?? { rec_total: 0, vrdespesas: 0, internacao: 0, terapia: 0, exame: 0, consulta: 0, emergencia: 0, demais: 0, nmclis: new Set<string>() };
-        cur.rec_total += Number(r.rec_total) || 0;
-        cur.vrdespesas += Number(r.vrdespesas) || 0;
-        cur.internacao += Number(r.internacao) || 0;
-        cur.terapia += Number(r.terapia) || 0;
-        cur.exame += Number(r.exame) || 0;
-        cur.consulta += Number(r.consulta) || 0;
-        cur.emergencia += Number(r.emergencia) || 0;
-        cur.demais += Number(r.DEMAIS) || 0;
-        const nm = String(r.nmcli ?? "");
-        if (nm) cur.nmclis.add(nm);
-        map.set(cd, cur);
-      }
-      if (rows.length < chunk) break;
-      from += chunk;
-    }
-    const arr: ChildRow[] = Array.from(map.entries())
-      .map(([cdpln, v]) => ({
-        cdpln,
-        vidas: v.nmclis.size,
-        rec_total: v.rec_total,
-        vrdespesas: v.vrdespesas,
-        saldo: v.rec_total - v.vrdespesas,
-        internacao: v.internacao,
-        terapia: v.terapia,
-        exame: v.exame,
-        consulta: v.consulta,
-        emergencia: v.emergencia,
-        demais: v.demais,
-      }))
-      .sort((a, b) => b.saldo - a.saldo);
-
-    setChildren((s) => ({ ...s, [grupo]: arr }));
-    setLoadingChild((s) => ({ ...s, [grupo]: false }));
-  };
-
   const toggle = (grupo: string) => {
-    setExpanded((s) => {
-      const next = { ...s, [grupo]: !s[grupo] };
-      if (next[grupo]) void loadChildren(grupo);
-      return next;
-    });
+    setExpanded((s) => ({ ...s, [grupo]: !s[grupo] }));
   };
+
+  const inputCls =
+    "h-9 w-24 px-2 rounded-md border border-border bg-background text-sm text-foreground tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/30";
 
   return (
     <TooltipProvider delayDuration={100}>
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col overflow-hidden">
       <div className="flex items-center gap-3 p-3 border-b border-border flex-wrap">
         <div className="flex items-center gap-2">
-          <label className="text-sm text-muted-foreground">Período</label>
-          <select
-            value={periodo}
-            onChange={(e) => setPeriodo(e.target.value)}
-            disabled={loading}
-            className="h-9 px-3 rounded-md border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50"
-          >
-            {loading && <option>Carregando...</option>}
-            {!loading && periodos.length === 0 && <option value="">—</option>}
-            {periodos.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-            {!loading && periodos.length > 0 && <option value="__ALL__">Todos</option>}
-          </select>
+          <label className="text-sm text-muted-foreground">mabas de</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={mIni}
+            onChange={(e) => setMIni(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            placeholder="202507"
+            className={inputCls}
+          />
+          <span className="text-sm text-muted-foreground">até</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={mFim}
+            onChange={(e) => setMFim(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            placeholder="202606"
+            className={inputCls}
+          />
+          {periodosDerivados.length > 0 && (
+            <span className="text-xs text-muted-foreground">
+              Período: {periodosDerivados.join(" · ")}
+            </span>
+          )}
         </div>
+
 
         <div className="relative">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
