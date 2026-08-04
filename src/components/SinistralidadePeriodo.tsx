@@ -1,12 +1,10 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { fetchISinRows, type ISinRow } from "@/lib/isinistralidadeData";
 import {
-  DEFAULT_MABAS_FIM,
-  DEFAULT_MABAS_INI,
-  cicloOf,
-  fetchISinRows,
-  fmtCiclo,
-  type ISinRow,
-} from "@/lib/isinistralidadeData";
+  fullRange,
+  periodoLabelOf,
+  useSinPeriodo,
+} from "@/lib/sinistralidadePeriodoStore";
 import { ChevronDown, ChevronRight, Loader2, ArrowUp, ArrowDown } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
