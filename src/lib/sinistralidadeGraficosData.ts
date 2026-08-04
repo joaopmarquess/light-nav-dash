@@ -6,6 +6,7 @@ import {
   fetchMabasBounds,
   fmtCiclo,
 } from "@/lib/isinistralidadeData";
+import { getSinPeriodo, periodoLabelOf } from "@/lib/sinistralidadePeriodoStore";
 
 export type PeriodoTotal = {
   periodo: string;
@@ -52,9 +53,16 @@ export function useSinistralidadeGraficosData(): SinGraficosData {
         if (alive) setLoading(false);
         return;
       }
-      const mFim = bounds.max;
-      const wanted = addMonths(mFim, -23);
-      const mIni = Number(wanted) < Number(bounds.min) ? bounds.min : wanted;
+      const cfg = getSinPeriodo();
+      let mFim = bounds.max;
+      let mIni: string;
+      if (cfg) {
+        mFim = cfg.periodos[0].mFim;
+        mIni = cfg.periodos[cfg.periodos.length - 1].mIni;
+      } else {
+        const wanted = addMonths(mFim, -23);
+        mIni = Number(wanted) < Number(bounds.min) ? bounds.min : wanted;
+      }
 
       const rows = await fetchISinRows(mIni, mFim);
       if (!alive) return;
@@ -95,7 +103,8 @@ export function useSinistralidadeGraficosData(): SinGraficosData {
       for (const r of rows) {
         if (!r.mabas) continue;
         const ciclo = cicloOf(r.mabas);
-        const periodo = fmtCiclo(ciclo);
+        const periodo = cfg ? periodoLabelOf(r.mabas, cfg) : fmtCiclo(ciclo);
+        if (!periodo) continue;
         const id = r.codigo || r.nmcli;
 
         const p = touch(perPeriodo, periodo);
