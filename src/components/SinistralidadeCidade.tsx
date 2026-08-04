@@ -1,10 +1,8 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { fetchISinRows, type ISinRow } from "@/lib/isinistralidadeData";
-import { useSinPeriodo } from "@/lib/sinistralidadePeriodoStore";
+import { hostinger } from "@/lib/hostingerClient";
 import { Search, ArrowUp, ArrowDown, ChevronRight, ChevronDown } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
 
 type Despesa = {
   internacao: number;
@@ -56,49 +54,65 @@ const emptyAcc = (): RawAcc => ({
   nmclis: new Set<string>(),
 });
 
-// Agrega linhas de public.isinistralidade por REGIONAL e REGIONAL::CIDADE.
-// PERIODO é derivado de `mabas` (ciclo móvel de 12 meses), não vem da tabela.
-function aggregate(rows: ISinRow[]): {
+// Fetch sinistralidade rows in chunks for one or more periods, aggregating by
+// REGIONAL and REGIONAL::CIDADE. Stable order avoids duplicate/missing rows
+// across paginated chunks.
+async function loadAgg(periodos: string[]): Promise<{
   regionais: Agg[];
   cidadesByReg: Record<string, ChildRow[]>;
-} {
+}> {
+  const chunk = 1000;
   const regMap = new Map<string, RawAcc>();
   const citMap = new Map<string, Map<string, { cidade: string } & RawAcc>>();
 
-  for (const r of rows) {
-    const reg = r.REGIONAL || "(sem regional)";
-    const cid = r.CIDADE || "(sem cidade)";
-    const nm = r.codigo || r.nmcli;
+  for (const periodo of periodos) {
+    let from = 0;
+    while (true) {
+      const { data, error } = await hostinger
+        .from("sinistralidade")
+        .select('codigo,nmcli,REGIONAL,CIDADE,rec_total,vrdespesas,internacao,terapia,exame,consulta,emergencia,"DEMAIS"')
+        .eq("PERIODO", periodo)
+        .order("codigo", { ascending: true, nullsFirst: true })
+        .order("nmcli", { ascending: true, nullsFirst: true })
+        .range(from, from + chunk - 1);
+      if (error) {
+        console.error("cidade fetch error", error);
+        break;
+      }
+      const rows = (data ?? []) as any[];
+      for (const r of rows) {
+        const reg = String(r.REGIONAL ?? "(sem regional)") || "(sem regional)";
+        const cid = String(r.CIDADE ?? "(sem cidade)") || "(sem cidade)";
+        const nm = String(r.nmcli ?? "");
+        const rec = Number(r.rec_total) || 0;
+        const desp = Number(r.vrdespesas) || 0;
+        const intern = Number(r.internacao) || 0;
+        const ter = Number(r.terapia) || 0;
+        const exa = Number(r.exame) || 0;
+        const con = Number(r.consulta) || 0;
+        const eme = Number(r.emergencia) || 0;
+        const dem = Number(r.DEMAIS) || 0;
 
-    const cur = regMap.get(reg) ?? emptyAcc();
-    cur.rec_total += r.rec_total; cur.vrdespesas += r.vrdespesas;
-    cur.internacao += r.internacao; cur.terapia += r.terapia; cur.exame += r.exame;
-    cur.consulta += r.consulta; cur.emergencia += r.emergencia; cur.demais += r.demais;
-    if (nm) cur.nmclis.add(nm);
-    regMap.set(reg, cur);
+        const cur = regMap.get(reg) ?? emptyAcc();
+        cur.rec_total += rec; cur.vrdespesas += desp;
+        cur.internacao += intern; cur.terapia += ter; cur.exame += exa;
+        cur.consulta += con; cur.emergencia += eme; cur.demais += dem;
+        if (nm) cur.nmclis.add(nm);
+        regMap.set(reg, cur);
 
-    let cmap = citMap.get(reg);
-    if (!cmap) { cmap = new Map(); citMap.set(reg, cmap); }
-    const ccur = cmap.get(cid) ?? { cidade: cid, ...emptyAcc() };
-    ccur.rec_total += r.rec_total; ccur.vrdespesas += r.vrdespesas;
-    ccur.internacao += r.internacao; ccur.terapia += r.terapia; ccur.exame += r.exame;
-    ccur.consulta += r.consulta; ccur.emergencia += r.emergencia; ccur.demais += r.demais;
-    if (nm) ccur.nmclis.add(nm);
-    cmap.set(cid, ccur);
+        let cmap = citMap.get(reg);
+        if (!cmap) { cmap = new Map(); citMap.set(reg, cmap); }
+        const ccur = cmap.get(cid) ?? { cidade: cid, ...emptyAcc() };
+        ccur.rec_total += rec; ccur.vrdespesas += desp;
+        ccur.internacao += intern; ccur.terapia += ter; ccur.exame += exa;
+        ccur.consulta += con; ccur.emergencia += eme; ccur.demais += dem;
+        if (nm) ccur.nmclis.add(nm);
+        cmap.set(cid, ccur);
+      }
+      if (rows.length < chunk) break;
+      from += chunk;
+    }
   }
-
-  return finalize(regMap, citMap);
-}
-
-function finalize(
-  regMap: Map<string, RawAcc>,
-  citMap: Map<string, Map<string, { cidade: string } & RawAcc>>,
-): {
-  regionais: Agg[];
-  cidadesByReg: Record<string, ChildRow[]>;
-} {
-
-
 
   const regionais: Agg[] = Array.from(regMap.entries()).map(([regional, v]) => ({
     regional,
@@ -129,15 +143,14 @@ function finalize(
 }
 
 export default function SinistralidadeCidade() {
-  const cfg = useSinPeriodo();
-  const periodos = cfg?.periodos ?? [];
-  const [periodo, setPeriodo] = useState(periodos[0]?.label ?? "");
-  const sel = periodos.find((p) => p.label === periodo) ?? periodos[0];
+  const [periodos, setPeriodos] = useState<string[]>([]);
+  const [periodo, setPeriodo] = useState<string>("");
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
   const [aggRows, setAggRows] = useState<Agg[]>([]);
   const [cidByReg, setCidByReg] = useState<Record<string, ChildRow[]>>({});
-  const [loadingRows, setLoadingRows] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [loadingRows, setLoadingRows] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("SALDO");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -148,22 +161,46 @@ export default function SinistralidadeCidade() {
   }, [q]);
 
   useEffect(() => {
-    if (!sel) return;
+    let alive = true;
+    (async () => {
+      setLoading(true);
+      const { data, error } = await hostinger.rpc("sin_periodos");
+      if (!alive) return;
+      if (error) {
+        console.error("PERIODO load error", error);
+        setPeriodos([]);
+      } else {
+        const uniq = Array.from(
+          new Set(
+            ((data ?? []) as any[])
+              .map((r) => String(r.periodo ?? r.PERIODO ?? ""))
+              .filter(Boolean),
+          ),
+        );
+        uniq.sort().reverse();
+        setPeriodos(uniq);
+        setPeriodo(uniq[0] ?? "");
+      }
+      setLoading(false);
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!periodo) return;
     let alive = true;
     setLoadingRows(true);
     setExpanded({});
     (async () => {
-      const rows = await fetchISinRows(sel.mIni, sel.mFim);
+      const targets = periodo === "__ALL__" ? periodos : [periodo];
+      const { regionais, cidadesByReg } = await loadAgg(targets);
       if (!alive) return;
-      const { regionais, cidadesByReg } = aggregate(rows);
       setAggRows(regionais);
       setCidByReg(cidadesByReg);
       setLoadingRows(false);
     })();
     return () => { alive = false; };
-  }, [sel?.mIni, sel?.mFim]);
-
-
+  }, [periodo, periodos]);
 
   const aggregated = useMemo<Agg[]>(() => {
     const t = debouncedQ.toLowerCase();
@@ -250,19 +287,19 @@ export default function SinistralidadeCidade() {
           <div className="flex items-center gap-2">
             <label className="text-sm text-muted-foreground">Período</label>
             <select
-              value={sel?.label ?? ""}
+              value={periodo}
               onChange={(e) => setPeriodo(e.target.value)}
-              className="h-9 px-2 rounded-md border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              disabled={loading}
+              className="h-9 px-3 rounded-md border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50"
             >
+              {loading && <option>Carregando...</option>}
+              {!loading && periodos.length === 0 && <option value="">—</option>}
               {periodos.map((p) => (
-                <option key={p.label} value={p.label}>
-                  Período {p.idx} — {p.label}
-                </option>
+                <option key={p} value={p}>{p}</option>
               ))}
+              {!loading && periodos.length > 0 && <option value="__ALL__">Todos</option>}
             </select>
           </div>
-
-
 
           <div className="relative">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

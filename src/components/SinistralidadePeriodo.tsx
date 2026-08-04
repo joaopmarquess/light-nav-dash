@@ -1,14 +1,8 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { fetchISinRows, type ISinRow } from "@/lib/isinistralidadeData";
-import {
-  fullRange,
-  periodoLabelOf,
-  useSinPeriodo,
-} from "@/lib/sinistralidadePeriodoStore";
+import { hostinger } from "@/lib/hostingerClient";
 import { ChevronDown, ChevronRight, Loader2, ArrowUp, ArrowDown } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
 
 type Agg = {
   grupo: string;
@@ -92,152 +86,85 @@ const mapAgg = (data: any[]): Agg[] =>
   }));
 
 export default function SinistralidadePeriodo({ embedded = false }: { embedded?: boolean } = {}) {
-  const cfg = useSinPeriodo();
-  const range = cfg ? fullRange(cfg) : null;
-  const [rows, setRows] = useState<ISinRow[]>([]);
+  const [periodos, setPeriodos] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [totals, setTotals] = useState<PeriodoTot[]>([]);
+  const [aggByPeriodo, setAggByPeriodo] = useState<Record<string, Agg[]>>({});
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [expandedGrupo, setExpandedGrupo] = useState<Record<string, boolean>>({});
+  const [children, setChildren] = useState<Record<string, ChildRow[]>>({});
+  const [loadingChild, setLoadingChild] = useState<Record<string, boolean>>({});
   const [sortKey, setSortKey] = useState<SortKey>("SALDO");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [expandedCdpln, setExpandedCdpln] = useState<Record<string, boolean>>({});
+  const [benefs, setBenefs] = useState<Record<string, BenefRow[]>>({});
+  const [loadingBenef, setLoadingBenef] = useState<Record<string, boolean>>({});
   const [filter, setFilter] = useState("");
 
   useEffect(() => {
-    if (!range) return;
     let alive = true;
-    setLoading(true);
-    setExpanded({});
-    setExpandedGrupo({});
-    setExpandedCdpln({});
     (async () => {
-      const data = await fetchISinRows(range.mIni, range.mFim);
+      setLoading(true);
+      setProgress(0);
+      const { data, error } = await hostinger.rpc("sin_periodos");
       if (!alive) return;
-      setRows(data);
+      if (error) {
+        console.error("PERIODO load error", error);
+        setLoading(false);
+        return;
+      }
+      const uniq = Array.from(
+        new Set(
+          ((data ?? []) as any[])
+            .map((r) => String(r.periodo ?? r.PERIODO ?? ""))
+            .filter(Boolean),
+        ),
+      );
+      uniq.sort().reverse();
+      setPeriodos(uniq);
+
+      // Fetch each period's aggregate (parallel, cached)
+      const results: PeriodoTot[] = [];
+      const cache: Record<string, Agg[]> = {};
+      let done = 0;
+      await Promise.all(
+        uniq.map(async (p) => {
+          const { data: d, error: e } = await hostinger.rpc("sin_por_grupo", { p_periodo: p });
+          if (e) {
+            console.error("sin_por_grupo error", p, e);
+          }
+          const agg = mapAgg((d ?? []) as any[]);
+          cache[p] = agg;
+          let rec = 0, desp = 0, sal = 0, vid = 0;
+          for (const a of agg) {
+            rec += a.rec_total;
+            desp += a.vrdespesas;
+            sal += a.saldo;
+            vid += a.vidas;
+          }
+          results.push({
+            periodo: p,
+            rec_total: rec,
+            vrdespesas: desp,
+            saldo: sal,
+            vidas: vid,
+            sin: rec ? desp / rec : 0,
+          });
+          done += 1;
+          if (alive) setProgress(done);
+        }),
+      );
+      if (!alive) return;
+      results.sort((a, b) => b.periodo.localeCompare(a.periodo));
+      setTotals(results);
+      setAggByPeriodo(cache);
       setLoading(false);
     })();
     return () => {
       alive = false;
     };
-  }, [range?.mIni, range?.mFim]);
-
-  /**
-   * PERIODO é derivado da definição feita no submenu "Definir Período"
-   * (base final + quantidade de meses), calculado a partir de `mabas`.
-   * Toda a hierarquia (Período > Grupo > Plano > Beneficiário) é agregada na aplicação.
-   */
-  const derived = useMemo(() => {
-    type GAcc = Agg & { codigos: Set<string> };
-    type CAcc = ChildRow & { codigos: Set<string> };
-    const gMaps = new Map<string, Map<string, GAcc>>();
-    const cMaps = new Map<string, Map<string, CAcc>>();
-    const bMaps = new Map<string, Map<string, BenefRow>>();
-
-    for (const r of rows) {
-      if (!r.mabas || !cfg) continue;
-      const periodo = periodoLabelOf(r.mabas, cfg);
-      if (!periodo) continue;
-
-      const grupo = r.GRUPO || "(sem grupo)";
-      const cd = r.cdpln || "(sem plano)";
-      const id = r.codigo || r.nmcli;
-
-      let gm = gMaps.get(periodo);
-      if (!gm) { gm = new Map(); gMaps.set(periodo, gm); }
-      let g = gm.get(grupo);
-      if (!g) {
-        g = {
-          grupo, rec_total: 0, vrdespesas: 0, saldo: 0, vidas: 0,
-          internacao: 0, terapia: 0, exame: 0, consulta: 0, emergencia: 0, demais: 0,
-          codigos: new Set<string>(),
-        };
-        gm.set(grupo, g);
-      }
-
-      const gkey = `${periodo}::${grupo}`;
-      let cm = cMaps.get(gkey);
-      if (!cm) { cm = new Map(); cMaps.set(gkey, cm); }
-      let c = cm.get(cd);
-      if (!c) {
-        c = {
-          cdpln: cd, dspln: r.dspln, vidas: 0, rec_total: 0, vrdespesas: 0, saldo: 0,
-          internacao: 0, terapia: 0, exame: 0, consulta: 0, emergencia: 0, demais: 0,
-          codigos: new Set<string>(),
-        };
-        cm.set(cd, c);
-      }
-      if (!c.dspln && r.dspln) c.dspln = r.dspln;
-
-      const ckey = `${periodo}::${grupo}::${cd}`;
-      let bm = bMaps.get(ckey);
-      if (!bm) { bm = new Map(); bMaps.set(ckey, bm); }
-      let b = bm.get(id || "(sem código)");
-      if (!b) {
-        b = {
-          codigo: id || "(sem código)", nmcli: r.nmcli, rec_total: 0, vrdespesas: 0, saldo: 0,
-          internacao: 0, terapia: 0, exame: 0, consulta: 0, emergencia: 0, demais: 0,
-        };
-        bm.set(b.codigo, b);
-      }
-      if (!b.nmcli && r.nmcli) b.nmcli = r.nmcli;
-
-      for (const t of [g, c, b] as (Agg | ChildRow | BenefRow)[]) {
-        t.rec_total += r.rec_total;
-        t.vrdespesas += r.vrdespesas;
-        t.internacao += r.internacao;
-        t.terapia += r.terapia;
-        t.exame += r.exame;
-        t.consulta += r.consulta;
-        t.emergencia += r.emergencia;
-        t.demais += r.demais;
-      }
-      if (id) {
-        g.codigos.add(id);
-        c.codigos.add(id);
-      }
-    }
-
-    const aggByPeriodo: Record<string, Agg[]> = {};
-    const totals: PeriodoTot[] = [];
-    for (const [periodo, gm] of gMaps.entries()) {
-      const aggs = Array.from(gm.values()).map((g) => ({
-        ...g,
-        vidas: g.codigos.size,
-        saldo: g.rec_total - g.vrdespesas,
-      }));
-      aggByPeriodo[periodo] = aggs;
-      let rec = 0, desp = 0, sal = 0, vid = 0;
-      for (const a of aggs) {
-        rec += a.rec_total;
-        desp += a.vrdespesas;
-        sal += a.saldo;
-        vid += a.vidas;
-      }
-      totals.push({ periodo, rec_total: rec, vrdespesas: desp, saldo: sal, vidas: vid, sin: rec ? desp / rec : 0 });
-    }
-    totals.sort((a, b) => b.periodo.localeCompare(a.periodo));
-
-    const children: Record<string, ChildRow[]> = {};
-    for (const [k, cm] of cMaps.entries()) {
-      children[k] = Array.from(cm.values())
-        .map((c) => ({ ...c, vidas: c.codigos.size, saldo: c.rec_total - c.vrdespesas }))
-        .sort((a, b) => b.saldo - a.saldo);
-    }
-    const benefs: Record<string, BenefRow[]> = {};
-    for (const [k, bm] of bMaps.entries()) {
-      benefs[k] = Array.from(bm.values())
-        .map((b) => ({ ...b, saldo: b.rec_total - b.vrdespesas }))
-        .sort((a, b) => b.saldo - a.saldo);
-    }
-    return { totals, aggByPeriodo, children, benefs };
-  }, [rows, cfg]);
-
-  const { totals, aggByPeriodo, children, benefs } = derived;
-  const loadingChild: Record<string, boolean> = {};
-  const loadingBenef: Record<string, boolean> = {};
-  const periodos = totals.map((t) => t.periodo);
-  const progress = totals.length;
-
+  }, []);
 
   const maxSin = useMemo(() => totals.reduce((m, t) => Math.max(m, t.sin), 0), [totals]);
 
@@ -268,33 +195,186 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
     });
   };
 
+  const loadChildren = async (periodo: string, grupo: string) => {
+    const key = `${periodo}::${grupo}`;
+    if (children[key] || loadingChild[key]) return;
+    setLoadingChild((s) => ({ ...s, [key]: true }));
+    const chunk = 1000;
+    let from = 0;
+    const map = new Map<
+      string,
+      {
+        dspln: string;
+        rec_total: number;
+        vrdespesas: number;
+        internacao: number;
+        terapia: number;
+        exame: number;
+        consulta: number;
+        emergencia: number;
+        demais: number;
+        nmclis: Set<string>;
+      }
+    >();
+    while (true) {
+      const { data, error } = await hostinger
+        .from("sinistralidade")
+        .select('cdpln,dspln,nmcli,rec_total,vrdespesas,internacao,terapia,exame,consulta,emergencia,"DEMAIS"')
+        .eq("PERIODO", periodo)
+        .eq("GRUPO", grupo)
+        .range(from, from + chunk - 1);
+      if (error) {
+        console.error("children fetch error", error);
+        break;
+      }
+      const rows = (data ?? []) as any[];
+      for (const r of rows) {
+        const cd = String(r.cdpln ?? "");
+        if (!cd) continue;
+        const cur = map.get(cd) ?? {
+          dspln: "",
+          rec_total: 0, vrdespesas: 0, internacao: 0, terapia: 0, exame: 0,
+          consulta: 0, emergencia: 0, demais: 0, nmclis: new Set<string>(),
+        };
+        if (!cur.dspln && r.dspln) cur.dspln = String(r.dspln);
+        cur.rec_total += Number(r.rec_total) || 0;
+        cur.vrdespesas += Number(r.vrdespesas) || 0;
+        cur.internacao += Number(r.internacao) || 0;
+        cur.terapia += Number(r.terapia) || 0;
+        cur.exame += Number(r.exame) || 0;
+        cur.consulta += Number(r.consulta) || 0;
+        cur.emergencia += Number(r.emergencia) || 0;
+        cur.demais += Number(r.DEMAIS) || 0;
+        const nm = String(r.nmcli ?? "");
+        if (nm) cur.nmclis.add(nm);
+        map.set(cd, cur);
+      }
+      if (rows.length < chunk) break;
+      from += chunk;
+    }
+    const arr: ChildRow[] = Array.from(map.entries())
+      .map(([cdpln, v]) => ({
+        cdpln,
+        dspln: v.dspln,
+        vidas: v.nmclis.size,
+        rec_total: v.rec_total,
+        vrdespesas: v.vrdespesas,
+        saldo: v.rec_total - v.vrdespesas,
+        internacao: v.internacao,
+        terapia: v.terapia,
+        exame: v.exame,
+        consulta: v.consulta,
+        emergencia: v.emergencia,
+        demais: v.demais,
+      }))
+      .sort((a, b) => b.saldo - a.saldo);
+    setChildren((s) => ({ ...s, [key]: arr }));
+    setLoadingChild((s) => ({ ...s, [key]: false }));
+  };
+
   const toggleGrupo = (periodo: string, grupo: string) => {
     const key = `${periodo}::${grupo}`;
-    setExpandedGrupo((s) => ({ ...s, [key]: !s[key] }));
+    setExpandedGrupo((s) => {
+      const next = { ...s, [key]: !s[key] };
+      if (next[key]) void loadChildren(periodo, grupo);
+      return next;
+    });
+  };
+
+  const loadBenefs = async (periodo: string, grupo: string, cdpln: string) => {
+    const key = `${periodo}::${grupo}::${cdpln}`;
+    if (benefs[key] || loadingBenef[key]) return;
+    setLoadingBenef((s) => ({ ...s, [key]: true }));
+    const chunk = 1000;
+    let from = 0;
+    const map = new Map<string, { nmcli: string; rec_total: number; vrdespesas: number; internacao: number; terapia: number; exame: number; consulta: number; emergencia: number; demais: number }>();
+    while (true) {
+      const { data, error } = await hostinger
+        .from("sinistralidade")
+        .select('codigo,nmcli,rec_total,vrdespesas,internacao,terapia,exame,consulta,emergencia,"DEMAIS"')
+        .eq("PERIODO", periodo)
+        .eq("GRUPO", grupo)
+        .eq("cdpln", cdpln)
+        .range(from, from + chunk - 1);
+      if (error) {
+        console.error("benef fetch error", error);
+        break;
+      }
+      const rows = (data ?? []) as any[];
+      for (const r of rows) {
+        const cd = String(r.codigo ?? "");
+        if (!cd) continue;
+        const cur = map.get(cd) ?? { nmcli: String(r.nmcli ?? ""), rec_total: 0, vrdespesas: 0, internacao: 0, terapia: 0, exame: 0, consulta: 0, emergencia: 0, demais: 0 };
+        cur.rec_total += Number(r.rec_total) || 0;
+        cur.vrdespesas += Number(r.vrdespesas) || 0;
+        cur.internacao += Number(r.internacao) || 0;
+        cur.terapia += Number(r.terapia) || 0;
+        cur.exame += Number(r.exame) || 0;
+        cur.consulta += Number(r.consulta) || 0;
+        cur.emergencia += Number(r.emergencia) || 0;
+        cur.demais += Number(r.DEMAIS) || 0;
+        if (!cur.nmcli && r.nmcli) cur.nmcli = String(r.nmcli);
+        map.set(cd, cur);
+      }
+      if (rows.length < chunk) break;
+      from += chunk;
+    }
+    const arr: BenefRow[] = Array.from(map.entries())
+      .map(([codigo, v]) => ({
+        codigo,
+        nmcli: v.nmcli,
+        rec_total: v.rec_total,
+        vrdespesas: v.vrdespesas,
+        saldo: v.rec_total - v.vrdespesas,
+        internacao: v.internacao,
+        terapia: v.terapia,
+        exame: v.exame,
+        consulta: v.consulta,
+        emergencia: v.emergencia,
+        demais: v.demais,
+      }))
+      .sort((a, b) => b.saldo - a.saldo);
+    setBenefs((s) => ({ ...s, [key]: arr }));
+    setLoadingBenef((s) => ({ ...s, [key]: false }));
   };
 
   const toggleCdpln = (periodo: string, grupo: string, cdpln: string) => {
     const key = `${periodo}::${grupo}::${cdpln}`;
-    setExpandedCdpln((s) => ({ ...s, [key]: !s[key] }));
+    setExpandedCdpln((s) => {
+      const next = { ...s, [key]: !s[key] };
+      if (next[key]) void loadBenefs(periodo, grupo, cdpln);
+      return next;
+    });
   };
+
+  // When user types a filter, eagerly load children of all groups so cdpln/dspln
+  // matches surface even for groups that were never manually expanded.
+  useEffect(() => {
+    const fq = filter.trim();
+    if (fq.length < 2) return;
+    let cancelled = false;
+    (async () => {
+      for (const [periodo, aggs] of Object.entries(aggByPeriodo)) {
+        for (const a of aggs) {
+          if (cancelled) return;
+          const key = `${periodo}::${a.grupo}`;
+          if (children[key] || loadingChild[key]) continue;
+          await loadChildren(periodo, a.grupo);
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter, aggByPeriodo]);
 
 
   return (
     <TooltipProvider delayDuration={100}>
       <section className={`bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col ${embedded ? "h-full" : "h-[calc(100vh-9rem)]"}`}>
-        <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground mb-3">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="shrink-0">Períodos definidos:</span>
-            {(cfg?.periodos ?? []).map((p) => (
-              <span
-                key={p.label}
-                className="px-2 py-0.5 rounded border border-border bg-muted/40 text-foreground tabular-nums"
-              >
-                {p.idx}. {p.label}
-              </span>
-            ))}
-          </div>
-
+        <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground mb-3">
+          <span className="shrink-0">
+            Comparativo por PERÍODO · métrica: <span className="text-foreground font-medium">Sinistralidade (%)</span>
+          </span>
           <input
             type="text"
             value={filter}
@@ -305,7 +385,7 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
           <span className="shrink-0">
             {loading ? (
               <span className="inline-flex items-center gap-2">
-                <Loader2 className="h-3 w-3 animate-spin" /> carregando...
+                <Loader2 className="h-3 w-3 animate-spin" /> {fmtInt(progress)}/{fmtInt(periodos.length)} períodos
               </span>
             ) : (
               <>
@@ -314,7 +394,6 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
             )}
           </span>
         </div>
-
 
         <div className="flex-1 overflow-auto border border-border rounded-lg p-4">
           {loading && totals.length === 0 ? (

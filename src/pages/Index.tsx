@@ -50,13 +50,12 @@ import BIOverview from "@/components/BIOverview";
 import DWCarteira from "@/components/DWCarteira";
 import CarteiraGraficos from "@/components/CarteiraGraficos";
 import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
+import SinistralidadeConsulta from "@/components/SinistralidadeConsulta";
 import SinistralidadeNova from "@/components/SinistralidadeNova";
+import SinistralidadeCidades from "@/components/SinistralidadeCidades";
 import SinistralidadePeriodo from "@/components/SinistralidadePeriodo";
 import SinistralidadeAPB from "@/components/SinistralidadeAPB";
 import SinistralidadeCidade from "@/components/SinistralidadeCidade";
-import SinistralidadeConsultaNiveis from "@/components/SinistralidadeConsultaNiveis";
-import SinistralidadeDefinirPeriodo from "@/components/SinistralidadeDefinirPeriodo";
-import SinPeriodoGuard from "@/components/SinPeriodoGuard";
 import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
 import Assistencial from "@/components/Assistencial";
@@ -79,7 +78,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 type MenuItem = {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
-  children?: { icon: React.ComponentType<{ className?: string }>; label: string; key?: string }[];
+  children?: { icon: React.ComponentType<{ className?: string }>; label: string }[];
 };
 
 const menuItems: MenuItem[] = [
@@ -109,10 +108,9 @@ const menuItems: MenuItem[] = [
     icon: Percent,
     label: "Sinistralidade",
     children: [
-      { icon: CalendarIcon, label: "Definir Período" },
-      { icon: Search, label: "Consulta", key: "Consulta Sinistralidade" },
       { icon: UserCheck, label: "Planos/Empresas" },
       { icon: CalendarCheck, label: "Período" },
+      { icon: CalendarCheck, label: "APB" },
       { icon: LayoutDashboard, label: "Cidades" },
       { icon: BarChart3, label: "Gráfico Sinistralidade" },
       { icon: LayoutDashboard, label: "PBI U12" },
@@ -126,13 +124,6 @@ const menuItems: MenuItem[] = [
       { icon: CalendarCheck, label: "Por Competência" },
       { icon: Search, label: "Consulta" },
       { icon: Stethoscope, label: "Relatório Plano Executor" },
-    ],
-  },
-  {
-    icon: Settings2,
-    label: "Outros",
-    children: [
-      { icon: CalendarCheck, label: "APB" },
       { icon: Stethoscope, label: "2518 Despesas" },
       { icon: Stethoscope, label: "2518 Receitas" },
     ],
@@ -240,12 +231,11 @@ const Index = () => {
                 {hasChildren && isOpen && !collapsed && (
                   <div className="mt-1 space-y-1">
                     {item.children!.map((child) => {
-                      const childKey = (child as { key?: string }).key ?? child.label;
-                      const childActive = active === childKey;
+                      const childActive = active === child.label;
                       return (
                         <button
-                          key={childKey}
-                          onClick={() => setActive(childKey)}
+                          key={child.label}
+                          onClick={() => setActive(child.label)}
                           className={`w-full flex items-center gap-3 pl-9 pr-3 py-2 rounded-lg text-sm transition-colors ${
                             childActive
                               ? "bg-accent text-primary font-medium"
@@ -364,26 +354,14 @@ const Index = () => {
           ) : active === "__removed_sin__" ? (
             <div />
 
-          ) : active === "Definir Período" ? (
-            <SinistralidadeDefinirPeriodo />
-          ) : active === "Consulta Sinistralidade" ? (
-            <SinPeriodoGuard onDefinir={() => setActive("Definir Período")}>
-              <SinistralidadeConsultaNiveis />
-            </SinPeriodoGuard>
           ) : active === "Planos/Empresas" ? (
-            <SinPeriodoGuard onDefinir={() => setActive("Definir Período")}>
-              <SinistralidadeNova mode="beneficiario" />
-            </SinPeriodoGuard>
+            <SinistralidadeNova mode="beneficiario" />
           ) : active === "Período" ? (
-            <SinPeriodoGuard onDefinir={() => setActive("Definir Período")}>
-              <SinistralidadePeriodo />
-            </SinPeriodoGuard>
+            <SinistralidadePeriodo />
           ) : active === "APB" ? (
             <SinistralidadeAPB />
           ) : active === "Cidades" ? (
-            <SinPeriodoGuard onDefinir={() => setActive("Definir Período")}>
-              <SinistralidadeCidade />
-            </SinPeriodoGuard>
+            <SinistralidadeCidade />
 
 
 
@@ -423,9 +401,7 @@ const Index = () => {
           ) : active === "Gráfico Carteira" ? (
             <CarteiraGraficos />
           ) : active === "Gráfico Sinistralidade" ? (
-            <SinPeriodoGuard onDefinir={() => setActive("Definir Período")}>
-              <SinistralidadeGraficos />
-            </SinPeriodoGuard>
+            <SinistralidadeGraficos />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : active === "Assistencial" ? (

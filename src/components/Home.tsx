@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   TrendingUp,
   TrendingDown,
@@ -11,12 +12,20 @@ import {
   LayoutDashboard,
   Stethoscope,
 } from "lucide-react";
-import { useSinistralidadeGraficosData } from "@/lib/sinistralidadeGraficosData";
+
+type ByMes = { k: number; rec: number; desp: number; saldo: number; vidas: number };
+type Sin = { byMes: ByMes[] };
 
 const fmtBRL = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(v);
 const fmtInt = (v: number) => new Intl.NumberFormat("pt-BR").format(v);
 const fmtPct = (v: number) => `${(v * 100).toFixed(1)}%`;
+const labelMes = (k: number) => {
+  const y = Math.floor(k / 100);
+  const m = k % 100;
+  const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+  return `${meses[m - 1]}/${String(y).slice(2)}`;
+};
 
 const shortcuts = [
   { icon: FileText, label: "DRE", desc: "Demonstrativo de resultados" },
@@ -27,23 +36,23 @@ const shortcuts = [
 ];
 
 const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
-  const { loading, totals } = useSinistralidadeGraficosData();
+  const [data, setData] = useState<Sin | null>(null);
 
-  const meses = totals.map((t) => ({
-    label: t.periodo,
-    rec: t.rec_total,
-    desp: t.vrdespesas,
-    saldo: t.saldo,
-    vidas: t.vidas,
-  }));
+  useEffect(() => {
+    fetch("/data/sinistralidade.json")
+      .then((r) => r.json())
+      .then(setData)
+      .catch(() => setData(null));
+  }, []);
+
+  const meses = (data?.byMes ?? []).filter((m) => m.vidas > 30000);
   const ultimo = meses[meses.length - 1];
   const anterior = meses[meses.length - 2];
 
-  const sinist = ultimo && ultimo.rec ? ultimo.desp / ultimo.rec : 0;
-  const sinistAnt = anterior && anterior.rec ? anterior.desp / anterior.rec : 0;
+  const sinist = ultimo ? ultimo.desp / ultimo.rec : 0;
+  const sinistAnt = anterior ? anterior.desp / anterior.rec : 0;
   const deltaVidas = ultimo && anterior ? ultimo.vidas - anterior.vidas : 0;
   const deltaRec = ultimo && anterior ? (ultimo.rec - anterior.rec) / anterior.rec : 0;
-
 
   const kpis = ultimo
     ? [
@@ -113,7 +122,7 @@ const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
           <div>
             <h2 className="text-2xl font-semibold text-foreground">Bem-vindo ao Dex Bensaúde</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Visão executiva da operação{loading ? " — carregando dados…" : ultimo ? ` — referência ${ultimo.label}` : ""}.
+              Visão executiva da operação{ultimo ? ` — referência ${labelMes(ultimo.k)}` : ""}.
             </p>
           </div>
           {meses.length >= 2 && (
@@ -153,7 +162,7 @@ const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
                   k.delta === 0 ? "text-muted-foreground" : positive ? "text-emerald-600" : "text-rose-600"
                 }`}
               >
-                {deltaTxt} <span className="text-muted-foreground font-normal">vs. período anterior</span>
+                {deltaTxt} <span className="text-muted-foreground font-normal">vs. mês anterior</span>
               </div>
             </div>
           );
