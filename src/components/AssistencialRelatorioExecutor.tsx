@@ -1020,15 +1020,12 @@ function buildPdf({
     return (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
   };
 
-  renderDetalhe(s3Y);
-  markSectionPages("Seção 3 - Geral", sec3Start);
-
-  // ---------- Section 4 (Declaração, sem timbrado) ----------
+  // ---------- Declaração (sem timbrado) ----------
   timbrado.setEnabled(false);
   declaracaoMode = true;
   doc.addPage();
   const sec4Start = doc.getNumberOfPages();
-  currentSecao = "Seção 4 | Credenciado Executor Selecionado";
+  currentSecao = "Credenciado Executor Selecionado";
 
   let s4Y = marginT;
   if (filterExe) {
