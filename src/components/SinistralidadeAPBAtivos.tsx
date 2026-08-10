@@ -136,7 +136,7 @@ const SinistralidadeAPBAtivos = () => {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9.5);
       doc.setTextColor(0, 0, 0);
-      doc.text(`${i} de ${pages}`, marginL, footY, { align: "left" });
+      doc.text(`${i} de ${pages}`, pageW - marginR, footY, { align: "right" });
     }
     return doc;
   };

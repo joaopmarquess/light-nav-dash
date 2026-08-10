@@ -458,7 +458,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9.5);
       doc.setTextColor(0, 0, 0);
-      doc.text(`${i} de ${total}`, marginL, footY, { align: "left" });
+      doc.text(`${i} de ${total}`, pageW - marginR, footY, { align: "right" });
     }
     return doc;
   };
