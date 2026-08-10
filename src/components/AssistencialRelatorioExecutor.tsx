@@ -936,71 +936,129 @@ function buildPdf({
     return a.cdcontrato.localeCompare(b.cdcontrato);
   });
 
-  for (const cg of contratoList) {
-    const guias = Array.from(cg.guias.values()).sort((a, b) => a.nrgui.localeCompare(b.nrgui));
-    let sub = 0;
-    const body: (string | { content: string; colSpan?: number; styles?: Record<string, unknown> })[][] = [];
-    for (const g of guias) {
-      sub += g.valor;
-      const cd = String(g.cdregusr ?? "");
-      const dp = cd ? String(Number(cd.slice(-2)) || 0) : "";
-      body.push([
-        truncFront(g.nmcli, s3W.nmcli),
-        dp,
-        g.nrgui,
-        fmtDateBR(g.dtexe),
-        fmtCompetencia(g.bscmp),
-        money(g.valor),
-      ]);
-    }
-    s3Grand += sub;
+  const renderDetalhe = (startY: number) => {
+    let y = startY;
+    let grand = 0;
+    for (const cg of contratoList) {
+      const guias = Array.from(cg.guias.values()).sort((a, b) => a.nrgui.localeCompare(b.nrgui));
+      let sub = 0;
+      const body: (string | { content: string; colSpan?: number; styles?: Record<string, unknown> })[][] = [];
+      for (const g of guias) {
+        sub += g.valor;
+        const cd = String(g.cdregusr ?? "");
+        const dp = cd ? String(Number(cd.slice(-2)) || 0) : "";
+        body.push([
+          truncFront(g.nmcli, s3W.nmcli),
+          dp,
+          g.nrgui,
+          fmtDateBR(g.dtexe),
+          fmtCompetencia(g.bscmp),
+          money(g.valor),
+        ]);
+      }
+      grand += sub;
 
-    const headerLabel = `${cg.nmclires} (${cg.cdcontrato})`;
+      const headerLabel = `${cg.nmclires} (${cg.cdcontrato})`;
+      autoTable(doc, {
+        ...commonTableOpts,
+        startY: y,
+        head: [
+          [{ content: headerLabel, colSpan: 6, styles: { ...groupRowStyles, halign: "left" } }],
+          [
+            "Nome Beneficiário",
+            { content: "dp", styles: { halign: "center" } },
+            { content: "Guia", styles: { halign: "center" } },
+            { content: "Execução", styles: { halign: "center" } },
+            { content: "Competência", styles: { halign: "center" } },
+            { content: "Total", styles: { halign: "right" } },
+          ],
+        ],
+        body,
+        showFoot: "lastPage",
+        foot: [[
+          { content: `Subtotal (Contrato: ${cg.cdcontrato})`, colSpan: 5, styles: { ...subtotalRowStyles, halign: "left", lineWidth: { top: 0.1, bottom: 0.8, left: 0.1, right: 0 }, lineColor: PDF_COLORS.navy } },
+          { content: money(sub), styles: { ...subtotalRowStyles, halign: "right", lineWidth: { top: 0.1, bottom: 0.8, left: 0, right: 0.1 }, lineColor: PDF_COLORS.navy } },
+        ]],
+        columnStyles: {
+          0: { cellWidth: s3W.nmcli },
+          1: { cellWidth: s3W.dp, halign: "center" },
+          2: { cellWidth: s3W.nrgui, halign: "center" },
+          3: { cellWidth: s3W.dtexe, halign: "center" },
+          4: { cellWidth: s3W.bscmp, halign: "center" },
+          5: { cellWidth: s3W.total, halign: "right" },
+        },
+      });
+      y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 3;
+      if (y > pageH - marginB - 20) { doc.addPage(); y = marginT + 6; }
+    }
     autoTable(doc, {
       ...commonTableOpts,
-      startY: s3Y,
-      head: [
-        [{ content: headerLabel, colSpan: 6, styles: { ...groupRowStyles, halign: "left" } }],
-        [
-          "Nome Beneficiário",
-          { content: "dp", styles: { halign: "center" } },
-          { content: "Guia", styles: { halign: "center" } },
-          { content: "Execução", styles: { halign: "center" } },
-          { content: "Competência", styles: { halign: "center" } },
-          { content: "Total", styles: { halign: "right" } },
-        ],
-      ],
-      body,
-      showFoot: "lastPage",
-      foot: [[
-        { content: `Subtotal (Contrato: ${cg.cdcontrato})`, colSpan: 5, styles: { ...subtotalRowStyles, halign: "left", lineWidth: { top: 0.1, bottom: 0.8, left: 0.1, right: 0 }, lineColor: PDF_COLORS.navy } },
-        { content: money(sub), styles: { ...subtotalRowStyles, halign: "right", lineWidth: { top: 0.1, bottom: 0.8, left: 0, right: 0.1 }, lineColor: PDF_COLORS.navy } },
+      startY: y,
+      body: [[
+        { content: `TOTAL:  ${filterExe || "GERAL"}`, styles: { ...totalRowStyles, halign: "left" } },
+        { content: money(grand), styles: { ...totalRowStyles, halign: "right" } },
       ]],
       columnStyles: {
-        0: { cellWidth: s3W.nmcli },
-        1: { cellWidth: s3W.dp, halign: "center" },
-        2: { cellWidth: s3W.nrgui, halign: "center" },
-        3: { cellWidth: s3W.dtexe, halign: "center" },
-        4: { cellWidth: s3W.bscmp, halign: "center" },
-        5: { cellWidth: s3W.total, halign: "right" },
+        0: { cellWidth: s3W.nmcli + s3W.dp + s3W.nrgui + s3W.dtexe + s3W.bscmp },
+        1: { cellWidth: s3W.total, halign: "right" },
       },
     });
-    s3Y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 3;
-    if (s3Y > pageH - marginB - 20) { doc.addPage(); s3Y = marginT + 6; }
-  }
-  autoTable(doc, {
-    ...commonTableOpts,
-    startY: s3Y,
-    body: [[
-      { content: `TOTAL:  ${filterExe || "GERAL"}`, styles: { ...totalRowStyles, halign: "left" } },
-      { content: money(s3Grand), styles: { ...totalRowStyles, halign: "right" } },
-    ]],
-    columnStyles: {
-      0: { cellWidth: s3W.nmcli + s3W.dp + s3W.nrgui + s3W.dtexe + s3W.bscmp },
-      1: { cellWidth: s3W.total, halign: "right" },
-    },
-  });
+    return (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
+  };
+
+  renderDetalhe(s3Y);
   markSectionPages("Seção 3 - Geral", sec3Start);
+
+  // ---------- Section 4 (Declaração, sem timbrado) ----------
+  timbrado.setEnabled(false);
+  declaracaoMode = true;
+  doc.addPage();
+  const sec4Start = doc.getNumberOfPages();
+  currentSecao = "Seção 4 | Credenciado Executor Selecionado";
+
+  let s4Y = marginT;
+  if (filterExe) {
+    const cdExe = report.exeCd.get(filterExe) ?? "";
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(`${cdExe} - ${filterExe}`, marginL, s4Y + 3);
+    s4Y += 5;
+  }
+  let declY = renderDetalhe(s4Y) + 12;
+
+  // Texto da declaração + assinatura na última página
+  const declText =
+    "Declaro que as informações acima são fidedignas e correspondem à exata expressão da verdade, refletindo os valores que efetivamente foram pagos a este Hospital, assumindo plena responsabilidade civil e administrativa pela veracidade dos dados ora prestados.";
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  const declLines = doc.splitTextToSize(declText, usableW);
+  const blockH = declLines.length * 5 + 46;
+  if (declY + blockH > pageH - marginB - 6) {
+    doc.addPage();
+    declY = marginT;
+  }
+  doc.text(declLines, marginL, declY, { align: "justify", maxWidth: usableW });
+  let y2 = declY + declLines.length * 5 + 16;
+
+  doc.setFontSize(10);
+  doc.text("___________________________, ____/_____/__________", pageW - marginR, y2, { align: "right" });
+  doc.setFontSize(8);
+  doc.setTextColor(...PDF_COLORS.muted);
+  doc.text("Local - Data", pageW - marginR, y2 + 4.5, { align: "right" });
+
+  y2 += 26;
+  const cx = pageW / 2;
+  const sigW = usableW * 0.6;
+  doc.setDrawColor(0);
+  doc.setLineWidth(0.3);
+  doc.line(cx - sigW / 2, y2, cx + sigW / 2, y2);
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Assinatura e Carimbo", cx, y2 + 5, { align: "center" });
+
+  markSectionPages("Seção 4 - Declaração", sec4Start);
+
 
   // ---------- Page numbers ----------
   const total = doc.getNumberOfPages();
