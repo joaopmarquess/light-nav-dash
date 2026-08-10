@@ -155,42 +155,59 @@ const SinistralidadeAPBFaturas = () => {
     const styleFor = (depth: number) =>
       depth === 0 ? groupRowStyles : depth === 1 ? subtotalRowStyles : depth === 2 ? { fontStyle: "bold" as const } : {};
 
-    const body = flat.map(({ node, depth }) => {
-      const pad = "  ".repeat(depth);
-      const st = styleFor(depth);
-      return [
-        { content: `${pad}${node.label}`, styles: { ...st, halign: "left" as const, overflow: "ellipsize" as const } },
-        ...VAL_COLS.map((c) => ({ content: fmt(node.vals[c]), styles: { ...st, halign: "right" as const } })),
-      ];
+    const rowOf = (label: string, vals: Vals, depth: number, st: Record<string, unknown>) => [
+      { content: `${"  ".repeat(depth)}${label}`, styles: { ...st, halign: "left" as const, overflow: "ellipsize" as const } },
+      ...VAL_COLS.map((c) => ({ content: fmt(vals[c]), styles: { ...st, halign: "right" as const } })),
+    ];
+
+    const columnStyles = {
+      0: { cellWidth: labelW, fontSize: 6 },
+      1: { cellWidth: valW, halign: "right" as const },
+      2: { cellWidth: valW, halign: "right" as const },
+      3: { cellWidth: valW, halign: "right" as const },
+      4: { cellWidth: valW, halign: "right" as const },
+      5: { cellWidth: valW, halign: "right" as const },
+      6: { cellWidth: valW, halign: "right" as const },
+    };
+
+    // Um bloco por plano (cdpln), cada um em nova página, com total no fim.
+    const planos = tree.map((p) => ({
+      plano: p,
+      rows: flat.filter(({ node }) => node.key === p.key || node.key.startsWith(`${p.key}|`)),
+    }));
+
+    planos.forEach(({ plano, rows: planoRows }, idx) => {
+      if (idx > 0) doc.addPage();
+      const body = planoRows.map(({ node, depth }) => rowOf(node.label, node.vals, depth, styleFor(depth)));
+      body.push(rowOf(`TOTAL ${plano.label}`, plano.vals, 0, { ...totalRowStyles, fontSize: 7 }));
+
+      autoTable(doc, {
+        ...base,
+        styles: { ...base.styles, fontSize: 6.6, cellPadding: 0.8, minCellHeight: 0, overflow: "ellipsize" },
+        headStyles: { ...base.headStyles, fontSize: 6.6, cellPadding: 0.7, halign: "center" },
+        margin: { left: marginL, right: marginR, top: marginT, bottom: marginB },
+        didDrawPage: () => { header(); },
+        startY: marginT,
+        head: [[
+          "Plano / Competência / Colaborador / Beneficiário",
+          ...VAL_COLS.map((c) => ({ content: c.replace("_", " "), styles: { halign: "right" as const } })),
+        ]],
+        body,
+        columnStyles,
+      });
     });
 
-    autoTable(doc, {
-      ...base,
-      styles: { ...base.styles, fontSize: 6.6, cellPadding: 0.8, minCellHeight: 0, overflow: "ellipsize" },
-      headStyles: { ...base.headStyles, fontSize: 6.6, cellPadding: 0.7, halign: "center" },
-      margin: { left: marginL, right: marginR, top: marginT, bottom: marginB },
-      didDrawPage: () => { header(); },
-      startY: marginT,
-      head: [[
-        "Plano / Competência / Colaborador / Beneficiário",
-        ...VAL_COLS.map((c) => ({ content: c.replace("_", " "), styles: { halign: "right" as const } })),
-      ]],
-      body,
-      foot: [[
-        { content: "TOTAL GERAL", styles: { ...totalRowStyles, halign: "left" as const, fontSize: 7 } },
-        ...VAL_COLS.map((c) => ({ content: fmt(totals[c]), styles: { ...totalRowStyles, halign: "right" as const, fontSize: 7 } })),
-      ]],
-      showFoot: "lastPage",
-      columnStyles: {
-        0: { cellWidth: labelW, fontSize: 6 },
-        1: { cellWidth: valW, halign: "right" },
-        2: { cellWidth: valW, halign: "right" },
-        3: { cellWidth: valW, halign: "right" },
-        4: { cellWidth: valW, halign: "right" },
-        5: { cellWidth: valW, halign: "right" },
-        6: { cellWidth: valW, halign: "right" },
-      },
-    });
+    if (planos.length > 1) {
+      autoTable(doc, {
+        ...base,
+        styles: { ...base.styles, fontSize: 7, cellPadding: 0.9, minCellHeight: 0, overflow: "ellipsize" },
+        margin: { left: marginL, right: marginR, top: marginT, bottom: marginB },
+        didDrawPage: () => { header(); },
+        body: [rowOf("TOTAL GERAL", totals, 0, { ...totalRowStyles, fontSize: 7 })],
+        columnStyles,
+      });
+    }
+
 
     const pages = doc.getNumberOfPages();
     const footY = pageH - 14;
