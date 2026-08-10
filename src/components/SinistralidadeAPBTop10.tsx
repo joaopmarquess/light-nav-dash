@@ -554,20 +554,20 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
                     {isOpen && (
                       <div className="border-t border-border/60">
                         <div className="max-h-[60vh] overflow-auto">
-                          <table className="w-full text-[9.5px]">
+                          <table className="w-full text-[9px]">
                             <thead className="sticky top-0 bg-muted/40 z-10">
                               <tr>
-                                <th className="px-2 py-1.5 text-left font-semibold cursor-pointer select-none" onClick={() => onSort("PLANO")}>PLANO {arrow("PLANO")}</th>
+                                <th className="px-1 py-1 text-left font-semibold cursor-pointer select-none" onClick={() => onSort("PLANO")}>PLANO {arrow("PLANO")}</th>
                                 {DESP_COLS.map(({ key, label }) => (
                                   <th
                                     key={key}
-                                    className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none"
+                                    className="px-1 py-1 text-right font-semibold cursor-pointer select-none"
                                     onClick={() => onSort(key as SortKey)}
                                   >
                                     {label} {arrow(key as SortKey)}
                                   </th>
                                 ))}
-                                <th className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none" onClick={() => onSort("vrdespesas")}>Total Despesa {arrow("vrdespesas")}</th>
+                                <th className="px-1 py-1 text-right font-semibold cursor-pointer select-none" onClick={() => onSort("vrdespesas")}>Total Despesa {arrow("vrdespesas")}</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -577,7 +577,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
                                 return (
                                   <Fragment key={pkey}>
                                     <tr className={`border-b border-border/40 hover:bg-accent/30 ${pOpen ? "font-bold" : ""}`}>
-                                      <td className="px-2 py-1 truncate max-w-[320px]" title={pl.plano}>
+                                      <td className="px-1 py-0.5 truncate max-w-[300px]" title={pl.plano}>
                                         <button
                                           onClick={() => setExpandedPlano((s) => ({ ...s, [pkey]: !s[pkey] }))}
                                           className="inline-flex items-center gap-1 hover:text-primary"
@@ -587,31 +587,32 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
                                         </button>
                                       </td>
                                       {DESP_COLS.map(({ key }) => (
-                                        <td key={key} className="px-2 py-1 text-right tabular-nums">{fmtNum(pl[key])}</td>
+                                        <td key={key} className="px-1 py-0.5 text-right tabular-nums">{fmtNum(pl[key])}</td>
                                       ))}
-                                      <td className="px-2 py-1 text-right tabular-nums"><DespTooltip title={pl.plano} m={pl} /></td>
+                                      <td className="px-1 py-0.5 text-right tabular-nums"><DespTooltip title={pl.plano} m={pl} /></td>
                                     </tr>
                                     {pOpen && pl.benefs.map((b, i) => (
                                       <tr
                                         key={`${pkey}::${b.codigo}::${i}`}
                                         className={`border-b border-border/20 ${b.outros ? "bg-muted/20 italic" : "bg-muted/5"}`}
                                       >
-                                        <td className="px-2 py-1 pl-8 truncate max-w-[360px]" title={b.outros ? b.nome : `${b.nome} (${b.codigo})`}>
+                                        <td className="px-1 py-0.5 pl-6 truncate max-w-[300px] text-[7.5px] leading-tight" title={benefLabel(b)}>
                                           {b.outros ? (
                                             <span className="text-muted-foreground">{b.nome}</span>
                                           ) : (
                                             <>
                                               <span className="text-muted-foreground mr-1 tabular-nums">{i + 1}.</span>
-                                              {b.nome} <span className="text-muted-foreground">({b.codigo})</span>
+                                              {b.nome} <span className="text-muted-foreground">({b.contrato}-{b.codigo})</span>
                                             </>
                                           )}
                                         </td>
                                         {DESP_COLS.map(({ key }) => (
-                                          <td key={key} className="px-2 py-1 text-right tabular-nums">{fmtNum(b[key])}</td>
+                                          <td key={key} className="px-1 py-0.5 text-right tabular-nums">{fmtNum(b[key])}</td>
                                         ))}
-                                        <td className="px-2 py-1 text-right tabular-nums"><DespTooltip title={b.outros ? b.nome : `${b.nome} (${b.codigo})`} m={b} /></td>
+                                        <td className="px-1 py-0.5 text-right tabular-nums"><DespTooltip title={benefLabel(b)} m={b} /></td>
                                       </tr>
                                     ))}
+
                                   </Fragment>
                                 );
                               })}
