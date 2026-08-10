@@ -614,13 +614,20 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
                                         key={`${pkey}::${b.codigo}::${i}`}
                                         className={`border-b border-border/20 ${b.outros ? "bg-muted/20 italic" : "bg-muted/5"}`}
                                       >
-                                        <td className="px-1 py-0.5 pl-6 truncate max-w-[300px] text-[7.5px] leading-tight" title={benefLabel(b)}>
+                                        <td className="px-1 py-0.5 pl-6 max-w-[300px] text-[7.5px] leading-tight" title={benefLabel(b)}>
                                           {b.outros ? (
                                             <span className="text-muted-foreground">{b.nome}</span>
                                           ) : (
                                             <>
-                                              <span className="text-muted-foreground mr-1 tabular-nums">{i + 1}.</span>
-                                              {b.nome} <span className="text-muted-foreground">({b.relacao || "—"}-{b.codigo})</span>
+                                              <div className="truncate">
+                                                <span className="text-muted-foreground mr-1 tabular-nums">{i + 1}.</span>
+                                                {b.nome} <span className="text-muted-foreground">({b.relacao || "—"}-{b.codigo})</span>
+                                              </div>
+                                              {b.titular && (
+                                                <div className="pl-4 truncate text-[6.8px] text-muted-foreground italic">
+                                                  Titular: {b.titular}
+                                                </div>
+                                              )}
                                             </>
                                           )}
                                         </td>
