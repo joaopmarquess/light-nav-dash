@@ -5,15 +5,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Legend,
-  Tooltip as RTooltip, ResponsiveContainer, ReferenceLine,
+  Tooltip as RTooltip, ResponsiveContainer,
 } from "recharts";
 
 type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number];
 
-type Metrics = {
-  rec_total: number;
-  rec_tm: number;
-  rec_cpa: number;
+type Desp = {
   vrdespesas: number;
   internacao: number;
   terapia: number;
@@ -23,19 +20,17 @@ type Metrics = {
   demais: number;
 };
 
-type Benef = Metrics & { codigo: string; nome: string };
-type Plano = Metrics & { plano: string; vidas: number; benefs: Benef[] };
-type Periodo = Metrics & { periodo: string; vidas: number; sin: number; planos: Plano[] };
+type Benef = Desp & { codigo: string; nome: string; outros?: number };
+type Plano = Desp & { plano: string; benefs: Benef[] };
+type Periodo = Desp & { periodo: string; planos: Plano[] };
 
-type SortKey = "PLANO" | "vidas" | "rec_total" | "vrdespesas" | "SALDO" | "sin";
+type SortKey = "PLANO" | "vrdespesas" | "internacao" | "terapia" | "exame" | "consulta" | "emergencia" | "demais";
+
+const TOP_N = 10;
 
 const fmtNum = (n: number) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtInt = (n: number) => n.toLocaleString("pt-BR");
-const fmtPct = (n: number) =>
-  Number.isFinite(n)
-    ? `${(n * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
-    : "-";
 const fmtShare = (v: number, total: number) => {
   if (!total) return "0,00%";
   return `${((v / total) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
@@ -43,12 +38,10 @@ const fmtShare = (v: number, total: number) => {
 const fmtComp = (mabas: string) =>
   mabas && mabas.length === 6 ? `${mabas.slice(4, 6)}/${mabas.slice(0, 4)}` : mabas;
 
-const zero = (): Metrics => ({
-  rec_total: 0, rec_tm: 0, rec_cpa: 0, vrdespesas: 0, internacao: 0, terapia: 0, exame: 0,
-  consulta: 0, emergencia: 0, demais: 0,
+const zero = (): Desp => ({
+  vrdespesas: 0, internacao: 0, terapia: 0, exame: 0, consulta: 0, emergencia: 0, demais: 0,
 });
-const add = (t: Metrics, r: Raw) => {
-  t.rec_total += r[5];
+const add = (t: Desp, r: Raw) => {
   t.vrdespesas += r[6];
   t.internacao += r[7];
   t.terapia += r[8];
@@ -56,15 +49,27 @@ const add = (t: Metrics, r: Raw) => {
   t.consulta += r[10];
   t.emergencia += r[11];
   t.demais += r[12];
-  t.rec_tm += r[14] ?? 0;
-  t.rec_cpa += r[15] ?? 0;
+};
+const addDesp = (t: Desp, s: Desp) => {
+  t.vrdespesas += s.vrdespesas;
+  t.internacao += s.internacao;
+  t.terapia += s.terapia;
+  t.exame += s.exame;
+  t.consulta += s.consulta;
+  t.emergencia += s.emergencia;
+  t.demais += s.demais;
 };
 
+const DESP_COLS: { key: keyof Desp; label: string }[] = [
+  { key: "internacao", label: "Internação" },
+  { key: "terapia", label: "Terapia" },
+  { key: "exame", label: "Exame" },
+  { key: "consulta", label: "Consulta" },
+  { key: "emergencia", label: "Emergência" },
+  { key: "demais", label: "Demais" },
+];
 
-const saldoOf = (m: Metrics) => m.rec_total - m.vrdespesas;
-const sinOf = (m: Metrics) => (m.rec_total ? m.vrdespesas / m.rec_total : 0);
-
-const DespTooltip = ({ title, m }: { title: string; m: Metrics }) => (
+const DespTooltip = ({ title, m }: { title: string; m: Desp }) => (
   <Tooltip>
     <TooltipTrigger asChild>
       <span className="cursor-help underline decoration-dotted decoration-muted-foreground/50 underline-offset-2">
@@ -76,18 +81,11 @@ const DespTooltip = ({ title, m }: { title: string; m: Metrics }) => (
         <div className="text-xs font-semibold mb-1.5 border-b border-border pb-1">{title}</div>
         <table className="text-[11px] w-full">
           <tbody>
-            {([
-              ["Internação", m.internacao],
-              ["Terapia", m.terapia],
-              ["Exame", m.exame],
-              ["Consulta", m.consulta],
-              ["Emergência", m.emergencia],
-              ["Demais", m.demais],
-            ] as [string, number][]).map(([label, v]) => (
+            {DESP_COLS.map(({ key, label }) => (
               <tr key={label}>
                 <td className="pr-3 py-0.5">{label}</td>
                 <td className="text-right tabular-nums">
-                  {fmtNum(v)} <span className="text-muted-foreground">({fmtShare(v, m.vrdespesas)})</span>
+                  {fmtNum(m[key])} <span className="text-muted-foreground">({fmtShare(m[key], m.vrdespesas)})</span>
                 </td>
               </tr>
             ))}
@@ -102,39 +100,6 @@ const DespTooltip = ({ title, m }: { title: string; m: Metrics }) => (
   </Tooltip>
 );
 
-
-const RecTooltip = ({ title, m }: { title: string; m: Metrics }) => (
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <span className="cursor-help underline decoration-dotted decoration-muted-foreground/50 underline-offset-2">
-        {fmtNum(m.rec_total)}
-      </span>
-    </TooltipTrigger>
-    <TooltipContent side="left" className="p-0">
-      <div className="min-w-[200px] p-2">
-        <div className="text-xs font-semibold mb-1.5 border-b border-border pb-1">{title}</div>
-        <table className="text-[11px] w-full">
-          <tbody>
-            {([["TM", m.rec_tm], ["CPA", m.rec_cpa]] as [string, number][]).map(([label, v]) => (
-              <tr key={label}>
-                <td className="pr-3 py-0.5">{label}</td>
-                <td className="text-right tabular-nums">
-                  {fmtNum(v)} <span className="text-muted-foreground">({fmtShare(v, m.rec_total)})</span>
-                </td>
-              </tr>
-            ))}
-            <tr className="border-t border-border font-semibold">
-              <td className="pr-3 pt-1">Total</td>
-              <td className="text-right tabular-nums pt-1">{fmtNum(m.rec_total)}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </TooltipContent>
-  </Tooltip>
-);
-
-
 export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?: boolean } = {}) {
   const [rows, setRows] = useState<Raw[]>([]);
   const [loading, setLoading] = useState(true);
@@ -143,7 +108,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
   const [filter, setFilter] = useState("");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [expandedPlano, setExpandedPlano] = useState<Record<string, boolean>>({});
-  const [sortKey, setSortKey] = useState<SortKey>("SALDO");
+  const [sortKey, setSortKey] = useState<SortKey>("vrdespesas");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
@@ -189,7 +154,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
 
       let p = byPeriodo.get(ciclo);
       if (!p) {
-        p = { periodo: ciclo, vidas: 0, sin: 0, planos: [], ...zero() };
+        p = { periodo: ciclo, planos: [], ...zero() };
         byPeriodo.set(ciclo, p);
         plMaps.set(ciclo, new Map());
       }
@@ -198,7 +163,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
       const pm = plMaps.get(ciclo)!;
       let pl = pm.get(r[1]);
       if (!pl) {
-        pl = { plano: r[1], vidas: 0, benefs: [], ...zero() };
+        pl = { plano: r[1], benefs: [], ...zero() };
         pm.set(r[1], pl);
         p.planos.push(pl);
         bMaps.set(`${ciclo}|${r[1]}`, new Map());
@@ -211,15 +176,26 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
         b = { codigo: r[3], nome: r[4], ...zero() };
         bm.set(r[3], b);
         pl.benefs.push(b);
-        pl.vidas += 1;
-        p.vidas += 1;
       }
       add(b, r);
     }
+
     const arr = Array.from(byPeriodo.values());
     for (const p of arr) {
-      p.sin = sinOf(p);
-      for (const pl of p.planos) pl.benefs.sort((a, b) => saldoOf(a) - saldoOf(b));
+      for (const pl of p.planos) {
+        pl.benefs.sort((a, b) => b.vrdespesas - a.vrdespesas);
+        if (pl.benefs.length > TOP_N) {
+          const resto = pl.benefs.slice(TOP_N);
+          const outros: Benef = {
+            codigo: "",
+            nome: `OUTROS (${resto.length} beneficiários)`,
+            outros: resto.length,
+            ...zero(),
+          };
+          for (const b of resto) addDesp(outros, b);
+          pl.benefs = [...pl.benefs.slice(0, TOP_N), outros];
+        }
+      }
     }
     arr.sort((a, b) => b.periodo.localeCompare(a.periodo));
     return arr;
@@ -230,24 +206,14 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
     return `${fmtComp(a)} a ${fmtComp(b)}`;
   };
 
-
-  const maxSin = useMemo(() => periodos.reduce((m, t) => Math.max(m, t.sin), 0), [periodos]);
+  const maxDesp = useMemo(
+    () => periodos.reduce((m, t) => Math.max(m, t.vrdespesas), 0),
+    [periodos]
+  );
 
   const totais = useMemo(() => {
-    const t = { ...zero(), vidas: 0 };
-    for (const p of periodos) {
-      t.vidas += p.vidas;
-      t.rec_total += p.rec_total;
-      t.rec_tm += p.rec_tm;
-      t.rec_cpa += p.rec_cpa;
-      t.vrdespesas += p.vrdespesas;
-      t.internacao += p.internacao;
-      t.terapia += p.terapia;
-      t.exame += p.exame;
-      t.consulta += p.consulta;
-      t.emergencia += p.emergencia;
-      t.demais += p.demais;
-    }
+    const t = zero();
+    for (const p of periodos) addDesp(t, p);
     return t;
   }, [periodos]);
 
@@ -258,7 +224,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
     const fim = mFim.trim();
     const fq = filter.trim().toLowerCase();
     const meses = new Set<string>();
-    const acc = new Map<string, Map<string, { rec: number; desp: number }>>();
+    const acc = new Map<string, Map<string, number>>();
     const planoTot = new Map<string, number>();
 
     for (const r of rows) {
@@ -274,10 +240,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
       meses.add(mabas);
       let pm = acc.get(r[1]);
       if (!pm) { pm = new Map(); acc.set(r[1], pm); }
-      const cur = pm.get(mabas) ?? { rec: 0, desp: 0 };
-      cur.rec += r[5];
-      cur.desp += r[6];
-      pm.set(mabas, cur);
+      pm.set(mabas, (pm.get(mabas) ?? 0) + r[6]);
       planoTot.set(r[1], (planoTot.get(r[1]) ?? 0) + r[6]);
     }
 
@@ -289,24 +252,18 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
 
     const data = mesesArr.map((mb) => {
       const row: Record<string, any> = { mes: fmtComp(mb) };
-      for (const p of planos) {
-        const v = acc.get(p)?.get(mb);
-        row[p] = v && v.rec ? (v.desp / v.rec) * 100 : null;
-      }
+      for (const p of planos) row[p] = acc.get(p)?.get(mb) ?? null;
       return row;
     });
     return { data, planos };
   }, [rows, mIni, mFim, filter]);
 
   const CHART_COLORS = [
-    "#f97316", "#a855f7", "#d4af37", // laranja, roxo, ouro
+    "#f97316", "#a855f7", "#d4af37",
     "#fb923c", "#c084fc", "#eab308",
     "#ea580c", "#7e22ce", "#b8860b",
     "#fdba74", "#d8b4fe", "#facc15",
   ];
-
-
-
 
   const onSort = (k: SortKey) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -324,8 +281,6 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
     const dir = sortDir === "asc" ? 1 : -1;
     return [...list].sort((a, b) => {
       if (sortKey === "PLANO") return a.plano.localeCompare(b.plano, "pt-BR") * dir;
-      if (sortKey === "sin") return (sinOf(a) - sinOf(b)) * dir;
-      if (sortKey === "SALDO") return (saldoOf(a) - saldoOf(b)) * dir;
       return ((a as any)[sortKey] - (b as any)[sortKey]) * dir;
     });
   };
@@ -338,7 +293,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
       <section className={`bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col ${embedded ? "h-full" : "h-[calc(100vh-9rem)]"}`}>
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground mb-3">
           <div className="flex items-center gap-2">
-            <span className="shrink-0">APB · mabas de</span>
+            <span className="shrink-0">APB Top10 · mabas de</span>
             <input
               type="text"
               inputMode="numeric"
@@ -359,14 +314,11 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
             <button
               onClick={() => setShowChart(true)}
               className="h-8 px-3 inline-flex items-center gap-1.5 rounded border border-border bg-background text-xs text-foreground hover:bg-accent"
-              title="Gráfico de sinistralidade por plano"
+              title="Gráfico de despesas por plano"
             >
               <LineChartIcon className="h-3.5 w-3.5" /> Gráfico
             </button>
           </div>
-
-
-
 
           <input
             type="text"
@@ -394,19 +346,18 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
               <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-muted/60 border border-border text-xs font-semibold text-foreground">
                 <div className="w-6 shrink-0" />
                 <div className="w-40 shrink-0 text-left">TOTAL GERAL</div>
-                <div className="flex-1 grid grid-cols-4 gap-2 text-right tabular-nums">
-                  <span>{fmtInt(totais.vidas)} vidas</span>
-                  <span><RecTooltip title="TOTAL GERAL · Receita" m={totais} /></span>
-                  <span><DespTooltip title="TOTAL GERAL · Despesa" m={totais} /></span>
-                  <span>{fmtNum(saldoOf(totais))}</span>
+                <div className="flex-1 grid grid-cols-6 gap-2 text-right tabular-nums">
+                  {DESP_COLS.map(({ key, label }) => (
+                    <span key={key} title={label}>{fmtNum(totais[key])}</span>
+                  ))}
                 </div>
-                <div className="w-56 shrink-0 text-right tabular-nums">
-                  SIN. {fmtPct(sinOf(totais))}
+                <div className="w-40 shrink-0 text-right tabular-nums">
+                  <DespTooltip title="TOTAL GERAL · Despesa" m={totais} />
                 </div>
               </div>
 
               {periodos.map((t) => {
-                const pct = maxSin ? (t.sin / maxSin) * 100 : 0;
+                const pct = maxDesp ? (t.vrdespesas / maxDesp) * 100 : 0;
                 const isOpen = !!expanded[t.periodo];
                 const planos = sortPlanos(t.planos);
                 return (
@@ -420,19 +371,13 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
                       </div>
                       <div className="w-40 shrink-0 text-xs font-medium text-foreground text-left">
                         {fmtCiclo(t.periodo)}
-
                       </div>
                       <div className="flex-1 h-5 bg-muted/40 rounded overflow-hidden">
-                        <div
-                          className={`h-full ${t.sin >= 1 ? "bg-destructive/70" : "bg-primary/70"}`}
-                          style={{ width: `${pct}%` }}
-                        />
+                        <div className="h-full bg-primary/70" style={{ width: `${pct}%` }} />
                       </div>
                       <div className="w-56 shrink-0 text-right text-xs tabular-nums text-foreground">
-                        <span className="font-semibold">{fmtPct(t.sin)}</span>
-                        <span className="text-muted-foreground">
-                          {" "}· Saldo {fmtNum(saldoOf(t))} · {fmtInt(t.vidas)} vidas
-                        </span>
+                        <span className="font-semibold">{fmtNum(t.vrdespesas)}</span>
+                        <span className="text-muted-foreground"> · despesa total</span>
                       </div>
                     </button>
 
@@ -443,11 +388,16 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
                             <thead className="sticky top-0 bg-muted/40 z-10">
                               <tr>
                                 <th className="px-2 py-1.5 text-left font-semibold cursor-pointer select-none" onClick={() => onSort("PLANO")}>PLANO {arrow("PLANO")}</th>
-                                <th className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none" onClick={() => onSort("vidas")}>Vidas {arrow("vidas")}</th>
-                                <th className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none" onClick={() => onSort("rec_total")}>Total Receita {arrow("rec_total")}</th>
+                                {DESP_COLS.map(({ key, label }) => (
+                                  <th
+                                    key={key}
+                                    className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none"
+                                    onClick={() => onSort(key as SortKey)}
+                                  >
+                                    {label} {arrow(key as SortKey)}
+                                  </th>
+                                ))}
                                 <th className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none" onClick={() => onSort("vrdespesas")}>Total Despesa {arrow("vrdespesas")}</th>
-                                <th className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none" onClick={() => onSort("SALDO")}>Saldo {arrow("SALDO")}</th>
-                                <th className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none" onClick={() => onSort("sin")}>SIN. {arrow("sin")}</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -466,22 +416,30 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
                                           <span>{pl.plano}</span>
                                         </button>
                                       </td>
-                                      <td className="px-2 py-1 text-right tabular-nums">{fmtInt(pl.vidas)}</td>
-                                      <td className="px-2 py-1 text-right tabular-nums"><RecTooltip title={pl.plano} m={pl} /></td>
+                                      {DESP_COLS.map(({ key }) => (
+                                        <td key={key} className="px-2 py-1 text-right tabular-nums">{fmtNum(pl[key])}</td>
+                                      ))}
                                       <td className="px-2 py-1 text-right tabular-nums"><DespTooltip title={pl.plano} m={pl} /></td>
-                                      <td className="px-2 py-1 text-right tabular-nums">{fmtNum(saldoOf(pl))}</td>
-                                      <td className="px-2 py-1 text-right tabular-nums">{fmtPct(sinOf(pl))}</td>
                                     </tr>
                                     {pOpen && pl.benefs.map((b, i) => (
-                                      <tr key={`${pkey}::${b.codigo}::${i}`} className="border-b border-border/20 bg-muted/5">
-                                        <td className="px-2 py-1 pl-8 truncate max-w-[360px]" title={`${b.nome} (${b.codigo})`}>
-                                          {b.nome} <span className="text-muted-foreground">({b.codigo})</span>
+                                      <tr
+                                        key={`${pkey}::${b.codigo}::${i}`}
+                                        className={`border-b border-border/20 ${b.outros ? "bg-muted/20 italic" : "bg-muted/5"}`}
+                                      >
+                                        <td className="px-2 py-1 pl-8 truncate max-w-[360px]" title={b.outros ? b.nome : `${b.nome} (${b.codigo})`}>
+                                          {b.outros ? (
+                                            <span className="text-muted-foreground">{b.nome}</span>
+                                          ) : (
+                                            <>
+                                              <span className="text-muted-foreground mr-1 tabular-nums">{i + 1}.</span>
+                                              {b.nome} <span className="text-muted-foreground">({b.codigo})</span>
+                                            </>
+                                          )}
                                         </td>
-                                        <td className="px-2 py-1 text-right tabular-nums">-</td>
-                                        <td className="px-2 py-1 text-right tabular-nums"><RecTooltip title={`${b.nome} (${b.codigo})`} m={b} /></td>
-                                        <td className="px-2 py-1 text-right tabular-nums"><DespTooltip title={`${b.nome} (${b.codigo})`} m={b} /></td>
-                                        <td className="px-2 py-1 text-right tabular-nums">{fmtNum(saldoOf(b))}</td>
-                                        <td className="px-2 py-1 text-right tabular-nums">{fmtPct(sinOf(b))}</td>
+                                        {DESP_COLS.map(({ key }) => (
+                                          <td key={key} className="px-2 py-1 text-right tabular-nums">{fmtNum(b[key])}</td>
+                                        ))}
+                                        <td className="px-2 py-1 text-right tabular-nums"><DespTooltip title={b.outros ? b.nome : `${b.nome} (${b.codigo})`} m={b} /></td>
                                       </tr>
                                     ))}
                                   </Fragment>
@@ -504,7 +462,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
         <DialogContent className="max-w-6xl">
           <DialogHeader>
             <DialogTitle className="text-sm">
-              Sinistralidade (%) por Plano · {fmtComp(mIni)} a {fmtComp(mFim)}
+              Despesa por Plano · {fmtComp(mIni)} a {fmtComp(mFim)}
             </DialogTitle>
           </DialogHeader>
           <div className="h-[60vh]">
@@ -520,27 +478,13 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
                   <YAxis
                     tick={{ fontSize: 10 }}
                     stroke="hsl(var(--muted-foreground))"
-                    tickFormatter={(v) => `${Number(v).toFixed(0)}%`}
+                    tickFormatter={(v) => fmtInt(Math.round(Number(v)))}
                   />
                   <RTooltip
-                    formatter={(v: any, n: any) => [v == null ? "-" : `${Number(v).toFixed(2)}%`, n]}
+                    formatter={(v: any, n: any) => [v == null ? "-" : fmtNum(Number(v)), n]}
                     contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
                   />
                   <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <ReferenceLine
-                    y={80}
-                    stroke="#10b981"
-                    strokeDasharray="6 4"
-                    strokeWidth={2}
-                    label={{ value: "Ideal 80%", position: "right", fill: "#10b981", fontSize: 10 }}
-                  />
-                  <ReferenceLine
-                    y={100}
-                    stroke="#ef4444"
-                    strokeDasharray="6 4"
-                    strokeWidth={2}
-                    label={{ value: "Crítica 100%", position: "right", fill: "#ef4444", fontSize: 10 }}
-                  />
                   {chart.planos.map((p, i) => (
                     <Line
                       key={p}
@@ -560,6 +504,5 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
         </DialogContent>
       </Dialog>
     </TooltipProvider>
-
   );
 }
