@@ -240,6 +240,16 @@ const SinistralidadeAPBFaturas = () => {
         </span>
         <button
           type="button"
+          onClick={() => setOpen(allExpanded ? new Set() : new Set(allKeys))}
+          disabled={loading || allKeys.length === 0}
+          className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent disabled:opacity-50 inline-flex items-center gap-2"
+        >
+          {allExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          {allExpanded ? "Recolher tudo" : "Expandir tudo"}
+        </button>
+        <button
+
+          type="button"
           onClick={() => setPdfOpen(true)}
           disabled={loading || flat.length === 0}
           className="ml-auto h-9 px-3 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50 inline-flex items-center gap-2"
