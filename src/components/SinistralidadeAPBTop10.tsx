@@ -375,7 +375,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
 
       for (const pl of planos) {
         const body: any[] = pl.benefs.map((b, i) => [
-          b.outros ? b.nome : `${i + 1}. ${b.nome} (${b.codigo})`,
+          b.outros ? b.nome : `${i + 1}. ${benefLabel(b)}`,
           ...DESP_COLS.map(({ key }) => fmtNum(b[key])),
           fmtNum(b.vrdespesas),
         ]);
