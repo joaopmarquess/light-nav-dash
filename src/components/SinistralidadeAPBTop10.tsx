@@ -470,13 +470,14 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
               <LineChartIcon className="h-3.5 w-3.5" /> Gráfico
             </button>
             <button
-              onClick={gerarPdf}
-              disabled={abertos.length === 0 || pdfBusy}
+              onClick={() => setPdfOpen(true)}
+              disabled={abertos.length === 0}
               className="h-8 px-3 inline-flex items-center gap-1.5 rounded border border-border bg-background text-xs text-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
               title={abertos.length === 0 ? "Expanda ao menos um período para gerar o PDF" : `Gerar PDF de ${abertos.length} período(s) aberto(s)`}
             >
-              <FileDown className="h-3.5 w-3.5" /> {pdfBusy ? "Gerando..." : "Gerar PDF"}
+              <FileDown className="h-3.5 w-3.5" /> Gerar PDF
             </button>
+
           </div>
 
           <input
