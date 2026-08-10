@@ -714,7 +714,7 @@ function buildPdf({
   timbradoDataUrl?: string | null;
 }): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  attachTimbrado(doc, timbradoDataUrl);
+  const timbrado = attachTimbrado(doc, timbradoDataUrl);
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
   const marginL = 12;
@@ -730,7 +730,20 @@ function buildPdf({
     : null;
 
   let currentSecao = "Seção 1 | Tipo de Guia de Procedimentos";
+  let declaracaoMode = false;
   const header = () => {
+    if (declaracaoMode) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.setTextColor(...PDF_COLORS.navy);
+      doc.text("DECLARAÇÃO", pageW / 2, 22, { align: "center", baseline: "middle" });
+      doc.setDrawColor(...PDF_COLORS.navy);
+      doc.setLineWidth(0.5);
+      doc.line(marginL, 26, pageW - marginR, 26);
+      doc.setTextColor(0, 0, 0);
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.2);
+    }
     drawReportHeading(doc, {
       title: "Relatório Despesas Assistenciais",
       plano: `Plano: ${cdpln}${dspln ? ` - ${dspln}` : ""}`,
@@ -739,6 +752,7 @@ function buildPdf({
       marginR,
     });
   };
+
 
 
   // Reserve room for the header on every page via didDrawPage.
