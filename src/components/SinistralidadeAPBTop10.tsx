@@ -602,7 +602,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
                                           ) : (
                                             <>
                                               <span className="text-muted-foreground mr-1 tabular-nums">{i + 1}.</span>
-                                              {b.nome} <span className="text-muted-foreground">({b.contrato}-{b.codigo})</span>
+                                              {b.nome} <span className="text-muted-foreground">({b.relacao || "—"}-{b.codigo})</span>
                                             </>
                                           )}
                                         </td>
