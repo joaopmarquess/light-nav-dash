@@ -1,12 +1,24 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, ArrowUp, ArrowDown, LineChart as LineChartIcon } from "lucide-react";
+import { ChevronDown, ChevronRight, ArrowUp, ArrowDown, LineChart as LineChartIcon, FileDown } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { attachTimbrado, loadTimbrado } from "@/lib/pdfTimbrado";
+import {
+  PDF_COLORS,
+  baseTableStyles,
+  drawReportHeading,
+  groupRowStyles,
+  subtotalRowStyles,
+  totalRowStyles,
+} from "@/lib/pdfTheme";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Legend,
   Tooltip as RTooltip, ResponsiveContainer,
 } from "recharts";
+
 
 type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number];
 
