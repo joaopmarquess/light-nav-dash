@@ -113,6 +113,20 @@ const SinistralidadeAPBFaturas = () => {
     return out;
   }, [tree, open]);
 
+  const allKeys = useMemo(() => {
+    const ks: string[] = [];
+    const walk = (nodes: Node[]) => {
+      for (const n of nodes) {
+        if (n.children.length > 0) { ks.push(n.key); walk(n.children); }
+      }
+    };
+    walk(tree);
+    return ks;
+  }, [tree]);
+  const allExpanded = allKeys.length > 0 && allKeys.every((k) => open.has(k));
+
+
+
   const buildDoc = async () => {
     const timbradoDataUrl = await loadTimbrado();
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
