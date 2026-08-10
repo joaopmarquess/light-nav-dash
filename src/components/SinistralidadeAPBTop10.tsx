@@ -379,7 +379,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
           startY: y,
           showFoot: "lastPage",
           head: [
-            [{ content: pl.plano, colSpan: 8, styles: { ...groupRowStyles, halign: "left" } }],
+            [{ content: pl.plano, colSpan: 8, styles: { ...groupRowStyles, halign: "left", cellPadding: 0.6, minCellHeight: 0 } }],
             [{
               content: resumo(pl),
               colSpan: 8,
@@ -387,6 +387,8 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
                 ...subtotalRowStyles,
                 halign: "left" as const,
                 fontSize: 6,
+                cellPadding: 0.6,
+                minCellHeight: 0,
                 fillColor: PDF_COLORS.zebra,
                 textColor: PDF_COLORS.navy,
               },
@@ -408,7 +410,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
           ]],
           columnStyles,
         });
-        y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 4;
+        y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 2;
         if (y > pageH - marginB - 24) { doc.addPage(); y = marginT; }
       }
 
