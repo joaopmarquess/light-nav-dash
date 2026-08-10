@@ -355,11 +355,13 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
 
 
     const colW = {
-      nome: usableW * 0.3,
-      val: (usableW * 0.7) / 7,
+      nome: usableW * 0.34,
+      val: (usableW * 0.66) / 7,
     };
-    const columnStyles: Record<number, any> = { 0: { cellWidth: colW.nome, overflow: "ellipsize" } };
-    for (let i = 1; i <= 7; i++) columnStyles[i] = { cellWidth: colW.val, halign: "right" };
+    const columnStyles: Record<number, any> = {
+      0: { cellWidth: colW.nome, overflow: "ellipsize", fontSize: 5.2 },
+    };
+    for (let i = 1; i <= 7; i++) columnStyles[i] = { cellWidth: colW.val, halign: "right", fontSize: 6 };
 
     const resumo = (m: Desp) =>
       `Rec TM ${fmtNum(m.rec_tm)}  |  Rec CPA ${fmtNum(m.rec_cpa)}  |  Receita ${fmtNum(m.rec_total)}  |  Despesas ${fmtNum(m.vrdespesas)}  |  Saldo ${fmtNum(saldoOf(m))}  |  Sin ${fmtPct(sinOf(m))}`;
