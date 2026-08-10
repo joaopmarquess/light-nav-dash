@@ -620,7 +620,7 @@ export default function AssistencialRelatorioExecutor({ source = "db" }: { sourc
               <div className="text-sm font-medium">Gerar PDF</div>
               <div className="space-y-2">
                 <label className="text-xs text-muted-foreground">
-                  Filtrar por cdcrdexe (opcional — aplica apenas à Seção 3)
+                  Filtrar por cdcrdexe (opcional — aplica apenas ao detalhamento)
                 </label>
                 <input
                   type="text"
