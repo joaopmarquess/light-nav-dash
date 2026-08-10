@@ -135,7 +135,7 @@ const RecTooltip = ({ title, m }: { title: string; m: Metrics }) => (
 );
 
 
-export default function SinistralidadeAPB({ embedded = false }: { embedded?: boolean } = {}) {
+export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?: boolean } = {}) {
   const [rows, setRows] = useState<Raw[]>([]);
   const [loading, setLoading] = useState(true);
   const [mIni, setMIni] = useState("202507");
