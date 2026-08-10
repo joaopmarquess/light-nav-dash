@@ -217,6 +217,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
           const resto = pl.benefs.slice(TOP_N);
           const outros: Benef = {
             codigo: "",
+            contrato: "",
             nome: `OUTROS (${resto.length} beneficiários)`,
             outros: resto.length,
             ...zero(),
