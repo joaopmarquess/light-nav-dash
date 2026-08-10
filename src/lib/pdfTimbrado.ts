@@ -22,12 +22,15 @@ export async function loadTimbrado(): Promise<string | null> {
 /**
  * Desenha o timbrado na página atual e em todas as páginas criadas depois,
  * sempre antes do conteúdo (interceptando doc.addPage).
+ * Retorna um controle para ligar/desligar o timbrado nas próximas páginas.
  */
 export function attachTimbrado(doc: jsPDF, dataUrl?: string | null) {
-  if (!dataUrl) return;
+  if (!dataUrl) return { setEnabled: (_: boolean) => {} };
+  let enabled = true;
   const w = doc.internal.pageSize.getWidth();
   const h = doc.internal.pageSize.getHeight();
   const draw = () => {
+    if (!enabled) return;
     try {
       doc.addImage(dataUrl, "PNG", 0, 0, w, h);
     } catch {
@@ -42,4 +45,6 @@ export function attachTimbrado(doc: jsPDF, dataUrl?: string | null) {
     draw();
     return r;
   };
+  return { setEnabled: (v: boolean) => { enabled = v; } };
 }
+
