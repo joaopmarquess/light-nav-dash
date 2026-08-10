@@ -113,6 +113,20 @@ const SinistralidadeAPBFaturas = () => {
     return out;
   }, [tree, open]);
 
+  const allKeys = useMemo(() => {
+    const ks: string[] = [];
+    const walk = (nodes: Node[]) => {
+      for (const n of nodes) {
+        if (n.children.length > 0) { ks.push(n.key); walk(n.children); }
+      }
+    };
+    walk(tree);
+    return ks;
+  }, [tree]);
+  const allExpanded = allKeys.length > 0 && allKeys.every((k) => open.has(k));
+
+
+
   const buildDoc = async () => {
     const timbradoDataUrl = await loadTimbrado();
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
@@ -225,6 +239,16 @@ const SinistralidadeAPBFaturas = () => {
           {filtered.length.toLocaleString("pt-BR")} lançamentos
         </span>
         <button
+          type="button"
+          onClick={() => setOpen(allExpanded ? new Set() : new Set(allKeys))}
+          disabled={loading || allKeys.length === 0}
+          className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent disabled:opacity-50 inline-flex items-center gap-2"
+        >
+          {allExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          {allExpanded ? "Recolher tudo" : "Expandir tudo"}
+        </button>
+        <button
+
           type="button"
           onClick={() => setPdfOpen(true)}
           disabled={loading || flat.length === 0}
