@@ -35,10 +35,12 @@ type Desp = {
   demais: number;
 };
 
-type Benef = Desp & { codigo: string; nome: string; contrato: string; relacao: string; outros?: number };
+type Benef = Desp & { codigo: string; nome: string; contrato: string; relacao: string; titular?: string; outros?: number };
 
-const benefLabel = (b: { nome: string; relacao?: string; codigo: string; outros?: number }) =>
-  b.outros ? b.nome : `${b.nome} (${b.relacao || "—"}-${b.codigo})`;
+const isTitular = (rel?: string) => (rel || "").toUpperCase().startsWith("TITULAR");
+
+const benefLabel = (b: { nome: string; relacao?: string; codigo: string; titular?: string; outros?: number }) =>
+  b.outros ? b.nome : `${b.nome} (${b.relacao || "—"}-${b.codigo})${b.titular ? `\nTitular: ${b.titular}` : ""}`;
 type Plano = Desp & { plano: string; benefs: Benef[] };
 type Periodo = Desp & { periodo: string; planos: Plano[] };
 
@@ -157,6 +159,18 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
     return () => { alive = false; };
   }, []);
 
+  // Mapa de titular por prefixo do código (código sem os 2 últimos dígitos)
+  const titularMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const r of rows) {
+      if (isTitular(r[16] as string)) {
+        const cod = String(r[3] ?? "");
+        if (cod.length > 2) m.set(cod.slice(0, -2), String(r[4] ?? ""));
+      }
+    }
+    return m;
+  }, [rows]);
+
   const periodos = useMemo<Periodo[]>(() => {
     const ini = mIni.trim();
     const fim = mFim.trim();
@@ -202,7 +216,10 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
       const bm = bMaps.get(`${ciclo}|${r[1]}`)!;
       let b = bm.get(r[3]);
       if (!b) {
-        b = { codigo: r[3], nome: r[4], contrato: r[2], relacao: r[16] ?? "", ...zero() };
+        const cod = String(r[3] ?? "");
+        const rel = (r[16] ?? "") as string;
+        const tit = isTitular(rel) ? "" : (titularMap.get(cod.slice(0, -2)) ?? "");
+        b = { codigo: cod, nome: r[4], contrato: r[2], relacao: rel, titular: tit || undefined, ...zero() };
         bm.set(r[3], b);
         pl.benefs.push(b);
       }
@@ -230,7 +247,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
     }
     arr.sort((a, b) => b.periodo.localeCompare(a.periodo));
     return arr;
-  }, [rows, mIni, mFim, filter]);
+  }, [rows, mIni, mFim, filter, titularMap]);
 
   const fmtCiclo = (ciclo: string) => {
     const [a, b] = ciclo.split("-");
@@ -360,7 +377,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
       val: (usableW * 0.66) / 7,
     };
     const columnStyles: Record<number, any> = {
-      0: { cellWidth: colW.nome, overflow: "ellipsize", fontSize: 5.2 },
+      0: { cellWidth: colW.nome, overflow: "linebreak", fontSize: 5.2 },
     };
     for (let i = 1; i <= 7; i++) columnStyles[i] = { cellWidth: colW.val, halign: "right", fontSize: 6 };
 
@@ -597,13 +614,20 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
                                         key={`${pkey}::${b.codigo}::${i}`}
                                         className={`border-b border-border/20 ${b.outros ? "bg-muted/20 italic" : "bg-muted/5"}`}
                                       >
-                                        <td className="px-1 py-0.5 pl-6 truncate max-w-[300px] text-[7.5px] leading-tight" title={benefLabel(b)}>
+                                        <td className="px-1 py-0.5 pl-6 max-w-[300px] text-[7.5px] leading-tight" title={benefLabel(b)}>
                                           {b.outros ? (
                                             <span className="text-muted-foreground">{b.nome}</span>
                                           ) : (
                                             <>
-                                              <span className="text-muted-foreground mr-1 tabular-nums">{i + 1}.</span>
-                                              {b.nome} <span className="text-muted-foreground">({b.relacao || "—"}-{b.codigo})</span>
+                                              <div className="truncate">
+                                                <span className="text-muted-foreground mr-1 tabular-nums">{i + 1}.</span>
+                                                {b.nome} <span className="text-muted-foreground">({b.relacao || "—"}-{b.codigo})</span>
+                                              </div>
+                                              {b.titular && (
+                                                <div className="pl-4 truncate text-[6.8px] text-muted-foreground italic">
+                                                  Titular: {b.titular}
+                                                </div>
+                                              )}
                                             </>
                                           )}
                                         </td>
