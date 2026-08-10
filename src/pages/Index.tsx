@@ -55,6 +55,7 @@ import SinistralidadeNova from "@/components/SinistralidadeNova";
 import SinistralidadeCidades from "@/components/SinistralidadeCidades";
 import SinistralidadePeriodo from "@/components/SinistralidadePeriodo";
 import SinistralidadeAPB from "@/components/SinistralidadeAPB";
+import SinistralidadeAPBTop10 from "@/components/SinistralidadeAPBTop10";
 import SinistralidadeCidade from "@/components/SinistralidadeCidade";
 import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
