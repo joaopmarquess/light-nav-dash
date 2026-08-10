@@ -1,12 +1,24 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, ArrowUp, ArrowDown, LineChart as LineChartIcon } from "lucide-react";
+import { ChevronDown, ChevronRight, ArrowUp, ArrowDown, LineChart as LineChartIcon, FileDown } from "lucide-react";
 import FunLoader from "@/components/FunLoader";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { attachTimbrado, loadTimbrado } from "@/lib/pdfTimbrado";
+import {
+  PDF_COLORS,
+  baseTableStyles,
+  drawReportHeading,
+  groupRowStyles,
+  subtotalRowStyles,
+  totalRowStyles,
+} from "@/lib/pdfTheme";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Legend,
   Tooltip as RTooltip, ResponsiveContainer,
 } from "recharts";
+
 
 type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number];
 
@@ -285,6 +297,141 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
     });
   };
 
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const abertos = useMemo(
+    () => periodos.filter((p) => expanded[p.periodo]),
+    [periodos, expanded]
+  );
+
+  const gerarPdf = async () => {
+    if (abertos.length === 0 || pdfBusy) return;
+    setPdfBusy(true);
+    try {
+      const timbradoDataUrl = await loadTimbrado();
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      attachTimbrado(doc, timbradoDataUrl);
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const marginL = 12;
+      const marginR = 12;
+      const marginT = 56;
+      const marginB = 16;
+      const usableW = pageW - marginL - marginR;
+
+      let currentSecao = "";
+      const header = () =>
+        drawReportHeading(doc, {
+          title: "APB · Top 10 Despesas por Plano",
+          plano: `Competências: ${fmtComp(mIni)} a ${fmtComp(mFim)}`,
+          secao: currentSecao,
+          marginL,
+          marginR,
+        });
+
+      const base = baseTableStyles(8);
+      const common: Parameters<typeof autoTable>[1] = {
+        ...base,
+        headStyles: { ...base.headStyles, halign: "center" },
+        margin: { left: marginL, right: marginR, top: marginT, bottom: marginB },
+        didDrawPage: () => { header(); },
+      };
+
+      const colW = {
+        nome: usableW * 0.28,
+        val: (usableW * 0.72) / 7,
+      };
+      const columnStyles: Record<number, any> = { 0: { cellWidth: colW.nome, overflow: "ellipsize" } };
+      for (let i = 1; i <= 7; i++) columnStyles[i] = { cellWidth: colW.val, halign: "right" };
+
+      const sectionByPage: Record<number, string> = {};
+
+      abertos.forEach((p, idx) => {
+        if (idx > 0) doc.addPage();
+        const fromPage = doc.getNumberOfPages();
+        currentSecao = `Período ${fmtCiclo(p.periodo)} · Total de Despesas: ${fmtNum(p.vrdespesas)}`;
+
+        let y = marginT;
+        const planos = sortPlanos(p.planos);
+
+        for (const pl of planos) {
+          const body: any[] = pl.benefs.map((b, i) => [
+            b.outros ? b.nome : `${i + 1}. ${b.nome} (${b.codigo})`,
+            ...DESP_COLS.map(({ key }) => fmtNum(b[key])),
+            fmtNum(b.vrdespesas),
+          ]);
+
+          autoTable(doc, {
+            ...common,
+            startY: y,
+            showFoot: "lastPage",
+            head: [
+              [{ content: pl.plano, colSpan: 8, styles: { ...groupRowStyles, halign: "left" } }],
+              [
+                "Beneficiário",
+                ...DESP_COLS.map(({ label }) => ({ content: label, styles: { halign: "right" as const } })),
+                { content: "Total Despesa", styles: { halign: "right" as const } },
+              ],
+            ],
+            body,
+            foot: [[
+              { content: `Subtotal ${pl.plano}`, styles: { ...subtotalRowStyles, halign: "left", lineWidth: { top: 0.1, bottom: 0.8, left: 0.1, right: 0 }, lineColor: PDF_COLORS.navy } },
+              ...DESP_COLS.map(({ key }) => ({
+                content: fmtNum(pl[key]),
+                styles: { ...subtotalRowStyles, halign: "right" as const, lineWidth: { top: 0.1, bottom: 0.8, left: 0, right: 0 }, lineColor: PDF_COLORS.navy },
+              })),
+              { content: fmtNum(pl.vrdespesas), styles: { ...subtotalRowStyles, halign: "right" as const, lineWidth: { top: 0.1, bottom: 0.8, left: 0, right: 0.1 }, lineColor: PDF_COLORS.navy } },
+            ]],
+            columnStyles,
+          });
+          y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 4;
+          if (y > pageH - marginB - 24) { doc.addPage(); y = marginT; }
+        }
+
+        autoTable(doc, {
+          ...common,
+          startY: y,
+          body: [[
+            { content: `TOTAL DO PERÍODO ${fmtCiclo(p.periodo)}`, styles: { ...totalRowStyles, halign: "left" } },
+            ...DESP_COLS.map(({ key }) => ({ content: fmtNum(p[key]), styles: { ...totalRowStyles, halign: "right" as const } })),
+            { content: fmtNum(p.vrdespesas), styles: { ...totalRowStyles, halign: "right" as const } },
+          ]],
+          columnStyles,
+        });
+
+        const to = doc.getNumberOfPages();
+        for (let pg = fromPage; pg <= to; pg++) sectionByPage[pg] = p.periodo;
+      });
+
+      // Rodapé: sequencial à esquerda, x de y por período à direita
+      const total = doc.getNumberOfPages();
+      const secTotals: Record<string, number> = {};
+      for (let i = 1; i <= total; i++) {
+        const s = sectionByPage[i];
+        if (s) secTotals[s] = (secTotals[s] ?? 0) + 1;
+      }
+      const secSeen: Record<string, number> = {};
+      const footY = pageH - 14;
+      for (let i = 1; i <= total; i++) {
+        doc.setPage(i);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9.5);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`${i} de ${total}`, marginL, footY, { align: "left" });
+        const s = sectionByPage[i];
+        if (s) {
+          secSeen[s] = (secSeen[s] ?? 0) + 1;
+          doc.text(`${secSeen[s]} de ${secTotals[s]}`, pageW - marginR, footY, { align: "right" });
+        }
+      }
+
+      doc.save(`APB_Top10_${mIni}_${mFim}.pdf`);
+    } catch (e) {
+      console.error("APB Top10 PDF error", e);
+    } finally {
+      setPdfBusy(false);
+    }
+  };
+
   const inputCls =
     "h-8 w-24 px-2 rounded border border-border bg-background text-xs text-foreground tabular-nums focus:outline-none focus:ring-1 focus:ring-primary";
 
@@ -317,6 +464,14 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
               title="Gráfico de despesas por plano"
             >
               <LineChartIcon className="h-3.5 w-3.5" /> Gráfico
+            </button>
+            <button
+              onClick={gerarPdf}
+              disabled={abertos.length === 0 || pdfBusy}
+              className="h-8 px-3 inline-flex items-center gap-1.5 rounded border border-border bg-background text-xs text-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
+              title={abertos.length === 0 ? "Expanda ao menos um período para gerar o PDF" : `Gerar PDF de ${abertos.length} período(s) aberto(s)`}
+            >
+              <FileDown className="h-3.5 w-3.5" /> {pdfBusy ? "Gerando..." : "Gerar PDF"}
             </button>
           </div>
 
