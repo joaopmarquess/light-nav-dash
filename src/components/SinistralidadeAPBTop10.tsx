@@ -35,7 +35,10 @@ type Desp = {
   demais: number;
 };
 
-type Benef = Desp & { codigo: string; nome: string; outros?: number };
+type Benef = Desp & { codigo: string; nome: string; contrato: string; outros?: number };
+
+const benefLabel = (b: { nome: string; contrato: string; codigo: string; outros?: number }) =>
+  b.outros ? b.nome : `${b.nome} (${b.contrato}-${b.codigo})`;
 type Plano = Desp & { plano: string; benefs: Benef[] };
 type Periodo = Desp & { periodo: string; planos: Plano[] };
 
@@ -199,7 +202,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
       const bm = bMaps.get(`${ciclo}|${r[1]}`)!;
       let b = bm.get(r[3]);
       if (!b) {
-        b = { codigo: r[3], nome: r[4], ...zero() };
+        b = { codigo: r[3], nome: r[4], contrato: r[2], ...zero() };
         bm.set(r[3], b);
         pl.benefs.push(b);
       }
@@ -214,6 +217,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
           const resto = pl.benefs.slice(TOP_N);
           const outros: Benef = {
             codigo: "",
+            contrato: "",
             nome: `OUTROS (${resto.length} beneficiários)`,
             outros: resto.length,
             ...zero(),
@@ -351,11 +355,13 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
 
 
     const colW = {
-      nome: usableW * 0.3,
-      val: (usableW * 0.7) / 7,
+      nome: usableW * 0.34,
+      val: (usableW * 0.66) / 7,
     };
-    const columnStyles: Record<number, any> = { 0: { cellWidth: colW.nome, overflow: "ellipsize" } };
-    for (let i = 1; i <= 7; i++) columnStyles[i] = { cellWidth: colW.val, halign: "right" };
+    const columnStyles: Record<number, any> = {
+      0: { cellWidth: colW.nome, overflow: "ellipsize", fontSize: 5.2 },
+    };
+    for (let i = 1; i <= 7; i++) columnStyles[i] = { cellWidth: colW.val, halign: "right", fontSize: 6 };
 
     const resumo = (m: Desp) =>
       `Rec TM ${fmtNum(m.rec_tm)}  |  Rec CPA ${fmtNum(m.rec_cpa)}  |  Receita ${fmtNum(m.rec_total)}  |  Despesas ${fmtNum(m.vrdespesas)}  |  Saldo ${fmtNum(saldoOf(m))}  |  Sin ${fmtPct(sinOf(m))}`;
@@ -369,7 +375,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
 
       for (const pl of planos) {
         const body: any[] = pl.benefs.map((b, i) => [
-          b.outros ? b.nome : `${i + 1}. ${b.nome} (${b.codigo})`,
+          b.outros ? b.nome : `${i + 1}. ${benefLabel(b)}`,
           ...DESP_COLS.map(({ key }) => fmtNum(b[key])),
           fmtNum(b.vrdespesas),
         ]);
@@ -548,20 +554,20 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
                     {isOpen && (
                       <div className="border-t border-border/60">
                         <div className="max-h-[60vh] overflow-auto">
-                          <table className="w-full text-[9.5px]">
+                          <table className="w-full text-[9px]">
                             <thead className="sticky top-0 bg-muted/40 z-10">
                               <tr>
-                                <th className="px-2 py-1.5 text-left font-semibold cursor-pointer select-none" onClick={() => onSort("PLANO")}>PLANO {arrow("PLANO")}</th>
+                                <th className="px-1 py-1 text-left font-semibold cursor-pointer select-none" onClick={() => onSort("PLANO")}>PLANO {arrow("PLANO")}</th>
                                 {DESP_COLS.map(({ key, label }) => (
                                   <th
                                     key={key}
-                                    className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none"
+                                    className="px-1 py-1 text-right font-semibold cursor-pointer select-none"
                                     onClick={() => onSort(key as SortKey)}
                                   >
                                     {label} {arrow(key as SortKey)}
                                   </th>
                                 ))}
-                                <th className="px-2 py-1.5 text-right font-semibold cursor-pointer select-none" onClick={() => onSort("vrdespesas")}>Total Despesa {arrow("vrdespesas")}</th>
+                                <th className="px-1 py-1 text-right font-semibold cursor-pointer select-none" onClick={() => onSort("vrdespesas")}>Total Despesa {arrow("vrdespesas")}</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -571,7 +577,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
                                 return (
                                   <Fragment key={pkey}>
                                     <tr className={`border-b border-border/40 hover:bg-accent/30 ${pOpen ? "font-bold" : ""}`}>
-                                      <td className="px-2 py-1 truncate max-w-[320px]" title={pl.plano}>
+                                      <td className="px-1 py-0.5 truncate max-w-[300px]" title={pl.plano}>
                                         <button
                                           onClick={() => setExpandedPlano((s) => ({ ...s, [pkey]: !s[pkey] }))}
                                           className="inline-flex items-center gap-1 hover:text-primary"
@@ -581,31 +587,32 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
                                         </button>
                                       </td>
                                       {DESP_COLS.map(({ key }) => (
-                                        <td key={key} className="px-2 py-1 text-right tabular-nums">{fmtNum(pl[key])}</td>
+                                        <td key={key} className="px-1 py-0.5 text-right tabular-nums">{fmtNum(pl[key])}</td>
                                       ))}
-                                      <td className="px-2 py-1 text-right tabular-nums"><DespTooltip title={pl.plano} m={pl} /></td>
+                                      <td className="px-1 py-0.5 text-right tabular-nums"><DespTooltip title={pl.plano} m={pl} /></td>
                                     </tr>
                                     {pOpen && pl.benefs.map((b, i) => (
                                       <tr
                                         key={`${pkey}::${b.codigo}::${i}`}
                                         className={`border-b border-border/20 ${b.outros ? "bg-muted/20 italic" : "bg-muted/5"}`}
                                       >
-                                        <td className="px-2 py-1 pl-8 truncate max-w-[360px]" title={b.outros ? b.nome : `${b.nome} (${b.codigo})`}>
+                                        <td className="px-1 py-0.5 pl-6 truncate max-w-[300px] text-[7.5px] leading-tight" title={benefLabel(b)}>
                                           {b.outros ? (
                                             <span className="text-muted-foreground">{b.nome}</span>
                                           ) : (
                                             <>
                                               <span className="text-muted-foreground mr-1 tabular-nums">{i + 1}.</span>
-                                              {b.nome} <span className="text-muted-foreground">({b.codigo})</span>
+                                              {b.nome} <span className="text-muted-foreground">({b.contrato}-{b.codigo})</span>
                                             </>
                                           )}
                                         </td>
                                         {DESP_COLS.map(({ key }) => (
-                                          <td key={key} className="px-2 py-1 text-right tabular-nums">{fmtNum(b[key])}</td>
+                                          <td key={key} className="px-1 py-0.5 text-right tabular-nums">{fmtNum(b[key])}</td>
                                         ))}
-                                        <td className="px-2 py-1 text-right tabular-nums"><DespTooltip title={b.outros ? b.nome : `${b.nome} (${b.codigo})`} m={b} /></td>
+                                        <td className="px-1 py-0.5 text-right tabular-nums"><DespTooltip title={benefLabel(b)} m={b} /></td>
                                       </tr>
                                     ))}
+
                                   </Fragment>
                                 );
                               })}
