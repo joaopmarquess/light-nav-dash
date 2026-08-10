@@ -111,6 +111,7 @@ const menuItems: MenuItem[] = [
       { icon: UserCheck, label: "Planos/Empresas" },
       { icon: CalendarCheck, label: "Período" },
       { icon: CalendarCheck, label: "APB" },
+      { icon: CalendarCheck, label: "APB Top10" },
       { icon: LayoutDashboard, label: "Cidades" },
       { icon: BarChart3, label: "Gráfico Sinistralidade" },
       { icon: LayoutDashboard, label: "PBI U12" },
