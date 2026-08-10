@@ -342,11 +342,13 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
     const base = baseTableStyles(6.2);
     const common: Parameters<typeof autoTable>[1] = {
       ...base,
-      styles: { ...base.styles, cellPadding: 0.9, overflow: "ellipsize" },
-      headStyles: { ...base.headStyles, halign: "center", fontSize: 6.2, cellPadding: 1 },
+      styles: { ...base.styles, cellPadding: 0.6, minCellHeight: 0, overflow: "ellipsize" },
+      headStyles: { ...base.headStyles, halign: "center", fontSize: 6.2, cellPadding: 0.5, minCellHeight: 0 },
+      footStyles: { ...(base as any).footStyles, cellPadding: 0.6, minCellHeight: 0 },
       margin: { left: marginL, right: marginR, top: marginT, bottom: marginB },
       didDrawPage: () => { header(); },
     };
+
 
     const colW = {
       nome: usableW * 0.3,
