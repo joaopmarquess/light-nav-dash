@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Legend,
-  Tooltip as RTooltip, ResponsiveContainer, ReferenceLine,
+  Tooltip as RTooltip, ResponsiveContainer,
 } from "recharts";
 
 type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number];
