@@ -35,10 +35,12 @@ type Desp = {
   demais: number;
 };
 
-type Benef = Desp & { codigo: string; nome: string; contrato: string; relacao: string; outros?: number };
+type Benef = Desp & { codigo: string; nome: string; contrato: string; relacao: string; titular?: string; outros?: number };
 
-const benefLabel = (b: { nome: string; relacao?: string; codigo: string; outros?: number }) =>
-  b.outros ? b.nome : `${b.nome} (${b.relacao || "—"}-${b.codigo})`;
+const isTitular = (rel?: string) => (rel || "").toUpperCase().startsWith("TITULAR");
+
+const benefLabel = (b: { nome: string; relacao?: string; codigo: string; titular?: string; outros?: number }) =>
+  b.outros ? b.nome : `${b.nome} (${b.relacao || "—"}-${b.codigo})${b.titular ? `\nTitular: ${b.titular}` : ""}`;
 type Plano = Desp & { plano: string; benefs: Benef[] };
 type Periodo = Desp & { periodo: string; planos: Plano[] };
 
