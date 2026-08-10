@@ -23,6 +23,9 @@ import {
 type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number];
 
 type Desp = {
+  rec_total: number;
+  rec_tm: number;
+  rec_cpa: number;
   vrdespesas: number;
   internacao: number;
   terapia: number;
@@ -51,9 +54,17 @@ const fmtComp = (mabas: string) =>
   mabas && mabas.length === 6 ? `${mabas.slice(4, 6)}/${mabas.slice(0, 4)}` : mabas;
 
 const zero = (): Desp => ({
+  rec_total: 0, rec_tm: 0, rec_cpa: 0,
   vrdespesas: 0, internacao: 0, terapia: 0, exame: 0, consulta: 0, emergencia: 0, demais: 0,
 });
+const saldoOf = (m: Desp) => m.rec_total - m.vrdespesas;
+const sinOf = (m: Desp) => (m.rec_total ? m.vrdespesas / m.rec_total : 0);
+const fmtPct = (v: number) =>
+  `${(v * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 const add = (t: Desp, r: Raw) => {
+  t.rec_total += r[5] ?? 0;
+  t.rec_tm += r[14] ?? 0;
+  t.rec_cpa += r[15] ?? 0;
   t.vrdespesas += r[6];
   t.internacao += r[7];
   t.terapia += r[8];
@@ -63,6 +74,9 @@ const add = (t: Desp, r: Raw) => {
   t.demais += r[12];
 };
 const addDesp = (t: Desp, s: Desp) => {
+  t.rec_total += s.rec_total;
+  t.rec_tm += s.rec_tm;
+  t.rec_cpa += s.rec_cpa;
   t.vrdespesas += s.vrdespesas;
   t.internacao += s.internacao;
   t.terapia += s.terapia;
