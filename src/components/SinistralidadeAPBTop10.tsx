@@ -20,7 +20,7 @@ import {
 } from "recharts";
 
 
-type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number];
+type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number, string];
 
 type Desp = {
   rec_total: number;
@@ -35,10 +35,10 @@ type Desp = {
   demais: number;
 };
 
-type Benef = Desp & { codigo: string; nome: string; contrato: string; outros?: number };
+type Benef = Desp & { codigo: string; nome: string; contrato: string; relacao: string; outros?: number };
 
-const benefLabel = (b: { nome: string; contrato: string; codigo: string; outros?: number }) =>
-  b.outros ? b.nome : `${b.nome} (${b.contrato}-${b.codigo})`;
+const benefLabel = (b: { nome: string; relacao?: string; codigo: string; outros?: number }) =>
+  b.outros ? b.nome : `${b.nome} (${b.relacao || "—"}-${b.codigo})`;
 type Plano = Desp & { plano: string; benefs: Benef[] };
 type Periodo = Desp & { periodo: string; planos: Plano[] };
 
