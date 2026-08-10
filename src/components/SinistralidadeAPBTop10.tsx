@@ -35,7 +35,10 @@ type Desp = {
   demais: number;
 };
 
-type Benef = Desp & { codigo: string; nome: string; outros?: number };
+type Benef = Desp & { codigo: string; nome: string; contrato: string; outros?: number };
+
+const benefLabel = (b: { nome: string; contrato: string; codigo: string; outros?: number }) =>
+  b.outros ? b.nome : `${b.nome} (${b.contrato}-${b.codigo})`;
 type Plano = Desp & { plano: string; benefs: Benef[] };
 type Periodo = Desp & { periodo: string; planos: Plano[] };
 
