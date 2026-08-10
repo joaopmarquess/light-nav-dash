@@ -620,7 +620,7 @@ export default function AssistencialRelatorioExecutor({ source = "db" }: { sourc
               <div className="text-sm font-medium">Gerar PDF</div>
               <div className="space-y-2">
                 <label className="text-xs text-muted-foreground">
-                  Filtrar por cdcrdexe (opcional — aplica apenas à Seção 3)
+                  Filtrar por cdcrdexe (opcional — aplica apenas ao detalhamento)
                 </label>
                 <input
                   type="text"
@@ -861,21 +861,9 @@ function buildPdf({
     },
   });
 
-  // ---------- Section 3 ----------
+  // ---------- Detalhe (Declaração) ----------
   markSectionPages("Seção 2 - Executor", sec2Start);
-  doc.addPage();
-  const sec3Start = doc.getNumberOfPages();
-  currentSecao = "Seção 3 | Credenciado Executor Selecionado";
 
-  let s3Y = marginT;
-  if (filterExe) {
-    const cdExe = report.exeCd.get(filterExe) ?? "";
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.text(`${cdExe} - ${filterExe}`, marginL, s3Y + 3);
-    s3Y += 5;
-  }
-  let s3Grand = 0;
   const s3ExeList = filterExe ? [filterExe] : report.exeSortedS3;
 
   // Column widths (fractions of usableW) for Section 3
@@ -1020,15 +1008,12 @@ function buildPdf({
     return (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
   };
 
-  renderDetalhe(s3Y);
-  markSectionPages("Seção 3 - Geral", sec3Start);
-
-  // ---------- Section 4 (Declaração, sem timbrado) ----------
+  // ---------- Declaração (sem timbrado) ----------
   timbrado.setEnabled(false);
   declaracaoMode = true;
   doc.addPage();
   const sec4Start = doc.getNumberOfPages();
-  currentSecao = "Seção 4 | Credenciado Executor Selecionado";
+  currentSecao = "Credenciado Executor Selecionado";
 
   let s4Y = marginT;
   if (filterExe) {
@@ -1088,7 +1073,7 @@ function buildPdf({
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9.5);
     doc.setTextColor(0, 0, 0);
-    doc.text(`${i}`, marginL, footY, { align: "left" });
+    if (i < sec4Start) doc.text(`${i}`, marginL, footY, { align: "left" });
     const sec = sectionByPage[i];
     if (sec) {
       secSeen[sec] = (secSeen[sec] ?? 0) + 1;
