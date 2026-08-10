@@ -861,21 +861,9 @@ function buildPdf({
     },
   });
 
-  // ---------- Section 3 ----------
+  // ---------- Detalhe (Declaração) ----------
   markSectionPages("Seção 2 - Executor", sec2Start);
-  doc.addPage();
-  const sec3Start = doc.getNumberOfPages();
-  currentSecao = "Seção 3 | Credenciado Executor Selecionado";
 
-  let s3Y = marginT;
-  if (filterExe) {
-    const cdExe = report.exeCd.get(filterExe) ?? "";
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.text(`${cdExe} - ${filterExe}`, marginL, s3Y + 3);
-    s3Y += 5;
-  }
-  let s3Grand = 0;
   const s3ExeList = filterExe ? [filterExe] : report.exeSortedS3;
 
   // Column widths (fractions of usableW) for Section 3
