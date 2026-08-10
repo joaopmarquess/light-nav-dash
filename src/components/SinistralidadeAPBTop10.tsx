@@ -20,7 +20,7 @@ import {
 } from "recharts";
 
 
-type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number];
+type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number, string];
 
 type Desp = {
   rec_total: number;
@@ -35,10 +35,10 @@ type Desp = {
   demais: number;
 };
 
-type Benef = Desp & { codigo: string; nome: string; contrato: string; outros?: number };
+type Benef = Desp & { codigo: string; nome: string; contrato: string; relacao: string; outros?: number };
 
-const benefLabel = (b: { nome: string; contrato: string; codigo: string; outros?: number }) =>
-  b.outros ? b.nome : `${b.nome} (${b.contrato}-${b.codigo})`;
+const benefLabel = (b: { nome: string; relacao?: string; codigo: string; outros?: number }) =>
+  b.outros ? b.nome : `${b.nome} (${b.relacao || "—"}-${b.codigo})`;
 type Plano = Desp & { plano: string; benefs: Benef[] };
 type Periodo = Desp & { periodo: string; planos: Plano[] };
 
@@ -202,7 +202,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
       const bm = bMaps.get(`${ciclo}|${r[1]}`)!;
       let b = bm.get(r[3]);
       if (!b) {
-        b = { codigo: r[3], nome: r[4], contrato: r[2], ...zero() };
+        b = { codigo: r[3], nome: r[4], contrato: r[2], relacao: r[16] ?? "", ...zero() };
         bm.set(r[3], b);
         pl.benefs.push(b);
       }
@@ -218,6 +218,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
           const outros: Benef = {
             codigo: "",
             contrato: "",
+            relacao: "",
             nome: `OUTROS (${resto.length} beneficiários)`,
             outros: resto.length,
             ...zero(),
@@ -602,7 +603,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
                                           ) : (
                                             <>
                                               <span className="text-muted-foreground mr-1 tabular-nums">{i + 1}.</span>
-                                              {b.nome} <span className="text-muted-foreground">({b.contrato}-{b.codigo})</span>
+                                              {b.nome} <span className="text-muted-foreground">({b.relacao || "—"}-{b.codigo})</span>
                                             </>
                                           )}
                                         </td>
