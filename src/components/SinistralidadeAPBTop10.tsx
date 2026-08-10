@@ -247,7 +247,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
     }
     arr.sort((a, b) => b.periodo.localeCompare(a.periodo));
     return arr;
-  }, [rows, mIni, mFim, filter]);
+  }, [rows, mIni, mFim, filter, titularMap]);
 
   const fmtCiclo = (ciclo: string) => {
     const [a, b] = ciclo.split("-");
