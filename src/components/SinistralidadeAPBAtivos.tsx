@@ -2,13 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, FileDown, Printer, X, FileText } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import {
-  baseTableStyles,
-  drawReportHeading,
-  groupRowStyles,
-  totalRowStyles,
-  PDF_COLORS,
-} from "@/lib/pdfTheme";
+import { baseTableStyles, drawReportHeading, totalRowStyles } from "@/lib/pdfTheme";
 import { attachTimbrado, loadTimbrado } from "@/lib/pdfTimbrado";
 
 type Row = Record<string, string>;
