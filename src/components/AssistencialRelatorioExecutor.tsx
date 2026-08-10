@@ -1088,7 +1088,7 @@ function buildPdf({
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9.5);
     doc.setTextColor(0, 0, 0);
-    doc.text(`${i}`, marginL, footY, { align: "left" });
+    if (i < sec4Start) doc.text(`${i}`, marginL, footY, { align: "left" });
     const sec = sectionByPage[i];
     if (sec) {
       secSeen[sec] = (secSeen[sec] ?? 0) + 1;
