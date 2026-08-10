@@ -342,11 +342,13 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
     const base = baseTableStyles(6.2);
     const common: Parameters<typeof autoTable>[1] = {
       ...base,
-      styles: { ...base.styles, cellPadding: 0.9, overflow: "ellipsize" },
-      headStyles: { ...base.headStyles, halign: "center", fontSize: 6.2, cellPadding: 1 },
+      styles: { ...base.styles, cellPadding: 0.6, minCellHeight: 0, overflow: "ellipsize" },
+      headStyles: { ...base.headStyles, halign: "center", fontSize: 6.2, cellPadding: 0.5, minCellHeight: 0 },
+      footStyles: { ...(base as any).footStyles, cellPadding: 0.6, minCellHeight: 0 },
       margin: { left: marginL, right: marginR, top: marginT, bottom: marginB },
       didDrawPage: () => { header(); },
     };
+
 
     const colW = {
       nome: usableW * 0.3,
@@ -377,7 +379,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
           startY: y,
           showFoot: "lastPage",
           head: [
-            [{ content: pl.plano, colSpan: 8, styles: { ...groupRowStyles, halign: "left" } }],
+            [{ content: pl.plano, colSpan: 8, styles: { ...groupRowStyles, halign: "left", cellPadding: 0.6, minCellHeight: 0 } }],
             [{
               content: resumo(pl),
               colSpan: 8,
@@ -385,6 +387,8 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
                 ...subtotalRowStyles,
                 halign: "left" as const,
                 fontSize: 6,
+                cellPadding: 0.6,
+                minCellHeight: 0,
                 fillColor: PDF_COLORS.zebra,
                 textColor: PDF_COLORS.navy,
               },
@@ -406,7 +410,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
           ]],
           columnStyles,
         });
-        y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 4;
+        y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 2;
         if (y > pageH - marginB - 24) { doc.addPage(); y = marginT; }
       }
 
