@@ -368,6 +368,10 @@ const Index = () => {
             <SinistralidadeAPB />
           ) : active === "APB Top10" ? (
             <SinistralidadeAPBTop10 />
+          ) : active === "APB Faturas" ? (
+            <SinistralidadeAPBFaturas />
+          ) : active === "APB Ativos" ? (
+            <SinistralidadeAPBAtivos />
           ) : active === "Cidades" ? (
             <SinistralidadeCidade />
 
