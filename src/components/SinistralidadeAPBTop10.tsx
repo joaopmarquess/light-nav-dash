@@ -216,7 +216,10 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
       const bm = bMaps.get(`${ciclo}|${r[1]}`)!;
       let b = bm.get(r[3]);
       if (!b) {
-        b = { codigo: r[3], nome: r[4], contrato: r[2], relacao: r[16] ?? "", ...zero() };
+        const cod = String(r[3] ?? "");
+        const rel = (r[16] ?? "") as string;
+        const tit = isTitular(rel) ? "" : (titularMap.get(cod.slice(0, -2)) ?? "");
+        b = { codigo: cod, nome: r[4], contrato: r[2], relacao: rel, titular: tit || undefined, ...zero() };
         bm.set(r[3], b);
         pl.benefs.push(b);
       }
