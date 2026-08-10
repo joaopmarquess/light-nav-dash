@@ -377,7 +377,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
       val: (usableW * 0.66) / 7,
     };
     const columnStyles: Record<number, any> = {
-      0: { cellWidth: colW.nome, overflow: "ellipsize", fontSize: 5.2 },
+      0: { cellWidth: colW.nome, overflow: "linebreak", fontSize: 5.2 },
     };
     for (let i = 1; i <= 7; i++) columnStyles[i] = { cellWidth: colW.val, halign: "right", fontSize: 6 };
 
