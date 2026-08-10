@@ -159,6 +159,18 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
     return () => { alive = false; };
   }, []);
 
+  // Mapa de titular por prefixo do código (código sem os 2 últimos dígitos)
+  const titularMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const r of rows) {
+      if (isTitular(r[16] as string)) {
+        const cod = String(r[3] ?? "");
+        if (cod.length > 2) m.set(cod.slice(0, -2), String(r[4] ?? ""));
+      }
+    }
+    return m;
+  }, [rows]);
+
   const periodos = useMemo<Periodo[]>(() => {
     const ini = mIni.trim();
     const fim = mFim.trim();
