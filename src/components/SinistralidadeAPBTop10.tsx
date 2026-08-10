@@ -333,7 +333,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
         ...base,
         headStyles: { ...base.headStyles, halign: "center" },
         margin: { left: marginL, right: marginR, top: marginT, bottom: marginB },
-        didDrawPage: () => header(),
+        didDrawPage: () => { header(); },
       };
 
       const colW = {
