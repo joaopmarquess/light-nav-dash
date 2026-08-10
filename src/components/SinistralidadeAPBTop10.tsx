@@ -202,7 +202,7 @@ export default function SinistralidadeAPBTop10({ embedded = false }: { embedded?
       const bm = bMaps.get(`${ciclo}|${r[1]}`)!;
       let b = bm.get(r[3]);
       if (!b) {
-        b = { codigo: r[3], nome: r[4], ...zero() };
+        b = { codigo: r[3], nome: r[4], contrato: r[2], ...zero() };
         bm.set(r[3], b);
         pl.benefs.push(b);
       }
