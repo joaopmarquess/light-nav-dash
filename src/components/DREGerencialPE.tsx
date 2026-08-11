@@ -385,6 +385,17 @@ const FIXED_YEARS = [2025, 2024];
     });
   };
 
+  useEffect(() => {
+    if (!tip?.pinned) return;
+    const clear = () => setTip(null);
+    window.addEventListener("click", clear);
+    window.addEventListener("scroll", clear, true);
+    return () => {
+      window.removeEventListener("click", clear);
+      window.removeEventListener("scroll", clear, true);
+    };
+  }, [tip?.pinned]);
+
 
 
 
