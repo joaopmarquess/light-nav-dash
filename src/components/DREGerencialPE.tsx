@@ -391,15 +391,13 @@ const FIXED_YEARS = [2025, 2024];
               {COLS.map((c) => {
                 const v = grandByCol[c.key] ?? 0;
                 return (
-                  <td key={c.key} className={`px-3 py-3 text-right tabular-nums ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}>
+                  <td key={c.key} className={`px-3 py-3 text-right tabular-nums ${bodyClass(c.kind)} ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}>
                     {fmt(v)}
                   </td>
                 );
               })}
-              <td className={`px-6 py-3 text-right tabular-nums border-l border-border ${grandTotal < 0 ? "text-destructive" : "text-foreground"}`}>
-                {fmt(grandTotal)}
-              </td>
             </tr>
+
           </tbody>
         </table>
       </div>
