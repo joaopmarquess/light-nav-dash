@@ -293,35 +293,35 @@ const Orcamento = () => {
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm">
-      <div className="px-6 py-4 border-b border-border">
-        <h2 className="text-base font-semibold text-foreground">Orçamento</h2>
-        <p className="text-xs text-muted-foreground">
+      <div className="px-4 py-2 border-b border-border">
+        <h2 className="text-sm font-semibold text-foreground">Orçamento</h2>
+        <p className="text-[10px] text-muted-foreground">
           Orçado x Realizado por mês — valores em R$ (botão direito no valor: % sobre Faturamento)
           {error ? ` — erro: ${error}` : ""}
         </p>
       </div>
 
-      <div className="overflow-auto max-h-[calc(100vh-13rem)]">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto">
+        <table className="w-full text-[11px] leading-tight">
           <thead className="bg-muted/50 text-muted-foreground sticky top-0 z-10">
             <tr>
-              <th className="text-left font-medium px-6 py-3 sticky left-0 bg-muted/50">Item</th>
+              <th className="text-left font-medium px-3 py-1 sticky left-0 bg-muted/50">Item</th>
               {COLS.map((c) => (
                 <Fragment key={c.key}>
                   {openCols[c.key] && (
-                    <th className={`text-right font-normal px-3 py-3 text-xs whitespace-nowrap border-l border-border bg-muted/60`}>
+                    <th className={`text-right font-normal px-2 py-1 text-[10px] whitespace-nowrap border-l border-border bg-muted/60`}>
                       {c.label} · Previsto
                     </th>
                   )}
                   <th
-                    className={`text-right font-medium px-3 py-3 whitespace-nowrap ${openCols[c.key] ? "" : "border-l border-border"} ${headClass(c.kind)}`}
+                    className={`text-right font-medium px-2 py-1 whitespace-nowrap ${openCols[c.key] ? "" : "border-l border-border"} ${headClass(c.kind)}`}
                   >
                     <button
                       onClick={() => toggleCol(c.key)}
                       className="inline-flex items-center gap-1 hover:text-primary"
                       title={openCols[c.key] ? "Ocultar previsto" : "Mostrar previsto"}
                     >
-                      <ChevronRight className={`h-3.5 w-3.5 transition-transform ${openCols[c.key] ? "rotate-90" : ""}`} />
+                      <ChevronRight className={`h-3 w-3 transition-transform ${openCols[c.key] ? "rotate-90" : ""}`} />
                       {c.label}
                     </button>
                   </th>
@@ -339,12 +339,12 @@ const Orcamento = () => {
                   className={`border-t border-border hover:bg-accent/40 ${isGroup ? "font-semibold bg-muted/20" : ""} ${isRatio ? "italic" : ""}`}
                 >
                   <td
-                    className={`px-6 py-2 sticky left-0 whitespace-nowrap ${isGroup ? "bg-muted/20" : "bg-card"}`}
-                    style={{ paddingLeft: `${1.5 + depth * 1.1}rem` }}
+                    className={`px-3 py-0.5 sticky left-0 whitespace-nowrap ${isGroup ? "bg-muted/20" : "bg-card"}`}
+                    style={{ paddingLeft: `${0.75 + depth * 0.8}rem` }}
                   >
                     {isGroup ? (
                       <button onClick={() => toggleRow(node.id)} className="inline-flex items-center gap-1 hover:text-primary">
-                        <ChevronRight className={`h-3.5 w-3.5 transition-transform ${openRows[node.id] ? "rotate-90" : ""}`} />
+                        <ChevronRight className={`h-3 w-3 transition-transform ${openRows[node.id] ? "rotate-90" : ""}`} />
                         {node.label}
                       </button>
                     ) : (
@@ -370,14 +370,14 @@ const Orcamento = () => {
                       <Fragment key={c.key}>
                         {openCols[c.key] && (
                           <td
-                            className="px-3 py-2 text-right tabular-nums border-l border-border bg-muted/30 text-muted-foreground"
+                            className="px-2 py-0.5 text-right tabular-nums border-l border-border bg-muted/30 text-muted-foreground"
                             onContextMenu={(e) => !isRatio && showPctTip(e, c, previsto, `${c.label} · Previsto`)}
                           >
                             {show(previsto)}
                           </td>
                         )}
                         <td
-                          className={`px-3 py-2 text-right tabular-nums cursor-help ${openCols[c.key] ? "" : "border-l border-border"} ${bodyClass(c.kind)}`}
+                          className={`px-2 py-0.5 text-right tabular-nums cursor-help ${openCols[c.key] ? "" : "border-l border-border"} ${bodyClass(c.kind)}`}
                           onMouseEnter={(e) => showTip(e, title, previsto, realizado, { invert: isRatio, pp: isRatio })}
                           onMouseMove={(e) => showTip(e, title, previsto, realizado, { invert: isRatio, pp: isRatio })}
 
@@ -394,18 +394,18 @@ const Orcamento = () => {
             })}
 
             <tr className="border-t-2 border-border bg-muted/60 font-semibold">
-              <td className="px-6 py-2.5 sticky left-0 bg-muted/60">Resultado do período</td>
+              <td className="px-3 py-1 sticky left-0 bg-muted/60">Resultado do período</td>
               {COLS.map((c) => {
                 const { previsto, realizado } = totalVals(c);
                 return (
                   <Fragment key={c.key}>
                     {openCols[c.key] && (
-                      <td className="px-3 py-2.5 text-right tabular-nums border-l border-border text-muted-foreground">
+                      <td className="px-2 py-1 text-right tabular-nums border-l border-border text-muted-foreground">
                         {fmt(previsto)}
                       </td>
                     )}
                     <td
-                      className={`px-3 py-2.5 text-right tabular-nums cursor-help ${openCols[c.key] ? "" : "border-l border-border"}`}
+                      className={`px-2 py-1 text-right tabular-nums cursor-help ${openCols[c.key] ? "" : "border-l border-border"}`}
                       onMouseEnter={(e) => showTip(e, `Resultado — ${c.label}`, previsto, realizado)}
                       onMouseMove={(e) => showTip(e, `Resultado — ${c.label}`, previsto, realizado)}
                       onMouseLeave={() => !tip?.pinned && setTip(null)}
