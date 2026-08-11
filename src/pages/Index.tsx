@@ -62,6 +62,8 @@ import SinistralidadeCidade from "@/components/SinistralidadeCidade";
 import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
 import DREGerencialPE from "@/components/DREGerencialPE";
+import Orcamento from "@/components/Orcamento";
+
 import Assistencial from "@/components/Assistencial";
 import AssistencialCompetencia from "@/components/AssistencialCompetencia";
 import AssistencialConsulta from "@/components/AssistencialConsulta";
