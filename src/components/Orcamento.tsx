@@ -125,40 +125,88 @@ const Orcamento = () => {
     const find = (re: RegExp) => items.filter((i) => re.test(i));
     const entradas = [...find(/\|\s*FATURAMENTO/i), ...find(/COPARTICIPA/i)];
     const saidas = find(/DESPESAS ASSISTENCIAIS/i);
-    const usados = new Set([...entradas, ...saidas]);
+    const usados = new Set<string>([...entradas, ...saidas]);
+
+    const leaf = (i: string, label?: string): Node => {
+      usados.add(i);
+      return { id: `i:${i}`, label: label ?? stripPrefix(i), items: [i] };
+    };
+    const one = (re: RegExp, label?: string) => {
+      const i = items.find((x) => re.test(x));
+      return i ? [leaf(i, label)] : [];
+    };
+
     const nodes: Node[] = [];
-    if (entradas.length || saidas.length) {
+
+    const opPrincipal: Node | null =
+      entradas.length || saidas.length
+        ? {
+            id: "g:op",
+            label: "Operacional principal",
+            items: [...entradas, ...saidas],
+            children: [
+              {
+                id: "g:entradas",
+                label: "Entradas",
+                items: entradas,
+                children: entradas.map((i) => ({ id: `i:${i}`, label: stripPrefix(i), items: [i] })),
+              },
+              {
+                id: "g:saidas",
+                label: "Saídas",
+                items: saidas,
+                children: saidas.map((i) => ({ id: `i:${i}`, label: stripPrefix(i), items: [i] })),
+              },
+              {
+                id: "r:sin",
+                label: "Sinistralidade",
+                items: [],
+                ratio: { num: saidas, den: entradas },
+              },
+            ],
+          }
+        : null;
+
+    const opOutros: Node[] = [
+      ...one(/IMPOSTOS DIRETOS/i, "Impostos diretos"),
+      ...one(/PROVIS[ÕO]ES OPERACIONAIS/i, "Provisões operacionais"),
+      ...one(/COMERCIALIZA/i, "Comercialização"),
+      ...one(/OUTRAS RECEITAS OPERACIONAIS/i, "Demais operações"),
+    ];
+
+    const opChildren = [...(opPrincipal ? [opPrincipal] : []), ...opOutros];
+    if (opChildren.length) {
       nodes.push({
-        id: "g:op",
-        label: "Operacional principal",
-        items: [...entradas, ...saidas],
-        children: [
-          {
-            id: "g:entradas",
-            label: "Entradas",
-            items: entradas,
-            children: entradas.map((i) => ({ id: `i:${i}`, label: stripPrefix(i), items: [i] })),
-          },
-          {
-            id: "g:saidas",
-            label: "Saídas",
-            items: saidas,
-            children: saidas.map((i) => ({ id: `i:${i}`, label: stripPrefix(i), items: [i] })),
-          },
-          {
-            id: "r:sin",
-            label: "Sinistralidade",
-            items: [],
-            ratio: { num: saidas, den: entradas },
-          },
-        ],
+        id: "g:operacional",
+        label: "Operacional",
+        items: opChildren.flatMap((n) => n.items),
+        children: opChildren,
       });
     }
+
+    const admChildren: Node[] = [
+      ...one(/\|\s*PESSOAL/i, "Pessoal"),
+      ...one(/MARKETING/i, "Marketing"),
+      ...one(/INFORM[ÁA]TICA/i, "Informática"),
+      ...one(/DEMAIS DESPESAS ADMINISTRATIVAS/i, "Demais despesas administrativas"),
+    ];
+    if (admChildren.length) {
+      nodes.push({
+        id: "g:adm",
+        label: "Despesas administrativas",
+        items: admChildren.flatMap((n) => n.items),
+        children: admChildren,
+      });
+    }
+
+    nodes.push(...one(/FINANCEIRO/i, "Financeiro"));
+
     for (const i of items) if (!usados.has(i)) nodes.push({ id: `i:${i}`, label: stripPrefix(i), items: [i] });
     return nodes;
   }, [items]);
 
-  const [openRows, setOpenRows] = useState<Record<string, boolean>>({ "g:op": true });
+
+  const [openRows, setOpenRows] = useState<Record<string, boolean>>({ "g:operacional": true, "g:op": true });
   const toggleRow = (k: string) => setOpenRows((p) => ({ ...p, [k]: !p[k] }));
 
   const flat = useMemo(() => {
