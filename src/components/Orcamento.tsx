@@ -99,16 +99,80 @@ const Orcamento = () => {
     return { previsto, realizado };
   };
 
-  const totalVals = (col: Col) => {
+  const sumVals = (its: string[], col: Col) => {
     let previsto = 0;
     let realizado = 0;
-    for (const it of items) {
+    for (const it of its) {
       const v = cellVals(it, col);
       previsto += v.previsto;
       realizado += v.realizado;
     }
     return { previsto, realizado };
   };
+
+  const totalVals = (col: Col) => sumVals(items, col);
+
+  /** Árvore: Operacional principal > Entradas / Saídas / Sinistralidade */
+  type Node = {
+    id: string;
+    label: string;
+    items: string[];
+    children?: Node[];
+    ratio?: { num: string[]; den: string[] };
+  };
+
+  const tree = useMemo<Node[]>(() => {
+    const find = (re: RegExp) => items.filter((i) => re.test(i));
+    const entradas = [...find(/\|\s*FATURAMENTO/i), ...find(/COPARTICIPA/i)];
+    const saidas = find(/DESPESAS ASSISTENCIAIS/i);
+    const usados = new Set([...entradas, ...saidas]);
+    const nodes: Node[] = [];
+    if (entradas.length || saidas.length) {
+      nodes.push({
+        id: "g:op",
+        label: "Operacional principal",
+        items: [...entradas, ...saidas],
+        children: [
+          {
+            id: "g:entradas",
+            label: "Entradas",
+            items: entradas,
+            children: entradas.map((i) => ({ id: `i:${i}`, label: stripPrefix(i), items: [i] })),
+          },
+          {
+            id: "g:saidas",
+            label: "Saídas",
+            items: saidas,
+            children: saidas.map((i) => ({ id: `i:${i}`, label: stripPrefix(i), items: [i] })),
+          },
+          {
+            id: "r:sin",
+            label: "Sinistralidade",
+            items: [],
+            ratio: { num: saidas, den: entradas },
+          },
+        ],
+      });
+    }
+    for (const i of items) if (!usados.has(i)) nodes.push({ id: `i:${i}`, label: stripPrefix(i), items: [i] });
+    return nodes;
+  }, [items]);
+
+  const [openRows, setOpenRows] = useState<Record<string, boolean>>({ "g:op": true });
+  const toggleRow = (k: string) => setOpenRows((p) => ({ ...p, [k]: !p[k] }));
+
+  const flat = useMemo(() => {
+    const out: { node: Node; depth: number }[] = [];
+    const walk = (ns: Node[], depth: number) => {
+      for (const n of ns) {
+        out.push({ node: n, depth });
+        if (n.children?.length && openRows[n.id]) walk(n.children, depth + 1);
+      }
+    };
+    walk(tree, 0);
+    return out;
+  }, [tree, openRows]);
+
 
   const showTip = (e: React.MouseEvent, title: string, previsto: number, realizado: number) => {
     if (tip?.pinned) return;
