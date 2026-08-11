@@ -182,23 +182,26 @@ const Orcamento = () => {
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-muted-foreground sticky top-0 z-10">
             <tr>
-              <th rowSpan={2} className="text-left font-medium px-6 py-3 sticky left-0 bg-muted/50">Item</th>
-              {COLS.map((c) => (
-                <th
-                  key={c.key}
-                  colSpan={3}
-                  className={`text-center font-medium px-3 py-2 whitespace-nowrap border-l border-border ${headClass(c.kind)}`}
-                >
-                  {c.label}
-                </th>
-              ))}
-            </tr>
-            <tr>
+              <th className="text-left font-medium px-6 py-3 sticky left-0 bg-muted/50">Item</th>
               {COLS.map((c) => (
                 <Fragment key={c.key}>
-                  <th key={`${c.key}-p`} className={`text-right font-normal px-3 py-2 text-xs whitespace-nowrap border-l border-border ${headClass(c.kind)}`}>Previsto</th>
-                  <th key={`${c.key}-r`} className={`text-right font-normal px-3 py-2 text-xs whitespace-nowrap ${headClass(c.kind)}`}>Realizado</th>
-                  <th key={`${c.key}-v`} className={`text-right font-normal px-3 py-2 text-xs whitespace-nowrap ${headClass(c.kind)}`}>Var</th>
+                  {openCols[c.key] && (
+                    <th className={`text-right font-normal px-3 py-3 text-xs whitespace-nowrap border-l border-border bg-muted/60`}>
+                      {c.label} · Previsto
+                    </th>
+                  )}
+                  <th
+                    className={`text-right font-medium px-3 py-3 whitespace-nowrap ${openCols[c.key] ? "" : "border-l border-border"} ${headClass(c.kind)}`}
+                  >
+                    <button
+                      onClick={() => toggleCol(c.key)}
+                      className="inline-flex items-center gap-1 hover:text-primary"
+                      title={openCols[c.key] ? "Ocultar previsto" : "Mostrar previsto"}
+                    >
+                      <ChevronRight className={`h-3.5 w-3.5 transition-transform ${openCols[c.key] ? "rotate-90" : ""}`} />
+                      {c.label}
+                    </button>
+                  </th>
                 </Fragment>
               ))}
             </tr>
@@ -209,33 +212,25 @@ const Orcamento = () => {
                 <td className="px-6 py-2 sticky left-0 bg-card whitespace-nowrap">{stripPrefix(it)}</td>
                 {COLS.map((c) => {
                   const { previsto, realizado } = cellVals(it, c);
-                  const diff = realizado - previsto;
+                  const title = `${stripPrefix(it)} — ${c.label}`;
                   return (
                     <Fragment key={c.key}>
+                      {openCols[c.key] && (
+                        <td
+                          className="px-3 py-2 text-right tabular-nums border-l border-border bg-muted/30 text-muted-foreground"
+                          onContextMenu={(e) => showPctTip(e, c, previsto, `${c.label} · Previsto`)}
+                        >
+                          {fmt(previsto)}
+                        </td>
+                      )}
                       <td
-                        key={`${c.key}-p`}
-                        className={`px-3 py-2 text-right tabular-nums border-l border-border ${bodyClass(c.kind)}`}
-                        onContextMenu={(e) => showPctTip(e, c, previsto, `${c.label} · Previsto`)}
-                      >
-                        {fmt(previsto)}
-                      </td>
-                      <td
-                        key={`${c.key}-r`}
-                        className={`px-3 py-2 text-right tabular-nums cursor-help ${bodyClass(c.kind)}`}
-                        onMouseEnter={(e) => showTip(e, `${stripPrefix(it)} — ${c.label}`, previsto, realizado)}
-                        onMouseMove={(e) => showTip(e, `${stripPrefix(it)} — ${c.label}`, previsto, realizado)}
+                        className={`px-3 py-2 text-right tabular-nums cursor-help ${openCols[c.key] ? "" : "border-l border-border"} ${bodyClass(c.kind)}`}
+                        onMouseEnter={(e) => showTip(e, title, previsto, realizado)}
+                        onMouseMove={(e) => showTip(e, title, previsto, realizado)}
                         onMouseLeave={() => !tip?.pinned && setTip(null)}
                         onContextMenu={(e) => showPctTip(e, c, realizado, `${c.label} · Realizado`)}
                       >
                         {fmt(realizado)}
-                      </td>
-                      <td
-                        key={`${c.key}-v`}
-                        className={`px-3 py-2 text-right tabular-nums ${bodyClass(c.kind)} ${
-                          Math.abs(diff) < 0.005 ? "text-muted-foreground" : diff > 0 ? "text-emerald-600" : "text-rose-600"
-                        }`}
-                      >
-                        {fmt(diff)}
                       </td>
                     </Fragment>
                   );
@@ -246,13 +241,15 @@ const Orcamento = () => {
               <td className="px-6 py-2.5 sticky left-0 bg-muted/60">Resultado do período</td>
               {COLS.map((c) => {
                 const { previsto, realizado } = totalVals(c);
-                const diff = realizado - previsto;
                 return (
                   <Fragment key={c.key}>
-                    <td key={`${c.key}-tp`} className="px-3 py-2.5 text-right tabular-nums border-l border-border">{fmt(previsto)}</td>
+                    {openCols[c.key] && (
+                      <td className="px-3 py-2.5 text-right tabular-nums border-l border-border text-muted-foreground">
+                        {fmt(previsto)}
+                      </td>
+                    )}
                     <td
-                      key={`${c.key}-tr`}
-                      className="px-3 py-2.5 text-right tabular-nums cursor-help"
+                      className={`px-3 py-2.5 text-right tabular-nums cursor-help ${openCols[c.key] ? "" : "border-l border-border"}`}
                       onMouseEnter={(e) => showTip(e, `Resultado — ${c.label}`, previsto, realizado)}
                       onMouseMove={(e) => showTip(e, `Resultado — ${c.label}`, previsto, realizado)}
                       onMouseLeave={() => !tip?.pinned && setTip(null)}
@@ -260,19 +257,12 @@ const Orcamento = () => {
                     >
                       {fmt(realizado)}
                     </td>
-                    <td
-                      key={`${c.key}-tv`}
-                      className={`px-3 py-2.5 text-right tabular-nums ${
-                        Math.abs(diff) < 0.005 ? "text-muted-foreground" : diff > 0 ? "text-emerald-600" : "text-rose-600"
-                      }`}
-                    >
-                      {fmt(diff)}
-                    </td>
                   </Fragment>
                 );
               })}
             </tr>
           </tbody>
+
         </table>
       </div>
 
