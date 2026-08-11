@@ -329,8 +329,9 @@ const Orcamento = () => {
                         )}
                         <td
                           className={`px-3 py-2 text-right tabular-nums cursor-help ${openCols[c.key] ? "" : "border-l border-border"} ${bodyClass(c.kind)}`}
-                          onMouseEnter={(e) => showTip(e, title, previsto, realizado)}
-                          onMouseMove={(e) => showTip(e, title, previsto, realizado)}
+                          onMouseEnter={(e) => showTip(e, title, previsto, realizado, { invert: isRatio, pp: isRatio })}
+                          onMouseMove={(e) => showTip(e, title, previsto, realizado, { invert: isRatio, pp: isRatio })}
+
                           onMouseLeave={() => !tip?.pinned && setTip(null)}
                           onContextMenu={(e) => !isRatio && showPctTip(e, c, realizado, `${c.label} · Realizado`)}
                         >
