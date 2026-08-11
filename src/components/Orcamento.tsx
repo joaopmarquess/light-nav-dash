@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { CalendarDays, Coins, TrendingUp, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -195,11 +195,11 @@ const Orcamento = () => {
             </tr>
             <tr>
               {COLS.map((c) => (
-                <>
+                <Fragment key={c.key}>
                   <th key={`${c.key}-p`} className={`text-right font-normal px-3 py-2 text-xs whitespace-nowrap border-l border-border ${headClass(c.kind)}`}>Previsto</th>
                   <th key={`${c.key}-r`} className={`text-right font-normal px-3 py-2 text-xs whitespace-nowrap ${headClass(c.kind)}`}>Realizado</th>
                   <th key={`${c.key}-v`} className={`text-right font-normal px-3 py-2 text-xs whitespace-nowrap ${headClass(c.kind)}`}>Var</th>
-                </>
+                </Fragment>
               ))}
             </tr>
           </thead>
@@ -211,7 +211,7 @@ const Orcamento = () => {
                   const { previsto, realizado } = cellVals(it, c);
                   const diff = realizado - previsto;
                   return (
-                    <>
+                    <Fragment key={c.key}>
                       <td
                         key={`${c.key}-p`}
                         className={`px-3 py-2 text-right tabular-nums border-l border-border ${bodyClass(c.kind)}`}
@@ -237,7 +237,7 @@ const Orcamento = () => {
                       >
                         {fmt(diff)}
                       </td>
-                    </>
+                    </Fragment>
                   );
                 })}
               </tr>
@@ -248,7 +248,7 @@ const Orcamento = () => {
                 const { previsto, realizado } = totalVals(c);
                 const diff = realizado - previsto;
                 return (
-                  <>
+                  <Fragment key={c.key}>
                     <td key={`${c.key}-tp`} className="px-3 py-2.5 text-right tabular-nums border-l border-border">{fmt(previsto)}</td>
                     <td
                       key={`${c.key}-tr`}
@@ -268,7 +268,7 @@ const Orcamento = () => {
                     >
                       {fmt(diff)}
                     </td>
-                  </>
+                  </Fragment>
                 );
               })}
             </tr>
