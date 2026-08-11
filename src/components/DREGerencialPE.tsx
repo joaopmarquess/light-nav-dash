@@ -40,7 +40,10 @@ type Col = {
   toggleKey?: string;
   open?: boolean;
   isGroupEdge?: boolean;
+  prevCells?: string[];
+  prevLabel?: string;
 };
+
 
 const headClass = (k: ColKind) =>
   k === "ano"
@@ -61,6 +64,24 @@ const bodyClass = (k: ColKind) =>
     : "";
 
 const cellKey = (ano: number, mes: number) => `${ano}-${mes}`;
+
+const anoLabel = (y: number) => `Total ${y}`;
+const triLabel = (y: number, t: number) => `${t}ºT/${String(y).slice(2)}`;
+const mesLabel = (y: number, m: number) => `${MES_LABEL[m - 1]}/${String(y).slice(2)}`;
+
+/** variação percentual formatada */
+const fmtVar = (atual: number, anterior: number) => {
+  const diff = atual - anterior;
+  const sinal = diff > 0 ? "+" : diff < 0 ? "−" : "";
+  const abs = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(Math.abs(diff));
+  const pct =
+    Math.abs(anterior) < 0.005
+      ? "n/d"
+      : `${diff / Math.abs(anterior) > 0 ? "+" : ""}${new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 }).format((diff / Math.abs(anterior)) * 100)}%`;
+  return { txt: `${sinal}${abs}`, pct };
+};
+
+
 
 
 function ensure(map: Map<string, Node>, key: string, label: string, level: number, parentChildren: Node[]): Node {
@@ -169,45 +190,83 @@ const FIXED_YEARS = [2025, 2024];
       }));
   }, [rows]);
 
+  /** meses existentes por ano em toda a base (para achar o par anterior) */
+  const mesesPorAno = useMemo(() => {
+    const m = new Map<number, number[]>();
+    for (const r of allRows || []) {
+      if (!m.has(r.ano)) m.set(r.ano, []);
+      const a = m.get(r.ano)!;
+      if (!a.includes(r.mes)) a.push(r.mes);
+    }
+    m.forEach((v) => v.sort((a, b) => a - b));
+    return m;
+  }, [allRows]);
+
+  const prevAno = (y: number) => {
+    const meses = mesesPorAno.get(y - 1);
+    if (!meses?.length) return undefined;
+    return { cells: meses.map((m) => cellKey(y - 1, m)), label: anoLabel(y - 1) };
+  };
+  const prevTri = (y: number, t: number) => {
+    const py = t === 1 ? y - 1 : y;
+    const pt = t === 1 ? 4 : t - 1;
+    const meses = (mesesPorAno.get(py) || []).filter((m) => Math.ceil(m / 3) === pt);
+    if (!meses.length) return undefined;
+    return { cells: meses.map((m) => cellKey(py, m)), label: triLabel(py, pt) };
+  };
+  const prevMes = (y: number, mes: number) => {
+    const py = mes === 1 ? y - 1 : y;
+    const pm = mes === 1 ? 12 : mes - 1;
+    if (!(mesesPorAno.get(py) || []).includes(pm)) return undefined;
+    return { cells: [cellKey(py, pm)], label: mesLabel(py, pm) };
+  };
+
   const COLS = useMemo<Col[]>(() => {
     const out: Col[] = [];
     for (const y of structure) {
       const yKey = `y:${y.ano}`;
       const yOpen = !!openCols[yKey];
       const allCells = y.tris.flatMap((t) => t.meses.map((m) => cellKey(y.ano, m)));
+      const py = prevAno(y.ano);
       if (!yOpen) {
-        out.push({ key: yKey, label: String(y.ano), kind: "ano", cells: allCells, toggleKey: yKey, open: false, isGroupEdge: true });
+        out.push({ key: yKey, label: String(y.ano), kind: "ano", cells: allCells, toggleKey: yKey, open: false, isGroupEdge: true, prevCells: py?.cells, prevLabel: py?.label });
         continue;
       }
       for (const t of y.tris) {
         const tKey = `t:${y.ano}:${t.tri}`;
         const tOpen = !!openCols[tKey];
         const tCells = t.meses.map((m) => cellKey(y.ano, m));
+        const pt = prevTri(y.ano, t.tri);
         if (!tOpen) {
-          out.push({ key: tKey, label: `${t.tri}ºT/${String(y.ano).slice(2)}`, kind: "tri", cells: tCells, toggleKey: tKey, open: false });
+          out.push({ key: tKey, label: triLabel(y.ano, t.tri), kind: "tri", cells: tCells, toggleKey: tKey, open: false, prevCells: pt?.cells, prevLabel: pt?.label });
           continue;
         }
         for (const m of t.meses) {
-          out.push({ key: `m:${y.ano}:${m}`, label: `${MES_LABEL[m - 1]}/${String(y.ano).slice(2)}`, kind: "mes", cells: [cellKey(y.ano, m)] });
+          const pm = prevMes(y.ano, m);
+          out.push({ key: `m:${y.ano}:${m}`, label: mesLabel(y.ano, m), kind: "mes", cells: [cellKey(y.ano, m)], prevCells: pm?.cells, prevLabel: pm?.label });
         }
-        out.push({ key: `t:${y.ano}:${t.tri}:tot`, label: `${t.tri}ºT/${String(y.ano).slice(2)}`, kind: "tri", cells: tCells, toggleKey: tKey, open: true });
+        out.push({ key: `t:${y.ano}:${t.tri}:tot`, label: triLabel(y.ano, t.tri), kind: "tri", cells: tCells, toggleKey: tKey, open: true, prevCells: pt?.cells, prevLabel: pt?.label });
       }
-      out.push({ key: `${yKey}:tot`, label: String(y.ano), kind: "ano", cells: allCells, toggleKey: yKey, open: true, isGroupEdge: true });
+      out.push({ key: `${yKey}:tot`, label: String(y.ano), kind: "ano", cells: allCells, toggleKey: yKey, open: true, isGroupEdge: true, prevCells: py?.cells, prevLabel: py?.label });
     }
 
     for (const fy of FIXED_YEARS) {
       const meses = Array.from(new Set((allRows || []).filter((r) => r.ano === fy).map((r) => r.mes)));
       if (!meses.length) continue;
+      const py = prevAno(fy);
       out.push({
         key: `fx:${fy}`,
         label: String(fy),
         kind: "fixo",
         cells: meses.map((m) => cellKey(fy, m)),
         isGroupEdge: true,
+        prevCells: py?.cells,
+        prevLabel: py?.label,
       });
     }
     return out;
-  }, [structure, openCols, allRows]);
+  }, [structure, openCols, allRows, mesesPorAno]);
+
 
   const tree = useMemo<Node[]>(() => {
     const roots: Node[] = [];
@@ -261,9 +320,23 @@ const FIXED_YEARS = [2025, 2024];
   walk(tree, true);
 
   const grandByCol: Record<string, number> = {};
+  const grandPrevByCol: Record<string, number> = {};
   tree.forEach((n) => {
-    COLS.forEach((c) => (grandByCol[c.key] = (grandByCol[c.key] ?? 0) + sumCells(n, c.cells)));
+    COLS.forEach((c) => {
+      grandByCol[c.key] = (grandByCol[c.key] ?? 0) + sumCells(n, c.cells);
+      if (c.prevCells) grandPrevByCol[c.key] = (grandPrevByCol[c.key] ?? 0) + sumCells(n, c.prevCells);
+    });
   });
+
+  const colLabel = (c: Col) => (c.kind === "ano" || c.kind === "fixo" ? anoLabel(Number(c.label)) : c.label);
+
+  const tipFor = (c: Col, atual: number, anterior?: number) => {
+    if (anterior === undefined) return `${colLabel(c)}: ${fmt(atual)} — sem período anterior para comparar`;
+    const { txt, pct } = fmtVar(atual, anterior);
+    return `${colLabel(c)} × ${c.prevLabel}\n${colLabel(c)}: ${fmt(atual)}\n${c.prevLabel}: ${fmt(anterior)}\nVariação: ${txt} (${pct})`;
+  };
+
+
 
 
   const toggle = (k: string) => setOpen((p) => ({ ...p, [k]: !p[k] }));
@@ -395,6 +468,7 @@ const FIXED_YEARS = [2025, 2024];
                     return (
                       <td
                         key={c.key}
+                        title={tipFor(c, v, c.prevCells ? sumCells(node, c.prevCells) : undefined)}
                         className={`px-3 py-2 text-right tabular-nums ${bodyClass(c.kind)} ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}
                       >
                         {fmt(v)}
@@ -410,12 +484,17 @@ const FIXED_YEARS = [2025, 2024];
               {COLS.map((c) => {
                 const v = grandByCol[c.key] ?? 0;
                 return (
-                  <td key={c.key} className={`px-3 py-3 text-right tabular-nums ${bodyClass(c.kind)} ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}>
+                  <td
+                    key={c.key}
+                    title={tipFor(c, v, c.prevCells ? grandPrevByCol[c.key] ?? 0 : undefined)}
+                    className={`px-3 py-3 text-right tabular-nums ${bodyClass(c.kind)} ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}
+                  >
                     {fmt(v)}
                   </td>
                 );
               })}
             </tr>
+
 
           </tbody>
         </table>
