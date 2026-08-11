@@ -170,22 +170,26 @@ const FIXED_YEARS = [2025, 2024];
           out.push({ key: `m:${y.ano}:${m}`, label: `${MES_LABEL[m - 1]}/${String(y.ano).slice(2)}`, kind: "mes", cells: [cellKey(y.ano, m)] });
         }
         out.push({ key: `t:${y.ano}:${t.tri}:tot`, label: `${t.tri}ºT/${String(y.ano).slice(2)}`, kind: "tri", cells: tCells, toggleKey: tKey, open: true });
-      }
-      out.push({ key: `${yKey}:tot`, label: String(y.ano), kind: "ano", cells: allCells, toggleKey: yKey, open: true, isGroupEdge: true });
+    }
+    for (const fy of FIXED_YEARS) {
+      const meses = Array.from(new Set((allRows || []).filter((r) => r.ano === fy).map((r) => r.mes)));
+      if (!meses.length) continue;
+      out.push({
+        key: `fx:${fy}`,
+        label: String(fy),
+        kind: "fixo",
+        cells: meses.map((m) => cellKey(fy, m)),
+        isGroupEdge: true,
+      });
     }
     return out;
-  }, [structure, openCols]);
-
-  const ALL_CELLS = useMemo(() => {
-    const s = new Set<string>();
-    COLS.forEach((c) => c.cells.forEach((k) => s.add(k)));
-    return Array.from(s);
-  }, [COLS]);
+  }, [structure, openCols, allRows]);
 
   const tree = useMemo<Node[]>(() => {
     const roots: Node[] = [];
     const m1 = new Map<string, Node>();
-    for (const r of rows) {
+    for (const r of treeRows) {
+
       const ck = cellKey(r.ano, r.mes);
       const k1 = r.g1;
       const n1 = ensure(m1, k1, stripPrefix(r.g1), 0, roots);
