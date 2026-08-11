@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-type Row = { g1: string; g2: string; g3: string; g4: string; valor: number; mes: number };
+type Row = { g1: string; g2: string; g3: string; g4: string; valor: number; mes: number; ano: number; tri: number };
 
 const MES_LABEL = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
@@ -26,33 +26,44 @@ type Node = {
   key: string;
   label: string;
   level: number;
-  values: Record<number, number>;
-  total: number;
+  values: Record<string, number>;
   children: Node[];
 };
+
+type Col = {
+  key: string;
+  label: string;
+  kind: "ano" | "tri" | "mes";
+  cells: string[]; // "ano-mes" keys
+  toggleKey?: string;
+  open?: boolean;
+  isGroupEdge?: boolean;
+};
+
+const cellKey = (ano: number, mes: number) => `${ano}-${mes}`;
 
 function ensure(map: Map<string, Node>, key: string, label: string, level: number, parentChildren: Node[]): Node {
   let n = map.get(key);
   if (!n) {
-    n = { key, label, level, values: {}, total: 0, children: [] };
+    n = { key, label, level, values: {}, children: [] };
     map.set(key, n);
     parentChildren.push(n);
   }
   return n;
 }
 
-function addValue(n: Node, mes: number, v: number) {
-  n.values[mes] = (n.values[mes] ?? 0) + v;
-  n.total += v;
+function addValue(n: Node, k: string, v: number) {
+  n.values[k] = (n.values[k] ?? 0) + v;
 }
 
+const sumCells = (n: Node, cells: string[]) => cells.reduce((a, c) => a + (n.values[c] ?? 0), 0);
+
 const DREGerencialPE = () => {
-  const [allRows, setAllRows] = useState<(Row & { ano: number })[] | null>(null);
+  const [allRows, setAllRows] = useState<Row[] | null>(null);
   const [open, setOpen] = useState<Record<string, boolean>>({});
+  const [openCols, setOpenCols] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
-  const [ano, setAno] = useState<number | null>(null);
-  const [mesDe, setMesDe] = useState<number>(1);
-  const [mesAte, setMesAte] = useState<number>(12);
+  const [ano, setAno] = useState<number | "todos">("todos");
 
   useEffect(() => {
     (async () => {
@@ -64,7 +75,7 @@ const DREGerencialPE = () => {
         while (true) {
           const { data: chunk, error } = await supabase
             .from("dre_gerencial_2t2026")
-            .select("nr_ano,nr_mes,g1,g2,g3,g4,valor")
+            .select("nr_ano,nr_mes,nr_trimestre,g1,g2,g3,g4,valor")
             .range(from, from + PAGE - 1);
           if (error) throw error;
           const arr = (chunk || []) as any[];
@@ -72,20 +83,22 @@ const DREGerencialPE = () => {
           if (arr.length < PAGE) break;
           from += PAGE;
         }
-        const parsed = data
+        const parsed: Row[] = data
           .filter((r) => r.g1)
-          .map((r) => ({
-            ano: Number(r.nr_ano) || 0,
-            mes: Number(r.nr_mes) || 0,
-            g1: r.g1 || "",
-            g2: r.g2 || "",
-            g3: r.g3 || "",
-            g4: r.g4 || "",
-            valor: Number(r.valor) || 0,
-          }));
+          .map((r) => {
+            const mes = Number(r.nr_mes) || 0;
+            return {
+              ano: Number(r.nr_ano) || 0,
+              mes,
+              tri: Number(r.nr_trimestre) || Math.ceil(mes / 3),
+              g1: r.g1 || "",
+              g2: r.g2 || "",
+              g3: r.g3 || "",
+              g4: r.g4 || "",
+              valor: Number(r.valor) || 0,
+            };
+          });
         setAllRows(parsed);
-        const anos = Array.from(new Set(parsed.map((r) => r.ano))).sort((a, b) => b - a);
-        if (anos.length) setAno((p) => p ?? anos[0]);
       } catch (e: any) {
         setError(e?.message || String(e));
         setAllRows([]);
@@ -94,28 +107,73 @@ const DREGerencialPE = () => {
   }, []);
 
   const anos = useMemo(
-    () => Array.from(new Set((allRows || []).map((r) => r.ano))).sort((a, b) => b - a),
+    () => Array.from(new Set((allRows || []).map((r) => r.ano))).sort((a, b) => a - b),
     [allRows]
   );
 
-  const MONTHS = useMemo(() => {
-    const yearRows = (allRows || []).filter((r) => r.ano === ano);
-    const present = Array.from(new Set(yearRows.map((r) => r.mes))).sort((a, b) => a - b);
-    return present
-      .filter((m) => m >= mesDe && m <= mesAte)
-      .map((m) => ({ n: m, label: `${MES_LABEL[m - 1]}/${String(ano ?? "").slice(2)}` }));
-  }, [allRows, ano, mesDe, mesAte]);
+  const rows = useMemo<Row[]>(
+    () => (allRows || []).filter((r) => (ano === "todos" ? true : r.ano === ano)),
+    [allRows, ano]
+  );
 
-  const rows = useMemo<Row[]>(() => {
-    if (!allRows || ano === null) return [];
-    const ms = new Set(MONTHS.map((m) => m.n));
-    return allRows.filter((r) => r.ano === ano && ms.has(r.mes));
-  }, [allRows, ano, MONTHS]);
+  /** Estrutura ano > trimestre > mes presente nos dados */
+  const structure = useMemo(() => {
+    const m = new Map<number, Map<number, Set<number>>>();
+    for (const r of rows) {
+      if (!m.has(r.ano)) m.set(r.ano, new Map());
+      const t = m.get(r.ano)!;
+      if (!t.has(r.tri)) t.set(r.tri, new Set());
+      t.get(r.tri)!.add(r.mes);
+    }
+    return Array.from(m.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([y, tris]) => ({
+        ano: y,
+        tris: Array.from(tris.entries())
+          .sort((a, b) => a[0] - b[0])
+          .map(([t, meses]) => ({ tri: t, meses: Array.from(meses).sort((a, b) => a - b) })),
+      }));
+  }, [rows]);
+
+  const COLS = useMemo<Col[]>(() => {
+    const out: Col[] = [];
+    for (const y of structure) {
+      const yKey = `y:${y.ano}`;
+      const yOpen = !!openCols[yKey];
+      const allCells = y.tris.flatMap((t) => t.meses.map((m) => cellKey(y.ano, m)));
+      if (!yOpen) {
+        out.push({ key: yKey, label: String(y.ano), kind: "ano", cells: allCells, toggleKey: yKey, open: false, isGroupEdge: true });
+        continue;
+      }
+      for (const t of y.tris) {
+        const tKey = `t:${y.ano}:${t.tri}`;
+        const tOpen = !!openCols[tKey];
+        const tCells = t.meses.map((m) => cellKey(y.ano, m));
+        if (!tOpen) {
+          out.push({ key: tKey, label: `${t.tri}ºT/${String(y.ano).slice(2)}`, kind: "tri", cells: tCells, toggleKey: tKey, open: false });
+          continue;
+        }
+        for (const m of t.meses) {
+          out.push({ key: `m:${y.ano}:${m}`, label: `${MES_LABEL[m - 1]}/${String(y.ano).slice(2)}`, kind: "mes", cells: [cellKey(y.ano, m)] });
+        }
+        out.push({ key: `t:${y.ano}:${t.tri}:tot`, label: `${t.tri}ºT/${String(y.ano).slice(2)}`, kind: "tri", cells: tCells, toggleKey: tKey, open: true });
+      }
+      out.push({ key: `${yKey}:tot`, label: String(y.ano), kind: "ano", cells: allCells, toggleKey: yKey, open: true, isGroupEdge: true });
+    }
+    return out;
+  }, [structure, openCols]);
+
+  const ALL_CELLS = useMemo(() => {
+    const s = new Set<string>();
+    COLS.forEach((c) => c.cells.forEach((k) => s.add(k)));
+    return Array.from(s);
+  }, [COLS]);
 
   const tree = useMemo<Node[]>(() => {
     const roots: Node[] = [];
     const m1 = new Map<string, Node>();
     for (const r of rows) {
+      const ck = cellKey(r.ano, r.mes);
       const k1 = r.g1;
       const n1 = ensure(m1, k1, stripPrefix(r.g1), 0, roots);
       const k2 = `${k1}>${r.g2}`;
@@ -129,11 +187,11 @@ const DREGerencialPE = () => {
         const k4 = `${k3}>${r.g4}`;
         const m4 = (n3 as any)._m ?? ((n3 as any)._m = new Map<string, Node>());
         const n4 = ensure(m4, k4, stripPrefix(r.g4), 3, n3.children);
-        addValue(n4, r.mes, r.valor);
+        addValue(n4, ck, r.valor);
       }
-      addValue(n3, r.mes, r.valor);
-      addValue(n2, r.mes, r.valor);
-      addValue(n1, r.mes, r.valor);
+      addValue(n3, ck, r.valor);
+      addValue(n2, ck, r.valor);
+      addValue(n1, ck, r.valor);
     }
     const sortRec = (nodes: Node[]) => {
       nodes.sort((a, b) => a.key.localeCompare(b.key, "pt-BR", { numeric: true }));
@@ -151,13 +209,6 @@ const DREGerencialPE = () => {
     }
   }, [tree]);
 
-  const grandTotalByMes: Record<number, number> = {};
-  let grandTotal = 0;
-  tree.forEach((n) => {
-    MONTHS.forEach((m) => (grandTotalByMes[m.n] = (grandTotalByMes[m.n] ?? 0) + (n.values[m.n] ?? 0)));
-    grandTotal += n.total;
-  });
-
   const rowsOut: { node: Node; visible: boolean }[] = [];
   const walk = (nodes: Node[], parentOpen: boolean) => {
     for (const n of nodes) {
@@ -168,62 +219,58 @@ const DREGerencialPE = () => {
   };
   walk(tree, true);
 
+  const grandByCol: Record<string, number> = {};
+  let grandTotal = 0;
+  tree.forEach((n) => {
+    COLS.forEach((c) => (grandByCol[c.key] = (grandByCol[c.key] ?? 0) + sumCells(n, c.cells)));
+    grandTotal += sumCells(n, ALL_CELLS);
+  });
+
   const toggle = (k: string) => setOpen((p) => ({ ...p, [k]: !p[k] }));
+  const toggleCol = (k: string) => setOpenCols((p) => ({ ...p, [k]: !p[k] }));
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm">
-      <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-border flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h2 className="text-base font-semibold text-foreground">DRE Gerencial PE</h2>
           <p className="text-xs text-muted-foreground">
-            {MONTHS.length ? `${MONTHS[0].label} a ${MONTHS[MONTHS.length - 1].label}` : "Selecione o período"} — valores em R${error ? ` — erro: ${error}` : ""}
+            Colunas por ano → trimestre → mês — valores em R${error ? ` — erro: ${error}` : ""}
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs">
           <label className="flex items-center gap-1">
             <span className="text-muted-foreground">Ano</span>
             <select
-              value={ano ?? ""}
-              onChange={(e) => setAno(Number(e.target.value))}
+              value={ano}
+              onChange={(e) => setAno(e.target.value === "todos" ? "todos" : Number(e.target.value))}
               className="px-2 py-1.5 rounded-md border border-border bg-background"
             >
+              <option value="todos">Todos</option>
               {anos.map((a) => (
                 <option key={a} value={a}>{a}</option>
               ))}
             </select>
           </label>
-          <label className="flex items-center gap-1">
-            <span className="text-muted-foreground">De</span>
-            <select
-              value={mesDe}
-              onChange={(e) => {
-                const v = Number(e.target.value);
-                setMesDe(v);
-                if (v > mesAte) setMesAte(v);
-              }}
-              className="px-2 py-1.5 rounded-md border border-border bg-background"
-            >
-              {MES_LABEL.map((l, i) => (
-                <option key={i + 1} value={i + 1}>{l}</option>
-              ))}
-            </select>
-          </label>
-          <label className="flex items-center gap-1">
-            <span className="text-muted-foreground">Até</span>
-            <select
-              value={mesAte}
-              onChange={(e) => {
-                const v = Number(e.target.value);
-                setMesAte(v);
-                if (v < mesDe) setMesDe(v);
-              }}
-              className="px-2 py-1.5 rounded-md border border-border bg-background"
-            >
-              {MES_LABEL.map((l, i) => (
-                <option key={i + 1} value={i + 1}>{l}</option>
-              ))}
-            </select>
-          </label>
+          <button
+            onClick={() => {
+              const all: Record<string, boolean> = {};
+              structure.forEach((y) => {
+                all[`y:${y.ano}`] = true;
+                y.tris.forEach((t) => (all[`t:${y.ano}:${t.tri}`] = true));
+              });
+              setOpenCols(all);
+            }}
+            className="px-3 py-1.5 rounded-md border border-border hover:bg-accent hover:text-primary"
+          >
+            Expandir períodos
+          </button>
+          <button
+            onClick={() => setOpenCols({})}
+            className="px-3 py-1.5 rounded-md border border-border hover:bg-accent hover:text-primary"
+          >
+            Recolher períodos
+          </button>
           <button
             onClick={() => {
               const all: Record<string, boolean> = {};
@@ -233,13 +280,13 @@ const DREGerencialPE = () => {
             }}
             className="px-3 py-1.5 rounded-md border border-border hover:bg-accent hover:text-primary"
           >
-            Expandir tudo
+            Expandir contas
           </button>
           <button
             onClick={() => setOpen({})}
             className="px-3 py-1.5 rounded-md border border-border hover:bg-accent hover:text-primary"
           >
-            Recolher tudo
+            Recolher contas
           </button>
         </div>
       </div>
@@ -249,10 +296,27 @@ const DREGerencialPE = () => {
           <thead className="bg-muted/50 text-muted-foreground">
             <tr>
               <th className="text-left font-medium px-6 py-3 sticky left-0 bg-muted/50">Conta</th>
-              {MONTHS.map((m) => (
-                <th key={m.n} className="text-right font-medium px-4 py-3 whitespace-nowrap">{m.label}</th>
+              {COLS.map((c) => (
+                <th
+                  key={c.key}
+                  className={`text-right font-medium px-3 py-3 whitespace-nowrap ${c.kind !== "mes" ? "bg-muted/70 text-foreground" : ""} ${c.isGroupEdge ? "border-l border-border" : ""}`}
+                >
+                  {c.toggleKey ? (
+                    <button
+                      onClick={() => toggleCol(c.toggleKey!)}
+                      className="inline-flex items-center gap-1 hover:text-primary"
+                      aria-label={c.open ? "Recolher período" : "Expandir período"}
+                      title={c.open ? "Recolher período" : "Expandir período"}
+                    >
+                      <ChevronRight className={`h-3.5 w-3.5 transition-transform ${c.open ? "rotate-90" : ""}`} />
+                      {c.label}
+                    </button>
+                  ) : (
+                    c.label
+                  )}
+                </th>
               ))}
-              <th className="text-right font-medium px-6 py-3 whitespace-nowrap">Total</th>
+              <th className="text-right font-medium px-6 py-3 whitespace-nowrap border-l border-border">Total</th>
             </tr>
           </thead>
           <tbody>
@@ -261,7 +325,7 @@ const DREGerencialPE = () => {
               const isOpen = !!open[node.key];
               const isTopLevel = node.level === 0;
               const isLeaf = node.level === 3;
-              const neg = node.total < 0;
+              const total = sumCells(node, ALL_CELLS);
               return (
                 <tr
                   key={node.key}
@@ -286,31 +350,34 @@ const DREGerencialPE = () => {
                       <span className={isLeaf ? "text-foreground/80" : ""}>{node.label}</span>
                     </div>
                   </td>
-                  {MONTHS.map((m) => {
-                    const v = node.values[m.n] ?? 0;
+                  {COLS.map((c) => {
+                    const v = sumCells(node, c.cells);
                     return (
-                      <td key={m.n} className={`px-4 py-2 text-right tabular-nums ${v < 0 ? "text-destructive" : "text-foreground"}`}>
+                      <td
+                        key={c.key}
+                        className={`px-3 py-2 text-right tabular-nums ${c.kind !== "mes" ? "bg-muted/20 font-medium" : ""} ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}
+                      >
                         {fmt(v)}
                       </td>
                     );
                   })}
-                  <td className={`px-6 py-2 text-right tabular-nums font-medium ${neg ? "text-destructive" : "text-foreground"}`}>
-                    {fmt(node.total)}
+                  <td className={`px-6 py-2 text-right tabular-nums font-medium border-l border-border ${total < 0 ? "text-destructive" : "text-foreground"}`}>
+                    {fmt(total)}
                   </td>
                 </tr>
               );
             })}
             <tr className="border-t-2 border-border bg-primary/5 font-semibold">
               <td className="px-6 py-3 sticky left-0 bg-primary/5">Resultado do Período</td>
-              {MONTHS.map((m) => {
-                const v = grandTotalByMes[m.n] ?? 0;
+              {COLS.map((c) => {
+                const v = grandByCol[c.key] ?? 0;
                 return (
-                  <td key={m.n} className={`px-4 py-3 text-right tabular-nums ${v < 0 ? "text-destructive" : "text-foreground"}`}>
+                  <td key={c.key} className={`px-3 py-3 text-right tabular-nums ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}>
                     {fmt(v)}
                   </td>
                 );
               })}
-              <td className={`px-6 py-3 text-right tabular-nums ${grandTotal < 0 ? "text-destructive" : "text-foreground"}`}>
+              <td className={`px-6 py-3 text-right tabular-nums border-l border-border ${grandTotal < 0 ? "text-destructive" : "text-foreground"}`}>
                 {fmt(grandTotal)}
               </td>
             </tr>
