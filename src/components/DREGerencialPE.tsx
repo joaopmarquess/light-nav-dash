@@ -344,7 +344,7 @@ const FIXED_YEARS = [2025, 2024];
               const isOpen = !!open[node.key];
               const isTopLevel = node.level === 0;
               const isLeaf = node.level === 3;
-              const total = sumCells(node, ALL_CELLS);
+              
               return (
                 <tr
                   key={node.key}
