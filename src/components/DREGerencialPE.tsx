@@ -240,11 +240,10 @@ const FIXED_YEARS = [2025, 2024];
   walk(tree, true);
 
   const grandByCol: Record<string, number> = {};
-  let grandTotal = 0;
   tree.forEach((n) => {
     COLS.forEach((c) => (grandByCol[c.key] = (grandByCol[c.key] ?? 0) + sumCells(n, c.cells)));
-    grandTotal += sumCells(n, ALL_CELLS);
   });
+
 
   const toggle = (k: string) => setOpen((p) => ({ ...p, [k]: !p[k] }));
   const toggleCol = (k: string) => setOpenCols((p) => ({ ...p, [k]: !p[k] }));
