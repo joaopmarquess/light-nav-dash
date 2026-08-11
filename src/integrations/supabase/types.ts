@@ -50,6 +50,33 @@ export type Database = {
         }
         Relationships: []
       }
+      orcamento_2026: {
+        Row: {
+          created_at: string
+          id: number
+          item: string
+          nr_mes: number
+          previsto: number
+          realizado: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          item: string
+          nr_mes: number
+          previsto?: number
+          realizado?: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          item?: string
+          nr_mes?: number
+          previsto?: number
+          realizado?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
