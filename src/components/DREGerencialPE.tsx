@@ -30,17 +30,38 @@ type Node = {
   children: Node[];
 };
 
+type ColKind = "ano" | "tri" | "mes" | "fixo";
+
 type Col = {
   key: string;
   label: string;
-  kind: "ano" | "tri" | "mes";
+  kind: ColKind;
   cells: string[]; // "ano-mes" keys
   toggleKey?: string;
   open?: boolean;
   isGroupEdge?: boolean;
 };
 
+const headClass = (k: ColKind) =>
+  k === "ano"
+    ? "bg-primary/15 text-foreground"
+    : k === "tri"
+    ? "bg-secondary text-secondary-foreground"
+    : k === "fixo"
+    ? "bg-muted text-muted-foreground"
+    : "bg-background text-foreground";
+
+const bodyClass = (k: ColKind) =>
+  k === "ano"
+    ? "bg-primary/10 font-semibold"
+    : k === "tri"
+    ? "bg-secondary/50 font-medium"
+    : k === "fixo"
+    ? "bg-muted/40 font-medium"
+    : "";
+
 const cellKey = (ano: number, mes: number) => `${ano}-${mes}`;
+
 
 function ensure(map: Map<string, Node>, key: string, label: string, level: number, parentChildren: Node[]): Node {
   let n = map.get(key);
