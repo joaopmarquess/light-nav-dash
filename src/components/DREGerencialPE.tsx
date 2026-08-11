@@ -190,45 +190,83 @@ const FIXED_YEARS = [2025, 2024];
       }));
   }, [rows]);
 
+  /** meses existentes por ano em toda a base (para achar o par anterior) */
+  const mesesPorAno = useMemo(() => {
+    const m = new Map<number, number[]>();
+    for (const r of allRows || []) {
+      if (!m.has(r.ano)) m.set(r.ano, []);
+      const a = m.get(r.ano)!;
+      if (!a.includes(r.mes)) a.push(r.mes);
+    }
+    m.forEach((v) => v.sort((a, b) => a - b));
+    return m;
+  }, [allRows]);
+
+  const prevAno = (y: number) => {
+    const meses = mesesPorAno.get(y - 1);
+    if (!meses?.length) return undefined;
+    return { cells: meses.map((m) => cellKey(y - 1, m)), label: anoLabel(y - 1) };
+  };
+  const prevTri = (y: number, t: number) => {
+    const py = t === 1 ? y - 1 : y;
+    const pt = t === 1 ? 4 : t - 1;
+    const meses = (mesesPorAno.get(py) || []).filter((m) => Math.ceil(m / 3) === pt);
+    if (!meses.length) return undefined;
+    return { cells: meses.map((m) => cellKey(py, m)), label: triLabel(py, pt) };
+  };
+  const prevMes = (y: number, mes: number) => {
+    const py = mes === 1 ? y - 1 : y;
+    const pm = mes === 1 ? 12 : mes - 1;
+    if (!(mesesPorAno.get(py) || []).includes(pm)) return undefined;
+    return { cells: [cellKey(py, pm)], label: mesLabel(py, pm) };
+  };
+
   const COLS = useMemo<Col[]>(() => {
     const out: Col[] = [];
     for (const y of structure) {
       const yKey = `y:${y.ano}`;
       const yOpen = !!openCols[yKey];
       const allCells = y.tris.flatMap((t) => t.meses.map((m) => cellKey(y.ano, m)));
+      const py = prevAno(y.ano);
       if (!yOpen) {
-        out.push({ key: yKey, label: String(y.ano), kind: "ano", cells: allCells, toggleKey: yKey, open: false, isGroupEdge: true });
+        out.push({ key: yKey, label: String(y.ano), kind: "ano", cells: allCells, toggleKey: yKey, open: false, isGroupEdge: true, prevCells: py?.cells, prevLabel: py?.label });
         continue;
       }
       for (const t of y.tris) {
         const tKey = `t:${y.ano}:${t.tri}`;
         const tOpen = !!openCols[tKey];
         const tCells = t.meses.map((m) => cellKey(y.ano, m));
+        const pt = prevTri(y.ano, t.tri);
         if (!tOpen) {
-          out.push({ key: tKey, label: `${t.tri}ºT/${String(y.ano).slice(2)}`, kind: "tri", cells: tCells, toggleKey: tKey, open: false });
+          out.push({ key: tKey, label: triLabel(y.ano, t.tri), kind: "tri", cells: tCells, toggleKey: tKey, open: false, prevCells: pt?.cells, prevLabel: pt?.label });
           continue;
         }
         for (const m of t.meses) {
-          out.push({ key: `m:${y.ano}:${m}`, label: `${MES_LABEL[m - 1]}/${String(y.ano).slice(2)}`, kind: "mes", cells: [cellKey(y.ano, m)] });
+          const pm = prevMes(y.ano, m);
+          out.push({ key: `m:${y.ano}:${m}`, label: mesLabel(y.ano, m), kind: "mes", cells: [cellKey(y.ano, m)], prevCells: pm?.cells, prevLabel: pm?.label });
         }
-        out.push({ key: `t:${y.ano}:${t.tri}:tot`, label: `${t.tri}ºT/${String(y.ano).slice(2)}`, kind: "tri", cells: tCells, toggleKey: tKey, open: true });
+        out.push({ key: `t:${y.ano}:${t.tri}:tot`, label: triLabel(y.ano, t.tri), kind: "tri", cells: tCells, toggleKey: tKey, open: true, prevCells: pt?.cells, prevLabel: pt?.label });
       }
-      out.push({ key: `${yKey}:tot`, label: String(y.ano), kind: "ano", cells: allCells, toggleKey: yKey, open: true, isGroupEdge: true });
+      out.push({ key: `${yKey}:tot`, label: String(y.ano), kind: "ano", cells: allCells, toggleKey: yKey, open: true, isGroupEdge: true, prevCells: py?.cells, prevLabel: py?.label });
     }
 
     for (const fy of FIXED_YEARS) {
       const meses = Array.from(new Set((allRows || []).filter((r) => r.ano === fy).map((r) => r.mes)));
       if (!meses.length) continue;
+      const py = prevAno(fy);
       out.push({
         key: `fx:${fy}`,
         label: String(fy),
         kind: "fixo",
         cells: meses.map((m) => cellKey(fy, m)),
         isGroupEdge: true,
+        prevCells: py?.cells,
+        prevLabel: py?.label,
       });
     }
     return out;
-  }, [structure, openCols, allRows]);
+  }, [structure, openCols, allRows, mesesPorAno]);
+
 
   const tree = useMemo<Node[]>(() => {
     const roots: Node[] = [];
