@@ -14,7 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      dre_gerencial_2t2026: {
+        Row: {
+          g1: string | null
+          g2: string | null
+          g3: string | null
+          g4: string | null
+          id: number
+          nr_ano: number
+          nr_mes: number
+          nr_trimestre: number
+          valor: number
+        }
+        Insert: {
+          g1?: string | null
+          g2?: string | null
+          g3?: string | null
+          g4?: string | null
+          id?: number
+          nr_ano: number
+          nr_mes: number
+          nr_trimestre: number
+          valor?: number
+        }
+        Update: {
+          g1?: string | null
+          g2?: string | null
+          g3?: string | null
+          g4?: string | null
+          id?: number
+          nr_ano?: number
+          nr_mes?: number
+          nr_trimestre?: number
+          valor?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
