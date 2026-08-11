@@ -99,16 +99,80 @@ const Orcamento = () => {
     return { previsto, realizado };
   };
 
-  const totalVals = (col: Col) => {
+  const sumVals = (its: string[], col: Col) => {
     let previsto = 0;
     let realizado = 0;
-    for (const it of items) {
+    for (const it of its) {
       const v = cellVals(it, col);
       previsto += v.previsto;
       realizado += v.realizado;
     }
     return { previsto, realizado };
   };
+
+  const totalVals = (col: Col) => sumVals(items, col);
+
+  /** Árvore: Operacional principal > Entradas / Saídas / Sinistralidade */
+  type Node = {
+    id: string;
+    label: string;
+    items: string[];
+    children?: Node[];
+    ratio?: { num: string[]; den: string[] };
+  };
+
+  const tree = useMemo<Node[]>(() => {
+    const find = (re: RegExp) => items.filter((i) => re.test(i));
+    const entradas = [...find(/\|\s*FATURAMENTO/i), ...find(/COPARTICIPA/i)];
+    const saidas = find(/DESPESAS ASSISTENCIAIS/i);
+    const usados = new Set([...entradas, ...saidas]);
+    const nodes: Node[] = [];
+    if (entradas.length || saidas.length) {
+      nodes.push({
+        id: "g:op",
+        label: "Operacional principal",
+        items: [...entradas, ...saidas],
+        children: [
+          {
+            id: "g:entradas",
+            label: "Entradas",
+            items: entradas,
+            children: entradas.map((i) => ({ id: `i:${i}`, label: stripPrefix(i), items: [i] })),
+          },
+          {
+            id: "g:saidas",
+            label: "Saídas",
+            items: saidas,
+            children: saidas.map((i) => ({ id: `i:${i}`, label: stripPrefix(i), items: [i] })),
+          },
+          {
+            id: "r:sin",
+            label: "Sinistralidade",
+            items: [],
+            ratio: { num: saidas, den: entradas },
+          },
+        ],
+      });
+    }
+    for (const i of items) if (!usados.has(i)) nodes.push({ id: `i:${i}`, label: stripPrefix(i), items: [i] });
+    return nodes;
+  }, [items]);
+
+  const [openRows, setOpenRows] = useState<Record<string, boolean>>({ "g:op": true });
+  const toggleRow = (k: string) => setOpenRows((p) => ({ ...p, [k]: !p[k] }));
+
+  const flat = useMemo(() => {
+    const out: { node: Node; depth: number }[] = [];
+    const walk = (ns: Node[], depth: number) => {
+      for (const n of ns) {
+        out.push({ node: n, depth });
+        if (n.children?.length && openRows[n.id]) walk(n.children, depth + 1);
+      }
+    };
+    walk(tree, 0);
+    return out;
+  }, [tree, openRows]);
+
 
   const showTip = (e: React.MouseEvent, title: string, previsto: number, realizado: number) => {
     if (tip?.pinned) return;
@@ -209,36 +273,68 @@ const Orcamento = () => {
             </tr>
           </thead>
           <tbody>
-            {items.map((it) => (
-              <tr key={it} className="border-t border-border hover:bg-accent/40">
-                <td className="px-6 py-2 sticky left-0 bg-card whitespace-nowrap">{stripPrefix(it)}</td>
-                {COLS.map((c) => {
-                  const { previsto, realizado } = cellVals(it, c);
-                  const title = `${stripPrefix(it)} — ${c.label}`;
-                  return (
-                    <Fragment key={c.key}>
-                      {openCols[c.key] && (
+            {flat.map(({ node, depth }) => {
+              const isGroup = !!node.children?.length;
+              const isRatio = !!node.ratio;
+              return (
+                <tr
+                  key={node.id}
+                  className={`border-t border-border hover:bg-accent/40 ${isGroup ? "font-semibold bg-muted/20" : ""} ${isRatio ? "italic" : ""}`}
+                >
+                  <td
+                    className={`px-6 py-2 sticky left-0 whitespace-nowrap ${isGroup ? "bg-muted/20" : "bg-card"}`}
+                    style={{ paddingLeft: `${1.5 + depth * 1.1}rem` }}
+                  >
+                    {isGroup ? (
+                      <button onClick={() => toggleRow(node.id)} className="inline-flex items-center gap-1 hover:text-primary">
+                        <ChevronRight className={`h-3.5 w-3.5 transition-transform ${openRows[node.id] ? "rotate-90" : ""}`} />
+                        {node.label}
+                      </button>
+                    ) : (
+                      node.label
+                    )}
+                  </td>
+                  {COLS.map((c) => {
+                    let previsto: number;
+                    let realizado: number;
+                    if (isRatio) {
+                      const num = sumVals(node.ratio!.num, c);
+                      const den = sumVals(node.ratio!.den, c);
+                      previsto = Math.abs(den.previsto) >= 0.005 ? (Math.abs(num.previsto) / Math.abs(den.previsto)) * 100 : 0;
+                      realizado = Math.abs(den.realizado) >= 0.005 ? (Math.abs(num.realizado) / Math.abs(den.realizado)) * 100 : 0;
+                    } else {
+                      const v = sumVals(node.items, c);
+                      previsto = v.previsto;
+                      realizado = v.realizado;
+                    }
+                    const title = `${node.label} — ${c.label}`;
+                    const show = (v: number) => (isRatio ? (Math.abs(v) < 0.005 ? "-" : pctFmt(v)) : fmt(v));
+                    return (
+                      <Fragment key={c.key}>
+                        {openCols[c.key] && (
+                          <td
+                            className="px-3 py-2 text-right tabular-nums border-l border-border bg-muted/30 text-muted-foreground"
+                            onContextMenu={(e) => !isRatio && showPctTip(e, c, previsto, `${c.label} · Previsto`)}
+                          >
+                            {show(previsto)}
+                          </td>
+                        )}
                         <td
-                          className="px-3 py-2 text-right tabular-nums border-l border-border bg-muted/30 text-muted-foreground"
-                          onContextMenu={(e) => showPctTip(e, c, previsto, `${c.label} · Previsto`)}
+                          className={`px-3 py-2 text-right tabular-nums cursor-help ${openCols[c.key] ? "" : "border-l border-border"} ${bodyClass(c.kind)}`}
+                          onMouseEnter={(e) => showTip(e, title, previsto, realizado)}
+                          onMouseMove={(e) => showTip(e, title, previsto, realizado)}
+                          onMouseLeave={() => !tip?.pinned && setTip(null)}
+                          onContextMenu={(e) => !isRatio && showPctTip(e, c, realizado, `${c.label} · Realizado`)}
                         >
-                          {fmt(previsto)}
+                          {show(realizado)}
                         </td>
-                      )}
-                      <td
-                        className={`px-3 py-2 text-right tabular-nums cursor-help ${openCols[c.key] ? "" : "border-l border-border"} ${bodyClass(c.kind)}`}
-                        onMouseEnter={(e) => showTip(e, title, previsto, realizado)}
-                        onMouseMove={(e) => showTip(e, title, previsto, realizado)}
-                        onMouseLeave={() => !tip?.pinned && setTip(null)}
-                        onContextMenu={(e) => showPctTip(e, c, realizado, `${c.label} · Realizado`)}
-                      >
-                        {fmt(realizado)}
-                      </td>
-                    </Fragment>
-                  );
-                })}
-              </tr>
-            ))}
+                      </Fragment>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+
             <tr className="border-t-2 border-border bg-muted/60 font-semibold">
               <td className="px-6 py-2.5 sticky left-0 bg-muted/60">Resultado do período</td>
               {COLS.map((c) => {
