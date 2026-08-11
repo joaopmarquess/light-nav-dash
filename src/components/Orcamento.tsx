@@ -306,12 +306,12 @@ const Orcamento = () => {
               {COLS.map((c) => (
                 <Fragment key={c.key}>
                   {openCols[c.key] && (
-                    <th className={`text-right font-normal px-2 py-1.5 text-[11px] whitespace-nowrap border-l border-border bg-muted/60`}>
+                    <th className={`text-right font-normal px-1.5 py-1.5 text-[11px] whitespace-nowrap border-l border-border bg-muted/60`}>
                       {c.label} · Previsto
                     </th>
                   )}
                   <th
-                    className={`text-right font-medium px-2 py-1.5 whitespace-nowrap ${openCols[c.key] ? "" : "border-l border-border"} ${headClass(c.kind)}`}
+                    className={`text-right font-medium px-1.5 py-1.5 whitespace-nowrap ${openCols[c.key] ? "" : "border-l border-border"} ${headClass(c.kind)}`}
                   >
                     <button
                       onClick={() => toggleCol(c.key)}
@@ -367,14 +367,14 @@ const Orcamento = () => {
                       <Fragment key={c.key}>
                         {openCols[c.key] && (
                           <td
-                            className="px-2 py-1.5 text-right tabular-nums border-l border-border bg-muted/30 text-muted-foreground"
+                            className="px-1.5 py-1.5 text-right tabular-nums whitespace-nowrap border-l border-border bg-muted/30 text-muted-foreground"
                             onContextMenu={(e) => !isRatio && showPctTip(e, c, previsto, `${c.label} · Previsto`)}
                           >
                             {show(previsto)}
                           </td>
                         )}
                         <td
-                          className={`px-2 py-1.5 text-right tabular-nums cursor-help ${openCols[c.key] ? "" : "border-l border-border"} ${bodyClass(c.kind)}`}
+                          className={`px-1.5 py-1.5 text-right tabular-nums whitespace-nowrap cursor-help ${openCols[c.key] ? "" : "border-l border-border"} ${bodyClass(c.kind)}`}
                           onMouseEnter={(e) => showTip(e, title, previsto, realizado, { invert: isRatio, pp: isRatio })}
                           onMouseMove={(e) => showTip(e, title, previsto, realizado, { invert: isRatio, pp: isRatio })}
 
@@ -397,12 +397,12 @@ const Orcamento = () => {
                 return (
                   <Fragment key={c.key}>
                     {openCols[c.key] && (
-                      <td className="px-2 py-1 text-right tabular-nums border-l border-border text-muted-foreground">
+                      <td className="px-1.5 py-1 text-right tabular-nums whitespace-nowrap border-l border-border text-muted-foreground">
                         {fmt(previsto)}
                       </td>
                     )}
                     <td
-                      className={`px-2 py-1 text-right tabular-nums cursor-help ${openCols[c.key] ? "" : "border-l border-border"}`}
+                      className={`px-1.5 py-1 text-right tabular-nums whitespace-nowrap cursor-help ${openCols[c.key] ? "" : "border-l border-border"}`}
                       onMouseEnter={(e) => showTip(e, `Resultado — ${c.label}`, previsto, realizado)}
                       onMouseMove={(e) => showTip(e, `Resultado — ${c.label}`, previsto, realizado)}
                       onMouseLeave={() => !tip?.pinned && setTip(null)}
