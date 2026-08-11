@@ -374,16 +374,14 @@ const FIXED_YEARS = [2025, 2024];
                     return (
                       <td
                         key={c.key}
-                        className={`px-3 py-2 text-right tabular-nums ${c.kind !== "mes" ? "bg-muted/20 font-medium" : ""} ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}
+                        className={`px-3 py-2 text-right tabular-nums ${bodyClass(c.kind)} ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}
                       >
                         {fmt(v)}
                       </td>
                     );
                   })}
-                  <td className={`px-6 py-2 text-right tabular-nums font-medium border-l border-border ${total < 0 ? "text-destructive" : "text-foreground"}`}>
-                    {fmt(total)}
-                  </td>
                 </tr>
+
               );
             })}
             <tr className="border-t-2 border-border bg-primary/5 font-semibold">
