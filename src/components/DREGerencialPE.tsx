@@ -320,9 +320,23 @@ const FIXED_YEARS = [2025, 2024];
   walk(tree, true);
 
   const grandByCol: Record<string, number> = {};
+  const grandPrevByCol: Record<string, number> = {};
   tree.forEach((n) => {
-    COLS.forEach((c) => (grandByCol[c.key] = (grandByCol[c.key] ?? 0) + sumCells(n, c.cells)));
+    COLS.forEach((c) => {
+      grandByCol[c.key] = (grandByCol[c.key] ?? 0) + sumCells(n, c.cells);
+      if (c.prevCells) grandPrevByCol[c.key] = (grandPrevByCol[c.key] ?? 0) + sumCells(n, c.prevCells);
+    });
   });
+
+  const colLabel = (c: Col) => (c.kind === "ano" || c.kind === "fixo" ? anoLabel(Number(c.label)) : c.label);
+
+  const tipFor = (c: Col, atual: number, anterior?: number) => {
+    if (anterior === undefined) return `${colLabel(c)}: ${fmt(atual)} — sem período anterior para comparar`;
+    const { txt, pct } = fmtVar(atual, anterior);
+    return `${colLabel(c)} × ${c.prevLabel}\n${colLabel(c)}: ${fmt(atual)}\n${c.prevLabel}: ${fmt(anterior)}\nVariação: ${txt} (${pct})`;
+  };
+
+
 
 
   const toggle = (k: string) => setOpen((p) => ({ ...p, [k]: !p[k] }));
