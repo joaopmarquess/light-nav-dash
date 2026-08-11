@@ -330,11 +330,25 @@ const FIXED_YEARS = [2025, 2024];
 
   const colLabel = (c: Col) => (c.kind === "ano" || c.kind === "fixo" ? anoLabel(Number(c.label)) : c.label);
 
-  const tipFor = (c: Col, atual: number, anterior?: number) => {
-    if (anterior === undefined) return `${colLabel(c)}: ${fmt(atual)} — sem período anterior para comparar`;
+  type TipData = { title: string; abs: string; pct: string; positive: boolean; neutral?: boolean };
+
+  const tipFor = (c: Col, atual: number, anterior?: number): TipData => {
+    if (anterior === undefined)
+      return { title: colLabel(c), abs: fmt(atual), pct: "sem período anterior", positive: true, neutral: true };
     const { txt, pct } = fmtVar(atual, anterior);
-    return `${colLabel(c)} × ${c.prevLabel}\n${colLabel(c)}: ${fmt(atual)}\n${c.prevLabel}: ${fmt(anterior)}\nVariação: ${txt} (${pct})`;
+    const diff = atual - anterior;
+    return {
+      title: `${c.prevLabel} x ${colLabel(c)}`,
+      abs: `${diff > 0 ? "+ " : diff < 0 ? "− " : ""}${txt.replace(/^[+−]/, "")}`,
+      pct: pct === "n/d" ? "n/d" : `${diff > 0 ? "+ " : diff < 0 ? "− " : ""}${pct.replace(/^[+−-]/, "")}`,
+      positive: diff >= 0,
+      neutral: Math.abs(diff) < 0.005,
+    };
   };
+
+  const showTip = (e: React.MouseEvent, d: TipData) =>
+    setTip({ d, x: e.clientX + 14, y: e.clientY + 14 });
+
 
 
 
