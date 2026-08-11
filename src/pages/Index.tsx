@@ -358,6 +358,9 @@ const Index = () => {
             <DRE />
           ) : active === "DRE Gerencial PE" ? (
             <DREGerencialPE />
+          ) : active === "Orçamento" ? (
+            <Orcamento />
+
           ) : active === "Gráfico" ? (
             <DREGraficos />
           ) : active === "__removed_dre__" ? (
