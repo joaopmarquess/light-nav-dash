@@ -106,7 +106,7 @@ const DREGerencialPE = () => {
   const [openCols, setOpenCols] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
   const [ano, setAno] = useState<number | "todos">("todos");
-  const [tip, setTip] = useState<{ d: { title: string; abs: string; pct: string; positive: boolean; neutral?: boolean }; x: number; y: number } | null>(null);
+  const [tip, setTip] = useState<{ d: { title: string; abs: string; pct: string; positive: boolean; neutral?: boolean }; x: number; y: number; pinned?: boolean } | null>(null);
 
 
   useEffect(() => {
@@ -348,8 +348,54 @@ const FIXED_YEARS = [2025, 2024];
     };
   };
 
-  const showTip = (e: React.MouseEvent, d: TipData) =>
+  const showTip = (e: React.MouseEvent, d: TipData) => {
+    if (tip?.pinned) return;
     setTip({ d, x: e.clientX + 14, y: e.clientY + 14 });
+  };
+
+  /** nó de Faturamento (busca recursiva pelo rótulo) */
+  const faturNode = useMemo<Node | null>(() => {
+    let found: Node | null = null;
+    const walkFind = (ns: Node[]) => {
+      for (const n of ns) {
+        if (!found && /faturamento/i.test(n.label)) found = n;
+        if (!found) walkFind(n.children);
+      }
+    };
+    walkFind(tree);
+    return found;
+  }, [tree]);
+
+  const showPctTip = (e: React.MouseEvent, c: Col, valor: number) => {
+    e.preventDefault();
+    const base = faturNode ? sumCells(faturNode, c.cells) : 0;
+    const has = Math.abs(base) >= 0.005;
+    const p = has ? (valor / Math.abs(base)) * 100 : 0;
+    setTip({
+      pinned: true,
+      x: e.clientX + 14,
+      y: e.clientY + 14,
+      d: {
+        title: `% sobre Faturamento — ${colLabel(c)}`,
+        abs: `${fmt(valor)} / ${fmt(base)}`,
+        pct: has ? `${new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 }).format(p)}%` : "n/d",
+        positive: p >= 0,
+        neutral: !has,
+      },
+    });
+  };
+
+  useEffect(() => {
+    if (!tip?.pinned) return;
+    const clear = () => setTip(null);
+    window.addEventListener("click", clear);
+    window.addEventListener("scroll", clear, true);
+    return () => {
+      window.removeEventListener("click", clear);
+      window.removeEventListener("scroll", clear, true);
+    };
+  }, [tip?.pinned]);
+
 
 
 
@@ -486,7 +532,8 @@ const FIXED_YEARS = [2025, 2024];
                         key={c.key}
                         onMouseEnter={(e) => showTip(e, tipFor(c, v, c.prevCells ? sumCells(node, c.prevCells) : undefined))}
                         onMouseMove={(e) => showTip(e, tipFor(c, v, c.prevCells ? sumCells(node, c.prevCells) : undefined))}
-                        onMouseLeave={() => setTip(null)}
+                        onMouseLeave={() => setTip((t) => (t?.pinned ? t : null))}
+                        onContextMenu={(e) => showPctTip(e, c, v)}
                         className={`px-3 py-2 text-right tabular-nums ${bodyClass(c.kind)} ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}
                       >
                         {fmt(v)}
@@ -506,7 +553,8 @@ const FIXED_YEARS = [2025, 2024];
                     key={c.key}
                     onMouseEnter={(e) => showTip(e, tipFor(c, v, c.prevCells ? grandPrevByCol[c.key] ?? 0 : undefined))}
                     onMouseMove={(e) => showTip(e, tipFor(c, v, c.prevCells ? grandPrevByCol[c.key] ?? 0 : undefined))}
-                    onMouseLeave={() => setTip(null)}
+                    onMouseLeave={() => setTip((t) => (t?.pinned ? t : null))}
+                    onContextMenu={(e) => showPctTip(e, c, v)}
                     className={`px-3 py-3 text-right tabular-nums ${bodyClass(c.kind)} ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}
                   >
                     {fmt(v)}
