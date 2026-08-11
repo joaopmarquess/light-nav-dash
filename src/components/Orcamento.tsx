@@ -206,7 +206,7 @@ const Orcamento = () => {
   }, [items]);
 
 
-  const [openRows, setOpenRows] = useState<Record<string, boolean>>({ "g:op": true });
+  const [openRows, setOpenRows] = useState<Record<string, boolean>>({ "g:operacional": true, "g:op": true });
   const toggleRow = (k: string) => setOpenRows((p) => ({ ...p, [k]: !p[k] }));
 
   const flat = useMemo(() => {
