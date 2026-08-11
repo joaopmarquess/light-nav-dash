@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { CalendarDays, Coins, TrendingUp, TrendingDown } from "lucide-react";
+import { CalendarDays, ChevronRight, Coins, TrendingUp, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 type Row = { item: string; mes: number; previsto: number; realizado: number };
@@ -32,6 +32,8 @@ const Orcamento = () => {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tip, setTip] = useState<{ d: TipData; x: number; y: number; pinned?: boolean } | null>(null);
+  const [openCols, setOpenCols] = useState<Record<string, boolean>>({});
+  const toggleCol = (k: string) => setOpenCols((p) => ({ ...p, [k]: !p[k] }));
 
   useEffect(() => {
     (async () => {
