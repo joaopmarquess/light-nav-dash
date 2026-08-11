@@ -26,7 +26,7 @@ const stripPrefix = (s: string) => toSentence((s || "").replace(/^\d+\|/, ""));
 
 type Col = { key: string; label: string; meses: number[]; kind: "mes" | "total" };
 
-type TipData = { title: string; abs: string; pct: string; positive: boolean; neutral?: boolean };
+type TipData = { title: string; abs: string; pct: string; positive: boolean; neutral?: boolean; up?: boolean };
 
 const Orcamento = () => {
   const [rows, setRows] = useState<Row[] | null>(null);
