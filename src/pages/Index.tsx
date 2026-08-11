@@ -91,6 +91,7 @@ const menuItems: MenuItem[] = [
     label: "Contabilidade",
     children: [
       { icon: FileText, label: "DRE" },
+      { icon: FileText, label: "DRE Gerencial PE" },
       { icon: BarChart3, label: "Gráfico" },
       { icon: LayoutDashboard, label: "DRE PB" },
     ],
