@@ -62,6 +62,8 @@ import SinistralidadeCidade from "@/components/SinistralidadeCidade";
 import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
 import DREGerencialPE from "@/components/DREGerencialPE";
+import Orcamento from "@/components/Orcamento";
+
 import Assistencial from "@/components/Assistencial";
 import AssistencialCompetencia from "@/components/AssistencialCompetencia";
 import AssistencialConsulta from "@/components/AssistencialConsulta";
@@ -93,8 +95,10 @@ const menuItems: MenuItem[] = [
     children: [
       { icon: FileText, label: "DRE" },
       { icon: FileText, label: "DRE Gerencial PE" },
+      { icon: Coins, label: "Orçamento" },
       { icon: BarChart3, label: "Gráfico" },
       { icon: LayoutDashboard, label: "DRE PB" },
+
     ],
   },
   {
@@ -356,6 +360,9 @@ const Index = () => {
             <DRE />
           ) : active === "DRE Gerencial PE" ? (
             <DREGerencialPE />
+          ) : active === "Orçamento" ? (
+            <Orcamento />
+
           ) : active === "Gráfico" ? (
             <DREGraficos />
           ) : active === "__removed_dre__" ? (
