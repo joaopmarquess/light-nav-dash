@@ -111,10 +111,23 @@ const DREGerencialPE = () => {
     [allRows]
   );
 
+const FIXED_YEARS = [2025, 2024];
+
+  /** linhas usadas nas colunas hierárquicas (exclui os anos fixos) */
   const rows = useMemo<Row[]>(
-    () => (allRows || []).filter((r) => (ano === "todos" ? true : r.ano === ano)),
+    () =>
+      (allRows || []).filter(
+        (r) => !FIXED_YEARS.includes(r.ano) && (ano === "todos" ? true : r.ano === ano)
+      ),
     [allRows, ano]
   );
+
+  /** linhas usadas para montar a árvore (inclui os anos fixos) */
+  const treeRows = useMemo<Row[]>(
+    () => (allRows || []).filter((r) => FIXED_YEARS.includes(r.ano) || (ano === "todos" ? true : r.ano === ano)),
+    [allRows, ano]
+  );
+
 
   /** Estrutura ano > trimestre > mes presente nos dados */
   const structure = useMemo(() => {
