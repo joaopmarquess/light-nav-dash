@@ -318,7 +318,7 @@ const FIXED_YEARS = [2025, 2024];
               {COLS.map((c) => (
                 <th
                   key={c.key}
-                  className={`text-right font-medium px-3 py-3 whitespace-nowrap ${c.kind !== "mes" ? "bg-muted/70 text-foreground" : ""} ${c.isGroupEdge ? "border-l border-border" : ""}`}
+                  className={`text-right font-medium px-3 py-3 whitespace-nowrap ${headClass(c.kind)} ${c.isGroupEdge ? "border-l border-border" : ""}`}
                 >
                   {c.toggleKey ? (
                     <button
