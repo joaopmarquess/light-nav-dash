@@ -26,7 +26,7 @@ const stripPrefix = (s: string) => toSentence((s || "").replace(/^\d+\|/, ""));
 
 type Col = { key: string; label: string; meses: number[]; kind: "mes" | "total" };
 
-type TipData = { title: string; abs: string; pct: string; positive: boolean; neutral?: boolean };
+type TipData = { title: string; abs: string; pct: string; positive: boolean; neutral?: boolean; up?: boolean };
 
 const Orcamento = () => {
   const [rows, setRows] = useState<Row[] | null>(null);
@@ -174,22 +174,31 @@ const Orcamento = () => {
   }, [tree, openRows]);
 
 
-  const showTip = (e: React.MouseEvent, title: string, previsto: number, realizado: number) => {
+  const showTip = (
+    e: React.MouseEvent,
+    title: string,
+    previsto: number,
+    realizado: number,
+    opts?: { invert?: boolean; pp?: boolean }
+  ) => {
     if (tip?.pinned) return;
     const diff = realizado - previsto;
     const has = Math.abs(previsto) >= 0.005;
+    const sign = diff > 0 ? "+ " : diff < 0 ? "− " : "";
     setTip({
       x: e.clientX + 14,
       y: e.clientY + 14,
       d: {
         title,
-        abs: `${diff > 0 ? "+ " : diff < 0 ? "− " : ""}${fmt(Math.abs(diff))}`,
-        pct: has ? `${diff > 0 ? "+ " : diff < 0 ? "− " : ""}${pctFmt(Math.abs((diff / Math.abs(previsto)) * 100))}` : "n/d",
-        positive: diff >= 0,
+        abs: opts?.pp ? `${sign}${pctFmt(Math.abs(diff))} p.p.` : `${sign}${fmt(Math.abs(diff))}`,
+        pct: has ? `${sign}${pctFmt(Math.abs((diff / Math.abs(previsto)) * 100))}` : "n/d",
+        positive: opts?.invert ? diff <= 0 : diff >= 0,
+        up: diff >= 0,
         neutral: Math.abs(diff) < 0.005,
       },
     });
   };
+
 
   const faturItem = useMemo(() => items.find((i) => /faturamento/i.test(i)) || null, [items]);
 
@@ -321,8 +330,9 @@ const Orcamento = () => {
                         )}
                         <td
                           className={`px-3 py-2 text-right tabular-nums cursor-help ${openCols[c.key] ? "" : "border-l border-border"} ${bodyClass(c.kind)}`}
-                          onMouseEnter={(e) => showTip(e, title, previsto, realizado)}
-                          onMouseMove={(e) => showTip(e, title, previsto, realizado)}
+                          onMouseEnter={(e) => showTip(e, title, previsto, realizado, { invert: isRatio, pp: isRatio })}
+                          onMouseMove={(e) => showTip(e, title, previsto, realizado, { invert: isRatio, pp: isRatio })}
+
                           onMouseLeave={() => !tip?.pinned && setTip(null)}
                           onContextMenu={(e) => !isRatio && showPctTip(e, c, realizado, `${c.label} · Realizado`)}
                         >
@@ -386,7 +396,7 @@ const Orcamento = () => {
               tip.d.neutral ? "text-muted-foreground" : tip.d.positive ? "text-emerald-600" : "text-rose-600"
             }`}
           >
-            {tip.d.positive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+            {(tip.d.up ?? tip.d.positive) ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
             {tip.d.pct}
           </div>
         </div>
