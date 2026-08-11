@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, CalendarDays, Coins, TrendingUp, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 type Row = { g1: string; g2: string; g3: string; g4: string; valor: number; mes: number; ano: number; tri: number };
@@ -106,6 +106,8 @@ const DREGerencialPE = () => {
   const [openCols, setOpenCols] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
   const [ano, setAno] = useState<number | "todos">("todos");
+  const [tip, setTip] = useState<{ d: { title: string; abs: string; pct: string; positive: boolean; neutral?: boolean }; x: number; y: number } | null>(null);
+
 
   useEffect(() => {
     (async () => {
@@ -330,11 +332,25 @@ const FIXED_YEARS = [2025, 2024];
 
   const colLabel = (c: Col) => (c.kind === "ano" || c.kind === "fixo" ? anoLabel(Number(c.label)) : c.label);
 
-  const tipFor = (c: Col, atual: number, anterior?: number) => {
-    if (anterior === undefined) return `${colLabel(c)}: ${fmt(atual)} — sem período anterior para comparar`;
+  type TipData = { title: string; abs: string; pct: string; positive: boolean; neutral?: boolean };
+
+  const tipFor = (c: Col, atual: number, anterior?: number): TipData => {
+    if (anterior === undefined)
+      return { title: colLabel(c), abs: fmt(atual), pct: "sem período anterior", positive: true, neutral: true };
     const { txt, pct } = fmtVar(atual, anterior);
-    return `${colLabel(c)} × ${c.prevLabel}\n${colLabel(c)}: ${fmt(atual)}\n${c.prevLabel}: ${fmt(anterior)}\nVariação: ${txt} (${pct})`;
+    const diff = atual - anterior;
+    return {
+      title: `${c.prevLabel} x ${colLabel(c)}`,
+      abs: `${diff > 0 ? "+ " : diff < 0 ? "− " : ""}${txt.replace(/^[+−]/, "")}`,
+      pct: pct === "n/d" ? "n/d" : `${diff > 0 ? "+ " : diff < 0 ? "− " : ""}${pct.replace(/^[+−-]/, "")}`,
+      positive: diff >= 0,
+      neutral: Math.abs(diff) < 0.005,
+    };
   };
+
+  const showTip = (e: React.MouseEvent, d: TipData) =>
+    setTip({ d, x: e.clientX + 14, y: e.clientY + 14 });
+
 
 
 
@@ -468,7 +484,9 @@ const FIXED_YEARS = [2025, 2024];
                     return (
                       <td
                         key={c.key}
-                        title={tipFor(c, v, c.prevCells ? sumCells(node, c.prevCells) : undefined)}
+                        onMouseEnter={(e) => showTip(e, tipFor(c, v, c.prevCells ? sumCells(node, c.prevCells) : undefined))}
+                        onMouseMove={(e) => showTip(e, tipFor(c, v, c.prevCells ? sumCells(node, c.prevCells) : undefined))}
+                        onMouseLeave={() => setTip(null)}
                         className={`px-3 py-2 text-right tabular-nums ${bodyClass(c.kind)} ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}
                       >
                         {fmt(v)}
@@ -486,7 +504,9 @@ const FIXED_YEARS = [2025, 2024];
                 return (
                   <td
                     key={c.key}
-                    title={tipFor(c, v, c.prevCells ? grandPrevByCol[c.key] ?? 0 : undefined)}
+                    onMouseEnter={(e) => showTip(e, tipFor(c, v, c.prevCells ? grandPrevByCol[c.key] ?? 0 : undefined))}
+                    onMouseMove={(e) => showTip(e, tipFor(c, v, c.prevCells ? grandPrevByCol[c.key] ?? 0 : undefined))}
+                    onMouseLeave={() => setTip(null)}
                     className={`px-3 py-3 text-right tabular-nums ${bodyClass(c.kind)} ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}
                   >
                     {fmt(v)}
@@ -499,8 +519,29 @@ const FIXED_YEARS = [2025, 2024];
           </tbody>
         </table>
       </div>
+
+      {tip && (
+        <div
+          className="fixed z-50 pointer-events-none rounded-lg border border-border bg-popover text-popover-foreground shadow-lg px-4 py-3 space-y-1.5 text-sm"
+          style={{ left: tip.x, top: tip.y }}
+        >
+          <div className="flex items-center gap-2 font-semibold">
+            <CalendarDays className="h-4 w-4 text-muted-foreground" />
+            <span>{tip.d.title}</span>
+          </div>
+          <div className={`flex items-center gap-2 font-semibold ${tip.d.neutral ? "text-muted-foreground" : tip.d.positive ? "text-emerald-600" : "text-destructive"}`}>
+            <Coins className="h-4 w-4" />
+            <span>{tip.d.abs}</span>
+          </div>
+          <div className={`flex items-center gap-2 font-semibold ${tip.d.neutral ? "text-muted-foreground" : tip.d.positive ? "text-emerald-600" : "text-destructive"}`}>
+            {tip.d.positive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+            <span>{tip.d.pct}</span>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
 
 export default DREGerencialPE;
+
