@@ -348,8 +348,43 @@ const FIXED_YEARS = [2025, 2024];
     };
   };
 
-  const showTip = (e: React.MouseEvent, d: TipData) =>
+  const showTip = (e: React.MouseEvent, d: TipData) => {
+    if (tip?.pinned) return;
     setTip({ d, x: e.clientX + 14, y: e.clientY + 14 });
+  };
+
+  /** nó de Faturamento (busca recursiva pelo rótulo) */
+  const faturNode = useMemo<Node | null>(() => {
+    let found: Node | null = null;
+    const walkFind = (ns: Node[]) => {
+      for (const n of ns) {
+        if (!found && /faturamento/i.test(n.label)) found = n;
+        if (!found) walkFind(n.children);
+      }
+    };
+    walkFind(tree);
+    return found;
+  }, [tree]);
+
+  const showPctTip = (e: React.MouseEvent, c: Col, valor: number) => {
+    e.preventDefault();
+    const base = faturNode ? sumCells(faturNode, c.cells) : 0;
+    const has = Math.abs(base) >= 0.005;
+    const p = has ? (valor / Math.abs(base)) * 100 : 0;
+    setTip({
+      pinned: true,
+      x: e.clientX + 14,
+      y: e.clientY + 14,
+      d: {
+        title: `% sobre Faturamento — ${colLabel(c)}`,
+        abs: `${fmt(valor)} / ${fmt(base)}`,
+        pct: has ? `${new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 }).format(p)}%` : "n/d",
+        positive: p >= 0,
+        neutral: !has,
+      },
+    });
+  };
+
 
 
 
