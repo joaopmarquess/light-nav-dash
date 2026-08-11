@@ -174,22 +174,30 @@ const Orcamento = () => {
   }, [tree, openRows]);
 
 
-  const showTip = (e: React.MouseEvent, title: string, previsto: number, realizado: number) => {
+  const showTip = (
+    e: React.MouseEvent,
+    title: string,
+    previsto: number,
+    realizado: number,
+    opts?: { invert?: boolean; pp?: boolean }
+  ) => {
     if (tip?.pinned) return;
     const diff = realizado - previsto;
     const has = Math.abs(previsto) >= 0.005;
+    const sign = diff > 0 ? "+ " : diff < 0 ? "− " : "";
     setTip({
       x: e.clientX + 14,
       y: e.clientY + 14,
       d: {
         title,
-        abs: `${diff > 0 ? "+ " : diff < 0 ? "− " : ""}${fmt(Math.abs(diff))}`,
-        pct: has ? `${diff > 0 ? "+ " : diff < 0 ? "− " : ""}${pctFmt(Math.abs((diff / Math.abs(previsto)) * 100))}` : "n/d",
-        positive: diff >= 0,
+        abs: opts?.pp ? `${sign}${pctFmt(Math.abs(diff))} p.p.` : `${sign}${fmt(Math.abs(diff))}`,
+        pct: has ? `${sign}${pctFmt(Math.abs((diff / Math.abs(previsto)) * 100))}` : "n/d",
+        positive: opts?.invert ? diff <= 0 : diff >= 0,
         neutral: Math.abs(diff) < 0.005,
       },
     });
   };
+
 
   const faturItem = useMemo(() => items.find((i) => /faturamento/i.test(i)) || null, [items]);
 
