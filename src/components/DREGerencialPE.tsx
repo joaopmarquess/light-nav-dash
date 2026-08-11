@@ -30,17 +30,38 @@ type Node = {
   children: Node[];
 };
 
+type ColKind = "ano" | "tri" | "mes" | "fixo";
+
 type Col = {
   key: string;
   label: string;
-  kind: "ano" | "tri" | "mes";
+  kind: ColKind;
   cells: string[]; // "ano-mes" keys
   toggleKey?: string;
   open?: boolean;
   isGroupEdge?: boolean;
 };
 
+const headClass = (k: ColKind) =>
+  k === "ano"
+    ? "bg-primary/15 text-foreground"
+    : k === "tri"
+    ? "bg-secondary text-secondary-foreground"
+    : k === "fixo"
+    ? "bg-muted text-muted-foreground"
+    : "bg-background text-foreground";
+
+const bodyClass = (k: ColKind) =>
+  k === "ano"
+    ? "bg-primary/10 font-semibold"
+    : k === "tri"
+    ? "bg-secondary/50 font-medium"
+    : k === "fixo"
+    ? "bg-muted/40 font-medium"
+    : "";
+
 const cellKey = (ano: number, mes: number) => `${ano}-${mes}`;
+
 
 function ensure(map: Map<string, Node>, key: string, label: string, level: number, parentChildren: Node[]): Node {
   let n = map.get(key);
@@ -111,10 +132,23 @@ const DREGerencialPE = () => {
     [allRows]
   );
 
+const FIXED_YEARS = [2025, 2024];
+
+  /** linhas usadas nas colunas hierárquicas (exclui os anos fixos) */
   const rows = useMemo<Row[]>(
-    () => (allRows || []).filter((r) => (ano === "todos" ? true : r.ano === ano)),
+    () =>
+      (allRows || []).filter(
+        (r) => !FIXED_YEARS.includes(r.ano) && (ano === "todos" ? true : r.ano === ano)
+      ),
     [allRows, ano]
   );
+
+  /** linhas usadas para montar a árvore (inclui os anos fixos) */
+  const treeRows = useMemo<Row[]>(
+    () => (allRows || []).filter((r) => FIXED_YEARS.includes(r.ano) || (ano === "todos" ? true : r.ano === ano)),
+    [allRows, ano]
+  );
+
 
   /** Estrutura ano > trimestre > mes presente nos dados */
   const structure = useMemo(() => {
@@ -160,19 +194,26 @@ const DREGerencialPE = () => {
       }
       out.push({ key: `${yKey}:tot`, label: String(y.ano), kind: "ano", cells: allCells, toggleKey: yKey, open: true, isGroupEdge: true });
     }
-    return out;
-  }, [structure, openCols]);
 
-  const ALL_CELLS = useMemo(() => {
-    const s = new Set<string>();
-    COLS.forEach((c) => c.cells.forEach((k) => s.add(k)));
-    return Array.from(s);
-  }, [COLS]);
+    for (const fy of FIXED_YEARS) {
+      const meses = Array.from(new Set((allRows || []).filter((r) => r.ano === fy).map((r) => r.mes)));
+      if (!meses.length) continue;
+      out.push({
+        key: `fx:${fy}`,
+        label: String(fy),
+        kind: "fixo",
+        cells: meses.map((m) => cellKey(fy, m)),
+        isGroupEdge: true,
+      });
+    }
+    return out;
+  }, [structure, openCols, allRows]);
 
   const tree = useMemo<Node[]>(() => {
     const roots: Node[] = [];
     const m1 = new Map<string, Node>();
-    for (const r of rows) {
+    for (const r of treeRows) {
+
       const ck = cellKey(r.ano, r.mes);
       const k1 = r.g1;
       const n1 = ensure(m1, k1, stripPrefix(r.g1), 0, roots);
@@ -220,11 +261,10 @@ const DREGerencialPE = () => {
   walk(tree, true);
 
   const grandByCol: Record<string, number> = {};
-  let grandTotal = 0;
   tree.forEach((n) => {
     COLS.forEach((c) => (grandByCol[c.key] = (grandByCol[c.key] ?? 0) + sumCells(n, c.cells)));
-    grandTotal += sumCells(n, ALL_CELLS);
   });
+
 
   const toggle = (k: string) => setOpen((p) => ({ ...p, [k]: !p[k] }));
   const toggleCol = (k: string) => setOpenCols((p) => ({ ...p, [k]: !p[k] }));
@@ -299,7 +339,7 @@ const DREGerencialPE = () => {
               {COLS.map((c) => (
                 <th
                   key={c.key}
-                  className={`text-right font-medium px-3 py-3 whitespace-nowrap ${c.kind !== "mes" ? "bg-muted/70 text-foreground" : ""} ${c.isGroupEdge ? "border-l border-border" : ""}`}
+                  className={`text-right font-medium px-3 py-3 whitespace-nowrap ${headClass(c.kind)} ${c.isGroupEdge ? "border-l border-border" : ""}`}
                 >
                   {c.toggleKey ? (
                     <button
@@ -316,7 +356,7 @@ const DREGerencialPE = () => {
                   )}
                 </th>
               ))}
-              <th className="text-right font-medium px-6 py-3 whitespace-nowrap border-l border-border">Total</th>
+              
             </tr>
           </thead>
           <tbody>
@@ -325,7 +365,7 @@ const DREGerencialPE = () => {
               const isOpen = !!open[node.key];
               const isTopLevel = node.level === 0;
               const isLeaf = node.level === 3;
-              const total = sumCells(node, ALL_CELLS);
+              
               return (
                 <tr
                   key={node.key}
@@ -355,16 +395,14 @@ const DREGerencialPE = () => {
                     return (
                       <td
                         key={c.key}
-                        className={`px-3 py-2 text-right tabular-nums ${c.kind !== "mes" ? "bg-muted/20 font-medium" : ""} ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}
+                        className={`px-3 py-2 text-right tabular-nums ${bodyClass(c.kind)} ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}
                       >
                         {fmt(v)}
                       </td>
                     );
                   })}
-                  <td className={`px-6 py-2 text-right tabular-nums font-medium border-l border-border ${total < 0 ? "text-destructive" : "text-foreground"}`}>
-                    {fmt(total)}
-                  </td>
                 </tr>
+
               );
             })}
             <tr className="border-t-2 border-border bg-primary/5 font-semibold">
@@ -372,15 +410,13 @@ const DREGerencialPE = () => {
               {COLS.map((c) => {
                 const v = grandByCol[c.key] ?? 0;
                 return (
-                  <td key={c.key} className={`px-3 py-3 text-right tabular-nums ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}>
+                  <td key={c.key} className={`px-3 py-3 text-right tabular-nums ${bodyClass(c.kind)} ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}>
                     {fmt(v)}
                   </td>
                 );
               })}
-              <td className={`px-6 py-3 text-right tabular-nums border-l border-border ${grandTotal < 0 ? "text-destructive" : "text-foreground"}`}>
-                {fmt(grandTotal)}
-              </td>
             </tr>
+
           </tbody>
         </table>
       </div>
