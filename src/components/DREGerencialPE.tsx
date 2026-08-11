@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, CalendarDays, Coins, TrendingUp, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 type Row = { g1: string; g2: string; g3: string; g4: string; valor: number; mes: number; ano: number; tri: number };
