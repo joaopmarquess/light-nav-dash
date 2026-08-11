@@ -335,7 +335,7 @@ const FIXED_YEARS = [2025, 2024];
                   )}
                 </th>
               ))}
-              <th className="text-right font-medium px-6 py-3 whitespace-nowrap border-l border-border">Total</th>
+              
             </tr>
           </thead>
           <tbody>
