@@ -65,6 +65,24 @@ const bodyClass = (k: ColKind) =>
 
 const cellKey = (ano: number, mes: number) => `${ano}-${mes}`;
 
+const anoLabel = (y: number) => `Total ${y}`;
+const triLabel = (y: number, t: number) => `${t}ºT/${String(y).slice(2)}`;
+const mesLabel = (y: number, m: number) => `${MES_LABEL[m - 1]}/${String(y).slice(2)}`;
+
+/** variação percentual formatada */
+const fmtVar = (atual: number, anterior: number) => {
+  const diff = atual - anterior;
+  const sinal = diff > 0 ? "+" : diff < 0 ? "−" : "";
+  const abs = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(Math.abs(diff));
+  const pct =
+    Math.abs(anterior) < 0.005
+      ? "n/d"
+      : `${diff / Math.abs(anterior) > 0 ? "+" : ""}${new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 }).format((diff / Math.abs(anterior)) * 100)}%`;
+  return { txt: `${sinal}${abs}`, pct };
+};
+
+
+
 
 function ensure(map: Map<string, Node>, key: string, label: string, level: number, parentChildren: Node[]): Node {
   let n = map.get(key);
