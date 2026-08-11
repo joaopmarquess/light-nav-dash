@@ -519,8 +519,29 @@ const FIXED_YEARS = [2025, 2024];
           </tbody>
         </table>
       </div>
+
+      {tip && (
+        <div
+          className="fixed z-50 pointer-events-none rounded-lg border border-border bg-popover text-popover-foreground shadow-lg px-4 py-3 space-y-1.5 text-sm"
+          style={{ left: tip.x, top: tip.y }}
+        >
+          <div className="flex items-center gap-2 font-semibold">
+            <CalendarDays className="h-4 w-4 text-muted-foreground" />
+            <span>{tip.d.title}</span>
+          </div>
+          <div className={`flex items-center gap-2 font-semibold ${tip.d.neutral ? "text-muted-foreground" : tip.d.positive ? "text-emerald-600" : "text-destructive"}`}>
+            <Coins className="h-4 w-4" />
+            <span>{tip.d.abs}</span>
+          </div>
+          <div className={`flex items-center gap-2 font-semibold ${tip.d.neutral ? "text-muted-foreground" : tip.d.positive ? "text-emerald-600" : "text-destructive"}`}>
+            {tip.d.positive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+            <span>{tip.d.pct}</span>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
 
 export default DREGerencialPE;
+
