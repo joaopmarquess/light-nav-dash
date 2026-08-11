@@ -293,13 +293,10 @@ const Orcamento = () => {
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm">
-      <div className="px-4 py-2 border-b border-border">
-        <h2 className="text-sm font-semibold text-foreground">Orçamento</h2>
-        <p className="text-[11px] text-muted-foreground">
-          Orçado x Realizado por mês — valores em R$ (botão direito no valor: % sobre Faturamento)
-          {error ? ` — erro: ${error}` : ""}
-        </p>
-      </div>
+      {error ? (
+        <div className="px-4 py-1 border-b border-border text-[11px] text-destructive">erro: {error}</div>
+      ) : null}
+
 
       <div className="overflow-x-auto">
         <table className="w-full text-[13px] leading-normal">
