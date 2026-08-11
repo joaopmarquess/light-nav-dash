@@ -40,7 +40,10 @@ type Col = {
   toggleKey?: string;
   open?: boolean;
   isGroupEdge?: boolean;
+  prevCells?: string[];
+  prevLabel?: string;
 };
+
 
 const headClass = (k: ColKind) =>
   k === "ano"
