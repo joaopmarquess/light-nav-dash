@@ -484,7 +484,9 @@ const FIXED_YEARS = [2025, 2024];
                     return (
                       <td
                         key={c.key}
-                        title={tipFor(c, v, c.prevCells ? sumCells(node, c.prevCells) : undefined)}
+                        onMouseEnter={(e) => showTip(e, tipFor(c, v, c.prevCells ? sumCells(node, c.prevCells) : undefined))}
+                        onMouseMove={(e) => showTip(e, tipFor(c, v, c.prevCells ? sumCells(node, c.prevCells) : undefined))}
+                        onMouseLeave={() => setTip(null)}
                         className={`px-3 py-2 text-right tabular-nums ${bodyClass(c.kind)} ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}
                       >
                         {fmt(v)}
