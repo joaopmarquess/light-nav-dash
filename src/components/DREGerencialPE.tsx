@@ -504,7 +504,9 @@ const FIXED_YEARS = [2025, 2024];
                 return (
                   <td
                     key={c.key}
-                    title={tipFor(c, v, c.prevCells ? grandPrevByCol[c.key] ?? 0 : undefined)}
+                    onMouseEnter={(e) => showTip(e, tipFor(c, v, c.prevCells ? grandPrevByCol[c.key] ?? 0 : undefined))}
+                    onMouseMove={(e) => showTip(e, tipFor(c, v, c.prevCells ? grandPrevByCol[c.key] ?? 0 : undefined))}
+                    onMouseLeave={() => setTip(null)}
                     className={`px-3 py-3 text-right tabular-nums ${bodyClass(c.kind)} ${c.isGroupEdge ? "border-l border-border" : ""} ${v < 0 ? "text-destructive" : "text-foreground"}`}
                   >
                     {fmt(v)}
