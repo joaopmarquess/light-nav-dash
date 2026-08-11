@@ -193,6 +193,7 @@ const Orcamento = () => {
         abs: opts?.pp ? `${sign}${pctFmt(Math.abs(diff))} p.p.` : `${sign}${fmt(Math.abs(diff))}`,
         pct: has ? `${sign}${pctFmt(Math.abs((diff / Math.abs(previsto)) * 100))}` : "n/d",
         positive: opts?.invert ? diff <= 0 : diff >= 0,
+        up: diff >= 0,
         neutral: Math.abs(diff) < 0.005,
       },
     });
@@ -395,7 +396,7 @@ const Orcamento = () => {
               tip.d.neutral ? "text-muted-foreground" : tip.d.positive ? "text-emerald-600" : "text-rose-600"
             }`}
           >
-            {tip.d.positive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+            {(tip.d.up ?? tip.d.positive) ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
             {tip.d.pct}
           </div>
         </div>
