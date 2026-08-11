@@ -106,7 +106,7 @@ const DREGerencialPE = () => {
   const [openCols, setOpenCols] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
   const [ano, setAno] = useState<number | "todos">("todos");
-  const [tip, setTip] = useState<{ d: { title: string; abs: string; pct: string; positive: boolean; neutral?: boolean }; x: number; y: number } | null>(null);
+  const [tip, setTip] = useState<{ d: { title: string; abs: string; pct: string; positive: boolean; neutral?: boolean }; x: number; y: number; pinned?: boolean } | null>(null);
 
 
   useEffect(() => {
