@@ -60,6 +60,7 @@ const AtivosEm = ({ dateValue }: Props) => {
             .select('"UF_CIDADE_OFICIAL","CIDADE_OFICIAL"')
             .lte("primeira_vigencia", ref)
             .or(`ultimo_cancelamento.is.null,ultimo_cancelamento.gt.${ref}`)
+            .order("CDREGUSR", { ascending: true })
             .range(from, from + pageSize - 1);
           if (error) throw error;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
