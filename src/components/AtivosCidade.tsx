@@ -3,7 +3,7 @@ import { Loader2, Search } from "lucide-react";
 import { hostinger } from "@/lib/hostingerClient";
 
 interface Props {
-  dateValue: string;
+  dateValue?: string;
 }
 
 const toISO = (s: string): string | null => {
@@ -17,23 +17,23 @@ const toISO = (s: string): string | null => {
 
 type CityRow = { cidade: string; uf: string; vidas: number };
 
+const DEFAULT_REF = "2026-08-12";
+
 const AtivosCidade = ({ dateValue }: Props) => {
+  const [ref, setRef] = useState<string>(() => toISO(dateValue ?? "") ?? DEFAULT_REF);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<CityRow[]>([]);
   const [q, setQ] = useState("");
 
   useEffect(() => {
-    if (!dateValue) return;
+    if (!ref) return;
     let abort = false;
     (async () => {
       setLoading(true);
       setError(null);
       setRows([]);
       try {
-        const ref = toISO(dateValue);
-        if (!ref) throw new Error(`Data de referência inválida: ${dateValue}`);
-
         // chave -> set de vidas distintas
         const byCity = new Map<string, { cidade: string; uf: string; vidas: Set<string> }>();
 
@@ -80,7 +80,7 @@ const AtivosCidade = ({ dateValue }: Props) => {
     return () => {
       abort = true;
     };
-  }, [dateValue]);
+  }, [ref]);
 
   const filtered = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -97,8 +97,15 @@ const AtivosCidade = ({ dateValue }: Props) => {
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col min-h-0">
       <div className="flex items-center justify-between gap-3 p-4 border-b border-border shrink-0">
-        <div className="text-sm text-foreground">
-          Ativos em <span className="font-semibold">{dateValue}</span> ·{" "}
+        <div className="flex items-center gap-2 text-sm text-foreground">
+          <span>Ativos em</span>
+          <input
+            type="date"
+            value={ref}
+            onChange={(e) => setRef(e.target.value)}
+            className="h-9 px-2 rounded-md border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          ·{" "}
           <span className="font-semibold tabular-nums">{fmtInt(total)}</span> vidas ·{" "}
           <span className="tabular-nums">{fmtInt(filtered.length)}</span> cidade(s)
         </div>
