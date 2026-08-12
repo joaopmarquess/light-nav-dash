@@ -124,6 +124,15 @@ const AtivosCidade = ({ dateValue }: Props) => {
           <span className="font-semibold tabular-nums">{fmtInt(total)}</span> vidas ·{" "}
           <span className="tabular-nums">{fmtInt(filtered.length)}</span> cidade(s)
         </div>
+        <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={exportCsv}
+          disabled={loading || filtered.length === 0}
+          className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-sm text-foreground hover:bg-accent disabled:opacity-50"
+        >
+          <Download className="h-4 w-4" /> Exportar CSV
+        </button>
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
