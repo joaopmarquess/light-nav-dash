@@ -143,6 +143,7 @@ const AtivosCidade = ({ dateValue }: Props) => {
             className="h-9 w-56 pl-8 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
         </div>
+        </div>
       </div>
 
       <div className="flex-1 min-h-0 overflow-auto">
