@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Search } from "lucide-react";
+import { Download, Loader2, Search } from "lucide-react";
 import { hostinger } from "@/lib/hostingerClient";
 
 interface Props {
@@ -94,6 +94,21 @@ const AtivosCidade = ({ dateValue }: Props) => {
   const max = Math.max(1, ...filtered.map((r) => r.vidas));
   const fmtInt = (n: number) => n.toLocaleString("pt-BR");
 
+  const exportCsv = () => {
+    const esc = (v: string) => (/[";\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+    const lines = [
+      "Cidade;UF;Vidas",
+      ...filtered.map((r) => [esc(r.cidade), esc(r.uf), String(r.vidas)].join(";")),
+    ];
+    const blob = new Blob(["\uFEFF" + lines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ativos_por_cidade_${ref}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col min-h-0">
       <div className="flex items-center justify-between gap-3 p-4 border-b border-border shrink-0">
@@ -109,6 +124,15 @@ const AtivosCidade = ({ dateValue }: Props) => {
           <span className="font-semibold tabular-nums">{fmtInt(total)}</span> vidas ·{" "}
           <span className="tabular-nums">{fmtInt(filtered.length)}</span> cidade(s)
         </div>
+        <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={exportCsv}
+          disabled={loading || filtered.length === 0}
+          className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-sm text-foreground hover:bg-accent disabled:opacity-50"
+        >
+          <Download className="h-4 w-4" /> Exportar CSV
+        </button>
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
@@ -118,6 +142,7 @@ const AtivosCidade = ({ dateValue }: Props) => {
             placeholder="Filtrar cidade ou UF"
             className="h-9 w-56 pl-8 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
+        </div>
         </div>
       </div>
 
