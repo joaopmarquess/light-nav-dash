@@ -94,6 +94,21 @@ const AtivosCidade = ({ dateValue }: Props) => {
   const max = Math.max(1, ...filtered.map((r) => r.vidas));
   const fmtInt = (n: number) => n.toLocaleString("pt-BR");
 
+  const exportCsv = () => {
+    const esc = (v: string) => (/[";\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+    const lines = [
+      "Cidade;UF;Vidas",
+      ...filtered.map((r) => [esc(r.cidade), esc(r.uf), String(r.vidas)].join(";")),
+    ];
+    const blob = new Blob(["\uFEFF" + lines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ativos_por_cidade_${ref}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col min-h-0">
       <div className="flex items-center justify-between gap-3 p-4 border-b border-border shrink-0">
