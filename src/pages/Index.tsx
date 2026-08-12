@@ -28,6 +28,7 @@ const todayBR = () => {
   return `${dd}/${mm}/${d.getFullYear()}`;
 };
 import AtivosEm from "@/components/AtivosEm";
+import AtivosCidade from "@/components/AtivosCidade";
 import HomeView from "@/components/Home";
 import Entradas from "@/components/Entradas";
 import Cancelamentos from "@/components/Cancelamentos";
@@ -107,6 +108,7 @@ const menuItems: MenuItem[] = [
     children: [
       { icon: Search, label: "Painel" },
       { icon: UserCheck, label: "Área Geográfica" },
+      { icon: UserCheck, label: "Ativos por Cidade" },
       { icon: TrendingUp, label: "Vendas" },
       { icon: TrendingUp, label: "Cancelamentos" },
       { icon: LayoutDashboard, label: "Dashboard" },
@@ -295,7 +297,7 @@ const Index = () => {
             <p className="text-xs text-muted-foreground">Relatório Executivo</p>
           </div>
           <div className="flex items-center gap-3">
-            {(active === "Área Geográfica" || active === "Dashboard") && (
+            {(active === "Área Geográfica" || active === "Dashboard" || active === "Ativos por Cidade") && (
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <Popover>
@@ -348,6 +350,8 @@ const Index = () => {
         <main className={`flex-1 min-h-0 overflow-hidden ${active === "Área Geográfica" || active === "Dashboard" ? "" : "p-8"}`}>
           {active === "Área Geográfica" ? (
             <AtivosEm dateValue={dateValue} />
+          ) : active === "Ativos por Cidade" ? (
+            <AtivosCidade dateValue={dateValue} />
           ) : active === "Dashboard" ? (
             <DWCarteira dateValue={dateValue} />
           ) : active === "Vendas" ? (
