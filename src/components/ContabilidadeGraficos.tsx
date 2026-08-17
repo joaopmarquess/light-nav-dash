@@ -125,38 +125,9 @@ const ContabilidadeGraficos = () => {
       }));
   }, [dre, anoAtual]);
 
-  /** 2) Comparativo anual acumulado (mesmo período de meses) */
-  const comparativoAnual = useMemo(() => {
-    const m = new Map<number, { ebitda: number; fin: number }>();
-    for (const r of dre || []) {
-      const cur = m.get(r.ano) || { ebitda: 0, fin: 0 };
-      if (/EBITDA/i.test(r.g1)) cur.ebitda += r.valor;
-      else cur.fin += r.valor;
-      m.set(r.ano, cur);
-    }
-    return Array.from(m.entries())
-      .sort((a, b) => a[0] - b[0])
-      .map(([ano, v]) => ({
-        ano: String(ano),
-        EBITDA: v.ebitda,
-        Financeiro: v.fin,
-        Resultado: v.ebitda + v.fin,
-      }));
-  }, [dre]);
+  /** cores por sinal */
+  const barColor = (v: number) => (v < 0 ? "hsl(var(--chart-4))" : "hsl(var(--chart-1))");
 
-  /** 3) Despesas administrativas por natureza (ano corrente) */
-  const administrativo = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const r of dre || []) {
-      if (r.ano !== anoAtual) continue;
-      if (!/ADMINISTRATIVO/i.test(r.g2)) continue;
-      const k = stripPrefix(r.g3);
-      m.set(k, (m.get(k) || 0) + Math.abs(r.valor));
-    }
-    return Array.from(m.entries())
-      .map(([nome, valor]) => ({ nome, valor }))
-      .sort((a, b) => b.valor - a.valor);
-  }, [dre, anoAtual]);
 
   /** 4) Orçamento: Previsto x Realizado por mês */
   const orcamentoMensal = useMemo(() => {
@@ -186,60 +157,28 @@ const ContabilidadeGraficos = () => {
     <div className="h-full flex flex-col min-h-0 gap-2">
       {error ? <div className="text-[11px] text-destructive">erro: {error}</div> : null}
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 grid-rows-2 gap-3">
-        <Card title={`Resultado mensal ${anoAtual}`} subtitle="EBITDA, Financeiro e Resultado do período (R$)">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={resultadoMensal} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="mes" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-              <YAxis tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
-              <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="EBITDA" fill="hsl(var(--chart-1))" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="Financeiro" fill="hsl(var(--chart-2))" radius={[3, 3, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
+        {([
+          { key: "EBITDA", title: `EBITDA mês a mês ${anoAtual}` },
+          { key: "Financeiro", title: `Financeiro mês a mês ${anoAtual}` },
+          { key: "Resultado", title: `Resultado geral mês a mês ${anoAtual}` },
+        ] as const).map((cfg) => (
+          <Card key={cfg.key} title={cfg.title} subtitle="Valores em R$">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={resultadoMensal} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="mes" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
+                <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
+                <Bar dataKey={cfg.key} radius={[3, 3, 0, 0]}>
+                  {resultadoMensal.map((d, i) => (
+                    <Cell key={i} fill={barColor(d[cfg.key])} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+        ))}
 
-        <Card title="Comparativo anual" subtitle="Acumulado Jan–Jun por ano (R$)">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={comparativoAnual} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="ano" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-              <YAxis tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
-              <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="EBITDA" fill="hsl(var(--chart-1))" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="Financeiro" fill="hsl(var(--chart-2))" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="Resultado" fill="hsl(var(--chart-3))" radius={[3, 3, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
-
-        <Card title={`Despesas administrativas ${anoAtual}`} subtitle="Por natureza, acumulado (R$)">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={administrativo}
-              layout="vertical"
-              margin={{ top: 4, right: 12, bottom: 0, left: 4 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis type="number" tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-              <YAxis
-                type="category"
-                dataKey="nome"
-                width={150}
-                tick={{ fontSize: 10 }}
-                stroke="hsl(var(--muted-foreground))"
-              />
-              <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
-              <Bar dataKey="valor" name="Valor" radius={[0, 3, 3, 0]}>
-                {administrativo.map((_, i) => (
-                  <Cell key={i} fill={`hsl(var(--chart-1) / ${1 - Math.min(i, 7) * 0.08})`} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
 
         <Card title="Orçamento — Previsto x Realizado" subtitle="Total por mês (R$)">
           <ResponsiveContainer width="100%" height="100%">
