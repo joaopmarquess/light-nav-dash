@@ -307,7 +307,7 @@ const ContabilidadeGraficos = () => {
               <BarChart data={operacionalFilhos} margin={{ top: 16, right: 8, bottom: 0, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="name" tick={{ fontSize: 9 }} interval={0} stroke="hsl(var(--muted-foreground))" />
-                <YAxis tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
+                <YAxis domain={[-4_000_000, "auto"]} tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
                 <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
                 <Bar dataKey="value" name="Total" radius={[3, 3, 0, 0]}>
                   {operacionalFilhos.map((d, i) => (
