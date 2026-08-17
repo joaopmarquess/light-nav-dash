@@ -159,7 +159,27 @@ const ContabilidadeGraficos = () => {
       }));
   }, [dre, anoAtual]);
 
-
+  /** Página 2b: Operacional x Administrativo (abs) x Financeiro por mês */
+  const opAdmFin = useMemo(() => {
+    const m = new Map<number, { op: number; adm: number; fin: number }>();
+    for (const r of dre || []) {
+      if (r.ano !== anoAtual) continue;
+      const cur = m.get(r.mes) || { op: 0, adm: 0, fin: 0 };
+      const g2 = stripPrefix(r.g2).toUpperCase();
+      if (/FINANCEIRO/.test(stripPrefix(r.g1).toUpperCase())) cur.fin += r.valor;
+      else if (g2.startsWith("ADMINISTRATIVO")) cur.adm += r.valor;
+      else if (g2.startsWith("OPERACIONAL")) cur.op += r.valor;
+      m.set(r.mes, cur);
+    }
+    return Array.from(m.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([mes, v]) => ({
+        mes: MES_LABEL[mes - 1] || String(mes),
+        Operacional: v.op,
+        Administrativo: Math.abs(v.adm),
+        Financeiro: v.fin,
+      }));
+  }, [dre, anoAtual]);
 
 
   /** 4) Orçamento: Previsto x Realizado por mês */
