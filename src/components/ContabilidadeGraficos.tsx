@@ -183,10 +183,65 @@ const ContabilidadeGraficos = () => {
     );
   }
 
+  if (pagina === 2) {
+    return (
+      <div className="h-full flex flex-col min-h-0 gap-2">
+        {error ? <div className="text-[11px] text-destructive">erro: {error}</div> : null}
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] text-muted-foreground">Página 2 de 2</span>
+          <button
+            onClick={() => setPagina(1)}
+            className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-[11px] hover:bg-accent"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" /> Voltar
+          </button>
+        </div>
+        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 grid-rows-2 gap-3">
+          <Card
+            title={`Receitas x Despesa assistencial ${anoAtual}`}
+            subtitle="Faturamento + Coparticipação vs. Desp. Assistencial (R$)"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={receitasVsDespesa} margin={{ top: 16, right: 8, bottom: 0, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="mes" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
+                <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="Faturamento" stackId="rec" fill="hsl(var(--chart-1))" />
+                <Bar dataKey="Coparticipação" stackId="rec" fill="hsl(var(--chart-3))" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="Desp. Assistencial" fill="hsl(var(--chart-4))" radius={[3, 3, 0, 0]}>
+                  <LabelList
+                    dataKey="Desp. Assistencial"
+                    position="top"
+                    offset={4}
+                    fontSize={9}
+                    fill="hsl(var(--foreground))"
+                    formatter={(v: number) => fmtMi(v)}
+                  />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex flex-col min-h-0 gap-2">
       {error ? <div className="text-[11px] text-destructive">erro: {error}</div> : null}
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] text-muted-foreground">Página 1 de 2</span>
+        <button
+          onClick={() => setPagina(2)}
+          className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-[11px] hover:bg-accent"
+        >
+          Avançar <ChevronRight className="h-3.5 w-3.5" />
+        </button>
+      </div>
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 grid-rows-2 gap-3">
+
         {([
           { key: "EBITDA", title: `EBITDA mês a mês ${anoAtual}`, domain: [-6_500_000, "auto"] },
           { key: "Financeiro", title: `Financeiro mês a mês ${anoAtual}`, domain: ["auto", "auto"] },
