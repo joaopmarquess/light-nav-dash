@@ -14,6 +14,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 type DreRow = { ano: number; mes: number; g1: string; g2: string; g3: string; g4: string; valor: number };
@@ -54,6 +55,7 @@ const ContabilidadeGraficos = () => {
   const [dre, setDre] = useState<DreRow[] | null>(null);
   const [orc, setOrc] = useState<OrcRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pagina, setPagina] = useState(1);
 
   useEffect(() => {
     (async () => {
