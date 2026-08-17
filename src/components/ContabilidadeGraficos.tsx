@@ -14,9 +14,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-type DreRow = { ano: number; mes: number; g1: string; g2: string; g3: string; valor: number };
+type DreRow = { ano: number; mes: number; g1: string; g2: string; g3: string; g4: string; valor: number };
 type OrcRow = { mes: number; item: string; previsto: number; realizado: number };
 
 const MES_LABEL = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -54,6 +55,7 @@ const ContabilidadeGraficos = () => {
   const [dre, setDre] = useState<DreRow[] | null>(null);
   const [orc, setOrc] = useState<OrcRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pagina, setPagina] = useState(1);
 
   useEffect(() => {
     (async () => {
@@ -63,7 +65,7 @@ const ContabilidadeGraficos = () => {
         for (let from = 0; ; from += PAGE) {
           const { data, error } = await supabase
             .from("dre_gerencial_2t2026")
-            .select("nr_ano,nr_mes,g1,g2,g3,valor")
+            .select("nr_ano,nr_mes,g1,g2,g3,g4,valor")
             .order("id")
             .range(from, from + PAGE - 1);
           if (error) throw error;
@@ -74,6 +76,7 @@ const ContabilidadeGraficos = () => {
               g1: r.g1 || "",
               g2: r.g2 || "",
               g3: r.g3 || "",
+              g4: r.g4 || "",
               valor: Number(r.valor) || 0,
             }))
           );
@@ -130,6 +133,33 @@ const ContabilidadeGraficos = () => {
   /** cores por sinal */
   const barColor = (v: number) => (v < 0 ? "hsl(var(--chart-4))" : "hsl(var(--chart-1))");
 
+  /** Página 2: Receitas (Faturamento + Coparticipação) x Despesa assistencial */
+  const receitasVsDespesa = useMemo(() => {
+    const m = new Map<number, { fat: number; copa: number; desp: number }>();
+    for (const r of dre || []) {
+      if (r.ano !== anoAtual) continue;
+      const g4 = stripPrefix(r.g4).toUpperCase();
+      const cur = m.get(r.mes) || { fat: 0, copa: 0, desp: 0 };
+      if (g4.startsWith("FATURAMENTO")) cur.fat += r.valor;
+      else if (g4.startsWith("COPARTICIPA")) cur.copa += r.valor;
+      else if (g4.startsWith("DESP. ASSISTENCIAL")) cur.desp += r.valor;
+      else {
+        continue;
+      }
+      m.set(r.mes, cur);
+    }
+    return Array.from(m.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([mes, v]) => ({
+        mes: MES_LABEL[mes - 1] || String(mes),
+        Faturamento: v.fat,
+        Coparticipação: v.copa,
+        "Desp. Assistencial": Math.abs(v.desp),
+      }));
+  }, [dre, anoAtual]);
+
+
+
 
   /** 4) Orçamento: Previsto x Realizado por mês */
   const orcamentoMensal = useMemo(() => {
@@ -155,10 +185,65 @@ const ContabilidadeGraficos = () => {
     );
   }
 
+  if (pagina === 2) {
+    return (
+      <div className="h-full flex flex-col min-h-0 gap-2">
+        {error ? <div className="text-[11px] text-destructive">erro: {error}</div> : null}
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] text-muted-foreground">Página 2 de 2</span>
+          <button
+            onClick={() => setPagina(1)}
+            className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-[11px] hover:bg-accent"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" /> Voltar
+          </button>
+        </div>
+        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 grid-rows-2 gap-3">
+          <Card
+            title={`Receitas x Despesa assistencial ${anoAtual}`}
+            subtitle="Faturamento + Coparticipação vs. Desp. Assistencial (R$)"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={receitasVsDespesa} margin={{ top: 16, right: 8, bottom: 0, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="mes" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
+                <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="Faturamento" stackId="rec" fill="hsl(var(--chart-1))" />
+                <Bar dataKey="Coparticipação" stackId="rec" fill="hsl(var(--chart-3))" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="Desp. Assistencial" fill="hsl(var(--chart-4))" radius={[3, 3, 0, 0]}>
+                  <LabelList
+                    dataKey="Desp. Assistencial"
+                    position="top"
+                    offset={4}
+                    fontSize={9}
+                    fill="hsl(var(--foreground))"
+                    formatter={(v: number) => fmtMi(v)}
+                  />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex flex-col min-h-0 gap-2">
       {error ? <div className="text-[11px] text-destructive">erro: {error}</div> : null}
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] text-muted-foreground">Página 1 de 2</span>
+        <button
+          onClick={() => setPagina(2)}
+          className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-[11px] hover:bg-accent"
+        >
+          Avançar <ChevronRight className="h-3.5 w-3.5" />
+        </button>
+      </div>
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 grid-rows-2 gap-3">
+
         {([
           { key: "EBITDA", title: `EBITDA mês a mês ${anoAtual}`, domain: [-6_500_000, "auto"] },
           { key: "Financeiro", title: `Financeiro mês a mês ${anoAtual}`, domain: ["auto", "auto"] },
