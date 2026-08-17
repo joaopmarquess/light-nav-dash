@@ -166,7 +166,7 @@ const ContabilidadeGraficos = () => {
         ] as const).map((cfg) => (
           <Card key={cfg.key} title={cfg.title} subtitle="Valores em R$">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={resultadoMensal} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+              <BarChart data={resultadoMensal} margin={{ top: 16, right: 8, bottom: 0, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="mes" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
                 <YAxis tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
@@ -175,8 +175,17 @@ const ContabilidadeGraficos = () => {
                   {resultadoMensal.map((d, i) => (
                     <Cell key={i} fill={barColor(d[cfg.key])} />
                   ))}
+                  <LabelList
+                    dataKey={cfg.key}
+                    position="top"
+                    offset={4}
+                    fontSize={9}
+                    fill="hsl(var(--foreground))"
+                    formatter={(v: number) => fmtMi(v)}
+                  />
                 </Bar>
               </BarChart>
+
             </ResponsiveContainer>
           </Card>
         ))}
