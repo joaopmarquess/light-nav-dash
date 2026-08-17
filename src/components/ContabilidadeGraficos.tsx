@@ -154,6 +154,7 @@ const ContabilidadeGraficos = () => {
         mes: MES_LABEL[mes - 1] || String(mes),
         Faturamento: v.fat,
         Coparticipação: v.copa,
+        Receitas: v.fat + v.copa,
         "Desp. Assistencial": Math.abs(v.desp),
       }));
   }, [dre, anoAtual]);
@@ -211,7 +212,16 @@ const ContabilidadeGraficos = () => {
                 <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Bar dataKey="Faturamento" stackId="rec" fill="hsl(var(--chart-1))" />
-                <Bar dataKey="Coparticipação" stackId="rec" fill="hsl(var(--chart-3))" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="Coparticipação" stackId="rec" fill="hsl(var(--chart-3))" radius={[3, 3, 0, 0]}>
+                  <LabelList
+                    dataKey="Receitas"
+                    position="top"
+                    offset={4}
+                    fontSize={9}
+                    fill="hsl(var(--foreground))"
+                    formatter={(v: number) => fmtMi(v)}
+                  />
+                </Bar>
                 <Bar dataKey="Desp. Assistencial" fill="hsl(var(--chart-4))" radius={[3, 3, 0, 0]}>
                   <LabelList
                     dataKey="Desp. Assistencial"
@@ -239,7 +249,7 @@ const ContabilidadeGraficos = () => {
           onClick={() => setPagina(2)}
           className="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-[11px] hover:bg-accent"
         >
-          Avançar <ChevronRight className="h-3.5 w-3.5" />
+          Página 2 <ChevronRight className="h-3.5 w-3.5" />
         </button>
       </div>
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 grid-rows-2 gap-3">
