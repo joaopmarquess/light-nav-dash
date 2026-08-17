@@ -160,16 +160,17 @@ const ContabilidadeGraficos = () => {
       {error ? <div className="text-[11px] text-destructive">erro: {error}</div> : null}
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 grid-rows-2 gap-3">
         {([
-          { key: "EBITDA", title: `EBITDA mês a mês ${anoAtual}` },
-          { key: "Financeiro", title: `Financeiro mês a mês ${anoAtual}` },
-          { key: "Resultado", title: `Resultado geral mês a mês ${anoAtual}` },
+          { key: "EBITDA", title: `EBITDA mês a mês ${anoAtual}`, domain: [-6_500_000, "auto"] },
+          { key: "Financeiro", title: `Financeiro mês a mês ${anoAtual}`, domain: ["auto", "auto"] },
+          { key: "Resultado", title: `Resultado geral mês a mês ${anoAtual}`, domain: ["auto", "auto"] },
         ] as const).map((cfg) => (
           <Card key={cfg.key} title={cfg.title} subtitle="Valores em R$">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={resultadoMensal} margin={{ top: 16, right: 8, bottom: 0, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="mes" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
+                <YAxis domain={cfg.domain as [number | string, number | string]} tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
+
                 <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
                 <Bar dataKey={cfg.key} radius={[3, 3, 0, 0]}>
                   {resultadoMensal.map((d, i) => (
