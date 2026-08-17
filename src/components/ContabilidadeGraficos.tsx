@@ -267,9 +267,15 @@ const ContabilidadeGraficos = () => {
                 <YAxis tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
                 <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="Operacional" fill="hsl(var(--chart-fat))" radius={[3, 3, 0, 0]} />
-                <Bar dataKey="Administrativo" fill="hsl(var(--chart-desp))" radius={[3, 3, 0, 0]} />
-                <Bar dataKey="Financeiro" fill="hsl(var(--chart-3))" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="Operacional" fill="hsl(var(--chart-op))" radius={[3, 3, 0, 0]}>
+                  <LabelList dataKey="Operacional" position="top" offset={4} fontSize={9} fill="hsl(var(--foreground))" formatter={(v: number) => fmtMi(v)} />
+                </Bar>
+                <Bar dataKey="Administrativo" fill="hsl(var(--chart-adm))" radius={[3, 3, 0, 0]}>
+                  <LabelList dataKey="Administrativo" position="top" offset={4} fontSize={9} fill="hsl(var(--foreground))" formatter={(v: number) => fmtMi(v)} />
+                </Bar>
+                <Bar dataKey="Financeiro" fill="hsl(var(--chart-fin))" radius={[3, 3, 0, 0]}>
+                  <LabelList dataKey="Financeiro" position="top" offset={4} fontSize={9} fill="hsl(var(--foreground))" formatter={(v: number) => fmtMi(v)} />
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </Card>
