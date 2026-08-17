@@ -130,6 +130,33 @@ const ContabilidadeGraficos = () => {
   /** cores por sinal */
   const barColor = (v: number) => (v < 0 ? "hsl(var(--chart-4))" : "hsl(var(--chart-1))");
 
+  /** Página 2: Receitas (Faturamento + Coparticipação) x Despesa assistencial */
+  const receitasVsDespesa = useMemo(() => {
+    const m = new Map<number, { fat: number; copa: number; desp: number }>();
+    for (const r of dre || []) {
+      if (r.ano !== anoAtual) continue;
+      const g4 = stripPrefix(r.g4).toUpperCase();
+      const cur = m.get(r.mes) || { fat: 0, copa: 0, desp: 0 };
+      if (g4.startsWith("FATURAMENTO")) cur.fat += r.valor;
+      else if (g4.startsWith("COPARTICIPA")) cur.copa += r.valor;
+      else if (g4.startsWith("DESP. ASSISTENCIAL")) cur.desp += r.valor;
+      else {
+        continue;
+      }
+      m.set(r.mes, cur);
+    }
+    return Array.from(m.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([mes, v]) => ({
+        mes: MES_LABEL[mes - 1] || String(mes),
+        Faturamento: v.fat,
+        Coparticipação: v.copa,
+        "Desp. Assistencial": Math.abs(v.desp),
+      }));
+  }, [dre, anoAtual]);
+
+
+
 
   /** 4) Orçamento: Previsto x Realizado por mês */
   const orcamentoMensal = useMemo(() => {
