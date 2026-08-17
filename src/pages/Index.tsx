@@ -363,6 +363,9 @@ const Index = () => {
             <DREGerencialPE />
           ) : active === "Orçamento" ? (
             <Orcamento />
+          ) : active === "Gráficos" ? (
+            <ContabilidadeGraficos />
+
 
           ) : active === "__removed_dre__" ? (
             <div />
