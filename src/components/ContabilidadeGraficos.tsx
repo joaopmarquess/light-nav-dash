@@ -211,8 +211,8 @@ const ContabilidadeGraficos = () => {
                 <YAxis tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
                 <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="Faturamento" stackId="rec" fill="hsl(var(--chart-1))" />
-                <Bar dataKey="Coparticipação" stackId="rec" fill="hsl(var(--chart-3))" radius={[3, 3, 0, 0]}>
+                <Bar dataKey="Faturamento" stackId="rec" fill="hsl(var(--chart-fat))" />
+                <Bar dataKey="Coparticipação" stackId="rec" fill="hsl(var(--chart-copart))" radius={[3, 3, 0, 0]}>
                   <LabelList
                     dataKey="Receitas"
                     position="top"
@@ -222,7 +222,7 @@ const ContabilidadeGraficos = () => {
                     formatter={(v: number) => fmtMi(v)}
                   />
                 </Bar>
-                <Bar dataKey="Desp. Assistencial" fill="hsl(var(--chart-4))" radius={[3, 3, 0, 0]}>
+                <Bar dataKey="Desp. Assistencial" fill="hsl(var(--chart-desp))" radius={[3, 3, 0, 0]}>
                   <LabelList
                     dataKey="Desp. Assistencial"
                     position="top"
