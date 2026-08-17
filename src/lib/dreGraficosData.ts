@@ -19,7 +19,7 @@ const ALL_MONTHS = [
 ];
 const YEAR = 2026;
 const MES_DE = 1;
-const MES_ATE = 5;
+const MES_ATE = 6;
 
 const ACRONYMS = ["EBITDA", "TI"];
 export const toSentence = (s: string) => {
