@@ -199,8 +199,8 @@ const ContabilidadeGraficos = () => {
       m.set(nome, (m.get(nome) || 0) + r.valor);
     }
     return Array.from(m.entries())
-      .map(([name, v]) => ({ name, value: Math.abs(v) }))
-      .filter((d) => d.value > 0)
+      .map(([name, v]) => ({ name, value: v }))
+      .filter((d) => d.value !== 0)
       .sort((a, b) => b.value - a.value);
   }, [dre, anoAtual]);
 
@@ -302,7 +302,7 @@ const ContabilidadeGraficos = () => {
             </ResponsiveContainer>
           </Card>
 
-          <Card title={`Filhos de Operacional · totais ${anoAtual}`} subtitle="Valores em R$ (módulo)">
+          <Card title={`Filhos de Operacional · totais ${anoAtual}`} subtitle="Valores em R$">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={operacionalFilhos} margin={{ top: 16, right: 8, bottom: 0, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -310,8 +310,8 @@ const ContabilidadeGraficos = () => {
                 <YAxis tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
                 <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
                 <Bar dataKey="value" name="Total" radius={[3, 3, 0, 0]}>
-                  {operacionalFilhos.map((_, i) => (
-                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                  {operacionalFilhos.map((d, i) => (
+                    <Cell key={i} fill={barColor(d.value)} />
                   ))}
                   <LabelList dataKey="value" position="top" offset={4} fontSize={9} fill="hsl(var(--foreground))" formatter={(v: number) => fmtMi(v)} />
                 </Bar>
