@@ -62,6 +62,8 @@ import SinistralidadeAPBAtivos from "@/components/SinistralidadeAPBAtivos";
 import SinistralidadeCidade from "@/components/SinistralidadeCidade";
 import DREGerencialPE from "@/components/DREGerencialPE";
 import Orcamento from "@/components/Orcamento";
+import ContabilidadeGraficos from "@/components/ContabilidadeGraficos";
+
 
 import Assistencial from "@/components/Assistencial";
 import AssistencialCompetencia from "@/components/AssistencialCompetencia";
