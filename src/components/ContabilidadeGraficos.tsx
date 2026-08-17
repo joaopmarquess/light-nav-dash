@@ -255,6 +255,25 @@ const ContabilidadeGraficos = () => {
               </BarChart>
             </ResponsiveContainer>
           </Card>
+
+          <Card
+            title={`Operacional x Administrativo x Financeiro ${anoAtual}`}
+            subtitle="Mês a mês, Administrativo em módulo (R$)"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={opAdmFin} margin={{ top: 16, right: 8, bottom: 0, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="mes" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
+                <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="Operacional" fill="hsl(var(--chart-fat))" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="Administrativo" fill="hsl(var(--chart-desp))" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="Financeiro" fill="hsl(var(--chart-3))" radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+
         </div>
       </div>
     );
