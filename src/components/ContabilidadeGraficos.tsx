@@ -313,7 +313,21 @@ const ContabilidadeGraficos = () => {
                   {operacionalFilhos.map((d, i) => (
                     <Cell key={i} fill={barColor(d.value)} />
                   ))}
-                  <LabelList dataKey="value" position="top" offset={4} fontSize={9} fill="hsl(var(--foreground))" formatter={(v: number) => fmtMi(v)} />
+                  <LabelList
+                    dataKey="value"
+                    content={(props: { x?: number | string; y?: number | string; width?: number | string; height?: number | string; value?: number | string }) => {
+                      const x = Number(props.x) + Number(props.width) / 2;
+                      const y = Number(props.y);
+                      const h = Number(props.height);
+                      const v = Number(props.value);
+                      const py = v < 0 ? y + h + 10 : y - 4;
+                      return (
+                        <text x={x} y={py} textAnchor="middle" fontSize={9} fill="hsl(var(--foreground))">
+                          {fmtMi(v)}
+                        </text>
+                      );
+                    }}
+                  />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
