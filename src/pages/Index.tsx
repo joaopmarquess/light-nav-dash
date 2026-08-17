@@ -60,7 +60,6 @@ import SinistralidadeAPBTop10 from "@/components/SinistralidadeAPBTop10";
 import SinistralidadeAPBFaturas from "@/components/SinistralidadeAPBFaturas";
 import SinistralidadeAPBAtivos from "@/components/SinistralidadeAPBAtivos";
 import SinistralidadeCidade from "@/components/SinistralidadeCidade";
-import DREGraficos from "@/components/DREGraficos";
 import DREGerencialPE from "@/components/DREGerencialPE";
 import Orcamento from "@/components/Orcamento";
 
@@ -95,8 +94,6 @@ const menuItems: MenuItem[] = [
     children: [
       { icon: FileText, label: "DRE Gerencial PE" },
       { icon: Coins, label: "Orçamento" },
-      { icon: BarChart3, label: "Gráfico" },
-      { icon: LayoutDashboard, label: "DRE PB" },
 
     ],
   },
@@ -363,8 +360,6 @@ const Index = () => {
           ) : active === "Orçamento" ? (
             <Orcamento />
 
-          ) : active === "Gráfico" ? (
-            <DREGraficos />
           ) : active === "__removed_dre__" ? (
             <div />
 
@@ -403,15 +398,6 @@ const Index = () => {
               <iframe
                 title="PBI U12"
                 src="https://app.powerbi.com/view?r=eyJrIjoiYjJkNjQ3MTYtMjM0Ni00Y2I2LWJiOWItNTcyNWU0YWY0ZTc2IiwidCI6ImM0ZTU0ODgxLWQ1NDktNDQ2Ny1iOGFjLWQ0ZjI1MGM2NzhjNiJ9"
-                className="w-full h-full border-0"
-                allowFullScreen
-              />
-            </section>
-          ) : active === "DRE PB" ? (
-            <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] overflow-hidden">
-              <iframe
-                title="DEX_DRE"
-                src="https://app.powerbi.com/view?r=eyJrIjoiMTBhYTQ4M2EtYWIzNy00NjBiLWFlOGItNGEyNDY5YTcwOTVhIiwidCI6ImM0ZTU0ODgxLWQ1NDktNDQ2Ny1iOGFjLWQ0ZjI1MGM2NzhjNiJ9"
                 className="w-full h-full border-0"
                 allowFullScreen
               />
