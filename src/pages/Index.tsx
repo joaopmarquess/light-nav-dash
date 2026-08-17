@@ -60,7 +60,6 @@ import SinistralidadeAPBTop10 from "@/components/SinistralidadeAPBTop10";
 import SinistralidadeAPBFaturas from "@/components/SinistralidadeAPBFaturas";
 import SinistralidadeAPBAtivos from "@/components/SinistralidadeAPBAtivos";
 import SinistralidadeCidade from "@/components/SinistralidadeCidade";
-import DRE from "@/components/DRE";
 import DREGraficos from "@/components/DREGraficos";
 import DREGerencialPE from "@/components/DREGerencialPE";
 import Orcamento from "@/components/Orcamento";
@@ -94,7 +93,6 @@ const menuItems: MenuItem[] = [
     icon: TrendingUp,
     label: "Contabilidade",
     children: [
-      { icon: FileText, label: "DRE" },
       { icon: FileText, label: "DRE Gerencial PE" },
       { icon: Coins, label: "Orçamento" },
       { icon: BarChart3, label: "Gráfico" },
@@ -360,8 +358,6 @@ const Index = () => {
             <Cancelamentos />
           ) : active === "Painel" ? (
             <ConsultaBeneficiarioDenis />
-          ) : active === "DRE" ? (
-            <DRE />
           ) : active === "DRE Gerencial PE" ? (
             <DREGerencialPE />
           ) : active === "Orçamento" ? (
