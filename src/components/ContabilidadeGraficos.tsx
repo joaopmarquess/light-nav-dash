@@ -181,6 +181,18 @@ const ContabilidadeGraficos = () => {
       }));
   }, [dre, anoAtual]);
 
+  /** Página 2d: Sinistralidade mês a mês */
+  const sinistralidade = useMemo(
+    () =>
+      receitasVsDespesa
+        .map((d) => ({
+          mes: d.mes,
+          Sinistralidade: d.Receitas ? (d["Desp. Assistencial"] / d.Receitas) * 100 : 0,
+        }))
+        .filter((d) => d.Sinistralidade !== 0),
+    [receitasVsDespesa]
+  );
+
   /** Página 2c: filhos de Operacional (g3) — pizza */
   const PIE_COLORS = [
     "hsl(var(--chart-op))",
@@ -327,6 +339,27 @@ const ContabilidadeGraficos = () => {
                         </text>
                       );
                     }}
+                  />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+
+          <Card title={`Sinistralidade mês a mês ${anoAtual}`} subtitle="Desp. Assistencial ÷ (Faturamento + Coparticipação)">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={sinistralidade} margin={{ top: 16, right: 8, bottom: 0, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="mes" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tickFormatter={(v: number) => `${v.toFixed(0)}%`} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={44} />
+                <Tooltip {...tooltipStyle} formatter={(v: number) => `${v.toFixed(1)}%`} />
+                <Bar dataKey="Sinistralidade" fill="hsl(var(--chart-desp))" radius={[3, 3, 0, 0]}>
+                  <LabelList
+                    dataKey="Sinistralidade"
+                    position="top"
+                    offset={4}
+                    fontSize={9}
+                    fill="hsl(var(--foreground))"
+                    formatter={(v: number) => `${v.toFixed(1)}%`}
                   />
                 </Bar>
               </BarChart>
