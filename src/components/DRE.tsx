@@ -65,7 +65,7 @@ const DRE = () => {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
   const [mesDe, setMesDe] = useState<number>(1);
-  const [mesAte, setMesAte] = useState<number>(6);
+  const [mesAte, setMesAte] = useState<number>(5);
 
   const MONTHS = useMemo(
     () => ALL_MONTHS.filter((m) => m.n >= mesDe && m.n <= mesAte),
