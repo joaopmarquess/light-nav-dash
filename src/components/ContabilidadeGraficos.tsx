@@ -16,7 +16,7 @@ import {
 } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 
-type DreRow = { ano: number; mes: number; g1: string; g2: string; g3: string; valor: number };
+type DreRow = { ano: number; mes: number; g1: string; g2: string; g3: string; g4: string; valor: number };
 type OrcRow = { mes: number; item: string; previsto: number; realizado: number };
 
 const MES_LABEL = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -63,7 +63,7 @@ const ContabilidadeGraficos = () => {
         for (let from = 0; ; from += PAGE) {
           const { data, error } = await supabase
             .from("dre_gerencial_2t2026")
-            .select("nr_ano,nr_mes,g1,g2,g3,valor")
+            .select("nr_ano,nr_mes,g1,g2,g3,g4,valor")
             .order("id")
             .range(from, from + PAGE - 1);
           if (error) throw error;
@@ -74,6 +74,7 @@ const ContabilidadeGraficos = () => {
               g1: r.g1 || "",
               g2: r.g2 || "",
               g3: r.g3 || "",
+              g4: r.g4 || "",
               valor: Number(r.valor) || 0,
             }))
           );
