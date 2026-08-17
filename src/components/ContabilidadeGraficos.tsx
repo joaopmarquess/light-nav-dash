@@ -159,7 +159,27 @@ const ContabilidadeGraficos = () => {
       }));
   }, [dre, anoAtual]);
 
-
+  /** Página 2b: Operacional x Administrativo (abs) x Financeiro por mês */
+  const opAdmFin = useMemo(() => {
+    const m = new Map<number, { op: number; adm: number; fin: number }>();
+    for (const r of dre || []) {
+      if (r.ano !== anoAtual) continue;
+      const cur = m.get(r.mes) || { op: 0, adm: 0, fin: 0 };
+      const g2 = stripPrefix(r.g2).toUpperCase();
+      if (/FINANCEIRO/.test(stripPrefix(r.g1).toUpperCase())) cur.fin += r.valor;
+      else if (g2.startsWith("ADMINISTRATIVO")) cur.adm += r.valor;
+      else if (g2.startsWith("OPERACIONAL")) cur.op += r.valor;
+      m.set(r.mes, cur);
+    }
+    return Array.from(m.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([mes, v]) => ({
+        mes: MES_LABEL[mes - 1] || String(mes),
+        Operacional: v.op,
+        Administrativo: Math.abs(v.adm),
+        Financeiro: v.fin,
+      }));
+  }, [dre, anoAtual]);
 
 
   /** 4) Orçamento: Previsto x Realizado por mês */
@@ -235,6 +255,25 @@ const ContabilidadeGraficos = () => {
               </BarChart>
             </ResponsiveContainer>
           </Card>
+
+          <Card
+            title={`Operacional x Administrativo x Financeiro ${anoAtual}`}
+            subtitle="Mês a mês, Administrativo em módulo (R$)"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={opAdmFin} margin={{ top: 16, right: 8, bottom: 0, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="mes" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
+                <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="Operacional" fill="hsl(var(--chart-fat))" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="Administrativo" fill="hsl(var(--chart-desp))" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="Financeiro" fill="hsl(var(--chart-3))" radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+
         </div>
       </div>
     );
