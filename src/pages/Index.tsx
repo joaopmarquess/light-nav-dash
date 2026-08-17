@@ -94,6 +94,8 @@ const menuItems: MenuItem[] = [
     children: [
       { icon: FileText, label: "DRE Gerencial PE" },
       { icon: Coins, label: "Orçamento" },
+      { icon: BarChart3, label: "Gráficos" },
+
 
     ],
   },
