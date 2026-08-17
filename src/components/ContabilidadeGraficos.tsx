@@ -9,6 +9,8 @@ import {
 
   Line,
   LineChart,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -181,6 +183,28 @@ const ContabilidadeGraficos = () => {
       }));
   }, [dre, anoAtual]);
 
+  /** Página 2c: filhos de Operacional (g3) — pizza */
+  const PIE_COLORS = [
+    "hsl(var(--chart-op))",
+    "hsl(var(--chart-adm))",
+    "hsl(var(--chart-fin))",
+    "hsl(var(--chart-fat))",
+    "hsl(var(--chart-copart))",
+    "hsl(var(--chart-desp))",
+  ];
+  const operacionalFilhos = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const r of dre || []) {
+      if (r.ano !== anoAtual) continue;
+      if (!stripPrefix(r.g2).toUpperCase().startsWith("OPERACIONAL")) continue;
+      const nome = stripPrefix(r.g3) || "(sem grupo)";
+      m.set(nome, (m.get(nome) || 0) + r.valor);
+    }
+    return Array.from(m.entries())
+      .map(([name, v]) => ({ name, value: Math.abs(v) }))
+      .filter((d) => d.value > 0)
+      .sort((a, b) => b.value - a.value);
+  }, [dre, anoAtual]);
 
   /** 4) Orçamento: Previsto x Realizado por mês */
   const orcamentoMensal = useMemo(() => {
@@ -277,6 +301,28 @@ const ContabilidadeGraficos = () => {
                   <LabelList dataKey="Financeiro" position="top" offset={4} fontSize={9} fill="hsl(var(--foreground))" formatter={(v: number) => fmtMi(v)} />
                 </Bar>
               </BarChart>
+            </ResponsiveContainer>
+          </Card>
+
+          <Card title="Composição do Operacional" subtitle={`Filhos de Operacional · ${anoAtual} · valores em módulo`}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={operacionalFilhos}
+                  dataKey="value"
+                  nameKey="name"
+                  outerRadius="75%"
+                  label={(d: { value: number }) => fmtMi(d.value)}
+                  labelLine={false}
+                  fontSize={9}
+                >
+                  {operacionalFilhos.map((_, i) => (
+                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
+                <Legend wrapperStyle={{ fontSize: 10 }} />
+              </PieChart>
             </ResponsiveContainer>
           </Card>
 
