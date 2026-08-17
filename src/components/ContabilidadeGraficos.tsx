@@ -125,38 +125,9 @@ const ContabilidadeGraficos = () => {
       }));
   }, [dre, anoAtual]);
 
-  /** 2) Comparativo anual acumulado (mesmo período de meses) */
-  const comparativoAnual = useMemo(() => {
-    const m = new Map<number, { ebitda: number; fin: number }>();
-    for (const r of dre || []) {
-      const cur = m.get(r.ano) || { ebitda: 0, fin: 0 };
-      if (/EBITDA/i.test(r.g1)) cur.ebitda += r.valor;
-      else cur.fin += r.valor;
-      m.set(r.ano, cur);
-    }
-    return Array.from(m.entries())
-      .sort((a, b) => a[0] - b[0])
-      .map(([ano, v]) => ({
-        ano: String(ano),
-        EBITDA: v.ebitda,
-        Financeiro: v.fin,
-        Resultado: v.ebitda + v.fin,
-      }));
-  }, [dre]);
+  /** cores por sinal */
+  const barColor = (v: number) => (v < 0 ? "hsl(var(--chart-4))" : "hsl(var(--chart-1))");
 
-  /** 3) Despesas administrativas por natureza (ano corrente) */
-  const administrativo = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const r of dre || []) {
-      if (r.ano !== anoAtual) continue;
-      if (!/ADMINISTRATIVO/i.test(r.g2)) continue;
-      const k = stripPrefix(r.g3);
-      m.set(k, (m.get(k) || 0) + Math.abs(r.valor));
-    }
-    return Array.from(m.entries())
-      .map(([nome, valor]) => ({ nome, valor }))
-      .sort((a, b) => b.valor - a.valor);
-  }, [dre, anoAtual]);
 
   /** 4) Orçamento: Previsto x Realizado por mês */
   const orcamentoMensal = useMemo(() => {
