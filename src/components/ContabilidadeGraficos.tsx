@@ -194,8 +194,8 @@ const ContabilidadeGraficos = () => {
               <YAxis tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
               <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="EBITDA" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="Financeiro" fill="hsl(var(--secondary))" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="EBITDA" fill="hsl(var(--chart-1))" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="Financeiro" fill="hsl(var(--chart-2))" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
@@ -208,9 +208,9 @@ const ContabilidadeGraficos = () => {
               <YAxis tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
               <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="EBITDA" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="Financeiro" fill="hsl(var(--secondary))" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="Resultado" fill="hsl(var(--accent))" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="EBITDA" fill="hsl(var(--chart-1))" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="Financeiro" fill="hsl(var(--chart-2))" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="Resultado" fill="hsl(var(--chart-3))" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
@@ -234,7 +234,7 @@ const ContabilidadeGraficos = () => {
               <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
               <Bar dataKey="valor" name="Valor" radius={[0, 3, 3, 0]}>
                 {administrativo.map((_, i) => (
-                  <Cell key={i} fill={`hsl(var(--primary) / ${1 - Math.min(i, 7) * 0.09})`} />
+                  <Cell key={i} fill={`hsl(var(--chart-1) / ${1 - Math.min(i, 7) * 0.08})`} />
                 ))}
               </Bar>
             </BarChart>
@@ -249,8 +249,8 @@ const ContabilidadeGraficos = () => {
               <YAxis tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
               <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Line type="monotone" dataKey="Previsto" stroke="hsl(var(--muted-foreground))" strokeDasharray="4 3" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="Realizado" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 2 }} />
+              <Line type="monotone" dataKey="Previsto" stroke="hsl(var(--chart-2))" strokeDasharray="4 3" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="Realizado" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ r: 2 }} />
             </LineChart>
           </ResponsiveContainer>
         </Card>
