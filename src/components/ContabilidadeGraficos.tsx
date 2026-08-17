@@ -9,8 +9,6 @@ import {
 
   Line,
   LineChart,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -304,25 +302,20 @@ const ContabilidadeGraficos = () => {
             </ResponsiveContainer>
           </Card>
 
-          <Card title="Composição do Operacional" subtitle={`Filhos de Operacional · ${anoAtual} · valores em módulo`}>
+          <Card title={`Filhos de Operacional · totais ${anoAtual}`} subtitle="Valores em R$ (módulo)">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={operacionalFilhos}
-                  dataKey="value"
-                  nameKey="name"
-                  outerRadius="75%"
-                  label={(d: { value: number }) => fmtMi(d.value)}
-                  labelLine={false}
-                  fontSize={9}
-                >
+              <BarChart data={operacionalFilhos} margin={{ top: 16, right: 8, bottom: 0, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="name" tick={{ fontSize: 9 }} interval={0} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tickFormatter={fmtMi} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={54} />
+                <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
+                <Bar dataKey="value" name="Total" radius={[3, 3, 0, 0]}>
                   {operacionalFilhos.map((_, i) => (
                     <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                   ))}
-                </Pie>
-                <Tooltip {...tooltipStyle} formatter={(v: number) => fmtFull(v)} />
-                <Legend wrapperStyle={{ fontSize: 10 }} />
-              </PieChart>
+                  <LabelList dataKey="value" position="top" offset={4} fontSize={9} fill="hsl(var(--foreground))" formatter={(v: number) => fmtMi(v)} />
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
           </Card>
 
