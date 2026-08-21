@@ -1303,7 +1303,7 @@ function renderTiposPng(data: ChartDatum[], wmm: number, hmm: number) {
     const x0 = (i % cols) * cw;
     const y0 = Math.floor(i / cols) * ch;
     const pad = Math.min(cw, ch) * 0.1;
-    const r = Math.min(cw / 2 - pad, ch * 0.42 - pad);
+    const r = Math.min(cw / 2 - pad, ch * 0.36 - pad);
     const cx = x0 + cw / 2;
     const cy = y0 + pad + r;
     const rIn = r * 0.6;
@@ -1335,7 +1335,7 @@ function renderTiposPng(data: ChartDatum[], wmm: number, hmm: number) {
     // legenda em 2 colunas
     g.font = font(r * 0.14);
     g.textAlign = "left";
-    const lineH = r * 0.2;
+    const lineH = r * 0.19;
     slices.forEach((s, k) => {
       const col = k % 2;
       const line = Math.floor(k / 2);
