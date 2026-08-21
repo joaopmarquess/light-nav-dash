@@ -613,18 +613,15 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                       <div className="flex-1 h-5 bg-muted/40 rounded overflow-hidden">
                         <div className="h-full bg-primary/70" style={{ width: `${pct}%` }} />
                       </div>
-                      <div className="w-56 shrink-0 text-right text-[13px] tabular-nums text-foreground">
-                        <span className="font-semibold">{fmtNum(t.vrdespesas)}</span>
-                        <span className="text-muted-foreground"> · despesa total</span>
-                      </div>
-                      <div className="w-72 shrink-0 grid grid-cols-4 gap-2 text-right text-[13px] tabular-nums text-foreground">
-                        {REC_COLS.map(({ key }) => (
-                          <span key={key}>{fmtNum(t[key])}</span>
-                        ))}
-                        <span className={sinOf(t) > 1 ? "text-destructive" : ""}>
+                      <div className="w-72 shrink-0 grid grid-cols-2 gap-3 text-right text-[13px] tabular-nums text-foreground">
+                        <span className={saldoOf(t) < 0 ? "text-destructive" : ""} title="Saldo">
+                          {fmtNum(saldoOf(t))}
+                        </span>
+                        <span className={sinOf(t) > 1 ? "text-destructive" : ""} title="Sinistralidade">
                           {t.rec_total ? fmtPct(sinOf(t)) : "—"}
                         </span>
                       </div>
+
                     </button>
 
                     {isOpen && (
@@ -653,7 +650,9 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                                     {label} {arrow(key as SortKey)}
                                   </th>
                                 ))}
+                                <th className="px-1 py-1 text-right font-semibold">Saldo</th>
                                 <th className="px-1 py-1 text-right font-semibold">Sinistralidade</th>
+
                               </tr>
                             </thead>
                             <tbody>
@@ -675,12 +674,16 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                                       {DESP_COLS.map(({ key }) => (
                                         <td key={key} className="px-1 py-1 text-right tabular-nums">{fmtNum(pl[key])}</td>
                                       ))}
-                                      <td className="px-1 py-1 text-right tabular-nums"><DespTooltip title={pl.plano} m={pl} /></td>
+                                      <td className="px-1 py-1" />
                                       {REC_COLS.map(({ key }) => (
-                                        <td key={key} className="px-1 py-1 text-right tabular-nums">{fmtNum(pl[key])}</td>
+                                        <td key={key} className="px-1 py-1" />
                                       ))}
+                                      <td className={`px-1 py-1 text-right tabular-nums ${saldoOf(pl) < 0 ? "text-destructive" : ""}`}>{fmtNum(saldoOf(pl))}</td>
                                       <td className={`px-1 py-1 text-right tabular-nums ${sinOf(pl) > 1 ? "text-destructive" : ""}`}>{pl.rec_total ? fmtPct(sinOf(pl)) : "—"}</td>
                                     </tr>
+
+
+
                                     {pOpen && pl.benefs.map((b, i) => (
                                       <tr
                                         key={`${pkey}::${b.codigo}::${i}`}
@@ -710,7 +713,9 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                                         {REC_COLS.map(({ key }) => (
                                           <td key={key} className="px-1 py-1 text-right tabular-nums">{fmtNum(b[key])}</td>
                                         ))}
+                                        <td className={`px-1 py-1 text-right tabular-nums ${saldoOf(b) < 0 ? "text-destructive" : ""}`}>{fmtNum(saldoOf(b))}</td>
                                         <td className={`px-1 py-1 text-right tabular-nums ${sinOf(b) > 1 ? "text-destructive" : ""}`}>{b.rec_total ? fmtPct(sinOf(b)) : "—"}</td>
+
                                       </tr>
                                     ))}
 
