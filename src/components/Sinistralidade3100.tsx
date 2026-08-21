@@ -249,7 +249,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
 
   const [showChart, setShowChart] = useState(false);
 
-  // Gráfico: Top 15 beneficiários por despesa no período consolidado
+  // Gráfico: Top 10 beneficiários por despesa + DEMAIS agrupados
   const chart = useMemo(() => {
     const fq = filter.trim().toLowerCase();
     const acc = new Map<string, { nome: string; valor: number }>();
@@ -268,12 +268,19 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
       acc.set(key, cur);
     }
 
-    const data = Array.from(acc.values())
-      .sort((a, b) => b.valor - a.valor)
-      .slice(0, 15)
-      .map((b) => ({ nome: b.nome, valor: b.valor }));
+    const all = Array.from(acc.values()).sort((a, b) => b.valor - a.valor);
+    const top = all.slice(0, 10).map((b) => ({ nome: b.nome, valor: b.valor }));
+    const rest = all.slice(10);
+    const data = [...top];
+    if (rest.length) {
+      data.push({
+        nome: `DEMAIS (${rest.length})`,
+        valor: rest.reduce((s, b) => s + b.valor, 0),
+      });
+    }
     return { data };
   }, [rows, filter]);
+
 
   const CHART_COLORS = [
     "#f97316", "#a855f7", "#d4af37",
@@ -618,7 +625,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
         <DialogContent className="max-w-6xl">
           <DialogHeader>
             <DialogTitle className="text-sm">
-              Top 15 Beneficiários por Despesa · {periodoLabel}
+              Top 10 Beneficiários por Despesa + Demais · {periodoLabel}
             </DialogTitle>
           </DialogHeader>
           <div className="h-[60vh]">
