@@ -324,7 +324,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
     const header = () =>
       drawReportHeading(doc, {
         title: "3100 · Top 10 Despesas por Plano",
-        plano: `Competências: ${fmtComp(mIni)} a ${fmtComp(mFim)}`,
+        plano: `Competências: ${periodoLabel}`,
         secao: currentSecao,
         marginL,
         marginR,
