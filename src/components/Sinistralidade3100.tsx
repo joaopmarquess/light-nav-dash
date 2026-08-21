@@ -249,44 +249,31 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
 
   const [showChart, setShowChart] = useState(false);
 
+  // Gráfico: Top 15 beneficiários por despesa no período consolidado
   const chart = useMemo(() => {
-    const ini = mIni.trim();
-    const fim = mFim.trim();
     const fq = filter.trim().toLowerCase();
-    const meses = new Set<string>();
-    const acc = new Map<string, Map<string, number>>();
-    const planoTot = new Map<string, number>();
+    const acc = new Map<string, { nome: string; valor: number }>();
 
     for (const r of rows) {
-      const mabas = r[0];
-      if (ini && mabas < ini) continue;
-      if (fim && mabas > fim) continue;
       if (fq && !(
         r[1].toLowerCase().includes(fq) ||
         r[2].toLowerCase().includes(fq) ||
         r[3].toLowerCase().includes(fq) ||
-        r[4].toLowerCase().includes(fq)
+        r[4].toLowerCase().includes(fq) ||
+        (r[17] ?? "").toLowerCase().includes(fq)
       )) continue;
-      meses.add(mabas);
-      let pm = acc.get(r[1]);
-      if (!pm) { pm = new Map(); acc.set(r[1], pm); }
-      pm.set(mabas, (pm.get(mabas) ?? 0) + r[6]);
-      planoTot.set(r[1], (planoTot.get(r[1]) ?? 0) + r[6]);
+      const key = r[3];
+      const cur = acc.get(key) ?? { nome: r[4], valor: 0 };
+      cur.valor += r[6];
+      acc.set(key, cur);
     }
 
-    const mesesArr = Array.from(meses).sort();
-    const planos = Array.from(planoTot.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 12)
-      .map(([p]) => p);
-
-    const data = mesesArr.map((mb) => {
-      const row: Record<string, any> = { mes: fmtComp(mb) };
-      for (const p of planos) row[p] = acc.get(p)?.get(mb) ?? null;
-      return row;
-    });
-    return { data, planos };
-  }, [rows, mIni, mFim, filter]);
+    const data = Array.from(acc.values())
+      .sort((a, b) => b.valor - a.valor)
+      .slice(0, 15)
+      .map((b) => ({ nome: b.nome, valor: b.valor }));
+    return { data };
+  }, [rows, filter]);
 
   const CHART_COLORS = [
     "#f97316", "#a855f7", "#d4af37",
