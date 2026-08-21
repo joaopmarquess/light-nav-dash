@@ -15,7 +15,7 @@ import {
   totalRowStyles,
 } from "@/lib/pdfTheme";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell,
   Tooltip as RTooltip, ResponsiveContainer, Legend, LabelList, LineChart, Line,
 } from "recharts";
 
@@ -697,64 +697,73 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
               Top 10 Beneficiários por Despesa + Demais · {periodoLabel}
             </DialogTitle>
           </DialogHeader>
-          <div className="h-[60vh]">
+          <div className="h-[70vh] overflow-y-auto pr-1">
             {chart.data.length === 0 ? (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
                 Sem dados para o filtro informado.
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chart.data} layout="vertical" margin={{ top: 8, right: 40, bottom: 8, left: 160 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis
-                    type="number"
-                    tick={{ fontSize: 10 }}
-                    stroke="hsl(var(--muted-foreground))"
-                    tickFormatter={(v) => fmtInt(Math.round(Number(v)))}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="nome"
-                    width={150}
-                    tick={{ fontSize: 9 }}
-                    stroke="hsl(var(--muted-foreground))"
-                  />
-                  <RTooltip
-                    formatter={(v: any, n: any) => [fmtNum(Number(v)), n]}
-                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
-                  />
-                  <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="liquido" stackId="d" name="Despesa líquida" fill={CHART_COLORS[0]}>
-                    <LabelList
-                      dataKey="liquido"
-                      position="center"
-                      fontSize={9}
-                      fill="#fff"
-                      formatter={(v: any) => (Number(v) > 0 ? fmtInt(Math.round(Number(v))) : "")}
-                    />
-                  </Bar>
-                  <Bar dataKey="copart" stackId="d" name="Coparticipação" fill="#22c55e" radius={[0, 3, 3, 0]}>
-                    <LabelList
-                      dataKey="copart"
-                      position="center"
-                      fontSize={9}
-                      fill="#fff"
-                      formatter={(v: any) => (Number(v) > 0 ? fmtInt(Math.round(Number(v))) : "")}
-                    />
-                    <LabelList
-                      dataKey="total"
-                      position="right"
-                      fontSize={10}
-                      fill="hsl(var(--foreground))"
-                      formatter={(v: any) => fmtInt(Math.round(Number(v)))}
-                    />
-                  </Bar>
-
-                </BarChart>
-
-              </ResponsiveContainer>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {(() => {
+                  const max = Math.max(...chart.data.map((d) => d.total), 1);
+                  return chart.data.map((d) => {
+                    const pct = d.total / max;
+                    const cpPct = d.total > 0 ? d.copart / d.total : 0;
+                    const gauge = [
+                      { name: "Despesa líquida", value: d.liquido, fill: CHART_COLORS[0] },
+                      { name: "Coparticipação", value: d.copart, fill: "#22c55e" },
+                      { name: "Restante", value: Math.max(max - d.total, 0), fill: "hsl(var(--muted))" },
+                    ];
+                    return (
+                      <div key={d.nome} className="rounded-md border bg-card p-2">
+                        <div className="h-[110px] relative">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <RTooltip
+                                formatter={(v: any, n: any) => [fmtNum(Number(v)), n]}
+                                contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
+                              />
+                              <Pie
+                                data={gauge}
+                                dataKey="value"
+                                cx="50%"
+                                cy="92%"
+                                startAngle={180}
+                                endAngle={0}
+                                innerRadius="72%"
+                                outerRadius="100%"
+                                stroke="none"
+                                isAnimationActive={false}
+                              >
+                                {gauge.map((g, i) => (
+                                  <Cell key={i} fill={g.fill} />
+                                ))}
+                              </Pie>
+                            </PieChart>
+                          </ResponsiveContainer>
+                          <div className="absolute inset-x-0 bottom-0 text-center pointer-events-none">
+                            <div className="text-[13px] font-semibold leading-tight">
+                              {fmtInt(Math.round(d.total))}
+                            </div>
+                            <div className="text-[9px] text-muted-foreground leading-tight">
+                              {(pct * 100).toFixed(0)}% do maior
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-1 text-[9px] font-medium text-center leading-tight line-clamp-2 min-h-[22px]">
+                          {d.nome}
+                        </div>
+                        <div className="text-[9px] text-center text-muted-foreground">
+                          copart {fmtInt(Math.round(d.copart))} ({(cpPct * 100).toFixed(1)}%)
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
             )}
           </div>
+
         </DialogContent>
       </Dialog>
 
