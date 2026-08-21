@@ -45,7 +45,7 @@ const benefLabel = (b: { nome: string; relacao?: string; codigo: string; titular
 type Plano = Desp & { plano: string; benefs: Benef[] };
 type Periodo = Desp & { periodo: string; planos: Plano[] };
 
-type SortKey = "PLANO" | "vrdespesas" | "internacao" | "terapia" | "exame" | "consulta" | "emergencia" | "demais";
+type SortKey = "PLANO" | "vrdespesas" | "internacao" | "terapia" | "exame" | "consulta" | "emergencia" | "demais" | "rec_tm" | "rec_cpa" | "rec_total";
 
 const TOP_N = 10;
 
