@@ -620,42 +620,37 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
         <DialogContent className="max-w-6xl">
           <DialogHeader>
             <DialogTitle className="text-sm">
-              Despesa por Plano · {fmtComp(mIni)} a {fmtComp(mFim)}
+              Top 15 Beneficiários por Despesa · {periodoLabel}
             </DialogTitle>
           </DialogHeader>
           <div className="h-[60vh]">
             {chart.data.length === 0 ? (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-                Sem dados para o intervalo informado.
+                Sem dados para o filtro informado.
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chart.data} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+                <BarChart data={chart.data} layout="vertical" margin={{ top: 8, right: 40, bottom: 8, left: 160 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="mes" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis
+                  <XAxis
+                    type="number"
                     tick={{ fontSize: 10 }}
                     stroke="hsl(var(--muted-foreground))"
                     tickFormatter={(v) => fmtInt(Math.round(Number(v)))}
                   />
+                  <YAxis
+                    type="category"
+                    dataKey="nome"
+                    width={150}
+                    tick={{ fontSize: 9 }}
+                    stroke="hsl(var(--muted-foreground))"
+                  />
                   <RTooltip
-                    formatter={(v: any, n: any) => [v == null ? "-" : fmtNum(Number(v)), n]}
+                    formatter={(v: any) => [fmtNum(Number(v)), "Despesa"]}
                     contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
                   />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  {chart.planos.map((p, i) => (
-                    <Line
-                      key={p}
-                      type="monotone"
-                      dataKey={p}
-                      name={p}
-                      stroke={CHART_COLORS[i % CHART_COLORS.length]}
-                      strokeWidth={2}
-                      dot={{ r: 2 }}
-                      connectNulls
-                    />
-                  ))}
-                </LineChart>
+                  <Bar dataKey="valor" name="Despesa" fill={CHART_COLORS[0]} radius={[0, 3, 3, 0]} />
+                </BarChart>
               </ResponsiveContainer>
             )}
           </div>
