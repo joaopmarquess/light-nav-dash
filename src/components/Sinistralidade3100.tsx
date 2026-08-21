@@ -812,7 +812,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                 Sem dados para o filtro informado.
               </div>
             ) : chartView === "tipo" ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div className="h-full grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 auto-rows-fr gap-2">
                 {chart.data.map((d) => {
                   const slices = DESP_COLS
                     .map(({ key, label }, i) => ({ name: label, value: d.desp[key], fill: TIPO_COLORS[i] }))
@@ -820,8 +820,8 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                   const tot = slices.reduce((s, x) => s + x.value, 0);
                   const top = slices.slice().sort((a, b) => b.value - a.value)[0];
                   return (
-                    <div key={d.nome} className="rounded-md border bg-card p-2">
-                      <div className="h-[130px] relative">
+                    <div key={d.nome} className="rounded-md border bg-card p-2 flex flex-col min-h-0">
+                      <div className="flex-1 min-h-0 relative">
                         {tot > 0 ? (
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
