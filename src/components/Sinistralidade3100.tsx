@@ -299,6 +299,49 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
     return { data };
   }, [rows, filter]);
 
+  // Gráfico mensal: evolução da despesa dos Top 10 (mês a mês, base ardmensal)
+  const [showChartMensal, setShowChartMensal] = useState(false);
+  const chartMensal = useMemo(() => {
+    const fq = filter.trim().toLowerCase();
+    const tot = new Map<string, { nome: string; valor: number }>();
+    for (const r of rows) {
+      if (fq && !(
+        r[1].toLowerCase().includes(fq) ||
+        r[2].toLowerCase().includes(fq) ||
+        r[3].toLowerCase().includes(fq) ||
+        r[4].toLowerCase().includes(fq) ||
+        (r[17] ?? "").toLowerCase().includes(fq)
+      )) continue;
+      const cur = tot.get(r[3]) ?? { nome: r[4], valor: 0 };
+      cur.valor += r[6];
+      tot.set(r[3], cur);
+    }
+    const top = Array.from(tot.entries())
+      .sort((a, b) => b[1].valor - a[1].valor)
+      .slice(0, 10);
+    const codeToName = new Map(top.map(([c, v]) => [c, v.nome]));
+    const names = top.map(([, v]) => v.nome);
+
+    const byMes = new Map<string, Record<string, number>>();
+    for (const m of mensal) {
+      const nome = codeToName.get(m[1]);
+      if (!nome) continue;
+      let row = byMes.get(m[0]);
+      if (!row) { row = { mes: 0 as unknown as number }; byMes.set(m[0], row); }
+      row[nome] = (row[nome] ?? 0) + m[3];
+    }
+    const data = Array.from(byMes.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([mes, vals]) => {
+        const o: Record<string, string | number> = { mes: `${mes.slice(4)}/${mes.slice(2, 4)}` };
+        for (const n of names) o[n] = vals[n] ?? 0;
+        return o;
+      });
+    return { data, names };
+  }, [rows, mensal, filter]);
+
+
+
 
   const CHART_COLORS = [
     "#f97316", "#a855f7", "#d4af37",
