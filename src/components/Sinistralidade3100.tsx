@@ -16,7 +16,7 @@ import {
 } from "@/lib/pdfTheme";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip as RTooltip, ResponsiveContainer,
+  Tooltip as RTooltip, ResponsiveContainer, Legend,
 } from "recharts";
 
 
