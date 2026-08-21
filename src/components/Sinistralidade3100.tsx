@@ -295,11 +295,19 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
         rest.reduce((s, b) => s + b.copart, 0),
       ));
     }
+    if (all.length) {
+      data.push(mk(
+        `TOTAL (${all.length})`,
+        all.reduce((s, b) => s + b.valor, 0),
+        all.reduce((s, b) => s + b.copart, 0),
+      ));
+    }
 
     return { data };
   }, [rows, filter]);
 
-  // Gráfico mensal: evolução da despesa dos Top 10 (mês a mês, base ardmensal)
+
+  // Gráfico mensal: Top 10, Outros e Total (base ardmensal)
   const [showChartMensal, setShowChartMensal] = useState(false);
   const chartMensal = useMemo(() => {
     const fq = filter.trim().toLowerCase();
@@ -316,32 +324,32 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
       cur.valor += r[6];
       tot.set(r[3], cur);
     }
-    const top = Array.from(tot.entries())
-      .sort((a, b) => b[1].valor - a[1].valor)
-      .slice(0, 10);
-    const codeToName = new Map(top.map(([c, v]) => [c, v.nome]));
-    const names = top.map(([, v]) => v.nome);
+    const codes = new Set(Array.from(tot.keys()));
+    const topCodes = new Set(
+      Array.from(tot.entries())
+        .sort((a, b) => b[1].valor - a[1].valor)
+        .slice(0, 10)
+        .map(([c]) => c),
+    );
 
-    const byMes = new Map<string, Record<string, number>>();
+    const byMes = new Map<string, { top: number; outros: number }>();
     for (const m of mensal) {
-      const nome = codeToName.get(m[1]);
-      if (!nome) continue;
+      if (!codes.has(m[1])) continue;
       let row = byMes.get(m[0]);
-      if (!row) { row = { mes: 0 as unknown as number }; byMes.set(m[0], row); }
-      row[nome] = (row[nome] ?? 0) + m[3];
+      if (!row) { row = { top: 0, outros: 0 }; byMes.set(m[0], row); }
+      if (topCodes.has(m[1])) row.top += m[3];
+      else row.outros += m[3];
     }
     const data = Array.from(byMes.entries())
       .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([mes, vals]) => {
-        const o: Record<string, string | number> = { mes: `${mes.slice(4)}/${mes.slice(2, 4)}` };
-        for (const n of names) o[n] = vals[n] ?? 0;
-        return o;
-      });
-    return { data, names };
+      .map(([mes, v]) => ({
+        mes: `${mes.slice(4)}/${mes.slice(2, 4)}`,
+        top10: v.top,
+        outros: v.outros,
+        total: v.top + v.outros,
+      }));
+    return { data };
   }, [rows, mensal, filter]);
-
-
-
 
   const CHART_COLORS = [
     "#f97316", "#a855f7", "#d4af37",
@@ -349,6 +357,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
     "#ea580c", "#7e22ce", "#b8860b",
     "#fdba74", "#d8b4fe", "#facc15",
   ];
+
 
   const onSort = (k: SortKey) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -746,7 +755,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                               {fmtInt(Math.round(d.total))}
                             </div>
                             <div className="text-[9px] text-muted-foreground leading-tight">
-                              {(pct * 100).toFixed(0)}% do maior
+                              {(pct * 100).toFixed(1)}% do total
                             </div>
                           </div>
                         </div>
@@ -794,17 +803,10 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                     contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
                   />
                   <Legend wrapperStyle={{ fontSize: 10 }} />
-                  {chartMensal.names.map((n, i) => (
-                    <Line
-                      key={n}
-                      type="monotone"
-                      dataKey={n}
-                      name={n}
-                      stroke={CHART_COLORS[i % CHART_COLORS.length]}
-                      strokeWidth={2}
-                      dot={{ r: 2 }}
-                    />
-                  ))}
+                  <Line type="monotone" dataKey="top10" name="Top 10" stroke="#f97316" strokeWidth={2} dot={{ r: 2 }} />
+                  <Line type="monotone" dataKey="outros" name="Outros" stroke="#a855f7" strokeWidth={2} dot={{ r: 2 }} />
+                  <Line type="monotone" dataKey="total" name="Total" stroke="hsl(var(--foreground))" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 2 }} />
+
                 </LineChart>
               </ResponsiveContainer>
             )}
