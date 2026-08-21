@@ -808,9 +808,75 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
                 Sem dados para o filtro informado.
               </div>
+            ) : chartView === "tipo" ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {chart.data.map((d) => {
+                  const slices = DESP_COLS
+                    .map(({ key, label }, i) => ({ name: label, value: d.desp[key], fill: TIPO_COLORS[i] }))
+                    .filter((s) => s.value > 0);
+                  const tot = slices.reduce((s, x) => s + x.value, 0);
+                  const top = slices.slice().sort((a, b) => b.value - a.value)[0];
+                  return (
+                    <div key={d.nome} className="rounded-md border bg-card p-2">
+                      <div className="h-[130px] relative">
+                        {tot > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <RTooltip
+                                formatter={(v: any, n: any) => [`${fmtNum(Number(v))} (${fmtShare(Number(v), tot)})`, n]}
+                                contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
+                              />
+                              <Pie
+                                data={slices}
+                                dataKey="value"
+                                cx="50%"
+                                cy="50%"
+                                innerRadius="58%"
+                                outerRadius="88%"
+                                stroke="none"
+                                isAnimationActive={false}
+                              >
+                                {slices.map((s, i) => (
+                                  <Cell key={i} fill={s.fill} />
+                                ))}
+                              </Pie>
+                            </PieChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="h-full flex items-center justify-center text-[10px] text-muted-foreground">
+                            sem despesas
+                          </div>
+                        )}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                          <div className="text-[12px] font-semibold leading-tight tabular-nums">
+                            {fmtInt(Math.round(tot))}
+                          </div>
+                          {top && (
+                            <div className="text-[9px] text-muted-foreground leading-tight">
+                              {top.name} {fmtShare(top.value, tot)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="mt-1 text-[9px] font-medium text-center leading-tight line-clamp-2 min-h-[22px]">
+                        {d.nome}
+                      </div>
+                      <div className="mt-1 flex flex-wrap justify-center gap-x-2 gap-y-0.5 text-[8px] text-muted-foreground">
+                        {slices.map((s) => (
+                          <span key={s.name} className="inline-flex items-center gap-1">
+                            <span className="h-1.5 w-1.5 rounded-full" style={{ background: s.fill }} />
+                            {s.name} {fmtShare(s.value, tot)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 {(() => {
+
                   const max = Math.max(...chart.data.map((d) => d.total), 1);
                   return chart.data.map((d) => {
                     const pct = d.total / max;
