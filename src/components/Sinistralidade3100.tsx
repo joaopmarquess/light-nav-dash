@@ -441,24 +441,8 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
       <section className={`bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col ${embedded ? "h-full" : "h-[calc(100vh-9rem)]"}`}>
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground mb-3">
           <div className="flex items-center gap-2">
-            <span className="shrink-0">3100 · mabas de</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={mIni}
-              onChange={(e) => setMIni(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="202507"
-              className={inputCls}
-            />
-            <span>até</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={mFim}
-              onChange={(e) => setMFim(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="202606"
-              className={inputCls}
-            />
+            <span className="shrink-0">3100 · período {periodoLabel}</span>
+
             <button
               onClick={() => setShowChart(true)}
               className="h-8 px-3 inline-flex items-center gap-1.5 rounded border border-border bg-background text-xs text-foreground hover:bg-accent"
