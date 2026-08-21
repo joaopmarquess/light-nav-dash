@@ -149,6 +149,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
         const json = await res.json();
         if (!alive) return;
         setRows((json.rows ?? []) as Raw[]);
+        setPeriodoLabel(String(json.periodoLabel ?? ""));
       } catch (e) {
         console.error("3100 load error", e);
       } finally {
