@@ -628,6 +628,16 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                                   </th>
                                 ))}
                                 <th className="px-1 py-1 text-right font-semibold cursor-pointer select-none" onClick={() => onSort("vrdespesas")}>Total Despesa {arrow("vrdespesas")}</th>
+                                {REC_COLS.map(({ key, label }) => (
+                                  <th
+                                    key={key}
+                                    className="px-1 py-1 text-right font-semibold cursor-pointer select-none"
+                                    onClick={() => onSort(key as SortKey)}
+                                  >
+                                    {label} {arrow(key as SortKey)}
+                                  </th>
+                                ))}
+                                <th className="px-1 py-1 text-right font-semibold">Sinistralidade</th>
                               </tr>
                             </thead>
                             <tbody>
