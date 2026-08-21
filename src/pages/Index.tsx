@@ -57,6 +57,7 @@ import SinistralidadeCidades from "@/components/SinistralidadeCidades";
 import SinistralidadePeriodo from "@/components/SinistralidadePeriodo";
 import SinistralidadeAPB from "@/components/SinistralidadeAPB";
 import SinistralidadeAPBTop10 from "@/components/SinistralidadeAPBTop10";
+import Sinistralidade3100 from "@/components/Sinistralidade3100";
 import SinistralidadeAPBFaturas from "@/components/SinistralidadeAPBFaturas";
 import SinistralidadeAPBAtivos from "@/components/SinistralidadeAPBAtivos";
 import SinistralidadeCidade from "@/components/SinistralidadeCidade";
@@ -124,6 +125,7 @@ const menuItems: MenuItem[] = [
       { icon: CalendarCheck, label: "APB Top10" },
       { icon: CalendarCheck, label: "APB Faturas" },
       { icon: CalendarCheck, label: "APB Ativos" },
+      { icon: CalendarCheck, label: "3100" },
       { icon: LayoutDashboard, label: "Cidades" },
       { icon: BarChart3, label: "Gráfico Sinistralidade" },
       { icon: LayoutDashboard, label: "PBI U12" },
@@ -385,6 +387,8 @@ const Index = () => {
             <SinistralidadeAPBFaturas />
           ) : active === "APB Ativos" ? (
             <SinistralidadeAPBAtivos />
+          ) : active === "3100" ? (
+            <Sinistralidade3100 />
           ) : active === "Cidades" ? (
             <SinistralidadeCidade />
 
