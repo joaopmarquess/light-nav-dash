@@ -784,7 +784,8 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
       )}
 
       <Dialog open={showChart} onOpenChange={setShowChart}>
-        <DialogContent className="max-w-6xl">
+        <DialogContent className="max-w-[96vw] w-[96vw] max-h-[95vh]">
+
           <DialogHeader>
             <DialogTitle className="text-sm flex items-center gap-3 flex-wrap">
               <span>Top 10 Beneficiários por Despesa + Demais · {periodoLabel}</span>
