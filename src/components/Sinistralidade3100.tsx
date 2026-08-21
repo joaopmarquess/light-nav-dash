@@ -822,20 +822,25 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                             </PieChart>
                           </ResponsiveContainer>
                           <div className="absolute inset-x-0 bottom-0 text-center pointer-events-none">
-                            <div className="text-[13px] font-semibold leading-tight">
-                              {fmtInt(Math.round(d.total))}
+                            <div className="text-[13px] font-semibold leading-tight" style={{ color: CHART_COLORS[0] }}>
+                              {fmtInt(Math.round(d.liquido))}
                             </div>
                             <div className="text-[9px] text-muted-foreground leading-tight">
-                              {(pct * 100).toFixed(1)}% do total
+                              líquida · {(pct * 100).toFixed(1)}% do total
                             </div>
                           </div>
                         </div>
                         <div className="mt-1 text-[9px] font-medium text-center leading-tight line-clamp-2 min-h-[22px]">
                           {d.nome}
                         </div>
-                        <div className="text-[9px] text-center text-muted-foreground">
-                          copart {fmtInt(Math.round(d.copart))} ({(cpPct * 100).toFixed(1)}%)
+                        <div className="text-[9px] text-center leading-tight tabular-nums">
+                          <span className="text-muted-foreground">bruta </span>
+                          <span className="font-medium">{fmtInt(Math.round(d.total))}</span>
+                          <span className="text-muted-foreground"> − copart </span>
+                          <span className="font-medium" style={{ color: "#22c55e" }}>{fmtInt(Math.round(d.copart))}</span>
+                          <span className="text-muted-foreground"> ({(cpPct * 100).toFixed(1)}%)</span>
                         </div>
+
                       </div>
                     );
                   });
