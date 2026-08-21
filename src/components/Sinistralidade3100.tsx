@@ -806,7 +806,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
             </DialogTitle>
           </DialogHeader>
 
-          <div className="h-[70vh] overflow-y-auto pr-1">
+          <div className="h-[82vh] overflow-hidden pr-1">
             {chart.data.length === 0 ? (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
                 Sem dados para o filtro informado.
