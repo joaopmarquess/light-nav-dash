@@ -611,7 +611,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
         <PdfPreview
           onClose={() => setPdfOpen(false)}
           build={buildDoc}
-          fileName={`3100_Top10_${mIni}_${mFim}.pdf`}
+          fileName={`3100_Top10_${periodoLabel.replace(/\D/g, "")}.pdf`}
           periodos={abertos.length}
         />
       )}
