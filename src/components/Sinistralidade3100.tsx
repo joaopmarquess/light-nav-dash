@@ -584,6 +584,14 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                 <div className="w-40 shrink-0 text-right tabular-nums">
                   <DespTooltip title="TOTAL GERAL · Despesa" m={totais} />
                 </div>
+                <div className="w-72 shrink-0 grid grid-cols-4 gap-2 text-right tabular-nums">
+                  {REC_COLS.map(({ key, label }) => (
+                    <span key={key} title={label}>{fmtNum(totais[key])}</span>
+                  ))}
+                  <span className={sinOf(totais) > 1 ? "text-destructive" : ""} title="Sinistralidade">
+                    {totais.rec_total ? fmtPct(sinOf(totais)) : "—"}
+                  </span>
+                </div>
               </div>
 
               {periodos.map((t) => {
