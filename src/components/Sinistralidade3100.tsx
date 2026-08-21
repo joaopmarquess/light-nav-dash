@@ -660,6 +660,10 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                                         <td key={key} className="px-1 py-0.5 text-right tabular-nums">{fmtNum(pl[key])}</td>
                                       ))}
                                       <td className="px-1 py-0.5 text-right tabular-nums"><DespTooltip title={pl.plano} m={pl} /></td>
+                                      {REC_COLS.map(({ key }) => (
+                                        <td key={key} className="px-1 py-0.5 text-right tabular-nums">{fmtNum(pl[key])}</td>
+                                      ))}
+                                      <td className={`px-1 py-0.5 text-right tabular-nums ${sinOf(pl) > 1 ? "text-destructive" : ""}`}>{pl.rec_total ? fmtPct(sinOf(pl)) : "—"}</td>
                                     </tr>
                                     {pOpen && pl.benefs.map((b, i) => (
                                       <tr
