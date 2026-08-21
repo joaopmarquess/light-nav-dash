@@ -101,6 +101,12 @@ const DESP_COLS: { key: keyof Desp; label: string }[] = [
   { key: "demais", label: "Demais" },
 ];
 
+const REC_COLS: { key: keyof Desp; label: string }[] = [
+  { key: "rec_tm", label: "Rec. TM" },
+  { key: "rec_cpa", label: "Rec. Copart" },
+  { key: "rec_total", label: "Receita Total" },
+];
+
 const DespTooltip = ({ title, m }: { title: string; m: Desp }) => (
   <Tooltip>
     <TooltipTrigger asChild>
