@@ -42,7 +42,7 @@ const isTitular = (rel?: string) => (rel || "").toUpperCase().startsWith("TITULA
 
 const benefLabel = (b: { nome: string; relacao?: string; codigo: string; titular?: string; outros?: number }) =>
   b.outros ? b.nome : `${b.nome} (${b.relacao || "—"}-${b.codigo})${b.titular ? `\nTitular: ${b.titular}` : ""}`;
-type Plano = Desp & { plano: string; benefs: Benef[] };
+type Plano = Desp & { plano: string; benefs: Benef[]; resto: Benef[] };
 type Periodo = Desp & { periodo: string; planos: Plano[] };
 
 type SortKey = "PLANO" | "vrdespesas" | "internacao" | "terapia" | "exame" | "consulta" | "emergencia" | "demais" | "rec_tm" | "rec_cpa" | "rec_total";
@@ -204,7 +204,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
       const pm = plMaps.get(ciclo)!;
       let pl = pm.get(r[1]);
       if (!pl) {
-        pl = { plano: r[1], benefs: [], ...zero() };
+        pl = { plano: r[1], benefs: [], resto: [], ...zero() };
         pm.set(r[1], pl);
         p.planos.push(pl);
         bMaps.set(`${ciclo}|${r[1]}`, new Map());
@@ -240,6 +240,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
             ...zero(),
           };
           for (const b of resto) addDesp(outros, b);
+          pl.resto = resto;
           pl.benefs = [...pl.benefs.slice(0, TOP_N), outros];
         }
       }
@@ -451,7 +452,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
 
     abertos.forEach((p, idx) => {
       if (idx > 0) doc.addPage();
-      currentSecao = `Período ${fmtCiclo(p.periodo)} · Total de Despesas: ${fmtNum(p.vrdespesas)}`;
+      currentSecao = `Seção 1 | Top 10 · Período ${fmtCiclo(p.periodo)} · Total de Despesas: ${fmtNum(p.vrdespesas)}`;
 
       let y = marginT;
       const planos = sortPlanos(p.planos);
@@ -514,6 +515,75 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
         columnStyles,
       });
     });
+
+    // ===================== Seção 2 | Demais beneficiários =====================
+    const temResto = abertos.some((p) => p.planos.some((pl) => pl.resto.length));
+    if (temResto) {
+      abertos.forEach((p) => {
+        const planos = sortPlanos(p.planos).filter((pl) => pl.resto.length);
+        if (!planos.length) return;
+        doc.addPage();
+        currentSecao = `Seção 2 | Demais beneficiários · Período ${fmtCiclo(p.periodo)}`;
+        let y = marginT;
+
+        for (const pl of planos) {
+          const restoTot = zero();
+          for (const b of pl.resto) addDesp(restoTot, b);
+
+          autoTable(doc, {
+            ...common,
+            startY: y,
+            showFoot: "lastPage",
+            head: [
+              [{ content: `${pl.plano} · demais (${pl.resto.length})`, colSpan: 8, styles: { ...groupRowStyles, halign: "left", cellPadding: 0.6, minCellHeight: 0 } }],
+              [
+                "Beneficiário",
+                ...DESP_COLS.map(({ label }) => ({ content: label, styles: { halign: "right" as const } })),
+                { content: "Total Despesa", styles: { halign: "right" as const } },
+              ],
+            ],
+            body: pl.resto.map((b, i) => [
+              `${TOP_N + i + 1}. ${benefLabel(b)}`,
+              ...DESP_COLS.map(({ key }) => fmtNum(b[key])),
+              fmtNum(b.vrdespesas),
+            ]),
+            foot: [[
+              { content: `Subtotal demais ${pl.plano}`, styles: { ...subtotalRowStyles, halign: "left", lineWidth: { top: 0.1, bottom: 0.8, left: 0.1, right: 0 }, lineColor: PDF_COLORS.navy } },
+              ...DESP_COLS.map(({ key }) => ({
+                content: fmtNum(restoTot[key]),
+                styles: { ...subtotalRowStyles, halign: "right" as const, lineWidth: { top: 0.1, bottom: 0.8, left: 0, right: 0 }, lineColor: PDF_COLORS.navy },
+              })),
+              { content: fmtNum(restoTot.vrdespesas), styles: { ...subtotalRowStyles, halign: "right" as const, lineWidth: { top: 0.1, bottom: 0.8, left: 0, right: 0.1 }, lineColor: PDF_COLORS.navy } },
+            ]],
+            columnStyles,
+          });
+          y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 2;
+          if (y > pageH - marginB - 24) { doc.addPage(); y = marginT; }
+        }
+      });
+    }
+
+    // ===================== Seção 3 | Gráficos =====================
+    const gW = usableW;
+    const gH = pageH - marginT - marginB - 6;
+
+    const graficos: { titulo: string; png: string }[] = [];
+    if (chart.data.length) {
+      graficos.push({ titulo: "Gráfico 1 · Meia-lua (despesa líquida × coparticipação)", png: renderGaugesPng(chart.data, gW, gH) });
+      graficos.push({ titulo: "Gráfico 2 · Composição por tipo de despesa", png: renderTiposPng(chart.data, gW, gH) });
+    }
+    if (chartMensal.data.length) {
+      graficos.push({ titulo: "Gráfico 3 · Top 10, Outros e Total mês a mês", png: renderMensalPng(chartMensal.data, gW, gH) });
+    }
+
+    graficos.forEach((gr) => {
+      doc.addPage();
+      currentSecao = `Seção 3 | ${gr.titulo}`;
+      header();
+      doc.addImage(gr.png, "PNG", marginL, marginT, gW, gH);
+    });
+
+
 
     // Rodapé: apenas p de pp (sem seções)
     const total = doc.getNumberOfPages();
@@ -1108,4 +1178,264 @@ function PdfPreview({
       </div>
     </div>
   );
+}
+
+// ============ Gráficos renderizados para o PDF (canvas -> PNG) ============
+
+type ChartDatum = { nome: string; liquido: number; copart: number; total: number; desp: Desp };
+
+const PNG_SCALE = 6;
+const C_ORANGE = "#f97316";
+const C_GREEN = "#22c55e";
+const C_GREY = "#e5e7eb";
+const C_TEXT = "#111827";
+const C_MUTED = "#6b7280";
+const PNG_TIPO_COLORS = ["#1e3a8a", "#0ea5e9", "#22c55e", "#f97316", "#ef4444", "#a855f7"];
+
+function mkCanvas(wmm: number, hmm: number) {
+  const c = document.createElement("canvas");
+  c.width = Math.round(wmm * PNG_SCALE);
+  c.height = Math.round(hmm * PNG_SCALE);
+  const g = c.getContext("2d")!;
+  g.fillStyle = "#ffffff";
+  g.fillRect(0, 0, c.width, c.height);
+  g.textBaseline = "alphabetic";
+  return { c, g };
+}
+
+const font = (px: number, bold = false) =>
+  `${bold ? "bold " : ""}${Math.max(6, Math.round(px))}px Helvetica, Arial, sans-serif`;
+
+function fitText(g: CanvasRenderingContext2D, text: string, maxW: number) {
+  if (g.measureText(text).width <= maxW) return text;
+  let t = text;
+  while (t.length > 3 && g.measureText(t + "…").width > maxW) t = t.slice(0, -1);
+  return t + "…";
+}
+
+function ring(
+  g: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  rOut: number,
+  rIn: number,
+  a0: number,
+  a1: number,
+  color: string,
+) {
+  if (a1 - a0 <= 0.0001) return;
+  g.beginPath();
+  g.arc(cx, cy, rOut, a0, a1);
+  g.arc(cx, cy, rIn, a1, a0, true);
+  g.closePath();
+  g.fillStyle = color;
+  g.fill();
+}
+
+/** Gráfico 1 — 12 meia-luas (líquida x coparticipação) */
+function renderGaugesPng(data: ChartDatum[], wmm: number, hmm: number) {
+  const { c, g } = mkCanvas(wmm, hmm);
+  const cols = 3;
+  const rows = Math.max(1, Math.ceil(data.length / cols));
+  const cw = c.width / cols;
+  const ch = c.height / rows;
+  const max = Math.max(...data.map((d) => d.total), 1);
+
+  data.forEach((d, i) => {
+    const x0 = (i % cols) * cw;
+    const y0 = Math.floor(i / cols) * ch;
+    const pad = Math.min(cw, ch) * 0.09;
+    const r = Math.min(cw / 2 - pad, ch * 0.58 - pad);
+    const cx = x0 + cw / 2;
+    const cy = y0 + pad + r;
+    const rIn = r * 0.66;
+
+    const segs = [
+      { v: d.liquido, col: C_ORANGE },
+      { v: d.copart, col: C_GREEN },
+      { v: Math.max(max - d.total, 0), col: C_GREY },
+    ];
+    let a = Math.PI;
+    for (const s of segs) {
+      const sweep = (Math.max(s.v, 0) / max) * Math.PI;
+      ring(g, cx, cy, r, rIn, a, a + sweep, s.col);
+      a += sweep;
+    }
+
+    g.textAlign = "center";
+    g.font = font(r * 0.24, true);
+    g.fillStyle = C_ORANGE;
+    g.fillText(fmtInt(Math.round(d.liquido)), cx, cy - r * 0.14);
+    g.font = font(r * 0.14);
+    g.fillStyle = C_MUTED;
+    g.fillText(`líquida · ${((d.total / max) * 100).toFixed(1)}% do total`, cx, cy + r * 0.02);
+
+    const maxW = cw - pad * 1.2;
+    g.font = font(r * 0.16, true);
+    g.fillStyle = C_TEXT;
+    g.fillText(fitText(g, d.nome, maxW), cx, cy + r * 0.28);
+    g.font = font(r * 0.14);
+    g.fillStyle = C_MUTED;
+    const cpPct = d.total > 0 ? (d.copart / d.total) * 100 : 0;
+    g.fillText(
+      fitText(
+        g,
+        `bruta ${fmtInt(Math.round(d.total))} − copart ${fmtInt(Math.round(d.copart))} (${cpPct.toFixed(1)}%)`,
+        maxW,
+      ),
+      cx,
+      cy + r * 0.46,
+    );
+  });
+
+  return c.toDataURL("image/png");
+}
+
+/** Gráfico 2 — 12 roscas por tipo de despesa */
+function renderTiposPng(data: ChartDatum[], wmm: number, hmm: number) {
+  const { c, g } = mkCanvas(wmm, hmm);
+  const cols = 3;
+  const rows = Math.max(1, Math.ceil(data.length / cols));
+  const cw = c.width / cols;
+  const ch = c.height / rows;
+
+  data.forEach((d, i) => {
+    const x0 = (i % cols) * cw;
+    const y0 = Math.floor(i / cols) * ch;
+    const pad = Math.min(cw, ch) * 0.1;
+    const r = Math.min(cw / 2 - pad, ch * 0.36 - pad);
+    const cx = x0 + cw / 2;
+    const cy = y0 + pad + r;
+    const rIn = r * 0.6;
+
+    const slices = DESP_COLS.map(({ key, label }, k) => ({
+      name: label,
+      value: d.desp[key],
+      fill: PNG_TIPO_COLORS[k],
+    })).filter((s) => s.value > 0);
+    const tot = slices.reduce((s, x) => s + x.value, 0);
+
+    let a = -Math.PI / 2;
+    for (const s of slices) {
+      const sweep = tot ? (s.value / tot) * Math.PI * 2 : 0;
+      ring(g, cx, cy, r, rIn, a, a + sweep, s.fill);
+      a += sweep;
+    }
+    if (!tot) ring(g, cx, cy, r, rIn, 0, Math.PI * 2, C_GREY);
+
+    g.textAlign = "center";
+    g.font = font(r * 0.24, true);
+    g.fillStyle = C_TEXT;
+    g.fillText(fmtInt(Math.round(tot)), cx, cy + r * 0.06);
+
+    const maxW = cw - pad * 1.2;
+    g.font = font(r * 0.17, true);
+    g.fillText(fitText(g, d.nome, maxW), cx, cy + r * 1.28);
+
+    // legenda em 2 colunas
+    g.font = font(r * 0.14);
+    g.textAlign = "left";
+    const lineH = r * 0.19;
+    slices.forEach((s, k) => {
+      const col = k % 2;
+      const line = Math.floor(k / 2);
+      const lx = x0 + pad * 0.6 + col * ((cw - pad * 1.2) / 2);
+      const ly = cy + r * 1.5 + line * lineH;
+      g.fillStyle = s.fill;
+      g.fillRect(lx, ly - lineH * 0.4, lineH * 0.35, lineH * 0.35);
+      g.fillStyle = C_MUTED;
+      g.fillText(
+        fitText(g, `${s.name} ${fmtShare(s.value, tot)}`, (cw - pad * 1.2) / 2 - lineH * 0.7),
+        lx + lineH * 0.55,
+        ly,
+      );
+    });
+  });
+
+  return c.toDataURL("image/png");
+}
+
+/** Gráfico 3 — linhas Top 10 / Outros / Total mês a mês */
+function renderMensalPng(
+  data: { mes: string; top10: number; outros: number; total: number }[],
+  wmm: number,
+  hmm: number,
+) {
+  const { c, g } = mkCanvas(wmm, hmm);
+  const padL = c.width * 0.1;
+  const padR = c.width * 0.03;
+  const padT = c.height * 0.06;
+  const padB = c.height * 0.14;
+  const w = c.width - padL - padR;
+  const h = c.height - padT - padB;
+  const base = c.height * 0.02;
+
+  const maxV = Math.max(...data.map((d) => d.total), 1);
+  const x = (i: number) => padL + (data.length > 1 ? (i * w) / (data.length - 1) : w / 2);
+  const y = (v: number) => padT + h - (v / maxV) * h;
+
+  // grade + eixo Y
+  g.strokeStyle = C_GREY;
+  g.lineWidth = Math.max(1, base * 0.06);
+  g.font = font(base * 0.7);
+  g.fillStyle = C_MUTED;
+  g.textAlign = "right";
+  for (let k = 0; k <= 5; k++) {
+    const v = (maxV / 5) * k;
+    const yy = y(v);
+    g.beginPath();
+    g.moveTo(padL, yy);
+    g.lineTo(padL + w, yy);
+    g.stroke();
+    g.fillText(fmtInt(Math.round(v)), padL - base * 0.3, yy + base * 0.25);
+  }
+
+  // eixo X
+  g.textAlign = "center";
+  data.forEach((d, i) => {
+    if (data.length > 14 && i % 2 === 1) return;
+    g.fillText(d.mes, x(i), padT + h + base);
+  });
+
+  const series: { key: "top10" | "outros" | "total"; label: string; color: string; dash: boolean }[] = [
+    { key: "top10", label: "Top 10", color: C_ORANGE, dash: false },
+    { key: "outros", label: "Outros", color: "#a855f7", dash: false },
+    { key: "total", label: "Total", color: C_TEXT, dash: true },
+  ];
+
+  for (const s of series) {
+    g.strokeStyle = s.color;
+    g.lineWidth = Math.max(1.5, base * 0.12);
+    g.setLineDash(s.dash ? [base * 0.5, base * 0.4] : []);
+    g.beginPath();
+    data.forEach((d, i) => {
+      const px = x(i);
+      const py = y(d[s.key]);
+      if (i === 0) g.moveTo(px, py);
+      else g.lineTo(px, py);
+    });
+    g.stroke();
+    g.setLineDash([]);
+    g.fillStyle = s.color;
+    data.forEach((d, i) => {
+      g.beginPath();
+      g.arc(x(i), y(d[s.key]), base * 0.14, 0, Math.PI * 2);
+      g.fill();
+    });
+  }
+
+  // legenda
+  g.font = font(base * 0.75, true);
+  g.textAlign = "left";
+  let lx = padL;
+  const ly = c.height - base * 0.6;
+  for (const s of series) {
+    g.fillStyle = s.color;
+    g.fillRect(lx, ly - base * 0.5, base * 0.8, base * 0.18);
+    g.fillStyle = C_TEXT;
+    g.fillText(s.label, lx + base, ly - base * 0.28);
+    lx += base * 4;
+  }
+
+  return c.toDataURL("image/png");
 }
