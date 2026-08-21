@@ -134,8 +134,7 @@ const DespTooltip = ({ title, m }: { title: string; m: Desp }) => (
 export default function Sinistralidade3100({ embedded = false }: { embedded?: boolean } = {}) {
   const [rows, setRows] = useState<Raw[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mIni, setMIni] = useState("202507");
-  const [mFim, setMFim] = useState("202606");
+  const [periodoLabel, setPeriodoLabel] = useState("");
   const [filter, setFilter] = useState("");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [expandedPlano, setExpandedPlano] = useState<Record<string, boolean>>({});
