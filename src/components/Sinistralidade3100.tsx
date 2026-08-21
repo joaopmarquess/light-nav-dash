@@ -877,7 +877,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                 })}
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div className="h-full grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 auto-rows-fr gap-2">
                 {(() => {
 
                   const max = Math.max(...chart.data.map((d) => d.total), 1);
@@ -890,8 +890,8 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                       { name: "Restante", value: Math.max(max - d.total, 0), fill: "hsl(var(--muted))" },
                     ];
                     return (
-                      <div key={d.nome} className="rounded-md border bg-card p-2">
-                        <div className="h-[110px] relative">
+                      <div key={d.nome} className="rounded-md border bg-card p-2 flex flex-col min-h-0">
+                        <div className="flex-1 min-h-0 relative">
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                               <RTooltip
