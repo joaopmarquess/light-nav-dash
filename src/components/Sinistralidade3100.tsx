@@ -351,9 +351,13 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
     return { data };
   }, [rows, mensal, filter]);
 
+  const CHART_COLORS = [
+    "#f97316", "#a855f7", "#d4af37",
+    "#fb923c", "#c084fc", "#eab308",
     "#ea580c", "#7e22ce", "#b8860b",
     "#fdba74", "#d8b4fe", "#facc15",
   ];
+
 
   const onSort = (k: SortKey) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
