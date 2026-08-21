@@ -20,6 +20,7 @@ import {
 } from "recharts";
 
 
+type MensalRow = [string, string, string, number, number];
 type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number, string, string];
 
 type Desp = {
