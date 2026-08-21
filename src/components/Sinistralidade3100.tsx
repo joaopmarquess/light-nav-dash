@@ -20,7 +20,7 @@ import {
 } from "recharts";
 
 
-type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number, string];
+type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number, string, string];
 
 type Desp = {
   rec_total: number;
