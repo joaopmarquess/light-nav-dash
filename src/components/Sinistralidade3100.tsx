@@ -573,26 +573,49 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
             </div>
           ) : (
             <div className="space-y-2">
-              <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-muted/60 border border-border text-[13px] font-semibold text-foreground">
-                <div className="w-6 shrink-0" />
-                <div className="w-40 shrink-0 text-left">TOTAL GERAL</div>
-                <div className="flex-1 grid grid-cols-6 gap-2 text-right tabular-nums">
-                  {DESP_COLS.map(({ key, label }) => (
-                    <span key={key} title={label}>{fmtNum(totais[key])}</span>
-                  ))}
-                </div>
-                <div className="w-40 shrink-0 text-right tabular-nums">
-                  <DespTooltip title="TOTAL GERAL · Despesa" m={totais} />
-                </div>
-                <div className="w-72 shrink-0 grid grid-cols-4 gap-2 text-right tabular-nums">
-                  {REC_COLS.map(({ key, label }) => (
-                    <span key={key} title={label}>{fmtNum(totais[key])}</span>
-                  ))}
-                  <span className={sinOf(totais) > 1 ? "text-destructive" : ""} title="Sinistralidade">
-                    {totais.rec_total ? fmtPct(sinOf(totais)) : "—"}
-                  </span>
-                </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                {[
+                  { label: "Receita Total", value: fmtNum(totais.rec_total), hint: "Rec. TM + Copart" },
+                  { label: "Rec. TM", value: fmtNum(totais.rec_tm) },
+                  { label: "Rec. Copart", value: fmtNum(totais.rec_cpa) },
+                  { label: "Despesa Total", value: fmtNum(totais.vrdespesas), hint: "Soma de todas as despesas" },
+                  {
+                    label: "Saldo",
+                    value: fmtNum(saldoOf(totais)),
+                    danger: saldoOf(totais) < 0,
+                  },
+                  {
+                    label: "Sinistralidade",
+                    value: totais.rec_total ? fmtPct(sinOf(totais)) : "—",
+                    danger: sinOf(totais) > 1,
+                  },
+                ].map((c) => (
+                  <div
+                    key={c.label}
+                    title={c.hint}
+                    className="rounded-lg border border-border bg-card px-3 py-2 shadow-sm"
+                  >
+                    <div className="text-[11px] uppercase tracking-wide text-muted-foreground truncate">{c.label}</div>
+                    <div
+                      className={`text-base font-semibold tabular-nums ${
+                        c.danger ? "text-destructive" : "text-foreground"
+                      }`}
+                    >
+                      {c.value}
+                    </div>
+                  </div>
+                ))}
               </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                {DESP_COLS.map(({ key, label }) => (
+                  <div key={key} className="rounded-lg border border-border/70 bg-muted/40 px-3 py-1.5">
+                    <div className="text-[11px] text-muted-foreground truncate" title={label}>{label}</div>
+                    <div className="text-[13px] font-medium tabular-nums text-foreground">{fmtNum(totais[key])}</div>
+                  </div>
+                ))}
+              </div>
+
 
               {periodos.map((t) => {
                 const pct = maxDesp ? (t.vrdespesas / maxDesp) * 100 : 0;
