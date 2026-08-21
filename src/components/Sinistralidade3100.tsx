@@ -266,10 +266,12 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
 
   const [showChart, setShowChart] = useState(false);
 
+  const [chartView, setChartView] = useState<"gauge" | "tipo">("gauge");
+
   // Gráfico: Top 10 beneficiários por despesa + DEMAIS agrupados
   const chart = useMemo(() => {
     const fq = filter.trim().toLowerCase();
-    const acc = new Map<string, { nome: string; valor: number; copart: number }>();
+    const acc = new Map<string, { nome: string; valor: number; copart: number; d: Desp }>();
 
     for (const r of rows) {
       if (fq && !(
@@ -280,25 +282,32 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
         (r[17] ?? "").toLowerCase().includes(fq)
       )) continue;
       const key = r[3];
-      const cur = acc.get(key) ?? { nome: r[4], valor: 0, copart: 0 };
+      const cur = acc.get(key) ?? { nome: r[4], valor: 0, copart: 0, d: zero() };
       cur.valor += r[6];
       cur.copart += r[15] ?? 0;
+      add(cur.d, r);
       acc.set(key, cur);
     }
 
-    const mk = (nome: string, valor: number, copart: number) => {
+    const mk = (nome: string, valor: number, copart: number, d: Desp) => {
       const cp = Math.min(copart, valor);
-      return { nome, liquido: valor - cp, copart: cp, total: valor };
+      return { nome, liquido: valor - cp, copart: cp, total: valor, desp: d };
+    };
+    const sumDesp = (arr: { d: Desp }[]) => {
+      const t = zero();
+      for (const a of arr) addDesp(t, a.d);
+      return t;
     };
 
     const all = Array.from(acc.values()).sort((a, b) => b.valor - a.valor);
-    const data = all.slice(0, 10).map((b) => mk(b.nome, b.valor, b.copart));
+    const data = all.slice(0, 10).map((b) => mk(b.nome, b.valor, b.copart, b.d));
     const rest = all.slice(10);
     if (rest.length) {
       data.push(mk(
         `DEMAIS (${rest.length})`,
         rest.reduce((s, b) => s + b.valor, 0),
         rest.reduce((s, b) => s + b.copart, 0),
+        sumDesp(rest),
       ));
     }
     if (all.length) {
@@ -306,11 +315,13 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
         `TOTAL (${all.length})`,
         all.reduce((s, b) => s + b.valor, 0),
         all.reduce((s, b) => s + b.copart, 0),
+        sumDesp(all),
       ));
     }
 
     return { data };
   }, [rows, filter]);
+
 
 
   // Gráfico mensal: Top 10, Outros e Total (base ardmensal)
