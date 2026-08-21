@@ -16,10 +16,11 @@ import {
 } from "@/lib/pdfTheme";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip as RTooltip, ResponsiveContainer, Legend, LabelList,
+  Tooltip as RTooltip, ResponsiveContainer, Legend, LabelList, LineChart, Line,
 } from "recharts";
 
 
+type MensalRow = [string, string, string, number, number];
 type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number, string, string];
 
 type Desp = {
@@ -141,6 +142,8 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
   const [sortKey, setSortKey] = useState<SortKey>("vrdespesas");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
+  const [mensal, setMensal] = useState<MensalRow[]>([]);
+
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -155,9 +158,17 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
       } finally {
         if (alive) setLoading(false);
       }
+      try {
+        const res = await fetch("/data/3100_mensal.json");
+        const json = await res.json();
+        if (alive) setMensal((json.rows ?? []) as MensalRow[]);
+      } catch (e) {
+        console.error("3100 mensal load error", e);
+      }
     })();
     return () => { alive = false; };
   }, []);
+
 
   const periodos = useMemo<Periodo[]>(() => {
     const fq = filter.trim().toLowerCase();
@@ -287,6 +298,49 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
 
     return { data };
   }, [rows, filter]);
+
+  // Gráfico mensal: evolução da despesa dos Top 10 (mês a mês, base ardmensal)
+  const [showChartMensal, setShowChartMensal] = useState(false);
+  const chartMensal = useMemo(() => {
+    const fq = filter.trim().toLowerCase();
+    const tot = new Map<string, { nome: string; valor: number }>();
+    for (const r of rows) {
+      if (fq && !(
+        r[1].toLowerCase().includes(fq) ||
+        r[2].toLowerCase().includes(fq) ||
+        r[3].toLowerCase().includes(fq) ||
+        r[4].toLowerCase().includes(fq) ||
+        (r[17] ?? "").toLowerCase().includes(fq)
+      )) continue;
+      const cur = tot.get(r[3]) ?? { nome: r[4], valor: 0 };
+      cur.valor += r[6];
+      tot.set(r[3], cur);
+    }
+    const top = Array.from(tot.entries())
+      .sort((a, b) => b[1].valor - a[1].valor)
+      .slice(0, 10);
+    const codeToName = new Map(top.map(([c, v]) => [c, v.nome]));
+    const names = top.map(([, v]) => v.nome);
+
+    const byMes = new Map<string, Record<string, number>>();
+    for (const m of mensal) {
+      const nome = codeToName.get(m[1]);
+      if (!nome) continue;
+      let row = byMes.get(m[0]);
+      if (!row) { row = { mes: 0 as unknown as number }; byMes.set(m[0], row); }
+      row[nome] = (row[nome] ?? 0) + m[3];
+    }
+    const data = Array.from(byMes.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([mes, vals]) => {
+        const o: Record<string, string | number> = { mes: `${mes.slice(4)}/${mes.slice(2, 4)}` };
+        for (const n of names) o[n] = vals[n] ?? 0;
+        return o;
+      });
+    return { data, names };
+  }, [rows, mensal, filter]);
+
+
 
 
   const CHART_COLORS = [
@@ -462,6 +516,14 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
             >
               <LineChartIcon className="h-3.5 w-3.5" /> Gráfico
             </button>
+            <button
+              onClick={() => setShowChartMensal(true)}
+              className="h-8 px-3 inline-flex items-center gap-1.5 rounded border border-border bg-background text-xs text-foreground hover:bg-accent"
+              title="Evolução mensal da despesa dos Top 10"
+            >
+              <LineChartIcon className="h-3.5 w-3.5" /> Top 10 mês a mês
+            </button>
+
             <button
               onClick={() => setPdfOpen(true)}
               disabled={abertos.length === 0}
@@ -695,6 +757,52 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={showChartMensal} onOpenChange={setShowChartMensal}>
+        <DialogContent className="max-w-6xl">
+          <DialogHeader>
+            <DialogTitle className="text-sm">
+              Top 10 Beneficiários · Despesa mês a mês
+            </DialogTitle>
+          </DialogHeader>
+          <div className="h-[60vh]">
+            {chartMensal.data.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+                Sem dados mensais para o filtro informado.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartMensal.data} margin={{ top: 8, right: 24, bottom: 8, left: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="mes" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis
+                    tick={{ fontSize: 10 }}
+                    stroke="hsl(var(--muted-foreground))"
+                    tickFormatter={(v) => fmtInt(Math.round(Number(v)))}
+                  />
+                  <RTooltip
+                    formatter={(v: any, n: any) => [fmtNum(Number(v)), n]}
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  {chartMensal.names.map((n, i) => (
+                    <Line
+                      key={n}
+                      type="monotone"
+                      dataKey={n}
+                      name={n}
+                      stroke={CHART_COLORS[i % CHART_COLORS.length]}
+                      strokeWidth={2}
+                      dot={{ r: 2 }}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </TooltipProvider>
   );
 }
