@@ -625,7 +625,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
         <DialogContent className="max-w-6xl">
           <DialogHeader>
             <DialogTitle className="text-sm">
-              Top 15 Beneficiários por Despesa · {periodoLabel}
+              Top 10 Beneficiários por Despesa + Demais · {periodoLabel}
             </DialogTitle>
           </DialogHeader>
           <div className="h-[60vh]">
