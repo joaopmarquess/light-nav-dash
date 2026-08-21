@@ -266,10 +266,12 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
 
   const [showChart, setShowChart] = useState(false);
 
+  const [chartView, setChartView] = useState<"gauge" | "tipo">("gauge");
+
   // Gráfico: Top 10 beneficiários por despesa + DEMAIS agrupados
   const chart = useMemo(() => {
     const fq = filter.trim().toLowerCase();
-    const acc = new Map<string, { nome: string; valor: number; copart: number }>();
+    const acc = new Map<string, { nome: string; valor: number; copart: number; d: Desp }>();
 
     for (const r of rows) {
       if (fq && !(
@@ -280,25 +282,32 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
         (r[17] ?? "").toLowerCase().includes(fq)
       )) continue;
       const key = r[3];
-      const cur = acc.get(key) ?? { nome: r[4], valor: 0, copart: 0 };
+      const cur = acc.get(key) ?? { nome: r[4], valor: 0, copart: 0, d: zero() };
       cur.valor += r[6];
       cur.copart += r[15] ?? 0;
+      add(cur.d, r);
       acc.set(key, cur);
     }
 
-    const mk = (nome: string, valor: number, copart: number) => {
+    const mk = (nome: string, valor: number, copart: number, d: Desp) => {
       const cp = Math.min(copart, valor);
-      return { nome, liquido: valor - cp, copart: cp, total: valor };
+      return { nome, liquido: valor - cp, copart: cp, total: valor, desp: d };
+    };
+    const sumDesp = (arr: { d: Desp }[]) => {
+      const t = zero();
+      for (const a of arr) addDesp(t, a.d);
+      return t;
     };
 
     const all = Array.from(acc.values()).sort((a, b) => b.valor - a.valor);
-    const data = all.slice(0, 10).map((b) => mk(b.nome, b.valor, b.copart));
+    const data = all.slice(0, 10).map((b) => mk(b.nome, b.valor, b.copart, b.d));
     const rest = all.slice(10);
     if (rest.length) {
       data.push(mk(
         `DEMAIS (${rest.length})`,
         rest.reduce((s, b) => s + b.valor, 0),
         rest.reduce((s, b) => s + b.copart, 0),
+        sumDesp(rest),
       ));
     }
     if (all.length) {
@@ -306,11 +315,13 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
         `TOTAL (${all.length})`,
         all.reduce((s, b) => s + b.valor, 0),
         all.reduce((s, b) => s + b.copart, 0),
+        sumDesp(all),
       ));
     }
 
     return { data };
   }, [rows, filter]);
+
 
 
   // Gráfico mensal: Top 10, Outros e Total (base ardmensal)
@@ -363,6 +374,8 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
     "#ea580c", "#7e22ce", "#b8860b",
     "#fdba74", "#d8b4fe", "#facc15",
   ];
+  const TIPO_COLORS = ["#1e3a8a", "#0ea5e9", "#22c55e", "#f97316", "#ef4444", "#a855f7"];
+
 
 
   const onSort = (k: SortKey) => {
@@ -773,18 +786,99 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
       <Dialog open={showChart} onOpenChange={setShowChart}>
         <DialogContent className="max-w-6xl">
           <DialogHeader>
-            <DialogTitle className="text-sm">
-              Top 10 Beneficiários por Despesa + Demais · {periodoLabel}
+            <DialogTitle className="text-sm flex items-center gap-3 flex-wrap">
+              <span>Top 10 Beneficiários por Despesa + Demais · {periodoLabel}</span>
+              <span className="inline-flex rounded-md border border-border overflow-hidden text-[11px] font-medium">
+                <button
+                  onClick={() => setChartView("gauge")}
+                  className={`px-2 py-1 ${chartView === "gauge" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-accent/40"}`}
+                >
+                  Meia-lua (líquida × copart)
+                </button>
+                <button
+                  onClick={() => setChartView("tipo")}
+                  className={`px-2 py-1 border-l border-border ${chartView === "tipo" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-accent/40"}`}
+                >
+                  Por tipo de despesa
+                </button>
+              </span>
             </DialogTitle>
           </DialogHeader>
+
           <div className="h-[70vh] overflow-y-auto pr-1">
             {chart.data.length === 0 ? (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
                 Sem dados para o filtro informado.
               </div>
+            ) : chartView === "tipo" ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {chart.data.map((d) => {
+                  const slices = DESP_COLS
+                    .map(({ key, label }, i) => ({ name: label, value: d.desp[key], fill: TIPO_COLORS[i] }))
+                    .filter((s) => s.value > 0);
+                  const tot = slices.reduce((s, x) => s + x.value, 0);
+                  const top = slices.slice().sort((a, b) => b.value - a.value)[0];
+                  return (
+                    <div key={d.nome} className="rounded-md border bg-card p-2">
+                      <div className="h-[130px] relative">
+                        {tot > 0 ? (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <RTooltip
+                                formatter={(v: any, n: any) => [`${fmtNum(Number(v))} (${fmtShare(Number(v), tot)})`, n]}
+                                contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
+                              />
+                              <Pie
+                                data={slices}
+                                dataKey="value"
+                                cx="50%"
+                                cy="50%"
+                                innerRadius="58%"
+                                outerRadius="88%"
+                                stroke="none"
+                                isAnimationActive={false}
+                              >
+                                {slices.map((s, i) => (
+                                  <Cell key={i} fill={s.fill} />
+                                ))}
+                              </Pie>
+                            </PieChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div className="h-full flex items-center justify-center text-[10px] text-muted-foreground">
+                            sem despesas
+                          </div>
+                        )}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                          <div className="text-[12px] font-semibold leading-tight tabular-nums">
+                            {fmtInt(Math.round(tot))}
+                          </div>
+                          {top && (
+                            <div className="text-[9px] text-muted-foreground leading-tight">
+                              {top.name} {fmtShare(top.value, tot)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="mt-1 text-[9px] font-medium text-center leading-tight line-clamp-2 min-h-[22px]">
+                        {d.nome}
+                      </div>
+                      <div className="mt-1 flex flex-wrap justify-center gap-x-2 gap-y-0.5 text-[8px] text-muted-foreground">
+                        {slices.map((s) => (
+                          <span key={s.name} className="inline-flex items-center gap-1">
+                            <span className="h-1.5 w-1.5 rounded-full" style={{ background: s.fill }} />
+                            {s.name} {fmtShare(s.value, tot)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 {(() => {
+
                   const max = Math.max(...chart.data.map((d) => d.total), 1);
                   return chart.data.map((d) => {
                     const pct = d.total / max;
