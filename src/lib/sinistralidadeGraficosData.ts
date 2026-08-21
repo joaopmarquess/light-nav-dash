@@ -1,3 +1,4 @@
+import { fetchSinPeriodos } from "@/lib/sinPeriodos";
 import { useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 
@@ -38,7 +39,7 @@ export function useSinistralidadeGraficosData(): SinGraficosData {
     let alive = true;
     (async () => {
       setLoading(true);
-      const { data: pdata, error: pErr } = await hostinger.rpc("sin_periodos");
+      const { data: pdata, error: pErr } = await fetchSinPeriodos().then((p) => ({ data: p.map((x) => ({ PERIODO: x })), error: null as any })).catch((e) => ({ data: [] as any[], error: e }));
       if (pErr) {
         console.error(pErr);
         if (alive) setLoading(false);
