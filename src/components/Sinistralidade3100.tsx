@@ -617,6 +617,14 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                         <span className="font-semibold">{fmtNum(t.vrdespesas)}</span>
                         <span className="text-muted-foreground"> · despesa total</span>
                       </div>
+                      <div className="w-72 shrink-0 grid grid-cols-4 gap-2 text-right text-xs tabular-nums text-foreground">
+                        {REC_COLS.map(({ key }) => (
+                          <span key={key}>{fmtNum(t[key])}</span>
+                        ))}
+                        <span className={sinOf(t) > 1 ? "text-destructive" : ""}>
+                          {t.rec_total ? fmtPct(sinOf(t)) : "—"}
+                        </span>
+                      </div>
                     </button>
 
                     {isOpen && (
