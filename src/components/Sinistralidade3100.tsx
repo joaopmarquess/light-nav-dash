@@ -45,7 +45,7 @@ const benefLabel = (b: { nome: string; relacao?: string; codigo: string; titular
 type Plano = Desp & { plano: string; benefs: Benef[] };
 type Periodo = Desp & { periodo: string; planos: Plano[] };
 
-type SortKey = "PLANO" | "vrdespesas" | "internacao" | "terapia" | "exame" | "consulta" | "emergencia" | "demais";
+type SortKey = "PLANO" | "vrdespesas" | "internacao" | "terapia" | "exame" | "consulta" | "emergencia" | "demais" | "rec_tm" | "rec_cpa" | "rec_total";
 
 const TOP_N = 10;
 
@@ -99,6 +99,12 @@ const DESP_COLS: { key: keyof Desp; label: string }[] = [
   { key: "consulta", label: "Consulta" },
   { key: "emergencia", label: "Emergência" },
   { key: "demais", label: "Demais" },
+];
+
+const REC_COLS: { key: keyof Desp; label: string }[] = [
+  { key: "rec_tm", label: "Rec. TM" },
+  { key: "rec_cpa", label: "Rec. Copart" },
+  { key: "rec_total", label: "Receita Total" },
 ];
 
 const DespTooltip = ({ title, m }: { title: string; m: Desp }) => (
@@ -578,6 +584,14 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                 <div className="w-40 shrink-0 text-right tabular-nums">
                   <DespTooltip title="TOTAL GERAL · Despesa" m={totais} />
                 </div>
+                <div className="w-72 shrink-0 grid grid-cols-4 gap-2 text-right tabular-nums">
+                  {REC_COLS.map(({ key, label }) => (
+                    <span key={key} title={label}>{fmtNum(totais[key])}</span>
+                  ))}
+                  <span className={sinOf(totais) > 1 ? "text-destructive" : ""} title="Sinistralidade">
+                    {totais.rec_total ? fmtPct(sinOf(totais)) : "—"}
+                  </span>
+                </div>
               </div>
 
               {periodos.map((t) => {
@@ -603,6 +617,14 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                         <span className="font-semibold">{fmtNum(t.vrdespesas)}</span>
                         <span className="text-muted-foreground"> · despesa total</span>
                       </div>
+                      <div className="w-72 shrink-0 grid grid-cols-4 gap-2 text-right text-xs tabular-nums text-foreground">
+                        {REC_COLS.map(({ key }) => (
+                          <span key={key}>{fmtNum(t[key])}</span>
+                        ))}
+                        <span className={sinOf(t) > 1 ? "text-destructive" : ""}>
+                          {t.rec_total ? fmtPct(sinOf(t)) : "—"}
+                        </span>
+                      </div>
                     </button>
 
                     {isOpen && (
@@ -622,6 +644,16 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                                   </th>
                                 ))}
                                 <th className="px-1 py-1 text-right font-semibold cursor-pointer select-none" onClick={() => onSort("vrdespesas")}>Total Despesa {arrow("vrdespesas")}</th>
+                                {REC_COLS.map(({ key, label }) => (
+                                  <th
+                                    key={key}
+                                    className="px-1 py-1 text-right font-semibold cursor-pointer select-none"
+                                    onClick={() => onSort(key as SortKey)}
+                                  >
+                                    {label} {arrow(key as SortKey)}
+                                  </th>
+                                ))}
+                                <th className="px-1 py-1 text-right font-semibold">Sinistralidade</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -644,6 +676,10 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                                         <td key={key} className="px-1 py-0.5 text-right tabular-nums">{fmtNum(pl[key])}</td>
                                       ))}
                                       <td className="px-1 py-0.5 text-right tabular-nums"><DespTooltip title={pl.plano} m={pl} /></td>
+                                      {REC_COLS.map(({ key }) => (
+                                        <td key={key} className="px-1 py-0.5 text-right tabular-nums">{fmtNum(pl[key])}</td>
+                                      ))}
+                                      <td className={`px-1 py-0.5 text-right tabular-nums ${sinOf(pl) > 1 ? "text-destructive" : ""}`}>{pl.rec_total ? fmtPct(sinOf(pl)) : "—"}</td>
                                     </tr>
                                     {pOpen && pl.benefs.map((b, i) => (
                                       <tr
@@ -671,6 +707,10 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                                           <td key={key} className="px-1 py-0.5 text-right tabular-nums">{fmtNum(b[key])}</td>
                                         ))}
                                         <td className="px-1 py-0.5 text-right tabular-nums"><DespTooltip title={benefLabel(b)} m={b} /></td>
+                                        {REC_COLS.map(({ key }) => (
+                                          <td key={key} className="px-1 py-0.5 text-right tabular-nums">{fmtNum(b[key])}</td>
+                                        ))}
+                                        <td className={`px-1 py-0.5 text-right tabular-nums ${sinOf(b) > 1 ? "text-destructive" : ""}`}>{b.rec_total ? fmtPct(sinOf(b)) : "—"}</td>
                                       </tr>
                                     ))}
 
