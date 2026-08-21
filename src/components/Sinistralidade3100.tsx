@@ -784,10 +784,25 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
       <Dialog open={showChart} onOpenChange={setShowChart}>
         <DialogContent className="max-w-6xl">
           <DialogHeader>
-            <DialogTitle className="text-sm">
-              Top 10 Beneficiários por Despesa + Demais · {periodoLabel}
+            <DialogTitle className="text-sm flex items-center gap-3 flex-wrap">
+              <span>Top 10 Beneficiários por Despesa + Demais · {periodoLabel}</span>
+              <span className="inline-flex rounded-md border border-border overflow-hidden text-[11px] font-medium">
+                <button
+                  onClick={() => setChartView("gauge")}
+                  className={`px-2 py-1 ${chartView === "gauge" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-accent/40"}`}
+                >
+                  Meia-lua (líquida × copart)
+                </button>
+                <button
+                  onClick={() => setChartView("tipo")}
+                  className={`px-2 py-1 border-l border-border ${chartView === "tipo" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-accent/40"}`}
+                >
+                  Por tipo de despesa
+                </button>
+              </span>
             </DialogTitle>
           </DialogHeader>
+
           <div className="h-[70vh] overflow-y-auto pr-1">
             {chart.data.length === 0 ? (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
