@@ -159,41 +159,22 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
     return () => { alive = false; };
   }, []);
 
-  // Mapa de titular por prefixo do código (código sem os 2 últimos dígitos)
-  const titularMap = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const r of rows) {
-      if (isTitular(r[16] as string)) {
-        const cod = String(r[3] ?? "");
-        if (cod.length > 2) m.set(cod.slice(0, -2), String(r[4] ?? ""));
-      }
-    }
-    return m;
-  }, [rows]);
-
   const periodos = useMemo<Periodo[]>(() => {
-    const ini = mIni.trim();
-    const fim = mFim.trim();
     const fq = filter.trim().toLowerCase();
     const byPeriodo = new Map<string, Periodo>();
     const plMaps = new Map<string, Map<string, Plano>>();
     const bMaps = new Map<string, Map<string, Benef>>();
 
     for (const r of rows) {
-      const mabas = r[0];
-      if (ini && mabas < ini) continue;
-      if (fim && mabas > fim) continue;
       if (fq && !(
         r[1].toLowerCase().includes(fq) ||
         r[2].toLowerCase().includes(fq) ||
         r[3].toLowerCase().includes(fq) ||
-        r[4].toLowerCase().includes(fq)
+        r[4].toLowerCase().includes(fq) ||
+        (r[17] ?? "").toLowerCase().includes(fq)
       )) continue;
 
-      const y = Number(mabas.slice(0, 4));
-      const m = Number(mabas.slice(4, 6));
-      const base = m >= 7 ? y : y - 1;
-      const ciclo = `${base}07-${base + 1}06`;
+      const ciclo = r[0];
 
       let p = byPeriodo.get(ciclo);
       if (!p) {
@@ -218,13 +199,14 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
       if (!b) {
         const cod = String(r[3] ?? "");
         const rel = (r[16] ?? "") as string;
-        const tit = isTitular(rel) ? "" : (titularMap.get(cod.slice(0, -2)) ?? "");
+        const tit = isTitular(rel) ? "" : String(r[17] ?? "");
         b = { codigo: cod, nome: r[4], contrato: r[2], relacao: rel, titular: tit || undefined, ...zero() };
         bm.set(r[3], b);
         pl.benefs.push(b);
       }
       add(b, r);
     }
+
 
     const arr = Array.from(byPeriodo.values());
     for (const p of arr) {
