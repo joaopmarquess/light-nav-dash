@@ -573,7 +573,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
             </div>
           ) : (
             <div className="space-y-2">
-              <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-muted/60 border border-border text-xs font-semibold text-foreground">
+              <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-muted/60 border border-border text-[13px] font-semibold text-foreground">
                 <div className="w-6 shrink-0" />
                 <div className="w-40 shrink-0 text-left">TOTAL GERAL</div>
                 <div className="flex-1 grid grid-cols-6 gap-2 text-right tabular-nums">
@@ -607,17 +607,17 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                       <div className="w-6 shrink-0 text-muted-foreground">
                         {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                       </div>
-                      <div className="w-40 shrink-0 text-xs font-medium text-foreground text-left">
+                      <div className="w-40 shrink-0 text-[13px] font-medium text-foreground text-left">
                         {fmtCiclo(t.periodo)}
                       </div>
                       <div className="flex-1 h-5 bg-muted/40 rounded overflow-hidden">
                         <div className="h-full bg-primary/70" style={{ width: `${pct}%` }} />
                       </div>
-                      <div className="w-56 shrink-0 text-right text-xs tabular-nums text-foreground">
+                      <div className="w-56 shrink-0 text-right text-[13px] tabular-nums text-foreground">
                         <span className="font-semibold">{fmtNum(t.vrdespesas)}</span>
                         <span className="text-muted-foreground"> · despesa total</span>
                       </div>
-                      <div className="w-72 shrink-0 grid grid-cols-4 gap-2 text-right text-xs tabular-nums text-foreground">
+                      <div className="w-72 shrink-0 grid grid-cols-4 gap-2 text-right text-[13px] tabular-nums text-foreground">
                         {REC_COLS.map(({ key }) => (
                           <span key={key}>{fmtNum(t[key])}</span>
                         ))}
@@ -630,7 +630,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                     {isOpen && (
                       <div className="border-t border-border/60">
                         <div className="max-h-[60vh] overflow-auto">
-                          <table className="w-full text-[9px]">
+                          <table className="w-full text-[11px]">
                             <thead className="sticky top-0 bg-muted/40 z-10">
                               <tr>
                                 <th className="px-1 py-1 text-left font-semibold cursor-pointer select-none" onClick={() => onSort("PLANO")}>PLANO {arrow("PLANO")}</th>
@@ -663,7 +663,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                                 return (
                                   <Fragment key={pkey}>
                                     <tr className={`border-b border-border/40 hover:bg-accent/30 ${pOpen ? "font-bold" : ""}`}>
-                                      <td className="px-1 py-0.5 truncate max-w-[300px]" title={pl.plano}>
+                                      <td className="px-1 py-1 truncate max-w-[300px]" title={pl.plano}>
                                         <button
                                           onClick={() => setExpandedPlano((s) => ({ ...s, [pkey]: !s[pkey] }))}
                                           className="inline-flex items-center gap-1 hover:text-primary"
@@ -673,20 +673,20 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                                         </button>
                                       </td>
                                       {DESP_COLS.map(({ key }) => (
-                                        <td key={key} className="px-1 py-0.5 text-right tabular-nums">{fmtNum(pl[key])}</td>
+                                        <td key={key} className="px-1 py-1 text-right tabular-nums">{fmtNum(pl[key])}</td>
                                       ))}
-                                      <td className="px-1 py-0.5 text-right tabular-nums"><DespTooltip title={pl.plano} m={pl} /></td>
+                                      <td className="px-1 py-1 text-right tabular-nums"><DespTooltip title={pl.plano} m={pl} /></td>
                                       {REC_COLS.map(({ key }) => (
-                                        <td key={key} className="px-1 py-0.5 text-right tabular-nums">{fmtNum(pl[key])}</td>
+                                        <td key={key} className="px-1 py-1 text-right tabular-nums">{fmtNum(pl[key])}</td>
                                       ))}
-                                      <td className={`px-1 py-0.5 text-right tabular-nums ${sinOf(pl) > 1 ? "text-destructive" : ""}`}>{pl.rec_total ? fmtPct(sinOf(pl)) : "—"}</td>
+                                      <td className={`px-1 py-1 text-right tabular-nums ${sinOf(pl) > 1 ? "text-destructive" : ""}`}>{pl.rec_total ? fmtPct(sinOf(pl)) : "—"}</td>
                                     </tr>
                                     {pOpen && pl.benefs.map((b, i) => (
                                       <tr
                                         key={`${pkey}::${b.codigo}::${i}`}
                                         className={`border-b border-border/20 ${b.outros ? "bg-muted/20 italic" : "bg-muted/5"}`}
                                       >
-                                        <td className="px-1 py-0.5 pl-6 max-w-[300px] text-[7.5px] leading-tight" title={benefLabel(b)}>
+                                        <td className="px-1 py-1 pl-6 max-w-[300px] text-[10px] leading-tight" title={benefLabel(b)}>
                                           {b.outros ? (
                                             <span className="text-muted-foreground">{b.nome}</span>
                                           ) : (
@@ -696,7 +696,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                                                 {b.nome} <span className="text-muted-foreground">({b.relacao || "—"}-{b.codigo})</span>
                                               </div>
                                               {b.titular && (
-                                                <div className="pl-4 truncate text-[6.8px] text-muted-foreground italic">
+                                                <div className="pl-4 truncate text-[9px] text-muted-foreground italic">
                                                   Titular: {b.titular}
                                                 </div>
                                               )}
@@ -704,13 +704,13 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                                           )}
                                         </td>
                                         {DESP_COLS.map(({ key }) => (
-                                          <td key={key} className="px-1 py-0.5 text-right tabular-nums">{fmtNum(b[key])}</td>
+                                          <td key={key} className="px-1 py-1 text-right tabular-nums">{fmtNum(b[key])}</td>
                                         ))}
-                                        <td className="px-1 py-0.5 text-right tabular-nums"><DespTooltip title={benefLabel(b)} m={b} /></td>
+                                        <td className="px-1 py-1 text-right tabular-nums"><DespTooltip title={benefLabel(b)} m={b} /></td>
                                         {REC_COLS.map(({ key }) => (
-                                          <td key={key} className="px-1 py-0.5 text-right tabular-nums">{fmtNum(b[key])}</td>
+                                          <td key={key} className="px-1 py-1 text-right tabular-nums">{fmtNum(b[key])}</td>
                                         ))}
-                                        <td className={`px-1 py-0.5 text-right tabular-nums ${sinOf(b) > 1 ? "text-destructive" : ""}`}>{b.rec_total ? fmtPct(sinOf(b)) : "—"}</td>
+                                        <td className={`px-1 py-1 text-right tabular-nums ${sinOf(b) > 1 ? "text-destructive" : ""}`}>{b.rec_total ? fmtPct(sinOf(b)) : "—"}</td>
                                       </tr>
                                     ))}
 
