@@ -755,7 +755,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                               {fmtInt(Math.round(d.total))}
                             </div>
                             <div className="text-[9px] text-muted-foreground leading-tight">
-                              {(pct * 100).toFixed(0)}% do maior
+                              {(pct * 100).toFixed(1)}% do total
                             </div>
                           </div>
                         </div>
