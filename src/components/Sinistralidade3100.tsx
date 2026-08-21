@@ -658,11 +658,14 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                     stroke="hsl(var(--muted-foreground))"
                   />
                   <RTooltip
-                    formatter={(v: any) => [fmtNum(Number(v)), "Despesa"]}
+                    formatter={(v: any, n: any) => [fmtNum(Number(v)), n]}
                     contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
                   />
-                  <Bar dataKey="valor" name="Despesa" fill={CHART_COLORS[0]} radius={[0, 3, 3, 0]} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="liquido" stackId="d" name="Despesa líquida" fill={CHART_COLORS[0]} />
+                  <Bar dataKey="copart" stackId="d" name="Coparticipação" fill="#22c55e" radius={[0, 3, 3, 0]} />
                 </BarChart>
+
               </ResponsiveContainer>
             )}
           </div>
