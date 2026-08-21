@@ -295,9 +295,17 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
         rest.reduce((s, b) => s + b.copart, 0),
       ));
     }
+    if (all.length) {
+      data.push(mk(
+        `TOTAL (${all.length})`,
+        all.reduce((s, b) => s + b.valor, 0),
+        all.reduce((s, b) => s + b.copart, 0),
+      ));
+    }
 
     return { data };
   }, [rows, filter]);
+
 
   // Gráfico mensal: evolução da despesa dos Top 10 (mês a mês, base ardmensal)
   const [showChartMensal, setShowChartMensal] = useState(false);
