@@ -784,7 +784,8 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
       )}
 
       <Dialog open={showChart} onOpenChange={setShowChart}>
-        <DialogContent className="max-w-6xl">
+        <DialogContent className="max-w-[96vw] w-[96vw] max-h-[95vh]">
+
           <DialogHeader>
             <DialogTitle className="text-sm flex items-center gap-3 flex-wrap">
               <span>Top 10 Beneficiários por Despesa + Demais · {periodoLabel}</span>
@@ -805,13 +806,13 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
             </DialogTitle>
           </DialogHeader>
 
-          <div className="h-[70vh] overflow-y-auto pr-1">
+          <div className="h-[82vh] overflow-hidden pr-1">
             {chart.data.length === 0 ? (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
                 Sem dados para o filtro informado.
               </div>
             ) : chartView === "tipo" ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div className="h-full grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 auto-rows-fr gap-2">
                 {chart.data.map((d) => {
                   const slices = DESP_COLS
                     .map(({ key, label }, i) => ({ name: label, value: d.desp[key], fill: TIPO_COLORS[i] }))
@@ -819,8 +820,8 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                   const tot = slices.reduce((s, x) => s + x.value, 0);
                   const top = slices.slice().sort((a, b) => b.value - a.value)[0];
                   return (
-                    <div key={d.nome} className="rounded-md border bg-card p-2">
-                      <div className="h-[130px] relative">
+                    <div key={d.nome} className="rounded-md border bg-card p-2 flex flex-col min-h-0">
+                      <div className="flex-1 min-h-0 relative">
                         {tot > 0 ? (
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -876,7 +877,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                 })}
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div className="h-full grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 auto-rows-fr gap-2">
                 {(() => {
 
                   const max = Math.max(...chart.data.map((d) => d.total), 1);
@@ -889,8 +890,8 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                       { name: "Restante", value: Math.max(max - d.total, 0), fill: "hsl(var(--muted))" },
                     ];
                     return (
-                      <div key={d.nome} className="rounded-md border bg-card p-2">
-                        <div className="h-[110px] relative">
+                      <div key={d.nome} className="rounded-md border bg-card p-2 flex flex-col min-h-0">
+                        <div className="flex-1 min-h-0 relative">
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                               <RTooltip
