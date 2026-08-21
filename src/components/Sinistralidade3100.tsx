@@ -517,6 +517,14 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
               <LineChartIcon className="h-3.5 w-3.5" /> Gráfico
             </button>
             <button
+              onClick={() => setShowChartMensal(true)}
+              className="h-8 px-3 inline-flex items-center gap-1.5 rounded border border-border bg-background text-xs text-foreground hover:bg-accent"
+              title="Evolução mensal da despesa dos Top 10"
+            >
+              <LineChartIcon className="h-3.5 w-3.5" /> Top 10 mês a mês
+            </button>
+
+            <button
               onClick={() => setPdfOpen(true)}
               disabled={abertos.length === 0}
               className="h-8 px-3 inline-flex items-center gap-1.5 rounded border border-border bg-background text-xs text-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
