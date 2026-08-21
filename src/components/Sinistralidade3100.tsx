@@ -15,7 +15,7 @@ import {
   totalRowStyles,
 } from "@/lib/pdfTheme";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Legend,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip as RTooltip, ResponsiveContainer,
 } from "recharts";
 
