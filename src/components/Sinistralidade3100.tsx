@@ -757,6 +757,52 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={showChartMensal} onOpenChange={setShowChartMensal}>
+        <DialogContent className="max-w-6xl">
+          <DialogHeader>
+            <DialogTitle className="text-sm">
+              Top 10 Beneficiários · Despesa mês a mês
+            </DialogTitle>
+          </DialogHeader>
+          <div className="h-[60vh]">
+            {chartMensal.data.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+                Sem dados mensais para o filtro informado.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartMensal.data} margin={{ top: 8, right: 24, bottom: 8, left: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="mes" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis
+                    tick={{ fontSize: 10 }}
+                    stroke="hsl(var(--muted-foreground))"
+                    tickFormatter={(v) => fmtInt(Math.round(Number(v)))}
+                  />
+                  <RTooltip
+                    formatter={(v: any, n: any) => [fmtNum(Number(v)), n]}
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  {chartMensal.names.map((n, i) => (
+                    <Line
+                      key={n}
+                      type="monotone"
+                      dataKey={n}
+                      name={n}
+                      stroke={CHART_COLORS[i % CHART_COLORS.length]}
+                      strokeWidth={2}
+                      dot={{ r: 2 }}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </TooltipProvider>
   );
 }
