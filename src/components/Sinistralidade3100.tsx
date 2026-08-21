@@ -15,12 +15,12 @@ import {
   totalRowStyles,
 } from "@/lib/pdfTheme";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Legend,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip as RTooltip, ResponsiveContainer,
 } from "recharts";
 
 
-type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number, string];
+type Raw = [string, string, string, string, string, number, number, number, number, number, number, number, number, number, number, number, string, string];
 
 type Desp = {
   rec_total: number;
@@ -134,8 +134,7 @@ const DespTooltip = ({ title, m }: { title: string; m: Desp }) => (
 export default function Sinistralidade3100({ embedded = false }: { embedded?: boolean } = {}) {
   const [rows, setRows] = useState<Raw[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mIni, setMIni] = useState("202507");
-  const [mFim, setMFim] = useState("202606");
+  const [periodoLabel, setPeriodoLabel] = useState("");
   const [filter, setFilter] = useState("");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [expandedPlano, setExpandedPlano] = useState<Record<string, boolean>>({});
@@ -150,6 +149,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
         const json = await res.json();
         if (!alive) return;
         setRows((json.rows ?? []) as Raw[]);
+        setPeriodoLabel(String(json.periodoLabel ?? ""));
       } catch (e) {
         console.error("3100 load error", e);
       } finally {
@@ -159,41 +159,22 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
     return () => { alive = false; };
   }, []);
 
-  // Mapa de titular por prefixo do código (código sem os 2 últimos dígitos)
-  const titularMap = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const r of rows) {
-      if (isTitular(r[16] as string)) {
-        const cod = String(r[3] ?? "");
-        if (cod.length > 2) m.set(cod.slice(0, -2), String(r[4] ?? ""));
-      }
-    }
-    return m;
-  }, [rows]);
-
   const periodos = useMemo<Periodo[]>(() => {
-    const ini = mIni.trim();
-    const fim = mFim.trim();
     const fq = filter.trim().toLowerCase();
     const byPeriodo = new Map<string, Periodo>();
     const plMaps = new Map<string, Map<string, Plano>>();
     const bMaps = new Map<string, Map<string, Benef>>();
 
     for (const r of rows) {
-      const mabas = r[0];
-      if (ini && mabas < ini) continue;
-      if (fim && mabas > fim) continue;
       if (fq && !(
         r[1].toLowerCase().includes(fq) ||
         r[2].toLowerCase().includes(fq) ||
         r[3].toLowerCase().includes(fq) ||
-        r[4].toLowerCase().includes(fq)
+        r[4].toLowerCase().includes(fq) ||
+        (r[17] ?? "").toLowerCase().includes(fq)
       )) continue;
 
-      const y = Number(mabas.slice(0, 4));
-      const m = Number(mabas.slice(4, 6));
-      const base = m >= 7 ? y : y - 1;
-      const ciclo = `${base}07-${base + 1}06`;
+      const ciclo = r[0];
 
       let p = byPeriodo.get(ciclo);
       if (!p) {
@@ -218,13 +199,14 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
       if (!b) {
         const cod = String(r[3] ?? "");
         const rel = (r[16] ?? "") as string;
-        const tit = isTitular(rel) ? "" : (titularMap.get(cod.slice(0, -2)) ?? "");
+        const tit = isTitular(rel) ? "" : String(r[17] ?? "");
         b = { codigo: cod, nome: r[4], contrato: r[2], relacao: rel, titular: tit || undefined, ...zero() };
         bm.set(r[3], b);
         pl.benefs.push(b);
       }
       add(b, r);
     }
+
 
     const arr = Array.from(byPeriodo.values());
     for (const p of arr) {
@@ -247,7 +229,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
     }
     arr.sort((a, b) => b.periodo.localeCompare(a.periodo));
     return arr;
-  }, [rows, mIni, mFim, filter, titularMap]);
+  }, [rows, filter]);
 
   const fmtCiclo = (ciclo: string) => {
     const [a, b] = ciclo.split("-");
@@ -267,44 +249,31 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
 
   const [showChart, setShowChart] = useState(false);
 
+  // Gráfico: Top 15 beneficiários por despesa no período consolidado
   const chart = useMemo(() => {
-    const ini = mIni.trim();
-    const fim = mFim.trim();
     const fq = filter.trim().toLowerCase();
-    const meses = new Set<string>();
-    const acc = new Map<string, Map<string, number>>();
-    const planoTot = new Map<string, number>();
+    const acc = new Map<string, { nome: string; valor: number }>();
 
     for (const r of rows) {
-      const mabas = r[0];
-      if (ini && mabas < ini) continue;
-      if (fim && mabas > fim) continue;
       if (fq && !(
         r[1].toLowerCase().includes(fq) ||
         r[2].toLowerCase().includes(fq) ||
         r[3].toLowerCase().includes(fq) ||
-        r[4].toLowerCase().includes(fq)
+        r[4].toLowerCase().includes(fq) ||
+        (r[17] ?? "").toLowerCase().includes(fq)
       )) continue;
-      meses.add(mabas);
-      let pm = acc.get(r[1]);
-      if (!pm) { pm = new Map(); acc.set(r[1], pm); }
-      pm.set(mabas, (pm.get(mabas) ?? 0) + r[6]);
-      planoTot.set(r[1], (planoTot.get(r[1]) ?? 0) + r[6]);
+      const key = r[3];
+      const cur = acc.get(key) ?? { nome: r[4], valor: 0 };
+      cur.valor += r[6];
+      acc.set(key, cur);
     }
 
-    const mesesArr = Array.from(meses).sort();
-    const planos = Array.from(planoTot.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 12)
-      .map(([p]) => p);
-
-    const data = mesesArr.map((mb) => {
-      const row: Record<string, any> = { mes: fmtComp(mb) };
-      for (const p of planos) row[p] = acc.get(p)?.get(mb) ?? null;
-      return row;
-    });
-    return { data, planos };
-  }, [rows, mIni, mFim, filter]);
+    const data = Array.from(acc.values())
+      .sort((a, b) => b.valor - a.valor)
+      .slice(0, 15)
+      .map((b) => ({ nome: b.nome, valor: b.valor }));
+    return { data };
+  }, [rows, filter]);
 
   const CHART_COLORS = [
     "#f97316", "#a855f7", "#d4af37",
@@ -355,7 +324,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
     const header = () =>
       drawReportHeading(doc, {
         title: "3100 · Top 10 Despesas por Plano",
-        plano: `Competências: ${fmtComp(mIni)} a ${fmtComp(mFim)}`,
+        plano: `Competências: ${periodoLabel}`,
         secao: currentSecao,
         marginL,
         marginR,
@@ -464,32 +433,14 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
   };
 
 
-  const inputCls =
-    "h-8 w-24 px-2 rounded border border-border bg-background text-xs text-foreground tabular-nums focus:outline-none focus:ring-1 focus:ring-primary";
 
   return (
     <TooltipProvider delayDuration={100}>
       <section className={`bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col ${embedded ? "h-full" : "h-[calc(100vh-9rem)]"}`}>
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground mb-3">
           <div className="flex items-center gap-2">
-            <span className="shrink-0">3100 · mabas de</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={mIni}
-              onChange={(e) => setMIni(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="202507"
-              className={inputCls}
-            />
-            <span>até</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={mFim}
-              onChange={(e) => setMFim(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="202606"
-              className={inputCls}
-            />
+            <span className="shrink-0">3100 · período {periodoLabel}</span>
+
             <button
               onClick={() => setShowChart(true)}
               className="h-8 px-3 inline-flex items-center gap-1.5 rounded border border-border bg-background text-xs text-foreground hover:bg-accent"
@@ -658,7 +609,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
         <PdfPreview
           onClose={() => setPdfOpen(false)}
           build={buildDoc}
-          fileName={`3100_Top10_${mIni}_${mFim}.pdf`}
+          fileName={`3100_Top10_${periodoLabel.replace(/\D/g, "")}.pdf`}
           periodos={abertos.length}
         />
       )}
@@ -667,42 +618,37 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
         <DialogContent className="max-w-6xl">
           <DialogHeader>
             <DialogTitle className="text-sm">
-              Despesa por Plano · {fmtComp(mIni)} a {fmtComp(mFim)}
+              Top 15 Beneficiários por Despesa · {periodoLabel}
             </DialogTitle>
           </DialogHeader>
           <div className="h-[60vh]">
             {chart.data.length === 0 ? (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-                Sem dados para o intervalo informado.
+                Sem dados para o filtro informado.
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chart.data} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+                <BarChart data={chart.data} layout="vertical" margin={{ top: 8, right: 40, bottom: 8, left: 160 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="mes" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis
+                  <XAxis
+                    type="number"
                     tick={{ fontSize: 10 }}
                     stroke="hsl(var(--muted-foreground))"
                     tickFormatter={(v) => fmtInt(Math.round(Number(v)))}
                   />
+                  <YAxis
+                    type="category"
+                    dataKey="nome"
+                    width={150}
+                    tick={{ fontSize: 9 }}
+                    stroke="hsl(var(--muted-foreground))"
+                  />
                   <RTooltip
-                    formatter={(v: any, n: any) => [v == null ? "-" : fmtNum(Number(v)), n]}
+                    formatter={(v: any) => [fmtNum(Number(v)), "Despesa"]}
                     contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
                   />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  {chart.planos.map((p, i) => (
-                    <Line
-                      key={p}
-                      type="monotone"
-                      dataKey={p}
-                      name={p}
-                      stroke={CHART_COLORS[i % CHART_COLORS.length]}
-                      strokeWidth={2}
-                      dot={{ r: 2 }}
-                      connectNulls
-                    />
-                  ))}
-                </LineChart>
+                  <Bar dataKey="valor" name="Despesa" fill={CHART_COLORS[0]} radius={[0, 3, 3, 0]} />
+                </BarChart>
               </ResponsiveContainer>
             )}
           </div>
