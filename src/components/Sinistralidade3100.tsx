@@ -433,8 +433,6 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
   };
 
 
-  const inputCls =
-    "h-8 w-24 px-2 rounded border border-border bg-background text-xs text-foreground tabular-nums focus:outline-none focus:ring-1 focus:ring-primary";
 
   return (
     <TooltipProvider delayDuration={100}>
