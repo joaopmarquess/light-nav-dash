@@ -374,6 +374,8 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
     "#ea580c", "#7e22ce", "#b8860b",
     "#fdba74", "#d8b4fe", "#facc15",
   ];
+  const TIPO_COLORS = ["#1e3a8a", "#0ea5e9", "#22c55e", "#f97316", "#ef4444", "#a855f7"];
+
 
 
   const onSort = (k: SortKey) => {
