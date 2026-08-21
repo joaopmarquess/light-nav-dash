@@ -16,7 +16,7 @@ import {
 } from "@/lib/pdfTheme";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip as RTooltip, ResponsiveContainer, Legend,
+  Tooltip as RTooltip, ResponsiveContainer, Legend, LabelList,
 } from "recharts";
 
 
@@ -662,8 +662,32 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                     contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
                   />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="liquido" stackId="d" name="Despesa líquida" fill={CHART_COLORS[0]} />
-                  <Bar dataKey="copart" stackId="d" name="Coparticipação" fill="#22c55e" radius={[0, 3, 3, 0]} />
+                  <Bar dataKey="liquido" stackId="d" name="Despesa líquida" fill={CHART_COLORS[0]}>
+                    <LabelList
+                      dataKey="liquido"
+                      position="center"
+                      fontSize={9}
+                      fill="#fff"
+                      formatter={(v: any) => (Number(v) > 0 ? fmtInt(Math.round(Number(v))) : "")}
+                    />
+                  </Bar>
+                  <Bar dataKey="copart" stackId="d" name="Coparticipação" fill="#22c55e" radius={[0, 3, 3, 0]}>
+                    <LabelList
+                      dataKey="copart"
+                      position="center"
+                      fontSize={9}
+                      fill="#fff"
+                      formatter={(v: any) => (Number(v) > 0 ? fmtInt(Math.round(Number(v))) : "")}
+                    />
+                    <LabelList
+                      dataKey="total"
+                      position="right"
+                      fontSize={10}
+                      fill="hsl(var(--foreground))"
+                      formatter={(v: any) => fmtInt(Math.round(Number(v)))}
+                    />
+                  </Bar>
+
                 </BarChart>
 
               </ResponsiveContainer>
