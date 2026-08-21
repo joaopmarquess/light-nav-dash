@@ -1,3 +1,4 @@
+import { fetchSinPeriodos } from "@/lib/sinPeriodos";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { ChevronDown, ChevronRight, Loader2, ArrowUp, ArrowDown } from "lucide-react";
@@ -107,7 +108,7 @@ export default function SinistralidadePeriodo({ embedded = false }: { embedded?:
     (async () => {
       setLoading(true);
       setProgress(0);
-      const { data, error } = await hostinger.rpc("sin_periodos");
+      const { data, error } = await fetchSinPeriodos().then((p) => ({ data: p.map((x) => ({ PERIODO: x })), error: null as any })).catch((e) => ({ data: [] as any[], error: e }));
       if (!alive) return;
       if (error) {
         console.error("PERIODO load error", error);
