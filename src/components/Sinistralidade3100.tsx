@@ -252,7 +252,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
   // Gráfico: Top 10 beneficiários por despesa + DEMAIS agrupados
   const chart = useMemo(() => {
     const fq = filter.trim().toLowerCase();
-    const acc = new Map<string, { nome: string; valor: number }>();
+    const acc = new Map<string, { nome: string; valor: number; copart: number }>();
 
     for (const r of rows) {
       if (fq && !(
@@ -263,21 +263,28 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
         (r[17] ?? "").toLowerCase().includes(fq)
       )) continue;
       const key = r[3];
-      const cur = acc.get(key) ?? { nome: r[4], valor: 0 };
+      const cur = acc.get(key) ?? { nome: r[4], valor: 0, copart: 0 };
       cur.valor += r[6];
+      cur.copart += r[15] ?? 0;
       acc.set(key, cur);
     }
 
+    const mk = (nome: string, valor: number, copart: number) => {
+      const cp = Math.min(copart, valor);
+      return { nome, liquido: valor - cp, copart: cp, total: valor };
+    };
+
     const all = Array.from(acc.values()).sort((a, b) => b.valor - a.valor);
-    const top = all.slice(0, 10).map((b) => ({ nome: b.nome, valor: b.valor }));
+    const data = all.slice(0, 10).map((b) => mk(b.nome, b.valor, b.copart));
     const rest = all.slice(10);
-    const data = [...top];
     if (rest.length) {
-      data.push({
-        nome: `DEMAIS (${rest.length})`,
-        valor: rest.reduce((s, b) => s + b.valor, 0),
-      });
+      data.push(mk(
+        `DEMAIS (${rest.length})`,
+        rest.reduce((s, b) => s + b.valor, 0),
+        rest.reduce((s, b) => s + b.copart, 0),
+      ));
     }
+
     return { data };
   }, [rows, filter]);
 
