@@ -672,7 +672,6 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                                         </button>
                                       </td>
                                       {DESP_COLS.map(({ key }) => (
-                                      {DESP_COLS.map(({ key }) => (
                                         <td key={key} className="px-1 py-1 text-right tabular-nums">{fmtNum(pl[key])}</td>
                                       ))}
                                       <td className="px-1 py-1" />
@@ -681,6 +680,9 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                                       ))}
                                       <td className={`px-1 py-1 text-right tabular-nums ${saldoOf(pl) < 0 ? "text-destructive" : ""}`}>{fmtNum(saldoOf(pl))}</td>
                                       <td className={`px-1 py-1 text-right tabular-nums ${sinOf(pl) > 1 ? "text-destructive" : ""}`}>{pl.rec_total ? fmtPct(sinOf(pl)) : "—"}</td>
+                                    </tr>
+
+
 
                                     {pOpen && pl.benefs.map((b, i) => (
                                       <tr
