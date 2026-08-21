@@ -803,17 +803,10 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                     contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
                   />
                   <Legend wrapperStyle={{ fontSize: 10 }} />
-                  {chartMensal.names.map((n, i) => (
-                    <Line
-                      key={n}
-                      type="monotone"
-                      dataKey={n}
-                      name={n}
-                      stroke={CHART_COLORS[i % CHART_COLORS.length]}
-                      strokeWidth={2}
-                      dot={{ r: 2 }}
-                    />
-                  ))}
+                  <Line type="monotone" dataKey="top10" name="Top 10" stroke="#f97316" strokeWidth={2} dot={{ r: 2 }} />
+                  <Line type="monotone" dataKey="outros" name="Outros" stroke="#a855f7" strokeWidth={2} dot={{ r: 2 }} />
+                  <Line type="monotone" dataKey="total" name="Total" stroke="hsl(var(--foreground))" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 2 }} />
+
                 </LineChart>
               </ResponsiveContainer>
             )}
