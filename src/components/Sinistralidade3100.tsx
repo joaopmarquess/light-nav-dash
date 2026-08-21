@@ -141,6 +141,8 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
   const [sortKey, setSortKey] = useState<SortKey>("vrdespesas");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
+  const [mensal, setMensal] = useState<MensalRow[]>([]);
+
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -155,9 +157,17 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
       } finally {
         if (alive) setLoading(false);
       }
+      try {
+        const res = await fetch("/data/3100_mensal.json");
+        const json = await res.json();
+        if (alive) setMensal((json.rows ?? []) as MensalRow[]);
+      } catch (e) {
+        console.error("3100 mensal load error", e);
+      }
     })();
     return () => { alive = false; };
   }, []);
+
 
   const periodos = useMemo<Periodo[]>(() => {
     const fq = filter.trim().toLowerCase();
