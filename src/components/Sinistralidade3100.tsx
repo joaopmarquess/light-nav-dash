@@ -650,7 +650,9 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                                     {label} {arrow(key as SortKey)}
                                   </th>
                                 ))}
+                                <th className="px-1 py-1 text-right font-semibold">Saldo</th>
                                 <th className="px-1 py-1 text-right font-semibold">Sinistralidade</th>
+
                               </tr>
                             </thead>
                             <tbody>
