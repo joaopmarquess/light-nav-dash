@@ -613,18 +613,15 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
                       <div className="flex-1 h-5 bg-muted/40 rounded overflow-hidden">
                         <div className="h-full bg-primary/70" style={{ width: `${pct}%` }} />
                       </div>
-                      <div className="w-56 shrink-0 text-right text-[13px] tabular-nums text-foreground">
-                        <span className="font-semibold">{fmtNum(t.vrdespesas)}</span>
-                        <span className="text-muted-foreground"> · despesa total</span>
-                      </div>
-                      <div className="w-72 shrink-0 grid grid-cols-4 gap-2 text-right text-[13px] tabular-nums text-foreground">
-                        {REC_COLS.map(({ key }) => (
-                          <span key={key}>{fmtNum(t[key])}</span>
-                        ))}
-                        <span className={sinOf(t) > 1 ? "text-destructive" : ""}>
+                      <div className="w-72 shrink-0 grid grid-cols-2 gap-3 text-right text-[13px] tabular-nums text-foreground">
+                        <span className={saldoOf(t) < 0 ? "text-destructive" : ""} title="Saldo">
+                          {fmtNum(saldoOf(t))}
+                        </span>
+                        <span className={sinOf(t) > 1 ? "text-destructive" : ""} title="Sinistralidade">
                           {t.rec_total ? fmtPct(sinOf(t)) : "—"}
                         </span>
                       </div>
+
                     </button>
 
                     {isOpen && (
