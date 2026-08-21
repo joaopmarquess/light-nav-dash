@@ -354,7 +354,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
     let currentSecao = "";
     const header = () =>
       drawReportHeading(doc, {
-        title: "APB · Top 10 Despesas por Plano",
+        title: "3100 · Top 10 Despesas por Plano",
         plano: `Competências: ${fmtComp(mIni)} a ${fmtComp(mFim)}`,
         secao: currentSecao,
         marginL,
@@ -472,7 +472,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
       <section className={`bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col ${embedded ? "h-full" : "h-[calc(100vh-9rem)]"}`}>
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground mb-3">
           <div className="flex items-center gap-2">
-            <span className="shrink-0">APB Top10 · mabas de</span>
+            <span className="shrink-0">3100 · mabas de</span>
             <input
               type="text"
               inputMode="numeric"
@@ -658,7 +658,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
         <PdfPreview
           onClose={() => setPdfOpen(false)}
           build={buildDoc}
-          fileName={`APB_Top10_${mIni}_${mFim}.pdf`}
+          fileName={`3100_Top10_${mIni}_${mFim}.pdf`}
           periodos={abertos.length}
         />
       )}
@@ -756,7 +756,7 @@ function PdfPreview({
         setLoading(false);
       }
     })().catch((err) => {
-      console.error("[APB Top10 PDF] falha ao renderizar:", err);
+      console.error("[3100 Top10 PDF] falha ao renderizar:", err);
       if (!cancelled) setLoading(false);
     });
     return () => { cancelled = true; };
@@ -772,7 +772,7 @@ function PdfPreview({
     const imgsHtml = pages
       .map((src) => `<img src="${src}" style="display:block;width:100%;page-break-after:always;" />`)
       .join("");
-    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>APB Top 10</title>
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>3100 Top 10</title>
 <style>
   @page { size: A4 portrait; margin: 0; }
   html, body { margin: 0; padding: 0; background: #fff; }
