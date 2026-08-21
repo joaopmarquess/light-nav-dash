@@ -229,7 +229,7 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
     }
     arr.sort((a, b) => b.periodo.localeCompare(a.periodo));
     return arr;
-  }, [rows, mIni, mFim, filter, titularMap]);
+  }, [rows, filter]);
 
   const fmtCiclo = (ciclo: string) => {
     const [a, b] = ciclo.split("-");
