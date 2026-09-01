@@ -65,6 +65,7 @@ import DREGerencialPE from "@/components/DREGerencialPE";
 import Orcamento from "@/components/Orcamento";
 import ContabilidadeGraficos from "@/components/ContabilidadeGraficos";
 import InteligenciaUberaba from "@/components/InteligenciaUberaba";
+import InteligenciaUnimed from "@/components/InteligenciaUnimed";
 
 
 import Assistencial from "@/components/Assistencial";
@@ -94,8 +95,11 @@ const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   {
     icon: Building2,
-    label: "Inteligência",
-    children: [{ icon: BarChart3, label: "Mercado Uberaba" }],
+    label: "Uberaba",
+    children: [
+      { icon: BarChart3, label: "OPS" },
+      { icon: BarChart3, label: "Unimed" },
+    ],
   },
   {
     icon: TrendingUp,
@@ -371,9 +375,13 @@ const Index = () => {
             <DREGerencialPE />
           ) : active === "Orçamento" ? (
             <Orcamento />
-          ) : active === "Mercado Uberaba" ? (
+          ) : active === "OPS" ? (
             <div className="h-full overflow-auto pr-1">
               <InteligenciaUberaba />
+            </div>
+          ) : active === "Unimed" ? (
+            <div className="h-full overflow-auto pr-1">
+              <InteligenciaUnimed />
             </div>
           ) : active === "Gráficos" ? (
             <ContabilidadeGraficos />
