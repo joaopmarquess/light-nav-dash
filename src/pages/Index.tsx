@@ -174,9 +174,15 @@ const Index = () => {
     window.addEventListener("open-ativos-em", handler as EventListener);
     const biHandler = () => setActive("B.I. Overview");
     window.addEventListener("open-bi-overview", biHandler);
+    const unimedHandler = () => {
+      setOpenGroups((p) => ({ ...p, Uberaba: true }));
+      setActive("Unimed");
+    };
+    window.addEventListener("open-unimed-uberaba", unimedHandler);
     return () => {
       window.removeEventListener("open-ativos-em", handler as EventListener);
       window.removeEventListener("open-bi-overview", biHandler);
+      window.removeEventListener("open-unimed-uberaba", unimedHandler);
     };
   }, []);
 
