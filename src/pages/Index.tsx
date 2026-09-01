@@ -371,6 +371,10 @@ const Index = () => {
             <DREGerencialPE />
           ) : active === "Orçamento" ? (
             <Orcamento />
+          ) : active === "Mercado Uberaba" ? (
+            <div className="h-full overflow-auto pr-1">
+              <InteligenciaUberaba />
+            </div>
           ) : active === "Gráficos" ? (
             <ContabilidadeGraficos />
 
