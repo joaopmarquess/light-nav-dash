@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { ChevronRight, Search, Building2 } from "lucide-react";
 
 type Op = { registro: string; nome: string; ades: number; canc: number; vidas: number; serie: number[] };
@@ -96,9 +96,8 @@ const InteligenciaUberaba = () => {
               const t = tot(g.rows);
               const isOpen = open[g.id];
               return (
-                <>
+                <Fragment key={g.id}>
                   <tr
-                    key={g.id}
                     onClick={() => setOpen((p) => ({ ...p, [g.id]: !p[g.id] }))}
                     className="cursor-pointer bg-accent/50 hover:bg-accent border-t border-border"
                   >
@@ -133,7 +132,7 @@ const InteligenciaUberaba = () => {
                         <td className="px-4 py-1.5 text-right font-medium">{fmt(o.vidas)}</td>
                       </tr>
                     ))}
-                </>
+                </Fragment>
               );
             })}
           </tbody>
