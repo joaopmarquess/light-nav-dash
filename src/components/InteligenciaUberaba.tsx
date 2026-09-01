@@ -1,7 +1,8 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { ChevronRight, Search, Building2 } from "lucide-react";
 
-type Op = { registro: string; nome: string; ades: number; canc: number; vidas: number; serie: number[] };
+type Tipo = { tipo: string; ades: number; canc: number; vidas: number; serie: number[] };
+type Op = { registro: string; nome: string; ades: number; canc: number; vidas: number; serie: number[]; tipos?: Tipo[] };
 type Data = { municipio: string; meses: string[]; operadoras: Op[] };
 
 const RIO_PRETO = ["AUSTACLINICAS", "UNIMED SAO JOSÉ DO RIO PRETO", "BENSAUDE", "H.B. SAÚDE"];
