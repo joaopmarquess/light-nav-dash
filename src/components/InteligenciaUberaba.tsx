@@ -166,7 +166,7 @@ const InteligenciaUberaba = () => {
                   {isOpen &&
                     g.rows.map((o) => {
                       const opKey = g.id + o.registro;
-                      const tipos = o.tipos ?? [];
+                      const tipos = sortRows(o.tipos ?? [], (t) => t.tipo);
                       const opOpen = !!openOp[opKey];
                       return (
                         <Fragment key={opKey}>
