@@ -121,11 +121,22 @@ const InteligenciaUberaba = () => {
         <table className="w-full text-[13px]">
           <thead className="bg-muted/60 text-muted-foreground">
             <tr>
-              <th className="text-left px-4 py-2 font-medium">Operadora</th>
-              <th className="text-right px-4 py-2 font-medium">Adesões</th>
-              <th className="text-right px-4 py-2 font-medium">Cancelamentos</th>
-              <th className="text-right px-4 py-2 font-medium">Crescimento</th>
-              <th className="text-right px-4 py-2 font-medium">Vidas jun/2026</th>
+              {COLS.map((c) => {
+                const active = sortKey === c.key;
+                const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
+                return (
+                  <th
+                    key={c.key}
+                    onClick={() => toggleSort(c.key)}
+                    className={`${c.align} px-4 py-2 font-medium cursor-pointer select-none hover:text-foreground`}
+                  >
+                    <span className={`inline-flex items-center gap-1 ${c.align === "text-right" ? "flex-row-reverse" : ""}`}>
+                      {c.label}
+                      <Icon className={`h-3 w-3 ${active ? "text-foreground" : "opacity-50"}`} />
+                    </span>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
