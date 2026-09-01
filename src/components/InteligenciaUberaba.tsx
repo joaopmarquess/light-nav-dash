@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { ChevronRight, Search, Building2 } from "lucide-react";
+import { ChevronRight, Search, Building2, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 
 type Tipo = { tipo: string; ades: number; canc: number; vidas: number; serie: number[] };
 type Op = { registro: string; nome: string; ades: number; canc: number; vidas: number; serie: number[]; tipos?: Tipo[] };
