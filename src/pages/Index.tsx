@@ -64,6 +64,7 @@ import SinistralidadeCidade from "@/components/SinistralidadeCidade";
 import DREGerencialPE from "@/components/DREGerencialPE";
 import Orcamento from "@/components/Orcamento";
 import ContabilidadeGraficos from "@/components/ContabilidadeGraficos";
+import InteligenciaUberaba from "@/components/InteligenciaUberaba";
 
 
 import Assistencial from "@/components/Assistencial";
@@ -91,6 +92,11 @@ type MenuItem = {
 
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
+  {
+    icon: Building2,
+    label: "Inteligência",
+    children: [{ icon: BarChart3, label: "Mercado Uberaba" }],
+  },
   {
     icon: TrendingUp,
     label: "Contabilidade",
@@ -365,6 +371,10 @@ const Index = () => {
             <DREGerencialPE />
           ) : active === "Orçamento" ? (
             <Orcamento />
+          ) : active === "Mercado Uberaba" ? (
+            <div className="h-full overflow-auto pr-1">
+              <InteligenciaUberaba />
+            </div>
           ) : active === "Gráficos" ? (
             <ContabilidadeGraficos />
 
