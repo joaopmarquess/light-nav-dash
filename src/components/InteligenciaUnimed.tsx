@@ -5,9 +5,6 @@ type Tipo = { tipo: string; ades: number; canc: number; vidas: number; serie: nu
 type Op = { registro: string; nome: string; ades: number; canc: number; vidas: number; serie: number[]; tipos?: Tipo[] };
 type Data = { municipio: string; meses: string[]; operadoras: Op[] };
 
-const RIO_PRETO = ["AUSTACLINICAS", "UNIMED SAO JOSÉ DO RIO PRETO", "BENSAUDE", "H.B. SAÚDE"];
-const isRioPreto = (nome: string) => RIO_PRETO.some((k) => nome.toUpperCase().includes(k.toUpperCase()));
-
 const fmt = (v: number) => new Intl.NumberFormat("pt-BR").format(v);
 const fmtSigned = (v: number) => `${v > 0 ? "+" : ""}${fmt(v)}`;
 
@@ -16,7 +13,7 @@ const TOP_N = 20;
 type SortKey = "nome" | "ades" | "canc" | "cres" | "vidas";
 
 const COLS: { key: SortKey; label: string; align: string }[] = [
-  { key: "nome", label: "Operadora", align: "text-left" },
+  { key: "nome", label: "Cidade", align: "text-left" },
   { key: "ades", label: "Adesões", align: "text-right" },
   { key: "canc", label: "Cancelamentos", align: "text-right" },
   { key: "cres", label: "Crescimento", align: "text-right" },
@@ -26,7 +23,7 @@ const COLS: { key: SortKey; label: string; align: string }[] = [
 const InteligenciaUnimed = () => {
   const [data, setData] = useState<Data | null>(null);
   const [q, setQ] = useState("");
-  const [open, setOpen] = useState<Record<string, boolean>>({ n1: true, n2: true, n3: false });
+  const [open, setOpen] = useState<Record<string, boolean>>({ n2: true, n3: false });
   const [openOp, setOpenOp] = useState<Record<string, boolean>>({});
   const [sortKey, setSortKey] = useState<SortKey>("vidas");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
@@ -40,7 +37,7 @@ const InteligenciaUnimed = () => {
   };
 
   useEffect(() => {
-    fetch("/data/inteligencia_uberaba.json")
+    fetch("/data/inteligencia_unimed_uberaba.json")
       .then((r) => r.json())
       .then(setData)
       .catch(() => setData(null));
@@ -65,15 +62,10 @@ const InteligenciaUnimed = () => {
     const term = q.trim().toLowerCase();
     const match = (o: Op) => !term || o.nome.toLowerCase().includes(term) || o.registro.includes(term);
     const all = [...data.operadoras].sort((a, b) => b.vidas - a.vidas);
-    const n1 = all.filter((o) => isRioPreto(o.nome));
-    const rest = all.filter((o) => !isRioPreto(o.nome));
-    const n2 = rest.slice(0, TOP_N);
-    const n3 = rest.slice(TOP_N);
     const prep = (rows: Op[]) => sortRows(rows.filter(match), (o) => o.nome);
     return [
-      { id: "n2", titulo: `Nível 1 · Top ${TOP_N} por Vidas em junho/2026`, rows: prep(n2) },
-      { id: "n3", titulo: "Nível 2 · Outras operadoras", rows: prep(n3) },
-      { id: "n1", titulo: "Nível 3 · Operadoras de Rio Preto", rows: prep(n1) },
+      { id: "n2", titulo: `Nível 1 · Top ${TOP_N} cidades por Vidas em junho/2026`, rows: prep(all.slice(0, TOP_N)) },
+      { id: "n3", titulo: "Nível 2 · Outras cidades", rows: prep(all.slice(TOP_N)) },
     ];
   }, [data, q, sortKey, sortDir]);
 
@@ -92,7 +84,7 @@ const InteligenciaUnimed = () => {
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { l: "Município", v: data.municipio, sub: `${data.operadoras.length} operadoras` },
+          { l: "Operadora", v: data.municipio, sub: `${data.operadoras.length} cidades` },
           { l: "Vidas jun/2026", v: fmt(geral.vidas), sub: "soma de beneficiários" },
           { l: "Crescimento", v: fmtSigned(geral.cres), sub: "adesões − cancelamentos" },
           { l: "Período", v: `${data.meses[0]} → ${data.meses[data.meses.length - 1]}`, sub: `${data.meses.length} competências` },
@@ -111,7 +103,7 @@ const InteligenciaUnimed = () => {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Filtrar operadora ou registro…"
+            placeholder="Filtrar cidade…"
             className="h-9 w-80 rounded-md border border-input bg-background pl-8 pr-3 text-sm outline-none focus:ring-1 focus:ring-ring"
           />
         </div>
@@ -182,7 +174,7 @@ const InteligenciaUnimed = () => {
                                   <span className="w-3.5" />
                                 )}
                                 <Building2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                <span title={`Registro ANS ${o.registro}`}>{o.nome}</span>
+                                <span>{o.nome}</span>
                               </span>
                             </td>
                             <td className="px-4 py-1.5 text-right">{fmt(o.ades)}</td>
