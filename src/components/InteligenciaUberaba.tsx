@@ -1,7 +1,8 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { ChevronRight, Search, Building2 } from "lucide-react";
 
-type Op = { registro: string; nome: string; ades: number; canc: number; vidas: number; serie: number[] };
+type Tipo = { tipo: string; ades: number; canc: number; vidas: number; serie: number[] };
+type Op = { registro: string; nome: string; ades: number; canc: number; vidas: number; serie: number[]; tipos?: Tipo[] };
 type Data = { municipio: string; meses: string[]; operadoras: Op[] };
 
 const RIO_PRETO = ["AUSTACLINICAS", "UNIMED SAO JOSÉ DO RIO PRETO", "BENSAUDE", "H.B. SAÚDE"];
@@ -16,6 +17,7 @@ const InteligenciaUberaba = () => {
   const [data, setData] = useState<Data | null>(null);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<Record<string, boolean>>({ n1: true, n2: true, n3: false });
+  const [openOp, setOpenOp] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetch("/data/inteligencia_uberaba.json")
@@ -116,22 +118,49 @@ const InteligenciaUberaba = () => {
                     <td className="px-4 py-2 text-right font-semibold">{fmt(t.vidas)}</td>
                   </tr>
                   {isOpen &&
-                    g.rows.map((o) => (
-                      <tr key={g.id + o.registro} className="border-t border-border/60 hover:bg-accent/30">
-                        <td className="px-4 py-1.5 pl-11 text-foreground/80">
-                          <span className="inline-flex items-center gap-2">
-                            <Building2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                            <span title={`Registro ANS ${o.registro}`}>{o.nome}</span>
-                          </span>
-                        </td>
-                        <td className="px-4 py-1.5 text-right">{fmt(o.ades)}</td>
-                        <td className="px-4 py-1.5 text-right">{fmt(o.canc)}</td>
-                        <td className={`px-4 py-1.5 text-right ${o.ades - o.canc < 0 ? "text-destructive" : "text-emerald-600"}`}>
-                          {fmtSigned(o.ades - o.canc)}
-                        </td>
-                        <td className="px-4 py-1.5 text-right font-medium">{fmt(o.vidas)}</td>
-                      </tr>
-                    ))}
+                    g.rows.map((o) => {
+                      const opKey = g.id + o.registro;
+                      const tipos = o.tipos ?? [];
+                      const opOpen = !!openOp[opKey];
+                      return (
+                        <Fragment key={opKey}>
+                          <tr
+                            onClick={() => tipos.length > 0 && setOpenOp((p) => ({ ...p, [opKey]: !p[opKey] }))}
+                            className={`border-t border-border/60 hover:bg-accent/30 ${tipos.length ? "cursor-pointer" : ""}`}
+                          >
+                            <td className="px-4 py-1.5 pl-8 text-foreground/80">
+                              <span className="inline-flex items-center gap-2">
+                                {tipos.length > 0 ? (
+                                  <ChevronRight className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${opOpen ? "rotate-90" : ""}`} />
+                                ) : (
+                                  <span className="w-3.5" />
+                                )}
+                                <Building2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                <span title={`Registro ANS ${o.registro}`}>{o.nome}</span>
+                              </span>
+                            </td>
+                            <td className="px-4 py-1.5 text-right">{fmt(o.ades)}</td>
+                            <td className="px-4 py-1.5 text-right">{fmt(o.canc)}</td>
+                            <td className={`px-4 py-1.5 text-right ${o.ades - o.canc < 0 ? "text-destructive" : "text-emerald-600"}`}>
+                              {fmtSigned(o.ades - o.canc)}
+                            </td>
+                            <td className="px-4 py-1.5 text-right font-medium">{fmt(o.vidas)}</td>
+                          </tr>
+                          {opOpen &&
+                            tipos.map((t) => (
+                              <tr key={opKey + t.tipo} className="border-t border-border/40 bg-muted/20">
+                                <td className="px-4 py-1 pl-20 text-xs text-muted-foreground">{t.tipo}</td>
+                                <td className="px-4 py-1 text-right text-xs">{fmt(t.ades)}</td>
+                                <td className="px-4 py-1 text-right text-xs">{fmt(t.canc)}</td>
+                                <td className={`px-4 py-1 text-right text-xs ${t.ades - t.canc < 0 ? "text-destructive" : "text-emerald-600"}`}>
+                                  {fmtSigned(t.ades - t.canc)}
+                                </td>
+                                <td className="px-4 py-1 text-right text-xs font-medium">{fmt(t.vidas)}</td>
+                              </tr>
+                            ))}
+                        </Fragment>
+                      );
+                    })}
                 </Fragment>
               );
             })}
