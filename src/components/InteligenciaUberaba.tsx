@@ -17,6 +17,7 @@ const InteligenciaUberaba = () => {
   const [data, setData] = useState<Data | null>(null);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<Record<string, boolean>>({ n1: true, n2: true, n3: false });
+  const [openOp, setOpenOp] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetch("/data/inteligencia_uberaba.json")
