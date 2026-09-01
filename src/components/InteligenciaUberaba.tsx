@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { ChevronRight, Search, Building2 } from "lucide-react";
+import { ChevronRight, Search, Building2, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 
 type Tipo = { tipo: string; ades: number; canc: number; vidas: number; serie: number[] };
 type Op = { registro: string; nome: string; ades: number; canc: number; vidas: number; serie: number[]; tipos?: Tipo[] };
@@ -13,11 +13,31 @@ const fmtSigned = (v: number) => `${v > 0 ? "+" : ""}${fmt(v)}`;
 
 const TOP_N = 20;
 
+type SortKey = "nome" | "ades" | "canc" | "cres" | "vidas";
+
+const COLS: { key: SortKey; label: string; align: string }[] = [
+  { key: "nome", label: "Operadora", align: "text-left" },
+  { key: "ades", label: "Adesões", align: "text-right" },
+  { key: "canc", label: "Cancelamentos", align: "text-right" },
+  { key: "cres", label: "Crescimento", align: "text-right" },
+  { key: "vidas", label: "Vidas jun/2026", align: "text-right" },
+];
+
 const InteligenciaUberaba = () => {
   const [data, setData] = useState<Data | null>(null);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<Record<string, boolean>>({ n1: true, n2: true, n3: false });
   const [openOp, setOpenOp] = useState<Record<string, boolean>>({});
+  const [sortKey, setSortKey] = useState<SortKey>("vidas");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+
+  const toggleSort = (k: SortKey) => {
+    if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortKey(k);
+      setSortDir(k === "nome" ? "asc" : "desc");
+    }
+  };
 
   useEffect(() => {
     fetch("/data/inteligencia_uberaba.json")
@@ -25,6 +45,20 @@ const InteligenciaUberaba = () => {
       .then(setData)
       .catch(() => setData(null));
   }, []);
+
+  const sortRows = <T extends { ades: number; canc: number; vidas: number }>(
+    rows: T[],
+    nameOf: (r: T) => string,
+  ) => {
+    const mult = sortDir === "asc" ? 1 : -1;
+    const val = (r: T) =>
+      sortKey === "cres" ? r.ades - r.canc : sortKey === "nome" ? 0 : (r[sortKey as "ades" | "canc" | "vidas"] as number);
+    return [...rows].sort((a, b) =>
+      sortKey === "nome"
+        ? nameOf(a).localeCompare(nameOf(b), "pt-BR") * mult
+        : (val(a) - val(b)) * mult,
+    );
+  };
 
   const groups = useMemo(() => {
     if (!data) return null;
@@ -35,12 +69,13 @@ const InteligenciaUberaba = () => {
     const rest = all.filter((o) => !isRioPreto(o.nome));
     const n2 = rest.slice(0, TOP_N);
     const n3 = rest.slice(TOP_N);
+    const prep = (rows: Op[]) => sortRows(rows.filter(match), (o) => o.nome);
     return [
-      { id: "n1", titulo: "Nível 1 · Operadoras de Rio Preto", rows: n1.filter(match) },
-      { id: "n2", titulo: `Nível 2 · Top ${TOP_N} por Vidas em junho/2026`, rows: n2.filter(match) },
-      { id: "n3", titulo: "Nível 3 · Outras operadoras", rows: n3.filter(match) },
+      { id: "n1", titulo: "Nível 1 · Operadoras de Rio Preto", rows: prep(n1) },
+      { id: "n2", titulo: `Nível 2 · Top ${TOP_N} por Vidas em junho/2026`, rows: prep(n2) },
+      { id: "n3", titulo: "Nível 3 · Outras operadoras", rows: prep(n3) },
     ];
-  }, [data, q]);
+  }, [data, q, sortKey, sortDir]);
 
   if (!data || !groups)
     return <div className="rounded-xl border border-border bg-card p-8 text-sm text-muted-foreground">Carregando dados…</div>;
@@ -86,11 +121,22 @@ const InteligenciaUberaba = () => {
         <table className="w-full text-[13px]">
           <thead className="bg-muted/60 text-muted-foreground">
             <tr>
-              <th className="text-left px-4 py-2 font-medium">Operadora</th>
-              <th className="text-right px-4 py-2 font-medium">Adesões</th>
-              <th className="text-right px-4 py-2 font-medium">Cancelamentos</th>
-              <th className="text-right px-4 py-2 font-medium">Crescimento</th>
-              <th className="text-right px-4 py-2 font-medium">Vidas jun/2026</th>
+              {COLS.map((c) => {
+                const active = sortKey === c.key;
+                const Icon = !active ? ArrowUpDown : sortDir === "asc" ? ArrowUp : ArrowDown;
+                return (
+                  <th
+                    key={c.key}
+                    onClick={() => toggleSort(c.key)}
+                    className={`${c.align} px-4 py-2 font-medium cursor-pointer select-none hover:text-foreground`}
+                  >
+                    <span className={`inline-flex items-center gap-1 ${c.align === "text-right" ? "flex-row-reverse" : ""}`}>
+                      {c.label}
+                      <Icon className={`h-3 w-3 ${active ? "text-foreground" : "opacity-50"}`} />
+                    </span>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
@@ -120,7 +166,7 @@ const InteligenciaUberaba = () => {
                   {isOpen &&
                     g.rows.map((o) => {
                       const opKey = g.id + o.registro;
-                      const tipos = o.tipos ?? [];
+                      const tipos = sortRows(o.tipos ?? [], (t) => t.tipo);
                       const opOpen = !!openOp[opKey];
                       return (
                         <Fragment key={opKey}>
