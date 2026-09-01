@@ -71,9 +71,9 @@ const InteligenciaUberaba = () => {
     const n3 = rest.slice(TOP_N);
     const prep = (rows: Op[]) => sortRows(rows.filter(match), (o) => o.nome);
     return [
-      { id: "n1", titulo: "Nível 1 · Operadoras de Rio Preto", rows: prep(n1) },
-      { id: "n2", titulo: `Nível 2 · Top ${TOP_N} por Vidas em junho/2026`, rows: prep(n2) },
-      { id: "n3", titulo: "Nível 3 · Outras operadoras", rows: prep(n3) },
+      { id: "n2", titulo: `Nível 1 · Top ${TOP_N} por Vidas em junho/2026`, rows: prep(n2) },
+      { id: "n3", titulo: "Nível 2 · Outras operadoras", rows: prep(n3) },
+      { id: "n1", titulo: "Nível 3 · Operadoras de Rio Preto", rows: prep(n1) },
     ];
   }, [data, q, sortKey, sortDir]);
 
