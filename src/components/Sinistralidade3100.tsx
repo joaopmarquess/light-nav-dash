@@ -536,14 +536,14 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
       });
     });
 
-    // ===================== Seção 2 | Demais beneficiários =====================
+    // ===================== Seção 3 | Demais beneficiários =====================
     const temResto = abertos.some((p) => p.planos.some((pl) => pl.resto.length));
     if (temResto) {
       abertos.forEach((p) => {
         const planos = sortPlanos(p.planos).filter((pl) => pl.resto.length);
         if (!planos.length) return;
         doc.addPage();
-        currentSecao = `Seção 2 | Demais beneficiários · Período ${fmtCiclo(p.periodo)}`;
+        currentSecao = `Seção 3 | Demais beneficiários · Período ${fmtCiclo(p.periodo)}`;
         let y = marginT;
 
         for (const pl of planos) {
