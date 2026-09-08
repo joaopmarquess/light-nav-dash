@@ -583,25 +583,6 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
       });
     }
 
-    // ===================== Seção 3 | Gráficos =====================
-    const gW = usableW;
-    const gH = pageH - marginT - marginB - 6;
-
-    const graficos: { titulo: string; png: string }[] = [];
-    if (chart.data.length) {
-      graficos.push({ titulo: "Gráfico 1 · Meia-lua (despesa líquida × coparticipação)", png: renderGaugesPng(chart.data, gW, gH) });
-      graficos.push({ titulo: "Gráfico 2 · Composição por tipo de despesa", png: renderTiposPng(chart.data, gW, gH) });
-    }
-    if (chartMensal.data.length) {
-      graficos.push({ titulo: "Gráfico 3 · Top 10, Outros e Total mês a mês", png: renderMensalPng(chartMensal.data, gW, gH) });
-    }
-
-    graficos.forEach((gr) => {
-      doc.addPage();
-      currentSecao = `Seção 3 | ${gr.titulo}`;
-      header();
-      doc.addImage(gr.png, "PNG", marginL, marginT, gW, gH);
-    });
 
 
 
