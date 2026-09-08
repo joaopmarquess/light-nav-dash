@@ -450,9 +450,29 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
     const resumo = (m: Desp) =>
       `Rec TM ${fmtNum(m.rec_tm)}  |  Rec CPA ${fmtNum(m.rec_cpa)}  |  Receita ${fmtNum(m.rec_total)}  |  Despesas ${fmtNum(m.vrdespesas)}  |  Saldo ${fmtNum(saldoOf(m))}  |  Sin ${fmtPct(sinOf(m))}`;
 
+    // ===================== Seção 1 | Gráficos (páginas iniciais) =====================
+    const gW = usableW;
+    const gH = pageH - marginT - marginB - 6;
+
+    const graficos: { titulo: string; png: string }[] = [];
+    if (chart.data.length) {
+      graficos.push({ titulo: "Gráfico 1 · Meia-lua (despesa líquida × coparticipação)", png: renderGaugesPng(chart.data, gW, gH) });
+      graficos.push({ titulo: "Gráfico 2 · Composição por tipo de despesa", png: renderTiposPng(chart.data, gW, gH) });
+    }
+    if (chartMensal.data.length) {
+      graficos.push({ titulo: "Gráfico 3 · Top 10, Outros e Total mês a mês", png: renderMensalPng(chartMensal.data, gW, gH) });
+    }
+
+    graficos.forEach((gr, i) => {
+      if (i > 0) doc.addPage();
+      currentSecao = `Seção 1 | ${gr.titulo}`;
+      header();
+      doc.addImage(gr.png, "PNG", marginL, marginT, gW, gH);
+    });
+
     abertos.forEach((p, idx) => {
-      if (idx > 0) doc.addPage();
-      currentSecao = `Seção 1 | Top 10 · Período ${fmtCiclo(p.periodo)} · Total de Despesas: ${fmtNum(p.vrdespesas)}`;
+      if (idx > 0 || graficos.length) doc.addPage();
+      currentSecao = `Seção 2 | Top 10 · Período ${fmtCiclo(p.periodo)} · Total de Despesas: ${fmtNum(p.vrdespesas)}`;
 
       let y = marginT;
       const planos = sortPlanos(p.planos);
@@ -516,14 +536,14 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
       });
     });
 
-    // ===================== Seção 2 | Demais beneficiários =====================
+    // ===================== Seção 3 | Demais beneficiários =====================
     const temResto = abertos.some((p) => p.planos.some((pl) => pl.resto.length));
     if (temResto) {
       abertos.forEach((p) => {
         const planos = sortPlanos(p.planos).filter((pl) => pl.resto.length);
         if (!planos.length) return;
         doc.addPage();
-        currentSecao = `Seção 2 | Demais beneficiários · Período ${fmtCiclo(p.periodo)}`;
+        currentSecao = `Seção 3 | Demais beneficiários · Período ${fmtCiclo(p.periodo)}`;
         let y = marginT;
 
         for (const pl of planos) {
@@ -563,25 +583,6 @@ export default function Sinistralidade3100({ embedded = false }: { embedded?: bo
       });
     }
 
-    // ===================== Seção 3 | Gráficos =====================
-    const gW = usableW;
-    const gH = pageH - marginT - marginB - 6;
-
-    const graficos: { titulo: string; png: string }[] = [];
-    if (chart.data.length) {
-      graficos.push({ titulo: "Gráfico 1 · Meia-lua (despesa líquida × coparticipação)", png: renderGaugesPng(chart.data, gW, gH) });
-      graficos.push({ titulo: "Gráfico 2 · Composição por tipo de despesa", png: renderTiposPng(chart.data, gW, gH) });
-    }
-    if (chartMensal.data.length) {
-      graficos.push({ titulo: "Gráfico 3 · Top 10, Outros e Total mês a mês", png: renderMensalPng(chartMensal.data, gW, gH) });
-    }
-
-    graficos.forEach((gr) => {
-      doc.addPage();
-      currentSecao = `Seção 3 | ${gr.titulo}`;
-      header();
-      doc.addImage(gr.png, "PNG", marginL, marginT, gW, gH);
-    });
 
 
 
