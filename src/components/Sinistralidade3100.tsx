@@ -1118,6 +1118,80 @@ export default function Sinistralidade3100({
         </DialogContent>
       </Dialog>
 
+      <Dialog open={showEvolucao} onOpenChange={setShowEvolucao}>
+        <DialogContent className="max-w-[96vw] w-[96vw] max-h-[92vh]">
+          <DialogHeader>
+            <DialogTitle className="text-sm">
+              Evolução Mensal · Despesas por beneficiário · {periodoLabel}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="overflow-auto max-h-[78vh] border border-border rounded-lg">
+            <table className="w-full text-xs">
+              <thead className="sticky top-0 bg-muted/70 backdrop-blur">
+                <tr>
+                  <th className="text-left px-3 py-2 font-semibold sticky left-0 bg-muted/90 min-w-[260px]">Beneficiário</th>
+                  {evolucao.meses.map((m) => (
+                    <th key={m} className="text-right px-3 py-2 font-semibold whitespace-nowrap">{fmtComp(m)}</th>
+                  ))}
+                  <th className="text-right px-3 py-2 font-semibold">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {evolucao.linhas.map((t) => {
+                  const open = !!evoOpen[t.titular];
+                  return (
+                    <>
+                      <tr
+                        key={t.titular}
+                        className="border-t border-border/60 hover:bg-accent/40 cursor-pointer font-medium"
+                        onClick={() => setEvoOpen((p) => ({ ...p, [t.titular]: !p[t.titular] }))}
+                      >
+                        <td className="px-3 py-1.5 sticky left-0 bg-card">
+                          <span className="inline-flex items-center gap-1.5">
+                            <ChevronRight className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-90" : ""}`} />
+                            {t.titular}
+                          </span>
+                        </td>
+                        {evolucao.meses.map((m) => (
+                          <td key={m} className="px-3 py-1.5 text-right tabular-nums">
+                            {t.meses.get(m) ? fmtNum(t.meses.get(m)!) : "—"}
+                          </td>
+                        ))}
+                        <td className="px-3 py-1.5 text-right tabular-nums font-semibold">{fmtNum(t.total)}</td>
+                      </tr>
+                      {open &&
+                        t.lista.map((b) => (
+                          <tr key={`${t.titular}|${b.nome}`} className="border-t border-border/40 bg-muted/20">
+                            <td className="px-3 py-1 pl-9 sticky left-0 bg-muted/30 text-muted-foreground">{b.nome}</td>
+                            {evolucao.meses.map((m) => (
+                              <td key={m} className="px-3 py-1 text-right tabular-nums text-muted-foreground">
+                                {b.meses.get(m) ? fmtNum(b.meses.get(m)!) : "—"}
+                              </td>
+                            ))}
+                            <td className="px-3 py-1 text-right tabular-nums">{fmtNum(b.total)}</td>
+                          </tr>
+                        ))}
+                    </>
+                  );
+                })}
+              </tbody>
+              <tfoot className="sticky bottom-0 bg-muted/80 backdrop-blur">
+                <tr className="border-t-2 border-border font-semibold">
+                  <td className="px-3 py-2 sticky left-0 bg-muted/90">TOTAL</td>
+                  {evolucao.meses.map((m) => (
+                    <td key={m} className="px-3 py-2 text-right tabular-nums">
+                      {fmtNum(evolucao.totalMeses.get(m) ?? 0)}
+                    </td>
+                  ))}
+                  <td className="px-3 py-2 text-right tabular-nums">{fmtNum(evolucao.totalGeral)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+
     </TooltipProvider>
   );
 }
