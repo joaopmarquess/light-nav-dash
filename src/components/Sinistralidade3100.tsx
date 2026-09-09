@@ -356,29 +356,33 @@ export default function Sinistralidade3100({
       info.set(r[3], { nome: String(r[4]), titular: tit });
     }
     const mesesSet = new Set<string>();
-    const byTit = new Map<string, { titular: string; total: number; meses: Map<string, number>; benefs: Map<string, { nome: string; total: number; meses: Map<string, number> }> }>();
+    const byTit = new Map<string, { titular: string; total: number; copart: number; meses: Map<string, number>; benefs: Map<string, { nome: string; total: number; copart: number; meses: Map<string, number> }> }>();
     for (const m of mensal) {
       const meta = info.get(m[1]);
       if (!meta) continue;
       const mes = m[0];
       mesesSet.add(mes);
+      const cp = m[4] ?? 0;
       let t = byTit.get(meta.titular);
-      if (!t) { t = { titular: meta.titular, total: 0, meses: new Map(), benefs: new Map() }; byTit.set(meta.titular, t); }
+      if (!t) { t = { titular: meta.titular, total: 0, copart: 0, meses: new Map(), benefs: new Map() }; byTit.set(meta.titular, t); }
       t.total += m[3];
+      t.copart += cp;
       t.meses.set(mes, (t.meses.get(mes) ?? 0) + m[3]);
       let b = t.benefs.get(m[1]);
-      if (!b) { b = { nome: meta.nome, total: 0, meses: new Map() }; t.benefs.set(m[1], b); }
+      if (!b) { b = { nome: meta.nome, total: 0, copart: 0, meses: new Map() }; t.benefs.set(m[1], b); }
       b.total += m[3];
+      b.copart += cp;
       b.meses.set(mes, (b.meses.get(mes) ?? 0) + m[3]);
     }
     const meses = Array.from(mesesSet).sort();
     const sgn = evoSort.dir === "asc" ? 1 : -1;
     const cmp = (
-      a: { nome: string; total: number; meses: Map<string, number> },
-      b: { nome: string; total: number; meses: Map<string, number> },
+      a: { nome: string; total: number; copart: number; meses: Map<string, number> },
+      b: { nome: string; total: number; copart: number; meses: Map<string, number> },
     ) => {
       if (evoSort.key === "__nome") return sgn * a.nome.localeCompare(b.nome, "pt-BR");
       if (evoSort.key === "__total") return sgn * (a.total - b.total);
+      if (evoSort.key === "__copart") return sgn * (a.copart - b.copart);
       return sgn * ((a.meses.get(evoSort.key) ?? 0) - (b.meses.get(evoSort.key) ?? 0));
     };
     const linhas = Array.from(byTit.values())
@@ -390,11 +394,13 @@ export default function Sinistralidade3100({
       .sort(cmp);
     const totalMeses = new Map<string, number>();
     let totalGeral = 0;
+    let totalCopart = 0;
     for (const t of linhas) {
       totalGeral += t.total;
+      totalCopart += t.copart;
       for (const [k, v] of t.meses) totalMeses.set(k, (totalMeses.get(k) ?? 0) + v);
     }
-    return { meses, linhas, totalMeses, totalGeral };
+    return { meses, linhas, totalMeses, totalGeral, totalCopart };
   }, [rows, mensal, filter, evoSort]);
 
   // Gráfico mensal: Top 10, Outros e Total (base ardmensal)
@@ -1179,6 +1185,16 @@ export default function Sinistralidade3100({
                         (evoSort.dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
                     </span>
                   </th>
+                  <th
+                    onClick={() => toggleEvoSort("__copart")}
+                    className="text-right px-3 py-2 font-semibold cursor-pointer select-none hover:text-primary whitespace-nowrap"
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      Copart
+                      {evoSort.key === "__copart" &&
+                        (evoSort.dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+                    </span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -1203,6 +1219,7 @@ export default function Sinistralidade3100({
                           </td>
                         ))}
                         <td className="px-3 py-1.5 text-right tabular-nums font-semibold">{fmtNum(t.total)}</td>
+                        <td className="px-3 py-1.5 text-right tabular-nums">{t.copart ? fmtNum(t.copart) : "—"}</td>
                       </tr>
                       {open &&
                         t.lista.map((b) => (
@@ -1214,6 +1231,7 @@ export default function Sinistralidade3100({
                               </td>
                             ))}
                             <td className="px-3 py-1 text-right tabular-nums">{fmtNum(b.total)}</td>
+                            <td className="px-3 py-1 text-right tabular-nums text-muted-foreground">{b.copart ? fmtNum(b.copart) : "—"}</td>
                           </tr>
                         ))}
                     </>
@@ -1229,6 +1247,7 @@ export default function Sinistralidade3100({
                     </td>
                   ))}
                   <td className="px-3 py-2 text-right tabular-nums">{fmtNum(evolucao.totalGeral)}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{fmtNum(evolucao.totalCopart)}</td>
                 </tr>
               </tfoot>
             </table>
