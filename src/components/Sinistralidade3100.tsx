@@ -1219,6 +1219,7 @@ export default function Sinistralidade3100({
                           </td>
                         ))}
                         <td className="px-3 py-1.5 text-right tabular-nums font-semibold">{fmtNum(t.total)}</td>
+                        <td className="px-3 py-1.5 text-right tabular-nums">{t.copart ? fmtNum(t.copart) : "—"}</td>
                       </tr>
                       {open &&
                         t.lista.map((b) => (
