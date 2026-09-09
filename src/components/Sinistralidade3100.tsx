@@ -330,6 +330,56 @@ export default function Sinistralidade3100({
 
 
 
+  // Evolução Mensal: titular > beneficiário x mabas (soma de vrdespesas)
+  const [showEvolucao, setShowEvolucao] = useState(false);
+  const [evoOpen, setEvoOpen] = useState<Record<string, boolean>>({});
+  const evolucao = useMemo(() => {
+    const fq = filter.trim().toLowerCase();
+    const info = new Map<string, { nome: string; titular: string }>();
+    for (const r of rows) {
+      if (fq && !(
+        r[1].toLowerCase().includes(fq) ||
+        r[2].toLowerCase().includes(fq) ||
+        r[3].toLowerCase().includes(fq) ||
+        r[4].toLowerCase().includes(fq) ||
+        (r[17] ?? "").toLowerCase().includes(fq)
+      )) continue;
+      const rel = String(r[16] ?? "");
+      const tit = isTitular(rel) ? String(r[4]) : String(r[17] ?? "") || String(r[4]);
+      info.set(r[3], { nome: String(r[4]), titular: tit });
+    }
+    const mesesSet = new Set<string>();
+    const byTit = new Map<string, { titular: string; total: number; meses: Map<string, number>; benefs: Map<string, { nome: string; total: number; meses: Map<string, number> }> }>();
+    for (const m of mensal) {
+      const meta = info.get(m[1]);
+      if (!meta) continue;
+      const mes = m[0];
+      mesesSet.add(mes);
+      let t = byTit.get(meta.titular);
+      if (!t) { t = { titular: meta.titular, total: 0, meses: new Map(), benefs: new Map() }; byTit.set(meta.titular, t); }
+      t.total += m[3];
+      t.meses.set(mes, (t.meses.get(mes) ?? 0) + m[3]);
+      let b = t.benefs.get(m[1]);
+      if (!b) { b = { nome: meta.nome, total: 0, meses: new Map() }; t.benefs.set(m[1], b); }
+      b.total += m[3];
+      b.meses.set(mes, (b.meses.get(mes) ?? 0) + m[3]);
+    }
+    const meses = Array.from(mesesSet).sort();
+    const linhas = Array.from(byTit.values())
+      .sort((a, b) => b.total - a.total)
+      .map((t) => ({
+        ...t,
+        lista: Array.from(t.benefs.values()).sort((a, b) => b.total - a.total),
+      }));
+    const totalMeses = new Map<string, number>();
+    let totalGeral = 0;
+    for (const t of linhas) {
+      totalGeral += t.total;
+      for (const [k, v] of t.meses) totalMeses.set(k, (totalMeses.get(k) ?? 0) + v);
+    }
+    return { meses, linhas, totalMeses, totalGeral };
+  }, [rows, mensal, filter]);
+
   // Gráfico mensal: Top 10, Outros e Total (base ardmensal)
   const [showChartMensal, setShowChartMensal] = useState(false);
   const chartMensal = useMemo(() => {
@@ -626,6 +676,13 @@ export default function Sinistralidade3100({
               title="Evolução mensal da despesa dos Top 10"
             >
               <LineChartIcon className="h-3.5 w-3.5" /> Top 10 mês a mês
+            </button>
+            <button
+              onClick={() => setShowEvolucao(true)}
+              className="h-8 px-3 inline-flex items-center gap-1.5 rounded border border-border bg-background text-xs text-foreground hover:bg-accent"
+              title="Despesas por beneficiário mês a mês"
+            >
+              <LineChartIcon className="h-3.5 w-3.5" /> Evolução Mensal
             </button>
 
             <button
@@ -1060,6 +1117,80 @@ export default function Sinistralidade3100({
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={showEvolucao} onOpenChange={setShowEvolucao}>
+        <DialogContent className="max-w-[96vw] w-[96vw] max-h-[92vh]">
+          <DialogHeader>
+            <DialogTitle className="text-sm">
+              Evolução Mensal · Despesas por beneficiário · {periodoLabel}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="overflow-auto max-h-[78vh] border border-border rounded-lg">
+            <table className="w-full text-xs">
+              <thead className="sticky top-0 bg-muted/70 backdrop-blur">
+                <tr>
+                  <th className="text-left px-3 py-2 font-semibold sticky left-0 bg-muted/90 min-w-[260px]">Beneficiário</th>
+                  {evolucao.meses.map((m) => (
+                    <th key={m} className="text-right px-3 py-2 font-semibold whitespace-nowrap">{fmtComp(m)}</th>
+                  ))}
+                  <th className="text-right px-3 py-2 font-semibold">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {evolucao.linhas.map((t) => {
+                  const open = !!evoOpen[t.titular];
+                  return (
+                    <>
+                      <tr
+                        key={t.titular}
+                        className="border-t border-border/60 hover:bg-accent/40 cursor-pointer font-medium"
+                        onClick={() => setEvoOpen((p) => ({ ...p, [t.titular]: !p[t.titular] }))}
+                      >
+                        <td className="px-3 py-1.5 sticky left-0 bg-card">
+                          <span className="inline-flex items-center gap-1.5">
+                            <ChevronRight className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-90" : ""}`} />
+                            {t.titular}
+                          </span>
+                        </td>
+                        {evolucao.meses.map((m) => (
+                          <td key={m} className="px-3 py-1.5 text-right tabular-nums">
+                            {t.meses.get(m) ? fmtNum(t.meses.get(m)!) : "—"}
+                          </td>
+                        ))}
+                        <td className="px-3 py-1.5 text-right tabular-nums font-semibold">{fmtNum(t.total)}</td>
+                      </tr>
+                      {open &&
+                        t.lista.map((b) => (
+                          <tr key={`${t.titular}|${b.nome}`} className="border-t border-border/40 bg-muted/20">
+                            <td className="px-3 py-1 pl-9 sticky left-0 bg-muted/30 text-muted-foreground">{b.nome}</td>
+                            {evolucao.meses.map((m) => (
+                              <td key={m} className="px-3 py-1 text-right tabular-nums text-muted-foreground">
+                                {b.meses.get(m) ? fmtNum(b.meses.get(m)!) : "—"}
+                              </td>
+                            ))}
+                            <td className="px-3 py-1 text-right tabular-nums">{fmtNum(b.total)}</td>
+                          </tr>
+                        ))}
+                    </>
+                  );
+                })}
+              </tbody>
+              <tfoot className="sticky bottom-0 bg-muted/80 backdrop-blur">
+                <tr className="border-t-2 border-border font-semibold">
+                  <td className="px-3 py-2 sticky left-0 bg-muted/90">TOTAL</td>
+                  {evolucao.meses.map((m) => (
+                    <td key={m} className="px-3 py-2 text-right tabular-nums">
+                      {fmtNum(evolucao.totalMeses.get(m) ?? 0)}
+                    </td>
+                  ))}
+                  <td className="px-3 py-2 text-right tabular-nums">{fmtNum(evolucao.totalGeral)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </DialogContent>
+      </Dialog>
+
 
     </TooltipProvider>
   );
