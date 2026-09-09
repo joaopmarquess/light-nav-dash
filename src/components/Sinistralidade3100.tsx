@@ -158,7 +158,8 @@ export default function Sinistralidade3100({
     let alive = true;
     (async () => {
       try {
-        const res = await fetch("/data/3100_sinistralidade.json");
+        setLoading(true);
+        const res = await fetch(dataUrl);
         const json = await res.json();
         if (!alive) return;
         setRows((json.rows ?? []) as Raw[]);
@@ -169,7 +170,7 @@ export default function Sinistralidade3100({
         if (alive) setLoading(false);
       }
       try {
-        const res = await fetch("/data/3100_mensal.json");
+        const res = await fetch(mensalUrl);
         const json = await res.json();
         if (alive) setMensal((json.rows ?? []) as MensalRow[]);
       } catch (e) {
@@ -177,7 +178,7 @@ export default function Sinistralidade3100({
       }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [dataUrl, mensalUrl]);
 
 
   const periodos = useMemo<Periodo[]>(() => {
