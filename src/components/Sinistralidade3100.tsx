@@ -372,12 +372,22 @@ export default function Sinistralidade3100({
       b.meses.set(mes, (b.meses.get(mes) ?? 0) + m[3]);
     }
     const meses = Array.from(mesesSet).sort();
+    const sgn = evoSort.dir === "asc" ? 1 : -1;
+    const cmp = (
+      a: { nome: string; total: number; meses: Map<string, number> },
+      b: { nome: string; total: number; meses: Map<string, number> },
+    ) => {
+      if (evoSort.key === "__nome") return sgn * a.nome.localeCompare(b.nome, "pt-BR");
+      if (evoSort.key === "__total") return sgn * (a.total - b.total);
+      return sgn * ((a.meses.get(evoSort.key) ?? 0) - (b.meses.get(evoSort.key) ?? 0));
+    };
     const linhas = Array.from(byTit.values())
-      .sort((a, b) => b.total - a.total)
       .map((t) => ({
         ...t,
-        lista: Array.from(t.benefs.values()).sort((a, b) => b.total - a.total),
-      }));
+        nome: t.titular,
+        lista: Array.from(t.benefs.values()).sort(cmp),
+      }))
+      .sort(cmp);
     const totalMeses = new Map<string, number>();
     let totalGeral = 0;
     for (const t of linhas) {
