@@ -138,7 +138,11 @@ const DespTooltip = ({ title, m }: { title: string; m: Desp }) => (
   </Tooltip>
 );
 
-export default function Sinistralidade3100({ embedded = false }: { embedded?: boolean } = {}) {
+export default function Sinistralidade3100({
+  embedded = false,
+  dataUrl = "/data/3100_sinistralidade.json",
+  mensalUrl = "/data/3100_mensal.json",
+}: { embedded?: boolean; dataUrl?: string; mensalUrl?: string } = {}) {
   const [rows, setRows] = useState<Raw[]>([]);
   const [loading, setLoading] = useState(true);
   const [periodoLabel, setPeriodoLabel] = useState("");
