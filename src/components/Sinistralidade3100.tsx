@@ -330,6 +330,56 @@ export default function Sinistralidade3100({
 
 
 
+  // Evolução Mensal: titular > beneficiário x mabas (soma de vrdespesas)
+  const [showEvolucao, setShowEvolucao] = useState(false);
+  const [evoOpen, setEvoOpen] = useState<Record<string, boolean>>({});
+  const evolucao = useMemo(() => {
+    const fq = filter.trim().toLowerCase();
+    const info = new Map<string, { nome: string; titular: string }>();
+    for (const r of rows) {
+      if (fq && !(
+        r[1].toLowerCase().includes(fq) ||
+        r[2].toLowerCase().includes(fq) ||
+        r[3].toLowerCase().includes(fq) ||
+        r[4].toLowerCase().includes(fq) ||
+        (r[17] ?? "").toLowerCase().includes(fq)
+      )) continue;
+      const rel = String(r[16] ?? "");
+      const tit = isTitular(rel) ? String(r[4]) : String(r[17] ?? "") || String(r[4]);
+      info.set(r[3], { nome: String(r[4]), titular: tit });
+    }
+    const mesesSet = new Set<string>();
+    const byTit = new Map<string, { titular: string; total: number; meses: Map<string, number>; benefs: Map<string, { nome: string; total: number; meses: Map<string, number> }> }>();
+    for (const m of mensal) {
+      const meta = info.get(m[1]);
+      if (!meta) continue;
+      const mes = m[0];
+      mesesSet.add(mes);
+      let t = byTit.get(meta.titular);
+      if (!t) { t = { titular: meta.titular, total: 0, meses: new Map(), benefs: new Map() }; byTit.set(meta.titular, t); }
+      t.total += m[3];
+      t.meses.set(mes, (t.meses.get(mes) ?? 0) + m[3]);
+      let b = t.benefs.get(m[1]);
+      if (!b) { b = { nome: meta.nome, total: 0, meses: new Map() }; t.benefs.set(m[1], b); }
+      b.total += m[3];
+      b.meses.set(mes, (b.meses.get(mes) ?? 0) + m[3]);
+    }
+    const meses = Array.from(mesesSet).sort();
+    const linhas = Array.from(byTit.values())
+      .sort((a, b) => b.total - a.total)
+      .map((t) => ({
+        ...t,
+        lista: Array.from(t.benefs.values()).sort((a, b) => b.total - a.total),
+      }));
+    const totalMeses = new Map<string, number>();
+    let totalGeral = 0;
+    for (const t of linhas) {
+      totalGeral += t.total;
+      for (const [k, v] of t.meses) totalMeses.set(k, (totalMeses.get(k) ?? 0) + v);
+    }
+    return { meses, linhas, totalMeses, totalGeral };
+  }, [rows, mensal, filter]);
+
   // Gráfico mensal: Top 10, Outros e Total (base ardmensal)
   const [showChartMensal, setShowChartMensal] = useState(false);
   const chartMensal = useMemo(() => {
