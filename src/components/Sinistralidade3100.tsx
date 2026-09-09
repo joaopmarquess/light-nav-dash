@@ -1146,11 +1146,39 @@ export default function Sinistralidade3100({
             <table className="w-full text-xs">
               <thead className="sticky top-0 bg-muted/70 backdrop-blur">
                 <tr>
-                  <th className="text-left px-3 py-2 font-semibold sticky left-0 bg-muted/90 min-w-[260px]">Beneficiário</th>
+                  <th
+                    onClick={() => toggleEvoSort("__nome")}
+                    className="text-left px-3 py-2 font-semibold sticky left-0 bg-muted/90 min-w-[260px] cursor-pointer select-none hover:text-primary"
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      Beneficiário
+                      {evoSort.key === "__nome" &&
+                        (evoSort.dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+                    </span>
+                  </th>
                   {evolucao.meses.map((m) => (
-                    <th key={m} className="text-right px-3 py-2 font-semibold whitespace-nowrap">{fmtComp(m)}</th>
+                    <th
+                      key={m}
+                      onClick={() => toggleEvoSort(m)}
+                      className="text-right px-3 py-2 font-semibold whitespace-nowrap cursor-pointer select-none hover:text-primary"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        {fmtComp(m)}
+                        {evoSort.key === m &&
+                          (evoSort.dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+                      </span>
+                    </th>
                   ))}
-                  <th className="text-right px-3 py-2 font-semibold">Total</th>
+                  <th
+                    onClick={() => toggleEvoSort("__total")}
+                    className="text-right px-3 py-2 font-semibold cursor-pointer select-none hover:text-primary"
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      Total
+                      {evoSort.key === "__total" &&
+                        (evoSort.dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+                    </span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
