@@ -1247,6 +1247,7 @@ export default function Sinistralidade3100({
                     </td>
                   ))}
                   <td className="px-3 py-2 text-right tabular-nums">{fmtNum(evolucao.totalGeral)}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{fmtNum(evolucao.totalCopart)}</td>
                 </tr>
               </tfoot>
             </table>
