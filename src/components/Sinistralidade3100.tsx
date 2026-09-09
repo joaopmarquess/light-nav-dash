@@ -1185,6 +1185,16 @@ export default function Sinistralidade3100({
                         (evoSort.dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
                     </span>
                   </th>
+                  <th
+                    onClick={() => toggleEvoSort("__copart")}
+                    className="text-right px-3 py-2 font-semibold cursor-pointer select-none hover:text-primary whitespace-nowrap"
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      Copart
+                      {evoSort.key === "__copart" &&
+                        (evoSort.dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+                    </span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
