@@ -395,7 +395,7 @@ export default function Sinistralidade3100({
       for (const [k, v] of t.meses) totalMeses.set(k, (totalMeses.get(k) ?? 0) + v);
     }
     return { meses, linhas, totalMeses, totalGeral };
-  }, [rows, mensal, filter]);
+  }, [rows, mensal, filter, evoSort]);
 
   // Gráfico mensal: Top 10, Outros e Total (base ardmensal)
   const [showChartMensal, setShowChartMensal] = useState(false);
