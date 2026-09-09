@@ -1231,6 +1231,7 @@ export default function Sinistralidade3100({
                               </td>
                             ))}
                             <td className="px-3 py-1 text-right tabular-nums">{fmtNum(b.total)}</td>
+                            <td className="px-3 py-1 text-right tabular-nums text-muted-foreground">{b.copart ? fmtNum(b.copart) : "—"}</td>
                           </tr>
                         ))}
                     </>
