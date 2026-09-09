@@ -135,7 +135,7 @@ const menuItems: MenuItem[] = [
       { icon: CalendarCheck, label: "APB Top10" },
       { icon: CalendarCheck, label: "APB Faturas" },
       { icon: CalendarCheck, label: "APB Ativos" },
-      { icon: CalendarCheck, label: "3100" },
+      { icon: CalendarCheck, label: "Bensaúde U12|202606" },
       { icon: LayoutDashboard, label: "Cidades" },
       { icon: BarChart3, label: "Gráfico Sinistralidade" },
       { icon: LayoutDashboard, label: "PBI U12" },
@@ -411,7 +411,7 @@ const Index = () => {
             <SinistralidadeAPBFaturas />
           ) : active === "APB Ativos" ? (
             <SinistralidadeAPBAtivos />
-          ) : active === "3100" ? (
+          ) : active === "Bensaúde U12|202606" ? (
             <Sinistralidade3100 />
           ) : active === "Cidades" ? (
             <SinistralidadeCidade />
