@@ -333,6 +333,13 @@ export default function Sinistralidade3100({
   // Evolução Mensal: titular > beneficiário x mabas (soma de vrdespesas)
   const [showEvolucao, setShowEvolucao] = useState(false);
   const [evoOpen, setEvoOpen] = useState<Record<string, boolean>>({});
+  const [evoSort, setEvoSort] = useState<{ key: string; dir: "asc" | "desc" }>({ key: "__total", dir: "desc" });
+  const toggleEvoSort = (key: string) =>
+    setEvoSort((s) =>
+      s.key === key
+        ? { key, dir: s.dir === "asc" ? "desc" : "asc" }
+        : { key, dir: key === "__nome" ? "asc" : "desc" },
+    );
   const evolucao = useMemo(() => {
     const fq = filter.trim().toLowerCase();
     const info = new Map<string, { nome: string; titular: string }>();
@@ -365,12 +372,22 @@ export default function Sinistralidade3100({
       b.meses.set(mes, (b.meses.get(mes) ?? 0) + m[3]);
     }
     const meses = Array.from(mesesSet).sort();
+    const sgn = evoSort.dir === "asc" ? 1 : -1;
+    const cmp = (
+      a: { nome: string; total: number; meses: Map<string, number> },
+      b: { nome: string; total: number; meses: Map<string, number> },
+    ) => {
+      if (evoSort.key === "__nome") return sgn * a.nome.localeCompare(b.nome, "pt-BR");
+      if (evoSort.key === "__total") return sgn * (a.total - b.total);
+      return sgn * ((a.meses.get(evoSort.key) ?? 0) - (b.meses.get(evoSort.key) ?? 0));
+    };
     const linhas = Array.from(byTit.values())
-      .sort((a, b) => b.total - a.total)
       .map((t) => ({
         ...t,
-        lista: Array.from(t.benefs.values()).sort((a, b) => b.total - a.total),
-      }));
+        nome: t.titular,
+        lista: Array.from(t.benefs.values()).sort(cmp),
+      }))
+      .sort(cmp);
     const totalMeses = new Map<string, number>();
     let totalGeral = 0;
     for (const t of linhas) {
@@ -378,7 +395,7 @@ export default function Sinistralidade3100({
       for (const [k, v] of t.meses) totalMeses.set(k, (totalMeses.get(k) ?? 0) + v);
     }
     return { meses, linhas, totalMeses, totalGeral };
-  }, [rows, mensal, filter]);
+  }, [rows, mensal, filter, evoSort]);
 
   // Gráfico mensal: Top 10, Outros e Total (base ardmensal)
   const [showChartMensal, setShowChartMensal] = useState(false);
@@ -1129,11 +1146,39 @@ export default function Sinistralidade3100({
             <table className="w-full text-xs">
               <thead className="sticky top-0 bg-muted/70 backdrop-blur">
                 <tr>
-                  <th className="text-left px-3 py-2 font-semibold sticky left-0 bg-muted/90 min-w-[260px]">Beneficiário</th>
+                  <th
+                    onClick={() => toggleEvoSort("__nome")}
+                    className="text-left px-3 py-2 font-semibold sticky left-0 bg-muted/90 min-w-[260px] cursor-pointer select-none hover:text-primary"
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      Beneficiário
+                      {evoSort.key === "__nome" &&
+                        (evoSort.dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+                    </span>
+                  </th>
                   {evolucao.meses.map((m) => (
-                    <th key={m} className="text-right px-3 py-2 font-semibold whitespace-nowrap">{fmtComp(m)}</th>
+                    <th
+                      key={m}
+                      onClick={() => toggleEvoSort(m)}
+                      className="text-right px-3 py-2 font-semibold whitespace-nowrap cursor-pointer select-none hover:text-primary"
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        {fmtComp(m)}
+                        {evoSort.key === m &&
+                          (evoSort.dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+                      </span>
+                    </th>
                   ))}
-                  <th className="text-right px-3 py-2 font-semibold">Total</th>
+                  <th
+                    onClick={() => toggleEvoSort("__total")}
+                    className="text-right px-3 py-2 font-semibold cursor-pointer select-none hover:text-primary"
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      Total
+                      {evoSort.key === "__total" &&
+                        (evoSort.dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+                    </span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
