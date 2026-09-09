@@ -333,6 +333,13 @@ export default function Sinistralidade3100({
   // Evolução Mensal: titular > beneficiário x mabas (soma de vrdespesas)
   const [showEvolucao, setShowEvolucao] = useState(false);
   const [evoOpen, setEvoOpen] = useState<Record<string, boolean>>({});
+  const [evoSort, setEvoSort] = useState<{ key: string; dir: "asc" | "desc" }>({ key: "__total", dir: "desc" });
+  const toggleEvoSort = (key: string) =>
+    setEvoSort((s) =>
+      s.key === key
+        ? { key, dir: s.dir === "asc" ? "desc" : "asc" }
+        : { key, dir: key === "__nome" ? "asc" : "desc" },
+    );
   const evolucao = useMemo(() => {
     const fq = filter.trim().toLowerCase();
     const info = new Map<string, { nome: string; titular: string }>();
