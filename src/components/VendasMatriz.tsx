@@ -166,25 +166,44 @@ export default function VendasMatriz() {
         <span className="text-sm text-muted-foreground">
           Níveis: {LEVEL_LABELS.join(" › ")}
         </span>
-        <Button
-          variant="outline"
-          size="sm"
-          className="ml-auto gap-2"
-          onClick={() => setView(view === "tabela" ? "grafico" : "tabela")}
-        >
-          {view === "tabela" ? (
-            <>
-              <BarChart3 className="h-4 w-4" /> Gráfico Vendedor × Produto
-            </>
-          ) : (
-            <>
-              <Table2 className="h-4 w-4" /> Voltar à matriz
-            </>
-          )}
-        </Button>
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            variant={view === "grafico" ? "default" : "outline"}
+            size="sm"
+            className="gap-2"
+            onClick={() => setView(view === "grafico" ? "tabela" : "grafico")}
+          >
+            {view === "grafico" ? (
+              <>
+                <Table2 className="h-4 w-4" /> Voltar à matriz
+              </>
+            ) : (
+              <>
+                <BarChart3 className="h-4 w-4" /> Gráfico Agente × Produto
+              </>
+            )}
+          </Button>
+          <Button
+            variant={view === "pizza" ? "default" : "outline"}
+            size="sm"
+            className="gap-2"
+            onClick={() => setView(view === "pizza" ? "tabela" : "pizza")}
+          >
+            {view === "pizza" ? (
+              <>
+                <Table2 className="h-4 w-4" /> Voltar à matriz
+              </>
+            ) : (
+              <>
+                <PieChartIcon className="h-4 w-4" /> Pizza por Produto
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {view === "grafico" && <VendasVendedorProdutoChart />}
+      {view === "pizza" && <VendasProdutoPizza />}
       {view === "tabela" && (
 
       <Card className="flex-1 min-h-0 flex flex-col overflow-hidden">
