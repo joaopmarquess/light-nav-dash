@@ -376,6 +376,8 @@ const Index = () => {
             <DWCarteira dateValue={dateValue} />
           ) : active === "Vendas" ? (
             <Entradas />
+          ) : active === "Vendas ate 08/2026" ? (
+            <VendasMatriz />
           ) : active === "Cancelamentos" ? (
             <Cancelamentos />
           ) : active === "Painel" ? (
