@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import {
   Bar,
-  BarChart,
+  ComposedChart,
+  Line,
   CartesianGrid,
   Legend,
   ResponsiveContainer,
@@ -207,7 +208,10 @@ export default function VendasEvolucaoMensal({ mesAte = "12" }: Props) {
       const k = `${r.ano}-${String(Number(r.mes)).padStart(2, "0")}`;
       const row = base.get(k);
       const sk = dimKey(r, dim);
-      if (!row || !ss.includes(sk)) continue;
+      if (!row) continue;
+      const tk = isAdm(r.produto) ? "__totalAdm" : "__totalOutros";
+      row[tk] = ((row[tk] as number) ?? 0) + r.qtd;
+      if (!ss.includes(sk)) continue;
       row[sk] = ((row[sk] as number) ?? 0) + r.qtd;
     }
     return { series: ss, chartData: [...base.values()] };
@@ -291,7 +295,7 @@ export default function VendasEvolucaoMensal({ mesAte = "12" }: Props) {
       <CardContent className="flex-1 min-h-0 overflow-auto">
         <div className="h-[460px] rounded-lg border border-border bg-card p-3">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ left: 4, right: 16, top: 8, bottom: 8 }}>
+            <ComposedChart data={chartData} margin={{ left: 4, right: 16, top: 8, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="mes" tick={{ fontSize: 10 }} interval={0} angle={-45} textAnchor="end" height={50} />
               <YAxis tick={{ fontSize: 10 }} />
@@ -300,7 +304,24 @@ export default function VendasEvolucaoMensal({ mesAte = "12" }: Props) {
               {series.map((s, i) => (
                 <Bar key={s} dataKey={s} stackId="a" fill={dim === "produto" || dim === "recurso_produto" ? prodColor(s, COLORS[i % COLORS.length]) : COLORS[i % COLORS.length]} />
               ))}
-            </BarChart>
+              <Line
+                type="monotone"
+                dataKey="__totalAdm"
+                name="Total Produto de ADM"
+                stroke="hsl(var(--chart-adm))"
+                strokeWidth={2}
+                dot={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="__totalOutros"
+                name="Total Outros produtos"
+                stroke="hsl(var(--chart-fat))"
+                strokeWidth={2}
+                dot={false}
+              />
+
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
