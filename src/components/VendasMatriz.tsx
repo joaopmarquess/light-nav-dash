@@ -24,7 +24,7 @@ const MESES = [
   "Jul", "Ago", "Set", "Out", "Nov", "Dez",
 ];
 
-const LEVEL_LABELS = ["Ano", "Recurso", "Vendedor", "Agente", "Tipo de Produto"];
+const LEVEL_LABELS = ["Ano", "Recurso", "Agente", "Vendedor", "Tipo de Produto"];
 
 const fmt = (n: number) => (n ? n.toLocaleString("pt-BR") : "—");
 
@@ -203,7 +203,7 @@ export default function VendasMatriz() {
               <thead className="sticky top-0 z-20 bg-secondary">
                 <tr className="text-xs uppercase tracking-wide text-muted-foreground">
                   <th className="sticky left-0 z-30 bg-secondary px-2 py-2 text-left">
-                    Ano / Recurso / Produto / Agente / Vendedor
+                    Ano / Recurso / Agente / Vendedor / Produto
                   </th>
                   {months.map((m) => (
                     <th key={m} className="px-2 py-2 text-right">
