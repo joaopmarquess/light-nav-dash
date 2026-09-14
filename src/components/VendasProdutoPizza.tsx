@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
@@ -38,6 +45,7 @@ const tooltipStyle = {
 
 export default function VendasProdutoPizza() {
   const [json, setJson] = useState<Json | null>(null);
+  const [agente, setAgente] = useState("__all__");
 
   useEffect(() => {
     fetch("/data/vendas_vendedor_produto.json")
@@ -49,12 +57,19 @@ export default function VendasProdutoPizza() {
   const anos = json?.anos ?? [];
   const produtos = json?.produtos ?? [];
 
+  const agentes = useMemo(() => {
+    const totals = new Map<string, number>();
+    for (const r of json?.data ?? []) totals.set(r.agente, (totals.get(r.agente) ?? 0) + r.qtd);
+    return [...totals.entries()].sort((a, b) => b[1] - a[1]).map(([a]) => a);
+  }, [json]);
+
   const porAno = useMemo(() => {
     const out = new Map<string, { name: string; value: number }[]>();
     for (const ano of anos) {
       const map = new Map<string, number>();
       for (const r of json?.data ?? []) {
         if (r.ano !== ano) continue;
+        if (agente !== "__all__" && r.agente !== agente) continue;
         map.set(r.produto, (map.get(r.produto) ?? 0) + r.qtd);
       }
       out.set(
@@ -65,7 +80,7 @@ export default function VendasProdutoPizza() {
       );
     }
     return out;
-  }, [json, anos, produtos]);
+  }, [json, anos, produtos, agente]);
 
   if (!json) {
     return (
@@ -79,8 +94,24 @@ export default function VendasProdutoPizza() {
 
   return (
     <Card className="flex-1 min-h-0 flex flex-col overflow-hidden">
-      <CardHeader className="shrink-0 py-3">
-        <CardTitle className="text-base">Tipo de Produto — participação por ano</CardTitle>
+      <CardHeader className="shrink-0 flex flex-row flex-wrap items-center justify-between gap-3 py-3">
+        <CardTitle className="text-base">
+          Tipo de Produto — participação por ano
+          {agente !== "__all__" && ` · ${agente}`}
+        </CardTitle>
+        <Select value={agente} onValueChange={setAgente}>
+          <SelectTrigger className="w-[260px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">Todos os agentes</SelectItem>
+            {agentes.map((a) => (
+              <SelectItem key={a} value={a}>
+                {a}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </CardHeader>
       <CardContent className="flex-1 min-h-0 overflow-auto">
         <div className="grid gap-4 lg:grid-cols-2">
