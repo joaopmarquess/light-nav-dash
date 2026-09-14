@@ -166,7 +166,26 @@ export default function VendasMatriz() {
         <span className="text-sm text-muted-foreground">
           Níveis: {LEVEL_LABELS.join(" › ")}
         </span>
+        <Button
+          variant="outline"
+          size="sm"
+          className="ml-auto gap-2"
+          onClick={() => setView(view === "tabela" ? "grafico" : "tabela")}
+        >
+          {view === "tabela" ? (
+            <>
+              <BarChart3 className="h-4 w-4" /> Gráfico Vendedor × Produto
+            </>
+          ) : (
+            <>
+              <Table2 className="h-4 w-4" /> Voltar à matriz
+            </>
+          )}
+        </Button>
       </div>
+
+      {view === "grafico" && <VendasVendedorProdutoChart />}
+      {view === "tabela" && (
 
       <Card className="flex-1 min-h-0 flex flex-col overflow-hidden">
         <CardHeader className="shrink-0 py-3">
