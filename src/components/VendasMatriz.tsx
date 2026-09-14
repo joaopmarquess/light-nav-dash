@@ -229,6 +229,7 @@ export default function VendasMatriz() {
           )}
         </CardContent>
       </Card>
+      )}
     </section>
   );
 }
