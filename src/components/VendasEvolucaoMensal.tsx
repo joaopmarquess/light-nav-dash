@@ -299,11 +299,36 @@ export default function VendasEvolucaoMensal({ mesAte = "12" }: Props) {
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="mes" tick={{ fontSize: 10 }} interval={0} angle={-45} textAnchor="end" height={50} />
               <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip formatter={(v: number) => nf(v)} contentStyle={tooltipStyle} />
+              <Tooltip
+                formatter={(v: number, name: string) =>
+                  String(name).startsWith("halo-") ? [null, null] : [nf(v), name]
+                }
+                contentStyle={tooltipStyle}
+              />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               {series.map((s, i) => (
                 <Bar key={s} dataKey={s} stackId="a" fill={dim === "produto" || dim === "recurso_produto" ? prodColor(s, COLORS[i % COLORS.length]) : COLORS[i % COLORS.length]} />
               ))}
+              <Line
+                type="monotone"
+                dataKey="__totalAdm"
+                name="halo-adm"
+                legendType="none"
+                stroke="hsl(var(--card))"
+                strokeWidth={6}
+                dot={false}
+                isAnimationActive={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="__totalOutros"
+                name="halo-outros"
+                legendType="none"
+                stroke="hsl(var(--card))"
+                strokeWidth={6}
+                dot={false}
+                isAnimationActive={false}
+              />
               <Line
                 type="monotone"
                 dataKey="__totalAdm"
