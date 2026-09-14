@@ -50,7 +50,9 @@ const tooltipStyle = {
   fontSize: 12,
 };
 
-export default function VendasProdutoPizza() {
+type Props = { mesDe?: string; mesAte?: string };
+
+export default function VendasProdutoPizza({ mesDe = "1", mesAte = "12" }: Props) {
   const [json, setJson] = useState<Json | null>(null);
   const [recurso, setRecurso] = useState("__all__");
   const [agente, setAgente] = useState("__all__");
@@ -65,31 +67,38 @@ export default function VendasProdutoPizza() {
 
   const anos = json?.anos ?? [];
   const produtos = json?.produtos ?? [];
+  const noPeriodo = useMemo(
+    () =>
+      (json?.data ?? []).filter(
+        (r) => Number(r.mes) >= Number(mesDe) && Number(r.mes) <= Number(mesAte),
+      ),
+    [json, mesDe, mesAte],
+  );
 
   const recursos = useMemo(() => {
     const totals = new Map<string, number>();
-    for (const r of json?.data ?? []) totals.set(r.recurso, (totals.get(r.recurso) ?? 0) + r.qtd);
+    for (const r of noPeriodo) totals.set(r.recurso, (totals.get(r.recurso) ?? 0) + r.qtd);
     return [...totals.entries()].sort((a, b) => b[1] - a[1]).map(([r]) => r);
-  }, [json]);
+  }, [noPeriodo]);
 
   const agentes = useMemo(() => {
     const totals = new Map<string, number>();
-    for (const r of json?.data ?? []) {
+    for (const r of noPeriodo) {
       if (recurso !== "__all__" && r.recurso !== recurso) continue;
       totals.set(r.agente, (totals.get(r.agente) ?? 0) + r.qtd);
     }
     return [...totals.entries()].sort((a, b) => b[1] - a[1]).map(([a]) => a);
-  }, [json, recurso]);
+  }, [noPeriodo, recurso]);
 
   const vendedores = useMemo(() => {
     const totals = new Map<string, number>();
-    for (const r of json?.data ?? []) {
+    for (const r of noPeriodo) {
       if (recurso !== "__all__" && r.recurso !== recurso) continue;
       if (agente !== "__all__" && r.agente !== agente) continue;
       totals.set(r.vendedor, (totals.get(r.vendedor) ?? 0) + r.qtd);
     }
     return [...totals.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v);
-  }, [json, recurso, agente]);
+  }, [noPeriodo, recurso, agente]);
 
   useEffect(() => {
     if (agente !== "__all__" && !agentes.includes(agente)) setAgente("__all__");
@@ -103,7 +112,7 @@ export default function VendasProdutoPizza() {
     const out = new Map<string, { name: string; value: number }[]>();
     for (const ano of anos) {
       const map = new Map<string, number>();
-      for (const r of json?.data ?? []) {
+      for (const r of noPeriodo) {
         if (r.ano !== ano) continue;
         if (recurso !== "__all__" && r.recurso !== recurso) continue;
         if (agente !== "__all__" && r.agente !== agente) continue;
@@ -118,7 +127,7 @@ export default function VendasProdutoPizza() {
       );
     }
     return out;
-  }, [json, anos, produtos, recurso, agente, vendedor]);
+  }, [noPeriodo, anos, produtos, recurso, agente, vendedor]);
 
   if (!json) {
     return (

@@ -69,7 +69,9 @@ const tooltipStyle = {
   fontSize: 12,
 };
 
-export default function VendasEvolucaoMensal() {
+type Props = { mesDe?: string; mesAte?: string };
+
+export default function VendasEvolucaoMensal({ mesDe = "1", mesAte = "12" }: Props) {
   const [json, setJson] = useState<Json | null>(null);
   const [dim, setDim] = useState<Dim>("produto");
   const [recurso, setRecurso] = useState("__all__");
@@ -83,30 +85,38 @@ export default function VendasEvolucaoMensal() {
       .catch((e) => console.error(e));
   }, []);
 
+  const noPeriodo = useMemo(
+    () =>
+      (json?.data ?? []).filter(
+        (r) => Number(r.mes) >= Number(mesDe) && Number(r.mes) <= Number(mesAte),
+      ),
+    [json, mesDe, mesAte],
+  );
+
   const recursos = useMemo(() => {
     const t = new Map<string, number>();
-    for (const r of json?.data ?? []) t.set(r.recurso, (t.get(r.recurso) ?? 0) + r.qtd);
+    for (const r of noPeriodo) t.set(r.recurso, (t.get(r.recurso) ?? 0) + r.qtd);
     return [...t.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v);
-  }, [json]);
+  }, [noPeriodo]);
 
   const agentes = useMemo(() => {
     const t = new Map<string, number>();
-    for (const r of json?.data ?? []) {
+    for (const r of noPeriodo) {
       if (recurso !== "__all__" && r.recurso !== recurso) continue;
       t.set(r.agente, (t.get(r.agente) ?? 0) + r.qtd);
     }
     return [...t.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v);
-  }, [json, recurso]);
+  }, [noPeriodo, recurso]);
 
   const vendedores = useMemo(() => {
     const t = new Map<string, number>();
-    for (const r of json?.data ?? []) {
+    for (const r of noPeriodo) {
       if (recurso !== "__all__" && r.recurso !== recurso) continue;
       if (agente !== "__all__" && r.agente !== agente) continue;
       t.set(r.vendedor, (t.get(r.vendedor) ?? 0) + r.qtd);
     }
     return [...t.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v);
-  }, [json, recurso, agente]);
+  }, [noPeriodo, recurso, agente]);
 
   useEffect(() => {
     if (agente !== "__all__" && !agentes.includes(agente)) setAgente("__all__");
@@ -118,13 +128,13 @@ export default function VendasEvolucaoMensal() {
 
   const filtradas = useMemo(
     () =>
-      (json?.data ?? []).filter(
+      noPeriodo.filter(
         (r) =>
           (recurso === "__all__" || r.recurso === recurso) &&
           (agente === "__all__" || r.agente === agente) &&
           (vendedor === "__all__" || r.vendedor === vendedor),
       ),
-    [json, recurso, agente, vendedor],
+    [noPeriodo, recurso, agente, vendedor],
   );
 
   // Eixo horizontal: todos os meses de 01/2025 até o último mês existente
@@ -134,10 +144,11 @@ export default function VendasEvolucaoMensal() {
     if (!chaves.size) return [] as string[];
     const anos = [...new Set([...chaves].map((c) => Number(c.slice(0, 4))))];
     const anoIni = Math.min(2025, ...anos);
-    const ultimo = [...chaves].sort().pop()!;
+    const anoFim = Math.max(...anos);
+    const ultimo = `${anoFim}-${String(Number(mesAte)).padStart(2, "0")}`;
     const out: string[] = [];
     let y = anoIni;
-    let m = 1;
+    let m = Number(mesDe);
     for (;;) {
       const k = `${y}-${String(m).padStart(2, "0")}`;
       out.push(k);
@@ -150,7 +161,7 @@ export default function VendasEvolucaoMensal() {
       if (out.length > 60) break;
     }
     return out;
-  }, [filtradas]);
+  }, [filtradas, mesDe, mesAte]);
 
   const { series, chartData } = useMemo(() => {
     const totals = new Map<string, number>();
