@@ -85,13 +85,20 @@ export default function VendasEvolucaoMensal({ mesDe = "1", mesAte = "12" }: Pro
       .catch((e) => console.error(e));
   }, []);
 
+  const anoFinal = useMemo(() => {
+    const anos = (json?.data ?? []).map((r) => Number(r.ano));
+    return anos.length ? Math.max(...anos) : 2026;
+  }, [json]);
+
+  // Anos anteriores: todos os meses. Último ano: até o mês selecionado.
   const noPeriodo = useMemo(
     () =>
       (json?.data ?? []).filter(
-        (r) => Number(r.mes) >= Number(mesDe) && Number(r.mes) <= Number(mesAte),
+        (r) => Number(r.ano) < anoFinal || Number(r.mes) <= Number(mesAte),
       ),
-    [json, mesDe, mesAte],
+    [json, anoFinal, mesAte],
   );
+
 
   const recursos = useMemo(() => {
     const t = new Map<string, number>();
