@@ -37,6 +37,7 @@ export default function VendasMatriz() {
   const [q, setQ] = useState("");
   const [mesDe, setMesDe] = useState("1");
   const [mesAte, setMesAte] = useState("12");
+  const [view, setView] = useState<"tabela" | "grafico">("tabela");
 
   useEffect(() => {
     fetch("/data/vendas_ate082026.json")
