@@ -50,6 +50,7 @@ import ConsultaBeneficiarioDenis from "@/components/ConsultaBeneficiarioDenis";
 import BIOverview from "@/components/BIOverview";
 import DWCarteira from "@/components/DWCarteira";
 import CarteiraGraficos from "@/components/CarteiraGraficos";
+import VendasMatriz from "@/components/VendasMatriz";
 import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
 import SinistralidadeConsulta from "@/components/SinistralidadeConsulta";
 import SinistralidadeNova from "@/components/SinistralidadeNova";
@@ -120,6 +121,7 @@ const menuItems: MenuItem[] = [
       { icon: UserCheck, label: "Área Geográfica" },
       { icon: UserCheck, label: "Ativos por Cidade" },
       { icon: TrendingUp, label: "Vendas" },
+      { icon: TrendingUp, label: "Vendas ate 08/2026" },
       { icon: TrendingUp, label: "Cancelamentos" },
       { icon: LayoutDashboard, label: "Dashboard" },
       { icon: BarChart3, label: "Gráfico Carteira" },
@@ -374,6 +376,8 @@ const Index = () => {
             <DWCarteira dateValue={dateValue} />
           ) : active === "Vendas" ? (
             <Entradas />
+          ) : active === "Vendas ate 08/2026" ? (
+            <VendasMatriz />
           ) : active === "Cancelamentos" ? (
             <Cancelamentos />
           ) : active === "Painel" ? (
