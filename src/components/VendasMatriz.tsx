@@ -33,6 +33,8 @@ export default function VendasMatriz() {
   const [data, setData] = useState<{ months: string[]; rows: Node[] } | null>(null);
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [q, setQ] = useState("");
+  const [mesDe, setMesDe] = useState("1");
+  const [mesAte, setMesAte] = useState("12");
 
   useEffect(() => {
     fetch("/data/vendas_ate082026.json")
@@ -113,7 +115,7 @@ export default function VendasMatriz() {
             </td>
           ))}
           <td className="px-2 py-1.5 text-right font-semibold tabular-nums">
-            {fmt(n.total)}
+            {fmt(rowTotal(n))}
           </td>
         </tr>,
       ];
@@ -130,6 +132,34 @@ export default function VendasMatriz() {
           placeholder="Filtrar recurso, produto, agente ou vendedor..."
           className="max-w-sm"
         />
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">De</span>
+          <Select value={mesDe} onValueChange={setMesDe}>
+            <SelectTrigger className="w-[110px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {MESES.map((nome, i) => (
+                <SelectItem key={i} value={String(i + 1)}>
+                  {nome}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <span className="text-sm text-muted-foreground">Até</span>
+          <Select value={mesAte} onValueChange={setMesAte}>
+            <SelectTrigger className="w-[110px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {MESES.map((nome, i) => (
+                <SelectItem key={i} value={String(i + 1)}>
+                  {nome}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <span className="text-sm text-muted-foreground">
           Níveis: {LEVEL_LABELS.join(" › ")}
         </span>
