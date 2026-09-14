@@ -47,6 +47,7 @@ const tooltipStyle = {
 
 export default function VendasProdutoPizza() {
   const [json, setJson] = useState<Json | null>(null);
+  const [recurso, setRecurso] = useState("__all__");
   const [agente, setAgente] = useState("__all__");
   const [vendedor, setVendedor] = useState("__all__");
 
@@ -60,20 +61,34 @@ export default function VendasProdutoPizza() {
   const anos = json?.anos ?? [];
   const produtos = json?.produtos ?? [];
 
+  const recursos = useMemo(() => {
+    const totals = new Map<string, number>();
+    for (const r of json?.data ?? []) totals.set(r.recurso, (totals.get(r.recurso) ?? 0) + r.qtd);
+    return [...totals.entries()].sort((a, b) => b[1] - a[1]).map(([r]) => r);
+  }, [json]);
+
   const agentes = useMemo(() => {
     const totals = new Map<string, number>();
-    for (const r of json?.data ?? []) totals.set(r.agente, (totals.get(r.agente) ?? 0) + r.qtd);
+    for (const r of json?.data ?? []) {
+      if (recurso !== "__all__" && r.recurso !== recurso) continue;
+      totals.set(r.agente, (totals.get(r.agente) ?? 0) + r.qtd);
+    }
     return [...totals.entries()].sort((a, b) => b[1] - a[1]).map(([a]) => a);
-  }, [json]);
+  }, [json, recurso]);
 
   const vendedores = useMemo(() => {
     const totals = new Map<string, number>();
     for (const r of json?.data ?? []) {
+      if (recurso !== "__all__" && r.recurso !== recurso) continue;
       if (agente !== "__all__" && r.agente !== agente) continue;
       totals.set(r.vendedor, (totals.get(r.vendedor) ?? 0) + r.qtd);
     }
     return [...totals.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v);
-  }, [json, agente]);
+  }, [json, recurso, agente]);
+
+  useEffect(() => {
+    if (agente !== "__all__" && !agentes.includes(agente)) setAgente("__all__");
+  }, [agentes, agente]);
 
   useEffect(() => {
     if (vendedor !== "__all__" && !vendedores.includes(vendedor)) setVendedor("__all__");
@@ -85,6 +100,7 @@ export default function VendasProdutoPizza() {
       const map = new Map<string, number>();
       for (const r of json?.data ?? []) {
         if (r.ano !== ano) continue;
+        if (recurso !== "__all__" && r.recurso !== recurso) continue;
         if (agente !== "__all__" && r.agente !== agente) continue;
         if (vendedor !== "__all__" && r.vendedor !== vendedor) continue;
         map.set(r.produto, (map.get(r.produto) ?? 0) + r.qtd);
@@ -97,7 +113,7 @@ export default function VendasProdutoPizza() {
       );
     }
     return out;
-  }, [json, anos, produtos, agente, vendedor]);
+  }, [json, anos, produtos, recurso, agente, vendedor]);
 
   if (!json) {
     return (
@@ -114,12 +130,26 @@ export default function VendasProdutoPizza() {
       <CardHeader className="shrink-0 flex flex-row flex-wrap items-center justify-between gap-3 py-3">
         <CardTitle className="text-base">
           Tipo de Produto — participação por ano
+          {recurso !== "__all__" && ` · ${recurso}`}
           {agente !== "__all__" && ` · ${agente}`}
           {vendedor !== "__all__" && ` · ${vendedor}`}
         </CardTitle>
         <div className="flex flex-wrap items-center gap-2">
+          <Select value={recurso} onValueChange={setRecurso}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">Todos os recursos</SelectItem>
+              {recursos.map((r) => (
+                <SelectItem key={r} value={r}>
+                  {r}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={agente} onValueChange={setAgente}>
-            <SelectTrigger className="w-[240px]">
+            <SelectTrigger className="w-[220px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -132,7 +162,7 @@ export default function VendasProdutoPizza() {
             </SelectContent>
           </Select>
           <Select value={vendedor} onValueChange={setVendedor}>
-            <SelectTrigger className="w-[240px]">
+            <SelectTrigger className="w-[220px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
