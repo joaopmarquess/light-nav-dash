@@ -200,11 +200,28 @@ export default function VendasMatriz() {
               </>
             )}
           </Button>
+          <Button
+            variant={view === "evolucao" ? "default" : "outline"}
+            size="sm"
+            className="gap-2"
+            onClick={() => setView(view === "evolucao" ? "tabela" : "evolucao")}
+          >
+            {view === "evolucao" ? (
+              <>
+                <Table2 className="h-4 w-4" /> Voltar à matriz
+              </>
+            ) : (
+              <>
+                <LineChartIcon className="h-4 w-4" /> Evolução mensal
+              </>
+            )}
+          </Button>
         </div>
       </div>
 
       {view === "grafico" && <VendasVendedorProdutoChart />}
       {view === "pizza" && <VendasProdutoPizza />}
+      {view === "evolucao" && <VendasEvolucaoMensal />}
       {view === "tabela" && (
 
       <Card className="flex-1 min-h-0 flex flex-col overflow-hidden">
