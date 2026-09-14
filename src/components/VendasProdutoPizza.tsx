@@ -36,6 +36,11 @@ const PROD_COLORS = [
   "hsl(var(--chart-5))",
 ];
 
+
+const isAdm = (p: string) => /adm/i.test(p);
+const prodColor = (p: string, fallback: string) =>
+  isAdm(p) ? "hsl(var(--chart-adm))" : "hsl(var(--chart-fat))";
+
 const nf = (v: number) => v.toLocaleString("pt-BR");
 
 const tooltipStyle = {
@@ -212,7 +217,7 @@ export default function VendasProdutoPizza() {
                         {dados.map((d, i) => (
                           <Cell
                             key={d.name}
-                            fill={PROD_COLORS[produtos.indexOf(d.name) % PROD_COLORS.length || i % PROD_COLORS.length]}
+                            fill={prodColor(d.name, PROD_COLORS[i % PROD_COLORS.length])}
                           />
                         ))}
                       </Pie>

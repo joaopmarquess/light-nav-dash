@@ -36,6 +36,11 @@ const PROD_COLORS = [
   "hsl(var(--chart-5))",
 ];
 
+
+const isAdm = (p: string) => /adm/i.test(p);
+const prodColor = (p: string, fallback: string) =>
+  isAdm(p) ? "hsl(var(--chart-adm))" : "hsl(var(--chart-fat))";
+
 const short = (s: string, n = 18) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 const nf = (v: number) => v.toLocaleString("pt-BR");
 
@@ -145,7 +150,7 @@ export default function VendasVendedorProdutoChart() {
                         key={p}
                         dataKey={p}
                         stackId="a"
-                        fill={PROD_COLORS[i % PROD_COLORS.length]}
+                        fill={prodColor(p, PROD_COLORS[i % PROD_COLORS.length])}
                       />
                     ))}
                   </BarChart>

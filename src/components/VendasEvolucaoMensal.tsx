@@ -46,6 +46,11 @@ const COLORS = [
   "hsl(var(--chart-5))",
 ];
 
+
+const isAdm = (p: string) => /adm/i.test(p);
+const prodColor = (p: string, fallback: string) =>
+  isAdm(p) ? "hsl(var(--chart-adm))" : "hsl(var(--chart-fat))";
+
 type Dim = "produto" | "recurso" | "agente" | "vendedor";
 
 const DIMS: { key: Dim; label: string }[] = [
@@ -254,7 +259,7 @@ export default function VendasEvolucaoMensal() {
               <Tooltip formatter={(v: number) => nf(v)} contentStyle={tooltipStyle} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               {series.map((s, i) => (
-                <Bar key={s} dataKey={s} stackId="a" fill={COLORS[i % COLORS.length]} />
+                <Bar key={s} dataKey={s} stackId="a" fill={dim === "produto" ? prodColor(s, COLORS[i % COLORS.length]) : COLORS[i % COLORS.length]} />
               ))}
             </BarChart>
           </ResponsiveContainer>
