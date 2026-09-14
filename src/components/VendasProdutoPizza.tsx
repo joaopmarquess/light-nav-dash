@@ -13,6 +13,7 @@ import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recha
 type Row = {
   ano: string;
   mes: string;
+  recurso: string;
   agente: string;
   vendedor: string;
   produto: string;
@@ -23,6 +24,7 @@ type Json = {
   anos: string[];
   produtos: string[];
   agentes: string[];
+  recursos?: string[];
   data: Row[];
 };
 
