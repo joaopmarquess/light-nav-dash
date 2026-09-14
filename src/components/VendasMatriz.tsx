@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 
 type Node = {
@@ -26,6 +33,8 @@ export default function VendasMatriz() {
   const [data, setData] = useState<{ months: string[]; rows: Node[] } | null>(null);
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [q, setQ] = useState("");
+  const [mesDe, setMesDe] = useState("1");
+  const [mesAte, setMesAte] = useState("12");
 
   useEffect(() => {
     fetch("/data/vendas_ate082026.json")
@@ -45,17 +54,26 @@ export default function VendasMatriz() {
     return filter(data.rows);
   }, [data, query]);
 
-  const months = data?.months ?? [];
+  const allMonths = data?.months ?? [];
+  const fullRange = mesDe === "1" && mesAte === "12";
+  const months = useMemo(
+    () =>
+      allMonths.filter((m) => Number(m) >= Number(mesDe) && Number(m) <= Number(mesAte)),
+    [allMonths, mesDe, mesAte],
+  );
+
+  const rowTotal = (n: Node) =>
+    fullRange ? n.total : months.reduce((s, m) => s + (n.byMonth[m] ?? 0), 0);
 
   const totals = useMemo(() => {
     const byMonth: Record<string, number> = {};
     let total = 0;
     for (const r of rows) {
       for (const m of months) byMonth[m] = (byMonth[m] ?? 0) + (r.byMonth[m] ?? 0);
-      total += r.total;
+      total += fullRange ? r.total : months.reduce((s, m) => s + (r.byMonth[m] ?? 0), 0);
     }
     return { byMonth, total };
-  }, [rows, months]);
+  }, [rows, months, fullRange]);
 
   const toggle = (key: string) =>
     setOpen((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -97,7 +115,7 @@ export default function VendasMatriz() {
             </td>
           ))}
           <td className="px-2 py-1.5 text-right font-semibold tabular-nums">
-            {fmt(n.total)}
+            {fmt(rowTotal(n))}
           </td>
         </tr>,
       ];
@@ -114,6 +132,34 @@ export default function VendasMatriz() {
           placeholder="Filtrar recurso, produto, agente ou vendedor..."
           className="max-w-sm"
         />
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">De</span>
+          <Select value={mesDe} onValueChange={setMesDe}>
+            <SelectTrigger className="w-[110px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {MESES.map((nome, i) => (
+                <SelectItem key={i} value={String(i + 1)}>
+                  {nome}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <span className="text-sm text-muted-foreground">Até</span>
+          <Select value={mesAte} onValueChange={setMesAte}>
+            <SelectTrigger className="w-[110px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {MESES.map((nome, i) => (
+                <SelectItem key={i} value={String(i + 1)}>
+                  {nome}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <span className="text-sm text-muted-foreground">
           Níveis: {LEVEL_LABELS.join(" › ")}
         </span>
