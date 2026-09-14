@@ -8,10 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BarChart3, ChevronDown, ChevronRight, Loader2, PieChart as PieChartIcon, Table2 } from "lucide-react";
+import { BarChart3, ChevronDown, ChevronRight, LineChart as LineChartIcon, Loader2, PieChart as PieChartIcon, Table2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import VendasVendedorProdutoChart from "@/components/VendasVendedorProdutoChart";
 import VendasProdutoPizza from "@/components/VendasProdutoPizza";
+import VendasEvolucaoMensal from "@/components/VendasEvolucaoMensal";
 
 type Node = {
   label: string;
@@ -38,7 +39,7 @@ export default function VendasMatriz() {
   const [q, setQ] = useState("");
   const [mesDe, setMesDe] = useState("1");
   const [mesAte, setMesAte] = useState("12");
-  const [view, setView] = useState<"tabela" | "grafico" | "pizza">("tabela");
+  const [view, setView] = useState<"tabela" | "grafico" | "pizza" | "evolucao">("tabela");
 
   useEffect(() => {
     fetch("/data/vendas_ate082026.json")
@@ -200,11 +201,28 @@ export default function VendasMatriz() {
               </>
             )}
           </Button>
+          <Button
+            variant={view === "evolucao" ? "default" : "outline"}
+            size="sm"
+            className="gap-2"
+            onClick={() => setView(view === "evolucao" ? "tabela" : "evolucao")}
+          >
+            {view === "evolucao" ? (
+              <>
+                <Table2 className="h-4 w-4" /> Voltar à matriz
+              </>
+            ) : (
+              <>
+                <LineChartIcon className="h-4 w-4" /> Evolução mensal
+              </>
+            )}
+          </Button>
         </div>
       </div>
 
       {view === "grafico" && <VendasVendedorProdutoChart />}
       {view === "pizza" && <VendasProdutoPizza />}
+      {view === "evolucao" && <VendasEvolucaoMensal />}
       {view === "tabela" && (
 
       <Card className="flex-1 min-h-0 flex flex-col overflow-hidden">
