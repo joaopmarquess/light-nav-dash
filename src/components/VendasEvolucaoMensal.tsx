@@ -307,6 +307,26 @@ export default function VendasEvolucaoMensal({ mesAte = "12" }: Props) {
               <Line
                 type="monotone"
                 dataKey="__totalAdm"
+                name="halo-adm"
+                legendType="none"
+                stroke="hsl(var(--card))"
+                strokeWidth={6}
+                dot={false}
+                isAnimationActive={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="__totalOutros"
+                name="halo-outros"
+                legendType="none"
+                stroke="hsl(var(--card))"
+                strokeWidth={6}
+                dot={false}
+                isAnimationActive={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="__totalAdm"
                 name="Total Produto de ADM"
                 stroke="hsl(var(--chart-adm))"
                 strokeWidth={2}
