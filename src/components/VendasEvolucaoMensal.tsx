@@ -51,9 +51,13 @@ const isAdm = (p: string) => /adm/i.test(p);
 const prodColor = (p: string, fallback: string) =>
   isAdm(p) ? "hsl(var(--chart-adm))" : "hsl(var(--chart-fat))";
 
-type Dim = "produto" | "recurso" | "agente" | "vendedor";
+type Dim = "produto" | "recurso" | "agente" | "vendedor" | "recurso_produto";
+
+const dimKey = (r: Row, dim: Dim) =>
+  dim === "recurso_produto" ? `${r.recurso} · ${r.produto}` : r[dim];
 
 const DIMS: { key: Dim; label: string }[] = [
+  { key: "recurso_produto", label: "Recurso × Produto" },
   { key: "produto", label: "Tipo de Produto" },
   { key: "recurso", label: "Recurso" },
   { key: "agente", label: "Agente" },
@@ -172,7 +176,10 @@ export default function VendasEvolucaoMensal({ mesAte = "12" }: Props) {
 
   const { series, chartData } = useMemo(() => {
     const totals = new Map<string, number>();
-    for (const r of filtradas) totals.set(r[dim], (totals.get(r[dim]) ?? 0) + r.qtd);
+    for (const r of filtradas) {
+      const k = dimKey(r, dim);
+      totals.set(k, (totals.get(k) ?? 0) + r.qtd);
+    }
     const ss = [...totals.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
@@ -186,8 +193,9 @@ export default function VendasEvolucaoMensal({ mesAte = "12" }: Props) {
     for (const r of filtradas) {
       const k = `${r.ano}-${String(Number(r.mes)).padStart(2, "0")}`;
       const row = base.get(k);
-      if (!row || !ss.includes(r[dim])) continue;
-      row[r[dim]] = ((row[r[dim]] as number) ?? 0) + r.qtd;
+      const sk = dimKey(r, dim);
+      if (!row || !ss.includes(sk)) continue;
+      row[sk] = ((row[sk] as number) ?? 0) + r.qtd;
     }
     return { series: ss, chartData: [...base.values()] };
   }, [filtradas, dim, meses]);
@@ -277,7 +285,7 @@ export default function VendasEvolucaoMensal({ mesAte = "12" }: Props) {
               <Tooltip formatter={(v: number) => nf(v)} contentStyle={tooltipStyle} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               {series.map((s, i) => (
-                <Bar key={s} dataKey={s} stackId="a" fill={dim === "produto" ? prodColor(s, COLORS[i % COLORS.length]) : COLORS[i % COLORS.length]} />
+                <Bar key={s} dataKey={s} stackId="a" fill={dim === "produto" || dim === "recurso_produto" ? prodColor(s, COLORS[i % COLORS.length]) : COLORS[i % COLORS.length]} />
               ))}
             </BarChart>
           </ResponsiveContainer>
