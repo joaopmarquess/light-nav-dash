@@ -50,32 +50,36 @@ export default function VendasVendedorProdutoChart() {
     [json, ano],
   );
 
-  const series = useMemo(
-    () => anos.flatMap((a) => produtos.map((p) => ({ ano: a, produto: p, key: `${a} · ${p}` }))),
-    [anos, produtos],
-  );
-
-  const chartData = useMemo(() => {
-    if (!json) return [];
-    const map = new Map<string, Record<string, number | string>>();
-    for (const r of json.data) {
-      if (ano !== "todos" && r.ano !== ano) continue;
+  const { vendedores, byAno } = useMemo(() => {
+    const totals = new Map<string, number>();
+    const byAno = new Map<string, Map<string, Record<string, number>>>();
+    anos.forEach((a) => byAno.set(a, new Map()));
+    for (const r of json?.data ?? []) {
+      if (!byAno.has(r.ano)) continue;
       if (mes !== "todos" && r.mes !== mes) continue;
-      let row = map.get(r.vendedor);
-      if (!row) {
-        row = { vendedor: r.vendedor, __total: 0 };
-        series.forEach((sr) => (row![sr.key] = 0));
-        map.set(r.vendedor, row);
-      }
-      const key = `${r.ano} · ${r.produto}`;
-      row[key] = ((row[key] as number) ?? 0) + r.qtd;
-      row.__total = (row.__total as number) + r.qtd;
+      totals.set(r.vendedor, (totals.get(r.vendedor) ?? 0) + r.qtd);
+      const m = byAno.get(r.ano)!;
+      const row = m.get(r.vendedor) ?? {};
+      row[r.produto] = (row[r.produto] ?? 0) + r.qtd;
+      m.set(r.vendedor, row);
     }
-    const list = [...map.values()].sort(
-      (a, b) => (b.__total as number) - (a.__total as number),
-    );
-    return list.slice(0, Number(top));
-  }, [json, ano, mes, top, series]);
+    const vendedores = [...totals.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, Number(top))
+      .map(([v]) => v);
+    return { vendedores, byAno };
+  }, [json, anos, mes, top]);
+
+  const dataFor = (a: string) => {
+    const m = byAno.get(a) ?? new Map<string, Record<string, number>>();
+    return vendedores.map((v) => {
+      const row: Record<string, number | string> = { vendedor: v };
+      produtos.forEach((p) => (row[p] = m.get(v)?.[p] ?? 0));
+      return row;
+    });
+  };
+
+  const height = Math.max(320, vendedores.length * 26 + 70);
 
   return (
     <Card className="flex-1 min-h-0 flex flex-col overflow-hidden">
@@ -130,38 +134,44 @@ export default function VendasVendedorProdutoChart() {
             <Loader2 className="h-4 w-4 animate-spin" /> Carregando...
           </div>
         ) : (
-          <div style={{ height: Math.max(320, chartData.length * (anos.length > 1 ? 44 : 28) + 60) }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} layout="vertical" margin={{ left: 8, right: 24 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis
-                  type="category"
-                  dataKey="vendedor"
-                  width={190}
-                  tick={{ fontSize: 11 }}
-                  tickFormatter={short}
-                />
-                <Tooltip
-                  formatter={(v: number) => v.toLocaleString("pt-BR")}
-                  contentStyle={{
-                    background: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    fontSize: 12,
-                  }}
-                />
-                <Legend />
-                {series.map((sr, i) => (
-                  <Bar
-                    key={sr.key}
-                    dataKey={sr.key}
-                    name={sr.key}
-                    stackId={sr.ano}
-                    fill={COLORS[i % COLORS.length]}
-                  />
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
+          <div className={anos.length > 1 ? "grid gap-4 lg:grid-cols-2" : ""}>
+            {anos.map((a) => (
+              <div key={a} className="min-w-0">
+                <p className="mb-1 text-center text-sm font-semibold text-foreground">{a}</p>
+                <div style={{ height }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dataFor(a)} layout="vertical" margin={{ left: 8, right: 24 }}>
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                      <XAxis type="number" tick={{ fontSize: 11 }} />
+                      <YAxis
+                        type="category"
+                        dataKey="vendedor"
+                        width={170}
+                        tick={{ fontSize: 10 }}
+                        tickFormatter={short}
+                      />
+                      <Tooltip
+                        formatter={(v: number) => v.toLocaleString("pt-BR")}
+                        contentStyle={{
+                          background: "hsl(var(--card))",
+                          border: "1px solid hsl(var(--border))",
+                          fontSize: 12,
+                        }}
+                      />
+                      <Legend />
+                      {produtos.map((prod, i) => (
+                        <Bar
+                          key={prod}
+                          dataKey={prod}
+                          stackId="a"
+                          fill={COLORS[i % COLORS.length]}
+                        />
+                      ))}
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </CardContent>
