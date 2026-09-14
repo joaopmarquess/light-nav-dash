@@ -22,7 +22,7 @@ const MESES = [
   "Jul", "Ago", "Set", "Out", "Nov", "Dez",
 ];
 
-const LEVEL_LABELS = ["Ano", "Recurso", "Tipo de Produto", "Agente", "Vendedor"];
+const LEVEL_LABELS = ["Ano", "Recurso", "Vendedor", "Agente", "Tipo de Produto"];
 
 const fmt = (n: number) => (n ? n.toLocaleString("pt-BR") : "—");
 
