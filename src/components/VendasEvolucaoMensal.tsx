@@ -188,10 +188,15 @@ export default function VendasEvolucaoMensal({ mesAte = "12" }: Props) {
       const k = dimKey(r, dim);
       totals.set(k, (totals.get(k) ?? 0) + r.qtd);
     }
-    const ss = [...totals.entries()]
+    let ss = [...totals.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
       .map(([k]) => k);
+    // Azuis (outros produtos) na base da pilha, laranjas (ADM) no topo
+    if (dim === "produto" || dim === "recurso_produto") {
+      ss = ss.sort((a, b) => Number(isAdm(a)) - Number(isAdm(b)));
+    }
+
     const base = new Map<string, Record<string, number | string>>(
       meses.map((k) => {
         const [y, m] = k.split("-");
