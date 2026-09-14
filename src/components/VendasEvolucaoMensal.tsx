@@ -304,6 +304,23 @@ export default function VendasEvolucaoMensal({ mesAte = "12" }: Props) {
               {series.map((s, i) => (
                 <Bar key={s} dataKey={s} stackId="a" fill={dim === "produto" || dim === "recurso_produto" ? prodColor(s, COLORS[i % COLORS.length]) : COLORS[i % COLORS.length]} />
               ))}
+              <Line
+                type="monotone"
+                dataKey="__totalAdm"
+                name="Total Produto de ADM"
+                stroke="hsl(var(--chart-adm))"
+                strokeWidth={2}
+                dot={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="__totalOutros"
+                name="Total Outros produtos"
+                stroke="hsl(var(--chart-fat))"
+                strokeWidth={2}
+                dot={false}
+              />
+
             </ComposedChart>
           </ResponsiveContainer>
         </div>
