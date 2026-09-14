@@ -43,10 +43,12 @@ All colors MUST be HSL.
     --chart-3: 168 60% 40%;
     --chart-4: 28 85% 55%;
     --chart-fat: 215 70% 28%;
+    --chart-fat-light: 215 60% 62%;
     --chart-copart: 205 80% 68%;
     --chart-desp: 0 65% 38%;
     --chart-op: 270 60% 50%;
     --chart-adm: 28 90% 53%;
+    --chart-adm-light: 28 90% 72%;
     --chart-fin: 145 60% 60%;
 
 
@@ -109,10 +111,12 @@ All colors MUST be HSL.
     --chart-3: 168 55% 50%;
     --chart-4: 28 85% 60%;
     --chart-fat: 215 65% 45%;
+    --chart-fat-light: 215 60% 70%;
     --chart-copart: 200 75% 72%;
     --chart-desp: 0 60% 48%;
     --chart-op: 270 65% 65%;
     --chart-adm: 28 92% 60%;
+    --chart-adm-light: 28 92% 76%;
     --chart-fin: 145 55% 65%;
 
   }

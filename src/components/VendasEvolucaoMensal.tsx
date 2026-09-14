@@ -48,8 +48,16 @@ const COLORS = [
 
 
 const isAdm = (p: string) => /adm/i.test(p);
-const prodColor = (p: string, fallback: string) =>
-  isAdm(p) ? "hsl(var(--chart-adm))" : "hsl(var(--chart-fat))";
+const isProprio = (s: string) => /pr[oó]prio/i.test(s);
+
+// Produto de ADM em laranja, outros produtos em azul escuro.
+// Combinação com recurso Próprio usa o tom mais claro.
+const prodColor = (label: string, fallback: string) => {
+  const adm = isAdm(label);
+  const claro = isProprio(label);
+  if (adm) return claro ? "hsl(var(--chart-adm-light))" : "hsl(var(--chart-adm))";
+  return claro ? "hsl(var(--chart-fat))" : "hsl(var(--chart-fat-light))";
+};
 
 type Dim = "produto" | "recurso" | "agente" | "vendedor" | "recurso_produto";
 
