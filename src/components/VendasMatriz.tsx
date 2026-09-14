@@ -52,17 +52,26 @@ export default function VendasMatriz() {
     return filter(data.rows);
   }, [data, query]);
 
-  const months = data?.months ?? [];
+  const allMonths = data?.months ?? [];
+  const fullRange = mesDe === "1" && mesAte === "12";
+  const months = useMemo(
+    () =>
+      allMonths.filter((m) => Number(m) >= Number(mesDe) && Number(m) <= Number(mesAte)),
+    [allMonths, mesDe, mesAte],
+  );
+
+  const rowTotal = (n: Node) =>
+    fullRange ? n.total : months.reduce((s, m) => s + (n.byMonth[m] ?? 0), 0);
 
   const totals = useMemo(() => {
     const byMonth: Record<string, number> = {};
     let total = 0;
     for (const r of rows) {
       for (const m of months) byMonth[m] = (byMonth[m] ?? 0) + (r.byMonth[m] ?? 0);
-      total += r.total;
+      total += fullRange ? r.total : months.reduce((s, m) => s + (r.byMonth[m] ?? 0), 0);
     }
     return { byMonth, total };
-  }, [rows, months]);
+  }, [rows, months, fullRange]);
 
   const toggle = (key: string) =>
     setOpen((prev) => ({ ...prev, [key]: !prev[key] }));
