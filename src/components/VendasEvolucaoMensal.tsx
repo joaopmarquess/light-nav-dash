@@ -71,7 +71,7 @@ const tooltipStyle = {
 
 type Props = { mesDe?: string; mesAte?: string };
 
-export default function VendasEvolucaoMensal({ mesDe = "1", mesAte = "12" }: Props) {
+export default function VendasEvolucaoMensal({ mesAte = "12" }: Props) {
   const [json, setJson] = useState<Json | null>(null);
   const [dim, setDim] = useState<Dim>("produto");
   const [recurso, setRecurso] = useState("__all__");
@@ -85,13 +85,20 @@ export default function VendasEvolucaoMensal({ mesDe = "1", mesAte = "12" }: Pro
       .catch((e) => console.error(e));
   }, []);
 
+  const anoFinal = useMemo(() => {
+    const anos = (json?.data ?? []).map((r) => Number(r.ano));
+    return anos.length ? Math.max(...anos) : 2026;
+  }, [json]);
+
+  // Anos anteriores: todos os meses. Último ano: até o mês selecionado.
   const noPeriodo = useMemo(
     () =>
       (json?.data ?? []).filter(
-        (r) => Number(r.mes) >= Number(mesDe) && Number(r.mes) <= Number(mesAte),
+        (r) => Number(r.ano) < anoFinal || Number(r.mes) <= Number(mesAte),
       ),
-    [json, mesDe, mesAte],
+    [json, anoFinal, mesAte],
   );
+
 
   const recursos = useMemo(() => {
     const t = new Map<string, number>();
@@ -148,7 +155,7 @@ export default function VendasEvolucaoMensal({ mesDe = "1", mesAte = "12" }: Pro
     const ultimo = `${anoFim}-${String(Number(mesAte)).padStart(2, "0")}`;
     const out: string[] = [];
     let y = anoIni;
-    let m = Number(mesDe);
+    let m = 1;
     for (;;) {
       const k = `${y}-${String(m).padStart(2, "0")}`;
       out.push(k);
@@ -161,7 +168,7 @@ export default function VendasEvolucaoMensal({ mesDe = "1", mesAte = "12" }: Pro
       if (out.length > 60) break;
     }
     return out;
-  }, [filtradas, mesDe, mesAte]);
+  }, [filtradas, mesAte]);
 
   const { series, chartData } = useMemo(() => {
     const totals = new Map<string, number>();
