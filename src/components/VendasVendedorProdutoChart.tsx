@@ -45,6 +45,16 @@ export default function VendasVendedorProdutoChart() {
 
   const produtos = json?.produtos ?? [];
 
+  const anos = useMemo(
+    () => (ano === "todos" ? (json?.anos ?? []) : [ano]),
+    [json, ano],
+  );
+
+  const series = useMemo(
+    () => anos.flatMap((a) => produtos.map((p) => ({ ano: a, produto: p, key: `${a} · ${p}` }))),
+    [anos, produtos],
+  );
+
   const chartData = useMemo(() => {
     if (!json) return [];
     const map = new Map<string, Record<string, number | string>>();
@@ -54,17 +64,18 @@ export default function VendasVendedorProdutoChart() {
       let row = map.get(r.vendedor);
       if (!row) {
         row = { vendedor: r.vendedor, __total: 0 };
-        produtos.forEach((p) => (row![p] = 0));
+        series.forEach((sr) => (row![sr.key] = 0));
         map.set(r.vendedor, row);
       }
-      row[r.produto] = ((row[r.produto] as number) ?? 0) + r.qtd;
+      const key = `${r.ano} · ${r.produto}`;
+      row[key] = ((row[key] as number) ?? 0) + r.qtd;
       row.__total = (row.__total as number) + r.qtd;
     }
     const list = [...map.values()].sort(
       (a, b) => (b.__total as number) - (a.__total as number),
     );
     return list.slice(0, Number(top));
-  }, [json, ano, mes, top, produtos]);
+  }, [json, ano, mes, top, series]);
 
   return (
     <Card className="flex-1 min-h-0 flex flex-col overflow-hidden">
@@ -78,7 +89,7 @@ export default function VendasVendedorProdutoChart() {
               <SelectValue placeholder="Ano" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="todos">Todos os anos</SelectItem>
+              <SelectItem value="todos">2025 e 2026</SelectItem>
               {(json?.anos ?? []).map((a) => (
                 <SelectItem key={a} value={a}>
                   {a}
@@ -119,7 +130,7 @@ export default function VendasVendedorProdutoChart() {
             <Loader2 className="h-4 w-4 animate-spin" /> Carregando...
           </div>
         ) : (
-          <div style={{ height: Math.max(320, chartData.length * 28 + 60) }}>
+          <div style={{ height: Math.max(320, chartData.length * (anos.length > 1 ? 44 : 28) + 60) }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} layout="vertical" margin={{ left: 8, right: 24 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
@@ -140,13 +151,13 @@ export default function VendasVendedorProdutoChart() {
                   }}
                 />
                 <Legend />
-                {produtos.map((p, i) => (
+                {series.map((sr, i) => (
                   <Bar
-                    key={p}
-                    dataKey={p}
-                    stackId="a"
+                    key={sr.key}
+                    dataKey={sr.key}
+                    name={sr.key}
+                    stackId={sr.ano}
                     fill={COLORS[i % COLORS.length]}
-                    radius={i === produtos.length - 1 ? [0, 3, 3, 0] : undefined}
                   />
                 ))}
               </BarChart>
