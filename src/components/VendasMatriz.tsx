@@ -8,10 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BarChart3, ChevronDown, ChevronRight, Loader2, PieChart as PieChartIcon, Table2 } from "lucide-react";
+import { BarChart3, ChevronDown, ChevronRight, LineChart as LineChartIcon, Loader2, PieChart as PieChartIcon, Table2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import VendasVendedorProdutoChart from "@/components/VendasVendedorProdutoChart";
 import VendasProdutoPizza from "@/components/VendasProdutoPizza";
+import VendasEvolucaoMensal from "@/components/VendasEvolucaoMensal";
 
 type Node = {
   label: string;
