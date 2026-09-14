@@ -51,7 +51,9 @@ const tooltipStyle = {
   fontSize: 12,
 };
 
-export default function VendasVendedorProdutoChart() {
+type Props = { mesDe?: string; mesAte?: string };
+
+export default function VendasVendedorProdutoChart({ mesDe = "1", mesAte = "12" }: Props) {
   const [json, setJson] = useState<Json | null>(null);
 
   useEffect(() => {
@@ -63,15 +65,22 @@ export default function VendasVendedorProdutoChart() {
 
   const anos = json?.anos ?? [];
   const produtos = json?.produtos ?? [];
+  const noPeriodo = useMemo(
+    () =>
+      (json?.data ?? []).filter(
+        (r) => Number(r.mes) >= Number(mesDe) && Number(r.mes) <= Number(mesAte),
+      ),
+    [json, mesDe, mesAte],
+  );
 
   // Agentes ordenados pelo total geral (mesma ordem nos dois anos)
   const agentes = useMemo(() => {
     const totals = new Map<string, number>();
-    for (const r of json?.data ?? []) {
+    for (const r of noPeriodo) {
       totals.set(r.agente, (totals.get(r.agente) ?? 0) + r.qtd);
     }
     return [...totals.entries()].sort((a, b) => b[1] - a[1]).map(([a]) => a);
-  }, [json]);
+  }, [noPeriodo]);
 
   // Uma série de dados por ano: agente × produto
   const porAno = useMemo(() => {
@@ -81,7 +90,7 @@ export default function VendasVendedorProdutoChart() {
       const rows = agentes.map((agente) => {
         const row: Record<string, number | string> = { agente };
         let total = 0;
-        for (const r of json?.data ?? []) {
+        for (const r of noPeriodo) {
           if (r.ano !== ano || r.agente !== agente) continue;
           row[r.produto] = ((row[r.produto] as number) ?? 0) + r.qtd;
           total += r.qtd;
@@ -93,13 +102,13 @@ export default function VendasVendedorProdutoChart() {
       out.set(ano, rows);
     }
     return { out, max };
-  }, [json, anos, agentes]);
+  }, [noPeriodo, anos, agentes]);
 
   const totalPorAno = useMemo(() => {
     const m = new Map<string, number>();
-    for (const r of json?.data ?? []) m.set(r.ano, (m.get(r.ano) ?? 0) + r.qtd);
+    for (const r of noPeriodo) m.set(r.ano, (m.get(r.ano) ?? 0) + r.qtd);
     return m;
-  }, [json]);
+  }, [noPeriodo]);
 
   if (!json) {
     return (

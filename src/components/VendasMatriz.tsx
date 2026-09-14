@@ -220,9 +220,9 @@ export default function VendasMatriz() {
         </div>
       </div>
 
-      {view === "grafico" && <VendasVendedorProdutoChart />}
-      {view === "pizza" && <VendasProdutoPizza />}
-      {view === "evolucao" && <VendasEvolucaoMensal />}
+      {view === "grafico" && <VendasVendedorProdutoChart mesDe={mesDe} mesAte={mesAte} />}
+      {view === "pizza" && <VendasProdutoPizza mesDe={mesDe} mesAte={mesAte} />}
+      {view === "evolucao" && <VendasEvolucaoMensal mesDe={mesDe} mesAte={mesAte} />}
       {view === "tabela" && (
 
       <Card className="flex-1 min-h-0 flex flex-col overflow-hidden">
