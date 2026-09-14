@@ -55,8 +55,8 @@ const isProprio = (s: string) => /pr[oó]prio/i.test(s);
 const prodColor = (label: string, fallback: string) => {
   const adm = isAdm(label);
   const claro = isProprio(label);
-  if (adm) return claro ? "hsl(28 90% 70%)" : "hsl(var(--chart-adm))";
-  return claro ? "hsl(var(--chart-fat))" : "hsl(215 60% 60%)";
+  if (adm) return claro ? "hsl(var(--chart-adm-light))" : "hsl(var(--chart-adm))";
+  return claro ? "hsl(var(--chart-fat))" : "hsl(var(--chart-fat-light))";
 };
 
 type Dim = "produto" | "recurso" | "agente" | "vendedor" | "recurso_produto";
