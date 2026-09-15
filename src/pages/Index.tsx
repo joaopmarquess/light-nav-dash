@@ -158,7 +158,14 @@ const menuItems: MenuItem[] = [
       { icon: Stethoscope, label: "2518 Receitas" },
     ],
   },
-  { icon: Trophy, label: "Promoções" },
+  {
+    icon: Trophy,
+    label: "Simulações",
+    children: [
+      { icon: Trophy, label: "Premiação 4T 2026" },
+      { icon: Users, label: "Carteiras Benevix" },
+    ],
+  },
   { icon: LayoutDashboard, label: "B.I. Overview" },
 ];
 
