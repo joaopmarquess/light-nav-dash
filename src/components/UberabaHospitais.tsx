@@ -15,6 +15,32 @@ const HOSPITAIS: Row[] = [
   { nome: "Hospital Beneficência Portuguesa", cnpj: "25.437.948/0001-30", cnes: "2164825", leitos: 40 },
 ];
 
+type Tipo = "sus" | "misto" | "privado";
+
+const TIPO: Record<string, Tipo> = {
+  "2206595": "sus",
+  "2195585": "misto",
+  "9141839": "sus",
+  "2165058": "misto",
+  "9745041": "privado",
+  "2165066": "privado",
+  "2164795": "sus",
+  "2164825": "privado",
+};
+
+const TIPO_LABEL: Record<Tipo, string> = {
+  sus: "Somente SUS",
+  misto: "Misto — SUS + convênios/particulares",
+  privado: "Somente convênios/particulares",
+};
+
+const TipoIcone = ({ tipo }: { tipo: Tipo }) => (
+  <span className="inline-flex items-center gap-0.5 align-middle">
+    {tipo !== "privado" && <Landmark className="h-4 w-4 text-emerald-600" />}
+    {tipo !== "sus" && <CreditCard className="h-4 w-4 text-sky-600" />}
+  </span>
+);
+
 const INFO: Record<string, { titulo: string; texto: string }> = {
   "2206595": {
     titulo: "Atendimento",
