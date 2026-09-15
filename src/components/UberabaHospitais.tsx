@@ -167,6 +167,7 @@ const UberabaHospitais = () => {
         </table>
       </div>
     </div>
+    </TooltipProvider>
   );
 };
 
