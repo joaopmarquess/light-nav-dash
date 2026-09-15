@@ -250,16 +250,15 @@ const CarteirasBenevix = () => {
     () => calcular(base.lancers.rows, null, sinLancers[aba]),
     [base, sinLancers, aba],
   );
-  const proposta = useMemo(
-    () =>
-      calcular(
-        base.benevix.rows,
-        prop[aba].spread,
-        prop[aba].sin,
-        benevix.rows.map((r) => r.despesas),
-      ),
-    [base, prop, aba, benevix],
-  );
+  const proposta = useMemo(() => {
+    const baseVidas = base.benevix.rows.map((r) => r.vidas ?? 0);
+    const novasVidas = distribuirVidas(baseVidas, prop[aba].total);
+    const rows = base.benevix.rows.map((r, i) => ({ ...r, vidas: novasVidas[i] }));
+    const despesas = benevix.rows.map((r, i) =>
+      baseVidas[i] ? (r.despesas / baseVidas[i]) * novasVidas[i] : 0,
+    );
+    return calcular(rows, prop[aba].spread, prop[aba].sin, despesas);
+  }, [base, prop, aba, benevix]);
 
   const delta = proposta.bensaude - benevix.bensaude;
 
