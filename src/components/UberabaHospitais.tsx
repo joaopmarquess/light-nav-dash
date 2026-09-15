@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowDown, ArrowUp, BedDouble, Building2, Hospital } from "lucide-react";
+import { ArrowDown, ArrowUp, BedDouble, Building2, CreditCard, Hospital, Landmark } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Row = { nome: string; cnpj: string; cnes: string; leitos: number };
@@ -14,6 +14,32 @@ const HOSPITAIS: Row[] = [
   { nome: "Hospital da Criança", cnpj: "25.440.199/0001-08", cnes: "2164795", leitos: 45 },
   { nome: "Hospital Beneficência Portuguesa", cnpj: "25.437.948/0001-30", cnes: "2164825", leitos: 40 },
 ];
+
+type Tipo = "sus" | "misto" | "privado";
+
+const TIPO: Record<string, Tipo> = {
+  "2206595": "sus",
+  "2195585": "misto",
+  "9141839": "sus",
+  "2165058": "misto",
+  "9745041": "privado",
+  "2165066": "privado",
+  "2164795": "sus",
+  "2164825": "privado",
+};
+
+const TIPO_LABEL: Record<Tipo, string> = {
+  sus: "Somente SUS",
+  misto: "Misto — SUS + convênios/particulares",
+  privado: "Somente convênios/particulares",
+};
+
+const TipoIcone = ({ tipo }: { tipo: Tipo }) => (
+  <span className="inline-flex items-center gap-0.5 align-middle">
+    {tipo !== "privado" && <Landmark className="h-4 w-4 text-emerald-600" />}
+    {tipo !== "sus" && <CreditCard className="h-4 w-4 text-sky-600" />}
+  </span>
+);
 
 const INFO: Record<string, { titulo: string; texto: string }> = {
   "2206595": {
@@ -97,6 +123,17 @@ const UberabaHospitais = () => {
           <Hospital className="h-5 w-5 text-primary" />
           <h1 className="text-lg font-semibold text-foreground">Hospitais de Uberaba</h1>
         </div>
+        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1">
+            <Landmark className="h-4 w-4 text-emerald-600" /> Somente SUS
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <TipoIcone tipo="misto" /> Misto
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <CreditCard className="h-4 w-4 text-sky-600" /> Convênios/particulares
+          </span>
+        </div>
         <div className="ml-auto flex gap-2">
           <div className="rounded-md border border-border bg-card px-3 py-1.5 text-sm">
             <span className="flex items-center gap-2 text-muted-foreground">
@@ -129,11 +166,15 @@ const UberabaHospitais = () => {
                 <td className="px-3 py-2 font-medium text-foreground">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="cursor-help underline decoration-dotted decoration-muted-foreground underline-offset-4">
-                        {r.nome}
+                      <span className="inline-flex cursor-help items-center gap-2">
+                        <TipoIcone tipo={TIPO[r.cnes]} />
+                        <span className="underline decoration-dotted decoration-muted-foreground underline-offset-4">
+                          {r.nome}
+                        </span>
                       </span>
                     </TooltipTrigger>
                     <TooltipContent side="right" className="max-w-sm">
+                      <p className="mb-1 text-xs font-semibold">{TIPO_LABEL[TIPO[r.cnes]]}</p>
                       <p className="mb-1 text-xs font-semibold">{INFO[r.cnes]?.titulo}</p>
                       <p className="text-xs leading-relaxed">{INFO[r.cnes]?.texto}</p>
                     </TooltipContent>
