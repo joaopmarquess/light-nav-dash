@@ -250,6 +250,7 @@ const CarteirasBenevix = () => {
         destaque
         onSpread={(v) => setProp((p) => ({ ...p, [aba]: { ...p[aba], spread: v } }))}
         onSin={(v) => setProp((p) => ({ ...p, [aba]: { ...p[aba], sin: v } }))}
+        colapsavel
       />
       <Bloco
         titulo="Benevix (atual)"
