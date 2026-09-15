@@ -33,6 +33,18 @@ const Promocoes = () => {
   const setRow = (i: number, patch: Partial<Participante>) =>
     setParticipantes((p) => p.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
 
+  // Digitar a projeção em valor nominal recalcula o % de crescimento correspondente.
+  const setProjecao = (i: number, campo: "lancers" | "outros", valor: number) =>
+    setParticipantes((p) =>
+      p.map((r, idx) => {
+        if (idx !== i) return r;
+        const base = campo === "lancers" ? r.lancers : r.outros;
+        const chaveCresc = campo === "lancers" ? "crescLancers" : "crescOutros";
+        if (base <= 0) return { ...r, [campo]: valor, [chaveCresc]: 0 };
+        return { ...r, [chaveCresc]: valor / base - 1 };
+      }),
+    );
+
   const calculados = useMemo<Record<Categoria, Calculado[]>>(() => {
     const out: Record<Categoria, Calculado[]> = { promotor: [], hunter: [] };
     (["promotor", "hunter"] as Categoria[]).forEach((cat) => {
@@ -40,8 +52,8 @@ const Promocoes = () => {
       const linhas = participantes
         .filter((p) => p.categoria === cat)
         .map((p) => {
-          const projLancers = p.lancers * (1 + p.crescLancers);
-          const projOutros = p.outros * (1 + p.crescOutros);
+          const projLancers = Math.trunc(p.lancers * (1 + p.crescLancers));
+          const projOutros = Math.trunc(p.outros * (1 + p.crescOutros));
           const projTotal = projLancers + projOutros;
           const atingiu =
             projLancers >= meta.lancers && projOutros >= meta.outros && projTotal >= meta.total;
@@ -245,8 +257,22 @@ const Promocoes = () => {
                         className="w-20 text-right bg-transparent tabular-nums focus:outline-none"
                       />
                     </td>
-                    <td className="px-3 py-1.5 text-right tabular-nums">{num(l.projLancers)}</td>
-                    <td className="px-3 py-1.5 text-right tabular-nums">{num(l.projOutros)}</td>
+                    <td className="px-3 py-1.5 text-right">
+                      <input
+                        type="number"
+                        value={l.projLancers}
+                        onChange={(e) => setProjecao(idx, "lancers", Number(e.target.value) || 0)}
+                        className="w-24 text-right bg-transparent tabular-nums focus:outline-none"
+                      />
+                    </td>
+                    <td className="px-3 py-1.5 text-right">
+                      <input
+                        type="number"
+                        value={l.projOutros}
+                        onChange={(e) => setProjecao(idx, "outros", Number(e.target.value) || 0)}
+                        className="w-24 text-right bg-transparent tabular-nums focus:outline-none"
+                      />
+                    </td>
                     <td className="px-3 py-1.5 text-right tabular-nums font-medium">
                       {num(l.projTotal)}
                     </td>
