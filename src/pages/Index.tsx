@@ -98,14 +98,6 @@ type MenuItem = {
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   {
-    icon: Building2,
-    label: "Uberaba",
-    children: [
-      { icon: BarChart3, label: "OPS" },
-      { icon: BarChart3, label: "Unimed" },
-    ],
-  },
-  {
     icon: TrendingUp,
     label: "Contabilidade",
     children: [
@@ -165,6 +157,8 @@ const menuItems: MenuItem[] = [
     children: [
       { icon: Trophy, label: "Premiação 4T 2026" },
       { icon: Users, label: "Carteiras Benevix" },
+      { icon: Building2, label: "OPS" },
+      { icon: BarChart3, label: "Unimed" },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
@@ -189,7 +183,7 @@ const Index = () => {
     const biHandler = () => setActive("B.I. Overview");
     window.addEventListener("open-bi-overview", biHandler);
     const unimedHandler = () => {
-      setOpenGroups((p) => ({ ...p, Uberaba: true }));
+      setOpenGroups((p) => ({ ...p, "Simulações": true }));
       setActive("Unimed");
     };
     window.addEventListener("open-unimed-uberaba", unimedHandler);
