@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { benevixBase, type FaixaRow } from "@/data/benevix";
 
 type Aba = "adesao" | "pme";
@@ -65,6 +66,7 @@ const Bloco = ({
   onSpread,
   onSin,
   destaque,
+  colapsavel,
 }: {
   titulo: string;
   calc: Calc;
@@ -74,10 +76,23 @@ const Bloco = ({
   onSpread?: (v: number) => void;
   onSin?: (v: number) => void;
   destaque?: boolean;
-}) => (
+  colapsavel?: boolean;
+}) => {
+  const [aberto, setAberto] = useState(!colapsavel);
+  return (
   <section className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
     <header className="px-4 py-3 border-b border-border flex flex-wrap items-center gap-4">
-      <h3 className="text-sm font-semibold text-foreground">{titulo}</h3>
+      {colapsavel ? (
+        <button
+          onClick={() => setAberto((v) => !v)}
+          className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-primary transition-colors"
+        >
+          <ChevronDown className={`h-4 w-4 transition-transform ${aberto ? "" : "-rotate-90"}`} />
+          {titulo}
+        </button>
+      ) : (
+        <h3 className="text-sm font-semibold text-foreground">{titulo}</h3>
+      )}
       {editavel ? (
         <>
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -125,7 +140,7 @@ const Bloco = ({
           </tr>
         </thead>
         <tbody>
-          {calc.rows.map((r, i) => (
+          {aberto && calc.rows.map((r, i) => (
             <tr key={r.faixa} className={i % 2 ? "bg-muted/20" : ""}>
               <td className="px-3 py-1.5 text-foreground/80">{r.faixa}</td>
               <td className="px-3 py-1.5 text-right tabular-nums">{brl(r.netEnfCalc)}</td>
@@ -157,7 +172,9 @@ const Bloco = ({
       </table>
     </div>
   </section>
-);
+  );
+};
+
 
 const CarteirasBenevix = () => {
   const [aba, setAba] = useState<Aba>("adesao");
@@ -224,13 +241,6 @@ const CarteirasBenevix = () => {
         ))}
       </div>
 
-      <Bloco titulo="Benevix (atual)" calc={benevix} spread={base.benevix.spread} sin={base.benevix.sin} />
-      <Bloco
-        titulo="Lancers"
-        calc={lancers}
-        spread={null}
-        sin={sinLancers[aba]}
-      />
       <Bloco
         titulo="Benevix Proposta"
         calc={proposta}
@@ -241,6 +251,14 @@ const CarteirasBenevix = () => {
         onSpread={(v) => setProp((p) => ({ ...p, [aba]: { ...p[aba], spread: v } }))}
         onSin={(v) => setProp((p) => ({ ...p, [aba]: { ...p[aba], sin: v } }))}
       />
+      <Bloco
+        titulo="Benevix (atual)"
+        calc={benevix}
+        spread={base.benevix.spread}
+        sin={base.benevix.sin}
+        colapsavel
+      />
+      <Bloco titulo="Lancers" calc={lancers} spread={null} sin={sinLancers[aba]} colapsavel />
     </div>
   );
 };
