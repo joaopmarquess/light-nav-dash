@@ -155,11 +155,15 @@ const UberabaHospitais = () => {
                 <td className="px-3 py-2 font-medium text-foreground">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="cursor-help underline decoration-dotted decoration-muted-foreground underline-offset-4">
-                        {r.nome}
+                      <span className="inline-flex cursor-help items-center gap-2">
+                        <TipoIcone tipo={TIPO[r.cnes]} />
+                        <span className="underline decoration-dotted decoration-muted-foreground underline-offset-4">
+                          {r.nome}
+                        </span>
                       </span>
                     </TooltipTrigger>
                     <TooltipContent side="right" className="max-w-sm">
+                      <p className="mb-1 text-xs font-semibold">{TIPO_LABEL[TIPO[r.cnes]]}</p>
                       <p className="mb-1 text-xs font-semibold">{INFO[r.cnes]?.titulo}</p>
                       <p className="text-xs leading-relaxed">{INFO[r.cnes]?.texto}</p>
                     </TooltipContent>
