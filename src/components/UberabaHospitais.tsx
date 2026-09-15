@@ -90,6 +90,7 @@ const UberabaHospitais = () => {
   );
 
   return (
+    <TooltipProvider delayDuration={150}>
     <div className="h-full overflow-auto pr-1">
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
