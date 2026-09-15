@@ -10,8 +10,7 @@ import {
 
 const brl = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 });
-const num = (v: number) =>
-  v.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const num = (v: number) => Math.trunc(v).toLocaleString("pt-BR");
 
 type Calculado = Participante & {
   projLancers: number;
