@@ -296,12 +296,19 @@ const CarteirasBenevix = () => {
       <Bloco
         titulo="Benevix Proposta"
         calc={proposta}
-        spread={prop[aba].spread}
-        sin={prop[aba].sin}
+        spread={draft[aba].spread}
+        sin={draft[aba].sin}
+        totalVidas={draft[aba].total}
         editavel
         destaque
-        onSpread={(v) => setProp((p) => ({ ...p, [aba]: { ...p[aba], spread: v } }))}
-        onSin={(v) => setProp((p) => ({ ...p, [aba]: { ...p[aba], sin: v } }))}
+        onSpread={(v) => setDraft((p) => ({ ...p, [aba]: { ...p[aba], spread: v } }))}
+        onSin={(v) => setDraft((p) => ({ ...p, [aba]: { ...p[aba], sin: v } }))}
+        onTotalVidas={(v) => setDraft((p) => ({ ...p, [aba]: { ...p[aba], total: v } }))}
+        onCalcular={() => setProp((p) => ({ ...p, [aba]: { ...draft[aba] } }))}
+        onRestaurar={() => {
+          setDraft((p) => ({ ...p, [aba]: padrao(aba) }));
+          setProp((p) => ({ ...p, [aba]: padrao(aba) }));
+        }}
         colapsavel
       />
       <Bloco
