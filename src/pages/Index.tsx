@@ -400,6 +400,8 @@ const Index = () => {
             <div className="h-full overflow-auto pr-1">
               <InteligenciaUnimed />
             </div>
+          ) : active === "Uberaba Hospitais" ? (
+            <UberabaHospitais />
           ) : active === "Gráficos" ? (
             <ContabilidadeGraficos />
 
