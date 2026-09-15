@@ -183,7 +183,7 @@ const Index = () => {
     const biHandler = () => setActive("B.I. Overview");
     window.addEventListener("open-bi-overview", biHandler);
     const unimedHandler = () => {
-      setOpenGroups((p) => ({ ...p, Uberaba: true }));
+      setOpenGroups((p) => ({ ...p, "Simulações": true }));
       setActive("Unimed");
     };
     window.addEventListener("open-unimed-uberaba", unimedHandler);
