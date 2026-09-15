@@ -21,6 +21,8 @@ export const participantesIniciais: Participante[] = [
   { nome: "DANITCHELE FERRAZ DA SILVA", categoria: "promotor", lancers: 93, outros: 37, crescLancers: 0.1, crescOutros: 0.3 },
   { nome: "KARINA CRISTINA FURLANETTO CHIACHIO", categoria: "promotor", lancers: 107, outros: 15, crescLancers: 0.1, crescOutros: 0.3 },
   { nome: "LETICIA SILVA GARCIA", categoria: "promotor", lancers: 94, outros: 15, crescLancers: 0.1, crescOutros: 0.3 },
+  { nome: "ANDRE DOS SANTOS GARCIA", categoria: "hunter", lancers: 101, outros: 144, crescLancers: 0.2, crescOutros: 0.7 },
+  { nome: "WAGNER LIMEIRA ROSA", categoria: "hunter", lancers: 11, outros: 27, crescLancers: 0.3, crescOutros: 0.8 },
 ];
 
 export const metasIniciais = {
