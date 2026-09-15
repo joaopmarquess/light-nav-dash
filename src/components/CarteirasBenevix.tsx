@@ -171,7 +171,9 @@ const Bloco = ({
       </table>
     </div>
   </section>
-);
+  );
+};
+
 
 const CarteirasBenevix = () => {
   const [aba, setAba] = useState<Aba>("adesao");
