@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { benevixBase, type FaixaRow } from "@/data/benevix";
 
 type Aba = "adesao" | "pme";
@@ -240,13 +241,6 @@ const CarteirasBenevix = () => {
         ))}
       </div>
 
-      <Bloco titulo="Benevix (atual)" calc={benevix} spread={base.benevix.spread} sin={base.benevix.sin} />
-      <Bloco
-        titulo="Lancers"
-        calc={lancers}
-        spread={null}
-        sin={sinLancers[aba]}
-      />
       <Bloco
         titulo="Benevix Proposta"
         calc={proposta}
@@ -257,6 +251,14 @@ const CarteirasBenevix = () => {
         onSpread={(v) => setProp((p) => ({ ...p, [aba]: { ...p[aba], spread: v } }))}
         onSin={(v) => setProp((p) => ({ ...p, [aba]: { ...p[aba], sin: v } }))}
       />
+      <Bloco
+        titulo="Benevix (atual)"
+        calc={benevix}
+        spread={base.benevix.spread}
+        sin={base.benevix.sin}
+        colapsavel
+      />
+      <Bloco titulo="Lancers" calc={lancers} spread={null} sin={sinLancers[aba]} colapsavel />
     </div>
   );
 };
