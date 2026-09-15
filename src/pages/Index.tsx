@@ -157,8 +157,8 @@ const menuItems: MenuItem[] = [
     children: [
       { icon: Trophy, label: "Premiação 4T 2026" },
       { icon: Users, label: "Carteiras Benevix" },
-      { icon: Building2, label: "OPS" },
-      { icon: BarChart3, label: "Unimed" },
+      { icon: Building2, label: "Uberaba OPS" },
+      { icon: BarChart3, label: "Uberaba Unimed" },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
@@ -184,7 +184,7 @@ const Index = () => {
     window.addEventListener("open-bi-overview", biHandler);
     const unimedHandler = () => {
       setOpenGroups((p) => ({ ...p, "Simulações": true }));
-      setActive("Unimed");
+      setActive("Uberaba Unimed");
     };
     window.addEventListener("open-unimed-uberaba", unimedHandler);
     return () => {
@@ -391,11 +391,11 @@ const Index = () => {
             <DREGerencialPE />
           ) : active === "Orçamento" ? (
             <Orcamento />
-          ) : active === "OPS" ? (
+          ) : active === "Uberaba OPS" ? (
             <div className="h-full overflow-auto pr-1">
               <InteligenciaUberaba />
             </div>
-          ) : active === "Unimed" ? (
+          ) : active === "Uberaba Unimed" ? (
             <div className="h-full overflow-auto pr-1">
               <InteligenciaUnimed />
             </div>
