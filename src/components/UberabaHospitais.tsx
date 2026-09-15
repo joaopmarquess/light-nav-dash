@@ -124,7 +124,19 @@ const UberabaHospitais = () => {
           <tbody>
             {rows.map((r, i) => (
               <tr key={r.cnes} className={`border-t border-border ${i % 2 ? "bg-muted/40" : "bg-card"}`}>
-                <td className="px-3 py-2 font-medium text-foreground">{r.nome}</td>
+                <td className="px-3 py-2 font-medium text-foreground">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="cursor-help underline decoration-dotted decoration-muted-foreground underline-offset-4">
+                        {r.nome}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-sm">
+                      <p className="mb-1 text-xs font-semibold">{INFO[r.cnes]?.titulo}</p>
+                      <p className="text-xs leading-relaxed">{INFO[r.cnes]?.texto}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </td>
                 <td className="px-3 py-2 tabular-nums text-muted-foreground">{r.cnpj}</td>
                 <td className="px-3 py-2 tabular-nums text-muted-foreground">{r.cnes}</td>
                 <td className="px-3 py-2">
