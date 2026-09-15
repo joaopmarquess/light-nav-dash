@@ -224,9 +224,18 @@ const CarteirasBenevix = () => {
   const [aba, setAba] = useState<Aba>("adesao");
   const base = benevixBase[aba];
 
-  const [prop, setProp] = useState<Record<Aba, { spread: number; sin: number }>>({
-    adesao: { ...benevixBase.adesao.proposta },
-    pme: { ...benevixBase.pme.proposta },
+  const totalDefault = (a: Aba) =>
+    benevixBase[a].benevix.rows.reduce((s, r) => s + (r.vidas ?? 0), 0);
+  const padrao = (a: Aba) => ({ ...benevixBase[a].proposta, total: totalDefault(a) });
+
+  type Params = { spread: number; sin: number; total: number };
+  const [draft, setDraft] = useState<Record<Aba, Params>>({
+    adesao: padrao("adesao"),
+    pme: padrao("pme"),
+  });
+  const [prop, setProp] = useState<Record<Aba, Params>>({
+    adesao: padrao("adesao"),
+    pme: padrao("pme"),
   });
   const [sinLancers] = useState<Record<Aba, number>>({
     adesao: benevixBase.adesao.lancers.sin,
