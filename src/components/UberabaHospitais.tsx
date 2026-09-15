@@ -123,6 +123,17 @@ const UberabaHospitais = () => {
           <Hospital className="h-5 w-5 text-primary" />
           <h1 className="text-lg font-semibold text-foreground">Hospitais de Uberaba</h1>
         </div>
+        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1">
+            <Landmark className="h-4 w-4 text-emerald-600" /> Somente SUS
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <TipoIcone tipo="misto" /> Misto
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <CreditCard className="h-4 w-4 text-sky-600" /> Convênios/particulares
+          </span>
+        </div>
         <div className="ml-auto flex gap-2">
           <div className="rounded-md border border-border bg-card px-3 py-1.5 text-sm">
             <span className="flex items-center gap-2 text-muted-foreground">
