@@ -137,6 +137,28 @@ const Bloco = ({
               className="h-8 w-24 rounded-md border border-amber-400 bg-amber-100 dark:bg-amber-500/20 px-2 text-sm text-foreground tabular-nums focus:outline-none focus:ring-2 focus:ring-amber-400/50"
             />
           </label>
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            Total de vidas
+            <input
+              type="number"
+              step="1"
+              value={totalVidas ?? 0}
+              onChange={(e) => onTotalVidas?.(Number(e.target.value))}
+              className="h-8 w-28 rounded-md border border-amber-400 bg-amber-100 dark:bg-amber-500/20 px-2 text-sm text-foreground tabular-nums focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+            />
+          </label>
+          <button
+            onClick={onCalcular}
+            className="h-8 px-4 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:opacity-90"
+          >
+            Calcular
+          </button>
+          <button
+            onClick={onRestaurar}
+            className="h-8 px-4 rounded-md border border-border text-xs font-medium text-foreground hover:bg-accent"
+          >
+            Restaurar
+          </button>
           <span className="text-[11px] text-muted-foreground">Campos em amarelo são editáveis</span>
         </>
       ) : (
