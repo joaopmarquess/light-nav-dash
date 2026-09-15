@@ -69,6 +69,7 @@ import ContabilidadeGraficos from "@/components/ContabilidadeGraficos";
 import InteligenciaUberaba from "@/components/InteligenciaUberaba";
 import InteligenciaUnimed from "@/components/InteligenciaUnimed";
 import Promocoes from "@/components/Promocoes";
+import UberabaHospitais from "@/components/UberabaHospitais";
 import CarteirasBenevix from "@/components/CarteirasBenevix";
 
 
@@ -159,6 +160,7 @@ const menuItems: MenuItem[] = [
       { icon: Users, label: "Carteiras Benevix" },
       { icon: Building2, label: "Uberaba OPS" },
       { icon: BarChart3, label: "Uberaba Unimed" },
+      { icon: Building2, label: "Uberaba Hospitais" },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
@@ -399,6 +401,8 @@ const Index = () => {
             <div className="h-full overflow-auto pr-1">
               <InteligenciaUnimed />
             </div>
+          ) : active === "Uberaba Hospitais" ? (
+            <UberabaHospitais />
           ) : active === "Gráficos" ? (
             <ContabilidadeGraficos />
 
