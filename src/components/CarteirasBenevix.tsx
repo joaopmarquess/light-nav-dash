@@ -139,7 +139,7 @@ const Bloco = ({
           </tr>
         </thead>
         <tbody>
-          {calc.rows.map((r, i) => (
+          {aberto && calc.rows.map((r, i) => (
             <tr key={r.faixa} className={i % 2 ? "bg-muted/20" : ""}>
               <td className="px-3 py-1.5 text-foreground/80">{r.faixa}</td>
               <td className="px-3 py-1.5 text-right tabular-nums">{brl(r.netEnfCalc)}</td>
