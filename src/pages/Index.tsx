@@ -19,6 +19,7 @@ import {
   Calendar as CalendarIcon,
   CalendarCheck,
   Search,
+  Trophy,
 } from "lucide-react";
 
 const todayBR = () => {
@@ -67,6 +68,7 @@ import Orcamento from "@/components/Orcamento";
 import ContabilidadeGraficos from "@/components/ContabilidadeGraficos";
 import InteligenciaUberaba from "@/components/InteligenciaUberaba";
 import InteligenciaUnimed from "@/components/InteligenciaUnimed";
+import Promocoes from "@/components/Promocoes";
 
 
 import Assistencial from "@/components/Assistencial";
@@ -156,6 +158,7 @@ const menuItems: MenuItem[] = [
       { icon: Stethoscope, label: "2518 Receitas" },
     ],
   },
+  { icon: Trophy, label: "Promoções" },
   { icon: LayoutDashboard, label: "B.I. Overview" },
 ];
 
@@ -450,6 +453,8 @@ const Index = () => {
           ) : active === "__removed_orc_dw__" ? (
             <div />
 
+          ) : active === "Promoções" ? (
+            <Promocoes />
           ) : active === "B.I. Overview" ? (
             <BIOverview />
           ) : active === "Gráfico Carteira" ? (
