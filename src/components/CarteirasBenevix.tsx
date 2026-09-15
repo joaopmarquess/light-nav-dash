@@ -57,6 +57,20 @@ function calcular(rows: FaixaRow[], spread: number | null, sin: number, despesas
   };
 }
 
+// Distribui um total de vidas nas faixas conforme a proporcao do default (maior resto).
+function distribuirVidas(base: number[], total: number): number[] {
+  const soma = base.reduce((a, b) => a + b, 0);
+  if (!soma || !Number.isFinite(total) || total <= 0) return base.map(() => 0);
+  const brutos = base.map((v) => (v / soma) * total);
+  const pisos = brutos.map((v) => Math.floor(v));
+  let resto = Math.round(total) - pisos.reduce((a, b) => a + b, 0);
+  const ordem = brutos
+    .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+    .sort((a, b) => b.frac - a.frac);
+  for (let k = 0; resto > 0 && k < ordem.length; k++, resto--) pisos[ordem[k].i] += 1;
+  return pisos;
+}
+
 const Bloco = ({
   titulo,
   calc,
@@ -65,6 +79,10 @@ const Bloco = ({
   editavel,
   onSpread,
   onSin,
+  totalVidas,
+  onTotalVidas,
+  onCalcular,
+  onRestaurar,
   destaque,
   colapsavel,
 }: {
@@ -75,6 +93,10 @@ const Bloco = ({
   editavel?: boolean;
   onSpread?: (v: number) => void;
   onSin?: (v: number) => void;
+  totalVidas?: number;
+  onTotalVidas?: (v: number) => void;
+  onCalcular?: () => void;
+  onRestaurar?: () => void;
   destaque?: boolean;
   colapsavel?: boolean;
 }) => {
@@ -115,6 +137,28 @@ const Bloco = ({
               className="h-8 w-24 rounded-md border border-amber-400 bg-amber-100 dark:bg-amber-500/20 px-2 text-sm text-foreground tabular-nums focus:outline-none focus:ring-2 focus:ring-amber-400/50"
             />
           </label>
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            Total de vidas
+            <input
+              type="number"
+              step="1"
+              value={totalVidas ?? 0}
+              onChange={(e) => onTotalVidas?.(Number(e.target.value))}
+              className="h-8 w-28 rounded-md border border-amber-400 bg-amber-100 dark:bg-amber-500/20 px-2 text-sm text-foreground tabular-nums focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+            />
+          </label>
+          <button
+            onClick={onCalcular}
+            className="h-8 px-4 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:opacity-90"
+          >
+            Calcular
+          </button>
+          <button
+            onClick={onRestaurar}
+            className="h-8 px-4 rounded-md border border-border text-xs font-medium text-foreground hover:bg-accent"
+          >
+            Restaurar
+          </button>
           <span className="text-[11px] text-muted-foreground">Campos em amarelo são editáveis</span>
         </>
       ) : (
@@ -180,9 +224,18 @@ const CarteirasBenevix = () => {
   const [aba, setAba] = useState<Aba>("adesao");
   const base = benevixBase[aba];
 
-  const [prop, setProp] = useState<Record<Aba, { spread: number; sin: number }>>({
-    adesao: { ...benevixBase.adesao.proposta },
-    pme: { ...benevixBase.pme.proposta },
+  const totalDefault = (a: Aba) =>
+    benevixBase[a].benevix.rows.reduce((s, r) => s + (r.vidas ?? 0), 0);
+  const padrao = (a: Aba) => ({ ...benevixBase[a].proposta, total: totalDefault(a) });
+
+  type Params = { spread: number; sin: number; total: number };
+  const [draft, setDraft] = useState<Record<Aba, Params>>({
+    adesao: padrao("adesao"),
+    pme: padrao("pme"),
+  });
+  const [prop, setProp] = useState<Record<Aba, Params>>({
+    adesao: padrao("adesao"),
+    pme: padrao("pme"),
   });
   const [sinLancers] = useState<Record<Aba, number>>({
     adesao: benevixBase.adesao.lancers.sin,
@@ -197,16 +250,15 @@ const CarteirasBenevix = () => {
     () => calcular(base.lancers.rows, null, sinLancers[aba]),
     [base, sinLancers, aba],
   );
-  const proposta = useMemo(
-    () =>
-      calcular(
-        base.benevix.rows,
-        prop[aba].spread,
-        prop[aba].sin,
-        benevix.rows.map((r) => r.despesas),
-      ),
-    [base, prop, aba, benevix],
-  );
+  const proposta = useMemo(() => {
+    const baseVidas = base.benevix.rows.map((r) => r.vidas ?? 0);
+    const novasVidas = distribuirVidas(baseVidas, prop[aba].total);
+    const rows = base.benevix.rows.map((r, i) => ({ ...r, vidas: novasVidas[i] }));
+    const despesas = benevix.rows.map((r, i) =>
+      baseVidas[i] ? (r.despesas / baseVidas[i]) * novasVidas[i] : 0,
+    );
+    return calcular(rows, prop[aba].spread, prop[aba].sin, despesas);
+  }, [base, prop, aba, benevix]);
 
   const delta = proposta.bensaude - benevix.bensaude;
 
@@ -244,12 +296,19 @@ const CarteirasBenevix = () => {
       <Bloco
         titulo="Benevix Proposta"
         calc={proposta}
-        spread={prop[aba].spread}
-        sin={prop[aba].sin}
+        spread={draft[aba].spread}
+        sin={draft[aba].sin}
+        totalVidas={draft[aba].total}
         editavel
         destaque
-        onSpread={(v) => setProp((p) => ({ ...p, [aba]: { ...p[aba], spread: v } }))}
-        onSin={(v) => setProp((p) => ({ ...p, [aba]: { ...p[aba], sin: v } }))}
+        onSpread={(v) => setDraft((p) => ({ ...p, [aba]: { ...p[aba], spread: v } }))}
+        onSin={(v) => setDraft((p) => ({ ...p, [aba]: { ...p[aba], sin: v } }))}
+        onTotalVidas={(v) => setDraft((p) => ({ ...p, [aba]: { ...p[aba], total: v } }))}
+        onCalcular={() => setProp((p) => ({ ...p, [aba]: { ...draft[aba] } }))}
+        onRestaurar={() => {
+          setDraft((p) => ({ ...p, [aba]: padrao(aba) }));
+          setProp((p) => ({ ...p, [aba]: padrao(aba) }));
+        }}
         colapsavel
       />
       <Bloco
