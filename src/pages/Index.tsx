@@ -69,6 +69,7 @@ import ContabilidadeGraficos from "@/components/ContabilidadeGraficos";
 import InteligenciaUberaba from "@/components/InteligenciaUberaba";
 import InteligenciaUnimed from "@/components/InteligenciaUnimed";
 import Promocoes from "@/components/Promocoes";
+import CarteirasBenevix from "@/components/CarteirasBenevix";
 
 
 import Assistencial from "@/components/Assistencial";
@@ -460,8 +461,10 @@ const Index = () => {
           ) : active === "__removed_orc_dw__" ? (
             <div />
 
-          ) : active === "Promoções" ? (
+          ) : active === "Premiação 4T 2026" ? (
             <Promocoes />
+          ) : active === "Carteiras Benevix" ? (
+            <CarteirasBenevix />
           ) : active === "B.I. Overview" ? (
             <BIOverview />
           ) : active === "Gráfico Carteira" ? (
