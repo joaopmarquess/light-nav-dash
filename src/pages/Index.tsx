@@ -69,6 +69,7 @@ import ContabilidadeGraficos from "@/components/ContabilidadeGraficos";
 import InteligenciaUberaba from "@/components/InteligenciaUberaba";
 import InteligenciaUnimed from "@/components/InteligenciaUnimed";
 import Promocoes from "@/components/Promocoes";
+import UberabaHospitais from "@/components/UberabaHospitais";
 import CarteirasBenevix from "@/components/CarteirasBenevix";
 
 
