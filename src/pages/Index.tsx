@@ -159,6 +159,7 @@ const menuItems: MenuItem[] = [
       { icon: Users, label: "Carteiras Benevix" },
       { icon: Building2, label: "Uberaba OPS" },
       { icon: BarChart3, label: "Uberaba Unimed" },
+      { icon: Building2, label: "Uberaba Hospitais" },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
