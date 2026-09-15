@@ -57,6 +57,20 @@ function calcular(rows: FaixaRow[], spread: number | null, sin: number, despesas
   };
 }
 
+// Distribui um total de vidas nas faixas conforme a proporcao do default (maior resto).
+function distribuirVidas(base: number[], total: number): number[] {
+  const soma = base.reduce((a, b) => a + b, 0);
+  if (!soma || !Number.isFinite(total) || total <= 0) return base.map(() => 0);
+  const brutos = base.map((v) => (v / soma) * total);
+  const pisos = brutos.map((v) => Math.floor(v));
+  let resto = Math.round(total) - pisos.reduce((a, b) => a + b, 0);
+  const ordem = brutos
+    .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+    .sort((a, b) => b.frac - a.frac);
+  for (let k = 0; resto > 0 && k < ordem.length; k++, resto--) pisos[ordem[k].i] += 1;
+  return pisos;
+}
+
 const Bloco = ({
   titulo,
   calc,
@@ -65,6 +79,10 @@ const Bloco = ({
   editavel,
   onSpread,
   onSin,
+  totalVidas,
+  onTotalVidas,
+  onCalcular,
+  onRestaurar,
   destaque,
   colapsavel,
 }: {
@@ -75,6 +93,10 @@ const Bloco = ({
   editavel?: boolean;
   onSpread?: (v: number) => void;
   onSin?: (v: number) => void;
+  totalVidas?: number;
+  onTotalVidas?: (v: number) => void;
+  onCalcular?: () => void;
+  onRestaurar?: () => void;
   destaque?: boolean;
   colapsavel?: boolean;
 }) => {
