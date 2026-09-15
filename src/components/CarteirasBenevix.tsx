@@ -167,7 +167,7 @@ const CarteirasBenevix = () => {
     adesao: { ...benevixBase.adesao.proposta },
     pme: { ...benevixBase.pme.proposta },
   });
-  const [sinLancers, setSinLancers] = useState<Record<Aba, number>>({
+  const [sinLancers] = useState<Record<Aba, number>>({
     adesao: benevixBase.adesao.lancers.sin,
     pme: benevixBase.pme.lancers.sin,
   });
@@ -230,8 +230,6 @@ const CarteirasBenevix = () => {
         calc={lancers}
         spread={null}
         sin={sinLancers[aba]}
-        editavel
-        onSin={(v) => setSinLancers((p) => ({ ...p, [aba]: v }))}
       />
       <Bloco
         titulo="Benevix Proposta"
