@@ -14,6 +14,48 @@ const HOSPITAIS: Row[] = [
   { nome: "Hospital Beneficência Portuguesa", cnpj: "25.437.948/0001-30", cnes: "2164825", leitos: 40 },
 ];
 
+const INFO: Record<string, { titulo: string; texto: string }> = {
+  "2206595": {
+    titulo: "Atendimento",
+    texto:
+      "Exclusivamente pelo SUS (Sistema Único de Saúde), integrando a rede pública de alta complexidade regulada pelo município e estado.",
+  },
+  "2195585": {
+    titulo: "Convênios e Planos",
+    texto:
+      "Atende particulares, o próprio plano de descontos da instituição (Cartão MPHU Saúde) e alguns convênios de saúde e seguros corporativos (como Bradesco Saúde, Cassi, Cemig Saúde, Petrobras, Porto Seguro Saúde e Unimed, sujeito a confirmação prévia de redes específicas), além de vagas reguladas pelo SUS.",
+  },
+  "9141839": {
+    titulo: "Atendimento",
+    texto:
+      "Totalmente voltado para o SUS, funcionando como retaguarda de urgência, emergência e leitos de referência macro-regional para a rede pública.",
+  },
+  "2165058": {
+    titulo: "Convênios e Planos",
+    texto:
+      "Combate ao Câncer. Além de forte atuação pelo SUS na área de oncologia, possui convênio com diversos planos de saúde e seguradoras, tais como: Amil, Bradesco Saúde, Unimed, Cassi, Copass, Hapvida, Assefaz, Capesaúde, Cemig Saúde, Postal Saúde, Saúde Caixa, IPSM-MG e Usisaúde (recomenda-se confirmar a cobertura específica do plano diretamente no setor de convênios do hospital).",
+  },
+  "9745041": {
+    titulo: "Convênios e Planos",
+    texto:
+      "Focado prioritariamente nos beneficiários do sistema Unimed (cartões locais e intercâmbio nacional do sistema) e particulares.",
+  },
+  "2164795": {
+    titulo: "Atendimento",
+    texto:
+      "Especializado e integrado à rede pública municipal de saúde para atendimento pediátrico via SUS.",
+  },
+  "2165066": {
+    titulo: "Convênios e Planos",
+    texto:
+      "Atendimento voltado para pacientes particulares, redes de saúde de menor porte e múltiplos convênios locais/regionais.",
+  },
+  "2164825": {
+    titulo: "Convênios e Planos",
+    texto: "Histórico por atendimentos particulares, filantropia e convênios selecionados da região.",
+  },
+};
+
 type SortKey = keyof Row;
 
 const UberabaHospitais = () => {
