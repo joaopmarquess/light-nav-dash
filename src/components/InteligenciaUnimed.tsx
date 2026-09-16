@@ -97,15 +97,6 @@ const InteligenciaUnimed = () => {
       ]);
       g.rows.forEach((o) => {
         body.push([o.nome, fmt(o.ades), fmt(o.canc), fmtSigned(o.ades - o.canc), fmt(o.vidas)]);
-        (o.tipos ?? []).forEach((tp) => {
-          body.push([
-            { content: `     ${tp.tipo}`, styles: { fontSize: 6.6, textColor: [90, 100, 110] } },
-            { content: fmt(tp.ades), styles: { fontSize: 6.6 } },
-            { content: fmt(tp.canc), styles: { fontSize: 6.6 } },
-            { content: fmtSigned(tp.ades - tp.canc), styles: { fontSize: 6.6 } },
-            { content: fmt(tp.vidas), styles: { fontSize: 6.6 } },
-          ]);
-        });
       });
     });
 
