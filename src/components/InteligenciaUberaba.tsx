@@ -110,6 +110,61 @@ const InteligenciaUberaba = () => {
       ].join("\n")
     : "Clique para abrir o submenu Unimed";
 
+  const gerarPdf = async () => {
+    const body: (string | { content: string; styles?: Record<string, unknown>; colSpan?: number })[][] = [];
+    groups.forEach((g) => {
+      const t = tot(g.rows);
+      body.push([
+        { content: `${g.titulo} (${g.rows.length})`, styles: { ...groupRowStyles, halign: "left" } },
+        { content: fmt(t.ades), styles: { ...groupRowStyles, halign: "right" } },
+        { content: fmt(t.canc), styles: { ...groupRowStyles, halign: "right" } },
+        { content: fmtSigned(t.cres), styles: { ...groupRowStyles, halign: "right" } },
+        { content: fmt(t.vidas), styles: { ...groupRowStyles, halign: "right" } },
+      ]);
+      g.rows.forEach((o) => {
+        body.push([
+          `${o.nome} (${o.registro})`,
+          fmt(o.ades),
+          fmt(o.canc),
+          fmtSigned(o.ades - o.canc),
+          fmt(o.vidas),
+        ]);
+        (o.tipos ?? []).forEach((tp) => {
+          body.push([
+            { content: `     ${tp.tipo}`, styles: { fontSize: 6.6, textColor: [90, 100, 110] } },
+            { content: fmt(tp.ades), styles: { fontSize: 6.6 } },
+            { content: fmt(tp.canc), styles: { fontSize: 6.6 } },
+            { content: fmtSigned(tp.ades - tp.canc), styles: { fontSize: 6.6 } },
+            { content: fmt(tp.vidas), styles: { fontSize: 6.6 } },
+          ]);
+        });
+      });
+    });
+
+    await gerarPdfTabela({
+      fileName: "uberaba-ops.pdf",
+      title: "Uberaba · Operadoras (OPS)",
+      plano: `${data.municipio} · ${data.operadoras.length} operadoras · ${data.meses[0]} → ${data.meses[data.meses.length - 1]}`,
+      secao: q.trim() ? `Filtro: ${q.trim()}` : "Adesões, cancelamentos, crescimento e vidas",
+      head: [["Operadora", "Adesões", "Cancelamentos", "Crescimento", "Vidas jun/2026"]],
+      body,
+      foot: [[
+        { content: "TOTAL GERAL", styles: { ...totalRowStyles, halign: "left" } },
+        { content: fmt(geral.ades), styles: { ...totalRowStyles, halign: "right" } },
+        { content: fmt(geral.canc), styles: { ...totalRowStyles, halign: "right" } },
+        { content: fmtSigned(geral.cres), styles: { ...totalRowStyles, halign: "right" } },
+        { content: fmt(geral.vidas), styles: { ...totalRowStyles, halign: "right" } },
+      ]],
+      columnStyles: {
+        0: { cellWidth: 92 },
+        1: { halign: "right" },
+        2: { halign: "right" },
+        3: { halign: "right" },
+        4: { halign: "right" },
+      },
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
