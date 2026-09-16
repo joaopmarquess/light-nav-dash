@@ -71,6 +71,7 @@ import InteligenciaUnimed from "@/components/InteligenciaUnimed";
 import Promocoes from "@/components/Promocoes";
 import UberabaHospitais from "@/components/UberabaHospitais";
 import CarteirasBenevix from "@/components/CarteirasBenevix";
+import UberabaShell from "@/components/UberabaShell";
 
 
 import Assistencial from "@/components/Assistencial";
