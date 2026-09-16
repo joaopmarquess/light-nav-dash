@@ -157,10 +157,7 @@ const menuItems: MenuItem[] = [
     label: "Simulações",
     children: [
       { icon: Trophy, label: "Premiação 4T 2026" },
-      { icon: Users, label: "Carteiras Benevix" },
-      { icon: Building2, label: "Uberaba OPS" },
-      { icon: BarChart3, label: "Uberaba Unimed" },
-      { icon: Building2, label: "Uberaba Hospitais" },
+      { icon: Building2, label: "Uberaba" },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
