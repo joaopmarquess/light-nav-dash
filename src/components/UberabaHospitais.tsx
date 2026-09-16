@@ -4,8 +4,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import mphuFoto from "@/assets/hospital-mphu.png.asset.json";
 import hcFoto from "@/assets/hospital-hc-uftm.png.asset.json";
 import jaFoto from "@/assets/hospital-jose-alencar.png.asset.json";
+import haFoto from "@/assets/hospital-helio-angotti.png.asset.json";
 
-const FOTO: Record<string, string> = { "2195585": mphuFoto.url, "2206595": hcFoto.url, "9141839": jaFoto.url };
+const FOTO: Record<string, string> = { "2195585": mphuFoto.url, "2206595": hcFoto.url, "9141839": jaFoto.url, "2165058": haFoto.url };
 
 type Row = { nome: string; cnpj: string; cnes: string; leitos: number };
 
