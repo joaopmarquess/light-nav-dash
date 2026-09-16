@@ -284,6 +284,10 @@ const UberabaHospitais = () => {
           </tfoot>
         </table>
       </div>
+
+      {preview && (
+        <PdfPreview build={montarPdf} fileName="uberaba-hospitais.pdf" onClose={() => setPreview(false)} />
+      )}
     </div>
     </TooltipProvider>
   );
