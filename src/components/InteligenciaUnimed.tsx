@@ -30,6 +30,7 @@ const InteligenciaUnimed = () => {
   const [openOp, setOpenOp] = useState<Record<string, boolean>>({});
   const [sortKey, setSortKey] = useState<SortKey>("vidas");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [preview, setPreview] = useState(false);
 
   const toggleSort = (k: SortKey) => {
     if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -265,6 +266,10 @@ const InteligenciaUnimed = () => {
           </tbody>
         </table>
       </div>
+
+      {preview && (
+        <PdfPreview build={montarPdf} fileName="uberaba-unimed.pdf" onClose={() => setPreview(false)} />
+      )}
     </div>
   );
 };
