@@ -71,6 +71,7 @@ import InteligenciaUnimed from "@/components/InteligenciaUnimed";
 import Promocoes from "@/components/Promocoes";
 import UberabaHospitais from "@/components/UberabaHospitais";
 import CarteirasBenevix from "@/components/CarteirasBenevix";
+import UberabaShell from "@/components/UberabaShell";
 
 
 import Assistencial from "@/components/Assistencial";
@@ -121,6 +122,7 @@ const menuItems: MenuItem[] = [
       { icon: TrendingUp, label: "Cancelamentos" },
       { icon: LayoutDashboard, label: "Dashboard" },
       { icon: BarChart3, label: "Gráfico Carteira" },
+      { icon: Users, label: "Administradoras" },
     ],
   },
   {
@@ -157,10 +159,7 @@ const menuItems: MenuItem[] = [
     label: "Simulações",
     children: [
       { icon: Trophy, label: "Premiação 4T 2026" },
-      { icon: Users, label: "Carteiras Benevix" },
-      { icon: Building2, label: "Uberaba OPS" },
-      { icon: BarChart3, label: "Uberaba Unimed" },
-      { icon: Building2, label: "Uberaba Hospitais" },
+      { icon: Building2, label: "Uberaba" },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
@@ -186,7 +185,7 @@ const Index = () => {
     window.addEventListener("open-bi-overview", biHandler);
     const unimedHandler = () => {
       setOpenGroups((p) => ({ ...p, "Simulações": true }));
-      setActive("Uberaba Unimed");
+      setActive("Uberaba");
     };
     window.addEventListener("open-unimed-uberaba", unimedHandler);
     return () => {
@@ -393,16 +392,8 @@ const Index = () => {
             <DREGerencialPE />
           ) : active === "Orçamento" ? (
             <Orcamento />
-          ) : active === "Uberaba OPS" ? (
-            <div className="h-full overflow-auto pr-1">
-              <InteligenciaUberaba />
-            </div>
-          ) : active === "Uberaba Unimed" ? (
-            <div className="h-full overflow-auto pr-1">
-              <InteligenciaUnimed />
-            </div>
-          ) : active === "Uberaba Hospitais" ? (
-            <UberabaHospitais />
+          ) : active === "Uberaba" ? (
+            <UberabaShell />
           ) : active === "Gráficos" ? (
             <ContabilidadeGraficos />
 
@@ -461,7 +452,7 @@ const Index = () => {
 
           ) : active === "Premiação 4T 2026" ? (
             <Promocoes />
-          ) : active === "Carteiras Benevix" ? (
+          ) : active === "Administradoras" ? (
             <CarteirasBenevix />
           ) : active === "B.I. Overview" ? (
             <BIOverview />
