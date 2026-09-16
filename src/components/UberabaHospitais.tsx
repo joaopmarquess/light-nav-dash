@@ -46,8 +46,22 @@ const TIPO_LABEL: Record<Tipo, string> = {
 
 const TipoIcone = ({ tipo }: { tipo: Tipo }) => (
   <span className="inline-flex items-center gap-0.5 align-middle">
-    {tipo !== "privado" && <Landmark className="h-4 w-4 text-emerald-600" />}
-    {tipo !== "sus" && <CreditCard className="h-4 w-4 text-sky-600" />}
+    {tipo === "privado" ? (
+      <>
+        <CreditCard className="h-4 w-4 text-sky-600" />
+        <CreditCard className="h-4 w-4 text-sky-600" />
+      </>
+    ) : tipo === "sus" ? (
+      <>
+        <Landmark className="h-4 w-4 text-emerald-600" />
+        <Landmark className="h-4 w-4 text-emerald-600" />
+      </>
+    ) : (
+      <>
+        <Landmark className="h-4 w-4 text-emerald-600" />
+        <CreditCard className="h-4 w-4 text-sky-600" />
+      </>
+    )}
   </span>
 );
 
