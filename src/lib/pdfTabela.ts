@@ -14,6 +14,8 @@ export type PdfTabelaOpts = {
   columnStyles?: Record<number, Partial<Styles>>;
   fontSize?: number;
   orientation?: "portrait" | "landscape";
+  /** Y (mm) do título; use ~33 para começar abaixo do traço do timbrado. */
+  headingTop?: number;
 };
 
 /** Monta um PDF A4 com timbrado e tabela no padrão dos relatórios do projeto. */
