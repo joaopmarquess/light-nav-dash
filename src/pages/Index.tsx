@@ -121,6 +121,7 @@ const menuItems: MenuItem[] = [
       { icon: TrendingUp, label: "Cancelamentos" },
       { icon: LayoutDashboard, label: "Dashboard" },
       { icon: BarChart3, label: "Gráfico Carteira" },
+      { icon: Users, label: "Administradoras" },
     ],
   },
   {
