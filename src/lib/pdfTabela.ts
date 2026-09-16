@@ -16,8 +16,8 @@ export type PdfTabelaOpts = {
   orientation?: "portrait" | "landscape";
 };
 
-/** Gera um PDF A4 com timbrado e tabela no padrão dos relatórios do projeto. */
-export async function gerarPdfTabela(opts: PdfTabelaOpts) {
+/** Monta um PDF A4 com timbrado e tabela no padrão dos relatórios do projeto. */
+export async function buildPdfTabela(opts: PdfTabelaOpts): Promise<jsPDF> {
   const timbrado = await loadTimbrado();
   const doc = new jsPDF({ orientation: opts.orientation ?? "portrait", unit: "mm", format: "a4" });
   attachTimbrado(doc, timbrado);
@@ -62,5 +62,11 @@ export async function gerarPdfTabela(opts: PdfTabelaOpts) {
     doc.text(`${i} de ${pages}`, pageW - marginR, pageH - 14, { align: "right" });
   }
 
+  return doc;
+}
+
+/** Gera e baixa direto (sem pré-visualização). */
+export async function gerarPdfTabela(opts: PdfTabelaOpts) {
+  const doc = await buildPdfTabela(opts);
   doc.save(opts.fileName);
 }
