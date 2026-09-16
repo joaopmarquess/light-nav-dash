@@ -114,6 +114,7 @@ type SortKey = keyof Row;
 
 const UberabaHospitais = () => {
   const [sort, setSort] = useState<{ key: SortKey; asc: boolean } | null>(null);
+  const [preview, setPreview] = useState(false);
 
   const rows = [...HOSPITAIS].sort((a, b) => {
     if (!sort) {
