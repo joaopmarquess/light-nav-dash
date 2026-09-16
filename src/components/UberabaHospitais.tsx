@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { ArrowDown, ArrowUp, BedDouble, Building2, CreditCard, Hospital, Landmark } from "lucide-react";
+import { ArrowDown, ArrowUp, BedDouble, Building2, CreditCard, FileDown, Hospital, Landmark } from "lucide-react";
+import { gerarPdfTabela } from "@/lib/pdfTabela";
+import { totalRowStyles } from "@/lib/pdfTheme";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import mphuFoto from "@/assets/hospital-mphu.png.asset.json";
 import hcFoto from "@/assets/hospital-hc-uftm.png.asset.json";
