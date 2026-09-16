@@ -110,9 +110,15 @@ const INFO: Record<string, { titulo: string; texto: string }> = {
 type SortKey = keyof Row;
 
 const UberabaHospitais = () => {
-  const [sort, setSort] = useState<{ key: SortKey; asc: boolean }>({ key: "leitos", asc: false });
+  const [sort, setSort] = useState<{ key: SortKey; asc: boolean } | null>(null);
 
   const rows = [...HOSPITAIS].sort((a, b) => {
+    if (!sort) {
+      const pa = TIPO[a.cnes] === "sus" ? 1 : 0;
+      const pb = TIPO[b.cnes] === "sus" ? 1 : 0;
+      if (pa !== pb) return pa - pb;
+      return b.leitos - a.leitos;
+    }
     const va = a[sort.key];
     const vb = b[sort.key];
     const cmp = typeof va === "number" && typeof vb === "number"
@@ -125,7 +131,7 @@ const UberabaHospitais = () => {
   const max = Math.max(...HOSPITAIS.map((r) => r.leitos));
 
   const toggle = (key: SortKey) =>
-    setSort((p) => (p.key === key ? { key, asc: !p.asc } : { key, asc: key === "nome" }));
+    setSort((p) => (p && p.key === key ? { key, asc: !p.asc } : { key, asc: key === "nome" }));
 
   const Th = ({ k, label, right }: { k: SortKey; label: string; right?: boolean }) => (
     <th
@@ -134,7 +140,7 @@ const UberabaHospitais = () => {
     >
       <span className={`inline-flex items-center gap-1 ${right ? "flex-row-reverse" : ""}`}>
         {label}
-        {sort.key === k && (sort.asc ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+        {sort?.key === k && (sort.asc ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
       </span>
     </th>
   );
