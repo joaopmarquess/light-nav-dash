@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowDown, ArrowUp, BedDouble, Building2, CreditCard, FileDown, Hospital, Landmark } from "lucide-react";
-import { gerarPdfTabela } from "@/lib/pdfTabela";
+import { buildPdfTabela } from "@/lib/pdfTabela";
+import PdfPreview from "@/components/PdfPreview";
 import { totalRowStyles } from "@/lib/pdfTheme";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import mphuFoto from "@/assets/hospital-mphu.png.asset.json";
@@ -113,6 +114,7 @@ type SortKey = keyof Row;
 
 const UberabaHospitais = () => {
   const [sort, setSort] = useState<{ key: SortKey; asc: boolean } | null>(null);
+  const [preview, setPreview] = useState(false);
 
   const rows = [...HOSPITAIS].sort((a, b) => {
     if (!sort) {
@@ -132,8 +134,8 @@ const UberabaHospitais = () => {
   const total = HOSPITAIS.reduce((s, r) => s + r.leitos, 0);
   const max = Math.max(...HOSPITAIS.map((r) => r.leitos));
 
-  const gerarPdf = async () => {
-    await gerarPdfTabela({
+  const montarPdf = async () => {
+    return buildPdfTabela({
       fileName: "uberaba-hospitais.pdf",
       title: "Uberaba · Hospitais",
       plano: `${HOSPITAIS.length} hospitais · ${total.toLocaleString("pt-BR")} leitos (~)`,
@@ -195,9 +197,9 @@ const UberabaHospitais = () => {
         </div>
         <div className="ml-auto flex items-center gap-2">
           <button
-            onClick={gerarPdf}
+            onClick={() => setPreview(true)}
             title="Gerar PDF"
-            className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm hover:bg-muted"
+            className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
           >
             <FileDown className="h-4 w-4" />
             Gerar PDF
@@ -282,6 +284,10 @@ const UberabaHospitais = () => {
           </tfoot>
         </table>
       </div>
+
+      {preview && (
+        <PdfPreview build={montarPdf} fileName="uberaba-hospitais.pdf" onClose={() => setPreview(false)} />
+      )}
     </div>
     </TooltipProvider>
   );

@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { ChevronRight, Search, Building2, ArrowUp, ArrowDown, ArrowUpDown, FileDown } from "lucide-react";
-import { gerarPdfTabela } from "@/lib/pdfTabela";
+import { buildPdfTabela } from "@/lib/pdfTabela";
+import PdfPreview from "@/components/PdfPreview";
 import { groupRowStyles, totalRowStyles } from "@/lib/pdfTheme";
 
 type Tipo = { tipo: string; ades: number; canc: number; vidas: number; serie: number[] };
@@ -29,6 +30,7 @@ const InteligenciaUnimed = () => {
   const [openOp, setOpenOp] = useState<Record<string, boolean>>({});
   const [sortKey, setSortKey] = useState<SortKey>("vidas");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [preview, setPreview] = useState(false);
 
   const toggleSort = (k: SortKey) => {
     if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -82,7 +84,7 @@ const InteligenciaUnimed = () => {
 
   const geral = tot(data.operadoras);
 
-  const gerarPdf = async () => {
+  const montarPdf = async () => {
     const body: (string | { content: string; styles?: Record<string, unknown> })[][] = [];
     groups.forEach((g) => {
       const t = tot(g.rows);
@@ -107,7 +109,7 @@ const InteligenciaUnimed = () => {
       });
     });
 
-    await gerarPdfTabela({
+    return buildPdfTabela({
       fileName: "uberaba-unimed.pdf",
       title: "Uberaba · Unimed por Cidade",
       plano: `${data.municipio} · ${data.operadoras.length} cidades · ${data.meses[0]} → ${data.meses[data.meses.length - 1]}`,
@@ -159,9 +161,9 @@ const InteligenciaUnimed = () => {
           />
         </div>
         <button
-          onClick={gerarPdf}
+          onClick={() => setPreview(true)}
           title="Gerar PDF"
-          className="ml-auto inline-flex h-9 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm hover:bg-muted"
+          className="ml-auto inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
         >
           <FileDown className="h-4 w-4" />
           Gerar PDF
@@ -264,6 +266,10 @@ const InteligenciaUnimed = () => {
           </tbody>
         </table>
       </div>
+
+      {preview && (
+        <PdfPreview build={montarPdf} fileName="uberaba-unimed.pdf" onClose={() => setPreview(false)} />
+      )}
     </div>
   );
 };
