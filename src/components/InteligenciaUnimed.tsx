@@ -101,6 +101,7 @@ const InteligenciaUnimed = () => {
     });
 
     return buildPdfTabela({
+      headingTop: 33,
       fileName: "uberaba-unimed.pdf",
       title: "Uberaba · Unimed por Cidade",
       plano: `${data.municipio} · ${data.operadoras.length} cidades · ${data.meses[0]} → ${data.meses[data.meses.length - 1]}`,

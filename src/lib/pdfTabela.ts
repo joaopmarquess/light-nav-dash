@@ -14,6 +14,8 @@ export type PdfTabelaOpts = {
   columnStyles?: Record<number, Partial<Styles>>;
   fontSize?: number;
   orientation?: "portrait" | "landscape";
+  /** Y (mm) do título; use ~33 para começar abaixo do traço do timbrado. */
+  headingTop?: number;
 };
 
 /** Monta um PDF A4 com timbrado e tabela no padrão dos relatórios do projeto. */
@@ -26,7 +28,8 @@ export async function buildPdfTabela(opts: PdfTabelaOpts): Promise<jsPDF> {
   const pageH = doc.internal.pageSize.getHeight();
   const marginL = 10;
   const marginR = 10;
-  const marginT = 44;
+  const headingTop = opts.headingTop ?? 23;
+  const marginT = 44 + (headingTop - 23);
   const marginB = 16;
 
   const base = baseTableStyles(opts.fontSize ?? 7.6);
@@ -49,6 +52,7 @@ export async function buildPdfTabela(opts: PdfTabelaOpts): Promise<jsPDF> {
         secao: opts.secao,
         marginL,
         marginR,
+        top: headingTop,
       });
     },
   });
