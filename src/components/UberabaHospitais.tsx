@@ -199,7 +199,7 @@ const UberabaHospitais = () => {
           <button
             onClick={() => setPreview(true)}
             title="Gerar PDF"
-            className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm hover:bg-muted"
+            className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
           >
             <FileDown className="h-4 w-4" />
             Gerar PDF
