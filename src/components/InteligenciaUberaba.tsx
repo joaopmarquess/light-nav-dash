@@ -137,6 +137,14 @@ const InteligenciaUberaba = () => {
             className="h-9 w-80 rounded-md border border-input bg-background pl-8 pr-3 text-sm outline-none focus:ring-1 focus:ring-ring"
           />
         </div>
+        <button
+          onClick={gerarPdf}
+          title="Gerar PDF"
+          className="ml-auto inline-flex h-9 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm hover:bg-muted"
+        >
+          <FileDown className="h-4 w-4" />
+          Gerar PDF
+        </button>
       </div>
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
