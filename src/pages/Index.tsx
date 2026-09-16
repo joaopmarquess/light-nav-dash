@@ -452,7 +452,7 @@ const Index = () => {
 
           ) : active === "Premiação 4T 2026" ? (
             <Promocoes />
-          ) : active === "Carteiras Benevix" ? (
+          ) : active === "Administradoras" ? (
             <CarteirasBenevix />
           ) : active === "B.I. Overview" ? (
             <BIOverview />
