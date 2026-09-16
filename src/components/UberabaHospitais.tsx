@@ -131,7 +131,7 @@ const UberabaHospitais = () => {
   const max = Math.max(...HOSPITAIS.map((r) => r.leitos));
 
   const toggle = (key: SortKey) =>
-    setSort((p) => (p.key === key ? { key, asc: !p.asc } : { key, asc: key === "nome" }));
+    setSort((p) => (p && p.key === key ? { key, asc: !p.asc } : { key, asc: key === "nome" }));
 
   const Th = ({ k, label, right }: { k: SortKey; label: string; right?: boolean }) => (
     <th
@@ -140,7 +140,7 @@ const UberabaHospitais = () => {
     >
       <span className={`inline-flex items-center gap-1 ${right ? "flex-row-reverse" : ""}`}>
         {label}
-        {sort.key === k && (sort.asc ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+        {sort?.key === k && (sort.asc ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
       </span>
     </th>
   );
