@@ -132,6 +132,33 @@ const UberabaHospitais = () => {
   const total = HOSPITAIS.reduce((s, r) => s + r.leitos, 0);
   const max = Math.max(...HOSPITAIS.map((r) => r.leitos));
 
+  const gerarPdf = async () => {
+    await gerarPdfTabela({
+      fileName: "uberaba-hospitais.pdf",
+      title: "Uberaba · Hospitais",
+      plano: `${HOSPITAIS.length} hospitais · ${total.toLocaleString("pt-BR")} leitos (~)`,
+      secao: "Nome, CNPJ, CNES, perfil de atendimento e leitos",
+      head: [["Hospital", "CNPJ", "CNES", "Perfil", "Leitos (~)"]],
+      body: rows.map((r) => [
+        r.nome,
+        r.cnpj,
+        r.cnes,
+        TIPO_LABEL[TIPO[r.cnes]],
+        r.leitos.toLocaleString("pt-BR"),
+      ]),
+      foot: [[
+        { content: "TOTAL", colSpan: 4, styles: { ...totalRowStyles, halign: "left" as const } },
+        { content: total.toLocaleString("pt-BR"), styles: { ...totalRowStyles, halign: "right" as const } },
+      ]],
+      columnStyles: {
+        0: { cellWidth: 62 },
+        1: { cellWidth: 30, halign: "center" },
+        2: { cellWidth: 18, halign: "center" },
+        4: { cellWidth: 18, halign: "right" },
+      },
+    });
+  };
+
   const toggle = (key: SortKey) =>
     setSort((p) => (p && p.key === key ? { key, asc: !p.asc } : { key, asc: key === "nome" }));
 
@@ -166,7 +193,15 @@ const UberabaHospitais = () => {
             <TipoIcone tipo="privado" /> Convênios/particulares
           </span>
         </div>
-        <div className="ml-auto flex gap-2">
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={gerarPdf}
+            title="Gerar PDF"
+            className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm hover:bg-muted"
+          >
+            <FileDown className="h-4 w-4" />
+            Gerar PDF
+          </button>
           <div className="rounded-md border border-border bg-card px-3 py-1.5 text-sm">
             <span className="flex items-center gap-2 text-muted-foreground">
               <Building2 className="h-4 w-4" /> Hospitais
