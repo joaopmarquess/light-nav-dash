@@ -26,7 +26,7 @@ export async function buildPdfTabela(opts: PdfTabelaOpts): Promise<jsPDF> {
   const pageH = doc.internal.pageSize.getHeight();
   const marginL = 10;
   const marginR = 10;
-  const marginT = 56;
+  const marginT = 44;
   const marginB = 16;
 
   const base = baseTableStyles(opts.fontSize ?? 7.6);
