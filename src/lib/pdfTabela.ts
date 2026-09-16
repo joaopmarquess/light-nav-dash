@@ -52,6 +52,7 @@ export async function buildPdfTabela(opts: PdfTabelaOpts): Promise<jsPDF> {
         secao: opts.secao,
         marginL,
         marginR,
+        top: headingTop,
       });
     },
   });
