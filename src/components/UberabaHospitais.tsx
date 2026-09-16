@@ -48,7 +48,7 @@ const TIPO_LABEL: Record<Tipo, string> = {
 };
 
 const TipoIcone = ({ tipo }: { tipo: Tipo }) => (
-  <span className="inline-flex items-center gap-0.5 align-middle">
+  <span className="inline-flex cursor-help items-center gap-0.5 align-middle" title={TIPO_LABEL[tipo]}>
     {tipo === "privado" ? (
       <>
         <CreditCard className="h-4 w-4 text-sky-600" />
