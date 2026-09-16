@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { ArrowDown, ArrowUp, BedDouble, Building2, CreditCard, Hospital, Landmark } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import mphuFoto from "@/assets/hospital-mphu.png.asset.json";
+
+const FOTO: Record<string, string> = { "2195585": mphuFoto.url };
 
 type Row = { nome: string; cnpj: string; cnes: string; leitos: number };
 
@@ -174,6 +177,14 @@ const UberabaHospitais = () => {
                       </span>
                     </TooltipTrigger>
                     <TooltipContent side="right" className="max-w-sm">
+                      {FOTO[r.cnes] && (
+                        <img
+                          src={FOTO[r.cnes]}
+                          alt={`Fachada do ${r.nome}`}
+                          loading="lazy"
+                          className="mb-2 w-full rounded-md border border-border object-cover"
+                        />
+                      )}
                       <p className="mb-1 text-xs font-semibold">{TIPO_LABEL[TIPO[r.cnes]]}</p>
                       <p className="mb-1 text-xs font-semibold">{INFO[r.cnes]?.titulo}</p>
                       <p className="text-xs leading-relaxed">{INFO[r.cnes]?.texto}</p>
