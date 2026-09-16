@@ -136,6 +136,7 @@ const UberabaHospitais = () => {
 
   const montarPdf = async () => {
     return buildPdfTabela({
+      headingTop: 33,
       fileName: "uberaba-hospitais.pdf",
       title: "Uberaba · Hospitais",
       plano: `${HOSPITAIS.length} hospitais · ${total.toLocaleString("pt-BR")} leitos (~)`,

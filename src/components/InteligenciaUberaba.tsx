@@ -135,6 +135,7 @@ const InteligenciaUberaba = () => {
     });
 
     return buildPdfTabela({
+      headingTop: 33,
       fileName: "uberaba-ops.pdf",
       title: "Uberaba · Operadoras (OPS)",
       plano: `${data.municipio} · ${data.operadoras.length} operadoras · ${data.meses[0]} → ${data.meses[data.meses.length - 1]}`,
