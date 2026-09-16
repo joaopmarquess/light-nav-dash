@@ -2,8 +2,9 @@ import { useState } from "react";
 import { ArrowDown, ArrowUp, BedDouble, Building2, CreditCard, Hospital, Landmark } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import mphuFoto from "@/assets/hospital-mphu.png.asset.json";
+import hcFoto from "@/assets/hospital-hc-uftm.png.asset.json";
 
-const FOTO: Record<string, string> = { "2195585": mphuFoto.url };
+const FOTO: Record<string, string> = { "2195585": mphuFoto.url, "2206595": hcFoto.url };
 
 type Row = { nome: string; cnpj: string; cnes: string; leitos: number };
 
