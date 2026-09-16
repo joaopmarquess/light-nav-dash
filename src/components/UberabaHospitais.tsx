@@ -5,7 +5,7 @@ import mphuFoto from "@/assets/hospital-mphu.png.asset.json";
 import hcFoto from "@/assets/hospital-hc-uftm.png.asset.json";
 import jaFoto from "@/assets/hospital-jose-alencar.png.asset.json";
 
-const FOTO: Record<string, string> = { "2195585": mphuFoto.url, "2206595": hcFoto.url };
+const FOTO: Record<string, string> = { "2195585": mphuFoto.url, "2206595": hcFoto.url, "9141839": jaFoto.url };
 
 type Row = { nome: string; cnpj: string; cnes: string; leitos: number };
 
