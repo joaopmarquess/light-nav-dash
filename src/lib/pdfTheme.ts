@@ -128,7 +128,7 @@ export function drawReportHeading(
   doc.text(plano, cx, 40.9, { align: "center", baseline: "middle" });
 
   doc.setFontSize(9.5);
-  doc.setTextColor(...PDF_COLORS.text);
+  doc.setTextColor(...PDF_COLORS.navy);
   doc.text(secao, cx, 47.5, { align: "center", baseline: "middle" });
 
   doc.setFont("helvetica", "normal");
