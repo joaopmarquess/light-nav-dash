@@ -8,8 +8,9 @@ import haFoto from "@/assets/hospital-helio-angotti.png.asset.json";
 import unimedFoto from "@/assets/hospital-unimed-uberaba.png.asset.json";
 import slFoto from "@/assets/hospital-santa-lucia.png.asset.json";
 import hcriFoto from "@/assets/hospital-da-crianca.png.asset.json";
+import bpFoto from "@/assets/hospital-beneficencia-portuguesa.png.asset.json";
 
-const FOTO: Record<string, string> = { "2195585": mphuFoto.url, "2206595": hcFoto.url, "9141839": jaFoto.url, "2165058": haFoto.url, "9745041": unimedFoto.url, "2165066": slFoto.url, "2164795": hcriFoto.url };
+const FOTO: Record<string, string> = { "2195585": mphuFoto.url, "2206595": hcFoto.url, "9141839": jaFoto.url, "2165058": haFoto.url, "9745041": unimedFoto.url, "2165066": slFoto.url, "2164795": hcriFoto.url, "2164825": bpFoto.url };
 
 type Row = { nome: string; cnpj: string; cnes: string; leitos: number };
 
