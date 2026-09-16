@@ -116,21 +116,22 @@ export function drawReportHeading(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11.5);
   doc.setTextColor(...PDF_COLORS.navy);
-  doc.text(title, cx, 35, { align: "center", baseline: "middle" });
+  doc.text(title, cx, 23, { align: "center", baseline: "middle" });
 
   doc.setFillColor(...PDF_COLORS.groupFill);
-  doc.rect(marginL, 37.6, pageW - marginL - marginR, 6, "F");
+  doc.rect(marginL, 25.6, pageW - marginL - marginR, 6, "F");
   doc.setFontSize(8.5);
   doc.setTextColor(...PDF_COLORS.navy);
-  doc.text(plano, cx, 40.7, { align: "center", baseline: "middle" });
+  doc.text(plano, cx, 28.7, { align: "center", baseline: "middle" });
 
   doc.setFontSize(9.5);
   doc.setTextColor(...PDF_COLORS.text);
-  doc.text(secao, cx, 47.5, { align: "center", baseline: "middle" });
+  doc.text(secao, cx, 35.5, { align: "center", baseline: "middle" });
 
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...PDF_COLORS.text);
-  return 50;
+  return 38;
+
 }
 
 /** Formata competência 202407 -> 07/2024 */

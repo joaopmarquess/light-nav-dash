@@ -50,7 +50,7 @@ const SinistralidadeAPBAtivos = () => {
     const pageH = doc.internal.pageSize.getHeight();
     const marginL = 10;
     const marginR = 10;
-    const marginT = 56;
+    const marginT = 44;
     const marginB = 16;
     const usableW = pageW - marginL - marginR;
 
