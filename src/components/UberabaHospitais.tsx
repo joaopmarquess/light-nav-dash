@@ -48,7 +48,7 @@ const TIPO_LABEL: Record<Tipo, string> = {
 };
 
 const TipoIcone = ({ tipo }: { tipo: Tipo }) => (
-  <span className="inline-flex items-center gap-0.5 align-middle">
+  <span className="inline-flex cursor-help items-center gap-0.5 align-middle" title={TIPO_LABEL[tipo]}>
     {tipo === "privado" ? (
       <>
         <CreditCard className="h-4 w-4 text-sky-600" />
@@ -184,40 +184,30 @@ const UberabaHospitais = () => {
           <Hospital className="h-5 w-5 text-primary" />
           <h1 className="text-lg font-semibold text-foreground">Hospitais de Uberaba</h1>
         </div>
-        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1">
-            <TipoIcone tipo="sus" /> Somente SUS
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <TipoIcone tipo="misto" /> Misto
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <TipoIcone tipo="privado" /> Convênios/particulares
-          </span>
-        </div>
+        <button
+          onClick={() => setPreview(true)}
+          title="Gerar PDF"
+          className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
+        >
+          <FileDown className="h-4 w-4" />
+          Gerar PDF
+        </button>
         <div className="ml-auto flex items-center gap-2">
-          <button
-            onClick={() => setPreview(true)}
-            title="Gerar PDF"
-            className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
-          >
-            <FileDown className="h-4 w-4" />
-            Gerar PDF
-          </button>
           <div className="rounded-md border border-border bg-card px-3 py-1.5 text-sm">
             <span className="flex items-center gap-2 text-muted-foreground">
               <Building2 className="h-4 w-4" /> Hospitais
+              <span className="text-base font-semibold text-foreground">{HOSPITAIS.length}</span>
             </span>
-            <span className="text-base font-semibold text-foreground">{HOSPITAIS.length}</span>
           </div>
           <div className="rounded-md border border-border bg-card px-3 py-1.5 text-sm">
             <span className="flex items-center gap-2 text-muted-foreground">
               <BedDouble className="h-4 w-4" /> Leitos (~)
+              <span className="text-base font-semibold text-foreground">{total.toLocaleString("pt-BR")}</span>
             </span>
-            <span className="text-base font-semibold text-foreground">{total.toLocaleString("pt-BR")}</span>
           </div>
         </div>
       </div>
+
 
       <div className="overflow-hidden rounded-lg border border-border">
         <table className="w-full border-collapse text-sm">
