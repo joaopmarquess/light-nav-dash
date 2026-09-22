@@ -246,7 +246,24 @@ const Bloco = ({
                       className="h-7 w-20 rounded-md border border-amber-400 bg-amber-100 dark:bg-amber-500/20 px-2 text-right text-xs text-foreground tabular-nums focus:outline-none focus:ring-2 focus:ring-amber-400/50"
                     />
                   </td>
-                  <td className="px-3 py-1.5 text-right tabular-nums">{int(r.vidas)}</td>
+                  <td className="px-3 py-1.5 text-right">
+                    <input
+                      type="number"
+                      step="1"
+                      value={Math.round((draft.dfe[i] ?? 0) * draft.vidas)}
+                      onChange={(e) => {
+                        const abs = draft.dfe.map((d) => d * draft.vidas);
+                        abs[i] = Math.max(0, Number(e.target.value));
+                        const total = abs.reduce((a, b) => a + b, 0);
+                        setDraft({
+                          ...draft,
+                          vidas: Math.round(total),
+                          dfe: total ? abs.map((v) => v / total) : abs.map(() => 0),
+                        });
+                      }}
+                      className="h-7 w-24 rounded-md border border-amber-400 bg-amber-100 dark:bg-amber-500/20 px-2 text-right text-xs text-foreground tabular-nums focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+                    />
+                  </td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{brl(r.venda)}</td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{brl(r.net)}</td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{brl(r.faturamento)}</td>
