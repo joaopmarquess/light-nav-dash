@@ -70,7 +70,7 @@ import InteligenciaUberaba from "@/components/InteligenciaUberaba";
 import InteligenciaUnimed from "@/components/InteligenciaUnimed";
 import Promocoes from "@/components/Promocoes";
 import UberabaHospitais from "@/components/UberabaHospitais";
-import CarteirasBenevix from "@/components/CarteirasBenevix";
+import AdministradorasSim from "@/components/AdministradorasSim";
 import UberabaShell from "@/components/UberabaShell";
 
 
@@ -122,7 +122,6 @@ const menuItems: MenuItem[] = [
       { icon: TrendingUp, label: "Cancelamentos" },
       { icon: LayoutDashboard, label: "Dashboard" },
       { icon: BarChart3, label: "Gráfico Carteira" },
-      { icon: Users, label: "Administradoras" },
     ],
   },
   {
@@ -159,6 +158,7 @@ const menuItems: MenuItem[] = [
     label: "Simulações",
     children: [
       { icon: Trophy, label: "Premiação 4T 2026" },
+      { icon: Users, label: "Administradoras" },
       { icon: Building2, label: "Uberaba" },
     ],
   },
@@ -453,7 +453,7 @@ const Index = () => {
           ) : active === "Premiação 4T 2026" ? (
             <Promocoes />
           ) : active === "Administradoras" ? (
-            <CarteirasBenevix />
+            <AdministradorasSim />
           ) : active === "B.I. Overview" ? (
             <BIOverview />
           ) : active === "Gráfico Carteira" ? (
