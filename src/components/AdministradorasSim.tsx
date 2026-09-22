@@ -3,6 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { simBase, type SimBase, type SimParams } from "@/data/benevixSim";
 
 type Aba = "adesao" | "pme";
+type Params = SimParams & { dfe: number[] };
 
 const brl = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 2 });
@@ -11,6 +12,7 @@ const int = (v: number) => Math.round(v).toLocaleString("pt-BR");
 
 type Row = {
   faixa: string;
+  dfe: number;
   vidas: number;
   venda: number;
   net: number;
@@ -25,6 +27,7 @@ type Row = {
 
 type Calc = {
   rows: Row[];
+  dfeTotal: number;
   vidas: number;
   faturamento: number;
   receitaNet: number;
@@ -38,17 +41,19 @@ type Calc = {
   despesaPercapta: number;
 };
 
-function calcular(base: SimBase, p: SimParams): Calc {
+function calcular(base: SimBase, p: Params): Calc {
   const despesaPercapta = p.netPercapta * p.sinRef;
   const despesaTotal = despesaPercapta * p.vidas;
 
-  const pre = base.faixas.map((f) => {
-    const vidas = p.vidas * f.dfe;
+  const pre = base.faixas.map((f, i) => {
+    const dfe = p.dfe[i] ?? 0;
+    const vidas = p.vidas * dfe;
     const net = f.venda * (1 - p.spread);
     const receitaNet = vidas * net;
     const copart = receitaNet * p.copart;
     return {
       faixa: f.faixa,
+      dfe,
       vidas,
       venda: f.venda,
       net,
@@ -71,15 +76,15 @@ function calcular(base: SimBase, p: SimParams): Calc {
   const sum = (f: (r: Row) => number) => rows.reduce((a, r) => a + f(r), 0);
   const vidas = sum((r) => r.vidas);
   const receitaNet = sum((r) => r.receitaNet);
-  const despesas = sum((r) => r.despesas);
   return {
     rows,
+    dfeTotal: sum((r) => r.dfe),
     vidas,
     faturamento: sum((r) => r.faturamento),
     receitaNet,
     copart: sum((r) => r.copart),
     bensaude: somaBensaude,
-    despesas,
+    despesas: sum((r) => r.despesas),
     resultado: sum((r) => r.resultado),
     adm: sum((r) => r.adm),
     sin,
@@ -127,13 +132,14 @@ const Bloco = ({
 }: {
   titulo: string;
   base: SimBase;
-  draft: SimParams;
-  setDraft: (p: SimParams) => void;
+  draft: Params;
+  setDraft: (p: Params) => void;
   calc: Calc;
   onCalcular: () => void;
   onRestaurar: () => void;
 }) => {
   const [aberto, setAberto] = useState(false);
+  const draftTotalDfe = draft.dfe.reduce((a, b) => a + b, 0);
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
       <header className="px-4 py-3 border-b border-border flex flex-wrap items-center gap-4">
@@ -193,13 +199,15 @@ const Bloco = ({
         <span>Net percapta: <strong className="text-foreground">{brl(calc.netPercaptaAtual)}</strong></span>
         <span>Despesa percapta: <strong className="text-foreground">{brl(calc.despesaPercapta)}</strong></span>
         <span>
-          Resultado mensal:{" "}
+          Bensaúde mensal:{" "}
           <strong className={calc.resultado < 0 ? "text-destructive" : "text-foreground"}>{brl(calc.resultado)}</strong>
         </span>
         <span>
-          Resultado anual:{" "}
-          <strong className={calc.resultado < 0 ? "text-destructive" : "text-foreground"}>{brl(calc.resultado * 12)}</strong>
+          Administradora mensal: <strong className="text-foreground">{brl(calc.adm)}</strong>
         </span>
+        {Math.abs(draftTotalDfe - 1) > 0.0005 && (
+          <span className="text-destructive">Soma das proporções: {pct(draftTotalDfe)} (ideal 100%)</span>
+        )}
       </div>
 
       <div className="overflow-x-auto">
@@ -207,6 +215,7 @@ const Bloco = ({
           <thead>
             <tr className="bg-muted/60 text-muted-foreground text-xs">
               <th className="px-3 py-2 text-left font-medium">Faixa</th>
+              <th className="px-3 py-2 text-right font-medium">% Vidas</th>
               <th className="px-3 py-2 text-right font-medium">Vidas</th>
               <th className="px-3 py-2 text-right font-medium">R$ Venda</th>
               <th className="px-3 py-2 text-right font-medium">R$ Net</th>
@@ -224,6 +233,19 @@ const Bloco = ({
               calc.rows.map((r, i) => (
                 <tr key={r.faixa} className={i % 2 ? "bg-muted/20" : ""}>
                   <td className="px-3 py-1.5 text-foreground/80">{r.faixa}</td>
+                  <td className="px-3 py-1.5 text-right">
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={Number(((draft.dfe[i] ?? 0) * 100).toFixed(2))}
+                      onChange={(e) => {
+                        const dfe = [...draft.dfe];
+                        dfe[i] = Number(e.target.value) / 100;
+                        setDraft({ ...draft, dfe });
+                      }}
+                      className="h-7 w-20 rounded-md border border-amber-400 bg-amber-100 dark:bg-amber-500/20 px-2 text-right text-xs text-foreground tabular-nums focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+                    />
+                  </td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{int(r.vidas)}</td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{brl(r.venda)}</td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{brl(r.net)}</td>
@@ -240,6 +262,7 @@ const Bloco = ({
               ))}
             <tr className="font-semibold border-t border-border bg-primary/10">
               <td className="px-3 py-2">Total</td>
+              <td className="px-3 py-2 text-right tabular-nums">{pct(calc.dfeTotal)}</td>
               <td className="px-3 py-2 text-right tabular-nums">{int(calc.vidas)}</td>
               <td className="px-3 py-2 text-right tabular-nums">—</td>
               <td className="px-3 py-2 text-right tabular-nums">—</td>
@@ -260,14 +283,14 @@ const Bloco = ({
   );
 };
 
-const padrao = (a: Aba): SimParams => {
-  const { vidas, spread, copart, sinRef, netPercapta } = simBase[a];
-  return { vidas, spread, copart, sinRef, netPercapta };
+const padrao = (a: Aba): Params => {
+  const { vidas, spread, copart, sinRef, netPercapta, faixas } = simBase[a];
+  return { vidas, spread, copart, sinRef, netPercapta, dfe: faixas.map((f) => f.dfe) };
 };
 
 const AdministradorasSim = () => {
-  const [draft, setDraft] = useState<Record<Aba, SimParams>>({ adesao: padrao("adesao"), pme: padrao("pme") });
-  const [aplicado, setAplicado] = useState<Record<Aba, SimParams>>({
+  const [draft, setDraft] = useState<Record<Aba, Params>>({ adesao: padrao("adesao"), pme: padrao("pme") });
+  const [aplicado, setAplicado] = useState<Record<Aba, Params>>({
     adesao: padrao("adesao"),
     pme: padrao("pme"),
   });
@@ -277,15 +300,20 @@ const AdministradorasSim = () => {
 
   const vidas = calcAdesao.vidas + calcPme.vidas;
   const mensal = calcAdesao.resultado + calcPme.resultado;
+  const mensalAdm = calcAdesao.adm + calcPme.adm;
+
+  const cards = [
+    { t: "Vidas", v: int(vidas) },
+    { t: "Bensaúde — mensal", v: brl(mensal), neg: mensal < 0 },
+    { t: "Bensaúde — anual", v: brl(mensal * 12), neg: mensal < 0 },
+    { t: "Administradora — mensal", v: brl(mensalAdm), neg: mensalAdm < 0 },
+    { t: "Administradora — anual", v: brl(mensalAdm * 12), neg: mensalAdm < 0 },
+  ];
 
   return (
     <div className="h-full overflow-auto pr-1 space-y-5">
-      <div className="grid gap-4 sm:grid-cols-3">
-        {[
-          { t: "Vidas", v: int(vidas) },
-          { t: "Resultado mensal", v: brl(mensal), neg: mensal < 0 },
-          { t: "Resultado anual", v: brl(mensal * 12), neg: mensal < 0 },
-        ].map((c) => (
+      <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        {cards.map((c) => (
           <div key={c.t} className="bg-card rounded-xl border border-border shadow-sm p-4">
             <p className="text-xs text-muted-foreground">{c.t}</p>
             <p className={`text-xl font-semibold tabular-nums ${c.neg ? "text-destructive" : "text-foreground"}`}>{c.v}</p>
@@ -301,7 +329,7 @@ const AdministradorasSim = () => {
           draft={draft[a]}
           setDraft={(p) => setDraft((prev) => ({ ...prev, [a]: p }))}
           calc={a === "adesao" ? calcAdesao : calcPme}
-          onCalcular={() => setAplicado((prev) => ({ ...prev, [a]: { ...draft[a] } }))}
+          onCalcular={() => setAplicado((prev) => ({ ...prev, [a]: { ...draft[a], dfe: [...draft[a].dfe] } }))}
           onRestaurar={() => {
             setDraft((prev) => ({ ...prev, [a]: padrao(a) }));
             setAplicado((prev) => ({ ...prev, [a]: padrao(a) }));
