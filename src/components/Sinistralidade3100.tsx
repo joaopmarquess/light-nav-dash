@@ -142,7 +142,8 @@ export default function Sinistralidade3100({
   embedded = false,
   dataUrl = "/data/3100_sinistralidade.json",
   mensalUrl = "/data/3100_mensal.json",
-}: { embedded?: boolean; dataUrl?: string; mensalUrl?: string } = {}) {
+  label = "3100",
+}: { embedded?: boolean; dataUrl?: string; mensalUrl?: string; label?: string } = {}) {
   const [rows, setRows] = useState<Raw[]>([]);
   const [loading, setLoading] = useState(true);
   const [periodoLabel, setPeriodoLabel] = useState("");
@@ -498,7 +499,7 @@ export default function Sinistralidade3100({
     let currentSecao = "";
     const header = () =>
       drawReportHeading(doc, {
-        title: "3100 · Top 10 Despesas por Plano",
+        title: `${label} · Top 10 Despesas por Plano`,
         plano: `Competências: ${periodoLabel}`,
         secao: currentSecao,
         marginL,
@@ -684,7 +685,7 @@ export default function Sinistralidade3100({
       <section className={`bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col ${embedded ? "h-full" : "h-[calc(100vh-9rem)]"}`}>
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground mb-3">
           <div className="flex items-center gap-2">
-            <span className="shrink-0">3100 · período {periodoLabel}</span>
+            <span className="shrink-0">{label} · período {periodoLabel}</span>
 
             <button
               onClick={() => setShowChart(true)}
@@ -934,7 +935,7 @@ export default function Sinistralidade3100({
         <PdfPreview
           onClose={() => setPdfOpen(false)}
           build={buildDoc}
-          fileName={`3100_Top10_${periodoLabel.replace(/\D/g, "")}.pdf`}
+          fileName={`${label}_Top10_${periodoLabel.replace(/\D/g, "")}.pdf`}
           periodos={abertos.length}
         />
       )}
