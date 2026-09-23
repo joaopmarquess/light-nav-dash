@@ -160,6 +160,7 @@ const menuItems: MenuItem[] = [
     icon: FileText,
     label: "Outros",
     children: [
+      { icon: CalendarCheck, label: "APB" },
       { icon: CalendarCheck, label: "APB Top10" },
       { icon: CalendarCheck, label: "APB Faturas" },
       { icon: CalendarCheck, label: "APB Ativos" },
