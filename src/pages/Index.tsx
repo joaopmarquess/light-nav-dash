@@ -431,7 +431,7 @@ const Index = () => {
               mensalUrl="/data/3100_v2_mensal.json"
             />
           ) : active === "Ultra-X" ? (
-            <Sinistralidade3100 key="ultrax" label="Ultra-X" dataUrl="/data/ultrax_sinistralidade.json" mensalUrl="/data/ultrax_mensal.json" />
+            <Sinistralidade3100 key="ultrax" label="Ultra-X" splitTop dataUrl="/data/ultrax_sinistralidade.json" mensalUrl="/data/ultrax_mensal.json" />
           ) : active === "Cidades" ? (
             <SinistralidadeCidade />
 

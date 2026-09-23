@@ -143,7 +143,8 @@ export default function Sinistralidade3100({
   dataUrl = "/data/3100_sinistralidade.json",
   mensalUrl = "/data/3100_mensal.json",
   label = "3100",
-}: { embedded?: boolean; dataUrl?: string; mensalUrl?: string; label?: string } = {}) {
+  splitTop = false,
+}: { embedded?: boolean; dataUrl?: string; mensalUrl?: string; label?: string; splitTop?: boolean } = {}) {
   const [rows, setRows] = useState<Raw[]>([]);
   const [loading, setLoading] = useState(true);
   const [periodoLabel, setPeriodoLabel] = useState("");
@@ -250,10 +251,21 @@ export default function Sinistralidade3100({
           pl.benefs = [...pl.benefs.slice(0, TOP_N), outros];
         }
       }
+      if (splitTop) {
+        const all = p.planos.flatMap((pl) => [...pl.benefs.filter((b) => !b.outros), ...pl.resto]);
+        all.sort((a, b) => b.vrdespesas - a.vrdespesas);
+        const mkPl = (nome: string, bs: Benef[]): Plano => {
+          const pl: Plano = { plano: nome, benefs: bs, resto: [], ...zero() };
+          for (const b of bs) addDesp(pl, b);
+          return pl;
+        };
+        const top = all.slice(0, TOP_N), rest = all.slice(TOP_N);
+        p.planos = [mkPl("TOP 10 DESPESAS", top), ...(rest.length ? [mkPl(`OUTROS (${rest.length} beneficiários)`, rest)] : [])];
+      }
     }
     arr.sort((a, b) => b.periodo.localeCompare(a.periodo));
     return arr;
-  }, [rows, filter]);
+  }, [rows, filter, splitTop]);
 
   const fmtCiclo = (ciclo: string) => {
     const [a, b] = ciclo.split("-");
