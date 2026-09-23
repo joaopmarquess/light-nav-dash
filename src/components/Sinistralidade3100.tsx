@@ -772,11 +772,13 @@ export default function Sinistralidade3100({
                     value: totais.rec_total ? fmtPct(sinOf(totais)) : "—",
                     danger: sinOf(totais) > 1,
                   },
-                ].map((c) => (
+                ].map((c, ci) => (
                   <div
                     key={c.label}
                     title={c.hint}
-                    className="rounded-lg border border-border bg-card px-3 py-2 shadow-sm"
+                    className={`relative overflow-hidden rounded-lg border border-border bg-card pl-4 pr-3 py-2.5 text-center shadow-md hover:shadow-lg transition-shadow before:absolute before:inset-y-0 before:left-0 before:w-1.5 ${
+                      c.danger ? "before:bg-destructive" : ["before:bg-primary", "before:bg-accent-foreground", "before:bg-muted-foreground", "before:bg-primary/70", "before:bg-secondary-foreground", "before:bg-primary/40"][ci % 6]
+                    }`}
                   >
                     <div className="text-[11px] uppercase tracking-wide text-muted-foreground truncate">{c.label}</div>
                     <div
@@ -792,7 +794,7 @@ export default function Sinistralidade3100({
 
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
                 {DESP_COLS.map(({ key, label }) => (
-                  <div key={key} className="rounded-lg border border-border/70 bg-muted/40 px-3 py-1.5">
+                  <div key={key} className="relative overflow-hidden rounded-lg border border-border/70 bg-card pl-4 pr-3 py-1.5 text-center shadow-md before:absolute before:inset-y-0 before:left-0 before:w-1 before:bg-primary/60">
                     <div className="text-[11px] text-muted-foreground truncate" title={label}>{label}</div>
                     <div className="text-[13px] font-medium tabular-nums text-foreground">{fmtNum(totais[key])}</div>
                   </div>
