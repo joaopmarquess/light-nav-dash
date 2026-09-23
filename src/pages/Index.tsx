@@ -132,6 +132,7 @@ const menuItems: MenuItem[] = [
       { icon: CalendarCheck, label: "Período" },
       { icon: LayoutDashboard, label: "Cidades" },
       { icon: BarChart3, label: "Gráfico Sinistralidade" },
+      { icon: CalendarCheck, label: "Ultra-X" },
       { icon: LayoutDashboard, label: "PBI U12" },
     ],
   },
@@ -429,6 +430,8 @@ const Index = () => {
               dataUrl="/data/3100_v2_sinistralidade.json"
               mensalUrl="/data/3100_v2_mensal.json"
             />
+          ) : active === "Ultra-X" ? (
+            <Sinistralidade3100 key="ultrax" label="Ultra-X" dataUrl="/data/ultrax_sinistralidade.json" mensalUrl="/data/ultrax_mensal.json" />
           ) : active === "Cidades" ? (
             <SinistralidadeCidade />
 
