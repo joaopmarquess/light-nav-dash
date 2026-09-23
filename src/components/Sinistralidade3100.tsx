@@ -41,7 +41,7 @@ type Benef = Desp & { codigo: string; nome: string; contrato: string; relacao: s
 const isTitular = (rel?: string) => (rel || "").toUpperCase().startsWith("TITULAR");
 
 const benefLabel = (b: { nome: string; relacao?: string; codigo: string; titular?: string; outros?: number }) =>
-  b.outros ? b.nome : `${b.nome}${b.titular ? `\n${b.relacao || "—"} ${b.titular}` : ""}`;
+  b.outros ? b.nome : `${b.nome}${b.titular ? `\n${b.relacao || "—"} de ${b.titular}` : ""}`;
 type Plano = Desp & { plano: string; benefs: Benef[]; resto: Benef[] };
 type Periodo = Desp & { periodo: string; planos: Plano[] };
 
@@ -912,7 +912,7 @@ export default function Sinistralidade3100({
                                               </div>
                                               {b.titular && (
                                                 <div className="pl-4 truncate text-[9px] text-muted-foreground italic">
-                                                  {b.relacao || "—"} {b.titular}
+                                                  {b.relacao || "—"} de {b.titular}
                                                 </div>
                                               )}
                                             </>
