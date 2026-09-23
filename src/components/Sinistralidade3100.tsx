@@ -41,7 +41,7 @@ type Benef = Desp & { codigo: string; nome: string; contrato: string; relacao: s
 const isTitular = (rel?: string) => (rel || "").toUpperCase().startsWith("TITULAR");
 
 const benefLabel = (b: { nome: string; relacao?: string; codigo: string; titular?: string; outros?: number }) =>
-  b.outros ? b.nome : `${b.nome} (${b.relacao || "—"}-${b.codigo})${b.titular ? `\nTitular: ${b.titular}` : ""}`;
+  b.outros ? b.nome : `${b.nome}${b.titular ? `\n${b.relacao || "—"} ${b.titular}` : ""}`;
 type Plano = Desp & { plano: string; benefs: Benef[]; resto: Benef[] };
 type Periodo = Desp & { periodo: string; planos: Plano[] };
 
@@ -223,7 +223,8 @@ export default function Sinistralidade3100({
       if (!b) {
         const cod = String(r[3] ?? "");
         const rel = (r[16] ?? "") as string;
-        const tit = isTitular(rel) ? "" : String(r[17] ?? "");
+        const nmres = String(r[17] ?? "").trim();
+        const tit = isTitular(rel) || !nmres || nmres.toUpperCase() === String(r[4] ?? "").trim().toUpperCase() ? "" : nmres;
         b = { codigo: cod, nome: r[4], contrato: r[2], relacao: rel, titular: tit || undefined, ...zero() };
         bm.set(r[3], b);
         pl.benefs.push(b);
@@ -907,11 +908,11 @@ export default function Sinistralidade3100({
                                             <>
                                               <div className="truncate">
                                                 <span className="text-muted-foreground mr-1 tabular-nums">{i + 1}.</span>
-                                                {b.nome} <span className="text-muted-foreground">({b.relacao || "—"}-{b.codigo})</span>
+                                                {b.nome}
                                               </div>
                                               {b.titular && (
                                                 <div className="pl-4 truncate text-[9px] text-muted-foreground italic">
-                                                  Titular: {b.titular}
+                                                  {b.relacao || "—"} {b.titular}
                                                 </div>
                                               )}
                                             </>
