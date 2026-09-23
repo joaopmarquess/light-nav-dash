@@ -483,6 +483,7 @@ export default function Sinistralidade3100({
     ) : null;
 
   const sortPlanos = (list: Plano[]) => {
+    if (splitTop) return list;
     const dir = sortDir === "asc" ? 1 : -1;
     return [...list].sort((a, b) => {
       if (sortKey === "PLANO") return a.plano.localeCompare(b.plano, "pt-BR") * dir;
