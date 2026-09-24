@@ -64,7 +64,11 @@ const CarteiraMapa = () => {
       if (f.properties._uf !== "MG") return;
       const n = norm(f.properties.name ?? "");
       if (alvo.has(n)) out.add(i);
+      if (["CACHOEIRA DOURADA", "CENTRALINA", "LIMEIRA DO OESTE"].includes(n)) out.add(i);
       if (alvo.has(n) || n === "FRUTAL") coords(f.geometry).forEach((c) => pts.add(key(c)));
+    });
+    feats.forEach((f, i) => {
+      if (f.properties._uf === "GO" && norm(f.properties.name ?? "") === "OUVIDOR") out.add(i);
     });
     feats.forEach((f, i) => {
       if (!out.has(i) && coords(f.geometry).some((c) => pts.has(key(c)))) out.add(i);
