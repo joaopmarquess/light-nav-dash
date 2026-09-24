@@ -51,6 +51,7 @@ import ConsultaBeneficiarioDenis from "@/components/ConsultaBeneficiarioDenis";
 import BIOverview from "@/components/BIOverview";
 import DWCarteira from "@/components/DWCarteira";
 import CarteiraGraficos from "@/components/CarteiraGraficos";
+import CarteiraMapa from "@/components/CarteiraMapa";
 import VendasMatriz from "@/components/VendasMatriz";
 import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
 import SinistralidadeConsulta from "@/components/SinistralidadeConsulta";
@@ -122,6 +123,7 @@ const menuItems: MenuItem[] = [
       { icon: TrendingUp, label: "Cancelamentos" },
       { icon: LayoutDashboard, label: "Dashboard" },
       { icon: BarChart3, label: "Gráfico Carteira" },
+      { icon: Building2, label: "Mapa" },
     ],
   },
   {
@@ -467,6 +469,8 @@ const Index = () => {
             <BIOverview />
           ) : active === "Gráfico Carteira" ? (
             <CarteiraGraficos />
+          ) : active === "Mapa" ? (
+            <CarteiraMapa />
           ) : active === "Gráfico Sinistralidade" ? (
             <SinistralidadeGraficos />
           ) : active === "Home" ? (
