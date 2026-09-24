@@ -52,6 +52,26 @@ const CarteiraMapa = () => {
     return geoPath(geoMercator().fitSize([W, H], { type: "FeatureCollection", features: feats }));
   }, [feats]);
 
+  const regiao = useMemo(() => {
+    const out = new Set<number>();
+    if (!feats) return out;
+    const alvo = new Set(["UBERABA", "UBERLANDIA", "ARAGUARI", "ITUIUTABA"]);
+    const pts = new Set<string>();
+    const coords = (g: any): number[][] =>
+      g.type === "Polygon" ? g.coordinates.flat() : g.type === "MultiPolygon" ? g.coordinates.flat(2) : [];
+    const key = (c: number[]) => `${c[0].toFixed(4)},${c[1].toFixed(4)}`;
+    feats.forEach((f, i) => {
+      if (f.properties._uf === "MG" && alvo.has(norm(f.properties.name ?? ""))) {
+        out.add(i);
+        coords(f.geometry).forEach((c) => pts.add(key(c)));
+      }
+    });
+    feats.forEach((f, i) => {
+      if (!out.has(i) && coords(f.geometry).some((c) => pts.has(key(c)))) out.add(i);
+    });
+    return out;
+  }, [feats]);
+
   const destacadas = useMemo(() => Object.values(vidas).filter((v) => v > MIN_VIDAS).length, [vidas]);
 
   if (err) return <div className="text-destructive text-sm">Erro: {err}</div>;
@@ -65,6 +85,12 @@ const CarteiraMapa = () => {
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm h-[calc(100vh-9rem)] flex flex-col p-4">
       <div className="flex items-center gap-4 text-xs text-muted-foreground shrink-0">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-3 w-4 rounded-sm" style={{ background: "color-mix(in hsl, hsl(var(--primary)) 55%, hsl(var(--foreground)))" }} /> Mais de 1.000 vidas
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-3 w-4 rounded-sm bg-primary/30" /> Uberaba, Uberlândia, Araguari, Ituiutaba e limítrofes
+        </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="h-3 w-4 rounded-sm bg-primary" /> Mais de {MIN_VIDAS} vidas ({destacadas} cidades)
         </span>
@@ -82,7 +108,15 @@ const CarteiraMapa = () => {
               <path
                 key={i}
                 d={path(f) ?? ""}
-                fill={v > MIN_VIDAS ? "hsl(var(--primary))" : "hsl(var(--muted))"}
+                fill={
+                  v > 1000
+                    ? "color-mix(in hsl, hsl(var(--primary)) 55%, hsl(var(--foreground)))"
+                    : v > MIN_VIDAS
+                      ? "hsl(var(--primary))"
+                      : regiao.has(i)
+                        ? "hsl(var(--primary) / 0.3)"
+                        : "hsl(var(--muted))"
+                }
                 stroke="hsl(var(--background))"
                 strokeWidth={0.4}
                 onMouseMove={(e) => {
