@@ -61,10 +61,10 @@ const CarteiraMapa = () => {
       g.type === "Polygon" ? g.coordinates.flat() : g.type === "MultiPolygon" ? g.coordinates.flat(2) : [];
     const key = (c: number[]) => `${c[0].toFixed(4)},${c[1].toFixed(4)}`;
     feats.forEach((f, i) => {
-      if (f.properties._uf === "MG" && alvo.has(norm(f.properties.name ?? ""))) {
-        out.add(i);
-        coords(f.geometry).forEach((c) => pts.add(key(c)));
-      }
+      if (f.properties._uf !== "MG") return;
+      const n = norm(f.properties.name ?? "");
+      if (alvo.has(n)) out.add(i);
+      if (alvo.has(n) || n === "FRUTAL") coords(f.geometry).forEach((c) => pts.add(key(c)));
     });
     feats.forEach((f, i) => {
       if (!out.has(i) && coords(f.geometry).some((c) => pts.has(key(c)))) out.add(i);
@@ -89,7 +89,10 @@ const CarteiraMapa = () => {
           <span className="h-3 w-4 rounded-sm" style={{ background: "color-mix(in hsl, hsl(var(--primary)) 55%, hsl(var(--foreground)))" }} /> Mais de 1.000 vidas
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-3 w-4 rounded-sm bg-primary/30" /> Uberaba, Uberlândia, Araguari, Ituiutaba e limítrofes
+          <span className="h-3 w-4 rounded-sm" style={{ background: "color-mix(in hsl, hsl(var(--primary)) 78%, hsl(var(--foreground)))" }} /> Mais de 100 vidas
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-3 w-4 rounded-sm bg-primary/30" /> Uberaba, Uberlândia, Araguari, Ituiutaba e limítrofes (e de Frutal)
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="h-3 w-4 rounded-sm bg-primary" /> Mais de {MIN_VIDAS} vidas ({destacadas} cidades)
@@ -111,6 +114,8 @@ const CarteiraMapa = () => {
                 fill={
                   v > 1000
                     ? "color-mix(in hsl, hsl(var(--primary)) 55%, hsl(var(--foreground)))"
+                    : v > 100
+                      ? "color-mix(in hsl, hsl(var(--primary)) 78%, hsl(var(--foreground)))"
                     : v > MIN_VIDAS
                       ? "hsl(var(--primary))"
                       : regiao.has(i)
@@ -130,6 +135,11 @@ const CarteiraMapa = () => {
           {states.map((f, i) => (
             <path key={`s${i}`} d={path(f) ?? ""} fill="none" stroke="hsl(var(--foreground))" strokeWidth={1.4} pointerEvents="none" />
           ))}
+          {feats
+            .filter((f) => f.properties._uf === "MG" && norm(f.properties.name ?? "") === "UBERABA")
+            .map((f, i) => (
+              <path key={`ub${i}`} d={path(f) ?? ""} fill="none" stroke="hsl(var(--destructive))" strokeWidth={2} pointerEvents="none" />
+            ))}
         </svg>
         {hover && (
           <div
