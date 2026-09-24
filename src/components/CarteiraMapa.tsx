@@ -74,6 +74,30 @@ const CarteiraMapa = () => {
 
   const destacadas = useMemo(() => Object.values(vidas).filter((v) => v > MIN_VIDAS).length, [vidas]);
 
+  const enclosed = useMemo(() => {
+    const out = new Set<number>();
+    if (!feats) return out;
+    const coords = (g: any): number[][] =>
+      g.type === "Polygon" ? g.coordinates.flat() : g.type === "MultiPolygon" ? g.coordinates.flat(2) : [];
+    const key = (c: number[]) => `${c[0].toFixed(4)},${c[1].toFixed(4)}`;
+    const painted = feats.map(
+      (f, i) => regiao.has(i) || (vidas[`${f.properties._uf}|${norm(f.properties.name ?? "")}`] ?? 0) > MIN_VIDAS,
+    );
+    const byPt = new Map<string, number[]>();
+    const keys = feats.map((f, i) => {
+      const ks = [...new Set(coords(f.geometry).map(key))];
+      ks.forEach((k) => (byPt.get(k) ?? byPt.set(k, []).get(k)!).push(i));
+      return ks;
+    });
+    feats.forEach((_, i) => {
+      if (painted[i]) return;
+      const nb = new Set<number>();
+      keys[i].forEach((k) => byPt.get(k)!.forEach((j) => j !== i && nb.add(j)));
+      if (nb.size > 0 && [...nb].every((j) => painted[j])) out.add(i);
+    });
+    return out;
+  }, [feats, vidas, regiao]);
+
   if (err) return <div className="text-destructive text-sm">Erro: {err}</div>;
   if (!feats || !path)
     return (
@@ -118,7 +142,7 @@ const CarteiraMapa = () => {
                       ? "color-mix(in hsl, hsl(var(--primary)) 78%, hsl(var(--foreground)))"
                     : v > MIN_VIDAS
                       ? "hsl(var(--primary))"
-                      : regiao.has(i)
+                      : regiao.has(i) || enclosed.has(i)
                         ? "hsl(var(--primary) / 0.3)"
                         : "hsl(var(--muted))"
                 }
@@ -140,6 +164,21 @@ const CarteiraMapa = () => {
             .map((f, i) => (
               <path key={`ub${i}`} d={path(f) ?? ""} fill="none" stroke="hsl(var(--destructive))" strokeWidth={2} pointerEvents="none" />
             ))}
+          {[
+            { uf: "SP", n: "SAO JOSE DO RIO PRETO", label: "Rio Preto" },
+            { uf: "MG", n: "UBERABA", label: "Uberaba" },
+          ].map((p) => {
+            const f = feats.find((x) => x.properties._uf === p.uf && norm(x.properties.name ?? "") === p.n);
+            if (!f) return null;
+            const [x, y] = path.centroid(f);
+            return (
+              <g key={p.label} transform={`translate(${x},${y})`} pointerEvents="none">
+                <path d="M0 0 C-2 -6 -8 -9 -8 -15 A8 8 0 1 1 8 -15 C8 -9 2 -6 0 0Z" fill="hsl(var(--destructive))" stroke="hsl(var(--background))" strokeWidth={1.2} />
+                <circle cx={0} cy={-15} r={3} fill="hsl(var(--background))" />
+                <text x={11} y={-12} fontSize={12} fontWeight={700} fill="hsl(var(--foreground))" stroke="hsl(var(--background))" strokeWidth={3} paintOrder="stroke">{p.label}</text>
+              </g>
+            );
+          })}
         </svg>
         {hover && (
           <div
