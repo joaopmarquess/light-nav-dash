@@ -3,7 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { simBase, type SimBase, type SimParams } from "@/data/benevixSim";
 
 type Aba = "adesao" | "pme";
-type Params = SimParams & { dfe: number[] };
+type Params = SimParams & { dfe: number[]; venda: number[] };
 
 const brl = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 2 });
@@ -47,21 +47,22 @@ function calcular(base: SimBase, p: Params): Calc {
 
   const pre = base.faixas.map((f, i) => {
     const dfe = p.dfe[i] ?? 0;
+    const venda = p.venda[i] ?? f.venda;
     const vidas = p.vidas * dfe;
-    const net = f.venda * (1 - p.spread);
+    const net = venda * (1 - p.spread);
     const receitaNet = vidas * net;
     const copart = receitaNet * p.copart;
     return {
       faixa: f.faixa,
       dfe,
       vidas,
-      venda: f.venda,
+      venda,
       net,
-      faturamento: vidas * f.venda,
+      faturamento: vidas * venda,
       receitaNet,
       copart,
       bensaude: receitaNet + copart,
-      adm: vidas * (f.venda - net),
+      adm: vidas * (venda - net),
     };
   });
 
@@ -264,7 +265,19 @@ const Bloco = ({
                       className="h-7 w-24 rounded-md border border-amber-400 bg-amber-100 dark:bg-amber-500/20 px-2 text-right text-xs text-foreground tabular-nums focus:outline-none focus:ring-2 focus:ring-amber-400/50"
                     />
                   </td>
-                  <td className="px-3 py-1.5 text-right tabular-nums">{brl(r.venda)}</td>
+                  <td className="px-3 py-1.5 text-right">
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={draft.venda[i] ?? 0}
+                      onChange={(e) => {
+                        const venda = [...draft.venda];
+                        venda[i] = Number(e.target.value);
+                        setDraft({ ...draft, venda });
+                      }}
+                      className="h-7 w-24 rounded-md border border-amber-400 bg-amber-100 dark:bg-amber-500/20 px-2 text-right text-xs text-foreground tabular-nums focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+                    />
+                  </td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{brl(r.net)}</td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{brl(r.faturamento)}</td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{brl(r.receitaNet)}</td>
@@ -302,7 +315,7 @@ const Bloco = ({
 
 const padrao = (a: Aba): Params => {
   const { vidas, spread, copart, sinRef, netPercapta, faixas } = simBase[a];
-  return { vidas, spread, copart, sinRef, netPercapta, dfe: faixas.map((f) => f.dfe) };
+  return { vidas, spread, copart, sinRef, netPercapta, dfe: faixas.map((f) => f.dfe), venda: faixas.map((f) => f.venda) };
 };
 
 const AdministradorasSim = () => {
@@ -346,7 +359,7 @@ const AdministradorasSim = () => {
           draft={draft[a]}
           setDraft={(p) => setDraft((prev) => ({ ...prev, [a]: p }))}
           calc={a === "adesao" ? calcAdesao : calcPme}
-          onCalcular={() => setAplicado((prev) => ({ ...prev, [a]: { ...draft[a], dfe: [...draft[a].dfe] } }))}
+          onCalcular={() => setAplicado((prev) => ({ ...prev, [a]: { ...draft[a], dfe: [...draft[a].dfe], venda: [...draft[a].venda] } }))}
           onRestaurar={() => {
             setDraft((prev) => ({ ...prev, [a]: padrao(a) }));
             setAplicado((prev) => ({ ...prev, [a]: padrao(a) }));
