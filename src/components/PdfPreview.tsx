@@ -64,9 +64,12 @@ export default function PdfPreview({
     const imgsHtml = pages
       .map((src) => `<img src="${src}" style="display:block;width:100%;page-break-after:always;" />`)
       .join("");
+    const d = docRef.current;
+    const landscape = d ? d.internal.pageSize.getWidth() > d.internal.pageSize.getHeight() : false;
+    const orient = landscape ? "landscape" : "portrait";
     w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Relatório</title>
 <style>
-  @page { size: A4 portrait; margin: 0; }
+  @page { size: A4 ${orient}; margin: 0; }
   html, body { margin: 0; padding: 0; background: #fff; }
   img { max-width: 100%; }
   @media print { img { page-break-after: always; } }
