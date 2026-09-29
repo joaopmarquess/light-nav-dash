@@ -392,6 +392,7 @@ async function buildRelatorio(itens: { titulo: string; p: Params | null; c: Calc
     doc.setFont("helvetica", "bold").setFontSize(16);
     doc.text(`Simulação Administradoras — ${titulo}`, 12, 16);
     doc.setFont("helvetica", "normal").setFontSize(9.5);
+    if (!p) doc.text(`Vidas: ${int(c.vidas)}`, 12, 23);
     if (p) doc.text(
       `Vidas: ${int(p.vidas)}   Spread: ${pct(p.spread)}   Copart.: ${pct(p.copart)}   Sinistralidade ref.: ${pct(p.sinRef)}   Net percapta ref.: ${brl(p.netPercapta)}`,
       12, 23,
@@ -400,13 +401,8 @@ async function buildRelatorio(itens: { titulo: string; p: Params | null; c: Calc
       `Sinistralidade medida: ${pct(c.sin)}   Net percapta: ${brl(c.netPercaptaAtual)}   Despesa percapta: ${brl(c.despesaPercapta)}`,
       12, 28.5,
     );
-    doc.setFont("helvetica", "bold");
-    doc.text(
-      `Bensaúde: mensal ${brl(c.resultado)} | anual ${brl(c.resultado * 12)}      Administradora: mensal ${brl(c.adm)} | anual ${brl(c.adm * 12)}`,
-      12, 34,
-    );
     autoTable(doc, {
-      startY: 39,
+      startY: p ? 34 : 29,
       margin: { left: 12, right: 12 },
       tableWidth: W - 24,
       theme: "grid",
@@ -418,6 +414,11 @@ async function buildRelatorio(itens: { titulo: string; p: Params | null; c: Calc
       footStyles: { fillColor: [225, 225, 225], textColor: [0, 0, 0], fontStyle: "bold", lineWidth: 0.4 },
       columnStyles: { 0: { halign: "left", fontStyle: "bold" } },
     });
+    doc.setFont("helvetica", "bold").setFontSize(10);
+    doc.text(
+      `Bensaúde: mensal ${brl(c.resultado)} | anual ${brl(c.resultado * 12)}      Administradora: mensal ${brl(c.adm)} | anual ${brl(c.adm * 12)}`,
+      12, ((doc as any).lastAutoTable.finalY as number) + 8,
+    );
   });
   const n = doc.getNumberOfPages();
   const H = doc.internal.pageSize.getHeight();
