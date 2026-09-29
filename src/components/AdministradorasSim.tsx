@@ -134,7 +134,9 @@ const Bloco = ({
   onCalcular,
   onRestaurar,
   sugerida,
+  onRelatorio,
 }: {
+  onRelatorio: () => void;
   sugerida: number[];
   titulo: string;
   base: SimBase;
@@ -209,6 +211,12 @@ const Bloco = ({
           className="h-8 px-4 rounded-md border border-border text-xs font-medium text-foreground hover:bg-accent"
         >
           Restaurar
+        </button>
+        <button
+          onClick={onRelatorio}
+          className="inline-flex items-center gap-1.5 h-8 px-4 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:opacity-90"
+        >
+          <FileText className="h-3.5 w-3.5" /> Relatório
         </button>
         <span className="text-[11px] text-muted-foreground">Campos em amarelo são editáveis</span>
       </header>
@@ -338,7 +346,44 @@ const padrao = (a: Aba): Params => {
 
 const n2 = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-async function buildRelatorio(itens: { titulo: string; p: Params; c: Calc }[]) {
+function somar(a: Calc, b: Calc): Calc {
+  const vidas = a.vidas + b.vidas;
+  const rows: Row[] = a.rows.map((r, i) => {
+    const q = b.rows[i];
+    const v = r.vidas + q.vidas;
+    return {
+      faixa: r.faixa,
+      vidas: v,
+      dfe: vidas ? v / vidas : 0,
+      venda: v ? (r.faturamento + q.faturamento) / v : 0,
+      net: v ? (r.receitaNet + q.receitaNet) / v : 0,
+      faturamento: r.faturamento + q.faturamento,
+      receitaNet: r.receitaNet + q.receitaNet,
+      copart: r.copart + q.copart,
+      bensaude: r.bensaude + q.bensaude,
+      despesas: r.despesas + q.despesas,
+      resultado: r.resultado + q.resultado,
+      adm: r.adm + q.adm,
+    };
+  });
+  const sum = (f: (r: Row) => number) => rows.reduce((x, r) => x + f(r), 0);
+  const receitaNet = sum((r) => r.receitaNet);
+  const bensaude = sum((r) => r.bensaude);
+  const despesas = sum((r) => r.despesas);
+  return {
+    rows, vidas, receitaNet, bensaude, despesas,
+    dfeTotal: sum((r) => r.dfe),
+    faturamento: sum((r) => r.faturamento),
+    copart: sum((r) => r.copart),
+    resultado: sum((r) => r.resultado),
+    adm: sum((r) => r.adm),
+    sin: bensaude ? despesas / bensaude : 0,
+    netPercaptaAtual: vidas ? receitaNet / vidas : 0,
+    despesaPercapta: vidas ? despesas / vidas : 0,
+  };
+}
+
+async function buildRelatorio(itens: { titulo: string; p: Params | null; c: Calc }[]) {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   itens.forEach(({ titulo, p, c }, idx) => {
@@ -347,7 +392,7 @@ async function buildRelatorio(itens: { titulo: string; p: Params; c: Calc }[]) {
     doc.setFont("helvetica", "bold").setFontSize(16);
     doc.text(`Simulação Administradoras — ${titulo}`, 12, 16);
     doc.setFont("helvetica", "normal").setFontSize(9.5);
-    doc.text(
+    if (p) doc.text(
       `Vidas: ${int(p.vidas)}   Spread: ${pct(p.spread)}   Copart.: ${pct(p.copart)}   Sinistralidade ref.: ${pct(p.sinRef)}   Net percapta ref.: ${brl(p.netPercapta)}`,
       12, 23,
     );
@@ -374,6 +419,13 @@ async function buildRelatorio(itens: { titulo: string; p: Params; c: Calc }[]) {
       columnStyles: { 0: { halign: "left", fontStyle: "bold" } },
     });
   });
+  const n = doc.getNumberOfPages();
+  const H = doc.internal.pageSize.getHeight();
+  for (let i = 1; i <= n; i++) {
+    doc.setPage(i);
+    doc.setFont("helvetica", "normal").setFontSize(9).setTextColor(0, 0, 0);
+    doc.text(`${i}/${n}`, W - 12, H - 8, { align: "right" });
+  }
   return doc;
 }
 
@@ -402,12 +454,6 @@ const AdministradorasSim = () => {
 
   return (
     <div className="h-full overflow-auto pr-1 space-y-5">
-      <button
-        onClick={() => setPdf(true)}
-        className="inline-flex items-center gap-2 h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90"
-      >
-        <FileText className="h-4 w-4" /> Relatório
-      </button>
       {pdf && (
         <PdfPreview
           fileName="Administradoras.pdf"
@@ -416,6 +462,7 @@ const AdministradorasSim = () => {
             buildRelatorio([
               { titulo: "Adesão", p: aplicado.adesao, c: calcAdesao },
               { titulo: "PME", p: aplicado.pme, c: calcPme },
+              { titulo: "Geral", p: null, c: somar(calcAdesao, calcPme) },
             ])
           }
         />
@@ -435,6 +482,7 @@ const AdministradorasSim = () => {
           titulo={a === "adesao" ? "Adesão" : "PME"}
           base={simBase[a]}
           sugerida={vendaSugerida[a]}
+          onRelatorio={() => setPdf(true)}
           draft={draft[a]}
           setDraft={(p) => setDraft((prev) => ({ ...prev, [a]: p }))}
           calc={a === "adesao" ? calcAdesao : calcPme}
