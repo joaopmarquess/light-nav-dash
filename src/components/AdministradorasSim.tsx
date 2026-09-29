@@ -402,7 +402,7 @@ async function buildRelatorio(itens: { titulo: string; p: Params | null; c: Calc
       12, 28.5,
     );
     autoTable(doc, {
-      startY: p ? 34 : 29,
+      startY: 34,
       margin: { left: 12, right: 12 },
       tableWidth: W - 24,
       theme: "grid",
