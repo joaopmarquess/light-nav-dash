@@ -1,5 +1,8 @@
 import { useMemo, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, FileText } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import PdfPreview from "@/components/PdfPreview";
 import { simBase, vendaSugerida, type SimBase, type SimParams } from "@/data/benevixSim";
 
 type Aba = "adesao" | "pme";
@@ -333,7 +336,49 @@ const padrao = (a: Aba): Params => {
   return { vidas, spread, copart, sinRef, netPercapta, dfe: faixas.map((f) => f.dfe), venda: faixas.map((f) => f.venda) };
 };
 
+const n2 = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+async function buildRelatorio(itens: { titulo: string; p: Params; c: Calc }[]) {
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  const W = doc.internal.pageSize.getWidth();
+  itens.forEach(({ titulo, p, c }, idx) => {
+    if (idx) doc.addPage();
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "bold").setFontSize(16);
+    doc.text(`Simulação Administradoras — ${titulo}`, 12, 16);
+    doc.setFont("helvetica", "normal").setFontSize(9.5);
+    doc.text(
+      `Vidas: ${int(p.vidas)}   Spread: ${pct(p.spread)}   Copart.: ${pct(p.copart)}   Sinistralidade ref.: ${pct(p.sinRef)}   Net percapta ref.: ${brl(p.netPercapta)}`,
+      12, 23,
+    );
+    doc.text(
+      `Sinistralidade medida: ${pct(c.sin)}   Net percapta: ${brl(c.netPercaptaAtual)}   Despesa percapta: ${brl(c.despesaPercapta)}`,
+      12, 28.5,
+    );
+    doc.setFont("helvetica", "bold");
+    doc.text(
+      `Bensaúde: mensal ${brl(c.resultado)} | anual ${brl(c.resultado * 12)}      Administradora: mensal ${brl(c.adm)} | anual ${brl(c.adm * 12)}`,
+      12, 34,
+    );
+    autoTable(doc, {
+      startY: 39,
+      margin: { left: 12, right: 12 },
+      tableWidth: W - 24,
+      theme: "grid",
+      head: [["Faixa", "% Vidas", "Vidas", "R$ Venda", "R$ Net", "Faturamento", "Receita Net", "Copart.", "R$ Bensaúde", "Despesas", "Result. Bensaúde", "Result. Adm."]],
+      body: c.rows.map((r) => [r.faixa, pct(r.dfe), int(r.vidas), n2(r.venda), n2(r.net), n2(r.faturamento), n2(r.receitaNet), n2(r.copart), n2(r.bensaude), `-${n2(r.despesas)}`, n2(r.resultado), n2(r.adm)]),
+      foot: [["Total", pct(c.dfeTotal), int(c.vidas), "—", "—", n2(c.faturamento), n2(c.receitaNet), n2(c.copart), n2(c.bensaude), `-${n2(c.despesas)}`, n2(c.resultado), n2(c.adm)]],
+      styles: { font: "helvetica", fontSize: 9.5, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.25, cellPadding: 2, halign: "right" },
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "bold", halign: "center", lineWidth: 0.4 },
+      footStyles: { fillColor: [225, 225, 225], textColor: [0, 0, 0], fontStyle: "bold", lineWidth: 0.4 },
+      columnStyles: { 0: { halign: "left", fontStyle: "bold" } },
+    });
+  });
+  return doc;
+}
+
 const AdministradorasSim = () => {
+  const [pdf, setPdf] = useState(false);
   const [draft, setDraft] = useState<Record<Aba, Params>>({ adesao: padrao("adesao"), pme: padrao("pme") });
   const [aplicado, setAplicado] = useState<Record<Aba, Params>>({
     adesao: padrao("adesao"),
@@ -357,6 +402,24 @@ const AdministradorasSim = () => {
 
   return (
     <div className="h-full overflow-auto pr-1 space-y-5">
+      <button
+        onClick={() => setPdf(true)}
+        className="inline-flex items-center gap-2 h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90"
+      >
+        <FileText className="h-4 w-4" /> Relatório
+      </button>
+      {pdf && (
+        <PdfPreview
+          fileName="Administradoras.pdf"
+          onClose={() => setPdf(false)}
+          build={() =>
+            buildRelatorio([
+              { titulo: "Adesão", p: aplicado.adesao, c: calcAdesao },
+              { titulo: "PME", p: aplicado.pme, c: calcPme },
+            ])
+          }
+        />
+      )}
       <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {cards.map((c) => (
           <div key={c.t} className="bg-card rounded-xl border border-border shadow-sm p-4">
