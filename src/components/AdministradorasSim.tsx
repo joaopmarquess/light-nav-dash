@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { simBase, type SimBase, type SimParams } from "@/data/benevixSim";
+import { simBase, vendaSugerida, type SimBase, type SimParams } from "@/data/benevixSim";
 
 type Aba = "adesao" | "pme";
 type Params = SimParams & { dfe: number[]; venda: number[] };
@@ -130,7 +130,9 @@ const Bloco = ({
   calc,
   onCalcular,
   onRestaurar,
+  sugerida,
 }: {
+  sugerida: number[];
   titulo: string;
   base: SimBase;
   draft: Params;
@@ -180,6 +182,19 @@ const Bloco = ({
           largura="w-28"
           onChange={(v) => setDraft({ ...draft, netPercapta: v })}
         />
+        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          R$ Venda
+          <select
+            value={draft.venda.every((v, i) => v === sugerida[i]) ? "sug" : "bnx"}
+            onChange={(e) =>
+              setDraft({ ...draft, venda: e.target.value === "sug" ? [...sugerida] : base.faixas.map((f) => f.venda) })
+            }
+            className="h-8 rounded-md border border-amber-400 bg-amber-100 dark:bg-amber-500/20 px-2 text-sm text-foreground"
+          >
+            <option value="bnx">Benevix</option>
+            <option value="sug">Sugerida</option>
+          </select>
+        </label>
         <button
           onClick={onCalcular}
           className="h-8 px-4 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:opacity-90"
@@ -356,6 +371,7 @@ const AdministradorasSim = () => {
           key={a}
           titulo={a === "adesao" ? "Adesão" : "PME"}
           base={simBase[a]}
+          sugerida={vendaSugerida[a]}
           draft={draft[a]}
           setDraft={(p) => setDraft((prev) => ({ ...prev, [a]: p }))}
           calc={a === "adesao" ? calcAdesao : calcPme}
