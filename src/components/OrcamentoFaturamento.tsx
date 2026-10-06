@@ -145,13 +145,16 @@ const OrcamentoFaturamento = () => {
       </section>
     ) : (
     <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
-      <h3 className="text-sm font-semibold cursor-help" title="A cada mês, Vidas = mês anterior + Entradas − Saídas; valor = Vidas × Ticket. Total 2027 = soma de jan/27 a dez/27.">Faturamento mensal — dez/26 a dez/27</h3>
+      <div className="flex items-center justify-between gap-2">
+      <h3 className="text-sm font-semibold cursor-help" title="A cada mês, Vidas = mês anterior + Entradas − Saídas; valor = Vidas × Ticket. Total 2027 = soma de jan/27 a dez/27.">Faturamento mensal — jan/27 a dez/27</h3>
+        <span className="rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm">Crescimento: <b className="tabular-nums">{tM26 ? `${Math.round((tM27 / tM26) * 100)}%` : "-"}</b></span>
+      </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-muted-foreground">
             <tr>
               <th className="text-left px-2 py-2">Planos</th>
-              {MESES.map((m, k) => <th key={m} className={`text-right px-2 py-2 whitespace-nowrap ${k === 0 ? "border-r-2 border-border" : ""}`}>{m}</th>)}
+              {MESES.slice(1).map((m) => <th key={m} className="text-right px-2 py-2 whitespace-nowrap">{m}</th>)}
               <th className="text-right px-2 py-2 border-l border-border">Total 2027</th>
             </tr>
           </thead>
@@ -159,13 +162,13 @@ const OrcamentoFaturamento = () => {
             {rows.map((r) => (
               <tr key={r.id} className="border-t border-border">
                 <td className="px-2 py-1.5 font-medium">{r.id}</td>
-                {MESES.map((m, k) => <td key={m} className={`${td} ${k === 0 ? "border-r-2 border-border" : ""}`}>{n2(mesVal(r, k))}</td>)}
+                {MESES.slice(1).map((m, k) => <td key={m} className={td}>{n2(mesVal(r, k + 1))}</td>)}
                 <td className={`${td} border-l border-border font-semibold`}>{n2(totLinha(r))}</td>
               </tr>
             ))}
             <tr className="border-t-2 border-border bg-muted/60 font-semibold">
               <td className="px-2 py-2">TOTAL</td>
-              {MESES.map((m, k) => <td key={m} className={`${td} ${k === 0 ? "border-r-2 border-border" : ""}`}>{n2(sum((r) => mesVal(r, k)))}</td>)}
+              {MESES.slice(1).map((m, k) => <td key={m} className={td}>{n2(sum((r) => mesVal(r, k + 1)))}</td>)}
               <td className={`${td} border-l border-border`}>{n2(sum(totLinha))}</td>
             </tr>
           </tbody>
