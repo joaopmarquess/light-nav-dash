@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { RotateCcw, ChevronDown, ChevronRight } from "lucide-react";
+import { RotateCcw, ChevronLeft, ChevronDown, ChevronRight } from "lucide-react";
 
 const parseBR = (v: string) => Number(v.replace(/\./g, "").replace(",", ".")) || 0;
 
