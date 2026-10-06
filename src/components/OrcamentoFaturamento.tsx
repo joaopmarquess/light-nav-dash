@@ -276,6 +276,7 @@ const OrcamentoFaturamento = () => {
         ...(dreAbertos[key] ? filhos[key].map(([n, v]) => row(n, v, "", undefined, true)) : []),
       ];
       const tF = t(fatM);
+      const SUB = "border-t-2 border-b-2 !border-primary/40 bg-primary/10 font-bold [&_td]:font-bold";
       return (
         <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
           <div className="flex items-center gap-2">
@@ -292,12 +293,12 @@ const OrcamentoFaturamento = () => {
                 </tr>
               </thead>
               <tbody>
-                {grupo("ENTRADAS OPERACIONAIS", ent, "ENT", "bg-muted/60 font-semibold")}
-                {grupo("DESPESAS ASSISTENCIAIS", desp, "DESP")}
-                {grupo("DEMAIS OPERACIONAIS", dOp, "OP")}
-                {grupo("DESPESAS ADMINISTRATIVAS", adm, "ADM")}
-                {row("FINANCEIRO", fin, "")}
-                {row("RESULTADO", res, "border-t-2 bg-muted/60 font-semibold")}
+                {grupo("ENTRADAS OPERACIONAIS", ent, "ENT", SUB)}
+                {grupo("DESPESAS ASSISTENCIAIS", desp, "DESP", SUB)}
+                {grupo("DEMAIS OPERACIONAIS", dOp, "OP", SUB)}
+                {grupo("DESPESAS ADMINISTRATIVAS", adm, "ADM", SUB)}
+                {row("FINANCEIRO", fin, SUB)}
+                {row("RESULTADO", res, "border-t-4 border-b-4 !border-primary bg-primary/30 font-bold [&_td]:font-bold")}
               </tbody>
             </table>
           </div>
