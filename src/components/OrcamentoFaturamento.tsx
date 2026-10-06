@@ -236,7 +236,7 @@ const OrcamentoFaturamento = () => {
       const M = MESES.slice(1);
       const NOMES = ["COMERCIALIZAÇÃO", "IMPOSTOS DIRETOS", "PROVISÕES", "SECUNDÁRIAS"];
       const fatM = M.map((_, k) => sum((r) => mesVal(r, k + 1)));
-      const linhas = demais.map((pc) => fatM.map((v) => -v * pc / 100));
+      const linhas = demais.map((pc) => fatM.map((v) => v * pc / 100));
       const totM = M.map((_, k) => linhas.reduce((a, l) => a + l[k], 0));
       const vert = demais.reduce((a, b) => a + b, 0);
       const t = (vs: number[]) => vs.reduce((a, b) => a + b, 0);
