@@ -68,7 +68,7 @@ const OrcamentoFaturamento = () => {
 
   return (
     <div className="space-y-4">
-    <section className="bg-card rounded-xl border border-border shadow-sm p-2 space-y-1">
+    {aba !== "DRE" && (<section className="bg-card rounded-xl border border-border shadow-sm p-2 space-y-1">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold cursor-help" title="Mensal 2026 = Vidas × Ticket; Anual = Mensal × 12. Mensal 2027 = média mensal de jan/27 a dez/27; Anual 2027 = Total 2027. Crescimento = (Entradas − Saídas) × 12. Vidas 2027 = Vidas 2026 + Crescimento. Ticket 2027 = Ticket 2026. Ticket total = Mensal total ÷ Vidas totais.">Orçamento — Faturamento 2026 × 2027</h3>
         <div className="flex items-center gap-2">
@@ -139,7 +139,7 @@ const OrcamentoFaturamento = () => {
           </tbody>
         </table>
       </div>
-    </section>
+    </section>)}
     <div className="flex flex-wrap gap-2">
       {ABAS.map((a) => (
         <button
@@ -245,7 +245,7 @@ const OrcamentoFaturamento = () => {
       const dOp = fatM.map((v) => v * pcOp / 100);
       const adm = fatM.map((v) => v * admTot / 100);
       const fin = fatM.map((v) => v * finPc / 100);
-      const res = ent.map((v, k) => v - desp[k] - dOp[k] - adm[k] - fin[k]);
+      const res = ent.map((v, k) => v - desp[k] - dOp[k] - adm[k] + fin[k]);
       const t = (vs: number[]) => vs.reduce((a, b) => a + b, 0);
       const cls = (v: number) => (v < 0 ? "text-destructive" : "");
       const linha = (nome: string, vs: number[], bold = false, sep = false) => (
@@ -259,7 +259,7 @@ const OrcamentoFaturamento = () => {
       return (
         <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold cursor-help" title="Resultado = Entradas Operacionais − Despesas Assistenciais − Demais Operacionais − Despesas Administrativas − Financeiro. Usa as premissas de cada botão.">DRE — jan/27 a dez/27</h3>
+            <h3 className="text-sm font-semibold cursor-help" title="Resultado = Entradas Operacionais − Despesas Assistenciais − Demais Operacionais − Despesas Administrativas + Financeiro. Usa as premissas de cada botão.">DRE — jan/27 a dez/27</h3>
             <span className="ml-auto rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm cursor-help" title="Resultado Total ÷ Faturamento Total">Margem: <b className="tabular-nums">{tF ? `${n2((t(res) / tF) * 100)}%` : "-"}</b></span>
           </div>
           <div className="overflow-x-auto">
