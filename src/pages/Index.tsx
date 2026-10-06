@@ -163,7 +163,7 @@ const menuItems: MenuItem[] = [
   {
     icon: Coins,
     label: "Orçamento ",
-    children: [{ icon: Coins, label: "2027" }],
+    children: [{ icon: LayoutDashboard, label: "Painel Orçamento" }, { icon: Coins, label: "Simulação" }],
   },
   {
     icon: FileText,
@@ -467,7 +467,9 @@ const Index = () => {
           ) : active === "__removed_orc_dw__" ? (
             <div />
 
-          ) : active === "2027" ? (
+          ) : active === "Painel Orçamento" ? (
+            <OrcamentoFaturamento home />
+          ) : active === "Simulação" ? (
             <OrcamentoFaturamento />
           ) : active === "Premiação 4T 2026" ? (
             <Promocoes />
