@@ -180,7 +180,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
         </div>);
       return (
         <div className="order-last mt-auto grid grid-cols-2 md:grid-cols-5 gap-3">
-          {rows.map((r) => <C key={r.plano} t={r.plano} v={n0(vidas27(r))} f={n2(totLinha(r))} c="border-l-primary" />)}
+          {rows.map((r) => <C key={r.id} t={r.id} v={n0(vidas27(r))} f={n2(totLinha(r))} c="border-l-primary" />)}
           <div className={`rounded-xl border border-border bg-card shadow-md border-l-4 ${cr < 0 ? "border-l-destructive" : "border-l-accent"} px-3 py-2 text-center flex flex-col justify-center`} title="(Faturamento 2027 ÷ Faturamento 2026) − 1">
             <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Crescimento Total</div>
             <div className={`text-xl font-bold tabular-nums ${cr < 0 ? "text-destructive" : ""}`}>{n2(cr * 100)}%</div>
