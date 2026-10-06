@@ -42,6 +42,7 @@ const OrcamentoFaturamento = () => {
   const [rede, setRede] = useState(55);
   const [demaisOp, setDemaisOp] = useState([2, 1, 0.5, 0.2]);
   const [admPc, setAdmPc] = useState([4, 2, 0.8, 1.2]);
+  const [admTot, setAdmTot] = useState(8);
   const tk = (r: Linha, k: number) => r.ticket * Math.pow(1 + reaj / 100, k - 1);
   const set = (i: number, k: Campo, v: number) =>
     setRows((p) => p.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
@@ -237,7 +238,7 @@ const OrcamentoFaturamento = () => {
       const M = MESES.slice(1);
       const isAdm = aba === "Despesas Administrativas";
       const NOMES = isAdm ? ["PESSOAL", "INFORMÁTICA", "MARKETING", "DEMAIS"] : ["COMERCIALIZAÇÃO", "IMPOSTOS DIRETOS", "PROVISÕES", "SECUNDÁRIAS"];
-      const demais = isAdm ? admPc : demaisOp;
+      const demais = isAdm ? [admPc[0], admPc[1], admPc[2], admTot - admPc[0] - admPc[1] - admPc[2]] : demaisOp;
       const setDemais = isAdm ? setAdmPc : setDemaisOp;
       const TOTNOME = isAdm ? "DESPESAS ADMINISTRATIVAS" : "DEMAIS OPERACIONAIS";
       const fatM = M.map((_, k) => sum((r) => mesVal(r, k + 1)));
@@ -273,14 +274,14 @@ const OrcamentoFaturamento = () => {
                 {linhas.map((l, i) => (
                   <tr key={i} className={`${i === 0 ? "border-t-2" : "border-t"} border-border`}>
                     <td className="px-2 py-0.5 font-medium whitespace-nowrap">{NOMES[i]}</td>
-                    <td className="px-2 py-0 text-right"><NumInput dec={2} className={campo} value={demais[i]} onChange={(v) => setDemais((p) => p.map((x, j) => (j === i ? v : x)))} /></td>
+                    <td className="px-2 py-0 text-right">{isAdm && i === 3 ? <span className="inline-block w-20 px-2 text-right tabular-nums">{n2(demais[i])}%</span> : <NumInput dec={2} className={campo} value={demais[i]} onChange={(v) => setDemais((p) => p.map((x, j) => (j === i ? v : x)))} />}</td>
                     {l.map((v, k) => <td key={k} className={`${td} ${cls(v)}`}>{n2(v)}</td>)}
                     <td className={`${td} border-l border-border font-semibold ${cls(t(l))}`}>{n2(t(l))}</td>
                   </tr>
                 ))}
                 <tr className="border-t border-border bg-muted/60 font-semibold">
                   <td className="px-2 py-0.5 whitespace-nowrap">{TOTNOME}</td>
-                  <td className="px-2 py-0.5 text-right tabular-nums">{n2(vert)}%</td>
+                  <td className="px-2 py-0 text-right tabular-nums">{isAdm ? <NumInput dec={2} className={campo} value={admTot} onChange={setAdmTot} /> : `${n2(vert)}%`}</td>
                   {totM.map((v, k) => <td key={k} className={`${td} ${cls(v)}`}>{n2(v)}</td>)}
                   <td className={`${td} border-l border-border ${cls(t(totM))}`}>{n2(t(totM))}</td>
                 </tr>
