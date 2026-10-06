@@ -39,7 +39,8 @@ const OrcamentoFaturamento = () => {
   const mensal26 = (r: Linha) => r.vidas * r.ticket;
   const cresc = (r: Linha) => (r.entradas - r.saidas) * 12;
   const vidas27 = (r: Linha) => r.vidas + cresc(r);
-  const mensal27 = (r: Linha) => vidas27(r) * r.ticket;
+  // média de jan/27 a dez/27 (vidas crescem mês a mês)
+  const mensal27 = (r: Linha) => (r.vidas + 6.5 * (r.entradas - r.saidas)) * r.ticket;
   const sum = (f: (r: Linha) => number) => rows.reduce((s, r) => s + f(r), 0);
 
   const tV26 = sum((r) => r.vidas), tM26 = sum(mensal26);
@@ -123,7 +124,7 @@ const OrcamentoFaturamento = () => {
         </table>
       </div>
       <p className="text-xs text-muted-foreground">
-        Mensal = Vidas × Ticket; Anual = Mensal × 12. Crescimento = (Entradas − Saídas) × 12. Vidas 2027 = Vidas 2026 +
+        Mensal 2026 = Vidas × Ticket; Anual = Mensal × 12. Mensal 2027 = média mensal de jan/27 a dez/27; Anual 2027 = Total 2027. Crescimento = (Entradas − Saídas) × 12. Vidas 2027 = Vidas 2026 +
         Crescimento. Ticket 2027 = Ticket 2026. Ticket total = Mensal total ÷ Vidas totais.
       </p>
     </section>
