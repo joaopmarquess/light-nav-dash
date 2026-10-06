@@ -69,6 +69,17 @@ const OrcamentoFaturamento = () => {
 
   return (
     <div className="space-y-4">
+    <div className="flex flex-wrap gap-2">
+      {ABAS.map((a) => (
+        <button
+          key={a}
+          onClick={() => setAba(a)}
+          className={`rounded-md border px-3 py-1.5 text-sm ${aba === a ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-muted"}`}
+        >
+          {a}
+        </button>
+      ))}
+    </div>
     {aba !== "DRE" && (<section className="bg-card rounded-xl border border-border shadow-sm p-2 space-y-1">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold cursor-help" title="Mensal 2026 = Vidas × Ticket; Anual = Mensal × 12. Mensal 2027 = média mensal de jan/27 a dez/27; Anual 2027 = Total 2027. Crescimento = (Entradas − Saídas) × 12. Vidas 2027 = Vidas 2026 + Crescimento. Ticket 2027 = Ticket 2026. Ticket total = Mensal total ÷ Vidas totais.">Orçamento — Faturamento 2026 × 2027</h3>
@@ -141,17 +152,6 @@ const OrcamentoFaturamento = () => {
         </table>
       </div>
     </section>)}
-    <div className="flex flex-wrap gap-2">
-      {ABAS.map((a) => (
-        <button
-          key={a}
-          onClick={() => setAba(a)}
-          className={`rounded-md border px-3 py-1.5 text-sm ${aba === a ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-muted"}`}
-        >
-          {a}
-        </button>
-      ))}
-    </div>
     {aba === "Coparticipação" ? (() => {
       const M = MESES.slice(1);
       const fat = M.map((_, k) => sum((r) => mesVal(r, k + 1)));
