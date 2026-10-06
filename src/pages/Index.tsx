@@ -182,6 +182,7 @@ const menuItems: MenuItem[] = [
 
 const Index = () => {
   const [active, setActive] = useState("Home");
+  const [abaOrc, setAbaOrc] = useState("Faturamento");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [collapsed, setCollapsed] = useState(true);
   const [dateValue, setDateValue] = useState(todayBR());
@@ -286,7 +287,7 @@ const Index = () => {
                 {hasChildren && isOpen && !collapsed && (
                   <div className="mt-1 space-y-1">
                     {item.children!.map((child) => {
-                      const childActive = active === (child.id ?? child.label);
+                      const childActive = active === (child.id ?? child.label) || ((child.id ?? child.label) === "Painel Orçamento" && active === "Simulação");
                       return (
                         <button
                           key={child.label}
@@ -468,9 +469,9 @@ const Index = () => {
             <div />
 
           ) : active === "Painel Orçamento" ? (
-            <OrcamentoFaturamento home onSimulacao={() => setActive("Simulação")} />
+            <OrcamentoFaturamento home onSimulacao={(a) => { setAbaOrc(a); setActive("Simulação"); }} />
           ) : active === "Simulação" ? (
-            <OrcamentoFaturamento onPainel={() => setActive("Painel Orçamento")} />
+            <OrcamentoFaturamento key={abaOrc} abaInicial={abaOrc} onPainel={() => setActive("Painel Orçamento")} />
           ) : active === "Premiação 4T 2026" ? (
             <Promocoes />
           ) : active === "Administradoras" ? (
