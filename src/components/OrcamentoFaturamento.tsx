@@ -40,6 +40,7 @@ const OrcamentoFaturamento = () => {
   const [rec, setRec] = useState(16);
   const [sinLiq, setSinLiq] = useState(87);
   const [rede, setRede] = useState(55);
+  const [demais, setDemais] = useState([-2, -1, -0.5, -0.2]);
   const tk = (r: Linha, k: number) => r.ticket * Math.pow(1 + reaj / 100, k - 1);
   const set = (i: number, k: Campo, v: number) =>
     setRows((p) => p.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
@@ -224,6 +225,58 @@ const OrcamentoFaturamento = () => {
                 {linha("REDE", rd, false, true)}
                 {linha("BENÊ", bn)}
                 {linha("DESPESAS ASSISTENCIAIS", desp, true)}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      );
+    })() : aba === "Demais Operacionais" ? (() => {
+      const M = MESES.slice(1);
+      const NOMES = ["COMERCIALIZAÇÃO", "IMPOSTOS DIRETOS", "PROVISÕES", "SECUNDÁRIAS"];
+      const fatM = M.map((_, k) => sum((r) => mesVal(r, k + 1)));
+      const linhas = demais.map((pc) => fatM.map((v) => v * pc / 100));
+      const totM = M.map((_, k) => linhas.reduce((a, l) => a + l[k], 0));
+      const vert = demais.reduce((a, b) => a + b, 0);
+      const t = (vs: number[]) => vs.reduce((a, b) => a + b, 0);
+      const cls = (v: number) => (v < 0 ? "text-destructive" : "");
+      const campo = "w-20 rounded border border-border px-2 py-0 h-6 text-right tabular-nums font-semibold bg-yellow-100/60";
+      return (
+        <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold cursor-help" title="Cada linha = Faturamento do mês × % da linha. Total = soma das linhas. Vertical = soma dos %.">Demais Operacionais — jan/27 a dez/27</h3>
+            <span className="ml-auto rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm">Vertical: <b className="tabular-nums">{n2(vert)}%</b></span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 text-muted-foreground">
+                <tr>
+                  <th />
+                  <th className="text-right px-2 py-2">%</th>
+                  {M.map((m) => <th key={m} className="text-right px-2 py-2 whitespace-nowrap">{m}</th>)}
+                  <th className="text-right px-2 py-2 border-l border-border">Total 2027</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-t border-border">
+                  <td className="px-2 py-0.5 font-medium">FATURAMENTO</td>
+                  <td />
+                  {fatM.map((v, k) => <td key={k} className={td}>{n2(v)}</td>)}
+                  <td className={`${td} border-l border-border font-semibold`}>{n2(t(fatM))}</td>
+                </tr>
+                {linhas.map((l, i) => (
+                  <tr key={i} className={`${i === 0 ? "border-t-2" : "border-t"} border-border`}>
+                    <td className="px-2 py-0.5 font-medium whitespace-nowrap">{NOMES[i]}</td>
+                    <td className="px-2 py-0 text-right"><NumInput dec={2} className={campo} value={demais[i]} onChange={(v) => setDemais((p) => p.map((x, j) => (j === i ? v : x)))} /></td>
+                    {l.map((v, k) => <td key={k} className={`${td} ${cls(v)}`}>{n2(v)}</td>)}
+                    <td className={`${td} border-l border-border font-semibold ${cls(t(l))}`}>{n2(t(l))}</td>
+                  </tr>
+                ))}
+                <tr className="border-t border-border bg-muted/60 font-semibold">
+                  <td className="px-2 py-0.5 whitespace-nowrap">DEMAIS OPERACIONAIS</td>
+                  <td className="px-2 py-0.5 text-right tabular-nums">{n2(vert)}%</td>
+                  {totM.map((v, k) => <td key={k} className={`${td} ${cls(v)}`}>{n2(v)}</td>)}
+                  <td className={`${td} border-l border-border ${cls(t(totM))}`}>{n2(t(totM))}</td>
+                </tr>
               </tbody>
             </table>
           </div>
