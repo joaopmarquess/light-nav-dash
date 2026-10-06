@@ -229,7 +229,7 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
                   <th className="text-right px-3 py-1.5 font-semibold text-foreground">Total 2027</th>
                 </tr>
               </thead>
-              <tbody className="[&>tr>td:first-child]:rounded-l-lg [&>tr>td:last-child]:rounded-r-lg">
+              <tbody className="[&>tr>td]:border-y [&>tr>td]:border-border/50 [&>tr>td:first-child]:border-l [&>tr>td:last-child]:border-r [&>tr>td:first-child]:rounded-l-lg [&>tr>td:last-child]:rounded-r-lg">
                 {linha("FATURAMENTO", fat, tF)}
                 {linha("COPARTICIPAÇÃO", cop, tC)}
                 {linha("ENTRADAS OPERACIONAIS", fat.map((v, k) => v + cop[k]), tF + tC, true)}
@@ -276,7 +276,7 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
                   <th className="text-right px-3 py-1.5 font-semibold text-foreground">Total 2027</th>
                 </tr>
               </thead>
-              <tbody className="[&>tr>td:first-child]:rounded-l-lg [&>tr>td:last-child]:rounded-r-lg">
+              <tbody className="[&>tr>td]:border-y [&>tr>td]:border-border/50 [&>tr>td:first-child]:border-l [&>tr>td:last-child]:border-r [&>tr>td:first-child]:rounded-l-lg [&>tr>td:last-child]:rounded-r-lg">
                 {linha("FATURAMENTO", fatM)}
                 {linha("COPARTICIPAÇÃO", fatM.map((v) => v * rec / 100))}
                 {linha("ENTRADAS OPERACIONAIS", ent, true)}
@@ -311,7 +311,7 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
         ADM: (["PESSOAL", "INFORMÁTICA", "MARKETING", "DEMAIS"] as const).map((n, i) => [n, fatM.map((v) => v * (i === 3 ? admDemais : admPc[i]) / 100)] as [string, number[]]),
       };
       const row = (nome: string, vs: number[], cl: string, key?: string, filho = false) => (
-        <tr key={nome + (filho ? "-f" : "")} className={`group transition-colors hover:bg-muted/40 ${cl}`}>
+        <tr key={nome + (filho ? "-f" : "")} className={`group transition-colors hover:bg-muted/80 ${cl}`}>
           <td className={`sticky left-0 z-10 bg-inherit px-3 py-1.5 whitespace-nowrap ${filho ? "pl-10 text-xs text-muted-foreground" : "font-semibold tracking-wide"}`}>
             {key ? (
               <button onClick={() => setDreAbertos((p) => ({ ...p, [key]: !p[key] }))} className="inline-flex items-center gap-1.5 hover:text-primary">
@@ -320,17 +320,17 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
             ) : <span className={filho ? "" : "pl-6"}>{nome}</span>}
           </td>
           {vs.map((v, k) => <td key={k} className={`px-2 py-1.5 text-right tabular-nums whitespace-nowrap ${filho ? "text-xs text-muted-foreground" : ""} ${cls(v)}`}>{n2(v)}</td>)}
-          <td className={`px-3 py-1.5 text-right tabular-nums whitespace-nowrap font-semibold bg-muted/30 ${cls(t(vs))}`}>{n2(t(vs))}</td>
+          <td className={`px-3 py-1.5 text-right tabular-nums whitespace-nowrap font-semibold bg-muted ${cls(t(vs))}`}>{n2(t(vs))}</td>
         </tr>
       );
       const grupo = (nome: string, vs: number[], key: string, cl = "") => [
         row(nome, vs, cl, key),
-        ...(dreAbertos[key] ? filhos[key].map(([n, v]) => row(n, v, "", undefined, true)) : []),
+        ...(dreAbertos[key] ? filhos[key].map(([n, v]) => row(n, v, "bg-muted/30", undefined, true)) : []),
       ];
       const tF = t(fatM);
       const imp = res.map((v) => (v > 0 ? v * 0.34 : 0));
       const resLiq = res.map((v, k) => v - imp[k]);
-      const SUB = "bg-card [&>td:first-child]:shadow-[inset_3px_0_0_hsl(var(--primary))]";
+      const SUB = "bg-muted/60 [&>td:first-child]:shadow-[inset_3px_0_0_hsl(var(--primary))]";
       return (
         <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
           <div className="flex items-center gap-2">
@@ -346,14 +346,14 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
                   <th className="text-right px-3 py-1.5 font-semibold text-foreground">Total 2027</th>
                 </tr>
               </thead>
-              <tbody className="[&>tr>td:first-child]:rounded-l-lg [&>tr>td:last-child]:rounded-r-lg">
+              <tbody className="[&>tr>td]:border-y [&>tr>td]:border-border/50 [&>tr>td:first-child]:border-l [&>tr>td:last-child]:border-r [&>tr>td:first-child]:rounded-l-lg [&>tr>td:last-child]:rounded-r-lg">
                 {grupo("ENTRADAS OPERACIONAIS", ent, "ENT", SUB)}
                 {grupo("DESPESAS ASSISTENCIAIS", desp, "DESP", SUB)}
                 {grupo("DEMAIS OPERACIONAIS", dOp, "OP", SUB)}
                 {grupo("DESPESAS ADMINISTRATIVAS", adm, "ADM", SUB)}
                 {row("FINANCEIRO", fin, SUB)}
                 {row("RESULTADO ANTES DOS IMPOSTOS", res, "bg-primary/10 [&>td:first-child]:shadow-[inset_3px_0_0_hsl(var(--primary))]")}
-                {row("IMPOSTOS FEDERAIS", imp, "bg-card")}
+                {row("IMPOSTOS FEDERAIS", imp, "bg-muted/60")}
                 {row("RESULTADO LÍQUIDO", resLiq, "bg-primary text-primary-foreground font-bold [&_td]:font-bold [&_td]:bg-primary hover:bg-primary [&_.text-destructive]:text-primary-foreground")}
               </tbody>
             </table>
