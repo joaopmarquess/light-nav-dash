@@ -31,7 +31,7 @@ const n0 = (v: number) => new Intl.NumberFormat("pt-BR", { maximumFractionDigits
 const n2 = (v: number) =>
   new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
 
-const ABAS = ["Faturamento", "Coparticipação", "Despesas Assistenciais", "Demais Operacionais", "Despesas Administrativas", "Financeiro", "Impostos Federais", "DRE"];
+const ABAS = ["Faturamento", "Coparticipação", "Despesas Assistenciais", "Demais Operacionais", "Despesas Administrativas", "Financeiro", "DRE"];
 
 const OrcamentoFaturamento = () => {
   const [rows, setRows] = useState<Linha[]>(BASE);
@@ -230,6 +230,56 @@ const OrcamentoFaturamento = () => {
                 {linha("REDE", rd, false, true)}
                 {linha("BENÊ", bn)}
                 {linha("DESPESAS ASSISTENCIAIS", desp, true)}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      );
+    })() : aba === "DRE" ? (() => {
+      const M = MESES.slice(1);
+      const fatM = M.map((_, k) => sum((r) => mesVal(r, k + 1)));
+      const cop = fatM.map((v) => v * rec / 100);
+      const ent = fatM.map((v, k) => v + cop[k]);
+      const desp = ent.map((v) => v * sinLiq / 100);
+      const pcOp = demaisOp.reduce((a, b) => a + b, 0);
+      const dOp = fatM.map((v) => v * pcOp / 100);
+      const adm = fatM.map((v) => v * admTot / 100);
+      const fin = fatM.map((v) => v * finPc / 100);
+      const res = ent.map((v, k) => v - desp[k] - dOp[k] - adm[k] - fin[k]);
+      const t = (vs: number[]) => vs.reduce((a, b) => a + b, 0);
+      const cls = (v: number) => (v < 0 ? "text-destructive" : "");
+      const linha = (nome: string, vs: number[], bold = false, sep = false) => (
+        <tr className={`${sep ? "border-t-2" : "border-t"} border-border ${bold ? "bg-muted/60 font-semibold" : ""}`}>
+          <td className="px-2 py-0.5 font-medium whitespace-nowrap">{nome}</td>
+          {vs.map((v, k) => <td key={k} className={`${td} ${cls(v)}`}>{n2(v)}</td>)}
+          <td className={`${td} border-l border-border font-semibold ${cls(t(vs))}`}>{n2(t(vs))}</td>
+        </tr>
+      );
+      const tF = t(fatM);
+      return (
+        <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold cursor-help" title="Resultado = Entradas Operacionais − Despesas Assistenciais − Demais Operacionais − Despesas Administrativas − Financeiro. Usa as premissas de cada botão.">DRE — jan/27 a dez/27</h3>
+            <span className="ml-auto rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm cursor-help" title="Resultado Total ÷ Faturamento Total">Margem: <b className="tabular-nums">{tF ? `${n2((t(res) / tF) * 100)}%` : "-"}</b></span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 text-muted-foreground">
+                <tr>
+                  <th />
+                  {M.map((m) => <th key={m} className="text-right px-2 py-2 whitespace-nowrap">{m}</th>)}
+                  <th className="text-right px-2 py-2 border-l border-border">Total 2027</th>
+                </tr>
+              </thead>
+              <tbody>
+                {linha("FATURAMENTO", fatM)}
+                {linha("COPARTICIPAÇÃO", cop)}
+                {linha("ENTRADAS OPERACIONAIS", ent, true)}
+                {linha("DESPESAS ASSISTENCIAIS", desp, false, true)}
+                {linha("DEMAIS OPERACIONAIS", dOp)}
+                {linha("DESPESAS ADMINISTRATIVAS", adm)}
+                {linha("FINANCEIRO", fin)}
+                {linha("RESULTADO", res, true, true)}
               </tbody>
             </table>
           </div>
