@@ -278,12 +278,12 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
             <NumInput dec={2} className="w-20 rounded border border-border px-2 py-0 h-6 text-right tabular-nums font-semibold bg-yellow-100/60" value={rec} onChange={setRec} />
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm border-separate border-spacing-y-0.5">
+            <table className="w-full text-xs border-separate border-spacing-y-px">
               <thead className="text-[11px] uppercase tracking-wider text-foreground/80">
                 <tr>
                   <th className="sticky left-0 bg-card" />
-                  {M.map((m) => <th key={m} className="text-right px-2 py-1.5 font-medium whitespace-nowrap">{m}</th>)}
-                  <th className="text-right px-3 py-1.5 font-semibold text-foreground">Total 2027</th>
+                  {M.map((m) => <th key={m} className="text-right px-2 py-0.5 font-medium whitespace-nowrap">{m}</th>)}
+                  <th className="text-right px-3 py-0.5 font-semibold text-foreground">Total 2027</th>
                 </tr>
               </thead>
               <tbody className="[&>tr>td]:border-y [&>tr>td]:border-border/50 [&>tr>td:first-child]:border-l [&>tr>td:last-child]:border-r [&>tr>td:first-child]:rounded-l-lg [&>tr>td:last-child]:rounded-r-lg">
@@ -330,7 +330,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
                 <tr>
                   <th className="sticky left-0 bg-card" />
                   {M.map((m) => <th key={m} className="text-right px-2 py-1.5 font-medium whitespace-nowrap">{m}</th>)}
-                  <th className="text-right px-3 py-1.5 font-semibold text-foreground">Total 2027</th>
+                  <th className="text-right px-3 py-0.5 font-semibold text-foreground">Total 2027</th>
                 </tr>
               </thead>
               <tbody className="[&>tr>td]:border-y [&>tr>td]:border-border/50 [&>tr>td:first-child]:border-l [&>tr>td:last-child]:border-r [&>tr>td:first-child]:rounded-l-lg [&>tr>td:last-child]:rounded-r-lg">
@@ -369,15 +369,15 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
       };
       const row = (nome: string, vs: number[], cl: string, key?: string, filho = false) => (
         <tr key={nome + (filho ? "-f" : "")} className={`group transition-colors hover:bg-muted/80 ${cl}`}>
-          <td className={`sticky left-0 z-10 bg-inherit px-3 py-0.5 whitespace-nowrap ${filho ? "pl-10 text-xs text-foreground/80" : "font-semibold tracking-wide"}`}>
+          <td className={`sticky left-0 z-10 bg-inherit px-3 py-0 leading-tight whitespace-nowrap ${filho ? "pl-10 text-xs text-foreground/80" : "font-semibold tracking-wide"}`}>
             {key ? (
               <button onClick={() => setDreAbertos((p) => ({ ...p, [key]: !p[key] }))} className="inline-flex items-center gap-1.5 hover:text-primary">
-                <span className="grid h-5 w-5 place-items-center rounded-full bg-primary/10 text-primary">{dreAbertos[key] ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}</span>{nome}
+                <span className="grid h-4 w-4 place-items-center rounded-full bg-primary/10 text-primary">{dreAbertos[key] ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}</span>{nome}
               </button>
             ) : <span className={filho ? "" : "pl-6"}>{nome}</span>}
           </td>
-          {vs.map((v, k) => <td key={k} className={`px-2 py-0.5 text-right tabular-nums whitespace-nowrap ${filho ? "text-xs text-foreground/80" : ""} ${cls(v)}`}>{n2(v)}</td>)}
-          <td className={`px-3 py-0.5 text-right tabular-nums whitespace-nowrap font-semibold bg-muted ${cls(t(vs))}`}>{n2(t(vs))}</td>
+          {vs.map((v, k) => <td key={k} className={`px-2 py-0 leading-tight text-right tabular-nums whitespace-nowrap ${filho ? "text-xs text-foreground/80" : ""} ${cls(v)}`}>{n2(v)}</td>)}
+          <td className={`px-3 py-0 leading-tight text-right tabular-nums whitespace-nowrap font-semibold bg-muted ${cls(t(vs))}`}>{n2(t(vs))}</td>
         </tr>
       );
       const grupo = (nome: string, vs: number[], key: string, cl = "") => [
@@ -401,7 +401,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
                 <tr>
                   <th className="sticky left-0 bg-card" />
                   {M.map((m) => <th key={m} className="text-right px-2 py-1.5 font-medium whitespace-nowrap">{m}</th>)}
-                  <th className="text-right px-3 py-1.5 font-semibold text-foreground">Total 2027</th>
+                  <th className="text-right px-3 py-0.5 font-semibold text-foreground">Total 2027</th>
                 </tr>
               </thead>
               <tbody className="[&>tr>td]:border-y [&>tr>td]:border-border/50 [&>tr>td:first-child]:border-l [&>tr>td:last-child]:border-r [&>tr>td:first-child]:rounded-l-lg [&>tr>td:last-child]:rounded-r-lg">
@@ -581,13 +581,13 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
             return (
             <div key={t} title={h} className={`rounded-xl border overflow-hidden cursor-help hover:shadow-md transition-shadow ${hero ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border"}`}>
               <div className={`h-1 ${hero ? "bg-primary-foreground/40" : v < 0 ? "bg-destructive" : "bg-primary"}`} />
-              <div className="px-3 py-2">
-                <div className={`text-[10px] uppercase tracking-wide leading-tight min-h-[1.6rem] ${hero ? "opacity-80" : "text-muted-foreground"}`}>{t}</div>
+              <div className={`px-3 ${aba === "DRE" ? "py-1" : "py-2"}`}>
+                <div className={`text-[10px] uppercase tracking-wide leading-tight ${aba === "DRE" ? "" : "min-h-[1.6rem]"} ${hero ? "opacity-80" : "text-muted-foreground"}`}>{t}</div>
                 <div className={`text-sm font-bold tabular-nums ${hero ? "" : v < 0 ? "text-destructive" : "text-foreground"}`}>R$ {n2(v)}</div>
-                <div className={`mt-1 h-1 rounded-full overflow-hidden ${hero ? "bg-primary-foreground/20" : "bg-muted"}`}>
+                {aba !== "DRE" && <><div className={`mt-1 h-1 rounded-full overflow-hidden ${hero ? "bg-primary-foreground/20" : "bg-muted"}`}>
                   <div className={`h-full ${hero ? "bg-primary-foreground" : v < 0 ? "bg-destructive" : "bg-primary"}`} style={{ width: `${Math.min(100, fT ? Math.abs(v / fT) * 100 : 0)}%` }} />
                 </div>
-                <div className={`text-[10px] ${hero ? "opacity-80" : "text-muted-foreground"}`}>{fT ? n2((v / fT) * 100) : "-"}% do faturamento</div>
+                <div className={`text-[10px] ${hero ? "opacity-80" : "text-muted-foreground"}`}>{fT ? n2((v / fT) * 100) : "-"}% do faturamento</div></>}
               </div>
             </div>
           );})}
