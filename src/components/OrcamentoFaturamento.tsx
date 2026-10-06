@@ -40,7 +40,8 @@ const OrcamentoFaturamento = () => {
   const [rec, setRec] = useState(16);
   const [sinLiq, setSinLiq] = useState(87);
   const [rede, setRede] = useState(55);
-  const [demais, setDemais] = useState([2, 1, 0.5, 0.2]);
+  const [demaisOp, setDemaisOp] = useState([2, 1, 0.5, 0.2]);
+  const [admPc, setAdmPc] = useState([4, 2, 0.8, 1.2]);
   const tk = (r: Linha, k: number) => r.ticket * Math.pow(1 + reaj / 100, k - 1);
   const set = (i: number, k: Campo, v: number) =>
     setRows((p) => p.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
@@ -232,9 +233,13 @@ const OrcamentoFaturamento = () => {
           </div>
         </section>
       );
-    })() : aba === "Demais Operacionais" ? (() => {
+    })() : (aba === "Demais Operacionais" || aba === "Despesas Administrativas") ? (() => {
       const M = MESES.slice(1);
-      const NOMES = ["COMERCIALIZAÇÃO", "IMPOSTOS DIRETOS", "PROVISÕES", "SECUNDÁRIAS"];
+      const isAdm = aba === "Despesas Administrativas";
+      const NOMES = isAdm ? ["PESSOAL", "INFORMÁTICA", "MARKETING", "DEMAIS"] : ["COMERCIALIZAÇÃO", "IMPOSTOS DIRETOS", "PROVISÕES", "SECUNDÁRIAS"];
+      const demais = isAdm ? admPc : demaisOp;
+      const setDemais = isAdm ? setAdmPc : setDemaisOp;
+      const TOTNOME = isAdm ? "DESPESAS ADMINISTRATIVAS" : "DEMAIS OPERACIONAIS";
       const fatM = M.map((_, k) => sum((r) => mesVal(r, k + 1)));
       const linhas = demais.map((pc) => fatM.map((v) => v * pc / 100));
       const totM = M.map((_, k) => linhas.reduce((a, l) => a + l[k], 0));
@@ -245,7 +250,7 @@ const OrcamentoFaturamento = () => {
       return (
         <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold cursor-help" title="Cada linha = Faturamento do mês × % da linha. Total = soma das linhas. Vertical = soma dos %.">Demais Operacionais — jan/27 a dez/27</h3>
+            <h3 className="text-sm font-semibold cursor-help" title="Cada linha = Faturamento do mês × % da linha. Total = soma das linhas. Vertical = soma dos %.">{aba} — jan/27 a dez/27</h3>
             <span className="ml-auto rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm">Vertical: <b className="tabular-nums">{n2(vert)}%</b></span>
           </div>
           <div className="overflow-x-auto">
@@ -274,7 +279,7 @@ const OrcamentoFaturamento = () => {
                   </tr>
                 ))}
                 <tr className="border-t border-border bg-muted/60 font-semibold">
-                  <td className="px-2 py-0.5 whitespace-nowrap">DEMAIS OPERACIONAIS</td>
+                  <td className="px-2 py-0.5 whitespace-nowrap">{TOTNOME}</td>
                   <td className="px-2 py-0.5 text-right tabular-nums">{n2(vert)}%</td>
                   {totM.map((v, k) => <td key={k} className={`${td} ${cls(v)}`}>{n2(v)}</td>)}
                   <td className={`${td} border-l border-border ${cls(t(totM))}`}>{n2(t(totM))}</td>
