@@ -319,12 +319,14 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
         ...(dreAbertos[key] ? filhos[key].map(([n, v]) => row(n, v, "", undefined, true)) : []),
       ];
       const tF = t(fatM);
+      const imp = res.map((v) => (v > 0 ? v * 0.34 : 0));
+      const resLiq = res.map((v, k) => v - imp[k]);
       const SUB = "border-t-2 border-b-2 !border-primary/40 bg-primary/10 font-bold [&_td]:font-bold";
       return (
         <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold cursor-help" title="Resultado = Entradas Operacionais − Despesas Assistenciais − Demais Operacionais − Despesas Administrativas + Financeiro. Usa as premissas de cada botão.">DRE — jan/27 a dez/27</h3>
-            <span className="ml-auto rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm cursor-help" title="Resultado Total ÷ Faturamento Total">Margem: <b className="tabular-nums">{tF ? `${n2((t(res) / tF) * 100)}%` : "-"}</b></span>
+            <h3 className="text-sm font-semibold cursor-help" title="Resultado antes dos impostos = Entradas Operacionais − Despesas Assistenciais − Demais Operacionais − Despesas Administrativas + Financeiro. Impostos Federais = 34% do resultado antes dos impostos, quando positivo (senão 0). Resultado = antes dos impostos − Impostos Federais.">DRE — jan/27 a dez/27</h3>
+            <span className="ml-auto rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm cursor-help" title="Resultado Total ÷ Faturamento Total">Margem: <b className="tabular-nums">{tF ? `${n2((t(resLiq) / tF) * 100)}%` : "-"}</b></span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -341,7 +343,9 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
                 {grupo("DEMAIS OPERACIONAIS", dOp, "OP", SUB)}
                 {grupo("DESPESAS ADMINISTRATIVAS", adm, "ADM", SUB)}
                 {row("FINANCEIRO", fin, SUB)}
-                {row("RESULTADO", res, "border-t-4 border-b-4 !border-primary bg-primary/30 font-bold [&_td]:font-bold")}
+                {row("RESULTADO ANTES DOS IMPOSTOS", res, SUB)}
+                {row("IMPOSTOS FEDERAIS", imp, "")}
+                {row("RESULTADO", resLiq, "border-t-4 border-b-4 !border-primary bg-primary/30 font-bold [&_td]:font-bold")}
               </tbody>
             </table>
           </div>
