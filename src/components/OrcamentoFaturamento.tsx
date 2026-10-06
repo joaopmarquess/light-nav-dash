@@ -184,7 +184,27 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
           <C t="Total" v={n0(tV27)} f={n2(fT)} c="border-l-foreground" />
         </div>);
     })()}
-    {<div className={`order-last ${aba === "Faturamento" ? "" : "mt-auto "}pt-2 pb-8 flex justify-center`}><div className="inline-flex flex-wrap justify-center gap-1 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_10px_30px_-8px_hsl(var(--foreground)/0.25)]">
+    {aba !== "Faturamento" && aba !== "DRE" && (() => {
+      const F = Array.from({ length: 12 }, (_, k) => sum((r) => mesVal(r, k + 1))).reduce((a, b) => a + b, 0);
+      const pf = (v: number) => (F ? `${n2((v / F) * 100)}% do fat.` : "");
+      const cop = F * rec / 100, ent = F + cop, desp = ent * sinLiq / 100;
+      const adD = admTot - admPc[0] - admPc[1] - admPc[2];
+      let L: [string, number, string][] = [];
+      if (aba === "Coparticipação") L = [["Faturamento", F, ""], ["Coparticipação", cop, `${n2(rec)}% recuperação`], ["Entradas Operacionais", ent, ""]];
+      else if (aba === "Despesas Assistenciais") L = [["Entradas Operacionais", ent, ""], ["Rede", desp * rede / 100, `${n2(rede)}% das despesas`], ["Benê", desp * (100 - rede) / 100, `${n2(100 - rede)}% das despesas`], ["Despesas Assistenciais", desp, F ? `Sin. bruta ${n2((desp / F) * 100)}%` : ""]];
+      else if (aba === "Demais Operacionais") { const N = ["Comercialização", "Impostos Diretos", "Provisões", "Secundárias"]; L = N.map((n, i) => [n, F * demaisOp[i] / 100, pf(F * demaisOp[i] / 100)] as [string, number, string]); const t = F * demaisOp.reduce((a, b) => a + b, 0) / 100; L.push(["Total", t, pf(t)]); }
+      else if (aba === "Despesas Administrativas") { const P = [admPc[0], admPc[1], admPc[2], adD]; L = ["Pessoal", "Informática", "Marketing", "Demais"].map((n, i) => [n, F * P[i] / 100, pf(F * P[i] / 100)] as [string, number, string]); L.push(["Total", F * admTot / 100, pf(F * admTot / 100)]); }
+      else if (aba === "Financeiro") L = [["Faturamento", F, ""], ["Financeiro", F * finPc / 100, pf(F * finPc / 100)]];
+      return (
+        <div className="order-last mt-auto grid gap-2" style={{ gridTemplateColumns: `repeat(${L.length}, minmax(0, 1fr))` }}>
+          {L.map(([t, v, sub], i) => (
+            <div key={t} className={`rounded-lg border border-border bg-card shadow-md border-l-4 ${v < 0 ? "border-l-destructive" : i === L.length - 1 ? "border-l-foreground" : "border-l-primary"} px-2 py-1 text-center leading-tight`}>
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{t}</div>
+              <div className={`text-xs tabular-nums ${v < 0 ? "text-destructive" : ""}`}><b>{n2(v)}</b>{sub && <span className="text-muted-foreground"> · {sub}</span>}</div>
+            </div>))}
+        </div>);
+    })()}
+    {<div className={`order-last ${aba === "DRE" ? "mt-auto " : ""}pt-2 pb-8 flex justify-center`}><div className="inline-flex flex-wrap justify-center gap-1 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_10px_30px_-8px_hsl(var(--foreground)/0.25)]">
       {onPainel && <button onClick={onPainel} className="rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5">Painel</button>}
       {ABAS.map((a) => (
         <button
