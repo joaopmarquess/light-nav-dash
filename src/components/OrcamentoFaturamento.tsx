@@ -88,7 +88,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; o
       ["Impostos Federais", -imp, "34% do resultado mensal, quando positivo"],
     ];
     return (
-      <div className="space-y-2">
+      <div className="flex flex-col gap-3 h-[calc(100vh-9rem)] min-h-[560px]">
         <div className="rounded-xl bg-primary text-primary-foreground shadow-md px-4 py-1.5 flex flex-wrap items-center justify-between gap-4" title="Antes dos Impostos − Impostos Federais">
           <div>
             <div className="text-xs uppercase tracking-widest opacity-80">Resultado Líquido 2027</div>
@@ -103,9 +103,9 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; o
           {cards.map(([t, v, h]) => (
             <div key={t} title={h} className="rounded-xl border border-border bg-card overflow-hidden cursor-help hover:shadow-md transition-shadow">
               <div className={`h-1 ${v < 0 ? "bg-destructive" : "bg-primary"}`} />
-              <div className="px-2.5 py-1.5">
+              <div className="px-3 py-2.5">
                 <div className="text-[10px] uppercase tracking-wide text-muted-foreground leading-tight min-h-[1.6rem]">{t}</div>
-                <div className={`text-sm font-bold tabular-nums ${v < 0 ? "text-destructive" : "text-foreground"}`}>{mi(v)}</div>
+                <div className={`text-base font-bold tabular-nums ${v < 0 ? "text-destructive" : "text-foreground"}`}>{mi(v)}</div>
                 <div className="mt-1 h-1 rounded-full bg-muted overflow-hidden">
                   <div className={`h-full ${v < 0 ? "bg-destructive" : "bg-primary"}`} style={{ width: `${Math.min(100, fat ? Math.abs(v / fat) * 100 : 0)}%` }} />
                 </div>
@@ -129,14 +129,14 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; o
             ["(=) Resultado Líquido", liq, 2],
           ];
           return (
-            <section className="rounded-2xl border border-border bg-card shadow-sm px-3 py-2">
+            <section className="rounded-2xl border border-border bg-card shadow-sm px-3 py-2 flex-1 flex flex-col">
               <div className="flex items-center justify-between mb-1">
                 <h3 className="text-sm font-semibold text-foreground">DRE simplificado 2027</h3>
                 <span className="text-[11px] uppercase tracking-wide text-muted-foreground">R$ · % fat.</span>
               </div>
-              <div className="space-y-0.5">
+              <div className="flex-1 flex flex-col justify-between gap-0.5">
                 {linhas.map(([t, v, k]) => (
-                  <div key={t} className={`flex items-center justify-between rounded-md px-3 py-0.5 text-[13px] ${k === 2 ? "bg-primary text-primary-foreground font-bold" : k === 1 ? "bg-primary/10 font-semibold text-foreground" : "text-foreground"}`}>
+                  <div key={t} className={`flex items-center justify-between rounded-md px-3 py-1 text-sm ${k === 2 ? "bg-primary text-primary-foreground font-bold" : k === 1 ? "bg-primary/10 font-semibold text-foreground" : "text-foreground"}`}>
                     <span>{t}</span>
                     <span className="flex gap-6 tabular-nums">
                       <span className={k !== 2 && v < 0 ? "text-destructive" : ""}>{n2(v)}</span>
