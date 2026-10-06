@@ -221,7 +221,9 @@ const OrcamentoFaturamento = () => {
                 </tr>
               </thead>
               <tbody>
-                {linha("ENTRADAS OPERACIONAIS", ent)}
+                {linha("FATURAMENTO", fatM)}
+                {linha("COPARTICIPAÇÃO", fatM.map((v) => v * rec / 100))}
+                {linha("ENTRADAS OPERACIONAIS", ent, true)}
                 {linha("REDE", rd, false, true)}
                 {linha("BENÊ", bn)}
                 {linha("DESPESAS ASSISTENCIAIS", desp, true)}
