@@ -168,8 +168,8 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; o
   const totLinha = (r: Linha) => MESES.slice(1).reduce((s, _, j) => s + mesVal(r, j + 1), 0);
 
   return (
-    <div className="space-y-4">
-    {aba !== "DRE" && <div className="flex flex-wrap gap-2">
+    <div className="flex flex-col gap-3 min-h-[calc(100vh-9rem)]">
+    {aba !== "DRE" && <div className="order-last mt-auto flex flex-wrap justify-center gap-2 border-t border-border pt-3">
       {ABAS.map((a) => (
         <button
           key={a}
@@ -558,6 +558,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; o
       const fM = Array.from({ length: 12 }, (_, k) => sum((r) => (r.vidas + (k + 1) * (r.entradas - r.saidas)) * tk(r, k + 1)));
       const pcOp = demaisOp.reduce((a, b) => a + b, 0);
       let prim = 0, sec = 0, adm = 0, fin = 0, rai = 0, imp = 0;
+      const fT = fM.reduce((a, b) => a + b, 0);
       fM.forEach((f) => {
         const ent = f * (1 + rec / 100), p = ent - ent * sinLiq / 100, s = -f * pcOp / 100, a = f * admTot / 100, fi = f * finPc / 100;
         const r = p + s - a + fi;
@@ -575,14 +576,22 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; o
         ["Resultado Líquido", rai - imp, "Antes dos Impostos − Impostos Federais"],
       ];
       return (
-        <div className="grid gap-3 sm:grid-cols-4 xl:grid-cols-8">
-          {cards.map(([t, v, h]) => (
-            <div key={t} title={h} className="relative overflow-hidden rounded-lg border border-border bg-card shadow-md px-2 py-1 pl-3 text-center cursor-help">
-              <span className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground leading-tight">{t}</div>
-              <div className={`text-sm font-bold tabular-nums ${v < 0 ? "text-destructive" : "text-foreground"}`}>R$ {(v / 1e6).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} mi</div>
+        <div className="order-first grid gap-2 sm:grid-cols-4 xl:grid-cols-8">
+          {cards.map(([t, v, h], i) => {
+            const hero = i === cards.length - 1;
+            return (
+            <div key={t} title={h} className={`rounded-xl border overflow-hidden cursor-help hover:shadow-md transition-shadow ${hero ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border"}`}>
+              <div className={`h-1 ${hero ? "bg-primary-foreground/40" : v < 0 ? "bg-destructive" : "bg-primary"}`} />
+              <div className="px-3 py-2">
+                <div className={`text-[10px] uppercase tracking-wide leading-tight min-h-[1.6rem] ${hero ? "opacity-80" : "text-muted-foreground"}`}>{t}</div>
+                <div className={`text-sm font-bold tabular-nums ${hero ? "" : v < 0 ? "text-destructive" : "text-foreground"}`}>R$ {n2(v)}</div>
+                <div className={`mt-1 h-1 rounded-full overflow-hidden ${hero ? "bg-primary-foreground/20" : "bg-muted"}`}>
+                  <div className={`h-full ${hero ? "bg-primary-foreground" : v < 0 ? "bg-destructive" : "bg-primary"}`} style={{ width: `${Math.min(100, fT ? Math.abs(v / fT) * 100 : 0)}%` }} />
+                </div>
+                <div className={`text-[10px] ${hero ? "opacity-80" : "text-muted-foreground"}`}>{fT ? n2((v / fT) * 100) : "-"}% do faturamento</div>
+              </div>
             </div>
-          ))}
+          );})}
         </div>
       );
     })()}
