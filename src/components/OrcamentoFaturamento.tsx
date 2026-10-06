@@ -37,6 +37,7 @@ const OrcamentoFaturamento = () => {
   const [rows, setRows] = useState<Linha[]>(BASE);
   const [aba, setAba] = useState("Faturamento");
   const [reaj, setReaj] = useState(1.01);
+  const [rec, setRec] = useState(16);
   const tk = (r: Linha, k: number) => r.ticket * Math.pow(1 + reaj / 100, k - 1);
   const set = (i: number, k: Campo, v: number) =>
     setRows((p) => p.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
@@ -144,7 +145,44 @@ const OrcamentoFaturamento = () => {
         </button>
       ))}
     </div>
-    {aba !== "Faturamento" ? (
+    {aba === "Coparticipação" ? (() => {
+      const M = MESES.slice(1);
+      const fat = M.map((_, k) => sum((r) => mesVal(r, k + 1)));
+      const cop = fat.map((v) => v * rec / 100);
+      const tF = fat.reduce((a, b) => a + b, 0), tC = tF * rec / 100;
+      const linha = (nome: string, vs: number[], t: number, bold = false) => (
+        <tr className={`border-t border-border ${bold ? "bg-muted/60 font-semibold" : ""}`}>
+          <td className="px-2 py-0.5 font-medium">{nome}</td>
+          {vs.map((v, k) => <td key={k} className={td}>{n2(v)}</td>)}
+          <td className={`${td} border-l border-border font-semibold`}>{n2(t)}</td>
+        </tr>
+      );
+      return (
+        <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold cursor-help" title="Coparticipação = Faturamento × % Recuperação. Total = Faturamento + Coparticipação.">Coparticipação — jan/27 a dez/27</h3>
+            <label className="ml-4 text-sm text-muted-foreground">% Recuperação</label>
+            <NumInput dec={2} className="w-20 rounded border border-border px-2 py-0 h-6 text-right tabular-nums font-semibold bg-yellow-100/60" value={rec} onChange={setRec} />
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 text-muted-foreground">
+                <tr>
+                  <th />
+                  {M.map((m) => <th key={m} className="text-right px-2 py-2 whitespace-nowrap">{m}</th>)}
+                  <th className="text-right px-2 py-2 border-l border-border">Total 2027</th>
+                </tr>
+              </thead>
+              <tbody>
+                {linha("FATURAMENTO", fat, tF)}
+                {linha("COPARTICIPAÇÃO", cop, tC)}
+                {linha("TOTAL", fat.map((v, k) => v + cop[k]), tF + tC, true)}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      );
+    })() : aba !== "Faturamento" ? (
       <section className="bg-card rounded-xl border border-dashed border-border shadow-sm p-8 text-center space-y-1">
         <h3 className="text-sm font-semibold">{aba}</h3>
         <p className="text-sm text-muted-foreground">Quadro ilustrativo — conteúdo em construção.</p>
