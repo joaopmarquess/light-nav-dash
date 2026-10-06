@@ -53,7 +53,7 @@ const OrcamentoFaturamento = () => {
   const td = "px-2 py-0.5 text-right tabular-nums whitespace-nowrap";
   const tot = (v: string) => <span className="inline-block w-24 px-2 text-right">{v}</span>;
 
-  const MESES = ["dez/26", ...["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"].map((m) => `${m}/27`)];
+  const MESES = ["2026", ...["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"].map((m) => `${m}/27`)];
   const mesVal = (r: Linha, k: number) => (r.vidas + k * (r.entradas - r.saidas)) * r.ticket;
   const totLinha = (r: Linha) => MESES.slice(1).reduce((s, _, j) => s + mesVal(r, j + 1), 0);
 
@@ -151,7 +151,7 @@ const OrcamentoFaturamento = () => {
           <thead className="bg-muted/50 text-muted-foreground">
             <tr>
               <th className="text-left px-2 py-2">Planos</th>
-              {MESES.map((m) => <th key={m} className="text-right px-2 py-2 whitespace-nowrap">{m}</th>)}
+              {MESES.map((m, k) => <th key={m} className={`text-right px-2 py-2 whitespace-nowrap ${k === 0 ? "border-r-2 border-border" : ""}`}>{m}</th>)}
               <th className="text-right px-2 py-2 border-l border-border">Total 2027</th>
             </tr>
           </thead>
@@ -159,13 +159,13 @@ const OrcamentoFaturamento = () => {
             {rows.map((r) => (
               <tr key={r.id} className="border-t border-border">
                 <td className="px-2 py-1.5 font-medium">{r.id}</td>
-                {MESES.map((m, k) => <td key={m} className={td}>{n2(mesVal(r, k))}</td>)}
+                {MESES.map((m, k) => <td key={m} className={`${td} ${k === 0 ? "border-r-2 border-border" : ""}`}>{n2(mesVal(r, k))}</td>)}
                 <td className={`${td} border-l border-border font-semibold`}>{n2(totLinha(r))}</td>
               </tr>
             ))}
             <tr className="border-t-2 border-border bg-muted/60 font-semibold">
               <td className="px-2 py-2">TOTAL</td>
-              {MESES.map((m, k) => <td key={m} className={td}>{n2(sum((r) => mesVal(r, k)))}</td>)}
+              {MESES.map((m, k) => <td key={m} className={`${td} ${k === 0 ? "border-r-2 border-border" : ""}`}>{n2(sum((r) => mesVal(r, k)))}</td>)}
               <td className={`${td} border-l border-border`}>{n2(sum(totLinha))}</td>
             </tr>
           </tbody>
