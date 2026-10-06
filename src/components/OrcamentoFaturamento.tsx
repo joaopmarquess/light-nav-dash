@@ -36,6 +36,8 @@ const ABAS = ["Faturamento", "Despesas Assistenciais", "Demais Operacionais", "D
 const OrcamentoFaturamento = () => {
   const [rows, setRows] = useState<Linha[]>(BASE);
   const [aba, setAba] = useState("Faturamento");
+  const [reaj, setReaj] = useState(1.01);
+  const tk = (r: Linha, k: number) => r.ticket * Math.pow(1 + reaj / 100, k - 1);
   const set = (i: number, k: Campo, v: number) =>
     setRows((p) => p.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
 
@@ -43,7 +45,7 @@ const OrcamentoFaturamento = () => {
   const cresc = (r: Linha) => (r.entradas - r.saidas) * 12;
   const vidas27 = (r: Linha) => r.vidas + cresc(r);
   // média de jan/27 a dez/27 (vidas crescem mês a mês)
-  const mensal27 = (r: Linha) => (r.vidas + 6.5 * (r.entradas - r.saidas)) * r.ticket;
+  const mensal27 = (r: Linha) => { let t = 0; for (let k = 1; k <= 12; k++) t += (r.vidas + k * (r.entradas - r.saidas)) * tk(r, k); return t / 12; };
   const sum = (f: (r: Linha) => number) => rows.reduce((s, r) => s + f(r), 0);
 
   const tV26 = sum((r) => r.vidas), tM26 = sum(mensal26);
@@ -54,7 +56,7 @@ const OrcamentoFaturamento = () => {
   const tot = (v: string) => <span className="inline-block w-24 px-2 text-right">{v}</span>;
 
   const MESES = ["2026", ...["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"].map((m) => `${m}/27`)];
-  const mesVal = (r: Linha, k: number) => (r.vidas + k * (r.entradas - r.saidas)) * r.ticket;
+  const mesVal = (r: Linha, k: number) => (r.vidas + k * (r.entradas - r.saidas)) * (k === 0 ? r.ticket : tk(r, k));
   const totLinha = (r: Linha) => MESES.slice(1).reduce((s, _, j) => s + mesVal(r, j + 1), 0);
 
   return (
@@ -62,12 +64,16 @@ const OrcamentoFaturamento = () => {
     <section className="bg-card rounded-xl border border-border shadow-sm p-2 space-y-1">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold cursor-help" title="Mensal 2026 = Vidas × Ticket; Anual = Mensal × 12. Mensal 2027 = média mensal de jan/27 a dez/27; Anual 2027 = Total 2027. Crescimento = (Entradas − Saídas) × 12. Vidas 2027 = Vidas 2026 + Crescimento. Ticket 2027 = Ticket 2026. Ticket total = Mensal total ÷ Vidas totais.">Orçamento — Faturamento 2026 × 2027</h3>
+        <div className="flex items-center gap-2">
+        <label className="text-sm text-muted-foreground">Reajuste mensal (%)</label>
+        <NumInput dec={2} className="w-20 rounded border border-border px-2 py-0 h-6 text-right tabular-nums font-semibold bg-yellow-100/60" value={reaj} onChange={setReaj} />
         <button
-          onClick={() => setRows(BASE)}
+          onClick={() => { setRows(BASE); setReaj(1.01); }}
           className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-0 text-sm hover:bg-muted"
         >
           <RotateCcw className="h-4 w-4" /> Restaurar
         </button>
+        </div>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
