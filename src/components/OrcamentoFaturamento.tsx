@@ -171,8 +171,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
   return (
     <div className="flex flex-col gap-3 min-h-[calc(100vh-9rem)]">
     {aba === "Faturamento" && (() => {
-      const fT = rows.reduce((s, r) => s + totLinha(r), 0), a26 = tM26 * 12, cr = a26 ? fT / a26 - 1 : 0;
-      const C = ({ t, v, f, c }: { t: string; v: string; f: string; c: string }) => (
+      const fT = rows.reduce((s, r) => s + totLinha(r), 0), a26 = tM26 * 12;
       const C = ({ t, v, f, c, neg }: { t: string; v: string; f: string; c: string; neg?: boolean }) => (
         <div className={`rounded-lg border border-border bg-card shadow-md border-l-4 ${c} px-2 py-1 text-center leading-tight`}>
           <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{t}</div>
