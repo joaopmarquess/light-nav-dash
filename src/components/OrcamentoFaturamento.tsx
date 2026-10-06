@@ -31,7 +31,7 @@ const n0 = (v: number) => new Intl.NumberFormat("pt-BR", { maximumFractionDigits
 const n2 = (v: number) =>
   new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
 
-const ABAS = ["Faturamento", "Despesas Assistenciais", "Demais Operacionais", "Despesas Administrativas", "Financeiro", "Impostos Federais", "DRE"];
+const ABAS = ["Faturamento", "Coparticipação", "Despesas Assistenciais", "Demais Operacionais", "Despesas Administrativas", "Financeiro", "Impostos Federais", "DRE"];
 
 const OrcamentoFaturamento = () => {
   const [rows, setRows] = useState<Linha[]>(BASE);
