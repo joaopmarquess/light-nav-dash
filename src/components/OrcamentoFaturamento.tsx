@@ -176,7 +176,7 @@ const OrcamentoFaturamento = () => {
               <tbody>
                 {linha("FATURAMENTO", fat, tF)}
                 {linha("COPARTICIPAÇÃO", cop, tC)}
-                {linha("ENTRADAS OPERACIONAIS", fat.map((v, k) => v + cop[k]), tF + tC, true)}
+                {linha("TOTAL", fat.map((v, k) => v + cop[k]), tF + tC, true)}
               </tbody>
             </table>
           </div>

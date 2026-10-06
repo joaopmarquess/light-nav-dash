@@ -160,7 +160,11 @@ const menuItems: MenuItem[] = [
       { icon: Building2, label: "Uberaba" },
     ],
   },
-  { icon: Coins, label: "Orçamento " },
+  {
+    icon: Coins,
+    label: "Orçamento ",
+    children: [{ icon: Coins, label: "Faturamento" }],
+  },
   {
     icon: FileText,
     label: "Outros",
