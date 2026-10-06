@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { RotateCcw } from "lucide-react";
 
 const parseBR = (v: string) => Number(v.replace(/\./g, "").replace(",", ".")) || 0;
 
@@ -17,14 +18,13 @@ const NumInput = ({ value, dec, className, onChange }: { value: number; dec: num
     />
   );
 };
-import { RotateCcw } from "lucide-react";
 
-type Linha = { id: string; anteriores: number; entradas: number; saidas: number; ticket: number };
-type Campo = "anteriores" | "entradas" | "saidas" | "ticket";
+type Linha = { id: string; vidas: number; ticket: number; entradas: number; saidas: number };
+type Campo = "vidas" | "ticket" | "entradas" | "saidas";
 const BASE: Linha[] = [
-  { id: "PIF", anteriores: 50000, entradas: 0, saidas: 0, ticket: 520 },
-  { id: "PCA", anteriores: 30000, entradas: 0, saidas: 0, ticket: 230 },
-  { id: "PCE", anteriores: 4000, entradas: 0, saidas: 0, ticket: 210 },
+  { id: "PIF", vidas: 36025, ticket: 595.89, entradas: 50, saidas: 450 },
+  { id: "PCA", vidas: 25351, ticket: 323.27, entradas: 1000, saidas: 50 },
+  { id: "PCE", vidas: 9881, ticket: 277.68, entradas: 500, saidas: 50 },
 ];
 
 const n0 = (v: number) => new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(v);
@@ -36,20 +36,23 @@ const OrcamentoFaturamento = () => {
   const set = (i: number, k: Campo, v: number) =>
     setRows((p) => p.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
 
-  const futuras = (r: Linha) => r.anteriores + r.entradas - r.saidas;
-  const fat = (r: Linha) => futuras(r) * r.ticket * 12;
+  const mensal26 = (r: Linha) => r.vidas * r.ticket;
+  const cresc = (r: Linha) => (r.entradas - r.saidas) * 12;
+  const vidas27 = (r: Linha) => r.vidas + cresc(r);
+  const mensal27 = (r: Linha) => vidas27(r) * r.ticket;
   const sum = (f: (r: Linha) => number) => rows.reduce((s, r) => s + f(r), 0);
-  const totFut = sum(futuras);
-  const totFat = sum(fat);
-  const totTicket = totFut ? totFat / 12 / totFut : 0;
 
-  const inp = "w-28 rounded border border-border px-2 py-1 text-right tabular-nums font-semibold";
-  const yel = `${inp} bg-yellow-100/60`;
+  const tV26 = sum((r) => r.vidas), tM26 = sum(mensal26);
+  const tV27 = sum(vidas27), tM27 = sum(mensal27);
+
+  const inp = "w-24 rounded border border-border px-2 py-1 text-right tabular-nums font-semibold bg-yellow-100/60";
+  const td = "px-2 py-1.5 text-right tabular-nums whitespace-nowrap";
+  const tot = (v: string) => <span className="inline-block w-24 px-2 text-right">{v}</span>;
 
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Orçamento — Faturamento (anual)</h3>
+        <h3 className="text-sm font-semibold">Orçamento — Faturamento 2026 × 2027</h3>
         <button
           onClick={() => setRows(BASE)}
           className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted"
@@ -61,49 +64,62 @@ const OrcamentoFaturamento = () => {
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-muted-foreground">
             <tr>
-              <th className="text-left px-3 py-2">Grupo</th>
-              <th className="text-left px-3 py-2">ID1</th>
-              <th className="text-center px-3 py-2">Vidas Anteriores</th>
-              <th className="text-center px-3 py-2">Entradas</th>
-              <th className="text-center px-3 py-2">Saídas</th>
-              <th className="text-right px-3 py-2">Vidas Futuras</th>
-              <th className="text-center px-3 py-2">Ticket</th>
-              <th className="text-right px-3 py-2">Faturamento</th>
+              <th />
+              <th colSpan={4} className="text-center px-2 py-1 border-l border-border">2026</th>
+              <th colSpan={7} className="text-center px-2 py-1 border-l border-border">2027</th>
+            </tr>
+            <tr>
+              <th className="text-left px-2 py-2">Planos</th>
+              <th className="text-center px-2 py-2 border-l border-border">Vidas</th>
+              <th className="text-center px-2 py-2">Ticket Méd.</th>
+              <th className="text-right px-2 py-2">Mensal</th>
+              <th className="text-right px-2 py-2">Anual</th>
+              <th className="text-center px-2 py-2 border-l border-border">Entradas</th>
+              <th className="text-center px-2 py-2">Saídas</th>
+              <th className="text-right px-2 py-2">Crescimento</th>
+              <th className="text-right px-2 py-2">Vidas</th>
+              <th className="text-right px-2 py-2">Ticket Méd.</th>
+              <th className="text-right px-2 py-2">Mensal</th>
+              <th className="text-right px-2 py-2">Anual</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r, i) => (
               <tr key={r.id} className="border-t border-border">
-                <td className="px-3 py-1.5">FATURAMENTO</td>
-                <td className="px-3 py-1.5">{r.id}</td>
-                {(["anteriores", "entradas", "saidas"] as Campo[]).map((k) => (
-                  <td key={k} className="px-3 py-1.5 text-center">
-                    <NumInput dec={0} className={yel} value={r[k]} onChange={(v) => set(i, k, v)} />
-                  </td>
-                ))}
-                <td className="px-3 py-1.5 text-right tabular-nums font-semibold">{n0(futuras(r))}</td>
-                <td className="px-3 py-1.5 text-center">
-                  <NumInput dec={2} className={`${inp} bg-orange-100/60`} value={r.ticket} onChange={(v) => set(i, "ticket", v)} />
-                </td>
-                <td className="px-3 py-1.5 text-right tabular-nums">{n2(fat(r))}</td>
+                <td className="px-2 py-1.5 font-medium">{r.id}</td>
+                <td className="px-2 py-1.5 text-center border-l border-border"><NumInput dec={0} className={inp} value={r.vidas} onChange={(v) => set(i, "vidas", v)} /></td>
+                <td className="px-2 py-1.5 text-center"><NumInput dec={2} className={inp} value={r.ticket} onChange={(v) => set(i, "ticket", v)} /></td>
+                <td className={td}>{n2(mensal26(r))}</td>
+                <td className={td}>{n2(mensal26(r) * 12)}</td>
+                <td className="px-2 py-1.5 text-center border-l border-border"><NumInput dec={0} className={inp} value={r.entradas} onChange={(v) => set(i, "entradas", v)} /></td>
+                <td className="px-2 py-1.5 text-center"><NumInput dec={0} className={inp} value={r.saidas} onChange={(v) => set(i, "saidas", v)} /></td>
+                <td className={td}>{n0(cresc(r))}</td>
+                <td className={td}>{n0(vidas27(r))}</td>
+                <td className={td}>{n2(r.ticket)}</td>
+                <td className={td}>{n2(mensal27(r))}</td>
+                <td className={td}>{n2(mensal27(r) * 12)}</td>
               </tr>
             ))}
             <tr className="border-t-2 border-border bg-muted/60 font-semibold">
-              <td className="px-3 py-2">FATURAMENTO</td>
-              <td className="px-3 py-2">TOTAL</td>
-              <td className="px-3 py-2 text-center tabular-nums"><span className="inline-block w-28 px-2 text-right">{n0(sum((r) => r.anteriores))}</span></td>
-              <td className="px-3 py-2 text-center tabular-nums"><span className="inline-block w-28 px-2 text-right">{n0(sum((r) => r.entradas))}</span></td>
-              <td className="px-3 py-2 text-center tabular-nums"><span className="inline-block w-28 px-2 text-right">{n0(sum((r) => r.saidas))}</span></td>
-              <td className="px-3 py-2 text-right tabular-nums">{n0(totFut)}</td>
-              <td className="px-3 py-2 text-center tabular-nums"><span className="inline-block w-28 px-2 text-right">{n2(totTicket)}</span></td>
-              <td className="px-3 py-2 text-right tabular-nums">{n2(totFat)}</td>
+              <td className="px-2 py-2">TOTAL</td>
+              <td className="px-2 py-2 text-center tabular-nums border-l border-border">{tot(n0(tV26))}</td>
+              <td className="px-2 py-2 text-center tabular-nums">{tot(n2(tV26 ? tM26 / tV26 : 0))}</td>
+              <td className={td}>{n2(tM26)}</td>
+              <td className={td}>{n2(tM26 * 12)}</td>
+              <td className="px-2 py-2 text-center tabular-nums border-l border-border">{tot(n0(sum((r) => r.entradas)))}</td>
+              <td className="px-2 py-2 text-center tabular-nums">{tot(n0(sum((r) => r.saidas)))}</td>
+              <td className={td}>{n0(sum(cresc))}</td>
+              <td className={td}>{n0(tV27)}</td>
+              <td className={td}>{n2(tV27 ? tM27 / tV27 : 0)}</td>
+              <td className={td}>{n2(tM27)}</td>
+              <td className={td}>{n2(tM27 * 12)}</td>
             </tr>
           </tbody>
         </table>
       </div>
       <p className="text-xs text-muted-foreground">
-        Vidas Futuras = Vidas Anteriores + Entradas − Saídas. Faturamento = Vidas Futuras × Ticket × 12. Ticket total =
-        Faturamento total ÷ 12 ÷ Vidas Futuras totais.
+        Mensal = Vidas × Ticket; Anual = Mensal × 12. Crescimento = (Entradas − Saídas) × 12. Vidas 2027 = Vidas 2026 +
+        Crescimento. Ticket 2027 = Ticket 2026. Ticket total = Mensal total ÷ Vidas totais.
       </p>
     </section>
   );
