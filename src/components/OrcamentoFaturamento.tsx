@@ -31,8 +31,11 @@ const n0 = (v: number) => new Intl.NumberFormat("pt-BR", { maximumFractionDigits
 const n2 = (v: number) =>
   new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
 
+const ABAS = ["Faturamento", "Despesas Assistenciais", "Demais Operacionais", "Despesas Administrativas", "Financeiro", "Impostos Federais", "DRE"];
+
 const OrcamentoFaturamento = () => {
   const [rows, setRows] = useState<Linha[]>(BASE);
+  const [aba, setAba] = useState("Faturamento");
   const set = (i: number, k: Campo, v: number) =>
     setRows((p) => p.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
 
@@ -124,6 +127,23 @@ const OrcamentoFaturamento = () => {
         </table>
       </div>
     </section>
+    <div className="flex flex-wrap gap-2">
+      {ABAS.map((a) => (
+        <button
+          key={a}
+          onClick={() => setAba(a)}
+          className={`rounded-md border px-3 py-1.5 text-sm ${aba === a ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-muted"}`}
+        >
+          {a}
+        </button>
+      ))}
+    </div>
+    {aba !== "Faturamento" ? (
+      <section className="bg-card rounded-xl border border-dashed border-border shadow-sm p-8 text-center space-y-1">
+        <h3 className="text-sm font-semibold">{aba}</h3>
+        <p className="text-sm text-muted-foreground">Quadro ilustrativo — conteúdo em construção.</p>
+      </section>
+    ) : (
     <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
       <h3 className="text-sm font-semibold cursor-help" title="A cada mês, Vidas = mês anterior + Entradas − Saídas; valor = Vidas × Ticket. Total 2027 = soma de jan/27 a dez/27.">Faturamento mensal — dez/26 a dez/27</h3>
       <div className="overflow-x-auto">
@@ -152,6 +172,7 @@ const OrcamentoFaturamento = () => {
         </table>
       </div>
     </section>
+    )}
     </div>
   );
 };
