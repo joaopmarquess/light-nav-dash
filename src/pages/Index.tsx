@@ -96,7 +96,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 type MenuItem = {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
-  children?: { icon: React.ComponentType<{ className?: string }>; label: string }[];
+  children?: { icon: React.ComponentType<{ className?: string }>; label: string; id?: string }[];
 };
 
 const menuItems: MenuItem[] = [
@@ -163,7 +163,7 @@ const menuItems: MenuItem[] = [
   {
     icon: Coins,
     label: "Orçamento ",
-    children: [{ icon: LayoutDashboard, label: "Painel Orçamento" }, { icon: Coins, label: "Simulação" }],
+    children: [{ icon: LayoutDashboard, label: "Painel", id: "Painel Orçamento" }],
   },
   {
     icon: FileText,
@@ -286,11 +286,11 @@ const Index = () => {
                 {hasChildren && isOpen && !collapsed && (
                   <div className="mt-1 space-y-1">
                     {item.children!.map((child) => {
-                      const childActive = active === child.label;
+                      const childActive = active === (child.id ?? child.label);
                       return (
                         <button
                           key={child.label}
-                          onClick={() => setActive(child.label)}
+                          onClick={() => setActive((child.id ?? child.label))}
                           className={`w-full flex items-center gap-3 pl-9 pr-3 py-2 rounded-lg text-sm transition-colors ${
                             childActive
                               ? "bg-accent text-primary font-medium"
