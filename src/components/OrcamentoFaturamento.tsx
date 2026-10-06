@@ -89,13 +89,6 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; o
     ];
     return (
       <div className="space-y-4">
-        {onSimulacao && (
-          <div className="flex justify-end">
-            <button onClick={onSimulacao} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:opacity-90">
-              Simulação →
-            </button>
-          </div>
-        )}
         <div className="rounded-2xl bg-primary text-primary-foreground shadow-lg p-6 flex flex-wrap items-end justify-between gap-4" title="Antes dos Impostos − Impostos Federais">
           <div>
             <div className="text-xs uppercase tracking-widest opacity-80">Resultado Líquido 2027</div>
@@ -156,6 +149,13 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; o
             </section>
           );
         })()}
+        {onSimulacao && (
+          <div className="flex justify-end">
+            <button onClick={onSimulacao} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:opacity-90">
+              Simulação →
+            </button>
+          </div>
+        )}
       </div>
     );
   }
