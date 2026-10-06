@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RotateCcw, ChevronDown, ChevronRight } from "lucide-react";
 
 const parseBR = (v: string) => Number(v.replace(/\./g, "").replace(",", ".")) || 0;
@@ -33,17 +33,23 @@ const n2 = (v: number) =>
 
 const ABAS = ["Faturamento", "Coparticipação", "Despesas Assistenciais", "Demais Operacionais", "Despesas Administrativas", "Financeiro", "DRE"];
 
-const OrcamentoFaturamento = () => {
-  const [rows, setRows] = useState<Linha[]>(BASE);
+const usePersist = <T,>(k: string, d: T) => {
+  const [v, setV] = useState<T>(() => { try { const x = localStorage.getItem("orc27:" + k); return x ? JSON.parse(x) : d; } catch { return d; } });
+  useEffect(() => { localStorage.setItem("orc27:" + k, JSON.stringify(v)); }, [k, v]);
+  return [v, setV] as const;
+};
+
+const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
+  const [rows, setRows] = usePersist("rows", BASE);
   const [aba, setAba] = useState("Faturamento");
-  const [reaj, setReaj] = useState(1.01);
-  const [rec, setRec] = useState(16);
-  const [sinLiq, setSinLiq] = useState(87);
-  const [rede, setRede] = useState(55);
-  const [demaisOp, setDemaisOp] = useState([2, 1, 0.5, 0.2]);
-  const [admPc, setAdmPc] = useState([4, 2, 0.8, 1.2]);
-  const [admTot, setAdmTot] = useState(8);
-  const [finPc, setFinPc] = useState(4);
+  const [reaj, setReaj] = usePersist("reaj", 1.01);
+  const [rec, setRec] = usePersist("rec", 16);
+  const [sinLiq, setSinLiq] = usePersist("sinLiq", 87);
+  const [rede, setRede] = usePersist("rede", 55);
+  const [demaisOp, setDemaisOp] = usePersist("demaisOp", [2, 1, 0.5, 0.2]);
+  const [admPc, setAdmPc] = usePersist("admPc", [4, 2, 0.8, 1.2]);
+  const [admTot, setAdmTot] = usePersist("admTot", 8);
+  const [finPc, setFinPc] = usePersist("finPc", 4);
   const [dreAbertos, setDreAbertos] = useState<Record<string, boolean>>({});
   const tk = (r: Linha, k: number) => r.ticket * Math.pow(1 + reaj / 100, k - 1);
   const set = (i: number, k: Campo, v: number) =>
@@ -58,6 +64,40 @@ const OrcamentoFaturamento = () => {
 
   const tV26 = sum((r) => r.vidas), tM26 = sum(mensal26);
   const tV27 = sum(vidas27), tM27 = sum(mensal27);
+
+  if (home) {
+    const fatM = Array.from({ length: 12 }, (_, k) => sum((r) => (r.vidas + (k + 1) * (r.entradas - r.saidas)) * tk(r, k + 1)));
+    const T = (vs: number[]) => vs.reduce((a, b) => a + b, 0);
+    const fat = T(fatM), cop = fat * rec / 100, ent = fat + cop, desp = ent * sinLiq / 100;
+    const dOp = fat * demaisOp.reduce((a, b) => a + b, 0) / 100, adm = fat * admTot / 100, fin = fat * finPc / 100;
+    const res = ent - desp - dOp - adm + fin;
+    const mi = (v: number) => `R$ ${n2(v / 1e6)} mi`;
+    const cards: [string, string, string, boolean?][] = [
+      ["Vidas dez/27", n0(tV27), `2026: ${n0(tV26)} · ${tV26 ? n2((tV27 / tV26 - 1) * 100) : "-"}%`],
+      ["Faturamento 2027", mi(fat), `Crescimento ${tM26 ? n2((fat / (tM26 * 12) - 1) * 100) : "-"}% s/ 2026`],
+      ["Entradas Operacionais", mi(ent), `Coparticipação ${mi(cop)}`],
+      ["Despesas Assistenciais", mi(desp), `Sinistralidade bruta ${fat ? n2(desp / fat * 100) : "-"}%`],
+      ["Demais Operacionais", mi(dOp), `${n2(demaisOp.reduce((a, b) => a + b, 0))}% do faturamento`],
+      ["Despesas Administrativas", mi(adm), `${n2(admTot)}% do faturamento`],
+      ["Financeiro", mi(fin), `${n2(finPc)}% do faturamento`],
+      ["Resultado 2027", mi(res), `Margem ${fat ? n2(res / fat * 100) : "-"}%`, true],
+    ];
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-muted-foreground">Resumo do orçamento 2027 com as premissas atuais da Simulação.</p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {cards.map(([t, v, s, destaque]) => (
+            <div key={t} className={`relative overflow-hidden rounded-xl border border-border shadow-md p-4 pl-5 text-center ${destaque ? "bg-primary/10" : "bg-card"}`}>
+              <span className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">{t}</div>
+              <div className={`mt-1 text-2xl font-bold tabular-nums ${destaque && res < 0 ? "text-destructive" : "text-foreground"}`}>{v}</div>
+              <div className="mt-1 text-xs text-muted-foreground">{s}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const inp = "w-24 rounded border border-border px-2 py-1 text-right tabular-nums font-semibold bg-yellow-100/60";
   const td = "px-2 py-0.5 text-right tabular-nums whitespace-nowrap";
