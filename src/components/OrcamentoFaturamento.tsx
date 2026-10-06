@@ -170,7 +170,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
 
   return (
     <div className="flex flex-col gap-3 min-h-[calc(100vh-9rem)]">
-    {aba !== "DRE" && <div className="order-last mt-auto flex flex-wrap justify-start gap-2 border-t border-border pt-3">
+    {<div className="order-last mt-auto flex flex-wrap justify-start gap-2 border-t border-border pt-3">
       {onPainel && <button onClick={onPainel} className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted">Painel</button>}
       {ABAS.map((a) => (
         <button
@@ -393,9 +393,6 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold cursor-help" title="Resultado antes dos impostos = Entradas Operacionais − Despesas Assistenciais − Demais Operacionais − Despesas Administrativas + Financeiro. Impostos Federais = 34% do resultado antes dos impostos, quando positivo (senão 0). Resultado Líquido = antes dos impostos − Impostos Federais.">DRE — jan/27 a dez/27</h3>
             <span className="ml-auto rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm cursor-help" title="Resultado Total ÷ Faturamento Total">Margem: <b className="tabular-nums">{tF ? `${n2((t(resLiq) / tF) * 100)}%` : "-"}</b></span>
-        <button onClick={() => setAba("Faturamento")} className="inline-flex items-center gap-1 rounded-md border border-primary bg-primary px-2 py-0.5 text-xs text-primary-foreground">
-          <ChevronLeft className="h-4 w-4" /> Voltar à simulação
-        </button>
 
           </div>
           <div className="overflow-x-auto">
