@@ -50,7 +50,7 @@ const OrcamentoFaturamento = () => {
   const tV27 = sum(vidas27), tM27 = sum(mensal27);
 
   const inp = "w-24 rounded border border-border px-2 py-1 text-right tabular-nums font-semibold bg-yellow-100/60";
-  const td = "px-2 py-1.5 text-right tabular-nums whitespace-nowrap";
+  const td = "px-2 py-0.5 text-right tabular-nums whitespace-nowrap";
   const tot = (v: string) => <span className="inline-block w-24 px-2 text-right">{v}</span>;
 
   const MESES = ["dez/26", ...["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"].map((m) => `${m}/27`)];
@@ -59,12 +59,12 @@ const OrcamentoFaturamento = () => {
 
   return (
     <div className="space-y-4">
-    <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
+    <section className="bg-card rounded-xl border border-border shadow-sm p-2 space-y-1">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold cursor-help" title="Mensal 2026 = Vidas × Ticket; Anual = Mensal × 12. Mensal 2027 = média mensal de jan/27 a dez/27; Anual 2027 = Total 2027. Crescimento = (Entradas − Saídas) × 12. Vidas 2027 = Vidas 2026 + Crescimento. Ticket 2027 = Ticket 2026. Ticket total = Mensal total ÷ Vidas totais.">Orçamento — Faturamento 2026 × 2027</h3>
         <button
           onClick={() => setRows(BASE)}
-          className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted"
+          className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-0 text-sm hover:bg-muted"
         >
           <RotateCcw className="h-4 w-4" /> Restaurar
         </button>
@@ -74,34 +74,34 @@ const OrcamentoFaturamento = () => {
           <thead className="bg-muted/50 text-muted-foreground">
             <tr>
               <th />
-              <th colSpan={4} className="text-center px-2 py-1 border-l border-border">2026</th>
-              <th colSpan={7} className="text-center px-2 py-1 border-l border-border">2027</th>
+              <th colSpan={4} className="text-center px-2 py-0 border-l border-border">2026</th>
+              <th colSpan={7} className="text-center px-2 py-0 border-l border-border">2027</th>
             </tr>
             <tr>
-              <th className="text-left px-2 py-2">Planos</th>
-              <th className="text-center px-2 py-2 border-l border-border">Vidas</th>
-              <th className="text-center px-2 py-2">Ticket Méd.</th>
-              <th className="text-right px-2 py-2">Mensal</th>
-              <th className="text-right px-2 py-2">Anual</th>
-              <th className="text-center px-2 py-2 border-l border-border">Entradas</th>
-              <th className="text-center px-2 py-2">Saídas</th>
-              <th className="text-right px-2 py-2">Crescimento</th>
-              <th className="text-right px-2 py-2">Vidas</th>
-              <th className="text-right px-2 py-2">Ticket Méd.</th>
-              <th className="text-right px-2 py-2">Mensal</th>
-              <th className="text-right px-2 py-2">Anual</th>
+              <th className="text-left px-2 py-0.5">Planos</th>
+              <th className="text-center px-2 py-0.5 border-l border-border">Vidas</th>
+              <th className="text-center px-2 py-0.5">Ticket Méd.</th>
+              <th className="text-right px-2 py-0.5">Mensal</th>
+              <th className="text-right px-2 py-0.5">Anual</th>
+              <th className="text-center px-2 py-0.5 border-l border-border">Entradas</th>
+              <th className="text-center px-2 py-0.5">Saídas</th>
+              <th className="text-right px-2 py-0.5">Crescimento</th>
+              <th className="text-right px-2 py-0.5">Vidas</th>
+              <th className="text-right px-2 py-0.5">Ticket Méd.</th>
+              <th className="text-right px-2 py-0.5">Mensal</th>
+              <th className="text-right px-2 py-0.5">Anual</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r, i) => (
               <tr key={r.id} className="border-t border-border">
-                <td className="px-2 py-1.5 font-medium">{r.id}</td>
-                <td className="px-2 py-1.5 text-center border-l border-border"><NumInput dec={0} className={inp} value={r.vidas} onChange={(v) => set(i, "vidas", v)} /></td>
-                <td className="px-2 py-1.5 text-center"><NumInput dec={2} className={inp} value={r.ticket} onChange={(v) => set(i, "ticket", v)} /></td>
+                <td className="px-2 py-0 font-medium">{r.id}</td>
+                <td className="px-2 py-0 text-center border-l border-border"><NumInput dec={0} className={inp} value={r.vidas} onChange={(v) => set(i, "vidas", v)} /></td>
+                <td className="px-2 py-0 text-center"><NumInput dec={2} className={inp} value={r.ticket} onChange={(v) => set(i, "ticket", v)} /></td>
                 <td className={td}>{n2(mensal26(r))}</td>
                 <td className={td}>{n2(mensal26(r) * 12)}</td>
-                <td className="px-2 py-1.5 text-center border-l border-border"><NumInput dec={0} className={inp} value={r.entradas} onChange={(v) => set(i, "entradas", v)} /></td>
-                <td className="px-2 py-1.5 text-center"><NumInput dec={0} className={inp} value={r.saidas} onChange={(v) => set(i, "saidas", v)} /></td>
+                <td className="px-2 py-0 text-center border-l border-border"><NumInput dec={0} className={inp} value={r.entradas} onChange={(v) => set(i, "entradas", v)} /></td>
+                <td className="px-2 py-0 text-center"><NumInput dec={0} className={inp} value={r.saidas} onChange={(v) => set(i, "saidas", v)} /></td>
                 <td className={td}>{n0(cresc(r))}</td>
                 <td className={td}>{n0(vidas27(r))}</td>
                 <td className={td}>{n2(r.ticket)}</td>
@@ -110,13 +110,13 @@ const OrcamentoFaturamento = () => {
               </tr>
             ))}
             <tr className="border-t-2 border-border bg-muted/60 font-semibold">
-              <td className="px-2 py-2">TOTAL</td>
-              <td className="px-2 py-2 text-center tabular-nums border-l border-border">{tot(n0(tV26))}</td>
-              <td className="px-2 py-2 text-center tabular-nums">{tot(n2(tV26 ? tM26 / tV26 : 0))}</td>
+              <td className="px-2 py-0.5">TOTAL</td>
+              <td className="px-2 py-0.5 text-center tabular-nums border-l border-border">{tot(n0(tV26))}</td>
+              <td className="px-2 py-0.5 text-center tabular-nums">{tot(n2(tV26 ? tM26 / tV26 : 0))}</td>
               <td className={td}>{n2(tM26)}</td>
               <td className={td}>{n2(tM26 * 12)}</td>
-              <td className="px-2 py-2 text-center tabular-nums border-l border-border">{tot(n0(sum((r) => r.entradas)))}</td>
-              <td className="px-2 py-2 text-center tabular-nums">{tot(n0(sum((r) => r.saidas)))}</td>
+              <td className="px-2 py-0.5 text-center tabular-nums border-l border-border">{tot(n0(sum((r) => r.entradas)))}</td>
+              <td className="px-2 py-0.5 text-center tabular-nums">{tot(n0(sum((r) => r.saidas)))}</td>
               <td className={td}>{n0(sum(cresc))}</td>
               <td className={td}>{n0(tV27)}</td>
               <td className={td}>{n2(tV27 ? tM27 / tV27 : 0)}</td>
