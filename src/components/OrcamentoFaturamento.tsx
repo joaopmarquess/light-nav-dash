@@ -328,7 +328,7 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
       const resLiq = res.map((v, k) => v - imp[k]);
       const SUB = "bg-muted/60 [&>td:first-child]:shadow-[inset_3px_0_0_hsl(var(--primary))]";
       return (
-        <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
+        <section className="bg-card rounded-xl border border-border shadow-sm px-3 py-2 space-y-1">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold cursor-help" title="Resultado antes dos impostos = Entradas Operacionais − Despesas Assistenciais − Demais Operacionais − Despesas Administrativas + Financeiro. Impostos Federais = 34% do resultado antes dos impostos, quando positivo (senão 0). Resultado Líquido = antes dos impostos − Impostos Federais.">DRE — jan/27 a dez/27</h3>
             <span className="ml-auto rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm cursor-help" title="Resultado Total ÷ Faturamento Total">Margem: <b className="tabular-nums">{tF ? `${n2((t(resLiq) / tF) * 100)}%` : "-"}</b></span>
