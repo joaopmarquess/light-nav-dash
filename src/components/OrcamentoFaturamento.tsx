@@ -76,7 +76,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; o
       fat += f; prim += p; sec += s; adm += a; fin += fi; rai += r; imp += r > 0 ? r * 0.34 : 0;
     });
     const tot = prim + sec, ebitda = tot - adm, liq = rai - imp;
-    const mi = (v: number) => `R$ ${n2(v / 1e6)} mi`;
+    const mi = (v: number) => `R$ ${n2(v)}`;
     const pf = (v: number) => (fat ? `${n2((v / fat) * 100)}%` : "-");
     const cards: [string, number, string][] = [
       ["Operacionais Primários", prim, "Entradas Operacionais − Despesas Assistenciais"],
@@ -88,29 +88,28 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; o
       ["Impostos Federais", -imp, "34% do resultado mensal, quando positivo"],
     ];
     return (
-      <div className="space-y-4">
-        <div className="rounded-2xl bg-primary text-primary-foreground shadow-lg p-6 flex flex-wrap items-end justify-between gap-4" title="Antes dos Impostos − Impostos Federais">
+      <div className="space-y-2">
+        <div className="rounded-xl bg-primary text-primary-foreground shadow-md px-4 py-1.5 flex flex-wrap items-center justify-between gap-4" title="Antes dos Impostos − Impostos Federais">
           <div>
             <div className="text-xs uppercase tracking-widest opacity-80">Resultado Líquido 2027</div>
-            <div className="text-4xl font-bold tabular-nums mt-1">{mi(liq)}</div>
+            <div className="text-xl font-bold tabular-nums leading-tight">{mi(liq)}</div>
           </div>
-          <div className="text-right text-sm">
-            <div className="opacity-80">Margem líquida</div>
-            <div className="text-2xl font-semibold tabular-nums">{pf(liq)}</div>
-            <div className="opacity-80 text-xs mt-1">Faturamento {mi(fat)}</div>
+          <div className="text-right text-xs leading-tight">
+            <div><span className="opacity-80">Margem líquida </span><span className="text-base font-semibold tabular-nums">{pf(liq)}</span></div>
+            <div className="opacity-80">Faturamento {mi(fat)}</div>
           </div>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
           {cards.map(([t, v, h]) => (
             <div key={t} title={h} className="rounded-xl border border-border bg-card overflow-hidden cursor-help hover:shadow-md transition-shadow">
               <div className={`h-1 ${v < 0 ? "bg-destructive" : "bg-primary"}`} />
-              <div className="p-3">
-                <div className="text-[11px] uppercase tracking-wide text-muted-foreground leading-tight min-h-[2rem]">{t}</div>
-                <div className={`text-lg font-bold tabular-nums ${v < 0 ? "text-destructive" : "text-foreground"}`}>{mi(v)}</div>
-                <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
+              <div className="px-2.5 py-1.5">
+                <div className="text-[10px] uppercase tracking-wide text-muted-foreground leading-tight min-h-[1.6rem]">{t}</div>
+                <div className={`text-sm font-bold tabular-nums ${v < 0 ? "text-destructive" : "text-foreground"}`}>{mi(v)}</div>
+                <div className="mt-1 h-1 rounded-full bg-muted overflow-hidden">
                   <div className={`h-full ${v < 0 ? "bg-destructive" : "bg-primary"}`} style={{ width: `${Math.min(100, fat ? Math.abs(v / fat) * 100 : 0)}%` }} />
                 </div>
-                <div className="mt-1 text-[11px] text-muted-foreground">{pf(v)} do faturamento</div>
+                <div className="text-[10px] text-muted-foreground">{pf(v)} do faturamento</div>
               </div>
             </div>
           ))}
@@ -130,17 +129,17 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; o
             ["(=) Resultado Líquido", liq, 2],
           ];
           return (
-            <section className="rounded-2xl border border-border bg-card shadow-sm p-4">
-              <div className="flex items-center justify-between mb-2">
+            <section className="rounded-2xl border border-border bg-card shadow-sm px-3 py-2">
+              <div className="flex items-center justify-between mb-1">
                 <h3 className="text-sm font-semibold text-foreground">DRE simplificado 2027</h3>
-                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">R$ mi · % fat.</span>
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">R$ · % fat.</span>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {linhas.map(([t, v, k]) => (
-                  <div key={t} className={`flex items-center justify-between rounded-lg px-3 py-1.5 text-sm ${k === 2 ? "bg-primary text-primary-foreground font-bold" : k === 1 ? "bg-primary/10 font-semibold text-foreground" : "text-foreground"}`}>
+                  <div key={t} className={`flex items-center justify-between rounded-md px-3 py-0.5 text-[13px] ${k === 2 ? "bg-primary text-primary-foreground font-bold" : k === 1 ? "bg-primary/10 font-semibold text-foreground" : "text-foreground"}`}>
                     <span>{t}</span>
                     <span className="flex gap-6 tabular-nums">
-                      <span className={k !== 2 && v < 0 ? "text-destructive" : ""}>{n2(v / 1e6)}</span>
+                      <span className={k !== 2 && v < 0 ? "text-destructive" : ""}>{n2(v)}</span>
                       <span className={`w-16 text-right ${k === 2 ? "" : "text-muted-foreground"}`}>{pf(v)}</span>
                     </span>
                   </div>
@@ -151,7 +150,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; o
         })()}
         {onSimulacao && (
           <div className="flex justify-end">
-            <button onClick={onSimulacao} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:opacity-90">
+            <button onClick={onSimulacao} className="rounded-lg bg-primary px-4 py-1 text-sm font-semibold text-primary-foreground shadow hover:opacity-90">
               Simulação →
             </button>
           </div>
