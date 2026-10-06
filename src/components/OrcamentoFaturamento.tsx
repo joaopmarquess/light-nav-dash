@@ -173,22 +173,19 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
     {aba === "Faturamento" && (() => {
       const fT = rows.reduce((s, r) => s + totLinha(r), 0), a26 = tM26 * 12, cr = a26 ? fT / a26 - 1 : 0;
       const C = ({ t, v, f, c }: { t: string; v: string; f: string; c: string }) => (
-        <div className={`rounded-xl border border-border bg-card shadow-md border-l-4 ${c} px-3 py-2 text-center`}>
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t}</div>
-          <div className="text-sm tabular-nums"><span className="text-muted-foreground">Vidas 2027: </span><b>{v}</b></div>
-          <div className="text-sm tabular-nums"><span className="text-muted-foreground">Faturamento: </span><b>{f}</b></div>
+      const C = ({ t, v, f, c, neg }: { t: string; v: string; f: string; c: string; neg?: boolean }) => (
+        <div className={`rounded-lg border border-border bg-card shadow-md border-l-4 ${c} px-2 py-1 text-center leading-tight`}>
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{t}</div>
+          <div className={`text-xs tabular-nums ${neg ? "text-destructive" : ""}`}><span className="text-muted-foreground">Vidas </span><b>{v}</b><span className="text-muted-foreground"> · Fat. </span><b>{f}</b></div>
         </div>);
       return (
-        <div className="order-last mt-auto grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="order-last mt-auto grid grid-cols-2 md:grid-cols-5 gap-2">
           {rows.map((r) => <C key={r.id} t={r.id} v={n0(vidas27(r))} f={n2(totLinha(r))} c="border-l-primary" />)}
-          <div className={`rounded-xl border border-border bg-card shadow-md border-l-4 ${cr < 0 ? "border-l-destructive" : "border-l-accent"} px-3 py-2 text-center flex flex-col justify-center`} title="(Faturamento 2027 ÷ Faturamento 2026) − 1">
-            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Crescimento Total</div>
-            <div className={`text-xl font-bold tabular-nums ${cr < 0 ? "text-destructive" : ""}`}>{n2(cr * 100)}%</div>
-          </div>
+          <C t="Crescimento" v={n0(tV27 - tV26)} f={n2(fT - a26)} c={fT - a26 < 0 ? "border-l-destructive" : "border-l-accent"} neg={fT - a26 < 0} />
           <C t="Total" v={n0(tV27)} f={n2(fT)} c="border-l-foreground" />
         </div>);
     })()}
-    {<div className={`order-last ${aba === "Faturamento" ? "" : "mt-auto "}pt-3 pb-6 flex justify-center`}><div className="inline-flex flex-wrap justify-center gap-1 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_10px_30px_-8px_hsl(var(--foreground)/0.25)]">
+    {<div className={`order-last ${aba === "Faturamento" ? "" : "mt-auto "}pt-2 pb-8 flex justify-center`}><div className="inline-flex flex-wrap justify-center gap-1 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_10px_30px_-8px_hsl(var(--foreground)/0.25)]">
       {onPainel && <button onClick={onPainel} className="rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5">Painel</button>}
       {ABAS.map((a) => (
         <button
@@ -542,7 +539,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
     <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
       <h3 className="text-sm font-semibold cursor-help" title="A cada mês, Vidas = mês anterior + Entradas − Saídas; valor = Vidas × Ticket. Total 2027 = soma de jan/27 a dez/27.">Faturamento mensal — jan/27 a dez/27</h3>
-        <span className="rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm">Crescimento: <b className="tabular-nums">{tM26 ? `${Math.round((tM27 / tM26 - 1) * 100)}%` : "-"}</b></span>
+        <span className="rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm">Crescimento: <b className="tabular-nums">{tM26 ? `${n2((tM27 / tM26 - 1) * 100)}%` : "-"}</b></span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
