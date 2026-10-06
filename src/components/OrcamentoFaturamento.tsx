@@ -211,7 +211,7 @@ const OrcamentoFaturamento = () => {
               </tr>
             ))}
             <tr className="border-t-2 border-border bg-muted/60 font-semibold">
-              <td className="px-2 py-2">TOTAL</td>
+              <td className="px-2 py-2">FATURAMENTO</td>
               {MESES.slice(1).map((m, k) => <td key={m} className={td}>{n2(sum((r) => mesVal(r, k + 1)))}</td>)}
               <td className={`${td} border-l border-border`}>{n2(sum(totLinha))}</td>
             </tr>
