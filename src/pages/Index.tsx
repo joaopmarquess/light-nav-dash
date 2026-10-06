@@ -72,6 +72,7 @@ import InteligenciaUnimed from "@/components/InteligenciaUnimed";
 import Promocoes from "@/components/Promocoes";
 import UberabaHospitais from "@/components/UberabaHospitais";
 import AdministradorasSim from "@/components/AdministradorasSim";
+import OrcamentoFaturamento from "@/components/OrcamentoFaturamento";
 import UberabaShell from "@/components/UberabaShell";
 
 
@@ -158,6 +159,11 @@ const menuItems: MenuItem[] = [
       { icon: Users, label: "Administradoras" },
       { icon: Building2, label: "Uberaba" },
     ],
+  },
+  {
+    icon: Coins,
+    label: "Orçamento ",
+    children: [{ icon: Coins, label: "Faturamento" }],
   },
   {
     icon: FileText,
@@ -461,6 +467,8 @@ const Index = () => {
           ) : active === "__removed_orc_dw__" ? (
             <div />
 
+          ) : active === "Faturamento" ? (
+            <OrcamentoFaturamento />
           ) : active === "Premiação 4T 2026" ? (
             <Promocoes />
           ) : active === "Administradoras" ? (
