@@ -274,7 +274,7 @@ const OrcamentoFaturamento = () => {
                 {linhas.map((l, i) => (
                   <tr key={i} className={`${i === 0 ? "border-t-2" : "border-t"} border-border`}>
                     <td className="px-2 py-0.5 font-medium whitespace-nowrap">{NOMES[i]}</td>
-                    <td className="px-2 py-0 text-right">{isAdm && i === 3 ? <span className="inline-block w-20 px-2 text-right tabular-nums">{n2(demais[i])}%</span> : <NumInput dec={2} className={campo} value={demais[i]} onChange={(v) => setDemais((p) => p.map((x, j) => (j === i ? v : x)))} />}</td>
+                    <td className="px-2 py-0 text-right">{isAdm && i === 3 ? <span className="inline-block w-20 px-2 text-right tabular-nums">{n2(demais[i])}</span> : <NumInput dec={2} className={campo} value={demais[i]} onChange={(v) => setDemais((p) => p.map((x, j) => (j === i ? v : x)))} />}</td>
                     {l.map((v, k) => <td key={k} className={`${td} ${cls(v)}`}>{n2(v)}</td>)}
                     <td className={`${td} border-l border-border font-semibold ${cls(t(l))}`}>{n2(t(l))}</td>
                   </tr>
