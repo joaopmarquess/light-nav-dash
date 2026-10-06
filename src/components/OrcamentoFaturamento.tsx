@@ -67,32 +67,51 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
   const tV27 = sum(vidas27), tM27 = sum(mensal27);
 
   if (home) {
-    const fatM = Array.from({ length: 12 }, (_, k) => sum((r) => (r.vidas + (k + 1) * (r.entradas - r.saidas)) * tk(r, k + 1)));
-    const T = (vs: number[]) => vs.reduce((a, b) => a + b, 0);
-    const fat = T(fatM), cop = fat * rec / 100, ent = fat + cop, desp = ent * sinLiq / 100;
-    const dOp = fat * demaisOp.reduce((a, b) => a + b, 0) / 100, adm = fat * admTot / 100, fin = fat * finPc / 100;
-    const res = ent - desp - dOp - adm + fin;
+    const fM = Array.from({ length: 12 }, (_, k) => sum((r) => (r.vidas + (k + 1) * (r.entradas - r.saidas)) * tk(r, k + 1)));
+    const pcOp = demaisOp.reduce((a, b) => a + b, 0);
+    let fat = 0, prim = 0, sec = 0, adm = 0, fin = 0, rai = 0, imp = 0;
+    fM.forEach((f) => {
+      const ent = f * (1 + rec / 100), p = ent - ent * sinLiq / 100, s = -f * pcOp / 100, a = f * admTot / 100, fi = f * finPc / 100;
+      const r = p + s - a + fi;
+      fat += f; prim += p; sec += s; adm += a; fin += fi; rai += r; imp += r > 0 ? r * 0.34 : 0;
+    });
+    const tot = prim + sec, ebitda = tot - adm, liq = rai - imp;
     const mi = (v: number) => `R$ ${n2(v / 1e6)} mi`;
-    const cards: [string, string, string, boolean?][] = [
-      ["Vidas dez/27", n0(tV27), `2026: ${n0(tV26)} · ${tV26 ? n2((tV27 / tV26 - 1) * 100) : "-"}%`],
-      ["Faturamento 2027", mi(fat), `Crescimento ${tM26 ? n2((fat / (tM26 * 12) - 1) * 100) : "-"}% s/ 2026`],
-      ["Entradas Operacionais", mi(ent), `Coparticipação ${mi(cop)}`],
-      ["Despesas Assistenciais", mi(desp), `Sinistralidade bruta ${fat ? n2(desp / fat * 100) : "-"}%`],
-      ["Demais Operacionais", mi(dOp), `${n2(demaisOp.reduce((a, b) => a + b, 0))}% do faturamento`],
-      ["Despesas Administrativas", mi(adm), `${n2(admTot)}% do faturamento`],
-      ["Financeiro", mi(fin), `${n2(finPc)}% do faturamento`],
-      ["Resultado 2027", mi(res), `Margem ${fat ? n2(res / fat * 100) : "-"}%`, true],
+    const pf = (v: number) => (fat ? `${n2((v / fat) * 100)}%` : "-");
+    const cards: [string, number, string][] = [
+      ["Operacionais Primários", prim, "Entradas Operacionais − Despesas Assistenciais"],
+      ["Operacionais Secundários", sec, "− Demais Operacionais"],
+      ["Operacionais Totais", tot, "Primários + Secundários"],
+      ["EBITDA", ebitda, "Operacionais Totais − Despesas Administrativas"],
+      ["Financeiro", fin, "Faturamento × % Financeiro"],
+      ["Resultado antes dos Impostos", rai, "EBITDA + Financeiro"],
+      ["Impostos Federais", -imp, "34% do resultado mensal, quando positivo"],
     ];
     return (
-      <div className="space-y-3">
-        <p className="text-sm text-muted-foreground">Resumo do orçamento 2027 com as premissas atuais da Simulação.</p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {cards.map(([t, v, s, destaque]) => (
-            <div key={t} className={`relative overflow-hidden rounded-xl border border-border shadow-md p-4 pl-5 text-center ${destaque ? "bg-primary/10" : "bg-card"}`}>
-              <span className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">{t}</div>
-              <div className={`mt-1 text-2xl font-bold tabular-nums ${destaque && res < 0 ? "text-destructive" : "text-foreground"}`}>{v}</div>
-              <div className="mt-1 text-xs text-muted-foreground">{s}</div>
+      <div className="space-y-4">
+        <div className="rounded-2xl bg-primary text-primary-foreground shadow-lg p-6 flex flex-wrap items-end justify-between gap-4" title="Antes dos Impostos − Impostos Federais">
+          <div>
+            <div className="text-xs uppercase tracking-widest opacity-80">Resultado Líquido 2027</div>
+            <div className="text-4xl font-bold tabular-nums mt-1">{mi(liq)}</div>
+          </div>
+          <div className="text-right text-sm">
+            <div className="opacity-80">Margem líquida</div>
+            <div className="text-2xl font-semibold tabular-nums">{pf(liq)}</div>
+            <div className="opacity-80 text-xs mt-1">Faturamento {mi(fat)}</div>
+          </div>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+          {cards.map(([t, v, h]) => (
+            <div key={t} title={h} className="rounded-xl border border-border bg-card overflow-hidden cursor-help hover:shadow-md transition-shadow">
+              <div className={`h-1 ${v < 0 ? "bg-destructive" : "bg-primary"}`} />
+              <div className="p-3">
+                <div className="text-[11px] uppercase tracking-wide text-muted-foreground leading-tight min-h-[2rem]">{t}</div>
+                <div className={`text-lg font-bold tabular-nums ${v < 0 ? "text-destructive" : "text-foreground"}`}>{mi(v)}</div>
+                <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div className={`h-full ${v < 0 ? "bg-destructive" : "bg-primary"}`} style={{ width: `${Math.min(100, fat ? Math.abs(v / fat) * 100 : 0)}%` }} />
+                </div>
+                <div className="mt-1 text-[11px] text-muted-foreground">{pf(v)} do faturamento</div>
+              </div>
             </div>
           ))}
         </div>
