@@ -282,8 +282,8 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
               <thead className="text-[11px] uppercase tracking-wider text-foreground/80">
                 <tr>
                   <th className="sticky left-0 bg-card" />
-                  {M.map((m) => <th key={m} className="text-right px-2 py-1.5 font-medium whitespace-nowrap py-0.5">{m}</th>)}
-                  <th className="text-right px-3 py-1.5 font-semibold text-foreground">Total 2027</th>
+                  {M.map((m) => <th key={m} className="text-right px-2 py-0.5 font-medium whitespace-nowrap">{m}</th>)}
+                  <th className="text-right px-3 py-0.5 font-semibold text-foreground">Total 2027</th>
                 </tr>
               </thead>
               <tbody className="[&>tr>td]:border-y [&>tr>td]:border-border/50 [&>tr>td:first-child]:border-l [&>tr>td:last-child]:border-r [&>tr>td:first-child]:rounded-l-lg [&>tr>td:last-child]:rounded-r-lg">
@@ -330,7 +330,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
                 <tr>
                   <th className="sticky left-0 bg-card" />
                   {M.map((m) => <th key={m} className="text-right px-2 py-1.5 font-medium whitespace-nowrap">{m}</th>)}
-                  <th className="text-right px-3 py-1.5 font-semibold text-foreground">Total 2027</th>
+                  <th className="text-right px-3 py-0.5 font-semibold text-foreground">Total 2027</th>
                 </tr>
               </thead>
               <tbody className="[&>tr>td]:border-y [&>tr>td]:border-border/50 [&>tr>td:first-child]:border-l [&>tr>td:last-child]:border-r [&>tr>td:first-child]:rounded-l-lg [&>tr>td:last-child]:rounded-r-lg">
@@ -401,7 +401,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
                 <tr>
                   <th className="sticky left-0 bg-card" />
                   {M.map((m) => <th key={m} className="text-right px-2 py-1.5 font-medium whitespace-nowrap">{m}</th>)}
-                  <th className="text-right px-3 py-1.5 font-semibold text-foreground">Total 2027</th>
+                  <th className="text-right px-3 py-0.5 font-semibold text-foreground">Total 2027</th>
                 </tr>
               </thead>
               <tbody className="[&>tr>td]:border-y [&>tr>td]:border-border/50 [&>tr>td:first-child]:border-l [&>tr>td:last-child]:border-r [&>tr>td:first-child]:rounded-l-lg [&>tr>td:last-child]:rounded-r-lg">
