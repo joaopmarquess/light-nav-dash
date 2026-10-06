@@ -50,6 +50,7 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
   const [admPc, setAdmPc] = usePersist("admPc", [4, 2, 0.8, 1.2]);
   const [admTot, setAdmTot] = usePersist("admTot", 8);
   const [finPc, setFinPc] = usePersist("finPc", 4);
+  const [planosAbertos, setPlanosAbertos] = useState(false);
   const [dreAbertos, setDreAbertos] = useState<Record<string, boolean>>({});
   const tk = (r: Linha, k: number) => r.ticket * Math.pow(1 + reaj / 100, k - 1);
   const set = (i: number, k: Campo, v: number) =>
@@ -158,7 +159,7 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, i) => (
+            {(aba === "Faturamento" || planosAbertos) && rows.map((r, i) => (
               <tr key={r.id} className="border-t border-border">
                 <td className="px-2 py-0 font-medium">{r.id}</td>
                 <td className="px-2 py-0 text-center border-l border-border"><NumInput dec={0} className={inp} value={r.vidas} onChange={(v) => set(i, "vidas", v)} /></td>
@@ -175,7 +176,11 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
               </tr>
             ))}
             <tr className="border-t-2 border-border bg-muted/60 font-semibold">
-              <td className="px-2 py-0.5">FATURAMENTO</td>
+              <td className="px-2 py-0.5">{aba === "Faturamento" ? "FATURAMENTO" : (
+                <button onClick={() => setPlanosAbertos((v) => !v)} className="inline-flex items-center gap-1 hover:text-primary">
+                  {planosAbertos ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}FATURAMENTO
+                </button>
+              )}</td>
               <td className="px-2 py-0.5 text-center tabular-nums border-l border-border">{tot(n0(tV26))}</td>
               <td className="px-2 py-0.5 text-center tabular-nums">{tot(n2(tV26 ? tM26 / tV26 : 0))}</td>
               <td className={td}>{n2(tM26)}</td>
