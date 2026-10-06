@@ -149,12 +149,12 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
           );
         })()}
         {onSimulacao && (
-          <div className="mt-auto flex flex-wrap justify-start gap-2 border-t border-border pt-3">
-            <button className="rounded-md border px-3 py-1.5 text-sm bg-primary text-primary-foreground border-primary">Painel</button>
+          <div className="mt-auto pt-3"><div className="inline-flex flex-wrap gap-1 rounded-full bg-muted/70 p-1 border border-border shadow-inner">
+            <button className="rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 bg-primary text-primary-foreground shadow-md shadow-primary/30">Painel</button>
             {ABAS.map((a) => (
-              <button key={a} onClick={() => { sessionStorage.setItem("orc27:aba", a); onSimulacao(); }} className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted">{a}</button>
+              <button key={a} onClick={() => { sessionStorage.setItem("orc27:aba", a); onSimulacao(); }} className="rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5">{a}</button>
             ))}
-          </div>
+          </div></div>
         )}
       </div>
     );
@@ -170,18 +170,18 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
 
   return (
     <div className="flex flex-col gap-3 min-h-[calc(100vh-9rem)]">
-    {<div className="order-last mt-auto flex flex-wrap justify-start gap-2 border-t border-border pt-3">
-      {onPainel && <button onClick={onPainel} className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted">Painel</button>}
+    {<div className="order-last mt-auto pt-3"><div className="inline-flex flex-wrap gap-1 rounded-full bg-muted/70 p-1 border border-border shadow-inner">
+      {onPainel && <button onClick={onPainel} className="rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5">Painel</button>}
       {ABAS.map((a) => (
         <button
           key={a}
           onClick={() => setAba(a)}
-          className={`rounded-md border px-3 py-1.5 text-sm ${aba === a ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-muted"}`}
+          className={aba === a ? "rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 bg-primary text-primary-foreground shadow-md shadow-primary/30" : "rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5"}
         >
           {a}
         </button>
       ))}
-    </div>}
+    </div></div>}
     {aba !== "DRE" && (<section className="bg-card rounded-xl border border-border shadow-sm p-2 space-y-1">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold cursor-help" title="Mensal 2026 = Vidas × Ticket; Anual = Mensal × 12. Mensal 2027 = média mensal de jan/27 a dez/27; Anual 2027 = Total 2027. Crescimento = (Entradas − Saídas) × 12. Vidas 2027 = Vidas 2026 + Crescimento. Ticket 2027 = Ticket 2026. Ticket total = Mensal total ÷ Vidas totais.">Orçamento — Faturamento 2026 × 2027</h3>
