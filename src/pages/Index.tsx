@@ -287,7 +287,7 @@ const Index = () => {
                 {hasChildren && isOpen && !collapsed && (
                   <div className="mt-1 space-y-1">
                     {item.children!.map((child) => {
-                      const childActive = active === (child.id ?? child.label);
+                      const childActive = active === (child.id ?? child.label) || ((child.id ?? child.label) === "Painel Orçamento" && active === "Simulação");
                       return (
                         <button
                           key={child.label}
