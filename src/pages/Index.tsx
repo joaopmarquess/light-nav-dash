@@ -468,7 +468,7 @@ const Index = () => {
             <div />
 
           ) : active === "Painel Orçamento" ? (
-            <OrcamentoFaturamento home />
+            <OrcamentoFaturamento home onSimulacao={() => setActive("Simulação")} />
           ) : active === "Simulação" ? (
             <OrcamentoFaturamento />
           ) : active === "Premiação 4T 2026" ? (

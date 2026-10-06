@@ -39,7 +39,7 @@ const usePersist = <T,>(k: string, d: T) => {
   return [v, setV] as const;
 };
 
-const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
+const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; onSimulacao?: () => void }) => {
   const [rows, setRows] = usePersist("rows", BASE);
   const [aba, setAba] = useState("Faturamento");
   const [reaj, setReaj] = usePersist("reaj", 1.01);
