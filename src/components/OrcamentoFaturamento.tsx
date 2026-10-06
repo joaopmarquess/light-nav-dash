@@ -325,7 +325,7 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
       return (
         <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold cursor-help" title="Resultado antes dos impostos = Entradas Operacionais − Despesas Assistenciais − Demais Operacionais − Despesas Administrativas + Financeiro. Impostos Federais = 34% do resultado antes dos impostos, quando positivo (senão 0). Resultado = antes dos impostos − Impostos Federais.">DRE — jan/27 a dez/27</h3>
+            <h3 className="text-sm font-semibold cursor-help" title="Resultado antes dos impostos = Entradas Operacionais − Despesas Assistenciais − Demais Operacionais − Despesas Administrativas + Financeiro. Impostos Federais = 34% do resultado antes dos impostos, quando positivo (senão 0). Resultado Líquido = antes dos impostos − Impostos Federais.">DRE — jan/27 a dez/27</h3>
             <span className="ml-auto rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm cursor-help" title="Resultado Total ÷ Faturamento Total">Margem: <b className="tabular-nums">{tF ? `${n2((t(resLiq) / tF) * 100)}%` : "-"}</b></span>
           </div>
           <div className="overflow-x-auto">
@@ -345,7 +345,7 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
                 {row("FINANCEIRO", fin, SUB)}
                 {row("RESULTADO ANTES DOS IMPOSTOS", res, SUB)}
                 {row("IMPOSTOS FEDERAIS", imp, "")}
-                {row("RESULTADO", resLiq, "border-t-4 border-b-4 !border-primary bg-primary/30 font-bold [&_td]:font-bold")}
+                {row("RESULTADO LÍQUIDO", resLiq, "border-t-4 border-b-4 !border-primary bg-primary/30 font-bold [&_td]:font-bold")}
               </tbody>
             </table>
           </div>
