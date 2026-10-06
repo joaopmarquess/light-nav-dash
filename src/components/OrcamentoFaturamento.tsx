@@ -170,7 +170,25 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
 
   return (
     <div className="flex flex-col gap-3 min-h-[calc(100vh-9rem)]">
-    {<div className="order-last mt-auto pt-3 pb-6 flex justify-center"><div className="inline-flex flex-wrap justify-center gap-1 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_10px_30px_-8px_hsl(var(--foreground)/0.25)]">
+    {aba === "Faturamento" && (() => {
+      const fT = rows.reduce((s, r) => s + totLinha(r), 0), a26 = tM26 * 12, cr = a26 ? fT / a26 - 1 : 0;
+      const C = ({ t, v, f, c }: { t: string; v: string; f: string; c: string }) => (
+        <div className={`rounded-xl border border-border bg-card shadow-md border-l-4 ${c} px-3 py-2 text-center`}>
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t}</div>
+          <div className="text-sm tabular-nums"><span className="text-muted-foreground">Vidas 2027: </span><b>{v}</b></div>
+          <div className="text-sm tabular-nums"><span className="text-muted-foreground">Faturamento: </span><b>{f}</b></div>
+        </div>);
+      return (
+        <div className="order-last mt-auto grid grid-cols-2 md:grid-cols-5 gap-3">
+          {rows.map((r) => <C key={r.id} t={r.id} v={n0(vidas27(r))} f={n2(totLinha(r))} c="border-l-primary" />)}
+          <div className={`rounded-xl border border-border bg-card shadow-md border-l-4 ${cr < 0 ? "border-l-destructive" : "border-l-accent"} px-3 py-2 text-center flex flex-col justify-center`} title="(Faturamento 2027 ÷ Faturamento 2026) − 1">
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Crescimento Total</div>
+            <div className={`text-xl font-bold tabular-nums ${cr < 0 ? "text-destructive" : ""}`}>{n2(cr * 100)}%</div>
+          </div>
+          <C t="Total" v={n0(tV27)} f={n2(fT)} c="border-l-foreground" />
+        </div>);
+    })()}
+    {<div className={`order-last ${aba === "Faturamento" ? "" : "mt-auto "}pt-3 pb-6 flex justify-center`}><div className="inline-flex flex-wrap justify-center gap-1 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_10px_30px_-8px_hsl(var(--foreground)/0.25)]">
       {onPainel && <button onClick={onPainel} className="rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5">Painel</button>}
       {ABAS.map((a) => (
         <button
