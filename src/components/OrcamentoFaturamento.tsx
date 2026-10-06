@@ -254,6 +254,9 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
             <label className="ml-4 text-sm text-muted-foreground">% Rede</label>
             <NumInput dec={2} className={campo} value={rede} onChange={setRede} />
             <span className="ml-auto rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm cursor-help" title="Total das Despesas Assistenciais ÷ Total do Faturamento">Sinistralidade Bruta: <b className="tabular-nums">{t(fatM) ? `${n2((t(desp) / t(fatM)) * 100)}%` : "-"}</b></span>
+            <button onClick={() => { setSinLiq(87); setRede(55); }} className="flex items-center gap-1 px-2 py-0.5 rounded-md text-sm border border-border bg-card hover:bg-accent transition-colors">
+              <RotateCcw className="h-3.5 w-3.5" /> Restaurar
+            </button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -401,6 +404,9 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold cursor-help" title="Cada linha = Faturamento do mês × % da linha. Total = soma das linhas. Vertical = soma dos %.">{aba} — jan/27 a dez/27</h3>
             <span className="ml-auto rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm">Vertical: <b className="tabular-nums">{n2(vert)}%</b></span>
+            <button onClick={() => { if (isAdm) { setAdmPc([4, 2, 0.8, 1.2]); setAdmTot(8); } else setDemaisOp([2, 1, 0.5, 0.2]); }} className="flex items-center gap-1 px-2 py-0.5 rounded-md text-sm border border-border bg-card hover:bg-accent transition-colors">
+              <RotateCcw className="h-3.5 w-3.5" /> Restaurar
+            </button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
