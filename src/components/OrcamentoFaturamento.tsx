@@ -38,6 +38,8 @@ const OrcamentoFaturamento = () => {
   const [aba, setAba] = useState("Faturamento");
   const [reaj, setReaj] = useState(1.01);
   const [rec, setRec] = useState(16);
+  const [sinLiq, setSinLiq] = useState(87);
+  const [rede, setRede] = useState(55);
   const tk = (r: Linha, k: number) => r.ticket * Math.pow(1 + reaj / 100, k - 1);
   const set = (i: number, k: Campo, v: number) =>
     setRows((p) => p.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
@@ -177,6 +179,49 @@ const OrcamentoFaturamento = () => {
                 {linha("FATURAMENTO", fat, tF)}
                 {linha("COPARTICIPAÇÃO", cop, tC)}
                 {linha("ENTRADAS OPERACIONAIS", fat.map((v, k) => v + cop[k]), tF + tC, true)}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      );
+    })() : aba === "Despesas Assistenciais" ? (() => {
+      const M = MESES.slice(1);
+      const ent = M.map((_, k) => sum((r) => mesVal(r, k + 1)) * (1 + rec / 100));
+      const desp = ent.map((v) => v * sinLiq / 100);
+      const rd = desp.map((v) => v * rede / 100);
+      const bn = desp.map((v, k) => v - rd[k]);
+      const t = (vs: number[]) => vs.reduce((a, b) => a + b, 0);
+      const linha = (nome: string, vs: number[], bold = false, sep = false) => (
+        <tr className={`${sep ? "border-t-2" : "border-t"} border-border ${bold ? "bg-muted/60 font-semibold" : ""}`}>
+          <td className="px-2 py-0.5 font-medium whitespace-nowrap">{nome}</td>
+          {vs.map((v, k) => <td key={k} className={td}>{n2(v)}</td>)}
+          <td className={`${td} border-l border-border font-semibold`}>{n2(t(vs))}</td>
+        </tr>
+      );
+      const campo = "w-20 rounded border border-border px-2 py-0 h-6 text-right tabular-nums font-semibold bg-yellow-100/60";
+      return (
+        <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="text-sm font-semibold cursor-help" title="Despesas Assistenciais = Entradas Operacionais × % Sinistralidade Líq. Rede = Despesas × % Rede. Benê = Despesas − Rede.">Despesas Assistenciais — jan/27 a dez/27</h3>
+            <label className="ml-4 text-sm text-muted-foreground">% Sinistralidade Líq.</label>
+            <NumInput dec={2} className={campo} value={sinLiq} onChange={setSinLiq} />
+            <label className="ml-4 text-sm text-muted-foreground">% Rede</label>
+            <NumInput dec={2} className={campo} value={rede} onChange={setRede} />
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 text-muted-foreground">
+                <tr>
+                  <th />
+                  {M.map((m) => <th key={m} className="text-right px-2 py-2 whitespace-nowrap">{m}</th>)}
+                  <th className="text-right px-2 py-2 border-l border-border">Total 2027</th>
+                </tr>
+              </thead>
+              <tbody>
+                {linha("ENTRADAS OPERACIONAIS", ent)}
+                {linha("REDE", rd, false, true)}
+                {linha("BENÊ", bn)}
+                {linha("DESPESAS ASSISTENCIAIS", desp, true)}
               </tbody>
             </table>
           </div>
