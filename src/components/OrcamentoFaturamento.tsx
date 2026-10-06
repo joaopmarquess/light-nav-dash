@@ -68,7 +68,7 @@ const OrcamentoFaturamento = () => {
 
   return (
     <div className="space-y-4">
-    <section className="bg-card rounded-xl border border-border shadow-sm p-2 space-y-1">
+    {aba !== "DRE" && (<section className="bg-card rounded-xl border border-border shadow-sm p-2 space-y-1">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold cursor-help" title="Mensal 2026 = Vidas × Ticket; Anual = Mensal × 12. Mensal 2027 = média mensal de jan/27 a dez/27; Anual 2027 = Total 2027. Crescimento = (Entradas − Saídas) × 12. Vidas 2027 = Vidas 2026 + Crescimento. Ticket 2027 = Ticket 2026. Ticket total = Mensal total ÷ Vidas totais.">Orçamento — Faturamento 2026 × 2027</h3>
         <div className="flex items-center gap-2">
@@ -139,7 +139,7 @@ const OrcamentoFaturamento = () => {
           </tbody>
         </table>
       </div>
-    </section>
+    </section>)}
     <div className="flex flex-wrap gap-2">
       {ABAS.map((a) => (
         <button
