@@ -117,7 +117,7 @@ const OrcamentoFaturamento = () => {
               </tr>
             ))}
             <tr className="border-t-2 border-border bg-muted/60 font-semibold">
-              <td className="px-2 py-0.5">TOTAL</td>
+              <td className="px-2 py-0.5">FATURAMENTO</td>
               <td className="px-2 py-0.5 text-center tabular-nums border-l border-border">{tot(n0(tV26))}</td>
               <td className="px-2 py-0.5 text-center tabular-nums">{tot(n2(tV26 ? tM26 / tV26 : 0))}</td>
               <td className={td}>{n2(tM26)}</td>
@@ -176,7 +176,7 @@ const OrcamentoFaturamento = () => {
               <tbody>
                 {linha("FATURAMENTO", fat, tF)}
                 {linha("COPARTICIPAÇÃO", cop, tC)}
-                {linha("TOTAL", fat.map((v, k) => v + cop[k]), tF + tC, true)}
+                {linha("ENTRADAS OPERACIONAIS", fat.map((v, k) => v + cop[k]), tF + tC, true)}
               </tbody>
             </table>
           </div>
