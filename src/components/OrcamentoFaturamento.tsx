@@ -110,12 +110,8 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
 
   return (
     <div className="space-y-4">
-    <div className="flex flex-wrap gap-2">
-      {aba === "DRE" ? (
-        <button onClick={() => setAba("Faturamento")} className="inline-flex items-center gap-1 rounded-md border border-primary bg-primary px-3 py-1.5 text-sm text-primary-foreground">
-          <ChevronLeft className="h-4 w-4" /> Voltar à simulação
-        </button>
-      ) : ABAS.map((a) => (
+    {aba !== "DRE" && <div className="flex flex-wrap gap-2">
+      {ABAS.map((a) => (
         <button
           key={a}
           onClick={() => setAba(a)}
@@ -124,7 +120,7 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
           {a}
         </button>
       ))}
-    </div>
+    </div>}
     {aba !== "DRE" && (<section className="bg-card rounded-xl border border-border shadow-sm p-2 space-y-1">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold cursor-help" title="Mensal 2026 = Vidas × Ticket; Anual = Mensal × 12. Mensal 2027 = média mensal de jan/27 a dez/27; Anual 2027 = Total 2027. Crescimento = (Entradas − Saídas) × 12. Vidas 2027 = Vidas 2026 + Crescimento. Ticket 2027 = Ticket 2026. Ticket total = Mensal total ÷ Vidas totais.">Orçamento — Faturamento 2026 × 2027</h3>
@@ -221,8 +217,8 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
             <NumInput dec={2} className="w-20 rounded border border-border px-2 py-0 h-6 text-right tabular-nums font-semibold bg-yellow-100/60" value={rec} onChange={setRec} />
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm border-separate border-spacing-y-1">
-              <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            <table className="w-full text-sm border-separate border-spacing-y-0.5">
+              <thead className="text-[11px] uppercase tracking-wider text-foreground/80">
                 <tr>
                   <th className="sticky left-0 bg-card" />
                   {M.map((m) => <th key={m} className="text-right px-2 py-1.5 font-medium whitespace-nowrap">{m}</th>)}
@@ -268,8 +264,8 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
             </button>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm border-separate border-spacing-y-1">
-              <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            <table className="w-full text-sm border-separate border-spacing-y-0.5">
+              <thead className="text-[11px] uppercase tracking-wider text-foreground/80">
                 <tr>
                   <th className="sticky left-0 bg-card" />
                   {M.map((m) => <th key={m} className="text-right px-2 py-1.5 font-medium whitespace-nowrap">{m}</th>)}
@@ -312,15 +308,15 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
       };
       const row = (nome: string, vs: number[], cl: string, key?: string, filho = false) => (
         <tr key={nome + (filho ? "-f" : "")} className={`group transition-colors hover:bg-muted/80 ${cl}`}>
-          <td className={`sticky left-0 z-10 bg-inherit px-3 py-1.5 whitespace-nowrap ${filho ? "pl-10 text-xs text-muted-foreground" : "font-semibold tracking-wide"}`}>
+          <td className={`sticky left-0 z-10 bg-inherit px-3 py-0.5 whitespace-nowrap ${filho ? "pl-10 text-xs text-foreground/80" : "font-semibold tracking-wide"}`}>
             {key ? (
               <button onClick={() => setDreAbertos((p) => ({ ...p, [key]: !p[key] }))} className="inline-flex items-center gap-1.5 hover:text-primary">
                 <span className="grid h-5 w-5 place-items-center rounded-full bg-primary/10 text-primary">{dreAbertos[key] ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}</span>{nome}
               </button>
             ) : <span className={filho ? "" : "pl-6"}>{nome}</span>}
           </td>
-          {vs.map((v, k) => <td key={k} className={`px-2 py-1.5 text-right tabular-nums whitespace-nowrap ${filho ? "text-xs text-muted-foreground" : ""} ${cls(v)}`}>{n2(v)}</td>)}
-          <td className={`px-3 py-1.5 text-right tabular-nums whitespace-nowrap font-semibold bg-muted ${cls(t(vs))}`}>{n2(t(vs))}</td>
+          {vs.map((v, k) => <td key={k} className={`px-2 py-0.5 text-right tabular-nums whitespace-nowrap ${filho ? "text-xs text-foreground/80" : ""} ${cls(v)}`}>{n2(v)}</td>)}
+          <td className={`px-3 py-0.5 text-right tabular-nums whitespace-nowrap font-semibold bg-muted ${cls(t(vs))}`}>{n2(t(vs))}</td>
         </tr>
       );
       const grupo = (nome: string, vs: number[], key: string, cl = "") => [
@@ -332,14 +328,18 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
       const resLiq = res.map((v, k) => v - imp[k]);
       const SUB = "bg-muted/60 [&>td:first-child]:shadow-[inset_3px_0_0_hsl(var(--primary))]";
       return (
-        <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
+        <section className="bg-card rounded-xl border border-border shadow-sm px-3 py-2 space-y-1">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold cursor-help" title="Resultado antes dos impostos = Entradas Operacionais − Despesas Assistenciais − Demais Operacionais − Despesas Administrativas + Financeiro. Impostos Federais = 34% do resultado antes dos impostos, quando positivo (senão 0). Resultado Líquido = antes dos impostos − Impostos Federais.">DRE — jan/27 a dez/27</h3>
             <span className="ml-auto rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm cursor-help" title="Resultado Total ÷ Faturamento Total">Margem: <b className="tabular-nums">{tF ? `${n2((t(resLiq) / tF) * 100)}%` : "-"}</b></span>
+        <button onClick={() => setAba("Faturamento")} className="inline-flex items-center gap-1 rounded-md border border-primary bg-primary px-2 py-0.5 text-xs text-primary-foreground">
+          <ChevronLeft className="h-4 w-4" /> Voltar à simulação
+        </button>
+
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm border-separate border-spacing-y-1">
-              <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            <table className="w-full text-sm border-separate border-spacing-y-0.5">
+              <thead className="text-[11px] uppercase tracking-wider text-foreground/80">
                 <tr>
                   <th className="sticky left-0 bg-card" />
                   {M.map((m) => <th key={m} className="text-right px-2 py-1.5 font-medium whitespace-nowrap">{m}</th>)}
