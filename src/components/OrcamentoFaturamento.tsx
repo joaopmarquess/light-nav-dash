@@ -58,7 +58,7 @@ const OrcamentoFaturamento = () => {
     <div className="space-y-4">
     <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Orçamento — Faturamento 2026 × 2027</h3>
+        <h3 className="text-sm font-semibold cursor-help" title="Mensal 2026 = Vidas × Ticket; Anual = Mensal × 12. Mensal 2027 = média mensal de jan/27 a dez/27; Anual 2027 = Total 2027. Crescimento = (Entradas − Saídas) × 12. Vidas 2027 = Vidas 2026 + Crescimento. Ticket 2027 = Ticket 2026. Ticket total = Mensal total ÷ Vidas totais.">Orçamento — Faturamento 2026 × 2027</h3>
         <button
           onClick={() => setRows(BASE)}
           className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted"
@@ -123,13 +123,9 @@ const OrcamentoFaturamento = () => {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-muted-foreground">
-        Mensal 2026 = Vidas × Ticket; Anual = Mensal × 12. Mensal 2027 = média mensal de jan/27 a dez/27; Anual 2027 = Total 2027. Crescimento = (Entradas − Saídas) × 12. Vidas 2027 = Vidas 2026 +
-        Crescimento. Ticket 2027 = Ticket 2026. Ticket total = Mensal total ÷ Vidas totais.
-      </p>
     </section>
     <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
-      <h3 className="text-sm font-semibold">Faturamento mensal — dez/26 a dez/27</h3>
+      <h3 className="text-sm font-semibold cursor-help" title="A cada mês, Vidas = mês anterior + Entradas − Saídas; valor = Vidas × Ticket. Total 2027 = soma de jan/27 a dez/27.">Faturamento mensal — dez/26 a dez/27</h3>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-muted-foreground">
@@ -155,9 +151,6 @@ const OrcamentoFaturamento = () => {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-muted-foreground">
-        A cada mês, Vidas = mês anterior + Entradas − Saídas; valor = Vidas × Ticket. Total 2027 = soma de jan/27 a dez/27.
-      </p>
     </section>
     </div>
   );
