@@ -120,6 +120,38 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
         </button>
       ))}
     </div>
+    {aba !== "DRE" && (() => {
+      const fM = Array.from({ length: 12 }, (_, k) => sum((r) => (r.vidas + (k + 1) * (r.entradas - r.saidas)) * tk(r, k + 1)));
+      const pcOp = demaisOp.reduce((a, b) => a + b, 0);
+      let prim = 0, sec = 0, adm = 0, fin = 0, rai = 0, imp = 0;
+      fM.forEach((f) => {
+        const ent = f * (1 + rec / 100), p = ent - ent * sinLiq / 100, s = -f * pcOp / 100, a = f * admTot / 100, fi = f * finPc / 100;
+        const r = p + s - a + fi;
+        prim += p; sec += s; adm += a; fin += fi; rai += r; imp += r > 0 ? r * 0.34 : 0;
+      });
+      const tot = prim + sec, ebitda = tot - adm;
+      const cards: [string, number, string][] = [
+        ["Operacionais Primários", prim, "Entradas Operacionais − Despesas Assistenciais"],
+        ["Operacionais Secundários", sec, "− Demais Operacionais"],
+        ["Operacionais Totais", tot, "Primários + Secundários"],
+        ["EBITDA", ebitda, "Operacionais Totais − Despesas Administrativas"],
+        ["Financeiro", fin, "Faturamento × % Financeiro"],
+        ["Resultado antes dos Impostos", rai, "EBITDA + Financeiro"],
+        ["Impostos Federais", -imp, "34% do resultado mensal, quando positivo"],
+        ["Resultado Líquido", rai - imp, "Antes dos Impostos − Impostos Federais"],
+      ];
+      return (
+        <div className="grid gap-3 sm:grid-cols-4 xl:grid-cols-8">
+          {cards.map(([t, v, h]) => (
+            <div key={t} title={h} className="relative overflow-hidden rounded-xl border border-border bg-card shadow-md p-2 pl-3 text-center cursor-help">
+              <span className="absolute left-0 top-0 h-full w-1.5 bg-primary" />
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{t}</div>
+              <div className={`mt-1 text-base font-bold tabular-nums ${v < 0 ? "text-destructive" : "text-foreground"}`}>R$ {(v / 1e6).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} mi</div>
+            </div>
+          ))}
+        </div>
+      );
+    })()}
     {aba !== "DRE" && (<section className="bg-card rounded-xl border border-border shadow-sm p-2 space-y-1">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold cursor-help" title="Mensal 2026 = Vidas × Ticket; Anual = Mensal × 12. Mensal 2027 = média mensal de jan/27 a dez/27; Anual 2027 = Total 2027. Crescimento = (Entradas − Saídas) × 12. Vidas 2027 = Vidas 2026 + Crescimento. Ticket 2027 = Ticket 2026. Ticket total = Mensal total ÷ Vidas totais.">Orçamento — Faturamento 2026 × 2027</h3>
