@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, ChevronDown, ChevronRight } from "lucide-react";
 
 const parseBR = (v: string) => Number(v.replace(/\./g, "").replace(",", ".")) || 0;
 
@@ -44,6 +44,7 @@ const OrcamentoFaturamento = () => {
   const [admPc, setAdmPc] = useState([4, 2, 0.8, 1.2]);
   const [admTot, setAdmTot] = useState(8);
   const [finPc, setFinPc] = useState(4);
+  const [dreAbertos, setDreAbertos] = useState<Record<string, boolean>>({});
   const tk = (r: Linha, k: number) => r.ticket * Math.pow(1 + reaj / 100, k - 1);
   const set = (i: number, k: Campo, v: number) =>
     setRows((p) => p.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
