@@ -147,7 +147,7 @@ const OrcamentoFaturamento = () => {
     <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
       <h3 className="text-sm font-semibold cursor-help" title="A cada mês, Vidas = mês anterior + Entradas − Saídas; valor = Vidas × Ticket. Total 2027 = soma de jan/27 a dez/27.">Faturamento mensal — jan/27 a dez/27</h3>
-        <span className="rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm">Crescimento: <b className="tabular-nums">{tM26 ? `${Math.round((tM27 / tM26) * 100)}%` : "-"}</b></span>
+        <span className="rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm">Crescimento: <b className="tabular-nums">{tM26 ? `${Math.round((tM27 / tM26 - 1) * 100)}%` : "-"}</b></span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
