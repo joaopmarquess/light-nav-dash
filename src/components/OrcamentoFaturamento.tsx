@@ -149,7 +149,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
           );
         })()}
         {onSimulacao && (
-          <div className="mt-auto pt-3 pb-2 flex justify-center"><div className="inline-flex flex-wrap justify-center gap-1 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_10px_30px_-8px_hsl(var(--foreground)/0.25)]">
+          <div className="mt-auto pt-3 pb-6 flex justify-center"><div className="inline-flex flex-wrap justify-center gap-1 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_10px_30px_-8px_hsl(var(--foreground)/0.25)]">
             <button className="rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 bg-primary text-primary-foreground shadow-md shadow-primary/30">Painel</button>
             {ABAS.map((a) => (
               <button key={a} onClick={() => { sessionStorage.setItem("orc27:aba", a); onSimulacao(); }} className="rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5">{a}</button>
@@ -170,7 +170,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
 
   return (
     <div className="flex flex-col gap-3 min-h-[calc(100vh-9rem)]">
-    {<div className="order-last mt-auto pt-3 pb-2 flex justify-center"><div className="inline-flex flex-wrap justify-center gap-1 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_10px_30px_-8px_hsl(var(--foreground)/0.25)]">
+    {<div className="order-last mt-auto pt-3 pb-6 flex justify-center"><div className="inline-flex flex-wrap justify-center gap-1 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_10px_30px_-8px_hsl(var(--foreground)/0.25)]">
       {onPainel && <button onClick={onPainel} className="rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5">Painel</button>}
       {ABAS.map((a) => (
         <button
