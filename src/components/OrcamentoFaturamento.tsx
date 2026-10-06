@@ -89,6 +89,13 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; o
     ];
     return (
       <div className="space-y-4">
+        {onSimulacao && (
+          <div className="flex justify-end">
+            <button onClick={onSimulacao} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:opacity-90">
+              Simulação →
+            </button>
+          </div>
+        )}
         <div className="rounded-2xl bg-primary text-primary-foreground shadow-lg p-6 flex flex-wrap items-end justify-between gap-4" title="Antes dos Impostos − Impostos Federais">
           <div>
             <div className="text-xs uppercase tracking-widest opacity-80">Resultado Líquido 2027</div>
@@ -115,6 +122,40 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; o
             </div>
           ))}
         </div>
+        {(() => {
+          const entT = fat * (1 + rec / 100), despT = entT * sinLiq / 100;
+          const linhas: [string, number, 0 | 1 | 2][] = [
+            ["Entradas Operacionais", entT, 0],
+            ["(−) Despesas Assistenciais", -despT, 0],
+            ["(−) Demais Operacionais", sec, 0],
+            ["(=) Operacionais Totais", tot, 1],
+            ["(−) Despesas Administrativas", -adm, 0],
+            ["(=) EBITDA", ebitda, 1],
+            ["(+) Financeiro", fin, 0],
+            ["(=) Resultado antes dos Impostos", rai, 1],
+            ["(−) Impostos Federais", -imp, 0],
+            ["(=) Resultado Líquido", liq, 2],
+          ];
+          return (
+            <section className="rounded-2xl border border-border bg-card shadow-sm p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-semibold text-foreground">DRE simplificado 2027</h3>
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">R$ mi · % fat.</span>
+              </div>
+              <div className="space-y-1">
+                {linhas.map(([t, v, k]) => (
+                  <div key={t} className={`flex items-center justify-between rounded-lg px-3 py-1.5 text-sm ${k === 2 ? "bg-primary text-primary-foreground font-bold" : k === 1 ? "bg-primary/10 font-semibold text-foreground" : "text-foreground"}`}>
+                    <span>{t}</span>
+                    <span className="flex gap-6 tabular-nums">
+                      <span className={k !== 2 && v < 0 ? "text-destructive" : ""}>{n2(v / 1e6)}</span>
+                      <span className={`w-16 text-right ${k === 2 ? "" : "text-muted-foreground"}`}>{pf(v)}</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        })()}
       </div>
     );
   }
