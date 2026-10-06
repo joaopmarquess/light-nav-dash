@@ -96,7 +96,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 type MenuItem = {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
-  children?: { icon: React.ComponentType<{ className?: string }>; label: string }[];
+  children?: { icon: React.ComponentType<{ className?: string }>; label: string; id?: string }[];
 };
 
 const menuItems: MenuItem[] = [
