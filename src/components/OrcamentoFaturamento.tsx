@@ -248,13 +248,32 @@ const OrcamentoFaturamento = () => {
       const res = ent.map((v, k) => v - desp[k] - dOp[k] - adm[k] + fin[k]);
       const t = (vs: number[]) => vs.reduce((a, b) => a + b, 0);
       const cls = (v: number) => (v < 0 ? "text-destructive" : "");
-      const linha = (nome: string, vs: number[], bold = false, sep = false) => (
-        <tr className={`${sep ? "border-t-2" : "border-t"} border-border ${bold ? "bg-muted/60 font-semibold" : ""}`}>
-          <td className="px-2 py-0.5 font-medium whitespace-nowrap">{nome}</td>
+      const rd = desp.map((v) => v * rede / 100);
+      const bn = desp.map((v, k) => v - rd[k]);
+      const admDemais = admTot - admPc[0] - admPc[1] - admPc[2];
+      const filhos: Record<string, [string, number[]][]> = {
+        ENT: [["FATURAMENTO", fatM], ["COPARTICIPAÇÃO", cop]],
+        DESP: [["REDE", rd], ["BENÊ", bn]],
+        OP: ["COMERCIALIZAÇÃO", "IMPOSTOS DIRETOS", "PROVISÕES", "SECUNDÁRIAS"].map((n, i) => [n, fatM.map((v) => v * demaisOp[i] / 100)] as [string, number[]]),
+        ADM: (["PESSOAL", "INFORMÁTICA", "MARKETING", "DEMAIS"] as const).map((n, i) => [n, fatM.map((v) => v * (i === 3 ? admDemais : admPc[i]) / 100)] as [string, number[]]),
+      };
+      const row = (nome: string, vs: number[], cl: string, key?: string, filho = false) => (
+        <tr key={nome + (filho ? "-f" : "")} className={`border-t border-border ${cl}`}>
+          <td className={`px-2 py-0.5 whitespace-nowrap ${filho ? "pl-8 text-muted-foreground" : "font-medium"}`}>
+            {key ? (
+              <button onClick={() => setDreAbertos((p) => ({ ...p, [key]: !p[key] }))} className="inline-flex items-center gap-1 hover:text-primary">
+                {dreAbertos[key] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}{nome}
+              </button>
+            ) : <span className={filho ? "" : "pl-5"}>{nome}</span>}
+          </td>
           {vs.map((v, k) => <td key={k} className={`${td} ${cls(v)}`}>{n2(v)}</td>)}
           <td className={`${td} border-l border-border font-semibold ${cls(t(vs))}`}>{n2(t(vs))}</td>
         </tr>
       );
+      const grupo = (nome: string, vs: number[], key: string, cl = "") => [
+        row(nome, vs, cl, key),
+        ...(dreAbertos[key] ? filhos[key].map(([n, v]) => row(n, v, "", undefined, true)) : []),
+      ];
       const tF = t(fatM);
       return (
         <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
@@ -272,14 +291,12 @@ const OrcamentoFaturamento = () => {
                 </tr>
               </thead>
               <tbody>
-                {linha("FATURAMENTO", fatM)}
-                {linha("COPARTICIPAÇÃO", cop)}
-                {linha("ENTRADAS OPERACIONAIS", ent, true)}
-                {linha("DESPESAS ASSISTENCIAIS", desp, false, true)}
-                {linha("DEMAIS OPERACIONAIS", dOp)}
-                {linha("DESPESAS ADMINISTRATIVAS", adm)}
-                {linha("FINANCEIRO", fin)}
-                {linha("RESULTADO", res, true, true)}
+                {grupo("ENTRADAS OPERACIONAIS", ent, "ENT", "bg-muted/60 font-semibold")}
+                {grupo("DESPESAS ASSISTENCIAIS", desp, "DESP")}
+                {grupo("DEMAIS OPERACIONAIS", dOp, "OP")}
+                {grupo("DESPESAS ADMINISTRATIVAS", adm, "ADM")}
+                {row("FINANCEIRO", fin, "")}
+                {row("RESULTADO", res, "border-t-2 bg-muted/60 font-semibold")}
               </tbody>
             </table>
           </div>
