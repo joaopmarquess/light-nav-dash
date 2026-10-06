@@ -49,7 +49,12 @@ const OrcamentoFaturamento = () => {
   const td = "px-2 py-1.5 text-right tabular-nums whitespace-nowrap";
   const tot = (v: string) => <span className="inline-block w-24 px-2 text-right">{v}</span>;
 
+  const MESES = ["dez/26", ...["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"].map((m) => `${m}/27`)];
+  const mesVal = (r: Linha, k: number) => (r.vidas + k * (r.entradas - r.saidas)) * r.ticket;
+  const totLinha = (r: Linha) => MESES.slice(1).reduce((s, _, j) => s + mesVal(r, j + 1), 0);
+
   return (
+    <div className="space-y-4">
     <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold">Orçamento — Faturamento 2026 × 2027</h3>
@@ -122,6 +127,38 @@ const OrcamentoFaturamento = () => {
         Crescimento. Ticket 2027 = Ticket 2026. Ticket total = Mensal total ÷ Vidas totais.
       </p>
     </section>
+    <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
+      <h3 className="text-sm font-semibold">Faturamento mensal — dez/26 a dez/27</h3>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/50 text-muted-foreground">
+            <tr>
+              <th className="text-left px-2 py-2">Planos</th>
+              {MESES.map((m) => <th key={m} className="text-right px-2 py-2 whitespace-nowrap">{m}</th>)}
+              <th className="text-right px-2 py-2 border-l border-border">Total 2027</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.id} className="border-t border-border">
+                <td className="px-2 py-1.5 font-medium">{r.id}</td>
+                {MESES.map((m, k) => <td key={m} className={td}>{n2(mesVal(r, k))}</td>)}
+                <td className={`${td} border-l border-border font-semibold`}>{n2(totLinha(r))}</td>
+              </tr>
+            ))}
+            <tr className="border-t-2 border-border bg-muted/60 font-semibold">
+              <td className="px-2 py-2">TOTAL</td>
+              {MESES.map((m, k) => <td key={m} className={td}>{n2(sum((r) => mesVal(r, k)))}</td>)}
+              <td className={`${td} border-l border-border`}>{n2(sum(totLinha))}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        A cada mês, Vidas = mês anterior + Entradas − Saídas; valor = Vidas × Ticket. Total 2027 = soma de jan/27 a dez/27.
+      </p>
+    </section>
+    </div>
   );
 };
 
