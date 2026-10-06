@@ -39,7 +39,7 @@ const usePersist = <T,>(k: string, d: T) => {
   return [v, setV] as const;
 };
 
-const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; onSimulacao?: () => void }) => {
+const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: boolean; onSimulacao?: () => void; onPainel?: () => void }) => {
   const [rows, setRows] = usePersist("rows", BASE);
   const [aba, setAba] = useState("Faturamento");
   const [reaj, setReaj] = usePersist("reaj", 1.01);
@@ -169,7 +169,8 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; o
 
   return (
     <div className="flex flex-col gap-3 min-h-[calc(100vh-9rem)]">
-    {aba !== "DRE" && <div className="order-last mt-auto flex flex-wrap justify-center gap-2 border-t border-border pt-3">
+    {aba !== "DRE" && <div className="order-last mt-auto flex flex-wrap justify-start gap-2 border-t border-border pt-3">
+      {onPainel && <button onClick={onPainel} className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted">Painel</button>}
       {ABAS.map((a) => (
         <button
           key={a}
@@ -578,7 +579,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao }: { home?: boolean; o
       return (
         <div className="order-first grid gap-2 sm:grid-cols-4 xl:grid-cols-8">
           {cards.map(([t, v, h], i) => {
-            const hero = i === cards.length - 1;
+            const hero = false;
             return (
             <div key={t} title={h} className={`rounded-xl border overflow-hidden cursor-help hover:shadow-md transition-shadow ${hero ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border"}`}>
               <div className={`h-1 ${hero ? "bg-primary-foreground/40" : v < 0 ? "bg-destructive" : "bg-primary"}`} />

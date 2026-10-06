@@ -470,7 +470,7 @@ const Index = () => {
           ) : active === "Painel Orçamento" ? (
             <OrcamentoFaturamento home onSimulacao={() => setActive("Simulação")} />
           ) : active === "Simulação" ? (
-            <OrcamentoFaturamento />
+            <OrcamentoFaturamento onPainel={() => setActive("Painel Orçamento")} />
           ) : active === "Premiação 4T 2026" ? (
             <Promocoes />
           ) : active === "Administradoras" ? (
