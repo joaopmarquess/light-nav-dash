@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { RotateCcw, ChevronDown, ChevronRight } from "lucide-react";
+import { RotateCcw, ChevronLeft, ChevronDown, ChevronRight } from "lucide-react";
 
 const parseBR = (v: string) => Number(v.replace(/\./g, "").replace(",", ".")) || 0;
 
@@ -111,7 +111,11 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
   return (
     <div className="space-y-4">
     <div className="flex flex-wrap gap-2">
-      {ABAS.map((a) => (
+      {aba === "DRE" ? (
+        <button onClick={() => setAba("Faturamento")} className="inline-flex items-center gap-1 rounded-md border border-primary bg-primary px-3 py-1.5 text-sm text-primary-foreground">
+          <ChevronLeft className="h-4 w-4" /> Voltar à simulação
+        </button>
+      ) : ABAS.map((a) => (
         <button
           key={a}
           onClick={() => setAba(a)}
@@ -217,15 +221,15 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
             <NumInput dec={2} className="w-20 rounded border border-border px-2 py-0 h-6 text-right tabular-nums font-semibold bg-yellow-100/60" value={rec} onChange={setRec} />
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50 text-muted-foreground">
+            <table className="w-full text-sm border-separate border-spacing-y-1">
+              <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
                 <tr>
-                  <th />
-                  {M.map((m) => <th key={m} className="text-right px-2 py-2 whitespace-nowrap">{m}</th>)}
-                  <th className="text-right px-2 py-2 border-l border-border">Total 2027</th>
+                  <th className="sticky left-0 bg-card" />
+                  {M.map((m) => <th key={m} className="text-right px-2 py-1.5 font-medium whitespace-nowrap">{m}</th>)}
+                  <th className="text-right px-3 py-1.5 font-semibold text-foreground">Total 2027</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="[&>tr>td:first-child]:rounded-l-lg [&>tr>td:last-child]:rounded-r-lg">
                 {linha("FATURAMENTO", fat, tF)}
                 {linha("COPARTICIPAÇÃO", cop, tC)}
                 {linha("ENTRADAS OPERACIONAIS", fat.map((v, k) => v + cop[k]), tF + tC, true)}
@@ -264,15 +268,15 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
             </button>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50 text-muted-foreground">
+            <table className="w-full text-sm border-separate border-spacing-y-1">
+              <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
                 <tr>
-                  <th />
-                  {M.map((m) => <th key={m} className="text-right px-2 py-2 whitespace-nowrap">{m}</th>)}
-                  <th className="text-right px-2 py-2 border-l border-border">Total 2027</th>
+                  <th className="sticky left-0 bg-card" />
+                  {M.map((m) => <th key={m} className="text-right px-2 py-1.5 font-medium whitespace-nowrap">{m}</th>)}
+                  <th className="text-right px-3 py-1.5 font-semibold text-foreground">Total 2027</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="[&>tr>td:first-child]:rounded-l-lg [&>tr>td:last-child]:rounded-r-lg">
                 {linha("FATURAMENTO", fatM)}
                 {linha("COPARTICIPAÇÃO", fatM.map((v) => v * rec / 100))}
                 {linha("ENTRADAS OPERACIONAIS", ent, true)}
@@ -307,16 +311,16 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
         ADM: (["PESSOAL", "INFORMÁTICA", "MARKETING", "DEMAIS"] as const).map((n, i) => [n, fatM.map((v) => v * (i === 3 ? admDemais : admPc[i]) / 100)] as [string, number[]]),
       };
       const row = (nome: string, vs: number[], cl: string, key?: string, filho = false) => (
-        <tr key={nome + (filho ? "-f" : "")} className={`border-t border-border ${cl}`}>
-          <td className={`px-2 py-0.5 whitespace-nowrap ${filho ? "pl-8 text-muted-foreground" : "font-medium"}`}>
+        <tr key={nome + (filho ? "-f" : "")} className={`group transition-colors hover:bg-muted/40 ${cl}`}>
+          <td className={`sticky left-0 z-10 bg-inherit px-3 py-1.5 whitespace-nowrap ${filho ? "pl-10 text-xs text-muted-foreground" : "font-semibold tracking-wide"}`}>
             {key ? (
-              <button onClick={() => setDreAbertos((p) => ({ ...p, [key]: !p[key] }))} className="inline-flex items-center gap-1 hover:text-primary">
-                {dreAbertos[key] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}{nome}
+              <button onClick={() => setDreAbertos((p) => ({ ...p, [key]: !p[key] }))} className="inline-flex items-center gap-1.5 hover:text-primary">
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-primary/10 text-primary">{dreAbertos[key] ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}</span>{nome}
               </button>
-            ) : <span className={filho ? "" : "pl-5"}>{nome}</span>}
+            ) : <span className={filho ? "" : "pl-6"}>{nome}</span>}
           </td>
-          {vs.map((v, k) => <td key={k} className={`${td} ${cls(v)}`}>{n2(v)}</td>)}
-          <td className={`${td} border-l border-border font-semibold ${cls(t(vs))}`}>{n2(t(vs))}</td>
+          {vs.map((v, k) => <td key={k} className={`px-2 py-1.5 text-right tabular-nums whitespace-nowrap ${filho ? "text-xs text-muted-foreground" : ""} ${cls(v)}`}>{n2(v)}</td>)}
+          <td className={`px-3 py-1.5 text-right tabular-nums whitespace-nowrap font-semibold bg-muted/30 ${cls(t(vs))}`}>{n2(t(vs))}</td>
         </tr>
       );
       const grupo = (nome: string, vs: number[], key: string, cl = "") => [
@@ -326,7 +330,7 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
       const tF = t(fatM);
       const imp = res.map((v) => (v > 0 ? v * 0.34 : 0));
       const resLiq = res.map((v, k) => v - imp[k]);
-      const SUB = "border-t-2 border-b-2 !border-primary/40 bg-primary/10 font-bold [&_td]:font-bold";
+      const SUB = "bg-card [&>td:first-child]:shadow-[inset_3px_0_0_hsl(var(--primary))]";
       return (
         <section className="bg-card rounded-xl border border-border shadow-sm p-4 space-y-3">
           <div className="flex items-center gap-2">
@@ -334,23 +338,23 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
             <span className="ml-auto rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm cursor-help" title="Resultado Total ÷ Faturamento Total">Margem: <b className="tabular-nums">{tF ? `${n2((t(resLiq) / tF) * 100)}%` : "-"}</b></span>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50 text-muted-foreground">
+            <table className="w-full text-sm border-separate border-spacing-y-1">
+              <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
                 <tr>
-                  <th />
-                  {M.map((m) => <th key={m} className="text-right px-2 py-2 whitespace-nowrap">{m}</th>)}
-                  <th className="text-right px-2 py-2 border-l border-border">Total 2027</th>
+                  <th className="sticky left-0 bg-card" />
+                  {M.map((m) => <th key={m} className="text-right px-2 py-1.5 font-medium whitespace-nowrap">{m}</th>)}
+                  <th className="text-right px-3 py-1.5 font-semibold text-foreground">Total 2027</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="[&>tr>td:first-child]:rounded-l-lg [&>tr>td:last-child]:rounded-r-lg">
                 {grupo("ENTRADAS OPERACIONAIS", ent, "ENT", SUB)}
                 {grupo("DESPESAS ASSISTENCIAIS", desp, "DESP", SUB)}
                 {grupo("DEMAIS OPERACIONAIS", dOp, "OP", SUB)}
                 {grupo("DESPESAS ADMINISTRATIVAS", adm, "ADM", SUB)}
                 {row("FINANCEIRO", fin, SUB)}
-                {row("RESULTADO ANTES DOS IMPOSTOS", res, SUB)}
-                {row("IMPOSTOS FEDERAIS", imp, "")}
-                {row("RESULTADO LÍQUIDO", resLiq, "border-t-4 border-b-4 !border-primary bg-primary/30 font-bold [&_td]:font-bold")}
+                {row("RESULTADO ANTES DOS IMPOSTOS", res, "bg-primary/10 [&>td:first-child]:shadow-[inset_3px_0_0_hsl(var(--primary))]")}
+                {row("IMPOSTOS FEDERAIS", imp, "bg-card")}
+                {row("RESULTADO LÍQUIDO", resLiq, "bg-primary text-primary-foreground font-bold [&_td]:font-bold [&_td]:bg-primary hover:bg-primary [&_.text-destructive]:text-primary-foreground")}
               </tbody>
             </table>
           </div>
@@ -491,7 +495,7 @@ const OrcamentoFaturamento = ({ home = false }: { home?: boolean }) => {
       </div>
     </section>
     )}
-    {aba !== "DRE" && (() => {
+    {(() => {
       const fM = Array.from({ length: 12 }, (_, k) => sum((r) => (r.vidas + (k + 1) * (r.entradas - r.saidas)) * tk(r, k + 1)));
       const pcOp = demaisOp.reduce((a, b) => a + b, 0);
       let prim = 0, sec = 0, adm = 0, fin = 0, rai = 0, imp = 0;
