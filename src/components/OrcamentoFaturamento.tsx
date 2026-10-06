@@ -40,7 +40,7 @@ const OrcamentoFaturamento = () => {
   const [rec, setRec] = useState(16);
   const [sinLiq, setSinLiq] = useState(87);
   const [rede, setRede] = useState(55);
-  const [demais, setDemais] = useState([-2, -1, -0.5, -0.2]);
+  const [demais, setDemais] = useState([2, 1, 0.5, 0.2]);
   const tk = (r: Linha, k: number) => r.ticket * Math.pow(1 + reaj / 100, k - 1);
   const set = (i: number, k: Campo, v: number) =>
     setRows((p) => p.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
@@ -236,7 +236,7 @@ const OrcamentoFaturamento = () => {
       const M = MESES.slice(1);
       const NOMES = ["COMERCIALIZAÇÃO", "IMPOSTOS DIRETOS", "PROVISÕES", "SECUNDÁRIAS"];
       const fatM = M.map((_, k) => sum((r) => mesVal(r, k + 1)));
-      const linhas = demais.map((pc) => fatM.map((v) => v * pc / 100));
+      const linhas = demais.map((pc) => fatM.map((v) => -v * pc / 100));
       const totM = M.map((_, k) => linhas.reduce((a, l) => a + l[k], 0));
       const vert = demais.reduce((a, b) => a + b, 0);
       const t = (vs: number[]) => vs.reduce((a, b) => a + b, 0);
