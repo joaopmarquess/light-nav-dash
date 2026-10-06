@@ -186,7 +186,8 @@ const OrcamentoFaturamento = () => {
       );
     })() : aba === "Despesas Assistenciais" ? (() => {
       const M = MESES.slice(1);
-      const ent = M.map((_, k) => sum((r) => mesVal(r, k + 1)) * (1 + rec / 100));
+      const fatM = M.map((_, k) => sum((r) => mesVal(r, k + 1)));
+      const ent = fatM.map((v) => v * (1 + rec / 100));
       const desp = ent.map((v) => v * sinLiq / 100);
       const rd = desp.map((v) => v * rede / 100);
       const bn = desp.map((v, k) => v - rd[k]);
@@ -207,6 +208,7 @@ const OrcamentoFaturamento = () => {
             <NumInput dec={2} className={campo} value={sinLiq} onChange={setSinLiq} />
             <label className="ml-4 text-sm text-muted-foreground">% Rede</label>
             <NumInput dec={2} className={campo} value={rede} onChange={setRede} />
+            <span className="ml-auto rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm cursor-help" title="Total das Despesas Assistenciais ÷ Total do Faturamento">Sinistralidade Bruta: <b className="tabular-nums">{t(fatM) ? `${n2((t(desp) / t(fatM)) * 100)}%` : "-"}</b></span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
