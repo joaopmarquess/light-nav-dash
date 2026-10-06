@@ -41,7 +41,7 @@ const usePersist = <T,>(k: string, d: T) => {
 
 const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: boolean; onSimulacao?: () => void; onPainel?: () => void }) => {
   const [rows, setRows] = usePersist("rows", BASE);
-  const [aba, setAba] = useState("Faturamento");
+  const [aba, setAba] = useState(() => { const x = sessionStorage.getItem("orc27:aba"); sessionStorage.removeItem("orc27:aba"); return x || "Faturamento"; });
   const [reaj, setReaj] = usePersist("reaj", 1.01);
   const [rec, setRec] = usePersist("rec", 16);
   const [sinLiq, setSinLiq] = usePersist("sinLiq", 87);
@@ -149,10 +149,11 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel }: { home?: 
           );
         })()}
         {onSimulacao && (
-          <div className="flex justify-end">
-            <button onClick={onSimulacao} className="rounded-lg bg-primary px-4 py-1 text-sm font-semibold text-primary-foreground shadow hover:opacity-90">
-              Simulação →
-            </button>
+          <div className="mt-auto flex flex-wrap justify-start gap-2 border-t border-border pt-3">
+            <button className="rounded-md border px-3 py-1.5 text-sm bg-primary text-primary-foreground border-primary">Painel</button>
+            {ABAS.map((a) => (
+              <button key={a} onClick={() => { sessionStorage.setItem("orc27:aba", a); onSimulacao(); }} className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted">{a}</button>
+            ))}
           </div>
         )}
       </div>
