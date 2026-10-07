@@ -72,7 +72,7 @@ import InteligenciaUnimed from "@/components/InteligenciaUnimed";
 import Promocoes from "@/components/Promocoes";
 import UberabaHospitais from "@/components/UberabaHospitais";
 import AdministradorasSim from "@/components/AdministradorasSim";
-import ControlPainel from "@/components/ControlPainel";
+import ControlPainel from "@/control/ControlPainel";
 import OrcamentoFaturamento from "@/components/OrcamentoFaturamento";
 import UberabaShell from "@/components/UberabaShell";
 
