@@ -108,10 +108,9 @@ type MenuItem = {
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   {
-    icon: Settings2,
+    icon: DollarSign,
     label: "Control",
     children: [
-      { icon: Home, label: "Home", id: "Control · Home" },
       { icon: FileText, label: "DRE", id: "Control · DRE Gerencial PE" },
       { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente" },
       { icon: TrendingUp, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
