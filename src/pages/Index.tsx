@@ -89,7 +89,7 @@ import AssistencialAuditoriaSSPMJR from "@/components/AssistencialAuditoriaSSPMJ
 import AssistencialRelatorioExecutor from "@/components/AssistencialRelatorioExecutor";
 import AssistencialReceitas2518 from "@/components/AssistencialReceitas2518";
 import { useConsultaState } from "@/lib/assistencialConsultaStore";
-import { Loader2 } from "lucide-react";
+import { Loader2, DollarSign } from "lucide-react";
 
 
 
