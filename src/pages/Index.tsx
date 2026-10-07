@@ -106,6 +106,7 @@ type MenuItem = {
 };
 
 const menuItems: MenuItem[] = [
+  { icon: Home, label: "Home" },
   {
     icon: Settings2,
     label: "Control",
@@ -118,7 +119,6 @@ const menuItems: MenuItem[] = [
       { icon: LayoutDashboard, label: "Carrossel", id: "Control · Dashboards" },
     ],
   },
-  { icon: Home, label: "Home" },
   {
     icon: Users,
     label: "Carteira",
