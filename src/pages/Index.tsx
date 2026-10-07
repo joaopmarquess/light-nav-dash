@@ -72,7 +72,11 @@ import InteligenciaUnimed from "@/components/InteligenciaUnimed";
 import Promocoes from "@/components/Promocoes";
 import UberabaHospitais from "@/components/UberabaHospitais";
 import AdministradorasSim from "@/components/AdministradorasSim";
-import ControlPainel from "@/components/ControlPainel";
+import ControlPainel from "@/control/ControlPainel";
+import CtrlDRE from "@/control/DREGerencialPE";
+import CtrlOrcamento from "@/control/Orcamento";
+import CtrlGraficos from "@/control/ContabilidadeGraficos";
+import CtrlDashboards from "@/control/Dashboards";
 import OrcamentoFaturamento from "@/components/OrcamentoFaturamento";
 import UberabaShell from "@/components/UberabaShell";
 
@@ -178,7 +182,17 @@ const menuItems: MenuItem[] = [
       { icon: CalendarCheck, label: "Bensaúde U12|202607" },
     ],
   },
-  { icon: Settings2, label: "Control" },
+  {
+    icon: Settings2,
+    label: "Control",
+    children: [
+      { icon: FileText, label: "DRE Gerencial PE", id: "Control · DRE Gerencial PE" },
+      { icon: Coins, label: "Orçamento Vigente", id: "Control · Orçamento Vigente" },
+      { icon: BarChart3, label: "Gráficos", id: "Control · Gráficos" },
+      { icon: Coins, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
+      { icon: LayoutDashboard, label: "Dashboards", id: "Control · Dashboards" },
+    ],
+  },
   { icon: LayoutDashboard, label: "B.I. Overview" },
 ];
 
@@ -479,7 +493,15 @@ const Index = () => {
             <Promocoes />
           ) : active === "Administradoras" ? (
             <AdministradorasSim />
-          ) : active === "Control" ? (
+          ) : active === "Control · DRE Gerencial PE" ? (
+            <CtrlDRE />
+          ) : active === "Control · Orçamento Vigente" ? (
+            <CtrlOrcamento />
+          ) : active === "Control · Gráficos" ? (
+            <CtrlGraficos />
+          ) : active === "Control · Dashboards" ? (
+            <CtrlDashboards />
+          ) : active === "Control · Orçamento 2027" ? (
             ctrlAba ? (
               <ControlPainel key={ctrlAba} abaInicial={ctrlAba} onPainel={() => setCtrlAba(null)} />
             ) : (
