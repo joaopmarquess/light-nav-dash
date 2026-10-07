@@ -106,18 +106,19 @@ type MenuItem = {
 };
 
 const menuItems: MenuItem[] = [
-  { icon: Home, label: "Home" },
   {
-    icon: TrendingUp,
-    label: "Contabilidade",
+    icon: Settings2,
+    label: "Control",
     children: [
-      { icon: FileText, label: "DRE Gerencial PE" },
-      { icon: Coins, label: "Orçamento" },
-      { icon: BarChart3, label: "Gráficos" },
-
-
+      { icon: Home, label: "Home", id: "Control · Home" },
+      { icon: FileText, label: "DRE", id: "Control · DRE Gerencial PE" },
+      { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente" },
+      { icon: TrendingUp, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
+      { icon: BarChart3, label: "Gráficos", id: "Control · Gráficos" },
+      { icon: LayoutDashboard, label: "Carrossel", id: "Control · Dashboards" },
     ],
   },
+  { icon: Home, label: "Home" },
   {
     icon: Users,
     label: "Carteira",
@@ -181,18 +182,6 @@ const menuItems: MenuItem[] = [
       { icon: CalendarCheck, label: "APB Ativos" },
       { icon: CalendarCheck, label: "Bensaúde U12|202606" },
       { icon: CalendarCheck, label: "Bensaúde U12|202607" },
-    ],
-  },
-  {
-    icon: Settings2,
-    label: "Control",
-    children: [
-      { icon: Home, label: "Home", id: "Control · Home" },
-      { icon: FileText, label: "DRE", id: "Control · DRE Gerencial PE" },
-      { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente" },
-      { icon: TrendingUp, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
-      { icon: BarChart3, label: "Gráficos", id: "Control · Gráficos" },
-      { icon: LayoutDashboard, label: "Carrossel", id: "Control · Dashboards" },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
