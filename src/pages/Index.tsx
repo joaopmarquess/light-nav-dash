@@ -72,6 +72,7 @@ import InteligenciaUnimed from "@/components/InteligenciaUnimed";
 import Promocoes from "@/components/Promocoes";
 import UberabaHospitais from "@/components/UberabaHospitais";
 import AdministradorasSim from "@/components/AdministradorasSim";
+import ControlPainel from "@/components/ControlPainel";
 import OrcamentoFaturamento from "@/components/OrcamentoFaturamento";
 import UberabaShell from "@/components/UberabaShell";
 
@@ -183,6 +184,7 @@ const menuItems: MenuItem[] = [
 
 const Index = () => {
   const [active, setActive] = useState("Home");
+  const [ctrlAba, setCtrlAba] = useState<string | null>(null);
   const [abaOrc, setAbaOrc] = useState("Faturamento");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [collapsed, setCollapsed] = useState(true);
@@ -250,8 +252,6 @@ const Index = () => {
                     } else {
                       setOpenGroups((p) => ({ ...p, [item.label]: !p[item.label] }));
                     }
-                  } else if (item.label === "Control") {
-                    window.open("https://controlbensaude.lovable.app", "_blank", "noopener,noreferrer");
                   } else {
                     setActive(item.label);
                   }
@@ -392,7 +392,7 @@ const Index = () => {
           </div>
         </header>
 
-        <main className={`flex-1 min-h-0 overflow-hidden ${active === "Área Geográfica" || active === "Dashboard" || active === "Control" ? "" : "p-8"}`}>
+        <main className={`flex-1 min-h-0 overflow-hidden ${active === "Área Geográfica" || active === "Dashboard" ? "" : "p-8"}`}>
           {active === "Área Geográfica" ? (
             <AtivosEm dateValue={dateValue} />
           ) : active === "Ativos por Cidade" ? (
@@ -480,22 +480,11 @@ const Index = () => {
           ) : active === "Administradoras" ? (
             <AdministradorasSim />
           ) : active === "Control" ? (
-            <section className="relative h-full w-full overflow-hidden">
-              <a
-                href="https://controlbensaude.lovable.app"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="absolute top-2 right-2 z-10 h-7 px-3 inline-flex items-center rounded-md border border-border bg-card text-xs text-foreground shadow-sm hover:bg-accent hover:text-primary"
-              >
-                Abrir em nova aba
-              </a>
-              <iframe
-                title="Control"
-                src="https://controlbensaude.lovable.app"
-                className="w-full h-full border-0"
-                allowFullScreen
-              />
-            </section>
+            ctrlAba ? (
+              <ControlPainel key={ctrlAba} abaInicial={ctrlAba} onPainel={() => setCtrlAba(null)} />
+            ) : (
+              <ControlPainel home onSimulacao={(a) => setCtrlAba(a)} />
+            )
           ) : active === "B.I. Overview" ? (
             <BIOverview />
           ) : active === "Gráfico Carteira" ? (
