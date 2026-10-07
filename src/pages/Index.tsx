@@ -73,6 +73,7 @@ import Promocoes from "@/components/Promocoes";
 import UberabaHospitais from "@/components/UberabaHospitais";
 import AdministradorasSim from "@/components/AdministradorasSim";
 import ControlPainel from "@/control/ControlPainel";
+import CtrlHome from "@/control/Home";
 import CtrlDRE from "@/control/DREGerencialPE";
 import CtrlOrcamento from "@/control/Orcamento";
 import CtrlGraficos from "@/control/ContabilidadeGraficos";
@@ -186,11 +187,12 @@ const menuItems: MenuItem[] = [
     icon: Settings2,
     label: "Control",
     children: [
-      { icon: FileText, label: "DRE Gerencial PE", id: "Control · DRE Gerencial PE" },
-      { icon: Coins, label: "Orçamento Vigente", id: "Control · Orçamento Vigente" },
+      { icon: Home, label: "Home", id: "Control · Home" },
+      { icon: FileText, label: "DRE", id: "Control · DRE Gerencial PE" },
+      { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente" },
+      { icon: TrendingUp, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
       { icon: BarChart3, label: "Gráficos", id: "Control · Gráficos" },
-      { icon: Coins, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
-      { icon: LayoutDashboard, label: "Dashboards", id: "Control · Dashboards" },
+      { icon: LayoutDashboard, label: "Carrossel", id: "Control · Dashboards" },
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
@@ -493,6 +495,8 @@ const Index = () => {
             <Promocoes />
           ) : active === "Administradoras" ? (
             <AdministradorasSim />
+          ) : active === "Control · Home" ? (
+            <CtrlHome onNavigate={(l) => setActive(({ "DRE Gerencial PE": "Control · DRE Gerencial PE", "Orçamento": "Control · Orçamento Vigente", "Gráficos": "Control · Gráficos", "Dashboards": "Control · Dashboards", "Painel Orçamento": "Control · Orçamento 2027" } as Record<string, string>)[l] ?? "Control · Home")} />
           ) : active === "Control · DRE Gerencial PE" ? (
             <CtrlDRE />
           ) : active === "Control · Orçamento Vigente" ? (
