@@ -177,6 +177,7 @@ const menuItems: MenuItem[] = [
       { icon: CalendarCheck, label: "Bensaúde U12|202607" },
     ],
   },
+  { icon: Settings2, label: "Control" },
   { icon: LayoutDashboard, label: "B.I. Overview" },
 ];
 
@@ -389,7 +390,7 @@ const Index = () => {
           </div>
         </header>
 
-        <main className={`flex-1 min-h-0 overflow-hidden ${active === "Área Geográfica" || active === "Dashboard" ? "" : "p-8"}`}>
+        <main className={`flex-1 min-h-0 overflow-hidden ${active === "Área Geográfica" || active === "Dashboard" || active === "Control" ? "" : "p-8"}`}>
           {active === "Área Geográfica" ? (
             <AtivosEm dateValue={dateValue} />
           ) : active === "Ativos por Cidade" ? (
@@ -476,6 +477,23 @@ const Index = () => {
             <Promocoes />
           ) : active === "Administradoras" ? (
             <AdministradorasSim />
+          ) : active === "Control" ? (
+            <section className="relative h-full w-full overflow-hidden">
+              <a
+                href="https://controlbensaude.lovable.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute top-2 right-2 z-10 h-7 px-3 inline-flex items-center rounded-md border border-border bg-card text-xs text-foreground shadow-sm hover:bg-accent hover:text-primary"
+              >
+                Abrir em nova aba
+              </a>
+              <iframe
+                title="Control"
+                src="https://controlbensaude.lovable.app"
+                className="w-full h-full border-0"
+                allowFullScreen
+              />
+            </section>
           ) : active === "B.I. Overview" ? (
             <BIOverview />
           ) : active === "Gráfico Carteira" ? (
