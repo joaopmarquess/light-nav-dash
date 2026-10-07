@@ -250,6 +250,8 @@ const Index = () => {
                     } else {
                       setOpenGroups((p) => ({ ...p, [item.label]: !p[item.label] }));
                     }
+                  } else if (item.label === "Control") {
+                    window.open("https://controlbensaude.lovable.app", "_blank", "noopener,noreferrer");
                   } else {
                     setActive(item.label);
                   }
