@@ -72,12 +72,12 @@ import InteligenciaUnimed from "@/components/InteligenciaUnimed";
 import Promocoes from "@/components/Promocoes";
 import UberabaHospitais from "@/components/UberabaHospitais";
 import AdministradorasSim from "@/components/AdministradorasSim";
-import ControlPainel from "@/control/ControlPainel";
-import CtrlHome from "@/control/Home";
-import CtrlDRE from "@/control/DREGerencialPE";
-import CtrlOrcamento from "@/control/Orcamento";
-import CtrlGraficos from "@/control/ContabilidadeGraficos";
+import ControlPainel from "@/control/OrcamentoFaturamento";
+import CtrlDRE from "@/control/DRETrial";
+import CtrlContas from "@/control/ContasHub";
+import CtrlOrcamento from "@/control/OrcamentoTrial";
 import CtrlDashboards from "@/control/Dashboards";
+import { ListTree } from "lucide-react";
 import OrcamentoFaturamento from "@/components/OrcamentoFaturamento";
 import UberabaShell from "@/components/UberabaShell";
 
@@ -111,10 +111,10 @@ const menuItems: MenuItem[] = [
     icon: DollarSign,
     label: "Control",
     children: [
-      { icon: FileText, label: "DRE", id: "Control · DRE Gerencial PE" },
+      { icon: FileText, label: "DRE Controladoria", id: "Control · DRE Gerencial PE" },
+      { icon: ListTree, label: "Contas", id: "Control · Contas" },
       { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente" },
       { icon: TrendingUp, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
-      { icon: BarChart3, label: "Gráficos", id: "Control · Gráficos" },
       { icon: LayoutDashboard, label: "Carrossel", id: "Control · Dashboards" },
     ],
   },
@@ -189,6 +189,7 @@ const menuItems: MenuItem[] = [
 const Index = () => {
   const [active, setActive] = useState("Home");
   const [ctrlAba, setCtrlAba] = useState<string | null>(null);
+  const [ctrlOrcDre, setCtrlOrcDre] = useState(false);
   const [abaOrc, setAbaOrc] = useState("Faturamento");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [collapsed, setCollapsed] = useState(true);
@@ -495,14 +496,12 @@ const Index = () => {
             <Promocoes />
           ) : active === "Administradoras" ? (
             <AdministradorasSim />
-          ) : active === "Control · Home" ? (
-            <CtrlHome onNavigate={(l) => setActive(({ "DRE Gerencial PE": "Control · DRE Gerencial PE", "Orçamento": "Control · Orçamento Vigente", "Gráficos": "Control · Gráficos", "Dashboards": "Control · Dashboards", "Painel Orçamento": "Control · Orçamento 2027" } as Record<string, string>)[l] ?? "Control · Home")} />
           ) : active === "Control · DRE Gerencial PE" ? (
             <CtrlDRE />
+          ) : active === "Control · Contas" ? (
+            <CtrlContas />
           ) : active === "Control · Orçamento Vigente" ? (
-            <CtrlOrcamento />
-          ) : active === "Control · Gráficos" ? (
-            <CtrlGraficos />
+            ctrlOrcDre ? <CtrlOrcamento onAba={() => setCtrlOrcDre(false)} /> : <CtrlOrcamento painel onAba={() => setCtrlOrcDre(true)} />
           ) : active === "Control · Dashboards" ? (
             <CtrlDashboards />
           ) : active === "Control · Orçamento 2027" ? (
