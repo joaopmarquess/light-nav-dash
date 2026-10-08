@@ -121,6 +121,7 @@ const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
           <div>
             <h2 className="text-2xl font-semibold text-foreground">Bem-vindo ao AXIS</h2>
             <p className="text-sm text-muted-foreground mt-1">Plataforma de Inteligência Executiva</p>
+            <p className="text-xs text-muted-foreground mt-1 tracking-wider">Dados • Estratégia • Decisão • Resultados</p>
           </div>
           {meses.length >= 2 && (
             <div className="flex items-center gap-3">
