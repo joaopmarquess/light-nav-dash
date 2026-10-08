@@ -287,7 +287,7 @@ const Index = () => {
                     <TooltipTrigger asChild>{button}</TooltipTrigger>
                     <TooltipContent side="right" className="max-w-xs">
                       {item.label === "Control"
-                        ? "Accesses another program called “Control” (accounting and budget management)."
+                        ? "Acessa outro programa chamado “Control” (gestão contábil e orçamentária)."
                         : item.label}
                     </TooltipContent>
                   </Tooltip>
