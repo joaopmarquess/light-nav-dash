@@ -232,11 +232,21 @@ const Index = () => {
         className={`${collapsed ? "w-16" : "w-64"} border-r border-border bg-card flex flex-col transition-all duration-200`}
       >
         <div className="h-20 flex items-center justify-center px-3 border-b border-border">
-          {collapsed ? (
-            <img src={logoIcon.url} alt="AXIS" className="h-10 w-10 object-contain" />
-          ) : (
-            <img src={logoFull.url} alt="AXIS" className="h-14 w-auto max-w-full" />
-          )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {collapsed ? (
+                <img src={logoIcon.url} alt="AXIS" className="h-10 w-10 object-contain" />
+              ) : (
+                <img src={logoFull.url} alt="AXIS" className="h-14 w-auto max-w-full" />
+              )}
+            </TooltipTrigger>
+            <TooltipContent side="right" className="text-center">
+              <div className="text-xs font-semibold tracking-[0.2em]">EXECUTIVE INTELLIGENCE PLATFORM</div>
+              <div className="text-[11px] text-muted-foreground mt-1 tracking-wider">
+                Dados | Estratégia | Decisão | Resultados
+              </div>
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
