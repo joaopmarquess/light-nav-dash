@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Maximize2, Minimize2, ChevronLeft, ChevronRight } from "lucide-react";
-import { useContabilidadeCharts } from "@/control/contabilidadeCharts";
+import { useDreCarrossel } from "@/control/dreCarrossel";
 import {
   ResponsiveContainer,
   BarChart,
@@ -88,7 +88,7 @@ const LudicCurtain = () => (
 );
 
 const Dashboards = () => {
-  const { charts, loading } = useContabilidadeCharts();
+  const { charts, loading } = useDreCarrossel();
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const [isFull, setIsFull] = useState(false);
