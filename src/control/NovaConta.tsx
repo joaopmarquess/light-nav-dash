@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
-import { supabase } from "@/integrations/supabase/client";
+import { dw as supabase } from "@/lib/dwClient";
 import { useAuth } from "@/control/useAuth";
 
 const DONO = "denis.santana@bensaude.com.br";

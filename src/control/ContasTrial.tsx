@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
-import { supabase } from "@/integrations/supabase/client";
+import { dw as supabase } from "@/lib/dwClient";
 import { useAuth } from "@/control/useAuth";
 
 // Linhas do plano 9D, usadas na lista de alteração (cada nível só mostra os valores ligados aos níveis acima)
