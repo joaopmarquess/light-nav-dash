@@ -13,6 +13,7 @@ import {
   UserCheck,
   Stethoscope,
   ChevronDown,
+  LogOut,
   ChevronLeft,
   ChevronsDownUp,
   Plus,
@@ -93,6 +94,8 @@ import { Loader2, DollarSign } from "lucide-react";
 
 
 
+import { useAuth } from "@/hooks/useAuth";
+import { APP_VERSION, BUILD_ID } from "@/lib/version";
 import logoFull from "@/assets/axis-logo.png.asset.json";
 import logoIcon from "@/assets/axis-icon.png.asset.json";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -188,6 +191,7 @@ const menuItems: MenuItem[] = [
 
 const Index = () => {
   const [active, setActive] = useState("Home");
+  const { nome, signOut } = useAuth();
   const [ctrlAba, setCtrlAba] = useState<string | null>(null);
   const [ctrlOrcDre, setCtrlOrcDre] = useState(false);
   const [abaOrc, setAbaOrc] = useState("Faturamento");
@@ -232,7 +236,7 @@ const Index = () => {
       <aside
         className={`${collapsed ? "w-16" : "w-64"} border-r border-border bg-card flex flex-col transition-all duration-200`}
       >
-        <div className="h-20 flex items-center justify-center px-3 border-b border-border">
+        <div className="h-20 flex flex-col items-center justify-center gap-1 px-3 border-b border-border">
           <Tooltip>
             <TooltipTrigger asChild>
               {collapsed ? (
@@ -245,6 +249,7 @@ const Index = () => {
               <div className="text-xs font-semibold tracking-[0.2em]">EXECUTIVE INTELLIGENCE PLATFORM</div>
             </TooltipContent>
           </Tooltip>
+          <span className="text-[10px] font-medium text-muted-foreground leading-none" title={`Build ${BUILD_ID}`}>v{APP_VERSION}{!collapsed && <span className="opacity-60"> · build {BUILD_ID}</span>}</span>
         </div>
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
@@ -402,10 +407,14 @@ const Index = () => {
                 </div>
               </div>
             )}
-            <span className="text-sm text-muted-foreground">Olá, Usuário</span>
+            <span className="text-sm text-muted-foreground">Olá, {nome ?? "Usuário"}</span>
             <div className="h-9 w-9 rounded-full bg-accent flex items-center justify-center text-primary text-sm font-semibold">
-              U
+              {(nome ?? "U").charAt(0).toUpperCase()}
             </div>
+            <button onClick={signOut} title="Sair"
+              className="flex items-center gap-1.5 h-9 px-3 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-primary transition-colors">
+              <LogOut className="h-4 w-4" /> Sair
+            </button>
           </div>
         </header>
 
