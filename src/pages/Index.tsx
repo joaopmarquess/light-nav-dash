@@ -242,7 +242,7 @@ const Index = () => {
               {collapsed ? (
                 <img src={logoIcon.url} alt="AXIS" className="h-10 w-10 object-contain" />
               ) : (
-                <img src={logoFull.url} alt="AXIS" className="h-14 w-auto max-w-full" />
+                <img src={logoFull.url} alt="AXIS" className="h-12 w-auto max-w-full" />
               )}
             </TooltipTrigger>
             <TooltipContent side="right" className="text-center">
