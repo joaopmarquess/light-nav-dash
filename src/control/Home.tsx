@@ -5,9 +5,7 @@ const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
 const pct = (v: number) => `${v.toFixed(1)}%`;
 
 const shortcuts = [
-  { icon: FileText, label: "DRE Gerencial PE", title: "DRE", desc: "Demonstrativo gerencial" },
   { icon: Coins, label: "Orçamento", title: "Orçamento 2026", desc: "Previsto x realizado" },
-  { icon: BarChart3, label: "Gráficos", desc: "Análises contábeis" },
   { icon: LayoutDashboard, label: "Dashboards", title: "Carrossel", desc: "Carrossel de indicadores" },
 ];
 
@@ -54,9 +52,9 @@ const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
   return (
     <div className="space-y-6 h-full overflow-y-auto">
       <section className="bg-card rounded-xl border border-border shadow-sm p-6">
-        <h2 className="text-2xl font-semibold text-foreground">Welcome to the Control</h2>
+        <h2 className="text-2xl font-semibold text-foreground">Bem-vindo ao Control</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Visão contábil gerencial{ultimoMes ? ` — referência ${ultimoMes}/${anoAtual}` : ""}.
+          Plataforma de Controladoria
         </p>
       </section>
 
@@ -91,7 +89,7 @@ const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
                   <Icon className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-sm font-medium text-foreground truncate">{"title" in s ? s.title : s.label}</div>
+                  <div className="text-sm font-medium text-foreground truncate">{s.title}</div>
                   <div className="text-xs text-muted-foreground truncate">{s.desc}</div>
                 </div>
               </button>

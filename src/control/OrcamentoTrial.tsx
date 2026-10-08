@@ -2,6 +2,28 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { CalendarDays, ChevronRight, ChevronsDownUp, ChevronsUpDown, Coins, TrendingUp, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { mergeOrcamento } from "@/control/orcamentoLocal";
+import { loadDreHostinger, type DreHRow } from "@/control/dreHostinger";
+
+/** Mapeia uma linha do balancete MV (plano 9D) para o item do orçamento */
+function itemDe(r: DreHRow): string | null {
+  if (/FINANCEIRO/i.test(r.g1)) return "12|FINANCEIRO";
+  if (/PRINCIPAL/i.test(r.g3)) {
+    if (/FATUR/i.test(r.g4)) return "01|FATURAMENTO";
+    if (/COPART/i.test(r.g4)) return "02|COPARTICIPAÇÃO";
+    return "03|DESPESAS ASSISTENCIAIS";
+  }
+  if (/SECUND/i.test(r.g3)) return "04|OUTRAS RECEITAS OPERACIONAIS";
+  if (/COMERCIAL/i.test(r.g3)) return "05|COMERCIALIZAÇÃO";
+  if (/IMPOSTOS DIRETOS/i.test(r.g3)) return "06|IMPOSTOS DIRETOS";
+  if (/PROVIS/i.test(r.g3)) return "07|PROVISÕES OPERACIONAIS";
+  if (/ADMINISTRATIVO/i.test(r.g2)) {
+    if (/PESSOAL/i.test(r.g3)) return "08|PESSOAL";
+    if (/MARKETING/i.test(r.g3)) return "09|MARKETING";
+    if (/TECNOLOGIA/i.test(r.g3)) return "10|INFORMÁTICA";
+    return "11|DEMAIS DESPESAS ADMINISTRATIVAS";
+  }
+  return null;
+}
 
 type Row = { item: string; mes: number; previsto: number; realizado: number; projetado: number };
 
@@ -9,7 +31,7 @@ const MES_LABEL = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set"
 
 const fmt = (v: number) => {
   if (Math.abs(v) < 0.005) return "-";
-  const s = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(Math.abs(v));
+  const s = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(v));
   return v < 0 ? `(${s})` : s;
 };
 
@@ -30,7 +52,19 @@ type Col = { key: string; label: string; meses: number[]; kind: "mes" | "total" 
 type TipLine = { label: string; abs: string; pct: string; positive: boolean; neutral?: boolean; up?: boolean };
 type TipData = { title: string; lines: TipLine[] };
 
-const Orcamento = () => {
+const Barra = ({ ativa, onAba }: { ativa: "Painel" | "DRE"; onAba?: (a: "Painel" | "DRE") => void }) =>
+  onAba ? (
+    <div className="sticky bottom-0 z-20 shrink-0 bg-background py-4 flex justify-center">
+      <div className="inline-flex gap-0.5 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_0_16px_2px_hsl(var(--foreground)/0.18)]">
+        {(["Painel", "DRE"] as const).map((a) => (
+          <button key={a} onClick={() => a !== ativa && onAba(a)}
+            className={`rounded-full px-3 py-1 text-[13px] font-medium transition-all duration-200 ${a === ativa ? "bg-primary text-primary-foreground shadow-md shadow-primary/30" : "text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5"}`}>{a}</button>
+        ))}
+      </div>
+    </div>
+  ) : null;
+
+const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (a: "Painel" | "DRE") => void } = {}) => {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tip, setTip] = useState<{ d: TipData; x: number; y: number; pinned?: boolean } | null>(null);
@@ -50,6 +84,21 @@ const Orcamento = () => {
           .order("item")
           .order("nr_mes");
         if (error) throw error;
+        // Realizado vem do balancete MV: só meses com movimento substituem o realizado
+        const mv = await loadDreHostinger(2026, [1, 2, 3, 4, 5, 6, 7, 8]); // só meses fechados (até Ago)
+        const real = new Map<string, number>();
+        const mesesMv = new Set<number>();
+        for (const r of mv) {
+          const it = itemDe(r);
+          if (!it) continue;
+          real.set(`${it}~${r.mes}`, (real.get(`${it}~${r.mes}`) || 0) + r.valor);
+          if (Math.abs(r.valor) >= 0.005) mesesMv.add(r.mes);
+        }
+        const norm = (x: string) => x.replace(/\s+/g, "").toUpperCase();
+        const realDe = (item: string, mes: number) => {
+          for (const [k, v] of real) { const [i, m] = k.split("~"); if (Number(m) === mes && norm(i) === norm(item)) return v; }
+          return 0;
+        };
         setRows(
           mergeOrcamento(
             (data || []).map((r) => ({
@@ -59,7 +108,7 @@ const Orcamento = () => {
               realizado: Number(r.realizado) || 0,
               projetado: Number((r as { projetado?: number }).projetado) || 0,
             }))
-          )
+          ).map((r) => (mesesMv.has(r.mes) ? { ...r, realizado: realDe(r.item, r.mes) } : { ...r, realizado: 0 }))
         );
       } catch (e: unknown) {
         setError(e instanceof Error ? e.message : String(e));
@@ -236,7 +285,7 @@ const Orcamento = () => {
   }, [items]);
 
 
-  const [openRows, setOpenRows] = useState<Record<string, boolean>>({ "g:operacional": true, "g:op": true, "g:entradas": true, "g:saidas": true, "g:adm": true });
+  const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
   const toggleRow = (k: string) => setOpenRows((p) => ({ ...p, [k]: !p[k] }));
 
   const flat = useMemo(() => {
@@ -348,8 +397,102 @@ const Orcamento = () => {
     );
   }
 
+  if (painel) {
+    const acum = COLS.find((c) => c.key === "acum");
+    const parc = COLS.find((c) => c.key === "parcial") || acum;
+    if (!acum || !parc) return null;
+    const v = (re: RegExp) => items.filter((i) => re.test(i)).reduce((t, i) => t + cellVals(i, acum).realizado, 0);
+    const fat = v(/\|\s*FATURAMENTO/i), cop = v(/COPARTICIPA/i), desp = v(/DESPESAS ASSISTENCIAIS/i);
+    const ent = fat + cop;
+    const demais = v(/IMPOSTOS DIRETOS/i) + v(/PROVIS[ÕO]ES OPERACIONAIS/i) + v(/COMERCIALIZA/i) + v(/OUTRAS RECEITAS OPERACIONAIS/i);
+    const tot = ent + desp + demais;
+    const adm = v(/\|\s*PESSOAL/i) + v(/MARKETING/i) + v(/INFORM[ÁA]TICA/i) + v(/DEMAIS DESPESAS ADMINISTRATIVAS/i);
+    const ebitda = tot + adm, fin = v(/FINANCEIRO/i), rai = ebitda + fin;
+    const imp = rai > 0 ? -rai * 0.34 : 0, liq = rai + imp;
+    const pf = (x: number) => (fat ? `${pctFmt((x / fat) * 100)}` : "-");
+    const parcial = totalVals(parc).realizado;
+    const cards: [string, number, string, boolean?][] = [
+      ["Operacionais Primários", ent + desp, "Entradas − Despesas Assistenciais"],
+      ["Operacionais Secundários", demais, "Demais operacionais"],
+      ["Operacionais Totais", tot, "Primários + Secundários"],
+      ["EBITDA", ebitda, "Operacionais Totais + Despesas Administrativas"],
+      ["Financeiro", fin, "Resultado financeiro"],
+      ["Resultado antes dos Impostos", rai, "EBITDA + Financeiro"],
+      ["Impostos Federais", imp, "34% do resultado, quando positivo", true],
+    ];
+    const linhas: [string, number, 0 | 1 | 2][] = [
+      ["Entradas Operacionais", ent, 0],
+      ["(−) Despesas Assistenciais", desp, 0],
+      ["(−) Demais Operacionais", demais, 0],
+      ["(=) Operacionais Totais", tot, 1],
+      ["(−) Despesas Administrativas", adm, 0],
+      ["(=) EBITDA", ebitda, 1],
+      ["(+) Financeiro", fin, 0],
+      ["(=) Resultado antes dos Impostos", rai, 1],
+      ["(−) Impostos Federais", imp, 0],
+      ["(=) Resultado Líquido", liq, 2],
+    ];
+    return (
+      <div className="flex flex-col gap-3 h-[calc(100vh-9rem)] overflow-y-auto">
+        <div className="rounded-xl bg-primary text-primary-foreground shadow-md px-4 py-1.5 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div className="text-xs uppercase tracking-widest opacity-80">Resultado Líquido 2026</div>
+            <div className="text-xl font-bold tabular-nums leading-tight">R$ {fmt(liq)}</div>
+          </div>
+          <div className="text-right text-xs leading-tight">
+            <div><span className="opacity-80">Margem líquida </span><span className="text-base font-semibold tabular-nums">{pf(liq)}</span></div>
+            <div className="opacity-80">Faturamento R$ {fmt(fat)} · Resultado parcial (Jan a {MES_LABEL[Math.max(...parc.meses) - 1]}) R$ {fmt(parcial)}</div>
+            <div className="opacity-80">Meses abertos com o {fonteFutura === "previsto" ? "Previsto" : "Projetado"}</div>
+          </div>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+          {cards.map(([t, x, h, naoRes]) => (
+            <div key={t} title={h} className="rounded-xl border border-border bg-card overflow-hidden cursor-help hover:shadow-md transition-shadow">
+              <div className={`h-1 ${x < 0 ? "bg-destructive" : "bg-primary"}`} />
+              <div className="px-3 py-2.5">
+                <div className="text-[10px] uppercase tracking-wide text-muted-foreground leading-tight min-h-[1.6rem]">{t}</div>
+                <div className={`text-base font-bold tabular-nums ${x < 0 && !naoRes ? "text-destructive" : "text-foreground"}`}>R$ {fmt(x)}</div>
+                <div className="mt-1 h-1 rounded-full bg-muted overflow-hidden">
+                  <div className={`h-full ${x < 0 ? "bg-destructive" : "bg-primary"}`} style={{ width: `${Math.min(100, fat ? Math.abs(x / fat) * 100 : 0)}%` }} />
+                </div>
+                <div className="text-[10px] text-muted-foreground">{pf(x)} do faturamento</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <section className="rounded-2xl border border-border bg-card shadow-sm px-3 py-2 flex-1 flex flex-col">
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="text-base font-semibold text-foreground">DRE simplificado 2026</h3>
+            <div className="flex items-center gap-3">
+              <div className="inline-flex rounded-md border border-border overflow-hidden text-[12px]">
+                {(["projetado", "previsto"] as const).map((k) => (
+                  <button key={k} onClick={() => setFonteFutura(k)} className={`px-2.5 py-0.5 transition-colors ${fonteFutura === k ? "bg-primary text-primary-foreground" : "bg-card hover:bg-accent"}`}>
+                    {k === "projetado" ? "Projetado" : "Previsto"}
+                  </button>
+                ))}
+              </div>
+              <span className="text-xs uppercase tracking-wide text-muted-foreground">R$ · % fat.</span>
+            </div>
+          </div>
+          <div className="flex-1 flex flex-col justify-between gap-0.5">
+            {linhas.map(([t, x, k]) => (
+              <div key={t} className={`flex items-center justify-between rounded-lg border px-3 py-1 text-[17px] ${k === 2 ? "border-primary bg-primary text-primary-foreground font-bold" : k === 1 ? "border-primary/20 bg-primary/10 font-semibold text-foreground" : "border-border/60 text-foreground"}`}>
+                <span>{t}</span>
+                <span className="flex gap-6 tabular-nums">
+                  <span className={k === 1 && x < 0 ? "text-destructive" : ""}>{fmt(x)}</span>
+                  <span className={`w-20 text-right ${k === 2 ? "" : "text-muted-foreground"}`}>{pf(x)}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+        <Barra ativa="Painel" onAba={onAba} />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 h-full overflow-y-auto">
       {(() => {
         const parc = COLS.find((c) => c.key === "parcial") || COLS.find((c) => c.key === "acum");
         const acum = COLS.find((c) => c.key === "acum");
@@ -539,28 +682,35 @@ const Orcamento = () => {
               );
             })}
 
-            <tr className="border-t-2 border-border bg-muted/60 font-semibold">
-              <td className="px-3 py-2 sticky left-0 bg-muted/60">Resultado do período</td>
+            {([
+              ["Resultado antes dos impostos", (x: number) => x, "border-t-2 border-border bg-muted/60 font-semibold", "bg-muted/60"],
+              ["Impostos Federais", (x: number) => (x > 0 ? -x * 0.34 : 0), "bg-card", "bg-card"],
+              ["Resultado Líquido", (x: number) => (x > 0 ? x * 0.66 : x), "border-t border-border bg-primary/10 font-bold", "bg-primary/10"],
+            ] as [string, (x: number) => number, string, string][]).map(([nome, fn, trCls, tdCls]) => (
+            <tr key={nome} className={trCls}>
+              <td className={`px-3 py-2 sticky left-0 ${tdCls}`}>{nome}</td>
               {COLS.map((c) => {
-                const { previsto, realizado, projetado } = totalVals(c);
+                const t = totalVals(c);
+                const previsto = fn(t.previsto), realizado = fn(t.realizado), projetado = fn(t.projetado);
+                const neg = (x: number) => (nome !== "Impostos Federais" && x < 0 ? "text-rose-600" : "");
                 return (
                   <Fragment key={c.key}>
                     {sub(c) && (
-                      <td className="px-1.5 py-2 text-right tabular-nums whitespace-nowrap border-l border-border text-orange-500">
+                      <td className={`px-1.5 py-2 text-right tabular-nums whitespace-nowrap border-l border-border text-orange-500 ${neg(previsto)}`}>
                         {fmt(previsto)}
                       </td>
                     )}
                     {sub(c) && showProj(c) && (
-                      <td className="px-1.5 py-2 text-right tabular-nums whitespace-nowrap border-l border-border text-foreground/80">
+                      <td className={`px-1.5 py-2 text-right tabular-nums whitespace-nowrap border-l border-border text-foreground/80 ${neg(projetado)}`}>
                         {fmt(projetado)}
                       </td>
                     )}
                     <td
-                      className={`px-1.5 py-2 text-right tabular-nums whitespace-nowrap cursor-help ${orig ? "text-orange-500" : corReal(c)} ${sub(c) ? "" : "border-l border-border"}`}
-                      onMouseEnter={(e) => showTip(e, `Resultado — ${c.label}`, previsto, realizado, { projetado: showProj(c) ? projetado : null })}
-                      onMouseMove={(e) => showTip(e, `Resultado — ${c.label}`, previsto, realizado, { projetado: showProj(c) ? projetado : null })}
+                      className={`px-1.5 py-2 text-right tabular-nums whitespace-nowrap cursor-help ${orig ? "text-orange-500" : corReal(c)} ${neg(orig ? previsto : realizado)} ${sub(c) ? "" : "border-l border-border"}`}
+                      onMouseEnter={(e) => showTip(e, `${nome} — ${c.label}`, previsto, realizado, { projetado: showProj(c) ? projetado : null })}
+                      onMouseMove={(e) => showTip(e, `${nome} — ${c.label}`, previsto, realizado, { projetado: showProj(c) ? projetado : null })}
                       onMouseLeave={() => !tip?.pinned && setTip(null)}
-                      onContextMenu={(e) => showPctTip(e, c, realizado, `${c.label} · Resultado`)}
+                      onContextMenu={(e) => showPctTip(e, c, realizado, `${c.label} · ${nome}`)}
                     >
                       {fmt(orig ? previsto : realizado)}
                     </td>
@@ -568,6 +718,7 @@ const Orcamento = () => {
                 );
               })}
             </tr>
+            ))}
           </tbody>
 
         </table>
@@ -644,8 +795,9 @@ const Orcamento = () => {
           </div>
         );
       })()}
+      <Barra ativa="DRE" onAba={onAba} />
     </div>
   );
 };
 
-export default Orcamento;
+export default OrcamentoTrial;

@@ -41,7 +41,7 @@ const usePersist = <T,>(k: string, d: T) => {
   return [v, setV] as const;
 };
 
-const ControlPainel = ({ home = false, onSimulacao, onPainel, abaInicial }: { home?: boolean; onSimulacao?: (aba: string) => void; onPainel?: () => void; abaInicial?: string }) => {
+const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial }: { home?: boolean; onSimulacao?: (aba: string) => void; onPainel?: () => void; abaInicial?: string }) => {
   const [rows, setRows] = usePersist("rows", BASE);
   const [aba, setAba] = useState(abaInicial || "Faturamento");
   const [reaj, setReaj] = usePersist("reaj_v2", 1.05);
@@ -647,4 +647,4 @@ const ControlPainel = ({ home = false, onSimulacao, onPainel, abaInicial }: { ho
   );
 };
 
-export default ControlPainel;
+export default OrcamentoFaturamento;
