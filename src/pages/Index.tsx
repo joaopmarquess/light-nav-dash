@@ -242,9 +242,6 @@ const Index = () => {
             </TooltipTrigger>
             <TooltipContent side="right" className="text-center">
               <div className="text-xs font-semibold tracking-[0.2em]">EXECUTIVE INTELLIGENCE PLATFORM</div>
-              <div className="text-[11px] text-muted-foreground mt-1 tracking-wider">
-                Dados | Estratégia | Decisão | Resultados
-              </div>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -358,7 +355,7 @@ const Index = () => {
         <header className="h-20 border-b border-border bg-card flex items-center justify-between px-8">
           <div>
             <h1 className="text-xl font-semibold text-foreground">{active}</h1>
-            <p className="text-xs text-muted-foreground">AXIS · Executive Intelligence Platform | Dados • Estratégia • Decisão • Resultados</p>
+            <p className="text-xs text-muted-foreground">AXIS | Executive Intelligence Platform</p>
           </div>
           <div className="flex items-center gap-3">
             {(active === "Área Geográfica" || active === "Dashboard" || active === "Ativos por Cidade") && (
