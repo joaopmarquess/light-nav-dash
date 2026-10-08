@@ -282,10 +282,14 @@ const Index = () => {
 
             return (
               <div key={item.label}>
-                {collapsed ? (
+                {collapsed || item.label === "Control" ? (
                   <Tooltip>
                     <TooltipTrigger asChild>{button}</TooltipTrigger>
-                    <TooltipContent side="right">{item.label}</TooltipContent>
+                    <TooltipContent side="right" className="max-w-xs">
+                      {item.label === "Control"
+                        ? "Accesses another program called “Control” (accounting and budget management)."
+                        : item.label}
+                    </TooltipContent>
                   </Tooltip>
                 ) : (
                   button
