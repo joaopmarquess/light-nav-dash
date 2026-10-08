@@ -93,8 +93,8 @@ import { Loader2, DollarSign } from "lucide-react";
 
 
 
-import logoFull from "@/assets/bensaude-logo.svg.asset.json";
-import logoIcon from "@/assets/bensaude-icon.svg.asset.json";
+import logoFull from "@/assets/axis-logo.png.asset.json";
+import logoIcon from "@/assets/axis-icon.png.asset.json";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 
@@ -233,9 +233,9 @@ const Index = () => {
       >
         <div className="h-20 flex items-center justify-center px-3 border-b border-border">
           {collapsed ? (
-            <img src={logoIcon.url} alt="Bensaúde" className="h-10 w-10" />
+            <img src={logoIcon.url} alt="AXIS" className="h-10 w-10 object-contain" />
           ) : (
-            <img src={logoFull.url} alt="Bensaúde" className="h-12 w-auto max-w-full" />
+            <img src={logoFull.url} alt="AXIS" className="h-14 w-auto max-w-full" />
           )}
         </div>
 
