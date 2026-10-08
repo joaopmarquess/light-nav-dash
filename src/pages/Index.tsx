@@ -262,11 +262,12 @@ const Index = () => {
                   if (hasChildren) {
                     if (collapsed) {
                       setCollapsed(false);
-                      setOpenGroups((p) => ({ ...p, [item.label]: true }));
+                      setOpenGroups({ [item.label]: true });
                     } else {
-                      setOpenGroups((p) => ({ ...p, [item.label]: !p[item.label] }));
+                      setOpenGroups((p) => ({ [item.label]: !p[item.label] }));
                     }
                   } else {
+                    setOpenGroups({});
                     setActive(item.label);
                   }
                 }}
