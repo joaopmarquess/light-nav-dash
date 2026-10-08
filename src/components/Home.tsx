@@ -120,7 +120,7 @@ const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
         <div className="flex items-start justify-between gap-6 flex-wrap">
           <div>
             <h2 className="text-2xl font-semibold text-foreground">Bem-vindo ao AXIS</h2>
-            <p className="text-sm text-muted-foreground mt-1">Executive Intelligence Platform</p>
+            <p className="text-sm text-muted-foreground mt-1">Plataforma de Inteligência Executiva</p>
           </div>
           {meses.length >= 2 && (
             <div className="flex items-center gap-3">
