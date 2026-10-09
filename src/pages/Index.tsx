@@ -269,7 +269,7 @@ const Index = () => {
           <TooltipProvider delayDuration={150}>
           {menuItems.map((item) => {
             const isActive = active === item.label;
-            const hasChildren = !!item.children;
+            const hasChildren = !!item.children || !!item.lab;
             const isOpen = openGroups[item.label];
 
             const button = (
