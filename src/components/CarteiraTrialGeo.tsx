@@ -50,7 +50,7 @@ const CarteiraTrialGeo = () => {
           <button type="button" onClick={() => setSel(null)} className="text-xs text-muted-foreground hover:text-foreground underline">← Voltar</button>
         </div>
         <div className="flex-1 min-h-0">
-          {sel === "BRASIL" ? <BrazilHeatMap ufTotals={ufTotals} /> : <StateHeatMap ufs={[sel]} cityTotalsByUF={cityTotalsByUF} />}
+          {sel === "BRASIL" ? <BrazilHeatMap ufTotals={ufTotals} /> : <StateHeatMap ufs={[sel]} cityTotalsByUF={cityTotalsByUF} stateTotals={ufTotals} />}
         </div>
       </div>
     );
@@ -93,7 +93,7 @@ const CarteiraTrialGeo = () => {
               })}
             </div>
             <div className="w-full h-full flex items-center justify-center">
-              <StateHeatMap ufs={["SP", "MG", "MS"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} />
+              <StateHeatMap ufs={["SP", "MG", "MS"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />
             </div>
           </div>
         )}
