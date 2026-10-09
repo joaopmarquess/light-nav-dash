@@ -74,7 +74,7 @@ const CarteiraTrialGeo = () => {
         ) : error ? (
           <div className="text-destructive text-sm">Erro: {error}</div>
         ) : (
-          <div className="h-full grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+          <div className="h-full grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-4 items-stretch">
             <div className="bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col justify-center gap-4">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Vidas por estado</h3>
               {porUF.map((r) => {
