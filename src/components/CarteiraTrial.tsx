@@ -225,7 +225,11 @@ export default function CarteiraTrial() {
         <div className="shrink-0 border-t border-border px-4 py-2 flex items-center justify-between text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-2">
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {total == null ? "…" : total.toLocaleString("pt-BR")} registros selecionados
+            {(() => {
+              const semTexto = !f.q.trim() && !f.empresa.trim() && !f.cidade.trim();
+              const n = semTexto ? (f.status === "A" ? kpi?.ativos : f.status === "F" ? kpi?.futuros : f.status === "C" ? kpi?.cancelados : kpi?.total) : (fim ? vis.length : null);
+              return n == null ? (semTexto ? "…" : `${vis.length.toLocaleString("pt-BR")}+`) : n.toLocaleString("pt-BR");
+            })()} registros selecionados
           </span>
         </div>
       </div>
