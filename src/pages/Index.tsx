@@ -118,6 +118,7 @@ const menuItems: MenuItem[] = [
       { icon: FileText, label: "Controladoria", id: "Control · DRE Gerencial PE" },
       { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente" },
       { icon: TrendingUp, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
+      { icon: BarChart3, label: "Carrossel", id: "Control · Dashboards" },
       { icon: Settings, label: "Configurações", id: "__cfg_control__" },
       { icon: ListTree, label: "Contas", id: "Control · Contas", nivel: 2 },
     ],
