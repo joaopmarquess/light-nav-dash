@@ -13,8 +13,15 @@ const PAGE = 50;
 
 const fmtD = (v: any) => v ? new Date(v).toLocaleDateString("pt-BR", { timeZone: "UTC" }) : "—";
 const brl = (v: any) => v == null ? "—" : Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const fmtMat = (v: any) => {
+  if (v == null || String(v).trim() === "") return "—";
+  const d = String(v).trim().replace(/\D/g, "");
+  if (d.length <= 8) return String(v).trim();
+  const r = d.slice(-8);
+  return `${Number(d.slice(0, -8))}/${r.slice(0, 6)}-${r.slice(6)}`;
+};
 const COLS: { key: string; label: string; fmt?: (v: any) => string; align?: "right" }[] = [
-  { key: "cd_mat_alternativa", label: "Matrícula" },
+  { key: "cd_mat_alternativa", label: "Matrícula", fmt: (v) => fmtMat(v) },
   { key: "nm_beneficiario", label: "Beneficiário" },
   { key: "tp_acomodacao", label: "Acomodação" },
   { key: "nm_empresa_estipulante", label: "Empresa" },
@@ -211,7 +218,7 @@ export default function CarteiraTrial() {
               <SheetHeader><SheetTitle>{sel.nm_beneficiario}</SheetTitle></SheetHeader>
               <div className="mt-4 space-y-4 text-sm">
                 {[
-                  ["Cadastro", [["Matrícula", sel.cd_mat_alternativa], ["Contrato", sel.cd_contrato], ["Status", sel.tp_status === "A" ? "Ativo" : "Cancelado"], ["Nascimento", fmtDate(sel.dt_nascimento)], ["Idade", sel.qt_idade], ["Faixa", sel.ds_faixa_etaria], ["Sexo", sel.tp_sexo]]],
+                  ["Cadastro", [["Matrícula", fmtMat(sel.cd_mat_alternativa)], ["Contrato", sel.cd_contrato], ["Status", sel.tp_status === "A" ? "Ativo" : "Cancelado"], ["Nascimento", fmtDate(sel.dt_nascimento)], ["Idade", sel.qt_idade], ["Faixa", sel.ds_faixa_etaria], ["Sexo", sel.tp_sexo]]],
                   ["Plano", [["Plano", sel.ds_plano], ["Acomodação", sel.tp_acomodacao], ["Contratação", sel.tp_contratacao], ["Recuperação", sel.tp_recuperacao], ["PME", sel.sn_pme], ["Mensalidade", brl(sel.vl_tmm)], ["Últ. reajuste", fmtDate(sel.dt_ult_reajuste)]]],
                   ["Empresa / Local", [["Estipulante", sel.nm_empresa_estipulante], ["Resp. financeiro", sel.nm_resp_financeiro], ["Cidade", `${sel.nm_cidade_plano ?? "—"} / ${sel.cd_uf_plano ?? ""}`], ["Regional", sel.nm_regional_plano], ["Vendedor", sel.nm_vendedor]]],
                   ["Datas", [["Cadastro", fmtDate(sel.dt_cadastro)], ["Vigência contrato", fmtDate(sel.dt_vigencia_contrato)], ["Vigência beneficiário", fmtDate(sel.dt_vigencia_beneficiario)], ["Cancelamento", fmtDate(sel.dt_desligamento)], ["Reativação", fmtDate(sel.dt_reativacao)], ["Motivo cancel.", sel.ds_motivo_cancelamento]]],
