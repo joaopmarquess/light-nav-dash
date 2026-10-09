@@ -103,6 +103,7 @@ export default function CarteiraTrial() {
     const v = f.status === ALL ? rows : rows.filter((r) => r.st === f.status);
     return sort.key === "st" ? [...v].sort((a, b) => (sort.asc ? 1 : -1) * String(a.st).localeCompare(String(b.st))) : v;
   }, [rows, f.status, sort]);
+  useEffect(() => { if (!loading && !fim && f.status !== ALL && vis.length < 50 && raw.length > 0) setPage((p) => p + 1); }, [loading, fim, vis.length, f.status, raw.length]);
   const cnt = (k: string) => rows.filter((r) => r.st === k).length;
   const [sel, setSel] = useState<Row | null>(null);
 
