@@ -94,7 +94,7 @@ export default function CarteiraTrial() {
   const [sort, setSort] = useState<{ key: string; asc: boolean }>({ key: "nm_beneficiario", asc: true });
   const [raw, setRaw] = useState<Row[]>([]);
   const [dataRef, setDataRef] = useState(() => new Date().toISOString().slice(0, 10));
-  const [ap, setAp] = useState<{ f: Filters; d: string } | null>(null);
+  const [ap, setAp] = useState<{ f: Filters; d: string } | null>(() => ({ f: { ...EMPTY }, d: new Date().toISOString().slice(0, 10) }));
   const df = ap?.f ?? EMPTY;
   const dRef = ap?.d ?? "";
   const buscar = () => setAp({ f: { ...f }, d: dataRef || new Date().toISOString().slice(0, 10) });
