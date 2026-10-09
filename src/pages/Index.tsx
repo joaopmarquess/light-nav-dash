@@ -1,4 +1,4 @@
-import { Settings, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Home,
   TrendingUp,
@@ -6,6 +6,7 @@ import {
   BarChart3,
   LayoutDashboard,
   Settings2,
+  Settings,
   Building2,
   Coins,
   Percent,
