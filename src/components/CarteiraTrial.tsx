@@ -40,7 +40,7 @@ function applyFilters(q: any, f: Filters) {
     q = /^\d+$/.test(t) ? q.or(`cd_mat_alternativa.eq.${t},cd_contrato.eq.${t}`) : q.ilike("nm_beneficiario", `%${t}%`);
   }
   if (f.status !== ALL) q = q.eq("tp_status", f.status);
-  if (f.tipo !== ALL) q = q.eq("tp_plano", f.tipo);
+  q = q.eq("tp_plano", "SAUDE");
   if (f.sexo !== ALL) q = q.eq("tp_sexo", f.sexo);
   if (f.pme !== ALL) q = q.eq("sn_pme", f.pme);
   if (f.uf !== ALL) q = q.eq("cd_uf_plano", f.uf);
@@ -63,7 +63,7 @@ export default function CarteiraTrial() {
   const [rows, setRows] = useState<Row[]>([]);
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [kpi, setKpi] = useState<{ ativos?: number; cancel?: number; saude?: number; odonto?: number }>({});
+  const [kpi, setKpi] = useState<{ ativos?: number; cancel?: number; total?: number }>({});
   const [sel, setSel] = useState<Row | null>(null);
 
   useEffect(() => { setPage(0); }, [df]);
@@ -93,10 +93,10 @@ export default function CarteiraTrial() {
       return count ?? 0;
     };
     (async () => {
-      const [ativos, cancelados, saude, odonto] = await Promise.all([
-        c({ status: "A" }), c({ status: "C" }), c({ tipo: "SAUDE" }), c({ tipo: "ODONTO" }),
+      const [ativos, cancelados, total] = await Promise.all([
+        c({ status: "A" }), c({ status: "C" }), c({ status: ALL }),
       ]);
-      if (!cancel) setKpi({ ativos, cancel: cancelados, saude, odonto });
+      if (!cancel) setKpi({ ativos, cancel: cancelados, total });
     })();
     return () => { cancel = true; };
   }, [df]);
@@ -127,11 +127,10 @@ export default function CarteiraTrial() {
 
   return (
     <div className="h-full flex flex-col gap-4 min-h-0">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 shrink-0">
+      <div className="grid grid-cols-3 gap-3 shrink-0">
         <Kpi icon={UserCheck} label="Ativos" v={kpi.ativos} on={f.status === "A"} onClick={() => set("status", f.status === "A" ? ALL : "A")} />
         <Kpi icon={UserX} label="Cancelados" v={kpi.cancel} on={f.status === "C"} onClick={() => set("status", f.status === "C" ? ALL : "C")} />
-        <Kpi icon={Users} label="Saúde" v={kpi.saude} on={f.tipo === "SAUDE"} onClick={() => set("tipo", f.tipo === "SAUDE" ? ALL : "SAUDE")} />
-        <Kpi icon={Building2} label="Odonto" v={kpi.odonto} on={f.tipo === "ODONTO"} onClick={() => set("tipo", f.tipo === "ODONTO" ? ALL : "ODONTO")} />
+        <Kpi icon={Users} label="Total Saúde" v={kpi.total} on={f.status === ALL} onClick={() => set("status", ALL)} />
       </div>
 
       <div className="flex flex-wrap items-center gap-2 shrink-0 bg-card border border-border rounded-xl p-3">
@@ -143,7 +142,6 @@ export default function CarteiraTrial() {
         <Input className="w-40" placeholder="Cidade" value={f.cidade} onChange={(e) => set("cidade", e.target.value)} />
         {([
           ["status", "Status", [["A", "Ativo"], ["C", "Cancelado"]]],
-          ["tipo", "Tipo", [["SAUDE", "Saúde"], ["ODONTO", "Odonto"]]],
           ["sexo", "Sexo", [["F", "Feminino"], ["M", "Masculino"]]],
           ["pme", "PME", [["S", "Sim"], ["N", "Não"]]],
           ["uf", "UF", [["SP", "SP"], ["MG", "MG"], ["MS", "MS"], ["GO", "GO"]]],
@@ -182,7 +180,7 @@ export default function CarteiraTrial() {
                     <td key={c.key} className={`px-3 py-1.5 whitespace-nowrap max-w-[260px] truncate ${c.align === "right" ? "text-right tabular-nums" : ""}`}>
                       {c.key === "tp_status" ? (
                         <Badge variant={r.tp_status === "A" ? "default" : "destructive"}>{r.tp_status === "A" ? "Ativo" : "Cancelado"}</Badge>
-                      ) : c.fmt ? c.fmt(r[c.key]) : String(r[c.key] ?? "—").trim()}
+                      ) : c.key === "nm_cidade_plano" ? cidadeUf(r) : c.fmt ? c.fmt(r[c.key]) : String(r[c.key] ?? "—").trim()}
                     </td>
                   ))}
                 </tr>
@@ -214,9 +212,9 @@ export default function CarteiraTrial() {
               <div className="mt-4 space-y-4 text-sm">
                 {[
                   ["Cadastro", [["Matrícula", sel.cd_mat_alternativa], ["Contrato", sel.cd_contrato], ["Status", sel.tp_status === "A" ? "Ativo" : "Cancelado"], ["Nascimento", fmtDate(sel.dt_nascimento)], ["Idade", sel.qt_idade], ["Faixa", sel.ds_faixa_etaria], ["Sexo", sel.tp_sexo]]],
-                  ["Plano", [["Plano", sel.ds_plano], ["Tipo", sel.tp_plano], ["Acomodação", sel.tp_acomodacao], ["Contratação", sel.tp_contratacao], ["Recuperação", sel.tp_recuperacao], ["PME", sel.sn_pme], ["Mensalidade", COLS[11].fmt!(sel.vl_tmm)], ["Últ. reajuste", fmtDate(sel.dt_ult_reajuste)]]],
+                  ["Plano", [["Plano", sel.ds_plano], ["Acomodação", sel.tp_acomodacao], ["Contratação", sel.tp_contratacao], ["Recuperação", sel.tp_recuperacao], ["PME", sel.sn_pme], ["Mensalidade", brl(sel.vl_tmm)], ["Últ. reajuste", fmtDate(sel.dt_ult_reajuste)]]],
                   ["Empresa / Local", [["Estipulante", sel.nm_empresa_estipulante], ["Resp. financeiro", sel.nm_resp_financeiro], ["Cidade", `${sel.nm_cidade_plano ?? "—"} / ${sel.cd_uf_plano ?? ""}`], ["Regional", sel.nm_regional_plano], ["Vendedor", sel.nm_vendedor]]],
-                  ["Datas", [["Cadastro", fmtDate(sel.dt_cadastro)], ["Vigência contrato", fmtDate(sel.dt_vigencia_contrato)], ["Vigência beneficiário", fmtDate(sel.dt_vigencia_beneficiario)], ["Desligamento", fmtDate(sel.dt_desligamento)], ["Motivo cancel.", sel.ds_motivo_cancelamento]]],
+                  ["Datas", [["Cadastro", fmtDate(sel.dt_cadastro)], ["Vigência contrato", fmtDate(sel.dt_vigencia_contrato)], ["Vigência beneficiário", fmtDate(sel.dt_vigencia_beneficiario)], ["Cancelamento", fmtDate(sel.dt_desligamento)], ["Reativação", fmtDate(sel.dt_reativacao)], ["Motivo cancel.", sel.ds_motivo_cancelamento]]],
                 ].map(([t, items]: any) => (
                   <div key={t}>
                     <p className="text-xs font-semibold uppercase text-primary mb-2">{t}</p>
