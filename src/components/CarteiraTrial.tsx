@@ -167,6 +167,7 @@ export default function CarteiraTrial() {
         <label className="flex items-center gap-2 text-sm text-muted-foreground">Ativos em:
           <Input type="date" className="w-40" value={dataRef} onChange={(e) => setDataRef(e.target.value)} />
         </label>
+        <span className="text-sm text-muted-foreground">Total de Ativos: <b className="text-foreground tabular-nums">{kpi?.ativos == null ? "…" : kpi.ativos.toLocaleString("pt-BR")}</b></span>
         <div className="relative w-72">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input className="pl-8" placeholder="Nome, matrícula ou contrato" value={f.q} onChange={(e) => set("q", e.target.value)} />
@@ -175,9 +176,6 @@ export default function CarteiraTrial() {
         <Input className="w-40" placeholder="Cidade" value={f.cidade} onChange={(e) => set("cidade", e.target.value)} />
         {([
           ["status", "Status", [["A", "Ativo"], ["F", "Futuro"], ["C", "Cancelado"]]],
-          ["sexo", "Sexo", [["F", "Feminino"], ["M", "Masculino"]]],
-          ["pme", "PME", [["S", "Sim"], ["N", "Não"]]],
-          ["uf", "UF", [["SP", "SP"], ["MG", "MG"], ["MS", "MS"], ["GO", "GO"]]],
         ] as [keyof Filters, string, string[][]][]).map(([k, label, opts]) => (
           <Select key={k} value={f[k]} onValueChange={(v) => set(k, v)}>
             <SelectTrigger className="w-32"><SelectValue placeholder={label} /></SelectTrigger>
@@ -227,9 +225,8 @@ export default function CarteiraTrial() {
         <div className="shrink-0 border-t border-border px-4 py-2 flex items-center justify-between text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-2">
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {rows.length.toLocaleString("pt-BR")} matrículas carregadas{total != null ? ` de ${total.toLocaleString("pt-BR")} registros` : ""}
+            {total == null ? "…" : total.toLocaleString("pt-BR")} registros selecionados
           </span>
-          <span>{fim ? "Tudo carregado" : "Role para carregar mais"}</span>
         </div>
       </div>
 
