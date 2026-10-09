@@ -34,11 +34,12 @@ interface Props {
   onSelectUF?: (uf: "SP" | "MG" | "MS") => void;
   stateTotals?: Record<string, number>;
   outrosTotal?: number;
+  trialScale?: boolean;
 }
 
 type FeatWithUF = Feature<Geometry, { name?: string; _uf: string }>;
 
-export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, outrosTotal }: Props) {
+export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, outrosTotal, trialScale }: Props) {
   const isArea = ufs.length > 1;
   const key = ufs.join("-");
   const [features, setFeatures] = useState<FeatWithUF[] | null>(null);
@@ -130,7 +131,27 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     </g>
   );
 
-  const colorFor = (total: number) => {
+  const vizinhos = useMemo(() => {
+    const out = new Set<number>();
+    if (!trialScale || !features) return out;
+    const coords = (g: any): number[][] =>
+      g.type === "Polygon" ? g.coordinates.flat() : g.type === "MultiPolygon" ? g.coordinates.flat(2) : [];
+    const k = (c: number[]) => `${c[0].toFixed(4)},${c[1].toFixed(4)}`;
+    const tot = features.map((f) => normalizedByUF[f.properties._uf]?.[normalize(f.properties?.name ?? "")] ?? 0);
+    const pts = new Set<string>();
+    features.forEach((f, i) => { if (tot[i] > 100) coords(f.geometry).forEach((c) => pts.add(k(c))); });
+    features.forEach((f, i) => { if (!tot[i] && coords(f.geometry).some((c) => pts.has(k(c)))) out.add(i); });
+    return out;
+  }, [trialScale, features, normalizedByUF]);
+
+  const colorFor = (total: number, i = -1) => {
+    if (trialScale) {
+      if (!total || total <= 0) return vizinhos.has(i) ? "hsl(var(--primary) / 0.12)" : "hsl(var(--muted))";
+      const lim = [50, 100, 300, 500, 1000, 4000];
+      const alphas = [0.25, 0.38, 0.5, 0.62, 0.75, 0.88, 1];
+      const t = lim.filter((l) => total >= l).length;
+      return `hsl(var(--primary) / ${alphas[t]})`;
+    }
     if (!total || total <= 0) return "hsl(var(--muted))";
     // Discrete tiers by absolute number of lives.
     // base < 300, +1 tone >=300, +2 >=1000, +3 >=3000, +4 >=5000
@@ -169,7 +190,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
             <path
               key={i}
               d={d}
-              fill={colorFor(total)}
+              fill={colorFor(total, i)}
               stroke="none"
               strokeWidth={0}
               onMouseMove={(e) => {
