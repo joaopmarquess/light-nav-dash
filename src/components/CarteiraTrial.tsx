@@ -163,13 +163,6 @@ export default function CarteiraTrial() {
 
   return (
     <div className="h-full flex flex-col gap-4 min-h-0">
-      <div className="grid grid-cols-4 gap-3 shrink-0">
-        <Kpi icon={UserCheck} label="Ativos" v={kpi?.ativos} on={f.status === "A"} onClick={() => set("status", f.status === "A" ? ALL : "A")} />
-        <Kpi icon={Building2} label="Futuros" v={kpi?.futuros} on={f.status === "F"} onClick={() => set("status", f.status === "F" ? ALL : "F")} />
-        <Kpi icon={UserX} label="Cancelados" v={kpi?.cancelados} on={f.status === "C"} onClick={() => set("status", f.status === "C" ? ALL : "C")} />
-        <Kpi icon={Users} label="Total" v={kpi?.total} on={false} onClick={() => set("status", ALL)} />
-      </div>
-
       <div className="flex flex-wrap items-center gap-2 shrink-0 bg-card border border-border rounded-xl p-3">
         <label className="flex items-center gap-2 text-sm text-muted-foreground">Ativos em:
           <Input type="date" className="w-40" value={dataRef} onChange={(e) => setDataRef(e.target.value)} />
@@ -238,6 +231,13 @@ export default function CarteiraTrial() {
           </span>
           <span>{fim ? "Tudo carregado" : "Role para carregar mais"}</span>
         </div>
+      </div>
+
+      <div className="grid grid-cols-4 gap-3 shrink-0">
+        <Kpi icon={UserCheck} label="Ativos" v={kpi?.ativos} on={f.status === "A"} onClick={() => set("status", f.status === "A" ? ALL : "A")} />
+        <Kpi icon={Building2} label="Futuros" v={kpi?.futuros} on={f.status === "F"} onClick={() => set("status", f.status === "F" ? ALL : "F")} />
+        <Kpi icon={UserX} label="Cancelados" v={kpi?.cancelados} on={f.status === "C"} onClick={() => set("status", f.status === "C" ? ALL : "C")} />
+        <Kpi icon={Users} label="Total" v={kpi?.total} on={false} onClick={() => set("status", ALL)} />
       </div>
 
       <Sheet open={!!sel} onOpenChange={(o) => !o && setSel(null)}>
