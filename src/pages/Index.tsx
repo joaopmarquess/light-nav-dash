@@ -91,7 +91,7 @@ import AssistencialAuditoriaSSPMJR from "@/components/AssistencialAuditoriaSSPMJ
 import AssistencialRelatorioExecutor from "@/components/AssistencialRelatorioExecutor";
 import AssistencialReceitas2518 from "@/components/AssistencialReceitas2518";
 import { useConsultaState } from "@/lib/assistencialConsultaStore";
-import { Loader2, DollarSign } from "lucide-react";
+import { Loader2, DollarSign, FlaskConical } from "lucide-react";
 
 
 
@@ -107,11 +107,10 @@ type MenuItem = {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   children?: { icon: React.ComponentType<{ className?: string }>; label: string; id?: string; nivel?: number }[];
+  lab?: MenuItem[];
 };
 
-const menuItems: MenuItem[] = [
-  { icon: Home, label: "Home" },
-  {
+const controlItem: MenuItem = {
     icon: DollarSign,
     label: "Control",
     children: [
@@ -122,7 +121,10 @@ const menuItems: MenuItem[] = [
       { icon: Settings, label: "Configurações", id: "__cfg_control__" },
       { icon: ListTree, label: "Contas", id: "Control · Contas", nivel: 2 },
     ],
-  },
+};
+
+const labItems: MenuItem[] = [
+  { icon: Home, label: "Home" },
   {
     icon: Users,
     label: "Carteira",
@@ -191,6 +193,11 @@ const menuItems: MenuItem[] = [
   { icon: LayoutDashboard, label: "B.I. Overview" },
 ];
 
+const menuItems: MenuItem[] = [
+  controlItem,
+  { icon: FlaskConical, label: "Laboratory", lab: labItems },
+];
+
 const Index = () => {
   const [active, setActive] = useState("Home");
   const { nome, signOut } = useAuth();
@@ -200,6 +207,7 @@ const Index = () => {
   const [ctrlDreDre, setCtrlDreDre] = useState(false);
   const [abaOrc, setAbaOrc] = useState("Faturamento");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [labOpen, setLabOpen] = useState<Record<string, boolean>>({});
   const [collapsed, setCollapsed] = useState(true);
   const [dateValue, setDateValue] = useState(todayBR());
   const [ativosDrillNome, setAtivosDrillNome] = useState<string | null>(null);
@@ -216,7 +224,8 @@ const Index = () => {
     const biHandler = () => setActive("B.I. Overview");
     window.addEventListener("open-bi-overview", biHandler);
     const unimedHandler = () => {
-      setOpenGroups((p) => ({ ...p, "Simulações": true }));
+      setOpenGroups({ Laboratory: true });
+      setLabOpen({ "Simulações": true });
       setActive("Uberaba");
     };
     window.addEventListener("open-unimed-uberaba", unimedHandler);
@@ -260,7 +269,7 @@ const Index = () => {
           <TooltipProvider delayDuration={150}>
           {menuItems.map((item) => {
             const isActive = active === item.label;
-            const hasChildren = !!item.children;
+            const hasChildren = !!item.children || !!item.lab;
             const isOpen = openGroups[item.label];
 
             const button = (
@@ -331,6 +340,59 @@ const Index = () => {
                           <child.icon className="h-4 w-4 shrink-0" />
                           <span className="whitespace-nowrap">{child.label}</span>
                         </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {item.lab && isOpen && !collapsed && (
+                  <div className="mt-1 space-y-1">
+                    {item.lab.map((sub) => {
+                      const subOpen = !!labOpen[sub.label];
+                      const subActive = !sub.children && active === sub.label;
+                      return (
+                        <div key={sub.label}>
+                          <button
+                            onClick={() =>
+                              sub.children
+                                ? setLabOpen((p) => ({ [sub.label]: !p[sub.label] }))
+                                : setActive(sub.label)
+                            }
+                            className={`w-full flex items-center gap-3 pl-9 pr-3 py-2 rounded-lg text-sm transition-colors ${
+                              subActive
+                                ? "bg-accent text-primary font-medium"
+                                : "text-foreground/70 hover:bg-accent/60 hover:text-primary"
+                            }`}
+                          >
+                            <sub.icon className="h-4 w-4 shrink-0" />
+                            <span className="flex-1 text-left whitespace-nowrap">{sub.label}</span>
+                            {sub.children && (
+                              <ChevronDown className={`h-4 w-4 transition-transform ${subOpen ? "" : "-rotate-90"}`} />
+                            )}
+                          </button>
+                          {sub.children && subOpen && (
+                            <div className="mt-1 space-y-1">
+                              {sub.children.map((child) => {
+                                const key = child.id ?? child.label;
+                                const childActive = active === key || (key === "Painel Orçamento" && active === "Simulação");
+                                return (
+                                  <button
+                                    key={child.label}
+                                    onClick={() => setActive(key)}
+                                    className={`w-full flex items-center gap-3 pl-14 pr-3 py-2 rounded-lg text-sm transition-colors ${
+                                      childActive
+                                        ? "bg-accent text-primary font-medium"
+                                        : "text-foreground/60 hover:bg-accent/60 hover:text-primary"
+                                    }`}
+                                  >
+                                    <child.icon className="h-4 w-4 shrink-0" />
+                                    <span className="whitespace-nowrap">{child.label}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
                       );
                     })}
                   </div>
