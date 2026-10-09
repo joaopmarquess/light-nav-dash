@@ -1,4 +1,5 @@
 import CarteiraTrial from "@/components/CarteiraTrial";
+import CarteiraTrialGeo from "@/components/CarteiraTrialGeo";
 import { useEffect, useState } from "react";
 import {
   Home,
@@ -196,7 +197,7 @@ const labItems: MenuItem[] = [
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   controlItem,
-  { icon: Users, label: "Carteira (Trial)", children: [{ icon: Search, label: "Consulta", id: "Carteira (Trial) · Consulta" }] },
+  { icon: Users, label: "Carteira (Trial)", children: [{ icon: Search, label: "Consulta", id: "Carteira (Trial) · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira (Trial) · Área Geográfica" }] },
   { icon: FlaskConical, label: "Laboratory", lab: labItems },
 ];
 
@@ -596,6 +597,8 @@ const Index = () => {
             <CarteiraMapa />
           ) : active === "Gráfico Sinistralidade" ? (
             <SinistralidadeGraficos />
+          ) : active === "Carteira (Trial) · Área Geográfica" ? (
+            <CarteiraTrialGeo />
           ) : active === "Carteira (Trial) · Consulta" ? (
             <CarteiraTrial />
           ) : active === "Home" ? (
