@@ -70,8 +70,8 @@ const CarteiraTrialGeo = () => {
           <div className="text-destructive text-sm">Erro: {error}</div>
         ) : (
           <div className="h-full grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-            <div className="flex flex-col justify-center space-y-2">
-              <div className="text-lg font-semibold text-foreground tabular-nums mb-1">Beneficiários ativos: {total.toLocaleString("pt-BR")}</div>
+            <div className="flex flex-col justify-start space-y-2">
+              <div className="text-3xl font-bold text-foreground tabular-nums mb-2">{total.toLocaleString("pt-BR")} vidas</div>
               {porUF.map((r) => {
                 const max = Math.max(1, ...porUF.map((x) => x.total));
                 const share = total > 0 ? (r.total / total) * 100 : 0;
