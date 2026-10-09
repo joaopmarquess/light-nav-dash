@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Settings, useEffect, useState } from "react";
 import {
   Home,
   TrendingUp,
@@ -114,11 +114,11 @@ const menuItems: MenuItem[] = [
     icon: DollarSign,
     label: "Control",
     children: [
-      { icon: FileText, label: "DRE Controladoria", id: "Control · DRE Gerencial PE" },
-      { icon: ListTree, label: "Contas", id: "Control · Contas" },
+      { icon: FileText, label: "Controladoria", id: "Control · DRE Gerencial PE" },
       { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente" },
       { icon: TrendingUp, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
-      { icon: LayoutDashboard, label: "Carrossel", id: "Control · Dashboards" },
+      { icon: Settings, label: "Configurações", id: "__cfg_control__" },
+      { icon: ListTree, label: "Contas", id: "Control · Contas", nivel: 2 },
     ],
   },
   {
@@ -194,6 +194,7 @@ const Index = () => {
   const { nome, signOut } = useAuth();
   const [ctrlAba, setCtrlAba] = useState<string | null>(null);
   const [ctrlOrcDre, setCtrlOrcDre] = useState(false);
+  const [ctrlCfgOpen, setCtrlCfgOpen] = useState(false);
   const [ctrlDreDre, setCtrlDreDre] = useState(false);
   const [abaOrc, setAbaOrc] = useState("Faturamento");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
@@ -312,13 +313,14 @@ const Index = () => {
 
                 {hasChildren && isOpen && !collapsed && (
                   <div className="mt-1 space-y-1">
-                    {item.children!.map((child) => {
+                    {item.children!.map((child: any) => {
+                      if (child.nivel === 2 && !ctrlCfgOpen && active !== child.id) return null;
                       const childActive = active === (child.id ?? child.label) || ((child.id ?? child.label) === "Painel Orçamento" && active === "Simulação");
                       return (
                         <button
                           key={child.label}
-                          onClick={() => setActive((child.id ?? child.label))}
-                          className={`w-full flex items-center gap-3 pl-9 pr-3 py-2 rounded-lg text-sm transition-colors ${
+                          onClick={() => child.id === "__cfg_control__" ? setCtrlCfgOpen((o) => !o) : setActive((child.id ?? child.label))}
+                          className={`w-full flex items-center gap-3 ${child.nivel === 2 ? "pl-14" : "pl-9"} pr-3 py-2 rounded-lg text-sm transition-colors ${
                             childActive
                               ? "bg-accent text-primary font-medium"
                               : "text-foreground/60 hover:bg-accent/60 hover:text-primary"
