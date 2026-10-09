@@ -58,7 +58,7 @@ export default function CarteiraTrial() {
   const [f, setF] = useState<Filters>(EMPTY);
   const df = useDebounced(f);
   const [page, setPage] = useState(0);
-  const [sort, setSort] = useState<{ key: string; asc: boolean }>({ key: "nm_beneficiario", asc: true });
+  const [sort, setSort] = useState<{ key: string; asc: boolean }>({ key: "", asc: true });
   const [rows, setRows] = useState<Row[]>([]);
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -71,14 +71,15 @@ export default function CarteiraTrial() {
     let cancel = false;
     (async () => {
       setLoading(true);
-      let q = hostinger.from(TABLE).select("*", { count: "exact" });
-      q = applyFilters(q, df).order(sort.key, { ascending: sort.asc, nullsFirst: false }).range(page * PAGE, page * PAGE + PAGE - 1);
-      const { data, count, error } = await q;
+      let q = applyFilters(hostinger.from(TABLE).select("*"), df);
+      if (sort.key) q = q.order(sort.key, { ascending: sort.asc, nullsFirst: false });
+      const { data, error } = await q.range(page * PAGE, page * PAGE + PAGE - 1);
       if (cancel) return;
       if (error) console.error(error);
       setRows(data ?? []);
-      setTotal(count ?? null);
       setLoading(false);
+      const { count } = await applyFilters(hostinger.from(TABLE).select("cd_matricula", { count: "exact", head: true }), df);
+      if (!cancel) setTotal(count ?? null);
     })();
     return () => { cancel = true; };
   }, [df, page, sort]);
