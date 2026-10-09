@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import type { FeatureCollection, Feature, Geometry } from "geojson";
 import { Loader2 } from "lucide-react";
@@ -84,8 +84,20 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     };
   }, [key, isArea]);
 
-  const width = 600;
-  const height = 560;
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ w: 600, h: 560 });
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => {
+      const { width: w, height: h } = e.contentRect;
+      if (w > 50 && h > 50) setSize({ w: Math.round(w), h: Math.round(h) });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [features]);
+  const width = size.w;
+  const height = size.h;
 
   const normalizedByUF = useMemo(() => {
     const out: Record<string, Record<string, number>> = {};
@@ -110,7 +122,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     const fc: FeatureCollection = { type: "FeatureCollection", features };
     const projection = geoMercator().fitExtent([[4, 4], [width - 4, height - 4]], fc);
     return { pathFn: geoPath(projection), projection };
-  }, [features]);
+  }, [features, width, height]);
   const label = (x: number, y: number, t1: string, t2: string, k: string) => (
     <g key={k} transform={`translate(${x},${y})`} pointerEvents="none">
       <text textAnchor="middle" fontSize={14} fontWeight={700} fill="hsl(var(--foreground))" stroke="hsl(var(--background))" strokeWidth={3} paintOrder="stroke">{t1}</text>
@@ -140,11 +152,11 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
   }
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
+    <div ref={boxRef} className="relative w-full h-full min-h-[300px]">
       <svg
         viewBox={`0 0 ${width} ${height}`}
         preserveAspectRatio="xMidYMid meet"
-        className="w-full h-full max-h-full"
+        className="absolute inset-0 w-full h-full"
         role="img"
         aria-label={`Mapa de calor por município — ${ufs.join(", ")}`}
       >
