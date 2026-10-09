@@ -98,7 +98,14 @@ export default function CarteiraTrial() {
   const [fim, setFim] = useState(false);
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [kpi, setKpi] = useState<{ total?: number }>({});
+  const [kpi, setKpi] = useState<{ ativos?: number; futuros?: number; cancelados?: number; total?: number } | null>(null);
+  useEffect(() => {
+    hostinger.rpc("carteira_trial_kpis").then(({ data, error }: any) => {
+      if (error) { console.error(error); return; }
+      const r = Array.isArray(data) ? data[0] : data;
+      if (r) setKpi({ ativos: Number(r.ativos), futuros: Number(r.futuros), cancelados: Number(r.cancelados), total: Number(r.total) });
+    });
+  }, []);
   const vis = useMemo(() => {
     const v = f.status === ALL ? rows : rows.filter((r) => r.st === f.status);
     return sort.key === "st" ? [...v].sort((a, b) => (sort.asc ? 1 : -1) * String(a.st).localeCompare(String(b.st))) : v;
@@ -128,22 +135,6 @@ export default function CarteiraTrial() {
     return () => { cancel = true; };
   }, [dfKey, page, sort.key === "st" ? "" : sort.key, sort.asc]);
 
-  // KPIs respeitam os filtros (exceto status/tipo que eles próprios segmentam)
-  useEffect(() => {
-    let cancel = false;
-    const c = async (over: Partial<Filters>) => {
-      const { count } = await applyFilters(hostinger.from(TABLE).select("cd_matricula", { count: "exact", head: true }), { ...df, ...over });
-      return count ?? 0;
-    };
-    (async () => {
-      const [ativos] = await Promise.all([
-        c({}),
-      ]);
-      if (!cancel) setKpi({ total: ativos });
-    })();
-    return () => { cancel = true; };
-  }, [dfKey]);
-
   const pages = total ? Math.ceil(total / PAGE) : 1;
   const set = (k: keyof Filters, v: string) => setF((p) => ({ ...p, [k]: v }));
   const activeChips = useMemo(() => (Object.keys(f) as (keyof Filters)[]).filter((k) => f[k] && f[k] !== ALL && f[k] !== EMPTY[k]), [f]);
@@ -171,10 +162,10 @@ export default function CarteiraTrial() {
   return (
     <div className="h-full flex flex-col gap-4 min-h-0">
       <div className="grid grid-cols-4 gap-3 shrink-0">
-        <Kpi icon={UserCheck} label="Ativos" v={loading ? null : cnt("A")} on={f.status === "A"} onClick={() => set("status", f.status === "A" ? ALL : "A")} />
-        <Kpi icon={Building2} label="Futuros" v={loading ? null : cnt("F")} on={f.status === "F"} onClick={() => set("status", f.status === "F" ? ALL : "F")} />
-        <Kpi icon={UserX} label="Cancelados" v={loading ? null : cnt("C")} on={f.status === "C"} onClick={() => set("status", f.status === "C" ? ALL : "C")} />
-        <Kpi icon={Users} label="Total no grid" v={kpi.total} on={false} onClick={() => set("status", ALL)} />
+        <Kpi icon={UserCheck} label="Ativos" v={kpi?.ativos} on={f.status === "A"} onClick={() => set("status", f.status === "A" ? ALL : "A")} />
+        <Kpi icon={Building2} label="Futuros" v={kpi?.futuros} on={f.status === "F"} onClick={() => set("status", f.status === "F" ? ALL : "F")} />
+        <Kpi icon={UserX} label="Cancelados" v={kpi?.cancelados} on={f.status === "C"} onClick={() => set("status", f.status === "C" ? ALL : "C")} />
+        <Kpi icon={Users} label="Total" v={kpi?.total} on={false} onClick={() => set("status", ALL)} />
       </div>
 
       <div className="flex flex-wrap items-center gap-2 shrink-0 bg-card border border-border rounded-xl p-3">
