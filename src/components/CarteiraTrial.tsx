@@ -97,11 +97,15 @@ export default function CarteiraTrial() {
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [kpi, setKpi] = useState<{ total?: number }>({});
-  const vis = useMemo(() => f.status === ALL ? rows : rows.filter((r) => r.st === f.status), [rows, f.status]);
+  const vis = useMemo(() => {
+    const v = f.status === ALL ? rows : rows.filter((r) => r.st === f.status);
+    return sort.key === "st" ? [...v].sort((a, b) => (sort.asc ? 1 : -1) * String(a.st).localeCompare(String(b.st))) : v;
+  }, [rows, f.status, sort]);
   const cnt = (k: string) => rows.filter((r) => r.st === k).length;
   const [sel, setSel] = useState<Row | null>(null);
 
-  useEffect(() => { setPage(0); }, [df]);
+  const dfKey = JSON.stringify({ ...df, status: "" });
+  useEffect(() => { setPage(0); }, [dfKey]);
 
   useEffect(() => {
     let cancel = false;
@@ -134,7 +138,7 @@ export default function CarteiraTrial() {
       if (!cancel) setKpi({ total: ativos });
     })();
     return () => { cancel = true; };
-  }, [{ ...df, status: "" }].map((x) => JSON.stringify(x))[0] as any);
+  }, [dfKey]);
 
   const pages = total ? Math.ceil(total / PAGE) : 1;
   const set = (k: keyof Filters, v: string) => setF((p) => ({ ...p, [k]: v }));
