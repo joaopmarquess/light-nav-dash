@@ -33,8 +33,20 @@ function agrupar(rows: Row[]): Row[] {
     base.dt_reativacao = maxD(o.dt_reativacao, r.dt_reativacao);
     m.set(k, base);
   }
-  return [...m.values()];
+  return [...m.values()].map((r) => ({ ...r, st: calcStatus(r) }));
 }
+const dia = (v: any) => (v ? String(v).slice(0, 10) : "");
+function calcStatus(r: Row): "A" | "F" | "C" {
+  const hoje = new Date().toISOString().slice(0, 10);
+  const vig = dia(r.dt_vigencia_beneficiario), can = dia(r.dt_desligamento), rea = dia(r.dt_reativacao);
+  if (vig && vig > hoje) return "F";
+  if (vig && vig <= hoje) {
+    if (!can && !rea) return "A";
+    if (rea && rea <= hoje && (!can || rea > can)) return "A";
+  }
+  return "C";
+}
+const ST: Record<string, [string, any]> = { A: ["Ativo", "default"], F: ["Futuro", "secondary"], C: ["Cancelado", "destructive"] };
 const COLS: { key: string; label: string; fmt?: (v: any) => string; align?: "right" }[] = [
   { key: "cd_mat_alternativa", label: "Matrícula", fmt: (v) => fmtMat(v) },
   { key: "nm_beneficiario", label: "Beneficiário" },
@@ -46,7 +58,7 @@ const COLS: { key: string; label: string; fmt?: (v: any) => string; align?: "rig
   { key: "dt_vigencia_beneficiario", label: "Vigência", fmt: fmtD },
   { key: "dt_desligamento", label: "Cancelamento", fmt: fmtD },
   { key: "dt_reativacao", label: "Reativação", fmt: fmtD },
-  { key: "tp_status", label: "Status" },
+  { key: "st", label: "Status" },
 ];
 const cidadeUf = (r: Row) => r.nm_cidade_plano ? `${String(r.nm_cidade_plano).trim()} (${String(r.cd_uf_plano ?? "").trim()})` : "—";
 
@@ -54,14 +66,13 @@ const fmtDate = (v: any) => v ? new Date(v).toLocaleDateString("pt-BR", { timeZo
 const ALL = "__all__";
 
 type Filters = { q: string; status: string; tipo: string; sexo: string; pme: string; uf: string; cidade: string; empresa: string };
-const EMPTY: Filters = { q: "", status: "A", tipo: "SAUDE", sexo: ALL, pme: ALL, uf: ALL, cidade: "", empresa: "" };
+const EMPTY: Filters = { q: "", status: ALL, tipo: "SAUDE", sexo: ALL, pme: ALL, uf: ALL, cidade: "", empresa: "" };
 
 function applyFilters(q: any, f: Filters) {
   if (f.q.trim()) {
     const t = f.q.trim();
     q = /^\d+$/.test(t) ? q.or(`cd_mat_alternativa.eq.${t},cd_contrato.eq.${t}`) : q.ilike("nm_beneficiario", `%${t}%`);
   }
-  if (f.status !== ALL) q = q.eq("tp_status", f.status);
   q = q.eq("tp_plano", "SAUDE").lte("cd_mat_alternativa", 399999999999);
   if (f.sexo !== ALL) q = q.eq("tp_sexo", f.sexo);
   if (f.pme !== ALL) q = q.eq("sn_pme", f.pme);
@@ -85,17 +96,23 @@ export default function CarteiraTrial() {
   const [rows, setRows] = useState<Row[]>([]);
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [kpi, setKpi] = useState<{ ativos?: number; cancel?: number; total?: number }>({});
+  const [kpi, setKpi] = useState<{ total?: number }>({});
+  const vis = useMemo(() => {
+    const v = f.status === ALL ? rows : rows.filter((r) => r.st === f.status);
+    return sort.key === "st" ? [...v].sort((a, b) => (sort.asc ? 1 : -1) * String(a.st).localeCompare(String(b.st))) : v;
+  }, [rows, f.status, sort]);
+  const cnt = (k: string) => rows.filter((r) => r.st === k).length;
   const [sel, setSel] = useState<Row | null>(null);
 
-  useEffect(() => { setPage(0); }, [df]);
+  const dfKey = JSON.stringify({ ...df, status: "" });
+  useEffect(() => { setPage(0); }, [dfKey]);
 
   useEffect(() => {
     let cancel = false;
     (async () => {
       setLoading(true);
       let q = applyFilters(hostinger.from(TABLE).select("*"), df);
-      if (sort.key) q = q.order(sort.key, { ascending: sort.asc, nullsFirst: false });
+      if (sort.key && sort.key !== "st") q = q.order(sort.key, { ascending: sort.asc, nullsFirst: false });
       const { data, error } = await q.range(page * PAGE, page * PAGE + PAGE - 1);
       if (cancel) return;
       if (error) console.error(error);
@@ -105,7 +122,7 @@ export default function CarteiraTrial() {
       if (!cancel) setTotal(count ?? null);
     })();
     return () => { cancel = true; };
-  }, [df, page, sort]);
+  }, [dfKey, page, sort.key === "st" ? "" : sort.key, sort.asc]);
 
   // KPIs respeitam os filtros (exceto status/tipo que eles próprios segmentam)
   useEffect(() => {
@@ -115,13 +132,13 @@ export default function CarteiraTrial() {
       return count ?? 0;
     };
     (async () => {
-      const [ativos, cancelados, total] = await Promise.all([
-        df.status === "C" ? 0 : c({ status: "A" }), df.status === "A" ? 0 : c({ status: "C" }), c({}),
+      const [ativos] = await Promise.all([
+        c({}),
       ]);
-      if (!cancel) setKpi({ ativos, cancel: cancelados, total });
+      if (!cancel) setKpi({ total: ativos });
     })();
     return () => { cancel = true; };
-  }, [df]);
+  }, [dfKey]);
 
   const pages = total ? Math.ceil(total / PAGE) : 1;
   const set = (k: keyof Filters, v: string) => setF((p) => ({ ...p, [k]: v }));
@@ -129,7 +146,7 @@ export default function CarteiraTrial() {
 
   const exportCsv = () => {
     const head = COLS.map((c) => c.label).join(";");
-    const body = rows.map((r) => COLS.map((c) => `"${String(c.fmt ? c.fmt(r[c.key]) : r[c.key] ?? "").trim().replace(/"/g, '""')}"`).join(";")).join("\n");
+    const body = vis.map((r) => COLS.map((c) => `"${String(c.fmt ? c.fmt(r[c.key]) : r[c.key] ?? "").trim().replace(/"/g, '""')}"`).join(";")).join("\n");
     const blob = new Blob(["\uFEFF" + head + "\n" + body], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -149,9 +166,10 @@ export default function CarteiraTrial() {
 
   return (
     <div className="h-full flex flex-col gap-4 min-h-0">
-      <div className="grid grid-cols-3 gap-3 shrink-0">
-        <Kpi icon={UserCheck} label="Ativos" v={kpi.ativos} on={f.status === "A"} onClick={() => set("status", f.status === "A" ? ALL : "A")} />
-        <Kpi icon={UserX} label="Cancelados" v={kpi.cancel} on={f.status === "C"} onClick={() => set("status", f.status === "C" ? ALL : "C")} />
+      <div className="grid grid-cols-4 gap-3 shrink-0">
+        <Kpi icon={UserCheck} label="Ativos (página)" v={loading ? null : cnt("A")} on={f.status === "A"} onClick={() => set("status", f.status === "A" ? ALL : "A")} />
+        <Kpi icon={Building2} label="Futuros (página)" v={loading ? null : cnt("F")} on={f.status === "F"} onClick={() => set("status", f.status === "F" ? ALL : "F")} />
+        <Kpi icon={UserX} label="Cancelados (página)" v={loading ? null : cnt("C")} on={f.status === "C"} onClick={() => set("status", f.status === "C" ? ALL : "C")} />
         <Kpi icon={Users} label="Total no grid" v={kpi.total} on={false} onClick={() => set("status", ALL)} />
       </div>
 
@@ -163,7 +181,7 @@ export default function CarteiraTrial() {
         <Input className="w-48" placeholder="Empresa" value={f.empresa} onChange={(e) => set("empresa", e.target.value)} />
         <Input className="w-40" placeholder="Cidade" value={f.cidade} onChange={(e) => set("cidade", e.target.value)} />
         {([
-          ["status", "Status", [["A", "Ativo"], ["C", "Cancelado"]]],
+          ["status", "Status", [["A", "Ativo"], ["F", "Futuro"], ["C", "Cancelado"]]],
           ["sexo", "Sexo", [["F", "Feminino"], ["M", "Masculino"]]],
           ["pme", "PME", [["S", "Sim"], ["N", "Não"]]],
           ["uf", "UF", [["SP", "SP"], ["MG", "MG"], ["MS", "MS"], ["GO", "GO"]]],
@@ -196,18 +214,18 @@ export default function CarteiraTrial() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((r, i) => (
+              {vis.map((r, i) => (
                 <tr key={`${r.cd_matricula}-${i}`} onClick={() => setSel(r)} className="border-t border-border hover:bg-accent cursor-pointer">
                   {COLS.map((c) => (
                     <td key={c.key} className={`px-3 py-1.5 whitespace-nowrap max-w-[260px] truncate ${c.align === "right" ? "text-right tabular-nums" : ""}`}>
-                      {c.key === "tp_status" ? (
-                        <Badge variant={r.tp_status === "A" ? "default" : "destructive"}>{r.tp_status === "A" ? "Ativo" : "Cancelado"}</Badge>
+                      {c.key === "st" ? (
+                        <Badge variant={ST[r.st][1]}>{ST[r.st][0]}</Badge>
                       ) : c.key === "nm_cidade_plano" ? cidadeUf(r) : c.fmt ? c.fmt(r[c.key]) : String(r[c.key] ?? "—").trim()}
                     </td>
                   ))}
                 </tr>
               ))}
-              {!loading && rows.length === 0 && (
+              {!loading && vis.length === 0 && (
                 <tr><td colSpan={COLS.length} className="text-center text-muted-foreground py-10">Nenhum beneficiário encontrado.</td></tr>
               )}
             </tbody>
@@ -233,7 +251,7 @@ export default function CarteiraTrial() {
               <SheetHeader><SheetTitle>{sel.nm_beneficiario}</SheetTitle></SheetHeader>
               <div className="mt-4 space-y-4 text-sm">
                 {[
-                  ["Cadastro", [["Matrícula", fmtMat(sel.cd_mat_alternativa)], ["Contrato", sel.cd_contrato], ["Status", sel.tp_status === "A" ? "Ativo" : "Cancelado"], ["Nascimento", fmtDate(sel.dt_nascimento)], ["Idade", sel.qt_idade], ["Faixa", sel.ds_faixa_etaria], ["Sexo", sel.tp_sexo]]],
+                  ["Cadastro", [["Matrícula", fmtMat(sel.cd_mat_alternativa)], ["Contrato", sel.cd_contrato], ["Status", ST[sel.st][0]], ["Nascimento", fmtDate(sel.dt_nascimento)], ["Idade", sel.qt_idade], ["Faixa", sel.ds_faixa_etaria], ["Sexo", sel.tp_sexo]]],
                   ["Plano", [["Plano", sel.ds_plano], ["Acomodação", sel.tp_acomodacao], ["Contratação", sel.tp_contratacao], ["Recuperação", sel.tp_recuperacao], ["PME", sel.sn_pme], ["Mensalidade", brl(sel.vl_tmm)], ["Últ. reajuste", fmtDate(sel.dt_ult_reajuste)]]],
                   ["Empresa / Local", [["Estipulante", sel.nm_empresa_estipulante], ["Resp. financeiro", sel.nm_resp_financeiro], ["Cidade", `${sel.nm_cidade_plano ?? "—"} / ${sel.cd_uf_plano ?? ""}`], ["Regional", sel.nm_regional_plano], ["Vendedor", sel.nm_vendedor]]],
                   ["Datas", [["Cadastro", fmtDate(sel.dt_cadastro)], ["Vigência contrato", fmtDate(sel.dt_vigencia_contrato)], ["Vigência beneficiário", fmtDate(sel.dt_vigencia_beneficiario)], ["Cancelamento", fmtDate(sel.dt_desligamento)], ["Reativação", fmtDate(sel.dt_reativacao)], ["Motivo cancel.", sel.ds_motivo_cancelamento]]],
