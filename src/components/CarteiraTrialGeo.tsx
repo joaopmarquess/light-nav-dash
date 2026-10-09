@@ -50,7 +50,7 @@ const CarteiraTrialGeo = () => {
           <button type="button" onClick={() => setSel(null)} className="text-xs text-muted-foreground hover:text-foreground underline">← Voltar</button>
         </div>
         <div className="flex-1 min-h-0">
-          {sel === "BRASIL" ? <BrazilHeatMap ufTotals={ufTotals} /> : <StateHeatMap ufs={[sel]} cityTotalsByUF={cityTotalsByUF} stateTotals={ufTotals} />}
+          {sel === "BRASIL" ? <BrazilHeatMap ufTotals={ufTotals} /> : <StateHeatMap trialScale ufs={[sel]} cityTotalsByUF={cityTotalsByUF} stateTotals={ufTotals} />}
         </div>
       </div>
     );
@@ -100,7 +100,7 @@ const CarteiraTrialGeo = () => {
             <div className="bg-card rounded-xl border border-border shadow-sm p-2 flex flex-col min-h-0">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide px-2 pt-2">Mapa por cidade</h3>
               <div className="flex-1 min-h-0 h-full w-full">
-                <StateHeatMap ufs={["SP", "MG", "MS"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />
+                <StateHeatMap trialScale ufs={["SP", "MG", "MS"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />
               </div>
             </div>
           </div>
