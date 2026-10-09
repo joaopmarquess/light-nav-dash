@@ -58,10 +58,15 @@ const CarteiraTrialGeo = () => {
 
   return (
     <section className="h-full flex flex-col min-h-0 gap-4">
-      <div className="flex items-center gap-2 text-sm">
-        <span className="text-muted-foreground">Ativos em:</span>
-        <input type="date" value={data} onChange={(e) => e.target.value && setData(e.target.value)}
-          className="h-9 px-3 rounded-md border border-border bg-background text-foreground" />
+      <div className="flex items-center justify-between gap-4 bg-card rounded-xl border border-border shadow-sm px-6 py-4">
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Ativos em:</span>
+          <input type="date" value={data} onChange={(e) => e.target.value && setData(e.target.value)}
+            className="h-9 px-3 rounded-md border border-border bg-background text-foreground" />
+        </div>
+        {!loading && !error && (
+          <div className="text-3xl font-bold text-foreground tabular-nums">{total.toLocaleString("pt-BR")} vidas</div>
+        )}
       </div>
       <div className="flex-1 min-h-0">
         {loading ? (
@@ -69,31 +74,34 @@ const CarteiraTrialGeo = () => {
         ) : error ? (
           <div className="text-destructive text-sm">Erro: {error}</div>
         ) : (
-          <div className="h-full grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-            <div className="flex flex-col justify-start space-y-2">
-              <div className="text-3xl font-bold text-foreground tabular-nums mb-2">{total.toLocaleString("pt-BR")} vidas</div>
+          <div className="h-full grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+            <div className="bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col justify-center gap-4">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Vidas por estado</h3>
               {porUF.map((r) => {
                 const max = Math.max(1, ...porUF.map((x) => x.total));
                 const share = total > 0 ? (r.total / total) * 100 : 0;
                 const outros = r.uf === "Outros";
                 return (
                   <button key={r.uf} type="button" onClick={() => setSel(outros ? "BRASIL" : (r.uf as "SP" | "MG" | "MS"))}
-                    className="w-full text-left rounded-md p-2 hover:bg-accent/40 transition-colors">
-                    <div className="flex justify-between text-sm mb-1">
+                    className="w-full text-left rounded-md p-3 hover:bg-accent/40 transition-colors">
+                    <div className="flex justify-between text-base mb-2">
                       <span className="text-foreground inline-flex items-center gap-2">
-                        {!outros && UF_FLAGS[r.uf] && <img src={UF_FLAGS[r.uf]} alt={`Bandeira ${r.uf}`} className="h-3.5 w-5 object-cover rounded-[2px] border border-border" />}
+                        {!outros && UF_FLAGS[r.uf] && <img src={UF_FLAGS[r.uf]} alt={`Bandeira ${r.uf}`} className="h-4 w-6 object-cover rounded-[2px] border border-border" />}
                         {r.uf}
                       </span>
                       <span><span className="font-semibold text-foreground tabular-nums">{r.total.toLocaleString("pt-BR")}</span>{" "}
                         <span className="text-xs text-muted-foreground tabular-nums">({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)</span></span>
                     </div>
-                    <div className="flex h-2 rounded-full bg-accent overflow-hidden"><div className="h-full bg-primary" style={{ width: `${(r.total / max) * 100}%` }} /></div>
+                    <div className="flex h-2.5 rounded-full bg-accent overflow-hidden"><div className="h-full bg-primary" style={{ width: `${(r.total / max) * 100}%` }} /></div>
                   </button>
                 );
               })}
             </div>
-            <div className="w-full h-full flex items-center justify-center">
-              <StateHeatMap ufs={["SP", "MG", "MS"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />
+            <div className="bg-card rounded-xl border border-border shadow-sm p-4 flex flex-col min-h-0">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide px-2 pt-2">Mapa por cidade</h3>
+              <div className="flex-1 min-h-0 flex items-center justify-center">
+                <StateHeatMap ufs={["SP", "MG", "MS"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />
+              </div>
             </div>
           </div>
         )}
