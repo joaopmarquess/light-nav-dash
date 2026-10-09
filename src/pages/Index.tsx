@@ -194,6 +194,7 @@ const Index = () => {
   const { nome, signOut } = useAuth();
   const [ctrlAba, setCtrlAba] = useState<string | null>(null);
   const [ctrlOrcDre, setCtrlOrcDre] = useState(false);
+  const [ctrlDreDre, setCtrlDreDre] = useState(false);
   const [abaOrc, setAbaOrc] = useState("Faturamento");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [collapsed, setCollapsed] = useState(true);
@@ -506,7 +507,7 @@ const Index = () => {
           ) : active === "Administradoras" ? (
             <AdministradorasSim />
           ) : active === "Control · DRE Gerencial PE" ? (
-            <CtrlDRE />
+            ctrlDreDre ? <CtrlDRE onAba={() => setCtrlDreDre(false)} /> : <CtrlDRE painel onAba={() => setCtrlDreDre(true)} />
           ) : active === "Control · Contas" ? (
             <CtrlContas />
           ) : active === "Control · Orçamento Vigente" ? (
