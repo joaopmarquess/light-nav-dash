@@ -116,7 +116,7 @@ export default function CarteiraTrial() {
     };
     (async () => {
       const [ativos, cancelados, total] = await Promise.all([
-        c({ status: "A" }), c({ status: "C" }), c({ status: ALL }),
+        df.status === "C" ? 0 : c({ status: "A" }), df.status === "A" ? 0 : c({ status: "C" }), c({}),
       ]);
       if (!cancel) setKpi({ ativos, cancel: cancelados, total });
     })();
@@ -152,7 +152,7 @@ export default function CarteiraTrial() {
       <div className="grid grid-cols-3 gap-3 shrink-0">
         <Kpi icon={UserCheck} label="Ativos" v={kpi.ativos} on={f.status === "A"} onClick={() => set("status", f.status === "A" ? ALL : "A")} />
         <Kpi icon={UserX} label="Cancelados" v={kpi.cancel} on={f.status === "C"} onClick={() => set("status", f.status === "C" ? ALL : "C")} />
-        <Kpi icon={Users} label="Total Saúde" v={kpi.total} on={f.status === ALL} onClick={() => set("status", ALL)} />
+        <Kpi icon={Users} label="Total no grid" v={kpi.total} on={false} onClick={() => set("status", ALL)} />
       </div>
 
       <div className="flex flex-wrap items-center gap-2 shrink-0 bg-card border border-border rounded-xl p-3">
