@@ -195,6 +195,7 @@ const labItems: MenuItem[] = [
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   controlItem,
+  { icon: Users, label: "Carteira (Trial)" },
   { icon: FlaskConical, label: "Laboratory", lab: labItems },
 ];
 
@@ -594,6 +595,11 @@ const Index = () => {
             <CarteiraMapa />
           ) : active === "Gráfico Sinistralidade" ? (
             <SinistralidadeGraficos />
+          ) : active === "Carteira (Trial)" ? (
+            <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
+              <h1 className="text-2xl font-semibold text-foreground">Carteira (Trial)</h1>
+              <p className="text-sm mt-2">Em construção.</p>
+            </div>
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : active === "Assistencial" ? (
