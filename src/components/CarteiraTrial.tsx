@@ -115,7 +115,7 @@ export default function CarteiraTrial() {
   const vis = useMemo(() => {
     const v = df.status === ALL ? rows : rows.filter((r) => r.st === df.status);
     return sort.key === "st" ? [...v].sort((a, b) => (sort.asc ? 1 : -1) * String(a.st).localeCompare(String(b.st))) : v;
-  }, [rows, f.status, sort]);
+  }, [rows, df.status, sort]);
   useEffect(() => { if (!loading && !fim && df.status !== ALL && vis.length < 50 && raw.length > 0) setPage((p) => p + 1); }, [loading, fim, vis.length, df.status, raw.length]);
   const cnt = (k: string) => rows.filter((r) => r.st === k).length;
   const [sel, setSel] = useState<Row | null>(null);
