@@ -66,7 +66,7 @@ export default function CarteiraTrial() {
   const [f, setF] = useState<Filters>(EMPTY);
   const df = useDebounced(f);
   const [page, setPage] = useState(0);
-  const [sort, setSort] = useState<{ key: string; asc: boolean }>({ key: "", asc: true });
+  const [sort, setSort] = useState<{ key: string; asc: boolean }>({ key: "nm_beneficiario", asc: true });
   const [rows, setRows] = useState<Row[]>([]);
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
