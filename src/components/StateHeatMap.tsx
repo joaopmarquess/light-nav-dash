@@ -108,7 +108,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
   const { pathFn, projection } = useMemo(() => {
     if (!features) return { pathFn: null, projection: null };
     const fc: FeatureCollection = { type: "FeatureCollection", features };
-    const projection = geoMercator().fitSize([width, height], fc);
+    const projection = geoMercator().fitExtent([[4, 4], [width - 4, height - 4]], fc);
     return { pathFn: geoPath(projection), projection };
   }, [features]);
   const label = (x: number, y: number, t1: string, t2: string, k: string) => (

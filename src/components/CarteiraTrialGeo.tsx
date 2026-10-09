@@ -97,9 +97,9 @@ const CarteiraTrialGeo = () => {
                 );
               })}
             </div>
-            <div className="bg-card rounded-xl border border-border shadow-sm p-4 flex flex-col min-h-0">
+            <div className="bg-card rounded-xl border border-border shadow-sm p-2 flex flex-col min-h-0">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide px-2 pt-2">Mapa por cidade</h3>
-              <div className="flex-1 min-h-0 flex items-center justify-center">
+              <div className="flex-1 min-h-0 h-full w-full">
                 <StateHeatMap ufs={["SP", "MG", "MS"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />
               </div>
             </div>
