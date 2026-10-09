@@ -1,3 +1,4 @@
+import CarteiraTrial from "@/components/CarteiraTrial";
 import { useEffect, useState } from "react";
 import {
   Home,
@@ -596,10 +597,7 @@ const Index = () => {
           ) : active === "Gráfico Sinistralidade" ? (
             <SinistralidadeGraficos />
           ) : active === "Carteira (Trial)" ? (
-            <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
-              <h1 className="text-2xl font-semibold text-foreground">Carteira (Trial)</h1>
-              <p className="text-sm mt-2">Em construção.</p>
-            </div>
+            <CarteiraTrial />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : active === "Assistencial" ? (
