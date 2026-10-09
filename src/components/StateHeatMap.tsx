@@ -32,11 +32,13 @@ interface Props {
   ufs: ("SP" | "MG" | "MS")[];
   cityTotalsByUF: Record<string, Record<string, number>>;
   onSelectUF?: (uf: "SP" | "MG" | "MS") => void;
+  stateTotals?: Record<string, number>;
+  outrosTotal?: number;
 }
 
 type FeatWithUF = Feature<Geometry, { name?: string; _uf: string }>;
 
-export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF }: Props) {
+export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, outrosTotal }: Props) {
   const isArea = ufs.length > 1;
   const key = ufs.join("-");
   const [features, setFeatures] = useState<FeatWithUF[] | null>(null);
@@ -103,12 +105,18 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF }: Props) {
     return m;
   }, [ufs, cityTotalsByUF]);
 
-  const pathFn = useMemo(() => {
-    if (!features) return null;
+  const { pathFn, projection } = useMemo(() => {
+    if (!features) return { pathFn: null, projection: null };
     const fc: FeatureCollection = { type: "FeatureCollection", features };
     const projection = geoMercator().fitSize([width, height], fc);
-    return geoPath(projection);
+    return { pathFn: geoPath(projection), projection };
   }, [features]);
+  const label = (x: number, y: number, t1: string, t2: string, k: string) => (
+    <g key={k} transform={`translate(${x},${y})`} pointerEvents="none">
+      <text textAnchor="middle" fontSize={14} fontWeight={700} fill="hsl(var(--foreground))" stroke="hsl(var(--background))" strokeWidth={3} paintOrder="stroke">{t1}</text>
+      <text y={17} textAnchor="middle" fontSize={13} fontWeight={600} fill="hsl(var(--foreground))" stroke="hsl(var(--background))" strokeWidth={3} paintOrder="stroke">{t2}</text>
+    </g>
+  );
 
   const colorFor = (total: number) => {
     if (!total || total <= 0) return "hsl(var(--muted))";
@@ -191,6 +199,15 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF }: Props) {
               pointerEvents="none"
             />
           ))}
+        {stateTotals && stateOutlines?.map((f, i) => {
+          const uf = NAME_TO_UF[(f.properties as any)?.name] ?? "";
+          const [x, y] = pathFn.centroid(f);
+          return label(x, y, uf, (stateTotals[uf] ?? 0).toLocaleString("pt-BR") + " vidas", `lbl-${i}`);
+        })}
+        {outrosTotal != null && projection && (() => {
+          const p = projection([-50.5, -17.8]);
+          return p ? label(p[0], p[1], "Outros", outrosTotal.toLocaleString("pt-BR") + " vidas", "lbl-outros") : null;
+        })()}
       </svg>
 
       {hover && (
