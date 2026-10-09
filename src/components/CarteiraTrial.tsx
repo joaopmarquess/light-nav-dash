@@ -12,7 +12,7 @@ const TABLE = "view_ecarteira";
 const PAGE = 50;
 
 const COLS: { key: string; label: string; fmt?: (v: any) => string; align?: "right" }[] = [
-  { key: "cd_matricula", label: "Matrícula" },
+  { key: "cd_mat_alternativa", label: "Matrícula" },
   { key: "nm_beneficiario", label: "Beneficiário" },
   { key: "tp_status", label: "Status" },
   { key: "ds_plano", label: "Plano" },
@@ -31,12 +31,12 @@ const fmtDate = (v: any) => v ? new Date(v).toLocaleDateString("pt-BR", { timeZo
 const ALL = "__all__";
 
 type Filters = { q: string; status: string; tipo: string; sexo: string; pme: string; uf: string; cidade: string; empresa: string };
-const EMPTY: Filters = { q: "", status: "A", tipo: ALL, sexo: ALL, pme: ALL, uf: ALL, cidade: "", empresa: "" };
+const EMPTY: Filters = { q: "", status: "A", tipo: "SAUDE", sexo: ALL, pme: ALL, uf: ALL, cidade: "", empresa: "" };
 
 function applyFilters(q: any, f: Filters) {
   if (f.q.trim()) {
     const t = f.q.trim();
-    q = /^\d+$/.test(t) ? q.or(`cd_matricula.eq.${t},cd_contrato.eq.${t}`) : q.ilike("nm_beneficiario", `%${t}%`);
+    q = /^\d+$/.test(t) ? q.or(`cd_mat_alternativa.eq.${t},cd_contrato.eq.${t}`) : q.ilike("nm_beneficiario", `%${t}%`);
   }
   if (f.status !== ALL) q = q.eq("tp_status", f.status);
   if (f.tipo !== ALL) q = q.eq("tp_plano", f.tipo);
@@ -212,7 +212,7 @@ export default function CarteiraTrial() {
               <SheetHeader><SheetTitle>{sel.nm_beneficiario}</SheetTitle></SheetHeader>
               <div className="mt-4 space-y-4 text-sm">
                 {[
-                  ["Cadastro", [["Matrícula", sel.cd_matricula], ["Contrato", sel.cd_contrato], ["Status", sel.tp_status === "A" ? "Ativo" : "Cancelado"], ["Nascimento", fmtDate(sel.dt_nascimento)], ["Idade", sel.qt_idade], ["Faixa", sel.ds_faixa_etaria], ["Sexo", sel.tp_sexo]]],
+                  ["Cadastro", [["Matrícula", sel.cd_mat_alternativa], ["Contrato", sel.cd_contrato], ["Status", sel.tp_status === "A" ? "Ativo" : "Cancelado"], ["Nascimento", fmtDate(sel.dt_nascimento)], ["Idade", sel.qt_idade], ["Faixa", sel.ds_faixa_etaria], ["Sexo", sel.tp_sexo]]],
                   ["Plano", [["Plano", sel.ds_plano], ["Tipo", sel.tp_plano], ["Acomodação", sel.tp_acomodacao], ["Contratação", sel.tp_contratacao], ["Recuperação", sel.tp_recuperacao], ["PME", sel.sn_pme], ["Mensalidade", COLS[11].fmt!(sel.vl_tmm)], ["Últ. reajuste", fmtDate(sel.dt_ult_reajuste)]]],
                   ["Empresa / Local", [["Estipulante", sel.nm_empresa_estipulante], ["Resp. financeiro", sel.nm_resp_financeiro], ["Cidade", `${sel.nm_cidade_plano ?? "—"} / ${sel.cd_uf_plano ?? ""}`], ["Regional", sel.nm_regional_plano], ["Vendedor", sel.nm_vendedor]]],
                   ["Datas", [["Cadastro", fmtDate(sel.dt_cadastro)], ["Vigência contrato", fmtDate(sel.dt_vigencia_contrato)], ["Vigência beneficiário", fmtDate(sel.dt_vigencia_beneficiario)], ["Desligamento", fmtDate(sel.dt_desligamento)], ["Motivo cancel.", sel.ds_motivo_cancelamento]]],
