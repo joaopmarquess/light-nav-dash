@@ -9,7 +9,7 @@ import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Download, Loader2, Searc
 
 type Row = Record<string, any>;
 const TABLE = "view_ecarteira";
-const PAGE = 50;
+const PAGE = 200;
 
 const fmtD = (v: any) => v ? new Date(v).toLocaleDateString("pt-BR", { timeZone: "UTC" }) : "—";
 const brl = (v: any) => v == null ? "—" : Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -93,7 +93,9 @@ export default function CarteiraTrial() {
   const df = useDebounced(f);
   const [page, setPage] = useState(0);
   const [sort, setSort] = useState<{ key: string; asc: boolean }>({ key: "nm_beneficiario", asc: true });
-  const [rows, setRows] = useState<Row[]>([]);
+  const [raw, setRaw] = useState<Row[]>([]);
+  const rows = useMemo(() => agrupar(raw), [raw]);
+  const [fim, setFim] = useState(false);
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [kpi, setKpi] = useState<{ total?: number }>({});
@@ -105,7 +107,7 @@ export default function CarteiraTrial() {
   const [sel, setSel] = useState<Row | null>(null);
 
   const dfKey = JSON.stringify({ ...df, status: "" });
-  useEffect(() => { setPage(0); }, [dfKey]);
+  useEffect(() => { setPage(0); }, [dfKey, sort.key, sort.asc]);
 
   useEffect(() => {
     let cancel = false;
@@ -116,7 +118,8 @@ export default function CarteiraTrial() {
       const { data, error } = await q.range(page * PAGE, page * PAGE + PAGE - 1);
       if (cancel) return;
       if (error) console.error(error);
-      setRows(agrupar(data ?? []));
+      setRaw((old) => (page === 0 ? data ?? [] : [...old, ...(data ?? [])]));
+      setFim((data?.length ?? 0) < PAGE);
       setLoading(false);
       const { count } = await applyFilters(hostinger.from(TABLE).select("cd_matricula", { count: "exact", head: true }), df);
       if (!cancel) setTotal(count ?? null);
@@ -150,7 +153,7 @@ export default function CarteiraTrial() {
     const blob = new Blob(["\uFEFF" + head + "\n" + body], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `carteira_pagina_${page + 1}.csv`;
+    a.download = `carteira.csv`;
     a.click();
   };
 
@@ -167,9 +170,9 @@ export default function CarteiraTrial() {
   return (
     <div className="h-full flex flex-col gap-4 min-h-0">
       <div className="grid grid-cols-4 gap-3 shrink-0">
-        <Kpi icon={UserCheck} label="Ativos (página)" v={loading ? null : cnt("A")} on={f.status === "A"} onClick={() => set("status", f.status === "A" ? ALL : "A")} />
-        <Kpi icon={Building2} label="Futuros (página)" v={loading ? null : cnt("F")} on={f.status === "F"} onClick={() => set("status", f.status === "F" ? ALL : "F")} />
-        <Kpi icon={UserX} label="Cancelados (página)" v={loading ? null : cnt("C")} on={f.status === "C"} onClick={() => set("status", f.status === "C" ? ALL : "C")} />
+        <Kpi icon={UserCheck} label="Ativos" v={loading ? null : cnt("A")} on={f.status === "A"} onClick={() => set("status", f.status === "A" ? ALL : "A")} />
+        <Kpi icon={Building2} label="Futuros" v={loading ? null : cnt("F")} on={f.status === "F"} onClick={() => set("status", f.status === "F" ? ALL : "F")} />
+        <Kpi icon={UserX} label="Cancelados" v={loading ? null : cnt("C")} on={f.status === "C"} onClick={() => set("status", f.status === "C" ? ALL : "C")} />
         <Kpi icon={Users} label="Total no grid" v={kpi.total} on={false} onClick={() => set("status", ALL)} />
       </div>
 
@@ -196,12 +199,12 @@ export default function CarteiraTrial() {
         ))}
         <div className="ml-auto flex gap-2">
           {activeChips.length > 0 && <Button variant="ghost" size="sm" onClick={() => setF({ ...EMPTY, status: ALL })}><X className="h-4 w-4 mr-1" />Limpar</Button>}
-          <Button variant="outline" size="sm" onClick={exportCsv} disabled={!rows.length}><Download className="h-4 w-4 mr-1" />Exportar página</Button>
+          <Button variant="outline" size="sm" onClick={exportCsv} disabled={!rows.length}><Download className="h-4 w-4 mr-1" />Exportar</Button>
         </div>
       </div>
 
       <div className="flex-1 min-h-0 bg-card border border-border rounded-xl overflow-hidden flex flex-col">
-        <div className="flex-1 min-h-0 overflow-auto">
+        <div className="flex-1 min-h-0 overflow-auto" onScroll={(e) => { const el = e.currentTarget; if (!loading && !fim && el.scrollTop + el.clientHeight > el.scrollHeight - 300) setPage((p) => p + 1); }}>
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-muted z-10">
               <tr>
@@ -234,13 +237,9 @@ export default function CarteiraTrial() {
         <div className="shrink-0 border-t border-border px-4 py-2 flex items-center justify-between text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-2">
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {total != null ? `${total.toLocaleString("pt-BR")} registros` : "—"}
+            {rows.length.toLocaleString("pt-BR")} matrículas carregadas{total != null ? ` de ${total.toLocaleString("pt-BR")} registros` : ""}
           </span>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" className="h-8 w-8" disabled={page === 0} onClick={() => setPage((p) => p - 1)}><ChevronLeft className="h-4 w-4" /></Button>
-            <span className="tabular-nums">Página {page + 1} de {pages.toLocaleString("pt-BR")}</span>
-            <Button variant="outline" size="icon" className="h-8 w-8" disabled={page + 1 >= pages} onClick={() => setPage((p) => p + 1)}><ChevronRight className="h-4 w-4" /></Button>
-          </div>
+          <span>{fim ? "Tudo carregado" : "Role para carregar mais"}</span>
         </div>
       </div>
 
