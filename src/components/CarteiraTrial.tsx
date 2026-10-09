@@ -219,7 +219,7 @@ export default function CarteiraTrial() {
                   <div key={t}>
                     <p className="text-xs font-semibold uppercase text-primary mb-2">{t}</p>
                     <dl className="grid grid-cols-[140px_1fr] gap-y-1">
-                      {items.map(([l, v]: any) => (<><dt key={l} className="text-muted-foreground">{l}</dt><dd className="text-foreground">{v == null || v === "" ? "—" : String(v).trim()}</dd></>))}
+                      {items.map(([l, v]: any) => (<div key={l} className="contents"><dt className="text-muted-foreground">{l}</dt><dd className="text-foreground">{v == null || v === "" ? "—" : String(v).trim()}</dd></div>))}
                     </dl>
                   </div>
                 ))}
