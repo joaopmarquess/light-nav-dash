@@ -151,12 +151,21 @@ export function useDreCarrossel() {
         </ComposedChart>) },
       { title: "Evolução da sinistralidade", subtitle: `${sub} · despesas assistenciais ÷ entradas operacionais`, chart: (
         <ComposedChart data={sinis} margin={{ top: 24, right: 24, left: 8, bottom: 0 }}>
-          <defs><linearGradient id="sinArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f97316" stopOpacity={0.35} /><stop offset="100%" stopColor="#f97316" stopOpacity={0.02} /></linearGradient></defs>
+          <defs>{(() => {
+            const vs = sinis.map((x) => x.Sinistralidade), dmx = Math.max(...vs), dmn = Math.min(...vs);
+            const off = (t: number, lo: number) => Math.min(1, Math.max(0, dmx === lo ? (t >= dmx ? 0 : 1) : (dmx - t) / (dmx - lo)));
+            const st = (lo: number, op?: number) => { const a = off(100, lo), b = off(90, lo); return [
+              <stop key="1" offset={0} stopColor="#dc2626" stopOpacity={op} />, <stop key="2" offset={a} stopColor="#dc2626" stopOpacity={op} />,
+              <stop key="3" offset={a} stopColor="#f97316" stopOpacity={op} />, <stop key="4" offset={b} stopColor="#f97316" stopOpacity={op} />,
+              <stop key="5" offset={b} stopColor="#2563eb" stopOpacity={op} />, <stop key="6" offset={1} stopColor="#2563eb" stopOpacity={op} />]; };
+            return <><linearGradient id="sinArea" x1="0" y1="0" x2="0" y2="1">{st(sinMin, 0.2)}</linearGradient><linearGradient id="sinLinha" x1="0" y1="0" x2="0" y2="1">{st(dmn)}</linearGradient></>;
+          })()}</defs>
           <CartesianGrid vertical={false} strokeDasharray="4 6" opacity={0.25} /><XAxis dataKey="mes" axisLine={false} tickLine={false} tickMargin={10} /><YAxis axisLine={false} tickLine={false} width={60} domain={[sinMin, sinMax]} tickFormatter={(v: number) => `${v}%`} />
           <Tooltip formatter={(v: number) => `${Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`} cursor={{ stroke: "hsl(var(--muted-foreground))", strokeDasharray: "4 4" }} contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))", boxShadow: "0 8px 24px -8px hsl(var(--foreground) / 0.2)" }} /><Legend />
           <ReferenceLine y={100} stroke="#dc2626" strokeWidth={1.5} strokeDasharray="6 4" label={{ value: "100%", position: "insideTopRight", fill: "#dc2626", fontSize: 11 }} />
+          <ReferenceLine y={90} stroke="#f97316" strokeWidth={1.5} strokeDasharray="6 4" label={{ value: "90%", position: "insideTopRight", fill: "#f97316", fontSize: 11 }} />
           <Area type="monotone" dataKey="Sinistralidade" fill="url(#sinArea)" stroke="none" legendType="none" tooltipType="none" isAnimationActive={false} />
-          <Line type="monotone" dataKey="Sinistralidade" stroke="#f97316" strokeWidth={4} strokeLinecap="round" dot={{ r: 6, strokeWidth: 3, stroke: "hsl(var(--card))", fill: "#f97316" }}>
+          <Line type="monotone" dataKey="Sinistralidade" stroke="url(#sinLinha)" strokeWidth={4} strokeLinecap="round" dot={(p: any) => <circle key={p.index} cx={p.cx} cy={p.cy} r={6} strokeWidth={3} stroke="hsl(var(--card))" fill={p.value > 100 ? "#dc2626" : p.value >= 90 ? "#f97316" : "#2563eb"} />}>
             <LabelList dataKey="Sinistralidade" content={(p: any) => <text x={p.x} y={p.y - 14} textAnchor={p.index === sinis.length - 1 ? "end" : p.index === 0 ? "start" : "middle"} fontSize={12} fontWeight={600} fill="hsl(var(--foreground))">{((v: number) => `${Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`)(Number(p.value))}</text>} />
           </Line>
         </ComposedChart>) },
