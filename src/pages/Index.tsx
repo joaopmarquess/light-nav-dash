@@ -324,7 +324,7 @@ const Index = () => {
 
                 {hasChildren && isOpen && !collapsed && (
                   <div className="mt-1 space-y-1">
-                    {item.children!.map((child: any) => {
+                    {(item.children ?? []).map((child: any) => {
                       if (child.nivel === 2 && !ctrlCfgOpen && active !== child.id) return null;
                       const childActive = active === (child.id ?? child.label) || ((child.id ?? child.label) === "Painel Orçamento" && active === "Simulação");
                       return (
