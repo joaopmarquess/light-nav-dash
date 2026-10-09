@@ -196,7 +196,7 @@ const labItems: MenuItem[] = [
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   controlItem,
-  { icon: Users, label: "Carteira (Trial)" },
+  { icon: Users, label: "Carteira (Trial)", children: [{ icon: Search, label: "Consulta", id: "Carteira (Trial) · Consulta" }] },
   { icon: FlaskConical, label: "Laboratory", lab: labItems },
 ];
 
@@ -596,7 +596,7 @@ const Index = () => {
             <CarteiraMapa />
           ) : active === "Gráfico Sinistralidade" ? (
             <SinistralidadeGraficos />
-          ) : active === "Carteira (Trial)" ? (
+          ) : active === "Carteira (Trial) · Consulta" ? (
             <CarteiraTrial />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
