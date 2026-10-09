@@ -91,7 +91,7 @@ import AssistencialAuditoriaSSPMJR from "@/components/AssistencialAuditoriaSSPMJ
 import AssistencialRelatorioExecutor from "@/components/AssistencialRelatorioExecutor";
 import AssistencialReceitas2518 from "@/components/AssistencialReceitas2518";
 import { useConsultaState } from "@/lib/assistencialConsultaStore";
-import { Loader2, DollarSign } from "lucide-react";
+import { Loader2, DollarSign, FlaskConical } from "lucide-react";
 
 
 
@@ -107,11 +107,10 @@ type MenuItem = {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   children?: { icon: React.ComponentType<{ className?: string }>; label: string; id?: string; nivel?: number }[];
+  lab?: MenuItem[];
 };
 
-const menuItems: MenuItem[] = [
-  { icon: Home, label: "Home" },
-  {
+const controlItem: MenuItem = {
     icon: DollarSign,
     label: "Control",
     children: [
@@ -122,7 +121,10 @@ const menuItems: MenuItem[] = [
       { icon: Settings, label: "Configurações", id: "__cfg_control__" },
       { icon: ListTree, label: "Contas", id: "Control · Contas", nivel: 2 },
     ],
-  },
+};
+
+const labItems: MenuItem[] = [
+  { icon: Home, label: "Home" },
   {
     icon: Users,
     label: "Carteira",
@@ -189,6 +191,11 @@ const menuItems: MenuItem[] = [
     ],
   },
   { icon: LayoutDashboard, label: "B.I. Overview" },
+];
+
+const menuItems: MenuItem[] = [
+  controlItem,
+  { icon: FlaskConical, label: "Laboratory", lab: labItems },
 ];
 
 const Index = () => {
