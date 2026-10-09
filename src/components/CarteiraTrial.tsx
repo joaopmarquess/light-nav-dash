@@ -102,12 +102,12 @@ export default function CarteiraTrial() {
   useEffect(() => {
     if (!dataRef) return;
     setKpi(null);
-    hostinger.rpc("carteira_trial_kpis", { p_data: dataRef }).then(({ data, error }: any) => {
+    hostinger.rpc("carteira_trial_kpis", { p_data: dataRef, p_q: df.q.trim() || null, p_empresa: df.empresa.trim() || null, p_cidade: df.cidade.trim() || null }).then(({ data, error }: any) => {
       if (error) { console.error(error); return; }
       const r = Array.isArray(data) ? data[0] : data;
       if (r) setKpi({ ativos: Number(r.ativos), futuros: Number(r.futuros), cancelados: Number(r.cancelados), total: Number(r.total) });
     });
-  }, [dataRef]);
+  }, [dataRef, df.q, df.empresa, df.cidade]);
   const vis = useMemo(() => {
     const v = f.status === ALL ? rows : rows.filter((r) => r.st === f.status);
     return sort.key === "st" ? [...v].sort((a, b) => (sort.asc ? 1 : -1) * String(a.st).localeCompare(String(b.st))) : v;
@@ -226,9 +226,8 @@ export default function CarteiraTrial() {
           <span className="inline-flex items-center gap-2">
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             {(() => {
-              const semTexto = !f.q.trim() && !f.empresa.trim() && !f.cidade.trim();
-              const n = semTexto ? (f.status === "A" ? kpi?.ativos : f.status === "F" ? kpi?.futuros : f.status === "C" ? kpi?.cancelados : kpi?.total) : (fim ? vis.length : null);
-              return n == null ? (semTexto ? "…" : `${vis.length.toLocaleString("pt-BR")}+`) : n.toLocaleString("pt-BR");
+              const n = f.status === "A" ? kpi?.ativos : f.status === "F" ? kpi?.futuros : f.status === "C" ? kpi?.cancelados : kpi?.total;
+              return n == null ? "…" : n.toLocaleString("pt-BR");
             })()} registros selecionados
           </span>
         </div>
