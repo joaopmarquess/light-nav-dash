@@ -67,7 +67,8 @@ const ALL = "__all__";
 type Filters = { q: string; status: string; tipo: string; sexo: string; pme: string; uf: string; cidade: string; empresa: string };
 const EMPTY: Filters = { q: "", status: ALL, tipo: "SAUDE", sexo: ALL, pme: ALL, uf: ALL, cidade: "", empresa: "" };
 
-function applyFilters(q: any, f: Filters) {
+function applyFilters(q: any, f: Filters, data?: string) {
+  if (f.status === "F" && data) q = q.gt("dt_vigencia_beneficiario", data);
   if (f.q.trim()) {
     const t = f.q.trim();
     q = /^\d+$/.test(t) ? q.or(`cd_mat_alternativa.eq.${t},cd_contrato.eq.${t}`) : q.ilike("nm_beneficiario", `%${t}%`);
@@ -116,14 +117,14 @@ export default function CarteiraTrial() {
   const cnt = (k: string) => rows.filter((r) => r.st === k).length;
   const [sel, setSel] = useState<Row | null>(null);
 
-  const dfKey = JSON.stringify({ ...df, status: "" });
+  const dfKey = JSON.stringify({ ...df, status: df.status === "F" ? "F" : "", d: df.status === "F" ? dataRef : "" });
   useEffect(() => { setPage(0); }, [dfKey, sort.key, sort.asc]);
 
   useEffect(() => {
     let cancel = false;
     (async () => {
       setLoading(true);
-      let q = applyFilters(hostinger.from(TABLE).select("*"), df);
+      let q = applyFilters(hostinger.from(TABLE).select("*"), df, dataRef);
       if (sort.key && sort.key !== "st") q = q.order(sort.key, { ascending: sort.asc, nullsFirst: false });
       const { data, error } = await q.range(page * PAGE, page * PAGE + PAGE - 1);
       if (cancel) return;
@@ -216,7 +217,7 @@ export default function CarteiraTrial() {
                   ))}
                 </tr>
               ))}
-              {!loading && vis.length === 0 && (
+              {!loading && fim && vis.length === 0 && (
                 <tr><td colSpan={COLS.length} className="text-center text-muted-foreground py-10">Nenhum beneficiário encontrado.</td></tr>
               )}
             </tbody>
