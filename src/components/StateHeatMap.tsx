@@ -95,7 +95,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     });
     ro.observe(el);
     return () => ro.disconnect();
-  });
+  }, [features]);
   const width = size.w;
   const height = size.h;
 
