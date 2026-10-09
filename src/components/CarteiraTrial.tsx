@@ -11,21 +11,22 @@ type Row = Record<string, any>;
 const TABLE = "view_ecarteira";
 const PAGE = 50;
 
+const fmtD = (v: any) => v ? new Date(v).toLocaleDateString("pt-BR", { timeZone: "UTC" }) : "—";
+const brl = (v: any) => v == null ? "—" : Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const COLS: { key: string; label: string; fmt?: (v: any) => string; align?: "right" }[] = [
   { key: "cd_mat_alternativa", label: "Matrícula" },
   { key: "nm_beneficiario", label: "Beneficiário" },
-  { key: "tp_status", label: "Status" },
-  { key: "ds_plano", label: "Plano" },
-  { key: "tp_plano", label: "Tipo" },
   { key: "tp_acomodacao", label: "Acomodação" },
   { key: "nm_empresa_estipulante", label: "Empresa" },
   { key: "nm_cidade_plano", label: "Cidade" },
-  { key: "cd_uf_plano", label: "UF" },
-  { key: "qt_idade", label: "Idade", align: "right" },
-  { key: "tp_sexo", label: "Sexo" },
-  { key: "vl_tmm", label: "Mensalidade", align: "right", fmt: (v) => v == null ? "—" : Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) },
-  { key: "dt_vigencia_beneficiario", label: "Vigência", fmt: (v) => v ? new Date(v).toLocaleDateString("pt-BR", { timeZone: "UTC" }) : "—" },
+  { key: "vl_tmm", label: "Mensalidade", align: "right", fmt: brl },
+  { key: "dt_nascimento", label: "Nascimento", fmt: fmtD },
+  { key: "dt_vigencia_beneficiario", label: "Vigência", fmt: fmtD },
+  { key: "dt_desligamento", label: "Cancelamento", fmt: fmtD },
+  { key: "dt_reativacao", label: "Reativação", fmt: fmtD },
+  { key: "tp_status", label: "Status" },
 ];
+const cidadeUf = (r: Row) => r.nm_cidade_plano ? `${String(r.nm_cidade_plano).trim()} (${String(r.cd_uf_plano ?? "").trim()})` : "—";
 
 const fmtDate = (v: any) => v ? new Date(v).toLocaleDateString("pt-BR", { timeZone: "UTC" }) : "—";
 const ALL = "__all__";
