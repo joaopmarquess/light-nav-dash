@@ -192,7 +192,7 @@ export default function CarteiraTrial() {
         ))}
         <Button size="sm" onClick={buscar}><Search className="h-4 w-4 mr-1" />Buscar</Button>
         <div className="ml-auto flex gap-2">
-          {activeChips.length > 0 && <Button variant="ghost" size="sm" onClick={() => setF({ ...EMPTY, status: ALL })}><X className="h-4 w-4 mr-1" />Limpar</Button>}
+          {activeChips.length > 0 && <Button variant="ghost" size="sm" onClick={() => { const e = { ...EMPTY, status: ALL }; setF(e); setAp({ f: e, d: dataRef || new Date().toISOString().slice(0, 10) }); }}><X className="h-4 w-4 mr-1" />Limpar</Button>}
           <Button variant="outline" size="sm" onClick={exportCsv} disabled={!rows.length}><Download className="h-4 w-4 mr-1" />Exportar</Button>
         </div>
       </div>
