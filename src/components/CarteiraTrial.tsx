@@ -62,7 +62,7 @@ function applyFilters(q: any, f: Filters) {
     q = /^\d+$/.test(t) ? q.or(`cd_mat_alternativa.eq.${t},cd_contrato.eq.${t}`) : q.ilike("nm_beneficiario", `%${t}%`);
   }
   if (f.status !== ALL) q = q.eq("tp_status", f.status);
-  q = q.eq("tp_plano", "SAUDE");
+  q = q.eq("tp_plano", "SAUDE").lte("cd_mat_alternativa", 399999999999);
   if (f.sexo !== ALL) q = q.eq("tp_sexo", f.sexo);
   if (f.pme !== ALL) q = q.eq("sn_pme", f.pme);
   if (f.uf !== ALL) q = q.eq("cd_uf_plano", f.uf);
