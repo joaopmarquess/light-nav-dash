@@ -21,7 +21,7 @@ const fmtMat = (v: any) => {
   return `${Number(d.slice(0, -8))}/${r.slice(0, 6)}-${r.slice(6)}`;
 };
 const maxD = (a: any, b: any) => (!a ? b : !b ? a : (String(a) > String(b) ? a : b));
-function agrupar(rows: Row[]): Row[] {
+function agrupar(rows: Row[], hoje: string): Row[] {
   const m = new Map<string, Row>();
   for (const r of rows) {
     const k = String(r.cd_mat_alternativa ?? r.cd_matricula ?? Math.random()).trim();
@@ -33,11 +33,10 @@ function agrupar(rows: Row[]): Row[] {
     base.dt_reativacao = maxD(o.dt_reativacao, r.dt_reativacao);
     m.set(k, base);
   }
-  return [...m.values()].map((r) => ({ ...r, st: calcStatus(r) }));
+  return [...m.values()].map((r) => ({ ...r, st: calcStatus(r, hoje) }));
 }
 const dia = (v: any) => (v ? String(v).slice(0, 10) : "");
-function calcStatus(r: Row): "A" | "F" | "C" {
-  const hoje = new Date().toISOString().slice(0, 10);
+function calcStatus(r: Row, hoje: string): "A" | "F" | "C" {
   const vig = dia(r.dt_vigencia_beneficiario), can = dia(r.dt_desligamento), rea = dia(r.dt_reativacao);
   if (vig && vig > hoje) return "F";
   if (vig && vig <= hoje) {
@@ -94,18 +93,21 @@ export default function CarteiraTrial() {
   const [page, setPage] = useState(0);
   const [sort, setSort] = useState<{ key: string; asc: boolean }>({ key: "nm_beneficiario", asc: true });
   const [raw, setRaw] = useState<Row[]>([]);
-  const rows = useMemo(() => agrupar(raw), [raw]);
+  const [dataRef, setDataRef] = useState(() => new Date().toISOString().slice(0, 10));
+  const rows = useMemo(() => agrupar(raw, dataRef || new Date().toISOString().slice(0, 10)), [raw, dataRef]);
   const [fim, setFim] = useState(false);
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [kpi, setKpi] = useState<{ ativos?: number; futuros?: number; cancelados?: number; total?: number } | null>(null);
   useEffect(() => {
-    hostinger.rpc("carteira_trial_kpis").then(({ data, error }: any) => {
+    if (!dataRef) return;
+    setKpi(null);
+    hostinger.rpc("carteira_trial_kpis", { p_data: dataRef }).then(({ data, error }: any) => {
       if (error) { console.error(error); return; }
       const r = Array.isArray(data) ? data[0] : data;
       if (r) setKpi({ ativos: Number(r.ativos), futuros: Number(r.futuros), cancelados: Number(r.cancelados), total: Number(r.total) });
     });
-  }, []);
+  }, [dataRef]);
   const vis = useMemo(() => {
     const v = f.status === ALL ? rows : rows.filter((r) => r.st === f.status);
     return sort.key === "st" ? [...v].sort((a, b) => (sort.asc ? 1 : -1) * String(a.st).localeCompare(String(b.st))) : v;
@@ -169,6 +171,9 @@ export default function CarteiraTrial() {
       </div>
 
       <div className="flex flex-wrap items-center gap-2 shrink-0 bg-card border border-border rounded-xl p-3">
+        <label className="flex items-center gap-2 text-sm text-muted-foreground">Ativos em:
+          <Input type="date" className="w-40" value={dataRef} onChange={(e) => setDataRef(e.target.value)} />
+        </label>
         <div className="relative w-72">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input className="pl-8" placeholder="Nome, matrícula ou contrato" value={f.q} onChange={(e) => set("q", e.target.value)} />
