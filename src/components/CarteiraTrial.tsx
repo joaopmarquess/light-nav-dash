@@ -122,7 +122,7 @@ export default function CarteiraTrial() {
       if (!cancel) setTotal(count ?? null);
     })();
     return () => { cancel = true; };
-  }, [df, page, sort]);
+  }, [dfKey, page, sort.key === "st" ? "" : sort.key, sort.asc]);
 
   // KPIs respeitam os filtros (exceto status/tipo que eles próprios segmentam)
   useEffect(() => {
