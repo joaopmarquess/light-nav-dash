@@ -124,7 +124,6 @@ const controlItem: MenuItem = {
 };
 
 const labItems: MenuItem[] = [
-  { icon: Home, label: "Home" },
   {
     icon: Users,
     label: "Carteira",
@@ -194,6 +193,7 @@ const labItems: MenuItem[] = [
 ];
 
 const menuItems: MenuItem[] = [
+  { icon: Home, label: "Home" },
   controlItem,
   { icon: FlaskConical, label: "Laboratory", lab: labItems },
 ];
