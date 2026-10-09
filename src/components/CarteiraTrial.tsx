@@ -20,6 +20,21 @@ const fmtMat = (v: any) => {
   const r = d.slice(-8);
   return `${Number(d.slice(0, -8))}/${r.slice(0, 6)}-${r.slice(6)}`;
 };
+const maxD = (a: any, b: any) => (!a ? b : !b ? a : (String(a) > String(b) ? a : b));
+function agrupar(rows: Row[]): Row[] {
+  const m = new Map<string, Row>();
+  for (const r of rows) {
+    const k = String(r.cd_mat_alternativa ?? r.cd_matricula ?? Math.random()).trim();
+    const o = m.get(k);
+    if (!o) { m.set(k, { ...r }); continue; }
+    const base = String(r.dt_vigencia_beneficiario ?? "") > String(o.dt_vigencia_beneficiario ?? "") ? { ...r } : o;
+    base.dt_vigencia_beneficiario = maxD(o.dt_vigencia_beneficiario, r.dt_vigencia_beneficiario);
+    base.dt_desligamento = maxD(o.dt_desligamento, r.dt_desligamento);
+    base.dt_reativacao = maxD(o.dt_reativacao, r.dt_reativacao);
+    m.set(k, base);
+  }
+  return [...m.values()];
+}
 const COLS: { key: string; label: string; fmt?: (v: any) => string; align?: "right" }[] = [
   { key: "cd_mat_alternativa", label: "Matrícula", fmt: (v) => fmtMat(v) },
   { key: "nm_beneficiario", label: "Beneficiário" },
@@ -84,7 +99,7 @@ export default function CarteiraTrial() {
       const { data, error } = await q.range(page * PAGE, page * PAGE + PAGE - 1);
       if (cancel) return;
       if (error) console.error(error);
-      setRows(data ?? []);
+      setRows(agrupar(data ?? []));
       setLoading(false);
       const { count } = await applyFilters(hostinger.from(TABLE).select("cd_matricula", { count: "exact", head: true }), df);
       if (!cancel) setTotal(count ?? null);
