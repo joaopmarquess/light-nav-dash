@@ -90,41 +90,45 @@ function useDebounced<T>(v: T, ms = 400) {
 
 export default function CarteiraTrial() {
   const [f, setF] = useState<Filters>(EMPTY);
-  const df = useDebounced(f);
   const [page, setPage] = useState(0);
   const [sort, setSort] = useState<{ key: string; asc: boolean }>({ key: "nm_beneficiario", asc: true });
   const [raw, setRaw] = useState<Row[]>([]);
   const [dataRef, setDataRef] = useState(() => new Date().toISOString().slice(0, 10));
-  const rows = useMemo(() => agrupar(raw, dataRef || new Date().toISOString().slice(0, 10)), [raw, dataRef]);
+  const [ap, setAp] = useState<{ f: Filters; d: string } | null>(null);
+  const df = ap?.f ?? EMPTY;
+  const dRef = ap?.d ?? "";
+  const buscar = () => setAp({ f: { ...f }, d: dataRef || new Date().toISOString().slice(0, 10) });
+  const rows = useMemo(() => agrupar(raw, dRef || new Date().toISOString().slice(0, 10)), [raw, dRef]);
   const [fim, setFim] = useState(false);
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [kpi, setKpi] = useState<{ ativos?: number; futuros?: number; cancelados?: number; total?: number } | null>(null);
   useEffect(() => {
-    if (!dataRef) return;
+    if (!ap) return;
     setKpi(null);
-    hostinger.rpc("carteira_trial_kpis", { p_data: dataRef, p_q: df.q.trim() || null, p_empresa: df.empresa.trim() || null, p_cidade: df.cidade.trim() || null }).then(({ data, error }: any) => {
+    hostinger.rpc("carteira_trial_kpis", { p_data: dRef, p_q: df.q.trim() || null, p_empresa: df.empresa.trim() || null, p_cidade: df.cidade.trim() || null }).then(({ data, error }: any) => {
       if (error) { console.error(error); return; }
       const r = Array.isArray(data) ? data[0] : data;
       if (r) setKpi({ ativos: Number(r.ativos), futuros: Number(r.futuros), cancelados: Number(r.cancelados), total: Number(r.total) });
     });
-  }, [dataRef, df.q, df.empresa, df.cidade]);
+  }, [ap]);
   const vis = useMemo(() => {
-    const v = f.status === ALL ? rows : rows.filter((r) => r.st === f.status);
+    const v = df.status === ALL ? rows : rows.filter((r) => r.st === df.status);
     return sort.key === "st" ? [...v].sort((a, b) => (sort.asc ? 1 : -1) * String(a.st).localeCompare(String(b.st))) : v;
   }, [rows, f.status, sort]);
-  useEffect(() => { if (!loading && !fim && f.status !== ALL && vis.length < 50 && raw.length > 0) setPage((p) => p + 1); }, [loading, fim, vis.length, f.status, raw.length]);
+  useEffect(() => { if (!loading && !fim && df.status !== ALL && vis.length < 50 && raw.length > 0) setPage((p) => p + 1); }, [loading, fim, vis.length, df.status, raw.length]);
   const cnt = (k: string) => rows.filter((r) => r.st === k).length;
   const [sel, setSel] = useState<Row | null>(null);
 
-  const dfKey = JSON.stringify({ ...df, status: df.status === "F" ? "F" : "", d: df.status === "F" ? dataRef : "" });
+  const dfKey = JSON.stringify({ ...df, status: df.status === "F" ? "F" : "", d: dRef, n: ap ? 1 : 0 });
   useEffect(() => { setPage(0); }, [dfKey, sort.key, sort.asc]);
 
   useEffect(() => {
     let cancel = false;
+    if (!ap) return;
     (async () => {
       setLoading(true);
-      let q = applyFilters(hostinger.from(TABLE).select("*"), df, dataRef);
+      let q = applyFilters(hostinger.from(TABLE).select("*"), df, dRef);
       if (sort.key && sort.key !== "st") q = q.order(sort.key, { ascending: sort.asc, nullsFirst: false });
       const { data, error } = await q.range(page * PAGE, page * PAGE + PAGE - 1);
       if (cancel) return;
@@ -168,7 +172,7 @@ export default function CarteiraTrial() {
         <label className="flex items-center gap-2 text-sm text-muted-foreground">Ativos em:
           <Input type="date" className="w-40" value={dataRef} onChange={(e) => setDataRef(e.target.value)} />
         </label>
-        <span className="text-sm text-muted-foreground">Total de Ativos: <b className="text-foreground tabular-nums">{kpi?.ativos == null ? "…" : kpi.ativos.toLocaleString("pt-BR")}</b></span>
+        <span className="text-sm text-muted-foreground">Total de Ativos: <b className="text-foreground tabular-nums">{!ap ? "—" : kpi?.ativos == null ? "…" : kpi.ativos.toLocaleString("pt-BR")}</b></span>
         <div className="relative w-72">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input className="pl-8" placeholder="Nome, matrícula ou contrato" value={f.q} onChange={(e) => set("q", e.target.value)} />
@@ -186,6 +190,7 @@ export default function CarteiraTrial() {
             </SelectContent>
           </Select>
         ))}
+        <Button size="sm" onClick={buscar}><Search className="h-4 w-4 mr-1" />Buscar</Button>
         <div className="ml-auto flex gap-2">
           {activeChips.length > 0 && <Button variant="ghost" size="sm" onClick={() => setF({ ...EMPTY, status: ALL })}><X className="h-4 w-4 mr-1" />Limpar</Button>}
           <Button variant="outline" size="sm" onClick={exportCsv} disabled={!rows.length}><Download className="h-4 w-4 mr-1" />Exportar</Button>
@@ -217,7 +222,10 @@ export default function CarteiraTrial() {
                   ))}
                 </tr>
               ))}
-              {!loading && fim && vis.length === 0 && (
+              {!ap && (
+                <tr><td colSpan={COLS.length} className="text-center text-muted-foreground py-10">Preencha os filtros e clique em Buscar.</td></tr>
+              )}
+              {ap && !loading && fim && vis.length === 0 && (
                 <tr><td colSpan={COLS.length} className="text-center text-muted-foreground py-10">Nenhum beneficiário encontrado.</td></tr>
               )}
             </tbody>
@@ -227,7 +235,7 @@ export default function CarteiraTrial() {
           <span className="inline-flex items-center gap-2">
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             {(() => {
-              const n = f.status === "A" ? kpi?.ativos : f.status === "F" ? kpi?.futuros : f.status === "C" ? kpi?.cancelados : kpi?.total;
+              const n = !ap ? 0 : df.status === "A" ? kpi?.ativos : df.status === "F" ? kpi?.futuros : df.status === "C" ? kpi?.cancelados : kpi?.total;
               return n == null ? "…" : n.toLocaleString("pt-BR");
             })()} registros selecionados
           </span>
@@ -235,10 +243,10 @@ export default function CarteiraTrial() {
       </div>
 
       <div className="grid grid-cols-4 gap-3 shrink-0">
-        <Kpi icon={UserCheck} label="Ativos" v={kpi?.ativos} on={f.status === "A"} onClick={() => set("status", f.status === "A" ? ALL : "A")} />
-        <Kpi icon={Building2} label="Futuros" v={kpi?.futuros} on={f.status === "F"} onClick={() => set("status", f.status === "F" ? ALL : "F")} />
-        <Kpi icon={UserX} label="Cancelados" v={kpi?.cancelados} on={f.status === "C"} onClick={() => set("status", f.status === "C" ? ALL : "C")} />
-        <Kpi icon={Users} label="Total" v={kpi?.total} on={false} onClick={() => set("status", ALL)} />
+        <Kpi icon={UserCheck} label="Ativos" v={kpi?.ativos} on={df.status === "A"} onClick={() => { const v = df.status === "A" ? ALL : "A"; set("status", v); ap && setAp({ ...ap, f: { ...ap.f, status: v } }); }} />
+        <Kpi icon={Building2} label="Futuros" v={kpi?.futuros} on={df.status === "F"} onClick={() => { const v = df.status === "F" ? ALL : "F"; set("status", v); ap && setAp({ ...ap, f: { ...ap.f, status: v } }); }} />
+        <Kpi icon={UserX} label="Cancelados" v={kpi?.cancelados} on={df.status === "C"} onClick={() => { const v = df.status === "C" ? ALL : "C"; set("status", v); ap && setAp({ ...ap, f: { ...ap.f, status: v } }); }} />
+        <Kpi icon={Users} label="Total" v={kpi?.total} on={false} onClick={() => { set("status", ALL); ap && setAp({ ...ap, f: { ...ap.f, status: ALL } }); }} />
       </div>
 
       <Sheet open={!!sel} onOpenChange={(o) => !o && setSel(null)}>
