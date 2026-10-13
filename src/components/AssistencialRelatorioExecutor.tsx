@@ -1091,17 +1091,17 @@ function buildPdf({
     doc.setFontSize(9.5);
     doc.setTextColor(0, 0, 0);
     if (i < sec4Start) doc.text(`${i}`, marginL, footY, { align: "left" });
-    else if (declaracoes && declByPage[i]) doc.text(`${declByPage[i]}/${declList.length}`, marginL, footY, { align: "left" });
+    else if (declaracoes) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6);
+      doc.text(`${i}`, marginL, footY, { align: "left" });
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+    }
     const sec = sectionByPage[i];
     if (sec) {
       secSeen[sec] = (secSeen[sec] ?? 0) + 1;
-      if (declaracoes) {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(6);
-        doc.text(`${i}`, pageW - marginR, footY, { align: "right" });
-      } else {
-        doc.text(`${secSeen[sec]} de ${secTotals[sec]}`, pageW - marginR, footY, { align: "right" });
-      }
+      doc.text(`${secSeen[sec]} de ${secTotals[sec]}`, pageW - marginR, footY, { align: "right" });
     }
   }
 
