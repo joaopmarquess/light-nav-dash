@@ -215,9 +215,6 @@ export default function CarteiraTrialMov() {
                         {aberto[g.k] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                         {grp === "dia" ? fmtD(g.k) : g.k}
                       </span>
-                      {ap.tipo === "todas" && <span className="float-right text-xs font-normal text-muted-foreground">
-                        Entradas <b className="text-foreground">{num(g.e)}</b> · Reativações <b className="text-foreground">{num(g.r)}</b> · Saídas <b className="text-destructive">{num(g.s)}</b> · Saldo <b className={g.saldo >= 0 ? "text-primary" : "text-destructive"}>{g.saldo > 0 ? "+" : ""}{num(g.saldo)}</b>
-                      </span>}
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums">{num(g.vidas)}</td>
                   </tr>
