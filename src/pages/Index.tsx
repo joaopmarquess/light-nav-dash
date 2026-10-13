@@ -38,6 +38,7 @@ import AtivosCidade from "@/components/AtivosCidade";
 import HomeView from "@/components/Home";
 import Entradas from "@/components/Entradas";
 import Cancelamentos from "@/components/Cancelamentos";
+import CarteiraTrialES from "@/components/CarteiraTrialES";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { ptBR } from "date-fns/locale";
@@ -198,7 +199,7 @@ const labItems: MenuItem[] = [
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   controlItem,
-  { icon: Users, label: "Carteira (Trial)", children: [{ icon: Search, label: "Consulta", id: "Carteira (Trial) · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira (Trial) · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira (Trial) · Movimentação" }] },
+  { icon: Users, label: "Carteira (Trial)", children: [{ icon: Search, label: "Consulta", id: "Carteira (Trial) · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira (Trial) · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira (Trial) · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira (Trial) · Entradas" }, { icon: TrendingUp, label: "Saídas", id: "Carteira (Trial) · Saídas" }] },
   { icon: FlaskConical, label: "Laboratory", lab: labItems },
 ];
 
@@ -598,6 +599,10 @@ const Index = () => {
             <CarteiraMapa />
           ) : active === "Gráfico Sinistralidade" ? (
             <SinistralidadeGraficos />
+          ) : active === "Carteira (Trial) · Entradas" ? (
+            <CarteiraTrialES key="ent" modo="entradas" />
+          ) : active === "Carteira (Trial) · Saídas" ? (
+            <CarteiraTrialES key="sai" modo="saidas" />
           ) : active === "Carteira (Trial) · Movimentação" ? (
             <CarteiraTrialMov />
           ) : active === "Carteira (Trial) · Área Geográfica" ? (
