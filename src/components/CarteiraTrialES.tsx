@@ -66,19 +66,21 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
       .some((v) => String(v ?? "").toLowerCase().includes(f)));
   }, [rows, filtro, chave, grupos, modo]);
 
+  const gb = modo === "entradas" ? "vendedor" : groupBy;
   const grouped = useMemo(() => {
     if (!filtered) return [];
     const key = (r: Row) => String(
-      groupBy === "grupo" ? grupos[r.cd_vendedor] || "SEM GRUPO"
-      : groupBy === "plano" ? r.ds_plano || "SEM PLANO"
-      : groupBy === "empresa" ? r.nm_empresa_estipulante || "SEM EMPRESA"
-      : groupBy === "cidade" ? cidade(r) || "SEM CIDADE"
+      gb === "vendedor" ? r.nm_vendedor || "SEM VENDEDOR"
+      : gb === "grupo" ? grupos[r.cd_vendedor] || "SEM GRUPO"
+      : gb === "plano" ? r.ds_plano || "SEM PLANO"
+      : gb === "empresa" ? r.nm_empresa_estipulante || "SEM EMPRESA"
+      : gb === "cidade" ? cidade(r) || "SEM CIDADE"
       : motivos[r.cd_motivo_cancelamento]?.gp || "SEM GRUPO DE MOTIVO").trim();
     const map = new Map<string, Row[]>();
     for (const r of filtered) { const k = key(r); if (!map.has(k)) map.set(k, []); map.get(k)!.push(r); }
     return [...map.entries()].map(([key, itens]) => ({ key, itens, qtd: new Set(itens.map((i) => i.cd_mat_alternativa)).size }))
       .sort((a, b) => b.qtd - a.qtd);
-  }, [filtered, groupBy, grupos, motivos]);
+  }, [filtered, gb, grupos, motivos]);
 
   const subVend = (its: Row[]) => { const m = new Map<string, Row[]>(); for (const r of its) { const k = String(groupBy === "motivo" ? motDs(r) : r.nm_vendedor || "SEM VENDEDOR").trim(); if (!m.has(k)) m.set(k, []); m.get(k)!.push(r); }
     return [...m.entries()].map(([key, itens]) => ({ key, itens, qtd: new Set(itens.map((i) => i.cd_mat_alternativa)).size })).sort((a, b) => b.qtd - a.qtd); };
@@ -113,14 +115,14 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
           <input type="date" value={de} onChange={(e) => setDe(e.target.value)} className={inp} /></div>
         <div><label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Até</label>
           <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} className={inp} /></div>
-        <div><label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Agrupar por</label>
+        {modo === "saidas" && <div><label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Agrupar por</label>
           <select value={groupBy} onChange={(e) => setGroupBy(e.target.value)} className={inp}>
             {modo === "saidas" && <option value="motivo">Grupo de motivo</option>}
             <option value="grupo">Grupo de vendedor</option>
             <option value="plano">Plano</option>
             <option value="empresa">Empresa</option>
             <option value="cidade">Cidade</option>
-          </select></div>
+          </select></div>}
         {modo === "entradas" && <div><label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Chave</label>
           <div className="flex h-9 rounded-md border border-border overflow-hidden">
             {(["venda", "outros"] as const).map((c) => (
@@ -162,7 +164,7 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
                         <div className="w-32 shrink-0 text-right text-xs tabular-nums text-foreground">{num(g.qtd)} <span className="text-muted-foreground">({share.toFixed(1)}%)</span></div>
                       </button>
                       {open && (
-                        (groupBy === "grupo" || groupBy === "motivo") ? (
+                        (gb === "grupo" || gb === "motivo") ? (
                           <div className="border-t border-border/60 p-2 space-y-1">
                             {subVend(g.itens).map((v) => { const id = `${g.key}||${v.key}`; const o = !!expanded[id]; return (
                               <div key={id} className="border border-border/40 rounded">
