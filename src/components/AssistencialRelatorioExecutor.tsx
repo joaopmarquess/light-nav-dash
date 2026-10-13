@@ -1189,6 +1189,40 @@ function ReportPreview({
     docRef.current.save(declaracoes ? "2518_SSPMJR-Declaracoes.pdf" : "2518_SSPMJR-Despesas.pdf");
   };
 
+  const [zipping, setZipping] = useState(false);
+  const doDownloadIndividuais = async () => {
+    setZipping(true);
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+      const used = new Set<string>();
+      const lista = filterCd
+        ? report.exeSortedS3.filter((e) => report.exeCd.get(e) === filterCd)
+        : report.exeSortedS3;
+      for (const exe of lista) {
+        const cd = String(report.exeCd.get(exe) ?? "");
+        const d = buildPdf({ cdpln, dspln, mabasIni, mabasFim, report, exeLabel, filterCd: cd, timbradoDataUrl: null, declaracoes: true });
+        let name = `${cd}_${exe}`.replace(/[\\/:*?"<>|]+/g, "-").trim();
+        let n = name, k = 2;
+        while (used.has(n)) n = `${name} (${k++})`;
+        used.add(n);
+        zip.file(`${n}.pdf`, d.output("arraybuffer"));
+        await new Promise((r) => setTimeout(r, 0));
+      }
+      const blob = await zip.generateAsync({ type: "blob", compression: "STORE" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "2518_SSPMJR-Declaracoes_individuais.zip";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    } finally {
+      setZipping(false);
+    }
+  };
+
   const doPrint = () => {
     if (pages.length === 0) return;
     const w = window.open("", "_blank");
@@ -1228,6 +1262,15 @@ function ReportPreview({
           >
             <FileDown className="h-4 w-4" /> Baixar PDF
           </button>
+          {declaracoes && (
+            <button
+              onClick={doDownloadIndividuais}
+              disabled={loading || zipping}
+              className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent disabled:opacity-50 inline-flex items-center gap-2"
+            >
+              {zipping ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />} Baixar PDF individuais
+            </button>
+          )}
           <button
             onClick={doPrint}
             disabled={loading || pages.length === 0}
