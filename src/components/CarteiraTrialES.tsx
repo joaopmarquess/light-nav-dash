@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { hostinger } from "@/lib/hostingerClient";
-import { useGruposVendedor } from "@/lib/vendedorGrupo";
+import { useGruposVendedor, useGruposMotivo } from "@/lib/vendedorGrupo";
 
 type Row = Record<string, any>;
 type Modo = "entradas" | "saidas";
