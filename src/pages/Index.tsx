@@ -165,6 +165,7 @@ const labItems: MenuItem[] = [
       { icon: Stethoscope, label: "Relatório Plano Executor" },
       { icon: Stethoscope, label: "2518 Despesas" },
       { icon: Stethoscope, label: "2518 Receitas" },
+      { icon: Stethoscope, label: "2518 Declarações" },
     ],
   },
   {
@@ -621,6 +622,8 @@ const Index = () => {
             <AssistencialRelatorioExecutor />
           ) : active === "2518 Despesas" ? (
             <AssistencialRelatorioExecutor source="csv2518" />
+          ) : active === "2518 Declarações" ? (
+            <AssistencialRelatorioExecutor source="csv2518" declaracoes />
           ) : active === "2518 Receitas" ? (
             <AssistencialReceitas2518 />
 

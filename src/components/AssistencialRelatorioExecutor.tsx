@@ -101,7 +101,7 @@ const parseBRNum = (s: string): number => {
   return Number.isFinite(n) ? n : 0;
 };
 
-export default function AssistencialRelatorioExecutor({ source = "db" }: { source?: "db" | "csv2518" } = {}) {
+export default function AssistencialRelatorioExecutor({ source = "db", declaracoes = false }: { source?: "db" | "csv2518"; declaracoes?: boolean } = {}) {
   const [cdpln, setCdpln] = useState("2518");
   const [mabasIni, setMabasIni] = useState("202407");
   const [mabasFim, setMabasFim] = useState("202506");
@@ -671,6 +671,7 @@ export default function AssistencialRelatorioExecutor({ source = "db" }: { sourc
           report={report}
           exeLabel={exeLabel}
           filterCd={previewFilter}
+          declaracoes={declaracoes}
         />
       )}
     </section>
@@ -703,6 +704,7 @@ function buildPdf({
   exeLabel,
   filterCd,
   timbradoDataUrl,
+  declaracoes = false,
 }: {
   cdpln: string;
   dspln: string;
@@ -712,6 +714,7 @@ function buildPdf({
   exeLabel: (exe: string, includeEsp?: boolean) => string;
   filterCd?: string;
   timbradoDataUrl?: string | null;
+  declaracoes?: boolean;
 }): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const timbrado = attachTimbrado(doc, timbradoDataUrl);
@@ -773,6 +776,7 @@ function buildPdf({
   };
   let sec1Start = doc.getNumberOfPages();
 
+  if (!declaracoes) {
   // ---------- Section 1 ----------
 
   const s1Body = report.s1Rows.map(([k, o]) => [
@@ -863,6 +867,7 @@ function buildPdf({
 
   // ---------- Detalhe (Declaração) ----------
   markSectionPages("Seção 2 - Executor", sec2Start);
+  }
 
   const s3ExeList = filterExe ? [filterExe] : report.exeSortedS3;
 
@@ -903,8 +908,9 @@ function buildPdf({
     nmclires: string;
     guias: Map<string, GAgg>;
   };
+  const buildContratos = (exeList: string[]) => {
   const contratoMap = new Map<string, CtAgg>();
-  for (const exe of s3ExeList) {
+  for (const exe of exeList) {
     for (const r of report.s3.get(exe) ?? []) {
       const ct = String(r.cdcontrato ?? "-");
       let cg = contratoMap.get(ct);
@@ -937,8 +943,10 @@ function buildPdf({
     if (n !== 0) return n;
     return a.cdcontrato.localeCompare(b.cdcontrato);
   });
+  return contratoList;
+  };
 
-  const renderDetalhe = (startY: number) => {
+  const renderDetalhe = (startY: number, contratoList: CtAgg[], totLabel: string) => {
     let y = startY;
     let grand = 0;
     for (const cg of contratoList) {
@@ -997,7 +1005,7 @@ function buildPdf({
       ...commonTableOpts,
       startY: y,
       body: [[
-        { content: `TOTAL:  ${filterExe || "GERAL"}`, styles: { ...totalRowStyles, halign: "left" } },
+        { content: `TOTAL:  ${totLabel}`, styles: { ...totalRowStyles, halign: "left" } },
         { content: money(grand), styles: { ...totalRowStyles, halign: "right" } },
       ]],
       columnStyles: {
@@ -1011,19 +1019,23 @@ function buildPdf({
   // ---------- Declaração (sem timbrado) ----------
   timbrado.setEnabled(false);
   declaracaoMode = true;
-  doc.addPage();
-  const sec4Start = doc.getNumberOfPages();
+  const declList: (string | null)[] = declaracoes ? (filterExe ? [filterExe] : report.exeSortedS3) : [filterExe];
+  let sec4Start = 0;
+  declList.forEach((dExe, di) => {
+  if (!(declaracoes && di === 0)) doc.addPage();
+  const pgStart = doc.getNumberOfPages();
+  if (di === 0) sec4Start = pgStart;
   currentSecao = "Credenciado Executor Selecionado";
 
   let s4Y = marginT;
-  if (filterExe) {
-    const cdExe = report.exeCd.get(filterExe) ?? "";
+  if (dExe) {
+    const cdExe = report.exeCd.get(dExe) ?? "";
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
-    doc.text(`${cdExe} - ${filterExe}`, marginL, s4Y + 3);
+    doc.text(`${cdExe} - ${dExe}`, marginL, s4Y + 3);
     s4Y += 5;
   }
-  let declY = renderDetalhe(s4Y) + 12;
+  let declY = renderDetalhe(s4Y, buildContratos(dExe ? [dExe] : s3ExeList), dExe || "GERAL") + 12;
 
   // Texto da declaração + assinatura na última página
   const declText =
@@ -1056,7 +1068,9 @@ function buildPdf({
   doc.setTextColor(0, 0, 0);
   doc.text("Assinatura e Carimbo", cx, y2 + 5, { align: "center" });
 
-  markSectionPages("Seção 4 - Declaração", sec4Start);
+  markSectionPages(`Declaração ${di}`, pgStart);
+  });
+
 
 
   // ---------- Page numbers ----------
@@ -1095,8 +1109,10 @@ function ReportPreview({
   report,
   exeLabel,
   filterCd,
+  declaracoes = false,
 }: {
   onClose: () => void;
+  declaracoes?: boolean;
   cdpln: string;
   dspln: string;
   mabasIni: string;
@@ -1121,7 +1137,8 @@ function ReportPreview({
         report,
         exeLabel,
         filterCd,
-        timbradoDataUrl: timbrado,
+        timbradoDataUrl: declaracoes ? null : timbrado,
+        declaracoes,
       });
 
       docRef.current = doc;
@@ -1159,7 +1176,7 @@ function ReportPreview({
 
   const doDownload = () => {
     if (!docRef.current) return;
-    docRef.current.save("2518_SSPMJR-Despesas.pdf");
+    docRef.current.save(declaracoes ? "2518_SSPMJR-Declaracoes.pdf" : "2518_SSPMJR-Despesas.pdf");
   };
 
   const doPrint = () => {
