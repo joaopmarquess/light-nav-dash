@@ -23,6 +23,7 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
   const [ate, setAte] = useState(hoje());
   const [groupBy, setGroupBy] = useState(modo === "saidas" ? "motivo" : "grupo");
   const [filtro, setFiltro] = useState("");
+  const [chave, setChave] = useState<"venda" | "outros">("venda");
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,10 +57,12 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
   const filtered = useMemo(() => {
     if (!rows) return null;
     const f = filtro.trim().toLowerCase();
-    if (!f) return rows;
-    return rows.filter((r) => [r.nm_beneficiario, r.ds_plano, r.nm_vendedor, r.nm_empresa_estipulante, r.cd_mat_alternativa]
+    const ehOutros = (r: Row) => ["NEV", "OUTROS"].includes(String(grupos[r.cd_vendedor] ?? "").toUpperCase());
+    const base = rows.filter((r) => (chave === "outros") === ehOutros(r));
+    if (!f) return base;
+    return base.filter((r) => [r.nm_beneficiario, r.ds_plano, r.nm_vendedor, r.nm_empresa_estipulante, r.cd_mat_alternativa]
       .some((v) => String(v ?? "").toLowerCase().includes(f)));
-  }, [rows, filtro]);
+  }, [rows, filtro, chave, grupos]);
 
   const grouped = useMemo(() => {
     if (!filtered) return [];
@@ -116,6 +119,11 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
             <option value="empresa">Empresa</option>
             <option value="cidade">Cidade</option>
           </select></div>
+        <div><label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Chave</label>
+          <div className="flex h-9 rounded-md border border-border overflow-hidden">
+            {(["venda", "outros"] as const).map((c) => (
+              <button key={c} onClick={() => setChave(c)} className={`px-3 text-sm ${chave === c ? "bg-primary text-primary-foreground" : "bg-background hover:bg-accent/40"}`}>{c === "venda" ? "Venda" : "Outros"}</button>))}
+          </div></div>
         <div className="flex-1 min-w-[200px]"><label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Filtrar</label>
           <input value={filtro} onChange={(e) => setFiltro(e.target.value)} placeholder="Filtrar por nome, vendedor, plano…" className={`${inp} w-full px-3`} /></div>
         <button onClick={consultar} disabled={loading} className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50">
