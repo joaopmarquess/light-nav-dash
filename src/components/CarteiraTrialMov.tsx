@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
+import { useGruposVendedor } from "@/lib/vendedorGrupo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -66,7 +67,7 @@ export default function CarteiraTrialMov() {
       const rows: Row[] = [];
       for (let from = 0; from < LIMITE; from += 1000) {
         let q = hostinger.from("view_ecarteira")
-          .select("cd_mat_alternativa,nm_beneficiario,nm_empresa_estipulante,nm_cidade_plano,cd_uf_plano,nm_vendedor,vl_tmm,dt_vigencia_beneficiario,dt_desligamento,dt_reativacao")
+          .select("cd_mat_alternativa,cd_vendedor,nm_beneficiario,nm_empresa_estipulante,nm_cidade_plano,cd_uf_plano,nm_vendedor,vl_tmm,dt_vigencia_beneficiario,dt_desligamento,dt_reativacao")
           .eq("tp_plano", "SAUDE").lte("cd_mat_alternativa", 399999999999)
           .or(conds.join(","))
           .range(from, from + 999);
@@ -112,13 +113,15 @@ export default function CarteiraTrialMov() {
     });
   }, [evs, sort]);
 
+  const gv = useGruposVendedor();
   const [grp, setGrp] = useState("nenhum");
   const [aberto, setAberto] = useState<Record<string, boolean>>({});
   const grupos = useMemo(() => {
     if (grp === "nenhum") return [];
     const key = (e: Ev) => grp === "empresa" ? (e.r.nm_empresa_estipulante || "SEM EMPRESA")
       : grp === "cidade" ? (e.r.nm_cidade_plano ? cidade(e.r) : "SEM CIDADE")
-      : grp === "vendedor" ? (e.r.nm_vendedor || "SEM VENDEDOR") : e.data;
+      : grp === "vendedor" ? (e.r.nm_vendedor || "SEM VENDEDOR")
+      : grp === "grupo" ? (gv[e.r.cd_vendedor] || "SEM GRUPO") : e.data;
     const m = new Map<string, Ev[]>();
     for (const e of lista) { const k = String(key(e)).trim(); if (!m.has(k)) m.set(k, []); m.get(k)!.push(e); }
     return [...m.entries()].map(([k, it]) => {
@@ -127,7 +130,7 @@ export default function CarteiraTrialMov() {
       const vidas = new Set(it.map((x) => String(x.r.cd_mat_alternativa))).size;
       return { k, it, e, r, s, saldo: e + r - s, vidas };
     }).sort((a, b) => grp === "dia" ? b.k.localeCompare(a.k) : b.it.length - a.it.length);
-  }, [lista, grp]);
+  }, [lista, grp, gv]);
   const vidasTot = useMemo(() => new Set(evs.map((x) => String(x.r.cd_mat_alternativa))).size, [evs]);
   const linha = (e: Ev, i: number) => (
     <tr key={i} className="border-t hover:bg-muted/50">
@@ -172,6 +175,7 @@ export default function CarteiraTrialMov() {
               <SelectItem value="nenhum">Sem agrupar</SelectItem>
               <SelectItem value="empresa">Empresa</SelectItem>
               <SelectItem value="cidade">Cidade</SelectItem>
+              <SelectItem value="grupo">Grupo de vendedor</SelectItem>
               <SelectItem value="vendedor">Vendedor</SelectItem>
               <SelectItem value="dia">Dia</SelectItem>
             </SelectContent>
