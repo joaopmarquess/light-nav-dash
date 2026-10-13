@@ -101,7 +101,7 @@ const parseBRNum = (s: string): number => {
   return Number.isFinite(n) ? n : 0;
 };
 
-export default function AssistencialRelatorioExecutor({ source = "db" }: { source?: "db" | "csv2518" } = {}) {
+export default function AssistencialRelatorioExecutor({ source = "db", declaracoes = false }: { source?: "db" | "csv2518"; declaracoes?: boolean } = {}) {
   const [cdpln, setCdpln] = useState("2518");
   const [mabasIni, setMabasIni] = useState("202407");
   const [mabasFim, setMabasFim] = useState("202506");
@@ -671,6 +671,7 @@ export default function AssistencialRelatorioExecutor({ source = "db" }: { sourc
           report={report}
           exeLabel={exeLabel}
           filterCd={previewFilter}
+          declaracoes={declaracoes}
         />
       )}
     </section>
@@ -1108,8 +1109,10 @@ function ReportPreview({
   report,
   exeLabel,
   filterCd,
+  declaracoes = false,
 }: {
   onClose: () => void;
+  declaracoes?: boolean;
   cdpln: string;
   dspln: string;
   mabasIni: string;
@@ -1134,7 +1137,8 @@ function ReportPreview({
         report,
         exeLabel,
         filterCd,
-        timbradoDataUrl: timbrado,
+        timbradoDataUrl: declaracoes ? null : timbrado,
+        declaracoes,
       });
 
       docRef.current = doc;
@@ -1172,7 +1176,7 @@ function ReportPreview({
 
   const doDownload = () => {
     if (!docRef.current) return;
-    docRef.current.save("2518_SSPMJR-Despesas.pdf");
+    docRef.current.save(declaracoes ? "2518_SSPMJR-Declaracoes.pdf" : "2518_SSPMJR-Despesas.pdf");
   };
 
   const doPrint = () => {
