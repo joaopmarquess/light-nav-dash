@@ -242,12 +242,6 @@ export default function CarteiraTrial() {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-3 shrink-0">
-        <Kpi icon={UserCheck} label="Ativos" v={kpi?.ativos} on={df.status === "A"} onClick={() => { const v = df.status === "A" ? ALL : "A"; set("status", v); ap && setAp({ ...ap, f: { ...ap.f, status: v } }); }} />
-        <Kpi icon={Building2} label="Futuros" v={kpi?.futuros} on={df.status === "F"} onClick={() => { const v = df.status === "F" ? ALL : "F"; set("status", v); ap && setAp({ ...ap, f: { ...ap.f, status: v } }); }} />
-        <Kpi icon={UserX} label="Cancelados" v={kpi?.cancelados} on={df.status === "C"} onClick={() => { const v = df.status === "C" ? ALL : "C"; set("status", v); ap && setAp({ ...ap, f: { ...ap.f, status: v } }); }} />
-        <Kpi icon={Users} label="Total" v={kpi?.total} on={false} onClick={() => { set("status", ALL); ap && setAp({ ...ap, f: { ...ap.f, status: ALL } }); }} />
-      </div>
 
       <Sheet open={!!sel} onOpenChange={(o) => !o && setSel(null)}>
         <SheetContent className="w-[480px] sm:max-w-[480px] overflow-auto">
