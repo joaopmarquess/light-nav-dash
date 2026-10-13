@@ -33,6 +33,7 @@ const COLS: { key: string; label: string; align?: "right" }[] = [
   { key: "cidade", label: "Cidade" },
   { key: "vendedor", label: "Vendedor" },
   { key: "valor", label: "Mensalidade", align: "right" },
+  { key: "vidas", label: "Vidas", align: "right" },
 ];
 const val = (e: Ev, k: string): any =>
   k === "data" ? e.data : k === "tipo" ? e.tipo : k === "mat" ? Number(e.r.cd_mat_alternativa ?? 0)
@@ -123,9 +124,11 @@ export default function CarteiraTrialMov() {
     return [...m.entries()].map(([k, it]) => {
       const c = (t: string) => it.filter((x) => x.tipo === t).length;
       const e = c("Entrada"), r = c("Reativação"), s = c("Saída");
-      return { k, it, e, r, s, saldo: e + r - s };
+      const vidas = new Set(it.map((x) => String(x.r.cd_mat_alternativa))).size;
+      return { k, it, e, r, s, saldo: e + r - s, vidas };
     }).sort((a, b) => grp === "dia" ? b.k.localeCompare(a.k) : b.it.length - a.it.length);
   }, [lista, grp]);
+  const vidasTot = useMemo(() => new Set(evs.map((x) => String(x.r.cd_mat_alternativa))).size, [evs]);
   const linha = (e: Ev, i: number) => (
     <tr key={i} className="border-t hover:bg-muted/50">
       <td className="px-3 py-1.5">{fmtD(e.data)}</td>
@@ -136,6 +139,7 @@ export default function CarteiraTrialMov() {
       <td className="px-3 py-1.5">{cidade(e.r)}</td>
       <td className="px-3 py-1.5">{e.r.nm_vendedor ?? "—"}</td>
       <td className="px-3 py-1.5 text-right">{brl(e.r.vl_tmm)}</td>
+      <td className="px-3 py-1.5 text-right text-muted-foreground">1</td>
     </tr>
   );
 
@@ -206,15 +210,16 @@ export default function CarteiraTrialMov() {
               {grp === "nenhum" ? lista.slice(0, 2000).map(linha) : grupos.map((g) => (
                 <Fragment key={g.k}>
                   <tr onClick={() => setAberto((p) => ({ ...p, [g.k]: !p[g.k] }))} className="border-t bg-muted/30 hover:bg-muted cursor-pointer font-medium">
-                    <td colSpan={COLS.length} className="px-3 py-2">
+                    <td colSpan={COLS.length - 1} className="px-3 py-2">
                       <span className="inline-flex items-center gap-2">
                         {aberto[g.k] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                         {grp === "dia" ? fmtD(g.k) : g.k}
                       </span>
-                      <span className="float-right text-xs font-normal text-muted-foreground">
+                      {ap.tipo === "todas" && <span className="float-right text-xs font-normal text-muted-foreground">
                         Entradas <b className="text-foreground">{num(g.e)}</b> · Reativações <b className="text-foreground">{num(g.r)}</b> · Saídas <b className="text-destructive">{num(g.s)}</b> · Saldo <b className={g.saldo >= 0 ? "text-primary" : "text-destructive"}>{g.saldo > 0 ? "+" : ""}{num(g.saldo)}</b>
-                      </span>
+                      </span>}
                     </td>
+                    <td className="px-3 py-2 text-right tabular-nums">{num(g.vidas)}</td>
                   </tr>
                   {aberto[g.k] && g.it.map(linha)}
                 </Fragment>
@@ -226,7 +231,7 @@ export default function CarteiraTrialMov() {
           {!loading && !err && evs.length === 0 && <div className="p-6 text-center text-muted-foreground">Nenhuma movimentação no período.</div>}
         </div>
         <div className="border-t px-3 py-2 text-xs text-muted-foreground">
-          {num(evs.length)} movimentações{grp !== "nenhum" ? ` em ${num(grupos.length)} grupos` : ""}{grp === "nenhum" && evs.length > 2000 ? " (exibindo as 2.000 primeiras pela ordem escolhida)" : ""}{cortado ? " — limite de busca atingido, reduza o período" : ""}
+          {num(evs.length)} movimentações · {num(vidasTot)} vidas{grp !== "nenhum" ? ` em ${num(grupos.length)} grupos` : ""}{grp === "nenhum" && evs.length > 2000 ? " (exibindo as 2.000 primeiras pela ordem escolhida)" : ""}{cortado ? " — limite de busca atingido, reduza o período" : ""}
         </div>
       </div>
     </div>
