@@ -139,7 +139,7 @@ export default function CarteiraTrialMov() {
       <td className="px-3 py-1.5">{cidade(e.r)}</td>
       <td className="px-3 py-1.5">{e.r.nm_vendedor ?? "—"}</td>
       <td className="px-3 py-1.5 text-right">{brl(e.r.vl_tmm)}</td>
-      <td className="px-3 py-1.5 text-right text-muted-foreground">1</td>
+      <td className="px-3 py-1.5 text-right text-muted-foreground">{ap.tipo === "todas" && e.tipo === "Saída" ? "-1" : ap.tipo === "todas" ? "+1" : "1"}</td>
     </tr>
   );
 
@@ -216,7 +216,7 @@ export default function CarteiraTrialMov() {
                         {grp === "dia" ? fmtD(g.k) : g.k}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums">{num(g.vidas)}</td>
+                    <td className="px-3 py-2 text-right tabular-nums">{ap.tipo === "todas" ? <span className={g.saldo >= 0 ? "text-primary" : "text-destructive"}>{g.saldo > 0 ? "+" : ""}{num(g.saldo)}</span> : num(g.vidas)}</td>
                   </tr>
                   {aberto[g.k] && g.it.map(linha)}
                 </Fragment>
@@ -228,7 +228,7 @@ export default function CarteiraTrialMov() {
           {!loading && !err && evs.length === 0 && <div className="p-6 text-center text-muted-foreground">Nenhuma movimentação no período.</div>}
         </div>
         <div className="border-t px-3 py-2 text-xs text-muted-foreground">
-          {num(evs.length)} movimentações · {num(vidasTot)} vidas{grp !== "nenhum" ? ` em ${num(grupos.length)} grupos` : ""}{grp === "nenhum" && evs.length > 2000 ? " (exibindo as 2.000 primeiras pela ordem escolhida)" : ""}{cortado ? " — limite de busca atingido, reduza o período" : ""}
+          {num(evs.length)} movimentações · {ap.tipo === "todas" ? `saldo ${kpi.saldo > 0 ? "+" : ""}${num(kpi.saldo)} vidas` : `${num(vidasTot)} vidas`}{grp !== "nenhum" ? ` em ${num(grupos.length)} grupos` : ""}{grp === "nenhum" && evs.length > 2000 ? " (exibindo as 2.000 primeiras pela ordem escolhida)" : ""}{cortado ? " — limite de busca atingido, reduza o período" : ""}
         </div>
       </div>
     </div>
