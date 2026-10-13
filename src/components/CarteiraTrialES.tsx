@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { hostinger } from "@/lib/hostingerClient";
-import { useGruposVendedor } from "@/lib/vendedorGrupo";
+import { useGruposVendedor, useGruposMotivo } from "@/lib/vendedorGrupo";
 
 type Row = Record<string, any>;
 type Modo = "entradas" | "saidas";
@@ -31,12 +31,14 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const grupos = useGruposVendedor();
+  const motivos = useGruposMotivo();
+  const motDs = (r: Row) => motivos[r.cd_motivo_cancelamento]?.ds || r.ds_motivo_cancelamento || "SEM MOTIVO";
   const consultar = async () => {
     setLoading(true); setError(null); setRows(null); setExpanded({}); setCortado(false);
     const all: Row[] = [];
     for (let from = 0; from < LIMITE; from += 1000) {
       const { data, error } = await hostinger.from("view_ecarteira")
-        .select(`cd_mat_alternativa,cd_vendedor,nm_beneficiario,ds_plano,nm_vendedor,nm_empresa_estipulante,nm_cidade_plano,cd_uf_plano,ds_motivo_cancelamento,${campo}`)
+        .select(`cd_mat_alternativa,cd_vendedor,nm_beneficiario,ds_plano,nm_vendedor,nm_empresa_estipulante,nm_cidade_plano,cd_uf_plano,ds_motivo_cancelamento,cd_motivo_cancelamento,${campo}`)
         .eq("tp_plano", "SAUDE").lte("cd_mat_alternativa", 399999999999)
         .gte(campo, de).lte(campo, `${ate}T23:59:59`)
         .range(from, from + 999);
@@ -71,14 +73,14 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
       : groupBy === "plano" ? r.ds_plano || "SEM PLANO"
       : groupBy === "empresa" ? r.nm_empresa_estipulante || "SEM EMPRESA"
       : groupBy === "cidade" ? cidade(r) || "SEM CIDADE"
-      : r.ds_motivo_cancelamento || "SEM MOTIVO").trim();
+      : motivos[r.cd_motivo_cancelamento]?.gp || "SEM GRUPO DE MOTIVO").trim();
     const map = new Map<string, Row[]>();
     for (const r of filtered) { const k = key(r); if (!map.has(k)) map.set(k, []); map.get(k)!.push(r); }
     return [...map.entries()].map(([key, itens]) => ({ key, itens, qtd: new Set(itens.map((i) => i.cd_mat_alternativa)).size }))
       .sort((a, b) => b.qtd - a.qtd);
-  }, [filtered, groupBy, grupos]);
+  }, [filtered, groupBy, grupos, motivos]);
 
-  const subVend = (its: Row[]) => { const m = new Map<string, Row[]>(); for (const r of its) { const k = String(r.nm_vendedor || "SEM VENDEDOR").trim(); if (!m.has(k)) m.set(k, []); m.get(k)!.push(r); }
+  const subVend = (its: Row[]) => { const m = new Map<string, Row[]>(); for (const r of its) { const k = String(groupBy === "motivo" ? motDs(r) : r.nm_vendedor || "SEM VENDEDOR").trim(); if (!m.has(k)) m.set(k, []); m.get(k)!.push(r); }
     return [...m.entries()].map(([key, itens]) => ({ key, itens, qtd: new Set(itens.map((i) => i.cd_mat_alternativa)).size })).sort((a, b) => b.qtd - a.qtd); };
   const tabela = (its: Row[]) => (
                         <div className="max-h-80 overflow-auto border-t border-border/60">
@@ -94,7 +96,7 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
                                 <td className="px-3 py-1">{r.nm_beneficiario ?? "—"}</td>
                                 <td className="px-3 py-1">{r.ds_plano ?? "—"}</td>
                                 <td className="px-3 py-1">{r.nm_vendedor ?? "—"}</td>
-                                {modo === "saidas" && <td className="px-3 py-1">{r.ds_motivo_cancelamento ?? "—"}</td>}
+                                {modo === "saidas" && <td className="px-3 py-1">{motDs(r)}</td>}
                                 <td className="px-3 py-1 tabular-nums">{fmtD(r[campo])}</td>
                               </tr>))}</tbody>
                           </table>
@@ -113,7 +115,7 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
           <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} className={inp} /></div>
         <div><label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Agrupar por</label>
           <select value={groupBy} onChange={(e) => setGroupBy(e.target.value)} className={inp}>
-            {modo === "saidas" && <option value="motivo">Motivo</option>}
+            {modo === "saidas" && <option value="motivo">Grupo de motivo</option>}
             <option value="grupo">Grupo de vendedor</option>
             <option value="plano">Plano</option>
             <option value="empresa">Empresa</option>
@@ -160,7 +162,7 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
                         <div className="w-32 shrink-0 text-right text-xs tabular-nums text-foreground">{num(g.qtd)} <span className="text-muted-foreground">({share.toFixed(1)}%)</span></div>
                       </button>
                       {open && (
-                        groupBy === "grupo" ? (
+                        (groupBy === "grupo" || groupBy === "motivo") ? (
                           <div className="border-t border-border/60 p-2 space-y-1">
                             {subVend(g.itens).map((v) => { const id = `${g.key}||${v.key}`; const o = !!expanded[id]; return (
                               <div key={id} className="border border-border/40 rounded">

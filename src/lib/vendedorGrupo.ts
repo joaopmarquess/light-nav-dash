@@ -14,3 +14,16 @@ export function useGruposVendedor() {
   }, []);
   return m;
 }
+
+let cacheMot: Record<string, { gp: string; ds: string }> | null = null;
+export function useGruposMotivo() {
+  const [m, setM] = useState(cacheMot ?? {});
+  useEffect(() => {
+    if (cacheMot) return;
+    hostinger.from("motivo_cancelamento_grupo").select("cd_motivo_cancelamento,ds_motivo_cancelamento_sb,gp_motivo_cancelamento").then(({ data }) => {
+      cacheMot = Object.fromEntries((data ?? []).map((r: any) => [String(r.cd_motivo_cancelamento), { gp: String(r.gp_motivo_cancelamento).trim(), ds: String(r.ds_motivo_cancelamento_sb).trim() }]));
+      setM(cacheMot);
+    });
+  }, []);
+  return m;
+}
