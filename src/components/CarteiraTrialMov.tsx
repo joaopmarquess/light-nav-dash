@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -204,8 +204,8 @@ export default function CarteiraTrialMov() {
             </thead>
             <tbody>
               {grp === "nenhum" ? lista.slice(0, 2000).map(linha) : grupos.map((g) => (
-                <>
-                  <tr key={g.k} onClick={() => setAberto((p) => ({ ...p, [g.k]: !p[g.k] }))} className="border-t bg-muted/30 hover:bg-muted cursor-pointer font-medium">
+                <Fragment key={g.k}>
+                  <tr onClick={() => setAberto((p) => ({ ...p, [g.k]: !p[g.k] }))} className="border-t bg-muted/30 hover:bg-muted cursor-pointer font-medium">
                     <td colSpan={COLS.length} className="px-3 py-2">
                       <span className="inline-flex items-center gap-2">
                         {aberto[g.k] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -217,7 +217,7 @@ export default function CarteiraTrialMov() {
                     </td>
                   </tr>
                   {aberto[g.k] && g.it.map(linha)}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>
