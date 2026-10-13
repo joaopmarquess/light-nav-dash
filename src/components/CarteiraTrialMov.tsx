@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowDown, ArrowUp, Loader2, Search, X, UserPlus, UserMinus, Scale } from "lucide-react";
+import { ArrowDown, ArrowUp, Loader2, Search, X, UserPlus, UserMinus, Scale, RotateCcw } from "lucide-react";
 
 type Row = Record<string, any>;
 type Ev = { data: string; tipo: "Entrada" | "Reativação" | "Saída"; r: Row };
@@ -57,11 +57,10 @@ export default function CarteiraTrialMov() {
       const { de, ate } = ap;
       const fim = `${ate}T23:59:59`;
       const conds: string[] = [];
-      if (ap.tipo !== "saidas") {
-        conds.push(`and(dt_vigencia_beneficiario.gte.${de},dt_vigencia_beneficiario.lte.${fim})`);
-        conds.push(`and(dt_reativacao.gte.${de},dt_reativacao.lte.${fim})`);
-      }
-      if (ap.tipo !== "entradas") conds.push(`and(dt_desligamento.gte.${de},dt_desligamento.lte.${fim})`);
+      const T = ap.tipo, all = T === "todas";
+      if (all || T === "entradas") conds.push(`and(dt_vigencia_beneficiario.gte.${de},dt_vigencia_beneficiario.lte.${fim})`);
+      if (all || T === "reativacoes") conds.push(`and(dt_reativacao.gte.${de},dt_reativacao.lte.${fim})`);
+      if (all || T === "saidas") conds.push(`and(dt_desligamento.gte.${de},dt_desligamento.lte.${fim})`);
       const rows: Row[] = [];
       for (let from = 0; from < LIMITE; from += 1000) {
         let q = hostinger.from("view_ecarteira")
@@ -88,8 +87,9 @@ export default function CarteiraTrialMov() {
       };
       for (const r of rows) {
         const v = dia(r.dt_vigencia_beneficiario), c = dia(r.dt_desligamento), a = dia(r.dt_reativacao);
-        if (ap.tipo !== "saidas") { if (inR(v)) add("Entrada", v, r); if (inR(a)) add("Reativação", a, r); }
-        if (ap.tipo !== "entradas" && inR(c)) add("Saída", c, r);
+        if ((all || T === "entradas") && inR(v)) add("Entrada", v, r);
+        if ((all || T === "reativacoes") && inR(a)) add("Reativação", a, r);
+        if ((all || T === "saidas") && inR(c)) add("Saída", c, r);
       }
       if (!off) { setEvs(out); setLoading(false); }
     })();
@@ -97,8 +97,9 @@ export default function CarteiraTrialMov() {
   }, [ap]);
 
   const kpi = useMemo(() => {
-    const e = evs.filter((x) => x.tipo !== "Saída").length, s = evs.length - e;
-    return { e, s, saldo: e - s };
+    const c = (t: string) => evs.filter((x) => x.tipo === t).length;
+    const e = c("Entrada"), r = c("Reativação"), s = c("Saída");
+    return { e, r, s, saldo: e + r - s };
   }, [evs]);
 
   const lista = useMemo(() => {
@@ -123,6 +124,7 @@ export default function CarteiraTrialMov() {
             <SelectContent>
               <SelectItem value="todas">Todas</SelectItem>
               <SelectItem value="entradas">Entradas</SelectItem>
+              <SelectItem value="reativacoes">Reativações</SelectItem>
               <SelectItem value="saidas">Saídas</SelectItem>
             </SelectContent>
           </Select>
@@ -134,9 +136,10 @@ export default function CarteiraTrialMov() {
         <Button variant="outline" onClick={limpar} disabled={loading}><X className="h-4 w-4 mr-1" />Limpar</Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[
           { l: "Entradas", v: kpi.e, I: UserPlus, c: "text-primary" },
+          { l: "Reativações", v: kpi.r, I: RotateCcw, c: "text-primary" },
           { l: "Saídas", v: kpi.s, I: UserMinus, c: "text-destructive" },
           { l: "Saldo líquido", v: kpi.saldo, I: Scale, c: kpi.saldo >= 0 ? "text-primary" : "text-destructive" },
         ].map(({ l, v, I, c }) => (
