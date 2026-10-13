@@ -739,10 +739,10 @@ function buildPdf({
       doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
       doc.setTextColor(...PDF_COLORS.navy);
-      doc.text("DECLARAÇÃO", pageW / 2, 22, { align: "center", baseline: "middle" });
+      doc.text("DECLARAÇÃO", pageW / 2, 10, { align: "center", baseline: "middle" });
       doc.setDrawColor(...PDF_COLORS.navy);
       doc.setLineWidth(0.5);
-      doc.line(marginL, 26, pageW - marginR, 26);
+      doc.line(marginL, 13.5, pageW - marginR, 13.5);
       doc.setTextColor(0, 0, 0);
       doc.setDrawColor(0);
       doc.setLineWidth(0.2);
@@ -753,6 +753,7 @@ function buildPdf({
       secao: currentSecao,
       marginL,
       marginR,
+      top: declaracaoMode ? 26 : 23,
     });
   };
 
@@ -763,7 +764,7 @@ function buildPdf({
     ...baseTableStyles(8.5),
     headStyles: { ...baseTableStyles(8.5).headStyles, halign: "center" },
     footStyles: { ...baseTableStyles(8.5).footStyles, ...subtotalRowStyles },
-    margin: { left: marginL, right: marginR, top: marginT, bottom: marginB },
+    margin: { left: marginL, right: marginR, top: declaracoes ? marginT + 3 : marginT, bottom: marginB },
     didParseCell: negativeRed,
     didDrawPage: () => header(),
   };
@@ -1021,13 +1022,14 @@ function buildPdf({
   declaracaoMode = true;
   const declList: (string | null)[] = declaracoes ? (filterExe ? [filterExe] : report.exeSortedS3) : [filterExe];
   let sec4Start = 0;
+  const declByPage: Record<number, number> = {};
   declList.forEach((dExe, di) => {
   if (!(declaracoes && di === 0)) doc.addPage();
   const pgStart = doc.getNumberOfPages();
   if (di === 0) sec4Start = pgStart;
   currentSecao = "Credenciado Executor Selecionado";
 
-  let s4Y = marginT;
+  let s4Y = marginT + 3;
   if (dExe) {
     const cdExe = report.exeCd.get(dExe) ?? "";
     doc.setFont("helvetica", "bold");
@@ -1069,6 +1071,7 @@ function buildPdf({
   doc.text("Assinatura e Carimbo", cx, y2 + 5, { align: "center" });
 
   markSectionPages(`Declaração ${di}`, pgStart);
+  for (let p = pgStart; p <= doc.getNumberOfPages(); p++) declByPage[p] = di + 1;
   });
 
 
@@ -1088,6 +1091,7 @@ function buildPdf({
     doc.setFontSize(9.5);
     doc.setTextColor(0, 0, 0);
     if (i < sec4Start) doc.text(`${i}`, marginL, footY, { align: "left" });
+    else if (declaracoes && declByPage[i]) doc.text(`${declByPage[i]}/${declList.length}`, marginL, footY, { align: "left" });
     const sec = sectionByPage[i];
     if (sec) {
       secSeen[sec] = (secSeen[sec] ?? 0) + 1;
