@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { hostinger } from "@/lib/hostingerClient";
+import { useGruposVendedor } from "@/lib/vendedorGrupo";
 
 type Row = Record<string, any>;
 type Modo = "entradas" | "saidas";
@@ -28,12 +29,13 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
   const [cortado, setCortado] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
+  const grupos = useGruposVendedor();
   const consultar = async () => {
     setLoading(true); setError(null); setRows(null); setExpanded({}); setCortado(false);
     const all: Row[] = [];
     for (let from = 0; from < LIMITE; from += 1000) {
       const { data, error } = await hostinger.from("view_ecarteira")
-        .select(`cd_mat_alternativa,nm_beneficiario,ds_plano,nm_vendedor,nm_empresa_estipulante,nm_cidade_plano,cd_uf_plano,ds_motivo_cancelamento,${campo}`)
+        .select(`cd_mat_alternativa,cd_vendedor,nm_beneficiario,ds_plano,nm_vendedor,nm_empresa_estipulante,nm_cidade_plano,cd_uf_plano,ds_motivo_cancelamento,${campo}`)
         .eq("tp_plano", "SAUDE").lte("cd_mat_alternativa", 399999999999)
         .gte(campo, de).lte(campo, `${ate}T23:59:59`)
         .range(from, from + 999);
@@ -63,6 +65,7 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
     if (!filtered) return [];
     const key = (r: Row) => String(
       groupBy === "vendedor" ? r.nm_vendedor || "SEM VENDEDOR"
+      : groupBy === "grupo" ? grupos[r.cd_vendedor] || "SEM GRUPO"
       : groupBy === "plano" ? r.ds_plano || "SEM PLANO"
       : groupBy === "empresa" ? r.nm_empresa_estipulante || "SEM EMPRESA"
       : groupBy === "cidade" ? cidade(r) || "SEM CIDADE"
@@ -71,7 +74,7 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
     for (const r of filtered) { const k = key(r); if (!map.has(k)) map.set(k, []); map.get(k)!.push(r); }
     return [...map.entries()].map(([key, itens]) => ({ key, itens, qtd: new Set(itens.map((i) => i.cd_mat_alternativa)).size }))
       .sort((a, b) => b.qtd - a.qtd);
-  }, [filtered, groupBy]);
+  }, [filtered, groupBy, grupos]);
 
   const total = filtered ? new Set(filtered.map((r) => r.cd_mat_alternativa)).size : 0;
   const max = grouped[0]?.qtd ?? 0;
@@ -87,6 +90,7 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
         <div><label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Agrupar por</label>
           <select value={groupBy} onChange={(e) => setGroupBy(e.target.value)} className={inp}>
             {modo === "saidas" && <option value="motivo">Motivo</option>}
+            <option value="grupo">Grupo de vendedor</option>
             <option value="vendedor">Vendedor</option>
             <option value="plano">Plano</option>
             <option value="empresa">Empresa</option>
