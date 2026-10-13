@@ -116,21 +116,26 @@ export default function CarteiraTrialMov() {
   const gv = useGruposVendedor();
   const [grp, setGrp] = useState("nenhum");
   const [aberto, setAberto] = useState<Record<string, boolean>>({});
-  const grupos = useMemo(() => {
-    if (grp === "nenhum") return [];
-    const key = (e: Ev) => grp === "empresa" ? (e.r.nm_empresa_estipulante || "SEM EMPRESA")
-      : grp === "cidade" ? (e.r.nm_cidade_plano ? cidade(e.r) : "SEM CIDADE")
-      : grp === "vendedor" ? (e.r.nm_vendedor || "SEM VENDEDOR")
-      : grp === "grupo" ? (gv[e.r.cd_vendedor] || "SEM GRUPO") : e.data;
+  const agrupa = (list: Ev[], key: (e: Ev) => string) => {
     const m = new Map<string, Ev[]>();
-    for (const e of lista) { const k = String(key(e)).trim(); if (!m.has(k)) m.set(k, []); m.get(k)!.push(e); }
+    for (const e of list) { const k = String(key(e)).trim(); if (!m.has(k)) m.set(k, []); m.get(k)!.push(e); }
     return [...m.entries()].map(([k, it]) => {
       const c = (t: string) => it.filter((x) => x.tipo === t).length;
       const e = c("Entrada"), r = c("Reativação"), s = c("Saída");
       const vidas = new Set(it.map((x) => String(x.r.cd_mat_alternativa))).size;
       return { k, it, e, r, s, saldo: e + r - s, vidas };
     }).sort((a, b) => grp === "dia" ? b.k.localeCompare(a.k) : b.it.length - a.it.length);
+  };
+  const grupos = useMemo(() => {
+    if (grp === "nenhum") return [];
+    const key = (e: Ev) => grp === "empresa" ? (e.r.nm_empresa_estipulante || "SEM EMPRESA")
+      : grp === "cidade" ? (e.r.nm_cidade_plano ? cidade(e.r) : "SEM CIDADE")
+      : grp === "grupo" ? (gv[e.r.cd_vendedor] || "SEM GRUPO") : e.data;
+    return agrupa(lista, key).map((g) => ({ ...g, sub: grp === "grupo" ? agrupa(g.it, (e) => e.r.nm_vendedor || "SEM VENDEDOR") : null }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lista, grp, gv]);
+  const vlr = (g: { saldo: number; vidas: number }) => ap.tipo === "todas"
+    ? <span className={g.saldo >= 0 ? "text-primary" : "text-destructive"}>{g.saldo > 0 ? "+" : ""}{num(g.saldo)}</span> : num(g.vidas);
   const vidasTot = useMemo(() => new Set(evs.map((x) => String(x.r.cd_mat_alternativa))).size, [evs]);
   const linha = (e: Ev, i: number) => (
     <tr key={i} className="border-t hover:bg-muted/50">
@@ -176,7 +181,6 @@ export default function CarteiraTrialMov() {
               <SelectItem value="empresa">Empresa</SelectItem>
               <SelectItem value="cidade">Cidade</SelectItem>
               <SelectItem value="grupo">Grupo de vendedor</SelectItem>
-              <SelectItem value="vendedor">Vendedor</SelectItem>
               <SelectItem value="dia">Dia</SelectItem>
             </SelectContent>
           </Select>
@@ -220,9 +224,18 @@ export default function CarteiraTrialMov() {
                         {grp === "dia" ? fmtD(g.k) : g.k}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums">{ap.tipo === "todas" ? <span className={g.saldo >= 0 ? "text-primary" : "text-destructive"}>{g.saldo > 0 ? "+" : ""}{num(g.saldo)}</span> : num(g.vidas)}</td>
+                    <td className="px-3 py-2 text-right tabular-nums">{vlr(g)}</td>
                   </tr>
-                  {aberto[g.k] && g.it.map(linha)}
+                  {aberto[g.k] && (g.sub ? g.sub.map((v) => { const id = `${g.k}||${v.k}`; return (
+                    <Fragment key={id}>
+                      <tr onClick={() => setAberto((p) => ({ ...p, [id]: !p[id] }))} className="border-t bg-muted/10 hover:bg-muted cursor-pointer">
+                        <td colSpan={COLS.length - 1} className="px-3 py-1.5 pl-9">
+                          <span className="inline-flex items-center gap-2">{aberto[id] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}{v.k}</span>
+                        </td>
+                        <td className="px-3 py-1.5 text-right tabular-nums">{vlr(v)}</td>
+                      </tr>
+                      {aberto[id] && v.it.map(linha)}
+                    </Fragment>); }) : g.it.map(linha))}
                 </Fragment>
               ))}
             </tbody>
