@@ -705,7 +705,9 @@ function buildPdf({
   filterCd,
   timbradoDataUrl,
   declaracoes = false,
+  individual = false,
 }: {
+  individual?: boolean;
   cdpln: string;
   dspln: string;
   mabasIni: string;
@@ -1091,7 +1093,7 @@ function buildPdf({
     doc.setFontSize(9.5);
     doc.setTextColor(0, 0, 0);
     if (i < sec4Start) doc.text(`${i}`, marginL, footY, { align: "left" });
-    else if (declaracoes) {
+    else if (declaracoes && !individual) {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(6);
       doc.text(`${i}`, marginL, footY, { align: "left" });
@@ -1201,7 +1203,7 @@ function ReportPreview({
         : report.exeSortedS3;
       for (const exe of lista) {
         const cd = String(report.exeCd.get(exe) ?? "");
-        const d = buildPdf({ cdpln, dspln, mabasIni, mabasFim, report, exeLabel, filterCd: cd, timbradoDataUrl: null, declaracoes: true });
+        const d = buildPdf({ cdpln, dspln, mabasIni, mabasFim, report, exeLabel, filterCd: cd, timbradoDataUrl: null, declaracoes: true, individual: true });
         let name = `${cd}_${exe}`.replace(/[\\/:*?"<>|]+/g, "-").trim();
         let n = name, k = 2;
         while (used.has(n)) n = `${name} (${k++})`;
