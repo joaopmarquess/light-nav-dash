@@ -1095,7 +1095,13 @@ function buildPdf({
     const sec = sectionByPage[i];
     if (sec) {
       secSeen[sec] = (secSeen[sec] ?? 0) + 1;
-      doc.text(`${secSeen[sec]} de ${secTotals[sec]}`, pageW - marginR, footY, { align: "right" });
+      if (declaracoes) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(6);
+        doc.text(`${i}`, pageW - marginR, footY, { align: "right" });
+      } else {
+        doc.text(`${secSeen[sec]} de ${secTotals[sec]}`, pageW - marginR, footY, { align: "right" });
+      }
     }
   }
 
