@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowDown, ArrowUp, Loader2, Search, X, UserPlus, UserMinus, Scale, RotateCcw } from "lucide-react";
+import { ArrowDown, ArrowUp, Loader2, Search, X, UserPlus, UserMinus, Scale, RotateCcw, ChevronDown, ChevronRight } from "lucide-react";
 
 type Row = Record<string, any>;
 type Ev = { data: string; tipo: "Entrada" | "Reativação" | "Saída"; r: Row };
@@ -31,12 +31,13 @@ const COLS: { key: string; label: string; align?: "right" }[] = [
   { key: "nome", label: "Beneficiário" },
   { key: "empresa", label: "Empresa" },
   { key: "cidade", label: "Cidade" },
+  { key: "vendedor", label: "Vendedor" },
   { key: "valor", label: "Mensalidade", align: "right" },
 ];
 const val = (e: Ev, k: string): any =>
   k === "data" ? e.data : k === "tipo" ? e.tipo : k === "mat" ? Number(e.r.cd_mat_alternativa ?? 0)
   : k === "nome" ? e.r.nm_beneficiario ?? "" : k === "empresa" ? e.r.nm_empresa_estipulante ?? ""
-  : k === "cidade" ? e.r.nm_cidade_plano ?? "" : Number(e.r.vl_tmm ?? 0);
+  : k === "cidade" ? e.r.nm_cidade_plano ?? "" : k === "vendedor" ? e.r.nm_vendedor ?? "" : Number(e.r.vl_tmm ?? 0);
 
 type F = { de: string; ate: string; tipo: string; q: string; empresa: string; cidade: string };
 const EMPTY = (): F => ({ de: inicioMes(), ate: hojeISO(), tipo: "todas", q: "", empresa: "", cidade: "" });
@@ -64,7 +65,7 @@ export default function CarteiraTrialMov() {
       const rows: Row[] = [];
       for (let from = 0; from < LIMITE; from += 1000) {
         let q = hostinger.from("view_ecarteira")
-          .select("cd_mat_alternativa,nm_beneficiario,nm_empresa_estipulante,nm_cidade_plano,cd_uf_plano,vl_tmm,dt_vigencia_beneficiario,dt_desligamento,dt_reativacao")
+          .select("cd_mat_alternativa,nm_beneficiario,nm_empresa_estipulante,nm_cidade_plano,cd_uf_plano,nm_vendedor,vl_tmm,dt_vigencia_beneficiario,dt_desligamento,dt_reativacao")
           .eq("tp_plano", "SAUDE").lte("cd_mat_alternativa", 399999999999)
           .or(conds.join(","))
           .range(from, from + 999);
@@ -110,6 +111,34 @@ export default function CarteiraTrialMov() {
     });
   }, [evs, sort]);
 
+  const [grp, setGrp] = useState("nenhum");
+  const [aberto, setAberto] = useState<Record<string, boolean>>({});
+  const grupos = useMemo(() => {
+    if (grp === "nenhum") return [];
+    const key = (e: Ev) => grp === "empresa" ? (e.r.nm_empresa_estipulante || "SEM EMPRESA")
+      : grp === "cidade" ? (e.r.nm_cidade_plano ? cidade(e.r) : "SEM CIDADE")
+      : grp === "vendedor" ? (e.r.nm_vendedor || "SEM VENDEDOR") : e.data;
+    const m = new Map<string, Ev[]>();
+    for (const e of lista) { const k = String(key(e)).trim(); if (!m.has(k)) m.set(k, []); m.get(k)!.push(e); }
+    return [...m.entries()].map(([k, it]) => {
+      const c = (t: string) => it.filter((x) => x.tipo === t).length;
+      const e = c("Entrada"), r = c("Reativação"), s = c("Saída");
+      return { k, it, e, r, s, saldo: e + r - s };
+    }).sort((a, b) => grp === "dia" ? b.k.localeCompare(a.k) : b.it.length - a.it.length);
+  }, [lista, grp]);
+  const linha = (e: Ev, i: number) => (
+    <tr key={i} className="border-t hover:bg-muted/50">
+      <td className="px-3 py-1.5">{fmtD(e.data)}</td>
+      <td className="px-3 py-1.5"><Badge variant={e.tipo === "Saída" ? "destructive" : e.tipo === "Reativação" ? "secondary" : "default"}>{e.tipo}</Badge></td>
+      <td className="px-3 py-1.5 whitespace-nowrap">{fmtMat(e.r.cd_mat_alternativa)}</td>
+      <td className="px-3 py-1.5">{e.r.nm_beneficiario}</td>
+      <td className="px-3 py-1.5">{e.r.nm_empresa_estipulante ?? "—"}</td>
+      <td className="px-3 py-1.5">{cidade(e.r)}</td>
+      <td className="px-3 py-1.5">{e.r.nm_vendedor ?? "—"}</td>
+      <td className="px-3 py-1.5 text-right">{brl(e.r.vl_tmm)}</td>
+    </tr>
+  );
+
   const buscar = () => setAp({ ...f });
   const limpar = () => { const e = EMPTY(); setF(e); setAp(e); };
 
@@ -132,6 +161,18 @@ export default function CarteiraTrialMov() {
         <Input placeholder="Nome, matrícula ou contrato" value={f.q} onChange={(e) => setF({ ...f, q: e.target.value })} onKeyDown={(e) => e.key === "Enter" && buscar()} className="w-60" />
         <Input placeholder="Empresa" value={f.empresa} onChange={(e) => setF({ ...f, empresa: e.target.value })} className="w-44" />
         <Input placeholder="Cidade" value={f.cidade} onChange={(e) => setF({ ...f, cidade: e.target.value })} className="w-44" />
+        <label className="text-xs text-muted-foreground">Agrupar por
+          <Select value={grp} onValueChange={(v) => { setGrp(v); setAberto({}); }}>
+            <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="nenhum">Sem agrupar</SelectItem>
+              <SelectItem value="empresa">Empresa</SelectItem>
+              <SelectItem value="cidade">Cidade</SelectItem>
+              <SelectItem value="vendedor">Vendedor</SelectItem>
+              <SelectItem value="dia">Dia</SelectItem>
+            </SelectContent>
+          </Select>
+        </label>
         <Button onClick={buscar} disabled={loading}><Search className="h-4 w-4 mr-1" />Buscar</Button>
         <Button variant="outline" onClick={limpar} disabled={loading}><X className="h-4 w-4 mr-1" />Limpar</Button>
       </div>
@@ -162,16 +203,21 @@ export default function CarteiraTrialMov() {
               </tr>
             </thead>
             <tbody>
-              {lista.slice(0, 2000).map((e, i) => (
-                <tr key={i} className="border-t hover:bg-muted/50">
-                  <td className="px-3 py-1.5">{fmtD(e.data)}</td>
-                  <td className="px-3 py-1.5"><Badge variant={e.tipo === "Saída" ? "destructive" : e.tipo === "Reativação" ? "secondary" : "default"}>{e.tipo}</Badge></td>
-                  <td className="px-3 py-1.5 whitespace-nowrap">{fmtMat(e.r.cd_mat_alternativa)}</td>
-                  <td className="px-3 py-1.5">{e.r.nm_beneficiario}</td>
-                  <td className="px-3 py-1.5">{e.r.nm_empresa_estipulante ?? "—"}</td>
-                  <td className="px-3 py-1.5">{cidade(e.r)}</td>
-                  <td className="px-3 py-1.5 text-right">{brl(e.r.vl_tmm)}</td>
-                </tr>
+              {grp === "nenhum" ? lista.slice(0, 2000).map(linha) : grupos.map((g) => (
+                <Fragment key={g.k}>
+                  <tr onClick={() => setAberto((p) => ({ ...p, [g.k]: !p[g.k] }))} className="border-t bg-muted/30 hover:bg-muted cursor-pointer font-medium">
+                    <td colSpan={COLS.length} className="px-3 py-2">
+                      <span className="inline-flex items-center gap-2">
+                        {aberto[g.k] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                        {grp === "dia" ? fmtD(g.k) : g.k}
+                      </span>
+                      <span className="float-right text-xs font-normal text-muted-foreground">
+                        Entradas <b className="text-foreground">{num(g.e)}</b> · Reativações <b className="text-foreground">{num(g.r)}</b> · Saídas <b className="text-destructive">{num(g.s)}</b> · Saldo <b className={g.saldo >= 0 ? "text-primary" : "text-destructive"}>{g.saldo > 0 ? "+" : ""}{num(g.saldo)}</b>
+                      </span>
+                    </td>
+                  </tr>
+                  {aberto[g.k] && g.it.map(linha)}
+                </Fragment>
               ))}
             </tbody>
           </table>
@@ -180,7 +226,7 @@ export default function CarteiraTrialMov() {
           {!loading && !err && evs.length === 0 && <div className="p-6 text-center text-muted-foreground">Nenhuma movimentação no período.</div>}
         </div>
         <div className="border-t px-3 py-2 text-xs text-muted-foreground">
-          {num(evs.length)} movimentações{evs.length > 2000 ? " (exibindo as 2.000 primeiras pela ordem escolhida)" : ""}{cortado ? " — limite de busca atingido, reduza o período" : ""}
+          {num(evs.length)} movimentações{grp !== "nenhum" ? ` em ${num(grupos.length)} grupos` : ""}{grp === "nenhum" && evs.length > 2000 ? " (exibindo as 2.000 primeiras pela ordem escolhida)" : ""}{cortado ? " — limite de busca atingido, reduza o período" : ""}
         </div>
       </div>
     </div>
