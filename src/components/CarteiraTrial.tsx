@@ -39,11 +39,9 @@ const dia = (v: any) => (v ? String(v).slice(0, 10) : "");
 function calcStatus(r: Row, hoje: string): "A" | "F" | "C" {
   const vig = dia(r.dt_vigencia_beneficiario), can = dia(r.dt_desligamento), rea = dia(r.dt_reativacao);
   if (vig && vig > hoje) return "F";
-  if (vig && vig <= hoje) {
-    if (!can && !rea) return "A";
-    if (rea && rea <= hoje && (!can || rea > can)) return "A";
-  }
-  return "C";
+  if (!vig) return "C";
+  if (can && can <= hoje && !(rea && rea <= hoje && rea > can)) return "C";
+  return "A";
 }
 const ST: Record<string, [string, any]> = { A: ["Ativo", "default"], F: ["Futuro", "secondary"], C: ["Cancelado", "destructive"] };
 const COLS: { key: string; label: string; fmt?: (v: any) => string; align?: "right" }[] = [
