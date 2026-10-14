@@ -53,7 +53,7 @@ export default function CarteiraTrialMov() {
           .select("cd_mat_alternativa,cd_vendedor,cd_motivo_cancelamento,nm_beneficiario,nm_empresa_estipulante,nm_vendedor,dt_vigencia_beneficiario,dt_desligamento,dt_reativacao")
           .eq("tp_plano", "SAUDE").lte("cd_mat_alternativa", 399999999999)
           .or(conds.join(","))
-          .range(from, from + 999);
+          .order("cd_mat_alternativa").order("dt_vigencia_beneficiario").order("dt_desligamento").range(from, from + 999);
         if (off) return;
         if (error) { setErr(error.message); setLoading(false); return; }
         rows.push(...(data ?? []));
