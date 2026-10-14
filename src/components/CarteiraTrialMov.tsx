@@ -78,14 +78,15 @@ export default function CarteiraTrialMov() {
   }, [ap]);
 
   const dAnt = useMemo(() => { const d = new Date(ap.de + "T12:00:00"); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10); }, [ap.de]);
+  const dFin = useMemo(() => { const d = new Date(ap.ate + "T12:00:00"); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); }, [ap.ate]);
   useEffect(() => {
     let off = false;
     setVidas({ ant: null, fin: null });
     const at = (d: string) => hostinger.rpc("carteira_trial_kpis", { p_data: d, p_q: null, p_empresa: null, p_cidade: null })
       .then(({ data }: any) => { const r = Array.isArray(data) ? data[0] : data; return r ? Number(r.ativos) : null; });
-    Promise.all([at(dAnt), at(ap.ate)]).then(([ant, fin]) => { if (!off) setVidas({ ant, fin }); });
+    Promise.all([at(dAnt), at(dFin)]).then(([ant, fin]) => { if (!off) setVidas({ ant, fin }); });
     return () => { off = true; };
-  }, [dAnt, ap.ate]);
+  }, [dAnt, dFin]);
 
   const kpi = useMemo(() => {
     const c = (t: Tipo) => evs.filter((x) => x.tipo === t).length;
@@ -148,7 +149,7 @@ export default function CarteiraTrialMov() {
         </div>
       </section>
 
-      {vcard("Vidas Finais", vidas.fin, ap.ate)}
+      {vcard("Vidas Finais", vidas.fin, dFin)}
 
       {err && <div className="p-4 text-center text-destructive">Erro: {err}</div>}
       {cortado && <div className="text-xs text-muted-foreground">Limite de busca atingido, reduza o período.</div>}
