@@ -159,32 +159,6 @@ export default function CarteiraTrialMov() {
       <div className="rounded-xl border bg-card p-4 flex flex-wrap items-end gap-3">
         <label className="text-xs text-muted-foreground">De<Input type="date" value={f.de} onChange={(e) => setF({ ...f, de: e.target.value })} className="w-40" /></label>
         <label className="text-xs text-muted-foreground">Até<Input type="date" value={f.ate} onChange={(e) => setF({ ...f, ate: e.target.value })} className="w-40" /></label>
-        <label className="text-xs text-muted-foreground">Tipo
-          <Select value={f.tipo} onValueChange={(v) => setF({ ...f, tipo: v })}>
-            <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todas">Todas</SelectItem>
-              <SelectItem value="entradas">Entradas</SelectItem>
-              <SelectItem value="reativacoes">Reativações</SelectItem>
-              <SelectItem value="saidas">Saídas</SelectItem>
-            </SelectContent>
-          </Select>
-        </label>
-        <Input placeholder="Nome, matrícula ou contrato" value={f.q} onChange={(e) => setF({ ...f, q: e.target.value })} onKeyDown={(e) => e.key === "Enter" && buscar()} className="w-60" />
-        <Input placeholder="Empresa" value={f.empresa} onChange={(e) => setF({ ...f, empresa: e.target.value })} className="w-44" />
-        <Input placeholder="Cidade" value={f.cidade} onChange={(e) => setF({ ...f, cidade: e.target.value })} className="w-44" />
-        <label className="text-xs text-muted-foreground">Agrupar por
-          <Select value={grp} onValueChange={(v) => { setGrp(v); setAberto({}); }}>
-            <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="nenhum">Sem agrupar</SelectItem>
-              <SelectItem value="empresa">Empresa</SelectItem>
-              <SelectItem value="cidade">Cidade</SelectItem>
-              <SelectItem value="grupo">Grupo de vendedor</SelectItem>
-              <SelectItem value="dia">Dia</SelectItem>
-            </SelectContent>
-          </Select>
-        </label>
         <Button onClick={buscar} disabled={loading}><Search className="h-4 w-4 mr-1" />Buscar</Button>
         <Button variant="outline" onClick={limpar} disabled={loading}><X className="h-4 w-4 mr-1" />Limpar</Button>
       </div>
@@ -203,51 +177,8 @@ export default function CarteiraTrialMov() {
         ))}
       </div>
 
-      <div className="rounded-xl border bg-card overflow-hidden">
-        <div className="max-h-[60vh] overflow-auto">
-          <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-muted">
-              <tr>{COLS.map((c) => (
-                <th key={c.key} onClick={() => setSort((s) => ({ k: c.key, asc: s.k === c.key ? !s.asc : true }))}
-                  className={`px-3 py-2 font-medium cursor-pointer select-none whitespace-nowrap ${c.align === "right" ? "text-right" : "text-left"}`}>
-                  {c.label}{sort.k === c.key && (sort.asc ? <ArrowUp className="inline h-3 w-3 ml-1" /> : <ArrowDown className="inline h-3 w-3 ml-1" />)}
-                </th>))}
-              </tr>
-            </thead>
-            <tbody>
-              {grp === "nenhum" ? lista.slice(0, 2000).map(linha) : grupos.map((g) => (
-                <Fragment key={g.k}>
-                  <tr onClick={() => setAberto((p) => ({ ...p, [g.k]: !p[g.k] }))} className="border-t bg-muted/30 hover:bg-muted cursor-pointer font-medium">
-                    <td colSpan={COLS.length - 1} className="px-3 py-2">
-                      <span className="inline-flex items-center gap-2">
-                        {aberto[g.k] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                        {grp === "dia" ? fmtD(g.k) : g.k}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 text-right tabular-nums">{vlr(g)}</td>
-                  </tr>
-                  {aberto[g.k] && (g.sub ? g.sub.map((v) => { const id = `${g.k}||${v.k}`; return (
-                    <Fragment key={id}>
-                      <tr onClick={() => setAberto((p) => ({ ...p, [id]: !p[id] }))} className="border-t bg-muted/10 hover:bg-muted cursor-pointer">
-                        <td colSpan={COLS.length - 1} className="px-3 py-1.5 pl-9">
-                          <span className="inline-flex items-center gap-2">{aberto[id] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}{v.k}</span>
-                        </td>
-                        <td className="px-3 py-1.5 text-right tabular-nums">{vlr(v)}</td>
-                      </tr>
-                      {aberto[id] && v.it.map(linha)}
-                    </Fragment>); }) : g.it.map(linha))}
-                </Fragment>
-              ))}
-            </tbody>
-          </table>
-          {loading && <div className="p-6 flex justify-center text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mr-2" />Carregando…</div>}
-          {err && <div className="p-6 text-center text-destructive">Erro: {err}</div>}
-          {!loading && !err && evs.length === 0 && <div className="p-6 text-center text-muted-foreground">Nenhuma movimentação no período.</div>}
-        </div>
-        <div className="border-t px-3 py-2 text-xs text-muted-foreground">
-          {num(evs.length)} movimentações · {ap.tipo === "todas" ? `saldo ${kpi.saldo > 0 ? "+" : ""}${num(kpi.saldo)} vidas` : `${num(vidasTot)} vidas`}{grp !== "nenhum" ? ` em ${num(grupos.length)} grupos` : ""}{grp === "nenhum" && evs.length > 2000 ? " (exibindo as 2.000 primeiras pela ordem escolhida)" : ""}{cortado ? " — limite de busca atingido, reduza o período" : ""}
-        </div>
-      </div>
+      {err && <div className="p-4 text-center text-destructive">Erro: {err}</div>}
+      {cortado && <div className="text-xs text-muted-foreground">Limite de busca atingido, reduza o período.</div>}
     </div>
   );
 }
