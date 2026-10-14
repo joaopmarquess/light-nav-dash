@@ -1,21 +1,20 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
-import { useGruposVendedor } from "@/lib/vendedorGrupo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowDown, ArrowUp, Loader2, Search, X, UserPlus, UserMinus, Scale, RotateCcw, ChevronDown, ChevronRight } from "lucide-react";
+import { Search, X, UserPlus, UserMinus, Scale, RotateCcw, ArrowRightLeft, LogIn, LogOut } from "lucide-react";
 
 type Row = Record<string, any>;
-type Ev = { data: string; tipo: "Entrada" | "Reativação" | "Saída"; r: Row };
+type Tipo = "Entrada" | "Reativação" | "Saída" | "T+" | "T-";
+type Ev = { data: string; tipo: Tipo; r: Row };
 const LIMITE = 30000;
+const VEND_T = new Set([273, 274]);
+const MOT_T = new Set([6, 7, 18, 26, 29, 101, 102, 104, 106, 208, 216]);
 
 const hojeISO = () => new Date().toISOString().slice(0, 10);
 const inicioMes = () => hojeISO().slice(0, 8) + "01";
 const dia = (v: any) => (v ? String(v).slice(0, 10) : "");
 const fmtD = (v: string) => (v ? v.split("-").reverse().join("/") : "—");
-const brl = (v: any) => (v == null ? "—" : Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
 const num = (n: number) => n.toLocaleString("pt-BR");
 const fmtMat = (v: any) => {
   const d = String(v ?? "").replace(/\D/g, "");
@@ -23,26 +22,9 @@ const fmtMat = (v: any) => {
   const r = d.slice(-8);
   return `${Number(d.slice(0, -8))}/${r.slice(0, 6)}-${r.slice(6)}`;
 };
-const cidade = (r: Row) => (r.nm_cidade_plano ? `${r.nm_cidade_plano}${r.cd_uf_plano ? ` (${r.cd_uf_plano})` : ""}` : "—");
 
-const COLS: { key: string; label: string; align?: "right" }[] = [
-  { key: "data", label: "Data" },
-  { key: "tipo", label: "Tipo" },
-  { key: "mat", label: "Matrícula" },
-  { key: "nome", label: "Beneficiário" },
-  { key: "empresa", label: "Empresa" },
-  { key: "cidade", label: "Cidade" },
-  { key: "vendedor", label: "Vendedor" },
-  { key: "valor", label: "Mensalidade", align: "right" },
-  { key: "vidas", label: "Vidas", align: "right" },
-];
-const val = (e: Ev, k: string): any =>
-  k === "data" ? e.data : k === "tipo" ? e.tipo : k === "mat" ? Number(e.r.cd_mat_alternativa ?? 0)
-  : k === "nome" ? e.r.nm_beneficiario ?? "" : k === "empresa" ? e.r.nm_empresa_estipulante ?? ""
-  : k === "cidade" ? e.r.nm_cidade_plano ?? "" : k === "vendedor" ? e.r.nm_vendedor ?? "" : Number(e.r.vl_tmm ?? 0);
-
-type F = { de: string; ate: string; tipo: string; q: string; empresa: string; cidade: string };
-const EMPTY = (): F => ({ de: inicioMes(), ate: hojeISO(), tipo: "todas", q: "", empresa: "", cidade: "" });
+type F = { de: string; ate: string };
+const EMPTY = (): F => ({ de: inicioMes(), ate: hojeISO() });
 
 export default function CarteiraTrialMov() {
   const [f, setF] = useState<F>(EMPTY());
@@ -51,7 +33,7 @@ export default function CarteiraTrialMov() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [cortado, setCortado] = useState(false);
-  const [sort, setSort] = useState<{ k: string; asc: boolean }>({ k: "data", asc: false });
+  const [sel, setSel] = useState<Tipo | null>(null);
 
   useEffect(() => {
     let off = false;
@@ -59,23 +41,18 @@ export default function CarteiraTrialMov() {
       setLoading(true); setErr(null); setEvs([]); setCortado(false);
       const { de, ate } = ap;
       const fim = `${ate}T23:59:59`;
-      const conds: string[] = [];
-      const T = ap.tipo, all = T === "todas";
-      if (all || T === "entradas") conds.push(`and(dt_vigencia_beneficiario.gte.${de},dt_vigencia_beneficiario.lte.${fim})`);
-      if (all || T === "reativacoes") conds.push(`and(dt_reativacao.gte.${de},dt_reativacao.lte.${fim})`);
-      if (all || T === "saidas") conds.push(`and(dt_desligamento.gte.${de},dt_desligamento.lte.${fim})`);
+      const conds = [
+        `and(dt_vigencia_beneficiario.gte.${de},dt_vigencia_beneficiario.lte.${fim})`,
+        `and(dt_reativacao.gte.${de},dt_reativacao.lte.${fim})`,
+        `and(dt_desligamento.gte.${de},dt_desligamento.lte.${fim})`,
+      ];
       const rows: Row[] = [];
       for (let from = 0; from < LIMITE; from += 1000) {
-        let q = hostinger.from("view_ecarteira")
-          .select("cd_mat_alternativa,cd_vendedor,nm_beneficiario,nm_empresa_estipulante,nm_cidade_plano,cd_uf_plano,nm_vendedor,vl_tmm,dt_vigencia_beneficiario,dt_desligamento,dt_reativacao")
+        const { data, error } = await hostinger.from("view_ecarteira")
+          .select("cd_mat_alternativa,cd_vendedor,cd_motivo_cancelamento,nm_beneficiario,nm_empresa_estipulante,nm_vendedor,dt_vigencia_beneficiario,dt_desligamento,dt_reativacao")
           .eq("tp_plano", "SAUDE").lte("cd_mat_alternativa", 399999999999)
           .or(conds.join(","))
           .range(from, from + 999);
-        const s = ap.q.trim();
-        if (s) q = /^\d+$/.test(s) ? q.or(`cd_mat_alternativa.eq.${s},cd_contrato.eq.${s}`) : q.ilike("nm_beneficiario", `%${s}%`);
-        if (ap.empresa.trim()) q = q.ilike("nm_empresa_estipulante", `%${ap.empresa.trim()}%`);
-        if (ap.cidade.trim()) q = q.ilike("nm_cidade_plano", `%${ap.cidade.trim()}%`);
-        const { data, error } = await q;
         if (off) return;
         if (error) { setErr(error.message); setLoading(false); return; }
         rows.push(...(data ?? []));
@@ -84,15 +61,15 @@ export default function CarteiraTrialMov() {
       }
       const inR = (d: string) => d && d >= de && d <= ate;
       const out: Ev[] = []; const seen = new Set<string>();
-      const add = (tipo: Ev["tipo"], d: string, r: Row) => {
+      const add = (tipo: Tipo, d: string, r: Row) => {
         const k = `${tipo}|${r.cd_mat_alternativa}|${d}`;
         if (seen.has(k)) return; seen.add(k); out.push({ tipo, data: d, r });
       };
       for (const r of rows) {
         const v = dia(r.dt_vigencia_beneficiario), c = dia(r.dt_desligamento), a = dia(r.dt_reativacao);
-        if ((all || T === "entradas") && inR(v)) add("Entrada", v, r);
-        if ((all || T === "reativacoes") && inR(a)) add("Reativação", a, r);
-        if ((all || T === "saidas") && inR(c)) add("Saída", c, r);
+        if (inR(v)) add(VEND_T.has(Number(r.cd_vendedor)) ? "T+" : "Entrada", v, r);
+        if (inR(a)) add("Reativação", a, r);
+        if (inR(c)) add(MOT_T.has(Number(r.cd_motivo_cancelamento)) ? "T-" : "Saída", c, r);
       }
       if (!off) { setEvs(out); setLoading(false); }
     })();
@@ -100,59 +77,29 @@ export default function CarteiraTrialMov() {
   }, [ap]);
 
   const kpi = useMemo(() => {
-    const c = (t: string) => evs.filter((x) => x.tipo === t).length;
+    const c = (t: Tipo) => evs.filter((x) => x.tipo === t).length;
     const e = c("Entrada"), r = c("Reativação"), s = c("Saída");
-    return { e, r, s, saldo: e + r - s };
+    return { e, r, s, saldo: e + r - s, tp: c("T+"), tm: c("T-") };
   }, [evs]);
 
-  const lista = useMemo(() => {
-    const m = sort.asc ? 1 : -1;
-    return [...evs].sort((a, b) => {
-      const x = val(a, sort.k), y = val(b, sort.k);
-      return (typeof x === "number" ? x - y : String(x).localeCompare(String(y), "pt-BR")) * m;
-    });
-  }, [evs, sort]);
-
-  const gv = useGruposVendedor();
-  const [grp, setGrp] = useState("nenhum");
-  const [aberto, setAberto] = useState<Record<string, boolean>>({});
-  const agrupa = (list: Ev[], key: (e: Ev) => string) => {
-    const m = new Map<string, Ev[]>();
-    for (const e of list) { const k = String(key(e)).trim(); if (!m.has(k)) m.set(k, []); m.get(k)!.push(e); }
-    return [...m.entries()].map(([k, it]) => {
-      const c = (t: string) => it.filter((x) => x.tipo === t).length;
-      const e = c("Entrada"), r = c("Reativação"), s = c("Saída");
-      const vidas = new Set(it.map((x) => String(x.r.cd_mat_alternativa))).size;
-      return { k, it, e, r, s, saldo: e + r - s, vidas };
-    }).sort((a, b) => grp === "dia" ? b.k.localeCompare(a.k) : b.it.length - a.it.length);
-  };
-  const grupos = useMemo(() => {
-    if (grp === "nenhum") return [];
-    const key = (e: Ev) => grp === "empresa" ? (e.r.nm_empresa_estipulante || "SEM EMPRESA")
-      : grp === "cidade" ? (e.r.nm_cidade_plano ? cidade(e.r) : "SEM CIDADE")
-      : grp === "grupo" ? (gv[e.r.cd_vendedor] || "SEM GRUPO") : e.data;
-    return agrupa(lista, key).map((g) => ({ ...g, sub: grp === "grupo" ? agrupa(g.it, (e) => e.r.nm_vendedor || "SEM VENDEDOR") : null }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lista, grp, gv]);
-  const vlr = (g: { saldo: number; vidas: number }) => ap.tipo === "todas"
-    ? <span className={g.saldo >= 0 ? "text-primary" : "text-destructive"}>{g.saldo > 0 ? "+" : ""}{num(g.saldo)}</span> : num(g.vidas);
-  const vidasTot = useMemo(() => new Set(evs.map((x) => String(x.r.cd_mat_alternativa))).size, [evs]);
-  const linha = (e: Ev, i: number) => (
-    <tr key={i} className="border-t hover:bg-muted/50">
-      <td className="px-3 py-1.5">{fmtD(e.data)}</td>
-      <td className="px-3 py-1.5"><Badge variant={e.tipo === "Saída" ? "destructive" : e.tipo === "Reativação" ? "secondary" : "default"}>{e.tipo}</Badge></td>
-      <td className="px-3 py-1.5 whitespace-nowrap">{fmtMat(e.r.cd_mat_alternativa)}</td>
-      <td className="px-3 py-1.5">{e.r.nm_beneficiario}</td>
-      <td className="px-3 py-1.5">{e.r.nm_empresa_estipulante ?? "—"}</td>
-      <td className="px-3 py-1.5">{cidade(e.r)}</td>
-      <td className="px-3 py-1.5">{e.r.nm_vendedor ?? "—"}</td>
-      <td className="px-3 py-1.5 text-right">{brl(e.r.vl_tmm)}</td>
-      <td className="px-3 py-1.5 text-right text-muted-foreground">{ap.tipo === "todas" && e.tipo === "Saída" ? "-1" : ap.tipo === "todas" ? "+1" : "1"}</td>
-    </tr>
+  const lista = useMemo(
+    () => (sel ? evs.filter((x) => x.tipo === sel).sort((a, b) => b.data.localeCompare(a.data)) : []),
+    [evs, sel],
   );
 
   const buscar = () => setAp({ ...f });
   const limpar = () => { const e = EMPTY(); setF(e); setAp(e); };
+
+  const card = (l: string, v: number, I: any, c: string, t: Tipo | null, sinal = false) => (
+    <button
+      key={l}
+      onClick={() => t && setSel(sel === t ? null : t)}
+      className={`rounded-xl border bg-card p-4 flex items-center gap-3 text-left transition ${t ? "hover:bg-muted/50 cursor-pointer" : "cursor-default"} ${sel && sel === t ? "ring-2 ring-primary" : ""}`}
+    >
+      <I className={`h-8 w-8 ${c}`} />
+      <div><p className="text-xs text-muted-foreground">{l}</p><p className={`text-2xl font-bold ${c}`}>{loading ? "…" : (sinal && v > 0 ? "+" : "") + num(v)}</p></div>
+    </button>
+  );
 
   return (
     <div className="space-y-4">
@@ -163,22 +110,48 @@ export default function CarteiraTrialMov() {
         <Button variant="outline" onClick={limpar} disabled={loading}><X className="h-4 w-4 mr-1" />Limpar</Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {[
-          { l: "Entradas", v: kpi.e, I: UserPlus, c: "text-primary" },
-          { l: "Reativações", v: kpi.r, I: RotateCcw, c: "text-primary" },
-          { l: "Saídas", v: kpi.s, I: UserMinus, c: "text-destructive" },
-          { l: "Saldo líquido", v: kpi.saldo, I: Scale, c: kpi.saldo >= 0 ? "text-primary" : "text-destructive" },
-        ].map(({ l, v, I, c }) => (
-          <div key={l} className="rounded-xl border bg-card p-4 flex items-center gap-3">
-            <I className={`h-8 w-8 ${c}`} />
-            <div><p className="text-xs text-muted-foreground">{l}</p><p className={`text-2xl font-bold ${c}`}>{loading ? "…" : (l === "Saldo líquido" && v > 0 ? "+" : "") + num(v)}</p></div>
-          </div>
-        ))}
-      </div>
+      <section className="space-y-2">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Movimentação</h3>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {card("Entradas", kpi.e, UserPlus, "text-primary", "Entrada")}
+          {card("Saídas", kpi.s, UserMinus, "text-destructive", "Saída")}
+          {card("Reativações", kpi.r, RotateCcw, "text-primary", "Reativação")}
+          {card("Saldo líquido", kpi.saldo, Scale, kpi.saldo >= 0 ? "text-primary" : "text-destructive", null, true)}
+        </div>
+      </section>
+
+      <section className="space-y-2 pt-2 border-t">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1"><ArrowRightLeft className="h-3.5 w-3.5" />Transferências</h3>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {card("T+ (entrada por transferência)", kpi.tp, LogIn, "text-primary", "T+")}
+          {card("T− (saída por transferência)", kpi.tm, LogOut, "text-destructive", "T-")}
+        </div>
+      </section>
 
       {err && <div className="p-4 text-center text-destructive">Erro: {err}</div>}
       {cortado && <div className="text-xs text-muted-foreground">Limite de busca atingido, reduza o período.</div>}
+
+      {sel && !loading && (
+        <div className="rounded-xl border bg-card overflow-auto max-h-[60vh]">
+          <div className="px-4 py-2 text-sm font-medium border-b">{sel} · {num(lista.length)} registro(s)</div>
+          <table className="w-full text-xs">
+            <thead className="bg-muted/40 sticky top-0">
+              <tr>{["Data", "Matrícula", "Beneficiário", "Empresa", "Vendedor"].map((h) => <th key={h} className="px-3 py-1.5 text-left">{h}</th>)}</tr>
+            </thead>
+            <tbody>
+              {lista.map((e, i) => (
+                <tr key={i} className="border-t">
+                  <td className="px-3 py-1">{fmtD(e.data)}</td>
+                  <td className="px-3 py-1 whitespace-nowrap">{fmtMat(e.r.cd_mat_alternativa)}</td>
+                  <td className="px-3 py-1">{e.r.nm_beneficiario}</td>
+                  <td className="px-3 py-1">{e.r.nm_empresa_estipulante ?? "—"}</td>
+                  <td className="px-3 py-1">{e.r.nm_vendedor ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
