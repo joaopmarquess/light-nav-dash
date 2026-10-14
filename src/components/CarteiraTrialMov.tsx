@@ -103,7 +103,7 @@ export default function CarteiraTrialMov() {
   const limpar = () => { const e = EMPTY(); setF(e); setAp(e); };
 
   const vcard = (l: string, v: number | null, d: string) => (
-    <div className="rounded-xl border bg-card p-4 flex items-center gap-3 md:w-1/2">
+    <div className="rounded-xl border bg-card p-4 flex items-center justify-center gap-3">
       <Users className="h-8 w-8 text-primary" />
       <div><p className="text-xs text-muted-foreground">{l} · Ativos em {fmtD(d)}</p><p className="text-2xl font-bold text-primary">{v == null ? "…" : num(v)}</p></div>
     </div>
@@ -113,7 +113,7 @@ export default function CarteiraTrialMov() {
     <button
       key={l}
       onClick={() => t && setSel(sel === t ? null : t)}
-      className={`rounded-xl border bg-card p-4 flex items-center gap-3 text-left transition ${t ? "hover:bg-muted/50 cursor-pointer" : "cursor-default"} ${sel && sel === t ? "ring-2 ring-primary" : ""}`}
+      className={`rounded-xl border bg-card p-4 flex items-center justify-center gap-3 text-left transition ${t ? "hover:bg-muted/50 cursor-pointer" : "cursor-default"} ${sel && sel === t ? "ring-2 ring-primary" : ""}`}
     >
       <I className={`h-8 w-8 ${c}`} />
       <div><p className="text-xs text-muted-foreground">{l}</p><p className={`text-2xl font-bold ${c}`}>{loading ? "…" : (sinal && v > 0 ? "+" : "") + num(v)}</p></div>
@@ -143,7 +143,7 @@ export default function CarteiraTrialMov() {
 
       <section className="space-y-2 pt-2 border-t">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1"><ArrowRightLeft className="h-3.5 w-3.5" />Transferências</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {card("T+ (entrada por transferência)", kpi.tp, LogIn, "text-primary", "T+")}
           {card("T− (saída por transferência)", kpi.tm, LogOut, "text-destructive", "T-")}
         </div>
