@@ -101,6 +101,13 @@ export default function CarteiraTrialMov() {
   const buscar = () => setAp({ ...f });
   const limpar = () => { const e = EMPTY(); setF(e); setAp(e); };
 
+  const vcard = (l: string, v: number | null, d: string) => (
+    <div className="rounded-xl border bg-card p-4 flex items-center gap-3 md:w-1/2">
+      <Users className="h-8 w-8 text-primary" />
+      <div><p className="text-xs text-muted-foreground">{l} · Ativos em {fmtD(d)}</p><p className="text-2xl font-bold text-primary">{v == null ? "…" : num(v)}</p></div>
+    </div>
+  );
+
   const card = (l: string, v: number, I: any, c: string, t: Tipo | null, sinal = false) => (
     <button
       key={l}
@@ -121,14 +128,7 @@ export default function CarteiraTrialMov() {
         <Button variant="outline" onClick={limpar} disabled={loading}><X className="h-4 w-4 mr-1" />Limpar</Button>
       </div>
 
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[["Vidas Anteriores", vidas.ant, dAnt], ["Vidas Finais", vidas.fin, ap.ate]].map(([l, v, d]: any) => (
-          <div key={l} className="rounded-xl border bg-card p-4 flex items-center gap-3">
-            <Users className="h-8 w-8 text-primary" />
-            <div><p className="text-xs text-muted-foreground">{l} · Ativos em {fmtD(d)}</p><p className="text-2xl font-bold text-primary">{v == null ? "…" : num(v)}</p></div>
-          </div>
-        ))}
-      </section>
+      {vcard("Vidas Anteriores", vidas.ant, dAnt)}
 
       <section className="space-y-2">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Movimentação</h3>
@@ -147,6 +147,8 @@ export default function CarteiraTrialMov() {
           {card("T− (saída por transferência)", kpi.tm, LogOut, "text-destructive", "T-")}
         </div>
       </section>
+
+      {vcard("Vidas Finais", vidas.fin, ap.ate)}
 
       {err && <div className="p-4 text-center text-destructive">Erro: {err}</div>}
       {cortado && <div className="text-xs text-muted-foreground">Limite de busca atingido, reduza o período.</div>}
