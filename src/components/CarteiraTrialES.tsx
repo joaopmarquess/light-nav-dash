@@ -41,7 +41,7 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
         .select(`cd_mat_alternativa,cd_vendedor,nm_beneficiario,ds_plano,nm_vendedor,nm_empresa_estipulante,nm_cidade_plano,cd_uf_plano,ds_motivo_cancelamento,cd_motivo_cancelamento,${campo}`)
         .eq("tp_plano", "SAUDE").lte("cd_mat_alternativa", 399999999999)
         .gte(campo, de).lte(campo, `${ate}T23:59:59`)
-        .range(from, from + 999);
+        .order("cd_mat_alternativa").order(campo).range(from, from + 999);
       if (error) { setError(error.message); setLoading(false); return; }
       all.push(...(data ?? []));
       if ((data ?? []).length < 1000) break;
