@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X, UserPlus, UserMinus, Scale, RotateCcw, ArrowRightLeft, LogIn, LogOut } from "lucide-react";
+import { Search, X, UserPlus, UserMinus, Scale, RotateCcw, ArrowRightLeft, LogIn, LogOut, Users } from "lucide-react";
 
 type Row = Record<string, any>;
 type Tipo = "Entrada" | "Reativação" | "Saída" | "T+" | "T-";
@@ -33,6 +33,7 @@ export default function CarteiraTrialMov() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [cortado, setCortado] = useState(false);
+  const [vidas, setVidas] = useState<{ ant: number | null; fin: number | null }>({ ant: null, fin: null });
   const [sel, setSel] = useState<Tipo | null>(null);
 
   useEffect(() => {
@@ -76,6 +77,16 @@ export default function CarteiraTrialMov() {
     return () => { off = true; };
   }, [ap]);
 
+  const dAnt = useMemo(() => { const d = new Date(ap.de + "T12:00:00"); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10); }, [ap.de]);
+  useEffect(() => {
+    let off = false;
+    setVidas({ ant: null, fin: null });
+    const at = (d: string) => hostinger.rpc("carteira_trial_kpis", { p_data: d, p_q: null, p_empresa: null, p_cidade: null })
+      .then(({ data }: any) => { const r = Array.isArray(data) ? data[0] : data; return r ? Number(r.ativos) : null; });
+    Promise.all([at(dAnt), at(ap.ate)]).then(([ant, fin]) => { if (!off) setVidas({ ant, fin }); });
+    return () => { off = true; };
+  }, [dAnt, ap.ate]);
+
   const kpi = useMemo(() => {
     const c = (t: Tipo) => evs.filter((x) => x.tipo === t).length;
     const e = c("Entrada"), r = c("Reativação"), s = c("Saída");
@@ -109,6 +120,15 @@ export default function CarteiraTrialMov() {
         <Button onClick={buscar} disabled={loading}><Search className="h-4 w-4 mr-1" />Buscar</Button>
         <Button variant="outline" onClick={limpar} disabled={loading}><X className="h-4 w-4 mr-1" />Limpar</Button>
       </div>
+
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {[["Vidas Anteriores", vidas.ant, dAnt], ["Vidas Finais", vidas.fin, ap.ate]].map(([l, v, d]: any) => (
+          <div key={l} className="rounded-xl border bg-card p-4 flex items-center gap-3">
+            <Users className="h-8 w-8 text-primary" />
+            <div><p className="text-xs text-muted-foreground">{l} · Ativos em {fmtD(d)}</p><p className="text-2xl font-bold text-primary">{v == null ? "…" : num(v)}</p></div>
+          </div>
+        ))}
+      </section>
 
       <section className="space-y-2">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Movimentação</h3>
