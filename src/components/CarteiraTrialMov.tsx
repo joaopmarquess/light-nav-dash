@@ -103,20 +103,21 @@ export default function CarteiraTrialMov() {
   const limpar = () => { const e = EMPTY(); setF(e); setAp(e); };
 
   const vcard = (l: string, v: number | null, d: string) => (
-    <div className="rounded-xl border bg-card p-4 flex items-center justify-center gap-3">
+    <div title={`${l} · Ativos em ${fmtD(d)}`} className="rounded-xl border bg-card p-4 flex items-center justify-center gap-3 cursor-help">
       <Users className="h-8 w-8 text-primary" />
-      <div><p className="text-xs text-muted-foreground">{l} · Ativos em {fmtD(d)}</p><p className="text-2xl font-bold text-primary">{v == null ? "…" : num(v)}</p></div>
+      <p className="text-2xl font-bold text-primary">{v == null ? "…" : num(v)}</p>
     </div>
   );
 
   const card = (l: string, v: number, I: any, c: string, t: Tipo | null, sinal = false) => (
     <button
       key={l}
+      title={l}
       onClick={() => t && setSel(sel === t ? null : t)}
       className={`rounded-xl border bg-card p-4 flex items-center justify-center gap-3 text-left transition ${t ? "hover:bg-muted/50 cursor-pointer" : "cursor-default"} ${sel && sel === t ? "ring-2 ring-primary" : ""}`}
     >
       <I className={`h-8 w-8 ${c}`} />
-      <div><p className="text-xs text-muted-foreground">{l}</p><p className={`text-2xl font-bold ${c}`}>{loading ? "…" : (sinal && v > 0 ? "+" : "") + num(v)}</p></div>
+      <p className={`text-2xl font-bold ${c}`}>{loading ? "…" : (sinal && v > 0 ? "+" : "") + num(v)}</p>
     </button>
   );
 
