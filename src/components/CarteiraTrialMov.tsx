@@ -103,9 +103,9 @@ export default function CarteiraTrialMov() {
   const limpar = () => { const e = EMPTY(); setF(e); setAp(e); };
 
   const vcard = (l: string, v: number | null, d: string) => (
-    <div title={`${l} · Ativos em ${fmtD(d)}`} className="rounded-xl border bg-card p-4 flex items-center justify-center gap-3 cursor-help">
-      <Users className="h-8 w-8 text-primary" />
-      <p className="text-2xl font-bold text-primary">{v == null ? "…" : num(v)}</p>
+    <div title={`${l} · Ativos em ${fmtD(d)}`} className="rounded-xl border bg-card px-3 py-2 flex items-center justify-center gap-2 cursor-help">
+      <Users className="h-5 w-5 text-primary" />
+      <p className="text-xl font-bold leading-none text-primary">{v == null ? "…" : num(v)}</p>
     </div>
   );
 
@@ -114,10 +114,10 @@ export default function CarteiraTrialMov() {
       key={l}
       title={l}
       onClick={() => t && setSel(sel === t ? null : t)}
-      className={`rounded-xl border bg-card p-4 flex items-center justify-center gap-3 text-left transition ${t ? "hover:bg-muted/50 cursor-pointer" : "cursor-default"} ${sel && sel === t ? "ring-2 ring-primary" : ""}`}
+      className={`rounded-xl border bg-card px-3 py-2 flex items-center justify-center gap-2 text-left transition ${t ? "hover:bg-muted/50 cursor-pointer" : "cursor-default"} ${sel && sel === t ? "ring-2 ring-primary" : ""}`}
     >
-      <I className={`h-8 w-8 ${c}`} />
-      <p className={`text-2xl font-bold ${c}`}>{loading ? "…" : (sinal && v > 0 ? "+" : "") + num(v)}</p>
+      <I className={`h-5 w-5 ${c}`} />
+      <p className={`text-xl font-bold leading-none ${c}`}>{loading ? "…" : (sinal && v > 0 ? "+" : "") + num(v)}</p>
     </button>
   );
 
