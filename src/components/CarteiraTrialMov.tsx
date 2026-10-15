@@ -130,13 +130,14 @@ export default function CarteiraTrialMov() {
         <Button variant="outline" onClick={limpar} disabled={loading}><X className="h-4 w-4 mr-1" />Limpar</Button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
         {vcard("Vidas Anteriores", vidas.ant, dAnt)}
         {card("+ Entradas", kpi.e, UserPlus, "text-primary", "Entrada")}
         {card("− Saídas", kpi.s, UserMinus, "text-destructive", "Saída")}
         {card("+ Reativações", kpi.r, RotateCcw, "text-primary", "Reativação")}
         {card("+ T+", kpi.tp, LogIn, "text-primary", "T+")}
         {card("− T−", kpi.tm, LogOut, "text-destructive", "T-")}
+        {card("Saldo de Crescimento do Período", kpi.e + kpi.r + kpi.tp - kpi.s - kpi.tm, Scale, kpi.e + kpi.r + kpi.tp - kpi.s - kpi.tm < 0 ? "text-destructive" : "text-primary", null, true)}
         {vcard("Vidas Finais", vidas.fin, dFin)}
       </div>
 
