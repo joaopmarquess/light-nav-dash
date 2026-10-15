@@ -129,27 +129,15 @@ export default function CarteiraTrialMov() {
         <Button variant="outline" onClick={limpar} disabled={loading}><X className="h-4 w-4 mr-1" />Limpar</Button>
       </div>
 
-      {vcard("Vidas Anteriores", vidas.ant, dAnt)}
-
-      <section className="space-y-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Movimentação</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {card("Entradas", kpi.e, UserPlus, "text-primary", "Entrada")}
-          {card("Saídas", kpi.s, UserMinus, "text-destructive", "Saída")}
-          {card("Reativações", kpi.r, RotateCcw, "text-primary", "Reativação")}
-          {card("Saldo líquido", kpi.saldo, Scale, kpi.saldo >= 0 ? "text-primary" : "text-destructive", null, true)}
-        </div>
-      </section>
-
-      <section className="space-y-2 pt-2 border-t">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1"><ArrowRightLeft className="h-3.5 w-3.5" />Transferências</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {card("T+ (entrada por transferência)", kpi.tp, LogIn, "text-primary", "T+")}
-          {card("T− (saída por transferência)", kpi.tm, LogOut, "text-destructive", "T-")}
-        </div>
-      </section>
-
-      {vcard("Vidas Finais", vidas.fin, dFin)}
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
+        {vcard("Vidas Anteriores", vidas.ant, dAnt)}
+        {card("+ Entradas", kpi.e, UserPlus, "text-primary", "Entrada")}
+        {card("− Saídas", kpi.s, UserMinus, "text-destructive", "Saída")}
+        {card("+ Reativações", kpi.r, RotateCcw, "text-primary", "Reativação")}
+        {card("+ T+", kpi.tp, LogIn, "text-primary", "T+")}
+        {card("− T−", kpi.tm, LogOut, "text-destructive", "T-")}
+        {vcard("Vidas Finais", vidas.fin, dFin)}
+      </div>
 
       {err && <div className="p-4 text-center text-destructive">Erro: {err}</div>}
       {cortado && <div className="text-xs text-muted-foreground">Limite de busca atingido, reduza o período.</div>}
