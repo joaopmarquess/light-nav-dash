@@ -18,6 +18,8 @@ export type PdfTabelaOpts = {
   headingTop?: number;
   /** Estilo 2518 Declarações: sem timbrado, título grande no topo, nº pequeno à esquerda. */
   topTitle?: string;
+  /** Se informado, cada bloco começa em página nova (body é ignorado). */
+  sections?: RowInput[][];
 };
 
 /** Monta um PDF A4 com timbrado e tabela no padrão dos relatórios do projeto. */
@@ -33,9 +35,14 @@ export async function buildPdfTabela(opts: PdfTabelaOpts): Promise<jsPDF> {
   const headingTop = opts.headingTop ?? (opts.topTitle ? 26 : 23);
   const marginT = 44 + (headingTop - 23);
   const marginB = 16;
+  const footY = pageH - (opts.topTitle ? 8 : 14);
 
   const base = baseTableStyles(opts.fontSize ?? 7.6);
 
+  const blocks = opts.sections ?? [opts.body];
+  blocks.forEach((blockBody, bi) => {
+  if (bi > 0) doc.addPage();
+  const isLast = bi === blocks.length - 1;
   autoTable(doc, {
     ...base,
     styles: { ...base.styles, fontSize: opts.fontSize ?? 7.6, cellPadding: 1, overflow: "linebreak", valign: "middle" },
@@ -43,9 +50,9 @@ export async function buildPdfTabela(opts: PdfTabelaOpts): Promise<jsPDF> {
     margin: { left: marginL, right: marginR, top: marginT, bottom: marginB },
     startY: marginT,
     head: opts.head,
-    body: opts.body,
-    foot: opts.foot,
-    showFoot: opts.foot ? "lastPage" : undefined,
+    body: blockBody,
+    foot: isLast ? opts.foot : undefined,
+    showFoot: isLast && opts.foot ? "lastPage" : undefined,
     columnStyles: opts.columnStyles,
     didDrawPage: () => {
       if (opts.topTitle) {
@@ -70,6 +77,7 @@ export async function buildPdfTabela(opts: PdfTabelaOpts): Promise<jsPDF> {
       });
     },
   });
+  });
 
   const pages = doc.getNumberOfPages();
   for (let i = 1; i <= pages; i++) {
@@ -80,11 +88,11 @@ export async function buildPdfTabela(opts: PdfTabelaOpts): Promise<jsPDF> {
     if (opts.topTitle) {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(6);
-      doc.text(`${i}`, marginL, pageH - 14, { align: "left" });
+      doc.text(`${i}`, marginL, footY, { align: "left" });
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9.5);
     }
-    doc.text(`${i} de ${pages}`, pageW - marginR, pageH - 14, { align: "right" });
+    doc.text(`${i} de ${pages}`, pageW - marginR, footY, { align: "right" });
   }
 
   return doc;

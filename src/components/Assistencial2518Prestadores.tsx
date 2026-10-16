@@ -63,8 +63,10 @@ export default function Assistencial2518Prestadores() {
   const total = useMemo(() => (grupos ?? []).reduce((s, g) => s + g.total, 0), [grupos]);
 
   const buildPdf = () => {
-    const body: RowInput[] = [];
+    const sections: RowInput[][] = [];
     for (const g of grupos ?? []) {
+      const body: RowInput[] = [];
+      sections.push(body);
       body.push([
         { content: `${g.cidade} (${g.itens.length})`, colSpan: 4, styles: groupRowStyles },
         { content: fmt(g.total), styles: { ...groupRowStyles, halign: "right" } },
@@ -78,7 +80,8 @@ export default function Assistencial2518Prestadores() {
       plano: "SINDICATO DOS SERVIDORES PUBLICOS MUNICIPAIS DE JALES E REGIAO - SSPMJR",
       secao: "Prestadores por cidade — valor total por credenciado executor",
       head: [["Código", "Credenciado", "Endereço", "Telefones", "Valor (R$)"]],
-      body,
+      body: [],
+      sections,
       foot: [[{ content: "TOTAL", colSpan: 4, styles: totalRowStyles }, { content: fmt(total), styles: { ...totalRowStyles, halign: "right" } }]],
       columnStyles: { 0: { cellWidth: 14 }, 1: { cellWidth: 52 }, 2: { cellWidth: 62 }, 3: { cellWidth: 34 }, 4: { cellWidth: 28, halign: "right" } },
       fontSize: 7,
