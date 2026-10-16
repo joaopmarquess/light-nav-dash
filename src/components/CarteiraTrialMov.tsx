@@ -50,7 +50,7 @@ export default function CarteiraTrialMov() {
       const rows: Row[] = [];
       for (let from = 0; from < LIMITE; from += 1000) {
         const { data, error } = await hostinger.from("view_ecarteira")
-          .select("cd_mat_alternativa,cd_vendedor,cd_motivo_cancelamento,nm_beneficiario,nm_empresa_estipulante,nm_vendedor,dt_vigencia_beneficiario,dt_desligamento,dt_reativacao")
+          .select("cd_mat_alternativa,cd_vendedor,cd_motivo_cancelamento,nm_beneficiario,nm_empresa_estipulante,nm_vendedor,dt_nascimento,dt_vigencia_beneficiario,dt_desligamento,dt_reativacao")
           .eq("tp_plano", "SAUDE").lte("cd_mat_alternativa", 399999999999)
           .or(conds.join(","))
           .order("cd_mat_alternativa").order("dt_vigencia_beneficiario").order("dt_desligamento").range(from, from + 999);
@@ -99,6 +99,37 @@ export default function CarteiraTrialMov() {
     [evs, sel],
   );
 
+  const [novas, setNovas] = useState<{ loading: boolean; grupos: [string, number][]; sem: number } | null>(null);
+  useEffect(() => {
+    if (sel !== "T-" || loading) { setNovas(null); return; }
+    let off = false;
+    const tm = evs.filter((x) => x.tipo === "T-");
+    setNovas({ loading: true, grupos: [], sem: 0 });
+    (async () => {
+      const nomes = [...new Set(tm.map((x) => x.r.nm_beneficiario).filter(Boolean))];
+      const cand: Row[] = [];
+      for (let i = 0; i < nomes.length; i += 80) {
+        const { data } = await hostinger.from("view_ecarteira")
+          .select("cd_mat_alternativa,nm_beneficiario,dt_nascimento,dt_vigencia_beneficiario")
+          .eq("tp_plano", "SAUDE").in("nm_beneficiario", nomes.slice(i, i + 80)).limit(5000);
+        if (off) return;
+        cand.push(...(data ?? []));
+      }
+      const chave = (r: Row) => `${String(r.nm_beneficiario).trim().toUpperCase()}|${dia(r.dt_nascimento)}`;
+      const mapa = new Map<string, Row[]>();
+      for (const r of cand) { const k = chave(r); (mapa.get(k) ?? mapa.set(k, []).get(k)!).push(r); }
+      const cont = new Map<string, number>(); let sem = 0;
+      for (const e of tm) {
+        const outras = (mapa.get(chave(e.r)) ?? []).filter((r) => String(r.cd_mat_alternativa) !== String(e.r.cd_mat_alternativa));
+        if (!outras.length) { sem++; continue; }
+        const v = outras.map((r) => dia(r.dt_vigencia_beneficiario)).sort().pop()!;
+        cont.set(v, (cont.get(v) ?? 0) + 1);
+      }
+      if (!off) setNovas({ loading: false, grupos: [...cont].sort((a, b) => b[0].localeCompare(a[0])), sem });
+    })();
+    return () => { off = true; };
+  }, [sel, evs, loading]);
+
   const buscar = () => setAp({ ...f });
   const limpar = () => { const e = EMPTY(); setF(e); setAp(e); };
 
@@ -143,6 +174,22 @@ export default function CarteiraTrialMov() {
 
       {err && <div className="p-4 text-center text-destructive">Erro: {err}</div>}
       {cortado && <div className="text-xs text-muted-foreground">Limite de busca atingido, reduza o período.</div>}
+
+      {novas && (
+        <div className="rounded-xl border bg-card overflow-auto max-h-[40vh]">
+          <div className="px-4 py-2 text-sm font-medium border-b">T− · Vigência da nova matrícula (mesmo nome e nascimento)</div>
+          {novas.loading ? <div className="p-4 text-xs text-muted-foreground">Procurando novas matrículas…</div> : (
+            <table className="w-full text-xs">
+              <thead className="bg-muted/40 sticky top-0"><tr><th className="px-3 py-1.5 text-left">Vigência</th><th className="px-3 py-1.5 text-right">Vidas</th></tr></thead>
+              <tbody>
+                {novas.grupos.map(([d, n]) => <tr key={d} className="border-t"><td className="px-3 py-1">{fmtD(d)}</td><td className="px-3 py-1 text-right">{num(n)}</td></tr>)}
+                <tr className="border-t text-muted-foreground"><td className="px-3 py-1">Sem nova matrícula</td><td className="px-3 py-1 text-right">{num(novas.sem)}</td></tr>
+                <tr className="border-t font-semibold"><td className="px-3 py-1">Total</td><td className="px-3 py-1 text-right">{num(novas.grupos.reduce((a, [, n]) => a + n, 0) + novas.sem)}</td></tr>
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
 
       {sel && !loading && (
         <div className="rounded-xl border bg-card overflow-auto max-h-[60vh]">
