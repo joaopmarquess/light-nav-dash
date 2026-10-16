@@ -94,6 +94,7 @@ import AssistencialConsulta from "@/components/AssistencialConsulta";
 import AssistencialAuditoriaSSPMJR from "@/components/AssistencialAuditoriaSSPMJR";
 import AssistencialRelatorioExecutor from "@/components/AssistencialRelatorioExecutor";
 import AssistencialReceitas2518 from "@/components/AssistencialReceitas2518";
+import Assistencial2518Prestadores from "@/components/Assistencial2518Prestadores";
 import { useConsultaState } from "@/lib/assistencialConsultaStore";
 import { Loader2, DollarSign, FlaskConical } from "lucide-react";
 
@@ -166,6 +167,7 @@ const labItems: MenuItem[] = [
       { icon: Stethoscope, label: "2518 Despesas" },
       { icon: Stethoscope, label: "2518 Receitas" },
       { icon: Stethoscope, label: "2518 Declarações" },
+      { icon: Stethoscope, label: "2518 Prestadores" },
     ],
   },
   {
@@ -624,6 +626,8 @@ const Index = () => {
             <AssistencialRelatorioExecutor source="csv2518" />
           ) : active === "2518 Declarações" ? (
             <AssistencialRelatorioExecutor source="csv2518" declaracoes />
+          ) : active === "2518 Prestadores" ? (
+            <Assistencial2518Prestadores />
           ) : active === "2518 Receitas" ? (
             <AssistencialReceitas2518 />
 
