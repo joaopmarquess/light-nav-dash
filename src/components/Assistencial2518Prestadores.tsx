@@ -104,6 +104,7 @@ export default function Assistencial2518Prestadores() {
       head: [["Código", "Credenciado", "Endereço", "Telefones", "Valor (R$)"]],
       body: [],
       sections,
+      sectionLabels: (grupos ?? []).map((g) => g.cidade),
       foot: [[{ content: "TOTAL", colSpan: 4, styles: totalRowStyles }, { content: fmt(total), styles: { ...totalRowStyles, halign: "right" } }]],
       columnStyles: { 0: { cellWidth: 14 }, 1: { cellWidth: 52 }, 2: { cellWidth: 62 }, 3: { cellWidth: 34 }, 4: { cellWidth: 28, halign: "right" } },
       fontSize: 7,

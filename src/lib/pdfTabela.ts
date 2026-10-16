@@ -20,6 +20,8 @@ export type PdfTabelaOpts = {
   topTitle?: string;
   /** Se informado, cada bloco começa em página nova (body é ignorado). */
   sections?: RowInput[][];
+  /** Texto do rodapé esquerdo para cada bloco de sections (substitui o nº pequeno). */
+  sectionLabels?: string[];
 };
 
 /** Monta um PDF A4 com timbrado e tabela no padrão dos relatórios do projeto. */
@@ -40,8 +42,10 @@ export async function buildPdfTabela(opts: PdfTabelaOpts): Promise<jsPDF> {
   const base = baseTableStyles(opts.fontSize ?? 7.6);
 
   const blocks = opts.sections ?? [opts.body];
+  const labelByPage: Record<number, string> = {};
   blocks.forEach((blockBody, bi) => {
   if (bi > 0) doc.addPage();
+  const startPage = doc.getNumberOfPages();
   const isLast = bi === blocks.length - 1;
   autoTable(doc, {
     ...base,
@@ -77,6 +81,8 @@ export async function buildPdfTabela(opts: PdfTabelaOpts): Promise<jsPDF> {
       });
     },
   });
+  const lbl = opts.sectionLabels?.[bi];
+  if (lbl) for (let pg = startPage; pg <= doc.getNumberOfPages(); pg++) labelByPage[pg] = lbl;
   });
 
   const pages = doc.getNumberOfPages();
@@ -86,9 +92,10 @@ export async function buildPdfTabela(opts: PdfTabelaOpts): Promise<jsPDF> {
     doc.setFontSize(9.5);
     doc.setTextColor(0, 0, 0);
     if (opts.topTitle) {
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(6);
-      doc.text(`${i}`, marginL, footY, { align: "left" });
+      const lbl = labelByPage[i];
+      doc.setFont("helvetica", lbl ? "bold" : "normal");
+      doc.setFontSize(lbl ? 9.5 : 6);
+      doc.text(lbl ?? `${i}`, marginL, footY, { align: "left" });
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9.5);
     }
