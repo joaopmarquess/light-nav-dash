@@ -13,10 +13,28 @@ const num = (s: string) => Number(String(s || "0").replace(/\./g, "").replace(",
 const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const clean = (s?: string) => { const t = (s ?? "").trim(); return t === "(vazio)" ? "" : t; };
 
+const normEnd = (e: string) =>
+  e.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase()
+    .replace(/\b(RUA|R|AVENIDA|AV|ALAMEDA|AL|TRAVESSA|TV|PRACA|PC|ESTRADA|ROD|RODOVIA)\b\.?/g, "")
+    .replace(/[^A-Z0-9]+/g, " ").trim();
+
+/** Despesas: valor desc. Endereços: blocos de endereço semelhante, ordenados pelo maior valor do bloco. */
+function ordenarItens(itens: Prest[], ordem: "despesas" | "enderecos"): Prest[] {
+  const byVal = [...itens].sort((x, y) => y.valor - x.valor);
+  if (ordem === "despesas") return byVal;
+  const blocos = new Map<string, Prest[]>();
+  for (const p of byVal) {
+    const k = normEnd(p.endereco) || `__${p.cd}`;
+    (blocos.get(k) ?? blocos.set(k, []).get(k)!).push(p);
+  }
+  return [...blocos.values()].flat(); // ordem de inserção = maior valor primeiro
+}
+
 export default function Assistencial2518Prestadores() {
   const [grupos, setGrupos] = useState<Grupo[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
+  const [ordem, setOrdem] = useState<"despesas" | "enderecos">("despesas");
   const [abertas, setAbertas] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -71,7 +89,7 @@ export default function Assistencial2518Prestadores() {
         { content: `${g.cidade} (${g.itens.length})`, colSpan: 4, styles: groupRowStyles },
         { content: fmt(g.total), styles: { ...groupRowStyles, halign: "right" } },
       ]);
-      for (const p of g.itens) body.push([p.cd, p.nome, p.endereco, p.telefones, fmt(p.valor)]);
+      for (const p of ordenarItens(g.itens, ordem)) body.push([p.cd, p.nome, p.endereco, p.telefones, fmt(p.valor)]);
     }
     return buildPdfTabela({
       fileName: "2518_SSPMJR-Prestadores.pdf",
@@ -95,9 +113,18 @@ export default function Assistencial2518Prestadores() {
     <div className="p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold">2518 Prestadores — total {fmt(total)}</h2>
+        <div className="flex items-center gap-2">
+        <div className="inline-flex rounded-md border border-border p-0.5 text-xs">
+          {(["despesas", "enderecos"] as const).map((o) => (
+            <button key={o} onClick={() => setOrdem(o)} className={`px-3 h-8 rounded ${ordem === o ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
+              {o === "despesas" ? "Despesas" : "Endereços"}
+            </button>
+          ))}
+        </div>
         <button onClick={() => setPreview(true)} className="h-9 px-3 rounded-md bg-primary text-primary-foreground text-sm inline-flex items-center gap-2">
           <FileDown className="h-4 w-4" /> Gerar PDF
         </button>
+        </div>
       </div>
       <div className="overflow-auto border border-border rounded-md">
         <table className="w-full text-xs [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border">
