@@ -43,7 +43,7 @@ export default function Assistencial2518Prestadores() {
           const info = cred.get(cd);
           const p = acc.get(cd) ?? {
             cd, nome: r[iDs] || info?.nome || "", endereco: info?.end ?? "", telefones: info?.tel ?? "",
-            cidade: info?.cidade || "SEM CIDADE", valor: 0,
+            cidade: clean(info?.cidade) || "SEM CIDADE", valor: 0,
           };
           p.valor += num(r[iT]);
           acc.set(cd, p);
@@ -53,7 +53,7 @@ export default function Assistencial2518Prestadores() {
           const g = gm.get(p.cidade) ?? { cidade: p.cidade, total: 0, itens: [] };
           g.itens.push(p); g.total += p.valor; gm.set(p.cidade, g);
         }
-        const gs = [...gm.values()].sort((x, y) => y.total - x.total);
+        const gs = [...gm.values()].sort((x, y) => (x.cidade === "SEM CIDADE" ? -1 : y.cidade === "SEM CIDADE" ? 1 : y.total - x.total));
         gs.forEach((g) => g.itens.sort((x, y) => y.valor - x.valor));
         setGrupos(gs);
       } catch (e) { setErro(String(e)); }
