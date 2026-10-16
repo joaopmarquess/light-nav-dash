@@ -73,9 +73,10 @@ export default function Assistencial2518Prestadores() {
     }
     return buildPdfTabela({
       fileName: "2518_SSPMJR-Prestadores.pdf",
-      title: "PRESTADORES POR CIDADE",
+      topTitle: "PRESTADORES",
+      title: "Relatório Despesas Assistenciais",
       plano: "SINDICATO DOS SERVIDORES PUBLICOS MUNICIPAIS DE JALES E REGIAO - SSPMJR",
-      secao: "Valor total por credenciado executor",
+      secao: "Prestadores por cidade — valor total por credenciado executor",
       head: [["Código", "Credenciado", "Endereço", "Telefones", "Valor (R$)"]],
       body,
       foot: [[{ content: "TOTAL", colSpan: 4, styles: totalRowStyles }, { content: fmt(total), styles: { ...totalRowStyles, halign: "right" } }]],
