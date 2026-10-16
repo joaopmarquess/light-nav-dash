@@ -34,7 +34,6 @@ export default function Assistencial2518Prestadores() {
   const [grupos, setGrupos] = useState<Grupo[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
-  const [ordem, setOrdem] = useState<"despesas" | "enderecos">("despesas");
   const [abertas, setAbertas] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -80,7 +79,7 @@ export default function Assistencial2518Prestadores() {
 
   const total = useMemo(() => (grupos ?? []).reduce((s, g) => s + g.total, 0), [grupos]);
 
-  const buildPdf = () => {
+  const buildPdf = (ordem: "despesas" | "enderecos" = "despesas") => {
     const sections: RowInput[][] = [];
     for (const g of grupos ?? []) {
       const body: RowInput[] = [];
@@ -96,7 +95,7 @@ export default function Assistencial2518Prestadores() {
       }
     }
     return buildPdfTabela({
-      fileName: "2518_SSPMJR-Prestadores.pdf",
+      fileName: ordem === "enderecos" ? "2518_prestadores_enderecos.pdf" : "2518_prestadores_geral.pdf",
       topTitle: "PRESTADORES",
       title: "Relatório Despesas Assistenciais",
       plano: "SINDICATO DOS SERVIDORES PUBLICOS MUNICIPAIS DE JALES E REGIAO - SSPMJR",
@@ -111,6 +110,12 @@ export default function Assistencial2518Prestadores() {
     });
   };
 
+  const baixarDois = async () => {
+    (await buildPdf("despesas")).save("2518_prestadores_geral.pdf");
+    await new Promise((r) => setTimeout(r, 600));
+    (await buildPdf("enderecos")).save("2518_prestadores_enderecos.pdf");
+  };
+
   if (erro) return <div className="p-4 text-sm text-destructive">Erro: {erro}</div>;
   if (!grupos) return <div className="p-4 text-sm flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Carregando...</div>;
 
@@ -119,13 +124,6 @@ export default function Assistencial2518Prestadores() {
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold">2518 Prestadores — total {fmt(total)}</h2>
         <div className="flex items-center gap-2">
-        <div className="inline-flex rounded-md border border-border p-0.5 text-xs">
-          {(["despesas", "enderecos"] as const).map((o) => (
-            <button key={o} onClick={() => setOrdem(o)} className={`px-3 h-8 rounded ${ordem === o ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
-              {o === "despesas" ? "Despesas" : "Endereços"}
-            </button>
-          ))}
-        </div>
         <button onClick={() => setPreview(true)} className="h-9 px-3 rounded-md bg-primary text-primary-foreground text-sm inline-flex items-center gap-2">
           <FileDown className="h-4 w-4" /> Gerar PDF
         </button>
@@ -148,7 +146,7 @@ export default function Assistencial2518Prestadores() {
           </tbody>
         </table>
       </div>
-      {preview && <PdfPreview build={buildPdf} fileName="2518_SSPMJR-Prestadores.pdf" onClose={() => setPreview(false)} />}
+      {preview && <PdfPreview build={() => buildPdf("despesas")} fileName="2518_prestadores_geral.pdf" onClose={() => setPreview(false)} onDownload={baixarDois} />}
     </div>
   );
 }

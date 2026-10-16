@@ -7,10 +7,13 @@ export default function PdfPreview({
   build,
   fileName,
   onClose,
+  onDownload,
 }: {
   build: () => Promise<jsPDF>;
   fileName: string;
   onClose: () => void;
+  /** Substitui o download padrão (ex.: baixar mais de um arquivo). */
+  onDownload?: () => void | Promise<void>;
 }) {
   const [pages, setPages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +55,7 @@ export default function PdfPreview({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const doDownload = () => docRef.current?.save(fileName);
+  const doDownload = () => (onDownload ? onDownload() : docRef.current?.save(fileName));
 
   const doPrint = () => {
     if (pages.length === 0) return;
