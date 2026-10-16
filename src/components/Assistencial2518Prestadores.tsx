@@ -19,7 +19,7 @@ const normEnd = (e: string) =>
     .replace(/[^A-Z0-9]+/g, " ").trim();
 
 /** Despesas: valor desc. Endereços: blocos de endereço semelhante, ordenados pelo maior valor do bloco. */
-function ordenarItens(itens: Prest[], ordem: "despesas" | "enderecos"): Prest[] {
+function ordenarItens(itens: Prest[], ordem: "despesas" | "enderecos"): (Prest & { topo?: boolean })[] {
   const byVal = [...itens].sort((x, y) => y.valor - x.valor);
   if (ordem === "despesas") return byVal;
   const blocos = new Map<string, Prest[]>();
@@ -27,7 +27,7 @@ function ordenarItens(itens: Prest[], ordem: "despesas" | "enderecos"): Prest[] 
     const k = normEnd(p.endereco) || `__${p.cd}`;
     (blocos.get(k) ?? blocos.set(k, []).get(k)!).push(p);
   }
-  return [...blocos.values()].flat(); // ordem de inserção = maior valor primeiro
+  return [...blocos.values()].flatMap((b) => b.map((p, i) => ({ ...p, topo: i === 0 && b.length > 1 }))); // ordem de inserção = maior valor primeiro
 }
 
 export default function Assistencial2518Prestadores() {
@@ -89,7 +89,10 @@ export default function Assistencial2518Prestadores() {
         { content: `${g.cidade} (${g.itens.length})`, colSpan: 4, styles: groupRowStyles },
         { content: fmt(g.total), styles: { ...groupRowStyles, halign: "right" } },
       ]);
-      for (const p of ordenarItens(g.itens, ordem)) body.push([p.cd, p.nome, p.endereco, p.telefones, fmt(p.valor)]);
+      for (const p of ordenarItens(g.itens, ordem)) {
+        const st = p.topo ? { fontStyle: "bold" as const } : {};
+        body.push([p.cd, p.nome, p.endereco, p.telefones, { content: fmt(p.valor), styles: { halign: "right" as const } }].map((c) => (typeof c === "string" ? { content: c, styles: st } : { ...c, styles: { ...c.styles, ...st } })));
+      }
     }
     return buildPdfTabela({
       fileName: "2518_SSPMJR-Prestadores.pdf",
