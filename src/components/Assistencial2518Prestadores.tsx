@@ -86,8 +86,8 @@ export default function Assistencial2518Prestadores() {
       const body: RowInput[] = [];
       sections.push(body);
       body.push([
-        { content: `${g.cidade} (${g.itens.length})`, colSpan: 4, styles: groupRowStyles },
-        { content: fmt(g.total), styles: { ...groupRowStyles, halign: "right" } },
+        { content: `${g.cidade}  (${g.itens.length})`, colSpan: 4, styles: { ...groupRowStyles, fontSize: 11, fontStyle: "bold", cellPadding: 2 } },
+        { content: fmt(g.total), styles: { ...groupRowStyles, fontSize: 11, fontStyle: "bold", halign: "right", cellPadding: 2 } },
       ]);
       for (const p of ordenarItens(g.itens, ordem)) {
         const st: Record<string, unknown> = p.topo ? { fontStyle: "bold" } : {};
