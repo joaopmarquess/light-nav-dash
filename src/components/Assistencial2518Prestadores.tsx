@@ -97,15 +97,15 @@ export default function Assistencial2518Prestadores() {
         </button>
       </div>
       <div className="overflow-auto border border-border rounded-md">
-        <table className="w-full text-xs">
-          <thead className="bg-muted">
+        <table className="w-full text-xs [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border">
+          <thead className="bg-muted/60 text-muted-foreground">
             <tr><th className="p-2 text-left">Código</th><th className="p-2 text-left">Credenciado</th><th className="p-2 text-left">Endereço</th><th className="p-2 text-left">Telefones</th><th className="p-2 text-right">Valor (R$)</th></tr>
           </thead>
           <tbody>
             {grupos.map((g) => [
-              <tr key={g.cidade} onClick={() => setAbertas((s) => { const n = new Set(s); n.has(g.cidade) ? n.delete(g.cidade) : n.add(g.cidade); return n; })} className="bg-accent font-semibold cursor-pointer select-none"><td colSpan={4} className="p-2">{abertas.has(g.cidade) ? "▾" : "▸"} {g.cidade} ({g.itens.length})</td><td className="p-2 text-right">{fmt(g.total)}</td></tr>,
+              <tr key={g.cidade} onClick={() => setAbertas((s) => { const n = new Set(s); n.has(g.cidade) ? n.delete(g.cidade) : n.add(g.cidade); return n; })} className="border-t border-border bg-background hover:bg-muted/50 font-medium cursor-pointer select-none"><td colSpan={4} className="p-2">{abertas.has(g.cidade) ? "▾" : "▸"} {g.cidade} ({g.itens.length})</td><td className="p-2 text-right">{fmt(g.total)}</td></tr>,
               ...(abertas.has(g.cidade) ? g.itens : []).map((p) => (
-                <tr key={g.cidade + p.cd} className="border-t border-border">
+                <tr key={g.cidade + p.cd} className="border-t border-border bg-muted/20">
                   <td className="p-2">{p.cd}</td><td className="p-2">{p.nome}</td><td className="p-2">{p.endereco}</td><td className="p-2">{p.telefones}</td><td className="p-2 text-right">{fmt(p.valor)}</td>
                 </tr>
               )),
