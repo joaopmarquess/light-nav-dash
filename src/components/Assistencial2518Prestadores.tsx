@@ -91,7 +91,7 @@ export default function Assistencial2518Prestadores() {
       ]);
       for (const p of ordenarItens(g.itens, ordem)) {
         const st: Record<string, unknown> = p.topo ? { fontStyle: "bold" } : {};
-        if (p.topo || p.fim) st.lineWidth = { top: p.topo ? 0.6 : 0.1, bottom: p.fim ? 0.6 : 0.1, left: 0.1, right: 0.1 };
+        if (p.topo || p.fim) st.lineWidth = { top: p.topo ? 0.6 : 0.1, bottom: p.fim ? 0.6 : 0.1, left: 0.1, right: 0.1 }; if (p.topo || p.fim) st.lineColor = [0, 0, 0];
         body.push([p.cd, p.nome, p.endereco, p.telefones, { content: fmt(p.valor), styles: { halign: "right" as const } }].map((c) => (typeof c === "string" ? { content: c, styles: st } : { ...c, styles: { ...c.styles, ...st } })));
       }
     }
