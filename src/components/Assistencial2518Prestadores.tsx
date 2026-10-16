@@ -17,6 +17,7 @@ export default function Assistencial2518Prestadores() {
   const [grupos, setGrupos] = useState<Grupo[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
+  const [abertas, setAbertas] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     (async () => {
@@ -101,8 +102,8 @@ export default function Assistencial2518Prestadores() {
           </thead>
           <tbody>
             {grupos.map((g) => [
-              <tr key={g.cidade} className="bg-accent font-semibold"><td colSpan={4} className="p-2">{g.cidade} ({g.itens.length})</td><td className="p-2 text-right">{fmt(g.total)}</td></tr>,
-              ...g.itens.map((p) => (
+              <tr key={g.cidade} onClick={() => setAbertas((s) => { const n = new Set(s); n.has(g.cidade) ? n.delete(g.cidade) : n.add(g.cidade); return n; })} className="bg-accent font-semibold cursor-pointer select-none"><td colSpan={4} className="p-2">{abertas.has(g.cidade) ? "▾" : "▸"} {g.cidade} ({g.itens.length})</td><td className="p-2 text-right">{fmt(g.total)}</td></tr>,
+              ...(abertas.has(g.cidade) ? g.itens : []).map((p) => (
                 <tr key={g.cidade + p.cd} className="border-t border-border">
                   <td className="p-2">{p.cd}</td><td className="p-2">{p.nome}</td><td className="p-2">{p.endereco}</td><td className="p-2">{p.telefones}</td><td className="p-2 text-right">{fmt(p.valor)}</td>
                 </tr>
