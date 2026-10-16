@@ -19,7 +19,7 @@ const normEnd = (e: string) =>
     .replace(/[^A-Z0-9]+/g, " ").trim();
 
 /** Despesas: valor desc. Endereços: blocos de endereço semelhante, ordenados pelo maior valor do bloco. */
-function ordenarItens(itens: Prest[], ordem: "despesas" | "enderecos"): (Prest & { topo?: boolean })[] {
+function ordenarItens(itens: Prest[], ordem: "despesas" | "enderecos"): (Prest & { topo?: boolean; fim?: boolean })[] {
   const byVal = [...itens].sort((x, y) => y.valor - x.valor);
   if (ordem === "despesas") return byVal;
   const blocos = new Map<string, Prest[]>();
@@ -27,7 +27,7 @@ function ordenarItens(itens: Prest[], ordem: "despesas" | "enderecos"): (Prest &
     const k = normEnd(p.endereco) || `__${p.cd}`;
     (blocos.get(k) ?? blocos.set(k, []).get(k)!).push(p);
   }
-  return [...blocos.values()].flatMap((b) => b.map((p, i) => ({ ...p, topo: i === 0 && b.length > 1 }))); // ordem de inserção = maior valor primeiro
+  return [...blocos.values()].flatMap((b) => b.map((p, i) => ({ ...p, topo: i === 0 && b.length > 1, fim: i === b.length - 1 && b.length > 1 }))); // ordem de inserção = maior valor primeiro
 }
 
 export default function Assistencial2518Prestadores() {
@@ -90,7 +90,8 @@ export default function Assistencial2518Prestadores() {
         { content: fmt(g.total), styles: { ...groupRowStyles, halign: "right" } },
       ]);
       for (const p of ordenarItens(g.itens, ordem)) {
-        const st = p.topo ? { fontStyle: "bold" as const } : {};
+        const st: Record<string, unknown> = p.topo ? { fontStyle: "bold" } : {};
+        if (p.topo || p.fim) st.lineWidth = { top: p.topo ? 0.6 : 0.1, bottom: p.fim ? 0.6 : 0.1, left: 0.1, right: 0.1 };
         body.push([p.cd, p.nome, p.endereco, p.telefones, { content: fmt(p.valor), styles: { halign: "right" as const } }].map((c) => (typeof c === "string" ? { content: c, styles: st } : { ...c, styles: { ...c.styles, ...st } })));
       }
     }
