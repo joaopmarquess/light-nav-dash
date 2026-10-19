@@ -202,7 +202,7 @@ const labItems: MenuItem[] = [
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   controlItem,
-  { icon: Users, label: "Carteira (Trial)", children: [{ icon: Search, label: "Consulta", id: "Carteira (Trial) · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira (Trial) · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira (Trial) · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira (Trial) · Entradas" }, { icon: TrendingUp, label: "Saídas", id: "Carteira (Trial) · Saídas" }] },
+  { icon: Users, label: "Carteira (Trial)", children: [{ icon: Search, label: "Consulta", id: "Carteira (Trial) · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira (Trial) · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira (Trial) · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira (Trial) · Entradas" }, { icon: TrendingUp, label: "Entradas Lancers", id: "Carteira (Trial) · Entradas Lancers" }, { icon: TrendingUp, label: "Saídas", id: "Carteira (Trial) · Saídas" }] },
   { icon: FlaskConical, label: "Laboratory", lab: labItems },
 ];
 
@@ -604,6 +604,8 @@ const Index = () => {
             <SinistralidadeGraficos />
           ) : active === "Carteira (Trial) · Entradas" ? (
             <CarteiraTrialES key="ent" modo="entradas" />
+          ) : active === "Carteira (Trial) · Entradas Lancers" ? (
+            <CarteiraTrialES key="ent-lancers" modo="entradas" />
           ) : active === "Carteira (Trial) · Saídas" ? (
             <CarteiraTrialES key="sai" modo="saidas" />
           ) : active === "Carteira (Trial) · Movimentação" ? (
