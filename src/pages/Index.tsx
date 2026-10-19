@@ -39,6 +39,7 @@ import HomeView from "@/components/Home";
 import Entradas from "@/components/Entradas";
 import Cancelamentos from "@/components/Cancelamentos";
 import CarteiraTrialES from "@/components/CarteiraTrialES";
+import CarteiraTrialLancers from "@/components/CarteiraTrialLancers";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { ptBR } from "date-fns/locale";
@@ -605,7 +606,7 @@ const Index = () => {
           ) : active === "Carteira (Trial) · Entradas" ? (
             <CarteiraTrialES key="ent" modo="entradas" />
           ) : active === "Carteira (Trial) · Entradas Lancers" ? (
-            <CarteiraTrialES key="ent-lancers" modo="entradas" />
+            <CarteiraTrialLancers />
           ) : active === "Carteira (Trial) · Saídas" ? (
             <CarteiraTrialES key="sai" modo="saidas" />
           ) : active === "Carteira (Trial) · Movimentação" ? (
