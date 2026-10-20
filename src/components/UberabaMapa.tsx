@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 const SRC: Record<string, string> = {
   MG: "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-31-mun.json",
   SP: "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-35-mun.json",
-  GO: "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-52-mun.json",
 };
 const COR = { g0: "#1597D4", g1: "#75C4EA", g2: "#C4E6F5", g3: "#E3F2FA", out: "#E5E7E9" };
 const W = 1600, H = 900; // 16:9
