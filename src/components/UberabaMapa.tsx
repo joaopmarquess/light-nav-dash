@@ -123,6 +123,7 @@ const UberabaMapa = () => {
     const order = feats.map((_, i) => i).sort((a, b) => (calc.grupo(a) % 4 + (calc.grupo(a) === 4 ? 2.5 : 0)) - (calc.grupo(b) % 4 + (calc.grupo(b) === 4 ? 2.5 : 0)));
     for (const i of order) {
       const g0 = calc.grupo(i); const g = g0 === 4 ? 2 : g0;
+      if (g === 3) continue;
       const [cx, cy] = calc.path.centroid(feats[i]);
       if (!isFinite(cx) || cx < 10 || cx > W - 10 || cy < 70 || cy > H - 10) continue;
       const t = g === 0 ? "UBERABA" : feats[i].properties.name;
@@ -190,7 +191,7 @@ const UberabaMapa = () => {
           <g transform={`translate(${z.x},${z.y}) scale(${z.k})`}>
           {br.map((f, i) => <path key={`br${i}`} d={calc.path(f) ?? ""} fill="#EEF0F2" stroke="none" />)}
           {feats.map((f, i) => calc.grupo(i) === 3 && (
-            <path key={i} d={calc.path(f) ?? ""} fill={COR.out} stroke="#9AA0A6" strokeWidth={0.5} />
+            <path key={i} d={calc.path(f) ?? ""} fill={COR.out} stroke="#9AA0A6" strokeWidth={0.5}><title>{`${f.properties.name}/${f.properties._uf}`}</title></path>
           ))}
           {[...calc.g2].map((i) => <path key={i} d={calc.path(feats[i]) ?? ""} fill={COR.g2} stroke="#3C4043" strokeWidth={1} />)}
           {ufOutline.map((fs, k) => fs.map((f, i) => (
@@ -206,9 +207,8 @@ const UberabaMapa = () => {
               {l.lx != null && <line x1={l.lx} y1={l.ly} x2={l.x} y2={l.y} stroke="#5F6368" strokeWidth={0.7} />}
               <text x={l.x} y={l.y} textAnchor="middle" dominantBaseline="middle"
                 fontSize={l.g === 0 ? 22 : l.g === 1 ? 14 : l.g === 2 ? 11 : 9}
-                fontWeight={l.g === 0 ? 800 : l.g === 1 ? 700 : l.g === 2 ? 600 : 400}
-                fill={l.g === 0 ? "#0B2E4A" : l.g === 3 ? "#5F6368" : "#1F2933"}
-                stroke="#FFFFFF" strokeWidth={l.g === 0 ? 4 : 2.5} paintOrder="stroke">{l.t}</text>
+                fontWeight={l.g === 0 ? 800 : 700}
+                fill="#000000">{l.t}</text>
             </g>
           ))}
           <text x={mgX} y={mgY} fontSize={34} fontWeight={700} fill="#80868B" opacity={0.55}>MG</text>
