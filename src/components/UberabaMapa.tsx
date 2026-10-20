@@ -125,7 +125,7 @@ const UberabaMapa = () => {
     for (const i of order) {
       const g0 = calc.grupo(i); const g = g0 === 4 ? 2 : g0;
       if (g === 3) continue;
-      const [cx, cy] = calc.path.centroid(feats[i]);
+      const [cx, cy0] = calc.path.centroid(feats[i]); const cy = g === 0 ? cy0 + 22 : cy0;
       if (!isFinite(cx) || cx < 10 || cx > W - 10 || cy < 70 || cy > H - 10) continue;
       const t = g === 0 ? "UBERABA" : feats[i].properties.name;
       const fs = g === 0 ? 22 : g === 1 ? 14 : g === 2 ? 11 : 9;
