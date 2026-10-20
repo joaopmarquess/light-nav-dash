@@ -188,7 +188,7 @@ const UberabaMapa = () => {
           onPointerUp={() => (drag.current = null)}>
           <rect width={W} height={H} fill="#F4F7FA" />
           <g transform={`translate(${z.x},${z.y}) scale(${z.k})`}>
-          {br.map((f, i) => <path key={`br${i}`} d={calc.path(f) ?? ""} fill="#EEF0F2" stroke="#5F6368" strokeWidth={1.2 / z.k} vectorEffect="non-scaling-stroke" />)}
+          {br.map((f, i) => <path key={`br${i}`} d={calc.path(f) ?? ""} fill="#EEF0F2" stroke="none" />)}
           {feats.map((f, i) => calc.grupo(i) === 3 && (
             <path key={i} d={calc.path(f) ?? ""} fill={COR.out} stroke="#9AA0A6" strokeWidth={0.5} />
           ))}
@@ -213,7 +213,7 @@ const UberabaMapa = () => {
           ))}
           <text x={mgX} y={mgY} fontSize={34} fontWeight={700} fill="#80868B" opacity={0.55}>MG</text>
           <text x={spX} y={spY} fontSize={34} fontWeight={700} fill="#80868B" opacity={0.55}>SP</text>
-          {br.map((f, i) => <path key={`bro${i}`} d={calc.path(f) ?? ""} fill="none" stroke="#202124" strokeWidth={1.4} vectorEffect="non-scaling-stroke" pointerEvents="none" />)}
+          {br.map((f, i) => <path key={`bro${i}`} d={calc.path(f) ?? ""} fill="none" stroke="#202124" strokeWidth={1.2} strokeLinejoin="round" vectorEffect="non-scaling-stroke" pointerEvents="none" />)}
           </g>
         </svg>
       </div>
