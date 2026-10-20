@@ -9,7 +9,7 @@ const SRC: Record<string, string> = {
   MG: "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-31-mun.json",
   SP: "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-35-mun.json",
 };
-const COR = { g0: "#1597D4", g1: "#75C4EA", g2: "#C4E6F5", out: "#E5E7E9" };
+const COR = { g0: "#1597D4", g1: "#75C4EA", g2: "#C4E6F5", g3: "#E3F2FA", out: "#E5E7E9" };
 const W = 1600, H = 900; // 16:9
 
 type F = Feature<Geometry, { name: string; _uf: string }>;
@@ -65,13 +65,18 @@ const UberabaMapa = () => {
     const g1 = new Set(nb[u]);
     const g2 = new Set<number>();
     g1.forEach((i) => nb[i].forEach((j) => j !== u && !g1.has(j) && g2.add(j)));
-    const foco = [u, ...g1, ...g2].map((i) => feats[i]);
+    // 3º anel: limítrofes do 2º anel situados a oeste de Uberaba (centroide com longitude menor)
+    const lon = (i: number) => { const p = pts(feats[i].geometry); return p.reduce((a, c) => a + c[0], 0) / p.length; };
+    const uLon = lon(u);
+    const g3 = new Set<number>();
+    g2.forEach((i) => nb[i].forEach((j) => j !== u && !g1.has(j) && !g2.has(j) && lon(j) < uLon && g3.add(j)));
+    const foco = [u, ...g1, ...g2, ...g3].map((i) => feats[i]);
     const proj = geoMercator().fitExtent([[60, 90], [W - 60, H - 40]], { type: "FeatureCollection", features: foco });
     const path = geoPath(proj);
-    const grupo = (i: number) => (i === u ? 0 : g1.has(i) ? 1 : g2.has(i) ? 2 : 3);
+    const grupo = (i: number) => (i === u ? 0 : g1.has(i) ? 1 : g2.has(i) ? 2 : g3.has(i) ? 4 : 3);
     console.info("[Mapa Uberaba] 1º anel:", [...g1].map((i) => feats[i].properties.name).sort().join(", "));
     console.info("[Mapa Uberaba] 2º anel:", [...g2].map((i) => `${feats[i].properties.name}/${feats[i].properties._uf}`).sort().join(", "));
-    return { u, g1, g2, path, proj, grupo };
+    return { u, g1, g2, g3, path, proj, grupo };
   }, [feats]);
 
   // Divisa MG/SP = trechos compartilhados entre municípios dos dois estados (desenho = contorno estadual)
@@ -84,9 +89,9 @@ const UberabaMapa = () => {
     if (!feats || !calc) return [];
     const placed: { x: number; y: number; w: number; h: number }[] = [];
     const out: { x: number; y: number; t: string; g: number; lx?: number; ly?: number }[] = [];
-    const order = feats.map((_, i) => i).sort((a, b) => calc.grupo(a) - calc.grupo(b));
+    const order = feats.map((_, i) => i).sort((a, b) => (calc.grupo(a) % 4 + (calc.grupo(a) === 4 ? 2.5 : 0)) - (calc.grupo(b) % 4 + (calc.grupo(b) === 4 ? 2.5 : 0)));
     for (const i of order) {
-      const g = calc.grupo(i);
+      const g0 = calc.grupo(i); const g = g0 === 4 ? 2 : g0;
       const [cx, cy] = calc.path.centroid(feats[i]);
       if (!isFinite(cx) || cx < 10 || cx > W - 10 || cy < 70 || cy > H - 10) continue;
       const t = g === 0 ? "UBERABA" : feats[i].properties.name;
@@ -147,6 +152,7 @@ const UberabaMapa = () => {
           {ufOutline.map((fs, k) => fs.map((f, i) => (
             <path key={`uf${k}-${i}`} d={calc.path(f) ?? ""} fill="none" stroke="none" />
           )))}
+          {[...calc.g3].map((i) => <path key={`g3${i}`} d={calc.path(feats[i]) ?? ""} fill={COR.g3} stroke="#3C4043" strokeWidth={0.8} strokeDasharray="3 2" />)}
           {[...calc.g1].map((i) => <path key={i} d={calc.path(feats[i]) ?? ""} fill={COR.g1} stroke="#FFFFFF" strokeWidth={2} />)}
           <path d={calc.path(feats[calc.u]) ?? ""} fill={COR.g0} stroke="#FFFFFF" strokeWidth={2.5} />
           <DivisaUF feats={feats} path={calc.path} />
@@ -165,9 +171,9 @@ const UberabaMapa = () => {
           <rect x={0} y={0} width={W} height={72} fill="#FFFFFF" opacity={0.92} />
           <text x={60} y={48} fontSize={34} fontWeight={800} fill="#0B2E4A" letterSpacing={1}>ONDE QUEREMOS ATUAR</text>
           <text x={W - 60} y={48} textAnchor="end" fontSize={14} fill="#5F6368">Bensaúde · Uberaba/MG e área de influência</text>
-          <g transform={`translate(40, ${H - 150})`}>
-            <rect width={300} height={130} rx={6} fill="#FFFFFF" stroke="#DADCE0" />
-            {[["Uberaba", COR.g0], ["Municípios limítrofes de Uberaba", COR.g1], ["Municípios do segundo anel", COR.g2], ["Demais municípios", COR.out]].map(([t, c], k) => (
+          <g transform={`translate(40, ${H - 177})`}>
+            <rect width={330} height={157} rx={6} fill="#FFFFFF" stroke="#DADCE0" />
+            {[["Uberaba", COR.g0], ["Municípios limítrofes de Uberaba", COR.g1], ["Municípios do segundo anel", COR.g2], ["Terceiro anel (oeste)", COR.g3], ["Demais municípios", COR.out]].map(([t, c], k) => (
               <g key={t} transform={`translate(14, ${18 + k * 27})`}>
                 <rect width={20} height={16} fill={c} stroke="#5F6368" strokeWidth={0.6} />
                 <text x={30} y={13} fontSize={13} fill="#3C4043">{t}</text>
@@ -181,6 +187,8 @@ const UberabaMapa = () => {
         <b>1º anel ({calc.g1.size}):</b> {[...calc.g1].map((i) => feats[i].properties.name).sort().join(", ")}
         <br />
         <b>2º anel ({calc.g2.size}):</b> {[...calc.g2].map((i) => `${feats[i].properties.name}/${feats[i].properties._uf}`).sort().join(", ")}
+        <br />
+        <b>3º anel – oeste ({calc.g3.size}):</b> {[...calc.g3].map((i) => `${feats[i].properties.name}/${feats[i].properties._uf}`).sort().join(", ")}
       </div>
     </div>
   );
