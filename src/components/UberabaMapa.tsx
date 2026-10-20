@@ -109,7 +109,7 @@ const UberabaMapa = () => {
     [...g3].forEach((i) => EXC.includes(kf(i)) && g3.delete(i));
     [...g3].forEach((i) => feats[i].properties._uf === "GO" && !INC.includes(kf(i)) && g3.delete(i));
     feats.forEach((_, i) => INC.includes(kf(i)) && !g1.has(i) && !g2.has(i) && g3.add(i));
-    const foco = [u, ...g1, ...g2, ...g3].map((i) => feats[i]);
+    const foco = [...[u, ...g1, ...g2, ...g3].map((i) => feats[i]), ...feats.filter((f) => f.properties._uf === "SP" && norm(f.properties.name) === "SAO JOSE DO RIO PRETO")];
     const proj = geoMercator().fitExtent([[30, 30], [W - 30, H - 30]], { type: "FeatureCollection", features: foco });
     const path = geoPath(proj);
     const grupo = (i: number) => (i === u ? 0 : g1.has(i) ? 1 : g2.has(i) ? 2 : g3.has(i) ? 4 : 3);
