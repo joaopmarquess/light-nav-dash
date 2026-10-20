@@ -156,6 +156,7 @@ const UberabaMapa = () => {
           {[...calc.g1].map((i) => <path key={i} d={calc.path(feats[i]) ?? ""} fill={COR.g1} stroke="#FFFFFF" strokeWidth={2} />)}
           <path d={calc.path(feats[calc.u]) ?? ""} fill={COR.g0} stroke="#FFFFFF" strokeWidth={2.5} />
           <DivisaUF feats={feats} path={calc.path} />
+          <DivisaMGOutros feats={feats} path={calc.path} />
           {labels.map((l, k) => (
             <g key={k} pointerEvents="none">
               {l.lx != null && <line x1={l.lx} y1={l.ly} x2={l.x} y2={l.y} stroke="#5F6368" strokeWidth={0.7} />}
@@ -213,6 +214,33 @@ function DivisaUF({ feats, path }: { feats: F[]; path: ReturnType<typeof geoPath
         if (cur.length > 1) lines.push(cur);
       });
     });
+    return path({ type: "MultiLineString", coordinates: lines } as any) ?? "";
+  }, [feats, path]);
+  return <path d={d} fill="none" stroke="#202124" strokeWidth={2.2} strokeLinejoin="round" pointerEvents="none" />;
+}
+
+// Divisa de MG com GO/MS (oeste e norte): arestas de MG que não são compartilhadas com outro município de MG nem com SP
+function DivisaMGOutros({ feats, path }: { feats: F[]; path: ReturnType<typeof geoPath> }) {
+  const d = useMemo(() => {
+    const k = (c: number[]) => `${c[0].toFixed(3)},${c[1].toFixed(3)}`;
+    const rings = (g: any): number[][][] => (g.type === "Polygon" ? g.coordinates : g.type === "MultiPolygon" ? g.coordinates.flat() : []);
+    const sp = new Set<string>();
+    feats.forEach((f) => f.properties._uf === "SP" && pts(f.geometry).forEach((c) => sp.add(k(c))));
+    const cnt = new Map<string, number>();
+    const seg = (a: number[], b: number[]) => [k(a), k(b)].sort().join("|");
+    const mg = feats.filter((f) => f.properties._uf === "MG");
+    mg.forEach((f) => rings(f.geometry).forEach((r) => r.slice(1).forEach((c, i) => { const s = seg(r[i], c); cnt.set(s, (cnt.get(s) ?? 0) + 1); })));
+    const lines: number[][][] = [];
+    mg.forEach((f) => rings(f.geometry).forEach((r) => {
+      let cur: number[][] = [];
+      r.slice(1).forEach((c, i) => {
+        const a = r[i];
+        const ext = cnt.get(seg(a, c)) === 1 && !(sp.has(k(a)) && sp.has(k(c)));
+        if (ext) { if (!cur.length) cur.push(a); cur.push(c); }
+        else { if (cur.length > 1) lines.push(cur); cur = []; }
+      });
+      if (cur.length > 1) lines.push(cur);
+    }));
     return path({ type: "MultiLineString", coordinates: lines } as any) ?? "";
   }, [feats, path]);
   return <path d={d} fill="none" stroke="#202124" strokeWidth={2.2} strokeLinejoin="round" pointerEvents="none" />;
