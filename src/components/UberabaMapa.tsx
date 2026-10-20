@@ -47,6 +47,7 @@ const UberabaMapa = () => {
   const [err, setErr] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const [br, setBr] = useState<Feature<Geometry>[]>([]);
+  const [tip, setTip] = useState<{ t: string; x: number; y: number } | null>(null);
   const [z, setZ] = useState({ k: 1, x: 0, y: 0 });
   const zRef = useRef(z); zRef.current = z;
   const drag = useRef<{ x: number; y: number } | null>(null);
@@ -177,7 +178,7 @@ const UberabaMapa = () => {
         <Button size="icon" variant="outline" title="Voltar ao recorte" onClick={() => setZ({ k: 1, x: 0, y: 0 })}><Maximize className="h-4 w-4" /></Button>
         <Button size="sm" variant="outline" onClick={exportar}><Download className="mr-2 h-4 w-4" />Exportar PNG 16:9 (4K)</Button>
       </div>
-      <div className="w-full overflow-hidden rounded-xl border border-border bg-card" style={{ aspectRatio: "16 / 9" }}>
+      <div className="relative w-full overflow-hidden rounded-xl border border-border bg-card" style={{ aspectRatio: "16 / 9" }}>
         <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${W} ${H}`} className="h-full w-full cursor-grab touch-none active:cursor-grabbing" fontFamily="Arial, Helvetica, sans-serif"
           onPointerDown={(e) => { (e.currentTarget as Element).setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY }; }}
           onPointerMove={(e) => {
@@ -191,7 +192,9 @@ const UberabaMapa = () => {
           <g transform={`translate(${z.x},${z.y}) scale(${z.k})`}>
           {br.map((f, i) => <path key={`br${i}`} d={calc.path(f) ?? ""} fill="#EEF0F2" stroke="none" />)}
           {feats.map((f, i) => calc.grupo(i) === 3 && (
-            <path key={i} d={calc.path(f) ?? ""} fill={COR.out} stroke="#9AA0A6" strokeWidth={0.5}><title>{`${f.properties.name}/${f.properties._uf}`}</title></path>
+            <path key={i} d={calc.path(f) ?? ""} fill={COR.out} stroke="#9AA0A6" strokeWidth={0.5}
+              onMouseMove={(e) => { const r = svgRef.current!.parentElement!.getBoundingClientRect(); setTip({ t: f.properties.name, x: e.clientX - r.left, y: e.clientY - r.top }); }}
+              onMouseLeave={() => setTip(null)} />
           ))}
           {[...calc.g2].map((i) => <path key={i} d={calc.path(feats[i]) ?? ""} fill={COR.g2} stroke="#3C4043" strokeWidth={1} />)}
           {ufOutline.map((fs, k) => fs.map((f, i) => (
@@ -216,6 +219,7 @@ const UberabaMapa = () => {
           {br.map((f, i) => <path key={`bro${i}`} d={calc.path(f) ?? ""} fill="none" stroke="#202124" strokeWidth={1.2} strokeLinejoin="round" vectorEffect="non-scaling-stroke" pointerEvents="none" />)}
           </g>
         </svg>
+        {tip && <div className="pointer-events-none absolute text-xs font-bold text-foreground" style={{ left: tip.x + 10, top: tip.y - 18 }}>{tip.t}</div>}
       </div>
     </div>
   );
