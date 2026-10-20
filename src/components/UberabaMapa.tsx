@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 const SRC: Record<string, string> = {
   MG: "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-31-mun.json",
   SP: "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-35-mun.json",
+  GO: "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-52-mun.json",
 };
 const COR = { g0: "#1597D4", g1: "#75C4EA", g2: "#C4E6F5", g3: "#E3F2FA", out: "#E5E7E9" };
 const W = 1600, H = 900; // 16:9
@@ -102,7 +103,13 @@ const UberabaMapa = () => {
     const uLon = lon(u);
     const g3 = new Set<number>();
     g2.forEach((i) => nb[i].forEach((j) => j !== u && !g1.has(j) && !g2.has(j) && lon(j) < uLon && g3.add(j)));
-    const foco = [u, ...g1, ...g2, ...g3].map((i) => feats[i]);
+    // ajustes pedidos: tira Barretos e Morro Agudo; inclui Catalão e São Simão (GO)
+    const EXC = ["SP|BARRETOS", "SP|MORRO AGUDO"], INC = ["GO|CATALAO", "GO|SAO SIMAO"];
+    const kf = (i: number) => `${feats[i].properties._uf}|${norm(feats[i].properties.name)}`;
+    [...g3].forEach((i) => EXC.includes(kf(i)) && g3.delete(i));
+    [...g3].forEach((i) => feats[i].properties._uf === "GO" && !INC.includes(kf(i)) && g3.delete(i));
+    feats.forEach((_, i) => INC.includes(kf(i)) && !g1.has(i) && !g2.has(i) && g3.add(i));
+    const foco = [...[u, ...g1, ...g2, ...g3].map((i) => feats[i]), ...feats.filter((f) => f.properties._uf === "SP" && norm(f.properties.name) === "SAO JOSE DO RIO PRETO")];
     const proj = geoMercator().fitExtent([[30, 30], [W - 30, H - 30]], { type: "FeatureCollection", features: foco });
     const path = geoPath(proj);
     const grupo = (i: number) => (i === u ? 0 : g1.has(i) ? 1 : g2.has(i) ? 2 : g3.has(i) ? 4 : 3);
