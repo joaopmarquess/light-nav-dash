@@ -125,7 +125,7 @@ const UberabaMapa = () => {
     for (const i of order) {
       const g0 = calc.grupo(i); const g = g0 === 4 ? 2 : g0;
       if (g === 3) continue;
-      const [cx, cy] = calc.path.centroid(feats[i]);
+      const [cx, cy0] = calc.path.centroid(feats[i]); const cy = g === 0 ? cy0 + 22 : cy0;
       if (!isFinite(cx) || cx < 10 || cx > W - 10 || cy < 70 || cy > H - 10) continue;
       const t = g === 0 ? "UBERABA" : feats[i].properties.name;
       const fs = g === 0 ? 22 : g === 1 ? 14 : g === 2 ? 11 : 9;
@@ -203,6 +203,10 @@ const UberabaMapa = () => {
           {[...calc.g3].map((i) => <path key={`g3${i}`} d={calc.path(feats[i]) ?? ""} fill={COR.g3} stroke="#3C4043" strokeWidth={0.8} strokeDasharray="3 2" />)}
           {[...calc.g1].map((i) => <path key={i} d={calc.path(feats[i]) ?? ""} fill={COR.g1} stroke="#FFFFFF" strokeWidth={2} />)}
           <path d={calc.path(feats[calc.u]) ?? ""} fill={COR.g0} stroke="#FFFFFF" strokeWidth={2.5} />
+          {(() => {
+            const rp = feats.find((f) => f.properties._uf === "SP" && norm(f.properties.name) === "SAO JOSE DO RIO PRETO");
+            return rp && <path d={calc.path(rp) ?? ""} fill="#0B4F8A" stroke="#FFFFFF" strokeWidth={2.5} />;
+          })()}
           <DivisaUF feats={feats} path={calc.path} />
           <DivisaMGOutros feats={feats} path={calc.path} />
           {labels.map((l, k) => (
@@ -214,6 +218,21 @@ const UberabaMapa = () => {
                 fill="#000000">{l.t}</text>
             </g>
           ))}
+          {[
+            { uf: "MG", n: "UBERABA", t: null },
+            { uf: "SP", n: "SAO JOSE DO RIO PRETO", t: "São José do Rio Preto" },
+          ].map((p) => {
+            const f = feats.find((x) => x.properties._uf === p.uf && norm(x.properties.name) === p.n);
+            if (!f) return null;
+            const [x, y] = calc.path.centroid(f);
+            return (
+              <g key={p.n} transform={`translate(${x},${y})`} pointerEvents="none">
+                <path d="M0 0 C-3 -9 -12 -13 -12 -22 A12 12 0 1 1 12 -22 C12 -13 3 -9 0 0Z" fill="#D93025" stroke="#FFFFFF" strokeWidth={1.5} />
+                <circle cx={0} cy={-22} r={4.5} fill="#FFFFFF" />
+                {p.t && <text x={16} y={-20} fontSize={15} fontWeight={800} fill="#000000">{p.t}</text>}
+              </g>
+            );
+          })}
           <text x={mgX} y={mgY} fontSize={34} fontWeight={700} fill="#80868B" opacity={0.55}>MG</text>
           <text x={spX} y={spY} fontSize={34} fontWeight={700} fill="#80868B" opacity={0.55}>SP</text>
           {br.map((f, i) => <path key={`bro${i}`} d={calc.path(f) ?? ""} fill="none" stroke="#202124" strokeWidth={1.2} strokeLinejoin="round" vectorEffect="non-scaling-stroke" pointerEvents="none" />)}
