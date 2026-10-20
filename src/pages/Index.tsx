@@ -87,6 +87,7 @@ import CtrlDashboards from "@/control/Dashboards";
 import { ListTree } from "lucide-react";
 import OrcamentoFaturamento from "@/components/OrcamentoFaturamento";
 import UberabaShell from "@/components/UberabaShell";
+import UberabaMapa from "@/components/UberabaMapa";
 
 
 import Assistencial from "@/components/Assistencial";
@@ -177,7 +178,8 @@ const labItems: MenuItem[] = [
     children: [
       { icon: Trophy, label: "Premiação 4T 2026" },
       { icon: Users, label: "Administradoras" },
-      { icon: Building2, label: "Uberaba" },
+      { icon: Building2, label: "Uberaba · Painel", id: "Uberaba" },
+      { icon: Building2, label: "Uberaba · Mapa", id: "Uberaba Mapa" },
     ],
   },
   {
@@ -515,6 +517,8 @@ const Index = () => {
             <Orcamento />
           ) : active === "Uberaba" ? (
             <UberabaShell />
+          ) : active === "Uberaba Mapa" ? (
+            <UberabaMapa />
           ) : active === "Gráficos" ? (
             <ContabilidadeGraficos />
 
