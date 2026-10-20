@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, Maximize, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // Malhas municipais do IBGE (base oficial) — MG e SP
@@ -46,6 +46,37 @@ const UberabaMapa = () => {
   const [feats, setFeats] = useState<F[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const [br, setBr] = useState<Feature<Geometry>[]>([]);
+  const [z, setZ] = useState({ k: 1, x: 0, y: 0 });
+  const zRef = useRef(z); zRef.current = z;
+  const drag = useRef<{ x: number; y: number } | null>(null);
+  const toSvg = (cx: number, cy: number) => {
+    const r = svgRef.current!.getBoundingClientRect();
+    const s = Math.min(r.width / W, r.height / H);
+    return [(cx - r.left - (r.width - W * s) / 2) / s, (cy - r.top - (r.height - H * s) / 2) / s];
+  };
+  const zoomAt = (px: number, py: number, f: number) => {
+    const o = zRef.current;
+    const k = Math.min(40, Math.max(0.08, o.k * f));
+    const q = k / o.k;
+    setZ({ k, x: px - (px - o.x) * q, y: py - (py - o.y) * q });
+  };
+  useEffect(() => {
+    fetch("https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/brazil-states.geojson")
+      .then((r) => r.json()).then((fc: FeatureCollection) => setBr(fc.features)).catch(() => {});
+  }, []);
+  useEffect(() => {
+    const el = svgRef.current;
+    if (!el) return;
+    const h = (e: WheelEvent) => {
+      e.preventDefault();
+      const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 100 : 1);
+      const [px, py] = toSvg(e.clientX, e.clientY);
+      zoomAt(px, py, Math.exp(-dy * 0.0015));
+    };
+    el.addEventListener("wheel", h, { passive: false });
+    return () => el.removeEventListener("wheel", h);
+  });
 
   useEffect(() => {
     Promise.all(Object.entries(SRC).map(([uf, u]) => fetch(u).then((r) => r.json()).then((fc: FeatureCollection) =>
@@ -71,7 +102,7 @@ const UberabaMapa = () => {
     const g3 = new Set<number>();
     g2.forEach((i) => nb[i].forEach((j) => j !== u && !g1.has(j) && !g2.has(j) && lon(j) < uLon && g3.add(j)));
     const foco = [u, ...g1, ...g2, ...g3].map((i) => feats[i]);
-    const proj = geoMercator().fitExtent([[60, 90], [W - 60, H - 40]], { type: "FeatureCollection", features: foco });
+    const proj = geoMercator().fitExtent([[30, 30], [W - 30, H - 30]], { type: "FeatureCollection", features: foco });
     const path = geoPath(proj);
     const grupo = (i: number) => (i === u ? 0 : g1.has(i) ? 1 : g2.has(i) ? 2 : g3.has(i) ? 4 : 3);
     console.info("[Mapa Uberaba] 1º anel:", [...g1].map((i) => feats[i].properties.name).sort().join(", "));
@@ -139,12 +170,25 @@ const UberabaMapa = () => {
 
   return (
     <div className="flex h-full flex-col gap-2">
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        <Button size="icon" variant="outline" title="Aproximar" onClick={() => zoomAt(W / 2, H / 2, 1.5)}><Plus className="h-4 w-4" /></Button>
+        <Button size="icon" variant="outline" title="Afastar" onClick={() => zoomAt(W / 2, H / 2, 1 / 1.5)}><Minus className="h-4 w-4" /></Button>
+        <Button size="icon" variant="outline" title="Voltar ao recorte" onClick={() => setZ({ k: 1, x: 0, y: 0 })}><Maximize className="h-4 w-4" /></Button>
         <Button size="sm" variant="outline" onClick={exportar}><Download className="mr-2 h-4 w-4" />Exportar PNG 16:9 (4K)</Button>
       </div>
       <div className="w-full overflow-hidden rounded-xl border border-border bg-card" style={{ aspectRatio: "16 / 9" }}>
-        <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${W} ${H}`} className="h-full w-full" fontFamily="Arial, Helvetica, sans-serif">
-          <rect width={W} height={H} fill="#FAFBFC" />
+        <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${W} ${H}`} className="h-full w-full cursor-grab touch-none active:cursor-grabbing" fontFamily="Arial, Helvetica, sans-serif"
+          onPointerDown={(e) => { (e.currentTarget as Element).setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY }; }}
+          onPointerMove={(e) => {
+            if (!drag.current) return;
+            const [ax, ay] = toSvg(drag.current.x, drag.current.y), [bx, by] = toSvg(e.clientX, e.clientY);
+            drag.current = { x: e.clientX, y: e.clientY };
+            setZ((o) => ({ ...o, x: o.x + bx - ax, y: o.y + by - ay }));
+          }}
+          onPointerUp={() => (drag.current = null)}>
+          <rect width={W} height={H} fill="#F4F7FA" />
+          <g transform={`translate(${z.x},${z.y}) scale(${z.k})`}>
+          {br.map((f, i) => <path key={`br${i}`} d={calc.path(f) ?? ""} fill="#EEF0F2" stroke="none" />)}
           {feats.map((f, i) => calc.grupo(i) === 3 && (
             <path key={i} d={calc.path(f) ?? ""} fill={COR.out} stroke="#9AA0A6" strokeWidth={0.5} />
           ))}
@@ -169,27 +213,9 @@ const UberabaMapa = () => {
           ))}
           <text x={mgX} y={mgY} fontSize={34} fontWeight={700} fill="#80868B" opacity={0.55}>MG</text>
           <text x={spX} y={spY} fontSize={34} fontWeight={700} fill="#80868B" opacity={0.55}>SP</text>
-          <rect x={0} y={0} width={W} height={72} fill="#FFFFFF" opacity={0.92} />
-          <text x={60} y={48} fontSize={34} fontWeight={800} fill="#0B2E4A" letterSpacing={1}>ONDE QUEREMOS ATUAR</text>
-          <text x={W - 60} y={48} textAnchor="end" fontSize={14} fill="#5F6368">Bensaúde · Uberaba/MG e área de influência</text>
-          <g transform={`translate(40, ${H - 177})`}>
-            <rect width={330} height={157} rx={6} fill="#FFFFFF" stroke="#DADCE0" />
-            {[["Uberaba", COR.g0], ["Municípios limítrofes de Uberaba", COR.g1], ["Municípios do segundo anel", COR.g2], ["Terceiro anel (oeste)", COR.g3], ["Demais municípios", COR.out]].map(([t, c], k) => (
-              <g key={t} transform={`translate(14, ${18 + k * 27})`}>
-                <rect width={20} height={16} fill={c} stroke="#5F6368" strokeWidth={0.6} />
-                <text x={30} y={13} fontSize={13} fill="#3C4043">{t}</text>
-              </g>
-            ))}
+          {br.map((f, i) => <path key={`bro${i}`} d={calc.path(f) ?? ""} fill="none" stroke="#202124" strokeWidth={1.2} strokeLinejoin="round" vectorEffect="non-scaling-stroke" pointerEvents="none" />)}
           </g>
-          <text x={W - 20} y={H - 12} textAnchor="end" fontSize={10} fill="#80868B">Fonte: malha municipal IBGE · anéis calculados por contiguidade dos polígonos</text>
         </svg>
-      </div>
-      <div className="text-xs text-muted-foreground">
-        <b>1º anel ({calc.g1.size}):</b> {[...calc.g1].map((i) => feats[i].properties.name).sort().join(", ")}
-        <br />
-        <b>2º anel ({calc.g2.size}):</b> {[...calc.g2].map((i) => `${feats[i].properties.name}/${feats[i].properties._uf}`).sort().join(", ")}
-        <br />
-        <b>3º anel – oeste ({calc.g3.size}):</b> {[...calc.g3].map((i) => `${feats[i].properties.name}/${feats[i].properties._uf}`).sort().join(", ")}
       </div>
     </div>
   );
