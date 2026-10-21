@@ -140,16 +140,16 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     const k = (c: number[]) => `${c[0].toFixed(4)},${c[1].toFixed(4)}`;
     const tot = features.map((f) => normalizedByUF[f.properties._uf]?.[normalize(f.properties?.name ?? "")] ?? 0);
     const pts = new Set<string>();
-    features.forEach((f, i) => { if (tot[i] >= 100) coords(f.geometry).forEach((c) => pts.add(k(c))); });
-    features.forEach((f, i) => { if (!tot[i] && coords(f.geometry).some((c) => pts.has(k(c)))) out.add(i); });
+    features.forEach((f, i) => { if (tot[i] >= 50) coords(f.geometry).forEach((c) => pts.add(k(c))); });
+    features.forEach((f, i) => { if (tot[i] < 50 && coords(f.geometry).some((c) => pts.has(k(c)))) out.add(i); });
     return out;
   }, [trialScale, features, normalizedByUF]);
 
   const colorFor = (total: number, i = -1) => {
     if (trialScale) {
       if (!total || total <= 0) return vizinhos.has(i) ? "hsl(var(--primary) / 0.12)" : "hsl(var(--muted))";
-      const lim = [50, 100, 500, 1000, 5000];
-      const alphas = [0.25, 0.4, 0.55, 0.7, 0.85, 1];
+      const lim = [100, 500, 1000, 5000];
+      const alphas = [0.42, 0.56, 0.7, 0.85, 1];
       const t = lim.filter((l) => total >= l).length;
       return `hsl(var(--primary) / ${alphas[t]})`;
     }
@@ -191,9 +191,9 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
             <path
               key={i}
               d={d}
-              fill={!trialScale ? colorFor(total, i) : total > 0 ? colorFor(total, i) : vizinhos.has(i) ? "hsl(var(--muted))" : "hsl(140 55% 92%)"}
-              stroke={trialScale && total > 10 ? "hsl(var(--foreground) / 0.55)" : "none"}
-              strokeWidth={trialScale && total > 10 ? 0.6 : 0}
+              fill={!trialScale ? colorFor(total, i) : total >= 50 ? colorFor(total, i) : total > 0 ? (vizinhos.has(i) ? "hsl(var(--primary) / 0.3)" : "hsl(var(--primary) / 0.14)") : vizinhos.has(i) ? "hsl(var(--primary) / 0.08)" : "hsl(var(--muted) / 0.55)"}
+              stroke={trialScale ? (total >= 50 ? "hsl(var(--background))" : "hsl(var(--border))") : "none"}
+              strokeWidth={trialScale ? (total >= 50 ? 0.8 : 0.3) : 0}
               strokeLinejoin="round"
               onMouseMove={(e) => {
                 const rect = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect();
