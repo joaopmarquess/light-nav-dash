@@ -12,7 +12,7 @@ export default function UberabaRedeAssistencial() {
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
         <h2 id="credenciamento-titulo" className="text-xl font-bold uppercase">Modelo de Credenciamento</h2>
-        <p className="credenciamento-secondary text-base">{modo === "Limite" ? "Limite de referências e valor máximo projetado" : modo === "Rio Preto" ? "Disponibilidade em Rio Preto e valor máximo projetado" : "Disponibilidade identificada e valor máximo projetado"}</p>
+        <p className="credenciamento-secondary text-base">{modo === "Limite" ? "Limite de referências e valor máximo projetado" : modo === "Rio Preto" ? "Disponibilidade em Rio Preto" : "Disponibilidade identificada e valor máximo projetado"}</p>
         </div>
         <div className="flex flex-wrap gap-2" role="group" aria-label="Cenário de credenciamento">
           {(["Disponível", "Limite", "Rio Preto"] as const).map((opcao) => <Button key={opcao} size="sm" variant={modo === opcao ? "default" : "outline"} aria-pressed={modo === opcao} onClick={() => setModo(opcao)}>{opcao}</Button>)}
@@ -25,7 +25,7 @@ export default function UberabaRedeAssistencial() {
             <h3 className="flex min-h-20 items-center justify-center px-4 py-3 text-center text-lg font-bold uppercase">{grupo.titulo}</h3>
             <table className="w-full border-collapse text-base">
               <thead><tr><th className="px-3 py-2 text-left">INDICADOR</th><th className="px-3 py-2 text-center">QUANTIDADE / VALOR</th></tr></thead>
-              <tbody>{[[grupo.indicador, grupo.categorias], [modo === "Limite" ? "Quantidade limite" : "Quantidade disponível", grupo.quantidade], ["Valor por credenciamento", moedaCredenciamento(grupo.valor)], ["Memória de cálculo", `${grupo.quantidade} × ${moedaCredenciamento(grupo.valor)}`]].map(([label, valor]) => <tr key={label}><th className="px-3 py-2 text-left font-medium">{label}</th><td className="px-3 py-2 text-center tabular-nums">{valor}</td></tr>)}</tbody>
+              <tbody>{[[grupo.indicador, grupo.categorias], [modo === "Limite" ? "Quantidade limite" : "Quantidade disponível", grupo.quantidade], ["Valor por credenciamento", moedaCredenciamento(grupo.valor)], ["Memória de cálculo", grupo.valor === null ? "-" : `${grupo.quantidade} × ${moedaCredenciamento(grupo.valor)}`]].map(([label, valor]) => <tr key={label}><th className="px-3 py-2 text-left font-medium">{label}</th><td className="px-3 py-2 text-center tabular-nums">{valor}</td></tr>)}</tbody>
             </table>
             <div className="px-4 py-3 text-center"><p className="credenciamento-secondary text-sm font-semibold">VALOR MÁXIMO PROJETADO</p><p className="mt-1 text-3xl font-bold tabular-nums">{moedaCredenciamento(grupo.total)}</p></div>
             <p className="credenciamento-secondary flex-1 px-4 pb-4 text-sm leading-5">{grupo.explicacao}</p>
