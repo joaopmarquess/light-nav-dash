@@ -207,7 +207,7 @@ const AtivosEm = ({ dateValue }: Props) => {
               <StateHeatMap
                 ufs={["SP", "MG", "MS"]}
                 cityTotalsByUF={cityTotalsByUF}
-                onSelectUF={setMapSelection}
+                onSelectUF={(u) => { if (u !== "GO") setMapSelection(u); }}
               />
             </div>
           </div>
