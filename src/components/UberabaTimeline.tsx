@@ -78,7 +78,7 @@ const UberabaTimeline = () => {
       {(atual?.filhos || atual?.texto) && (
         <div className="min-h-0 w-full flex-1 overflow-auto rounded-lg border border-border bg-card px-12 py-8">
           <p className="mb-6 text-xl font-semibold text-foreground">{atual.nome}</p>
-          {atual.texto && <p className="whitespace-pre-line text-justify text-xl leading-9 text-foreground/85 hyphens-auto" lang="pt-BR">{atual.texto.split("**").map((t, i) => (i % 2 ? <strong key={i} className="font-semibold text-foreground">{t}</strong> : t))}</p>}
+          {atual.texto && <p className="whitespace-pre-line text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{atual.texto.split("**").map((t, i) => (i % 2 ? <strong key={i} className="font-semibold text-foreground">{t}</strong> : t))}</p>}
           {atual.filhos && <div className="flex w-full gap-4">
             {atual.filhos.map((f) => (
               <div key={f} className="flex-1 rounded-md border border-border bg-muted/40 px-4 py-2 text-sm font-medium text-foreground">
