@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { ImageIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import campanha from "@/assets/uberaba-marketing-v3-campanha.asset.json";
 
 const PREMISSAS = [
@@ -26,7 +28,19 @@ export default function UberabaMarketing() {
             <h3>O Bensaúde chega a Uberaba porque acredita na cidade, reconhece sua força econômica e sua vocação para a saúde.</h3>
             <p>Trazemos a credibilidade construída onde já atuamos e queremos investir em uma relação duradoura com empresas, profissionais de saúde, prestadores e a comunidade.</p>
             <strong className="marketing-motto">Chegar • Conectar • Crescer</strong>
-            {imageFailed ? <div className="marketing-image-placeholder"><ImageIcon aria-hidden="true" />Imagem a inserir</div> : <img src={campanha.url} alt="Campanha Bensaúde: Estamos chegando, Uberaba!" onError={() => setImageFailed(true)} />}
+            {imageFailed ? <div className="marketing-image-placeholder"><ImageIcon aria-hidden="true" />Imagem a inserir</div> : (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" className="h-auto w-full shrink-0 cursor-zoom-in p-0 hover:bg-transparent" aria-label="Ampliar imagem do outdoor">
+                    <img src={campanha.url} alt="Campanha Bensaúde: Estamos chegando, Uberaba!" onError={() => setImageFailed(true)} />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="w-[calc(100vw-2rem)] max-w-6xl gap-3 p-4 pt-10" aria-describedby={undefined}>
+                  <DialogTitle className="sr-only">Outdoor Bensaúde — Uberaba</DialogTitle>
+                  <img src={campanha.url} alt="Outdoor da campanha Bensaúde: Estamos chegando, Uberaba!" className="max-h-[80dvh] w-full object-contain" />
+                </DialogContent>
+              </Dialog>
+            )}
           </section>
           <div className="marketing-strategy">
             <section className="marketing-premises" aria-labelledby="marketing-premises-title">
