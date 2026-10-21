@@ -140,8 +140,8 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     const k = (c: number[]) => `${c[0].toFixed(4)},${c[1].toFixed(4)}`;
     const tot = features.map((f) => normalizedByUF[f.properties._uf]?.[normalize(f.properties?.name ?? "")] ?? 0);
     const pts = new Set<string>();
-    features.forEach((f, i) => { if (tot[i] >= 50) coords(f.geometry).forEach((c) => pts.add(k(c))); });
-    features.forEach((f, i) => { if (tot[i] < 50 && coords(f.geometry).some((c) => pts.has(k(c)))) out.add(i); });
+    features.forEach((f, i) => { if (tot[i] > 70) coords(f.geometry).forEach((c) => pts.add(k(c))); });
+    features.forEach((f, i) => { if (tot[i] <= 70 && coords(f.geometry).some((c) => pts.has(k(c)))) out.add(i); });
     return out;
   }, [trialScale, features, normalizedByUF]);
 
@@ -158,7 +158,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     // base < 300, +1 tone >=300, +2 >=1000, +3 >=3000, +4 >=5000
     const alphas = [0.35, 0.55, 0.75, 0.9, 1];
     let tier = 0;
-    if (total >= 5000) tier = 4;
+    if (total > 7000) tier = 4;
     else if (total >= 3000) tier = 3;
     else if (total >= 1000) tier = 2;
     else if (total >= 300) tier = 1;
@@ -191,9 +191,9 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
             <path
               key={i}
               d={d}
-              fill={!trialScale ? colorFor(total, i) : total >= 50 ? colorFor(total, i) : total > 0 ? (vizinhos.has(i) ? "hsl(var(--primary) / 0.3)" : "hsl(var(--primary) / 0.14)") : vizinhos.has(i) ? "hsl(var(--primary) / 0.08)" : "hsl(var(--muted) / 0.55)"}
-              stroke={trialScale ? (total >= 50 ? "hsl(var(--background))" : "hsl(var(--border))") : "none"}
-              strokeWidth={trialScale ? (total >= 50 ? 0.8 : 0.3) : 0}
+              fill={!trialScale ? colorFor(total, i) : total > 70 ? colorFor(total, i) : total > 0 ? (vizinhos.has(i) ? "hsl(var(--primary) / 0.3)" : "hsl(var(--primary) / 0.14)") : vizinhos.has(i) ? "hsl(var(--primary) / 0.08)" : "hsl(var(--muted) / 0.55)"}
+              stroke={trialScale ? (total > 70 ? "hsl(var(--background))" : "hsl(var(--border))") : "none"}
+              strokeWidth={trialScale ? (total > 70 ? 0.8 : 0.3) : 0}
               strokeLinejoin="round"
               onMouseMove={(e) => {
                 const rect = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect();
