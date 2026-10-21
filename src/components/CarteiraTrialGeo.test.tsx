@@ -14,6 +14,22 @@ vi.mock("@/components/StateHeatMap", () => ({
 }));
 
 describe("inline MAA toggle", () => {
+  it("keeps the selected date and beneficiary total when opening and closing the magnifier", async () => {
+    render(<CarteiraTrialGeo />);
+    fireEvent.click(await screen.findByRole("button", { name: "Mostrar MAA" }));
+    const date = screen.getByLabelText("Ativos em") as HTMLInputElement;
+    const selectedDate = date.value;
+    fireEvent.click(screen.getByRole("button", { name: "Mapa Área Atuação (MAA)" }));
+    expect(screen.getByTestId("map").getAttribute("data-core")).toBe("true");
+    expect((screen.getByLabelText("Ativos em") as HTMLInputElement).value).toBe(selectedDate);
+    expect(screen.getByText("1.000 vidas")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Voltar" }));
+    expect(screen.getByTestId("map").getAttribute("data-core")).toBe("false");
+    expect(screen.getByTestId("map").getAttribute("data-outline")).toBe("true");
+    expect((screen.getByLabelText("Ativos em") as HTMLInputElement).value).toBe(selectedDate);
+    expect(screen.getByText("1.000 vidas")).toBeTruthy();
+  });
+
   it("starts hidden, shows MAA in place, then restores the original view without changing totals", async () => {
     render(<CarteiraTrialGeo />);
     const toggle = await screen.findByRole("button", { name: "Mostrar MAA" });
