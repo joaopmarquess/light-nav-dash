@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { geoCentroid, geoMercator, geoPath } from "d3-geo";
 import type { FeatureCollection, Feature, Geometry } from "geojson";
 import { Loader2 } from "lucide-react";
-import { insideMAA, maaFillRole, smoothMAAPath } from "@/lib/maaGeometry";
+import { insideMAA, isExplicitMAAMember, maaFillRole, outerMAARings, smoothMAAPath } from "@/lib/maaGeometry";
 
 // IBGE UF codes for municipality geojson from tbrugz/geodata-br
 const UF_CODE: Record<string, string> = { SP: "35", MG: "31", MS: "50", GO: "52" };
@@ -133,6 +133,9 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     let start = 0; tot.forEach((t, i) => { if (t > tot[start]) start = i; });
     const set = new Set<number>([start]); const q = [start];
     while (q.length) { const i = q.shift(); if (i === undefined) break; nb(i).forEach((j) => { if (!set.has(j) && tot[j] > 70) { set.add(j); q.push(j); } }); }
+    features.forEach((f, i) => {
+      if (isExplicitMAAMember(f.properties._uf, f.properties.name ?? "")) set.add(i);
+    });
     const show = new Set<number>(set); set.forEach((i) => nb(i).forEach((j) => show.add(j)));
     const seg = (a: number[], b: number[]) => [k(a), k(b)].sort().join("|");
     const cnt = new Map<string, number>();
@@ -143,7 +146,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
       r.slice(1).forEach((c, n) => { if (cnt.get(seg(r[n], c)) === 1) { if (!cur.length) cur.push(r[n]); cur.push(c); } else { if (cur.length > 1) lines.push(cur); cur = []; } });
       if (cur.length > 1) lines.push(cur);
     }));
-    // encadeia os trechos de borda em anéis fechados e mantém só o mais externo (maior área); ilhas internas ficam sem vermelho
+    // Encadeia os trechos em anéis; mantém bordas externas, inclusive áreas separadas, sem vermelho nas ilhas internas.
     const pt = new Map<string, number[]>(); const adj = new Map<string, string[]>();
     lines.forEach((l) => l.slice(1).forEach((c, n) => {
       const a = k(l[n]), b = k(c); pt.set(a, l[n]); pt.set(b, c);
@@ -167,8 +170,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
         if (cur === s0 && end) { loop.push(end); loops.push(loop); }
       }
     });
-    const area = (l: number[][]) => Math.abs(l.reduce((a, c, n) => { const d = l[(n + 1) % l.length]; return a + c[0] * d[1] - d[0] * c[1]; }, 0));
-    const outer = loops.length ? [loops.reduce((m, l) => (area(l) > area(m) ? l : m))] : lines;
+    const outer = loops.length ? outerMAARings(loops) : lines;
     const inside = new Set<number>(set);
     features.forEach((f, i) => {
       if (outer.some((ring) => insideMAA(geoCentroid(f), ring))) { inside.add(i); show.add(i); }
