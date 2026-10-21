@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { geoMercator, geoPath } from "d3-geo";
+import { geoCentroid, geoMercator, geoPath } from "d3-geo";
 import type { FeatureCollection, Feature, Geometry } from "geojson";
 import { Loader2 } from "lucide-react";
+import { insideMAA, maaFillRole, smoothMAAPath } from "@/lib/maaGeometry";
 
 // IBGE UF codes for municipality geojson from tbrugz/geodata-br
 const UF_CODE: Record<string, string> = { SP: "35", MG: "31", MS: "50", GO: "52" };
@@ -77,7 +78,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
       if (cancelled) return;
       const wanted = new Set(ufs as string[]);
       setStateOutlines(
-        (statesCache!.features as Feature<Geometry, { name: string }>[]).filter(
+        ((statesCache?.features ?? []) as Feature<Geometry, { name: string }>[]).filter(
           (f) => wanted.has(NAME_TO_UF[f.properties?.name] ?? ""),
         ),
       );
@@ -131,7 +132,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     const nb = (i: number) => { const s = new Set<number>(); rings(features[i].geometry).flat().forEach((c) => owners.get(k(c))?.forEach((j) => j !== i && s.add(j))); return s; };
     let start = 0; tot.forEach((t, i) => { if (t > tot[start]) start = i; });
     const set = new Set<number>([start]); const q = [start];
-    while (q.length) { const i = q.shift()!; nb(i).forEach((j) => { if (!set.has(j) && tot[j] > 70) { set.add(j); q.push(j); } }); }
+    while (q.length) { const i = q.shift(); if (i === undefined) break; nb(i).forEach((j) => { if (!set.has(j) && tot[j] > 70) { set.add(j); q.push(j); } }); }
     const show = new Set<number>(set); set.forEach((i) => nb(i).forEach((j) => show.add(j)));
     const seg = (a: number[], b: number[]) => [k(a), k(b)].sort().join("|");
     const cnt = new Map<string, number>();
@@ -144,25 +145,36 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     }));
     // encadeia os trechos de borda em anéis fechados e mantém só o mais externo (maior área); ilhas internas ficam sem vermelho
     const pt = new Map<string, number[]>(); const adj = new Map<string, string[]>();
-    lines.forEach((l) => l.slice(1).forEach((c, n) => { const a = k(l[n]), b = k(c); pt.set(a, l[n]); pt.set(b, c); (adj.get(a) ?? adj.set(a, []).get(a)!).push(b); (adj.get(b) ?? adj.set(b, []).get(b)!).push(a); }));
+    lines.forEach((l) => l.slice(1).forEach((c, n) => {
+      const a = k(l[n]), b = k(c); pt.set(a, l[n]); pt.set(b, c);
+      const aNeighbors = adj.get(a) ?? []; aNeighbors.push(b); adj.set(a, aNeighbors);
+      const bNeighbors = adj.get(b) ?? []; bNeighbors.push(a); adj.set(b, bNeighbors);
+    }));
     const used = new Set<string>(); const loops: number[][][] = [];
     adj.forEach((_, s0) => {
-      for (const nx of adj.get(s0)!) {
+      for (const nx of adj.get(s0) ?? []) {
         if (used.has([s0, nx].sort().join("|"))) continue;
-        const loop = [pt.get(s0)!]; let prev = s0, cur = nx; used.add([s0, nx].sort().join("|"));
+        const initial = pt.get(s0); if (!initial) continue;
+        const loop = [initial]; let prev = s0, cur = nx; used.add([s0, nx].sort().join("|"));
         while (cur !== s0) {
-          loop.push(pt.get(cur)!);
-          const nxt = adj.get(cur)!.find((x) => x !== prev && !used.has([cur, x].sort().join("|")));
+          const current = pt.get(cur); if (!current) break;
+          loop.push(current);
+          const nxt = adj.get(cur)?.find((x) => x !== prev && !used.has([cur, x].sort().join("|")));
           if (!nxt) break;
           used.add([cur, nxt].sort().join("|")); prev = cur; cur = nxt;
         }
-        loop.push(pt.get(cur)!); loops.push(loop);
+        const end = pt.get(cur);
+        if (cur === s0 && end) { loop.push(end); loops.push(loop); }
       }
     });
     const area = (l: number[][]) => Math.abs(l.reduce((a, c, n) => { const d = l[(n + 1) % l.length]; return a + c[0] * d[1] - d[0] * c[1]; }, 0));
     const outer = loops.length ? [loops.reduce((m, l) => (area(l) > area(m) ? l : m))] : lines;
+    const inside = new Set<number>(set);
+    features.forEach((f, i) => {
+      if (outer.some((ring) => insideMAA(geoCentroid(f), ring))) { inside.add(i); show.add(i); }
+    });
     const total = [...set].reduce((s, i) => s + tot[i], 0);
-    return { set, show, lines: outer, total };
+    return { set, show, inside, lines: outer, total };
   }, [core, features, normalizedByUF]);
 
   const { pathFn, projection } = useMemo(() => {
@@ -171,6 +183,21 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     const projection = geoMercator().fitExtent([[4, 4], [width - 4, height - 4]], fc);
     return { pathFn: geoPath(projection), projection };
   }, [features, width, height, coreData]);
+  const maaOutline = useMemo(() => {
+    if (!coreData || !projection) return "";
+    return coreData.lines.map((ring) => smoothMAAPath(ring.flatMap((p) => {
+      const projected = projection([p[0], p[1]]); return projected ? [projected] : [];
+    }))).join(" ");
+  }, [coreData, projection]);
+  const maaLabels = useMemo(() => {
+    if (!coreData || !features || !pathFn) return [];
+    return ufs.flatMap((uf) => {
+      const visible = features.filter((f, i) => f.properties._uf === uf && coreData.show.has(i));
+      if (!visible.length) return [];
+      const [x, y] = pathFn.centroid({ type: "FeatureCollection", features: visible });
+      return Number.isFinite(x) && Number.isFinite(y) ? [{ uf, x, y }] : [];
+    });
+  }, [coreData, features, pathFn, key]);
   const label = (x: number, y: number, t1: string, t2: string, k: string) => (
     <g key={k} transform={`translate(${x},${y})`} pointerEvents="none">
       <text textAnchor="middle" fontSize={14} fontWeight={700} fill="hsl(var(--foreground))" stroke="hsl(var(--background))" strokeWidth={3} paintOrder="stroke">{t1}</text>
@@ -192,6 +219,12 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
   }, [trialScale, features, normalizedByUF]);
 
   const colorFor = (total: number, i = -1) => {
+    if (coreData) {
+      const role = maaFillRole(coreData.set.has(i), coreData.inside.has(i), total);
+      if (role === "island") return "hsl(var(--primary) / 0.42)";
+      if (role === "outside-with-lives") return "hsl(var(--map-outside-lives))";
+      if (role === "outside-empty") return "hsl(var(--muted) / 0.55)";
+    }
     if (trialScale) {
       if (!total || total <= 0) return vizinhos.has(i) ? "hsl(var(--primary) / 0.12)" : "hsl(var(--muted))";
       const lim = [100, 500, 1000, 5000];
@@ -226,7 +259,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
         preserveAspectRatio="xMidYMid meet"
         className="absolute inset-0 w-full h-full"
         role="img"
-        aria-label={`Mapa de calor por município — ${ufs.join(", ")}`}
+        aria-label={core ? "Mapa Área Atuação (MAA)" : `Mapa de calor por município — ${ufs.join(", ")}`}
       >
         {features.map((f, i) => {
           const name = f.properties?.name ?? "";
@@ -238,8 +271,9 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
             <path
               key={i}
               d={d}
-              fill={!trialScale ? colorFor(total, i) : total > 70 ? colorFor(total, i) : total > 0 ? (vizinhos.has(i) ? "hsl(var(--primary) / 0.3)" : "hsl(var(--primary) / 0.14)") : vizinhos.has(i) ? "hsl(var(--primary) / 0.08)" : "hsl(var(--muted) / 0.55)"}
-              stroke={coreData ? "hsl(var(--background))" : trialScale ? (total > 70 ? "hsl(var(--background))" : "hsl(var(--border))") : "none"}
+              fill={coreData || !trialScale ? colorFor(total, i) : total > 70 ? colorFor(total, i) : total > 0 ? (vizinhos.has(i) ? "hsl(var(--primary) / 0.3)" : "hsl(var(--primary) / 0.14)") : vizinhos.has(i) ? "hsl(var(--primary) / 0.08)" : "hsl(var(--muted) / 0.55)"}
+              data-maa-role={coreData ? maaFillRole(coreData.set.has(i), coreData.inside.has(i), total) : undefined}
+              stroke={coreData ? "hsl(var(--map-municipal-border))" : trialScale ? (total > 70 ? "hsl(var(--background))" : "hsl(var(--border))") : "none"}
               strokeWidth={coreData ? 0.8 : trialScale ? (total > 70 ? 0.8 : 0.3) : 0}
               strokeLinejoin="round"
               onMouseMove={(e) => {
@@ -263,7 +297,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
             key={`uf-outline-${i}`}
             d={pathFn(f) ?? ""}
             fill="none"
-            stroke="#000"
+            stroke="hsl(var(--map-state-border))"
             strokeWidth={1.2}
             strokeLinejoin="round"
             pointerEvents="none"
@@ -275,15 +309,18 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
               key={`state-outline-${i}`}
               d={pathFn(f) ?? ""}
               fill="none"
-              stroke="#000"
+              stroke="hsl(var(--map-state-border))"
               strokeWidth={coreData ? 2.5 : 1.5}
               strokeLinejoin="round"
               pointerEvents="none"
             />
           ))}
         {coreData && (
-          <path d={pathFn({ type: "MultiLineString", coordinates: coreData.lines } as any) ?? ""} fill="none" stroke="hsl(var(--destructive))" strokeWidth={3} strokeLinejoin="round" pointerEvents="none" />
+          <path d={maaOutline} fill="none" stroke="hsl(var(--map-maa-outline))" strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" pointerEvents="none" />
         )}
+        {maaLabels.map(({ uf, x, y }) => (
+          <text key={`maa-uf-${uf}`} x={x} y={y} textAnchor="middle" fontSize={20} fontWeight={700} fill="hsl(var(--map-state-border))" pointerEvents="none">{uf}</text>
+        ))}
         {!coreData && stateTotals && stateOutlines?.map((f, i) => {
           const uf = NAME_TO_UF[(f.properties as any)?.name] ?? "";
           const [x, y] = pathFn.centroid(f);

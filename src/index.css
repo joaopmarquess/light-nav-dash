@@ -35,6 +35,10 @@ All colors MUST be HSL.
     --border: 210 30% 90%;
     --input: 210 30% 90%;
     --ring: 205 85% 55%;
+    --map-municipal-border: 0 0% 100%;
+    --map-state-border: 0 0% 0%;
+    --map-maa-outline: 0 78% 49%;
+    --map-outside-lives: 0 0% 88%;
 
     --radius: 0.5rem;
 
@@ -97,6 +101,10 @@ All colors MUST be HSL.
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+    --map-municipal-border: 0 0% 100%;
+    --map-state-border: 0 0% 0%;
+    --map-maa-outline: 0 85% 65%;
+    --map-outside-lives: 0 0% 68%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
