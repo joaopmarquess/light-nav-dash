@@ -49,6 +49,7 @@ All colors MUST be HSL.
     --credential-diagnostic: 40 57% 58%;
     --credential-nonmedical: 16 56% 65%;
     --credential-summary: 206 40% 23%;
+    --credential-summary-text: 0 0% 100%;
     --credential-shadow: 0 2px 8px hsl(206 40% 23% / 0.06);
 
     --radius: 0.5rem;
@@ -167,4 +168,4 @@ All colors MUST be HSL.
 .credenciamento table thead { background: hsl(var(--credential-head)); }
 .credenciamento table tbody tr { border-top: 1px solid hsl(var(--credential-border)); }
 .credenciamento table tbody tr:nth-child(even) { background: hsl(var(--credential-alt)); }
-.credenciamento-summary { background: hsl(var(--credential-summary)); color: hsl(var(--primary-foreground)); }
+.credenciamento-summary { background: hsl(var(--credential-summary)); color: hsl(var(--credential-summary-text)); }

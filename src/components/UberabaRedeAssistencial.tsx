@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowUpDown, ChevronDown, ChevronUp, List, Search, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ export default function UberabaRedeAssistencial({ referencias = referenciasCrede
   const [busca, setBusca] = useState("");
   const [ordem, setOrdem] = useState<Ordenacao>("nome");
   const [desc, setDesc] = useState(false);
+  useEffect(() => { inicio.current?.scrollIntoView({ block: "start" }); }, []);
   const abrir = (grupo: GrupoCredenciamento) => {
     setAberto(grupo); setBusca(""); setOrdem("nome"); setDesc(false);
     requestAnimationFrame(() => detalhes.current?.scrollIntoView({ block: "start", behavior: "smooth" }));
