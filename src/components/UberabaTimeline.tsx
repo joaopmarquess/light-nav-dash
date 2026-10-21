@@ -9,6 +9,7 @@ import UberabaHospital from "@/components/UberabaHospital";
 import UberabaMarketing from "@/components/UberabaMarketing";
 import UberabaFormalizacao from "@/components/UberabaFormalizacao";
 import UberabaGuias from "@/components/UberabaGuias";
+import UberabaOperacaoIniciada from "@/components/UberabaOperacaoIniciada";
 import { FileCheck2 } from "lucide-react";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
@@ -33,6 +34,7 @@ const ETAPAS: Etapa[] = [
   { nome: "Plano de Marketing", conteudo: MARKETING },
   { nome: "Formalização", conteudo: FORMALIZACAO },
   { nome: "Implantação", conteudo: IMPLANTACAO },
+  { nome: "Operação Iniciada", conteudo: <UberabaOperacaoIniciada /> },
 ];
 
 const UberabaTimeline = () => {
@@ -64,9 +66,9 @@ const UberabaTimeline = () => {
         </ToggleGroup>
       </div>
       <div className="overflow-x-auto rounded-lg border border-border bg-card px-8 py-4">
-        <div className="relative min-w-[720px] md:min-w-0">
-          <div className="absolute left-[8.33%] right-[8.33%] top-5 h-0.5 bg-border" />
-          <ol className="relative grid grid-cols-6 gap-4">
+        <div className="relative min-w-[840px] md:min-w-0">
+          <div className="absolute left-[7.14%] right-[7.14%] top-5 h-0.5 bg-border" />
+          <ol className="relative grid grid-cols-7 gap-4">
             {ETAPAS.map((e, i) => {
               const on = aberta === e.nome;
               const clicavel = !!e.filhos || !!e.texto || !!e.conteudo;
@@ -97,7 +99,7 @@ const UberabaTimeline = () => {
       </div>
 
       {(atual?.filhos || atual?.texto || atual?.conteudo) && (
-        <div className="-my-6 grid grid-cols-6 gap-4 px-8">
+        <div className="-my-6 grid grid-cols-7 gap-4 px-8">
           <div
             className="flex justify-center"
             style={{ gridColumnStart: ETAPAS.indexOf(atual) + 1 }}
@@ -108,8 +110,8 @@ const UberabaTimeline = () => {
       )}
 
       {(atual?.filhos || atual?.texto || atual?.conteudo) && (
-        <div ref={panelRef} className={`flex min-h-0 w-full flex-1 flex-col overflow-auto rounded-lg border border-border bg-card ${atual.nome === "Hospital Mário Palmério" || (versao === "simples" && ["Plano de Marketing", "Formalização"].includes(atual.nome)) ? "" : "px-4 py-4 sm:px-8"}`}>
-          {atual.nome !== "Hospital Mário Palmério" && !(versao === "simples" && ["Plano de Marketing", "Formalização"].includes(atual.nome)) && <div className="mb-3 flex flex-wrap items-center gap-4">
+        <div ref={panelRef} className={`flex min-h-0 w-full flex-1 flex-col overflow-auto rounded-lg border border-border bg-card ${["Hospital Mário Palmério", "Operação Iniciada"].includes(atual.nome) || (versao === "simples" && ["Plano de Marketing", "Formalização"].includes(atual.nome)) ? "" : "px-4 py-4 sm:px-8"}`}>
+          {!["Hospital Mário Palmério", "Operação Iniciada"].includes(atual.nome) && !(versao === "simples" && ["Plano de Marketing", "Formalização"].includes(atual.nome)) && <div className="mb-3 flex flex-wrap items-center gap-4">
             <p className="text-xl font-semibold text-foreground">{atual.nome}</p>
             {versao === "simples" && atual.nome === "Modelo de Atuação" && (
               <div className="flex flex-wrap gap-3">
@@ -120,7 +122,7 @@ const UberabaTimeline = () => {
               </div>
             )}
           </div>}
-          {atual.nome === "Hospital Mário Palmério" ? <UberabaHospital onBack={voltarTimeline} /> : versao === "simples" && atual.nome === "Plano de Marketing" ? <UberabaMarketing /> : versao === "simples" && atual.nome === "Formalização" ? <UberabaFormalizacao /> : versao === "simples" ? (atual.nome === "Estudo" ? (
+          {atual.nome === "Operação Iniciada" ? <UberabaOperacaoIniciada /> : atual.nome === "Hospital Mário Palmério" ? <UberabaHospital onBack={voltarTimeline} /> : versao === "simples" && atual.nome === "Plano de Marketing" ? <UberabaMarketing /> : versao === "simples" && atual.nome === "Formalização" ? <UberabaFormalizacao /> : versao === "simples" ? (atual.nome === "Estudo" ? (
             <UberabaEstudoMapas />
           ) : atual.nome === "Modelo de Atuação" ? (
             <div className="flex min-h-0 flex-1 flex-col">

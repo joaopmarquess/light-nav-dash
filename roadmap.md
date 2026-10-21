@@ -1,3 +1,4 @@
+- [ ] Criar a seção final Operação Iniciada com seis frentes convergentes, resultado esperado e apresentação adaptada à tela.
 - [x] Inserir Guias no Modelo de Atuação simplificado, com jornada digital, imagem gerada, fluxo expansível e retorno; dois testes aprovados e interação conferida na Timeline.
 - [x] Ajustar cores internas/externas, suavização e siglas do Mapa Área Atuação.
 - [x] Criar e conferir apresentação de Formalização com produtos restritos a Uberaba e instrumentos contratuais previstos; cinco testes aprovados, sem rolagem na tela de origem e versão Completa preservada.
