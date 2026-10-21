@@ -66,7 +66,7 @@ const UberabaTimeline = () => {
       )}
 
       {(atual?.filhos || atual?.texto) && (
-        <div className="w-full rounded-lg border border-border bg-card px-8 py-6">
+        <div className="min-h-0 w-full flex-1 overflow-auto rounded-lg border border-border bg-card px-8 py-6">
           <p className="mb-4 text-sm font-semibold text-foreground">{atual.nome}</p>
           {atual.texto && <p className="text-sm leading-relaxed text-muted-foreground">{atual.texto}</p>}
           {atual.filhos && <div className="flex w-full gap-4">
