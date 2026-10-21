@@ -70,6 +70,10 @@ All colors MUST be HSL.
     --guias-autorizador: 40 57% 58%;
     --guias-auditoria: 113 19% 54%;
     --guias-atendimento: 16 56% 65%;
+    --timeline-heat-low: 194 51% 90%;
+    --timeline-heat-medium: 196 65% 67%;
+    --timeline-heat-high: 38 88% 64%;
+    --timeline-heat-ink: 206 47% 22%;
 
     --radius: 0.5rem;
 
@@ -152,6 +156,10 @@ All colors MUST be HSL.
     --credential-alt: 217 28% 15%;
     --credential-summary: 206 40% 23%;
     --sidebar-background: 240 5.9% 10%;
+    --timeline-heat-low: 194 35% 24%;
+    --timeline-heat-medium: 196 60% 35%;
+    --timeline-heat-high: 38 65% 35%;
+    --timeline-heat-ink: 0 0% 100%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
@@ -186,6 +194,19 @@ All colors MUST be HSL.
   }
 }
 
+.timeline-heat { margin-top: 20px; }
+.timeline-heat-band { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 16px; }
+.timeline-heat-month { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 78px; border-radius: 4px; color: hsl(var(--timeline-heat-ink)); }
+.timeline-heat-level-1 { background: hsl(var(--timeline-heat-low)); }
+.timeline-heat-level-2 { background: hsl(var(--timeline-heat-medium)); }
+.timeline-heat-level-3 { background: hsl(var(--timeline-heat-high)); }
+.timeline-heat-month strong { font-size: 16px; line-height: 1.4; }
+.timeline-heat-month > span { font-size: 12px; margin-top: 3px; }
+.timeline-heat-ticks { position: absolute; inset: -13px 0 auto; display: flex; justify-content: space-around; }
+.timeline-heat-ticks span { width: 2px; height: 13px; background: hsl(var(--border)); }
+.timeline-heat-legend { display: flex; justify-content: flex-end; align-items: center; gap: 7px; margin-top: 10px; font-size: 11px; color: hsl(var(--muted-foreground)); }
+.timeline-heat-legend > span:first-child { margin-right: 5px; }
+.timeline-heat-legend i { width: 16px; height: 8px; border-radius: 2px; margin-left: 5px; }
 .credenciamento { background: hsl(var(--credential-background)); color: hsl(var(--credential-text)); }
 .uberaba-guias { container-type: inline-size; flex: 1; min-height: 0; color: hsl(var(--credential-text)); background: hsl(var(--hospital-canvas)); border-top: 8px solid hsl(var(--guias-virtual)); }
 .guias-page { display: flex; flex-direction: column; flex: 1; min-width: 0; gap: 12px; padding: 18px 24px 14px; }

@@ -11,7 +11,7 @@ import UberabaFormalizacao from "@/components/UberabaFormalizacao";
 import UberabaGuias from "@/components/UberabaGuias";
 import UberabaOperacaoIniciada from "@/components/UberabaOperacaoIniciada";
 import { CalendarDays, FileCheck2 } from "lucide-react";
-import { dataPlanejadaUberaba } from "@/lib/uberabaCronograma";
+import UberabaCronograma from "@/components/UberabaCronograma";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
@@ -105,11 +105,11 @@ const UberabaTimeline = () => {
                       {e.nome}
                     </span>
                   </button>
-                  {mostrarDatas && <div className="flex w-full items-center justify-center gap-2 border-t border-border pt-2 text-sm font-semibold text-secondary-foreground"><CalendarDays aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-primary" /><span className="whitespace-nowrap">{dataPlanejadaUberaba(e.nome)}</span></div>}
                 </li>
               );
             })}
           </ol>
+          {mostrarDatas && <UberabaCronograma />}
         </div>
       </div>
 
