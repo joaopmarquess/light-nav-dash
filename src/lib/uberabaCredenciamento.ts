@@ -10,11 +10,11 @@ export type ReferenciaCredenciamento = {
 
 export const GRUPOS_CREDENCIAMENTO = [
   { id: "medicos", titulo: "Especialidades médicas", indicador: "Especialidades médicas", categorias: 56, quantidade: 229, valor: 200, total: 45800, explicacao: "A quantidade de 229 corresponde à disponibilidade identificada por especialidade, priorizando a rede EVO e utilizando a Unimed quando não houver disponibilidade correspondente na EVO." },
-  { id: "diagnostico", titulo: "Serviços auxiliares de diagnóstico e terapia", indicador: "Categorias de serviços", categorias: 15, quantidade: 69, valor: 400, total: 27600, explicacao: "A quantidade de 69 corresponde aos prestadores disponíveis nas categorias de diagnóstico e terapia, considerando a EVO como fonte principal e a Unimed como referência complementar." },
+  { id: "diagnostico", titulo: "Serviços auxiliares de diagnóstico e terapia", indicador: "Categorias de serviços", categorias: 15, quantidade: 69, valor: 200, total: 13800, explicacao: "A quantidade de 69 corresponde aos prestadores disponíveis nas categorias de diagnóstico e terapia, considerando a EVO como fonte principal e a Unimed como referência complementar." },
   { id: "nao-medicos", titulo: "Serviços auxiliares e profissionais não médicos", indicador: "Categorias profissionais", categorias: 6, quantidade: 55, valor: 200, total: 11000, explicacao: "A quantidade de 55 corresponde aos profissionais e serviços disponíveis nas categorias não médicas, priorizando a EVO e utilizando a Unimed somente quando necessário." },
 ] as const;
 
-export const RESUMO_CREDENCIAMENTO = { categorias: 77, quantidade: 353, total: 84400 };
+export const RESUMO_CREDENCIAMENTO = { categorias: 77, quantidade: 353, total: 70600 };
 export type ModoCredenciamento = "Disponível" | "Limite" | "Rio Preto";
 export const MODO_CREDENCIAMENTO_PADRAO: ModoCredenciamento = "Disponível";
 const QUANTIDADES_RIO_PRETO: Record<GrupoCredenciamento, number> = { medicos: 577, diagnostico: 20, "nao-medicos": 30 };
