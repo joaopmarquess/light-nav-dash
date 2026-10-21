@@ -1,4 +1,5 @@
 - [x] Ajustar cores internas/externas, suavização e siglas do Mapa Área Atuação.
+- [x] Exibir Área Geográfica e Uberaba - Mapa lado a lado em Estudo da Timeline simplificada; ambos carregados com dados reais, versão Completa preservada e três testes aprovados.
 - [x] Validar regras e conferir o mapa da lupa com dados reais; quatro testes passaram e nenhuma falha na tela.
 - [x] Afastar a visão da lupa e incluir um minimapa geral com o retângulo da região exibida; testes de geometria passaram.
 - [x] Conferir a lupa com dados reais — mapa e minimapa carregados, topo com 72.198 vidas preservado e retorno à origem confirmado.
