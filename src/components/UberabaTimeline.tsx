@@ -12,7 +12,6 @@ import UberabaGuias from "@/components/UberabaGuias";
 import UberabaOperacaoIniciada from "@/components/UberabaOperacaoIniciada";
 import { CalendarDays, FileCheck2 } from "lucide-react";
 import UberabaCronograma from "@/components/UberabaCronograma";
-import UberabaCalendario from "@/components/UberabaCalendario";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
@@ -71,7 +70,6 @@ const UberabaTimeline = () => {
             </TooltipTrigger>
             <TooltipContent>{mostrarDatas ? "Ocultar datas planejadas" : "Mostrar datas planejadas"}</TooltipContent>
           </Tooltip>
-          <UberabaCalendario />
           {mostrarDatas && <span className="text-xs font-medium text-muted-foreground">Datas planejadas</span>}
         </div>
         <ToggleGroup type="single" value={versao} onValueChange={(value) => {
