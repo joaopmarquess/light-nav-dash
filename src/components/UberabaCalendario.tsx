@@ -1,20 +1,11 @@
-import { CalendarRange } from "lucide-react";
+import type { ReactElement } from "react";
 import { folhinhasUberaba } from "@/lib/uberabaCronograma";
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-export default function UberabaCalendario() {
+export default function UberabaCalendario({ trigger }: { trigger: ReactElement }) {
   return (
     <Dialog>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <DialogTrigger asChild>
-            <Button size="icon" variant="outline" aria-label="Abrir calendário mensal"><CalendarRange className="h-5 w-5" /></Button>
-          </DialogTrigger>
-        </TooltipTrigger>
-        <TooltipContent>Calendário mensal</TooltipContent>
-      </Tooltip>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="w-[calc(100%-2rem)] max-w-6xl max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="tracking-normal">Calendário · Projeto Uberaba</DialogTitle>
