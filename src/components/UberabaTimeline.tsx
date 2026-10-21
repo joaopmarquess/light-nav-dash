@@ -59,8 +59,8 @@ const UberabaTimeline = () => {
           <ToggleGroupItem value="completa">Completa</ToggleGroupItem>
         </ToggleGroup>
       </div>
-      <div className="rounded-lg border border-border bg-card px-8 py-4">
-        <div className="relative">
+      <div className="overflow-x-auto rounded-lg border border-border bg-card px-8 py-4">
+        <div className="relative min-w-[720px] md:min-w-0">
           <div className="absolute left-[8.33%] right-[8.33%] top-5 h-0.5 bg-border" />
           <ol className="relative grid grid-cols-6 gap-4">
             {ETAPAS.map((e, i) => {
@@ -104,7 +104,7 @@ const UberabaTimeline = () => {
       )}
 
       {(atual?.filhos || atual?.texto || atual?.conteudo) && (
-        <div ref={panelRef} className="flex min-h-0 w-full flex-1 flex-col overflow-auto rounded-lg border border-border bg-card px-8 py-4">
+        <div ref={panelRef} className="flex min-h-0 w-full flex-1 flex-col overflow-auto rounded-lg border border-border bg-card px-4 py-4 sm:px-8">
           <div className="mb-3 flex flex-wrap items-center gap-4">
             <p className="text-xl font-semibold text-foreground">{atual.nome}</p>
             {versao === "simples" && atual.nome === "Modelo de Atuação" && (
