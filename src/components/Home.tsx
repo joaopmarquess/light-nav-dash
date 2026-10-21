@@ -1,197 +1,63 @@
-import { useEffect, useState } from "react";
-import {
-  TrendingUp,
-  TrendingDown,
-  Users,
-  Coins,
-  Percent,
-  FileText,
-  BarChart3,
-  Search,
-  UserCheck,
-  LayoutDashboard,
-  Stethoscope,
-} from "lucide-react";
+import { ArrowUpRight, CalendarRange, FileText, Map, Search, TrendingDown, TrendingUp, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-type ByMes = { k: number; rec: number; desp: number; saldo: number; vidas: number };
-type Sin = { byMes: ByMes[] };
-
-const fmtBRL = (v: number) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(v);
-const fmtInt = (v: number) => new Intl.NumberFormat("pt-BR").format(v);
-const fmtPct = (v: number) => `${(v * 100).toFixed(1)}%`;
-const labelMes = (k: number) => {
-  const y = Math.floor(k / 100);
-  const m = k % 100;
-  const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-  return `${meses[m - 1]}/${String(y).slice(2)}`;
-};
-
-const shortcuts = [
-  { icon: Search, label: "Painel", desc: "Consulta beneficiário" },
-  { icon: UserCheck, label: "Área Geográfica", desc: "Carteira por data" },
-  { icon: TrendingUp, label: "Vendas", desc: "Novas adesões" },
-  { icon: LayoutDashboard, label: "B.I. Overview", desc: "Painel rotativo" },
+const carteiraItems = [
+  { icon: Search, label: "Consulta" },
+  { icon: Map, label: "Área Geográfica" },
+  { icon: CalendarRange, label: "Movimentação" },
+  { icon: TrendingUp, label: "Entradas" },
+  { icon: Users, label: "Entradas Lancers" },
+  { icon: TrendingDown, label: "Saídas" },
 ];
 
-const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
-  const [data, setData] = useState<Sin | null>(null);
+const shortcuts = [
+  { icon: CalendarRange, label: "Timeline Uberaba", destination: "Uberaba Timeline" },
+  { icon: FileText, label: "Controladoria", destination: "Control · DRE Gerencial PE" },
+  { icon: Map, label: "Área Geográfica", destination: "Carteira (Trial) · Área Geográfica" },
+];
 
-  useEffect(() => {
-    fetch("/data/sinistralidade.json")
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => setData(null));
-  }, []);
+const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => (
+  <div className="space-y-8">
+    <header>
+      <h2 className="text-2xl font-semibold text-foreground">Bem-vindo ao AXIS</h2>
+    </header>
 
-  const meses = (data?.byMes ?? []).filter((m) => m.vidas > 30000);
-  const ultimo = meses[meses.length - 1];
-  const anterior = meses[meses.length - 2];
-
-  const sinist = ultimo ? ultimo.desp / ultimo.rec : 0;
-  const sinistAnt = anterior ? anterior.desp / anterior.rec : 0;
-  const deltaVidas = ultimo && anterior ? ultimo.vidas - anterior.vidas : 0;
-  const deltaRec = ultimo && anterior ? (ultimo.rec - anterior.rec) / anterior.rec : 0;
-
-  const kpis = ultimo
-    ? [
-        {
-          label: "Receita",
-          value: fmtBRL(ultimo.rec),
-          delta: deltaRec,
-          icon: Coins,
-          tone: "text-emerald-600",
-        },
-        {
-          label: "Despesa",
-          value: fmtBRL(ultimo.desp),
-          delta: anterior ? (ultimo.desp - anterior.desp) / anterior.desp : 0,
-          icon: TrendingDown,
-          tone: "text-rose-600",
-          invert: true,
-        },
-        {
-          label: "Saldo",
-          value: fmtBRL(ultimo.saldo),
-          delta: anterior ? (ultimo.saldo - anterior.saldo) / Math.abs(anterior.saldo || 1) : 0,
-          icon: TrendingUp,
-          tone: ultimo.saldo >= 0 ? "text-emerald-600" : "text-rose-600",
-        },
-        {
-          label: "Sinistralidade",
-          value: fmtPct(sinist),
-          delta: sinist - sinistAnt,
-          icon: Percent,
-          tone: sinist <= 0.8 ? "text-emerald-600" : "text-rose-600",
-          isAbs: true,
-          invert: true,
-        },
-        {
-          label: "Vidas",
-          value: fmtInt(ultimo.vidas),
-          delta: anterior ? deltaVidas / anterior.vidas : 0,
-          icon: Users,
-          tone: "text-blue-700",
-        },
-      ]
-    : [];
-
-  // mini sparkline path
-  const spark = (() => {
-    if (meses.length < 2) return "";
-    const vals = meses.map((m) => m.desp / m.rec);
-    const min = Math.min(...vals);
-    const max = Math.max(...vals);
-    const W = 100;
-    const H = 28;
-    return vals
-      .map((v, i) => {
-        const x = (i / (vals.length - 1)) * W;
-        const y = H - ((v - min) / (max - min || 1)) * H;
-        return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
-      })
-      .join(" ");
-  })();
-
-  return (
-    <div className="space-y-6">
-      {/* Saudação */}
-      <section className="bg-card rounded-xl border border-border shadow-sm p-6">
-        <div className="flex items-start justify-between gap-6 flex-wrap">
-          <div>
-            <h2 className="text-2xl font-semibold text-foreground">Bem-vindo ao AXIS</h2>
-            <p className="text-sm text-muted-foreground mt-1">Plataforma de Inteligência Executiva</p>
-          </div>
-          {meses.length >= 2 && (
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <div className="text-xs text-muted-foreground">Sinistralidade (12m)</div>
-                <div className="text-lg font-semibold text-foreground">{fmtPct(sinist)}</div>
-              </div>
-              <svg viewBox="0 0 100 28" className="w-32 h-8 text-primary">
-                <path d={spark} fill="none" stroke="currentColor" strokeWidth="1.5" />
-              </svg>
-            </div>
-          )}
+    <section className="rounded-lg border border-border bg-card p-6 shadow-sm" aria-labelledby="home-carteira">
+      <div className="mb-6 flex items-center gap-3">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-accent text-primary">
+          <Users className="h-6 w-6" />
         </div>
-      </section>
+        <h3 id="home-carteira" className="text-xl font-semibold text-foreground">Carteira (Trial)</h3>
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {carteiraItems.map(({ icon: Icon, label }) => (
+          <Button
+            key={label}
+            variant="outline"
+            onClick={() => onNavigate(`Carteira (Trial) · ${label}`)}
+            className="h-14 justify-start gap-3 px-4 text-base"
+          >
+            <Icon className="text-primary" />
+            <span className="whitespace-normal text-left">{label}</span>
+            <ArrowUpRight className="ml-auto shrink-0 text-muted-foreground" />
+          </Button>
+        ))}
+      </div>
+    </section>
 
-      {/* KPIs */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {kpis.map((k) => {
-          const Icon = k.icon;
-          const positive = k.invert ? k.delta < 0 : k.delta > 0;
-          const deltaTxt =
-            k.delta === 0
-              ? "—"
-              : k.isAbs
-              ? `${k.delta > 0 ? "+" : ""}${(k.delta * 100).toFixed(1)} p.p.`
-              : `${k.delta > 0 ? "+" : ""}${(k.delta * 100).toFixed(1)}%`;
-          return (
-            <div key={k.label} className="bg-card rounded-xl border border-border shadow-sm p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{k.label}</span>
-                <Icon className={`h-4 w-4 ${k.tone}`} />
-              </div>
-              <div className={`mt-2 text-xl font-semibold ${k.tone}`}>{k.value}</div>
-              <div
-                className={`mt-1 text-xs font-medium ${
-                  k.delta === 0 ? "text-muted-foreground" : positive ? "text-emerald-600" : "text-rose-600"
-                }`}
-              >
-                {deltaTxt} <span className="text-muted-foreground font-normal">vs. mês anterior</span>
-              </div>
-            </div>
-          );
-        })}
-      </section>
-
-      {/* Atalhos */}
-      <section className="bg-card rounded-xl border border-border shadow-sm p-6">
-        <h3 className="text-sm font-semibold text-foreground mb-4">Atalhos</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
-          {shortcuts.map((s) => {
-            const Icon = s.icon;
-            return (
-              <button
-                key={s.label}
-                onClick={() => onNavigate(s.label)}
-                className="group flex items-start gap-3 p-3 rounded-lg border border-border bg-background hover:border-primary/40 hover:bg-accent/50 transition-colors text-left"
-              >
-                <div className="h-9 w-9 rounded-md bg-accent flex items-center justify-center text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                  <Icon className="h-4 w-4" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-sm font-medium text-foreground truncate">{s.label}</div>
-                  <div className="text-xs text-muted-foreground truncate">{s.desc}</div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-    </div>
-  );
-};
+    <section aria-labelledby="home-atalhos">
+      <h3 id="home-atalhos" className="mb-4 text-sm font-semibold text-foreground">Atalhos</h3>
+      <div className="flex flex-wrap gap-3">
+        {shortcuts.map(({ icon: Icon, label, destination }) => (
+          <Button key={label} variant="secondary" onClick={() => onNavigate(destination)} className="h-12 gap-3 px-5">
+            <Icon />
+            {label}
+            <ArrowUpRight className="text-muted-foreground" />
+          </Button>
+        ))}
+      </div>
+    </section>
+  </div>
+);
 
 export default Home;
