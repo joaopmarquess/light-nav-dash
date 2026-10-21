@@ -321,7 +321,7 @@ All colors MUST be HSL.
 .marketing-footer p { font-style: italic; }
 .marketing-footer strong { color: hsl(var(--hospital-blue)); }
 .uberaba-formalizacao { container-type: inline-size; display: flex; flex: 1; min-height: 620px; background: hsl(var(--hospital-canvas)); color: hsl(var(--credential-text)); border-top: 14px solid hsl(var(--hospital-blue)); }
-.formalizacao-page { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; width: 100%; gap: 24px; padding: 28px 44px 20px; }
+.formalizacao-page { display: grid; grid-template-rows: auto auto minmax(min-content, 1fr) auto; width: 100%; gap: 20px; padding: 24px 44px 18px; }
 .formalizacao-header > p, .formalizacao-products p, .formalizacao-section-heading p, .formalizacao-assistance-item p { font-size: 12px; font-weight: 700; color: hsl(var(--hospital-secondary)); margin-bottom: 8px; }
 .formalizacao-header h2 { font-size: 42px; font-weight: 750; line-height: 1.2; }
 .formalizacao-header > span { display: block; font-size: 18px; color: hsl(var(--hospital-secondary)); margin-top: 6px; }
@@ -330,7 +330,7 @@ All colors MUST be HSL.
 .formalizacao-products h3 { font-size: 26px; font-weight: 700; }
 .formalizacao-products > strong { margin-left: auto; font-size: 24px; color: hsl(var(--hospital-blue)); }
 .formalizacao-contracts { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 32px; min-height: 0; }
-.formalizacao-siga { display: flex; flex-direction: column; justify-content: space-between; gap: 16px; padding: 26px 30px; background: hsl(var(--hospital-navy)); color: hsl(var(--credential-summary-text)); border-radius: 6px; }
+.formalizacao-siga { display: flex; flex-direction: column; justify-content: space-between; gap: 12px; padding: 22px 30px; background: hsl(var(--hospital-navy)); color: hsl(var(--credential-summary-text)); border-radius: 6px; }
 .formalizacao-section-heading { display: flex; align-items: center; gap: 18px; }
 .formalizacao-section-heading > svg { width: 36px; height: 36px; flex-shrink: 0; color: hsl(var(--hospital-gold)); }
 .formalizacao-section-heading p { color: hsl(var(--hospital-light)); }
@@ -341,7 +341,7 @@ All colors MUST be HSL.
 .formalizacao-sequence svg { color: hsl(var(--hospital-gold)); }
 .formalizacao-sequence span { font-size: 11px; color: hsl(var(--hospital-light)); font-weight: 700; }
 .formalizacao-sequence strong { font-size: 21px; line-height: 1.25; }
-.formalizacao-sequence > div:last-child strong { text-transform: capitalize; }
+.formalizacao-sequence > div:last-child strong::first-letter { text-transform: uppercase; }
 .formalizacao-scope { border-top: 1px solid hsl(var(--hospital-light) / .4); padding-top: 16px; font-size: 17px; line-height: 1.5; color: hsl(var(--hospital-light)); }
 .formalizacao-scope strong { color: hsl(var(--credential-summary-text)); }
 .formalizacao-assistance { display: grid; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 24px; }
@@ -352,7 +352,7 @@ All colors MUST be HSL.
 .formalizacao-footer { display: flex; justify-content: space-between; gap: 20px; border-top: 1px solid hsl(var(--hospital-frame)); padding-top: 14px; font-size: 12px; color: hsl(var(--hospital-secondary)); }
 .formalizacao-footer strong { color: hsl(var(--hospital-blue)); }
 @container (min-width: 1700px) {
-  .formalizacao-page { padding: 30px 52px 24px; gap: 28px; }
+  .formalizacao-page { padding: 24px 52px 18px; gap: 20px; }
   .formalizacao-header h2 { font-size: 48px; }
   .formalizacao-header > span, .formalizacao-fronts { font-size: 24px; }
   .formalizacao-header > p, .formalizacao-products p, .formalizacao-section-heading p, .formalizacao-assistance-item p { font-size: 15px; }
@@ -363,7 +363,7 @@ All colors MUST be HSL.
   .formalizacao-scope, .formalizacao-assistance-item span { font-size: 22px; }
 }
 @container (max-width: 999px) {
-  .formalizacao-page { padding: 24px; }
+  .formalizacao-page { display: flex; flex-direction: column; padding: 24px; }
   .formalizacao-products { flex-wrap: wrap; }
   .formalizacao-products > strong { margin-left: 0; }
   .formalizacao-contracts { grid-template-columns: 1fr; }
