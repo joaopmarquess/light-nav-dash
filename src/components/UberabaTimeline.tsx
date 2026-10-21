@@ -90,8 +90,8 @@ const UberabaTimeline = () => {
       )}
 
       {(atual?.filhos || atual?.texto || atual?.conteudo) && (
-        <div className="min-h-0 w-full flex-1 overflow-auto rounded-lg border border-border bg-card px-12 py-8">
-          <p className="mb-6 text-xl font-semibold text-foreground">{atual.nome}</p>
+        <div className="min-h-0 w-full flex-1 overflow-auto rounded-lg border border-border bg-card px-8 py-4">
+          <p className="mb-3 text-xl font-semibold text-foreground">{atual.nome}</p>
           {versao === "simples" ? (atual.nome === "Modelo de Atuação" ? (
             <div className="space-y-3">
               <div className="flex gap-3">
