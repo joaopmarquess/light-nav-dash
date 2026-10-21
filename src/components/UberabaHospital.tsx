@@ -27,8 +27,8 @@ const UberabaHospital = ({ hospital = HOSPITAL_PALMERIO }: { hospital?: Hospital
           <HospitalImage src={hospital.imagem_fachada_url} alt="Fachada do Hospital Mário Palmério" className="hospital-slide-facade" />
           <div className="hospital-slide-identity">
             <h2>{hospital.nome}<br />{hospital.tipo_prestador}</h2>
-            <p className="hospital-slide-priority">Referência hospitalar prioritária<br />para o Projeto Uberaba</p>
-            <p className="hospital-slide-description">A estrutura é tratada no projeto como ponto de sustentação para a formação da rede complementar e para a proposta de valor assistencial da Bensaúde.</p>
+            <p className="hospital-slide-priority">Referência hospitalar prioritária<br />para o Bensaúde Uberba</p>
+            <p className="hospital-slide-description">A estrutura é tratada no projeto como ponto de sustentação para a formação da rede complementar e para a proposta de valor assistencial do Bensaúde.</p>
           </div>
         </aside>
         <div className="hospital-slide-content">
@@ -50,7 +50,7 @@ const UberabaHospital = ({ hospital = HOSPITAL_PALMERIO }: { hospital?: Hospital
           </section>
           <footer className="hospital-slide-footer">
             <p>{hospital.endereco.replace(/\n/g, " • ")} • <a href={`tel:${hospital.telefone.replace(/\D/g, "")}`}>{hospital.telefone}</a> • <a href={`https://${hospital.site}`} target="_blank" rel="noreferrer">{hospital.site}</a></p>
-            <p className="hospital-slide-signature">Projeto Uberaba | Bensaúde</p>
+            <p className="hospital-slide-signature">Bensaúde Uberba</p>
           </footer>
         </div>
       </div>

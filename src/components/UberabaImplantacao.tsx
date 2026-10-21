@@ -3,10 +3,10 @@ import { IMPLANTACAO_UBERABA as dados, textoDefinicao } from "@/lib/uberabaImpla
 
 export default function UberabaImplantacao() {
   return (
-    <article className="uberaba-implantacao" aria-label="Implantação do Projeto Uberaba">
+    <article className="uberaba-implantacao" aria-label="Implantação do Bensaúde Uberba">
       <div className="implantacao-page">
         <header className="formalizacao-header">
-          <p>PROJETO UBERABA | IMPLANTAÇÃO</p>
+          <p>BENSAÚDE UBERBA | IMPLANTAÇÃO</p>
           <h2>{dados.titulo}</h2>
           <span>{dados.subtitulo}</span>
         </header>
