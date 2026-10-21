@@ -142,8 +142,27 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
       r.slice(1).forEach((c, n) => { if (cnt.get(seg(r[n], c)) === 1) { if (!cur.length) cur.push(r[n]); cur.push(c); } else { if (cur.length > 1) lines.push(cur); cur = []; } });
       if (cur.length > 1) lines.push(cur);
     }));
+    // encadeia os trechos de borda em anéis fechados e mantém só o mais externo (maior área); ilhas internas ficam sem vermelho
+    const pt = new Map<string, number[]>(); const adj = new Map<string, string[]>();
+    lines.forEach((l) => l.slice(1).forEach((c, n) => { const a = k(l[n]), b = k(c); pt.set(a, l[n]); pt.set(b, c); (adj.get(a) ?? adj.set(a, []).get(a)!).push(b); (adj.get(b) ?? adj.set(b, []).get(b)!).push(a); }));
+    const used = new Set<string>(); const loops: number[][][] = [];
+    adj.forEach((_, s0) => {
+      for (const nx of adj.get(s0)!) {
+        if (used.has([s0, nx].sort().join("|"))) continue;
+        const loop = [pt.get(s0)!]; let prev = s0, cur = nx; used.add([s0, nx].sort().join("|"));
+        while (cur !== s0) {
+          loop.push(pt.get(cur)!);
+          const nxt = adj.get(cur)!.find((x) => x !== prev && !used.has([cur, x].sort().join("|")));
+          if (!nxt) break;
+          used.add([cur, nxt].sort().join("|")); prev = cur; cur = nxt;
+        }
+        loop.push(pt.get(cur)!); loops.push(loop);
+      }
+    });
+    const area = (l: number[][]) => Math.abs(l.reduce((a, c, n) => { const d = l[(n + 1) % l.length]; return a + c[0] * d[1] - d[0] * c[1]; }, 0));
+    const outer = loops.length ? [loops.reduce((m, l) => (area(l) > area(m) ? l : m))] : lines;
     const total = [...set].reduce((s, i) => s + tot[i], 0);
-    return { set, show, lines, total };
+    return { set, show, lines: outer, total };
   }, [core, features, normalizedByUF]);
 
   const { pathFn, projection } = useMemo(() => {
