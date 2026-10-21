@@ -1,14 +1,17 @@
 import { useState } from "react";
 
-type Etapa = { nome: string; filhos?: string[] };
+type Etapa = { nome: string; filhos?: string[]; texto?: string };
+
+const LOREM =
+  "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
 
 const ETAPAS: Etapa[] = [
-  { nome: "Estudo", filhos: ["Item 1", "Item 2"] },
-  { nome: "Hospital Mário Palmério", filhos: ["Item 1", "Item 2"] },
+  { nome: "Estudo", texto: LOREM },
+  { nome: "Hospital Mário Palmério", texto: LOREM },
   { nome: "Modelo de Atuação", filhos: ["Operação Comercial", "Rede Assistencial"] },
-  { nome: "Plano de Marketing", filhos: ["Item 1", "Item 2"] },
-  { nome: "Formalização", filhos: ["Item 1", "Item 2"] },
-  { nome: "Implantação", filhos: ["Item 1", "Item 2"] },
+  { nome: "Plano de Marketing", texto: LOREM },
+  { nome: "Formalização", texto: LOREM },
+  { nome: "Implantação", texto: LOREM },
 ];
 
 const UberabaTimeline = () => {
@@ -24,7 +27,7 @@ const UberabaTimeline = () => {
           <ol className="relative grid grid-cols-6 gap-4">
             {ETAPAS.map((e, i) => {
               const on = aberta === e.nome;
-              const clicavel = !!e.filhos;
+              const clicavel = !!e.filhos || !!e.texto;
               return (
                 <li key={e.nome} className="flex flex-col items-center gap-3 text-center">
                   <button
@@ -51,7 +54,7 @@ const UberabaTimeline = () => {
         </div>
       </div>
 
-      {atual?.filhos && (
+      {(atual?.filhos || atual?.texto) && (
         <div className="-my-6 grid grid-cols-6 gap-4 px-8">
           <div
             className="flex justify-center"
@@ -62,16 +65,17 @@ const UberabaTimeline = () => {
         </div>
       )}
 
-      {atual?.filhos && (
+      {(atual?.filhos || atual?.texto) && (
         <div className="rounded-lg border border-border bg-card px-8 py-6">
           <p className="mb-4 text-sm font-semibold text-foreground">{atual.nome}</p>
-          <div className="flex flex-wrap gap-4">
+          {atual.texto && <p className="text-sm leading-relaxed text-muted-foreground">{atual.texto}</p>}
+          {atual.filhos && <div className="flex flex-wrap gap-4">
             {atual.filhos.map((f) => (
               <div key={f} className="rounded-md border border-border bg-muted/40 px-4 py-2 text-sm font-medium text-foreground">
                 {f}
               </div>
             ))}
-          </div>
+          </div>}
         </div>
       )}
     </div>
