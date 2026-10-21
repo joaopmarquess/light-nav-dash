@@ -4,7 +4,7 @@ import type { FeatureCollection, Feature, Geometry } from "geojson";
 import { Loader2 } from "lucide-react";
 
 // IBGE UF codes for municipality geojson from tbrugz/geodata-br
-const UF_CODE: Record<string, string> = { SP: "35", MG: "31", MS: "50" };
+const UF_CODE: Record<string, string> = { SP: "35", MG: "31", MS: "50", GO: "52" };
 
 const geoUrl = (uf: string) =>
   `https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-${UF_CODE[uf]}-mun.json`;
@@ -15,6 +15,7 @@ const NAME_TO_UF: Record<string, string> = {
   "São Paulo": "SP",
   "Minas Gerais": "MG",
   "Mato Grosso do Sul": "MS",
+  "Goiás": "GO",
 };
 
 const cache: Record<string, FeatureCollection> = {};
@@ -29,9 +30,9 @@ function normalize(s: string): string {
 }
 
 interface Props {
-  ufs: ("SP" | "MG" | "MS")[];
+  ufs: ("SP" | "MG" | "MS" | "GO")[];
   cityTotalsByUF: Record<string, Record<string, number>>;
-  onSelectUF?: (uf: "SP" | "MG" | "MS") => void;
+  onSelectUF?: (uf: "SP" | "MG" | "MS" | "GO") => void;
   stateTotals?: Record<string, number>;
   outrosTotal?: number;
   trialScale?: boolean;
@@ -139,7 +140,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     const k = (c: number[]) => `${c[0].toFixed(4)},${c[1].toFixed(4)}`;
     const tot = features.map((f) => normalizedByUF[f.properties._uf]?.[normalize(f.properties?.name ?? "")] ?? 0);
     const pts = new Set<string>();
-    features.forEach((f, i) => { if (tot[i] > 100) coords(f.geometry).forEach((c) => pts.add(k(c))); });
+    features.forEach((f, i) => { if (tot[i] > 10) coords(f.geometry).forEach((c) => pts.add(k(c))); });
     features.forEach((f, i) => { if (!tot[i] && coords(f.geometry).some((c) => pts.has(k(c)))) out.add(i); });
     return out;
   }, [trialScale, features, normalizedByUF]);
@@ -190,7 +191,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
             <path
               key={i}
               d={d}
-              fill={trialScale && !(total > 0) ? "hsl(140 55% 92%)" : colorFor(total, i)}
+              fill={!trialScale ? colorFor(total, i) : total > 10 ? colorFor(total, i) : total > 0 ? "hsl(var(--muted))" : vizinhos.has(i) ? "hsl(var(--muted-foreground) / 0.45)" : "hsl(140 55% 92%)"}
               stroke={trialScale && total > 10 ? "hsl(var(--foreground) / 0.55)" : "none"}
               strokeWidth={trialScale && total > 10 ? 0.6 : 0}
               strokeLinejoin="round"
@@ -205,7 +206,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
                 });
               }}
               onMouseLeave={() => setHover(null)}
-              onClick={() => onSelectUF?.(uf as "SP" | "MG" | "MS")}
+              onClick={() => onSelectUF?.(uf as any)}
               style={{ transition: "fill 120ms", cursor: onSelectUF ? "pointer" : "default" }}
             />
           );
@@ -239,7 +240,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
           return label(x, y, uf, (stateTotals[uf] ?? 0).toLocaleString("pt-BR") + " vidas", `lbl-${i}`);
         })}
         {outrosTotal != null && projection && (() => {
-          const p = projection([-50.5, -17.8]);
+          const p = projection([-54.8, -16.2]);
           return p ? label(p[0], p[1], "Outros", outrosTotal.toLocaleString("pt-BR") + " vidas", "lbl-outros") : null;
         })()}
       </svg>

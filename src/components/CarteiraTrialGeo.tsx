@@ -13,7 +13,7 @@ const CarteiraTrialGeo = () => {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sel, setSel] = useState<"SP" | "MG" | "MS" | "BRASIL" | null>(null);
+  const [sel, setSel] = useState<"SP" | "MG" | "MS" | "GO" | "BRASIL" | null>(null);
 
   useEffect(() => {
     let abort = false;
@@ -28,14 +28,14 @@ const CarteiraTrialGeo = () => {
 
   const { total, porUF, ufTotals, cityTotalsByUF } = useMemo(() => {
     const ufTotals: Record<string, number> = {};
-    const city: Record<string, Record<string, number>> = { SP: {}, MG: {}, MS: {} };
+    const city: Record<string, Record<string, number>> = { SP: {}, MG: {}, MS: {}, GO: {} };
     let total = 0;
     for (const r of rows ?? []) {
       total += r.ativos;
       if (r.uf) ufTotals[r.uf] = (ufTotals[r.uf] ?? 0) + r.ativos;
       if (city[r.uf] && r.cidade) city[r.uf][r.cidade] = (city[r.uf][r.cidade] ?? 0) + r.ativos;
     }
-    const porUF = ["SP", "MS", "MG"].map((uf) => ({ uf, total: ufTotals[uf] ?? 0 }));
+    const porUF = ["SP", "MS", "MG", "GO"].map((uf) => ({ uf, total: ufTotals[uf] ?? 0 }));
     porUF.push({ uf: "Outros", total: total - porUF.reduce((s, r) => s + r.total, 0) });
     return { total, porUF, ufTotals, cityTotalsByUF: city };
   }, [rows]);
@@ -82,7 +82,7 @@ const CarteiraTrialGeo = () => {
                 const share = total > 0 ? (r.total / total) * 100 : 0;
                 const outros = r.uf === "Outros";
                 return (
-                  <button key={r.uf} type="button" onClick={() => setSel(outros ? "BRASIL" : (r.uf as "SP" | "MG" | "MS"))}
+                  <button key={r.uf} type="button" onClick={() => setSel(outros ? "BRASIL" : (r.uf as "SP" | "MG" | "MS" | "GO"))}
                     className="w-full text-left rounded-md p-3 hover:bg-accent/40 transition-colors">
                     <div className="flex justify-between text-base mb-2">
                       <span className="text-foreground inline-flex items-center gap-2">
@@ -100,7 +100,7 @@ const CarteiraTrialGeo = () => {
             <div className="bg-card rounded-xl border border-border shadow-sm p-2 flex flex-col min-h-0">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide px-2 pt-2">Mapa por cidade</h3>
               <div className="flex-1 min-h-0 h-full w-full">
-                <StateHeatMap trialScale ufs={["SP", "MG", "MS"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />
+                <StateHeatMap trialScale ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />
               </div>
             </div>
           </div>
