@@ -54,9 +54,9 @@ const Colunas = ({ itens }: { itens: { t: string; d: string }[] }) => (
 export const HOSPITAL = (
   <div className="space-y-4">
     <Sub>Referência hospitalar para a estruturação da operação em Uberaba</Sub>
-    <P>A construção do modelo de atuação em Uberaba passa pela definição de uma <B>referência hospitalar</B> capaz de dar <B>sustentação assistencial</B> e <B>credibilidade</B> à entrada da Bensaúde na cidade. O <B>Hospital Mário Palmério</B> foi incorporado ao estudo como <B>parceiro prioritário</B> nessa estruturação.</P>
+    <P>A construção do modelo de atuação em Uberaba passa pela definição de uma <B>referência hospitalar</B> capaz de dar <B>sustentação assistencial</B> e <B>credibilidade</B> à entrada do Bensaúde na cidade. O <B>Hospital Mário Palmério</B> foi incorporado ao estudo como <B>parceiro prioritário</B> nessa estruturação.</P>
     <P>A relação com o hospital deve ser apresentada como parte de uma estratégia mais ampla de implantação da rede. A presença hospitalar funciona como ponto de partida para a construção de uma <B>rede complementar</B> formada por médicos, clínicas, laboratórios e serviços de diagnóstico e terapia.</P>
-    <P>O objetivo não é apenas adicionar um prestador à rede, mas estabelecer uma <B>referência assistencial local</B> que dialogue com o posicionamento pretendido para a Bensaúde em Uberaba e com o desenvolvimento futuro dos produtos comerciais.</P>
+    <P>O objetivo não é apenas adicionar um prestador à rede, mas estabelecer uma <B>referência assistencial local</B> que dialogue com o posicionamento pretendido para o Bensaúde em Uberaba e com o desenvolvimento futuro dos produtos comerciais.</P>
     <div className="pt-4">
       <Colunas itens={[
         { t: "Papel no projeto", d: "Referência hospitalar prioritária" },
@@ -74,7 +74,7 @@ export const HOSPITAL = (
 export const MODELO = (
   <div className="space-y-4">
     <Sub>Estratégia de implantação, operação e desenvolvimento comercial e assistencial</Sub>
-    <P>O Modelo de Atuação organiza a entrada da Bensaúde em Uberaba de forma integrada. A proposta combina <B>rede assistencial</B>, <B>estratégia comercial</B>, <B>parceiros locais</B>, <B>posicionamento institucional</B> e <B>desenvolvimento de mercado</B>.</P>
+    <P>O Modelo de Atuação organiza a entrada do Bensaúde em Uberaba de forma integrada. A proposta combina <B>rede assistencial</B>, <B>estratégia comercial</B>, <B>parceiros locais</B>, <B>posicionamento institucional</B> e <B>desenvolvimento de mercado</B>.</P>
     <P>Na dimensão comercial, o estudo foi organizado em <B>três frentes distintas</B>:</P>
     <Colunas itens={[
       { t: "PCA / ACIU", d: "Mercado de adesão, direcionado aos públicos elegíveis vinculados à ACIU e demais entidades aplicáveis." },
@@ -93,8 +93,8 @@ export const MARKETING = (
   <div className="space-y-4">
     <Sub>Estratégia de posicionamento e publicidade inicial na cidade</Sub>
     <p className="border-l-4 border-primary py-1 pl-5 text-3xl font-semibold text-foreground">Estamos chegando.</p>
-    <P>A Bensaúde chega a Uberaba ainda sem o mesmo <B>reconhecimento de marca</B> construído nos mercados onde já atua. Por isso, a primeira etapa da comunicação deve ser <B>institucional</B>: apresentar quem somos, demonstrar nossa <B>credibilidade</B> e explicar por que escolhemos Uberaba.</P>
-    <P>Nossa mensagem parte da convicção de que Uberaba possui valores, potencial econômico e uma relevante <B>vocação para a saúde e para a medicina</B>. Queremos apresentar a Bensaúde como uma empresa que acredita nesse potencial e pretende construir uma <B>presença de longo prazo</B> na cidade.</P>
+    <P>O Bensaúde chega a Uberaba ainda sem o mesmo <B>reconhecimento de marca</B> construído nos mercados onde já atua. Por isso, a primeira etapa da comunicação deve ser <B>institucional</B>: apresentar quem somos, demonstrar nossa <B>credibilidade</B> e explicar por que escolhemos Uberaba.</P>
+    <P>Nossa mensagem parte da convicção de que Uberaba possui valores, potencial econômico e uma relevante <B>vocação para a saúde e para a medicina</B>. Queremos apresentar o Bensaúde como uma organização que acredita nesse potencial e pretende construir uma <B>presença de longo prazo</B> na cidade.</P>
     <P>A comunicação também deverá demonstrar que <B>não chegamos sozinhos</B>. O projeto considera <B>parceiros locais</B> inseridos no ecossistema de Uberaba e pretende aproximar empresas, profissionais de saúde, prestadores e futuros beneficiários.</P>
     <H>A mensagem</H>
     <ol className="grid gap-x-8 gap-y-3 text-lg text-foreground/85 md:grid-cols-2">
@@ -120,7 +120,7 @@ export const MARKETING = (
       </div>
       <div>
         <p className="mb-2 text-base font-semibold text-foreground">On-line</p>
-        <Lista cols={1} itens={["Instagram", "Facebook", "LinkedIn", "Impulsionamento geolocalizado", "Influenciadores locais", "Canais próprios da Bensaúde"]} />
+        <Lista cols={1} itens={["Instagram", "Facebook", "LinkedIn", "Impulsionamento geolocalizado", "Influenciadores locais", "Canais próprios do Bensaúde"]} />
       </div>
     </div>
     <div className="pt-4">
@@ -140,7 +140,7 @@ export const FORMALIZACAO = (
     <Fluxo itens={["Estudo", "Negociação", "Definição das condições", "Aprovação", "Formalização", "Implantação"]} />
     <H>Documentos e instrumentos</H>
     <Pendente icon={FileText}>
-      <B>Em definição.</B> Esta área deverá concentrar posteriormente protocolos de intenções, contratos, propostas, anexos comerciais e demais documentos relacionados ao Projeto Uberaba.
+      <B>Em definição.</B> Esta área deverá concentrar posteriormente protocolos de intenções, contratos, propostas, anexos comerciais e demais documentos relacionados ao Bensaúde Uberba.
     </Pendente>
   </div>
 );
@@ -161,7 +161,7 @@ export const IMPLANTACAO = (
       { t: "Marketing", d: "Alcance, geração de oportunidades e desempenho das campanhas." },
     ]} />
     <blockquote className="mt-8 border-l-4 border-primary bg-muted/30 px-6 py-5 text-xl italic leading-8 text-foreground">
-      “Uberaba não é apenas uma nova praça comercial. O projeto foi concebido para construir uma operação que conecte capacidade assistencial, desenvolvimento empresarial, profissionais de saúde e presença regional da Bensaúde.”
+      “Uberaba não é apenas uma nova praça comercial. O projeto foi concebido para construir uma operação que conecte capacidade assistencial, desenvolvimento empresarial, profissionais de saúde e presença regional do Bensaúde.”
     </blockquote>
   </div>
 );

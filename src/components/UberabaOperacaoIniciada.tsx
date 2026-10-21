@@ -6,7 +6,7 @@ export default function UberabaOperacaoIniciada() {
     <section className="uberaba-operacao" aria-labelledby="operacao-titulo">
       <div className="operacao-page">
         <header className="operacao-header">
-          <p>PROJETO UBERABA | RESULTADO ESPERADO</p>
+          <p>BENSAÚDE UBERBA | RESULTADO ESPERADO</p>
           <h2 id="operacao-titulo">Operação Iniciada</h2>
           <p>Tudo convergindo para a operação iniciada</p>
         </header>

@@ -1,3 +1,4 @@
+- [x] Revisar os textos para o tratamento masculino do Bensaúde e o nome Bensaúde Uberba, preservando Uberaba como cidade; 41 testes aprovados e textos conferidos na Timeline.
 - [x] Abrir as folhinhas pelas caixas mês/ano, sem segundo ícone; quatro caixas e fechamento conferidos, mantendo datas circuladas e faixa de calor.
 - [x] Melhorar o calendário com faixa de calor mensal alinhada às sete etapas; nove testes aprovados e alternância conferida preservando a etapa selecionada.
 - [x] Acrescentar calendário para alternar a exibição dos sete meses planejados na Timeline; sete datas testadas e alternância conferida na tela preservando a etapa selecionada.
