@@ -1,4 +1,5 @@
 - [x] Ajustar cores internas/externas, suavização e siglas do Mapa Área Atuação.
+- [ ] Incluir o PDF v3 em Plano de Marketing da Timeline, com texto legível e imagem original da campanha.
 - [x] Refazer Hospital Mário Palmério seguindo o visual e as fotografias do PowerPoint v3; cinco testes aprovados e apresentação conferida na Timeline, sem rolagem na tela de origem.
 - [x] Implementar a apresentação institucional do Hospital Mário Palmério conforme anexo; cinco testes aprovados e botões conferidos. Imagens ausentes exibem marcação discreta.
 - [x] Exibir Área Geográfica e Uberaba - Mapa lado a lado em Estudo da Timeline simplificada; ambos carregados com dados reais, versão Completa preservada e três testes aprovados.
