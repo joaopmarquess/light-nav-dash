@@ -61,13 +61,13 @@ const Tabela = ({ linhas }: { linhas: Linha[] }) => (
   <table className="w-full border-collapse text-center text-lg leading-6" style={{ color: C.txt }}>
     <thead className="sticky top-0">
       <tr style={{ background: C.head }}>
-        {["FAIXA", "ENFERMARIA", "APARTAMENTO"].map((h) => <th key={h} className="px-2 py-1 text-base font-semibold">{h}</th>)}
+        {["FAIXA", "ENFERMARIA", "APARTAMENTO"].map((h) => <th key={h} className="px-2 py-1.5 text-base font-semibold">{h}</th>)}
       </tr>
     </thead>
     <tbody>
       {linhas.map((l, i) => (
         <tr key={l[0]} style={{ background: i % 2 ? C.alt : C.card, borderTop: `1px solid ${C.borda}` }}>
-          {l.map((v, j) => <td key={j} className="px-2 py-1 tabular-nums">{v}</td>)}
+          {l.map((v, j) => <td key={j} className="px-2 py-1.5 tabular-nums">{v}</td>)}
         </tr>
       ))}
     </tbody>
@@ -88,8 +88,8 @@ const Card = ({ f }: { f: Frente }) => (
         <tbody>
           {f.indicadores.map(([k, v]) => (
             <tr key={k}>
-              <th className="whitespace-nowrap px-3 py-1 text-left font-semibold" style={{ color: C.txt2, border: `1px solid ${C.borda}`, background: C.alt }}>{k}</th>
-              <td className="px-3 py-1 text-center" style={{ border: `1px solid ${C.borda}` }}>{v}</td>
+              <th className="whitespace-nowrap px-3 py-1.5 text-right font-semibold" style={{ color: C.txt2, border: `1px solid ${C.borda}`, background: C.alt }}>{k}</th>
+              <td className="px-3 py-1.5 text-left" style={{ border: `1px solid ${C.borda}` }}>{v}</td>
             </tr>
           ))}
         </tbody>
