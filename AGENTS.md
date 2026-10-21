@@ -3,3 +3,4 @@
 - Simplify only the projected display outline; classify municipalities using the original outer ring to preserve geographic membership.
 - Derive the MAA locator rectangle from the main projection's inverse viewport corners, so the overview always represents the displayed region.
 - Apply explicit MAA municipality inclusions in the geometry helper before boundary generation; keep disconnected exterior rings and omit enclosed holes so all included municipalities receive an external outline.
+- Reuse the same core map rendering for inline MAA and the full-screen magnifier; control locator visibility separately so toggling does not duplicate geography logic.

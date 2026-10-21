@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Map as MapIcon, Search } from "lucide-react";
+import { Eye, EyeOff, Loader2, Map as MapIcon, Search } from "lucide-react";
 import { hostinger } from "@/lib/hostingerClient";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 import { StateHeatMap } from "@/components/StateHeatMap";
 import { UF_FLAGS } from "@/components/DWCarteira";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Row = { uf: string; cidade: string; ativos: number };
 const hoje = () => new Date().toISOString().slice(0, 10);
@@ -15,6 +16,7 @@ const CarteiraTrialGeo = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sel, setSel] = useState<"SP" | "MG" | "MS" | "GO" | "BRASIL" | "CENTRO" | null>(null);
+  const [showMAA, setShowMAA] = useState(false);
 
   useEffect(() => {
     let abort = false;
@@ -99,9 +101,24 @@ const CarteiraTrialGeo = () => {
               })}
             </div>
             <div className="bg-card rounded-xl border border-border shadow-sm p-2 flex flex-col min-h-0">
-              <div className="flex items-center justify-between px-2 pt-2"><h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Mapa por cidade</h3><Button type="button" variant="outline" size="icon" title="Mapa Área Atuação (MAA)" aria-label="Mapa Área Atuação (MAA)" onClick={() => setSel("CENTRO")} className="h-8 w-8"><Search className="h-4 w-4" /></Button></div>
+              <div className="flex items-center justify-between gap-2 px-2 pt-2">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Mapa por cidade</h3>
+                <div className="flex shrink-0 items-center gap-2">
+                  <TooltipProvider delayDuration={150}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button type="button" variant={showMAA ? "secondary" : "outline"} size="icon" aria-label={showMAA ? "Ocultar MAA" : "Mostrar MAA"} aria-pressed={showMAA} onClick={() => setShowMAA((visible) => !visible)} className="h-8 w-8">
+                          {showMAA ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{showMAA ? "Ocultar MAA" : "Mostrar MAA"}</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <Button type="button" variant="outline" size="icon" title="Mapa Área Atuação (MAA)" aria-label="Mapa Área Atuação (MAA)" onClick={() => setSel("CENTRO")} className="h-8 w-8"><Search className="h-4 w-4" /></Button>
+                </div>
+              </div>
               <div className="flex-1 min-h-0 h-full w-full">
-                <StateHeatMap trialScale ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />
+                <StateHeatMap trialScale core={showMAA} showOverview={false} ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />
               </div>
             </div>
           </div>

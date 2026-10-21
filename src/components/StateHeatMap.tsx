@@ -38,11 +38,12 @@ interface Props {
   outrosTotal?: number;
   trialScale?: boolean;
   core?: boolean;
+  showOverview?: boolean;
 }
 
 type FeatWithUF = Feature<Geometry, { name?: string; _uf: string }>;
 
-export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, outrosTotal, trialScale, core }: Props) {
+export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, outrosTotal, trialScale, core, showOverview = true }: Props) {
   const isArea = ufs.length > 1;
   const key = ufs.join("-");
   const [features, setFeatures] = useState<FeatWithUF[] | null>(null);
@@ -371,7 +372,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
         </div>
       )}
     </div>
-    {overview && (
+    {overview && showOverview && (
       <aside className="w-full shrink-0 self-start rounded-md border border-border bg-background p-3 md:w-[284px]" aria-label="Localização da lupa no mapa geral">
         <h3 className="mb-2 text-sm font-semibold text-foreground">Mapa geral</h3>
         <svg viewBox="0 0 260 280" className="mx-auto w-full max-w-[260px]" role="img" aria-label="Mapa geral com retângulo da região ampliada">
