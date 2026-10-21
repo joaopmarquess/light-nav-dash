@@ -66,12 +66,12 @@ const UberabaTimeline = () => {
       )}
 
       {(atual?.filhos || atual?.texto) && (
-        <div className="rounded-lg border border-border bg-card px-8 py-6">
+        <div className="w-full rounded-lg border border-border bg-card px-8 py-6">
           <p className="mb-4 text-sm font-semibold text-foreground">{atual.nome}</p>
           {atual.texto && <p className="text-sm leading-relaxed text-muted-foreground">{atual.texto}</p>}
-          {atual.filhos && <div className="flex flex-wrap gap-4">
+          {atual.filhos && <div className="flex w-full gap-4">
             {atual.filhos.map((f) => (
-              <div key={f} className="rounded-md border border-border bg-muted/40 px-4 py-2 text-sm font-medium text-foreground">
+              <div key={f} className="flex-1 rounded-md border border-border bg-muted/40 px-4 py-2 text-sm font-medium text-foreground">
                 {f}
               </div>
             ))}
