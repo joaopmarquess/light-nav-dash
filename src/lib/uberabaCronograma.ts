@@ -24,3 +24,15 @@ export function mesesPlanejadosUberaba() {
   }
   return meses;
 }
+
+export function folhinhasUberaba() {
+  const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+  return mesesPlanejadosUberaba().map(({ data, etapas }) => {
+    const [mes, anoTexto] = data.split("/");
+    const ano = Number(anoTexto);
+    const mesNumero = nomesMeses.indexOf(mes);
+    const ultimoDia = new Date(Date.UTC(ano, mesNumero + 1, 0)).getUTCDate();
+    const inicioSemana = new Date(Date.UTC(ano, mesNumero, 1)).getUTCDay();
+    return { data, etapas, mes, ano, ultimoDia, inicioSemana, dataFinal: `${ultimoDia}/${String(mesNumero + 1).padStart(2, "0")}/${ano}` };
+  });
+}

@@ -1,3 +1,4 @@
+- [x] Acrescentar segundo ícone com calendário em folhinhas e últimos dias circulados; treze testes aprovados e abertura, fechamento e preservação da faixa de calor conferidos.
 - [x] Melhorar o calendário com faixa de calor mensal alinhada às sete etapas; nove testes aprovados e alternância conferida preservando a etapa selecionada.
 - [x] Acrescentar calendário para alternar a exibição dos sete meses planejados na Timeline; sete datas testadas e alternância conferida na tela preservando a etapa selecionada.
 - [x] Criar a seção final Operação Iniciada com seis frentes convergentes e resultado esperado; dois testes aprovados e apresentação conferida sem rolagem na tela de origem, com seta vertical em telas menores.
