@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from "react";
 import { HOSPITAL, MODELO, MARKETING, FORMALIZACAO, IMPLANTACAO } from "@/components/UberabaTimelineEtapas";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Button } from "@/components/ui/button";
+import UberabaTabelasComerciais from "@/components/UberabaTabelasComerciais";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
 
@@ -29,6 +31,7 @@ const ETAPAS: Etapa[] = [
 const UberabaTimeline = () => {
   const [aberta, setAberta] = useState<string | null>(null);
   const [versao, setVersao] = useState<"simples" | "completa">("simples");
+  const [sub, setSub] = useState<"Comercial" | "Rede Assistencial" | null>(null);
   const atual = ETAPAS.find((e) => e.nome === aberta);
 
   return (
@@ -89,8 +92,20 @@ const UberabaTimeline = () => {
       {(atual?.filhos || atual?.texto || atual?.conteudo) && (
         <div className="min-h-0 w-full flex-1 overflow-auto rounded-lg border border-border bg-card px-12 py-8">
           <p className="mb-6 text-xl font-semibold text-foreground">{atual.nome}</p>
-          {versao === "simples" ? (
+          {versao === "simples" ? (atual.nome === "Modelo de Atuação" ? (
+            <div className="space-y-6">
+              <p className="text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{LOREM}</p>
+              <div className="flex gap-3">
+                {(["Comercial", "Rede Assistencial"] as const).map((b) => (
+                  <Button key={b} variant={sub === b ? "default" : "outline"} onClick={() => setSub(sub === b ? null : b)} aria-pressed={sub === b}>{b}</Button>
+                ))}
+              </div>
+              {sub === "Comercial" && <UberabaTabelasComerciais />}
+              {sub === "Rede Assistencial" && <p className="text-justify text-xl leading-7 text-foreground/85" lang="pt-BR">{LOREM}</p>}
+            </div>
+          ) : (
             <p className="text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{LOREM}</p>
+          )
           ) : <>
           {atual.texto && <p className="whitespace-pre-line text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{atual.texto.split("**").map((t, i) => (i % 2 ? <strong key={i} className="font-semibold text-foreground">{t}</strong> : t))}</p>}
           {atual.conteudo}
