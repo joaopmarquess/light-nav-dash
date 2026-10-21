@@ -90,15 +90,19 @@ const UberabaTimeline = () => {
       )}
 
       {(atual?.filhos || atual?.texto || atual?.conteudo) && (
-        <div className="min-h-0 w-full flex-1 overflow-auto rounded-lg border border-border bg-card px-8 py-4">
-          <p className="mb-3 text-xl font-semibold text-foreground">{atual.nome}</p>
-          {versao === "simples" ? (atual.nome === "Modelo de Atuação" ? (
-            <div className="space-y-3">
+        <div className="flex min-h-0 w-full flex-1 flex-col overflow-auto rounded-lg border border-border bg-card px-8 py-4">
+          <div className="mb-3 flex flex-wrap items-center gap-4">
+            <p className="text-xl font-semibold text-foreground">{atual.nome}</p>
+            {versao === "simples" && atual.nome === "Modelo de Atuação" && (
               <div className="flex gap-3">
                 {(["Comercial", "Rede Assistencial"] as const).map((b) => (
-                  <Button key={b} variant={sub === b ? "default" : "outline"} onClick={() => setSub(sub === b ? null : b)} aria-pressed={sub === b}>{b}</Button>
+                  <Button key={b} size="sm" variant={sub === b ? "default" : "outline"} onClick={() => setSub(sub === b ? null : b)} aria-pressed={sub === b}>{b}</Button>
                 ))}
               </div>
+            )}
+          </div>
+          {versao === "simples" ? (atual.nome === "Modelo de Atuação" ? (
+            <div className="flex min-h-0 flex-1 flex-col">
               {sub === "Comercial" && <UberabaTabelasComerciais />}
               {sub === "Rede Assistencial" && <p className="text-justify text-xl leading-7 text-foreground/85" lang="pt-BR">{LOREM}</p>}
             </div>
