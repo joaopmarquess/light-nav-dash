@@ -25,7 +25,7 @@ export default function UberabaGuias({ onBack, content = GUIAS_UBERABA }: { onBa
       <div className="guias-page">
         <header className="guias-header">
           <div>
-            <p>PROJETO UBERABA</p>
+            <p>BENSAÚDE UBERBA</p>
             <h2 id="guias-titulo">Modelo de Operação – Guias</h2>
             <p className="guias-subtitle">Jornada digital, sem papel e sem deslocamento ao Bensaúde</p>
           </div>
