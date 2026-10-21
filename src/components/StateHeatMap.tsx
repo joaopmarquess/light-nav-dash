@@ -182,7 +182,11 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     const fc: FeatureCollection = { type: "FeatureCollection", features: coreData ? features.filter((_, i) => coreData.set.has(i)) : features };
     const projection = geoMercator().fitExtent([[4, 4], [width - 4, height - 4]], fc);
     // Pull back the display only; the original MAA membership is unchanged.
-    if (coreData) projection.scale(projection.scale() * 0.68);
+    if (coreData) {
+      const [tx, ty] = projection.translate();
+      projection.scale(projection.scale() * 0.68);
+      projection.translate([width / 2 + (tx - width / 2) * 0.68, height / 2 + (ty - height / 2) * 0.68]);
+    }
     return { pathFn: geoPath(projection), projection };
   }, [features, width, height, coreData]);
   const overview = useMemo(() => {
