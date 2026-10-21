@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { dataPlanejadaUberaba } from "./uberabaCronograma";
+import { dataPlanejadaUberaba, mesesPlanejadosUberaba } from "./uberabaCronograma";
 
 describe("Cronograma Uberaba", () => {
+  it("groups the seven stages into their four supplied months", () => {
+    expect(mesesPlanejadosUberaba().map(({ data, etapas }) => [data, etapas.length])).toEqual([
+      ["Outubro/2026", 1], ["Novembro/2026", 3], ["Dezembro/2026", 1], ["Janeiro/2027", 2],
+    ]);
+  });
   it.each([
     ["Estudo", "Outubro/2026"],
     ["Hospital Mário Palmério", "Novembro/2026"],

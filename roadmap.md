@@ -1,3 +1,4 @@
+- [x] Melhorar o calendário com faixa de calor mensal alinhada às sete etapas; nove testes aprovados e alternância conferida preservando a etapa selecionada.
 - [x] Acrescentar calendário para alternar a exibição dos sete meses planejados na Timeline; sete datas testadas e alternância conferida na tela preservando a etapa selecionada.
 - [x] Criar a seção final Operação Iniciada com seis frentes convergentes e resultado esperado; dois testes aprovados e apresentação conferida sem rolagem na tela de origem, com seta vertical em telas menores.
 - [x] Inserir Guias no Modelo de Atuação simplificado, com jornada digital, imagem gerada, fluxo expansível e retorno; dois testes aprovados e interação conferida na Timeline.
