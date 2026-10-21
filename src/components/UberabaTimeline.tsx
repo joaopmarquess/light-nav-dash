@@ -7,6 +7,7 @@ import UberabaRedeAssistencial from "@/components/UberabaRedeAssistencial";
 import UberabaEstudoMapas from "@/components/UberabaEstudoMapas";
 import UberabaHospital from "@/components/UberabaHospital";
 import UberabaMarketing from "@/components/UberabaMarketing";
+import UberabaFormalizacao from "@/components/UberabaFormalizacao";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
 
@@ -105,8 +106,8 @@ const UberabaTimeline = () => {
       )}
 
       {(atual?.filhos || atual?.texto || atual?.conteudo) && (
-        <div ref={panelRef} className={`flex min-h-0 w-full flex-1 flex-col overflow-auto rounded-lg border border-border bg-card ${atual.nome === "Hospital Mário Palmério" || (versao === "simples" && atual.nome === "Plano de Marketing") ? "" : "px-4 py-4 sm:px-8"}`}>
-          {atual.nome !== "Hospital Mário Palmério" && !(versao === "simples" && atual.nome === "Plano de Marketing") && <div className="mb-3 flex flex-wrap items-center gap-4">
+        <div ref={panelRef} className={`flex min-h-0 w-full flex-1 flex-col overflow-auto rounded-lg border border-border bg-card ${atual.nome === "Hospital Mário Palmério" || (versao === "simples" && ["Plano de Marketing", "Formalização"].includes(atual.nome)) ? "" : "px-4 py-4 sm:px-8"}`}>
+          {atual.nome !== "Hospital Mário Palmério" && !(versao === "simples" && ["Plano de Marketing", "Formalização"].includes(atual.nome)) && <div className="mb-3 flex flex-wrap items-center gap-4">
             <p className="text-xl font-semibold text-foreground">{atual.nome}</p>
             {versao === "simples" && atual.nome === "Modelo de Atuação" && (
               <div className="flex gap-3">
@@ -117,7 +118,7 @@ const UberabaTimeline = () => {
               </div>
             )}
           </div>}
-          {atual.nome === "Hospital Mário Palmério" ? <UberabaHospital onBack={voltarTimeline} /> : versao === "simples" && atual.nome === "Plano de Marketing" ? <UberabaMarketing /> : versao === "simples" ? (atual.nome === "Estudo" ? (
+          {atual.nome === "Hospital Mário Palmério" ? <UberabaHospital onBack={voltarTimeline} /> : versao === "simples" && atual.nome === "Plano de Marketing" ? <UberabaMarketing /> : versao === "simples" && atual.nome === "Formalização" ? <UberabaFormalizacao /> : versao === "simples" ? (atual.nome === "Estudo" ? (
             <UberabaEstudoMapas />
           ) : atual.nome === "Modelo de Atuação" ? (
             <div className="flex min-h-0 flex-1 flex-col">

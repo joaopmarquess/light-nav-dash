@@ -1,4 +1,5 @@
 # Project rules
+- Keep simplified Timeline formalization as a container-aware live presentation with contract scope in a tested data helper; preserve the complete version to avoid changing existing institutional content.
 - Keep hospital institutional content in a typed data object passed into its Timeline presentation; missing media must render placeholders so future data integration never requires replacing the layout.
 - Rebuild supplied hospital slide references as a container-aware live layout using extracted photo assets, with permanently visible services; do not flatten the presentation into a screenshot.
 - Render the simplified marketing PDF reference as live text and extracted campaign imagery, preserving the complete Timeline version and avoiding source-document text overlaps.

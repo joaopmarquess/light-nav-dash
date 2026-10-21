@@ -1,4 +1,5 @@
 - [x] Ajustar cores internas/externas, suavização e siglas do Mapa Área Atuação.
+- [x] Criar e conferir apresentação de Formalização com produtos restritos a Uberaba e instrumentos contratuais previstos; cinco testes aprovados, sem rolagem na tela de origem e versão Completa preservada.
 - [x] Incluir o PDF v3 em Plano de Marketing da Timeline simplificada, com texto legível, imagem original da campanha, seis premissas e canais de divulgação; conferido sem rolagem na tela de origem e versão Completa preservada.
 - [x] Refazer Hospital Mário Palmério seguindo o visual e as fotografias do PowerPoint v3; cinco testes aprovados e apresentação conferida na Timeline, sem rolagem na tela de origem.
 - [x] Implementar a apresentação institucional do Hospital Mário Palmério conforme anexo; cinco testes aprovados e botões conferidos. Imagens ausentes exibem marcação discreta.

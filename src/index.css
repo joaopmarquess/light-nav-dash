@@ -320,6 +320,70 @@ All colors MUST be HSL.
 .marketing-footer { display: flex; justify-content: space-between; gap: 20px; padding-top: 12px; border-top: 1px solid hsl(var(--hospital-frame)); font-size: 11px; color: hsl(var(--hospital-secondary)); }
 .marketing-footer p { font-style: italic; }
 .marketing-footer strong { color: hsl(var(--hospital-blue)); }
+.uberaba-formalizacao { container-type: inline-size; display: flex; flex: 1; min-height: 620px; background: hsl(var(--hospital-canvas)); color: hsl(var(--credential-text)); border-top: 14px solid hsl(var(--hospital-blue)); }
+.formalizacao-page { display: grid; grid-template-rows: auto auto minmax(min-content, 1fr) auto; width: 100%; gap: 20px; padding: 24px 44px 18px; }
+.formalizacao-header > p, .formalizacao-products p, .formalizacao-section-heading p, .formalizacao-assistance-item p { font-size: 12px; font-weight: 700; color: hsl(var(--hospital-secondary)); margin-bottom: 8px; }
+.formalizacao-header h2 { font-size: 42px; font-weight: 750; line-height: 1.2; }
+.formalizacao-header > span { display: block; font-size: 18px; color: hsl(var(--hospital-secondary)); margin-top: 6px; }
+.formalizacao-products { display: flex; align-items: center; gap: 24px; padding: 24px 28px; background: hsl(var(--hospital-stat-fill)); border-left: 6px solid hsl(var(--hospital-blue)); }
+.formalizacao-products > svg { width: 42px; height: 42px; flex-shrink: 0; color: hsl(var(--hospital-blue)); }
+.formalizacao-products h3 { font-size: 26px; font-weight: 700; }
+.formalizacao-products > strong { margin-left: auto; font-size: 24px; color: hsl(var(--hospital-blue)); }
+.formalizacao-contracts { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 32px; min-height: 0; }
+.formalizacao-siga { display: flex; flex-direction: column; justify-content: space-between; gap: 12px; padding: 22px 30px; background: hsl(var(--hospital-navy)); color: hsl(var(--credential-summary-text)); border-radius: 6px; }
+.formalizacao-section-heading { display: flex; align-items: center; gap: 18px; }
+.formalizacao-section-heading > svg { width: 36px; height: 36px; flex-shrink: 0; color: hsl(var(--hospital-gold)); }
+.formalizacao-section-heading p { color: hsl(var(--hospital-light)); }
+.formalizacao-section-heading h3 { font-size: 28px; font-weight: 700; }
+.formalizacao-fronts { font-size: 20px; color: hsl(var(--hospital-light)); }
+.formalizacao-sequence { display: grid; grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr); align-items: center; gap: 16px; }
+.formalizacao-sequence > div { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid hsl(var(--hospital-light) / .4); padding-top: 18px; }
+.formalizacao-sequence svg { color: hsl(var(--hospital-gold)); }
+.formalizacao-sequence span { font-size: 11px; color: hsl(var(--hospital-light)); font-weight: 700; }
+.formalizacao-sequence strong { font-size: 21px; line-height: 1.25; }
+.formalizacao-sequence > div:last-child strong::first-letter { text-transform: uppercase; }
+.formalizacao-scope { border-top: 1px solid hsl(var(--hospital-light) / .4); padding-top: 16px; font-size: 17px; line-height: 1.5; color: hsl(var(--hospital-light)); }
+.formalizacao-scope strong { color: hsl(var(--credential-summary-text)); }
+.formalizacao-assistance { display: grid; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.formalizacao-assistance-item { display: flex; align-items: center; gap: 24px; border: 1px solid hsl(var(--hospital-frame)); border-left-width: 6px; border-radius: 4px; background: hsl(var(--hospital-surface)); padding: 26px; }
+.formalizacao-assistance-item > svg { width: 44px; height: 44px; flex-shrink: 0; color: hsl(var(--hospital-secondary)); }
+.formalizacao-assistance-item h3 { font-size: 27px; font-weight: 700; line-height: 1.25; }
+.formalizacao-assistance-item span { display: block; margin-top: 12px; font-size: 18px; color: hsl(var(--hospital-secondary)); }
+.formalizacao-footer { display: flex; justify-content: space-between; gap: 20px; border-top: 1px solid hsl(var(--hospital-frame)); padding-top: 14px; font-size: 12px; color: hsl(var(--hospital-secondary)); }
+.formalizacao-footer strong { color: hsl(var(--hospital-blue)); }
+@container (min-width: 1700px) {
+  .formalizacao-page { padding: 18px 52px 14px; gap: 12px; }
+  .formalizacao-products { padding-top: 16px; padding-bottom: 16px; }
+  .formalizacao-header h2 { font-size: 48px; }
+  .formalizacao-header > span, .formalizacao-fronts { font-size: 24px; }
+  .formalizacao-header > p, .formalizacao-products p, .formalizacao-section-heading p, .formalizacao-assistance-item p { font-size: 15px; }
+  .formalizacao-products h3, .formalizacao-products > strong { font-size: 32px; }
+  .formalizacao-section-heading h3, .formalizacao-assistance-item h3 { font-size: 34px; }
+  .formalizacao-sequence strong { font-size: 28px; }
+  .formalizacao-sequence span, .formalizacao-footer { font-size: 14px; }
+  .formalizacao-scope, .formalizacao-assistance-item span { font-size: 22px; }
+}
+@container (max-width: 999px) {
+  .formalizacao-page { display: flex; flex-direction: column; padding: 24px; }
+  .formalizacao-products { flex-wrap: wrap; }
+  .formalizacao-products > strong { margin-left: 0; }
+  .formalizacao-contracts { grid-template-columns: 1fr; }
+  .formalizacao-assistance { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: auto; }
+  .formalizacao-assistance-item { align-items: flex-start; flex-direction: column; padding: 20px; gap: 12px; }
+  .formalizacao-assistance-item h3 { font-size: 22px; }
+}
+@container (max-width: 599px) {
+  .formalizacao-page { padding: 22px 18px; gap: 20px; }
+  .formalizacao-header h2 { font-size: 32px; }
+  .formalizacao-products { padding: 20px; gap: 14px; }
+  .formalizacao-products h3, .formalizacao-products > strong { font-size: 22px; }
+  .formalizacao-siga { padding: 22px; }
+  .formalizacao-section-heading h3 { font-size: 24px; }
+  .formalizacao-sequence { grid-template-columns: 1fr; }
+  .formalizacao-arrow { transform: rotate(90deg); }
+  .formalizacao-assistance { grid-template-columns: 1fr; }
+  .formalizacao-footer { flex-wrap: wrap; }
+}
 @container (min-width: 1700px) {
   .marketing-page { padding: 22px 52px; gap: 26px; }
   .marketing-header h2 { font-size: 48px; }
