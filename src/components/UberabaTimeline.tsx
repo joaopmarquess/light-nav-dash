@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import { HOSPITAL, MODELO, MARKETING, FORMALIZACAO, IMPLANTACAO } from "@/components/UberabaTimelineEtapas";
 
-type Etapa = { nome: string; filhos?: string[]; texto?: string };
+type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
 
 const ESTUDO = `O estudo para o **Projeto Uberaba** partiu de uma **leitura ampla do mercado** e da convicção de que a entrada da Bensaúde na cidade não poderia ser tratada apenas como uma **expansão comercial**. Buscamos compreender o território, sua dinâmica empresarial, sua influência regional e, sobretudo, sua reconhecida **vocação para a saúde e para a medicina**. A partir dessa visão, o projeto passou a ser construído para integrar **presença institucional**, **capacidade assistencial** e **desenvolvimento de mercado**.
 
@@ -17,11 +18,11 @@ const LOREM =
 
 const ETAPAS: Etapa[] = [
   { nome: "Estudo", texto: ESTUDO },
-  { nome: "Hospital Mário Palmério", texto: LOREM },
-  { nome: "Modelo de Atuação", filhos: ["Operação Comercial", "Rede Assistencial"] },
-  { nome: "Plano de Marketing", texto: LOREM },
-  { nome: "Formalização", texto: LOREM },
-  { nome: "Implantação", texto: LOREM },
+  { nome: "Hospital Mário Palmério", conteudo: HOSPITAL },
+  { nome: "Modelo de Atuação", conteudo: MODELO },
+  { nome: "Plano de Marketing", conteudo: MARKETING },
+  { nome: "Formalização", conteudo: FORMALIZACAO },
+  { nome: "Implantação", conteudo: IMPLANTACAO },
 ];
 
 const UberabaTimeline = () => {
@@ -37,7 +38,7 @@ const UberabaTimeline = () => {
           <ol className="relative grid grid-cols-6 gap-4">
             {ETAPAS.map((e, i) => {
               const on = aberta === e.nome;
-              const clicavel = !!e.filhos || !!e.texto;
+              const clicavel = !!e.filhos || !!e.texto || !!e.conteudo;
               return (
                 <li key={e.nome} className="flex flex-col items-center gap-3 text-center">
                   <button
@@ -64,7 +65,7 @@ const UberabaTimeline = () => {
         </div>
       </div>
 
-      {(atual?.filhos || atual?.texto) && (
+      {(atual?.filhos || atual?.texto || atual?.conteudo) && (
         <div className="-my-6 grid grid-cols-6 gap-4 px-8">
           <div
             className="flex justify-center"
@@ -75,10 +76,11 @@ const UberabaTimeline = () => {
         </div>
       )}
 
-      {(atual?.filhos || atual?.texto) && (
+      {(atual?.filhos || atual?.texto || atual?.conteudo) && (
         <div className="min-h-0 w-full flex-1 overflow-auto rounded-lg border border-border bg-card px-12 py-8">
           <p className="mb-6 text-xl font-semibold text-foreground">{atual.nome}</p>
           {atual.texto && <p className="whitespace-pre-line text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{atual.texto.split("**").map((t, i) => (i % 2 ? <strong key={i} className="font-semibold text-foreground">{t}</strong> : t))}</p>}
+          {atual.conteudo}
           {atual.filhos && <div className="flex w-full gap-4">
             {atual.filhos.map((f) => (
               <div key={f} className="flex-1 rounded-md border border-border bg-muted/40 px-4 py-2 text-sm font-medium text-foreground">
