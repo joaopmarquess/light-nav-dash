@@ -181,8 +181,31 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     if (!features) return { pathFn: null, projection: null };
     const fc: FeatureCollection = { type: "FeatureCollection", features: coreData ? features.filter((_, i) => coreData.set.has(i)) : features };
     const projection = geoMercator().fitExtent([[4, 4], [width - 4, height - 4]], fc);
+    // Pull back the display only; the original MAA membership is unchanged.
+    if (coreData) {
+      const [tx, ty] = projection.translate();
+      projection.scale(projection.scale() * 0.68);
+      projection.translate([width / 2 + (tx - width / 2) * 0.68, height / 2 + (ty - height / 2) * 0.68]);
+    }
     return { pathFn: geoPath(projection), projection };
   }, [features, width, height, coreData]);
+  const overview = useMemo(() => {
+    if (!coreData || !features || !projection) return null;
+    const overviewProjection = geoMercator().fitExtent([[12, 12], [248, 268]], {
+      type: "FeatureCollection", features,
+    });
+    const overviewPath = geoPath(overviewProjection);
+    const topLeft = projection.invert?.([0, 0]);
+    const bottomRight = projection.invert?.([width, height]);
+    if (!topLeft || !bottomRight) return null;
+    const a = overviewProjection(topLeft);
+    const b = overviewProjection(bottomRight);
+    if (!a || !b) return null;
+    return {
+      path: overviewPath,
+      viewport: { x: Math.min(a[0], b[0]), y: Math.min(a[1], b[1]), width: Math.abs(b[0] - a[0]), height: Math.abs(b[1] - a[1]) },
+    };
+  }, [coreData, features, projection, width, height]);
   const maaOutline = useMemo(() => {
     if (!coreData || !projection) return "";
     return coreData.lines.map((ring) => smoothMAAPath(ring.flatMap((p) => {
@@ -253,7 +276,8 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
   }
 
   return (
-    <div ref={boxRef} className="relative w-full h-full min-h-[300px]">
+    <div className={core ? "flex h-full w-full flex-col gap-4 md:flex-row" : "h-full w-full"}>
+    <div ref={boxRef} className="relative w-full h-full min-h-[300px] min-w-0 flex-1 overflow-hidden">
       <svg
         viewBox={`0 0 ${width} ${height}`}
         preserveAspectRatio="xMidYMid meet"
@@ -265,7 +289,6 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
           const name = f.properties?.name ?? "";
           const uf = f.properties._uf;
           const total = normalizedByUF[uf]?.[normalize(name)] ?? 0;
-          if (coreData && !coreData.show.has(i)) return null;
           const d = pathFn(f) ?? "";
           return (
             <path
@@ -345,6 +368,25 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
           </div>
         </div>
       )}
+    </div>
+    {overview && (
+      <aside className="w-full shrink-0 self-start rounded-md border border-border bg-background p-3 md:w-[284px]" aria-label="Localização da lupa no mapa geral">
+        <h3 className="mb-2 text-sm font-semibold text-foreground">Mapa geral</h3>
+        <svg viewBox="0 0 260 280" className="mx-auto w-full max-w-[260px]" role="img" aria-label="Mapa geral com retângulo da região ampliada">
+          {features.map((f, i) => {
+            const total = normalizedByUF[f.properties._uf]?.[normalize(f.properties?.name ?? "")] ?? 0;
+            return <path key={i} d={overview.path(f) ?? ""} fill={total > 70 ? "hsl(var(--primary) / 0.7)" : total > 0 ? "hsl(var(--primary) / 0.25)" : "hsl(var(--muted))"} stroke="hsl(var(--map-municipal-border))" strokeWidth={0.2} />;
+          })}
+          {stateOutlines?.map((f, i) => <path key={`overview-state-${i}`} d={overview.path(f) ?? ""} fill="none" stroke="hsl(var(--map-state-border))" strokeWidth={1} />)}
+          {stateOutlines?.map((f, i) => {
+            const [x, y] = overview.path.centroid(f);
+            const uf = NAME_TO_UF[(f.properties as { name?: string })?.name ?? ""];
+            return <text key={`overview-label-${i}`} x={x} y={y} textAnchor="middle" fontSize={12} fontWeight={700} fill="hsl(var(--map-state-border))">{uf}</text>;
+          })}
+          <rect {...overview.viewport} fill="hsl(var(--map-maa-outline) / 0.06)" stroke="hsl(var(--map-maa-outline))" strokeWidth={2} />
+        </svg>
+      </aside>
+    )}
     </div>
   );
 }
