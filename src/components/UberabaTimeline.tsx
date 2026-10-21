@@ -10,7 +10,9 @@ import UberabaMarketing from "@/components/UberabaMarketing";
 import UberabaFormalizacao from "@/components/UberabaFormalizacao";
 import UberabaGuias from "@/components/UberabaGuias";
 import UberabaOperacaoIniciada from "@/components/UberabaOperacaoIniciada";
-import { FileCheck2 } from "lucide-react";
+import { CalendarDays, FileCheck2 } from "lucide-react";
+import { dataPlanejadaUberaba } from "@/lib/uberabaCronograma";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
 
@@ -39,6 +41,7 @@ const ETAPAS: Etapa[] = [
 
 const UberabaTimeline = () => {
   const [aberta, setAberta] = useState<string | null>(null);
+  const [mostrarDatas, setMostrarDatas] = useState(false);
   const [versao, setVersao] = useState<"simples" | "completa">("simples");
   const [sub, setSub] = useState<"Comercial" | "Rede Assistencial" | "Guias" | null>(null);
   const atual = ETAPAS.find((e) => e.nome === aberta);
@@ -57,7 +60,18 @@ const UberabaTimeline = () => {
   return (
     <div ref={timelineRef} className="flex h-full flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-lg font-semibold text-foreground">Timeline</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-lg font-semibold text-foreground">Timeline</h1>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="icon" variant={mostrarDatas ? "default" : "outline"} aria-label={mostrarDatas ? "Ocultar datas planejadas" : "Mostrar datas planejadas"} aria-pressed={mostrarDatas} onClick={() => setMostrarDatas(!mostrarDatas)}>
+                <CalendarDays className="h-5 w-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{mostrarDatas ? "Ocultar datas planejadas" : "Mostrar datas planejadas"}</TooltipContent>
+          </Tooltip>
+          {mostrarDatas && <span className="text-xs font-medium text-muted-foreground">Datas planejadas</span>}
+        </div>
         <ToggleGroup type="single" value={versao} onValueChange={(value) => {
           if (value === "simples" || value === "completa") setVersao(value);
         }} variant="outline" aria-label="Versão da Timeline">
@@ -91,6 +105,7 @@ const UberabaTimeline = () => {
                       {e.nome}
                     </span>
                   </button>
+                  {mostrarDatas && <div className="flex w-full items-center justify-center gap-2 border-t border-border pt-2 text-sm font-semibold text-secondary-foreground"><CalendarDays aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-primary" /><span className="whitespace-nowrap">{dataPlanejadaUberaba(e.nome)}</span></div>}
                 </li>
               );
             })}
