@@ -8,6 +8,7 @@ describe("MAA municipality rules", () => {
     ["MG", "Campina verde"],
     ["MG", "Comendador Gomes"],
     ["GO", "Chapadão do Céu"],
+    ["GO", "Mineiros"],
     ["MS", "Costa Rica"],
   ])("includes %s / %s independently of lives", (uf, name) => {
     expect(isExplicitMAAMember(uf, name)).toBe(true);

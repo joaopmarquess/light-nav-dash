@@ -4,7 +4,7 @@ export type MapPoint = number[];
 
 const includedMunicipalities: Record<string, readonly string[]> = {
   MG: ["LIMEIRA DO OESTE", "CAMPINA VERDE", "COMENDADOR GOMES"],
-  GO: ["CHAPADAO DO CEU"],
+  GO: ["CHAPADAO DO CEU", "MINEIROS"],
   MS: ["COSTA RICA"],
 };
 
