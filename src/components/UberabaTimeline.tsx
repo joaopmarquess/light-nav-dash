@@ -3,6 +3,7 @@ import { HOSPITAL, MODELO, MARKETING, FORMALIZACAO, IMPLANTACAO } from "@/compon
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import UberabaTabelasComerciais, { ReferenciaButton } from "@/components/UberabaTabelasComerciais";
+import UberabaRedeAssistencial from "@/components/UberabaRedeAssistencial";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
 
@@ -105,7 +106,7 @@ const UberabaTimeline = () => {
           {versao === "simples" ? (atual.nome === "Modelo de Atuação" ? (
             <div className="flex min-h-0 flex-1 flex-col">
               {sub === "Comercial" && <UberabaTabelasComerciais />}
-              {sub === "Rede Assistencial" && <p className="text-justify text-xl leading-7 text-foreground/85" lang="pt-BR">{LOREM}</p>}
+               {sub === "Rede Assistencial" && <UberabaRedeAssistencial />}
             </div>
           ) : (
             <p className="text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{LOREM}</p>
