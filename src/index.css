@@ -352,7 +352,8 @@ All colors MUST be HSL.
 .formalizacao-footer { display: flex; justify-content: space-between; gap: 20px; border-top: 1px solid hsl(var(--hospital-frame)); padding-top: 14px; font-size: 12px; color: hsl(var(--hospital-secondary)); }
 .formalizacao-footer strong { color: hsl(var(--hospital-blue)); }
 @container (min-width: 1700px) {
-  .formalizacao-page { padding: 24px 52px 18px; gap: 20px; }
+  .formalizacao-page { padding: 18px 52px 14px; gap: 12px; }
+  .formalizacao-products { padding-top: 16px; padding-bottom: 16px; }
   .formalizacao-header h2 { font-size: 48px; }
   .formalizacao-header > span, .formalizacao-fronts { font-size: 24px; }
   .formalizacao-header > p, .formalizacao-products p, .formalizacao-section-heading p, .formalizacao-assistance-item p { font-size: 15px; }
