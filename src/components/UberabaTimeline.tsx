@@ -3,12 +3,12 @@ import { useState } from "react";
 type Etapa = { nome: string; filhos?: string[] };
 
 const ETAPAS: Etapa[] = [
-  { nome: "Estudo" },
-  { nome: "Hospital Mário Palmério" },
+  { nome: "Estudo", filhos: ["Item 1", "Item 2"] },
+  { nome: "Hospital Mário Palmério", filhos: ["Item 1", "Item 2"] },
   { nome: "Modelo de Atuação", filhos: ["Operação Comercial", "Rede Assistencial"] },
-  { nome: "Plano de Marketing" },
-  { nome: "Formalização" },
-  { nome: "Implantação" },
+  { nome: "Plano de Marketing", filhos: ["Item 1", "Item 2"] },
+  { nome: "Formalização", filhos: ["Item 1", "Item 2"] },
+  { nome: "Implantação", filhos: ["Item 1", "Item 2"] },
 ];
 
 const UberabaTimeline = () => {
