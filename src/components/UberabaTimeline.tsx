@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { HOSPITAL, MODELO, MARKETING, FORMALIZACAO, IMPLANTACAO } from "@/components/UberabaTimelineEtapas";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
 
@@ -27,11 +28,20 @@ const ETAPAS: Etapa[] = [
 
 const UberabaTimeline = () => {
   const [aberta, setAberta] = useState<string | null>(null);
+  const [versao, setVersao] = useState<"simples" | "completa">("simples");
   const atual = ETAPAS.find((e) => e.nome === aberta);
 
   return (
     <div className="flex h-full flex-col gap-6">
-      <h1 className="text-lg font-semibold text-foreground">Timeline</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-lg font-semibold text-foreground">Timeline</h1>
+        <ToggleGroup type="single" value={versao} onValueChange={(value) => {
+          if (value === "simples" || value === "completa") setVersao(value);
+        }} variant="outline" aria-label="Versão da Timeline">
+          <ToggleGroupItem value="simples">Simplificada</ToggleGroupItem>
+          <ToggleGroupItem value="completa">Completa</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
       <div className="rounded-lg border border-border bg-card px-8 py-12">
         <div className="relative">
           <div className="absolute left-[8.33%] right-[8.33%] top-5 h-0.5 bg-border" />
@@ -79,6 +89,9 @@ const UberabaTimeline = () => {
       {(atual?.filhos || atual?.texto || atual?.conteudo) && (
         <div className="min-h-0 w-full flex-1 overflow-auto rounded-lg border border-border bg-card px-12 py-8">
           <p className="mb-6 text-xl font-semibold text-foreground">{atual.nome}</p>
+          {versao === "simples" ? (
+            <p className="text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{LOREM}</p>
+          ) : <>
           {atual.texto && <p className="whitespace-pre-line text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{atual.texto.split("**").map((t, i) => (i % 2 ? <strong key={i} className="font-semibold text-foreground">{t}</strong> : t))}</p>}
           {atual.conteudo}
           {atual.filhos && <div className="flex w-full gap-4">
@@ -88,6 +101,7 @@ const UberabaTimeline = () => {
               </div>
             ))}
           </div>}
+          </>}
         </div>
       )}
     </div>
