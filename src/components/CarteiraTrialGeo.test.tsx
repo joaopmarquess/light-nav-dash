@@ -8,8 +8,8 @@ vi.mock("@/lib/hostingerClient", () => ({
 vi.mock("@/components/DWCarteira", () => ({ UF_FLAGS: {} }));
 vi.mock("@/components/BrazilHeatMap", () => ({ BrazilHeatMap: () => null }));
 vi.mock("@/components/StateHeatMap", () => ({
-  StateHeatMap: ({ core, showOverview }: { core?: boolean; showOverview?: boolean }) => (
-    <div data-testid="map" data-core={Boolean(core)} data-overview={showOverview} />
+  StateHeatMap: ({ core, outlineOnly, showOverview }: { core?: boolean; outlineOnly?: boolean; showOverview?: boolean }) => (
+    <div data-testid="map" data-core={Boolean(core)} data-outline={Boolean(outlineOnly)} data-overview={showOverview} />
   ),
 }));
 
@@ -20,12 +20,14 @@ describe("inline MAA toggle", () => {
     expect(toggle.getAttribute("aria-pressed")).toBe("false");
     expect(screen.getByTestId("map").getAttribute("data-core")).toBe("false");
     fireEvent.click(toggle);
-    await waitFor(() => expect(screen.getByTestId("map").getAttribute("data-core")).toBe("true"));
+    await waitFor(() => expect(screen.getByTestId("map").getAttribute("data-outline")).toBe("true"));
+    expect(screen.getByTestId("map").getAttribute("data-core")).toBe("false");
     expect(screen.getByRole("button", { name: "Ocultar MAA" }).getAttribute("aria-pressed")).toBe("true");
     expect(screen.getByTestId("map").getAttribute("data-overview")).toBe("false");
     expect(screen.queryByText("← Voltar")).toBeNull();
     expect(screen.getByText("1.000 vidas")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Ocultar MAA" }));
+    expect(screen.getByTestId("map").getAttribute("data-outline")).toBe("false");
     expect(screen.getByTestId("map").getAttribute("data-core")).toBe("false");
     expect(screen.getByRole("button", { name: "Mostrar MAA" }).getAttribute("aria-pressed")).toBe("false");
     expect(screen.getByText("1.000 vidas")).toBeTruthy();

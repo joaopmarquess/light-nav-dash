@@ -38,12 +38,13 @@ interface Props {
   outrosTotal?: number;
   trialScale?: boolean;
   core?: boolean;
+  outlineOnly?: boolean;
   showOverview?: boolean;
 }
 
 type FeatWithUF = Feature<Geometry, { name?: string; _uf: string }>;
 
-export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, outrosTotal, trialScale, core, showOverview = true }: Props) {
+export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, outrosTotal, trialScale, core, outlineOnly, showOverview = true }: Props) {
   const isArea = ufs.length > 1;
   const key = ufs.join("-");
   const [features, setFeatures] = useState<FeatWithUF[] | null>(null);
@@ -124,7 +125,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
 
   // Centro principal: bloco contíguo de municípios com mais de 70 vidas que contém o maior município
   const coreData = useMemo(() => {
-    if (!core || !features) return null;
+    if ((!core && !outlineOnly) || !features) return null;
     const rings = (g: any): number[][][] => (g.type === "Polygon" ? g.coordinates : g.type === "MultiPolygon" ? g.coordinates.flat() : []);
     const k = (c: number[]) => `${c[0].toFixed(4)},${c[1].toFixed(4)}`;
     const tot = features.map((f) => normalizedByUF[f.properties._uf]?.[normalize(f.properties?.name ?? "")] ?? 0);
@@ -178,22 +179,22 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     });
     const total = [...set].reduce((s, i) => s + tot[i], 0);
     return { set, show, inside, lines: outer, total };
-  }, [core, features, normalizedByUF]);
+  }, [core, outlineOnly, features, normalizedByUF]);
 
   const { pathFn, projection } = useMemo(() => {
     if (!features) return { pathFn: null, projection: null };
-    const fc: FeatureCollection = { type: "FeatureCollection", features: coreData ? features.filter((_, i) => coreData.set.has(i)) : features };
+    const fc: FeatureCollection = { type: "FeatureCollection", features: core && coreData ? features.filter((_, i) => coreData.set.has(i)) : features };
     const projection = geoMercator().fitExtent([[4, 4], [width - 4, height - 4]], fc);
     // Pull back the display only; the original MAA membership is unchanged.
-    if (coreData) {
+    if (core && coreData) {
       const [tx, ty] = projection.translate();
       projection.scale(projection.scale() * 0.68);
       projection.translate([width / 2 + (tx - width / 2) * 0.68, height / 2 + (ty - height / 2) * 0.68]);
     }
     return { pathFn: geoPath(projection), projection };
-  }, [features, width, height, coreData]);
+  }, [features, width, height, coreData, core]);
   const overview = useMemo(() => {
-    if (!coreData || !features || !projection) return null;
+    if (!core || !coreData || !features || !projection) return null;
     const overviewProjection = geoMercator().fitExtent([[12, 12], [248, 268]], {
       type: "FeatureCollection", features,
     });
@@ -208,7 +209,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
       path: overviewPath,
       viewport: { x: Math.min(a[0], b[0]), y: Math.min(a[1], b[1]), width: Math.abs(b[0] - a[0]), height: Math.abs(b[1] - a[1]) },
     };
-  }, [coreData, features, projection, width, height]);
+  }, [core, coreData, features, projection, width, height]);
   const maaOutline = useMemo(() => {
     if (!coreData || !projection) return "";
     return coreData.lines.map((ring) => smoothMAAPath(ring.flatMap((p) => {
@@ -216,14 +217,14 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     }))).join(" ");
   }, [coreData, projection]);
   const maaLabels = useMemo(() => {
-    if (!coreData || !features || !pathFn) return [];
+    if (!core || !coreData || !features || !pathFn) return [];
     return ufs.flatMap((uf) => {
       const visible = features.filter((f, i) => f.properties._uf === uf && coreData.show.has(i));
       if (!visible.length) return [];
       const [x, y] = pathFn.centroid({ type: "FeatureCollection", features: visible });
       return Number.isFinite(x) && Number.isFinite(y) ? [{ uf, x, y }] : [];
     });
-  }, [coreData, features, pathFn, key]);
+  }, [core, coreData, features, pathFn, key]);
   const label = (x: number, y: number, t1: string, t2: string, k: string) => (
     <g key={k} transform={`translate(${x},${y})`} pointerEvents="none">
       <text textAnchor="middle" fontSize={14} fontWeight={700} fill="hsl(var(--foreground))" stroke="hsl(var(--background))" strokeWidth={3} paintOrder="stroke">{t1}</text>
@@ -245,7 +246,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
   }, [trialScale, features, normalizedByUF]);
 
   const colorFor = (total: number, i = -1) => {
-    if (coreData) {
+    if (core && coreData) {
       const role = maaFillRole(coreData.set.has(i), coreData.inside.has(i), total);
       if (role === "island") return "hsl(var(--primary) / 0.42)";
       if (role === "outside-with-lives") return "hsl(var(--map-outside-lives))";
@@ -297,10 +298,10 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
             <path
               key={i}
               d={d}
-              fill={coreData || !trialScale ? colorFor(total, i) : total > 70 ? colorFor(total, i) : total > 0 ? (vizinhos.has(i) ? "hsl(var(--primary) / 0.3)" : "hsl(var(--primary) / 0.14)") : vizinhos.has(i) ? "hsl(var(--primary) / 0.08)" : "hsl(var(--muted) / 0.55)"}
+              fill={(core && coreData) || !trialScale ? colorFor(total, i) : total > 70 ? colorFor(total, i) : total > 0 ? (vizinhos.has(i) ? "hsl(var(--primary) / 0.3)" : "hsl(var(--primary) / 0.14)") : vizinhos.has(i) ? "hsl(var(--primary) / 0.08)" : "hsl(var(--muted) / 0.55)"}
               data-maa-role={coreData ? maaFillRole(coreData.set.has(i), coreData.inside.has(i), total) : undefined}
-              stroke={coreData ? "hsl(var(--map-municipal-border))" : trialScale ? (total > 70 ? "hsl(var(--background))" : "hsl(var(--border))") : "none"}
-              strokeWidth={coreData ? 0.8 : trialScale ? (total > 70 ? 0.8 : 0.3) : 0}
+              stroke={core && coreData ? "hsl(var(--map-municipal-border))" : trialScale ? (total > 70 ? "hsl(var(--background))" : "hsl(var(--border))") : "none"}
+              strokeWidth={core && coreData ? 0.8 : trialScale ? (total > 70 ? 0.8 : 0.3) : 0}
               strokeLinejoin="round"
               onMouseMove={(e) => {
                 const rect = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect();
@@ -336,23 +337,23 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
               d={pathFn(f) ?? ""}
               fill="none"
               stroke="hsl(var(--map-state-border))"
-              strokeWidth={coreData ? 2.5 : 1.5}
+              strokeWidth={core && coreData ? 2.5 : 1.5}
               strokeLinejoin="round"
               pointerEvents="none"
             />
           ))}
         {coreData && (
-          <path d={maaOutline} fill="none" stroke="hsl(var(--map-maa-outline))" strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" pointerEvents="none" />
+          <path data-maa-outline d={maaOutline} fill="none" stroke="hsl(var(--map-maa-outline))" strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" pointerEvents="none" />
         )}
         {maaLabels.map(({ uf, x, y }) => (
           <text key={`maa-uf-${uf}`} x={x} y={y} textAnchor="middle" fontSize={20} fontWeight={700} fill="hsl(var(--map-state-border))" pointerEvents="none">{uf}</text>
         ))}
-        {!coreData && stateTotals && stateOutlines?.map((f, i) => {
+        {!core && stateTotals && stateOutlines?.map((f, i) => {
           const uf = NAME_TO_UF[(f.properties as any)?.name] ?? "";
           const [x, y] = pathFn.centroid(f);
           return label(x, y, uf, (stateTotals[uf] ?? 0).toLocaleString("pt-BR") + " vidas", `lbl-${i}`);
         })}
-        {!coreData && outrosTotal != null && projection && (() => {
+        {!core && outrosTotal != null && projection && (() => {
           const p = projection([-54.8, -16.2]);
           return p ? label(p[0], p[1], "Outros", outrosTotal.toLocaleString("pt-BR") + " vidas", "lbl-outros") : null;
         })()}
