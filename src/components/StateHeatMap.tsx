@@ -36,11 +36,12 @@ interface Props {
   stateTotals?: Record<string, number>;
   outrosTotal?: number;
   trialScale?: boolean;
+  core?: boolean;
 }
 
 type FeatWithUF = Feature<Geometry, { name?: string; _uf: string }>;
 
-export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, outrosTotal, trialScale }: Props) {
+export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, outrosTotal, trialScale, core }: Props) {
   const isArea = ufs.length > 1;
   const key = ufs.join("-");
   const [features, setFeatures] = useState<FeatWithUF[] | null>(null);
@@ -119,12 +120,38 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     return m;
   }, [ufs, cityTotalsByUF]);
 
+  // Centro principal: bloco contíguo de municípios com mais de 70 vidas que contém o maior município
+  const coreData = useMemo(() => {
+    if (!core || !features) return null;
+    const rings = (g: any): number[][][] => (g.type === "Polygon" ? g.coordinates : g.type === "MultiPolygon" ? g.coordinates.flat() : []);
+    const k = (c: number[]) => `${c[0].toFixed(4)},${c[1].toFixed(4)}`;
+    const tot = features.map((f) => normalizedByUF[f.properties._uf]?.[normalize(f.properties?.name ?? "")] ?? 0);
+    const owners = new Map<string, number[]>();
+    features.forEach((f, i) => rings(f.geometry).flat().forEach((c) => { const key = k(c); const a = owners.get(key); if (!a) owners.set(key, [i]); else if (a[a.length - 1] !== i) a.push(i); }));
+    const nb = (i: number) => { const s = new Set<number>(); rings(features[i].geometry).flat().forEach((c) => owners.get(k(c))?.forEach((j) => j !== i && s.add(j))); return s; };
+    let start = 0; tot.forEach((t, i) => { if (t > tot[start]) start = i; });
+    const set = new Set<number>([start]); const q = [start];
+    while (q.length) { const i = q.shift()!; nb(i).forEach((j) => { if (!set.has(j) && tot[j] > 70) { set.add(j); q.push(j); } }); }
+    const show = new Set<number>(set); set.forEach((i) => nb(i).forEach((j) => show.add(j)));
+    const seg = (a: number[], b: number[]) => [k(a), k(b)].sort().join("|");
+    const cnt = new Map<string, number>();
+    set.forEach((i) => rings(features[i].geometry).forEach((r) => r.slice(1).forEach((c, n) => { const s = seg(r[n], c); cnt.set(s, (cnt.get(s) ?? 0) + 1); })));
+    const lines: number[][][] = [];
+    set.forEach((i) => rings(features[i].geometry).forEach((r) => {
+      let cur: number[][] = [];
+      r.slice(1).forEach((c, n) => { if (cnt.get(seg(r[n], c)) === 1) { if (!cur.length) cur.push(r[n]); cur.push(c); } else { if (cur.length > 1) lines.push(cur); cur = []; } });
+      if (cur.length > 1) lines.push(cur);
+    }));
+    const total = [...set].reduce((s, i) => s + tot[i], 0);
+    return { set, show, lines, total };
+  }, [core, features, normalizedByUF]);
+
   const { pathFn, projection } = useMemo(() => {
     if (!features) return { pathFn: null, projection: null };
-    const fc: FeatureCollection = { type: "FeatureCollection", features };
+    const fc: FeatureCollection = { type: "FeatureCollection", features: coreData ? features.filter((_, i) => coreData.set.has(i)) : features };
     const projection = geoMercator().fitExtent([[4, 4], [width - 4, height - 4]], fc);
     return { pathFn: geoPath(projection), projection };
-  }, [features, width, height]);
+  }, [features, width, height, coreData]);
   const label = (x: number, y: number, t1: string, t2: string, k: string) => (
     <g key={k} transform={`translate(${x},${y})`} pointerEvents="none">
       <text textAnchor="middle" fontSize={14} fontWeight={700} fill="hsl(var(--foreground))" stroke="hsl(var(--background))" strokeWidth={3} paintOrder="stroke">{t1}</text>
@@ -186,6 +213,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
           const name = f.properties?.name ?? "";
           const uf = f.properties._uf;
           const total = normalizedByUF[uf]?.[normalize(name)] ?? 0;
+          if (coreData && !coreData.show.has(i)) return null;
           const d = pathFn(f) ?? "";
           return (
             <path
@@ -234,12 +262,15 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
               pointerEvents="none"
             />
           ))}
-        {stateTotals && stateOutlines?.map((f, i) => {
+        {coreData && (
+          <path d={pathFn({ type: "MultiLineString", coordinates: coreData.lines } as any) ?? ""} fill="none" stroke="hsl(var(--foreground))" strokeWidth={3} strokeLinejoin="round" pointerEvents="none" />
+        )}
+        {!coreData && stateTotals && stateOutlines?.map((f, i) => {
           const uf = NAME_TO_UF[(f.properties as any)?.name] ?? "";
           const [x, y] = pathFn.centroid(f);
           return label(x, y, uf, (stateTotals[uf] ?? 0).toLocaleString("pt-BR") + " vidas", `lbl-${i}`);
         })}
-        {outrosTotal != null && projection && (() => {
+        {!coreData && outrosTotal != null && projection && (() => {
           const p = projection([-54.8, -16.2]);
           return p ? label(p[0], p[1], "Outros", outrosTotal.toLocaleString("pt-BR") + " vidas", "lbl-outros") : null;
         })()}

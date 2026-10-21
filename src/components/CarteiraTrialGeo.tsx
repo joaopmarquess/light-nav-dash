@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Map as MapIcon } from "lucide-react";
+import { Loader2, Map as MapIcon, Search } from "lucide-react";
 import { hostinger } from "@/lib/hostingerClient";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 import { StateHeatMap } from "@/components/StateHeatMap";
@@ -13,7 +13,7 @@ const CarteiraTrialGeo = () => {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sel, setSel] = useState<"SP" | "MG" | "MS" | "GO" | "BRASIL" | null>(null);
+  const [sel, setSel] = useState<"SP" | "MG" | "MS" | "GO" | "BRASIL" | "CENTRO" | null>(null);
 
   useEffect(() => {
     let abort = false;
@@ -45,12 +45,12 @@ const CarteiraTrialGeo = () => {
       <div className="fixed inset-0 z-50 bg-background flex flex-col">
         <div className="flex items-center justify-between px-4 py-2 border-b border-border">
           <div className="text-sm font-semibold text-foreground inline-flex items-center gap-2">
-            <MapIcon className="h-4 w-4" />{sel === "BRASIL" ? "Mapa do Brasil — Vidas por UF" : `Mapa de ${sel}`}
+            <MapIcon className="h-4 w-4" />{sel === "BRASIL" ? "Mapa do Brasil — Vidas por UF" : sel === "CENTRO" ? "Centro principal — municípios contíguos com mais de 70 vidas" : `Mapa de ${sel}`}
           </div>
           <button type="button" onClick={() => setSel(null)} className="text-xs text-muted-foreground hover:text-foreground underline">← Voltar</button>
         </div>
         <div className="flex-1 min-h-0">
-          {sel === "BRASIL" ? <BrazilHeatMap ufTotals={ufTotals} /> : <StateHeatMap trialScale ufs={[sel]} cityTotalsByUF={cityTotalsByUF} stateTotals={ufTotals} />}
+          {sel === "BRASIL" ? <BrazilHeatMap ufTotals={ufTotals} /> : sel === "CENTRO" ? <StateHeatMap trialScale core ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} /> : <StateHeatMap trialScale ufs={[sel]} cityTotalsByUF={cityTotalsByUF} stateTotals={ufTotals} />}
         </div>
       </div>
     );
@@ -98,7 +98,7 @@ const CarteiraTrialGeo = () => {
               })}
             </div>
             <div className="bg-card rounded-xl border border-border shadow-sm p-2 flex flex-col min-h-0">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide px-2 pt-2">Mapa por cidade</h3>
+              <div className="flex items-center justify-between px-2 pt-2"><h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Mapa por cidade</h3><button type="button" title="Ver centro principal" aria-label="Ver centro principal" onClick={() => setSel("CENTRO")} className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-border hover:bg-accent"><Search className="h-4 w-4" /></button></div>
               <div className="flex-1 min-h-0 h-full w-full">
                 <StateHeatMap trialScale ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />
               </div>
