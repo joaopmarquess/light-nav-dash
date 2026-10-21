@@ -262,6 +262,74 @@ All colors MUST be HSL.
   .guias-flow-list { grid-template-columns: 1fr; }
 }
 .credenciamento-secondary { color: hsl(var(--credential-secondary)); }
+.uberaba-operacao { container-type: inline-size; display: flex; flex: 1; min-height: 620px; background: hsl(var(--hospital-canvas)); color: hsl(var(--credential-text)); border-top: 12px solid hsl(var(--hospital-blue)); }
+.operacao-page { display: flex; flex-direction: column; width: 100%; padding: 28px 36px 20px; gap: 24px; }
+.operacao-header > p:first-child { font-size: 12px; font-weight: 700; color: hsl(var(--hospital-secondary)); }
+.operacao-header h2 { font-size: 38px; line-height: 1.2; font-weight: 750; margin-top: 10px; }
+.operacao-header > p:last-child { font-size: 18px; margin-top: 8px; color: hsl(var(--hospital-secondary)); }
+.operacao-diagram { display: grid; grid-template-columns: minmax(0, 42fr) 6fr minmax(0, 13fr) minmax(0, 15fr) minmax(0, 24fr); align-items: center; flex: 1; min-height: 0; }
+.operacao-fronts { display: grid; grid-template-rows: repeat(6, minmax(min-content, 1fr)); gap: 10px; align-self: stretch; }
+.operacao-front { display: flex; align-items: center; gap: 16px; padding: 12px 18px; background: hsl(var(--hospital-surface)); border: 1px solid hsl(var(--hospital-frame)); border-left: 5px solid var(--front-color); border-radius: 5px; box-shadow: var(--credential-shadow); }
+.operacao-tone-rede { --front-color: hsl(var(--hospital-blue)); }
+.operacao-tone-comercial { --front-color: hsl(var(--hospital-gold)); }
+.operacao-tone-credenciamento { --front-color: hsl(var(--marketing-trust)); }
+.operacao-tone-marketing { --front-color: hsl(var(--credential-nonmedical)); }
+.operacao-tone-guias { --front-color: hsl(var(--marketing-partners)); }
+.operacao-tone-formalizacao { --front-color: hsl(var(--hospital-red)); }
+.operacao-front > span { color: var(--front-color); font-size: 23px; font-weight: 750; flex-shrink: 0; }
+.operacao-front h3 { font-size: 14px; font-weight: 750; line-height: 1.25; }
+.operacao-front p { font-size: 13px; line-height: 1.35; color: hsl(var(--hospital-secondary)); margin-top: 4px; }
+.operacao-connections { position: relative; width: 100%; align-self: stretch; min-height: 0; }
+.operacao-connections svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.operacao-connections path { fill: none; stroke: hsl(var(--hospital-frame)); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.operacao-alignment { align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-align: center; padding: 16px 10px; background: hsl(var(--hospital-stat-fill)); border: 1px solid hsl(var(--hospital-frame)); border-radius: 5px; }
+.operacao-alignment svg { width: 36px; height: 36px; color: hsl(var(--hospital-blue)); }
+.operacao-alignment h3 { font-size: 16px; font-weight: 750; line-height: 1.5; }
+.operacao-arrow { position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; padding: 12px 18px; color: hsl(var(--hospital-navy)); text-align: center; }
+.operacao-arrow span { font-size: 12px; font-weight: 750; line-height: 1.5; }
+.operacao-arrow-right { width: 100%; height: 70px; stroke-width: 3; color: hsl(var(--hospital-blue)); }
+.operacao-arrow-down { display: none; }
+.operacao-outcome { display: flex; flex-direction: column; justify-content: center; min-height: 300px; background: hsl(var(--hospital-navy)); color: hsl(var(--credential-summary-text)); padding: 28px 24px; border-radius: 6px; text-align: center; }
+.operacao-expected { font-size: 11px; font-weight: 700; color: hsl(var(--hospital-gold)); margin-bottom: 22px; }
+.operacao-outcome h3 { font-size: 29px; font-weight: 750; line-height: 1.25; }
+.operacao-description { font-size: 16px; line-height: 1.65; color: hsl(var(--hospital-light)); margin-top: 22px; }
+.operacao-monitor { display: flex; align-items: center; justify-content: center; gap: 10px; border-top: 1px solid hsl(var(--hospital-light) / .3); margin-top: 28px; padding-top: 22px; }
+.operacao-monitor svg { width: 18px; height: 18px; flex-shrink: 0; color: hsl(var(--hospital-gold)); }
+.operacao-monitor p { font-size: 12px; font-weight: 750; }
+.operacao-footer { color: hsl(var(--hospital-secondary)); font-size: 12px; line-height: 1.5; border-top: 1px solid hsl(var(--hospital-frame)); padding-top: 12px; font-style: italic; }
+@container (min-width: 1700px) {
+  .operacao-page { padding: 26px 48px 22px; gap: 22px; }
+  .operacao-header h2 { font-size: 44px; }
+  .operacao-header > p:last-child { font-size: 22px; }
+  .operacao-front h3 { font-size: 20px; }
+  .operacao-front p { font-size: 17px; }
+  .operacao-front > span { font-size: 30px; }
+  .operacao-alignment h3 { font-size: 23px; }
+  .operacao-arrow span { font-size: 16px; }
+  .operacao-outcome h3 { font-size: 38px; }
+  .operacao-description { font-size: 21px; }
+  .operacao-expected, .operacao-monitor p { font-size: 15px; }
+  .operacao-outcome { padding: 36px 28px; }
+}
+@container (max-width: 1099px) {
+  .operacao-diagram { display: flex; flex-direction: column; gap: 20px; }
+  .operacao-diagram > * { flex-shrink: 0; }
+  .operacao-fronts { width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: auto; }
+  .operacao-connections { display: none; }
+  .operacao-alignment { flex-direction: row; width: 100%; padding: 20px; }
+  .operacao-alignment h3 br { display: none; }
+  .operacao-arrow-right { display: none; }
+  .operacao-arrow-down { display: block; width: 46px; height: 54px; stroke-width: 3; color: hsl(var(--hospital-blue)); }
+  .operacao-outcome { width: 100%; min-height: 0; }
+}
+@container (max-width: 599px) {
+  .operacao-page { padding: 24px 18px; }
+  .operacao-header h2 { font-size: 30px; }
+  .operacao-fronts { grid-template-columns: 1fr; }
+  .operacao-front { padding: 16px 12px; gap: 12px; }
+  .operacao-outcome h3 { font-size: 28px; }
+  .operacao-alignment { gap: 12px; }
+}
 .credenciamento-card { background: hsl(var(--card)); border-color: hsl(var(--credential-border)); box-shadow: var(--credential-shadow); }
 .credenciamento-medicos { background: hsl(var(--credential-medical)); }
 .credenciamento-diagnostico { background: hsl(var(--credential-diagnostic)); }

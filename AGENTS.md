@@ -1,4 +1,5 @@
 # Project rules
+- Render the final expected-operation section as a live convergence diagram with container-aware vertical fallback; expose its expected-result status from a tested data helper and leave previous Timeline content intact.
 - Keep Guias in the simplified Timeline's existing model selector as a container-aware presentation backed by typed, replaceable content; preserve the complete version and avoid backend changes until integration is requested.
 - Keep simplified Timeline formalization as a container-aware live presentation with contract scope in a tested data helper; preserve the complete version to avoid changing existing institutional content.
 - Keep hospital institutional content in a typed data object passed into its Timeline presentation; missing media must render placeholders so future data integration never requires replacing the layout.
