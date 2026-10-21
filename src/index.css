@@ -39,6 +39,18 @@ All colors MUST be HSL.
     --map-state-border: 0 0% 0%;
     --map-maa-outline: 0 78% 49%;
     --map-outside-lives: 0 0% 88%;
+    --credential-background: 210 33% 98%;
+    --credential-text: 206 40% 23%;
+    --credential-secondary: 203 13% 45%;
+    --credential-border: 200 28% 87%;
+    --credential-head: 201 67% 92%;
+    --credential-alt: 197 41% 97%;
+    --credential-medical: 202 66% 51%;
+    --credential-diagnostic: 40 57% 58%;
+    --credential-nonmedical: 16 56% 65%;
+    --credential-summary: 206 40% 23%;
+    --credential-summary-text: 0 0% 100%;
+    --credential-shadow: 0 2px 8px hsl(206 40% 23% / 0.06);
 
     --radius: 0.5rem;
 
@@ -105,6 +117,13 @@ All colors MUST be HSL.
     --map-state-border: 0 0% 0%;
     --map-maa-outline: 0 85% 65%;
     --map-outside-lives: 0 0% 68%;
+    --credential-background: 222 35% 10%;
+    --credential-text: 210 40% 98%;
+    --credential-secondary: 210 20% 72%;
+    --credential-border: 217 25% 28%;
+    --credential-head: 205 35% 22%;
+    --credential-alt: 217 28% 15%;
+    --credential-summary: 206 40% 23%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -139,3 +158,14 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+.credenciamento { background: hsl(var(--credential-background)); color: hsl(var(--credential-text)); }
+.credenciamento-secondary { color: hsl(var(--credential-secondary)); }
+.credenciamento-card { background: hsl(var(--card)); border-color: hsl(var(--credential-border)); box-shadow: var(--credential-shadow); }
+.credenciamento-medicos { background: hsl(var(--credential-medical)); }
+.credenciamento-diagnostico { background: hsl(var(--credential-diagnostic)); }
+.credenciamento-nao-medicos { background: hsl(var(--credential-nonmedical)); }
+.credenciamento table thead { background: hsl(var(--credential-head)); }
+.credenciamento table tbody tr { border-top: 1px solid hsl(var(--credential-border)); }
+.credenciamento table tbody tr:nth-child(even) { background: hsl(var(--credential-alt)); }
+.credenciamento-summary { background: hsl(var(--credential-summary)); color: hsl(var(--credential-summary-text)); }
