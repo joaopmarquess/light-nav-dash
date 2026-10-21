@@ -178,8 +178,14 @@ const labItems: MenuItem[] = [
     children: [
       { icon: Trophy, label: "Premiação 4T 2026" },
       { icon: Users, label: "Administradoras" },
-      { icon: Building2, label: "Uberaba · Painel", id: "Uberaba" },
-      { icon: Building2, label: "Uberaba · Mapa", id: "Uberaba Mapa" },
+    ],
+  },
+  {
+    icon: Building2,
+    label: "Uberaba",
+    children: [
+      { icon: LayoutDashboard, label: "Painel", id: "Uberaba" },
+      { icon: Building2, label: "Mapa", id: "Uberaba Mapa" },
     ],
   },
   {
@@ -236,7 +242,7 @@ const Index = () => {
     window.addEventListener("open-bi-overview", biHandler);
     const unimedHandler = () => {
       setOpenGroups({ Laboratory: true });
-      setLabOpen({ "Simulações": true });
+      setLabOpen({ "Uberaba": true });
       setActive("Uberaba");
     };
     window.addEventListener("open-unimed-uberaba", unimedHandler);
