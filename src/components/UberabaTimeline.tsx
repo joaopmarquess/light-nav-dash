@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { HOSPITAL, MODELO, MARKETING, FORMALIZACAO, IMPLANTACAO } from "@/components/UberabaTimelineEtapas";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
-import UberabaTabelasComerciais from "@/components/UberabaTabelasComerciais";
+import UberabaTabelasComerciais, { ReferenciaButton } from "@/components/UberabaTabelasComerciais";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
 
@@ -98,6 +98,7 @@ const UberabaTimeline = () => {
                 {(["Comercial", "Rede Assistencial"] as const).map((b) => (
                   <Button key={b} size="sm" variant={sub === b ? "default" : "outline"} onClick={() => setSub(sub === b ? null : b)} aria-pressed={sub === b}>{b}</Button>
                 ))}
+                {sub === "Comercial" && <ReferenciaButton />}
               </div>
             )}
           </div>

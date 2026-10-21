@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+import { useRef, useState, type PointerEvent } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 // Valores estáticos informados pelo usuário; estrutura pronta para vir do banco no futuro.
@@ -101,24 +103,30 @@ const UberabaTabelasComerciais = () => (
     <div className="mb-3 flex snap-x gap-4 overflow-x-auto sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-3 [&>*]:w-[85%] [&>*]:shrink-0 sm:[&>*]:w-auto">
       {FRENTES.map((f) => <Card key={f.titulo} f={f} />)}
     </div>
-    <div className="mt-auto flex justify-center">
-      <Dialog>
-        <DialogTrigger asChild>
-          <button type="button" className="rounded-md px-5 py-2 text-base font-bold" style={{ background: C.card, color: C.txt, border: `1px solid ${C.borda}` }}>
-            REFERÊNCIA
-          </button>
-        </DialogTrigger>
-        <DialogContent className="max-w-xl" style={{ color: C.txt }}>
-          <DialogHeader>
-            <DialogTitle style={{ color: C.txt }}>Referência</DialogTitle>
-            <p className="text-sm" style={{ color: C.txt2 }}>Tabela-base para cálculo das frentes comerciais</p>
-          </DialogHeader>
-          <Tabela linhas={REFERENCIA} />
-          <p className="text-center text-sm font-medium">Apartamento = TRUNCAR(Enfermaria × 1,25; 2)</p>
-        </DialogContent>
-      </Dialog>
-    </div>
   </section>
 );
 
 export default UberabaTabelasComerciais;
+
+export const ReferenciaButton = () => {
+  const [dx, setDx] = useState(0);
+  const drag = useRef<{ x: number; dx: number } | null>(null);
+  const down = (e: PointerEvent<HTMLDivElement>) => { drag.current = { x: e.clientX, dx }; e.currentTarget.setPointerCapture(e.pointerId); };
+  const move = (e: PointerEvent<HTMLDivElement>) => { if (drag.current) setDx(drag.current.dx + e.clientX - drag.current.x); };
+  const up = () => { drag.current = null; };
+  return (
+    <Dialog onOpenChange={(o) => o && setDx(0)}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline">Referência</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-xl" style={{ color: C.txt, marginLeft: dx }}>
+        <DialogHeader onPointerDown={down} onPointerMove={move} onPointerUp={up} className="cursor-ew-resize select-none" title="Arraste para mover">
+          <DialogTitle style={{ color: C.txt }}>Referência</DialogTitle>
+          <p className="text-sm" style={{ color: C.txt2 }}>Tabela-base para cálculo das frentes comerciais</p>
+        </DialogHeader>
+        <Tabela linhas={REFERENCIA} />
+        <p className="text-center text-sm font-medium">Apartamento = TRUNCAR(Enfermaria × 1,25; 2)</p>
+      </DialogContent>
+    </Dialog>
+  );
+};
