@@ -4,6 +4,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import UberabaTabelasComerciais, { ReferenciaButton } from "@/components/UberabaTabelasComerciais";
 import UberabaRedeAssistencial from "@/components/UberabaRedeAssistencial";
+import UberabaEstudoMapas from "@/components/UberabaEstudoMapas";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
 
@@ -103,7 +104,9 @@ const UberabaTimeline = () => {
               </div>
             )}
           </div>
-          {versao === "simples" ? (atual.nome === "Modelo de Atuação" ? (
+          {versao === "simples" ? (atual.nome === "Estudo" ? (
+            <UberabaEstudoMapas />
+          ) : atual.nome === "Modelo de Atuação" ? (
             <div className="flex min-h-0 flex-1 flex-col">
               {sub === "Comercial" && <UberabaTabelasComerciais />}
                {sub === "Rede Assistencial" && <UberabaRedeAssistencial />}

@@ -42,7 +42,7 @@ function vizinhanca(feats: F[]) {
   return nb.map((m) => new Set([...m].filter(([, c]) => c >= 3).map(([j]) => j)));
 }
 
-const UberabaMapa = () => {
+const UberabaMapa = ({ embedded = false }: { embedded?: boolean }) => {
   const [feats, setFeats] = useState<F[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -177,14 +177,14 @@ const UberabaMapa = () => {
   const [spX, spY] = calc.proj([-48.6, -20.9]) ?? [0, 0];
 
   return (
-    <div className="flex h-full flex-col gap-2">
-      <div className="flex justify-end gap-2">
+    <div className="flex h-full min-h-0 flex-col gap-2">
+      <div className="flex shrink-0 flex-wrap justify-end gap-2">
         <Button size="icon" variant="outline" title="Aproximar" onClick={() => zoomAt(W / 2, H / 2, 1.5)}><Plus className="h-4 w-4" /></Button>
         <Button size="icon" variant="outline" title="Afastar" onClick={() => zoomAt(W / 2, H / 2, 1 / 1.5)}><Minus className="h-4 w-4" /></Button>
         <Button size="icon" variant="outline" title="Voltar ao recorte" onClick={() => setZ({ k: 1, x: 0, y: 0 })}><Maximize className="h-4 w-4" /></Button>
         <Button size="sm" variant="outline" onClick={exportar}><Download className="mr-2 h-4 w-4" />Exportar PNG 16:9 (4K)</Button>
       </div>
-      <div className="relative w-full overflow-hidden rounded-xl border border-border bg-card" style={{ aspectRatio: "16 / 9" }}>
+      <div className={`relative w-full overflow-hidden rounded-lg border border-border bg-card ${embedded ? "min-h-0 flex-1" : "aspect-video"}`}>
         <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${W} ${H}`} className="h-full w-full cursor-grab touch-none active:cursor-grabbing" fontFamily="Arial, Helvetica, sans-serif"
           onPointerDown={(e) => { (e.currentTarget as Element).setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY }; }}
           onPointerMove={(e) => {
