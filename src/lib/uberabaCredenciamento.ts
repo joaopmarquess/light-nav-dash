@@ -22,18 +22,18 @@ export function cenarioCredenciamento(modo: ModoCredenciamento = MODO_CREDENCIAM
   const grupos = GRUPOS_CREDENCIAMENTO.map((grupo) => {
     if (modo === "Rio Preto") {
       const quantidade = QUANTIDADES_RIO_PRETO[grupo.id];
-      return { ...grupo, quantidade, total: quantidade * grupo.valor, explicacao: `Disponibilidade em Rio Preto: ${quantidade} referências em ${grupo.categorias} ${grupo.indicador.toLocaleLowerCase("pt-BR")}.` };
+      return { ...grupo, quantidade, valor: null, total: null, explicacao: `Disponibilidade em Rio Preto: ${quantidade} referências em ${grupo.categorias} ${grupo.indicador.toLocaleLowerCase("pt-BR")}.` };
     }
     if (modo !== "Limite") return grupo;
     const multiplicador = grupo.id === "diagnostico" ? 1 : 2;
     const quantidade = grupo.categorias * multiplicador;
     return { ...grupo, quantidade, total: quantidade * grupo.valor, explicacao: `Limite: ${grupo.categorias} ${grupo.indicador.toLocaleLowerCase("pt-BR")} × ${multiplicador} = ${quantidade} referências.` };
   });
-  const resumo = modo !== "Disponível" ? { categorias: 77, quantidade: grupos.reduce((s, g) => s + g.quantidade, 0), total: grupos.reduce((s, g) => s + g.total, 0) } : RESUMO_CREDENCIAMENTO;
+  const resumo = modo !== "Disponível" ? { categorias: 77, quantidade: grupos.reduce((s, g) => s + g.quantidade, 0), total: modo === "Rio Preto" ? null : grupos.reduce((s, g) => s + (g.total ?? 0), 0) } : RESUMO_CREDENCIAMENTO;
   return { grupos, resumo };
 }
 export const referenciasCredenciamento: ReferenciaCredenciamento[] = [];
-export const moedaCredenciamento = (valor: number) => valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+export const moedaCredenciamento = (valor: number | null) => valor === null ? "-" : valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 export function projetarCredenciamento(item: ReferenciaCredenciamento) {
   const evoDisponivel = (item.quantidade_evo ?? 0) > 0;

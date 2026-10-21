@@ -19,16 +19,16 @@ describe("Credenciamento Uberaba", () => {
     expect(cenarioCredenciamento("Limite").resumo).toEqual({ categorias: 77, quantidade: 139, total: 30800 });
   });
   it("Rio Preto usa 577 referências médicas em 56 especialidades", () => {
-    expect(cenarioCredenciamento("Rio Preto").grupos[0]).toMatchObject({ categorias: 56, quantidade: 577, valor: 200, total: 115400 });
+    expect(cenarioCredenciamento("Rio Preto").grupos[0]).toMatchObject({ categorias: 56, quantidade: 577, valor: null, total: null });
   });
   it("Rio Preto usa 20 referências em 15 categorias de diagnóstico", () => {
-    expect(cenarioCredenciamento("Rio Preto").grupos[1]).toMatchObject({ categorias: 15, quantidade: 20, valor: 400, total: 8000 });
+    expect(cenarioCredenciamento("Rio Preto").grupos[1]).toMatchObject({ categorias: 15, quantidade: 20, valor: null, total: null });
   });
   it("Rio Preto usa 30 referências em 6 categorias profissionais", () => {
-    expect(cenarioCredenciamento("Rio Preto").grupos[2]).toMatchObject({ categorias: 6, quantidade: 30, valor: 200, total: 6000 });
+    expect(cenarioCredenciamento("Rio Preto").grupos[2]).toMatchObject({ categorias: 6, quantidade: 30, valor: null, total: null });
   });
   it("Rio Preto consolida 77 categorias e 627 referências", () => {
-    expect(cenarioCredenciamento("Rio Preto").resumo).toEqual({ categorias: 77, quantidade: 627, total: 129400 });
+    expect(cenarioCredenciamento("Rio Preto").resumo).toEqual({ categorias: 77, quantidade: 627, total: null });
   });
   it("prioriza EVO sem somar Unimed", () => {
     expect(projetarCredenciamento(referencia)).toMatchObject({ quantidade_considerada: 3, origem_quantidade: "EVO", valor_unitario: 200, valor_projetado: 600 });
