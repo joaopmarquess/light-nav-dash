@@ -1,48 +1,70 @@
-type Etapa = { nomes: string[]; filhos?: string[] };
+import { useState } from "react";
+
+type Etapa = { nome: string; filhos?: string[] };
 
 const ETAPAS: Etapa[] = [
-  { nomes: ["Estudo", "Hospital Mário Palmério"] },
-  { nomes: ["Modelo de Atuação"], filhos: ["Operação Comercial", "Rede Assistencial"] },
-  { nomes: ["Plano de Marketing"] },
-  { nomes: ["Formalização"] },
-  { nomes: ["Implantação"] },
+  { nome: "Estudo" },
+  { nome: "Hospital Mário Palmério" },
+  { nome: "Modelo de Atuação", filhos: ["Operação Comercial", "Rede Assistencial"] },
+  { nome: "Plano de Marketing" },
+  { nome: "Formalização" },
+  { nome: "Implantação" },
 ];
 
-const UberabaTimeline = () => (
-  <div className="flex h-full flex-col gap-6">
-    <h1 className="text-lg font-semibold text-foreground">Timeline</h1>
-    <div className="rounded-lg border border-border bg-card px-8 py-12">
-      <div className="relative">
-        <div className="absolute left-[10%] right-[10%] top-5 h-0.5 bg-border" />
-        <ol className="relative grid grid-cols-5 gap-4">
-          {ETAPAS.map((e, i) => (
-            <li key={i} className="flex flex-col items-center gap-3 text-center">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-sm font-semibold text-primary">
-                {i + 1}
-              </span>
-              <div className="flex flex-col items-center gap-2">
-                {e.nomes.map((n) => (
-                  <span key={n} className="text-sm font-medium text-foreground">{n}</span>
-                ))}
-              </div>
-              {e.filhos && (
-                <div className="flex flex-col items-center">
-                  <div className="h-4 w-px bg-border" />
-                  <ul className="flex flex-col gap-2">
-                    {e.filhos.map((f) => (
-                      <li key={f} className="rounded-md border border-border bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground">
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </li>
-          ))}
-        </ol>
+const UberabaTimeline = () => {
+  const [aberta, setAberta] = useState<string | null>(null);
+  const atual = ETAPAS.find((e) => e.nome === aberta);
+
+  return (
+    <div className="flex h-full flex-col gap-6">
+      <h1 className="text-lg font-semibold text-foreground">Timeline</h1>
+      <div className="rounded-lg border border-border bg-card px-8 py-12">
+        <div className="relative">
+          <div className="absolute left-[8.33%] right-[8.33%] top-5 h-0.5 bg-border" />
+          <ol className="relative grid grid-cols-6 gap-4">
+            {ETAPAS.map((e, i) => {
+              const on = aberta === e.nome;
+              const clicavel = !!e.filhos;
+              return (
+                <li key={e.nome} className="flex flex-col items-center gap-3 text-center">
+                  <button
+                    type="button"
+                    disabled={!clicavel}
+                    onClick={() => setAberta(on ? null : e.nome)}
+                    className={`flex flex-col items-center gap-3 ${clicavel ? "cursor-pointer" : "cursor-default"}`}
+                  >
+                    <span
+                      className={`flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary text-sm font-semibold ${
+                        on ? "bg-primary text-primary-foreground" : "bg-background text-primary"
+                      }`}
+                    >
+                      {i + 1}
+                    </span>
+                    <span className={`text-sm font-medium text-foreground ${clicavel ? "underline decoration-dotted underline-offset-4" : ""}`}>
+                      {e.nome}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
       </div>
+
+      {atual?.filhos && (
+        <div className="rounded-lg border border-border bg-card px-8 py-6">
+          <p className="mb-4 text-sm font-semibold text-foreground">{atual.nome}</p>
+          <div className="flex flex-wrap gap-4">
+            {atual.filhos.map((f) => (
+              <div key={f} className="rounded-md border border-border bg-muted/40 px-4 py-2 text-sm font-medium text-foreground">
+                {f}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 export default UberabaTimeline;
