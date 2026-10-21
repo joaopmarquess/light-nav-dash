@@ -188,12 +188,12 @@ All colors MUST be HSL.
 
 .credenciamento { background: hsl(var(--credential-background)); color: hsl(var(--credential-text)); }
 .uberaba-guias { container-type: inline-size; flex: 1; min-height: 0; color: hsl(var(--credential-text)); background: hsl(var(--hospital-canvas)); border-top: 8px solid hsl(var(--guias-virtual)); }
-.guias-page { display: flex; flex-direction: column; min-height: 100%; gap: 14px; padding: 22px 28px 16px; }
+.guias-page { display: flex; flex-direction: column; flex: 1; min-width: 0; gap: 12px; padding: 18px 24px 14px; }
 .guias-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .guias-header > div > p:first-child { font-size: 11px; font-weight: 700; color: hsl(var(--hospital-secondary)); margin-bottom: 5px; }
 .guias-header h2 { font-size: 30px; line-height: 1.2; font-weight: 750; }
 .guias-subtitle { font-size: 16px; color: hsl(var(--hospital-secondary)); margin-top: 6px; }
-.guias-body { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: 28px; flex: 1; min-height: 330px; }
+.guias-body { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: 28px; flex: 1; min-height: 280px; }
 .guias-stages { display: grid; grid-template-rows: repeat(4, minmax(min-content, 1fr)); gap: 14px; }
 .guias-stage { position: relative; display: flex; align-items: center; gap: 18px; padding: 15px 20px; border: 1px solid hsl(var(--hospital-frame)); border-radius: 6px; background: hsl(var(--hospital-surface)); box-shadow: var(--credential-shadow); }
 .guias-stage:not(:last-child)::after { content: ""; position: absolute; left: 43px; top: 100%; height: 15px; border-left: 2px solid hsl(var(--hospital-frame)); }
@@ -224,12 +224,14 @@ All colors MUST be HSL.
 .guias-flow-list span { width: 26px; height: 26px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: hsl(var(--hospital-stat-fill)); border-radius: 50%; font-weight: 700; }
 .guias-observation { padding-top: 10px; border-top: 1px solid hsl(var(--hospital-frame)); color: hsl(var(--hospital-secondary)); font-size: 11px; line-height: 1.5; }
 @container (min-width: 1700px) {
-  .guias-page { gap: 14px; padding: 20px 32px 16px; }
-  .guias-header h2 { font-size: 38px; }
+  .guias-page { gap: 10px; padding: 14px 28px 12px; }
+  .guias-header h2 { font-size: 32px; }
   .guias-subtitle { font-size: 20px; }
   .guias-stage h3 { font-size: 21px; }
   .guias-stage p { font-size: 18px; }
-  .guias-stage { padding: 14px 22px; }
+  .guias-stage { padding: 10px 22px; }
+  .guias-stage p { margin-top: 4px; }
+  .guias-result { padding: 12px 24px; }
   .guias-stage:not(:last-child)::after { left: 45px; }
   .guias-figure figcaption { font-size: 18px; }
   .guias-indicators li { font-size: 13px; }
@@ -247,6 +249,8 @@ All colors MUST be HSL.
 }
 @container (max-width: 599px) {
   .guias-page { padding: 20px 14px; gap: 18px; }
+  .guias-header > div { min-width: 0; }
+  .guias-header > button { height: auto; min-height: 36px; max-width: 100%; white-space: normal; text-align: left; }
   .guias-header h2 { font-size: 26px; }
   .guias-stages { grid-template-columns: 1fr; gap: 18px; }
   .guias-stage { padding: 14px; gap: 12px; }
