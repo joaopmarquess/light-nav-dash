@@ -1,4 +1,5 @@
 # Project rules
+- Keep hospital institutional content in a typed data object passed into its Timeline presentation; missing media must render placeholders so future data integration never requires replacing the layout.
 - Compose the simplified Timeline study maps by reusing the geographic and Uberaba map screens; use container-aware presentation options instead of duplicating map logic.
 - Keep Uberaba credentialing reference selection and supplied summary values in a tested helper, separate from summary presentation, so visual changes cannot alter quantities or source precedence.
 - Keep MAA geometry and area classification in a focused helper, with tests, so map presentation does not change beneficiary counts or geographic membership.
