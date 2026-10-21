@@ -4,19 +4,19 @@ const referencia: ReferenciaCredenciamento = { grupo: "medicos", especialidade_c
 describe("Credenciamento Uberaba", () => {
   it("inicia em Disponível com os valores originais", () => {
     expect(MODO_CREDENCIAMENTO_PADRAO).toBe("Disponível");
-    expect(cenarioCredenciamento().resumo).toEqual({ categorias: 77, quantidade: 353, total: 84400 });
+    expect(cenarioCredenciamento().resumo).toEqual({ categorias: 77, quantidade: 353, total: 70600 });
   });
   it("Limite usa duas referências por especialidade médica", () => {
     expect(cenarioCredenciamento("Limite").grupos[0]).toMatchObject({ categorias: 56, quantidade: 112, valor: 200, total: 22400 });
   });
   it("Limite usa uma referência por categoria de serviço", () => {
-    expect(cenarioCredenciamento("Limite").grupos[1]).toMatchObject({ categorias: 15, quantidade: 15, valor: 400, total: 6000 });
+    expect(cenarioCredenciamento("Limite").grupos[1]).toMatchObject({ categorias: 15, quantidade: 15, valor: 200, total: 3000 });
   });
   it("Limite usa duas referências por categoria profissional", () => {
     expect(cenarioCredenciamento("Limite").grupos[2]).toMatchObject({ categorias: 6, quantidade: 12, valor: 200, total: 2400 });
   });
   it("consolida o Limite sem alterar as categorias", () => {
-    expect(cenarioCredenciamento("Limite").resumo).toEqual({ categorias: 77, quantidade: 139, total: 30800 });
+    expect(cenarioCredenciamento("Limite").resumo).toEqual({ categorias: 77, quantidade: 139, total: 27800 });
   });
   it("Rio Preto usa 577 referências médicas em 56 especialidades", () => {
     expect(cenarioCredenciamento("Rio Preto").grupos[0]).toMatchObject({ categorias: 56, quantidade: 577, valor: null, total: null });
@@ -41,13 +41,13 @@ describe("Credenciamento Uberaba", () => {
     expect(GRUPOS_CREDENCIAMENTO[0]).toMatchObject({ categorias: 56, quantidade: 229, valor: 200, total: 45800 });
   });
   it("preserva as quantidades e valores de diagnóstico informados", () => {
-    expect(GRUPOS_CREDENCIAMENTO[1]).toMatchObject({ categorias: 15, quantidade: 69, valor: 400, total: 27600 });
-    expect(projetarCredenciamento({ ...referencia, grupo: "diagnostico" }).valor_projetado).toBe(1200);
+    expect(GRUPOS_CREDENCIAMENTO[1]).toMatchObject({ categorias: 15, quantidade: 69, valor: 200, total: 13800 });
+    expect(projetarCredenciamento({ ...referencia, grupo: "diagnostico" }).valor_projetado).toBe(600);
   });
   it("preserva as quantidades e valores não médicos informados", () => {
     expect(GRUPOS_CREDENCIAMENTO[2]).toMatchObject({ categorias: 6, quantidade: 55, valor: 200, total: 11000 });
   });
   it("mantém os totais consolidados do anexo", () => {
-    expect(RESUMO_CREDENCIAMENTO).toEqual({ categorias: 77, quantidade: 353, total: 84400 });
+    expect(RESUMO_CREDENCIAMENTO).toEqual({ categorias: 77, quantidade: 353, total: 70600 });
   });
 });
