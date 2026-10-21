@@ -246,8 +246,9 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
   }, [trialScale, features, normalizedByUF]);
 
   const colorFor = (total: number, i = -1) => {
-    if (core && coreData) {
+    if (coreData) {
       const role = maaFillRole(coreData.set.has(i), coreData.inside.has(i), total);
+      if (role === "member" && total <= 70) return "hsl(var(--primary) / 0.42)";
       if (role === "island") return "hsl(var(--primary) / 0.42)";
       if (role === "outside-with-lives") return "hsl(var(--map-outside-lives))";
       if (role === "outside-empty") return "hsl(var(--muted) / 0.55)";
@@ -298,10 +299,10 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
             <path
               key={i}
               d={d}
-              fill={!core && outlineOnly && coreData && coreData.inside.has(i) && !coreData.set.has(i) ? "hsl(var(--primary) / 0.14)" : (core && coreData) || !trialScale ? colorFor(total, i) : total > 70 ? colorFor(total, i) : total > 0 ? (vizinhos.has(i) ? "hsl(var(--primary) / 0.3)" : "hsl(var(--primary) / 0.14)") : vizinhos.has(i) ? "hsl(var(--primary) / 0.08)" : "hsl(var(--muted) / 0.55)"}
+              fill={coreData || !trialScale ? colorFor(total, i) : total > 70 ? colorFor(total, i) : total > 0 ? (vizinhos.has(i) ? "hsl(var(--primary) / 0.3)" : "hsl(var(--primary) / 0.14)") : vizinhos.has(i) ? "hsl(var(--primary) / 0.08)" : "hsl(var(--muted) / 0.55)"}
               data-maa-role={coreData ? maaFillRole(coreData.set.has(i), coreData.inside.has(i), total) : undefined}
-              stroke={core && coreData ? "hsl(var(--map-municipal-border))" : trialScale ? (total > 70 ? "hsl(var(--background))" : "hsl(var(--border))") : "none"}
-              strokeWidth={core && coreData ? 0.8 : trialScale ? (total > 70 ? 0.8 : 0.3) : 0}
+              stroke={coreData ? "hsl(var(--map-municipal-border))" : trialScale ? (total > 70 ? "hsl(var(--background))" : "hsl(var(--border))") : "none"}
+              strokeWidth={coreData ? 0.8 : trialScale ? (total > 70 ? 0.8 : 0.3) : 0}
               strokeLinejoin="round"
               onMouseMove={(e) => {
                 const rect = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect();
@@ -337,7 +338,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
               d={pathFn(f) ?? ""}
               fill="none"
               stroke="hsl(var(--map-state-border))"
-              strokeWidth={core && coreData ? 2.5 : 1.5}
+              strokeWidth={coreData ? 2.5 : 1.5}
               strokeLinejoin="round"
               pointerEvents="none"
             />
