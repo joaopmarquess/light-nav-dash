@@ -229,7 +229,7 @@ All colors MUST be HSL.
   .guias-subtitle { font-size: 20px; }
   .guias-stage h3 { font-size: 21px; }
   .guias-stage p { font-size: 18px; }
-  .guias-stage { padding: 10px 22px; }
+  .guias-stage { padding: 8px 22px; }
   .guias-stage p { margin-top: 4px; }
   .guias-result { padding: 12px 24px; }
   .guias-stage:not(:last-child)::after { left: 45px; }
