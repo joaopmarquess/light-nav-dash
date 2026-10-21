@@ -2,6 +2,28 @@ import simplify from "simplify-js";
 
 export type MapPoint = number[];
 
+const includedMunicipalities: Record<string, readonly string[]> = {
+  MG: ["LIMEIRA DO OESTE", "CAMPINA VERDE", "COMENDADOR GOMES"],
+  GO: ["CHAPADAO DO CEU"],
+  MS: ["COSTA RICA"],
+};
+
+export function isExplicitMAAMember(uf: string, name: string): boolean {
+  const normalized = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+  return includedMunicipalities[uf]?.includes(normalized) ?? false;
+}
+
+// Keep each exterior component, but never outline enclosed holes in red.
+export function outerMAARings(rings: MapPoint[][]): MapPoint[][] {
+  const area = (ring: MapPoint[]) => Math.abs(ring.reduce((sum, p, i) => {
+    const next = ring[(i + 1) % ring.length];
+    return sum + p[0] * next[1] - next[0] * p[1];
+  }, 0));
+  return rings.filter((ring, i) => ring.length >= 4 && !rings.some((other, j) =>
+    i !== j && area(other) > area(ring) && insideMAA(ring[0], other),
+  ));
+}
+
 export function insideMAA(point: MapPoint, ring: MapPoint[]): boolean {
   let inside = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
