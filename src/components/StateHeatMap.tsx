@@ -338,7 +338,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
               d={pathFn(f) ?? ""}
               fill="none"
               stroke="hsl(var(--map-state-border))"
-              strokeWidth={core && coreData ? 2.5 : 1.5}
+              strokeWidth={coreData ? 2.5 : 1.5}
               strokeLinejoin="round"
               pointerEvents="none"
             />
