@@ -35,6 +35,13 @@ All colors MUST be HSL.
     --border: 210 30% 90%;
     --input: 210 30% 90%;
     --ring: 205 85% 55%;
+    --hospital-navy: 204 58% 21%;
+    --hospital-light: 203 45% 89%;
+    --hospital-red: 3 54% 49%;
+    --hospital-gold: 40 57% 58%;
+    --hospital-blue: 202 66% 51%;
+    --hospital-surface: 0 0% 100%;
+    --hospital-secondary: 203 16% 44%;
     --map-municipal-border: 0 0% 100%;
     --map-state-border: 0 0% 0%;
     --map-maa-outline: 0 78% 49%;
@@ -113,6 +120,8 @@ All colors MUST be HSL.
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+    --hospital-surface: 217 28% 15%;
+    --hospital-secondary: 210 20% 72%;
     --map-municipal-border: 0 0% 100%;
     --map-state-border: 0 0% 0%;
     --map-maa-outline: 0 85% 65%;
@@ -169,3 +178,15 @@ All colors MUST be HSL.
 .credenciamento table tbody tr { border-top: 1px solid hsl(var(--credential-border)); }
 .credenciamento table tbody tr:nth-child(even) { background: hsl(var(--credential-alt)); }
 .credenciamento-summary { background: hsl(var(--credential-summary)); color: hsl(var(--credential-summary-text)); }
+.hospital-executive { color: hsl(var(--hospital-navy)); }
+.dark .hospital-executive { color: hsl(var(--foreground)); }
+.hospital-institution { background: hsl(var(--hospital-navy)); color: hsl(var(--credential-summary-text)); }
+.hospital-institution-secondary { color: hsl(var(--hospital-light)); }
+.hospital-title { color: hsl(var(--hospital-red)); }
+.hospital-indicator, .hospital-service { background: hsl(var(--hospital-surface)); }
+.hospital-highlight { background: hsl(var(--hospital-light)); color: hsl(var(--hospital-navy)); }
+.hospital-secondary { color: hsl(var(--hospital-secondary)); }
+.hospital-placeholder { background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); }
+.hospital-service-assistance { border-left-color: hsl(var(--hospital-blue)); }
+.hospital-service-complex { border-left-color: hsl(var(--hospital-red)); }
+.hospital-service-diagnostic { border-left-color: hsl(var(--hospital-gold)); }

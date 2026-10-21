@@ -1,10 +1,11 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { HOSPITAL, MODELO, MARKETING, FORMALIZACAO, IMPLANTACAO } from "@/components/UberabaTimelineEtapas";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import UberabaTabelasComerciais, { ReferenciaButton } from "@/components/UberabaTabelasComerciais";
 import UberabaRedeAssistencial from "@/components/UberabaRedeAssistencial";
 import UberabaEstudoMapas from "@/components/UberabaEstudoMapas";
+import UberabaHospital from "@/components/UberabaHospital";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
 
@@ -35,9 +36,20 @@ const UberabaTimeline = () => {
   const [versao, setVersao] = useState<"simples" | "completa">("simples");
   const [sub, setSub] = useState<"Comercial" | "Rede Assistencial" | null>(null);
   const atual = ETAPAS.find((e) => e.nome === aberta);
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (aberta !== "Hospital Mário Palmério") return;
+    if (panelRef.current) panelRef.current.scrollTop = 0;
+    panelRef.current?.scrollIntoView({ block: "nearest", behavior: "auto" });
+  }, [aberta]);
+  const voltarTimeline = () => {
+    if (panelRef.current) panelRef.current.scrollTop = 0;
+    timelineRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
+  };
 
   return (
-    <div className="flex h-full flex-col gap-6">
+    <div ref={timelineRef} className="flex h-full flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-lg font-semibold text-foreground">Timeline</h1>
         <ToggleGroup type="single" value={versao} onValueChange={(value) => {
@@ -47,8 +59,8 @@ const UberabaTimeline = () => {
           <ToggleGroupItem value="completa">Completa</ToggleGroupItem>
         </ToggleGroup>
       </div>
-      <div className="rounded-lg border border-border bg-card px-8 py-4">
-        <div className="relative">
+      <div className="overflow-x-auto rounded-lg border border-border bg-card px-8 py-4">
+        <div className="relative min-w-[720px] md:min-w-0">
           <div className="absolute left-[8.33%] right-[8.33%] top-5 h-0.5 bg-border" />
           <ol className="relative grid grid-cols-6 gap-4">
             {ETAPAS.map((e, i) => {
@@ -92,7 +104,7 @@ const UberabaTimeline = () => {
       )}
 
       {(atual?.filhos || atual?.texto || atual?.conteudo) && (
-        <div className="flex min-h-0 w-full flex-1 flex-col overflow-auto rounded-lg border border-border bg-card px-8 py-4">
+        <div ref={panelRef} className="flex min-h-0 w-full flex-1 flex-col overflow-auto rounded-lg border border-border bg-card px-4 py-4 sm:px-8">
           <div className="mb-3 flex flex-wrap items-center gap-4">
             <p className="text-xl font-semibold text-foreground">{atual.nome}</p>
             {versao === "simples" && atual.nome === "Modelo de Atuação" && (
@@ -104,7 +116,7 @@ const UberabaTimeline = () => {
               </div>
             )}
           </div>
-          {versao === "simples" ? (atual.nome === "Estudo" ? (
+          {atual.nome === "Hospital Mário Palmério" ? <UberabaHospital onBack={voltarTimeline} /> : versao === "simples" ? (atual.nome === "Estudo" ? (
             <UberabaEstudoMapas />
           ) : atual.nome === "Modelo de Atuação" ? (
             <div className="flex min-h-0 flex-1 flex-col">
