@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Eye, EyeOff, Loader2, Map as MapIcon, Search } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2, Map as MapIcon, Search } from "lucide-react";
 import { hostinger } from "@/lib/hostingerClient";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 import { StateHeatMap } from "@/components/StateHeatMap";
@@ -43,17 +43,17 @@ const CarteiraTrialGeo = () => {
     return { total, porUF, ufTotals, cityTotalsByUF: city };
   }, [rows]);
 
-  if (sel) {
+  if (sel && sel !== "CENTRO") {
     return (
       <div className="fixed inset-0 z-50 bg-background flex flex-col">
         <div className="flex items-center justify-between px-4 py-2 border-b border-border">
           <div className="text-sm font-semibold text-foreground inline-flex items-center gap-2">
-            <MapIcon className="h-4 w-4" />{sel === "BRASIL" ? "Mapa do Brasil — Vidas por UF" : sel === "CENTRO" ? "Mapa Área Atuação (MAA)" : `Mapa de ${sel}`}
+            <MapIcon className="h-4 w-4" />{sel === "BRASIL" ? "Mapa do Brasil — Vidas por UF" : `Mapa de ${sel}`}
           </div>
           <button type="button" onClick={() => setSel(null)} className="text-xs text-muted-foreground hover:text-foreground underline">← Voltar</button>
         </div>
         <div className="flex-1 min-h-0">
-          {sel === "BRASIL" ? <BrazilHeatMap ufTotals={ufTotals} /> : sel === "CENTRO" ? <StateHeatMap trialScale core ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} /> : <StateHeatMap trialScale ufs={[sel]} cityTotalsByUF={cityTotalsByUF} stateTotals={ufTotals} />}
+          {sel === "BRASIL" ? <BrazilHeatMap ufTotals={ufTotals} /> : <StateHeatMap trialScale ufs={[sel]} cityTotalsByUF={cityTotalsByUF} stateTotals={ufTotals} />}
         </div>
       </div>
     );
@@ -61,10 +61,10 @@ const CarteiraTrialGeo = () => {
 
   return (
     <section className="h-full flex flex-col min-h-0 gap-4">
-      <div className="flex items-center justify-between gap-4 bg-card rounded-xl border border-border shadow-sm px-6 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-card rounded-xl border border-border shadow-sm px-6 py-4">
         <div className="flex items-center gap-2 text-sm">
           <span className="text-muted-foreground">Ativos em:</span>
-          <input type="date" value={data} onChange={(e) => e.target.value && setData(e.target.value)}
+          <input type="date" aria-label="Ativos em" value={data} onChange={(e) => e.target.value && setData(e.target.value)}
             className="h-9 px-3 rounded-md border border-border bg-background text-foreground" />
         </div>
         {!loading && !error && (
@@ -76,6 +76,18 @@ const CarteiraTrialGeo = () => {
           <div className="h-full flex items-center justify-center text-muted-foreground text-sm"><Loader2 className="h-4 w-4 mr-2 animate-spin" />Carregando…</div>
         ) : error ? (
           <div className="text-destructive text-sm">Erro: {error}</div>
+        ) : sel === "CENTRO" ? (
+          <div className="h-full bg-card rounded-xl border border-border shadow-sm p-2 flex flex-col min-h-0">
+            <div className="flex items-center gap-3 px-2 pt-2">
+              <Button type="button" variant="outline" onClick={() => setSel(null)} className="h-12 shrink-0 gap-2 px-3 [&_svg]:size-6">
+                <ArrowLeft />Voltar
+              </Button>
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Mapa Área Atuação (MAA)</h3>
+            </div>
+            <div className="flex-1 min-h-0 w-full pt-2">
+              <StateHeatMap trialScale core ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} />
+            </div>
+          </div>
         ) : (
           <div className="h-full grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-4 items-stretch">
             <div className="bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col justify-center gap-4">
@@ -101,21 +113,21 @@ const CarteiraTrialGeo = () => {
               })}
             </div>
             <div className="bg-card rounded-xl border border-border shadow-sm p-2 flex flex-col min-h-0">
-              <div className="flex items-center justify-between gap-2 px-2 pt-2">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Mapa por cidade</h3>
+              <div className="flex items-center gap-3 px-2 pt-2">
                 <div className="flex shrink-0 items-center gap-2">
+                  <Button type="button" variant="outline" size="icon" title="Mapa Área Atuação (MAA)" aria-label="Mapa Área Atuação (MAA)" onClick={() => setSel("CENTRO")} className="h-12 w-12 [&_svg]:size-6"><Search /></Button>
                   <TooltipProvider delayDuration={150}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button type="button" variant={showMAA ? "secondary" : "outline"} size="icon" aria-label={showMAA ? "Ocultar MAA" : "Mostrar MAA"} aria-pressed={showMAA} onClick={() => setShowMAA((visible) => !visible)} className="h-8 w-8">
-                          {showMAA ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                        <Button type="button" variant={showMAA ? "secondary" : "outline"} size="icon" aria-label={showMAA ? "Ocultar MAA" : "Mostrar MAA"} aria-pressed={showMAA} onClick={() => setShowMAA((visible) => !visible)} className="h-12 w-12 [&_svg]:size-6">
+                          {showMAA ? <Eye /> : <EyeOff />}
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>{showMAA ? "Ocultar MAA" : "Mostrar MAA"}</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  <Button type="button" variant="outline" size="icon" title="Mapa Área Atuação (MAA)" aria-label="Mapa Área Atuação (MAA)" onClick={() => setSel("CENTRO")} className="h-8 w-8"><Search className="h-4 w-4" /></Button>
                 </div>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Mapa por cidade</h3>
               </div>
               <div className="flex-1 min-h-0 h-full w-full">
                 <StateHeatMap trialScale outlineOnly={showMAA} showOverview={false} ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />

@@ -5,3 +5,4 @@
 - [x] Incluir os cinco municípios solicitados no MAA e validar pertencimento e contornos; dez testes passaram.
 - [x] Adicionar alternância pelo olho no Mapa por cidade e validar retorno ao mapa original sem sair da tela; teste de interação e onze testes de geometria passaram. Conferência visual com dados reais permanece bloqueada pelo carregamento acima.
 - [x] Ajustar o olho para acrescentar somente o contorno, preservando enquadramento, cores e rótulos; doze testes passaram.
+- [x] Ampliar olho e lupa à esquerda e manter o topo da Área Geográfica na lupa, com um único quadro e Voltar à esquerda.
