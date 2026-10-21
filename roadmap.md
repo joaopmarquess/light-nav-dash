@@ -3,4 +3,4 @@
 - [x] Afastar a visão da lupa e incluir um minimapa geral com o retângulo da região exibida; testes de geometria passaram.
 - [ ] Conferir a lupa com dados reais — bloqueado pelo carregamento da consulta da carteira, que não terminou durante a verificação.
 - [x] Incluir os cinco municípios solicitados no MAA e validar pertencimento e contornos; dez testes passaram.
-- [ ] Adicionar alternância pelo olho no Mapa por cidade e validar retorno ao mapa original sem sair da tela.
+- [x] Adicionar alternância pelo olho no Mapa por cidade e validar retorno ao mapa original sem sair da tela; teste de interação e onze testes de geometria passaram. Conferência visual com dados reais permanece bloqueada pelo carregamento acima.
