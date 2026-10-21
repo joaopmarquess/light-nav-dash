@@ -12,7 +12,7 @@ export default function UberabaRedeAssistencial() {
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
         <h2 id="credenciamento-titulo" className="text-xl font-bold uppercase">Modelo de Credenciamento</h2>
-        <p className="credenciamento-secondary text-base">{modo === "Limite" ? "Limite de referências e valor máximo projetado" : "Disponibilidade identificada e valor máximo projetado"}</p>
+        <p className="credenciamento-secondary text-base">{modo === "Limite" ? "Limite de referências e valor máximo projetado" : modo === "Rio Preto" ? "Disponibilidade em Rio Preto e valor máximo projetado" : "Disponibilidade identificada e valor máximo projetado"}</p>
         </div>
         <div className="flex flex-wrap gap-2" role="group" aria-label="Cenário de credenciamento">
           {(["Disponível", "Limite", "Rio Preto"] as const).map((opcao) => <Button key={opcao} size="sm" variant={modo === opcao ? "default" : "outline"} aria-pressed={modo === opcao} onClick={() => setModo(opcao)}>{opcao}</Button>)}
@@ -35,7 +35,7 @@ export default function UberabaRedeAssistencial() {
       <div className="credenciamento-summary grid gap-4 rounded-lg px-4 py-4 text-center sm:grid-cols-3">
         {[["TOTAL DE ESPECIALIDADES E CATEGORIAS", resumo.categorias], [modo === "Limite" ? "TOTAL DE REFERÊNCIAS NO LIMITE" : "TOTAL DE REFERÊNCIAS DISPONÍVEIS", resumo.quantidade], ["VALOR MÁXIMO PROJETADO", moedaCredenciamento(resumo.total)]].map(([label, valor]) => <div key={label}><p className="text-sm font-medium">{label}</p><p className="mt-1 text-3xl font-bold tabular-nums">{valor}</p></div>)}
       </div>
-      <p className="credenciamento-secondary text-sm leading-5">Os quantitativos apresentados representam disponibilidade identificada nas redes de referência e não equivalem a credenciamentos concluídos. A rede EVO foi utilizada como fonte principal e a Unimed como referência complementar nos casos em que não foi identificada disponibilidade na EVO. O pagamento dependerá da conclusão, aprovação e formalização de cada credenciamento pela Bensaúde.</p>
+      <p className="credenciamento-secondary text-sm leading-5">{modo === "Rio Preto" ? "Os quantitativos apresentados correspondem à disponibilidade informada em Rio Preto, utilizada como referência para o projeto. O pagamento dependerá da conclusão, aprovação e formalização de cada credenciamento pela Bensaúde." : "Os quantitativos apresentados representam disponibilidade identificada nas redes de referência e não equivalem a credenciamentos concluídos. A rede EVO foi utilizada como fonte principal e a Unimed como referência complementar nos casos em que não foi identificada disponibilidade na EVO. O pagamento dependerá da conclusão, aprovação e formalização de cada credenciamento pela Bensaúde."}</p>
     </section>
   );
 }
