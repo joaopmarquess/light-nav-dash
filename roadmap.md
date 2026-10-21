@@ -2,4 +2,4 @@
 - [x] Validar regras e conferir o mapa da lupa com dados reais; quatro testes passaram e nenhuma falha na tela.
 - [x] Afastar a visão da lupa e incluir um minimapa geral com o retângulo da região exibida; testes de geometria passaram.
 - [ ] Conferir a lupa com dados reais — bloqueado pelo carregamento da consulta da carteira, que não terminou durante a verificação.
-- [ ] Incluir os cinco municípios solicitados no MAA e validar pertencimento e contornos.
+- [x] Incluir os cinco municípios solicitados no MAA e validar pertencimento e contornos; dez testes passaram.
