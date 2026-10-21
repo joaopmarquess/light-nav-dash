@@ -191,7 +191,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
             <path
               key={i}
               d={d}
-              fill={trialScale && !(total > 0) ? "hsl(140 55% 92%)" : colorFor(total, i)}
+              fill={!trialScale ? colorFor(total, i) : total > 10 ? colorFor(total, i) : total > 0 ? "hsl(var(--muted))" : vizinhos.has(i) ? "hsl(var(--muted-foreground) / 0.45)" : "hsl(140 55% 92%)"}
               stroke={trialScale && total > 10 ? "hsl(var(--foreground) / 0.55)" : "none"}
               strokeWidth={trialScale && total > 10 ? 0.6 : 0}
               strokeLinejoin="round"
@@ -240,7 +240,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
           return label(x, y, uf, (stateTotals[uf] ?? 0).toLocaleString("pt-BR") + " vidas", `lbl-${i}`);
         })}
         {outrosTotal != null && projection && (() => {
-          const p = projection([-50.5, -17.8]);
+          const p = projection([-54.8, -16.2]);
           return p ? label(p[0], p[1], "Outros", outrosTotal.toLocaleString("pt-BR") + " vidas", "lbl-outros") : null;
         })()}
       </svg>
