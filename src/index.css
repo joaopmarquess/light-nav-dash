@@ -294,7 +294,7 @@ All colors MUST be HSL.
 .marketing-message h3 { font-size: 25px; font-weight: 700; line-height: 1.23; }
 .marketing-message > p { font-size: 17px; line-height: 1.3; color: hsl(var(--hospital-light)); }
 .marketing-motto { font-size: 21px; color: hsl(var(--hospital-gold)); }
-.marketing-message img { width: 100%; min-height: 0; height: 150px; flex-shrink: 0; object-fit: cover; object-position: center; }
+.marketing-message img { width: 100%; min-height: 0; height: 150px; flex-shrink: 0; object-fit: contain; object-position: left center; }
 .marketing-image-placeholder { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 120px; color: hsl(var(--hospital-light)); border: 1px dashed hsl(var(--hospital-light)); }
 .marketing-strategy { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 30px; min-height: 0; }
 .marketing-premises { display: flex; flex-direction: column; min-height: 0; }
