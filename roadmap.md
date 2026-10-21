@@ -1,7 +1,7 @@
 - [x] Ajustar cores internas/externas, suavização e siglas do Mapa Área Atuação.
 - [x] Validar regras e conferir o mapa da lupa com dados reais; quatro testes passaram e nenhuma falha na tela.
 - [x] Afastar a visão da lupa e incluir um minimapa geral com o retângulo da região exibida; testes de geometria passaram.
-- [ ] Conferir a lupa com dados reais — bloqueado pelo carregamento da consulta da carteira, que não terminou durante a verificação.
+- [x] Conferir a lupa com dados reais — mapa e minimapa carregados, topo com 72.198 vidas preservado e retorno à origem confirmado.
 - [x] Incluir os cinco municípios solicitados no MAA e validar pertencimento e contornos; dez testes passaram.
 - [x] Adicionar alternância pelo olho no Mapa por cidade e validar retorno ao mapa original sem sair da tela; teste de interação e onze testes de geometria passaram. Conferência visual com dados reais permanece bloqueada pelo carregamento acima.
 - [x] Ajustar o olho para acrescentar somente o contorno, preservando enquadramento, cores e rótulos; doze testes passaram.
