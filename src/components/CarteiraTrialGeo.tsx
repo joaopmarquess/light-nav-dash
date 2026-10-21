@@ -4,6 +4,7 @@ import { hostinger } from "@/lib/hostingerClient";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 import { StateHeatMap } from "@/components/StateHeatMap";
 import { UF_FLAGS } from "@/components/DWCarteira";
+import { Button } from "@/components/ui/button";
 
 type Row = { uf: string; cidade: string; ativos: number };
 const hoje = () => new Date().toISOString().slice(0, 10);
@@ -45,7 +46,7 @@ const CarteiraTrialGeo = () => {
       <div className="fixed inset-0 z-50 bg-background flex flex-col">
         <div className="flex items-center justify-between px-4 py-2 border-b border-border">
           <div className="text-sm font-semibold text-foreground inline-flex items-center gap-2">
-            <MapIcon className="h-4 w-4" />{sel === "BRASIL" ? "Mapa do Brasil — Vidas por UF" : sel === "CENTRO" ? "Centro principal — municípios contíguos com mais de 70 vidas" : `Mapa de ${sel}`}
+            <MapIcon className="h-4 w-4" />{sel === "BRASIL" ? "Mapa do Brasil — Vidas por UF" : sel === "CENTRO" ? "Mapa Área Atuação (MAA)" : `Mapa de ${sel}`}
           </div>
           <button type="button" onClick={() => setSel(null)} className="text-xs text-muted-foreground hover:text-foreground underline">← Voltar</button>
         </div>
@@ -98,7 +99,7 @@ const CarteiraTrialGeo = () => {
               })}
             </div>
             <div className="bg-card rounded-xl border border-border shadow-sm p-2 flex flex-col min-h-0">
-              <div className="flex items-center justify-between px-2 pt-2"><h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Mapa por cidade</h3><button type="button" title="Ver centro principal" aria-label="Ver centro principal" onClick={() => setSel("CENTRO")} className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-border hover:bg-accent"><Search className="h-4 w-4" /></button></div>
+              <div className="flex items-center justify-between px-2 pt-2"><h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Mapa por cidade</h3><Button type="button" variant="outline" size="icon" title="Mapa Área Atuação (MAA)" aria-label="Mapa Área Atuação (MAA)" onClick={() => setSel("CENTRO")} className="h-8 w-8"><Search className="h-4 w-4" /></Button></div>
               <div className="flex-1 min-h-0 h-full w-full">
                 <StateHeatMap trialScale ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />
               </div>

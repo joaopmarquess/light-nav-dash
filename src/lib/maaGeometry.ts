@@ -1,0 +1,37 @@
+import simplify from "simplify-js";
+
+export type MapPoint = number[];
+
+export function insideMAA(point: MapPoint, ring: MapPoint[]): boolean {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const a = ring[i], b = ring[j];
+    if ((a[1] > point[1]) !== (b[1] > point[1]) &&
+      point[0] < ((b[0] - a[0]) * (point[1] - a[1])) / (b[1] - a[1]) + a[0]) inside = !inside;
+  }
+  return inside;
+}
+
+export function maaFillRole(member: boolean, inside: boolean, lives: number) {
+  if (member) return "member";
+  if (inside) return "island";
+  return lives > 0 ? "outside-with-lives" : "outside-empty";
+}
+
+// Pixel-space simplification followed by short rounded corners, not changes to geography.
+export function smoothMAAPath(points: MapPoint[]): string {
+  if (points.length < 4) return "";
+  const reduced = simplify(points.map(([x, y]) => ({ x, y })), 2, true);
+  const first = reduced[0], last = reduced[reduced.length - 1];
+  if (!first || !last) return "";
+  if (first.x === last.x && first.y === last.y) reduced.pop();
+  if (reduced.length < 3) return "";
+  const start = reduced[0];
+  const previous = reduced[reduced.length - 1];
+  let d = `M${(previous.x + start.x) / 2},${(previous.y + start.y) / 2}`;
+  reduced.forEach((p, i) => {
+    const next = reduced[(i + 1) % reduced.length];
+    d += `Q${p.x},${p.y} ${(p.x + next.x) / 2},${(p.y + next.y) / 2}`;
+  });
+  return d + "Z";
+}

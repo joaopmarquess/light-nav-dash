@@ -1,0 +1,2 @@
+- [x] Ajustar cores internas/externas, suavização e siglas do Mapa Área Atuação.
+- [x] Validar regras e conferir o mapa da lupa com dados reais; quatro testes passaram e nenhuma falha na tela.
