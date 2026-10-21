@@ -223,6 +223,9 @@ All colors MUST be HSL.
 .hospital-slide-service { display: grid; grid-template-columns: 35% 65%; gap: 8px; align-content: start; padding: 12px; border: 1px solid hsl(var(--hospital-frame)); border-left-width: 8px; border-radius: 3px; background: hsl(var(--hospital-surface)); }
 .hospital-slide-service h4 { font-size: 11px; line-height: 1.25; font-weight: 750; }
 .hospital-slide-service p { color: hsl(var(--hospital-secondary)); font-size: 11px; line-height: 1.3; }
+.hospital-slide-service.hospital-service-assistance { border-left-color: hsl(var(--hospital-blue)); }
+.hospital-slide-service.hospital-service-complex { border-left-color: hsl(var(--hospital-red)); }
+.hospital-slide-service.hospital-service-diagnostic { border-left-color: hsl(var(--hospital-gold)); }
 .hospital-slide-role { display: grid; grid-template-columns: 21% 1fr; align-items: center; gap: 14px; padding: 22px 26px; border: 1px solid hsl(var(--hospital-frame)); border-radius: 4px; background: hsl(var(--hospital-role-fill)); }
 .hospital-slide-role h4 { color: hsl(var(--hospital-blue)); font-size: 11px; font-weight: 750; }
 .hospital-slide-role p { font-size: 15px; font-weight: 700; line-height: 1.3; }
@@ -259,8 +262,8 @@ All colors MUST be HSL.
   .hospital-slide-service { grid-template-columns: 1fr; gap: 6px; padding: 10px; }
 }
 @container (max-width: 719px) {
-  .hospital-slide { grid-template-columns: 1fr; }
-  .hospital-slide-institution { display: flex; flex-direction: column; }
+  .hospital-slide { display: block; }
+  .hospital-slide-institution { display: block; }
   .hospital-slide-facade { height: auto; aspect-ratio: 1.57; }
   .hospital-slide-identity { gap: 20px; padding: 24px; }
   .hospital-slide-content { display: flex; flex-direction: column; padding: 24px 18px; }
