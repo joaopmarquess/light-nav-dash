@@ -42,6 +42,10 @@ All colors MUST be HSL.
     --hospital-blue: 202 66% 51%;
     --hospital-surface: 0 0% 100%;
     --hospital-secondary: 203 16% 44%;
+    --hospital-canvas: 205 45% 97%;
+    --hospital-frame: 204 28% 86%;
+    --hospital-stat-fill: 200 65% 93%;
+    --hospital-role-fill: 201 55% 96%;
     --map-municipal-border: 0 0% 100%;
     --map-state-border: 0 0% 0%;
     --map-maa-outline: 0 78% 49%;
@@ -122,6 +126,10 @@ All colors MUST be HSL.
     --ring: 212.7 26.8% 83.9%;
     --hospital-surface: 217 28% 15%;
     --hospital-secondary: 210 20% 72%;
+    --hospital-canvas: 217 28% 15%;
+    --hospital-frame: 210 20% 32%;
+    --hospital-stat-fill: 204 35% 25%;
+    --hospital-role-fill: 204 35% 22%;
     --map-municipal-border: 0 0% 100%;
     --map-state-border: 0 0% 0%;
     --map-maa-outline: 0 85% 65%;
@@ -190,3 +198,78 @@ All colors MUST be HSL.
 .hospital-service-assistance { border-left-color: hsl(var(--hospital-blue)); }
 .hospital-service-complex { border-left-color: hsl(var(--hospital-red)); }
 .hospital-service-diagnostic { border-left-color: hsl(var(--hospital-gold)); }
+
+.hospital-presentation { container-type: inline-size; flex: 1; min-height: 680px; display: flex; color: hsl(var(--hospital-navy)); background: hsl(var(--hospital-canvas)); }
+.dark .hospital-presentation { color: hsl(var(--foreground)); }
+.hospital-slide { width: 100%; display: grid; grid-template-columns: 37.5fr 62.5fr; }
+.hospital-slide-institution { display: grid; grid-template-rows: 42.3% 57.7%; min-height: 0; }
+.hospital-slide-facade { width: 100%; height: 100%; min-height: 0; object-fit: cover; }
+.hospital-slide-identity { padding: 38px 42px; display: flex; flex-direction: column; justify-content: space-around; gap: 24px; }
+.hospital-slide-identity h2 { font-size: 32px; line-height: 1.25; font-weight: 750; }
+.hospital-slide-priority { color: hsl(var(--hospital-light)); font-size: 22px; line-height: 1.25; font-weight: 700; }
+.hospital-slide-description { color: hsl(var(--hospital-light)); font-size: 17px; line-height: 1.35; }
+.hospital-slide-content { padding: 36px 38px 20px; min-width: 0; display: grid; grid-template-rows: auto 104px minmax(190px, 1fr) 104px auto; gap: 26px; }
+.hospital-slide-header > p { font-size: 14px; font-weight: 700; text-transform: uppercase; margin-bottom: 14px; }
+.hospital-slide-header h3 { font-size: 30px; line-height: 1.2; font-weight: 750; }
+.hospital-slide-indicators { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+.hospital-slide-indicator { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; border: 1px solid hsl(var(--hospital-frame)); border-radius: 4px; background: hsl(var(--hospital-surface)); text-align: center; padding: 10px; }
+.hospital-slide-indicator strong { font-size: 28px; line-height: 1; font-weight: 750; font-variant-numeric: tabular-nums; }
+.hospital-slide-indicator span { font-size: 10px; font-weight: 700; color: hsl(var(--hospital-secondary)); }
+.hospital-slide-indicator-primary { background: hsl(var(--hospital-stat-fill)); }
+.hospital-slide-indicator-primary strong { color: hsl(var(--hospital-blue)); }
+.hospital-slide-assistance { display: grid; grid-template-columns: 1fr 1.02fr; gap: 26px; min-height: 0; }
+.hospital-slide-care-photo { width: 100%; height: 100%; min-height: 0; object-fit: cover; }
+.hospital-slide-services { display: grid; grid-template-rows: repeat(3, 1fr); gap: 8px; }
+.hospital-slide-service { display: grid; grid-template-columns: 35% 65%; gap: 8px; align-content: start; padding: 12px; border: 1px solid hsl(var(--hospital-frame)); border-left-width: 8px; border-radius: 3px; background: hsl(var(--hospital-surface)); }
+.hospital-slide-service h4 { font-size: 11px; line-height: 1.25; font-weight: 750; }
+.hospital-slide-service p { color: hsl(var(--hospital-secondary)); font-size: 11px; line-height: 1.3; }
+.hospital-slide-role { display: grid; grid-template-columns: 21% 1fr; align-items: center; gap: 14px; padding: 22px 26px; border: 1px solid hsl(var(--hospital-frame)); border-radius: 4px; background: hsl(var(--hospital-role-fill)); }
+.hospital-slide-role h4 { color: hsl(var(--hospital-blue)); font-size: 11px; font-weight: 750; }
+.hospital-slide-role p { font-size: 15px; font-weight: 700; line-height: 1.3; }
+.hospital-slide-footer { border-top: 1px solid hsl(var(--hospital-frame)); padding-top: 16px; color: hsl(var(--hospital-secondary)); text-align: center; font-size: 10px; }
+.hospital-slide-footer a:hover { text-decoration: underline; }
+.hospital-slide-signature { color: hsl(var(--hospital-blue)); text-align: right; font-weight: 700; margin-top: 20px; }
+.hospital-placeholder { display: flex; align-items: center; justify-content: center; gap: 8px; }
+@container (min-width: 1700px) {
+  .hospital-slide-content { padding: 40px 48px 24px; gap: 28px; grid-template-rows: auto 120px minmax(200px, 1fr) 108px auto; }
+  .hospital-slide-identity { padding: 40px 56px; }
+  .hospital-slide-identity h2 { font-size: 40px; }
+  .hospital-slide-priority { font-size: 28px; }
+  .hospital-slide-description { font-size: 22px; }
+  .hospital-slide-header h3 { font-size: 38px; }
+  .hospital-slide-header > p { font-size: 17px; }
+  .hospital-slide-indicator strong { font-size: 36px; }
+  .hospital-slide-indicator span { font-size: 13px; }
+  .hospital-slide-service { padding: 16px; grid-template-columns: 33% 1fr; }
+  .hospital-slide-service h4, .hospital-slide-service p { font-size: 15px; }
+  .hospital-slide-role h4 { font-size: 15px; }
+  .hospital-slide-role p { font-size: 21px; }
+  .hospital-slide-footer { font-size: 13px; }
+}
+@container (max-width: 1099px) {
+  .hospital-slide { grid-template-columns: 34fr 66fr; }
+  .hospital-slide-content { padding: 24px; gap: 20px; }
+  .hospital-slide-header h3 { font-size: 26px; }
+  .hospital-slide-identity { padding: 24px; }
+  .hospital-slide-identity h2 { font-size: 26px; }
+  .hospital-slide-priority { font-size: 19px; }
+  .hospital-slide-description { font-size: 15px; }
+  .hospital-slide-indicators { gap: 10px; }
+  .hospital-slide-assistance { gap: 14px; }
+  .hospital-slide-service { grid-template-columns: 1fr; gap: 6px; padding: 10px; }
+}
+@container (max-width: 719px) {
+  .hospital-slide { grid-template-columns: 1fr; }
+  .hospital-slide-institution { display: flex; flex-direction: column; }
+  .hospital-slide-facade { height: auto; aspect-ratio: 1.57; }
+  .hospital-slide-identity { gap: 20px; padding: 24px; }
+  .hospital-slide-content { display: flex; flex-direction: column; padding: 24px 18px; }
+  .hospital-slide-indicators { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hospital-slide-indicator { min-height: 100px; }
+  .hospital-slide-assistance { grid-template-columns: 1fr; }
+  .hospital-slide-care-photo { height: auto; aspect-ratio: 1.62; }
+  .hospital-slide-service { grid-template-columns: 35% 1fr; padding: 14px; }
+  .hospital-slide-service h4, .hospital-slide-service p { font-size: 13px; }
+  .hospital-slide-role { grid-template-columns: 1fr; padding: 20px; }
+  .hospital-slide-footer { line-height: 1.6; font-size: 11px; }
+}
