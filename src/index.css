@@ -279,7 +279,8 @@ All colors MUST be HSL.
 .operacao-front > span { color: var(--front-color); font-size: 23px; font-weight: 750; flex-shrink: 0; }
 .operacao-front h3 { font-size: 14px; font-weight: 750; line-height: 1.25; }
 .operacao-front p { font-size: 13px; line-height: 1.35; color: hsl(var(--hospital-secondary)); margin-top: 4px; }
-.operacao-connections { width: 100%; height: 100%; overflow: visible; }
+.operacao-connections { position: relative; width: 100%; align-self: stretch; min-height: 0; }
+.operacao-connections svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .operacao-connections path { fill: none; stroke: hsl(var(--hospital-frame)); stroke-width: 2; vector-effect: non-scaling-stroke; }
 .operacao-alignment { align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-align: center; padding: 16px 10px; background: hsl(var(--hospital-stat-fill)); border: 1px solid hsl(var(--hospital-frame)); border-radius: 5px; }
 .operacao-alignment svg { width: 36px; height: 36px; color: hsl(var(--hospital-blue)); }
@@ -312,6 +313,7 @@ All colors MUST be HSL.
 }
 @container (max-width: 1099px) {
   .operacao-diagram { display: flex; flex-direction: column; gap: 20px; }
+  .operacao-diagram > * { flex-shrink: 0; }
   .operacao-fronts { width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: auto; }
   .operacao-connections { display: none; }
   .operacao-alignment { flex-direction: row; width: 100%; padding: 20px; }

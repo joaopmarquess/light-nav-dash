@@ -19,9 +19,9 @@ export default function UberabaOperacaoIniciada() {
               </li>
             ))}
           </ol>
-          <svg className="operacao-connections" viewBox="0 0 100 600" preserveAspectRatio="none" aria-hidden="true">
+          <div className="operacao-connections"><svg viewBox="0 0 100 600" preserveAspectRatio="none" aria-hidden="true">
             {[50, 150, 250, 350, 450, 550].map((y) => <path key={y} d={`M0 ${y} C55 ${y} 45 300 100 300`} />)}
-          </svg>
+          </svg></div>
           <div className="operacao-alignment">
             <Waypoints aria-hidden="true" />
             <h3>ALINHAMENTO<br />E EXECUÇÃO</h3>
