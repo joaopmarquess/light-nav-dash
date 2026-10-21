@@ -66,6 +66,10 @@ All colors MUST be HSL.
     --credential-summary: 206 40% 23%;
     --credential-summary-text: 0 0% 100%;
     --credential-shadow: 0 2px 8px hsl(206 40% 23% / 0.06);
+    --guias-virtual: 202 66% 51%;
+    --guias-autorizador: 40 57% 58%;
+    --guias-auditoria: 113 19% 54%;
+    --guias-atendimento: 16 56% 65%;
 
     --radius: 0.5rem;
 
@@ -183,6 +187,76 @@ All colors MUST be HSL.
 }
 
 .credenciamento { background: hsl(var(--credential-background)); color: hsl(var(--credential-text)); }
+.uberaba-guias { container-type: inline-size; flex: 1; min-height: 0; color: hsl(var(--credential-text)); background: hsl(var(--hospital-canvas)); border-top: 8px solid hsl(var(--guias-virtual)); }
+.guias-page { display: flex; flex-direction: column; min-height: 100%; gap: 14px; padding: 22px 28px 16px; }
+.guias-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.guias-header > div > p:first-child { font-size: 11px; font-weight: 700; color: hsl(var(--hospital-secondary)); margin-bottom: 5px; }
+.guias-header h2 { font-size: 30px; line-height: 1.2; font-weight: 750; }
+.guias-subtitle { font-size: 16px; color: hsl(var(--hospital-secondary)); margin-top: 6px; }
+.guias-body { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: 28px; flex: 1; min-height: 330px; }
+.guias-stages { display: grid; grid-template-rows: repeat(4, minmax(min-content, 1fr)); gap: 14px; }
+.guias-stage { position: relative; display: flex; align-items: center; gap: 18px; padding: 15px 20px; border: 1px solid hsl(var(--hospital-frame)); border-radius: 6px; background: hsl(var(--hospital-surface)); box-shadow: var(--credential-shadow); }
+.guias-stage:not(:last-child)::after { content: ""; position: absolute; left: 43px; top: 100%; height: 15px; border-left: 2px solid hsl(var(--hospital-frame)); }
+.guias-number { width: 46px; height: 46px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 750; color: hsl(var(--hospital-navy)); }
+.guias-tone-virtual .guias-number { background: hsl(var(--guias-virtual)); }
+.guias-tone-autorizador .guias-number { background: hsl(var(--guias-autorizador)); }
+.guias-tone-auditoria .guias-number { background: hsl(var(--guias-auditoria)); }
+.guias-tone-atendimento .guias-number { background: hsl(var(--guias-atendimento)); }
+.guias-stage h3 { font-size: 15px; line-height: 1.3; font-weight: 750; }
+.guias-stage p { margin-top: 6px; color: hsl(var(--hospital-secondary)); font-size: 14px; line-height: 1.4; }
+.guias-media { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.guias-figure { position: relative; flex: 1; overflow: hidden; min-height: 260px; border-radius: 6px; background: hsl(var(--muted)); }
+.guias-figure img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.guias-figure figcaption { position: absolute; bottom: 0; width: 100%; background: hsl(var(--hospital-navy)); color: hsl(var(--credential-summary-text)); padding: 14px 20px; font-size: 14px; line-height: 1.4; text-align: center; }
+.guias-placeholder { height: 100%; min-height: 260px; display: flex; align-items: center; justify-content: center; gap: 12px; color: hsl(var(--muted-foreground)); }
+.guias-indicators { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.guias-indicators li { display: flex; justify-content: center; align-items: center; text-align: center; padding: 10px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+.guias-indicator-1, .guias-indicator-2 { background: hsl(var(--hospital-stat-fill)); }
+.guias-indicator-3 { background: hsl(var(--guias-auditoria) / .15); }
+.guias-indicator-4 { background: hsl(var(--guias-atendimento) / .15); }
+.guias-result { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 28px; padding: 18px 24px; background: hsl(var(--hospital-navy)); color: hsl(var(--credential-summary-text)); }
+.guias-result h3 { font-size: 11px; font-weight: 750; color: hsl(var(--hospital-light)); }
+.guias-result-main { font-size: 24px; font-weight: 700; line-height: 1.3; }
+.guias-result ul { display: flex; flex-wrap: wrap; gap: 5px 16px; color: hsl(var(--hospital-light)); font-size: 11px; margin-top: 8px; }
+.guias-premise { font-style: italic; font-size: 12px; line-height: 1.4; color: hsl(var(--hospital-secondary)); }
+.guias-flow-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 26px; margin-top: 18px; }
+.guias-flow-list li { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid hsl(var(--hospital-frame)); padding: 8px 0; font-size: 14px; }
+.guias-flow-list span { width: 26px; height: 26px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: hsl(var(--hospital-stat-fill)); border-radius: 50%; font-weight: 700; }
+.guias-observation { padding-top: 10px; border-top: 1px solid hsl(var(--hospital-frame)); color: hsl(var(--hospital-secondary)); font-size: 11px; line-height: 1.5; }
+@container (min-width: 1700px) {
+  .guias-page { gap: 14px; padding: 20px 32px 16px; }
+  .guias-header h2 { font-size: 38px; }
+  .guias-subtitle { font-size: 20px; }
+  .guias-stage h3 { font-size: 21px; }
+  .guias-stage p { font-size: 18px; }
+  .guias-stage { padding: 14px 22px; }
+  .guias-stage:not(:last-child)::after { left: 45px; }
+  .guias-figure figcaption { font-size: 18px; }
+  .guias-indicators li { font-size: 13px; }
+  .guias-result-main { font-size: 30px; }
+  .guias-result h3, .guias-result ul, .guias-premise { font-size: 14px; }
+  .guias-observation { font-size: 12px; }
+}
+@container (max-width: 1099px) {
+  .guias-header { flex-wrap: wrap; }
+  .guias-body { display: flex; flex-direction: column; }
+  .guias-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: auto; }
+  .guias-stage:not(:last-child)::after { display: none; }
+  .guias-figure { flex: none; aspect-ratio: 1.8; }
+  .guias-result { grid-template-columns: 1fr; gap: 10px; }
+}
+@container (max-width: 599px) {
+  .guias-page { padding: 20px 14px; gap: 18px; }
+  .guias-header h2 { font-size: 26px; }
+  .guias-stages { grid-template-columns: 1fr; gap: 18px; }
+  .guias-stage { padding: 14px; gap: 12px; }
+  .guias-stage:not(:last-child)::after { display: block; left: 37px; height: 19px; }
+  .guias-indicators { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .guias-figure { aspect-ratio: 1.1; }
+  .guias-result { padding: 20px; }
+  .guias-result-main { font-size: 22px; }
+  .guias-flow-list { grid-template-columns: 1fr; }
+}
 .credenciamento-secondary { color: hsl(var(--credential-secondary)); }
 .credenciamento-card { background: hsl(var(--card)); border-color: hsl(var(--credential-border)); box-shadow: var(--credential-shadow); }
 .credenciamento-medicos { background: hsl(var(--credential-medical)); }
