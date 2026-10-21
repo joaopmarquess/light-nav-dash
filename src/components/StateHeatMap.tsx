@@ -220,8 +220,8 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
               key={i}
               d={d}
               fill={!trialScale ? colorFor(total, i) : total > 70 ? colorFor(total, i) : total > 0 ? (vizinhos.has(i) ? "hsl(var(--primary) / 0.3)" : "hsl(var(--primary) / 0.14)") : vizinhos.has(i) ? "hsl(var(--primary) / 0.08)" : "hsl(var(--muted) / 0.55)"}
-              stroke={trialScale ? (total > 70 ? "hsl(var(--background))" : "hsl(var(--border))") : "none"}
-              strokeWidth={trialScale ? (total > 70 ? 0.8 : 0.3) : 0}
+              stroke={coreData ? "hsl(var(--background))" : trialScale ? (total > 70 ? "hsl(var(--background))" : "hsl(var(--border))") : "none"}
+              strokeWidth={coreData ? 0.8 : trialScale ? (total > 70 ? 0.8 : 0.3) : 0}
               strokeLinejoin="round"
               onMouseMove={(e) => {
                 const rect = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect();
@@ -257,13 +257,13 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
               d={pathFn(f) ?? ""}
               fill="none"
               stroke="#000"
-              strokeWidth={1.5}
+              strokeWidth={coreData ? 2.5 : 1.5}
               strokeLinejoin="round"
               pointerEvents="none"
             />
           ))}
         {coreData && (
-          <path d={pathFn({ type: "MultiLineString", coordinates: coreData.lines } as any) ?? ""} fill="none" stroke="hsl(var(--foreground))" strokeWidth={3} strokeLinejoin="round" pointerEvents="none" />
+          <path d={pathFn({ type: "MultiLineString", coordinates: coreData.lines } as any) ?? ""} fill="none" stroke="hsl(var(--destructive))" strokeWidth={3} strokeLinejoin="round" pointerEvents="none" />
         )}
         {!coreData && stateTotals && stateOutlines?.map((f, i) => {
           const uf = NAME_TO_UF[(f.properties as any)?.name] ?? "";
