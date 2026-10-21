@@ -1,3 +1,4 @@
+- [ ] Inserir Guias no Modelo de Atuação simplificado, com jornada digital, imagem, fluxo expansível e retorno; conferir interação e apresentação.
 - [x] Ajustar cores internas/externas, suavização e siglas do Mapa Área Atuação.
 - [x] Criar e conferir apresentação de Formalização com produtos restritos a Uberaba e instrumentos contratuais previstos; cinco testes aprovados, sem rolagem na tela de origem e versão Completa preservada.
 - [x] Incluir o PDF v3 em Plano de Marketing da Timeline simplificada, com texto legível, imagem original da campanha, seis premissas e canais de divulgação; conferido sem rolagem na tela de origem e versão Completa preservada.
