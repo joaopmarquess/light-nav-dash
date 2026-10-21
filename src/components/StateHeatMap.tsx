@@ -190,9 +190,10 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
             <path
               key={i}
               d={d}
-              fill={colorFor(total, i)}
-              stroke="none"
-              strokeWidth={0}
+              fill={trialScale && !(total > 0) ? "hsl(140 55% 92%)" : colorFor(total, i)}
+              stroke={trialScale && total > 10 ? "hsl(var(--foreground) / 0.55)" : "none"}
+              strokeWidth={trialScale && total > 10 ? 0.6 : 0}
+              strokeLinejoin="round"
               onMouseMove={(e) => {
                 const rect = (e.currentTarget.ownerSVGElement as SVGSVGElement).getBoundingClientRect();
                 setHover({
