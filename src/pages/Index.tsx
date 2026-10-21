@@ -88,6 +88,7 @@ import { ListTree } from "lucide-react";
 import OrcamentoFaturamento from "@/components/OrcamentoFaturamento";
 import UberabaShell from "@/components/UberabaShell";
 import UberabaMapa from "@/components/UberabaMapa";
+import UberabaTimeline from "@/components/UberabaTimeline";
 
 
 import Assistencial from "@/components/Assistencial";
@@ -186,6 +187,7 @@ const labItems: MenuItem[] = [
     children: [
       { icon: LayoutDashboard, label: "Painel", id: "Uberaba" },
       { icon: Building2, label: "Mapa", id: "Uberaba Mapa" },
+      { icon: LayoutDashboard, label: "Timeline", id: "Uberaba Timeline" },
     ],
   },
   {
@@ -523,6 +525,8 @@ const Index = () => {
             <Orcamento />
           ) : active === "Uberaba" ? (
             <UberabaShell />
+          ) : active === "Uberaba Timeline" ? (
+            <UberabaTimeline />
           ) : active === "Uberaba Mapa" ? (
             <UberabaMapa />
           ) : active === "Gráficos" ? (
