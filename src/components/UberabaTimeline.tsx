@@ -45,7 +45,7 @@ const UberabaTimeline = () => {
           <ToggleGroupItem value="completa">Completa</ToggleGroupItem>
         </ToggleGroup>
       </div>
-      <div className="rounded-lg border border-border bg-card px-8 py-12">
+      <div className="rounded-lg border border-border bg-card px-8 py-4">
         <div className="relative">
           <div className="absolute left-[8.33%] right-[8.33%] top-5 h-0.5 bg-border" />
           <ol className="relative grid grid-cols-6 gap-4">
@@ -93,8 +93,7 @@ const UberabaTimeline = () => {
         <div className="min-h-0 w-full flex-1 overflow-auto rounded-lg border border-border bg-card px-12 py-8">
           <p className="mb-6 text-xl font-semibold text-foreground">{atual.nome}</p>
           {versao === "simples" ? (atual.nome === "Modelo de Atuação" ? (
-            <div className="space-y-6">
-              <p className="text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{LOREM}</p>
+            <div className="space-y-3">
               <div className="flex gap-3">
                 {(["Comercial", "Rede Assistencial"] as const).map((b) => (
                   <Button key={b} variant={sub === b ? "default" : "outline"} onClick={() => setSub(sub === b ? null : b)} aria-pressed={sub === b}>{b}</Button>

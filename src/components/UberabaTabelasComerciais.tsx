@@ -60,13 +60,13 @@ const Tabela = ({ linhas }: { linhas: Linha[] }) => (
   <table className="w-full border-collapse text-center text-sm" style={{ color: C.txt }}>
     <thead className="sticky top-0">
       <tr style={{ background: C.head }}>
-        {["FAIXA", "ENFERMARIA", "APARTAMENTO"].map((h) => <th key={h} className="px-2 py-2 text-xs font-semibold">{h}</th>)}
+        {["FAIXA", "ENFERMARIA", "APARTAMENTO"].map((h) => <th key={h} className="px-2 py-1 text-xs font-semibold">{h}</th>)}
       </tr>
     </thead>
     <tbody>
       {linhas.map((l, i) => (
         <tr key={l[0]} style={{ background: i % 2 ? C.alt : C.card, borderTop: `1px solid ${C.borda}` }}>
-          {l.map((v, j) => <td key={j} className="px-2 py-1.5 tabular-nums">{v}</td>)}
+          {l.map((v, j) => <td key={j} className="px-2 py-0.5 tabular-nums">{v}</td>)}
         </tr>
       ))}
     </tbody>
@@ -78,20 +78,20 @@ const Card = ({ f }: { f: Frente }) => {
   return (
     <div className="flex min-w-[280px] snap-center flex-col overflow-hidden rounded-lg" style={{ background: C.card, border: `1px solid ${C.borda}` }}>
       <div className="h-2" style={{ background: f.cor }} />
-      <div className="px-4 py-3 text-center">
-        <p className="text-lg font-bold" style={{ color: C.txt }}>{f.titulo}</p>
+      <div className="flex items-baseline justify-center gap-2 px-4 py-1.5 text-center">
+        <p className="text-base font-bold" style={{ color: C.txt }}>{f.titulo}</p>
         <p className="text-xs font-semibold tracking-wide" style={{ color: f.cor }}>{f.segmento}</p>
       </div>
       <Tabela linhas={f.linhas} />
-      <button type="button" onClick={() => setAberto(!aberto)} className="flex items-center justify-center gap-1 px-4 py-2 text-xs font-semibold uppercase tracking-wide" style={{ color: C.txt, borderTop: `1px solid ${C.borda}`, background: C.alt }} aria-expanded={aberto}>
+      <button type="button" onClick={() => setAberto(!aberto)} className="flex items-center justify-center gap-1 px-4 py-1 text-xs font-semibold uppercase tracking-wide" style={{ color: C.txt, borderTop: `1px solid ${C.borda}`, background: C.alt }} aria-expanded={aberto}>
         Indicadores variáveis <ChevronDown className={`h-4 w-4 transition-transform ${aberto ? "rotate-180" : ""}`} />
       </button>
       {aberto && (
-        <dl className="flex-1 space-y-2 px-4 py-3 text-center text-sm">
+        <dl className="flex-1 space-y-0.5 px-3 py-1.5 text-center text-xs">
           {f.indicadores.map(([k, v]) => (
-            <div key={k}>
-              <dt className="text-xs font-semibold" style={{ color: C.txt2 }}>{k}</dt>
-              <dd style={{ color: C.txt }}>{v}</dd>
+            <div key={k} className="truncate" title={`${k}: ${v}`}>
+              <dt className="inline font-semibold" style={{ color: C.txt2 }}>{k}: </dt>
+              <dd className="inline" style={{ color: C.txt }}>{v}</dd>
             </div>
           ))}
         </dl>
@@ -103,18 +103,19 @@ const Card = ({ f }: { f: Frente }) => {
 const UberabaTabelasComerciais = () => {
   const [ref, setRef] = useState(false);
   return (
-    <section className="rounded-lg p-6" style={{ background: C.fundo, color: C.txt }}>
-      <h3 className="text-xl font-bold">Tabelas de preços e indicadores variáveis</h3>
-      <p className="mb-1 text-sm" style={{ color: C.txt2 }}>Valores mensais por faixa etária | Enfermaria e Apartamento</p>
-      <p className="mb-4 text-xs font-semibold" style={{ color: C.txt2 }}>Valores em R$</p>
+    <section className="rounded-lg p-3" style={{ background: C.fundo, color: C.txt }}>
+      <div className="mb-2 flex flex-wrap items-baseline gap-x-3">
+        <h3 className="text-base font-bold">Tabelas de preços e indicadores variáveis</h3>
+        <p className="text-xs" style={{ color: C.txt2 }}>Valores mensais por faixa etária | Enfermaria e Apartamento | Valores em R$</p>
+      </div>
       <div className="flex snap-x gap-4 overflow-x-auto sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-3 [&>*]:w-[85%] [&>*]:shrink-0 sm:[&>*]:w-auto">
         {FRENTES.map((f) => <Card key={f.titulo} f={f} />)}
       </div>
-      <div className="mt-6 overflow-hidden rounded-lg" style={{ background: C.card, border: `1px solid ${C.borda}` }}>
-        <button type="button" onClick={() => setRef(!ref)} aria-expanded={ref} className="flex w-full items-center justify-between px-4 py-3 text-left">
+      <div className="mt-2 overflow-hidden rounded-lg" style={{ background: C.card, border: `1px solid ${C.borda}` }}>
+        <button type="button" onClick={() => setRef(!ref)} aria-expanded={ref} className="flex w-full items-center justify-between px-4 py-1.5 text-left">
           <span>
-            <span className="block font-bold">REFERÊNCIA</span>
-            <span className="text-sm" style={{ color: C.txt2 }}>Tabela-base para cálculo das frentes comerciais</span>
+            <span className="mr-3 text-sm font-bold">REFERÊNCIA</span>
+            <span className="text-xs" style={{ color: C.txt2 }}>Tabela-base para cálculo das frentes comerciais</span>
           </span>
           <ChevronDown className={`h-5 w-5 transition-transform ${ref ? "rotate-180" : ""}`} />
         </button>
@@ -125,7 +126,7 @@ const UberabaTabelasComerciais = () => {
           </div>
         )}
       </div>
-      <p className="mt-4 text-xs italic" style={{ color: C.txt2 }}>“Condições comerciais sujeitas à validação final e à formalização dos instrumentos definitivos.”</p>
+      <p className="mt-1 text-xs italic" style={{ color: C.txt2 }}>“Condições comerciais sujeitas à validação final e à formalização dos instrumentos definitivos.”</p>
     </section>
   );
 };
