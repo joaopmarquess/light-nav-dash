@@ -8,6 +8,8 @@ import UberabaEstudoMapas from "@/components/UberabaEstudoMapas";
 import UberabaHospital from "@/components/UberabaHospital";
 import UberabaMarketing from "@/components/UberabaMarketing";
 import UberabaFormalizacao from "@/components/UberabaFormalizacao";
+import UberabaGuias from "@/components/UberabaGuias";
+import { FileCheck2 } from "lucide-react";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
 
@@ -36,7 +38,7 @@ const ETAPAS: Etapa[] = [
 const UberabaTimeline = () => {
   const [aberta, setAberta] = useState<string | null>(null);
   const [versao, setVersao] = useState<"simples" | "completa">("simples");
-  const [sub, setSub] = useState<"Comercial" | "Rede Assistencial" | null>(null);
+  const [sub, setSub] = useState<"Comercial" | "Rede Assistencial" | "Guias" | null>(null);
   const atual = ETAPAS.find((e) => e.nome === aberta);
   const timelineRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -110,9 +112,9 @@ const UberabaTimeline = () => {
           {atual.nome !== "Hospital Mário Palmério" && !(versao === "simples" && ["Plano de Marketing", "Formalização"].includes(atual.nome)) && <div className="mb-3 flex flex-wrap items-center gap-4">
             <p className="text-xl font-semibold text-foreground">{atual.nome}</p>
             {versao === "simples" && atual.nome === "Modelo de Atuação" && (
-              <div className="flex gap-3">
-                {(["Comercial", "Rede Assistencial"] as const).map((b) => (
-                  <Button key={b} size="sm" variant={sub === b ? "default" : "outline"} onClick={() => setSub(sub === b ? null : b)} aria-pressed={sub === b}>{b}</Button>
+              <div className="flex flex-wrap gap-3">
+                {(["Comercial", "Rede Assistencial", "Guias"] as const).map((b) => (
+                  <Button key={b} size="sm" variant={sub === b ? "default" : "outline"} onClick={() => setSub(sub === b ? null : b)} aria-pressed={sub === b}>{b === "Guias" && <FileCheck2 className="h-4 w-4" />}{b}</Button>
                 ))}
                 {sub === "Comercial" && <ReferenciaButton />}
               </div>
@@ -124,6 +126,7 @@ const UberabaTimeline = () => {
             <div className="flex min-h-0 flex-1 flex-col">
               {sub === "Comercial" && <UberabaTabelasComerciais />}
                {sub === "Rede Assistencial" && <UberabaRedeAssistencial />}
+               {sub === "Guias" && <UberabaGuias onBack={() => { setSub(null); if (panelRef.current) panelRef.current.scrollTop = 0; }} />}
             </div>
           ) : (
             <p className="text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{LOREM}</p>
