@@ -8,6 +8,7 @@ import UberabaEstudoMapas from "@/components/UberabaEstudoMapas";
 import UberabaHospital from "@/components/UberabaHospital";
 import UberabaMarketing from "@/components/UberabaMarketing";
 import UberabaFormalizacao from "@/components/UberabaFormalizacao";
+import UberabaImplantacao from "@/components/UberabaImplantacao";
 import UberabaGuias from "@/components/UberabaGuias";
 import UberabaOperacaoIniciada from "@/components/UberabaOperacaoIniciada";
 import { CalendarDays, FileCheck2 } from "lucide-react";
@@ -137,7 +138,7 @@ const UberabaTimeline = () => {
               </div>
             )}
           </div>}
-          {atual.nome === "Operação Iniciada" ? <UberabaOperacaoIniciada /> : atual.nome === "Hospital Mário Palmério" ? <UberabaHospital onBack={voltarTimeline} /> : versao === "simples" && atual.nome === "Plano de Marketing" ? <UberabaMarketing /> : versao === "simples" && atual.nome === "Formalização" ? <UberabaFormalizacao /> : versao === "simples" ? (atual.nome === "Estudo" ? (
+          {atual.nome === "Operação Iniciada" ? <UberabaOperacaoIniciada /> : atual.nome === "Hospital Mário Palmério" ? <UberabaHospital onBack={voltarTimeline} /> : versao === "simples" && atual.nome === "Plano de Marketing" ? <UberabaMarketing /> : versao === "simples" && atual.nome === "Formalização" ? <UberabaFormalizacao /> : versao === "simples" && atual.nome === "Implantação" ? <UberabaImplantacao /> : versao === "simples" ? (atual.nome === "Estudo" ? (
             <UberabaEstudoMapas />
           ) : atual.nome === "Modelo de Atuação" ? (
             <div className="flex min-h-0 flex-1 flex-col">
