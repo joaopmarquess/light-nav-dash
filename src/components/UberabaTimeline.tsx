@@ -2,11 +2,17 @@ import { useState } from "react";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string };
 
+const ESTUDO = `O estudo para o Projeto Uberaba foi construído a partir da análise conjunta do mercado, da estrutura assistencial e do potencial regional. Avaliamos a rede necessária para sustentar a operação, as especialidades médicas e serviços de diagnóstico, além das oportunidades comerciais nos diferentes segmentos.
+
+A estratégia foi estruturada em três frentes: adesão, médias empresas e grandes empresas, buscando adequar produtos, canais e modelos comerciais a cada público. Paralelamente, analisamos parceiros locais capazes de fortalecer a implantação e aproximar a Bensaúde do ecossistema empresarial e médico de Uberaba.
+
+O resultado é uma proposta que vai além da expansão comercial. O projeto procura combinar rede assistencial, relacionamento com a classe médica, empresas, parceiros locais e construção de marca, criando as bases para uma presença consistente e sustentável da Bensaúde em Uberaba.`;
+
 const LOREM =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
 
 const ETAPAS: Etapa[] = [
-  { nome: "Estudo", texto: LOREM },
+  { nome: "Estudo", texto: ESTUDO },
   { nome: "Hospital Mário Palmério", texto: LOREM },
   { nome: "Modelo de Atuação", filhos: ["Operação Comercial", "Rede Assistencial"] },
   { nome: "Plano de Marketing", texto: LOREM },
@@ -68,7 +74,7 @@ const UberabaTimeline = () => {
       {(atual?.filhos || atual?.texto) && (
         <div className="min-h-0 w-full flex-1 overflow-auto rounded-lg border border-border bg-card px-8 py-6">
           <p className="mb-4 text-sm font-semibold text-foreground">{atual.nome}</p>
-          {atual.texto && <p className="text-sm leading-relaxed text-muted-foreground">{atual.texto}</p>}
+          {atual.texto && <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{atual.texto}</p>}
           {atual.filhos && <div className="flex w-full gap-4">
             {atual.filhos.map((f) => (
               <div key={f} className="flex-1 rounded-md border border-border bg-muted/40 px-4 py-2 text-sm font-medium text-foreground">
