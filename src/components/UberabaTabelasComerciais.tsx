@@ -58,16 +58,16 @@ const REFERENCIA = mk(
 const C = { fundo: "#F7F9FB", card: "#FFFFFF", head: "#DCEEF8", alt: "#F8FAFB", borda: "#D6E2E8", txt: "#233E52", txt2: "#647783" };
 
 const Tabela = ({ linhas }: { linhas: Linha[] }) => (
-  <table className="w-full border-collapse text-center text-lg" style={{ color: C.txt }}>
+  <table className="w-full border-collapse text-center text-lg leading-6" style={{ color: C.txt }}>
     <thead className="sticky top-0">
       <tr style={{ background: C.head }}>
-        {["FAIXA", "ENFERMARIA", "APARTAMENTO"].map((h) => <th key={h} className="px-2 py-2 text-base font-semibold">{h}</th>)}
+        {["FAIXA", "ENFERMARIA", "APARTAMENTO"].map((h) => <th key={h} className="px-2 py-1 text-base font-semibold">{h}</th>)}
       </tr>
     </thead>
     <tbody>
       {linhas.map((l, i) => (
         <tr key={l[0]} style={{ background: i % 2 ? C.alt : C.card, borderTop: `1px solid ${C.borda}` }}>
-          {l.map((v, j) => <td key={j} className="px-2 py-2 tabular-nums">{v}</td>)}
+          {l.map((v, j) => <td key={j} className="px-2 py-1 tabular-nums">{v}</td>)}
         </tr>
       ))}
     </tbody>
@@ -82,14 +82,14 @@ const Card = ({ f }: { f: Frente }) => (
       <p className="text-sm font-semibold tracking-wide" style={{ color: f.cor }}>{f.segmento}</p>
     </div>
     <Tabela linhas={f.linhas} />
-    <div className="px-3 pb-3 pt-3" style={{ borderTop: `1px solid ${C.borda}` }}>
+    <div className="px-3 pb-2 pt-2" style={{ borderTop: `1px solid ${C.borda}` }}>
       <p className="mb-2 text-center text-sm font-semibold uppercase tracking-wide" style={{ color: C.txt2 }}>Indicadores variáveis</p>
-      <table className="w-full border-collapse text-base" style={{ color: C.txt }}>
+      <table className="w-full border-collapse text-base leading-5" style={{ color: C.txt }}>
         <tbody>
           {f.indicadores.map(([k, v]) => (
             <tr key={k}>
-              <th className="whitespace-nowrap px-3 py-1.5 text-left font-semibold" style={{ color: C.txt2, border: `1px solid ${C.borda}`, background: C.alt }}>{k}</th>
-              <td className="px-3 py-1.5 text-center" style={{ border: `1px solid ${C.borda}` }}>{v}</td>
+              <th className="whitespace-nowrap px-3 py-1 text-left font-semibold" style={{ color: C.txt2, border: `1px solid ${C.borda}`, background: C.alt }}>{k}</th>
+              <td className="px-3 py-1 text-center" style={{ border: `1px solid ${C.borda}` }}>{v}</td>
             </tr>
           ))}
         </tbody>
