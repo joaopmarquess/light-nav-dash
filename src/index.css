@@ -46,6 +46,10 @@ All colors MUST be HSL.
     --hospital-frame: 204 28% 86%;
     --hospital-stat-fill: 200 65% 93%;
     --hospital-role-fill: 201 55% 96%;
+    --marketing-trust: 110 18% 53%;
+    --marketing-partners: 222 30% 65%;
+    --marketing-offline: 44 90% 96%;
+    --marketing-online: 201 65% 96%;
     --map-municipal-border: 0 0% 100%;
     --map-state-border: 0 0% 0%;
     --map-maa-outline: 0 78% 49%;
@@ -130,6 +134,8 @@ All colors MUST be HSL.
     --hospital-frame: 210 20% 32%;
     --hospital-stat-fill: 204 35% 25%;
     --hospital-role-fill: 204 35% 22%;
+    --marketing-offline: 40 24% 18%;
+    --marketing-online: 201 30% 19%;
     --map-municipal-border: 0 0% 100%;
     --map-state-border: 0 0% 0%;
     --map-maa-outline: 0 85% 65%;
@@ -275,4 +281,91 @@ All colors MUST be HSL.
   .hospital-slide-service h4, .hospital-slide-service p { font-size: 13px; }
   .hospital-slide-role { grid-template-columns: 1fr; padding: 20px; }
   .hospital-slide-footer { line-height: 1.6; font-size: 11px; }
+}
+
+.uberaba-marketing { container-type: inline-size; display: flex; flex: 1; min-height: 680px; background: hsl(var(--hospital-canvas)); color: hsl(var(--hospital-navy)); border-top: 14px solid hsl(var(--hospital-blue)); }
+.dark .uberaba-marketing { color: hsl(var(--foreground)); }
+.marketing-page { width: 100%; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: 20px 44px 18px; gap: 24px; }
+.marketing-header > p:first-child { font-size: 11px; font-weight: 700; color: hsl(var(--hospital-secondary)); margin-bottom: 22px; }
+.marketing-header h2 { font-size: 42px; font-weight: 750; line-height: 1.2; }
+.marketing-subtitle { color: hsl(var(--hospital-secondary)); font-size: 18px; margin-top: 6px; }
+.marketing-body { display: grid; grid-template-columns: minmax(0, 35fr) minmax(0, 65fr); gap: 34px; min-height: 0; }
+.marketing-message { background: hsl(var(--hospital-navy)); color: hsl(var(--credential-summary-text)); display: flex; flex-direction: column; justify-content: space-between; gap: 16px; padding: 26px; border-radius: 6px; min-height: 0; }
+.marketing-message h3 { font-size: 25px; font-weight: 700; line-height: 1.23; }
+.marketing-message > p { font-size: 17px; line-height: 1.3; color: hsl(var(--hospital-light)); }
+.marketing-motto { font-size: 21px; color: hsl(var(--hospital-gold)); }
+.marketing-message img { width: 100%; min-height: 0; height: 150px; flex-shrink: 0; object-fit: contain; object-position: left center; }
+.marketing-image-placeholder { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 120px; color: hsl(var(--hospital-light)); border: 1px dashed hsl(var(--hospital-light)); }
+.marketing-strategy { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 30px; min-height: 0; }
+.marketing-premises { display: flex; flex-direction: column; min-height: 0; }
+.marketing-premises > h3, .marketing-channels > h3 { font-size: 26px; font-weight: 700; margin-bottom: 16px; }
+.marketing-premises ol { display: grid; flex: 1; min-height: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 12px 26px; }
+.marketing-premises li { display: flex; align-items: center; gap: 16px; border: 1px solid hsl(var(--hospital-frame)); border-radius: 4px; background: hsl(var(--hospital-surface)); padding: 14px; min-width: 0; }
+.marketing-number { width: 46px; height: 46px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: hsl(var(--credential-summary-text)); font-size: 14px; font-weight: 700; }
+.marketing-tone-arrival { background: hsl(var(--hospital-blue)); }
+.marketing-tone-trust { background: hsl(var(--marketing-trust)); }
+.marketing-tone-potential { background: hsl(var(--hospital-gold)); }
+.marketing-tone-health { background: hsl(var(--credential-nonmedical)); }
+.marketing-tone-partners { background: hsl(var(--marketing-partners)); }
+.marketing-premises h4 { font-size: 16px; font-weight: 700; line-height: 1.25; }
+.marketing-premises li p { font-size: 13px; color: hsl(var(--hospital-secondary)); line-height: 1.35; margin-top: 10px; }
+.marketing-channel-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px; }
+.marketing-channel { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 22px; padding: 20px; border: 1px solid hsl(var(--hospital-frame)); border-radius: 4px; }
+.marketing-channel h4 { font-size: 13px; font-weight: 700; }
+.marketing-channel p { font-size: 13px; font-weight: 700; line-height: 1.35; }
+.marketing-offline { background: hsl(var(--marketing-offline)); border-color: hsl(var(--hospital-gold) / .5); }
+.marketing-offline h4 { color: hsl(var(--hospital-gold)); }
+.marketing-online { background: hsl(var(--marketing-online)); border-color: hsl(var(--hospital-blue) / .3); }
+.marketing-online h4 { color: hsl(var(--hospital-blue)); }
+.marketing-footer { display: flex; justify-content: space-between; gap: 20px; padding-top: 12px; border-top: 1px solid hsl(var(--hospital-frame)); font-size: 11px; color: hsl(var(--hospital-secondary)); }
+.marketing-footer p { font-style: italic; }
+.marketing-footer strong { color: hsl(var(--hospital-blue)); }
+@container (min-width: 1700px) {
+  .marketing-page { padding: 22px 52px; gap: 26px; }
+  .marketing-header h2 { font-size: 48px; }
+  .marketing-header > p:first-child { font-size: 14px; margin-bottom: 20px; }
+  .marketing-subtitle { font-size: 22px; }
+  .marketing-message { padding: 26px 34px; gap: 14px; }
+  .marketing-message h3 { font-size: 28px; }
+  .marketing-message > p { font-size: 20px; }
+  .marketing-message img { height: 175px; }
+  .marketing-motto { font-size: 26px; }
+  .marketing-premises > h3, .marketing-channels > h3 { font-size: 30px; }
+  .marketing-premises h4 { font-size: 22px; }
+  .marketing-premises li p { font-size: 18px; }
+  .marketing-premises li { padding: 10px 14px; }
+  .marketing-premises > h3, .marketing-channels > h3 { margin-bottom: 12px; }
+  .marketing-strategy { gap: 26px; }
+  .marketing-number { width: 56px; height: 56px; font-size: 18px; }
+  .marketing-channel h4, .marketing-channel p { font-size: 18px; }
+  .marketing-footer { font-size: 14px; }
+}
+@container (max-width: 1099px) {
+  .marketing-page { padding: 20px 24px; }
+  .marketing-body { gap: 24px; grid-template-columns: minmax(0, 38fr) minmax(0, 62fr); }
+  .marketing-message { padding: 20px; }
+  .marketing-message h3 { font-size: 22px; }
+  .marketing-message > p { font-size: 15px; }
+  .marketing-premises ol { gap: 12px; }
+  .marketing-premises li { gap: 10px; padding: 10px; }
+  .marketing-number { width: 32px; height: 32px; }
+  .marketing-premises h4 { font-size: 14px; }
+  .marketing-premises li p { font-size: 12px; margin-top: 6px; }
+  .marketing-channel { grid-template-columns: 1fr; gap: 8px; padding: 14px; }
+}
+@container (max-width: 719px) {
+  .marketing-page { display: block; padding: 24px 18px; }
+  .marketing-header h2 { font-size: 32px; }
+  .marketing-subtitle { font-size: 17px; }
+  .marketing-body { display: block; margin-top: 24px; }
+  .marketing-message { gap: 20px; }
+  .marketing-message img { max-height: none; height: auto; }
+  .marketing-strategy { display: block; margin-top: 28px; }
+  .marketing-premises ol { grid-template-columns: 1fr; grid-template-rows: none; }
+  .marketing-premises li { padding: 16px; }
+  .marketing-premises h4 { font-size: 17px; }
+  .marketing-premises li p { font-size: 14px; }
+  .marketing-channels { margin-top: 28px; }
+  .marketing-channel-grid { grid-template-columns: 1fr; gap: 12px; }
+  .marketing-footer { margin-top: 28px; flex-direction: column; }
 }
