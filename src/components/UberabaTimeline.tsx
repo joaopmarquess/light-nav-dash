@@ -52,6 +52,17 @@ const UberabaTimeline = () => {
       </div>
 
       {atual?.filhos && (
+        <div className="-my-6 grid grid-cols-6 gap-4 px-8">
+          <div
+            className="flex justify-center"
+            style={{ gridColumnStart: ETAPAS.indexOf(atual) + 1 }}
+          >
+            <div className="h-6 w-0.5 bg-primary" />
+          </div>
+        </div>
+      )}
+
+      {atual?.filhos && (
         <div className="rounded-lg border border-border bg-card px-8 py-6">
           <p className="mb-4 text-sm font-semibold text-foreground">{atual.nome}</p>
           <div className="flex flex-wrap gap-4">
