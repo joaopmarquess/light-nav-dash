@@ -446,7 +446,7 @@ const Index = () => {
       <div className="flex-1 flex flex-col min-h-0 min-w-0">
         <header className="h-20 border-b border-border bg-card flex items-center justify-between px-8">
           <div>
-            <h1 className="text-xl font-semibold text-foreground">{active}</h1>
+            <h1 className="text-xl font-semibold text-foreground">{active === "Uberaba Timeline" ? "Projeto Bensaúde|Uberaba" : active}</h1>
             <p className="text-xs text-muted-foreground">AXIS | Executive Intelligence Platform</p>
           </div>
           <div className="flex items-center gap-3">

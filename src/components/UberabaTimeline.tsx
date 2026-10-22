@@ -144,7 +144,6 @@ const UberabaTimeline = () => {
             </article>
           ) : (
             <p className="text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{LOREM}</p>
-          )
           )}
           {!["Hospital Mário Palmério", "Operação Iniciada"].includes(atual.nome) && (
             <footer className="mt-auto shrink-0 px-4 pb-4 pt-5 text-right text-base font-bold text-primary sm:px-8">
