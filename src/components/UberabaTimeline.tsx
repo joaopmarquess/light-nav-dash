@@ -33,7 +33,7 @@ const ETAPAS: Etapa[] = [
 ];
 
 const UberabaTimeline = () => {
-  const [aberta, setAberta] = useState<string | null>(null);
+  const [aberta, setAberta] = useState<string | null>("Estudo");
   const [mostrarDatas, setMostrarDatas] = useState(false);
   const [sub, setSub] = useState<"Comercial" | "Rede Assistencial" | "Guias" | null>(null);
   const atual = ETAPAS.find((e) => e.nome === aberta);
