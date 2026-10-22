@@ -3,10 +3,10 @@ import { FORMALIZACAO_UBERABA as dados } from "@/lib/uberabaFormalizacao";
 
 export default function UberabaFormalizacao() {
   return (
-    <article className="uberaba-formalizacao" aria-label="Formalização do Bensaúde Uberba">
+    <article className="uberaba-formalizacao" aria-label="Formalização do Bensaúde Uberaba">
       <div className="formalizacao-page">
         <header className="formalizacao-header">
-          <p>BENSAÚDE UBERBA | FORMALIZAÇÃO</p>
+          <p>BENSAÚDE UBERABA | FORMALIZAÇÃO</p>
           <h2>Formalização</h2>
           <span>Produtos e instrumentos contratuais previstos</span>
         </header>
@@ -31,7 +31,7 @@ export default function UberabaFormalizacao() {
             <section className="formalizacao-assistance-item hospital-service-diagnostic"><Users aria-hidden="true" /><div><p>REDE ASSISTENCIAL</p><h3>Contratos com os {dados.contratosAssistenciais[1].toLowerCase()}</h3><span>Formalização dos credenciamentos</span></div></section>
           </div>
         </div>
-        <footer className="formalizacao-footer"><span>Instrumentos previstos para o Bensaúde Uberba</span><strong>Bensaúde</strong></footer>
+        <footer className="formalizacao-footer"><span>Instrumentos previstos para o Bensaúde Uberaba</span><strong>Bensaúde</strong></footer>
       </div>
     </article>
   );
