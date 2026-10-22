@@ -1,4 +1,4 @@
-- [ ] Substituir a imagem do Home de Estudo e do popup do Plano de Marketing pelo novo arquivo enviado, preservando textos e carregamento antecipado.
+- [x] Substituir a imagem do Home de Estudo e do popup do Plano de Marketing pelo novo arquivo enviado; imagem carregada e cinco parágrafos preservados nos testes de navegação.
 - [ ] Capturar telas atuais em estados abertos e criar a rota independente /projeto-bensaude-uberaba-apresentacao com frames estáticos 16:9, omitindo conteúdo inexistente e preservando o projeto original.
 - [x] Usar a imagem enviada no Home de Estudo e no popup do Plano de Marketing, com carregamento antecipado e texto preservado; dois testes aprovados e imagem integral conferida nos dois locais.
 - [x] Criar Home padrão de Estudo com o texto completo, retirar a seleção Completa e renomear menu, atalhos e tela para Projeto Bensaúde|Uberaba; 14 testes aprovados e Home com cinco parágrafos, alternância Painel/Área e retorno conferidos com acesso autorizado.
