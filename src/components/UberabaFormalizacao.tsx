@@ -4,7 +4,7 @@ import TimelinePresentationHeader from "@/components/TimelinePresentationHeader"
 
 export default function UberabaFormalizacao() {
   return (
-    <article className="uberaba-formalizacao timeline-presentation" aria-label="Formalização do Bensaúde Uberaba">
+    <article className="uberaba-formalizacao timeline-presentation" aria-label="Formalização do Bensaúde|Uberaba">
       <div className="formalizacao-page">
         <TimelinePresentationHeader title="Formalização" subtitle="Produtos e instrumentos contratuais previstos" />
         <div className="formalizacao-products">

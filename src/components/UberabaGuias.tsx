@@ -21,7 +21,7 @@ export default function UberabaGuias({ onBack, content = GUIAS_UBERABA }: { onBa
       <div className="guias-page">
         <header className="guias-header">
           <div>
-            <p>BENSAÚDE UBERABA</p>
+            <p>Bensaúde|Uberaba</p>
             <h3 id="guias-titulo">Guias</h3>
             <p className="guias-subtitle">Jornada digital, sem papel e sem deslocamento ao Bensaúde</p>
           </div>
@@ -38,7 +38,7 @@ export default function UberabaGuias({ onBack, content = GUIAS_UBERABA }: { onBa
           </ol>
           <div className="guias-media">
             <figure className="guias-figure">
-              {imagemFalhou ? <div className="guias-placeholder"><ImageOff aria-hidden="true" className="h-6 w-6" />Imagem da operação digital</div> : <img src={imagem} onError={() => setImagemFalhou(true)} loading="lazy" width={1536} height={1024} alt="Operação digital de autorização de guias com recepção, computadores, auditoria remota e aplicativo com carteirinha virtual." />}
+              {imagemFalhou ? <div className="guias-placeholder"><ImageOff aria-hidden="true" className="h-6 w-6" />Imagem da operação digital</div> : <img src={imagem} onError={() => setImagemFalhou(true)} loading="eager" decoding="sync" width={1536} height={1024} alt="Operação digital de autorização de guias com recepção, computadores, auditoria remota e aplicativo com carteirinha virtual." />}
               <figcaption>{content.texto_imagem}</figcaption>
             </figure>
             <ul className="guias-indicators" aria-label="Indicadores da operação">{INDICADORES.map((item, index) => <li key={item} className={`guias-indicator-${index + 1}`}>{item}</li>)}</ul>

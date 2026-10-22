@@ -1,15 +1,12 @@
 import { ArrowDown, ArrowRight, ShieldAlert } from "lucide-react";
 import { IMPLANTACAO_UBERABA as dados, textoDefinicao } from "@/lib/uberabaImplantacao";
+import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
 
 export default function UberabaImplantacao() {
   return (
-    <article className="uberaba-implantacao" aria-label="Implantação do Bensaúde Uberaba">
+    <article className="uberaba-implantacao" aria-label="Implantação do Bensaúde|Uberaba">
       <div className="implantacao-page">
-        <header className="formalizacao-header">
-          <p>BENSAÚDE UBERABA | IMPLANTAÇÃO</p>
-          <h2>{dados.titulo}</h2>
-          <span>{dados.subtitulo}</span>
-        </header>
+        <TimelinePresentationHeader title={dados.titulo} subtitle={dados.subtitulo} />
         <ol className="implantacao-flow">
           {dados.etapas.map((e, i) => (
             <li key={e.numero} className="implantacao-step">

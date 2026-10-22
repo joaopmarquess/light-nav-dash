@@ -1,15 +1,12 @@
 import { OPERACAO_UBERABA } from "@/lib/uberabaOperacao";
 import { ArrowDown, ArrowRight, RefreshCw, Waypoints } from "lucide-react";
+import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
 
 export default function UberabaOperacaoIniciada() {
   return (
     <section className="uberaba-operacao" aria-labelledby="operacao-titulo">
       <div className="operacao-page">
-        <header className="operacao-header">
-          <p>BENSAÚDE UBERABA | RESULTADO ESPERADO</p>
-          <h2 id="operacao-titulo">Operação Iniciada</h2>
-          <p>Tudo convergindo para a operação iniciada</p>
-        </header>
+        <TimelinePresentationHeader title="Operação Iniciada" titleId="operacao-titulo" subtitle="Tudo convergindo para a operação iniciada" />
         <div className="operacao-diagram">
           <ol className="operacao-fronts" aria-label="Frentes do projeto">
             {OPERACAO_UBERABA.frentes.map((frente, index) => (

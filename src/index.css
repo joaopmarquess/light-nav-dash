@@ -603,8 +603,14 @@ All colors MUST be HSL.
 
 /* Implantação Uberaba */
 .timeline-presentation { container-type: inline-size; display: flex; flex: 1 0 auto; flex-direction: column; min-width: 0; min-height: min-content; background: hsl(var(--hospital-canvas)); color: hsl(var(--credential-text)); border-top: 14px solid hsl(var(--hospital-blue)); }
-.timeline-presentation-header > p { font-size: 12px; font-weight: 700; color: hsl(var(--hospital-secondary)); margin-bottom: 8px; text-transform: uppercase; }
-.timeline-presentation-header h2 { font-size: 42px; line-height: 1.2; font-weight: 750; }
+.timeline-workspace { overflow-y: auto; scrollbar-width: none; }
+.timeline-workspace::-webkit-scrollbar { display: none; }
+.timeline-stage-panel { flex-shrink: 0; }
+.timeline-stage-static { overflow: visible; min-height: min-content; }
+.timeline-stage-static > .uberaba-operacao, .timeline-stage-static > .uberaba-implantacao { min-height: 0; flex: 1 0 auto; }
+.timeline-presentation-header { min-width: 0; flex-shrink: 0; }
+.timeline-presentation-header > p { font-size: 12px; line-height: 1.4; font-weight: 700; color: hsl(var(--hospital-secondary)); margin-bottom: 8px; }
+.timeline-presentation-header h2 { font-size: 42px; line-height: 1.2; font-weight: 750; overflow-wrap: anywhere; }
 .timeline-presentation-header > span { display: block; font-size: 18px; color: hsl(var(--hospital-secondary)); margin-top: 6px; }
 .timeline-presentation .marketing-page, .timeline-presentation .formalizacao-page { flex: 1; padding: 24px 44px; gap: 18px; grid-template-rows: auto auto auto; align-content: start; }
 .timeline-presentation .marketing-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1.8fr); gap: 20px; }
@@ -725,7 +731,7 @@ All colors MUST be HSL.
   .timeline-presentation .marketing-premises ol { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(130px, auto)); }
   .timeline-presentation .marketing-message h3 { font-size: 26px; }
   .timeline-presentation .marketing-message > p, .timeline-presentation .hospital-slide-description { font-size: 18px; }
-  .timeline-presentation .hospital-slide-service { padding: 18px; }
+  .timeline-presentation .hospital-slide-service { padding: 12px 18px; }
   .timeline-presentation .hospital-slide-service h4, .timeline-presentation .hospital-slide-service p { font-size: 16px; }
   .timeline-presentation .hospital-slide-role p { font-size: 17px; }
 }
@@ -757,6 +763,7 @@ All colors MUST be HSL.
 }
 .uberaba-implantacao { container-type: inline-size; display: flex; flex: 1; background: hsl(var(--hospital-canvas)); color: hsl(var(--credential-text)); border-top: 14px solid hsl(var(--hospital-blue)); }
 .implantacao-page { display: flex; flex-direction: column; width: 100%; gap: 18px; padding: 24px 44px 24px; }
+.implantacao-page > * { flex-shrink: 0; }
 .implantacao-flow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0; }
 .implantacao-step { display: flex; align-items: stretch; }
 .implantacao-card { flex: 1; display: flex; flex-direction: column; gap: 10px; background: hsl(var(--hospital-surface)); border: 1px solid hsl(var(--hospital-frame)); border-top: 6px solid var(--cor); border-radius: 8px; padding: 12px; box-shadow: var(--credential-shadow); }
@@ -783,6 +790,13 @@ All colors MUST be HSL.
 .implantacao-monitorar h3 { font-size: 16px; font-weight: 750; text-transform: uppercase; margin-bottom: 10px; color: hsl(var(--hospital-navy)); }
 .implantacao-monitorar ul { display: flex; flex-wrap: wrap; gap: 8px; }
 .implantacao-monitorar li { font-size: 14px; background: hsl(var(--hospital-stat-fill)); border-radius: 999px; padding: 4px 12px; }
+@container (min-width: 1101px) {
+  .implantacao-page { gap: 10px; padding-top: 18px; padding-bottom: 18px; }
+  .implantacao-card { gap: 8px; padding: 10px; }
+  .implantacao-condicao { padding-top: 10px; padding-bottom: 10px; }
+  .implantacao-resultado { padding: 12px; }
+  .implantacao-monitorar { padding: 10px 18px; }
+}
 @container (max-width: 1100px) {
   .implantacao-flow { grid-template-columns: 1fr; }
   .implantacao-step { flex-direction: column; }

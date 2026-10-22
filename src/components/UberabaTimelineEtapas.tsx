@@ -140,7 +140,7 @@ export const FORMALIZACAO = (
     <Fluxo itens={["Estudo", "Negociação", "Definição das condições", "Aprovação", "Formalização", "Implantação"]} />
     <H>Documentos e instrumentos</H>
     <Pendente icon={FileText}>
-      <B>Em definição.</B> Esta área deverá concentrar posteriormente protocolos de intenções, contratos, propostas, anexos comerciais e demais documentos relacionados ao Bensaúde Uberaba.
+      <B>Em definição.</B> Esta área deverá concentrar posteriormente protocolos de intenções, contratos, propostas, anexos comerciais e demais documentos relacionados ao Bensaúde|Uberaba.
     </Pendente>
   </div>
 );
