@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 type Row = { uf: string; cidade: string; ativos: number };
 const hoje = () => new Date().toISOString().slice(0, 10);
 
-const CarteiraTrialGeo = () => {
+const CarteiraTrialGeo = ({ embedded = false, mapOnly = false }: { embedded?: boolean; mapOnly?: boolean }) => {
   const [data, setData] = useState(hoje());
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,12 +45,12 @@ const CarteiraTrialGeo = () => {
 
   if (sel && sel !== "CENTRO") {
     return (
-      <div className="fixed inset-0 z-50 bg-background flex flex-col">
+      <div className={embedded ? "h-full min-h-[400px] bg-background flex flex-col" : "fixed inset-0 z-50 bg-background flex flex-col"}>
         <div className="flex items-center justify-between px-4 py-2 border-b border-border">
           <div className="text-sm font-semibold text-foreground inline-flex items-center gap-2">
             <MapIcon className="h-4 w-4" />{sel === "BRASIL" ? "Mapa do Brasil — Vidas por UF" : `Mapa de ${sel}`}
           </div>
-          <button type="button" onClick={() => setSel(null)} className="text-xs text-muted-foreground hover:text-foreground underline">← Voltar</button>
+          <Button variant="outline" size="sm" onClick={() => setSel(null)}><ArrowLeft />Voltar</Button>
         </div>
         <div className="flex-1 min-h-0">
           {sel === "BRASIL" ? <BrazilHeatMap ufTotals={ufTotals} /> : <StateHeatMap trialScale ufs={[sel]} cityTotalsByUF={cityTotalsByUF} stateTotals={ufTotals} />}
@@ -89,8 +89,8 @@ const CarteiraTrialGeo = () => {
             </div>
           </div>
         ) : (
-          <div className="h-full grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-4 items-stretch">
-            <div className="bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col justify-center gap-4">
+          <div className={`h-full grid grid-cols-1 ${mapOnly ? "" : "md:grid-cols-[2fr_3fr]"} gap-4 items-stretch`}>
+            {!mapOnly && <div className="bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col justify-center gap-4">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Vidas por estado</h3>
               {porUF.map((r) => {
                 const max = Math.max(1, ...porUF.map((x) => x.total));
@@ -111,7 +111,7 @@ const CarteiraTrialGeo = () => {
                   </button>
                 );
               })}
-            </div>
+            </div>}
             <div className="bg-card rounded-xl border border-border shadow-sm p-2 flex flex-col min-h-0">
               <div className="flex items-center gap-3 px-2 pt-2">
                 <div className="flex shrink-0 items-center gap-2">

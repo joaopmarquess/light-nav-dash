@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { geoMercator, geoPath } from "d3-geo";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
-import { Download, Loader2, Maximize, Minus, Plus } from "lucide-react";
+import { Download, Loader2, Maximize, Minimize2, Expand, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import CarteiraTrialGeo from "@/components/CarteiraTrialGeo";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Malhas municipais do IBGE (base oficial) — MG e SP
 const SRC: Record<string, string> = {
   MG: "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-31-mun.json",
   SP: "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-35-mun.json",
 };
-const COR = { g0: "#1597D4", g1: "#75C4EA", g2: "#C4E6F5", g3: "#E3F2FA", out: "#E5E7E9" };
+const COR = { g0: "hsl(var(--uberaba-map-center))", g1: "hsl(var(--uberaba-map-ring-one))", g2: "hsl(var(--uberaba-map-ring-two))", g3: "hsl(var(--uberaba-map-ring-three))", out: "hsl(var(--map-outside-lives))" };
 const W = 1600, H = 900; // 16:9
 
 type F = Feature<Geometry, { name: string; _uf: string }>;
@@ -26,7 +28,9 @@ function vizinhanca(feats: F[]) {
   all.forEach((ps, i) =>
     ps.forEach(([x, y]) => {
       const k = `${cell(x)},${cell(y)}`;
-      (grid.get(k) ?? grid.set(k, new Set()).get(k)!).add(i);
+      const members = grid.get(k) ?? new Set<number>();
+      members.add(i);
+      grid.set(k, members);
     }),
   );
   const nb = feats.map(() => new Map<number, number>());
@@ -43,6 +47,7 @@ function vizinhanca(feats: F[]) {
 }
 
 const UberabaMapa = ({ embedded = false }: { embedded?: boolean }) => {
+  const [geographic, setGeographic] = useState(false);
   const [feats, setFeats] = useState<F[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -52,7 +57,8 @@ const UberabaMapa = ({ embedded = false }: { embedded?: boolean }) => {
   const zRef = useRef(z); zRef.current = z;
   const drag = useRef<{ x: number; y: number } | null>(null);
   const toSvg = (cx: number, cy: number) => {
-    const r = svgRef.current!.getBoundingClientRect();
+    const r = svgRef.current?.getBoundingClientRect();
+    if (!r) return [0, 0];
     const s = Math.min(r.width / W, r.height / H);
     return [(cx - r.left - (r.width - W * s) / 2) / s, (cy - r.top - (r.height - H * s) / 2) / s];
   };
@@ -157,8 +163,10 @@ const UberabaMapa = ({ embedded = false }: { embedded?: boolean }) => {
     img.onload = () => {
       const c = document.createElement("canvas");
       c.width = 3840; c.height = 2160;
-      const ctx = c.getContext("2d")!;
-      ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, c.width, c.height);
+      const ctx = c.getContext("2d");
+      if (!ctx) return;
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--card").trim();
+      ctx.fillStyle = `hsl(${ctx.fillStyle})`; ctx.fillRect(0, 0, c.width, c.height);
       ctx.drawImage(img, 0, 0, c.width, c.height);
       const a = document.createElement("a");
       a.download = "Bensaude_Uberaba_Onde_Queremos_Atuar.png";
@@ -168,21 +176,30 @@ const UberabaMapa = ({ embedded = false }: { embedded?: boolean }) => {
     img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(xml);
   };
 
+  const viewToggle = <TooltipProvider><Tooltip><TooltipTrigger asChild>
+    <Button size="icon" variant={geographic ? "secondary" : "outline"} aria-label={geographic ? "Desampliar para Mapa Uberaba" : "Ampliar para Área Geográfica"} aria-pressed={geographic} onClick={() => setGeographic((value) => !value)} className="h-12 w-12 [&_svg]:size-6">
+      {geographic ? <Minimize2 /> : <Expand />}
+    </Button>
+  </TooltipTrigger><TooltipContent>{geographic ? "Desampliar para Mapa Uberaba" : "Ampliar para Área Geográfica"}</TooltipContent></Tooltip></TooltipProvider>;
+
+  if (geographic) return <div className="flex h-full min-h-[500px] min-w-0 flex-col gap-2"><div className="flex shrink-0">{viewToggle}</div><div className="min-h-0 flex-1"><CarteiraTrialGeo embedded mapOnly /></div></div>;
   if (err) return <div className="text-sm text-destructive">Erro ao carregar a malha municipal: {err}</div>;
   if (!feats || !calc)
     return <div className="flex h-full items-center justify-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Carregando malha municipal…</div>;
 
-  const fill = [COR.g0, COR.g1, COR.g2, COR.out];
   const [mgX, mgY] = calc.proj([-47.2, -18.6]) ?? [0, 0];
   const [spX, spY] = calc.proj([-48.6, -20.9]) ?? [0, 0];
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-2">
-      <div className="flex shrink-0 flex-wrap justify-end gap-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-2">
+        {viewToggle}
+        <div className="ml-auto flex flex-wrap gap-2">
         <Button size="icon" variant="outline" title="Aproximar" onClick={() => zoomAt(W / 2, H / 2, 1.5)}><Plus className="h-4 w-4" /></Button>
         <Button size="icon" variant="outline" title="Afastar" onClick={() => zoomAt(W / 2, H / 2, 1 / 1.5)}><Minus className="h-4 w-4" /></Button>
         <Button size="icon" variant="outline" title="Voltar ao recorte" onClick={() => setZ({ k: 1, x: 0, y: 0 })}><Maximize className="h-4 w-4" /></Button>
         <Button size="sm" variant="outline" onClick={exportar}><Download className="mr-2 h-4 w-4" />Exportar PNG 16:9 (4K)</Button>
+        </div>
       </div>
       <div className={`relative w-full overflow-hidden rounded-lg border border-border bg-card ${embedded ? "min-h-0 flex-1" : "aspect-video"}`}>
         <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${W} ${H}`} className="h-full w-full cursor-grab touch-none active:cursor-grabbing" fontFamily="Arial, Helvetica, sans-serif"
@@ -194,12 +211,12 @@ const UberabaMapa = ({ embedded = false }: { embedded?: boolean }) => {
             setZ((o) => ({ ...o, x: o.x + bx - ax, y: o.y + by - ay }));
           }}
           onPointerUp={() => (drag.current = null)}>
-          <rect width={W} height={H} fill="#F4F7FA" />
+          <rect width={W} height={H} fill="hsl(var(--background))" />
           <g transform={`translate(${z.x},${z.y}) scale(${z.k})`}>
           {br.map((f, i) => <path key={`br${i}`} d={calc.path(f) ?? ""} fill="#EEF0F2" stroke="none" />)}
           {feats.map((f, i) => calc.grupo(i) === 3 && (
             <path key={i} d={calc.path(f) ?? ""} fill={COR.out} stroke="#9AA0A6" strokeWidth={0.5}
-              onMouseMove={(e) => { const r = svgRef.current!.parentElement!.getBoundingClientRect(); setTip({ t: f.properties.name, x: e.clientX - r.left, y: e.clientY - r.top }); }}
+              onMouseMove={(e) => { const r = svgRef.current?.parentElement?.getBoundingClientRect(); if (r) setTip({ t: f.properties.name, x: e.clientX - r.left, y: e.clientY - r.top }); }}
               onMouseLeave={() => setTip(null)} />
           ))}
           {[...calc.g2].map((i) => <path key={i} d={calc.path(feats[i]) ?? ""} fill={COR.g2} stroke="#3C4043" strokeWidth={1} />)}
@@ -211,7 +228,7 @@ const UberabaMapa = ({ embedded = false }: { embedded?: boolean }) => {
           <path d={calc.path(feats[calc.u]) ?? ""} fill={COR.g0} stroke="#FFFFFF" strokeWidth={2.5} />
           {(() => {
             const rp = feats.find((f) => f.properties._uf === "SP" && norm(f.properties.name) === "SAO JOSE DO RIO PRETO");
-            return rp && <path d={calc.path(rp) ?? ""} fill="#0B4F8A" stroke="#FFFFFF" strokeWidth={2.5} />;
+            return rp && <path d={calc.path(rp) ?? ""} fill="hsl(var(--uberaba-map-reference))" stroke="hsl(var(--map-municipal-border))" strokeWidth={2.5} />;
           })()}
           <DivisaUF feats={feats} path={calc.path} />
           <DivisaMGOutros feats={feats} path={calc.path} />
