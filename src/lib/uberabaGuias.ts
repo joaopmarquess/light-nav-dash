@@ -44,5 +44,5 @@ export const GUIAS_UBERABA: GuiasContent = {
     "Histórico permanece disponível para consulta.",
   ].map((fluxo_item, index) => ({ id: `fluxo-${index + 1}`, fluxo_item, fluxo_ordem: index + 1, status_ativo: true })),
   status_ativo: true,
-  observacao: "O fluxo apresentado representa a premissa operacional proposta para o Bensaúde Uberaba. Regras de autorização, critérios de auditoria, prazos e níveis de serviço deverão ser confirmados durante a formalização e a implantação.",
+  observacao: "O fluxo apresentado representa a premissa operacional proposta para o Bensaúde|Uberaba. Regras de autorização, critérios de auditoria, prazos e níveis de serviço deverão ser confirmados durante a formalização e a implantação.",
 };

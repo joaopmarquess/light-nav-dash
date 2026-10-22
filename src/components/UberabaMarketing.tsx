@@ -17,7 +17,7 @@ const PREMISSAS = [
 export default function UberabaMarketing() {
   const [imageFailed, setImageFailed] = useState(false);
   return (
-    <article className="uberaba-marketing timeline-presentation" aria-label="Plano de Marketing do Bensaúde Uberaba">
+    <article className="uberaba-marketing timeline-presentation" aria-label="Plano de Marketing do Bensaúde|Uberaba">
       <div className="marketing-page">
         <TimelinePresentationHeader title="Plano de Marketing" subtitle="Estamos chegando. Posicionamento e publicidade inicial na cidade." />
         <div className="marketing-body">
@@ -29,12 +29,12 @@ export default function UberabaMarketing() {
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="ghost" className="h-auto w-full shrink-0 cursor-zoom-in p-0 hover:bg-transparent" aria-label="Ampliar imagem do outdoor">
-                    <img src={campanha} alt="Campanha Bensaúde: Estamos chegando, Uberaba" onError={() => setImageFailed(true)} />
+                    <img src={campanha} loading="eager" decoding="sync" fetchPriority="high" alt="Campanha Bensaúde: Estamos chegando, Uberaba" onError={() => setImageFailed(true)} />
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="w-[calc(100vw-2rem)] max-w-6xl gap-3 p-4 pt-10" aria-describedby={undefined}>
                   <DialogTitle className="sr-only">Outdoor Bensaúde — Uberaba</DialogTitle>
-                  <img src={campanha} alt="Outdoor da campanha Bensaúde: Estamos chegando, Uberaba" className="max-h-[80dvh] w-full object-contain" />
+                  <img src={campanha} loading="eager" decoding="sync" alt="Outdoor da campanha Bensaúde: Estamos chegando, Uberaba" className="max-h-[80dvh] w-full object-contain" />
                 </DialogContent>
               </Dialog>
             )}

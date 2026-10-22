@@ -6,7 +6,7 @@ import TimelinePresentationHeader from "@/components/TimelinePresentationHeader"
 function HospitalImage({ src, alt, className }: { src: string | null; alt: string; className: string }) {
   const [failed, setFailed] = useState(false);
   if (!src || failed) return <div role="img" aria-label={alt} className={`hospital-placeholder ${className}`}><Building2 aria-hidden="true" />Imagem a inserir</div>;
-  return <img src={src} alt={alt} onError={() => setFailed(true)} className={className} />;
+  return <img src={src} alt={alt} loading="eager" decoding="sync" onError={() => setFailed(true)} className={className} />;
 }
 
 const UberabaHospital = ({ hospital = HOSPITAL_PALMERIO }: { hospital?: HospitalInstitucional; onBack?: () => void }) => {
@@ -22,14 +22,14 @@ const UberabaHospital = ({ hospital = HOSPITAL_PALMERIO }: { hospital?: Hospital
     { title: "DIAGNÓSTICO", text: hospital.servicos_diagnostico, tone: "hospital-service-diagnostic" },
   ];
   return (
-    <article className="hospital-presentation timeline-presentation" aria-label="Hospital Mário Palmério do Bensaúde Uberaba">
+    <article className="hospital-presentation timeline-presentation" aria-label="Hospital Mário Palmério do Bensaúde|Uberaba">
       <TimelinePresentationHeader title="Hospital Mário Palmério" subtitle="Estrutura, serviços e papel estratégico" />
       <div className="hospital-slide">
         <aside className="hospital-institution hospital-slide-institution">
           <HospitalImage src={hospital.imagem_fachada_url} alt="Fachada do Hospital Mário Palmério" className="hospital-slide-facade" />
           <div className="hospital-slide-identity">
             <h2>{hospital.nome}<br />{hospital.tipo_prestador}</h2>
-            <p className="hospital-slide-priority">Referência hospitalar prioritária<br />para o Bensaúde Uberaba</p>
+            <p className="hospital-slide-priority">Referência hospitalar prioritária<br />para o Bensaúde|Uberaba</p>
             <p className="hospital-slide-description">A estrutura é tratada no projeto como ponto de sustentação para a formação da rede complementar e para a proposta de valor assistencial do Bensaúde.</p>
           </div>
         </aside>
@@ -51,7 +51,7 @@ const UberabaHospital = ({ hospital = HOSPITAL_PALMERIO }: { hospital?: Hospital
           </section>
           <footer className="hospital-slide-footer">
             <p>{hospital.endereco.replace(/\n/g, " • ")} • <a href={`tel:${hospital.telefone.replace(/\D/g, "")}`}>{hospital.telefone}</a> • <a href={`https://${hospital.site}`} target="_blank" rel="noreferrer">{hospital.site}</a></p>
-            <p className="hospital-slide-signature">Bensaúde Uberaba</p>
+            <p className="hospital-slide-signature">Bensaúde|Uberaba</p>
           </footer>
         </div>
       </div>
