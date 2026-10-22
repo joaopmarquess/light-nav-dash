@@ -19,7 +19,7 @@ export default function UberabaMarketing() {
     <article className="uberaba-marketing" aria-label="Plano de Marketing de Uberaba">
       <div className="marketing-page">
         <header className="marketing-header">
-          <p>BENSAÚDE UBERBA | PLANO DE MARKETING</p>
+          <p>BENSAÚDE UBERABA | PLANO DE MARKETING</p>
           <h2>Estamos chegando.</h2>
           <p className="marketing-subtitle">Posicionamento e publicidade inicial na cidade</p>
         </header>

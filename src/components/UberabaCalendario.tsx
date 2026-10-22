@@ -8,7 +8,7 @@ export default function UberabaCalendario({ trigger }: { trigger: ReactElement }
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="w-[calc(100%-2rem)] max-w-6xl max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="tracking-normal">Calendário · Bensaúde Uberba</DialogTitle>
+          <DialogTitle className="tracking-normal">Calendário · Bensaúde Uberaba</DialogTitle>
           <DialogDescription>Datas planejadas · Outubro de 2026 a Janeiro de 2027</DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
