@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { geoMercator, geoPath } from "d3-geo";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
-import { Download, Loader2, Maximize, Minimize2, Expand, Minus, Plus } from "lucide-react";
+import { Download, Layers, Loader2, Maximize, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { geographicToday, useCarteiraTrialGeo } from "@/hooks/useCarteiraTrialGeo";
 import { municipalHeatFill, municipalHeatNeighbors, normalizedMunicipalTotals } from "@/lib/municipalHeatColors";
@@ -203,10 +203,10 @@ const UberabaMapa = ({ embedded = false, selectedDate, toolbarTarget }: { embedd
   };
 
   const viewToggle = <TooltipProvider><Tooltip><TooltipTrigger asChild>
-    <Button size="icon" variant={geographic ? "secondary" : "outline"} aria-label={geographic ? "Restaurar cores do Mapa Uberaba" : "Aplicar cores da Área Geográfica"} aria-pressed={geographic} disabled={loadingColors || Boolean(colorsError)} onClick={() => setGeographic((value) => !value)} className="h-12 w-12 [&_svg]:size-6">
-      {geographic ? <Minimize2 /> : <Expand />}
+    <Button size="icon" variant={geographic ? "secondary" : "outline"} aria-label="Alternar cores do mapa" aria-pressed={geographic} disabled={loadingColors || Boolean(colorsError)} onClick={() => setGeographic((value) => !value)} className="h-12 w-12 [&_svg]:size-6">
+      <Layers />
     </Button>
-  </TooltipTrigger><TooltipContent>{geographic ? "Restaurar cores do Mapa Uberaba" : "Aplicar cores da Área Geográfica"}</TooltipContent></Tooltip></TooltipProvider>;
+  </TooltipTrigger><TooltipContent>Alternar cores do mapa</TooltipContent></Tooltip></TooltipProvider>;
 
   if (err) return <div className="text-sm text-destructive">Erro ao carregar a malha municipal: {err}</div>;
   if (!feats || !calc)
