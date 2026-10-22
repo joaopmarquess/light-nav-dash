@@ -3,6 +3,7 @@ import { ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import campanha from "@/assets/uberaba-marketing-outdoor-sem-exclamacao.png";
+import outdoorImagem from "@/assets/uberaba-estudo-outdoor.jpg.asset.json";
 import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
 
 const PREMISSAS = [
@@ -34,7 +35,7 @@ export default function UberabaMarketing() {
                 </DialogTrigger>
                 <DialogContent className="outdoor-dialog" aria-describedby={undefined}>
                   <DialogTitle className="sr-only">Outdoor Bensaúde — Uberaba</DialogTitle>
-                  <img src={campanha} loading="eager" decoding="sync" alt="Outdoor da campanha Bensaúde: Estamos chegando, Uberaba" className="outdoor-dialog-image" />
+                  <img src={outdoorImagem.url} loading="eager" decoding="sync" alt="Outdoor do Bensaúde com Hospital Mário Palmério e SIGA: Estamos chegando, Uberaba" className="outdoor-dialog-image" />
                 </DialogContent>
               </Dialog>
             )}
