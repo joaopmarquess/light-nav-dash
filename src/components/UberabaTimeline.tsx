@@ -15,10 +15,13 @@ import { CalendarDays, FileCheck2 } from "lucide-react";
 import UberabaCronograma from "@/components/UberabaCronograma";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
+import { HOSPITAL_PALMERIO } from "@/lib/uberabaHospital";
+import campanha from "@/assets/uberaba-marketing-outdoor-sem-exclamacao.png";
+import operacaoDigital from "@/assets/uberaba-guias-operacao-digital.jpg";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
 
-const ESTUDO = `O estudo para o **Bensaúde Uberaba** partiu de uma **leitura ampla do mercado** e da convicção de que a entrada do Bensaúde na cidade não poderia ser tratada apenas como uma **expansão comercial**. Buscamos compreender o território, sua dinâmica empresarial, sua influência regional e, sobretudo, sua reconhecida **vocação para a saúde e para a medicina**. A partir dessa visão, o projeto passou a ser construído para integrar **presença institucional**, **capacidade assistencial** e **desenvolvimento de mercado**.
+const ESTUDO = `O estudo para o **Bensaúde|Uberaba** partiu de uma **leitura ampla do mercado** e da convicção de que a entrada do Bensaúde na cidade não poderia ser tratada apenas como uma **expansão comercial**. Buscamos compreender o território, sua dinâmica empresarial, sua influência regional e, sobretudo, sua reconhecida **vocação para a saúde e para a medicina**. A partir dessa visão, o projeto passou a ser construído para integrar **presença institucional**, **capacidade assistencial** e **desenvolvimento de mercado**.
 
 A **estrutura assistencial** recebeu atenção especial. Avaliamos a necessidade de uma **referência hospitalar**, a composição de uma **rede médica por especialidade** e a disponibilidade de **serviços de diagnóstico e terapia**. Comparamos redes já existentes em Uberaba e utilizamos também a experiência do próprio Bensaúde em **São José do Rio Preto** como parâmetro para dimensionamento. O objetivo não foi simplesmente reproduzir uma rede, mas entender que estrutura seria necessária para sustentar uma **operação competitiva e confiável**.
 
@@ -47,7 +50,18 @@ const UberabaTimeline = () => {
   const [versao, setVersao] = useState<"simples" | "completa">("simples");
   const [sub, setSub] = useState<"Comercial" | "Rede Assistencial" | "Guias" | null>(null);
   const atual = ETAPAS.find((e) => e.nome === aberta);
+  const permiteRolagem = versao === "simples" && ["Estudo", "Plano de Marketing", "Modelo de Atuação"].includes(aberta ?? "");
+  const apresentacaoPropria = ["Hospital Mário Palmério", "Operação Iniciada"].includes(aberta ?? "") || (versao === "simples" && ["Plano de Marketing", "Formalização", "Modelo de Atuação", "Implantação"].includes(aberta ?? ""));
   const timelineRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const imagens = [HOSPITAL_PALMERIO.imagem_fachada_url, HOSPITAL_PALMERIO.imagem_assistencial_url, campanha, operacaoDigital];
+    imagens.forEach((src) => {
+      if (!src) return;
+      const imagem = new Image();
+      imagem.src = src;
+      void imagem.decode().catch(() => undefined);
+    });
+  }, []);
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (panelRef.current) panelRef.current.scrollTop = 0;
@@ -63,10 +77,10 @@ const UberabaTimeline = () => {
   };
 
   return (
-    <div ref={timelineRef} className="flex h-full flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div ref={timelineRef} className="timeline-workspace flex h-full min-h-0 flex-col gap-6">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold text-foreground">Timeline · Bensaúde Uberaba</h1>
+          <h1 className="text-lg font-semibold text-foreground">Timeline · Bensaúde|Uberaba</h1>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button size="icon" variant={mostrarDatas ? "default" : "outline"} aria-label={mostrarDatas ? "Ocultar datas planejadas" : "Mostrar datas planejadas"} aria-pressed={mostrarDatas} onClick={() => setMostrarDatas(!mostrarDatas)}>
@@ -84,7 +98,7 @@ const UberabaTimeline = () => {
           <ToggleGroupItem value="completa">Completa</ToggleGroupItem>
         </ToggleGroup>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-border bg-card px-8 py-4">
+      <div className="shrink-0 overflow-x-auto rounded-lg border border-border bg-card px-8 py-4">
         <div className="relative min-w-[840px] md:min-w-0">
           <div className="absolute left-[7.14%] right-[7.14%] top-5 h-0.5 bg-border" />
           <ol className="relative grid grid-cols-7 gap-4">
@@ -130,22 +144,12 @@ const UberabaTimeline = () => {
       )}
 
       {(atual?.filhos || atual?.texto || atual?.conteudo) && (
-        <div ref={panelRef} className={`flex min-h-0 w-full flex-1 flex-col overflow-auto rounded-lg border border-border bg-card ${["Hospital Mário Palmério", "Operação Iniciada"].includes(atual.nome) || (versao === "simples" && ["Plano de Marketing", "Formalização", "Modelo de Atuação"].includes(atual.nome)) ? "" : "px-4 py-4 sm:px-8"}`}>
-          {!["Hospital Mário Palmério", "Operação Iniciada"].includes(atual.nome) && !(versao === "simples" && ["Plano de Marketing", "Formalização", "Modelo de Atuação"].includes(atual.nome)) && <div className="mb-3 flex flex-wrap items-center gap-4">
-            <p className="text-xl font-semibold text-foreground">{atual.nome}</p>
-            {versao === "simples" && atual.nome === "Modelo de Atuação" && (
-              <div className="flex flex-wrap gap-3">
-                {(["Comercial", "Rede Assistencial", "Guias"] as const).map((b) => (
-                  <Button key={b} size="sm" variant={sub === b ? "default" : "outline"} onClick={() => setSub(sub === b ? null : b)} aria-pressed={sub === b}>{b === "Guias" && <FileCheck2 className="h-4 w-4" />}{b}</Button>
-                ))}
-                {sub === "Comercial" && <ReferenciaButton />}
-              </div>
-            )}
-          </div>}
+        <div ref={panelRef} data-expansivel={permiteRolagem} className={`timeline-stage-panel flex min-h-0 w-full flex-1 flex-col rounded-lg border border-border bg-card ${permiteRolagem ? "overflow-auto" : "timeline-stage-static"} ${apresentacaoPropria ? "" : "px-4 py-4 sm:px-8"}`}>
+          {!apresentacaoPropria && <div className="mb-5"><TimelinePresentationHeader title={atual.nome} /></div>}
           {atual.nome === "Operação Iniciada" ? <UberabaOperacaoIniciada /> : atual.nome === "Hospital Mário Palmério" ? <UberabaHospital onBack={voltarTimeline} /> : versao === "simples" && atual.nome === "Plano de Marketing" ? <UberabaMarketing /> : versao === "simples" && atual.nome === "Formalização" ? <UberabaFormalizacao /> : versao === "simples" && atual.nome === "Implantação" ? <UberabaImplantacao /> : versao === "simples" ? (atual.nome === "Estudo" ? (
             <UberabaEstudoMapas />
           ) : atual.nome === "Modelo de Atuação" ? (
-            <article className="timeline-presentation modelo-presentation" aria-label="Modelo de Atuação do Bensaúde Uberaba">
+            <article className="timeline-presentation modelo-presentation" aria-label="Modelo de Atuação do Bensaúde|Uberaba">
               <div className="modelo-heading">
                 <TimelinePresentationHeader title="Modelo de Atuação" subtitle="Operação comercial, rede assistencial e jornada digital" />
                 <div className="modelo-controls" role="group" aria-label="Frentes do modelo de atuação">
@@ -180,9 +184,9 @@ const UberabaTimeline = () => {
             ))}
           </div>}
           </>}
-          {atual.nome !== "Hospital Mário Palmério" && (
+          {!["Hospital Mário Palmério", "Operação Iniciada"].includes(atual.nome) && (
             <footer className="mt-auto shrink-0 px-4 pb-4 pt-5 text-right text-base font-bold text-primary sm:px-8">
-              Bensaúde Uberaba
+              Bensaúde|Uberaba
             </footer>
           )}
         </div>
