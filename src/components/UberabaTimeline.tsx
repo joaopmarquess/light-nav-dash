@@ -50,6 +50,9 @@ const UberabaTimeline = () => {
   const timelineRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    if (panelRef.current) panelRef.current.scrollTop = 0;
+  }, [sub]);
+  useEffect(() => {
     if (aberta !== "Hospital Mário Palmério") return;
     if (panelRef.current) panelRef.current.scrollTop = 0;
     panelRef.current?.scrollIntoView({ block: "nearest", behavior: "auto" });

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cenarioCredenciamento, MODO_CREDENCIAMENTO_PADRAO, moedaCredenciamento, type ModoCredenciamento } from "@/lib/uberabaCredenciamento";
 
@@ -6,7 +6,6 @@ export default function UberabaRedeAssistencial() {
   const inicio = useRef<HTMLElement>(null);
   const [modo, setModo] = useState<ModoCredenciamento>(MODO_CREDENCIAMENTO_PADRAO);
   const { grupos, resumo } = cenarioCredenciamento(modo);
-  useEffect(() => { inicio.current?.scrollIntoView({ block: "start" }); }, []);
   return (
     <section ref={inicio} className="credenciamento modelo-rede space-y-4" aria-labelledby="credenciamento-titulo">
       <header className="flex flex-wrap items-center justify-between gap-3">

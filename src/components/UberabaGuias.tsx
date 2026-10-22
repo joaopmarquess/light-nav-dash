@@ -11,10 +11,6 @@ export default function UberabaGuias({ onBack, content = GUIAS_UBERABA }: { onBa
   const [fluxoAberto, setFluxoAberto] = useState(false);
   const [imagemFalhou, setImagemFalhou] = useState(false);
   const imagem = content.imagem_operacao_url ?? operacaoDigital;
-  useEffect(() => {
-    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    inicioRef.current?.scrollIntoView?.({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
-  }, []);
   useEffect(() => setImagemFalhou(false), [imagem]);
   if (!content.status_ativo) return null;
   const etapas = content.etapas.filter((etapa) => etapa.status_ativo).sort((a, b) => a.ordem_exibicao - b.ordem_exibicao);
@@ -26,10 +22,10 @@ export default function UberabaGuias({ onBack, content = GUIAS_UBERABA }: { onBa
         <header className="guias-header">
           <div>
             <p>BENSAÚDE UBERABA</p>
-            <h2 id="guias-titulo">Modelo de Operação – Guias</h2>
+            <h3 id="guias-titulo">Guias</h3>
             <p className="guias-subtitle">Jornada digital, sem papel e sem deslocamento ao Bensaúde</p>
           </div>
-          <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft className="h-4 w-4" />Voltar ao Modelo de Operação</Button>
+          <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft className="h-4 w-4" />Voltar ao Modelo de Atuação</Button>
         </header>
         <div className="guias-body">
           <ol className="guias-stages" aria-label="Jornada operacional">

@@ -701,6 +701,10 @@ All colors MUST be HSL.
 .comercial-card > div:last-child table th { color: hsl(var(--credential-secondary)); background: hsl(var(--credential-alt)); white-space: normal; }
 .modelo-rede .credenciamento-card { box-shadow: none; }
 .modelo-rede .credenciamento-summary { padding: 18px; }
+.modelo-presentation .guias-header h3 { font-size: 22px; font-weight: 750; }
+.modelo-presentation .guias-header > div > p:first-child { display: none; }
+.modelo-presentation .guias-page { padding: 0; }
+.modelo-presentation .uberaba-guias { border-top: 0; }
 @container (min-width: 1700px) {
   .timeline-presentation .hospital-slide-facade { max-height: 270px; }
   .timeline-presentation .hospital-slide-care-photo { min-height: 230px; max-height: 300px; }
