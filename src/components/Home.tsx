@@ -11,7 +11,7 @@ const carteiraItems = [
 ];
 
 const shortcuts = [
-  { icon: CalendarRange, label: "Timeline Uberaba", destination: "Uberaba Timeline" },
+  { icon: CalendarRange, label: "Projeto Bensaúde|Uberaba", destination: "Uberaba Timeline" },
   { icon: FileText, label: "Controladoria", destination: "Control · DRE Gerencial PE" },
   { icon: Map, label: "Área Geográfica", destination: "Carteira (Trial) · Área Geográfica" },
 ];
