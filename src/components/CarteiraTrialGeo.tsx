@@ -1,33 +1,20 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ArrowLeft, Eye, EyeOff, Loader2, Map as MapIcon, Search } from "lucide-react";
-import { hostinger } from "@/lib/hostingerClient";
+import { geographicToday, useCarteiraTrialGeo } from "@/hooks/useCarteiraTrialGeo";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 import { StateHeatMap } from "@/components/StateHeatMap";
 import { UF_FLAGS } from "@/components/DWCarteira";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-type Row = { uf: string; cidade: string; ativos: number };
-const hoje = () => new Date().toISOString().slice(0, 10);
-
-const CarteiraTrialGeo = ({ embedded = false, mapOnly = false }: { embedded?: boolean; mapOnly?: boolean }) => {
-  const [data, setData] = useState(hoje());
-  const [rows, setRows] = useState<Row[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onDateChange }: { embedded?: boolean; mapOnly?: boolean; selectedDate?: string; onDateChange?: (date: string) => void }) => {
+  const [localDate, setLocalDate] = useState(geographicToday);
+  const data = selectedDate ?? localDate;
+  const setData = onDateChange ?? setLocalDate;
+  const { data: rows, isLoading: loading, error: queryError } = useCarteiraTrialGeo(data);
+  const error = queryError?.message;
   const [sel, setSel] = useState<"SP" | "MG" | "MS" | "GO" | "BRASIL" | "CENTRO" | null>(null);
   const [showMAA, setShowMAA] = useState(false);
-
-  useEffect(() => {
-    let abort = false;
-    setLoading(true); setError(null);
-    hostinger.rpc("carteira_trial_geo", { p_data: data }).then(({ data: d, error }: any) => {
-      if (abort) return;
-      if (error) setError(error.message); else setRows((d ?? []).map((r: any) => ({ uf: String(r.uf ?? "").trim().toUpperCase(), cidade: String(r.cidade ?? ""), ativos: Number(r.ativos) || 0 })));
-      setLoading(false);
-    });
-    return () => { abort = true; };
-  }, [data]);
 
   const { total, porUF, ufTotals, cityTotalsByUF } = useMemo(() => {
     const ufTotals: Record<string, number> = {};

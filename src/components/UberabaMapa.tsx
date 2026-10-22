@@ -3,13 +3,16 @@ import { geoMercator, geoPath } from "d3-geo";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import { Download, Loader2, Maximize, Minimize2, Expand, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import CarteiraTrialGeo from "@/components/CarteiraTrialGeo";
+import { geographicToday, useCarteiraTrialGeo } from "@/hooks/useCarteiraTrialGeo";
+import { municipalHeatFill, municipalHeatNeighbors, normalizedMunicipalTotals } from "@/lib/municipalHeatColors";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-// Malhas municipais do IBGE (base oficial) — MG e SP
+// Malhas municipais do IBGE (base oficial)
 const SRC: Record<string, string> = {
   MG: "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-31-mun.json",
   SP: "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-35-mun.json",
+  GO: "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-52-mun.json",
+  MS: "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-50-mun.json",
 };
 const COR = { g0: "hsl(var(--uberaba-map-center))", g1: "hsl(var(--uberaba-map-ring-one))", g2: "hsl(var(--uberaba-map-ring-two))", g3: "hsl(var(--uberaba-map-ring-three))", out: "hsl(var(--map-outside-lives))" };
 const W = 1600, H = 900; // 16:9
@@ -46,8 +49,9 @@ function vizinhanca(feats: F[]) {
   return nb.map((m) => new Set([...m].filter(([, c]) => c >= 3).map(([j]) => j)));
 }
 
-const UberabaMapa = ({ embedded = false }: { embedded?: boolean }) => {
+const UberabaMapa = ({ embedded = false, selectedDate }: { embedded?: boolean; selectedDate?: string }) => {
   const [geographic, setGeographic] = useState(false);
+  const { data: rows, isLoading: loadingColors, error: colorsError } = useCarteiraTrialGeo(selectedDate ?? geographicToday());
   const [feats, setFeats] = useState<F[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -89,16 +93,18 @@ const UberabaMapa = ({ embedded = false }: { embedded?: boolean }) => {
     Promise.all(Object.entries(SRC).map(([uf, u]) => fetch(u).then((r) => r.json()).then((fc: FeatureCollection) =>
       fc.features.map((f) => ({ ...f, properties: { name: (f.properties as any)?.name ?? "", _uf: uf } })) as F[])))
       .then((r) => {
-        // recorte de trabalho em torno de Uberaba (só para desempenho; a vizinhança é geométrica)
-        const box = (f: F) => pts(f.geometry).some(([x, y]) => x > -51.5 && x < -45.5 && y > -21.8 && y < -17.8);
-        setFeats(r.flat().filter(box));
+        setFeats(r.flat());
       })
       .catch((e) => setErr(String(e?.message ?? e)));
   }, []);
 
   const calc = useMemo(() => {
     if (!feats) return null;
-    const nb = vizinhanca(feats);
+    // Preserve the original MG/SP study rings and framing; added geometry only supplies color context.
+    const regional = feats.flatMap((f, i) => ["MG", "SP"].includes(f.properties._uf) && pts(f.geometry).some(([x, y]) => x > -51.5 && x < -45.5 && y > -21.8 && y < -17.8) ? [i] : []);
+    const regionalNeighbors = vizinhanca(regional.map((i) => feats[i]));
+    const nb = feats.map(() => new Set<number>());
+    regional.forEach((index, i) => { nb[index] = new Set([...regionalNeighbors[i]].map((j) => regional[j])); });
     const u = feats.findIndex((f) => f.properties._uf === "MG" && norm(f.properties.name) === "UBERABA");
     const g1 = new Set(nb[u]);
     const g2 = new Set<number>();
@@ -122,6 +128,16 @@ const UberabaMapa = ({ embedded = false }: { embedded?: boolean }) => {
     console.info("[Mapa Uberaba] 2º anel:", [...g2].map((i) => `${feats[i].properties.name}/${feats[i].properties._uf}`).sort().join(", "));
     return { u, g1, g2, g3, path, proj, grupo };
   }, [feats]);
+
+  const heatTotals = useMemo(() => {
+    const totals: Record<string, Record<string, number>> = {};
+    for (const row of rows ?? []) {
+      const cities = totals[row.uf] ?? (totals[row.uf] = {});
+      cities[row.cidade] = (cities[row.cidade] ?? 0) + row.ativos;
+    }
+    return normalizedMunicipalTotals(totals);
+  }, [rows]);
+  const heatNeighbors = useMemo(() => feats ? municipalHeatNeighbors(feats, heatTotals) : new Set<number>(), [feats, heatTotals]);
 
   // Divisa MG/SP = trechos compartilhados entre municípios dos dois estados (desenho = contorno estadual)
   const ufOutline = useMemo(() => {
@@ -186,12 +202,11 @@ const UberabaMapa = ({ embedded = false }: { embedded?: boolean }) => {
   };
 
   const viewToggle = <TooltipProvider><Tooltip><TooltipTrigger asChild>
-    <Button size="icon" variant={geographic ? "secondary" : "outline"} aria-label={geographic ? "Desampliar para Mapa Uberaba" : "Ampliar para Área Geográfica"} aria-pressed={geographic} onClick={() => setGeographic((value) => !value)} className="h-12 w-12 [&_svg]:size-6">
+    <Button size="icon" variant={geographic ? "secondary" : "outline"} aria-label={geographic ? "Restaurar cores do Mapa Uberaba" : "Aplicar cores da Área Geográfica"} aria-pressed={geographic} disabled={loadingColors || Boolean(colorsError)} onClick={() => setGeographic((value) => !value)} className="h-12 w-12 [&_svg]:size-6">
       {geographic ? <Minimize2 /> : <Expand />}
     </Button>
-  </TooltipTrigger><TooltipContent>{geographic ? "Desampliar para Mapa Uberaba" : "Ampliar para Área Geográfica"}</TooltipContent></Tooltip></TooltipProvider>;
+  </TooltipTrigger><TooltipContent>{geographic ? "Restaurar cores do Mapa Uberaba" : "Aplicar cores da Área Geográfica"}</TooltipContent></Tooltip></TooltipProvider>;
 
-  if (geographic) return <div className="flex h-full min-h-[500px] min-w-0 flex-col gap-2"><div className="flex shrink-0">{viewToggle}</div><div className="min-h-0 flex-1"><CarteiraTrialGeo embedded mapOnly /></div></div>;
   if (err) return <div className="text-sm text-destructive">Erro ao carregar a malha municipal: {err}</div>;
   if (!feats || !calc)
     return <div className="flex h-full items-center justify-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Carregando malha municipal…</div>;
@@ -203,6 +218,7 @@ const UberabaMapa = ({ embedded = false }: { embedded?: boolean }) => {
     <div className="flex h-full min-h-0 flex-col gap-2">
       <div className="flex shrink-0 flex-wrap items-center gap-2">
         {viewToggle}
+        {colorsError && <span className="text-sm text-destructive">Não foi possível carregar as cores municipais.</span>}
         <div className="ml-auto flex flex-wrap gap-2">
         <Button size="icon" variant="outline" title="Aproximar" onClick={() => zoomAt(W / 2, H / 2, 1.5)}><Plus className="h-4 w-4" /></Button>
         <Button size="icon" variant="outline" title="Afastar" onClick={() => zoomAt(W / 2, H / 2, 1 / 1.5)}><Minus className="h-4 w-4" /></Button>
@@ -211,7 +227,7 @@ const UberabaMapa = ({ embedded = false }: { embedded?: boolean }) => {
         </div>
       </div>
       <div className={`relative w-full overflow-hidden rounded-lg border border-border bg-card ${embedded ? "min-h-0 flex-1" : "aspect-video"}`}>
-        <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${W} ${H}`} className="h-full w-full cursor-grab touch-none active:cursor-grabbing" fontFamily="Arial, Helvetica, sans-serif"
+        <svg ref={svgRef} role="img" aria-label="Mapa Uberaba" xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${W} ${H}`} className="h-full w-full cursor-grab touch-none active:cursor-grabbing" fontFamily="Arial, Helvetica, sans-serif"
           onPointerDown={(e) => { (e.currentTarget as Element).setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY }; }}
           onPointerMove={(e) => {
             if (!drag.current) return;
@@ -223,19 +239,24 @@ const UberabaMapa = ({ embedded = false }: { embedded?: boolean }) => {
           <rect width={W} height={H} fill="hsl(var(--background))" />
           <g transform={`translate(${z.x},${z.y}) scale(${z.k})`}>
           {br.map((f, i) => <path key={`br${i}`} d={calc.path(f) ?? ""} fill="#EEF0F2" stroke="none" />)}
-          {feats.map((f, i) => calc.grupo(i) === 3 && (
+          {!geographic && feats.map((f, i) => calc.grupo(i) === 3 && (
             <path key={i} d={calc.path(f) ?? ""} fill={COR.out} stroke="#9AA0A6" strokeWidth={0.5}
               onMouseMove={(e) => { const r = svgRef.current?.parentElement?.getBoundingClientRect(); if (r) setTip({ t: f.properties.name, x: e.clientX - r.left, y: e.clientY - r.top }); }}
               onMouseLeave={() => setTip(null)} />
           ))}
-          {[...calc.g2].map((i) => <path key={i} d={calc.path(feats[i]) ?? ""} fill={COR.g2} stroke="#3C4043" strokeWidth={1} />)}
+          {!geographic && [...calc.g2].map((i) => <path key={i} d={calc.path(feats[i]) ?? ""} fill={COR.g2} stroke="#3C4043" strokeWidth={1} />)}
           {ufOutline.map((fs, k) => fs.map((f, i) => (
             <path key={`uf${k}-${i}`} d={calc.path(f) ?? ""} fill="none" stroke="none" />
           )))}
-          {[...calc.g3].map((i) => <path key={`g3${i}`} d={calc.path(feats[i]) ?? ""} fill={COR.g3} stroke="#3C4043" strokeWidth={0.8} strokeDasharray="3 2" />)}
-          {[...calc.g1].map((i) => <path key={i} d={calc.path(feats[i]) ?? ""} fill={COR.g1} stroke="#FFFFFF" strokeWidth={2} />)}
-          <path d={calc.path(feats[calc.u]) ?? ""} fill={COR.g0} stroke="#FFFFFF" strokeWidth={2.5} />
-          {(() => {
+          {!geographic && [...calc.g3].map((i) => <path key={`g3${i}`} d={calc.path(feats[i]) ?? ""} fill={COR.g3} stroke="#3C4043" strokeWidth={0.8} strokeDasharray="3 2" />)}
+          {!geographic && [...calc.g1].map((i) => <path key={i} d={calc.path(feats[i]) ?? ""} fill={COR.g1} stroke="#FFFFFF" strokeWidth={2} />)}
+          {!geographic && <path d={calc.path(feats[calc.u]) ?? ""} fill={COR.g0} stroke="#FFFFFF" strokeWidth={2.5} />}
+          {geographic && feats.map((f, i) => {
+            const total = heatTotals[f.properties._uf]?.[norm(f.properties.name)] ?? 0;
+            return <path key={`heat-${i}`} data-municipality={`${f.properties._uf}|${norm(f.properties.name)}`} d={calc.path(f) ?? ""} fill={municipalHeatFill(total, heatNeighbors.has(i))} stroke={total > 70 ? "hsl(var(--background))" : "hsl(var(--border))"} strokeWidth={total > 70 ? 0.8 : 0.3}
+              onMouseMove={(e) => { const r = svgRef.current?.parentElement?.getBoundingClientRect(); if (r) setTip({ t: `${f.properties.name}/${f.properties._uf}`, x: e.clientX - r.left, y: e.clientY - r.top }); }} onMouseLeave={() => setTip(null)} />;
+          })}
+          {!geographic && (() => {
             const rp = feats.find((f) => f.properties._uf === "SP" && norm(f.properties.name) === "SAO JOSE DO RIO PRETO");
             return rp && <path d={calc.path(rp) ?? ""} fill="hsl(var(--uberaba-map-reference))" stroke="hsl(var(--map-municipal-border))" strokeWidth={2.5} />;
           })()}

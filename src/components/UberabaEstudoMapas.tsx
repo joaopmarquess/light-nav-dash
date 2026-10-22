@@ -3,9 +3,11 @@ import CarteiraTrialGeo from "@/components/CarteiraTrialGeo";
 import UberabaMapa from "@/components/UberabaMapa";
 import { Button } from "@/components/ui/button";
 import { Map, MapPinned } from "lucide-react";
+import { geographicToday } from "@/hooks/useCarteiraTrialGeo";
 
 const UberabaEstudoMapas = () => {
   const [selected, setSelected] = useState<"geo" | "uberaba">("geo");
+  const [date, setDate] = useState(geographicToday);
   return (
     <div className="flex min-h-[560px] min-w-0 flex-1 flex-col gap-4">
       <div className="flex flex-wrap gap-2" role="group" aria-label="Mapas do Estudo">
@@ -13,8 +15,8 @@ const UberabaEstudoMapas = () => {
         <Button variant={selected === "uberaba" ? "default" : "outline"} aria-pressed={selected === "uberaba"} onClick={() => setSelected("uberaba")}><MapPinned />Mapa Uberaba</Button>
       </div>
       <section aria-label={selected === "geo" ? "Área Geográfica" : "Mapa Uberaba"} className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <div className={selected === "geo" ? "min-h-0 flex-1" : "hidden"}><CarteiraTrialGeo embedded /></div>
-        {selected === "uberaba" && <UberabaMapa embedded />}
+        <div className={selected === "geo" ? "min-h-0 flex-1" : "hidden"}><CarteiraTrialGeo embedded selectedDate={date} onDateChange={setDate} /></div>
+        {selected === "uberaba" && <UberabaMapa embedded selectedDate={date} />}
       </section>
     </div>
   );

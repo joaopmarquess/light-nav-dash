@@ -3,6 +3,7 @@ import { geoCentroid, geoMercator, geoPath } from "d3-geo";
 import type { FeatureCollection, Feature, Geometry } from "geojson";
 import { Loader2 } from "lucide-react";
 import { insideMAA, isExplicitMAAMember, maaFillRole, outerMAARings, smoothMAAPath } from "@/lib/maaGeometry";
+import { municipalHeatFill, municipalHeatNeighbors } from "@/lib/municipalHeatColors";
 
 // IBGE UF codes for municipality geojson from tbrugz/geodata-br
 const UF_CODE: Record<string, string> = { SP: "35", MG: "31", MS: "50", GO: "52" };
@@ -233,16 +234,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
   );
 
   const vizinhos = useMemo(() => {
-    const out = new Set<number>();
-    if (!trialScale || !features) return out;
-    const coords = (g: any): number[][] =>
-      g.type === "Polygon" ? g.coordinates.flat() : g.type === "MultiPolygon" ? g.coordinates.flat(2) : [];
-    const k = (c: number[]) => `${c[0].toFixed(4)},${c[1].toFixed(4)}`;
-    const tot = features.map((f) => normalizedByUF[f.properties._uf]?.[normalize(f.properties?.name ?? "")] ?? 0);
-    const pts = new Set<string>();
-    features.forEach((f, i) => { if (tot[i] > 70) coords(f.geometry).forEach((c) => pts.add(k(c))); });
-    features.forEach((f, i) => { if (tot[i] <= 70 && coords(f.geometry).some((c) => pts.has(k(c)))) out.add(i); });
-    return out;
+    return trialScale && features ? municipalHeatNeighbors(features, normalizedByUF) : new Set<number>();
   }, [trialScale, features, normalizedByUF]);
 
   const colorFor = (total: number, i = -1) => {
@@ -299,7 +291,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
             <path
               key={i}
               d={d}
-              fill={coreData || !trialScale ? colorFor(total, i) : total > 70 ? colorFor(total, i) : total > 0 ? (vizinhos.has(i) ? "hsl(var(--primary) / 0.3)" : "hsl(var(--primary) / 0.14)") : vizinhos.has(i) ? "hsl(var(--primary) / 0.08)" : "hsl(var(--muted) / 0.55)"}
+              fill={coreData || !trialScale ? colorFor(total, i) : municipalHeatFill(total, vizinhos.has(i))}
               data-maa-role={coreData ? maaFillRole(coreData.set.has(i), coreData.inside.has(i), total) : undefined}
               stroke={coreData ? "hsl(var(--map-municipal-border))" : trialScale ? (total > 70 ? "hsl(var(--background))" : "hsl(var(--border))") : "none"}
               strokeWidth={coreData ? 0.8 : trialScale ? (total > 70 ? 0.8 : 0.3) : 0}
