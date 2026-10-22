@@ -187,7 +187,7 @@ const labItems: MenuItem[] = [
     children: [
       { icon: LayoutDashboard, label: "Painel", id: "Uberaba" },
       { icon: Building2, label: "Mapa", id: "Uberaba Mapa" },
-      { icon: LayoutDashboard, label: "Timeline", id: "Uberaba Timeline" },
+      { icon: LayoutDashboard, label: "Projeto Bensaúde|Uberaba", id: "Uberaba Timeline" },
     ],
   },
   {
