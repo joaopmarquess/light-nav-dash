@@ -1,4 +1,4 @@
-- [ ] Aplicar a imagem SVG transparente enviada somente no Home de Estudo, removendo o fundo laranja e preservando o popup do Plano de Marketing.
+- [x] Aplicar a imagem SVG transparente somente no Home de Estudo; transparência real conferida (alpha 0), fundo laranja removido, cinco parágrafos e popup anterior preservados.
 - [x] Substituir a imagem do Home de Estudo e do popup do Plano de Marketing pelo novo arquivo enviado; imagem carregada e cinco parágrafos preservados nos testes de navegação.
 - [ ] Capturar telas atuais em estados abertos e criar a rota independente /projeto-bensaude-uberaba-apresentacao com frames estáticos 16:9, omitindo conteúdo inexistente e preservando o projeto original.
 - [x] Usar a imagem enviada no Home de Estudo e no popup do Plano de Marketing, com carregamento antecipado e texto preservado; dois testes aprovados e imagem integral conferida nos dois locais.
