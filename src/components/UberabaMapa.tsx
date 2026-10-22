@@ -165,8 +165,8 @@ const UberabaMapa = ({ embedded = false }: { embedded?: boolean }) => {
       c.width = 3840; c.height = 2160;
       const ctx = c.getContext("2d");
       if (!ctx) return;
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--card").trim();
-      ctx.fillStyle = `hsl(${ctx.fillStyle})`; ctx.fillRect(0, 0, c.width, c.height);
+      ctx.fillStyle = `hsl(${getComputedStyle(document.documentElement).getPropertyValue("--card").trim()})`;
+      ctx.fillRect(0, 0, c.width, c.height);
       ctx.drawImage(img, 0, 0, c.width, c.height);
       const a = document.createElement("a");
       a.download = "Bensaude_Uberaba_Onde_Queremos_Atuar.png";
