@@ -245,6 +245,7 @@ All colors MUST be HSL.
 .guias-flow-list span { width: 26px; height: 26px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: hsl(var(--hospital-stat-fill)); border-radius: 50%; font-weight: 700; }
 .guias-observation { padding-top: 10px; border-top: 1px solid hsl(var(--hospital-frame)); color: hsl(var(--hospital-secondary)); font-size: 11px; line-height: 1.5; }
 @container (min-width: 1700px) {
+  .timeline-stage-static:has(> .modelo-presentation) > footer { padding-top: 8px; padding-bottom: 8px; }
   .guias-page { gap: 10px; padding: 14px 28px 12px; }
   .guias-header h2 { font-size: 32px; }
   .guias-subtitle { font-size: 20px; }
@@ -725,7 +726,7 @@ All colors MUST be HSL.
   .modelo-rede .credenciamento-card h3 { min-height: 60px; padding: 10px; }
   .modelo-rede .credenciamento-card td, .modelo-rede .credenciamento-card th { padding-top: 6px; padding-bottom: 6px; }
   .modelo-presentation .uberaba-guias { border-top: 0; }
-  .modelo-presentation .guias-page { padding: 0; gap: 10px; }
+  .modelo-presentation .guias-page { padding: 0; gap: 8px; }
   .modelo-presentation .guias-stage { padding: 10px 16px; }
   .modelo-presentation .guias-stage h3 { font-size: 17px; }
   .modelo-presentation .guias-stage p { font-size: 15px; }
