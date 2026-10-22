@@ -158,7 +158,16 @@ const UberabaMapa = ({ embedded = false }: { embedded?: boolean }) => {
   const exportar = () => {
     const svg = svgRef.current;
     if (!svg) return;
-    const xml = new XMLSerializer().serializeToString(svg);
+    const copy = svg.cloneNode(true) as SVGSVGElement;
+    const originals = svg.querySelectorAll("[fill], [stroke]");
+    copy.querySelectorAll("[fill], [stroke]").forEach((element, index) => {
+      const original = originals[index];
+      if (!original) return;
+      const computed = getComputedStyle(original);
+      if (element.hasAttribute("fill")) element.setAttribute("fill", computed.fill);
+      if (element.hasAttribute("stroke")) element.setAttribute("stroke", computed.stroke);
+    });
+    const xml = new XMLSerializer().serializeToString(copy);
     const img = new Image();
     img.onload = () => {
       const c = document.createElement("canvas");
