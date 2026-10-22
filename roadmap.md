@@ -1,3 +1,4 @@
+- [ ] Corrigir ampliar no Mapa Uberaba para aplicar as cores municipais da Área Geográfica em MG, GO, SP e MS sem substituir o mapa nem alterar seu enquadramento.
 - [x] Substituir os mapas lado a lado de Estudo por seleção (Área Geográfica inicial), tornar o Mapa Uberaba verde-claro e acrescentar alternância para cores e visões geográficas no mesmo quadro; 14 testes aprovados e seleção, ampliação, MAA e retorno conferidos com 72.198 vidas reais.
 - [x] Retirar rolagem das subtelas de Modelo de Atuação, antecipar e manter imagens decodificadas desde a abertura do aplicativo e ampliar o popup do outdoor para quase toda a tela; imagens, subtelas, cenários e fluxo conferidos, 20 testes aprovados.
 - [x] Ajustar rolagem apenas nas telas expansíveis, padronizar textos do topo, adotar Bensaúde|Uberaba e antecipar imagens da Timeline; fotografias otimizadas, 42 testes aprovados e apresentações/expansões conferidas.
