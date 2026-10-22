@@ -12,7 +12,7 @@ describe("Guias interactions", () => {
     expect(toggle).toHaveAttribute("aria-expanded", "true");
     fireEvent.click(toggle);
     expect(toggle).toHaveAttribute("aria-expanded", "false");
-    fireEvent.click(screen.getByRole("button", { name: "Voltar ao Modelo de Operação" }));
+    fireEvent.click(screen.getByRole("button", { name: "Voltar ao Modelo de Atuação" }));
     expect(onBack).toHaveBeenCalledOnce();
   });
 });
