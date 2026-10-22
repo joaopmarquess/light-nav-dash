@@ -160,6 +160,11 @@ const UberabaTimeline = () => {
             ))}
           </div>}
           </>}
+          {atual.nome !== "Hospital Mário Palmério" && (
+            <footer className="mt-auto shrink-0 px-4 pb-4 pt-5 text-right text-base font-bold text-primary sm:px-8">
+              Bensaúde Uberaba
+            </footer>
+          )}
         </div>
       )}
     </div>
