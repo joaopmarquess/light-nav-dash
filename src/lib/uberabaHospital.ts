@@ -1,5 +1,5 @@
-import fachada from "@/assets/hospital-palmerio-v3-fachada.asset.json";
-import assistencia from "@/assets/hospital-palmerio-v3-assistencia.asset.json";
+import fachada from "@/assets/hospital-palmerio-v3-fachada.webp.asset.json";
+import assistencia from "@/assets/hospital-palmerio-v3-assistencia.webp.asset.json";
 
 export type HospitalInstitucional = {
   nome: string; nome_completo: string; tipo_prestador: string; resumo_institucional: string;
