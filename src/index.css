@@ -606,7 +606,7 @@ All colors MUST be HSL.
 .timeline-workspace { overflow-y: auto; scrollbar-width: none; }
 .timeline-workspace::-webkit-scrollbar { display: none; }
 .timeline-stage-panel { flex-shrink: 0; }
-.timeline-stage-static { overflow: visible; }
+.timeline-stage-static { overflow: visible; min-height: min-content; }
 .timeline-stage-static > .uberaba-operacao, .timeline-stage-static > .uberaba-implantacao { min-height: 0; flex: 1 0 auto; }
 .timeline-presentation-header { min-width: 0; flex-shrink: 0; }
 .timeline-presentation-header > p { font-size: 12px; line-height: 1.4; font-weight: 700; color: hsl(var(--hospital-secondary)); margin-bottom: 8px; }
@@ -790,6 +790,13 @@ All colors MUST be HSL.
 .implantacao-monitorar h3 { font-size: 16px; font-weight: 750; text-transform: uppercase; margin-bottom: 10px; color: hsl(var(--hospital-navy)); }
 .implantacao-monitorar ul { display: flex; flex-wrap: wrap; gap: 8px; }
 .implantacao-monitorar li { font-size: 14px; background: hsl(var(--hospital-stat-fill)); border-radius: 999px; padding: 4px 12px; }
+@container (min-width: 1101px) {
+  .implantacao-page { gap: 10px; padding-top: 18px; padding-bottom: 18px; }
+  .implantacao-card { gap: 8px; padding: 10px; }
+  .implantacao-condicao { padding-top: 10px; padding-bottom: 10px; }
+  .implantacao-resultado { padding: 12px; }
+  .implantacao-monitorar { padding: 10px 18px; }
+}
 @container (max-width: 1100px) {
   .implantacao-flow { grid-template-columns: 1fr; }
   .implantacao-step { flex-direction: column; }
