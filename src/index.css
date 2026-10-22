@@ -602,7 +602,7 @@ All colors MUST be HSL.
 }
 
 /* Implantação Uberaba */
-.timeline-presentation { container-type: inline-size; display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; background: hsl(var(--hospital-canvas)); color: hsl(var(--credential-text)); border-top: 14px solid hsl(var(--hospital-blue)); }
+.timeline-presentation { container-type: inline-size; display: flex; flex: 1 0 auto; flex-direction: column; min-width: 0; min-height: min-content; background: hsl(var(--hospital-canvas)); color: hsl(var(--credential-text)); border-top: 14px solid hsl(var(--hospital-blue)); }
 .timeline-presentation-header > p { font-size: 12px; font-weight: 700; color: hsl(var(--hospital-secondary)); margin-bottom: 8px; text-transform: uppercase; }
 .timeline-presentation-header h2 { font-size: 42px; line-height: 1.2; font-weight: 750; }
 .timeline-presentation-header > span { display: block; font-size: 18px; color: hsl(var(--hospital-secondary)); margin-top: 6px; }
@@ -702,6 +702,22 @@ All colors MUST be HSL.
 .modelo-rede .credenciamento-card { box-shadow: none; }
 .modelo-rede .credenciamento-summary { padding: 18px; }
 @container (min-width: 1700px) {
+  .timeline-presentation .hospital-slide-facade { max-height: 270px; }
+  .timeline-presentation .hospital-slide-care-photo { min-height: 230px; max-height: 300px; }
+  .timeline-presentation .hospital-slide-indicator { padding: 12px; }
+  .timeline-presentation .formalizacao-siga { padding: 18px 22px; gap: 10px; }
+  .timeline-presentation .formalizacao-products { padding: 14px 22px; }
+  .comercial-card > div:first-child { padding: 10px 16px; }
+  .comercial-card .comercial-table th, .comercial-card .comercial-table td { padding-top: 3px; padding-bottom: 3px; }
+  .comercial-card > div:last-child table th, .comercial-card > div:last-child table td { padding-top: 4px; padding-bottom: 4px; }
+  .modelo-rede .credenciamento-card h3 { min-height: 60px; padding: 10px; }
+  .modelo-rede .credenciamento-card td, .modelo-rede .credenciamento-card th { padding-top: 6px; padding-bottom: 6px; }
+  .modelo-presentation .uberaba-guias { border-top: 0; }
+  .modelo-presentation .guias-page { padding: 0; gap: 10px; }
+  .modelo-presentation .guias-stage { padding: 10px 16px; }
+  .modelo-presentation .guias-stage h3 { font-size: 17px; }
+  .modelo-presentation .guias-stage p { font-size: 15px; }
+  .modelo-presentation .guias-result-main { font-size: 24px; }
   .timeline-presentation .marketing-premises ol { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(130px, auto)); }
   .timeline-presentation .marketing-message h3 { font-size: 26px; }
   .timeline-presentation .marketing-message > p, .timeline-presentation .hospital-slide-description { font-size: 18px; }
