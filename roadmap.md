@@ -1,4 +1,4 @@
-- [ ] Ajustar rolagem apenas nas telas expansíveis, padronizar textos do topo, adotar Bensaúde|Uberaba e antecipar imagens da Timeline.
+- [x] Ajustar rolagem apenas nas telas expansíveis, padronizar textos do topo, adotar Bensaúde|Uberaba e antecipar imagens da Timeline; fotografias otimizadas, 42 testes aprovados e apresentações/expansões conferidas.
 - [x] Padronizar Hospital Mário Palmério, Plano de Marketing, Formalização e Modelo de Atuação pela apresentação de Implantação; conteúdos e valores preservados, 29 testes aprovados e telas, controles, outdoor e referência conferidos.
 - [x] Atualizar o nome do projeto nos textos para Bensaúde Uberaba, mantendo o tratamento masculino.
 - [x] Revisar os textos para o tratamento masculino do Bensaúde e o nome Bensaúde Uberaba, preservando Uberaba como cidade; 41 testes aprovados e textos conferidos na Timeline.
