@@ -1,3 +1,4 @@
+- [ ] Padronizar Hospital Mário Palmério, Plano de Marketing, Formalização e Modelo de Atuação pela apresentação de Implantação; preservar conteúdos, valores e versão Completa, conferir telas e controles.
 - [x] Atualizar o nome do projeto nos textos para Bensaúde Uberaba, mantendo o tratamento masculino.
 - [x] Revisar os textos para o tratamento masculino do Bensaúde e o nome Bensaúde Uberaba, preservando Uberaba como cidade; 41 testes aprovados e textos conferidos na Timeline.
 - [x] Abrir as folhinhas pelas caixas mês/ano, sem segundo ícone; quatro caixas e fechamento conferidos, mantendo datas circuladas e faixa de calor.
