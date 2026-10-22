@@ -3,6 +3,7 @@ import { ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import campanha from "@/assets/uberaba-marketing-outdoor-sem-exclamacao.png";
+import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
 
 const PREMISSAS = [
   { titulo: "Somos novos", texto: "Apresentar a chegada com transparência.", cor: "arrival" },
@@ -16,13 +17,9 @@ const PREMISSAS = [
 export default function UberabaMarketing() {
   const [imageFailed, setImageFailed] = useState(false);
   return (
-    <article className="uberaba-marketing" aria-label="Plano de Marketing de Uberaba">
+    <article className="uberaba-marketing timeline-presentation" aria-label="Plano de Marketing do Bensaúde Uberaba">
       <div className="marketing-page">
-        <header className="marketing-header">
-          <p>BENSAÚDE UBERABA | PLANO DE MARKETING</p>
-          <h2>Estamos chegando.</h2>
-          <p className="marketing-subtitle">Posicionamento e publicidade inicial na cidade</p>
-        </header>
+        <TimelinePresentationHeader title="Plano de Marketing" subtitle="Estamos chegando. Posicionamento e publicidade inicial na cidade." />
         <div className="marketing-body">
           <section className="marketing-message" aria-label="A mensagem">
             <h3>O Bensaúde chega a Uberaba porque acredita na cidade, reconhece sua força econômica e sua vocação para a saúde.</h3>
@@ -58,7 +55,7 @@ export default function UberabaMarketing() {
             </section>
           </div>
         </div>
-        <footer className="marketing-footer"><p>Diretriz: comunicação institucional primeiro; produtos, preços e rede somente após validação e autorização formal.</p><strong>Bensaúde</strong></footer>
+        <footer className="marketing-footer"><p>Diretriz: comunicação institucional primeiro; produtos, preços e rede somente após validação e autorização formal.</p></footer>
       </div>
     </article>
   );

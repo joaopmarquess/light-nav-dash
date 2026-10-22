@@ -1,4 +1,5 @@
 # Project rules
+- Use the shared Timeline presentation header and container-scoped styling for hospital, marketing, formalization and simplified operating-model screens; preserve typed content, calculations and complete-version institutional text so visual changes cannot affect business rules.
 - Keep planned Timeline months, month grouping and UTC month-end calendar calculations in a tested helper keyed by stage; derive heat-band intensity from monthly counts and keep both calendar controls independent of version and selected stage so presentation cannot alter dates.
 - Render the final expected-operation section as a live convergence diagram with container-aware vertical fallback; expose its expected-result status from a tested data helper and leave previous Timeline content intact.
 - Keep Guias in the simplified Timeline's existing model selector as a container-aware presentation backed by typed, replaceable content; preserve the complete version and avoid backend changes until integration is requested.

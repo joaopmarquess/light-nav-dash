@@ -1,15 +1,12 @@
 import { ArrowRight, FileText, Handshake, Hospital, MapPin, ShieldCheck, Users } from "lucide-react";
 import { FORMALIZACAO_UBERABA as dados } from "@/lib/uberabaFormalizacao";
+import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
 
 export default function UberabaFormalizacao() {
   return (
-    <article className="uberaba-formalizacao" aria-label="Formalização do Bensaúde Uberaba">
+    <article className="uberaba-formalizacao timeline-presentation" aria-label="Formalização do Bensaúde Uberaba">
       <div className="formalizacao-page">
-        <header className="formalizacao-header">
-          <p>BENSAÚDE UBERABA | FORMALIZAÇÃO</p>
-          <h2>Formalização</h2>
-          <span>Produtos e instrumentos contratuais previstos</span>
-        </header>
+        <TimelinePresentationHeader title="Formalização" subtitle="Produtos e instrumentos contratuais previstos" />
         <div className="formalizacao-products">
           <MapPin aria-hidden="true" />
           <div><p>PRODUTOS</p><h3>{dados.produtos.titulo}</h3></div>
@@ -31,7 +28,7 @@ export default function UberabaFormalizacao() {
             <section className="formalizacao-assistance-item hospital-service-diagnostic"><Users aria-hidden="true" /><div><p>REDE ASSISTENCIAL</p><h3>Contratos com os {dados.contratosAssistenciais[1].toLowerCase()}</h3><span>Formalização dos credenciamentos</span></div></section>
           </div>
         </div>
-        <footer className="formalizacao-footer"><span>Instrumentos previstos para o Bensaúde Uberaba</span><strong>Bensaúde</strong></footer>
+        <footer className="formalizacao-footer"><span>Instrumentos previstos; sujeitos à negociação e formalização.</span></footer>
       </div>
     </article>
   );

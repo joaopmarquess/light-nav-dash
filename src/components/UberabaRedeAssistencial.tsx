@@ -8,19 +8,19 @@ export default function UberabaRedeAssistencial() {
   const { grupos, resumo } = cenarioCredenciamento(modo);
   useEffect(() => { inicio.current?.scrollIntoView({ block: "start" }); }, []);
   return (
-    <section ref={inicio} className="credenciamento space-y-4 rounded-lg p-3" aria-labelledby="credenciamento-titulo">
+    <section ref={inicio} className="credenciamento modelo-rede space-y-4" aria-labelledby="credenciamento-titulo">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-        <h2 id="credenciamento-titulo" className="text-xl font-bold uppercase">Modelo de Credenciamento</h2>
+        <h3 id="credenciamento-titulo" className="text-xl font-bold">Rede Assistencial</h3>
         <p className="credenciamento-secondary text-base">{modo === "Limite" ? "Limite de referências e valor máximo projetado" : modo === "Rio Preto" ? "Disponibilidade em Rio Preto" : "Disponibilidade identificada e valor máximo projetado"}</p>
         </div>
         <div className="flex flex-wrap gap-2" role="group" aria-label="Cenário de credenciamento">
           {(["Disponível", "Limite", "Rio Preto"] as const).map((opcao) => <Button key={opcao} size="sm" variant={modo === opcao ? "default" : "outline"} aria-pressed={modo === opcao} onClick={() => setModo(opcao)}>{opcao}</Button>)}
         </div>
       </header>
-      <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-1 sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-3">
+      <div className="modelo-rede-grid">
         {grupos.map((grupo) => (
-          <article key={grupo.id} data-grupo={grupo.id} className="credenciamento-card flex w-[90%] shrink-0 snap-center flex-col overflow-hidden rounded-lg border sm:w-auto">
+          <article key={grupo.id} data-grupo={grupo.id} className="credenciamento-card flex min-w-0 flex-col overflow-hidden rounded-lg border">
             <div className={`credenciamento-stripe credenciamento-${grupo.id} h-2 shrink-0`} />
             <h3 className="flex min-h-20 items-center justify-center px-4 py-3 text-center text-lg font-bold uppercase">{grupo.titulo}</h3>
             <table className="w-full border-collapse text-base">
