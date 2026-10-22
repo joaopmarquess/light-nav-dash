@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Building2 } from "lucide-react";
 import { HOSPITAL_PALMERIO, type HospitalInstitucional } from "@/lib/uberabaHospital";
+import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
 
 function HospitalImage({ src, alt, className }: { src: string | null; alt: string; className: string }) {
   const [failed, setFailed] = useState(false);
@@ -21,7 +22,8 @@ const UberabaHospital = ({ hospital = HOSPITAL_PALMERIO }: { hospital?: Hospital
     { title: "DIAGNÓSTICO", text: hospital.servicos_diagnostico, tone: "hospital-service-diagnostic" },
   ];
   return (
-    <article className="hospital-presentation" aria-label="Apresentação do Hospital Mário Palmério">
+    <article className="hospital-presentation timeline-presentation" aria-label="Hospital Mário Palmério do Bensaúde Uberaba">
+      <TimelinePresentationHeader title="Hospital Mário Palmério" subtitle="Estrutura, serviços e papel estratégico" />
       <div className="hospital-slide">
         <aside className="hospital-institution hospital-slide-institution">
           <HospitalImage src={hospital.imagem_fachada_url} alt="Fachada do Hospital Mário Palmério" className="hospital-slide-facade" />
@@ -33,8 +35,7 @@ const UberabaHospital = ({ hospital = HOSPITAL_PALMERIO }: { hospital?: Hospital
         </aside>
         <div className="hospital-slide-content">
           <header className="hospital-slide-header">
-            <p className="hospital-title">{hospital.nome_completo}</p>
-            <h3>Estrutura, serviços e papel estratégico</h3>
+            <h3>{hospital.nome_completo}</h3>
           </header>
           <div className="hospital-slide-indicators">
             {indicators.map((item, i) => <div key={item.label} className={`hospital-slide-indicator ${i === 0 ? "hospital-slide-indicator-primary" : ""}`}><strong>{item.value}</strong><span>{item.label}</span></div>)}

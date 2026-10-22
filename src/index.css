@@ -602,6 +602,159 @@ All colors MUST be HSL.
 }
 
 /* Implantação Uberaba */
+.timeline-presentation { container-type: inline-size; display: flex; flex: 1 0 auto; flex-direction: column; min-width: 0; min-height: min-content; background: hsl(var(--hospital-canvas)); color: hsl(var(--credential-text)); border-top: 14px solid hsl(var(--hospital-blue)); }
+.timeline-presentation-header > p { font-size: 12px; font-weight: 700; color: hsl(var(--hospital-secondary)); margin-bottom: 8px; text-transform: uppercase; }
+.timeline-presentation-header h2 { font-size: 42px; line-height: 1.2; font-weight: 750; }
+.timeline-presentation-header > span { display: block; font-size: 18px; color: hsl(var(--hospital-secondary)); margin-top: 6px; }
+.timeline-presentation .marketing-page, .timeline-presentation .formalizacao-page { flex: 1; padding: 24px 44px; gap: 18px; grid-template-rows: auto auto auto; align-content: start; }
+.timeline-presentation .marketing-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1.8fr); gap: 20px; }
+.timeline-presentation .marketing-message { background: transparent; color: hsl(var(--credential-text)); padding: 0; border-radius: 0; justify-content: flex-start; gap: 14px; }
+.timeline-presentation .marketing-message h3 { font-size: 23px; line-height: 1.35; }
+.timeline-presentation .marketing-message > p { font-size: 16px; line-height: 1.45; color: hsl(var(--hospital-secondary)); }
+.timeline-presentation .marketing-motto { font-size: 21px; color: hsl(var(--hospital-blue)); }
+.timeline-presentation .marketing-message img { height: auto; max-height: 230px; object-position: center; }
+.timeline-presentation .marketing-strategy { gap: 18px; }
+.timeline-presentation .marketing-premises > h3, .timeline-presentation .marketing-channels > h3 { font-size: 20px; margin-bottom: 12px; }
+.timeline-presentation .marketing-premises ol { gap: 14px; grid-template-rows: repeat(3, minmax(104px, auto)); }
+.timeline-presentation .marketing-premises li { align-items: flex-start; border-top: 5px solid hsl(var(--hospital-blue)); padding: 16px; border-radius: 8px; gap: 12px; }
+.timeline-presentation .marketing-premises li:nth-child(2) { border-top-color: hsl(var(--marketing-trust)); }
+.timeline-presentation .marketing-premises li:nth-child(3) { border-top-color: hsl(var(--hospital-gold)); }
+.timeline-presentation .marketing-premises li:nth-child(4) { border-top-color: hsl(var(--credential-nonmedical)); }
+.timeline-presentation .marketing-premises li:nth-child(5) { border-top-color: hsl(var(--marketing-partners)); }
+.timeline-presentation .marketing-number { width: 28px; height: 28px; font-size: 13px; }
+.timeline-presentation .marketing-premises h4 { font-size: 17px; }
+.timeline-presentation .marketing-premises li p { font-size: 14px; margin-top: 6px; }
+.timeline-presentation .marketing-channel-grid { gap: 14px; }
+.timeline-presentation .marketing-channel { padding: 14px 16px; gap: 12px; border-radius: 8px; }
+.timeline-presentation .marketing-channel h4, .timeline-presentation .marketing-channel p { font-size: 14px; }
+.timeline-presentation .marketing-footer, .timeline-presentation .formalizacao-footer { font-size: 13px; padding-top: 12px; }
+.timeline-presentation .formalizacao-page { grid-template-rows: auto auto auto auto; }
+.timeline-presentation .formalizacao-products { padding: 18px 22px; gap: 18px; border: 1px solid hsl(var(--hospital-frame)); border-top: 5px solid hsl(var(--hospital-blue)); border-radius: 8px; background: hsl(var(--hospital-surface)); }
+.timeline-presentation .formalizacao-products h3, .timeline-presentation .formalizacao-products > strong { font-size: 24px; }
+.timeline-presentation .formalizacao-contracts { gap: 20px; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+.timeline-presentation .formalizacao-siga { padding: 22px; gap: 16px; background: hsl(var(--hospital-surface)); color: hsl(var(--credential-text)); border: 1px solid hsl(var(--hospital-frame)); border-top: 6px solid hsl(var(--hospital-gold)); border-radius: 8px; }
+.timeline-presentation .formalizacao-section-heading p, .timeline-presentation .formalizacao-fronts, .timeline-presentation .formalizacao-sequence span, .timeline-presentation .formalizacao-scope { color: hsl(var(--hospital-secondary)); }
+.timeline-presentation .formalizacao-section-heading h3 { font-size: 25px; }
+.timeline-presentation .formalizacao-fronts { font-size: 18px; }
+.timeline-presentation .formalizacao-sequence > div { border-color: hsl(var(--hospital-frame)); }
+.timeline-presentation .formalizacao-sequence strong { font-size: 22px; }
+.timeline-presentation .formalizacao-scope { font-size: 16px; border-color: hsl(var(--hospital-frame)); background: hsl(var(--hospital-role-fill)); padding: 12px; border-radius: 6px; }
+.timeline-presentation .formalizacao-scope strong { color: hsl(var(--credential-text)); }
+.timeline-presentation .formalizacao-assistance { gap: 16px; }
+.timeline-presentation .formalizacao-assistance-item { border-left-width: 1px; border-top: 6px solid hsl(var(--hospital-red)); border-radius: 8px; padding: 22px; gap: 16px; }
+.timeline-presentation .formalizacao-assistance-item:last-child { border-top-color: hsl(var(--chart-3)); }
+.timeline-presentation .formalizacao-assistance-item h3 { font-size: 24px; }
+.timeline-presentation .formalizacao-assistance-item span { font-size: 16px; margin-top: 8px; }
+.hospital-presentation.timeline-presentation { padding: 24px 44px; gap: 18px; }
+.timeline-presentation .hospital-slide { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 20px; flex: 1; align-items: start; }
+.timeline-presentation .hospital-slide-institution { display: flex; flex-direction: column; background: transparent; color: hsl(var(--credential-text)); overflow: visible; }
+.timeline-presentation .hospital-slide-facade { height: auto; aspect-ratio: 1.8; object-fit: cover; border-radius: 6px; }
+.timeline-presentation .hospital-slide-identity { padding: 18px 0 0; gap: 14px; justify-content: start; }
+.timeline-presentation .hospital-slide-identity h2 { font-size: 23px; }
+.timeline-presentation .hospital-slide-priority { color: hsl(var(--hospital-blue)); font-size: 19px; }
+.timeline-presentation .hospital-slide-description { color: hsl(var(--hospital-secondary)); font-size: 16px; line-height: 1.45; }
+.timeline-presentation .hospital-slide-content { padding: 0; gap: 16px; grid-template-rows: auto auto auto auto auto; }
+.timeline-presentation .hospital-slide-header h3 { font-size: 17px; font-weight: 600; color: hsl(var(--hospital-secondary)); }
+.timeline-presentation .hospital-slide-indicators { gap: 14px; }
+.timeline-presentation .hospital-slide-indicator { padding: 18px 12px; gap: 10px; border-top: 5px solid hsl(var(--hospital-blue)); border-radius: 8px; background: hsl(var(--hospital-surface)); }
+.timeline-presentation .hospital-slide-indicator:nth-child(2) { border-top-color: hsl(var(--hospital-red)); }
+.timeline-presentation .hospital-slide-indicator:nth-child(3) { border-top-color: hsl(var(--chart-3)); }
+.timeline-presentation .hospital-slide-indicator:nth-child(4) { border-top-color: hsl(var(--hospital-gold)); }
+.timeline-presentation .hospital-slide-indicator strong { font-size: 32px; }
+.timeline-presentation .hospital-slide-indicator span { font-size: 12px; }
+.timeline-presentation .hospital-slide-assistance { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 16px; overflow: visible; }
+.timeline-presentation .hospital-slide-care-photo { height: 100%; min-height: 260px; max-height: 390px; border-radius: 6px; }
+.timeline-presentation .hospital-slide-services { gap: 12px; grid-template-rows: repeat(3, auto); }
+.timeline-presentation .hospital-slide-service { grid-template-columns: 1fr; gap: 6px; padding: 14px; border-left-width: 1px; border-top: 5px solid hsl(var(--hospital-blue)); border-radius: 8px; }
+.timeline-presentation .hospital-slide-service.hospital-service-complex { border-top-color: hsl(var(--hospital-red)); }
+.timeline-presentation .hospital-slide-service.hospital-service-diagnostic { border-top-color: hsl(var(--hospital-gold)); }
+.timeline-presentation .hospital-slide-service h4 { font-size: 14px; }
+.timeline-presentation .hospital-slide-service p { font-size: 14px; line-height: 1.4; }
+.timeline-presentation .hospital-slide-role { padding: 16px; grid-template-columns: 150px 1fr; border-radius: 8px; }
+.timeline-presentation .hospital-slide-role h4 { font-size: 13px; }
+.timeline-presentation .hospital-slide-role p { font-size: 15px; line-height: 1.45; }
+.timeline-presentation .hospital-slide-footer { font-size: 12px; line-height: 1.5; }
+.timeline-presentation .hospital-slide-signature { font-size: 16px; margin-top: 14px; }
+.modelo-presentation { padding: 24px 44px; gap: 18px; }
+.modelo-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 18px; }
+.modelo-controls { display: flex; flex-wrap: wrap; gap: 10px; }
+.modelo-fronts, .comercial-grid, .modelo-rede-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.modelo-front { display: flex; flex-direction: column; align-items: start; gap: 14px; padding: 24px; border: 1px solid hsl(var(--hospital-frame)); border-top: 6px solid var(--front-color); border-radius: 8px; background: hsl(var(--hospital-surface)); }
+.modelo-front-comercial { --front-color: hsl(var(--hospital-gold)); }
+.modelo-front-rede { --front-color: hsl(var(--hospital-blue)); }
+.modelo-front-guias { --front-color: hsl(var(--chart-3)); }
+.modelo-front > span { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--front-color); color: hsl(var(--credential-summary-text)); font-weight: 700; }
+.modelo-front h3 { font-size: 24px; font-weight: 700; }
+.modelo-front p { font-size: 17px; color: hsl(var(--hospital-secondary)); line-height: 1.45; margin-bottom: auto; }
+.comercial-presentation, .comercial-reference { color: hsl(var(--credential-text)); }
+.comercial-card { min-width: 0; display: flex; flex-direction: column; overflow: hidden; background: hsl(var(--hospital-surface)); border: 1px solid hsl(var(--hospital-frame)); border-top: 6px solid var(--commercial-color); border-radius: 8px; }
+.comercial-adesao { --commercial-color: hsl(var(--hospital-gold)); }
+.comercial-medias { --commercial-color: hsl(var(--hospital-blue)); }
+.comercial-grandes { --commercial-color: hsl(var(--credential-nonmedical)); }
+.comercial-card > div:first-child { flex-wrap: wrap; padding: 16px; }
+.comercial-card > div:first-child > p:last-child { color: var(--commercial-color); }
+.comercial-table thead { background: hsl(var(--credential-head)); }
+.comercial-table tbody tr { border-top: 1px solid hsl(var(--hospital-frame)); background: hsl(var(--hospital-surface)); }
+.comercial-table tbody tr:nth-child(even) { background: hsl(var(--credential-alt)); }
+.comercial-card > div:last-child > p { color: hsl(var(--credential-secondary)); }
+.comercial-card > div:last-child table th, .comercial-card > div:last-child table td { border: 1px solid hsl(var(--hospital-frame)); }
+.comercial-card > div:last-child table th { color: hsl(var(--credential-secondary)); background: hsl(var(--credential-alt)); white-space: normal; }
+.modelo-rede .credenciamento-card { box-shadow: none; }
+.modelo-rede .credenciamento-summary { padding: 18px; }
+.modelo-presentation .guias-header h3 { font-size: 22px; font-weight: 750; }
+.modelo-presentation .guias-header > div > p:first-child { display: none; }
+.modelo-presentation .guias-page { padding: 0; }
+.modelo-presentation .uberaba-guias { border-top: 0; }
+@container (min-width: 1700px) {
+  .timeline-presentation .hospital-slide-facade { max-height: 270px; }
+  .timeline-presentation .hospital-slide-care-photo { min-height: 230px; max-height: 300px; }
+  .timeline-presentation .hospital-slide-indicator { padding: 12px; }
+  .timeline-presentation .formalizacao-siga { padding: 18px 22px; gap: 10px; }
+  .timeline-presentation .formalizacao-products { padding: 14px 22px; }
+  .comercial-card > div:first-child { padding: 10px 16px; }
+  .comercial-card .comercial-table th, .comercial-card .comercial-table td { padding-top: 3px; padding-bottom: 3px; }
+  .comercial-card > div:last-child table th, .comercial-card > div:last-child table td { padding-top: 4px; padding-bottom: 4px; }
+  .modelo-rede .credenciamento-card h3 { min-height: 60px; padding: 10px; }
+  .modelo-rede .credenciamento-card td, .modelo-rede .credenciamento-card th { padding-top: 6px; padding-bottom: 6px; }
+  .modelo-presentation .uberaba-guias { border-top: 0; }
+  .modelo-presentation .guias-page { padding: 0; gap: 10px; }
+  .modelo-presentation .guias-stage { padding: 10px 16px; }
+  .modelo-presentation .guias-stage h3 { font-size: 17px; }
+  .modelo-presentation .guias-stage p { font-size: 15px; }
+  .modelo-presentation .guias-result-main { font-size: 24px; }
+  .timeline-presentation .marketing-premises ol { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(130px, auto)); }
+  .timeline-presentation .marketing-message h3 { font-size: 26px; }
+  .timeline-presentation .marketing-message > p, .timeline-presentation .hospital-slide-description { font-size: 18px; }
+  .timeline-presentation .hospital-slide-service { padding: 18px; }
+  .timeline-presentation .hospital-slide-service h4, .timeline-presentation .hospital-slide-service p { font-size: 16px; }
+  .timeline-presentation .hospital-slide-role p { font-size: 17px; }
+}
+@container (max-width: 1100px) {
+  .timeline-presentation .marketing-body, .timeline-presentation .formalizacao-contracts, .timeline-presentation .hospital-slide { grid-template-columns: 1fr; }
+  .timeline-presentation .hospital-slide-institution { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+  .timeline-presentation .hospital-slide-identity { padding: 0; }
+  .timeline-presentation .hospital-slide-facade { height: 100%; }
+  .timeline-presentation .marketing-message img { max-height: 280px; }
+  .modelo-fronts, .comercial-grid, .modelo-rede-grid { grid-template-columns: 1fr; }
+}
+@container (max-width: 719px) {
+  .hospital-presentation.timeline-presentation, .modelo-presentation, .timeline-presentation .marketing-page, .timeline-presentation .formalizacao-page { padding: 20px 18px; }
+  .timeline-presentation-header h2 { font-size: 30px; overflow-wrap: anywhere; }
+  .timeline-presentation-header > span { font-size: 16px; }
+  .timeline-presentation .marketing-page, .timeline-presentation .formalizacao-page { display: flex; flex-direction: column; }
+  .timeline-presentation .marketing-body, .timeline-presentation .marketing-strategy { display: flex; flex-direction: column; margin-top: 0; gap: 20px; }
+  .timeline-presentation .marketing-premises ol, .timeline-presentation .marketing-channel-grid, .timeline-presentation .formalizacao-assistance { grid-template-columns: 1fr; grid-template-rows: auto; }
+  .timeline-presentation .marketing-channels, .timeline-presentation .marketing-footer { margin-top: 0; }
+  .timeline-presentation .hospital-slide { display: flex; flex-direction: column; }
+  .timeline-presentation .hospital-slide-institution { display: flex; }
+  .timeline-presentation .hospital-slide-content { width: 100%; }
+  .timeline-presentation .hospital-slide-assistance { grid-template-columns: 1fr; }
+  .timeline-presentation .hospital-slide-care-photo { height: auto; min-height: 0; aspect-ratio: 1.8; }
+  .timeline-presentation .hospital-slide-role { grid-template-columns: 1fr; }
+  .comercial-card table { font-size: 14px; }
+  .comercial-card table th, .comercial-card table td { padding-left: 6px; padding-right: 6px; overflow-wrap: anywhere; }
+  .modelo-rede table { font-size: 14px; }
+}
 .uberaba-implantacao { container-type: inline-size; display: flex; flex: 1; background: hsl(var(--hospital-canvas)); color: hsl(var(--credential-text)); border-top: 14px solid hsl(var(--hospital-blue)); }
 .implantacao-page { display: flex; flex-direction: column; width: 100%; gap: 18px; padding: 24px 44px 24px; }
 .implantacao-flow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0; }

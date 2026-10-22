@@ -11,7 +11,7 @@ const mk = (enf: string[], apt: string[]): Linha[] => FAIXAS.map((f, i) => [f, e
 
 export const FRENTES: Frente[] = [
   {
-    titulo: "PCA / ACIU", segmento: "ADESÃO", cor: "#D1A755",
+    titulo: "PCA / ACIU", segmento: "ADESÃO", cor: "comercial-adesao",
     linhas: mk(
       ["157,50", "183,80", "214,49", "236,36", "275,81", "315,24", "386,16", "481,54", "638,99", "944,73"],
       ["196,88", "229,75", "268,11", "295,45", "344,77", "394,05", "482,70", "601,92", "798,74", "1.180,91"]),
@@ -24,7 +24,7 @@ export const FRENTES: Frente[] = [
     ],
   },
   {
-    titulo: "PCE 50 A 99", segmento: "MÉDIAS EMPRESAS", cor: "#2E97D4",
+    titulo: "PCE 50 A 99", segmento: "MÉDIAS EMPRESAS", cor: "comercial-medias",
     linhas: mk(
       ["140,00", "163,38", "190,66", "210,10", "245,17", "280,22", "343,26", "428,03", "567,99", "839,76"],
       ["175,00", "204,22", "238,32", "262,62", "306,46", "350,27", "429,07", "535,04", "709,99", "1.049,70"]),
@@ -37,7 +37,7 @@ export const FRENTES: Frente[] = [
     ],
   },
   {
-    titulo: "PCE 100+", segmento: "GRANDES EMPRESAS", cor: "#D88E73",
+    titulo: "PCE 100+", segmento: "GRANDES EMPRESAS", cor: "comercial-grandes",
     linhas: mk(
       ["131,25", "153,17", "178,74", "196,97", "229,85", "262,70", "321,80", "401,28", "532,49", "787,28"],
       ["164,06", "191,46", "223,43", "246,21", "287,31", "328,38", "402,25", "501,60", "665,62", "984,09"]),
@@ -55,18 +55,18 @@ const REFERENCIA = mk(
   ["175,00", "204,22", "238,32", "262,62", "306,46", "350,27", "429,07", "535,04", "709,99", "1.049,70"],
   ["218,75", "255,27", "297,90", "328,27", "383,07", "437,83", "536,33", "668,80", "887,48", "1.312,12"]);
 
-const C = { fundo: "#F7F9FB", card: "#FFFFFF", head: "#DCEEF8", alt: "#F8FAFB", borda: "#D6E2E8", txt: "#233E52", txt2: "#647783" };
+
 
 const Tabela = ({ linhas }: { linhas: Linha[] }) => (
-  <table className="w-full border-collapse text-center text-lg leading-6" style={{ color: C.txt }}>
+  <table className="comercial-table w-full border-collapse text-center text-lg leading-6">
     <thead className="sticky top-0">
-      <tr style={{ background: C.head }}>
+      <tr>
         {["FAIXA", "ENFERMARIA", "APARTAMENTO"].map((h) => <th key={h} className="px-2 py-1.5 text-base font-semibold">{h}</th>)}
       </tr>
     </thead>
     <tbody>
       {linhas.map((l, i) => (
-        <tr key={l[0]} style={{ background: i % 2 ? C.alt : C.card, borderTop: `1px solid ${C.borda}` }}>
+        <tr key={l[0]} >
           {l.map((v, j) => <td key={j} className="px-2 py-1.5 tabular-nums">{v}</td>)}
         </tr>
       ))}
@@ -75,21 +75,21 @@ const Tabela = ({ linhas }: { linhas: Linha[] }) => (
 );
 
 const Card = ({ f }: { f: Frente }) => (
-  <div className="flex min-w-[280px] snap-center flex-col overflow-hidden rounded-lg" style={{ background: C.card, border: `1px solid ${C.borda}` }}>
-    <div className="h-2" style={{ background: f.cor }} />
+  <div className={`comercial-card ${f.cor}`}>
+    
     <div className="flex items-baseline justify-center gap-2 px-4 py-2 text-center">
-      <p className="text-xl font-bold" style={{ color: C.txt }}>{f.titulo}</p>
-      <p className="text-sm font-semibold tracking-wide" style={{ color: f.cor }}>{f.segmento}</p>
+      <p className="text-xl font-bold">{f.titulo}</p>
+      <p className="text-sm font-semibold tracking-normal">{f.segmento}</p>
     </div>
     <Tabela linhas={f.linhas} />
-    <div className="px-3 pb-2 pt-2" style={{ borderTop: `1px solid ${C.borda}` }}>
-      <p className="mb-2 text-center text-sm font-semibold uppercase tracking-wide" style={{ color: C.txt2 }}>Indicadores variáveis</p>
-      <table className="w-full border-collapse text-base leading-5" style={{ color: C.txt }}>
+    <div className="px-3 pb-2 pt-2">
+      <p className="mb-2 text-center text-sm font-semibold uppercase tracking-normal">Indicadores variáveis</p>
+      <table className="w-full border-collapse text-base leading-5">
         <tbody>
           {f.indicadores.map(([k, v]) => (
             <tr key={k}>
-              <th className="whitespace-nowrap px-3 py-1.5 text-right font-semibold" style={{ color: C.txt2, border: `1px solid ${C.borda}`, background: C.alt }}>{k}</th>
-              <td className="px-3 py-1.5 text-left" style={{ border: `1px solid ${C.borda}` }}>{v}</td>
+              <th className="whitespace-nowrap px-3 py-1.5 text-right font-semibold">{k}</th>
+              <td className="px-3 py-1.5 text-left">{v}</td>
             </tr>
           ))}
         </tbody>
@@ -99,8 +99,8 @@ const Card = ({ f }: { f: Frente }) => (
 );
 
 const UberabaTabelasComerciais = () => (
-  <section className="flex flex-1 flex-col rounded-lg p-3" style={{ background: C.fundo, color: C.txt }}>
-    <div className="mb-3 flex snap-x gap-4 overflow-x-auto sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-3 [&>*]:w-[85%] [&>*]:shrink-0 sm:[&>*]:w-auto">
+  <section className="comercial-presentation">
+    <div className="comercial-grid">
       {FRENTES.map((f) => <Card key={f.titulo} f={f} />)}
     </div>
   </section>
@@ -119,10 +119,10 @@ export const ReferenciaButton = () => {
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">Referência</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-xl" style={{ color: C.txt, marginLeft: dx }}>
+      <DialogContent className="comercial-reference max-w-xl" style={{ marginLeft: dx }}>
         <DialogHeader onPointerDown={down} onPointerMove={move} onPointerUp={up} className="cursor-ew-resize select-none" title="Arraste para mover">
-          <DialogTitle style={{ color: C.txt }}>Referência</DialogTitle>
-          <p className="text-sm" style={{ color: C.txt2 }}>Tabela-base para cálculo das frentes comerciais</p>
+          <DialogTitle>Referência</DialogTitle>
+          <p className="text-sm">Tabela-base para cálculo das frentes comerciais</p>
         </DialogHeader>
         <Tabela linhas={REFERENCIA} />
         <p className="text-center text-sm font-medium">Apartamento = TRUNCAR(Enfermaria × 1,25; 2)</p>

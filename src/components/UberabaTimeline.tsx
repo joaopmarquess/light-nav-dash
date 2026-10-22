@@ -14,6 +14,7 @@ import UberabaOperacaoIniciada from "@/components/UberabaOperacaoIniciada";
 import { CalendarDays, FileCheck2 } from "lucide-react";
 import UberabaCronograma from "@/components/UberabaCronograma";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
 
@@ -49,6 +50,9 @@ const UberabaTimeline = () => {
   const timelineRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    if (panelRef.current) panelRef.current.scrollTop = 0;
+  }, [sub]);
+  useEffect(() => {
     if (aberta !== "Hospital Mário Palmério") return;
     if (panelRef.current) panelRef.current.scrollTop = 0;
     panelRef.current?.scrollIntoView({ block: "nearest", behavior: "auto" });
@@ -62,7 +66,7 @@ const UberabaTimeline = () => {
     <div ref={timelineRef} className="flex h-full flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold text-foreground">Timeline</h1>
+          <h1 className="text-lg font-semibold text-foreground">Timeline · Bensaúde Uberaba</h1>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button size="icon" variant={mostrarDatas ? "default" : "outline"} aria-label={mostrarDatas ? "Ocultar datas planejadas" : "Mostrar datas planejadas"} aria-pressed={mostrarDatas} onClick={() => setMostrarDatas(!mostrarDatas)}>
@@ -126,8 +130,8 @@ const UberabaTimeline = () => {
       )}
 
       {(atual?.filhos || atual?.texto || atual?.conteudo) && (
-        <div ref={panelRef} className={`flex min-h-0 w-full flex-1 flex-col overflow-auto rounded-lg border border-border bg-card ${["Hospital Mário Palmério", "Operação Iniciada"].includes(atual.nome) || (versao === "simples" && ["Plano de Marketing", "Formalização"].includes(atual.nome)) ? "" : "px-4 py-4 sm:px-8"}`}>
-          {!["Hospital Mário Palmério", "Operação Iniciada"].includes(atual.nome) && !(versao === "simples" && ["Plano de Marketing", "Formalização"].includes(atual.nome)) && <div className="mb-3 flex flex-wrap items-center gap-4">
+        <div ref={panelRef} className={`flex min-h-0 w-full flex-1 flex-col overflow-auto rounded-lg border border-border bg-card ${["Hospital Mário Palmério", "Operação Iniciada"].includes(atual.nome) || (versao === "simples" && ["Plano de Marketing", "Formalização", "Modelo de Atuação"].includes(atual.nome)) ? "" : "px-4 py-4 sm:px-8"}`}>
+          {!["Hospital Mário Palmério", "Operação Iniciada"].includes(atual.nome) && !(versao === "simples" && ["Plano de Marketing", "Formalização", "Modelo de Atuação"].includes(atual.nome)) && <div className="mb-3 flex flex-wrap items-center gap-4">
             <p className="text-xl font-semibold text-foreground">{atual.nome}</p>
             {versao === "simples" && atual.nome === "Modelo de Atuação" && (
               <div className="flex flex-wrap gap-3">
@@ -141,11 +145,27 @@ const UberabaTimeline = () => {
           {atual.nome === "Operação Iniciada" ? <UberabaOperacaoIniciada /> : atual.nome === "Hospital Mário Palmério" ? <UberabaHospital onBack={voltarTimeline} /> : versao === "simples" && atual.nome === "Plano de Marketing" ? <UberabaMarketing /> : versao === "simples" && atual.nome === "Formalização" ? <UberabaFormalizacao /> : versao === "simples" && atual.nome === "Implantação" ? <UberabaImplantacao /> : versao === "simples" ? (atual.nome === "Estudo" ? (
             <UberabaEstudoMapas />
           ) : atual.nome === "Modelo de Atuação" ? (
-            <div className="flex min-h-0 flex-1 flex-col">
+            <article className="timeline-presentation modelo-presentation" aria-label="Modelo de Atuação do Bensaúde Uberaba">
+              <div className="modelo-heading">
+                <TimelinePresentationHeader title="Modelo de Atuação" subtitle="Operação comercial, rede assistencial e jornada digital" />
+                <div className="modelo-controls" role="group" aria-label="Frentes do modelo de atuação">
+                  {(["Comercial", "Rede Assistencial", "Guias"] as const).map((b) => (
+                    <Button key={b} variant={sub === b ? "default" : "outline"} onClick={() => setSub(sub === b ? null : b)} aria-pressed={sub === b}>{b === "Guias" && <FileCheck2 className="h-4 w-4" />}{b}</Button>
+                  ))}
+                  {sub === "Comercial" && <ReferenciaButton />}
+                </div>
+              </div>
+              {sub === null && <div className="modelo-fronts">
+                {[
+                  { nome: "Comercial", texto: "PCA / ACIU, PCE 50 a 99 e PCE 100+", cor: "comercial" },
+                  { nome: "Rede Assistencial", texto: "Referências médicas, diagnóstico e terapia e profissionais não médicos", cor: "rede" },
+                  { nome: "Guias", texto: "Carteirinha virtual, autorização online, auditoria remota e atendimento digital", cor: "guias" },
+                ].map((f, i) => <section key={f.nome} className={`modelo-front modelo-front-${f.cor}`}><span>{i + 1}</span><h3>{f.nome}</h3><p>{f.texto}</p><Button variant="outline" onClick={() => setSub(f.nome as "Comercial" | "Rede Assistencial" | "Guias")}>{f.nome}</Button></section>)}
+              </div>}
               {sub === "Comercial" && <UberabaTabelasComerciais />}
                {sub === "Rede Assistencial" && <UberabaRedeAssistencial />}
                {sub === "Guias" && <UberabaGuias onBack={() => { setSub(null); if (panelRef.current) panelRef.current.scrollTop = 0; }} />}
-            </div>
+            </article>
           ) : (
             <p className="text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{LOREM}</p>
           )
