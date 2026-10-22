@@ -28,7 +28,6 @@ const COLS: { key: SortKey; label: string; align: string }[] = [
 
 const InteligenciaUberaba = () => {
   const [data, setData] = useState<Data | null>(null);
-  const [unimed, setUnimed] = useState<Data | null>(null);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<Record<string, boolean>>({ n1: true, n2: true, n3: false });
   const [openOp, setOpenOp] = useState<Record<string, boolean>>({});
@@ -49,10 +48,6 @@ const InteligenciaUberaba = () => {
       .then((r) => r.json())
       .then(setData)
       .catch(() => setData(null));
-    fetch("/data/inteligencia_unimed_uberaba.json")
-      .then((r) => r.json())
-      .then(setUnimed)
-      .catch(() => setUnimed(null));
   }, []);
 
   const sortRows = <T extends { ades: number; canc: number; vidas: number }>(
@@ -96,21 +91,6 @@ const InteligenciaUberaba = () => {
     );
 
   const geral = tot(data.operadoras);
-
-  const isUnimedUberaba = (o: Op) => o.registro === "354066" || o.nome.toUpperCase().includes("UNIMED UBERABA");
-  const uniTot = unimed ? tot(unimed.operadoras as unknown as Op[]) : null;
-  const uniTitle = uniTot
-    ? [
-        "Unimed Uberaba — total da rede (todas as cidades)",
-        `Cidades: ${unimed!.operadoras.length}`,
-        `Adesões: ${fmt(uniTot.ades)}`,
-        `Cancelamentos: ${fmt(uniTot.canc)}`,
-        `Crescimento: ${fmtSigned(uniTot.cres)}`,
-        `Vidas jun/2026: ${fmt(uniTot.vidas)}`,
-        "",
-        "Clique para abrir o submenu Unimed",
-      ].join("\n")
-    : "Clique para abrir o submenu Unimed";
 
   const montarPdf = async () => {
     const body: (string | { content: string; styles?: Record<string, unknown>; colSpan?: number })[][] = [];
@@ -250,15 +230,10 @@ const InteligenciaUberaba = () => {
                       return (
                         <Fragment key={opKey}>
                           <tr
-                            title={isUnimedUberaba(o) ? uniTitle : undefined}
                             onClick={() => {
-                              if (isUnimedUberaba(o)) {
-                                window.dispatchEvent(new Event("open-unimed-uberaba"));
-                                return;
-                              }
                               if (tipos.length > 0) setOpenOp((p) => ({ ...p, [opKey]: !p[opKey] }));
                             }}
-                            className={`border-t border-border/60 hover:bg-accent/30 ${tipos.length || isUnimedUberaba(o) ? "cursor-pointer" : ""}`}
+                            className={`border-t border-border/60 hover:bg-accent/30 ${tipos.length ? "cursor-pointer" : ""}`}
                           >
                             <td className="px-4 py-1.5 pl-8 text-foreground/80">
                               <span className="inline-flex items-center gap-2">
@@ -268,7 +243,7 @@ const InteligenciaUberaba = () => {
                                   <span className="w-3.5" />
                                 )}
                                 <Building2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                <span title={isUnimedUberaba(o) ? undefined : `Registro ANS ${o.registro}`} className={isUnimedUberaba(o) ? "text-primary font-medium underline decoration-dotted" : ""}>{o.nome}</span>
+                                <span title={`Registro ANS ${o.registro}`}>{o.nome}</span>
                               </span>
                             </td>
                             <td className="px-4 py-1.5 text-right">{fmt(o.ades)}</td>
