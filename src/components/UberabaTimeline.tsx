@@ -58,8 +58,9 @@ const UberabaTimeline = () => {
     imagens.forEach((src) => {
       if (!src) return;
       const imagem = new Image();
+      if (src === campanha) imagem.fetchPriority = "high";
       imagem.src = src;
-      void imagem.decode().catch(() => undefined);
+      if (typeof imagem.decode === "function") void imagem.decode().catch(() => undefined);
     });
   }, []);
   const panelRef = useRef<HTMLDivElement>(null);
