@@ -54,6 +54,11 @@ All colors MUST be HSL.
     --map-state-border: 0 0% 0%;
     --map-maa-outline: 0 78% 49%;
     --map-outside-lives: 0 0% 88%;
+    --uberaba-map-center: 137 42% 65%;
+    --uberaba-map-ring-one: 137 43% 78%;
+    --uberaba-map-ring-two: 137 44% 87%;
+    --uberaba-map-ring-three: 137 40% 93%;
+    --uberaba-map-reference: 143 36% 41%;
     --credential-background: 210 33% 98%;
     --credential-text: 206 40% 23%;
     --credential-secondary: 203 13% 45%;
@@ -148,6 +153,11 @@ All colors MUST be HSL.
     --map-state-border: 0 0% 0%;
     --map-maa-outline: 0 85% 65%;
     --map-outside-lives: 0 0% 68%;
+    --uberaba-map-center: 137 38% 55%;
+    --uberaba-map-ring-one: 137 30% 45%;
+    --uberaba-map-ring-two: 137 24% 34%;
+    --uberaba-map-ring-three: 137 20% 24%;
+    --uberaba-map-reference: 143 40% 65%;
     --credential-background: 222 35% 10%;
     --credential-text: 210 40% 98%;
     --credential-secondary: 210 20% 72%;
