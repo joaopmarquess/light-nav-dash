@@ -10,6 +10,7 @@
 - Render the simplified marketing PDF reference as live text and extracted campaign imagery, preserving the complete Timeline version and avoiding source-document text overlaps.
 - Compose simplified Timeline Study with a single selected view and reuse the standalone Uberaba dashboard for its Panel option to keep data and interactions consistent; share dated geographic queries and tested municipal heat-color/neighbor helpers. Uberaba's color toggle paints MG/GO/SP/MS on its own geometry while preserving its projection, zoom, study rings and labels; never replace it with the geographic screen.
 - Study maps expose optional toolbar portal targets to place their existing controls alongside the shared presentation header without duplicating state; standalone map toolbars remain unchanged.
+- Keep explicit green Uberaba study-area inclusions in a tested helper, applying them after projection fitting so membership additions preserve the existing map framing and do not affect life-based colors.
 - Keep Uberaba credentialing reference selection and supplied summary values in a tested helper, separate from summary presentation, so visual changes cannot alter quantities or source precedence.
 - Keep MAA geometry and area classification in a focused helper, with tests, so map presentation does not change beneficiary counts or geographic membership.
 - Simplify only the projected display outline; classify municipalities using the original outer ring to preserve geographic membership.
