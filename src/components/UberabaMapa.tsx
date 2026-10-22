@@ -17,6 +17,7 @@ const SRC: Record<string, string> = {
 };
 const COR = { g0: "hsl(var(--uberaba-map-center))", g1: "hsl(var(--uberaba-map-ring-one))", g2: "hsl(var(--uberaba-map-ring-two))", g3: "hsl(var(--uberaba-map-ring-three))", out: "hsl(var(--uberaba-map-background))" };
 const W = 1600, H = 900; // 16:9
+const DEFAULT_ZOOM = { k: 1 / 1.5, x: (W / 2) * (1 - 1 / 1.5), y: (H / 2) * (1 - 1 / 1.5) };
 
 type F = Feature<Geometry, { name: string; _uf: string }>;
 const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
@@ -58,7 +59,7 @@ const UberabaMapa = ({ embedded = false, selectedDate, toolbarTarget }: { embedd
   const svgRef = useRef<SVGSVGElement>(null);
   const [br, setBr] = useState<Feature<Geometry>[]>([]);
   const [tip, setTip] = useState<{ t: string; x: number; y: number } | null>(null);
-  const [z, setZ] = useState({ k: 1, x: 0, y: 0 });
+  const [z, setZ] = useState(DEFAULT_ZOOM);
   const zRef = useRef(z); zRef.current = z;
   const drag = useRef<{ x: number; y: number } | null>(null);
   const toSvg = (cx: number, cy: number) => {
@@ -220,7 +221,7 @@ const UberabaMapa = ({ embedded = false, selectedDate, toolbarTarget }: { embedd
         <div className="ml-auto flex flex-wrap gap-2">
         <Button size="icon" variant="outline" title="Aproximar" onClick={() => zoomAt(W / 2, H / 2, 1.5)}><Plus className="h-4 w-4" /></Button>
         <Button size="icon" variant="outline" title="Afastar" onClick={() => zoomAt(W / 2, H / 2, 1 / 1.5)}><Minus className="h-4 w-4" /></Button>
-        <Button size="icon" variant="outline" title="Voltar ao recorte" onClick={() => setZ({ k: 1, x: 0, y: 0 })}><Maximize className="h-4 w-4" /></Button>
+        <Button size="icon" variant="outline" title="Voltar ao recorte" onClick={() => setZ(DEFAULT_ZOOM)}><Maximize className="h-4 w-4" /></Button>
         <Button size="sm" variant="outline" onClick={exportar}><Download className="mr-2 h-4 w-4" />Exportar PNG 16:9 (4K)</Button>
         </div>
       </div>;
