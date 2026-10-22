@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { geoMercator, geoPath } from "d3-geo";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import { Download, Loader2, Maximize, Minimize2, Expand, Minus, Plus } from "lucide-react";
@@ -14,7 +15,7 @@ const SRC: Record<string, string> = {
   GO: "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-52-mun.json",
   MS: "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-50-mun.json",
 };
-const COR = { g0: "hsl(var(--uberaba-map-center))", g1: "hsl(var(--uberaba-map-ring-one))", g2: "hsl(var(--uberaba-map-ring-two))", g3: "hsl(var(--uberaba-map-ring-three))", out: "hsl(var(--map-outside-lives))" };
+const COR = { g0: "hsl(var(--uberaba-map-center))", g1: "hsl(var(--uberaba-map-ring-one))", g2: "hsl(var(--uberaba-map-ring-two))", g3: "hsl(var(--uberaba-map-ring-three))", out: "hsl(var(--uberaba-map-background))" };
 const W = 1600, H = 900; // 16:9
 
 type F = Feature<Geometry, { name: string; _uf: string }>;
@@ -49,7 +50,7 @@ function vizinhanca(feats: F[]) {
   return nb.map((m) => new Set([...m].filter(([, c]) => c >= 3).map(([j]) => j)));
 }
 
-const UberabaMapa = ({ embedded = false, selectedDate }: { embedded?: boolean; selectedDate?: string }) => {
+const UberabaMapa = ({ embedded = false, selectedDate, toolbarTarget }: { embedded?: boolean; selectedDate?: string; toolbarTarget?: HTMLElement | null }) => {
   const [geographic, setGeographic] = useState(false);
   const { data: rows, isLoading: loadingColors, error: colorsError } = useCarteiraTrialGeo(selectedDate ?? geographicToday());
   const [feats, setFeats] = useState<F[] | null>(null);
@@ -213,10 +214,7 @@ const UberabaMapa = ({ embedded = false, selectedDate }: { embedded?: boolean; s
 
   const [mgX, mgY] = calc.proj([-47.2, -18.6]) ?? [0, 0];
   const [spX, spY] = calc.proj([-48.6, -20.9]) ?? [0, 0];
-
-  return (
-    <div className="flex h-full min-h-0 flex-col gap-2">
-      <div className="flex shrink-0 flex-wrap items-center gap-2">
+  const toolbar = <div className="flex shrink-0 flex-wrap items-center gap-2">
         {viewToggle}
         {colorsError && <span className="text-sm text-destructive">Não foi possível carregar as cores municipais.</span>}
         <div className="ml-auto flex flex-wrap gap-2">
@@ -225,7 +223,11 @@ const UberabaMapa = ({ embedded = false, selectedDate }: { embedded?: boolean; s
         <Button size="icon" variant="outline" title="Voltar ao recorte" onClick={() => setZ({ k: 1, x: 0, y: 0 })}><Maximize className="h-4 w-4" /></Button>
         <Button size="sm" variant="outline" onClick={exportar}><Download className="mr-2 h-4 w-4" />Exportar PNG 16:9 (4K)</Button>
         </div>
-      </div>
+      </div>;
+
+  return (
+    <div className="flex h-full min-h-0 flex-col gap-2">
+      {toolbarTarget ? createPortal(toolbar, toolbarTarget) : toolbar}
       <div className={`relative w-full overflow-hidden rounded-lg border border-border bg-card ${embedded ? "min-h-0 flex-1" : "aspect-video"}`}>
         <svg ref={svgRef} role="img" aria-label="Mapa Uberaba" xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${W} ${H}`} className="h-full w-full cursor-grab touch-none active:cursor-grabbing" fontFamily="Arial, Helvetica, sans-serif"
           onPointerDown={(e) => { (e.currentTarget as Element).setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY }; }}
@@ -238,9 +240,9 @@ const UberabaMapa = ({ embedded = false, selectedDate }: { embedded?: boolean; s
           onPointerUp={() => (drag.current = null)}>
           <rect width={W} height={H} fill="hsl(var(--background))" />
           <g transform={`translate(${z.x},${z.y}) scale(${z.k})`}>
-          {br.map((f, i) => <path key={`br${i}`} d={calc.path(f) ?? ""} fill="#EEF0F2" stroke="none" />)}
+          {br.map((f, i) => <path key={`br${i}`} d={calc.path(f) ?? ""} fill={COR.out} stroke="none" />)}
           {!geographic && feats.map((f, i) => calc.grupo(i) === 3 && (
-            <path key={i} d={calc.path(f) ?? ""} fill={COR.out} stroke="#9AA0A6" strokeWidth={0.5}
+            <path key={i} data-background-municipality={`${f.properties._uf}|${norm(f.properties.name)}`} d={calc.path(f) ?? ""} fill={COR.out} stroke="hsl(var(--uberaba-map-background-border))" strokeWidth={0.6}
               onMouseMove={(e) => { const r = svgRef.current?.parentElement?.getBoundingClientRect(); if (r) setTip({ t: f.properties.name, x: e.clientX - r.left, y: e.clientY - r.top }); }}
               onMouseLeave={() => setTip(null)} />
           ))}
@@ -253,7 +255,7 @@ const UberabaMapa = ({ embedded = false, selectedDate }: { embedded?: boolean; s
           {!geographic && <path d={calc.path(feats[calc.u]) ?? ""} fill={COR.g0} stroke="#FFFFFF" strokeWidth={2.5} />}
           {geographic && feats.map((f, i) => {
             const total = heatTotals[f.properties._uf]?.[norm(f.properties.name)] ?? 0;
-            return <path key={`heat-${i}`} data-municipality={`${f.properties._uf}|${norm(f.properties.name)}`} d={calc.path(f) ?? ""} fill={municipalHeatFill(total, heatNeighbors.has(i))} stroke={total > 70 ? "hsl(var(--background))" : "hsl(var(--border))"} strokeWidth={total > 70 ? 0.8 : 0.3}
+            return <path key={`heat-${i}`} data-background-municipality={total <= 0 ? `${f.properties._uf}|${norm(f.properties.name)}` : undefined} data-municipality={`${f.properties._uf}|${norm(f.properties.name)}`} d={calc.path(f) ?? ""} fill={total > 0 ? municipalHeatFill(total, heatNeighbors.has(i)) : COR.out} stroke={total <= 0 ? "hsl(var(--uberaba-map-background-border))" : total > 70 ? "hsl(var(--background))" : "hsl(var(--border))"} strokeWidth={total <= 0 ? 0.6 : total > 70 ? 0.8 : 0.3}
               onMouseMove={(e) => { const r = svgRef.current?.parentElement?.getBoundingClientRect(); if (r) setTip({ t: `${f.properties.name}/${f.properties._uf}`, x: e.clientX - r.left, y: e.clientY - r.top }); }} onMouseLeave={() => setTip(null)} />;
           })}
           {!geographic && (() => {

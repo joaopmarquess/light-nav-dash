@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { ArrowLeft, Eye, EyeOff, Loader2, Map as MapIcon, Search } from "lucide-react";
 import { geographicToday, useCarteiraTrialGeo } from "@/hooks/useCarteiraTrialGeo";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
@@ -7,7 +8,7 @@ import { UF_FLAGS } from "@/components/DWCarteira";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onDateChange }: { embedded?: boolean; mapOnly?: boolean; selectedDate?: string; onDateChange?: (date: string) => void }) => {
+const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onDateChange, toolbarTarget }: { embedded?: boolean; mapOnly?: boolean; selectedDate?: string; onDateChange?: (date: string) => void; toolbarTarget?: HTMLElement | null }) => {
   const [localDate, setLocalDate] = useState(geographicToday);
   const data = selectedDate ?? localDate;
   const setData = onDateChange ?? setLocalDate;
@@ -46,18 +47,26 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
     );
   }
 
-  return (
-    <section className="h-full flex flex-col min-h-0 gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-card rounded-xl border border-border shadow-sm px-6 py-4">
+  const dateControls = <div className={toolbarTarget ? "flex flex-wrap items-center gap-4" : "flex flex-wrap items-center justify-between gap-4 bg-card rounded-xl border border-border shadow-sm px-6 py-4"}>
         <div className="flex items-center gap-2 text-sm">
           <span className="text-muted-foreground">Ativos em:</span>
           <input type="date" aria-label="Ativos em" value={data} onChange={(e) => e.target.value && setData(e.target.value)}
             className="h-9 px-3 rounded-md border border-border bg-background text-foreground" />
         </div>
         {!loading && !error && (
-          <div className="text-3xl font-bold text-foreground tabular-nums">{total.toLocaleString("pt-BR")} vidas</div>
+          <div className={`${toolbarTarget ? "text-xl" : "text-3xl"} font-bold text-foreground tabular-nums`}>{total.toLocaleString("pt-BR")} vidas</div>
         )}
-      </div>
+      </div>;
+  const mapControls = <div className="flex shrink-0 items-center gap-2">
+    <Button type="button" variant="outline" size="icon" title="Mapa Área Atuação (MAA)" aria-label="Mapa Área Atuação (MAA)" onClick={() => setSel("CENTRO")} className="h-12 w-12 [&_svg]:size-6"><Search /></Button>
+    <TooltipProvider delayDuration={150}><Tooltip><TooltipTrigger asChild>
+      <Button type="button" variant={showMAA ? "secondary" : "outline"} size="icon" aria-label={showMAA ? "Ocultar MAA" : "Mostrar MAA"} aria-pressed={showMAA} onClick={() => setShowMAA((visible) => !visible)} className="h-12 w-12 [&_svg]:size-6">{showMAA ? <Eye /> : <EyeOff />}</Button>
+    </TooltipTrigger><TooltipContent>{showMAA ? "Ocultar MAA" : "Mostrar MAA"}</TooltipContent></Tooltip></TooltipProvider>
+  </div>;
+
+  return (
+    <section className="h-full flex flex-col min-h-0 gap-4">
+      {toolbarTarget ? createPortal(<>{dateControls}{sel !== "CENTRO" && mapControls}</>, toolbarTarget) : dateControls}
       <div className="flex-1 min-h-0">
         {loading ? (
           <div className="h-full flex items-center justify-center text-muted-foreground text-sm"><Loader2 className="h-4 w-4 mr-2 animate-spin" />Carregando…</div>
@@ -100,22 +109,10 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
               })}
             </div>}
             <div className="bg-card rounded-xl border border-border shadow-sm p-2 flex flex-col min-h-0">
-              <div className="flex items-center gap-3 px-2 pt-2">
-                <div className="flex shrink-0 items-center gap-2">
-                  <Button type="button" variant="outline" size="icon" title="Mapa Área Atuação (MAA)" aria-label="Mapa Área Atuação (MAA)" onClick={() => setSel("CENTRO")} className="h-12 w-12 [&_svg]:size-6"><Search /></Button>
-                  <TooltipProvider delayDuration={150}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button type="button" variant={showMAA ? "secondary" : "outline"} size="icon" aria-label={showMAA ? "Ocultar MAA" : "Mostrar MAA"} aria-pressed={showMAA} onClick={() => setShowMAA((visible) => !visible)} className="h-12 w-12 [&_svg]:size-6">
-                          {showMAA ? <Eye /> : <EyeOff />}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>{showMAA ? "Ocultar MAA" : "Mostrar MAA"}</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
+              {!toolbarTarget && <div className="flex items-center gap-3 px-2 pt-2">
+                {mapControls}
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Mapa por cidade</h3>
-              </div>
+              </div>}
               <div className="flex-1 min-h-0 h-full w-full">
                 <StateHeatMap trialScale outlineOnly={showMAA} showOverview={false} ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />
               </div>
