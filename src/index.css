@@ -59,6 +59,8 @@ All colors MUST be HSL.
     --uberaba-map-ring-two: 137 44% 87%;
     --uberaba-map-ring-three: 137 40% 93%;
     --uberaba-map-reference: 143 36% 41%;
+    --uberaba-map-background: 0 0% 92%;
+    --uberaba-map-background-border: 0 0% 65%;
     --credential-background: 210 33% 98%;
     --credential-text: 206 40% 23%;
     --credential-secondary: 203 13% 45%;
@@ -158,6 +160,8 @@ All colors MUST be HSL.
     --uberaba-map-ring-two: 137 24% 34%;
     --uberaba-map-ring-three: 137 20% 24%;
     --uberaba-map-reference: 143 40% 65%;
+    --uberaba-map-background: 0 0% 24%;
+    --uberaba-map-background-border: 0 0% 48%;
     --credential-background: 222 35% 10%;
     --credential-text: 210 40% 98%;
     --credential-secondary: 210 20% 72%;

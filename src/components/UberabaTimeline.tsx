@@ -133,7 +133,7 @@ const UberabaTimeline = () => {
 
       {(atual?.filhos || atual?.texto || atual?.conteudo) && (
         <div ref={panelRef} data-expansivel={permiteRolagem} className={`timeline-stage-panel flex min-h-0 w-full flex-1 flex-col rounded-lg border border-border bg-card ${permiteRolagem ? "overflow-auto" : "timeline-stage-static"} ${apresentacaoPropria ? "" : "px-4 py-4 sm:px-8"}`}>
-          {!apresentacaoPropria && <div className="mb-5"><TimelinePresentationHeader title={atual.nome} /></div>}
+          {!apresentacaoPropria && !(versao === "simples" && atual.nome === "Estudo") && <div className="mb-5"><TimelinePresentationHeader title={atual.nome} /></div>}
           {atual.nome === "Operação Iniciada" ? <UberabaOperacaoIniciada /> : atual.nome === "Hospital Mário Palmério" ? <UberabaHospital onBack={voltarTimeline} /> : versao === "simples" && atual.nome === "Plano de Marketing" ? <UberabaMarketing /> : versao === "simples" && atual.nome === "Formalização" ? <UberabaFormalizacao /> : versao === "simples" && atual.nome === "Implantação" ? <UberabaImplantacao /> : versao === "simples" ? (atual.nome === "Estudo" ? (
             <UberabaEstudoMapas />
           ) : atual.nome === "Modelo de Atuação" ? (
