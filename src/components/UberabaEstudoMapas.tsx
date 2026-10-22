@@ -7,6 +7,7 @@ import { geographicToday } from "@/hooks/useCarteiraTrialGeo";
 import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
 
 import { UBERABA_ESTUDO } from "@/lib/uberabaEstudo";
+import estudoImagem from "@/assets/uberaba-estudo-outdoor.jpg.asset.json";
 
 const UberabaEstudoMapas = () => {
   const [selected, setSelected] = useState<"home" | "painel" | "uberaba">("home");
@@ -25,6 +26,7 @@ const UberabaEstudoMapas = () => {
       </div>
       <section aria-label={selected === "home" ? "Home do Estudo" : selected === "painel" ? "Painel" : "Área"} className="flex min-h-0 min-w-0 flex-1 flex-col">
         {selected === "home" && <article lang="pt-BR" className="space-y-5 text-justify text-xl leading-7 text-foreground/85 hyphens-auto">
+          <img src={estudoImagem.url} loading="eager" decoding="sync" alt="Outdoor do Bensaúde com Hospital Mário Palmério e SIGA: Estamos chegando, Uberaba" className="max-h-[60vh] w-full object-contain" />
           {UBERABA_ESTUDO.split("\n\n").map((paragraph, index) => <p key={index}>{paragraph.split("**").map((text, part) => part % 2 ? <strong key={part} className="font-semibold text-foreground">{text}</strong> : text)}</p>)}
         </article>}
         {selected === "painel" && <UberabaShell embedded />}

@@ -1,13 +1,14 @@
 import { HOSPITAL_PALMERIO } from "@/lib/uberabaHospital";
 import campanha from "@/assets/uberaba-marketing-outdoor-sem-exclamacao.png";
 import operacaoDigital from "@/assets/uberaba-guias-operacao-digital.jpg";
+import outdoorImagem from "@/assets/uberaba-estudo-outdoor.jpg.asset.json";
 
 // Keep decoded images alive across stage changes, including the first visit.
 const imagens: HTMLImageElement[] = [];
 
 export function anteciparImagensTimeline() {
   if (imagens.length > 0) return;
-  for (const src of [HOSPITAL_PALMERIO.imagem_fachada_url, HOSPITAL_PALMERIO.imagem_assistencial_url, campanha, operacaoDigital]) {
+  for (const src of [HOSPITAL_PALMERIO.imagem_fachada_url, HOSPITAL_PALMERIO.imagem_assistencial_url, campanha, operacaoDigital, outdoorImagem.url]) {
     if (!src) continue;
     const preload = document.createElement("link");
     preload.rel = "preload";
