@@ -32,9 +32,9 @@ export default function UberabaMarketing() {
                     <img src={campanha} loading="eager" decoding="sync" alt="Campanha Bensaúde: Estamos chegando, Uberaba" onError={() => setImageFailed(true)} />
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="w-[calc(100vw-2rem)] max-w-6xl gap-3 p-4 pt-10" aria-describedby={undefined}>
+                <DialogContent className="outdoor-dialog" aria-describedby={undefined}>
                   <DialogTitle className="sr-only">Outdoor Bensaúde — Uberaba</DialogTitle>
-                  <img src={campanha} loading="eager" decoding="sync" alt="Outdoor da campanha Bensaúde: Estamos chegando, Uberaba" className="max-h-[80dvh] w-full object-contain" />
+                  <img src={campanha} loading="eager" decoding="sync" alt="Outdoor da campanha Bensaúde: Estamos chegando, Uberaba" className="outdoor-dialog-image" />
                 </DialogContent>
               </Dialog>
             )}
