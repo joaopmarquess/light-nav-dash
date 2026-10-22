@@ -12,7 +12,7 @@ const TABS: { id: Tab; label: string; icon: typeof Building2 }[] = [
   { id: "hospitais", label: "Uberaba Hospitais", icon: Hospital },
 ];
 
-const UberabaShell = () => {
+const UberabaShell = ({ embedded = false }: { embedded?: boolean }) => {
   const [tab, setTab] = useState<Tab>("ops");
 
   useEffect(() => {
@@ -43,7 +43,7 @@ const UberabaShell = () => {
           );
         })}
       </div>
-      <div className="min-h-0 flex-1 overflow-auto pr-1">
+      <div className={embedded ? "min-w-0" : "min-h-0 flex-1 overflow-auto pr-1"}>
         {tab === "ops" ? <InteligenciaUberaba /> : tab === "unimed" ? <InteligenciaUnimed /> : <UberabaHospitais />}
       </div>
     </div>

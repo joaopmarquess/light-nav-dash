@@ -1,7 +1,7 @@
 import { useState } from "react";
 import CarteiraTrialGeo from "@/components/CarteiraTrialGeo";
 import UberabaMapa from "@/components/UberabaMapa";
-import InteligenciaUberaba from "@/components/InteligenciaUberaba";
+import UberabaShell from "@/components/UberabaShell";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Map, MapPinned } from "lucide-react";
 import { geographicToday } from "@/hooks/useCarteiraTrialGeo";
@@ -23,8 +23,8 @@ const UberabaEstudoMapas = () => {
       <div ref={setToolbar} className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-3" />
       </div>
       <section aria-label={selected === "painel" ? "Painel" : selected === "geo" ? "Área Geográfica" : "Mapa Uberaba"} className="flex min-h-0 min-w-0 flex-1 flex-col">
-        {selected === "painel" && <InteligenciaUberaba />}
-        <div className={selected === "geo" ? "min-h-0 flex-1" : "hidden"}><CarteiraTrialGeo embedded selectedDate={date} onDateChange={setDate} toolbarTarget={selected === "geo" ? toolbar : null} /></div>
+        {selected === "painel" && <UberabaShell embedded />}
+        <div hidden={selected !== "geo"} className={selected === "geo" ? "min-h-0 flex-1" : "hidden"}><CarteiraTrialGeo embedded selectedDate={date} onDateChange={setDate} toolbarTarget={selected === "geo" ? toolbar : null} /></div>
         {selected === "uberaba" && <UberabaMapa embedded selectedDate={date} toolbarTarget={toolbar} />}
       </section>
     </div>
