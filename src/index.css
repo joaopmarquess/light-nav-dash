@@ -463,6 +463,8 @@ All colors MUST be HSL.
 .marketing-motto { font-size: 21px; color: hsl(var(--hospital-gold)); }
 .marketing-message img { width: 100%; min-height: 0; height: 150px; flex-shrink: 0; object-fit: contain; object-position: left center; }
 .marketing-image-placeholder { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 120px; color: hsl(var(--hospital-light)); border: 1px dashed hsl(var(--hospital-light)); }
+.outdoor-dialog { width: calc(100vw - 48px); max-width: none; height: calc(100dvh - 48px); display: flex; align-items: center; justify-content: center; padding: 42px 16px 16px; }
+.outdoor-dialog-image { width: 100%; height: 100%; min-height: 0; object-fit: contain; }
 .marketing-strategy { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 30px; min-height: 0; }
 .marketing-premises { display: flex; flex-direction: column; min-height: 0; }
 .marketing-premises > h3, .marketing-channels > h3 { font-size: 26px; font-weight: 700; margin-bottom: 16px; }
@@ -728,6 +730,21 @@ All colors MUST be HSL.
   .modelo-presentation .guias-stage h3 { font-size: 17px; }
   .modelo-presentation .guias-stage p { font-size: 15px; }
   .modelo-presentation .guias-result-main { font-size: 24px; }
+  .modelo-presentation { padding-top: 18px; padding-bottom: 18px; gap: 12px; }
+  .modelo-presentation .comercial-card > div:last-child { padding-top: 4px; }
+  .modelo-presentation .comercial-card > div:last-child table { font-size: 15px; line-height: 18px; }
+  .modelo-presentation .comercial-card > div:last-child table th, .modelo-presentation .comercial-card > div:last-child table td { padding: 3px 10px; }
+  .modelo-presentation .modelo-rede { display: flex; flex-direction: column; gap: 12px; }
+  .modelo-presentation .modelo-rede > * { margin-top: 0; }
+  .modelo-presentation .credenciamento-card h3 { min-height: 48px; padding: 8px; }
+  .modelo-presentation .credenciamento-card td, .modelo-presentation .credenciamento-card th { padding-top: 4px; padding-bottom: 4px; }
+  .modelo-presentation .credenciamento-card > div:nth-last-child(2) { padding-top: 8px; padding-bottom: 8px; }
+  .modelo-presentation .credenciamento-card > p:last-child { padding-bottom: 10px; }
+  .modelo-presentation .credenciamento-summary { padding: 12px; }
+  .modelo-presentation .guias-body { min-height: 250px; }
+  .modelo-presentation .guias-stage { padding: 8px 16px; }
+  .modelo-presentation .guias-result { padding: 10px 18px; }
+  .modelo-presentation .guias-observation { padding-top: 6px; }
   .timeline-presentation .marketing-premises ol { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(130px, auto)); }
   .timeline-presentation .marketing-message h3 { font-size: 26px; }
   .timeline-presentation .marketing-message > p, .timeline-presentation .hospital-slide-description { font-size: 18px; }

@@ -15,9 +15,6 @@ import { CalendarDays, FileCheck2 } from "lucide-react";
 import UberabaCronograma from "@/components/UberabaCronograma";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
-import { HOSPITAL_PALMERIO } from "@/lib/uberabaHospital";
-import campanha from "@/assets/uberaba-marketing-outdoor-sem-exclamacao.png";
-import operacaoDigital from "@/assets/uberaba-guias-operacao-digital.jpg";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
 
@@ -50,19 +47,9 @@ const UberabaTimeline = () => {
   const [versao, setVersao] = useState<"simples" | "completa">("simples");
   const [sub, setSub] = useState<"Comercial" | "Rede Assistencial" | "Guias" | null>(null);
   const atual = ETAPAS.find((e) => e.nome === aberta);
-  const permiteRolagem = versao === "simples" && ["Estudo", "Plano de Marketing", "Modelo de Atuação"].includes(aberta ?? "");
+  const permiteRolagem = versao === "simples" && ["Estudo", "Plano de Marketing"].includes(aberta ?? "");
   const apresentacaoPropria = ["Hospital Mário Palmério", "Operação Iniciada"].includes(aberta ?? "") || (versao === "simples" && ["Plano de Marketing", "Formalização", "Modelo de Atuação", "Implantação"].includes(aberta ?? ""));
   const timelineRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const imagens = [HOSPITAL_PALMERIO.imagem_fachada_url, HOSPITAL_PALMERIO.imagem_assistencial_url, campanha, operacaoDigital];
-    imagens.forEach((src) => {
-      if (!src) return;
-      const imagem = new Image();
-      if (src === campanha) imagem.fetchPriority = "high";
-      imagem.src = src;
-      if (typeof imagem.decode === "function") void imagem.decode().catch(() => undefined);
-    });
-  }, []);
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (panelRef.current) panelRef.current.scrollTop = 0;
