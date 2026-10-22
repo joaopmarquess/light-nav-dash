@@ -6,6 +6,7 @@ import { Download, Layers, Loader2, Maximize, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { geographicToday, useCarteiraTrialGeo } from "@/hooks/useCarteiraTrialGeo";
 import { municipalHeatFill, municipalHeatNeighbors, normalizedMunicipalTotals } from "@/lib/municipalHeatColors";
+import { isAdditionalUberabaStudyMember } from "@/lib/uberabaStudyArea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Malhas municipais do IBGE (base oficial)
@@ -125,6 +126,10 @@ const UberabaMapa = ({ embedded = false, selectedDate, toolbarTarget }: { embedd
     const foco = [...[u, ...g1, ...g2, ...g3].map((i) => feats[i]), ...feats.filter((f) => f.properties._uf === "SP" && norm(f.properties.name) === "SAO JOSE DO RIO PRETO")];
     const proj = geoMercator().fitExtent([[30, 30], [W - 30, H - 30]], { type: "FeatureCollection", features: foco });
     const path = geoPath(proj);
+    // Explicit green-area additions do not change the existing projection or study rings.
+    feats.forEach((f, i) => {
+      if (isAdditionalUberabaStudyMember(f.properties._uf, f.properties.name) && !g1.has(i) && !g2.has(i)) g3.add(i);
+    });
     const grupo = (i: number) => (i === u ? 0 : g1.has(i) ? 1 : g2.has(i) ? 2 : g3.has(i) ? 4 : 3);
     console.info("[Mapa Uberaba] 1º anel:", [...g1].map((i) => feats[i].properties.name).sort().join(", "));
     console.info("[Mapa Uberaba] 2º anel:", [...g2].map((i) => `${feats[i].properties.name}/${feats[i].properties._uf}`).sort().join(", "));
@@ -251,7 +256,7 @@ const UberabaMapa = ({ embedded = false, selectedDate, toolbarTarget }: { embedd
           {ufOutline.map((fs, k) => fs.map((f, i) => (
             <path key={`uf${k}-${i}`} d={calc.path(f) ?? ""} fill="none" stroke="none" />
           )))}
-          {!geographic && [...calc.g3].map((i) => <path key={`g3${i}`} d={calc.path(feats[i]) ?? ""} fill={COR.g3} stroke="#3C4043" strokeWidth={0.8} strokeDasharray="3 2" />)}
+          {!geographic && [...calc.g3].map((i) => <path key={`g3${i}`} data-study-municipality={`${feats[i].properties._uf}|${norm(feats[i].properties.name)}`} d={calc.path(feats[i]) ?? ""} fill={COR.g3} stroke="#3C4043" strokeWidth={0.8} strokeDasharray="3 2" />)}
           {!geographic && [...calc.g1].map((i) => <path key={i} d={calc.path(feats[i]) ?? ""} fill={COR.g1} stroke="#FFFFFF" strokeWidth={2} />)}
           {!geographic && <path d={calc.path(feats[calc.u]) ?? ""} fill={COR.g0} stroke="#FFFFFF" strokeWidth={2.5} />}
           {geographic && feats.map((f, i) => {
