@@ -194,6 +194,23 @@ export default function CarteiraTrialMov() {
       {err && <div className="p-4 text-center text-destructive">Erro: {err}</div>}
       {cortado && <div className="text-xs text-muted-foreground">Limite de busca atingido, reduza o período.</div>}
 
+      <div className="grid gap-3 md:grid-cols-3">
+        {BLOCOS.map(({ b, t, titulo, dica }) => (
+          <section key={b} title={dica} className={`rounded-xl border bg-card p-3 ${same(t, undefined, b) ? "ring-2 ring-primary" : ""}`}>
+            <button type="button" onClick={() => toggle(t, undefined, b)} className="mb-1 flex w-full items-center justify-between rounded-md px-3 py-1 hover:bg-muted/50">
+              <h3 className={`text-sm font-semibold ${t === "T+" ? "text-primary" : "text-destructive"}`}>{titulo}</h3>
+              <span className={`text-xl font-bold tabular-nums ${t === "T+" ? "text-primary" : "text-destructive"}`}>{v(nB(t, b))}</span>
+            </button>
+            {(["Pura", "Revenda"] as TipoReentrada[]).map((s) => (
+              <button key={s} type="button" onClick={() => toggle(t, s, b)}
+                className={`flex w-full items-center justify-between rounded-md px-3 py-1.5 text-sm hover:bg-muted/50 ${same(t, s, b) ? "ring-2 ring-primary" : ""}`}>
+                <span>Transferência {s}</span><span className="font-semibold tabular-nums">{v(nB(t, b, s))}</span>
+              </button>
+            ))}
+          </section>
+        ))}
+      </div>
+
       <div className="grid gap-3 lg:grid-cols-[1fr_auto_1fr]">
         <section className="rounded-xl border bg-card p-3">
           <div className="mb-2 flex items-center justify-between px-3"><h3 className="flex items-center gap-2 text-sm font-semibold text-primary"><LogIn className="h-4 w-4" />Entradas por transferência (T+)</h3><span className="text-xl font-bold text-primary">{v(kpi.tp)}</span></div>
