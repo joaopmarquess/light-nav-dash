@@ -1,6 +1,6 @@
 -- Executar na mesma base que contém public.view_eard_mensal.
--- Último mês incluso: 12 meses = mês final menos 11 meses até o mês final.
--- Lista somente blocos que possuem competências na tabela.
+-- Conceito: maior competência COM DESPESAS fecha o bloco; 12 meses = mês final menos 11 meses.
+-- Lista somente blocos que possuem competências com despesas.
 CREATE OR REPLACE FUNCTION public.sinistralidade_mv_periodos()
 RETURNS TABLE (
   periodo text,
@@ -18,6 +18,8 @@ AS $function$
     FROM public.view_eard_mensal
     WHERE nr_ano BETWEEN 1 AND 9998
       AND nr_mes BETWEEN 1 AND 12
+      AND coalesce(vl_desp_consulta, 0) + coalesce(vl_desp_urgencia, 0)
+        + coalesce(vl_desp_outros, 0) <> 0
   ), base AS (
     SELECT max(indice) AS ultimo FROM meses
   ), blocos AS (
