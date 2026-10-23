@@ -47,17 +47,34 @@ export default function CarteiraTrialMov() {
     (async () => {
       setLoading(true); setErr(null); setEvs([]); setCortado(false); setSel(null); setEtapa("Calculando movimentações…");
       const rows: Row[] = [];
-      const pag = (from: number) => hostinger.rpc("carteira_movimentacao", { p_de: ap.de, p_ate: ap.ate })
-        .order("tipo").order("data").order("mat").range(from, from + 999);
-      for (let from = 0; from < LIMITE; from += 4000) {
-        const res = await Promise.all([0, 1, 2, 3].map((i) => pag(from + i * 1000)));
-        if (off) return;
-        const e = res.find((r) => r.error);
-        if (e?.error) { setErr(e.error.message); setLoading(false); return; }
-        for (const r of res) rows.push(...((r.data as Row[]) ?? []));
-        if (res.some((r) => ((r.data as Row[]) ?? []).length < 1000)) break;
-        if (from + 4000 >= LIMITE) setCortado(true);
+      // Divide o período em meses: cada mês é independente (a função liga ±1 mês), evitando tempo esgotado.
+      const meses: F[] = [];
+      for (let ini = ap.de; ini <= ap.ate; ini = addMes(ini, 1)) {
+        const fimMes = new Date(addMes(ini, 1) + "T12:00:00"); fimMes.setDate(0);
+        const f2 = fimMes.toISOString().slice(0, 10);
+        meses.push({ de: ini, ate: f2 < ap.ate ? f2 : ap.ate });
       }
+      const pag = (m: F, from: number) => hostinger.rpc("carteira_movimentacao", { p_de: m.de, p_ate: m.ate })
+        .order("tipo").order("data").order("mat").range(from, from + 999);
+      const doMes = async (m: F) => {
+        const out: Row[] = [];
+        for (let from = 0; from < LIMITE; from += 1000) {
+          let r = await pag(m, from);
+          if (r.error) r = await pag(m, from);
+          if (r.error) throw new Error(r.error.message);
+          out.push(...((r.data as Row[]) ?? []));
+          if (((r.data as Row[]) ?? []).length < 1000) break;
+        }
+        return out;
+      };
+      try {
+        for (let i = 0; i < meses.length; i += 2) {
+          setEtapa(`Calculando ${meses.length > 1 ? `mês ${Math.min(i + 2, meses.length)} de ${meses.length}` : "movimentações"}…`);
+          const res = await Promise.all(meses.slice(i, i + 2).map(doMes));
+          if (off) return;
+          for (const r of res) rows.push(...r);
+        }
+      } catch (e: any) { if (!off) { setErr(e.message); setLoading(false); } return; }
       const out: Ev[] = rows.map((x) => {
         const r = { cd_mat_alternativa: x.mat, nm_beneficiario: x.nome, nm_empresa_estipulante: x.empresa, nm_vendedor: x.nm_vendedor, cd_vendedor: x.cd_vendedor, nr_cpf: x.cpf };
         const par: TransfPar | undefined = x.tipo === "T+" || x.tipo === "T-" ? {
