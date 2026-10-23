@@ -3,7 +3,7 @@ import { ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import campanha from "@/assets/uberaba-marketing-outdoor-sem-exclamacao.png";
-import outdoorImagem from "@/assets/projeto-uberaba-home-transparente.svg.asset.json";
+import outdoorImagem from "@/assets/projeto-uberaba-home-v2.svg.asset.json";
 import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
 
 const PREMISSAS = [
@@ -30,7 +30,7 @@ export default function UberabaMarketing() {
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="ghost" className="h-auto w-full shrink-0 cursor-zoom-in p-0 hover:bg-transparent" aria-label="Ampliar imagem do outdoor">
-                    <img src={campanha} loading="eager" decoding="sync" alt="Campanha Bensaúde: Estamos chegando, Uberaba" onError={() => setImageFailed(true)} />
+                    <img src={outdoorImagem.url} loading="eager" decoding="sync" alt="Campanha Bensaúde: Estamos chegando, Uberaba" onError={() => setImageFailed(true)} />
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="outdoor-dialog" aria-describedby={undefined}>
