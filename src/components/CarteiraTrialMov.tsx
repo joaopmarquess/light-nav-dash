@@ -3,11 +3,11 @@ import { hostinger } from "@/lib/hostingerClient";
 import { type BlocoMes, type TransfPar, type TipoReentrada } from "@/lib/transferencias";
 import { podeCalcularMovimentacao, resumoMovimentacao } from "@/lib/movimentacaoResumo";
 import { normalizarVendedor } from "@/lib/vendedorTransferencia";
-import { datasVidasIndicadores, mesesMovimentacao, ultimosMesesMovimentacao, somarTotaisMovimentacao, fluxoMensalMovimentacao, fechamentosMensaisMovimentacao, combinarFluxosEVidas, type VidasMensais, type FluxoMensal, type TotaisMovimentacao } from "@/lib/movimentacaoCarga";
+import { datasVidasIndicadores, mesesMovimentacao, janelaMesesMovimentacao, somarTotaisMovimentacao, fluxoMensalMovimentacao, fechamentosMensaisMovimentacao, combinarFluxosEVidas, type VidasMensais, type FluxoMensal, type TotaisMovimentacao } from "@/lib/movimentacaoCarga";
 import MovimentacaoCrescimentoMensal from "@/components/MovimentacaoCrescimentoMensal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X, UserPlus, UserMinus, Scale, RotateCcw, ArrowRightLeft, LogIn, LogOut, Users, Eye, EyeOff, LoaderCircle } from "lucide-react";
+import { Search, X, UserPlus, UserMinus, Scale, RotateCcw, ArrowRightLeft, LogIn, LogOut, Users, Eye, EyeOff, LoaderCircle, ChevronLeft, ChevronRight } from "lucide-react";
 
 type Row = Record<string, any>;
 type Tipo = "Entrada" | "Reativação" | "Saída" | "T+" | "T-";
@@ -43,6 +43,8 @@ export default function CarteiraTrialMov() {
   const [f, setF] = useState<F>(EMPTY());
   const [ap, setAp] = useState<F | null>(null);
   const [mesSelecionado, setMesSelecionado] = useState<F | null>(null);
+  const [paginaMeses, setPaginaMeses] = useState(0);
+  const janelaMeses = useMemo(() => ap ? janelaMesesMovimentacao(ap, paginaMeses) : null, [ap, paginaMeses]);
   const periodoIndicadores = mesSelecionado ?? ap;
   const [totaisMensais, setTotaisMensais] = useState<Record<string, TotaisMovimentacao>>({});
   const [vidasSelecionadas, setVidasSelecionadas] = useState<{ ant: number | null; fin: number | null }>({ ant: null, fin: null });
@@ -215,7 +217,7 @@ export default function CarteiraTrialMov() {
   const toggle = (t: Tipo, sub?: TipoReentrada, bloco?: BlocoMes) => setSel(same(t, sub, bloco) ? null : { tipo: t, sub, bloco });
   const nB = (t: Tipo, b: BlocoMes, sub?: TipoReentrada) => evs.filter((x) => x.tipo === t && bl(x) === b && (!sub || x.par?.tipo === sub)).length;
   const resetDetalhes = () => { setDepuracaoAberta(false); setSel(null); setEvs([]); setDetalhesProntos(false); setDetalhesErro(null); setDetalhesLoading(false); };
-  const buscar = () => { if (podeCalcularMovimentacao(f)) { resetDetalhes(); cacheVidas.current.clear(); cacheDetalhes.current.clear(); setMesSelecionado(null); setAp({ ...f }); } };
+  const buscar = () => { if (podeCalcularMovimentacao(f)) { resetDetalhes(); cacheVidas.current.clear(); cacheDetalhes.current.clear(); setPaginaMeses(0); setMesSelecionado(null); setAp({ ...f }); } };
   const limpar = () => { resetDetalhes(); setMesSelecionado(null); cacheVidas.current.clear(); cacheDetalhes.current.clear(); setTotais(null); setMensal([]); setTotaisMensais({}); setF(EMPTY()); setAp(null); setErr(null); setLoading(false); setVidas({ ant: null, fin: null }); };
   const selecionarMes = (mes: F | null) => { resetDetalhes(); setErr(null); setMesSelecionado(mes); };
   const v = (n: number) => (detalhesLoading || !detalhesProntos ? "…" : num(n));
@@ -278,11 +280,15 @@ export default function CarteiraTrialMov() {
         <label className="text-xs text-muted-foreground">Até<Input type="date" value={f.ate} onChange={(e) => setF({ ...f, ate: e.target.value })} className="w-40" /></label>
         <Button onClick={buscar} disabled={loading || !podeCalcularMovimentacao(f)}><Search className="h-4 w-4 mr-1" />Calcular</Button>
         <Button variant="outline" onClick={limpar} disabled={loading}><X className="h-4 w-4 mr-1" />Limpar</Button>
-        {ap && !loading && !mensalLoading && totais && <div className="flex flex-wrap items-center gap-1 sm:ml-2" role="group" aria-label="Período dos indicadores">
+        {ap && janelaMeses && !loading && !mensalLoading && totais && <div className="flex min-w-0 basis-full items-center justify-center gap-1 sm:basis-72 sm:flex-1" role="group" aria-label="Período dos indicadores">
+          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-muted-foreground" aria-label="Meses anteriores" title="Meses anteriores" disabled={!janelaMeses.anteriores} onClick={() => setPaginaMeses(janelaMeses.pagina + 1)}><ChevronLeft className="h-4 w-4" /></Button>
+          <div className="flex min-w-0 flex-wrap items-center justify-center gap-1">
           <Button variant="ghost" className={`h-10 rounded-none border-b-2 px-3 text-xs shadow-none transition-colors hover:bg-transparent hover:text-primary ${!mesSelecionado ? "border-primary font-semibold text-primary" : "border-transparent text-muted-foreground"}`} aria-pressed={!mesSelecionado} onClick={() => selecionarMes(null)}>Período completo</Button>
-          {ultimosMesesMovimentacao(ap).map(mes => <Button key={mes.de} variant="ghost" className={`h-10 rounded-none border-b-2 px-3 text-xs shadow-none transition-colors hover:bg-transparent hover:text-primary ${mesSelecionado?.de === mes.de ? "border-primary font-semibold text-primary" : "border-transparent text-muted-foreground"}`} aria-pressed={mesSelecionado?.de === mes.de} title={`${fmtD(mes.de)} a ${fmtD(mes.ate)}`} onClick={() => selecionarMes(mes)}>
+          {janelaMeses.meses.map(mes => <Button key={mes.de} variant="ghost" className={`h-10 rounded-none border-b-2 px-3 text-xs shadow-none transition-colors hover:bg-transparent hover:text-primary ${mesSelecionado?.de === mes.de ? "border-primary font-semibold text-primary" : "border-transparent text-muted-foreground"}`} aria-pressed={mesSelecionado?.de === mes.de} title={`${fmtD(mes.de)} a ${fmtD(mes.ate)}`} onClick={() => selecionarMes(mes)}>
             {new Intl.DateTimeFormat("pt-BR", { month: "short", year: "2-digit", timeZone: "UTC" }).format(new Date(`${mes.de}T00:00:00Z`))}
           </Button>)}
+          </div>
+          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-muted-foreground" aria-label="Meses posteriores" title="Meses posteriores" disabled={!janelaMeses.posteriores} onClick={() => setPaginaMeses(janelaMeses.pagina - 1)}><ChevronRight className="h-4 w-4" /></Button>
         </div>}
       </div>
 

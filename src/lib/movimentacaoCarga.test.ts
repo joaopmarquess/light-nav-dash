@@ -1,8 +1,29 @@
 import { describe, expect, it } from "vitest";
-import { datasVidasIndicadores, mesesMovimentacao, ultimosMesesMovimentacao, somarTotaisMovimentacao, fechamentosMensaisMovimentacao, escalaVidasMensais, fluxoMensalMovimentacao, combinarFluxosEVidas } from "./movimentacaoCarga";
+import { janelaMesesMovimentacao, datasVidasIndicadores, mesesMovimentacao, ultimosMesesMovimentacao, somarTotaisMovimentacao, fechamentosMensaisMovimentacao, escalaVidasMensais, fluxoMensalMovimentacao, combinarFluxosEVidas } from "./movimentacaoCarga";
 import { resumoMovimentacao } from "./movimentacaoResumo";
 
 describe("carga de totais da Movimentação", () => {
+  it("navega em grupos de até 12 meses sem sair do período disponível", () => {
+    const periodo = { de: "2025-01-15", ate: "2026-10-23" };
+    const recente = janelaMesesMovimentacao(periodo);
+    const anterior = janelaMesesMovimentacao(periodo, 1);
+    expect(recente.meses).toHaveLength(12);
+    expect(recente.anteriores).toBe(true);
+    expect(recente.posteriores).toBe(false);
+    expect(anterior.meses).toHaveLength(10);
+    expect(anterior.meses[0]).toEqual({ de: "2025-01-15", ate: "2025-01-31" });
+    expect(anterior.meses[9]).toEqual({ de: "2025-10-01", ate: "2025-10-31" });
+    expect(anterior.anteriores).toBe(false);
+    expect(anterior.posteriores).toBe(true);
+    expect(janelaMesesMovimentacao(periodo, 99)).toEqual(anterior);
+    expect(janelaMesesMovimentacao(periodo, -1)).toEqual(recente);
+  });
+  it("não permite navegar quando há menos de 12 meses", () => {
+    const janela = janelaMesesMovimentacao({ de: "2026-08-01", ate: "2026-10-23" });
+    expect(janela.meses).toHaveLength(3);
+    expect(janela.anteriores).toBe(false);
+    expect(janela.posteriores).toBe(false);
+  });
   it("consulta o Final no mesmo fechamento da linha para um mês completo", () => {
     const periodo = { de: "2026-09-01", ate: "2026-09-30" };
     expect(datasVidasIndicadores(periodo)).toEqual({ anterior: "2026-08-31", final: "2026-09-30" });

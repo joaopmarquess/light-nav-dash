@@ -47,7 +47,15 @@ export function mesesMovimentacao(periodo: PeriodoMovimentacao): PeriodoMoviment
 }
 
 export function ultimosMesesMovimentacao(periodo: PeriodoMovimentacao): PeriodoMovimentacao[] {
-  return mesesMovimentacao(periodo).slice(-12);
+  return janelaMesesMovimentacao(periodo).meses;
+}
+
+export function janelaMesesMovimentacao(periodo: PeriodoMovimentacao, pagina = 0) {
+  const disponiveis = mesesMovimentacao(periodo);
+  const paginas = Math.ceil(disponiveis.length / 12);
+  const atual = Math.max(0, Math.min(Math.trunc(pagina), Math.max(0, paginas - 1)));
+  const fim = disponiveis.length - atual * 12;
+  return { meses: disponiveis.slice(Math.max(0, fim - 12), fim), pagina: atual, anteriores: atual + 1 < paginas, posteriores: atual > 0 };
 }
 
 export function somarTotaisMovimentacao(rows: Record<string, unknown>[]): TotaisMovimentacao {
