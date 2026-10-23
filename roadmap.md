@@ -1,3 +1,4 @@
+- [x] Refazer Movimentação com sete indicadores e dois quadros de depuração conforme o mapa mental; nove testes aprovados e acesso autorizado confirmou ausência de consultas antes de Calcular, dois quadros com dados reais após cálculo e resultados ocultos após Limpar.
 - [x] Incluir ícone discreto de PDF no topo do projeto; download direto e impressão conferidos com acesso autorizado: 31 páginas, todas 16:9 e com imagens integrais, sem páginas extras; quatro testes aprovados.
 - [x] Incluir Dados em Estudo com Mercado, Preços, Oportunidades e Premissas dos dois HTMLs Lancers; tabelas completas disponíveis, dez testes aprovados e navegação com acesso autorizado conferida, mantendo Home padrão e sem sobreposição.
 - [x] Aplicar a imagem SVG transparente somente no Home de Estudo; transparência real conferida (alpha 0), fundo laranja removido, cinco parágrafos e popup anterior preservados.
