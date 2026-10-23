@@ -1,17 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { mesesMovimentacao, somarTotaisMovimentacao, crescimentoMensalMovimentacao } from "./movimentacaoCarga";
+import { mesesMovimentacao, somarTotaisMovimentacao, fechamentosMensaisMovimentacao } from "./movimentacaoCarga";
 import { resumoMovimentacao } from "./movimentacaoResumo";
 
 describe("carga de totais da Movimentação", () => {
-  it("calcula o crescimento mensal com transferências e respeita o mês parcial selecionado", () => {
-    expect(crescimentoMensalMovimentacao({ de: "2026-10-01", ate: "2026-10-23" }, {
-      vendas: 11771, cancelamentos: 8049, reativacoes: 1179, entradas_transferencia: 2043, saidas_transferencia: 2019,
-    })).toEqual({ de: "2026-10-01", ate: "2026-10-23", mes: "2026-10", crescimento: 4925 });
+  it("consulta o último dia de cada mês inclusive quando o período termina antes do fechamento", () => {
+    expect(fechamentosMensaisMovimentacao({ de: "2026-08-15", ate: "2026-10-23" })).toEqual(["2026-08-31", "2026-09-30", "2026-10-31"]);
   });
-  it("mantém crescimento negativo em meses de redução", () => {
-    expect(crescimentoMensalMovimentacao({ de: "2026-09-01", ate: "2026-09-30" }, {
-      vendas: 10, cancelamentos: 30, reativacoes: 2, entradas_transferencia: 3, saidas_transferencia: 5,
-    }).crescimento).toBe(-20);
+  it("preserva fechamento UTC de fevereiro bissexto e virada de ano", () => {
+    expect(fechamentosMensaisMovimentacao({ de: "2024-02-01", ate: "2024-02-29" })).toEqual(["2024-02-29"]);
+    expect(fechamentosMensaisMovimentacao({ de: "2025-12-01", ate: "2026-01-15" })).toEqual(["2025-12-31", "2026-01-31"]);
   });
   it("preserva limites do período e a janela mensal", () => {
     expect(mesesMovimentacao({ de: "2026-01-15", ate: "2026-03-12" })).toEqual([

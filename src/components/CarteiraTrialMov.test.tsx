@@ -57,4 +57,9 @@ describe("consultas da Movimentação sob demanda", () => {
     await waitFor(() => expect(api.rpc).toHaveBeenCalledWith("carteira_trial_kpis", { p_data: "2026-09-30", p_q: null, p_empresa: null, p_cidade: null }));
     expect(api.rpc).toHaveBeenCalledWith("carteira_trial_kpis", { p_data: "2026-10-24", p_q: null, p_empresa: null, p_cidade: null });
   });
+  it("busca vidas em 31/10 em vez de usar o saldo de crescimento ou a data do card Final", async () => {
+    render(<CarteiraTrialMov />); aplicar();
+    await waitFor(() => expect(api.rpc).toHaveBeenCalledWith("carteira_trial_kpis", { p_data: "2026-10-31", p_q: null, p_empresa: null, p_cidade: null }));
+    expect(api.pages).not.toHaveBeenCalled();
+  });
 });
