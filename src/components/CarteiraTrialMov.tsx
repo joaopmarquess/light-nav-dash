@@ -50,7 +50,7 @@ export default function CarteiraTrialMov() {
       const rows: Row[] = [];
       for (let from = 0; from < LIMITE; from += 1000) {
         const { data, error } = await hostinger.from("view_ecarteira")
-          .select("cd_mat_alternativa,cd_vendedor,cd_motivo_cancelamento,nm_beneficiario,nm_empresa_estipulante,nm_vendedor,dt_nascimento,dt_vigencia_beneficiario,dt_desligamento,dt_reativacao")
+          .select("cd_mat_alternativa,cd_vendedor,cd_motivo_cancelamento,nm_beneficiario,nr_cpf,nm_empresa_estipulante,nm_vendedor,dt_nascimento,dt_vigencia_beneficiario,dt_desligamento,dt_reativacao")
           .eq("tp_plano", "SAUDE").lte("cd_mat_alternativa", 399999999999)
           .or(conds.join(","))
           .order("cd_mat_alternativa").order("dt_vigencia_beneficiario").order("dt_desligamento").range(from, from + 999);
@@ -106,16 +106,16 @@ export default function CarteiraTrialMov() {
     const tm = evs.filter((x) => x.tipo === "T-");
     setNovas({ loading: true, grupos: [], sem: 0 });
     (async () => {
-      const nomes = [...new Set(tm.map((x) => x.r.nm_beneficiario).filter(Boolean))];
+      const nomes = [...new Set(tm.map((x) => x.r.nr_cpf).filter(Boolean).map(String))];
       const cand: Row[] = [];
       for (let i = 0; i < nomes.length; i += 80) {
         const { data } = await hostinger.from("view_ecarteira")
-          .select("cd_mat_alternativa,nm_beneficiario,dt_nascimento,dt_vigencia_beneficiario")
-          .eq("tp_plano", "SAUDE").in("nm_beneficiario", nomes.slice(i, i + 80)).limit(5000);
+          .select("cd_mat_alternativa,nr_cpf,dt_vigencia_beneficiario")
+          .eq("tp_plano", "SAUDE").in("nr_cpf", nomes.slice(i, i + 80)).limit(5000);
         if (off) return;
         cand.push(...(data ?? []));
       }
-      const chave = (r: Row) => `${String(r.nm_beneficiario).trim().toUpperCase()}|${dia(r.dt_nascimento)}`;
+      const chave = (r: Row) => String(r.nr_cpf ?? "").replace(/\D/g, "").replace(/^0+/, "");
       const mapa = new Map<string, Row[]>();
       for (const r of cand) { const k = chave(r); (mapa.get(k) ?? mapa.set(k, []).get(k)!).push(r); }
       const cont = new Map<string, number>(); let sem = 0;
