@@ -212,6 +212,13 @@ All colors MUST be HSL.
   }
 }
 
+.movimentacao-chart .recharts-cartesian-axis-tick-value { font-variant-numeric: tabular-nums; }
+.movimentacao-key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.movimentacao-key-vendas { background: hsl(var(--chart-1)); }
+.movimentacao-key-saidas { background: hsl(var(--chart-desp)); }
+.movimentacao-key-vidas { width: 24px; height: 4px; background: hsl(var(--chart-3)); position: relative; }
+.movimentacao-key-vidas::after { content: ""; position: absolute; width: 10px; height: 10px; border-radius: 50%; background: hsl(var(--card)); border: 3px solid hsl(var(--chart-3)); top: -3px; left: 7px; }
+@media (max-width: 640px) { .movimentacao-chart .recharts-label-list { display: none; } }
 .timeline-heat { margin-top: 20px; }
 .study-home-image { background: var(--study-sky-background); }
 .timeline-heat-band { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 16px; }
