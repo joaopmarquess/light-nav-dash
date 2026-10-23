@@ -278,9 +278,9 @@ export default function CarteiraTrialMov() {
         <label className="text-xs text-muted-foreground">Até<Input type="date" value={f.ate} onChange={(e) => setF({ ...f, ate: e.target.value })} className="w-40" /></label>
         <Button onClick={buscar} disabled={loading || !podeCalcularMovimentacao(f)}><Search className="h-4 w-4 mr-1" />Calcular</Button>
         <Button variant="outline" onClick={limpar} disabled={loading}><X className="h-4 w-4 mr-1" />Limpar</Button>
-        {ap && !loading && !mensalLoading && totais && <div className="flex flex-wrap gap-2" role="group" aria-label="Período dos indicadores">
-          <Button variant={mesSelecionado ? "outline" : "default"} aria-pressed={!mesSelecionado} onClick={() => selecionarMes(null)}>Período completo</Button>
-          {ultimosMesesMovimentacao(ap).map(mes => <Button key={mes.de} variant={mesSelecionado?.de === mes.de ? "default" : "outline"} aria-pressed={mesSelecionado?.de === mes.de} title={`${fmtD(mes.de)} a ${fmtD(mes.ate)}`} onClick={() => selecionarMes(mes)}>
+        {ap && !loading && !mensalLoading && totais && <div className="flex flex-wrap items-center gap-1 sm:ml-2" role="group" aria-label="Período dos indicadores">
+          <Button variant="ghost" className={`h-10 rounded-none border-b-2 px-3 text-xs shadow-none transition-colors hover:bg-transparent hover:text-primary ${!mesSelecionado ? "border-primary font-semibold text-primary" : "border-transparent text-muted-foreground"}`} aria-pressed={!mesSelecionado} onClick={() => selecionarMes(null)}>Período completo</Button>
+          {ultimosMesesMovimentacao(ap).map(mes => <Button key={mes.de} variant="ghost" className={`h-10 rounded-none border-b-2 px-3 text-xs shadow-none transition-colors hover:bg-transparent hover:text-primary ${mesSelecionado?.de === mes.de ? "border-primary font-semibold text-primary" : "border-transparent text-muted-foreground"}`} aria-pressed={mesSelecionado?.de === mes.de} title={`${fmtD(mes.de)} a ${fmtD(mes.ate)}`} onClick={() => selecionarMes(mes)}>
             {new Intl.DateTimeFormat("pt-BR", { month: "short", year: "2-digit", timeZone: "UTC" }).format(new Date(`${mes.de}T00:00:00Z`))}
           </Button>)}
         </div>}
