@@ -1,4 +1,4 @@
-import { ArrowUpRight, FlaskConical, CalendarRange, FileText, Map } from "lucide-react";
+import { ArrowUpRight, FlaskConical, CalendarRange, FileText, Map as MapIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { geographicToday, useCarteiraTrialGeo } from "@/hooks/useCarteiraTrialGeo";
 
@@ -43,7 +43,7 @@ const shortcuts = [
   { icon: FlaskConical, label: "Laboratory", destination: "Laboratory" },
   { icon: CalendarRange, label: "Projeto Bensaúde|Uberaba", destination: "Uberaba Timeline" },
   { icon: FileText, label: "Controladoria", destination: "Control · DRE Gerencial PE" },
-  { icon: Map, label: "Área Geográfica", destination: "Carteira (Trial) · Área Geográfica" },
+  { icon: MapIcon, label: "Área Geográfica", destination: "Carteira (Trial) · Área Geográfica" },
 ];
 
 const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => (
