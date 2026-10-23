@@ -51,8 +51,8 @@ export default function MovimentacaoCrescimentoMensal({ dados, ajustarAltura = f
           }} />
           <Bar dataKey="vendas" name="Vendas" fill={`url(#${id}-vendas)`} radius={[5, 5, 0, 0]} maxBarSize={56} isAnimationActive={false} />
           <Bar dataKey="saidas" name="Saídas (abs)" fill={`url(#${id}-saidas)`} radius={[5, 5, 0, 0]} maxBarSize={56} isAnimationActive={false} />
-          <Line yAxisId="vidas" type="monotone" dataKey="vidas" name="Vidas no fim do mês" stroke="hsl(var(--chart-3))" strokeWidth={4} dot={{ r: 5, fill: "hsl(var(--card))", strokeWidth: 3 }} activeDot={{ r: 7, fill: "hsl(var(--chart-3))", stroke: "hsl(var(--card))", strokeWidth: 3 }} isAnimationActive={false}>
-            <LabelList dataKey="vidas" position="top" offset={16} formatter={(v: number) => v.toLocaleString("pt-BR")} fill="hsl(var(--chart-3))" fontSize={13} fontWeight={700} />
+          <Line yAxisId="vidas" type="monotone" dataKey="vidas" name="Vidas no fim do mês" stroke="hsl(var(--chart-vidas))" strokeWidth={4} dot={{ r: 5, fill: "hsl(var(--card))", strokeWidth: 3 }} activeDot={{ r: 7, fill: "hsl(var(--chart-vidas))", stroke: "hsl(var(--card))", strokeWidth: 3 }} isAnimationActive={false}>
+            <LabelList dataKey="vidas" position="top" offset={16} formatter={(v: number) => v.toLocaleString("pt-BR")} fill="hsl(var(--chart-vidas))" fontSize={13} fontWeight={700} />
           </Line>
         </ComposedChart>
       </ResponsiveContainer>
