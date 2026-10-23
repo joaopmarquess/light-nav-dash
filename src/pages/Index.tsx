@@ -65,6 +65,7 @@ import SinistralidadeConsulta from "@/components/SinistralidadeConsulta";
 import SinistralidadeNova from "@/components/SinistralidadeNova";
 import SinistralidadeCidades from "@/components/SinistralidadeCidades";
 import SinistralidadePeriodo from "@/components/SinistralidadePeriodo";
+import SinistralidadePeriodosMV from "@/components/SinistralidadePeriodosMV";
 import SinistralidadeAPB from "@/components/SinistralidadeAPB";
 import SinistralidadeAPBTop10 from "@/components/SinistralidadeAPBTop10";
 import Sinistralidade3100 from "@/components/Sinistralidade3100";
@@ -150,7 +151,7 @@ const labItems: MenuItem[] = [
   },
   {
     icon: Percent,
-    label: "Sinistralidade",
+    label: "vSinistralidade",
     children: [
       { icon: UserCheck, label: "Planos/Empresas" },
       { icon: CalendarCheck, label: "Período" },
@@ -215,6 +216,7 @@ const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   controlItem,
   { icon: Users, label: "Carteira", children: [{ icon: Search, label: "Consulta", id: "Carteira · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira · Entradas" }, { icon: TrendingUp, label: "Entradas Lancers", id: "Carteira · Entradas Lancers" }, { icon: TrendingUp, label: "Saídas", id: "Carteira · Saídas" }] },
+  { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }] },
 ];
 
 const LAB_IDS = new Set<string>(["Laboratory", ...labItems.flatMap((g) => g.children ? g.children.map((c) => c.id ?? c.label) : [g.label])]);
@@ -575,6 +577,8 @@ const Index = () => {
             <SinistralidadeNova mode="beneficiario" />
           ) : active === "Período" ? (
             <SinistralidadePeriodo />
+          ) : active === "Sinistralidade · Períodos" ? (
+            <SinistralidadePeriodosMV />
           ) : active === "APB" ? (
             <SinistralidadeAPB />
           ) : active === "APB Top10" ? (

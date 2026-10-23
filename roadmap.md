@@ -1,3 +1,5 @@
+- [x] Renomear a área antiga para vSinistralidade e incluir Sinistralidade > Períodos abaixo de Carteira; navegação e indisponibilidade da fonte conferidas com sessão autorizada, preservando a tela antiga.
+- [ ] Montar indicadores e detalhamento de Períodos: bloqueado porque view_eard_mensal não existe na conexão atual (consulta retornou PGRST205); aguarda acesso à visão e validação de suas colunas reais.
 - [x] Adicionar seleção dos últimos 12 meses após Calcular, com indicadores e detalhes do intervalo selecionado, preservando o gráfico do período; 12 testes aprovados e seleção de setembro com retorno ao período completo conferida com dados reais.
 - [x] Substituir gráfico de vidas pelo combinado mensal de vendas, saídas absolutas e crescimento, reaproveitando totais dos cards; dez testes aprovados e dados reais de agosto a outubro conferidos com seis barras e uma linha, sem erros.
 - [x] Preparar SQL de totais e separar cards da depuração sob demanda; 16 testes aprovados. Referência real antes: 13,32 s para 01/10–23/10/2026, cinco chamadas incluindo KPIs.
