@@ -44,7 +44,7 @@
 .study-data-premise:nth-child(4) { border-top-color: hsl(var(--credential-nonmedical)); }
 .study-data-premise h4 { font-size: 18px; font-weight: 650; margin-bottom: 10px; }
 .study-data-premise p { font-size: 14px; line-height: 1.6; }
-.study-data-dialog { width: calc(100vw - 48px); max-width: 1800px; max-height: calc(100dvh - 48px); display: flex; flex-direction: column; }
+.study-data-dialog[role="dialog"] { width: calc(100vw - 48px); max-width: none; max-height: calc(100dvh - 48px); display: flex; flex-direction: column; }
 .study-data-dialog-body { overflow: auto; min-height: 0; }
 .study-data-dialog-body table { min-width: 900px; }
 .study-data-dialog-body p { white-space: pre-line; font-size: 14px; line-height: 1.7; margin: 18px 0; }
