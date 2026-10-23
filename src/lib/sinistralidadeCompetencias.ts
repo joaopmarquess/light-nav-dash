@@ -61,3 +61,6 @@ export function agruparPorAno(meses: MesSoma[]): AnoAgrupado[] {
     return { ano, meses: ord, soma: somarTotais(ord.map(m => m.soma)) };
   });
 }
+
+/** Ignora meses cuja despesa total seja menor que 50% da receita total. */
+export const mesValido = (s: SomaCompetencia) => s.despTotal >= 0.5 * s.recTotal;
