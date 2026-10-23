@@ -31,8 +31,8 @@ describe("saldo e sin", () => {
 
 import { agruparPorAno, anosSinistralidade } from "./sinistralidadeCompetencias";
 describe("agrupamento por ano", () => {
-  it("anos 2024, 2025 completos e 2026 até outubro", () =>
-    expect(anosSinistralidade(new Date("2026-10-23T12:00:00Z"))).toEqual([{ ano: 2024, ateMes: 12 }, { ano: 2025, ateMes: 12 }, { ano: 2026, ateMes: 10 }]));
+  it("anos 2024, 2025 completos e 2026 até setembro (ignora o mês corrente)", () =>
+    expect(anosSinistralidade(new Date("2026-10-23T12:00:00Z"))).toEqual([{ ano: 2024, ateMes: 12 }, { ano: 2025, ateMes: 12 }, { ano: 2026, ateMes: 9 }]));
   it("soma os meses de cada ano", () => {
     const s = (v: number) => ({ ...somaVazia(), recTotal: v });
     const r = agruparPorAno([{ ano: 2025, mes: 2, soma: s(5) }, { ano: 2024, mes: 1, soma: s(1) }, { ano: 2025, mes: 1, soma: s(3) }]);
@@ -42,3 +42,7 @@ describe("agrupamento por ano", () => {
 
 import { saldoLimiteSin } from "./sinistralidadeCompetencias";
 it("limite Sin 90% = 10% da receita total", () => expect(saldoLimiteSin({ ...somaVazia(), recTotal: 1000 }, 0.9)).toBeCloseTo(100));
+
+import { dominioCentrado } from "./sinistralidadeCompetencias";
+it("em janeiro o ano corrente não aparece", () => expect(anosSinistralidade(new Date("2027-01-10T12:00:00Z")).map(a => a.ano)).toEqual([2025, 2026]));
+it("linha limite fica no centro do eixo", () => { const [a, b] = dominioCentrado([0, 500], [100, 300]); expect((a + b) / 2).toBe(200); });

@@ -46,10 +46,19 @@ export const sinistralidade = (s: SomaCompetencia) => (s.recTotal ? s.despTotal 
 export interface MesSoma { ano: number; mes: number; soma: SomaCompetencia }
 export interface AnoAgrupado { ano: number; soma: SomaCompetencia; meses: MesSoma[] }
 
-/** Últimos 3 anos: dois anteriores completos e o atual até o mês corrente (UTC). */
+/** Últimos 3 anos: dois anteriores completos e o atual até o mês anterior ao corrente (UTC); o mês corrente é ignorado. */
 export function anosSinistralidade(hoje: Date): { ano: number; ateMes: number }[] {
   const a = hoje.getUTCFullYear();
-  return [{ ano: a - 2, ateMes: 12 }, { ano: a - 1, ateMes: 12 }, { ano: a, ateMes: hoje.getUTCMonth() + 1 }];
+  const lista = [{ ano: a - 2, ateMes: 12 }, { ano: a - 1, ateMes: 12 }, { ano: a, ateMes: hoje.getUTCMonth() }];
+  return lista.filter(x => x.ateMes > 0);
+}
+
+/** Domínio vertical com a média da linha limite sempre no centro. */
+export function dominioCentrado(valores: number[], limites: number[]): [number, number] {
+  if (!limites.length) return [0, 1];
+  const meio = limites.reduce((t, v) => t + v, 0) / limites.length;
+  const d = Math.max(1, ...[...valores, ...limites].map(v => Math.abs(v - meio))) * 1.1;
+  return [meio - d, meio + d];
 }
 
 /** Agrupa competências por ano (ordem crescente), somando os meses. */
