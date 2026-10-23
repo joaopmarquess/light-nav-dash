@@ -1,3 +1,5 @@
+- [x] Preparar SQL de totais e separar cards da depuração sob demanda; 16 testes aprovados. Referência real antes: 13,32 s para 01/10–23/10/2026, cinco chamadas incluindo KPIs.
+- [ ] Validar totais e depuração com dados reais e medir depois no mesmo período; bloqueado pela instalação externa de carteira_movimentacao_totais, confirmada ausente na tela. Não confundir resposta de função ausente com ganho de desempenho.
 - [x] Refazer Movimentação com sete indicadores e dois quadros de depuração conforme o mapa mental; nove testes aprovados e acesso autorizado confirmou ausência de consultas antes de Calcular, dois quadros com dados reais após cálculo e resultados ocultos após Limpar.
 - [x] Incluir ícone discreto de PDF no topo do projeto; download direto e impressão conferidos com acesso autorizado: 31 páginas, todas 16:9 e com imagens integrais, sem páginas extras; quatro testes aprovados.
 - [x] Incluir Dados em Estudo com Mercado, Preços, Oportunidades e Premissas dos dois HTMLs Lancers; tabelas completas disponíveis, dez testes aprovados e navegação com acesso autorizado conferida, mantendo Home padrão e sem sobreposição.

@@ -3,6 +3,7 @@ import { hostinger } from "@/lib/hostingerClient";
 import { type BlocoMes, type TransfPar, type TipoReentrada } from "@/lib/transferencias";
 import { podeCalcularMovimentacao, resumoMovimentacao } from "@/lib/movimentacaoResumo";
 import { normalizarVendedor } from "@/lib/vendedorTransferencia";
+import { mesesMovimentacao, somarTotaisMovimentacao, type TotaisMovimentacao } from "@/lib/movimentacaoCarga";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X, UserPlus, UserMinus, Scale, RotateCcw, ArrowRightLeft, LogIn, LogOut, Users, Eye, EyeOff, LoaderCircle } from "lucide-react";
@@ -48,25 +49,55 @@ export default function CarteiraTrialMov() {
   const [vidas, setVidas] = useState<{ ant: number | null; fin: number | null }>({ ant: null, fin: null });
   const [sel, setSel] = useState<Sel>(null);
   const [depuracaoAberta, setDepuracaoAberta] = useState(false);
-  // Movimentação calculada na base pela função carteira_movimentacao (regra de transferência no servidor).
+  const [totais, setTotais] = useState<TotaisMovimentacao | null>(null);
+  const [detalhesLoading, setDetalhesLoading] = useState(false);
+  const [detalhesErro, setDetalhesErro] = useState<string | null>(null);
+  const [detalhesProntos, setDetalhesProntos] = useState(false);
+  const [detalhesEtapa, setDetalhesEtapa] = useState("");
   useEffect(() => {
     if (!podeCalcularMovimentacao(ap)) return;
     let off = false;
+    setLoading(true); setErr(null); setTotais(null);
     (async () => {
-      setLoading(true); setErr(null); setEvs([]); setCortado(false); setSel(null); setEtapa("Calculando movimentações…");
+      try {
+        const meses = mesesMovimentacao(ap);
+        const rows: Row[] = [];
+        for (let i = 0; i < meses.length; i += 2) {
+          if (off) return;
+          setEtapa(`Calculando mês ${Math.min(i + 2, meses.length)} de ${meses.length}…`);
+          const res = await Promise.all(meses.slice(i, i + 2).map(async m => {
+            const { data, error } = await hostinger.rpc("carteira_movimentacao_totais", { p_de: m.de, p_ate: m.ate });
+            if (error) throw new Error(error.code === "PGRST202" || error.code === "42883"
+              ? "A função de totais ainda precisa ser instalada na base da carteira."
+              : error.message);
+            const row = Array.isArray(data) ? data[0] : data;
+            if (!row) throw new Error("A função de totais não retornou os resultados do período.");
+            return row as Row;
+          }));
+          rows.push(...res);
+        }
+        if (!off) setTotais(somarTotaisMovimentacao(rows));
+      } catch (e: any) { if (!off) setErr(e.message); }
+      finally { if (!off) setLoading(false); }
+    })();
+    return () => { off = true; };
+  }, [ap]);
+  // Movimentação calculada na base pela função carteira_movimentacao (regra de transferência no servidor).
+  const precisaDetalhes = depuracaoAberta || sel !== null;
+  useEffect(() => {
+    if (!podeCalcularMovimentacao(ap) || !precisaDetalhes || detalhesProntos || !totais) return;
+    let off = false;
+    (async () => {
+      setDetalhesLoading(true); setDetalhesErro(null); setEvs([]); setCortado(false); setDetalhesEtapa("Carregando detalhes…");
       const rows: Row[] = [];
       // Divide o período em meses: cada mês é independente (a função liga ±1 mês), evitando tempo esgotado.
-      const meses: F[] = [];
-      for (let ini = ap.de; ini <= ap.ate; ini = addMes(ini, 1)) {
-        const fimMes = new Date(addMes(ini, 1) + "T12:00:00"); fimMes.setDate(0);
-        const f2 = fimMes.toISOString().slice(0, 10);
-        meses.push({ de: ini, ate: f2 < ap.ate ? f2 : ap.ate });
-      }
+      const meses = mesesMovimentacao(ap);
       const pag = (m: F, from: number) => hostinger.rpc("carteira_movimentacao", { p_de: m.de, p_ate: m.ate })
         .order("tipo").order("data").order("mat").range(from, from + 999);
       const doMes = async (m: F) => {
         const out: Row[] = [];
-        for (let from = 0; from < LIMITE; from += 1000) {
+        for (let from = 0; ; from += 1000) {
+          if (off) return out;
           let r = await pag(m, from);
           if (r.error) r = await pag(m, from);
           if (r.error) throw new Error(r.error.message);
@@ -77,24 +108,24 @@ export default function CarteiraTrialMov() {
       };
       try {
         for (let i = 0; i < meses.length; i += 2) {
-          setEtapa(`Calculando ${meses.length > 1 ? `mês ${Math.min(i + 2, meses.length)} de ${meses.length}` : "movimentações"}…`);
+          setDetalhesEtapa(`Carregando detalhes: mês ${Math.min(i + 2, meses.length)} de ${meses.length}…`);
           const res = await Promise.all(meses.slice(i, i + 2).map(doMes));
           if (off) return;
           for (const r of res) rows.push(...r);
         }
-      } catch (e: any) { if (!off) { setErr(e.message); setLoading(false); } return; }
+      } catch (e: any) { if (!off) { setDetalhesErro(e.message); setDetalhesLoading(false); } return; }
       const out: Ev[] = rows.map((x) => {
-        const r = { cd_mat_alternativa: x.mat, nm_beneficiario: x.nome, nm_empresa_estipulante: x.empresa, nm_vendedor: x.nm_vendedor, cd_vendedor: x.cd_vendedor, nr_cpf: x.cpf };
+        const r = normalizarVendedor({ cd_mat_alternativa: x.mat, nm_beneficiario: x.nome, nm_empresa_estipulante: x.empresa, nm_vendedor: x.nm_vendedor, cd_vendedor: x.cd_vendedor, nr_cpf: x.cpf });
         const par: TransfPar | undefined = x.tipo === "T+" || x.tipo === "T-" ? {
           cpf: String(x.cpf ?? ""), nome: x.nome ?? "", matAnterior: String(x.mat_anterior ?? ""), saida: dia(x.saida), motivo: x.motivo,
           matNova: String(x.mat_nova ?? ""), entrada: dia(x.entrada), vendedor: x.cd_vendedor_novo, nmVendedor: x.nm_vendedor_novo, tipo: x.tipo_reentrada as TipoReentrada,
         } : undefined;
         return { tipo: x.tipo as Tipo, data: dia(x.data), r, par };
       });
-      if (!off) { setEvs(out); setLoading(false); }
+      if (!off) { setEvs(out); setDetalhesProntos(true); setDetalhesLoading(false); }
     })();
     return () => { off = true; };
-  }, [ap]);
+  }, [ap, precisaDetalhes, detalhesProntos, totais]);
 
   const dAnt = useMemo(() => { if (!ap) return ""; const d = new Date(ap.de + "T12:00:00"); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10); }, [ap?.de]);
   const dFin = useMemo(() => { if (!ap) return ""; const d = new Date(ap.ate + "T12:00:00"); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); }, [ap?.ate]);
@@ -108,10 +139,7 @@ export default function CarteiraTrialMov() {
     return () => { off = true; };
   }, [dAnt, dFin]);
 
-  const kpi = useMemo(() => {
-    const c = (t: Tipo, sub?: TipoReentrada) => evs.filter((x) => x.tipo === t && (!sub || x.par?.tipo === sub)).length;
-    return { e: c("Entrada"), r: c("Reativação"), s: c("Saída"), tp: c("T+"), tpP: c("T+", "Pura"), tpR: c("T+", "Revenda"), tm: c("T-"), tmP: c("T-", "Pura"), tmR: c("T-", "Revenda") };
-  }, [evs]);
+  const kpi = totais ?? { e: 0, r: 0, s: 0, tp: 0, tm: 0 };
   const resumo = resumoMovimentacao(kpi.e, kpi.s, kpi.r, kpi.tp, kpi.tm);
 
   const bl = (x: Ev): BlocoMes | null => {
@@ -127,23 +155,24 @@ export default function CarteiraTrialMov() {
   const same = (t: Tipo, sub?: TipoReentrada, bloco?: BlocoMes) => sel?.tipo === t && sel?.sub === sub && sel?.bloco === bloco;
   const toggle = (t: Tipo, sub?: TipoReentrada, bloco?: BlocoMes) => setSel(same(t, sub, bloco) ? null : { tipo: t, sub, bloco });
   const nB = (t: Tipo, b: BlocoMes, sub?: TipoReentrada) => evs.filter((x) => x.tipo === t && bl(x) === b && (!sub || x.par?.tipo === sub)).length;
-  const buscar = () => { if (podeCalcularMovimentacao(f)) { setDepuracaoAberta(false); setAp({ ...f }); } };
-  const limpar = () => { setDepuracaoAberta(false); setF(EMPTY()); setAp(null); setEvs([]); setSel(null); setErr(null); setLoading(false); setVidas({ ant: null, fin: null }); };
-  const v = (n: number) => (loading ? "…" : num(n));
+  const resetDetalhes = () => { setDepuracaoAberta(false); setSel(null); setEvs([]); setDetalhesProntos(false); setDetalhesErro(null); setDetalhesLoading(false); };
+  const buscar = () => { if (podeCalcularMovimentacao(f)) { resetDetalhes(); setAp({ ...f }); } };
+  const limpar = () => { resetDetalhes(); setTotais(null); setF(EMPTY()); setAp(null); setErr(null); setLoading(false); setVidas({ ant: null, fin: null }); };
+  const v = (n: number) => (detalhesLoading || !detalhesProntos ? "…" : num(n));
 
   const card = (label: string, value: number | null, Icon: typeof Users, negative = false, tipo: Tipo | null = null, neutral = false) => (
     <div className="relative min-w-0">
-    <Button variant="outline" title={label} onClick={() => tipo && toggle(tipo)}
+    <Button variant="outline" title={label} disabled={Boolean(tipo) && (loading || !totais)} onClick={() => tipo && toggle(tipo)}
       className={`h-36 w-full flex-col items-center justify-center gap-4 rounded-lg border-l-[6px] bg-card px-5 text-center whitespace-normal ${neutral ? "border-l-muted-foreground" : negative ? "border-l-destructive" : "border-l-primary"} ${tipo && same(tipo) ? "ring-2 ring-primary" : ""}`}>
       <span className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground"><Icon className="h-4 w-4 shrink-0" />{label}</span>
-      <span className={`text-2xl font-bold tabular-nums ${neutral ? "text-foreground" : negative ? "text-destructive" : "text-primary"}`}>{loading || value == null ? "…" : num(value)}</span>
+      <span className={`text-2xl font-bold tabular-nums ${neutral ? "text-foreground" : negative ? "text-destructive" : "text-primary"}`}>{loading || value == null || (!neutral && !totais) ? "…" : num(value)}</span>
     </Button>
-    {label === "Transferências Líq." && <Button variant="ghost" size="icon" disabled={loading}
+    {label === "Transferências Líq." && <Button variant="ghost" size="icon" disabled={loading || !totais}
       className="absolute right-1 top-1 h-7 w-7 text-muted-foreground"
       aria-label={depuracaoAberta ? "Ocultar depuração" : "Abrir depuração"}
       title={depuracaoAberta ? "Ocultar depuração" : "Abrir depuração"}
       aria-expanded={depuracaoAberta} aria-controls="depuracao-transferencias"
-      onClick={() => { setDepuracaoAberta(!depuracaoAberta); if (isT) setSel(null); }}>
+      onClick={() => { setDepuracaoAberta(aberta => !aberta); if (isT) setSel(null); }}>
       {depuracaoAberta ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
     </Button>}
     </div>
@@ -159,7 +188,7 @@ export default function CarteiraTrialMov() {
       { label: "Saiu no mês anterior", bloco: "proximo", dica: "Saída no período, no mês anterior à reentrada; entrada no mês seguinte" },
     ];
     const celula = (sub?: TipoReentrada, bloco?: BlocoMes) => (
-      <Button variant="ghost" disabled={loading} onClick={() => toggle(tipo, sub, bloco)}
+      <Button variant="ghost" disabled={detalhesLoading || !detalhesProntos} onClick={() => toggle(tipo, sub, bloco)}
         className={`h-11 w-full justify-end rounded-md text-base tabular-nums ${same(tipo, sub, bloco) ? "bg-muted ring-1 ring-primary" : ""}`}>
         {v(bloco ? nB(tipo, bloco, sub) : evs.filter(x => x.tipo === tipo && (!sub || x.par?.tipo === sub)).length)}
       </Button>
@@ -205,11 +234,15 @@ export default function CarteiraTrialMov() {
       {cortado && <div className="text-xs text-muted-foreground">Limite de busca atingido, reduza o período.</div>}
       {depuracaoAberta && <section id="depuracao-transferencias" className="space-y-5 border-t pt-5">
         <h2 className="text-lg font-semibold">Depuração de Transferência Líq.</h2>
+        {detalhesLoading && <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-5 w-5 motion-safe:animate-spin" />{detalhesEtapa}</div>}
+        {detalhesErro && <div role="alert" className="text-destructive">Erro: {detalhesErro}</div>}
         <div className="grid gap-8 xl:grid-cols-2">{quadro("T+")}{quadro("T-")}</div>
       </section>}
       </>}
 
-      {sel && !loading && (
+      {sel && !depuracaoAberta && detalhesLoading && <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-5 w-5 motion-safe:animate-spin" />{detalhesEtapa}</div>}
+      {sel && !depuracaoAberta && detalhesErro && <div role="alert" className="text-destructive">Erro: {detalhesErro}</div>}
+      {sel && !loading && !detalhesLoading && detalhesProntos && (
         <div className="rounded-xl border bg-card overflow-auto max-h-[60vh]">
           <div className="px-4 py-2 text-sm font-medium border-b">{sel.tipo}{sel.sub ? ` · ${sel.sub}` : ""} · {num(lista.length)} registro(s){isT ? " · ligação por CPF" : ""}</div>
           <table className="w-full text-xs">
