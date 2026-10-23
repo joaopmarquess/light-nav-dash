@@ -2,7 +2,6 @@ import { useState } from "react";
 import { ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import campanha from "@/assets/uberaba-marketing-outdoor-sem-exclamacao.png";
 import outdoorImagem from "@/assets/projeto-uberaba-home-v2.svg.asset.json";
 import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
 
