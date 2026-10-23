@@ -1,45 +1,37 @@
-import { describe, expect, it } from "vitest";
-import { classificarTransferencias } from "./transferencias";
+import { describe, it, expect } from "vitest";
+import { transfSaidas, transfEntradas, mesValido, type TransfMat } from "./transferencias";
 
-const de = "2026-10-01", ate = "2026-10-23";
+const MOT = new Set([6, 208]);
+const m = (o: Partial<TransfMat>): TransfMat => ({ cpf: "1", mat: "x", nome: "N", vig: "", desl: "", vendedor: null, motivo: null, ...o });
 
-describe("classificarTransferencias", () => {
-  it("liga por CPF ignorando zeros à esquerda e classifica chegadas", () => {
-    const r = classificarTransferencias(
-      [
-        { cpf: "01", mat: "N1", nome: "A", data: "2026-10-01" },
-        { cpf: "2", mat: "N2", nome: "B", data: "2026-10-01" },
-        { cpf: "3", mat: "N3", nome: "C", data: "2026-10-10" },
-      ],
-      [],
-      [
-        { cpf: "1", mat: "A1", vig: "2020-01-01", desl: "2026-09-30" },
-        { cpf: "2", mat: "A2", vig: "2020-01-01", desl: "2026-10-01" },
-      ],
-      de, ate,
-    );
-    expect(r.grupos.veioAntes.map((i) => i.matAnterior)).toEqual(["A1"]);
-    expect(r.grupos.dentroChegada.map((i) => i.matAnterior)).toEqual(["A2"]);
-    expect(r.grupos.semAnterior.map((i) => i.matNova)).toEqual(["N3"]);
+describe("conceito de transferência", () => {
+  it("mesmo mês ou mês seguinte valem; dois meses depois não", () => {
+    expect(mesValido("2026-09-30", "2026-09-01")).toBe(true);
+    expect(mesValido("2026-09-30", "2026-10-15")).toBe(true);
+    expect(mesValido("2026-09-30", "2026-11-01")).toBe(false);
+    expect(mesValido("2026-10-01", "2026-09-30")).toBe(false);
   });
 
-  it("classifica partidas e calcula o saldo sem contar trocas dentro do período", () => {
-    const r = classificarTransferencias(
-      [{ cpf: "9", mat: "X", nome: "Z", data: "2026-10-05" }],
-      [
-        { cpf: "1", mat: "A1", nome: "A", data: "2026-10-01" },
-        { cpf: "2", mat: "A2", nome: "B", data: "2026-10-20" },
-        { cpf: "3", mat: "A3", nome: "C", data: "2026-10-01" },
-      ],
-      [
-        { cpf: "1", mat: "N1", vig: "2026-10-01", desl: "" },
-        { cpf: "2", mat: "N2", vig: "2026-11-01", desl: "" },
-      ],
-      de, ate,
-    );
-    expect(r.grupos.dentro).toHaveLength(1);
-    expect(r.grupos.depois).toHaveLength(1);
-    expect(r.grupos.semNova).toHaveLength(1);
-    expect(r.saldo).toBe(1 - 2);
+  it("saída com motivo de transferência e reentrada pelo vendedor 274 é Pura", () => {
+    const s = m({ mat: "a", desl: "2026-10-01", motivo: 208 });
+    const r = transfSaidas([s], [s, m({ mat: "b", vig: "2026-10-01", vendedor: 274 })], MOT);
+    expect([...r.values()][0].tipo).toBe("Pura");
+  });
+
+  it("reentrada por outro vendedor é Revenda", () => {
+    const s = m({ mat: "a", desl: "2026-10-01", motivo: 6 });
+    const r = transfSaidas([s], [m({ mat: "b", vig: "2026-11-01", vendedor: 87 })], MOT);
+    expect([...r.values()][0].tipo).toBe("Revenda");
+  });
+
+  it("motivo fora do grupo Transferência não conta", () => {
+    const s = m({ mat: "a", desl: "2026-10-01", motivo: 22 });
+    expect(transfSaidas([s], [m({ mat: "b", vig: "2026-10-01", vendedor: 274 })], MOT).size).toBe(0);
+  });
+
+  it("ligação apenas por CPF", () => {
+    const e = m({ cpf: "2", mat: "b", vig: "2026-10-01", vendedor: 274 });
+    expect(transfEntradas([e], [m({ cpf: "1", mat: "a", desl: "2026-09-30", motivo: 6 })], MOT).size).toBe(0);
+    expect(transfEntradas([e], [m({ cpf: "002", mat: "a", desl: "2026-09-30", motivo: 6 })], MOT).size).toBe(1);
   });
 });
