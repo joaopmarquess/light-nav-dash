@@ -5,7 +5,7 @@ import { podeCalcularMovimentacao, resumoMovimentacao } from "@/lib/movimentacao
 import { normalizarVendedor } from "@/lib/vendedorTransferencia";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X, UserPlus, UserMinus, Scale, RotateCcw, ArrowRightLeft, LogIn, LogOut, Users } from "lucide-react";
+import { Search, X, UserPlus, UserMinus, Scale, RotateCcw, ArrowRightLeft, LogIn, LogOut, Users, Eye, EyeOff, LoaderCircle } from "lucide-react";
 
 type Row = Record<string, any>;
 type Tipo = "Entrada" | "Reativação" | "Saída" | "T+" | "T-";
@@ -47,6 +47,7 @@ export default function CarteiraTrialMov() {
   const [cortado, setCortado] = useState(false);
   const [vidas, setVidas] = useState<{ ant: number | null; fin: number | null }>({ ant: null, fin: null });
   const [sel, setSel] = useState<Sel>(null);
+  const [depuracaoAberta, setDepuracaoAberta] = useState(false);
   // Movimentação calculada na base pela função carteira_movimentacao (regra de transferência no servidor).
   useEffect(() => {
     if (!podeCalcularMovimentacao(ap)) return;
@@ -126,16 +127,26 @@ export default function CarteiraTrialMov() {
   const same = (t: Tipo, sub?: TipoReentrada, bloco?: BlocoMes) => sel?.tipo === t && sel?.sub === sub && sel?.bloco === bloco;
   const toggle = (t: Tipo, sub?: TipoReentrada, bloco?: BlocoMes) => setSel(same(t, sub, bloco) ? null : { tipo: t, sub, bloco });
   const nB = (t: Tipo, b: BlocoMes, sub?: TipoReentrada) => evs.filter((x) => x.tipo === t && bl(x) === b && (!sub || x.par?.tipo === sub)).length;
-  const buscar = () => { if (podeCalcularMovimentacao(f)) setAp({ ...f }); };
-  const limpar = () => { setF(EMPTY()); setAp(null); setEvs([]); setSel(null); setErr(null); setLoading(false); setVidas({ ant: null, fin: null }); };
+  const buscar = () => { if (podeCalcularMovimentacao(f)) { setDepuracaoAberta(false); setAp({ ...f }); } };
+  const limpar = () => { setDepuracaoAberta(false); setF(EMPTY()); setAp(null); setEvs([]); setSel(null); setErr(null); setLoading(false); setVidas({ ant: null, fin: null }); };
   const v = (n: number) => (loading ? "…" : num(n));
 
   const card = (label: string, value: number | null, Icon: typeof Users, negative = false, tipo: Tipo | null = null, neutral = false) => (
+    <div className="relative min-w-0">
     <Button variant="outline" title={label} onClick={() => tipo && toggle(tipo)}
-      className={`h-36 w-full flex-col items-start justify-center gap-4 rounded-lg border-l-[6px] bg-card px-5 whitespace-normal ${neutral ? "border-l-muted-foreground" : negative ? "border-l-destructive" : "border-l-primary"} ${tipo && same(tipo) ? "ring-2 ring-primary" : ""}`}>
-      <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground"><Icon className="h-4 w-4 shrink-0" />{label}</span>
+      className={`h-36 w-full flex-col items-center justify-center gap-4 rounded-lg border-l-[6px] bg-card px-5 text-center whitespace-normal ${neutral ? "border-l-muted-foreground" : negative ? "border-l-destructive" : "border-l-primary"} ${tipo && same(tipo) ? "ring-2 ring-primary" : ""}`}>
+      <span className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground"><Icon className="h-4 w-4 shrink-0" />{label}</span>
       <span className={`text-2xl font-bold tabular-nums ${neutral ? "text-foreground" : negative ? "text-destructive" : "text-primary"}`}>{loading || value == null ? "…" : num(value)}</span>
     </Button>
+    {label === "Transferências Líq." && <Button variant="ghost" size="icon" disabled={loading}
+      className="absolute right-1 top-1 h-7 w-7 text-muted-foreground"
+      aria-label={depuracaoAberta ? "Ocultar depuração" : "Abrir depuração"}
+      title={depuracaoAberta ? "Ocultar depuração" : "Abrir depuração"}
+      aria-expanded={depuracaoAberta} aria-controls="depuracao-transferencias"
+      onClick={() => { setDepuracaoAberta(!depuracaoAberta); if (isT) setSel(null); }}>
+      {depuracaoAberta ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+    </Button>}
+    </div>
   );
 
   const quadro = (tipo: "T+" | "T-") => {
@@ -170,12 +181,14 @@ export default function CarteiraTrialMov() {
 
   return (
     <div className="space-y-4">
+      {loading && <div role="status" aria-live="polite" className="flex items-center gap-2 text-sm text-muted-foreground">
+        <LoaderCircle aria-hidden="true" className="h-5 w-5 text-primary motion-safe:animate-spin" />{etapa}
+      </div>}
       <div className="border-b pb-4 flex flex-wrap items-end gap-3">
         <label className="text-xs text-muted-foreground">De<Input type="date" value={f.de} onChange={(e) => setF({ ...f, de: e.target.value })} className="w-40" /></label>
         <label className="text-xs text-muted-foreground">Até<Input type="date" value={f.ate} onChange={(e) => setF({ ...f, ate: e.target.value })} className="w-40" /></label>
         <Button onClick={buscar} disabled={loading || !podeCalcularMovimentacao(f)}><Search className="h-4 w-4 mr-1" />Calcular</Button>
         <Button variant="outline" onClick={limpar} disabled={loading}><X className="h-4 w-4 mr-1" />Limpar</Button>
-        {loading && <span className="text-xs text-muted-foreground">{etapa}</span>}
       </div>
 
       {ap && <>
@@ -190,10 +203,10 @@ export default function CarteiraTrialMov() {
       </div>
       {err && <div className="p-4 text-center text-destructive">Erro: {err}</div>}
       {cortado && <div className="text-xs text-muted-foreground">Limite de busca atingido, reduza o período.</div>}
-      <section className="space-y-5 border-t pt-5">
+      {depuracaoAberta && <section id="depuracao-transferencias" className="space-y-5 border-t pt-5">
         <h2 className="text-lg font-semibold">Depuração de Transferência Líq.</h2>
         <div className="grid gap-8 xl:grid-cols-2">{quadro("T+")}{quadro("T-")}</div>
-      </section>
+      </section>}
       </>}
 
       {sel && !loading && (
