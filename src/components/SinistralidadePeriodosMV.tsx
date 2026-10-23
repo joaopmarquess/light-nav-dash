@@ -4,7 +4,7 @@ import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Too
 import { hostinger } from "@/lib/hostingerClient";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { agruparPorAno, anosSinistralidade, saldoCompetencia, saldoLimiteSin, sinistralidade, somaVazia, somarTotais, type AnoAgrupado, type SomaCompetencia } from "@/lib/sinistralidadeCompetencias";
+import { agruparPorAno, anosSinistralidade, dominioCentrado, saldoCompetencia, saldoLimiteSin, sinistralidade, somaVazia, somarTotais, type AnoAgrupado, type SomaCompetencia } from "@/lib/sinistralidadeCompetencias";
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 type Col = "recCpp" | "recCopart" | "recTotal" | "despTotal" | "saldo" | "sin";
@@ -106,7 +106,7 @@ export default function SinistralidadePeriodosMV() {
                   <LineChart data={serie} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                    <YAxis tickFormatter={curto} stroke="hsl(var(--muted-foreground))" fontSize={12} width={70} />
+                    <YAxis domain={dominioCentrado(serie.map(x => x.saldo), serie.map(x => x.limite))} allowDataOverflow tickFormatter={curto} stroke="hsl(var(--muted-foreground))" fontSize={12} width={70} />
                     <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" />
                     <Tooltip formatter={(v: number, n: string) => [fmt(v), n === "limite" ? "Limite Sin 90%" : "Saldo"]} labelFormatter={l => `${l}/${sel.ano}`} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
                     <Line type="monotone" dataKey="limite" stroke="hsl(var(--destructive))" strokeWidth={2} strokeDasharray="6 4" dot={false} />
