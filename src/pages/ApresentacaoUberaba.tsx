@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Expand, FileDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, Expand } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import UberabaPresentationPdfButton from "@/components/UberabaPresentationPdfButton";
 import slides from "@/assets/apresentacao/slides.json";
 import "./ApresentacaoUberaba.css";
 
@@ -35,8 +36,11 @@ export default function ApresentacaoUberaba() {
   });
   useEffect(() => {
     if (!print) return;
-    const imgs = [...document.images];
-    Promise.all(imgs.map((i) => (i.complete ? Promise.resolve() : new Promise((r) => { i.onload = i.onerror = r; })))).then(() => setTimeout(() => window.print(), 300));
+    let active = true;
+    Promise.all([...document.images].map((image) => image.decode()))
+      .then(() => { if (active) window.print(); })
+      .catch(() => { /* Never print a partial deck with missing snapshots. */ });
+    return () => { active = false; };
   }, [print]);
 
   if (print) {
@@ -64,7 +68,7 @@ export default function ApresentacaoUberaba() {
           <span className="pbu-counter">{index + 1} / {slides.length} · {slides[index].title}</span>
           <Button size="icon" variant="outline" aria-label="Próximo slide" disabled={index === slides.length - 1} onClick={() => go(index + 1)}><ChevronRight /></Button>
           <Button variant="outline" onClick={() => document.documentElement.requestFullscreen()}><Expand />Tela cheia</Button>
-          <Button variant="outline" onClick={() => window.open(`${window.location.pathname}?print`, "_blank")}><FileDown />Exportar PDF</Button>
+          <UberabaPresentationPdfButton />
         </nav>
       )}
     </div>

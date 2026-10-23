@@ -3,7 +3,12 @@
 .pbu-slide { max-width: 100%; max-height: 100%; aspect-ratio: 16 / 9; object-fit: contain; user-select: none; }
 .pbu-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; padding: 8px; background: hsl(var(--background)); }
 .pbu-counter { min-width: 0; font-size: 14px; color: hsl(var(--muted-foreground)); padding: 0 8px; }
-.pbu-print-page { width: 1920px; height: 1080px; break-after: page; page-break-after: always; }
-.pbu-print-page img { width: 100%; height: 100%; display: block; }
-@page { size: 1920px 1080px; margin: 0; }
-@media print { body { margin: 0; } }
+.pbu-print-page { width: 1920px; height: 1080px; overflow: hidden; break-inside: avoid; page: uberaba-slide; }
+.pbu-print-page:not(:last-child) { break-after: page; }
+.pbu-print-page img { width: 100%; height: 100%; display: block; object-fit: contain; }
+@page uberaba-slide { size: 1920px 1080px; margin: 0; }
+@media print {
+  html:has(.pbu-print), body:has(.pbu-print), #root:has(.pbu-print) { margin: 0; padding: 0; width: 1920px; min-height: 0; page: uberaba-slide; }
+  body:has(.pbu-print) *:not(.pbu-print):not(.pbu-print *):not(:has(.pbu-print)) { display: none !important; }
+  .pbu-print { width: 1920px; margin: 0; padding: 0; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}

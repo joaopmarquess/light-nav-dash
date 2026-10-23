@@ -14,6 +14,7 @@ import { CalendarDays, FileCheck2 } from "lucide-react";
 import UberabaCronograma from "@/components/UberabaCronograma";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
+import UberabaPresentationPdfButton from "@/components/UberabaPresentationPdfButton";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
 
@@ -59,6 +60,7 @@ const UberabaTimeline = () => {
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <h1 className="text-lg font-semibold text-foreground">Projeto Bensaúde|Uberaba</h1>
+          <UberabaPresentationPdfButton iconOnly />
           <Tooltip>
             <TooltipTrigger asChild>
               <Button size="icon" variant={mostrarDatas ? "default" : "outline"} aria-label={mostrarDatas ? "Ocultar datas planejadas" : "Mostrar datas planejadas"} aria-pressed={mostrarDatas} onClick={() => setMostrarDatas(!mostrarDatas)}>
