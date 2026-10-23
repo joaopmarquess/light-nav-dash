@@ -3,7 +3,7 @@ import { AlertCircle, CalendarRange, Loader2, RefreshCw } from "lucide-react";
 import { hostinger } from "@/lib/hostingerClient";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { acumular, competenciasDoAno, somaVazia, somarTotais, type LinhaEard, type SomaCompetencia } from "@/lib/sinistralidadeCompetencias";
+import { acumular, competenciasDoAno, somaVazia, somarTotais, saldoCompetencia, sinistralidade, type LinhaEard, type SomaCompetencia } from "@/lib/sinistralidadeCompetencias";
 
 const CAMPOS = "vl_desp_consulta,vl_desp_urgencia,vl_desp_outros,vl_rec_cpp,vl_rec_copart,vl_rec_outros";
 const FILTRO = "vl_desp_consulta.neq.0,vl_desp_urgencia.neq.0,vl_desp_outros.neq.0,vl_rec_cpp.neq.0,vl_rec_copart.neq.0,vl_rec_outros.neq.0";
@@ -63,11 +63,17 @@ export default function SinistralidadePeriodosMV() {
   useEffect(() => () => ctrl?.abort(), [ctrl]);
 
   const total = somarTotais(linhas.map(l => l.soma));
-  const cols: [string, keyof SomaCompetencia][] = [
-    ["Desp. Consulta", "consulta"], ["Desp. Urgência", "urgencia"], ["Desp. Outros", "outros"], ["Desp. Total", "despTotal"],
+  type Col = "recCpp" | "recCopart" | "recTotal" | "despTotal" | "saldo" | "sin";
+  const cols: [string, Col][] = [
     ["Rec. CPP", "recCpp"], ["Rec. Copart.", "recCopart"], ["Rec. Total", "recTotal"],
+    ["Desp. Total", "despTotal"], ["Saldo", "saldo"], ["Sin", "sin"],
   ];
-  const destaque = (k: keyof SomaCompetencia) => k === "despTotal" || k === "recTotal" ? "font-semibold" : "";
+  const valor = (s: SomaCompetencia, k: Col) => {
+    if (k === "saldo") return fmt(saldoCompetencia(s));
+    if (k === "sin") { const v = sinistralidade(s); return v == null ? "—" : `${(v * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`; }
+    return fmt(s[k]);
+  };
+  const destaque = (k: Col) => k === "recTotal" || k === "despTotal" || k === "saldo" || k === "sin" ? "font-semibold" : "";
 
   return (
     <section className="flex h-full min-h-0 flex-col gap-6" aria-labelledby="sin-periodos-title">
@@ -91,10 +97,10 @@ export default function SinistralidadePeriodosMV() {
             <TableBody>{linhas.map(l => (
               <TableRow key={`${l.ano}-${l.mes}`}>
                 <TableCell className="whitespace-nowrap">{String(l.mes).padStart(2, "0")}/{l.ano}</TableCell>
-                {cols.map(([lb, k]) => <TableCell key={lb} className={`whitespace-nowrap text-right tabular-nums ${destaque(k)}`}>{fmt(l.soma[k])}</TableCell>)}
+                {cols.map(([lb, k]) => <TableCell key={lb} className={`whitespace-nowrap text-right tabular-nums ${destaque(k)}`}>{valor(l.soma, k)}</TableCell>)}
               </TableRow>
             ))}</TableBody>
-            {!loading && <TableFooter><TableRow><TableCell className="font-semibold">Total</TableCell>{cols.map(([lb, k]) => <TableCell key={lb} className="whitespace-nowrap text-right font-semibold tabular-nums">{fmt(total[k])}</TableCell>)}</TableRow></TableFooter>}
+            {!loading && <TableFooter><TableRow><TableCell className="font-semibold">Total</TableCell>{cols.map(([lb, k]) => <TableCell key={lb} className="whitespace-nowrap text-right font-semibold tabular-nums">{valor(total, k)}</TableCell>)}</TableRow></TableFooter>}
           </Table>
         </div>
       )}
