@@ -4,15 +4,15 @@ import type { MovimentoMensalComVidas } from "@/lib/movimentacaoCarga";
 
 const fmtMes = (mes: string) => new Intl.DateTimeFormat("pt-BR", { month: "short", year: "2-digit", timeZone: "UTC" }).format(new Date(`${mes}-01T00:00:00Z`));
 
-export default function MovimentacaoCrescimentoMensal({ dados }: { dados: MovimentoMensalComVidas[] }) {
+export default function MovimentacaoCrescimentoMensal({ dados, ajustarAltura = false }: { dados: MovimentoMensalComVidas[]; ajustarAltura?: boolean }) {
   const id = useId().replace(/:/g, "");
   const minimoVidas = Math.min(...dados.map(d => d.vidas));
   const maximoVidas = Math.max(...dados.map(d => d.vidas));
   const amplitudeVidas = Math.max(maximoVidas - minimoVidas, 1000);
   const dominioVidas: [number, number] = [minimoVidas - amplitudeVidas * 4, maximoVidas + amplitudeVidas * 0.5];
   const maximoFluxo = Math.max(1, ...dados.flatMap(d => [d.vendas, d.saidas]));
-  return <section aria-labelledby="crescimento-mensal-titulo" className="movimentacao-chart min-w-0 border-t pt-7">
-    <div className="mb-6 flex flex-wrap items-center justify-between gap-5">
+  return <section aria-labelledby="crescimento-mensal-titulo" className={`movimentacao-chart min-w-0 border-t pt-7 ${ajustarAltura ? "flex h-full min-h-0 flex-col" : ""}`}>
+    <div className="mb-6 flex shrink-0 flex-wrap items-center justify-between gap-5">
       <h2 id="crescimento-mensal-titulo" className="text-2xl font-semibold">Vendas, saídas e vidas no fim de cada mês</h2>
       <ul className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-medium" aria-label="Legenda do gráfico">
         <li className="flex items-center gap-2"><span className="movimentacao-key movimentacao-key-vendas" />Vendas</li>
@@ -20,7 +20,7 @@ export default function MovimentacaoCrescimentoMensal({ dados }: { dados: Movime
         <li className="flex items-center gap-2"><span className="movimentacao-key movimentacao-key-vidas" />Vidas no fim do mês</li>
       </ul>
     </div>
-    <div className="h-[520px] w-full text-xs text-muted-foreground sm:h-[560px]" role="img" aria-label={dados.map(d => `${fmtMes(d.mes)}: ${d.vendas} vendas, ${d.saidas} saídas, ${d.vidas} vidas em ${d.data}`).join("; ")}>
+    <div className={`${ajustarAltura ? "min-h-0 flex-1" : "h-[520px] sm:h-[560px]"} w-full text-xs text-muted-foreground`} role="img" aria-label={dados.map(d => `${fmtMes(d.mes)}: ${d.vendas} vendas, ${d.saidas} saídas, ${d.vidas} vidas em ${d.data}`).join("; ")}>
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={dados} margin={{ top: 38, right: 32, bottom: 12, left: 0 }} barGap={8} barCategoryGap="24%" accessibilityLayer>
           <defs>
