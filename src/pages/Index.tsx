@@ -230,6 +230,7 @@ const Index = () => {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [labOpen, setLabOpen] = useState<Record<string, boolean>>({});
   const [collapsed, setCollapsed] = useState(true);
+  const [labMenuAberto, setLabMenuAberto] = useState<string | null>(null);
   const [dateValue, setDateValue] = useState(todayBR());
   const [ativosDrillNome, setAtivosDrillNome] = useState<string | null>(null);
 
@@ -519,7 +520,7 @@ const Index = () => {
                   <button key={g.label} type="button" onClick={() => setActive(g.label)} className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm ${ativo ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-accent"}`}><g.icon className="h-4 w-4" />{g.label}</button>
                 );
                 return (
-                  <DropdownMenu key={g.label}>
+                  <DropdownMenu key={g.label} onOpenChange={(o) => setLabMenuAberto(o ? g.label : null)}>
                     <DropdownMenuTrigger className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm ${ativo ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-accent"}`}>
                       <g.icon className="h-4 w-4" />{g.label.trim()}<ChevronDown className="h-3 w-3" />
                     </DropdownMenuTrigger>
@@ -661,7 +662,7 @@ const Index = () => {
           ) : active === "Carteira (Trial) · Consulta" ? (
             <CarteiraTrial />
           ) : active === "Laboratory" ? (
-            <section className="rounded-lg border border-border bg-card p-8 shadow-sm" aria-labelledby="lab-home-title">
+            labMenuAberto ? null : <section className="rounded-lg border border-border bg-card p-8 shadow-sm" aria-labelledby="lab-home-title">
               <h2 id="lab-home-title" className="flex items-center gap-3 text-2xl font-semibold text-foreground"><FlaskConical className="h-6 w-6 text-primary" />Laboratory</h2>
               <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
                 O Laboratory é a área experimental do AXIS, uma incubadora de projetos. Aqui ficam protótipos, simulações, estudos e novas análises que ainda estão sendo testados e amadurecidos. Os dados e as telas podem mudar, e alguns resultados são preliminares. Quando um projeto se prova útil e confiável, ele sai do Laboratory e passa a fazer parte do AXIS.
