@@ -3,20 +3,29 @@ import { janelaMesesMovimentacao, datasVidasIndicadores, mesesMovimentacao, ulti
 import { resumoMovimentacao } from "./movimentacaoResumo";
 
 describe("carga de totais da Movimentação", () => {
-  it("navega em grupos de até 12 meses sem sair do período disponível", () => {
+  it("desloca a janela de 12 meses um mês por clique", () => {
     const periodo = { de: "2025-01-15", ate: "2026-10-23" };
     const recente = janelaMesesMovimentacao(periodo);
     const anterior = janelaMesesMovimentacao(periodo, 1);
     expect(recente.meses).toHaveLength(12);
     expect(recente.anteriores).toBe(true);
     expect(recente.posteriores).toBe(false);
-    expect(anterior.meses).toHaveLength(10);
-    expect(anterior.meses[0]).toEqual({ de: "2025-01-15", ate: "2025-01-31" });
-    expect(anterior.meses[9]).toEqual({ de: "2025-10-01", ate: "2025-10-31" });
-    expect(anterior.anteriores).toBe(false);
+    expect(anterior.meses).toHaveLength(12);
+    expect(anterior.meses[0]).toEqual({ de: "2025-10-01", ate: "2025-10-31" });
+    expect(anterior.meses[11]).toEqual({ de: "2026-09-01", ate: "2026-09-30" });
+    expect(anterior.anteriores).toBe(true);
     expect(anterior.posteriores).toBe(true);
-    expect(janelaMesesMovimentacao(periodo, 99)).toEqual(anterior);
+    expect(janelaMesesMovimentacao(periodo, anterior.pagina - 1)).toEqual(recente);
     expect(janelaMesesMovimentacao(periodo, -1)).toEqual(recente);
+  });
+  it("para no primeiro mês disponível sem reduzir a janela de 12 meses", () => {
+    const limite = janelaMesesMovimentacao({ de: "2025-01-15", ate: "2026-10-23" }, 99);
+    expect(limite.pagina).toBe(10);
+    expect(limite.meses).toHaveLength(12);
+    expect(limite.meses[0]).toEqual({ de: "2025-01-15", ate: "2025-01-31" });
+    expect(limite.meses[11]).toEqual({ de: "2025-12-01", ate: "2025-12-31" });
+    expect(limite.anteriores).toBe(false);
+    expect(limite.posteriores).toBe(true);
   });
   it("não permite navegar quando há menos de 12 meses", () => {
     const janela = janelaMesesMovimentacao({ de: "2026-08-01", ate: "2026-10-23" });
