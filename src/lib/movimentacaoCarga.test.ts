@@ -1,8 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { mesesMovimentacao, ultimosMesesMovimentacao, somarTotaisMovimentacao, fechamentosMensaisMovimentacao, escalaVidasMensais, fluxoMensalMovimentacao, combinarFluxosEVidas } from "./movimentacaoCarga";
+import { datasVidasIndicadores, mesesMovimentacao, ultimosMesesMovimentacao, somarTotaisMovimentacao, fechamentosMensaisMovimentacao, escalaVidasMensais, fluxoMensalMovimentacao, combinarFluxosEVidas } from "./movimentacaoCarga";
 import { resumoMovimentacao } from "./movimentacaoResumo";
 
 describe("carga de totais da Movimentação", () => {
+  it("consulta o Final no mesmo fechamento da linha para um mês completo", () => {
+    const periodo = { de: "2026-09-01", ate: "2026-09-30" };
+    expect(datasVidasIndicadores(periodo)).toEqual({ anterior: "2026-08-31", final: "2026-09-30" });
+    expect(datasVidasIndicadores(periodo).final).toBe(fechamentosMensaisMovimentacao(periodo)[0]);
+  });
+  it("preserva a data final aplicada em períodos parciais e o anterior UTC na virada do ano", () => {
+    expect(datasVidasIndicadores({ de: "2026-01-01", ate: "2026-10-23" })).toEqual({ anterior: "2025-12-31", final: "2026-10-23" });
+  });
   it("limita os botões aos últimos 12 meses do período", () => {
     const meses = ultimosMesesMovimentacao({ de: "2025-01-01", ate: "2026-10-23" });
     expect(meses).toHaveLength(12);

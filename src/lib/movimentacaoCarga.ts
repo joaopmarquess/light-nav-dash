@@ -4,6 +4,12 @@ export type VidasMensais = { mes: string; data: string; vidas: number };
 export type FluxoMensal = { mes: string; vendas: number; saidas: number; crescimento: number };
 export type MovimentoMensalComVidas = FluxoMensal & { vidas: number; data: string };
 
+export function datasVidasIndicadores(periodo: PeriodoMovimentacao): { anterior: string; final: string } {
+  const anterior = new Date(`${periodo.de}T00:00:00Z`);
+  anterior.setUTCDate(anterior.getUTCDate() - 1);
+  return { anterior: anterior.toISOString().slice(0, 10), final: periodo.ate };
+}
+
 export function combinarFluxosEVidas(fluxos: FluxoMensal[], vidas: VidasMensais[]): MovimentoMensalComVidas[] {
   return fluxos.flatMap(fluxo => {
     const fechamento = vidas.find(ponto => ponto.mes === fluxo.mes);

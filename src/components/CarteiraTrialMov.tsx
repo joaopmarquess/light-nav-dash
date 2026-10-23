@@ -3,7 +3,7 @@ import { hostinger } from "@/lib/hostingerClient";
 import { type BlocoMes, type TransfPar, type TipoReentrada } from "@/lib/transferencias";
 import { podeCalcularMovimentacao, resumoMovimentacao } from "@/lib/movimentacaoResumo";
 import { normalizarVendedor } from "@/lib/vendedorTransferencia";
-import { mesesMovimentacao, ultimosMesesMovimentacao, somarTotaisMovimentacao, fluxoMensalMovimentacao, fechamentosMensaisMovimentacao, combinarFluxosEVidas, type VidasMensais, type FluxoMensal, type TotaisMovimentacao } from "@/lib/movimentacaoCarga";
+import { datasVidasIndicadores, mesesMovimentacao, ultimosMesesMovimentacao, somarTotaisMovimentacao, fluxoMensalMovimentacao, fechamentosMensaisMovimentacao, combinarFluxosEVidas, type VidasMensais, type FluxoMensal, type TotaisMovimentacao } from "@/lib/movimentacaoCarga";
 import MovimentacaoCrescimentoMensal from "@/components/MovimentacaoCrescimentoMensal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -163,18 +163,16 @@ export default function CarteiraTrialMov() {
     setVidasSelecionadas({ ant: null, fin: null });
     if (!mesSelecionado) return;
     let off = false;
-    const anterior = new Date(`${mesSelecionado.de}T00:00:00Z`);
-    anterior.setUTCDate(anterior.getUTCDate() - 1);
-    const final = new Date(`${mesSelecionado.ate}T00:00:00Z`);
-    final.setUTCDate(final.getUTCDate() + 1);
-    Promise.all([consultarVidas(anterior.toISOString().slice(0, 10)), consultarVidas(final.toISOString().slice(0, 10))])
+    const { anterior, final } = datasVidasIndicadores(mesSelecionado);
+    Promise.all([consultarVidas(anterior), consultarVidas(final)])
       .then(([ant, fin]) => { if (!off) setVidasSelecionadas({ ant, fin }); })
       .catch((e: Error) => { if (!off) setErr(e.message); });
     return () => { off = true; };
   }, [mesSelecionado]);
 
-  const dAnt = useMemo(() => { if (!ap) return ""; const d = new Date(ap.de + "T12:00:00"); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10); }, [ap?.de]);
-  const dFin = useMemo(() => { if (!ap) return ""; const d = new Date(ap.ate + "T12:00:00"); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); }, [ap?.ate]);
+  const datasIndicadores = useMemo(() => ap ? datasVidasIndicadores(ap) : null, [ap]);
+  const dAnt = datasIndicadores?.anterior ?? "";
+  const dFin = datasIndicadores?.final ?? "";
   useEffect(() => {
     let off = false;
     setVidas({ ant: null, fin: null });
