@@ -8,6 +8,7 @@
 .pbu-print-page img { width: 100%; height: 100%; display: block; object-fit: contain; }
 @page uberaba-slide { size: 1920px 1080px; margin: 0; }
 @media print {
-  html:has(.pbu-print), body:has(.pbu-print), #root:has(.pbu-print) { margin: 0; padding: 0; width: 1920px; min-height: 0; }
+  html:has(.pbu-print), body:has(.pbu-print), #root:has(.pbu-print) { margin: 0; padding: 0; width: 1920px; min-height: 0; page: uberaba-slide; }
+  body:has(.pbu-print) *:not(.pbu-print):not(.pbu-print *):not(:has(.pbu-print)) { display: none !important; }
   .pbu-print { width: 1920px; margin: 0; padding: 0; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }
