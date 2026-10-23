@@ -60,7 +60,6 @@ const UberabaTimeline = () => {
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <h1 className="text-lg font-semibold text-foreground">Projeto Bensaúde|Uberaba</h1>
-          <UberabaPresentationPdfButton iconOnly />
           <Tooltip>
             <TooltipTrigger asChild>
               <Button size="icon" variant={mostrarDatas ? "default" : "outline"} aria-label={mostrarDatas ? "Ocultar datas planejadas" : "Mostrar datas planejadas"} aria-pressed={mostrarDatas} onClick={() => setMostrarDatas(!mostrarDatas)}>
@@ -71,6 +70,7 @@ const UberabaTimeline = () => {
           </Tooltip>
           {mostrarDatas && <span className="text-xs font-medium text-muted-foreground">Datas planejadas</span>}
         </div>
+        <div className="ml-auto shrink-0"><UberabaPresentationPdfButton iconOnly /></div>
       </div>
       <div className="shrink-0 overflow-x-auto rounded-lg border border-border bg-card px-8 py-4">
         <div className="relative min-w-[840px] md:min-w-0">
