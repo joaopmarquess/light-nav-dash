@@ -282,14 +282,14 @@ export default function CarteiraTrialMov() {
         <Button variant="outline" onClick={limpar} disabled={loading}><X className="h-4 w-4 mr-1" />Limpar</Button>
         {ap && janelaMeses && !loading && !mensalLoading && totais && <div className="flex min-w-0 basis-full justify-center sm:basis-72 sm:flex-1" role="group" aria-label="Período dos indicadores">
           <div className="grid w-fit max-w-full grid-cols-[auto_2rem_minmax(0,1fr)_2rem] items-center gap-0">
-          <Button variant="ghost" className={`h-10 rounded-none border-b-2 px-3 text-sm shadow-none transition-colors hover:bg-transparent hover:text-primary ${!mesSelecionado ? "border-primary font-semibold text-primary" : "border-transparent text-muted-foreground"}`} aria-pressed={!mesSelecionado} onClick={() => selecionarMes(null)}>Período completo</Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-muted-foreground" aria-label="Meses anteriores" title="Meses anteriores" disabled={!janelaMeses.anteriores} onClick={() => setPaginaMeses(janelaMeses.pagina + 1)}><ChevronLeft className="h-5 w-5" /></Button>
+          <Button variant="ghost" className={`h-10 rounded-none border-b-2 px-3 text-lg shadow-none transition-colors hover:bg-transparent hover:text-primary ${!mesSelecionado ? "border-primary font-semibold text-primary" : "border-transparent text-muted-foreground"}`} aria-pressed={!mesSelecionado} onClick={() => selecionarMes(null)}>Período completo</Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-muted-foreground" aria-label="Meses anteriores" title="Meses anteriores" disabled={!janelaMeses.anteriores} onClick={() => setPaginaMeses(janelaMeses.pagina + 1)}><ChevronLeft className="h-6 w-6" /></Button>
           <div className="flex min-w-0 flex-wrap items-center justify-center gap-0">
-          {janelaMeses.meses.map(mes => <Button key={mes.de} variant="ghost" className={`h-10 w-20 shrink-0 rounded-none border-b-2 px-1 text-sm shadow-none transition-colors hover:bg-transparent hover:text-primary ${mesSelecionado?.de === mes.de ? "border-primary font-semibold text-primary" : "border-transparent text-muted-foreground"}`} aria-pressed={mesSelecionado?.de === mes.de} title={`${fmtD(mes.de)} a ${fmtD(mes.ate)}`} onClick={() => selecionarMes(mes)}>
+          {janelaMeses.meses.map(mes => <Button key={mes.de} variant="ghost" className={`h-10 w-24 shrink-0 rounded-none border-b-2 px-1 text-lg shadow-none transition-colors hover:bg-transparent hover:text-primary ${mesSelecionado?.de === mes.de ? "border-primary font-semibold text-primary" : "border-transparent text-muted-foreground"}`} aria-pressed={mesSelecionado?.de === mes.de} title={`${fmtD(mes.de)} a ${fmtD(mes.ate)}`} onClick={() => selecionarMes(mes)}>
             {new Intl.DateTimeFormat("pt-BR", { month: "short", year: "2-digit", timeZone: "UTC" }).format(new Date(`${mes.de}T00:00:00Z`))}
           </Button>)}
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-muted-foreground" aria-label="Meses posteriores" title="Meses posteriores" disabled={!janelaMeses.posteriores} onClick={() => setPaginaMeses(janelaMeses.pagina - 1)}><ChevronRight className="h-5 w-5" /></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-muted-foreground" aria-label="Meses posteriores" title="Meses posteriores" disabled={!janelaMeses.posteriores} onClick={() => setPaginaMeses(janelaMeses.pagina - 1)}><ChevronRight className="h-6 w-6" /></Button>
           </div>
         </div>}
       </div>
