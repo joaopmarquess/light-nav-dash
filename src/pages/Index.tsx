@@ -661,8 +661,11 @@ const Index = () => {
           ) : active === "Carteira (Trial) · Consulta" ? (
             <CarteiraTrial />
           ) : active === "Laboratory" ? (
-            <section className="flex h-full items-center justify-center rounded-lg border border-border bg-card text-sm text-muted-foreground">
-              Selecione uma opção no menu do Laboratory.
+            <section className="rounded-lg border border-border bg-card p-8 shadow-sm" aria-labelledby="lab-home-title">
+              <h2 id="lab-home-title" className="flex items-center gap-3 text-2xl font-semibold text-foreground"><FlaskConical className="h-6 w-6 text-primary" />Laboratory</h2>
+              <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
+                O Laboratory é a área experimental do AXIS, uma incubadora de projetos. Aqui ficam protótipos, simulações, estudos e novas análises que ainda estão sendo testados e amadurecidos. Os dados e as telas podem mudar, e alguns resultados são preliminares. Quando um projeto se prova útil e confiável, ele sai do Laboratory e passa a fazer parte do AXIS.
+              </p>
             </section>
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
