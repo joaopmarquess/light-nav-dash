@@ -1,6 +1,12 @@
 export type PeriodoMovimentacao = { de: string; ate: string };
 export type TotaisMovimentacao = { e: number; s: number; r: number; tp: number; tm: number };
 export type VidasMensais = { mes: string; data: string; vidas: number };
+export type FluxoMensal = { mes: string; vendas: number; saidas: number; crescimento: number };
+
+export function fluxoMensalMovimentacao(mes: string, row: Record<string, unknown>): FluxoMensal {
+  const total = somarTotaisMovimentacao([row]);
+  return { mes, vendas: total.e, saidas: Math.abs(total.s), crescimento: total.e - total.s + total.r + total.tp - total.tm };
+}
 
 export const escalaVidasMensais = {
   dominio: [50000, 80000] as [number, number],

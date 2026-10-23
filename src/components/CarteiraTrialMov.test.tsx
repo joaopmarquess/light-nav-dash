@@ -57,9 +57,11 @@ describe("consultas da Movimentação sob demanda", () => {
     await waitFor(() => expect(api.rpc).toHaveBeenCalledWith("carteira_trial_kpis", { p_data: "2026-09-30", p_q: null, p_empresa: null, p_cidade: null }));
     expect(api.rpc).toHaveBeenCalledWith("carteira_trial_kpis", { p_data: "2026-10-24", p_q: null, p_empresa: null, p_cidade: null });
   });
-  it("busca vidas em 31/10 em vez de usar o saldo de crescimento ou a data do card Final", async () => {
+  it("reutiliza os totais mensais no gráfico sem consultar vidas adicionais nem detalhes", async () => {
     render(<CarteiraTrialMov />); aplicar();
-    await waitFor(() => expect(api.rpc).toHaveBeenCalledWith("carteira_trial_kpis", { p_data: "2026-10-31", p_q: null, p_empresa: null, p_cidade: null }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Abrir depuração" })).toBeEnabled());
+    expect(api.rpc.mock.calls.filter(([name]) => name === "carteira_trial_kpis")).toHaveLength(2);
+    expect(api.rpc.mock.calls.filter(([name]) => name === "carteira_movimentacao_totais")).toHaveLength(1);
     expect(api.pages).not.toHaveBeenCalled();
   });
 });

@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { mesesMovimentacao, somarTotaisMovimentacao, fechamentosMensaisMovimentacao, escalaVidasMensais } from "./movimentacaoCarga";
+import { mesesMovimentacao, somarTotaisMovimentacao, fechamentosMensaisMovimentacao, escalaVidasMensais, fluxoMensalMovimentacao } from "./movimentacaoCarga";
 import { resumoMovimentacao } from "./movimentacaoResumo";
 
 describe("carga de totais da Movimentação", () => {
+  it("combina vendas e saídas absolutas com crescimento segundo a regra dos cards", () => {
+    expect(fluxoMensalMovimentacao("2026-09", { vendas: 11771, cancelamentos: 8049, reativacoes: 1179, entradas_transferencia: 2043, saidas_transferencia: 2019 })).toEqual({ mes: "2026-09", vendas: 11771, saidas: 8049, crescimento: 4925 });
+    expect(fluxoMensalMovimentacao("2026-10", { vendas: 10, cancelamentos: 30 })).toEqual({ mes: "2026-10", vendas: 10, saidas: 30, crescimento: -20 });
+  });
   it("fixa a escala de vidas entre 50.000 e 80.000 com intervalos de 2.000", () => {
     expect(escalaVidasMensais.dominio).toEqual([50000, 80000]);
     expect(escalaVidasMensais.marcas).toEqual([50000, 52000, 54000, 56000, 58000, 60000, 62000, 64000, 66000, 68000, 70000, 72000, 74000, 76000, 78000, 80000]);
