@@ -14,12 +14,14 @@ SECURITY INVOKER
 SET search_path = public
 AS $function$
   WITH meses AS (
-    SELECT DISTINCT nr_ano * 12 + nr_mes - 1 AS indice
+    -- Competência válida: soma de vl_desp_consulta + vl_desp_urgencia + vl_desp_outros > 0.
+    SELECT nr_ano * 12 + nr_mes - 1 AS indice
     FROM public.view_eard_mensal
     WHERE nr_ano BETWEEN 1 AND 9998
       AND nr_mes BETWEEN 1 AND 12
-      AND coalesce(vl_desp_consulta, 0) + coalesce(vl_desp_urgencia, 0)
-        + coalesce(vl_desp_outros, 0) <> 0
+    GROUP BY nr_ano, nr_mes
+    HAVING sum(coalesce(vl_desp_consulta, 0) + coalesce(vl_desp_urgencia, 0)
+             + coalesce(vl_desp_outros, 0)) > 0
   ), base AS (
     SELECT max(indice) AS ultimo FROM meses
   ), blocos AS (
