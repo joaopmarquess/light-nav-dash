@@ -50,7 +50,7 @@ export default function SinistralidadePeriodosMV() {
 
   useEffect(() => { void carregar(); return () => ctrl.current?.abort(); }, [carregar]);
 
-  const alternar = (ano: number) => { setAnoSel(ano); setAbertos(s => { const n = new Set(s); n.has(ano) ? n.delete(ano) : n.add(ano); return n; }); };
+  const alternar = (ano: number) => { setAbertos(s => { const n = new Set(s); n.has(ano) ? n.delete(ano) : n.add(ano); return n; }); };
   const sel = anos.find(a => a.ano === anoSel) ?? anos[anos.length - 1];
   const serie = (sel?.meses ?? []).map(m => ({ mes: String(m.mes).padStart(2, "0"), saldo: saldoCompetencia(m.soma), limite: saldoLimiteSin(m.soma, 0.9) }));
   const curto = (v: number) => `${(v / 1e6).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} mi`;
@@ -80,9 +80,9 @@ export default function SinistralidadePeriodosMV() {
                 const aberto = abertos.has(a.ano);
                 return (
                   <Fragment key={a.ano}>
-                    <TableRow className="cursor-pointer bg-muted/40 font-semibold" onClick={() => alternar(a.ano)} aria-expanded={aberto}>
+                    <TableRow className={`cursor-pointer font-semibold ${sel?.ano === a.ano ? "bg-primary/10" : "bg-muted/40"}`} onClick={() => setAnoSel(a.ano)} aria-selected={sel?.ano === a.ano}>
                       <TableCell className="whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1">{aberto ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}{a.ano}<span className="ml-2 text-xs font-normal text-muted-foreground">{a.meses.length} meses</span></span>
+                        <span className="inline-flex items-center gap-1"><button type="button" aria-expanded={aberto} aria-label={aberto ? `Recolher meses de ${a.ano}` : `Expandir meses de ${a.ano}`} onClick={e => { e.stopPropagation(); alternar(a.ano); }} className="rounded p-0.5 hover:bg-muted">{aberto ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}</button>{a.ano}<span className="ml-2 text-xs font-normal text-muted-foreground">{a.meses.length} meses</span></span>
                       </TableCell>
                       {cols.map(([lb, k]) => <TableCell key={lb} className="whitespace-nowrap text-right tabular-nums">{valor(a.soma, k)}</TableCell>)}
                     </TableRow>
