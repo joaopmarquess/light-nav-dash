@@ -3,7 +3,7 @@ import { hostinger } from "@/lib/hostingerClient";
 import { type BlocoMes, type TransfPar, type TipoReentrada } from "@/lib/transferencias";
 import { podeCalcularMovimentacao, resumoMovimentacao } from "@/lib/movimentacaoResumo";
 import { normalizarVendedor } from "@/lib/vendedorTransferencia";
-import { mesesMovimentacao, somarTotaisMovimentacao, fluxoMensalMovimentacao, type FluxoMensal, type TotaisMovimentacao } from "@/lib/movimentacaoCarga";
+import { mesesMovimentacao, somarTotaisMovimentacao, fluxoMensalMovimentacao, fechamentosMensaisMovimentacao, combinarFluxosEVidas, type VidasMensais, type FluxoMensal, type TotaisMovimentacao } from "@/lib/movimentacaoCarga";
 import MovimentacaoCrescimentoMensal from "@/components/MovimentacaoCrescimentoMensal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -52,6 +52,10 @@ export default function CarteiraTrialMov() {
   const [depuracaoAberta, setDepuracaoAberta] = useState(false);
   const [totais, setTotais] = useState<TotaisMovimentacao | null>(null);
   const [mensal, setMensal] = useState<FluxoMensal[]>([]);
+  const [vidasMensais, setVidasMensais] = useState<VidasMensais[]>([]);
+  const [mensalLoading, setMensalLoading] = useState(false);
+  const [mensalErro, setMensalErro] = useState<string | null>(null);
+  const dadosGrafico = useMemo(() => combinarFluxosEVidas(mensal, vidasMensais), [mensal, vidasMensais]);
   const [detalhesLoading, setDetalhesLoading] = useState(false);
   const [detalhesErro, setDetalhesErro] = useState<string | null>(null);
   const [detalhesProntos, setDetalhesProntos] = useState(false);
@@ -137,6 +141,7 @@ export default function CarteiraTrialMov() {
   useEffect(() => {
     let off = false;
     setVidas({ ant: null, fin: null });
+    setVidasMensais([]); setMensalLoading(false); setMensalErro(null);
     if (!podeCalcularMovimentacao(ap)) return;
     const cache = new Map<string, Promise<number>>();
     const at = (d: string): Promise<number> => {
@@ -154,8 +159,21 @@ export default function CarteiraTrialMov() {
     };
     Promise.all([at(dAnt), at(dFin)]).then(([ant, fin]) => { if (!off) setVidas({ ant, fin }); })
       .catch((e: Error) => { if (!off) setErr(e.message); });
+    setMensalLoading(true);
+    (async () => {
+      try {
+        const datas = fechamentosMensaisMovimentacao(ap);
+        const pontos: VidasMensais[] = [];
+        for (let i = 0; i < datas.length; i += 2) {
+          if (off) return;
+          pontos.push(...await Promise.all(datas.slice(i, i + 2).map(async data => ({ mes: data.slice(0, 7), data, vidas: await at(data) }))));
+        }
+        if (!off) setVidasMensais(pontos);
+      } catch (e: any) { if (!off) setMensalErro(e.message); }
+      finally { if (!off) setMensalLoading(false); }
+    })();
     return () => { off = true; };
-  }, [dAnt, dFin]);
+  }, [ap, dAnt, dFin]);
 
   const kpi = totais ?? { e: 0, r: 0, s: 0, tp: 0, tm: 0 };
   const resumo = resumoMovimentacao(kpi.e, kpi.s, kpi.r, kpi.tp, kpi.tm);
@@ -249,7 +267,9 @@ export default function CarteiraTrialMov() {
         {card("Crescimento", resumo.crescimento, Scale, resumo.crescimento < 0)}
       </div>
       {err && <div className="p-4 text-center text-destructive">Erro: {err}</div>}
-      {!loading && totais && mensal.length > 0 && <MovimentacaoCrescimentoMensal dados={mensal} />}
+      {mensalLoading && <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-5 w-5 motion-safe:animate-spin" />Consultando vidas no fechamento de cada mês…</div>}
+      {mensalErro && <div role="alert" className="text-destructive">Erro no gráfico: {mensalErro}</div>}
+      {!loading && !mensalLoading && totais && dadosGrafico.length > 0 && <MovimentacaoCrescimentoMensal dados={dadosGrafico} />}
       {cortado && <div className="text-xs text-muted-foreground">Limite de busca atingido, reduza o período.</div>}
       {depuracaoAberta && <section id="depuracao-transferencias" className="space-y-5 border-t pt-5">
         <h2 className="text-lg font-semibold">Saldo das Transferências: <span className="tabular-nums">{num(resumo.transferenciasLiquidas)}</span></h2>

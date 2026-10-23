@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { mesesMovimentacao, somarTotaisMovimentacao, fechamentosMensaisMovimentacao, escalaVidasMensais, fluxoMensalMovimentacao } from "./movimentacaoCarga";
+import { mesesMovimentacao, somarTotaisMovimentacao, fechamentosMensaisMovimentacao, escalaVidasMensais, fluxoMensalMovimentacao, combinarFluxosEVidas } from "./movimentacaoCarga";
 import { resumoMovimentacao } from "./movimentacaoResumo";
 
 describe("carga de totais da Movimentação", () => {
+  it("usa vidas consultadas no fechamento para a linha, sem substituir pelo crescimento líquido", () => {
+    expect(combinarFluxosEVidas([{ mes: "2026-09", vendas: 1200, saidas: 1000, crescimento: 300 }], [{ mes: "2026-09", data: "2026-09-30", vidas: 71337 }])).toEqual([{ mes: "2026-09", vendas: 1200, saidas: 1000, crescimento: 300, data: "2026-09-30", vidas: 71337 }]);
+  });
   it("combina vendas e saídas absolutas com crescimento segundo a regra dos cards", () => {
     expect(fluxoMensalMovimentacao("2026-09", { vendas: 11771, cancelamentos: 8049, reativacoes: 1179, entradas_transferencia: 2043, saidas_transferencia: 2019 })).toEqual({ mes: "2026-09", vendas: 11771, saidas: 8049, crescimento: 4925 });
     expect(fluxoMensalMovimentacao("2026-10", { vendas: 10, cancelamentos: 30 })).toEqual({ mes: "2026-10", vendas: 10, saidas: 30, crescimento: -20 });

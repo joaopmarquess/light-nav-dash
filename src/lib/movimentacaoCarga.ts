@@ -2,6 +2,14 @@ export type PeriodoMovimentacao = { de: string; ate: string };
 export type TotaisMovimentacao = { e: number; s: number; r: number; tp: number; tm: number };
 export type VidasMensais = { mes: string; data: string; vidas: number };
 export type FluxoMensal = { mes: string; vendas: number; saidas: number; crescimento: number };
+export type MovimentoMensalComVidas = FluxoMensal & { vidas: number; data: string };
+
+export function combinarFluxosEVidas(fluxos: FluxoMensal[], vidas: VidasMensais[]): MovimentoMensalComVidas[] {
+  return fluxos.flatMap(fluxo => {
+    const fechamento = vidas.find(ponto => ponto.mes === fluxo.mes);
+    return fechamento ? [{ ...fluxo, vidas: fechamento.vidas, data: fechamento.data }] : [];
+  });
+}
 
 export function fluxoMensalMovimentacao(mes: string, row: Record<string, unknown>): FluxoMensal {
   const total = somarTotaisMovimentacao([row]);
