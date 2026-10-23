@@ -59,6 +59,7 @@ export default function SinistralidadePeriodosMV() {
   const topo = Math.max(limiteAno, ...serie.map(x => x.saldo));
   const fundo = Math.min(limiteAno, ...serie.map(x => x.saldo));
   const corte = topo > fundo ? (topo - limiteAno) / (topo - fundo) : 0.5;
+  const corteZero = topo > fundo ? Math.min(1, Math.max(corte, topo / (topo - fundo))) : 1;
   const gradId = `sin-barriga-${useId().replace(/:/g, "")}`;
   const curto = (v: number) => `${(v / 1e6).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} mi`;
   const total = somarTotais(anos.map(a => a.soma));
@@ -119,6 +120,8 @@ export default function SinistralidadePeriodosMV() {
                     <defs><linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
                       <stop offset={corte} stopColor="hsl(var(--chart-sin-ok))" stopOpacity={0.3} />
                       <stop offset={corte} stopColor="hsl(var(--chart-sin-alerta))" stopOpacity={0.3} />
+                      <stop offset={corteZero} stopColor="hsl(var(--chart-sin-alerta))" stopOpacity={0.3} />
+                      <stop offset={corteZero} stopColor="hsl(var(--destructive))" stopOpacity={0.75} />
                     </linearGradient></defs>
                     <Area type="monotone" dataKey="saldo" baseValue={limiteAno} stroke="none" fill={`url(#${gradId})`} isAnimationActive={false} tooltipType="none" />
                     <Line type="linear" dataKey="limite" stroke="hsl(var(--destructive))" strokeWidth={2} strokeDasharray="6 4" dot={false} />
