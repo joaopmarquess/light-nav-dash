@@ -1,3 +1,4 @@
+- [ ] Incluir ícone discreto de PDF no topo do projeto e validar a exportação dos 31 slides em 16:9, sem cortes nem páginas extras.
 - [x] Incluir Dados em Estudo com Mercado, Preços, Oportunidades e Premissas dos dois HTMLs Lancers; tabelas completas disponíveis, dez testes aprovados e navegação com acesso autorizado conferida, mantendo Home padrão e sem sobreposição.
 - [x] Aplicar a imagem SVG transparente somente no Home de Estudo; transparência real conferida (alpha 0), fundo laranja removido, cinco parágrafos e popup anterior preservados.
 - [x] Substituir a imagem do Home de Estudo e do popup do Plano de Marketing pelo novo arquivo enviado; imagem carregada e cinco parágrafos preservados nos testes de navegação.
