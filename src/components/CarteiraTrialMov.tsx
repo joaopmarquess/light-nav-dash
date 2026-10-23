@@ -280,7 +280,7 @@ export default function CarteiraTrialMov() {
         <label className="text-xs text-muted-foreground">Até<Input type="date" value={f.ate} onChange={(e) => setF({ ...f, ate: e.target.value })} className="w-40" /></label>
         <Button onClick={buscar} disabled={loading || !podeCalcularMovimentacao(f)}><Search className="h-4 w-4 mr-1" />Calcular</Button>
         <Button variant="outline" onClick={limpar} disabled={loading}><X className="h-4 w-4 mr-1" />Limpar</Button>
-        {ap && janelaMeses && !loading && !mensalLoading && totais && <div className="flex min-w-0 basis-full items-center justify-center gap-1 sm:basis-72 sm:flex-1" role="group" aria-label="Período dos indicadores">
+        {ap && janelaMeses && !loading && !mensalLoading && totais && <div className="grid min-w-0 basis-full grid-cols-[2rem_minmax(0,1fr)_2rem] items-center gap-1 sm:basis-72 sm:flex-1" role="group" aria-label="Período dos indicadores">
           <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-muted-foreground" aria-label="Meses anteriores" title="Meses anteriores" disabled={!janelaMeses.anteriores} onClick={() => setPaginaMeses(janelaMeses.pagina + 1)}><ChevronLeft className="h-4 w-4" /></Button>
           <div className="flex min-w-0 flex-wrap items-center justify-center gap-1">
           <Button variant="ghost" className={`h-10 rounded-none border-b-2 px-3 text-xs shadow-none transition-colors hover:bg-transparent hover:text-primary ${!mesSelecionado ? "border-primary font-semibold text-primary" : "border-transparent text-muted-foreground"}`} aria-pressed={!mesSelecionado} onClick={() => selecionarMes(null)}>Período completo</Button>
