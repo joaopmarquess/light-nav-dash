@@ -47,3 +47,12 @@ export function transfEntradas(entradas: TransfMat[], cand: TransfMat[], motT: S
   }
   return out;
 }
+
+export type BlocoMes = "anterior" | "mesmo" | "proximo";
+/** Bloco do par: T+ com saída no mês anterior, mesmo mês, ou T− com entrada no mês seguinte. */
+export const blocoMes = (lado: "T+" | "T-", p: { saida: string; entrada: string }): BlocoMes | null => {
+  const d = mesIdx(p.entrada) - mesIdx(p.saida);
+  if (d === 0) return lado === "T+" ? "mesmo" : null;
+  if (d === 1) return lado === "T+" ? "anterior" : "proximo";
+  return null;
+};

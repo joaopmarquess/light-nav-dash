@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
-import { transfEntradas, transfSaidas, type TransfMat, type TransfPar, type TipoReentrada } from "@/lib/transferencias";
+import { blocoMes, transfEntradas, transfSaidas, type BlocoMes, type TransfMat, type TransfPar, type TipoReentrada } from "@/lib/transferencias";
 import { normalizarVendedor } from "@/lib/vendedorTransferencia";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,7 @@ const toMat = (r: Row): TransfMat => ({ cpf: String(r.nr_cpf ?? ""), mat: String
 
 type F = { de: string; ate: string };
 const EMPTY = (): F => ({ de: inicioMes(), ate: hojeISO() });
-type Sel = { tipo: Tipo; sub?: TipoReentrada } | null;
+type Sel = { tipo: Tipo; sub?: TipoReentrada; bloco?: BlocoMes } | null;
 
 export default function CarteiraTrialMov() {
   const [f, setF] = useState<F>(EMPTY());
@@ -131,13 +131,20 @@ export default function CarteiraTrialMov() {
   }, [evs]);
   const saldo = kpi.e + kpi.r + kpi.tp - kpi.s - kpi.tm;
 
+  const bl = (x: Ev) => (x.par && (x.tipo === "T+" || x.tipo === "T-") ? blocoMes(x.tipo, x.par) : null);
   const lista = useMemo(
-    () => (sel ? evs.filter((x) => x.tipo === sel.tipo && (!sel.sub || x.par?.tipo === sel.sub)).sort((a, b) => b.data.localeCompare(a.data)) : []),
+    () => (sel ? evs.filter((x) => x.tipo === sel.tipo && (!sel.sub || x.par?.tipo === sel.sub) && (!sel.bloco || bl(x) === sel.bloco)).sort((a, b) => b.data.localeCompare(a.data)) : []),
     [evs, sel],
   );
   const isT = sel?.tipo === "T+" || sel?.tipo === "T-";
-  const same = (t: Tipo, sub?: TipoReentrada) => sel?.tipo === t && sel?.sub === sub;
-  const toggle = (t: Tipo, sub?: TipoReentrada) => setSel(same(t, sub) ? null : { tipo: t, sub });
+  const same = (t: Tipo, sub?: TipoReentrada, bloco?: BlocoMes) => sel?.tipo === t && sel?.sub === sub && sel?.bloco === bloco;
+  const toggle = (t: Tipo, sub?: TipoReentrada, bloco?: BlocoMes) => setSel(same(t, sub, bloco) ? null : { tipo: t, sub, bloco });
+  const nB = (t: Tipo, b: BlocoMes, sub?: TipoReentrada) => evs.filter((x) => x.tipo === t && bl(x) === b && (!sub || x.par?.tipo === sub)).length;
+  const BLOCOS: { b: BlocoMes; t: Tipo; titulo: string; dica: string }[] = [
+    { b: "anterior", t: "T+", titulo: "Entrou vindo do mês anterior", dica: "Saída por transferência no mês anterior e entrada no período" },
+    { b: "mesmo", t: "T+", titulo: "Entrou no mesmo mês", dica: "Saída e entrada no mesmo mês" },
+    { b: "proximo", t: "T-", titulo: "Vai entrar no próximo mês", dica: "Saída no período e entrada no mês seguinte" },
+  ];
 
   const buscar = () => setAp({ ...f });
   const limpar = () => { const e = EMPTY(); setF(e); setAp(e); };
@@ -186,6 +193,23 @@ export default function CarteiraTrialMov() {
 
       {err && <div className="p-4 text-center text-destructive">Erro: {err}</div>}
       {cortado && <div className="text-xs text-muted-foreground">Limite de busca atingido, reduza o período.</div>}
+
+      <div className="grid gap-3 md:grid-cols-3">
+        {BLOCOS.map(({ b, t, titulo, dica }) => (
+          <section key={b} title={dica} className={`rounded-xl border bg-card p-3 ${same(t, undefined, b) ? "ring-2 ring-primary" : ""}`}>
+            <button type="button" onClick={() => toggle(t, undefined, b)} className="mb-1 flex w-full items-center justify-between rounded-md px-3 py-1 hover:bg-muted/50">
+              <h3 className={`text-sm font-semibold ${t === "T+" ? "text-primary" : "text-destructive"}`}>{titulo}</h3>
+              <span className={`text-xl font-bold tabular-nums ${t === "T+" ? "text-primary" : "text-destructive"}`}>{v(nB(t, b))}</span>
+            </button>
+            {(["Pura", "Revenda"] as TipoReentrada[]).map((s) => (
+              <button key={s} type="button" onClick={() => toggle(t, s, b)}
+                className={`flex w-full items-center justify-between rounded-md px-3 py-1.5 text-sm hover:bg-muted/50 ${same(t, s, b) ? "ring-2 ring-primary" : ""}`}>
+                <span>Transferência {s}</span><span className="font-semibold tabular-nums">{v(nB(t, b, s))}</span>
+              </button>
+            ))}
+          </section>
+        ))}
+      </div>
 
       <div className="grid gap-3 lg:grid-cols-[1fr_auto_1fr]">
         <section className="rounded-xl border bg-card p-3">
