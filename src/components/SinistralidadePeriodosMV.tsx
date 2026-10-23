@@ -118,11 +118,11 @@ export default function SinistralidadePeriodosMV() {
                     <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" />
                     <Tooltip formatter={(v: number, n: string) => [fmt(v), n === "limite" ? "Limite Sin 90%" : "Saldo"]} labelFormatter={l => `${l}/${sel.ano}`} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
                     <defs><linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset={0} stopColor="hsl(var(--chart-sin-ok))" stopOpacity={0.85} />
-                      <stop offset={corte} stopColor="hsl(var(--chart-sin-ok))" stopOpacity={0.1} />
-                      <stop offset={corte} stopColor="hsl(var(--chart-sin-alerta))" stopOpacity={0.3} />
-                      <stop offset={corteZero} stopColor="hsl(var(--chart-sin-alerta))" stopOpacity={0.3} />
-                      <stop offset={corteZero} stopColor="hsl(var(--destructive))" stopOpacity={0.75} />
+                      <stop offset={0} stopColor="hsl(var(--chart-sin-ok))" stopOpacity={0.8} />
+                      <stop offset={corte} stopColor="hsl(var(--chart-sin-ok))" stopOpacity={0.8} />
+                      <stop offset={corte} stopColor="hsl(var(--chart-sin-ok))" stopOpacity={0.25} />
+                      <stop offset={corteZero} stopColor="hsl(var(--chart-sin-ok))" stopOpacity={0.25} />
+                      <stop offset={corteZero} stopColor="hsl(var(--destructive))" stopOpacity={0.8} />
                     </linearGradient></defs>
                     <Area type="monotone" dataKey="saldo" baseValue={limiteAno} stroke="none" fill={`url(#${gradId})`} isAnimationActive={false} tooltipType="none" />
                     <Line type="linear" dataKey="limite" stroke="hsl(var(--destructive))" strokeWidth={2} strokeDasharray="6 4" dot={false} />
