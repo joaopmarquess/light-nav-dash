@@ -61,3 +61,6 @@ export function agruparPorAno(meses: MesSoma[]): AnoAgrupado[] {
     return { ano, meses: ord, soma: somarTotais(ord.map(m => m.soma)) };
   });
 }
+
+/** Saldo equivalente a um Sin limite: receita total × (1 − limite). */
+export const saldoLimiteSin = (s: SomaCompetencia, limite: number) => s.recTotal * (1 - limite);

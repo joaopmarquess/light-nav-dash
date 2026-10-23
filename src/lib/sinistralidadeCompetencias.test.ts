@@ -39,3 +39,6 @@ describe("agrupamento por ano", () => {
     expect(r.map(a => [a.ano, a.soma.recTotal, a.meses.map(m => m.mes)])).toEqual([[2024, 1, [1]], [2025, 8, [1, 2]]]);
   });
 });
+
+import { saldoLimiteSin } from "./sinistralidadeCompetencias";
+it("limite Sin 90% = 10% da receita total", () => expect(saldoLimiteSin({ ...somaVazia(), recTotal: 1000 }, 0.9)).toBeCloseTo(100));
