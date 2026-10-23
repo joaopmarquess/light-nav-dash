@@ -214,7 +214,7 @@ const labItems: MenuItem[] = [
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   controlItem,
-  { icon: Users, label: "Carteira", children: [{ icon: Search, label: "Consulta", id: "Carteira (Trial) · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira (Trial) · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira (Trial) · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira (Trial) · Entradas" }, { icon: TrendingUp, label: "Entradas Lancers", id: "Carteira (Trial) · Entradas Lancers" }, { icon: TrendingUp, label: "Saídas", id: "Carteira (Trial) · Saídas" }] },
+  { icon: Users, label: "Carteira", children: [{ icon: Search, label: "Consulta", id: "Carteira · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira · Entradas" }, { icon: TrendingUp, label: "Entradas Lancers", id: "Carteira · Entradas Lancers" }, { icon: TrendingUp, label: "Saídas", id: "Carteira · Saídas" }] },
 ];
 
 const LAB_IDS = new Set<string>(["Laboratory", ...labItems.flatMap((g) => g.children ? g.children.map((c) => c.id ?? c.label) : [g.label])]);
@@ -649,17 +649,17 @@ const Index = () => {
             <CarteiraMapa />
           ) : active === "Gráfico Sinistralidade" ? (
             <SinistralidadeGraficos />
-          ) : active === "Carteira (Trial) · Entradas" ? (
+          ) : active === "Carteira · Entradas" ? (
             <CarteiraTrialES key="ent" modo="entradas" />
-          ) : active === "Carteira (Trial) · Entradas Lancers" ? (
+          ) : active === "Carteira · Entradas Lancers" ? (
             <CarteiraTrialLancers />
-          ) : active === "Carteira (Trial) · Saídas" ? (
+          ) : active === "Carteira · Saídas" ? (
             <CarteiraTrialES key="sai" modo="saidas" />
-          ) : active === "Carteira (Trial) · Movimentação" ? (
+          ) : active === "Carteira · Movimentação" ? (
             <CarteiraTrialMov />
-          ) : active === "Carteira (Trial) · Área Geográfica" ? (
+          ) : active === "Carteira · Área Geográfica" ? (
             <CarteiraTrialGeo />
-          ) : active === "Carteira (Trial) · Consulta" ? (
+          ) : active === "Carteira · Consulta" ? (
             <CarteiraTrial />
           ) : active === "Laboratory" ? (
             labMenuAberto ? null : <section className="rounded-lg border border-border bg-card p-8 shadow-sm" aria-labelledby="lab-home-title">
