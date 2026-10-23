@@ -269,7 +269,6 @@ export default function CarteiraTrialMov() {
       {err && <div className="p-4 text-center text-destructive">Erro: {err}</div>}
       {mensalLoading && <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-5 w-5 motion-safe:animate-spin" />Consultando vidas no fechamento de cada mês…</div>}
       {mensalErro && <div role="alert" className="text-destructive">Erro no gráfico: {mensalErro}</div>}
-      {!loading && !mensalLoading && totais && dadosGrafico.length > 0 && <MovimentacaoCrescimentoMensal dados={dadosGrafico} />}
       {cortado && <div className="text-xs text-muted-foreground">Limite de busca atingido, reduza o período.</div>}
       {depuracaoAberta && <section id="depuracao-transferencias" className="space-y-5 border-t pt-5">
         <h2 className="text-lg font-semibold">Saldo das Transferências: <span className="tabular-nums">{num(resumo.transferenciasLiquidas)}</span></h2>
@@ -277,6 +276,9 @@ export default function CarteiraTrialMov() {
         {detalhesErro && <div role="alert" className="text-destructive">Erro: {detalhesErro}</div>}
         <div className="grid gap-8 xl:grid-cols-2">{quadro("T+")}{quadro("T-")}</div>
       </section>}
+       {!loading && !mensalLoading && totais && dadosGrafico.length > 0 && <div className={depuracaoAberta ? "mx-auto w-full min-w-0 lg:w-4/5" : "w-full min-w-0"}>
+         <MovimentacaoCrescimentoMensal dados={dadosGrafico} />
+       </div>}
       </>}
 
       {sel && !depuracaoAberta && detalhesLoading && <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-5 w-5 motion-safe:animate-spin" />{detalhesEtapa}</div>}
