@@ -41,78 +41,35 @@ export default function CarteiraTrialMov() {
   const [cortado, setCortado] = useState(false);
   const [vidas, setVidas] = useState<{ ant: number | null; fin: number | null }>({ ant: null, fin: null });
   const [sel, setSel] = useState<Sel>(null);
-  const [motT, setMotT] = useState<Set<number> | null>(null);
-
+  // Movimentação calculada na base pela função carteira_movimentacao (regra de transferência no servidor).
   useEffect(() => {
-    hostinger.from("motivo_cancelamento_grupo").select("cd_motivo_cancelamento,gp_motivo_cancelamento").then(({ data }) => {
-      const s = new Set((data ?? []).filter((x: any) => String(x.gp_motivo_cancelamento).trim().toLowerCase() === "transferência").map((x: any) => Number(x.cd_motivo_cancelamento)));
-      setMotT(s.size ? s : new Set(MOT_T_PADRAO));
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!motT) return;
     let off = false;
     (async () => {
-      setLoading(true); setErr(null); setEvs([]); setCortado(false); setSel(null); setEtapa("Buscando movimentações…");
-      const { de, ate } = ap;
-      const fim = `${ate}T23:59:59`;
-      const conds = [
-        `and(dt_vigencia_beneficiario.gte.${de},dt_vigencia_beneficiario.lte.${fim})`,
-        `and(dt_reativacao.gte.${de},dt_reativacao.lte.${fim})`,
-        `and(dt_desligamento.gte.${de},dt_desligamento.lte.${fim})`,
-      ];
-      const SEL = "cd_mat_alternativa,cd_vendedor,cd_motivo_cancelamento,nm_beneficiario,nr_cpf,nm_empresa_estipulante,nm_vendedor,dt_vigencia_beneficiario,dt_desligamento,dt_reativacao";
+      setLoading(true); setErr(null); setEvs([]); setCortado(false); setSel(null); setEtapa("Calculando movimentações…");
       const rows: Row[] = [];
-      for (let from = 0; from < LIMITE; from += 1000) {
-        const { data, error } = await hostinger.from("view_ecarteira").select(SEL)
-          .eq("tp_plano", "SAUDE").lte("cd_mat_alternativa", 399999999999)
-          .or(conds.join(","))
-          .order("cd_mat_alternativa").order("dt_vigencia_beneficiario").order("dt_desligamento").range(from, from + 999);
+      const pag = (from: number) => hostinger.rpc("carteira_movimentacao", { p_de: ap.de, p_ate: ap.ate })
+        .order("tipo").order("data").order("mat").range(from, from + 999);
+      for (let from = 0; from < LIMITE; from += 4000) {
+        const res = await Promise.all([0, 1, 2, 3].map((i) => pag(from + i * 1000)));
         if (off) return;
-        if (error) { setErr(error.message); setLoading(false); return; }
-        rows.push(...(data ?? []).map(normalizarVendedor));
-        if ((data ?? []).length < 1000) break;
-        if (from + 1000 >= LIMITE) setCortado(true);
+        const e = res.find((r) => r.error);
+        if (e?.error) { setErr(e.error.message); setLoading(false); return; }
+        for (const r of res) rows.push(...((r.data as Row[]) ?? []));
+        if (res.some((r) => ((r.data as Row[]) ?? []).length < 1000)) break;
+        if (from + 4000 >= LIMITE) setCortado(true);
       }
-      const inR = (d: string) => d && d >= de && d <= ate;
-      const entradas: Row[] = [], saidas: Row[] = [], reat: Row[] = [];
-      const seen = new Set<string>();
-      const uniq = (t: string, d: string, r: Row) => { const k = `${t}|${r.cd_mat_alternativa}|${d}`; if (seen.has(k)) return false; seen.add(k); return true; };
-      for (const r of rows) {
-        const v = dia(r.dt_vigencia_beneficiario), c = dia(r.dt_desligamento), a = dia(r.dt_reativacao);
-        if (inR(v) && uniq("E", v, r)) entradas.push(r);
-        if (inR(a) && uniq("R", a, r)) reat.push(r);
-        if (inR(c) && uniq("S", c, r)) saidas.push(r);
-      }
-
-      // Candidatos por CPF: entradas e saídas com motivo de transferência
-      setEtapa("Ligando transferências por CPF…");
-      const cpfs = [...new Set([...entradas, ...saidas.filter((r) => motT.has(Number(r.cd_motivo_cancelamento)))]
-        .map((r) => String(r.nr_cpf ?? "")).filter(Boolean))];
-      const cand: TransfMat[] = [];
-      const lotes: string[][] = [];
-      for (let i = 0; i < cpfs.length; i += 80) lotes.push(cpfs.slice(i, i + 80));
-      const ini = addMes(de, -1), lim = `${addMes(ate, 2)}`;
-      for (let i = 0; i < lotes.length; i += 6) {
-        const res = await Promise.all(lotes.slice(i, i + 6).map((l) => hostinger.from("view_ecarteira").select(SEL)
-          .eq("tp_plano", "SAUDE").in("nr_cpf", l)
-          .or(`and(dt_vigencia_beneficiario.gte.${ini},dt_vigencia_beneficiario.lt.${lim}),and(dt_desligamento.gte.${ini},dt_desligamento.lt.${lim})`)
-          .limit(5000)));
-        if (off) return;
-        for (const { data } of res) for (const r of data ?? []) cand.push(toMat(normalizarVendedor(r)));
-      }
-      const tMais = transfEntradas(entradas.map(toMat), cand, motT);
-      const tMenos = transfSaidas(saidas.map(toMat), cand, motT);
-
-      const out: Ev[] = [];
-      for (const r of entradas) { const v = dia(r.dt_vigencia_beneficiario); const p = tMais.get(`${r.cd_mat_alternativa}|${v}`); out.push({ tipo: p ? "T+" : "Entrada", data: v, r, par: p }); }
-      for (const r of reat) out.push({ tipo: "Reativação", data: dia(r.dt_reativacao), r });
-      for (const r of saidas) { const c = dia(r.dt_desligamento); const p = tMenos.get(`${r.cd_mat_alternativa}|${c}`); out.push({ tipo: p ? "T-" : "Saída", data: c, r, par: p }); }
+      const out: Ev[] = rows.map((x) => {
+        const r = { cd_mat_alternativa: x.mat, nm_beneficiario: x.nome, nm_empresa_estipulante: x.empresa, nm_vendedor: x.nm_vendedor, cd_vendedor: x.cd_vendedor, nr_cpf: x.cpf };
+        const par: TransfPar | undefined = x.tipo === "T+" || x.tipo === "T-" ? {
+          cpf: String(x.cpf ?? ""), nome: x.nome ?? "", matAnterior: String(x.mat_anterior ?? ""), saida: dia(x.saida), motivo: x.motivo,
+          matNova: String(x.mat_nova ?? ""), entrada: dia(x.entrada), vendedor: x.cd_vendedor_novo, nmVendedor: x.nm_vendedor_novo, tipo: x.tipo_reentrada as TipoReentrada,
+        } : undefined;
+        return { tipo: x.tipo as Tipo, data: dia(x.data), r, par };
+      });
       if (!off) { setEvs(out); setLoading(false); }
     })();
     return () => { off = true; };
-  }, [ap, motT]);
+  }, [ap]);
 
   const dAnt = useMemo(() => { const d = new Date(ap.de + "T12:00:00"); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10); }, [ap.de]);
   const dFin = useMemo(() => { const d = new Date(ap.ate + "T12:00:00"); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); }, [ap.ate]);
