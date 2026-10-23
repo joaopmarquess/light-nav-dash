@@ -108,14 +108,14 @@ export default function CarteiraTrialMov() {
   const v = (n: number) => (loading ? "…" : num(n));
 
   const vcard = (l: string, val: number | null, d: string) => (
-    <div title={`${l} · Ativos em ${fmtD(d)}`} className="rounded-xl border bg-card px-3 py-2 flex items-center justify-center gap-2 cursor-help">
+    <div title={`${l} · Ativos em ${fmtD(d)}`} className="rounded-xl border bg-card px-3 py-6 flex items-center justify-center gap-2 cursor-help">
       <Users className="h-5 w-5 text-primary" />
       <p className="text-xl font-bold leading-none text-primary">{val == null ? "…" : num(val)}</p>
     </div>
   );
   const card = (l: string, val: number, I: any, c: string, t: Tipo | null, sinal = false) => (
     <button key={l} title={l} onClick={() => t && toggle(t)}
-      className={`rounded-xl border bg-card px-3 py-2 flex items-center justify-center gap-2 transition ${t ? "hover:bg-muted/50 cursor-pointer" : "cursor-default"} ${t && same(t) ? "ring-2 ring-primary" : ""}`}>
+      className={`rounded-xl border bg-card px-3 py-6 flex items-center justify-center gap-2 transition ${t ? "hover:bg-muted/50 cursor-pointer" : "cursor-default"} ${t && same(t) ? "ring-2 ring-primary" : ""}`}>
       <I className={`h-5 w-5 ${c}`} />
       <p className={`text-xl font-bold leading-none ${c}`}>{loading ? "…" : (sinal && val > 0 ? "+" : "") + num(val)}</p>
     </button>
