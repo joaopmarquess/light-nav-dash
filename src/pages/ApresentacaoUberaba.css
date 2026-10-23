@@ -1,0 +1,9 @@
+.pbu-deck { position: fixed; inset: 0; display: flex; flex-direction: column; background: hsl(var(--foreground)); }
+.pbu-stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.pbu-slide { max-width: 100%; max-height: 100%; aspect-ratio: 16 / 9; object-fit: contain; user-select: none; }
+.pbu-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; padding: 8px; background: hsl(var(--background)); }
+.pbu-counter { min-width: 0; font-size: 14px; color: hsl(var(--muted-foreground)); padding: 0 8px; }
+.pbu-print-page { width: 1920px; height: 1080px; break-after: page; page-break-after: always; }
+.pbu-print-page img { width: 100%; height: 100%; display: block; }
+@page { size: 1920px 1080px; margin: 0; }
+@media print { body { margin: 0; } }
