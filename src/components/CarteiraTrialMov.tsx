@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
+import { classificarTransferencias, type TransfCand, type TransfEv, type TransfGrupo, type TransfItem } from "@/lib/transferencias";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X, UserPlus, UserMinus, Scale, RotateCcw, ArrowRightLeft, LogIn, LogOut, Users } from "lucide-react";
@@ -99,36 +100,30 @@ export default function CarteiraTrialMov() {
     [evs, sel],
   );
 
-  const [novas, setNovas] = useState<{ loading: boolean; grupos: [string, number][]; sem: number } | null>(null);
+  const [transf, setTransf] = useState<{ loading: boolean; res: ReturnType<typeof classificarTransferencias> | null }>({ loading: false, res: null });
+  const [grupoSel, setGrupoSel] = useState<TransfGrupo | null>(null);
   useEffect(() => {
-    if (sel !== "T-" || loading) { setNovas(null); return; }
+    if (loading) return;
     let off = false;
-    const tm = evs.filter((x) => x.tipo === "T-");
-    setNovas({ loading: true, grupos: [], sem: 0 });
+    const ev = (t: Tipo): TransfEv[] => evs.filter((x) => x.tipo === t).map((x) => ({ cpf: String(x.r.nr_cpf ?? ""), mat: String(x.r.cd_mat_alternativa), nome: x.r.nm_beneficiario ?? "", data: x.data }));
+    const chegadas = ev("T+"), partidas = ev("T-");
+    setGrupoSel(null);
+    if (!chegadas.length && !partidas.length) { setTransf({ loading: false, res: classificarTransferencias([], [], [], ap.de, ap.ate) }); return; }
+    setTransf({ loading: true, res: null });
     (async () => {
-      const nomes = [...new Set(tm.map((x) => x.r.nr_cpf).filter(Boolean).map(String))];
-      const cand: Row[] = [];
-      for (let i = 0; i < nomes.length; i += 80) {
+      const cpfs = [...new Set([...chegadas, ...partidas].map((x) => x.cpf).filter(Boolean))];
+      const cand: TransfCand[] = [];
+      for (let i = 0; i < cpfs.length; i += 80) {
         const { data } = await hostinger.from("view_ecarteira")
-          .select("cd_mat_alternativa,nr_cpf,dt_vigencia_beneficiario")
-          .eq("tp_plano", "SAUDE").in("nr_cpf", nomes.slice(i, i + 80)).limit(5000);
+          .select("cd_mat_alternativa,nr_cpf,dt_vigencia_beneficiario,dt_desligamento")
+          .eq("tp_plano", "SAUDE").in("nr_cpf", cpfs.slice(i, i + 80)).limit(5000);
         if (off) return;
-        cand.push(...(data ?? []));
+        for (const r of data ?? []) cand.push({ cpf: String(r.nr_cpf ?? ""), mat: String(r.cd_mat_alternativa), vig: dia(r.dt_vigencia_beneficiario), desl: dia(r.dt_desligamento) });
       }
-      const chave = (r: Row) => String(r.nr_cpf ?? "").replace(/\D/g, "").replace(/^0+/, "");
-      const mapa = new Map<string, Row[]>();
-      for (const r of cand) { const k = chave(r); (mapa.get(k) ?? mapa.set(k, []).get(k)!).push(r); }
-      const cont = new Map<string, number>(); let sem = 0;
-      for (const e of tm) {
-        const outras = (mapa.get(chave(e.r)) ?? []).filter((r) => String(r.cd_mat_alternativa) !== String(e.r.cd_mat_alternativa));
-        if (!outras.length) { sem++; continue; }
-        const v = outras.map((r) => dia(r.dt_vigencia_beneficiario)).sort().pop()!;
-        cont.set(v, (cont.get(v) ?? 0) + 1);
-      }
-      if (!off) setNovas({ loading: false, grupos: [...cont].sort((a, b) => b[0].localeCompare(a[0])), sem });
+      if (!off) setTransf({ loading: false, res: classificarTransferencias(chegadas, partidas, cand, ap.de, ap.ate) });
     })();
     return () => { off = true; };
-  }, [sel, evs, loading]);
+  }, [evs, loading, ap]);
 
   const buscar = () => setAp({ ...f });
   const limpar = () => { const e = EMPTY(); setF(e); setAp(e); };
@@ -175,21 +170,7 @@ export default function CarteiraTrialMov() {
       {err && <div className="p-4 text-center text-destructive">Erro: {err}</div>}
       {cortado && <div className="text-xs text-muted-foreground">Limite de busca atingido, reduza o período.</div>}
 
-      {novas && (
-        <div className="rounded-xl border bg-card overflow-auto max-h-[40vh]">
-          <div className="px-4 py-2 text-sm font-medium border-b">T− · Vigência da nova matrícula (mesmo nome e nascimento)</div>
-          {novas.loading ? <div className="p-4 text-xs text-muted-foreground">Procurando novas matrículas…</div> : (
-            <table className="w-full text-xs">
-              <thead className="bg-muted/40 sticky top-0"><tr><th className="px-3 py-1.5 text-left">Vigência</th><th className="px-3 py-1.5 text-right">Vidas</th></tr></thead>
-              <tbody>
-                {novas.grupos.map(([d, n]) => <tr key={d} className="border-t"><td className="px-3 py-1">{fmtD(d)}</td><td className="px-3 py-1 text-right">{num(n)}</td></tr>)}
-                <tr className="border-t text-muted-foreground"><td className="px-3 py-1">Sem nova matrícula</td><td className="px-3 py-1 text-right">{num(novas.sem)}</td></tr>
-                <tr className="border-t font-semibold"><td className="px-3 py-1">Total</td><td className="px-3 py-1 text-right">{num(novas.grupos.reduce((a, [, n]) => a + n, 0) + novas.sem)}</td></tr>
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
+      <TransferenciasBlocos transf={transf} grupoSel={grupoSel} setGrupoSel={setGrupoSel} />
 
       {sel && !loading && (
         <div className="rounded-xl border bg-card overflow-auto max-h-[60vh]">
@@ -206,6 +187,79 @@ export default function CarteiraTrialMov() {
                   <td className="px-3 py-1">{e.r.nm_beneficiario}</td>
                   <td className="px-3 py-1">{e.r.nm_empresa_estipulante ?? "—"}</td>
                   <td className="px-3 py-1">{e.r.nm_vendedor ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const fmtCpf = (v: string) => { const d = v.replace(/\D/g, "").padStart(11, "0"); return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`; };
+
+const ROTULOS: Record<TransfGrupo, string> = {
+  veioAntes: "Vieram de antes",
+  dentroChegada: "Trocaram dentro do período",
+  semAnterior: "Sem saída anterior",
+  dentro: "Trocaram dentro do período",
+  depois: "Vão entrar depois",
+  semNova: "Sem nova matrícula",
+};
+
+function TransferenciasBlocos({ transf, grupoSel, setGrupoSel }: {
+  transf: { loading: boolean; res: ReturnType<typeof classificarTransferencias> | null };
+  grupoSel: TransfGrupo | null;
+  setGrupoSel: (g: TransfGrupo | null) => void;
+}) {
+  const g = transf.res?.grupos;
+  const n = (k: TransfGrupo) => (g ? num(g[k].length) : "…");
+  const linha = (k: TransfGrupo, dica: string) => (
+    <button key={k} type="button" title={dica} onClick={() => setGrupoSel(grupoSel === k ? null : k)}
+      className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-sm hover:bg-muted/50 ${grupoSel === k ? "ring-2 ring-primary" : ""}`}>
+      <span>{ROTULOS[k]}</span><span className="font-semibold tabular-nums">{n(k)}</span>
+    </button>
+  );
+  const total = (ks: TransfGrupo[]) => (g ? num(ks.reduce((a, k) => a + g[k].length, 0)) : "…");
+  const saldo = transf.res?.saldo ?? 0;
+  const itens: TransfItem[] = grupoSel && g ? g[grupoSel] : [];
+  return (
+    <div className="space-y-3">
+      <div className="grid gap-3 lg:grid-cols-[1fr_auto_1fr]">
+        <section className="rounded-xl border bg-card p-3">
+          <div className="mb-2 flex items-center justify-between px-3"><h3 className="flex items-center gap-2 text-sm font-semibold text-primary"><LogIn className="h-4 w-4" />Transferências que chegaram</h3><span className="text-xl font-bold text-primary">{total(["veioAntes", "dentroChegada", "semAnterior"])}</span></div>
+          {linha("veioAntes", "Saíram antes do início do período e entraram dentro dele")}
+          {linha("dentroChegada", "Saída e entrada dentro do período")}
+          {linha("semAnterior", "Entraram por transferência sem matrícula anterior na base")}
+        </section>
+        <section className="flex flex-col items-center justify-center rounded-xl border bg-card px-6 py-3 text-center">
+          <ArrowRightLeft className="h-5 w-5 text-muted-foreground" />
+          <span className="mt-1 text-xs text-muted-foreground">Saldo de transferências</span>
+          <span className={`text-2xl font-bold ${saldo < 0 ? "text-destructive" : "text-primary"}`}>{transf.res ? (saldo > 0 ? "+" : "") + num(saldo) : "…"}</span>
+          <span className="mt-1 max-w-[12rem] text-[11px] text-muted-foreground">Trocas dentro do período não alteram o saldo</span>
+        </section>
+        <section className="rounded-xl border bg-card p-3">
+          <div className="mb-2 flex items-center justify-between px-3"><h3 className="flex items-center gap-2 text-sm font-semibold text-destructive"><LogOut className="h-4 w-4" />Transferências que partiram</h3><span className="text-xl font-bold text-destructive">{total(["dentro", "depois", "semNova"])}</span></div>
+          {linha("dentro", "Saíram e entraram em nova matrícula dentro do período")}
+          {linha("depois", "Saíram no período e a nova matrícula começa depois dele")}
+          {linha("semNova", "Saíram sem outra matrícula com o mesmo CPF")}
+        </section>
+      </div>
+      {grupoSel && g && (
+        <div className="rounded-xl border bg-card overflow-auto max-h-[50vh]">
+          <div className="px-4 py-2 text-sm font-medium border-b">{ROTULOS[grupoSel]} · {num(itens.length)} registro(s) · ligação por CPF</div>
+          <table className="w-full text-xs">
+            <thead className="bg-muted/40 sticky top-0"><tr>{["CPF", "Beneficiário", "Matrícula anterior", "Saída", "Matrícula nova", "Entrada"].map((h) => <th key={h} className="px-3 py-1.5 text-left">{h}</th>)}</tr></thead>
+            <tbody>
+              {itens.map((i, k) => (
+                <tr key={k} className="border-t">
+                  <td className="px-3 py-1 whitespace-nowrap">{i.cpf ? fmtCpf(i.cpf) : "—"}</td>
+                  <td className="px-3 py-1">{i.nome}</td>
+                  <td className="px-3 py-1 whitespace-nowrap">{i.matAnterior ? fmtMat(i.matAnterior) : "—"}</td>
+                  <td className="px-3 py-1">{fmtD(i.saida ?? "")}</td>
+                  <td className="px-3 py-1 whitespace-nowrap">{i.matNova ? fmtMat(i.matNova) : "—"}</td>
+                  <td className="px-3 py-1">{fmtD(i.entrada ?? "")}</td>
                 </tr>
               ))}
             </tbody>
