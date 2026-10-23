@@ -1,5 +1,6 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { VidasMensais } from "@/lib/movimentacaoCarga";
+import { escalaVidasMensais } from "@/lib/movimentacaoCarga";
 
 const fmtMes = (mes: string) => new Intl.DateTimeFormat("pt-BR", { month: "short", year: "2-digit", timeZone: "UTC" }).format(new Date(`${mes}-01T00:00:00Z`));
 const fmtData = (data: string) => data.split("-").reverse().join("/");
@@ -12,7 +13,7 @@ export default function MovimentacaoCrescimentoMensal({ dados }: { dados: VidasM
         <BarChart data={dados} margin={{ top: 16, right: 16, bottom: 8, left: 8 }} accessibilityLayer>
           <CartesianGrid vertical={false} stroke="hsl(var(--border))" strokeDasharray="3 3" />
           <XAxis dataKey="mes" tickFormatter={fmtMes} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-          <YAxis tickFormatter={n => Number(n).toLocaleString("pt-BR")} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} width={65} />
+          <YAxis domain={escalaVidasMensais.dominio} ticks={escalaVidasMensais.marcas} interval={0} allowDataOverflow tickFormatter={n => Number(n).toLocaleString("pt-BR")} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} width={65} />
           <Tooltip cursor={false} content={({ active, payload }) => {
             const d = payload?.[0]?.payload as VidasMensais | undefined;
             if (!active || !d) return null;
