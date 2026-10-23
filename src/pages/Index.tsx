@@ -214,7 +214,6 @@ const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   controlItem,
   { icon: Users, label: "Carteira (Trial)", children: [{ icon: Search, label: "Consulta", id: "Carteira (Trial) · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira (Trial) · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira (Trial) · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira (Trial) · Entradas" }, { icon: TrendingUp, label: "Entradas Lancers", id: "Carteira (Trial) · Entradas Lancers" }, { icon: TrendingUp, label: "Saídas", id: "Carteira (Trial) · Saídas" }] },
-  { icon: FlaskConical, label: "Laboratory", lab: labItems },
 ];
 
 const Index = () => {
@@ -629,6 +628,27 @@ const Index = () => {
             <CarteiraTrialGeo />
           ) : active === "Carteira (Trial) · Consulta" ? (
             <CarteiraTrial />
+          ) : active === "Laboratory" ? (
+            <section className="rounded-lg border border-border bg-card p-6 shadow-sm" aria-labelledby="lab-title">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-md bg-accent text-primary"><FlaskConical className="h-6 w-6" /></div>
+                <h2 id="lab-title" className="text-xl font-semibold text-foreground">Laboratory</h2>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {labItems.map((g) => (
+                  <div key={g.label} className="rounded-md border border-border bg-background p-4">
+                    <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground"><g.icon className="h-4 w-4 text-primary" />{g.label.trim()}</h3>
+                    <div className="flex flex-col gap-1">
+                      {(g.children ?? [{ icon: g.icon, label: g.label }]).map((c) => (
+                        <button key={c.id ?? c.label} type="button" onClick={() => setActive(c.id ?? c.label)} className="flex items-center gap-2 rounded px-2 py-1.5 text-left text-sm text-foreground hover:bg-accent">
+                          <c.icon className="h-4 w-4 shrink-0 text-muted-foreground" />{c.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : active === "Assistencial" ? (
