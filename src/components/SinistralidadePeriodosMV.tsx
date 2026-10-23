@@ -4,7 +4,7 @@ import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Too
 import { hostinger } from "@/lib/hostingerClient";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { agruparPorAno, anosSinistralidade, saldoCompetencia, sinistralidade, somaVazia, somarTotais, type AnoAgrupado, type SomaCompetencia } from "@/lib/sinistralidadeCompetencias";
+import { agruparPorAno, anosSinistralidade, saldoCompetencia, saldoLimiteSin, sinistralidade, somaVazia, somarTotais, type AnoAgrupado, type SomaCompetencia } from "@/lib/sinistralidadeCompetencias";
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 type Col = "recCpp" | "recCopart" | "recTotal" | "despTotal" | "saldo" | "sin";
@@ -52,7 +52,7 @@ export default function SinistralidadePeriodosMV() {
 
   const alternar = (ano: number) => { setAnoSel(ano); setAbertos(s => { const n = new Set(s); n.has(ano) ? n.delete(ano) : n.add(ano); return n; }); };
   const sel = anos.find(a => a.ano === anoSel) ?? anos[anos.length - 1];
-  const serie = (sel?.meses ?? []).map(m => ({ mes: String(m.mes).padStart(2, "0"), saldo: saldoCompetencia(m.soma) }));
+  const serie = (sel?.meses ?? []).map(m => ({ mes: String(m.mes).padStart(2, "0"), saldo: saldoCompetencia(m.soma), limite: saldoLimiteSin(m.soma, 0.9) }));
   const curto = (v: number) => `${(v / 1e6).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} mi`;
   const total = somarTotais(anos.map(a => a.soma));
   const forte = (k: Col) => (k === "recCpp" || k === "recCopart" ? "" : "font-semibold");
@@ -100,7 +100,7 @@ export default function SinistralidadePeriodosMV() {
           </div>
           {sel && (
             <div className="w-full min-w-0 rounded-md border border-border bg-card p-4">
-              <h3 className="mb-3 text-base font-semibold text-foreground">Evolução mensal do saldo · {sel.ano}</h3>
+              <h3 className="mb-3 text-base font-semibold text-foreground">Evolução mensal do saldo · {sel.ano}<span className="ml-3 text-xs font-normal text-muted-foreground">--- Limite Sin 90%</span></h3>
               <div className="h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={serie} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
@@ -108,7 +108,8 @@ export default function SinistralidadePeriodosMV() {
                     <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                     <YAxis tickFormatter={curto} stroke="hsl(var(--muted-foreground))" fontSize={12} width={70} />
                     <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip formatter={(v: number) => [fmt(v), "Saldo"]} labelFormatter={l => `${l}/${sel.ano}`} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+                    <Tooltip formatter={(v: number, n: string) => [fmt(v), n === "limite" ? "Limite Sin 90%" : "Saldo"]} labelFormatter={l => `${l}/${sel.ano}`} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+                    <Line type="monotone" dataKey="limite" stroke="hsl(var(--destructive))" strokeWidth={2} strokeDasharray="6 4" dot={false} />
                     <Line type="monotone" dataKey="saldo" stroke="hsl(var(--chart-vidas))" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
                   </LineChart>
                 </ResponsiveContainer>
