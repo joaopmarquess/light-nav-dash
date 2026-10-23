@@ -42,3 +42,22 @@ export function competenciasDoAno(hoje: Date): { ano: number; mes: number }[] {
 export const saldoCompetencia = (s: SomaCompetencia) => s.recTotal - s.despTotal;
 /** Sin = despesa total ÷ receita total (null sem receita). */
 export const sinistralidade = (s: SomaCompetencia) => (s.recTotal ? s.despTotal / s.recTotal : null);
+
+export interface MesSoma { ano: number; mes: number; soma: SomaCompetencia }
+export interface AnoAgrupado { ano: number; soma: SomaCompetencia; meses: MesSoma[] }
+
+/** Últimos 3 anos: dois anteriores completos e o atual até o mês corrente (UTC). */
+export function anosSinistralidade(hoje: Date): { ano: number; ateMes: number }[] {
+  const a = hoje.getUTCFullYear();
+  return [{ ano: a - 2, ateMes: 12 }, { ano: a - 1, ateMes: 12 }, { ano: a, ateMes: hoje.getUTCMonth() + 1 }];
+}
+
+/** Agrupa competências por ano (ordem crescente), somando os meses. */
+export function agruparPorAno(meses: MesSoma[]): AnoAgrupado[] {
+  const mapa = new Map<number, MesSoma[]>();
+  for (const m of meses) mapa.set(m.ano, [...(mapa.get(m.ano) ?? []), m]);
+  return [...mapa.entries()].sort(([a], [b]) => a - b).map(([ano, ms]) => {
+    const ord = ms.sort((x, y) => x.mes - y.mes);
+    return { ano, meses: ord, soma: somarTotais(ord.map(m => m.soma)) };
+  });
+}
