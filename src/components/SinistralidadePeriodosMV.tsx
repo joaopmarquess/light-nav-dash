@@ -1,115 +1,95 @@
-import { useCallback, useEffect, useState } from "react";
-import { AlertCircle, CalendarRange, Loader2, RefreshCw } from "lucide-react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { AlertCircle, CalendarRange, ChevronDown, ChevronRight, Loader2, RefreshCw } from "lucide-react";
 import { hostinger } from "@/lib/hostingerClient";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { acumular, competenciasDoAno, somaVazia, somarTotais, saldoCompetencia, sinistralidade, type LinhaEard, type SomaCompetencia } from "@/lib/sinistralidadeCompetencias";
+import { agruparPorAno, anosSinistralidade, saldoCompetencia, sinistralidade, somaVazia, somarTotais, type AnoAgrupado, type SomaCompetencia } from "@/lib/sinistralidadeCompetencias";
 
-const CAMPOS = "vl_desp_consulta,vl_desp_urgencia,vl_desp_outros,vl_rec_cpp,vl_rec_copart,vl_rec_outros";
-const FILTRO = "vl_desp_consulta.neq.0,vl_desp_urgencia.neq.0,vl_desp_outros.neq.0,vl_rec_cpp.neq.0,vl_rec_copart.neq.0,vl_rec_outros.neq.0";
-const PAGINA = 1000;
 const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+type Col = "recCpp" | "recCopart" | "recTotal" | "despTotal" | "saldo" | "sin";
+const cols: [string, Col][] = [
+  ["Rec. CPP", "recCpp"], ["Rec. Copart.", "recCopart"], ["Rec. Total", "recTotal"],
+  ["Desp. Total", "despTotal"], ["Saldo", "saldo"], ["Sin", "sin"],
+];
+const valor = (s: SomaCompetencia, k: Col) => {
+  if (k === "saldo") return fmt(saldoCompetencia(s));
+  if (k === "sin") { const v = sinistralidade(s); return v == null ? "—" : `${(v * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`; }
+  return fmt(s[k]);
+};
 
-interface Linha { ano: number; mes: number; soma: SomaCompetencia }
-
-async function somarMes(ano: number, mes: number, signal: AbortSignal): Promise<SomaCompetencia> {
-  const head = await hostinger.from("view_eard_mensal").select("cd_matricula", { count: "exact", head: true })
-    .eq("nr_ano", ano).eq("nr_mes", mes).or(FILTRO).abortSignal(signal);
-  if (head.error) throw head.error;
-  const total = head.count ?? 0;
-  const offsets = Array.from({ length: Math.ceil(total / PAGINA) }, (_, i) => i * PAGINA);
-  let soma = somaVazia();
-  for (let i = 0; i < offsets.length; i += 6) {
-    const lotes = await Promise.all(offsets.slice(i, i + 6).map(async o => {
-      const r = await hostinger.from("view_eard_mensal").select(CAMPOS).eq("nr_ano", ano).eq("nr_mes", mes).or(FILTRO)
-        .order("cd_matricula").order("dt_competencia").range(o, o + PAGINA - 1).abortSignal(signal);
-      if (r.error) throw r.error;
-      return (r.data ?? []) as LinhaEard[];
-    }));
-    lotes.forEach(l => { soma = acumular(soma, l); });
-  }
-  return soma;
-}
+interface Rpc { nr_ano: number; nr_mes: number; rec_cpp: number; rec_copart: number; rec_total: number; desp_total: number }
 
 export default function SinistralidadePeriodosMV() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [linhas, setLinhas] = useState<Linha[]>([]);
-  const [progresso, setProgresso] = useState({ feito: 0, total: 0 });
-  const [ctrl, setCtrl] = useState<AbortController | null>(null);
+  const [anos, setAnos] = useState<AnoAgrupado[]>([]);
+  const [abertos, setAbertos] = useState<Set<number>>(new Set());
+  const ctrl = useRef<AbortController | null>(null);
 
   const carregar = useCallback(async () => {
+    ctrl.current?.abort();
     const controller = new AbortController();
-    setCtrl(old => { old?.abort(); return controller; });
-    const comps = competenciasDoAno(new Date());
-    setLoading(true); setError(null); setLinhas([]); setProgresso({ feito: 0, total: comps.length });
+    ctrl.current = controller;
+    setLoading(true); setError(null);
     try {
-      const ult = comps[comps.length - 1];
-      const rpc = await hostinger.rpc("sinistralidade_mv_competencias", { p_ano: ult.ano, p_ate_mes: ult.mes }).abortSignal(controller.signal);
+      const res = await Promise.all(anosSinistralidade(new Date()).map(async ({ ano, ateMes }) => {
+        const r = await hostinger.rpc("sinistralidade_mv_competencias", { p_ano: ano, p_ate_mes: ateMes }).abortSignal(controller.signal);
+        if (r.error) throw r.error;
+        return (r.data ?? []) as Rpc[];
+      }));
       if (controller.signal.aborted) return;
-      if (!rpc.error) {
-        const dados = (rpc.data ?? []) as { nr_ano: number; nr_mes: number; rec_cpp: number; rec_copart: number; rec_total: number; desp_total: number }[];
-        setLinhas(dados.map(d => ({ ano: d.nr_ano, mes: d.nr_mes, soma: { ...somaVazia(), recCpp: Number(d.rec_cpp), recCopart: Number(d.rec_copart), recTotal: Number(d.rec_total), despTotal: Number(d.desp_total) } })));
-        return;
-      }
-      // Função ainda não instalada: soma pela leitura linha a linha (lenta).
-      const res: Linha[] = [];
-      for (let i = 0; i < comps.length; i += 2) {
-        const par = await Promise.all(comps.slice(i, i + 2).map(async c => ({ ...c, soma: await somarMes(c.ano, c.mes, controller.signal) })));
-        if (controller.signal.aborted) return;
-        res.push(...par);
-        setLinhas([...res]);
-        setProgresso({ feito: res.length, total: comps.length });
-      }
+      setAnos(agruparPorAno(res.flat().map(d => ({ ano: d.nr_ano, mes: d.nr_mes, soma: { ...somaVazia(), recCpp: Number(d.rec_cpp), recCopart: Number(d.rec_copart), recTotal: Number(d.rec_total), despTotal: Number(d.desp_total) } }))));
     } catch {
-      if (!controller.signal.aborted) setError("Não foi possível consultar view_eard_mensal. Tente novamente.");
+      if (!controller.signal.aborted) setError("Não foi possível consultar a função sinistralidade_mv_competencias. Tente novamente.");
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
   }, []);
 
-  useEffect(() => { void carregar(); }, [carregar]);
-  useEffect(() => () => ctrl?.abort(), [ctrl]);
+  useEffect(() => { void carregar(); return () => ctrl.current?.abort(); }, [carregar]);
 
-  const total = somarTotais(linhas.map(l => l.soma));
-  type Col = "recCpp" | "recCopart" | "recTotal" | "despTotal" | "saldo" | "sin";
-  const cols: [string, Col][] = [
-    ["Rec. CPP", "recCpp"], ["Rec. Copart.", "recCopart"], ["Rec. Total", "recTotal"],
-    ["Desp. Total", "despTotal"], ["Saldo", "saldo"], ["Sin", "sin"],
-  ];
-  const valor = (s: SomaCompetencia, k: Col) => {
-    if (k === "saldo") return fmt(saldoCompetencia(s));
-    if (k === "sin") { const v = sinistralidade(s); return v == null ? "—" : `${(v * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`; }
-    return fmt(s[k]);
-  };
-  const destaque = (k: Col) => k === "recTotal" || k === "despTotal" || k === "saldo" || k === "sin" ? "font-semibold" : "";
+  const alternar = (ano: number) => setAbertos(s => { const n = new Set(s); n.has(ano) ? n.delete(ano) : n.add(ano); return n; });
+  const total = somarTotais(anos.map(a => a.soma));
+  const forte = (k: Col) => (k === "recCpp" || k === "recCopart" ? "" : "font-semibold");
 
   return (
     <section className="flex h-full min-h-0 flex-col gap-6" aria-labelledby="sin-periodos-title">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 id="sin-periodos-title" className="flex items-center gap-2 text-2xl font-semibold text-foreground"><CalendarRange className="h-6 w-6 text-primary" />Períodos</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Sinistralidade · Despesas e receitas por competência · Fonte: view_eard_mensal</p>
+          <p className="mt-1 text-sm text-muted-foreground">Sinistralidade · Receitas e despesas por ano · Fonte: view_eard_mensal</p>
         </div>
         <Button variant="outline" disabled={loading} onClick={() => void carregar()}><RefreshCw className={loading ? "animate-spin" : ""} />Atualizar</Button>
       </header>
 
-      {loading && (
-        <div role="status" className="flex items-center gap-3 text-sm text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none" />Somando competência {Math.min(progresso.feito + 1, progresso.total)} de {progresso.total}…</div>
-      )}
-      {error ? (
-        <div role="alert" className="flex items-start gap-3 border-y border-border py-6 text-foreground"><AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" /><p className="text-sm text-muted-foreground">{error}</p></div>
-      ) : linhas.length > 0 && (
+      {loading ? (
+        <div role="status" className="flex items-center gap-3 text-sm text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none" />Consultando períodos…</div>
+      ) : error ? (
+        <div role="alert" className="flex items-start gap-3 border-y border-border py-6"><AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" /><p className="text-sm text-muted-foreground">{error}</p></div>
+      ) : (
         <div className="min-h-0 overflow-auto rounded-md border border-border">
           <Table>
-            <TableHeader><TableRow><TableHead>Competência</TableHead>{cols.map(([l]) => <TableHead key={l} className="whitespace-nowrap text-right">{l}</TableHead>)}</TableRow></TableHeader>
-            <TableBody>{linhas.map(l => (
-              <TableRow key={`${l.ano}-${l.mes}`}>
-                <TableCell className="whitespace-nowrap">{String(l.mes).padStart(2, "0")}/{l.ano}</TableCell>
-                {cols.map(([lb, k]) => <TableCell key={lb} className={`whitespace-nowrap text-right tabular-nums ${destaque(k)}`}>{valor(l.soma, k)}</TableCell>)}
-              </TableRow>
-            ))}</TableBody>
-            {!loading && <TableFooter><TableRow><TableCell className="font-semibold">Total</TableCell>{cols.map(([lb, k]) => <TableCell key={lb} className="whitespace-nowrap text-right font-semibold tabular-nums">{valor(total, k)}</TableCell>)}</TableRow></TableFooter>}
+            <TableHeader><TableRow><TableHead>Período</TableHead>{cols.map(([l]) => <TableHead key={l} className="whitespace-nowrap text-right">{l}</TableHead>)}</TableRow></TableHeader>
+            <TableBody>{anos.map(a => {
+              const aberto = abertos.has(a.ano);
+              return (
+                <Fragment key={a.ano}>
+                  <TableRow className="cursor-pointer bg-muted/40 font-semibold" onClick={() => alternar(a.ano)} aria-expanded={aberto}>
+                    <TableCell className="whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1">{aberto ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}{a.ano}<span className="ml-2 text-xs font-normal text-muted-foreground">{a.meses.length} meses</span></span>
+                    </TableCell>
+                    {cols.map(([lb, k]) => <TableCell key={lb} className="whitespace-nowrap text-right tabular-nums">{valor(a.soma, k)}</TableCell>)}
+                  </TableRow>
+                  {aberto && a.meses.map(m => (
+                    <TableRow key={`${a.ano}-${m.mes}`}>
+                      <TableCell className="whitespace-nowrap pl-10 text-muted-foreground">{String(m.mes).padStart(2, "0")}/{a.ano}</TableCell>
+                      {cols.map(([lb, k]) => <TableCell key={lb} className={`whitespace-nowrap text-right tabular-nums ${forte(k)}`}>{valor(m.soma, k)}</TableCell>)}
+                    </TableRow>
+                  ))}
+                </Fragment>
+              );
+            })}</TableBody>
+            <TableFooter><TableRow><TableCell className="font-semibold">Total</TableCell>{cols.map(([lb, k]) => <TableCell key={lb} className="whitespace-nowrap text-right font-semibold tabular-nums">{valor(total, k)}</TableCell>)}</TableRow></TableFooter>
           </Table>
         </div>
       )}

@@ -28,3 +28,14 @@ describe("saldo e sin", () => {
   it("sin = desp. total ÷ rec. total", () => expect(sinistralidade(s)).toBe(0.75));
   it("sin sem receita fica vazio", () => expect(sinistralidade(somaVazia())).toBeNull());
 });
+
+import { agruparPorAno, anosSinistralidade } from "./sinistralidadeCompetencias";
+describe("agrupamento por ano", () => {
+  it("anos 2024, 2025 completos e 2026 até outubro", () =>
+    expect(anosSinistralidade(new Date("2026-10-23T12:00:00Z"))).toEqual([{ ano: 2024, ateMes: 12 }, { ano: 2025, ateMes: 12 }, { ano: 2026, ateMes: 10 }]));
+  it("soma os meses de cada ano", () => {
+    const s = (v: number) => ({ ...somaVazia(), recTotal: v });
+    const r = agruparPorAno([{ ano: 2025, mes: 2, soma: s(5) }, { ano: 2024, mes: 1, soma: s(1) }, { ano: 2025, mes: 1, soma: s(3) }]);
+    expect(r.map(a => [a.ano, a.soma.recTotal, a.meses.map(m => m.mes)])).toEqual([[2024, 1, [1]], [2025, 8, [1, 2]]]);
+  });
+});
