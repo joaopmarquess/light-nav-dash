@@ -1,14 +1,43 @@
-import { ArrowUpRight, FlaskConical, CalendarRange, FileText, Map, Search, TrendingDown, TrendingUp, Users } from "lucide-react";
+import { ArrowUpRight, FlaskConical, CalendarRange, FileText, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { geographicToday, useCarteiraTrialGeo } from "@/hooks/useCarteiraTrialGeo";
 
-const carteiraItems = [
-  { icon: Search, label: "Consulta" },
-  { icon: Map, label: "Área Geográfica" },
-  { icon: CalendarRange, label: "Movimentação" },
-  { icon: TrendingUp, label: "Entradas" },
-  { icon: Users, label: "Entradas Lancers" },
-  { icon: TrendingDown, label: "Saídas" },
-];
+const fmt = (n: number) => n.toLocaleString("pt-BR");
+
+const AtivosEmCards = () => {
+  const date = geographicToday();
+  const { data, isLoading, error } = useCarteiraTrialGeo(date);
+  const rows = data ?? [];
+  const total = rows.reduce((a, r) => a + r.ativos, 0);
+  const porUF = new Map<string, number>();
+  rows.forEach((r) => porUF.set(r.uf, (porUF.get(r.uf) ?? 0) + r.ativos));
+  const topUF = [...porUF].sort((a, b) => b[1] - a[1])[0];
+  const topCidade = [...rows].sort((a, b) => b.ativos - a.ativos)[0];
+  const cards = [
+    { label: "Vidas ativas", value: fmt(total), hint: `Ativos em ${date.split("-").reverse().join("/")}` },
+    { label: "Municípios", value: fmt(rows.filter((r) => r.ativos > 0).length), hint: "Com ao menos uma vida" },
+    { label: "Estados", value: fmt([...porUF.values()].filter((v) => v > 0).length), hint: "UFs com vidas" },
+    { label: "Maior UF", value: topUF ? topUF[0] : "—", hint: topUF ? `${fmt(topUF[1])} vidas` : "" },
+    { label: "Maior município", value: topCidade?.cidade ?? "—", hint: topCidade ? `${topCidade.uf} · ${fmt(topCidade.ativos)} vidas` : "" },
+  ];
+  return (
+    <section aria-label="Ativos em">
+      {error ? (
+        <p className="text-sm text-destructive">Não foi possível carregar os indicadores de ativos.</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          {cards.map((c) => (
+            <div key={c.label} className="rounded-lg border border-border bg-card p-5 shadow-sm">
+              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{c.label}</div>
+              <div className="mt-2 truncate text-2xl font-semibold text-foreground">{isLoading ? "…" : c.value}</div>
+              <div className="mt-1 truncate text-xs text-muted-foreground">{isLoading ? "Carregando" : c.hint}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+};
 
 const shortcuts = [
   { icon: FlaskConical, label: "Laboratory", destination: "Laboratory" },
@@ -23,28 +52,7 @@ const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => (
       <h2 className="text-2xl font-semibold text-foreground">Bem-vindo ao AXIS</h2>
     </header>
 
-    <section className="rounded-lg border border-border bg-card p-6 shadow-sm" aria-labelledby="home-carteira">
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-accent text-primary">
-          <Users className="h-6 w-6" />
-        </div>
-        <h3 id="home-carteira" className="text-xl font-semibold text-foreground">Carteira (Trial)</h3>
-      </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {carteiraItems.map(({ icon: Icon, label }) => (
-          <Button
-            key={label}
-            variant="outline"
-            onClick={() => onNavigate(`Carteira (Trial) · ${label}`)}
-            className="h-14 justify-start gap-3 px-4 text-base"
-          >
-            <Icon className="text-primary" />
-            <span className="whitespace-normal text-left">{label}</span>
-            <ArrowUpRight className="ml-auto shrink-0 text-muted-foreground" />
-          </Button>
-        ))}
-      </div>
-    </section>
+    <AtivosEmCards />
 
     <section aria-labelledby="home-atalhos">
       <h3 id="home-atalhos" className="mb-4 text-sm font-semibold text-foreground">Atalhos</h3>
