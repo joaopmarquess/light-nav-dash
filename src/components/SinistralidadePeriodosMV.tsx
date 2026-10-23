@@ -13,7 +13,6 @@ const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2,
 interface Linha { ano: number; mes: number; soma: SomaCompetencia }
 
 async function somarMes(ano: number, mes: number, signal: AbortSignal): Promise<SomaCompetencia> {
-  const base = () => hostinger.from("view_eard_mensal").eq("nr_ano", ano).eq("nr_mes", mes).or(FILTRO);
   const head = await hostinger.from("view_eard_mensal").select("cd_matricula", { count: "exact", head: true })
     .eq("nr_ano", ano).eq("nr_mes", mes).or(FILTRO).abortSignal(signal);
   if (head.error) throw head.error;
@@ -29,7 +28,6 @@ async function somarMes(ano: number, mes: number, signal: AbortSignal): Promise<
     }));
     lotes.forEach(l => { soma = acumular(soma, l); });
   }
-  void base;
   return soma;
 }
 
