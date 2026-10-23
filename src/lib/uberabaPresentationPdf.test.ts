@@ -4,7 +4,7 @@ import { createPresentationPdf } from "./uberabaPresentationPdf";
 
 describe("Frozen Uberaba PDF", () => {
   it("exports exactly 31 pages without a trailing page", () => {
-    const addImage = vi.spyOn(jsPDF.API, "addImage").mockReturnThis();
+    const addImage = vi.spyOn(jsPDF.API as Pick<jsPDF, "addImage">, "addImage").mockReturnThis();
     try {
       const pdf = createPresentationPdf(Array.from({ length: 31 }, (_, i) => `image-${i}`));
       expect(pdf.getNumberOfPages()).toBe(31);
@@ -12,7 +12,7 @@ describe("Frozen Uberaba PDF", () => {
   });
 
   it("keeps every image edge within an exact full-bleed 16:9 page", () => {
-    const addImage = vi.spyOn(jsPDF.API, "addImage").mockReturnThis();
+    const addImage = vi.spyOn(jsPDF.API as Pick<jsPDF, "addImage">, "addImage").mockReturnThis();
     try {
       const pdf = createPresentationPdf(Array.from({ length: 31 }, (_, i) => `image-${i}`));
       for (let page = 1; page <= 31; page++) {
