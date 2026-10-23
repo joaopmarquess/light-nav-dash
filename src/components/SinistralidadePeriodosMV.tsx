@@ -1,5 +1,6 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { AlertCircle, CalendarRange, ChevronDown, ChevronRight, Loader2, RefreshCw } from "lucide-react";
+import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { hostinger } from "@/lib/hostingerClient";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -24,6 +25,7 @@ export default function SinistralidadePeriodosMV() {
   const [error, setError] = useState<string | null>(null);
   const [anos, setAnos] = useState<AnoAgrupado[]>([]);
   const [abertos, setAbertos] = useState<Set<number>>(new Set());
+  const [anoSel, setAnoSel] = useState<number | null>(null);
   const ctrl = useRef<AbortController | null>(null);
 
   const carregar = useCallback(async () => {
@@ -48,7 +50,10 @@ export default function SinistralidadePeriodosMV() {
 
   useEffect(() => { void carregar(); return () => ctrl.current?.abort(); }, [carregar]);
 
-  const alternar = (ano: number) => setAbertos(s => { const n = new Set(s); n.has(ano) ? n.delete(ano) : n.add(ano); return n; });
+  const alternar = (ano: number) => { setAnoSel(ano); setAbertos(s => { const n = new Set(s); n.has(ano) ? n.delete(ano) : n.add(ano); return n; }); };
+  const sel = anos.find(a => a.ano === anoSel) ?? anos[anos.length - 1];
+  const serie = (sel?.meses ?? []).map(m => ({ mes: String(m.mes).padStart(2, "0"), saldo: saldoCompetencia(m.soma) }));
+  const curto = (v: number) => `${(v / 1e6).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} mi`;
   const total = somarTotais(anos.map(a => a.soma));
   const forte = (k: Col) => (k === "recCpp" || k === "recCopart" ? "" : "font-semibold");
 
@@ -67,30 +72,49 @@ export default function SinistralidadePeriodosMV() {
       ) : error ? (
         <div role="alert" className="flex items-start gap-3 border-y border-border py-6"><AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" /><p className="text-sm text-muted-foreground">{error}</p></div>
       ) : (
+        <div className="flex min-h-0 flex-col gap-6">
         <div className="min-h-0 w-full max-w-5xl overflow-auto rounded-md border border-border">
-          <Table>
-            <TableHeader><TableRow><TableHead>Período</TableHead>{cols.map(([l]) => <TableHead key={l} className="whitespace-nowrap text-right">{l}</TableHead>)}</TableRow></TableHeader>
-            <TableBody>{anos.map(a => {
-              const aberto = abertos.has(a.ano);
-              return (
-                <Fragment key={a.ano}>
-                  <TableRow className="cursor-pointer bg-muted/40 font-semibold" onClick={() => alternar(a.ano)} aria-expanded={aberto}>
-                    <TableCell className="whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1">{aberto ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}{a.ano}<span className="ml-2 text-xs font-normal text-muted-foreground">{a.meses.length} meses</span></span>
-                    </TableCell>
-                    {cols.map(([lb, k]) => <TableCell key={lb} className="whitespace-nowrap text-right tabular-nums">{valor(a.soma, k)}</TableCell>)}
-                  </TableRow>
-                  {aberto && a.meses.map(m => (
-                    <TableRow key={`${a.ano}-${m.mes}`}>
-                      <TableCell className="whitespace-nowrap pl-10 text-muted-foreground">{String(m.mes).padStart(2, "0")}/{a.ano}</TableCell>
-                      {cols.map(([lb, k]) => <TableCell key={lb} className={`whitespace-nowrap text-right tabular-nums ${forte(k)}`}>{valor(m.soma, k)}</TableCell>)}
+            <Table>
+              <TableHeader><TableRow><TableHead>Período</TableHead>{cols.map(([l]) => <TableHead key={l} className="whitespace-nowrap text-right">{l}</TableHead>)}</TableRow></TableHeader>
+              <TableBody>{anos.map(a => {
+                const aberto = abertos.has(a.ano);
+                return (
+                  <Fragment key={a.ano}>
+                    <TableRow className="cursor-pointer bg-muted/40 font-semibold" onClick={() => alternar(a.ano)} aria-expanded={aberto}>
+                      <TableCell className="whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1">{aberto ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}{a.ano}<span className="ml-2 text-xs font-normal text-muted-foreground">{a.meses.length} meses</span></span>
+                      </TableCell>
+                      {cols.map(([lb, k]) => <TableCell key={lb} className="whitespace-nowrap text-right tabular-nums">{valor(a.soma, k)}</TableCell>)}
                     </TableRow>
-                  ))}
-                </Fragment>
-              );
-            })}</TableBody>
-            <TableFooter><TableRow><TableCell className="font-semibold">Total</TableCell>{cols.map(([lb, k]) => <TableCell key={lb} className="whitespace-nowrap text-right font-semibold tabular-nums">{valor(total, k)}</TableCell>)}</TableRow></TableFooter>
-          </Table>
+                    {aberto && a.meses.map(m => (
+                      <TableRow key={`${a.ano}-${m.mes}`}>
+                        <TableCell className="whitespace-nowrap pl-10 text-muted-foreground">{String(m.mes).padStart(2, "0")}/{a.ano}</TableCell>
+                        {cols.map(([lb, k]) => <TableCell key={lb} className={`whitespace-nowrap text-right tabular-nums ${forte(k)}`}>{valor(m.soma, k)}</TableCell>)}
+                      </TableRow>
+                    ))}
+                  </Fragment>
+                );
+              })}</TableBody>
+              <TableFooter><TableRow><TableCell className="font-semibold">Total</TableCell>{cols.map(([lb, k]) => <TableCell key={lb} className="whitespace-nowrap text-right font-semibold tabular-nums">{valor(total, k)}</TableCell>)}</TableRow></TableFooter>
+            </Table>
+          </div>
+          {sel && (
+            <div className="w-full max-w-5xl rounded-md border border-border bg-card p-4">
+              <h3 className="mb-3 text-base font-semibold text-foreground">Evolução mensal do saldo · {sel.ano}</h3>
+              <div className="h-72 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={serie} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis tickFormatter={curto} stroke="hsl(var(--muted-foreground))" fontSize={12} width={70} />
+                    <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" />
+                    <Tooltip formatter={(v: number) => [fmt(v), "Saldo"]} labelFormatter={l => `${l}/${sel.ano}`} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
+                    <Line type="monotone" dataKey="saldo" stroke="hsl(var(--chart-vidas))" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </section>
