@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { mesesMovimentacao, somarTotaisMovimentacao, fechamentosMensaisMovimentacao } from "./movimentacaoCarga";
+import { mesesMovimentacao, somarTotaisMovimentacao, fechamentosMensaisMovimentacao, escalaVidasMensais } from "./movimentacaoCarga";
 import { resumoMovimentacao } from "./movimentacaoResumo";
 
 describe("carga de totais da Movimentação", () => {
+  it("fixa a escala de vidas entre 50.000 e 80.000 com intervalos de 2.000", () => {
+    expect(escalaVidasMensais.dominio).toEqual([50000, 80000]);
+    expect(escalaVidasMensais.marcas).toEqual([50000, 52000, 54000, 56000, 58000, 60000, 62000, 64000, 66000, 68000, 70000, 72000, 74000, 76000, 78000, 80000]);
+  });
   it("consulta o último dia de cada mês inclusive quando o período termina antes do fechamento", () => {
     expect(fechamentosMensaisMovimentacao({ de: "2026-08-15", ate: "2026-10-23" })).toEqual(["2026-08-31", "2026-09-30", "2026-10-31"]);
   });

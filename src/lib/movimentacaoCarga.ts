@@ -2,6 +2,11 @@ export type PeriodoMovimentacao = { de: string; ate: string };
 export type TotaisMovimentacao = { e: number; s: number; r: number; tp: number; tm: number };
 export type VidasMensais = { mes: string; data: string; vidas: number };
 
+export const escalaVidasMensais = {
+  dominio: [50000, 80000] as [number, number],
+  marcas: Array.from({ length: 16 }, (_, indice) => 50000 + indice * 2000),
+};
+
 export function fechamentosMensaisMovimentacao(periodo: PeriodoMovimentacao): string[] {
   return mesesMovimentacao(periodo).map(({ de }) => {
     const [ano, mes] = de.split("-").map(Number);
