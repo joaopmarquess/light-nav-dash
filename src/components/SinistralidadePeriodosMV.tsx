@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { AlertCircle, CalendarRange, Loader2, RefreshCw } from "lucide-react";
-import { dw } from "@/lib/dwClient";
+import { hostinger } from "@/lib/hostingerClient";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -15,14 +15,14 @@ export default function SinistralidadePeriodosMV() {
     setError(null);
     setRows([]);
     try {
-      let query = dw.from("view_eard_mensal").select("*", { count: "exact" }).limit(100);
+      let query = hostinger.from("view_eard_mensal").select("*", { count: "exact" }).limit(100);
       if (signal) query = query.abortSignal(signal);
       const result = await query;
       if (signal?.aborted) return;
       if (result.error) {
         const unavailable = ["PGRST205", "42P01"].includes(result.error.code);
         setError(unavailable
-          ? "A fonte view_eard_mensal ainda não foi encontrada na conexão atual. Os indicadores por período aguardam o acesso a essa visão."
+          ? "A tabela view_eard_mensal ainda não foi encontrada na conexão existente. Os indicadores por período aguardam o acesso a essa tabela."
           : "Não foi possível consultar view_eard_mensal. Tente novamente após verificar sua disponibilidade e a permissão de leitura.");
         return;
       }
