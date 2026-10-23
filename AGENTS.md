@@ -1,4 +1,5 @@
 # Project rules
+- Keep Movimentação requests gated by an explicitly applied period; derive reconciliation totals in the tested summary helper and preserve server-side transfer classification, so presentation changes never substitute sample figures for actual data.
 - Keep Study Dados as local, typed presentations sourced from the supplied Lancers HTML tables; isolate price rankings and scenario totals in tested helpers, label historical dates and unapproved assumptions, and never merge these snapshots with live portfolio queries.
 - Use the shared Timeline presentation header and container-scoped styling for hospital, marketing, formalization and simplified operating-model screens; preserve typed content, calculations and complete-version institutional text so visual changes cannot affect business rules.
 - Use the shared presentation header for every Timeline stage; keep internal scrolling limited to presentations with expansion controls except operating-model subviews, which flow without clipping; preload and retain decoded presentation images from application startup to avoid first-visit and stage-switch loading delays.
