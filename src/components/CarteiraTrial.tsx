@@ -131,7 +131,8 @@ export default function CarteiraTrial() {
       const { data, error } = await q.range(page * PAGE, page * PAGE + PAGE - 1);
       if (cancel) return;
       if (error) console.error(error);
-      setRaw((old) => (page === 0 ? data ?? [] : [...old, ...(data ?? [])]));
+      const norm = (data ?? []).map(normalizarVendedor);
+      setRaw((old) => (page === 0 ? norm : [...old, ...norm]));
       setFim((data?.length ?? 0) < PAGE);
       setLoading(false);
       const { count } = await applyFilters(hostinger.from(TABLE).select("cd_matricula", { count: "exact", head: true }), df);

@@ -43,7 +43,7 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
         .gte(campo, de).lte(campo, `${ate}T23:59:59`)
         .order("cd_mat_alternativa").order(campo).range(from, from + 999);
       if (error) { setError(error.message); setLoading(false); return; }
-      all.push(...(data ?? []));
+      all.push(...(data ?? []).map(normalizarVendedor));
       if ((data ?? []).length < 1000) break;
       if (from + 1000 >= LIMITE) setCortado(true);
     }
