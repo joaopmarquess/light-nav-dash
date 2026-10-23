@@ -1,5 +1,5 @@
 import { Fragment, useCallback, useEffect, useId, useRef, useState } from "react";
-import { AlertCircle, CalendarRange, ChevronDown, ChevronRight, Loader2, RefreshCw } from "lucide-react";
+import { AlertCircle, CalendarRange, ChevronDown, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, RefreshCw } from "lucide-react";
 import { Area, CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { hostinger } from "@/lib/hostingerClient";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,8 @@ export default function SinistralidadePeriodosMV() {
   const [error, setError] = useState<string | null>(null);
   const [anos, setAnos] = useState<AnoAgrupado[]>([]);
   const [abertos, setAbertos] = useState<Set<number>>(new Set());
+  const [expandido, setExpandido] = useState(false);
+  const vis = expandido ? cols : cols.filter(([, k]) => k === "saldo" || k === "sin");
   const [anoSel, setAnoSel] = useState<number | null>(null);
   const ctrl = useRef<AbortController | null>(null);
 
@@ -77,10 +79,10 @@ export default function SinistralidadePeriodosMV() {
       ) : error ? (
         <div role="alert" className="flex items-start gap-3 border-y border-border py-6"><AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" /><p className="text-sm text-muted-foreground">{error}</p></div>
       ) : (
-        <div className="grid min-h-0 items-start gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <div className={`grid min-h-0 items-start gap-6 ${expandido ? "xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]" : "xl:grid-cols-[auto_minmax(0,1fr)]"}`}>
         <div className="min-h-0 w-full overflow-auto rounded-md border border-border">
             <Table>
-              <TableHeader><TableRow><TableHead>Período</TableHead>{cols.map(([l]) => <TableHead key={l} className="whitespace-nowrap text-right">{l}</TableHead>)}</TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead className="whitespace-nowrap"><span className="inline-flex items-center gap-2">Período<button type="button" onClick={() => setExpandido(v => !v)} aria-expanded={expandido} title={expandido ? "Recolher colunas" : "Expandir colunas"} aria-label={expandido ? "Recolher colunas" : "Expandir colunas"} className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground">{expandido ? <ChevronsLeft className="h-4 w-4" /> : <ChevronsRight className="h-4 w-4" />}</button></span></TableHead>{vis.map(([l]) => <TableHead key={l} className="whitespace-nowrap text-right">{l}</TableHead>)}</TableRow></TableHeader>
               <TableBody>{anos.map(a => {
                 const aberto = abertos.has(a.ano);
                 return (
@@ -89,18 +91,18 @@ export default function SinistralidadePeriodosMV() {
                       <TableCell className="whitespace-nowrap">
                         <span className="inline-flex items-center gap-1"><button type="button" aria-expanded={aberto} aria-label={aberto ? `Recolher meses de ${a.ano}` : `Expandir meses de ${a.ano}`} onClick={e => { e.stopPropagation(); alternar(a.ano); }} className="rounded p-0.5 hover:bg-muted">{aberto ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}</button>{a.ano}<span className="ml-2 text-xs font-normal text-muted-foreground">{a.meses.length} meses</span></span>
                       </TableCell>
-                      {cols.map(([lb, k]) => <TableCell key={lb} className="whitespace-nowrap text-right tabular-nums">{valor(a.soma, k)}</TableCell>)}
+                      {vis.map(([lb, k]) => <TableCell key={lb} className="whitespace-nowrap text-right tabular-nums">{valor(a.soma, k)}</TableCell>)}
                     </TableRow>
                     {aberto && a.meses.map(m => (
                       <TableRow key={`${a.ano}-${m.mes}`}>
                         <TableCell className="whitespace-nowrap pl-10 text-muted-foreground">{String(m.mes).padStart(2, "0")}/{a.ano}</TableCell>
-                        {cols.map(([lb, k]) => <TableCell key={lb} className={`whitespace-nowrap text-right tabular-nums ${forte(k)}`}>{valor(m.soma, k)}</TableCell>)}
+                        {vis.map(([lb, k]) => <TableCell key={lb} className={`whitespace-nowrap text-right tabular-nums ${forte(k)}`}>{valor(m.soma, k)}</TableCell>)}
                       </TableRow>
                     ))}
                   </Fragment>
                 );
               })}</TableBody>
-              <TableFooter><TableRow><TableCell className="font-semibold">Total</TableCell>{cols.map(([lb, k]) => <TableCell key={lb} className="whitespace-nowrap text-right font-semibold tabular-nums">{valor(total, k)}</TableCell>)}</TableRow></TableFooter>
+              <TableFooter><TableRow><TableCell className="font-semibold">Total</TableCell>{vis.map(([lb, k]) => <TableCell key={lb} className="whitespace-nowrap text-right font-semibold tabular-nums">{valor(total, k)}</TableCell>)}</TableRow></TableFooter>
             </Table>
           </div>
           {sel && (
