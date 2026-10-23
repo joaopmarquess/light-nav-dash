@@ -68,6 +68,8 @@ export default function CarteiraTrialMov() {
         if (seen.has(k)) return; seen.add(k); out.push({ tipo, data: d, r });
       };
       for (const r of rows) {
+        // Código 274 é transferência: registros gravados com nome de pessoa contam como "TRANSFERENCIA DE CONTRATO".
+        if (Number(r.cd_vendedor) === 274) r.nm_vendedor = "TRANSFERENCIA DE CONTRATO";
         const v = dia(r.dt_vigencia_beneficiario), c = dia(r.dt_desligamento), a = dia(r.dt_reativacao);
         if (inR(v)) add(VEND_T.has(Number(r.cd_vendedor)) ? "T+" : "Entrada", v, r);
         if (inR(a)) add("Reativação", a, r);
