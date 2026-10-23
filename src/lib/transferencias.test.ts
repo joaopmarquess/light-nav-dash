@@ -35,3 +35,13 @@ describe("conceito de transferência", () => {
     expect(transfEntradas([e], [m({ cpf: "002", mat: "a", desl: "2026-09-30", motivo: 6 })], MOT).size).toBe(1);
   });
 });
+
+import { blocoMes } from "./transferencias";
+describe("blocos por mês", () => {
+  it("classifica anterior, mesmo e próximo mês", () => {
+    expect(blocoMes("T+", { saida: "2026-09-30", entrada: "2026-10-01" })).toBe("anterior");
+    expect(blocoMes("T+", { saida: "2026-10-01", entrada: "2026-10-01" })).toBe("mesmo");
+    expect(blocoMes("T-", { saida: "2026-10-20", entrada: "2026-11-01" })).toBe("proximo");
+    expect(blocoMes("T-", { saida: "2026-10-01", entrada: "2026-10-01" })).toBe(null);
+  });
+});
