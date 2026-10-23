@@ -99,7 +99,8 @@ import AssistencialRelatorioExecutor from "@/components/AssistencialRelatorioExe
 import AssistencialReceitas2518 from "@/components/AssistencialReceitas2518";
 import Assistencial2518Prestadores from "@/components/Assistencial2518Prestadores";
 import { useConsultaState } from "@/lib/assistencialConsultaStore";
-import { Loader2, DollarSign, FlaskConical } from "lucide-react";
+import { Loader2, DollarSign, FlaskConical, ChevronDown } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 
 
@@ -215,6 +216,8 @@ const menuItems: MenuItem[] = [
   controlItem,
   { icon: Users, label: "Carteira (Trial)", children: [{ icon: Search, label: "Consulta", id: "Carteira (Trial) · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira (Trial) · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira (Trial) · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira (Trial) · Entradas" }, { icon: TrendingUp, label: "Entradas Lancers", id: "Carteira (Trial) · Entradas Lancers" }, { icon: TrendingUp, label: "Saídas", id: "Carteira (Trial) · Saídas" }] },
 ];
+
+const LAB_IDS = new Set<string>(["Laboratory", ...labItems.flatMap((g) => g.children ? g.children.map((c) => c.id ?? c.label) : [g.label])]);
 
 const Index = () => {
   const [active, setActive] = useState("Home");
@@ -503,7 +506,36 @@ const Index = () => {
           </div>
         </header>
 
-        <main className={`flex-1 min-h-0 overflow-hidden ${active === "Área Geográfica" || active === "Dashboard" ? "" : "p-8"}`}>
+        <main className={`flex-1 min-h-0 overflow-hidden flex flex-col ${active === "Área Geográfica" || active === "Dashboard" ? "" : "p-8"}`}>
+          {LAB_IDS.has(active) && (
+            <nav aria-label="Menu Laboratory" className="mb-4 flex shrink-0 flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-2 shadow-sm">
+              <button type="button" onClick={() => setActive("Laboratory")} className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold ${active === "Laboratory" ? "bg-primary text-primary-foreground" : "text-primary hover:bg-accent"}`}>
+                <FlaskConical className="h-4 w-4" />Laboratory
+              </button>
+              {labItems.map((g) => {
+                const filhos = g.children ?? [{ icon: g.icon, label: g.label }];
+                const ativo = filhos.some((c) => (c.id ?? c.label) === active);
+                if (!g.children) return (
+                  <button key={g.label} type="button" onClick={() => setActive(g.label)} className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm ${ativo ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-accent"}`}><g.icon className="h-4 w-4" />{g.label}</button>
+                );
+                return (
+                  <DropdownMenu key={g.label}>
+                    <DropdownMenuTrigger className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm ${ativo ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-accent"}`}>
+                      <g.icon className="h-4 w-4" />{g.label.trim()}<ChevronDown className="h-3 w-3" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      {filhos.map((c) => (
+                        <DropdownMenuItem key={c.id ?? c.label} onSelect={() => setActive(c.id ?? c.label)}>
+                          <c.icon className="mr-2 h-4 w-4" />{c.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                );
+              })}
+            </nav>
+          )}
+          <div className="min-h-0 flex-1">
           {active === "Área Geográfica" ? (
             <AtivosEm dateValue={dateValue} />
           ) : active === "Ativos por Cidade" ? (
@@ -629,25 +661,8 @@ const Index = () => {
           ) : active === "Carteira (Trial) · Consulta" ? (
             <CarteiraTrial />
           ) : active === "Laboratory" ? (
-            <section className="rounded-lg border border-border bg-card p-6 shadow-sm" aria-labelledby="lab-title">
-              <div className="mb-6 flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-md bg-accent text-primary"><FlaskConical className="h-6 w-6" /></div>
-                <h2 id="lab-title" className="text-xl font-semibold text-foreground">Laboratory</h2>
-              </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {labItems.map((g) => (
-                  <div key={g.label} className="rounded-md border border-border bg-background p-4">
-                    <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground"><g.icon className="h-4 w-4 text-primary" />{g.label.trim()}</h3>
-                    <div className="flex flex-col gap-1">
-                      {(g.children ?? [{ icon: g.icon, label: g.label }]).map((c) => (
-                        <button key={c.id ?? c.label} type="button" onClick={() => setActive(c.id ?? c.label)} className="flex items-center gap-2 rounded px-2 py-1.5 text-left text-sm text-foreground hover:bg-accent">
-                          <c.icon className="h-4 w-4 shrink-0 text-muted-foreground" />{c.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <section className="flex h-full items-center justify-center rounded-lg border border-border bg-card text-sm text-muted-foreground">
+              Selecione uma opção no menu do Laboratory.
             </section>
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
@@ -677,7 +692,7 @@ const Index = () => {
               Selecione uma opção no menu lateral.
             </section>
           )}
-
+          </div>
         </main>
       </div>
 
