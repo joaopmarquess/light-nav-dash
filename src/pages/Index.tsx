@@ -135,7 +135,7 @@ const controlItem: MenuItem = {
 const labItems: MenuItem[] = [
   {
     icon: Users,
-    label: "Carteira",
+    label: "vCarteira",
     children: [
       { icon: Search, label: "Painel" },
       { icon: UserCheck, label: "Área Geográfica" },
@@ -214,7 +214,7 @@ const labItems: MenuItem[] = [
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   controlItem,
-  { icon: Users, label: "Carteira (Trial)", children: [{ icon: Search, label: "Consulta", id: "Carteira (Trial) · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira (Trial) · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira (Trial) · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira (Trial) · Entradas" }, { icon: TrendingUp, label: "Entradas Lancers", id: "Carteira (Trial) · Entradas Lancers" }, { icon: TrendingUp, label: "Saídas", id: "Carteira (Trial) · Saídas" }] },
+  { icon: Users, label: "Carteira", children: [{ icon: Search, label: "Consulta", id: "Carteira (Trial) · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira (Trial) · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira (Trial) · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira (Trial) · Entradas" }, { icon: TrendingUp, label: "Entradas Lancers", id: "Carteira (Trial) · Entradas Lancers" }, { icon: TrendingUp, label: "Saídas", id: "Carteira (Trial) · Saídas" }] },
 ];
 
 const LAB_IDS = new Set<string>(["Laboratory", ...labItems.flatMap((g) => g.children ? g.children.map((c) => c.id ?? c.label) : [g.label])]);
