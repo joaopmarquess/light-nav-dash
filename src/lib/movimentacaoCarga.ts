@@ -40,6 +40,10 @@ export function mesesMovimentacao(periodo: PeriodoMovimentacao): PeriodoMoviment
   return meses;
 }
 
+export function ultimosMesesMovimentacao(periodo: PeriodoMovimentacao): PeriodoMovimentacao[] {
+  return mesesMovimentacao(periodo).slice(-12);
+}
+
 export function somarTotaisMovimentacao(rows: Record<string, unknown>[]): TotaisMovimentacao {
   return rows.reduce<TotaisMovimentacao>((acc, row) => ({
     e: acc.e + Number(row.vendas ?? 0),

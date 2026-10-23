@@ -1,3 +1,4 @@
+- [ ] Adicionar seleção dos últimos 12 meses após Calcular, com indicadores e detalhes do intervalo selecionado, preservando o gráfico do período.
 - [x] Substituir gráfico de vidas pelo combinado mensal de vendas, saídas absolutas e crescimento, reaproveitando totais dos cards; dez testes aprovados e dados reais de agosto a outubro conferidos com seis barras e uma linha, sem erros.
 - [x] Preparar SQL de totais e separar cards da depuração sob demanda; 16 testes aprovados. Referência real antes: 13,32 s para 01/10–23/10/2026, cinco chamadas incluindo KPIs.
 - [x] Validar função instalada em 01/10–23/10/2026: cards em 4,29 s e 5,32 s contra referência de 13,32 s; zero consultas de detalhes antes do olho, três após abrir e nenhuma adicional ao reabrir. Na segunda execução, 493 T+ menos 478 T− reconciliam saldo 15; gráfico e quadros conferidos. Contagens variaram entre execuções (saldo 16/15), sem congelamento da fonte.

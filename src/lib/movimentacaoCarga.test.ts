@@ -1,8 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { mesesMovimentacao, somarTotaisMovimentacao, fechamentosMensaisMovimentacao, escalaVidasMensais, fluxoMensalMovimentacao, combinarFluxosEVidas } from "./movimentacaoCarga";
+import { mesesMovimentacao, ultimosMesesMovimentacao, somarTotaisMovimentacao, fechamentosMensaisMovimentacao, escalaVidasMensais, fluxoMensalMovimentacao, combinarFluxosEVidas } from "./movimentacaoCarga";
 import { resumoMovimentacao } from "./movimentacaoResumo";
 
 describe("carga de totais da Movimentação", () => {
+  it("limita os botões aos últimos 12 meses do período", () => {
+    const meses = ultimosMesesMovimentacao({ de: "2025-01-01", ate: "2026-10-23" });
+    expect(meses).toHaveLength(12);
+    expect(meses[0]).toEqual({ de: "2025-11-01", ate: "2025-11-30" });
+    expect(meses[11]).toEqual({ de: "2026-10-01", ate: "2026-10-23" });
+  });
+  it("mantém os limites aplicados ao selecionar um mês parcial", () => {
+    expect(ultimosMesesMovimentacao({ de: "2026-08-15", ate: "2026-10-23" })).toEqual([
+      { de: "2026-08-15", ate: "2026-08-31" },
+      { de: "2026-09-01", ate: "2026-09-30" },
+      { de: "2026-10-01", ate: "2026-10-23" },
+    ]);
+  });
   it("usa vidas consultadas no fechamento para a linha, sem substituir pelo crescimento líquido", () => {
     expect(combinarFluxosEVidas([{ mes: "2026-09", vendas: 1200, saidas: 1000, crescimento: 300 }], [{ mes: "2026-09", data: "2026-09-30", vidas: 71337 }])).toEqual([{ mes: "2026-09", vendas: 1200, saidas: 1000, crescimento: 300, data: "2026-09-30", vidas: 71337 }]);
   });
