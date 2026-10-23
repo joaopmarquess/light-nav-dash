@@ -20,3 +20,11 @@ describe("somas por competência", () => {
     expect(competenciasDoAno(new Date("2026-10-23T12:00:00Z")).map(c => c.mes)).toEqual([1,2,3,4,5,6,7,8,9,10]);
   });
 });
+
+import { saldoCompetencia, sinistralidade } from "./sinistralidadeCompetencias";
+describe("saldo e sin", () => {
+  const s = { ...somaVazia(), recTotal: 200, despTotal: 150 };
+  it("saldo = rec. total − desp. total", () => expect(saldoCompetencia(s)).toBe(50));
+  it("sin = desp. total ÷ rec. total", () => expect(sinistralidade(s)).toBe(0.75));
+  it("sin sem receita fica vazio", () => expect(sinistralidade(somaVazia())).toBeNull());
+});

@@ -37,3 +37,8 @@ export function competenciasDoAno(hoje: Date): { ano: number; mes: number }[] {
   const ano = hoje.getUTCFullYear();
   return Array.from({ length: hoje.getUTCMonth() + 1 }, (_, i) => ({ ano, mes: i + 1 }));
 }
+
+/** Saldo = receita total − despesa total. */
+export const saldoCompetencia = (s: SomaCompetencia) => s.recTotal - s.despTotal;
+/** Sin = despesa total ÷ receita total (null sem receita). */
+export const sinistralidade = (s: SomaCompetencia) => (s.recTotal ? s.despTotal / s.recTotal : null);
