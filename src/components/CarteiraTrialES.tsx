@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { normalizarVendedor } from "@/lib/vendedorTransferencia";
 import { hostinger } from "@/lib/hostingerClient";
 import { useGruposVendedor, useGruposMotivo } from "@/lib/vendedorGrupo";
 
