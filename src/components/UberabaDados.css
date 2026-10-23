@@ -1,7 +1,8 @@
 .study-data { container-type: inline-size; min-width: 0; color: hsl(var(--foreground)); display: flex; flex-direction: column; gap: 20px; }
 .study-data-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid hsl(var(--border)); padding-bottom: 16px; }
 .study-data-heading h3 { font-size: 26px; font-weight: 700; }
-.study-data-heading p, .study-data-footnote { font-size: 13px; color: hsl(var(--muted-foreground)); }
+.study-data-heading p { font-size: 17px; line-height: 1.5; color: hsl(var(--muted-foreground)); }
+.study-data-footnote { font-size: 13px; color: hsl(var(--muted-foreground)); }
 .study-data-kpis { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; }
 .study-data-kpi { padding: 16px 18px; border: 1px solid hsl(var(--border)); border-top: 4px solid hsl(var(--hospital-blue)); border-radius: 6px; background: hsl(var(--muted) / .4); }
 .study-data-kpi:nth-child(2) { border-top-color: hsl(var(--marketing-trust)); }
