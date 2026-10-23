@@ -1,3 +1,4 @@
+- [ ] Incluir gráfico de crescimento mensal no período calculado usando os mesmos totais, sem novas consultas.
 - [x] Preparar SQL de totais e separar cards da depuração sob demanda; 16 testes aprovados. Referência real antes: 13,32 s para 01/10–23/10/2026, cinco chamadas incluindo KPIs.
 - [ ] Validar totais e depuração com dados reais e medir depois no mesmo período; bloqueado pela instalação externa de carteira_movimentacao_totais, confirmada ausente na tela. Não confundir resposta de função ausente com ganho de desempenho.
 - [x] Refazer Movimentação com sete indicadores e dois quadros de depuração conforme o mapa mental; nove testes aprovados e acesso autorizado confirmou ausência de consultas antes de Calcular, dois quadros com dados reais após cálculo e resultados ocultos após Limpar.

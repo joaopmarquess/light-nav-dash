@@ -3,7 +3,8 @@ import { hostinger } from "@/lib/hostingerClient";
 import { type BlocoMes, type TransfPar, type TipoReentrada } from "@/lib/transferencias";
 import { podeCalcularMovimentacao, resumoMovimentacao } from "@/lib/movimentacaoResumo";
 import { normalizarVendedor } from "@/lib/vendedorTransferencia";
-import { mesesMovimentacao, somarTotaisMovimentacao, type TotaisMovimentacao } from "@/lib/movimentacaoCarga";
+import { mesesMovimentacao, somarTotaisMovimentacao, crescimentoMensalMovimentacao, type CrescimentoMensal, type TotaisMovimentacao } from "@/lib/movimentacaoCarga";
+import MovimentacaoCrescimentoMensal from "@/components/MovimentacaoCrescimentoMensal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X, UserPlus, UserMinus, Scale, RotateCcw, ArrowRightLeft, LogIn, LogOut, Users, Eye, EyeOff, LoaderCircle } from "lucide-react";
@@ -50,6 +51,7 @@ export default function CarteiraTrialMov() {
   const [sel, setSel] = useState<Sel>(null);
   const [depuracaoAberta, setDepuracaoAberta] = useState(false);
   const [totais, setTotais] = useState<TotaisMovimentacao | null>(null);
+  const [mensal, setMensal] = useState<CrescimentoMensal[]>([]);
   const [detalhesLoading, setDetalhesLoading] = useState(false);
   const [detalhesErro, setDetalhesErro] = useState<string | null>(null);
   const [detalhesProntos, setDetalhesProntos] = useState(false);
@@ -57,7 +59,7 @@ export default function CarteiraTrialMov() {
   useEffect(() => {
     if (!podeCalcularMovimentacao(ap)) return;
     let off = false;
-    setLoading(true); setErr(null); setTotais(null);
+    setLoading(true); setErr(null); setTotais(null); setMensal([]);
     (async () => {
       try {
         const meses = mesesMovimentacao(ap);
@@ -76,7 +78,10 @@ export default function CarteiraTrialMov() {
           }));
           rows.push(...res);
         }
-        if (!off) setTotais(somarTotaisMovimentacao(rows));
+        if (!off) {
+          setTotais(somarTotaisMovimentacao(rows));
+          setMensal(meses.map((mes, i) => crescimentoMensalMovimentacao(mes, rows[i])));
+        }
       } catch (e: any) { if (!off) setErr(e.message); }
       finally { if (!off) setLoading(false); }
     })();
@@ -157,7 +162,7 @@ export default function CarteiraTrialMov() {
   const nB = (t: Tipo, b: BlocoMes, sub?: TipoReentrada) => evs.filter((x) => x.tipo === t && bl(x) === b && (!sub || x.par?.tipo === sub)).length;
   const resetDetalhes = () => { setDepuracaoAberta(false); setSel(null); setEvs([]); setDetalhesProntos(false); setDetalhesErro(null); setDetalhesLoading(false); };
   const buscar = () => { if (podeCalcularMovimentacao(f)) { resetDetalhes(); setAp({ ...f }); } };
-  const limpar = () => { resetDetalhes(); setTotais(null); setF(EMPTY()); setAp(null); setErr(null); setLoading(false); setVidas({ ant: null, fin: null }); };
+  const limpar = () => { resetDetalhes(); setTotais(null); setMensal([]); setF(EMPTY()); setAp(null); setErr(null); setLoading(false); setVidas({ ant: null, fin: null }); };
   const v = (n: number) => (detalhesLoading || !detalhesProntos ? "…" : num(n));
 
   const card = (label: string, value: number | null, Icon: typeof Users, negative = false, tipo: Tipo | null = null, neutral = false) => (
@@ -231,6 +236,7 @@ export default function CarteiraTrialMov() {
         {card("Crescimento", resumo.crescimento, Scale, resumo.crescimento < 0)}
       </div>
       {err && <div className="p-4 text-center text-destructive">Erro: {err}</div>}
+      {!loading && totais && mensal.length > 0 && <MovimentacaoCrescimentoMensal dados={mensal} />}
       {cortado && <div className="text-xs text-muted-foreground">Limite de busca atingido, reduza o período.</div>}
       {depuracaoAberta && <section id="depuracao-transferencias" className="space-y-5 border-t pt-5">
         <h2 className="text-lg font-semibold">Depuração de Transferência Líq.</h2>

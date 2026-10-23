@@ -1,5 +1,13 @@
+import { resumoMovimentacao } from "./movimentacaoResumo";
+
 export type PeriodoMovimentacao = { de: string; ate: string };
 export type TotaisMovimentacao = { e: number; s: number; r: number; tp: number; tm: number };
+export type CrescimentoMensal = PeriodoMovimentacao & { mes: string; crescimento: number };
+
+export function crescimentoMensalMovimentacao(periodo: PeriodoMovimentacao, row: Record<string, unknown>): CrescimentoMensal {
+  const t = somarTotaisMovimentacao([row]);
+  return { ...periodo, mes: periodo.de.slice(0, 7), crescimento: resumoMovimentacao(t.e, t.s, t.r, t.tp, t.tm).crescimento };
+}
 
 export function mesesMovimentacao(periodo: PeriodoMovimentacao): PeriodoMovimentacao[] {
   const meses: PeriodoMovimentacao[] = [];
