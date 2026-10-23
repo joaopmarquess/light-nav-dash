@@ -8,7 +8,7 @@ const fmtData = (data: string) => data.split("-").reverse().join("/");
 export default function MovimentacaoCrescimentoMensal({ dados }: { dados: VidasMensais[] }) {
   return <section aria-labelledby="crescimento-mensal-titulo" className="min-w-0 border-t pt-5">
     <h2 id="crescimento-mensal-titulo" className="mb-4 text-lg font-semibold">Vidas no fim de cada mês</h2>
-    <div className="h-72 w-full text-xs text-muted-foreground" role="img" aria-label={dados.map(d => `${fmtData(d.data)}: ${d.vidas.toLocaleString("pt-BR")} vidas`).join("; ")}>
+    <div className="mx-auto h-[480px] w-full max-w-4xl text-xs text-muted-foreground" role="img" aria-label={dados.map(d => `${fmtData(d.data)}: ${d.vidas.toLocaleString("pt-BR")} vidas`).join("; ")}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={dados} margin={{ top: 16, right: 16, bottom: 8, left: 8 }} accessibilityLayer>
           <CartesianGrid vertical={false} stroke="hsl(var(--border))" strokeDasharray="3 3" />
