@@ -118,7 +118,8 @@ export default function SinistralidadePeriodosMV() {
                     <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" />
                     <Tooltip formatter={(v: number, n: string) => [fmt(v), n === "limite" ? "Limite Sin 90%" : "Saldo"]} labelFormatter={l => `${l}/${sel.ano}`} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
                     <defs><linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset={corte} stopColor="hsl(var(--chart-sin-ok))" stopOpacity={0.3} />
+                      <stop offset={0} stopColor="hsl(var(--chart-sin-ok))" stopOpacity={0.85} />
+                      <stop offset={corte} stopColor="hsl(var(--chart-sin-ok))" stopOpacity={0.1} />
                       <stop offset={corte} stopColor="hsl(var(--chart-sin-alerta))" stopOpacity={0.3} />
                       <stop offset={corteZero} stopColor="hsl(var(--chart-sin-alerta))" stopOpacity={0.3} />
                       <stop offset={corteZero} stopColor="hsl(var(--destructive))" stopOpacity={0.75} />
