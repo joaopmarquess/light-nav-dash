@@ -239,7 +239,7 @@ export default function CarteiraTrialMov() {
       {!loading && totais && mensal.length > 0 && <MovimentacaoCrescimentoMensal dados={mensal} />}
       {cortado && <div className="text-xs text-muted-foreground">Limite de busca atingido, reduza o período.</div>}
       {depuracaoAberta && <section id="depuracao-transferencias" className="space-y-5 border-t pt-5">
-        <h2 className="text-lg font-semibold">Depuração de Transferência Líq.</h2>
+        <h2 className="text-lg font-semibold">Saldo das Transferências: <span className="tabular-nums">{num(resumo.transferenciasLiquidas)}</span></h2>
         {detalhesLoading && <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-5 w-5 motion-safe:animate-spin" />{detalhesEtapa}</div>}
         {detalhesErro && <div role="alert" className="text-destructive">Erro: {detalhesErro}</div>}
         <div className="grid gap-8 xl:grid-cols-2">{quadro("T+")}{quadro("T-")}</div>
