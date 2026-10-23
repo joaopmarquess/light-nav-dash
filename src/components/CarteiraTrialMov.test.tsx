@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor, cleanup } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const api = vi.hoisted(() => ({ rpc: vi.fn(), pages: vi.fn() }));
+vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} });
 vi.mock("@/lib/hostingerClient", () => ({ hostinger: { rpc: api.rpc } }));
 import CarteiraTrialMov from "./CarteiraTrialMov";
 

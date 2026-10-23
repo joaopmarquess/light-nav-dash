@@ -1,8 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { mesesMovimentacao, somarTotaisMovimentacao } from "./movimentacaoCarga";
+import { mesesMovimentacao, somarTotaisMovimentacao, crescimentoMensalMovimentacao } from "./movimentacaoCarga";
 import { resumoMovimentacao } from "./movimentacaoResumo";
 
 describe("carga de totais da Movimentação", () => {
+  it("calcula o crescimento mensal com transferências e respeita o mês parcial selecionado", () => {
+    expect(crescimentoMensalMovimentacao({ de: "2026-10-01", ate: "2026-10-23" }, {
+      vendas: 11771, cancelamentos: 8049, reativacoes: 1179, entradas_transferencia: 2043, saidas_transferencia: 2019,
+    })).toEqual({ de: "2026-10-01", ate: "2026-10-23", mes: "2026-10", crescimento: 4925 });
+  });
+  it("mantém crescimento negativo em meses de redução", () => {
+    expect(crescimentoMensalMovimentacao({ de: "2026-09-01", ate: "2026-09-30" }, {
+      vendas: 10, cancelamentos: 30, reativacoes: 2, entradas_transferencia: 3, saidas_transferencia: 5,
+    }).crescimento).toBe(-20);
+  });
   it("preserva limites do período e a janela mensal", () => {
     expect(mesesMovimentacao({ de: "2026-01-15", ate: "2026-03-12" })).toEqual([
       { de: "2026-01-15", ate: "2026-01-31" },
