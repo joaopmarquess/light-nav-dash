@@ -115,7 +115,7 @@ export default function CarteiraTrialMov() {
         }
       } catch (e: any) { if (!off) { setDetalhesErro(e.message); setDetalhesLoading(false); } return; }
       const out: Ev[] = rows.map((x) => {
-        const r = { cd_mat_alternativa: x.mat, nm_beneficiario: x.nome, nm_empresa_estipulante: x.empresa, nm_vendedor: normalizarVendedor(x.cd_vendedor, x.nm_vendedor), cd_vendedor: x.cd_vendedor, nr_cpf: x.cpf };
+        const r = normalizarVendedor({ cd_mat_alternativa: x.mat, nm_beneficiario: x.nome, nm_empresa_estipulante: x.empresa, nm_vendedor: x.nm_vendedor, cd_vendedor: x.cd_vendedor, nr_cpf: x.cpf });
         const par: TransfPar | undefined = x.tipo === "T+" || x.tipo === "T-" ? {
           cpf: String(x.cpf ?? ""), nome: x.nome ?? "", matAnterior: String(x.mat_anterior ?? ""), saida: dia(x.saida), motivo: x.motivo,
           matNova: String(x.mat_nova ?? ""), entrada: dia(x.entrada), vendedor: x.cd_vendedor_novo, nmVendedor: x.nm_vendedor_novo, tipo: x.tipo_reentrada as TipoReentrada,
