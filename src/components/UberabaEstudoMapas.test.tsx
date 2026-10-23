@@ -11,6 +11,10 @@ describe("Estudo map selection", () => {
     expect(screen.getByRole("button", { name: "Home" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("region", { name: "Home do Estudo" })).toBeVisible();
     expect(screen.queryByText("Mapa regional selecionado")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /^Dados$/ }));
+    expect(screen.getByRole("region", { name: "Dados" })).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: /^Home$/ }));
+    expect(screen.getByRole("region", { name: "Home do Estudo" })).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Painel" }));
     expect(screen.getByLabelText("Filtro do painel")).toBeVisible();
     expect(screen.queryByText("Mapa regional selecionado")).toBeNull();

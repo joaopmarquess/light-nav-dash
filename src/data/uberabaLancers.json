@@ -1,0 +1,3722 @@
+{
+  "mercado": {
+    "file": "Bensaude_Mercado_Lancers_2026.html",
+    "tables": [
+      {
+        "title": "1. Limítrofes de Uberaba (3170107): 9 municípios",
+        "headers": [
+          "Método",
+          "Resultado"
+        ],
+        "rows": [
+          [
+            "A. Malha municipal IBGE (API v3, MG, qualidade máxima): segmentos de divisa compartilhados",
+            "9 municípios com divisa real"
+          ],
+          [
+            "B. IBGE, Coleção de Monografias Municipais nº 462 'Uberaba', 2ª ed. (dados de 1968): 'Limita-se com os municípios de Indianópolis, Uberlândia, Água Comprida, Igarapava, Conquista, Sacramento, Nova Ponte, Veríssimo e Conceição das Alagoas' (https://biblioteca.ibge.gov.br/visualizacao/periodicos/113/col_mono_n462_uberaba_2ed.pdf)",
+            "Os 8 limítrofes mineiros da monografia coincidem com a malha IBGE 2024. Delta aparece só na malha: não consta da monografia (dados de 1968), que é anterior à criação do município. Igarapava/SP fica fora por ser de outra UF; a malha também aponta 33,2 km de divisa com SP. ✅ coincidem (8 + Delta)"
+          ]
+        ]
+      },
+      {
+        "title": "3. Indicadores socioeconômicos",
+        "headers": [
+          "Município",
+          "Cód. IBGE",
+          "Papel",
+          "Divisa (km)",
+          "Pop. Censo 2022",
+          "Pop. estimada 2026",
+          "Renda dom. pc média (R$)",
+          "Renda dom. pc mediana (R$)",
+          "PIB 2023 (R$ bi)",
+          "PIB per capita (R$)",
+          "Salário médio (SM)",
+          "Empresas",
+          "Assalariados",
+          "IDHM 2010"
+        ],
+        "rows": [
+          [
+            "Uberaba",
+            "3170107",
+            "praça nova",
+            "—",
+            "337.836",
+            "359.275",
+            "1939,60",
+            "1300,00",
+            "23,69",
+            "70.121",
+            "2,5",
+            "20.376",
+            "104.121",
+            "0,772"
+          ],
+          [
+            "Uberlândia",
+            "3170206",
+            "limítrofe",
+            "122,1",
+            "713.224",
+            "768.339",
+            "2079,68",
+            "1333,33",
+            "51,07",
+            "71.598",
+            "2,6",
+            "54.656",
+            "239.723",
+            "0,789"
+          ],
+          [
+            "Frutal",
+            "3127107",
+            "L3 · Triângulo",
+            "—",
+            "58.588",
+            "61.588",
+            "1600,24",
+            "1200,00",
+            "4,03",
+            "68.730",
+            "2,1",
+            "3.513",
+            "15.986",
+            "0,730"
+          ],
+          [
+            "Iturama",
+            "3134400",
+            "L3 · Triângulo",
+            "—",
+            "38.295",
+            "40.493",
+            "1765,14",
+            "1212,00",
+            "2,86",
+            "74.812",
+            "2,2",
+            "2.338",
+            "11.136",
+            "0,747"
+          ],
+          [
+            "Conceição das Alagoas",
+            "3117306",
+            "limítrofe",
+            "26,9",
+            "28.381",
+            "30.589",
+            "1299,73",
+            "925,00",
+            "1,78",
+            "62.797",
+            "2,4",
+            "1.030",
+            "5.657",
+            "0,712"
+          ],
+          [
+            "Sacramento",
+            "3156908",
+            "limítrofe",
+            "15,2",
+            "26.670",
+            "28.251",
+            "1829,52",
+            "1212,00",
+            "2,39",
+            "89.507",
+            "2,1",
+            "1.436",
+            "7.540",
+            "0,732"
+          ],
+          [
+            "Campina Verde",
+            "3111101",
+            "L3 · Triângulo",
+            "—",
+            "18.011",
+            "18.129",
+            "1558,18",
+            "1212,00",
+            "0,68",
+            "37.625",
+            "1,8",
+            "904",
+            "2.761",
+            "0,704"
+          ],
+          [
+            "Nova Ponte",
+            "3145000",
+            "limítrofe",
+            "78,6",
+            "14.598",
+            "15.321",
+            "1505,83",
+            "1178,00",
+            "1,58",
+            "108.347",
+            "1,7",
+            "888",
+            "2.652",
+            "0,701"
+          ],
+          [
+            "Fronteira",
+            "3127008",
+            "L3 · Triângulo",
+            "—",
+            "14.540",
+            "14.980",
+            "1354,64",
+            "1006,00",
+            "1,09",
+            "74.995",
+            "1,9",
+            "707",
+            "2.072",
+            "0,684"
+          ],
+          [
+            "Itapagipe",
+            "3133402",
+            "L3 · Triângulo",
+            "—",
+            "13.690",
+            "14.024",
+            "1635,17",
+            "1200,00",
+            "0,71",
+            "52.219",
+            "2,4",
+            "529",
+            "2.830",
+            "0,723"
+          ],
+          [
+            "Delta",
+            "3121258",
+            "limítrofe",
+            "31,2",
+            "10.494",
+            "11.275",
+            "1021,95",
+            "804,00",
+            "0,71",
+            "67.511",
+            "2,6",
+            "429",
+            "4.851",
+            "0,639"
+          ],
+          [
+            "Carneirinho",
+            "3114550",
+            "L3 · Triângulo",
+            "—",
+            "9.422",
+            "9.636",
+            "1588,77",
+            "1212,00",
+            "0,68",
+            "72.650",
+            "2,2",
+            "427",
+            "1.926",
+            "0,741"
+          ],
+          [
+            "Limeira do Oeste",
+            "3138625",
+            "L3 · Triângulo",
+            "—",
+            "8.687",
+            "9.290",
+            "1567,05",
+            "1233,33",
+            "0,78",
+            "89.244",
+            "2,9",
+            "334",
+            "3.195",
+            "0,710"
+          ],
+          [
+            "Conquista",
+            "3118205",
+            "limítrofe",
+            "42,2",
+            "6.694",
+            "6.890",
+            "1504,91",
+            "1200,00",
+            "0,67",
+            "100.332",
+            "2,3",
+            "314",
+            "784",
+            "0,729"
+          ],
+          [
+            "Indianópolis",
+            "3130705",
+            "limítrofe",
+            "10,2",
+            "6.171",
+            "6.314",
+            "1534,43",
+            "1175,00",
+            "2,15",
+            "348.423",
+            "4,1",
+            "253",
+            "2.662",
+            "0,674"
+          ],
+          [
+            "São Francisco de Sales",
+            "3161304",
+            "L3 · Triângulo",
+            "—",
+            "5.732",
+            "5.859",
+            "1313,75",
+            "1050,00",
+            "0,25",
+            "43.502",
+            "2,1",
+            "191",
+            "862",
+            "0,688"
+          ],
+          [
+            "União de Minas",
+            "3170438",
+            "L3 · Triângulo",
+            "—",
+            "3.828",
+            "3.789",
+            "1279,07",
+            "1062,40",
+            "0,19",
+            "49.028",
+            "1,9",
+            "155",
+            "481",
+            "0,672"
+          ],
+          [
+            "Veríssimo",
+            "3171105",
+            "limítrofe",
+            "71,1",
+            "3.411",
+            "3.476",
+            "1352,42",
+            "1000,00",
+            "0,31",
+            "89.993",
+            "2,3",
+            "134",
+            "407",
+            "0,667"
+          ],
+          [
+            "Comendador Gomes",
+            "3116902",
+            "L3 · Triângulo",
+            "—",
+            "2.773",
+            "2.795",
+            "1482,71",
+            "1208,80",
+            "0,23",
+            "81.280",
+            "2,0",
+            "147",
+            "2.537",
+            "0,697"
+          ],
+          [
+            "Água Comprida",
+            "3100708",
+            "limítrofe",
+            "44,9",
+            "2.108",
+            "2.176",
+            "1631,86",
+            "1212,00",
+            "0,33",
+            "156.993",
+            "2,8",
+            "85",
+            "228",
+            "0,675"
+          ]
+        ]
+      },
+      {
+        "title": "4. Principal fonte de renda (VAB 2021, último ano municipal publicado · PAM 2025)",
+        "headers": [
+          "Município",
+          "VAB agro %",
+          "VAB indústria %",
+          "VAB serviços %",
+          "VAB adm. pública %",
+          "Maior setor",
+          "Cultura principal (PAM)",
+          "% do valor agrícola"
+        ],
+        "rows": [
+          [
+            "Uberaba",
+            "8,3",
+            "35,4",
+            "46,5",
+            "9,8",
+            "Serviços (exc. adm. pública)",
+            "Cana-de-açúcar",
+            "49,1%"
+          ],
+          [
+            "Uberlândia",
+            "2,7",
+            "31,0",
+            "56,7",
+            "9,6",
+            "Serviços (exc. adm. pública)",
+            "Soja (em grão)",
+            "40,1%"
+          ],
+          [
+            "Frutal",
+            "19,8",
+            "17,1",
+            "48,2",
+            "14,9",
+            "Serviços (exc. adm. pública)",
+            "Cana-de-açúcar",
+            "54,6%"
+          ],
+          [
+            "Iturama",
+            "9,0",
+            "43,4",
+            "36,2",
+            "11,3",
+            "Indústria",
+            "Cana-de-açúcar",
+            "74,8%"
+          ],
+          [
+            "Conceição das Alagoas",
+            "34,8",
+            "17,5",
+            "35,7",
+            "12,1",
+            "Serviços (exc. adm. pública)",
+            "Cana-de-açúcar",
+            "53,0%"
+          ],
+          [
+            "Sacramento",
+            "35,9",
+            "22,8",
+            "32,1",
+            "9,2",
+            "Agropecuária",
+            "Soja (em grão)",
+            "30,2%"
+          ],
+          [
+            "Campina Verde",
+            "35,3",
+            "6,2",
+            "39,2",
+            "19,3",
+            "Serviços (exc. adm. pública)",
+            "Cana-de-açúcar",
+            "29,9%"
+          ],
+          [
+            "Nova Ponte",
+            "35,1",
+            "33,0",
+            "22,9",
+            "8,9",
+            "Agropecuária",
+            "Soja (em grão)",
+            "48,3%"
+          ],
+          [
+            "Fronteira",
+            "1,6",
+            "72,7",
+            "12,8",
+            "12,9",
+            "Indústria",
+            "Abacaxi*",
+            "58,0%"
+          ],
+          [
+            "Itapagipe",
+            "34,0",
+            "18,4",
+            "30,6",
+            "17,0",
+            "Agropecuária",
+            "Cana-de-açúcar",
+            "85,4%"
+          ],
+          [
+            "Delta",
+            "6,1",
+            "42,7",
+            "35,6",
+            "15,7",
+            "Indústria",
+            "Cana-de-açúcar",
+            "93,9%"
+          ],
+          [
+            "Carneirinho",
+            "38,6",
+            "17,0",
+            "26,9",
+            "17,6",
+            "Agropecuária",
+            "Cana-de-açúcar",
+            "92,4%"
+          ],
+          [
+            "Limeira do Oeste",
+            "31,0",
+            "32,3",
+            "25,1",
+            "11,6",
+            "Indústria",
+            "Cana-de-açúcar",
+            "90,3%"
+          ],
+          [
+            "Conquista",
+            "33,8",
+            "38,3",
+            "18,2",
+            "9,7",
+            "Indústria",
+            "Cana-de-açúcar",
+            "54,3%"
+          ],
+          [
+            "Indianópolis",
+            "31,3",
+            "50,5",
+            "12,2",
+            "6,0",
+            "Indústria",
+            "Café (em grão) Total",
+            "54,3%"
+          ],
+          [
+            "São Francisco de Sales",
+            "49,9",
+            "5,1",
+            "24,4",
+            "20,6",
+            "Agropecuária",
+            "Cana-de-açúcar",
+            "74,0%"
+          ],
+          [
+            "União de Minas",
+            "56,0",
+            "4,5",
+            "20,2",
+            "19,4",
+            "Agropecuária",
+            "Cana-de-açúcar",
+            "77,6%"
+          ],
+          [
+            "Veríssimo",
+            "61,4",
+            "4,1",
+            "17,6",
+            "16,8",
+            "Agropecuária",
+            "Cana-de-açúcar",
+            "82,8%"
+          ],
+          [
+            "Comendador Gomes",
+            "62,0",
+            "3,6",
+            "18,9",
+            "15,4",
+            "Agropecuária",
+            "Laranja",
+            "70,5%"
+          ],
+          [
+            "Água Comprida",
+            "69,0",
+            "4,4",
+            "17,7",
+            "8,9",
+            "Agropecuária",
+            "Cana-de-açúcar",
+            "68,9%"
+          ]
+        ]
+      },
+      {
+        "title": "5. Emprego formal por CNAE e porte: RAIS 2025 (vínculos ativos em 31/12)",
+        "headers": [
+          "Município",
+          "Vínculos",
+          "Top 3 seções",
+          "Top 3 divisões",
+          "Indústria de transformação",
+          "Maior divisão industrial",
+          "Estab. 1–9",
+          "10–49",
+          "50–99",
+          "100+"
+        ],
+        "rows": [
+          [
+            "Uberaba",
+            "112.451",
+            "G Comércio; reparação de veículos automotores e motocicletas (18,2%)",
+            "C Indústrias de transformação (18,2%)",
+            "O Administração pública, defesa e seguridade social (10,4%)",
+            "47 Comércio varejista (11,6%)",
+            "84 Administração pública, defesa e seguridade social (10,4%)",
+            "85 Educação (9,7%)",
+            "18,2%",
+            "20 Fabricação de produtos químicos (4,4%)"
+          ],
+          [
+            "Uberlândia",
+            "254.163",
+            "G Comércio; reparação de veículos automotores e motocicletas (20,6%)",
+            "N Atividades administrativas e serviços complementares (13,5%)",
+            "C Indústrias de transformação (12,2%)",
+            "47 Comércio varejista (11,9%)",
+            "82 Serviços de escritório, de apoio administrativo e outros serviços prestados principalmente às empresas (7,6%)",
+            "86 Atividades de atenção à saúde humana (7,1%)",
+            "12,2%",
+            "10 Fabricação de produtos alimentícios (5,5%)"
+          ],
+          [
+            "Frutal",
+            "19.051",
+            "C Indústrias de transformação (22,8%)",
+            "G Comércio; reparação de veículos automotores e motocicletas (19,4%)",
+            "A Agricultura, pecuária, produção florestal, pesca e aqüicultura (12,5%)",
+            "47 Comércio varejista (13,0%)",
+            "01 Agricultura, pecuária e serviços relacionados (12,4%)",
+            "84 Administração pública, defesa e seguridade social (10,6%)",
+            "22,8%",
+            "19 Fabricação de coque, de produtos derivados do petróleo e de biocombustíveis (7,3%)"
+          ],
+          [
+            "Iturama",
+            "12.265",
+            "C Indústrias de transformação (28,5%)",
+            "G Comércio; reparação de veículos automotores e motocicletas (19,2%)",
+            "O Administração pública, defesa e seguridade social (12,5%)",
+            "10 Fabricação de produtos alimentícios (25,6%)",
+            "47 Comércio varejista (13,9%)",
+            "84 Administração pública, defesa e seguridade social (12,5%)",
+            "28,5%",
+            "10 Fabricação de produtos alimentícios (25,6%)"
+          ],
+          [
+            "Conceição das Alagoas",
+            "7.292",
+            "C Indústrias de transformação (32,6%)",
+            "A Agricultura, pecuária, produção florestal, pesca e aqüicultura (16,9%)",
+            "O Administração pública, defesa e seguridade social (16,8%)",
+            "10 Fabricação de produtos alimentícios (29,3%)",
+            "01 Agricultura, pecuária e serviços relacionados (16,8%)",
+            "84 Administração pública, defesa e seguridade social (16,8%)",
+            "32,6%",
+            "10 Fabricação de produtos alimentícios (29,3%)"
+          ],
+          [
+            "Sacramento",
+            "9.915",
+            "C Indústrias de transformação (20,4%)",
+            "A Agricultura, pecuária, produção florestal, pesca e aqüicultura (17,7%)",
+            "F Construção (14,1%)",
+            "01 Agricultura, pecuária e serviços relacionados (17,3%)",
+            "84 Administração pública, defesa e seguridade social (13,6%)",
+            "43 Serviços especializados para construção (13,0%)",
+            "20,4%",
+            "10 Fabricação de produtos alimentícios (11,3%)"
+          ],
+          [
+            "Campina Verde",
+            "4.018",
+            "A Agricultura, pecuária, produção florestal, pesca e aqüicultura (27,9%)",
+            "O Administração pública, defesa e seguridade social (22,2%)",
+            "G Comércio; reparação de veículos automotores e motocicletas (17,4%)",
+            "01 Agricultura, pecuária e serviços relacionados (27,9%)",
+            "84 Administração pública, defesa e seguridade social (22,2%)",
+            "47 Comércio varejista (14,4%)",
+            "12,2%",
+            "10 Fabricação de produtos alimentícios (8,7%)"
+          ],
+          [
+            "Nova Ponte",
+            "4.013",
+            "O Administração pública, defesa e seguridade social (26,3%)",
+            "A Agricultura, pecuária, produção florestal, pesca e aqüicultura (23,4%)",
+            "G Comércio; reparação de veículos automotores e motocicletas (12,5%)",
+            "84 Administração pública, defesa e seguridade social (26,3%)",
+            "01 Agricultura, pecuária e serviços relacionados (22,5%)",
+            "82 Serviços de escritório, de apoio administrativo e outros serviços prestados principalmente às empresas (11,6%)",
+            "11,0%",
+            "16 Fabricação de produtos de madeira (7,8%)"
+          ],
+          [
+            "Fronteira",
+            "2.431",
+            "O Administração pública, defesa e seguridade social (44,4%)",
+            "G Comércio; reparação de veículos automotores e motocicletas (14,6%)",
+            "N Atividades administrativas e serviços complementares (11,9%)",
+            "84 Administração pública, defesa e seguridade social (44,4%)",
+            "47 Comércio varejista (12,8%)",
+            "78 Seleção, agenciamento e locação de mão-de-obra (4,8%)",
+            "3,7%",
+            "20 Fabricação de produtos químicos (2,4%)"
+          ],
+          [
+            "Itapagipe",
+            "3.482",
+            "C Indústrias de transformação (28,4%)",
+            "A Agricultura, pecuária, produção florestal, pesca e aqüicultura (21,9%)",
+            "O Administração pública, defesa e seguridade social (19,8%)",
+            "10 Fabricação de produtos alimentícios (25,8%)",
+            "01 Agricultura, pecuária e serviços relacionados (21,9%)",
+            "84 Administração pública, defesa e seguridade social (19,8%)",
+            "28,4%",
+            "10 Fabricação de produtos alimentícios (25,8%)"
+          ],
+          [
+            "Delta",
+            "5.138",
+            "C Indústrias de transformação (50,7%)",
+            "H Transporte, armazenagem e correio (17,7%)",
+            "O Administração pública, defesa e seguridade social (15,8%)",
+            "10 Fabricação de produtos alimentícios (48,6%)",
+            "49 Transporte terrestre (17,7%)",
+            "84 Administração pública, defesa e seguridade social (15,8%)",
+            "50,7%",
+            "10 Fabricação de produtos alimentícios (48,6%)"
+          ],
+          [
+            "Carneirinho",
+            "2.783",
+            "C Indústrias de transformação (35,4%)",
+            "O Administração pública, defesa e seguridade social (28,7%)",
+            "A Agricultura, pecuária, produção florestal, pesca e aqüicultura (19,2%)",
+            "10 Fabricação de produtos alimentícios (30,3%)",
+            "84 Administração pública, defesa e seguridade social (28,7%)",
+            "01 Agricultura, pecuária e serviços relacionados (19,2%)",
+            "35,4%",
+            "10 Fabricação de produtos alimentícios (30,3%)"
+          ],
+          [
+            "Limeira do Oeste",
+            "3.750",
+            "C Indústrias de transformação (54,7%)",
+            "O Administração pública, defesa e seguridade social (15,9%)",
+            "G Comércio; reparação de veículos automotores e motocicletas (9,2%)",
+            "10 Fabricação de produtos alimentícios (28,7%)",
+            "19 Fabricação de coque, de produtos derivados do petróleo e de biocombustíveis (25,8%)",
+            "84 Administração pública, defesa e seguridade social (15,9%)",
+            "54,7%",
+            "10 Fabricação de produtos alimentícios (28,7%)"
+          ],
+          [
+            "Conquista",
+            "1.177",
+            "O Administração pública, defesa e seguridade social (38,8%)",
+            "A Agricultura, pecuária, produção florestal, pesca e aqüicultura (24,3%)",
+            "G Comércio; reparação de veículos automotores e motocicletas (10,8%)",
+            "84 Administração pública, defesa e seguridade social (38,8%)",
+            "01 Agricultura, pecuária e serviços relacionados (24,3%)",
+            "47 Comércio varejista (10,1%)",
+            "10,1%",
+            "10 Fabricação de produtos alimentícios (8,8%)"
+          ],
+          [
+            "Indianópolis",
+            "3.369",
+            "A Agricultura, pecuária, produção florestal, pesca e aqüicultura (43,0%)",
+            "O Administração pública, defesa e seguridade social (18,2%)",
+            "C Indústrias de transformação (16,3%)",
+            "01 Agricultura, pecuária e serviços relacionados (22,4%)",
+            "02 Produção florestal (20,5%)",
+            "84 Administração pública, defesa e seguridade social (18,2%)",
+            "16,3%",
+            "17 Fabricação de celulose, papel e produtos de papel (11,6%)"
+          ],
+          [
+            "São Francisco de Sales",
+            "1.227",
+            "O Administração pública, defesa e seguridade social (30,2%)",
+            "A Agricultura, pecuária, produção florestal, pesca e aqüicultura (29,3%)",
+            "C Indústrias de transformação (16,7%)",
+            "84 Administração pública, defesa e seguridade social (30,2%)",
+            "01 Agricultura, pecuária e serviços relacionados (29,2%)",
+            "13 Fabricação de produtos têxteis (13,1%)",
+            "16,7%",
+            "13 Fabricação de produtos têxteis (13,1%)"
+          ],
+          [
+            "União de Minas",
+            "1.017",
+            "A Agricultura, pecuária, produção florestal, pesca e aqüicultura (49,5%)",
+            "O Administração pública, defesa e seguridade social (32,4%)",
+            "G Comércio; reparação de veículos automotores e motocicletas (7,8%)",
+            "01 Agricultura, pecuária e serviços relacionados (49,5%)",
+            "84 Administração pública, defesa e seguridade social (32,4%)",
+            "47 Comércio varejista (7,4%)",
+            "0,0%",
+            ""
+          ],
+          [
+            "Veríssimo",
+            "667",
+            "A Agricultura, pecuária, produção florestal, pesca e aqüicultura (42,9%)",
+            "O Administração pública, defesa e seguridade social (34,3%)",
+            "C Indústrias de transformação (6,9%)",
+            "01 Agricultura, pecuária e serviços relacionados (42,9%)",
+            "84 Administração pública, defesa e seguridade social (34,3%)",
+            "10 Fabricação de produtos alimentícios (6,7%)",
+            "6,9%",
+            "10 Fabricação de produtos alimentícios (6,7%)"
+          ],
+          [
+            "Comendador Gomes",
+            "3.182",
+            "A Agricultura, pecuária, produção florestal, pesca e aqüicultura (86,6%)",
+            "O Administração pública, defesa e seguridade social (10,0%)",
+            "G Comércio; reparação de veículos automotores e motocicletas (2,1%)",
+            "01 Agricultura, pecuária e serviços relacionados (86,6%)",
+            "84 Administração pública, defesa e seguridade social (10,0%)",
+            "47 Comércio varejista (2,0%)",
+            "0,0%",
+            ""
+          ],
+          [
+            "Água Comprida",
+            "651",
+            "A Agricultura, pecuária, produção florestal, pesca e aqüicultura (43,0%)",
+            "O Administração pública, defesa e seguridade social (42,5%)",
+            "G Comércio; reparação de veículos automotores e motocicletas (4,0%)",
+            "01 Agricultura, pecuária e serviços relacionados (43,0%)",
+            "84 Administração pública, defesa e seguridade social (42,5%)",
+            "47 Comércio varejista (3,8%)",
+            "0,6%",
+            "10 Fabricação de produtos alimentícios (0,6%)"
+          ]
+        ]
+      },
+      {
+        "title": "6. Novo CAGED: 12 meses (202509–202608)",
+        "headers": [
+          "Município",
+          "Saldo",
+          "Admissões",
+          "Desligamentos",
+          "Admissões ÷ vínculos RAIS"
+        ],
+        "rows": [
+          [
+            "Uberlândia",
+            "+1.514",
+            "145.218",
+            "143.704",
+            "57%"
+          ],
+          [
+            "Frutal",
+            "+519",
+            "10.119",
+            "9.600",
+            "53%"
+          ],
+          [
+            "Uberaba",
+            "+482",
+            "60.923",
+            "60.441",
+            "54%"
+          ],
+          [
+            "Comendador Gomes",
+            "+210",
+            "4.188",
+            "3.978",
+            "132%"
+          ],
+          [
+            "Iturama",
+            "+155",
+            "5.687",
+            "5.532",
+            "46%"
+          ],
+          [
+            "Limeira do Oeste",
+            "+124",
+            "1.323",
+            "1.199",
+            "35%"
+          ],
+          [
+            "Conceição das Alagoas",
+            "+103",
+            "3.227",
+            "3.124",
+            "44%"
+          ],
+          [
+            "Carneirinho",
+            "+94",
+            "828",
+            "734",
+            "30%"
+          ],
+          [
+            "União de Minas",
+            "+58",
+            "739",
+            "681",
+            "73%"
+          ],
+          [
+            "Campina Verde",
+            "+40",
+            "2.129",
+            "2.089",
+            "53%"
+          ],
+          [
+            "Indianópolis",
+            "+39",
+            "1.527",
+            "1.488",
+            "45%"
+          ],
+          [
+            "Água Comprida",
+            "+30",
+            "225",
+            "195",
+            "35%"
+          ],
+          [
+            "Sacramento",
+            "+27",
+            "6.862",
+            "6.835",
+            "69%"
+          ],
+          [
+            "Veríssimo",
+            "+10",
+            "259",
+            "249",
+            "39%"
+          ],
+          [
+            "Fronteira",
+            "+3",
+            "1.133",
+            "1.130",
+            "47%"
+          ],
+          [
+            "São Francisco de Sales",
+            "−9",
+            "851",
+            "860",
+            "69%"
+          ],
+          [
+            "Conquista",
+            "−16",
+            "245",
+            "261",
+            "21%"
+          ],
+          [
+            "Itapagipe",
+            "−117",
+            "1.084",
+            "1.201",
+            "31%"
+          ],
+          [
+            "Delta",
+            "−133",
+            "1.738",
+            "1.871",
+            "34%"
+          ],
+          [
+            "Nova Ponte",
+            "−149",
+            "1.850",
+            "1.999",
+            "46%"
+          ],
+          [
+            "Universo",
+            "+2.984",
+            "250.155",
+            "247.171",
+            "55%"
+          ]
+        ]
+      },
+      {
+        "title": "1. Visão geral (ago/26)",
+        "headers": [
+          "Recorte",
+          "Municípios",
+          "População",
+          "Vidas",
+          "Penetração",
+          "Vidas Bensaúde",
+          "Share",
+          "Ranking",
+          "Nº de operadoras"
+        ],
+        "rows": [
+          [
+            "Universo",
+            "20",
+            "1.412.489",
+            "514.465",
+            "36,4%",
+            "4.611",
+            "0,90%",
+            "15º",
+            "330"
+          ],
+          [
+            "Praça nova · Uberaba",
+            "1",
+            "359.275",
+            "141.122",
+            "39,3%",
+            "2",
+            "0,00%",
+            "207º",
+            "247"
+          ],
+          [
+            "Demais 19 (L1 limítrofes, L2, L3)",
+            "19",
+            "1.053.214",
+            "373.343",
+            "35,4%",
+            "4.609",
+            "1,23%",
+            "15º",
+            "304"
+          ]
+        ]
+      },
+      {
+        "title": "2. Por modalidade",
+        "headers": [
+          "Recorte",
+          "Modalidade",
+          "Mercado",
+          "% do mercado",
+          "Operadora",
+          "Share",
+          "Ranking",
+          "Líder (share)"
+        ],
+        "rows": [
+          [
+            "Universo",
+            "Individual",
+            "47.252",
+            "9,2%",
+            "2.782",
+            "5,89%",
+            "4º de 132",
+            "Unimed Uberaba (354066) (32,4%)"
+          ],
+          [
+            "Universo",
+            "Empresarial",
+            "418.381",
+            "81,3%",
+            "396",
+            "0,09%",
+            "41º de 275",
+            "Unimed Uberlândia (384577) (22,7%)"
+          ],
+          [
+            "Universo",
+            "Adesão",
+            "48.735",
+            "9,5%",
+            "1.433",
+            "2,94%",
+            "10º de 127",
+            "Unimed Belo Horizonte (343889) (24,1%)"
+          ],
+          [
+            "Área de venda",
+            "Individual",
+            "20.893",
+            "14,8%",
+            "1",
+            "0,00%",
+            "53º de 78",
+            "Unimed Uberaba (354066) (67,2%)"
+          ],
+          [
+            "Área de venda",
+            "Empresarial",
+            "107.588",
+            "76,2%",
+            "1",
+            "0,00%",
+            "188º de 199",
+            "Unimed Uberaba (354066) (53,8%)"
+          ],
+          [
+            "Área de venda",
+            "Adesão",
+            "12.627",
+            "8,9%",
+            "0",
+            "0,00%",
+            "—º de 83",
+            "Unimed Uberaba (354066) (50,8%)"
+          ],
+          [
+            "Fora da área",
+            "Individual",
+            "26.359",
+            "7,1%",
+            "2.781",
+            "10,55%",
+            "2º de 108",
+            "Unimed Uberlândia (384577) (55,7%)"
+          ],
+          [
+            "Fora da área",
+            "Empresarial",
+            "310.793",
+            "83,2%",
+            "395",
+            "0,13%",
+            "33º de 254",
+            "Unimed Uberlândia (384577) (30,2%)"
+          ],
+          [
+            "Fora da área",
+            "Adesão",
+            "36.108",
+            "9,7%",
+            "1.433",
+            "3,97%",
+            "9º de 112",
+            "Unimed Belo Horizonte (343889) (23,7%)"
+          ]
+        ]
+      },
+      {
+        "title": "3. Por município (ago/26)",
+        "headers": [
+          "Município",
+          "Papel",
+          "Vidas",
+          "Penetração",
+          "% emp.",
+          "% ades.",
+          "% ind.",
+          "Operadora",
+          "Share",
+          "Ranking",
+          "Share ind. · emp. · ades.",
+          "Líder",
+          "Var. mercado"
+        ],
+        "rows": [
+          [
+            "Uberaba",
+            "praça nova",
+            "141.122",
+            "39,3%",
+            "76%",
+            "9%",
+            "15%",
+            "2",
+            "0,00%",
+            "207º/247",
+            "0,0% · 0,0% · 0,0%",
+            "Unimed Uberaba (354066) (55,5%)",
+            "−758"
+          ],
+          [
+            "Uberlândia",
+            "limítrofe",
+            "292.511",
+            "38,1%",
+            "85%",
+            "8%",
+            "6%",
+            "1",
+            "0,00%",
+            "267º/284",
+            "0,0% · 0,0% · 0,0%",
+            "Unimed Uberlândia (384577) (38,5%)",
+            "+1.782"
+          ],
+          [
+            "Frutal",
+            "L3 · Triângulo",
+            "20.413",
+            "33,1%",
+            "68%",
+            "23%",
+            "8%",
+            "553",
+            "2,71%",
+            "5º/95",
+            "20,1% · 0,4% · 3,5%",
+            "Austaclinicas (327417) (38,1%)",
+            "+92"
+          ],
+          [
+            "Iturama",
+            "L3 · Triângulo",
+            "14.145",
+            "34,9%",
+            "67%",
+            "18%",
+            "15%",
+            "2.838",
+            "20,06%",
+            "2º/78",
+            "72,7% · 2,4% · 42,3%",
+            "Unimed Pontal do Triângulo (353876) (55,3%)",
+            "+171"
+          ],
+          [
+            "Conceição das Alagoas",
+            "limítrofe",
+            "8.650",
+            "28,3%",
+            "92%",
+            "3%",
+            "5%",
+            "1",
+            "0,01%",
+            "42º/53",
+            "0,0% · 0,0% · 0,4%",
+            "Unimed Uberaba (354066) (89,2%)",
+            "+48"
+          ],
+          [
+            "Sacramento",
+            "limítrofe",
+            "5.206",
+            "18,4%",
+            "78%",
+            "11%",
+            "11%",
+            "0",
+            "0,00%",
+            "—º/67",
+            "0,0% · 0,0% · 0,0%",
+            "Unimed Uberaba (354066) (73,9%)",
+            "−36"
+          ],
+          [
+            "Campina Verde",
+            "L3 · Triângulo",
+            "2.785",
+            "15,4%",
+            "73%",
+            "22%",
+            "5%",
+            "24",
+            "0,86%",
+            "14º/52",
+            "15,3% · 0,1% · 0,0%",
+            "Unimed Pontal do Triângulo (353876) (40,4%)",
+            "+1"
+          ],
+          [
+            "Nova Ponte",
+            "limítrofe",
+            "5.195",
+            "33,9%",
+            "91%",
+            "5%",
+            "5%",
+            "0",
+            "0,00%",
+            "—º/44",
+            "0,0% · 0,0% · 0,0%",
+            "Unimed Uberaba (354066) (65,4%)",
+            "−27"
+          ],
+          [
+            "Fronteira",
+            "L3 · Triângulo",
+            "3.096",
+            "20,7%",
+            "64%",
+            "14%",
+            "22%",
+            "123",
+            "3,97%",
+            "4º/39",
+            "13,0% · 0,7% · 4,8%",
+            "Hapvida/NotreDame (grupo) (34,2%)",
+            "+41"
+          ],
+          [
+            "Itapagipe",
+            "L3 · Triângulo",
+            "4.566",
+            "32,6%",
+            "64%",
+            "27%",
+            "9%",
+            "274",
+            "6,00%",
+            "5º/40",
+            "58,4% · 0,4% · 1,4%",
+            "Austaclinicas (327417) (29,3%)",
+            "+44"
+          ],
+          [
+            "Delta",
+            "limítrofe",
+            "2.700",
+            "23,9%",
+            "97%",
+            "0%",
+            "3%",
+            "0",
+            "0,00%",
+            "—º/32",
+            "0,0% · 0,0% · 0,0%",
+            "Unimed Uberaba (354066) (72,8%)",
+            "0"
+          ],
+          [
+            "Carneirinho",
+            "L3 · Triângulo",
+            "3.351",
+            "34,8%",
+            "75%",
+            "13%",
+            "13%",
+            "442",
+            "13,19%",
+            "3º/39",
+            "82,2% · 1,6% · 13,4%",
+            "Unimed Pontal do Triângulo (353876) (54,3%)",
+            "+59"
+          ],
+          [
+            "Limeira do Oeste",
+            "L3 · Triângulo",
+            "4.178",
+            "45,0%",
+            "89%",
+            "7%",
+            "4%",
+            "156",
+            "3,73%",
+            "5º/24",
+            "47,0% · 1,1% · 14,5%",
+            "Unimed Pontal do Triângulo (353876) (54,4%)",
+            "+46"
+          ],
+          [
+            "Conquista",
+            "limítrofe",
+            "2.870",
+            "41,7%",
+            "92%",
+            "4%",
+            "4%",
+            "0",
+            "0,00%",
+            "—º/34",
+            "0,0% · 0,0% · 0,0%",
+            "Unimed Uberaba (354066) (78,7%)",
+            "+38"
+          ],
+          [
+            "Indianópolis",
+            "limítrofe",
+            "390",
+            "6,2%",
+            "85%",
+            "9%",
+            "6%",
+            "0",
+            "0,00%",
+            "—º/26",
+            "0,0% · 0,0% · 0,0%",
+            "Unimed Uberlândia (384577) (47,2%)",
+            "−42"
+          ],
+          [
+            "São Francisco de Sales",
+            "L3 · Triângulo",
+            "1.792",
+            "30,6%",
+            "78%",
+            "13%",
+            "10%",
+            "93",
+            "5,19%",
+            "4º/23",
+            "43,9% · 0,1% · 6,6%",
+            "Hapvida/NotreDame (grupo) (50,1%)",
+            "+16"
+          ],
+          [
+            "União de Minas",
+            "L3 · Triângulo",
+            "485",
+            "12,8%",
+            "58%",
+            "21%",
+            "20%",
+            "93",
+            "19,18%",
+            "2º/14",
+            "71,4% · 0,0% · 22,1%",
+            "Unimed Pontal do Triângulo (353876) (51,1%)",
+            "+3"
+          ],
+          [
+            "Veríssimo",
+            "limítrofe",
+            "315",
+            "9,1%",
+            "79%",
+            "9%",
+            "12%",
+            "0",
+            "0,00%",
+            "—º/13",
+            "0,0% · 0,0% · 0,0%",
+            "Unimed Uberaba (354066) (80,0%)",
+            "0"
+          ],
+          [
+            "Comendador Gomes",
+            "L3 · Triângulo",
+            "412",
+            "14,7%",
+            "69%",
+            "22%",
+            "9%",
+            "11",
+            "2,67%",
+            "4º/15",
+            "22,2% · 0,0% · 3,3%",
+            "Unimed Frutal (371564) (51,0%)",
+            "0"
+          ],
+          [
+            "Água Comprida",
+            "limítrofe",
+            "283",
+            "13,0%",
+            "59%",
+            "12%",
+            "29%",
+            "0",
+            "0,00%",
+            "—º/12",
+            "0,0% · 0,0% · 0,0%",
+            "Unimed Uberaba (354066) (83,0%)",
+            "−4"
+          ]
+        ]
+      },
+      {
+        "title": "4. Série histórica (PDA-024)",
+        "headers": [
+          "Competência",
+          "Mercado",
+          "Bensaúde no universo",
+          "Share",
+          "Bensaúde total UF",
+          "Individual: mercado (Bensaúde)",
+          "Empresarial: mercado (Bensaúde)",
+          "Adesão: mercado (Bensaúde)"
+        ],
+        "rows": [
+          [
+            "jun/23",
+            "489.851",
+            "3.674",
+            "0,75%",
+            "3.690",
+            "52.463 (2.928)",
+            "388.742 (149)",
+            "48.537 (597)"
+          ],
+          [
+            "jun/25",
+            "498.155",
+            "4.098",
+            "0,82%",
+            "4.113",
+            "50.585 (2.872)",
+            "400.549 (217)",
+            "46.923 (1.009)"
+          ],
+          [
+            "jun/26",
+            "512.991",
+            "4.399",
+            "0,86%",
+            "4.413",
+            "48.034 (2.768)",
+            "416.374 (333)",
+            "48.486 (1.298)"
+          ],
+          [
+            "ago/26",
+            "514.465",
+            "4.611",
+            "0,90%",
+            "4.625",
+            "47.252 (2.782)",
+            "418.381 (396)",
+            "48.735 (1.433)"
+          ]
+        ]
+      },
+      {
+        "title": "5. Fluxo jun/26 → ago/26",
+        "headers": [
+          "Operadora",
+          "Modalidade",
+          "Ativos ant.",
+          "Ativos atual",
+          "Variação",
+          "Aderidos (% a.m.)",
+          "Cancelados (% a.m.)"
+        ],
+        "rows": [
+          [
+            "Bensaúde (total UF)",
+            "Individual",
+            "2.782",
+            "2.796",
+            "+14",
+            "9 (0,32%)",
+            "0 (0,00%)"
+          ],
+          [
+            "Bensaúde (total UF)",
+            "Empresarial",
+            "333",
+            "396",
+            "+63",
+            "15 (3,79%)",
+            "12 (3,03%)"
+          ],
+          [
+            "Bensaúde (total UF)",
+            "Adesão",
+            "1.298",
+            "1.433",
+            "+135",
+            "847 (59,11%)",
+            "754 (52,62%)"
+          ],
+          [
+            "Mercado ex-operadora (universo)",
+            "Individual",
+            "45.266",
+            "44.470",
+            "−796",
+            "365 (0,82%)",
+            "967 (2,17%)"
+          ],
+          [
+            "Mercado ex-operadora (universo)",
+            "Empresarial",
+            "416.041",
+            "417.985",
+            "+1.944",
+            "9.879 (2,36%)",
+            "8.726 (2,09%)"
+          ],
+          [
+            "Mercado ex-operadora (universo)",
+            "Adesão",
+            "47.188",
+            "47.302",
+            "+114",
+            "849 (1,79%)",
+            "729 (1,54%)"
+          ],
+          [
+            "Unimed Uberlândia (384577)",
+            "Individual",
+            "14.796",
+            "14.765",
+            "−31",
+            "36 (0,24%)",
+            "67 (0,45%)"
+          ],
+          [
+            "Unimed Uberlândia (384577)",
+            "Empresarial",
+            "95.324",
+            "94.958",
+            "−366",
+            "1.598 (1,68%)",
+            "1.022 (1,08%)"
+          ],
+          [
+            "Unimed Uberlândia (384577)",
+            "Adesão",
+            "5.336",
+            "5.296",
+            "−40",
+            "77 (1,45%)",
+            "109 (2,06%)"
+          ],
+          [
+            "Unimed Uberaba (354066)",
+            "Individual",
+            "15.273",
+            "15.305",
+            "+32",
+            "156 (1,02%)",
+            "128 (0,84%)"
+          ],
+          [
+            "Unimed Uberaba (354066)",
+            "Empresarial",
+            "79.421",
+            "79.078",
+            "−343",
+            "1.022 (1,29%)",
+            "1.444 (1,83%)"
+          ],
+          [
+            "Unimed Uberaba (354066)",
+            "Adesão",
+            "7.075",
+            "7.085",
+            "+10",
+            "44 (0,62%)",
+            "36 (0,51%)"
+          ],
+          [
+            "Hapvida/NotreDame (grupo)",
+            "Individual",
+            "9.659",
+            "8.932",
+            "−727",
+            "163 (1,82%)",
+            "741 (8,30%)"
+          ],
+          [
+            "Hapvida/NotreDame (grupo)",
+            "Empresarial",
+            "59.985",
+            "60.454",
+            "+469",
+            "2.256 (3,73%)",
+            "1.928 (3,19%)"
+          ],
+          [
+            "Hapvida/NotreDame (grupo)",
+            "Adesão",
+            "2.819",
+            "2.719",
+            "−100",
+            "54 (1,99%)",
+            "103 (3,79%)"
+          ],
+          [
+            "Unimed CNU (339679)",
+            "Individual",
+            "24",
+            "24",
+            "0",
+            "0 (0,00%)",
+            "0 (0,00%)"
+          ],
+          [
+            "Unimed CNU (339679)",
+            "Empresarial",
+            "24.019",
+            "23.983",
+            "−36",
+            "496 (2,07%)",
+            "599 (2,50%)"
+          ],
+          [
+            "Unimed CNU (339679)",
+            "Adesão",
+            "477",
+            "474",
+            "−3",
+            "0 (0,00%)",
+            "0 (0,00%)"
+          ],
+          [
+            "Unimed Belo Horizonte (343889)",
+            "Individual",
+            "93",
+            "89",
+            "−4",
+            "0 (0,00%)",
+            "3 (3,37%)"
+          ],
+          [
+            "Unimed Belo Horizonte (343889)",
+            "Empresarial",
+            "9.685",
+            "9.680",
+            "−5",
+            "292 (3,02%)",
+            "233 (2,41%)"
+          ],
+          [
+            "Unimed Belo Horizonte (343889)",
+            "Adesão",
+            "11.764",
+            "11.742",
+            "−22",
+            "125 (1,06%)",
+            "128 (1,09%)"
+          ],
+          [
+            "Bradesco (005711)",
+            "Individual",
+            "170",
+            "170",
+            "0",
+            "0 (0,00%)",
+            "0 (0,00%)"
+          ],
+          [
+            "Bradesco (005711)",
+            "Empresarial",
+            "17.522",
+            "19.416",
+            "+1.894",
+            "602 (3,10%)",
+            "344 (1,77%)"
+          ],
+          [
+            "Bradesco (005711)",
+            "Adesão",
+            "44",
+            "41",
+            "−3",
+            "0 (0,00%)",
+            "0 (0,00%)"
+          ]
+        ]
+      },
+      {
+        "title": "6. Perfil etário (faixas de reajuste ANS)",
+        "headers": [
+          "Recorte",
+          "0 a 18 anos",
+          "19 a 23 anos",
+          "24 a 28 anos",
+          "29 a 33 anos",
+          "34 a 38 anos",
+          "39 a 43 anos",
+          "44 a 48 anos",
+          "49 a 53 anos",
+          "54 a 58 anos",
+          "59 anos ou mais"
+        ],
+        "rows": [
+          [
+            "Bensaúde total",
+            "22,1%",
+            "4,8%",
+            "6,3%",
+            "6,7%",
+            "7,2%",
+            "7,4%",
+            "7,7%",
+            "7,1%",
+            "7,3%",
+            "23,4%"
+          ],
+          [
+            "Mercado ex-operadora",
+            "23,8%",
+            "6,1%",
+            "7,1%",
+            "8,8%",
+            "9,7%",
+            "9,6%",
+            "8,9%",
+            "6,7%",
+            "5,3%",
+            "14,1%"
+          ],
+          [
+            "Bensaúde Individual",
+            "24,2%",
+            "4,2%",
+            "5,4%",
+            "5,4%",
+            "7,0%",
+            "7,4%",
+            "8,0%",
+            "7,3%",
+            "7,3%",
+            "23,9%"
+          ],
+          [
+            "Mercado Individual ex-op.",
+            "31,3%",
+            "4,6%",
+            "5,2%",
+            "6,2%",
+            "6,2%",
+            "5,9%",
+            "5,8%",
+            "4,2%",
+            "3,7%",
+            "26,9%"
+          ],
+          [
+            "Bensaúde Empresarial",
+            "23,2%",
+            "6,3%",
+            "8,8%",
+            "11,6%",
+            "10,6%",
+            "11,1%",
+            "9,6%",
+            "9,1%",
+            "4,3%",
+            "5,3%"
+          ],
+          [
+            "Mercado Empresarial ex-op.",
+            "23,2%",
+            "6,5%",
+            "7,5%",
+            "9,2%",
+            "10,2%",
+            "10,1%",
+            "9,4%",
+            "7,0%",
+            "5,5%",
+            "11,4%"
+          ],
+          [
+            "Bensaúde Adesão",
+            "17,7%",
+            "5,6%",
+            "7,3%",
+            "8,0%",
+            "6,6%",
+            "6,6%",
+            "6,7%",
+            "6,1%",
+            "8,0%",
+            "27,4%"
+          ],
+          [
+            "Mercado Adesão ex-op.",
+            "21,7%",
+            "4,3%",
+            "5,8%",
+            "7,2%",
+            "8,0%",
+            "8,2%",
+            "7,6%",
+            "6,2%",
+            "5,7%",
+            "25,3%"
+          ]
+        ]
+      },
+      {
+        "title": "1. Econômico-financeiro (DIOPS/ANS 1T2024–2T2026)",
+        "headers": [
+          "Período",
+          "Receita (R$ mi)",
+          "Contraprestações",
+          "Eventos",
+          "Sinistralidade",
+          "Resultado (R$ mi)",
+          "Margem",
+          "Desp. adm./receita",
+          "Desp. comerc./receita",
+          "Conta 69"
+        ],
+        "rows": [
+          [
+            "2024",
+            "323,28",
+            "307,65",
+            "293,19",
+            "95,3%",
+            "-2,18",
+            "-0,7%",
+            "7,6%",
+            "0,8%",
+            "-7,34"
+          ],
+          [
+            "H1/2025",
+            "173,87",
+            "165,83",
+            "155,37",
+            "93,7%",
+            "-0,14",
+            "-0,1%",
+            "7,7%",
+            "0,8%",
+            "-0,14"
+          ],
+          [
+            "2025",
+            "363,08",
+            "343,00",
+            "318,77",
+            "92,9%",
+            "5,70",
+            "1,6%",
+            "7,6%",
+            "0,8%",
+            "5,70"
+          ],
+          [
+            "H1/2026",
+            "195,25",
+            "184,13",
+            "177,62",
+            "96,5%",
+            "-5,10",
+            "-2,6%",
+            "7,2%",
+            "0,8%",
+            "-5,10"
+          ]
+        ]
+      },
+      {
+        "title": "1. Econômico-financeiro (DIOPS/ANS 1T2024–2T2026)",
+        "headers": [
+          "Trimestre",
+          "1T2024",
+          "2T2024",
+          "3T2024",
+          "4T2024",
+          "1T2025",
+          "2T2025",
+          "3T2025",
+          "4T2025",
+          "1T2026",
+          "2T2026"
+        ],
+        "rows": [
+          [
+            "Sinistralidade",
+            "92,7%",
+            "97,6%",
+            "99,7%",
+            "91,2%",
+            "93,2%",
+            "94,2%",
+            "86,8%",
+            "97,5%",
+            "101,8%",
+            "91,2%"
+          ],
+          [
+            "Margem",
+            "-0,8%",
+            "-3,9%",
+            "-2,9%",
+            "4,6%",
+            "0,4%",
+            "-0,6%",
+            "6,4%",
+            "0,0%",
+            "-10,1%",
+            "4,5%"
+          ]
+        ]
+      },
+      {
+        "title": "1. Econômico-financeiro (DIOPS/ANS 1T2024–2T2026)",
+        "headers": [
+          "Data-base",
+          "PL (R$ mi)",
+          "Ativo (R$ mi)",
+          "Liquidez corrente"
+        ],
+        "rows": [
+          [
+            "4T2024",
+            "60,32",
+            "127,57",
+            "1,78"
+          ],
+          [
+            "4T2025",
+            "66,01",
+            "131,52",
+            "1,91"
+          ],
+          [
+            "2T2026",
+            "60,82",
+            "131,81",
+            "1,80"
+          ]
+        ]
+      },
+      {
+        "title": "Despesa de comercialização × porte (benchmark ANS)",
+        "headers": [
+          "2025",
+          "Pequeno",
+          "Médio",
+          "Grande"
+        ],
+        "rows": [
+          [
+            "Medicina de Grupo",
+            "2,76% (med. 0,53%; n=130)",
+            "3,82% (med. 2,85%; n=58)",
+            "4,66% (med. 3,59%; n=28)"
+          ],
+          [
+            "Mercado (sem autogestão)",
+            "1,12% (med. 0,31%; n=257)",
+            "1,65% (med. 0,77%; n=178)",
+            "3,74% (med. 1,19%; n=82)"
+          ],
+          [
+            "Autogestão",
+            "0,02% (med. 0,00%; n=79)",
+            "0,01% (med. 0,00%; n=27)",
+            "0,07% (med. 0,00%; n=7)"
+          ],
+          [
+            "Cooperativa Médica",
+            "0,49% (med. 0,31%; n=100)",
+            "0,71% (med. 0,55%; n=107)",
+            "1,36% (med. 0,66%; n=48)"
+          ],
+          [
+            "Filantropia",
+            "0,25% (med. 0,05%; n=19)",
+            "0,60% (med. 0,38%; n=11)",
+            "1,46% (med. 1,47%; n=2)"
+          ],
+          [
+            "Seguradora Especializada em Saúde",
+            "0,36% (med. 0,07%; n=3)",
+            "—",
+            "4,92% (med. 5,33%; n=4)"
+          ]
+        ]
+      },
+      {
+        "title": "Despesa de comercialização × porte (benchmark ANS)",
+        "headers": [
+          "H1/2026",
+          "Pequeno",
+          "Médio",
+          "Grande"
+        ],
+        "rows": [
+          [
+            "Medicina de Grupo",
+            "3,12% (med. 0,59%; n=129)",
+            "4,38% (med. 2,58%; n=59)",
+            "4,46% (med. 3,54%; n=27)"
+          ],
+          [
+            "Mercado (sem autogestão)",
+            "1,15% (med. 0,27%; n=257)",
+            "1,86% (med. 0,72%; n=178)",
+            "3,71% (med. 1,20%; n=82)"
+          ],
+          [
+            "Autogestão",
+            "0,01% (med. 0,00%; n=80)",
+            "0,09% (med. 0,00%; n=27)",
+            "0,16% (med. 0,00%; n=7)"
+          ],
+          [
+            "Cooperativa Médica",
+            "0,43% (med. 0,27%; n=104)",
+            "0,65% (med. 0,54%; n=108)",
+            "1,26% (med. 0,58%; n=49)"
+          ],
+          [
+            "Filantropia",
+            "0,27% (med. 0,09%; n=19)",
+            "0,58% (med. 0,37%; n=11)",
+            "1,61% (med. 1,68%; n=2)"
+          ],
+          [
+            "Seguradora Especializada em Saúde",
+            "0,20% (med. 0,04%; n=3)",
+            "—",
+            "5,26% (med. 5,74%; n=4)"
+          ]
+        ]
+      },
+      {
+        "title": "Comparação regional e setorial",
+        "headers": [
+          "Operadora",
+          "Modalidade",
+          "Receita 2025 (R$ mi)",
+          "Sin. 2024",
+          "Sin. 2025",
+          "Sin. H1/2026",
+          "Margem 2025",
+          "Margem H1/2026",
+          "PL 2T2026",
+          "Liquidez"
+        ],
+        "rows": [
+          [
+            "Bensaúde (366561)",
+            "Medicina de Grupo",
+            "363,08",
+            "95,3%",
+            "92,9%",
+            "96,5%",
+            "1,6%",
+            "-2,6%",
+            "60,82",
+            "1,80"
+          ],
+          [
+            "Unimed Uberlândia (384577)",
+            "Cooperativa Médica",
+            "930,81",
+            "83,6%",
+            "80,8%",
+            "82,3%",
+            "0,8%",
+            "5,5%",
+            "161,97",
+            "1,57"
+          ],
+          [
+            "Unimed Uberaba (354066)",
+            "Cooperativa Médica",
+            "587,05",
+            "76,1%",
+            "73,4%",
+            "75,6%",
+            "8,3%",
+            "4,5%",
+            "126,14",
+            "1,58"
+          ],
+          [
+            "Hapvida (368253)",
+            "Medicina de Grupo",
+            "16311,98",
+            "61,6%",
+            "71,3%",
+            "74,8%",
+            "9,3%",
+            "4,7%",
+            "9975,32",
+            "1,53"
+          ],
+          [
+            "Hapvida Minas Gerais (348520)",
+            "Medicina de Grupo",
+            "1201,12",
+            "85,5%",
+            "94,1%",
+            "96,5%",
+            "9,7%",
+            "-3,3%",
+            "626,09",
+            "1,43"
+          ],
+          [
+            "Unimed CNU (339679)",
+            "Cooperativa Médica",
+            "8936,10",
+            "83,4%",
+            "74,2%",
+            "70,1%",
+            "2,8%",
+            "4,7%",
+            "1677,66",
+            "1,33"
+          ],
+          [
+            "Unimed Belo Horizonte (343889)",
+            "Cooperativa Médica",
+            "8543,73",
+            "76,8%",
+            "75,6%",
+            "74,5%",
+            "10,0%",
+            "10,7%",
+            "4405,44",
+            "2,15"
+          ],
+          [
+            "Bradesco (005711)",
+            "Seguradora Especializada em Saúde",
+            "43344,19",
+            "87,0%",
+            "82,3%",
+            "81,1%",
+            "11,5%",
+            "13,6%",
+            "6809,38",
+            "0,86"
+          ]
+        ]
+      },
+      {
+        "title": "2. Qualidade regulatória",
+        "headers": [
+          "Operadora",
+          "IDSS (3 últimas bases)",
+          "IDQS",
+          "IDGA",
+          "IDSM",
+          "IDGR",
+          "IGR 12m",
+          "Reclamações 12m",
+          "Porte"
+        ],
+        "rows": [
+          [
+            "Bensaúde",
+            "2022: 0,7231 · 2023: 0,6748 · 2024: 0,7835",
+            "0,7466",
+            "0,5319",
+            "1,0000",
+            "1,0000",
+            "12,63",
+            "103",
+            "Médio"
+          ],
+          [
+            "Unimed Uberlândia",
+            "2022: 0,8531 · 2023: 1,0000 · 2024: 1,0000",
+            "0,8036",
+            "0,6387",
+            "1,0000",
+            "0,9678",
+            "37,64",
+            "611",
+            "Grande"
+          ],
+          [
+            "Unimed Uberaba",
+            "2022: 1,0000 · 2023: 0,8785 · 2024: 0,8582",
+            "1,0000",
+            "0,6173",
+            "1,0000",
+            "0,7303",
+            "27,96",
+            "404",
+            "Grande"
+          ],
+          [
+            "Hapvida",
+            "2022: 0,8020 · 2023: 0,8263 · 2024: 0,7693",
+            "1,0000",
+            "0,5364",
+            "0,7367",
+            "0,8734",
+            "42,25",
+            "22152",
+            "Grande"
+          ],
+          [
+            "Hapvida Minas Gerais",
+            "2022: 0,8248 · 2023: 0,6856 · 2024: 0,6990",
+            "0,7155",
+            "0,3584",
+            "1,0000",
+            "0,7679",
+            "43,06",
+            "2403",
+            "Grande"
+          ],
+          [
+            "Unimed CNU",
+            "2022: 1,0000 · 2023: 0,9408 · 2024: 0,9255",
+            "0,7587",
+            "0,6674",
+            "0,7078",
+            "0,8532",
+            "56,24",
+            "11882",
+            "Grande"
+          ],
+          [
+            "Unimed Belo Horizonte",
+            "2022: 1,0000 · 2023: 1,0000 · 2024: 1,0000",
+            "0,9886",
+            "0,7104",
+            "1,0000",
+            "0,9411",
+            "40,64",
+            "7902",
+            "Grande"
+          ],
+          [
+            "Bradesco",
+            "2022: 1,0000 · 2023: 0,7626 · 2024: 0,8112",
+            "0,7897",
+            "0,6396",
+            "1,0000",
+            "0,8240",
+            "70,07",
+            "27431",
+            "Grande"
+          ]
+        ]
+      },
+      {
+        "title": "3. Produtos (PDA-008 × PDA-024)",
+        "headers": [
+          "Vidas",
+          "Produto",
+          "Situação (data)",
+          "Contratação",
+          "Acomodação",
+          "Fator moderador",
+          "Na NTRP?",
+          "Aderidos",
+          "Cancelados"
+        ],
+        "rows": [
+          [
+            "1.200",
+            "BEM FÁCIL FLEX 50 PCA PRATA",
+            "Ativo (2024-02-07)",
+            "Coletivo por adesão",
+            "Coletiva",
+            "Coparticipação",
+            "sim",
+            "812",
+            "6"
+          ],
+          [
+            "831",
+            "BEM FACIL - PRATA",
+            "Suspenso (2024-04-04)",
+            "Individual ou familiar",
+            "Coletiva",
+            "Coparticipação",
+            "não",
+            "1",
+            "0"
+          ],
+          [
+            "408",
+            "Pleno-enfermaria",
+            "Suspenso (2015-01-05)",
+            "Individual ou familiar",
+            "Coletiva",
+            "Ausente",
+            "não",
+            "0",
+            "0"
+          ],
+          [
+            "310",
+            "- USE BENSAÚDE - INDIVIDUAL E/OU FAMILIAR - ENFERMARIA",
+            "Suspenso (2015-01-05)",
+            "Individual ou familiar",
+            "Coletiva",
+            "Franquia + Coparticipação",
+            "não",
+            "0",
+            "0"
+          ],
+          [
+            "284",
+            "SUPER BEM - PRATA",
+            "Suspenso (2023-07-03)",
+            "Individual ou familiar",
+            "Coletiva",
+            "Ausente",
+            "não",
+            "0",
+            "0"
+          ],
+          [
+            "248",
+            "BEM FÁCIL FLEX 50 PRATA",
+            "Ativo (2024-02-07)",
+            "Individual ou familiar",
+            "Coletiva",
+            "Coparticipação",
+            "sim",
+            "6",
+            "0"
+          ],
+          [
+            "208",
+            "BEM FÁCIL FLEX 50 PCE PRATA",
+            "Ativo (2024-02-07)",
+            "Coletivo empresarial",
+            "Coletiva",
+            "Coparticipação",
+            "sim",
+            "15",
+            "12"
+          ],
+          [
+            "195",
+            "BEM FACIL - OURO",
+            "Suspenso (2024-04-04)",
+            "Individual ou familiar",
+            "Individual",
+            "Coparticipação",
+            "não",
+            "0",
+            "0"
+          ],
+          [
+            "167",
+            "Pleno-Apartamento",
+            "Suspenso (2015-01-05)",
+            "Individual ou familiar",
+            "Individual",
+            "Ausente",
+            "não",
+            "0",
+            "0"
+          ],
+          [
+            "149",
+            "BEM FÁCIL FLEX 50 PCA OURO",
+            "Ativo (2024-02-07)",
+            "Coletivo por adesão",
+            "Individual",
+            "Coparticipação",
+            "sim",
+            "35",
+            "2"
+          ],
+          [
+            "113",
+            "USE BENSAÚDE COLETIVO EMPRESARIAL - ENFERMARIA",
+            "Ativo (2006-01-13)",
+            "Coletivo empresarial",
+            "Coletiva",
+            "Franquia + Coparticipação",
+            "sim",
+            "0",
+            "0"
+          ],
+          [
+            "108",
+            "Bem Mais Familiar",
+            "Suspenso (2014-02-07)",
+            "Individual ou familiar",
+            "Coletiva",
+            "Ausente",
+            "não",
+            "0",
+            "0"
+          ],
+          [
+            "62",
+            "SUPER BEM - OURO",
+            "Suspenso (2023-07-03)",
+            "Individual ou familiar",
+            "Individual",
+            "Ausente",
+            "não",
+            "0",
+            "0"
+          ],
+          [
+            "61",
+            "USE BENSAÚDE - INDIVIDUAL E/OU FAMILIAR - APARTAMENTO",
+            "Suspenso (2015-01-05)",
+            "Individual ou familiar",
+            "Individual",
+            "Franquia + Coparticipação",
+            "não",
+            "0",
+            "0"
+          ],
+          [
+            "56",
+            "Bem Mais Familiar",
+            "Suspenso (2013-06-10)",
+            "Individual ou familiar",
+            "Individual",
+            "Ausente",
+            "não",
+            "0",
+            "0"
+          ]
+        ]
+      },
+      {
+        "title": "4. Preço de referência: VCM NTRP jun/26, Uberaba",
+        "headers": [
+          "Grupo",
+          "Nº",
+          "0–18",
+          "29–33",
+          "39–43",
+          "49–53",
+          "59+",
+          "59+ ÷ 0–18"
+        ],
+        "rows": [
+          [
+            "Evo Saude · Coletivo empresarial · Coletiva",
+            "2",
+            "132,53",
+            "223,13",
+            "299,88",
+            "405,74",
+            "792,66",
+            "5,98"
+          ],
+          [
+            "Evo Saude · Coletivo empresarial · Individual",
+            "2",
+            "156,39",
+            "263,29",
+            "355,12",
+            "478,78",
+            "935,33",
+            "5,98"
+          ],
+          [
+            "Evo Saude · Coletivo por adesão · Coletiva",
+            "2",
+            "144,45",
+            "219,72",
+            "290,57",
+            "460,85",
+            "866,32",
+            "6,00"
+          ],
+          [
+            "Evo Saude · Coletivo por adesão · Individual",
+            "2",
+            "170,46",
+            "259,26",
+            "342,87",
+            "543,79",
+            "1022,26",
+            "6,00"
+          ],
+          [
+            "Hapvida/NotreDame · Coletivo empresarial · Coletiva",
+            "86",
+            "489,18",
+            "732,44",
+            "911,04",
+            "1481,19",
+            "2747,19",
+            "5,81"
+          ],
+          [
+            "Hapvida/NotreDame · Coletivo empresarial · Individual",
+            "75",
+            "487,56",
+            "728,22",
+            "900,32",
+            "1468,34",
+            "2712,11",
+            "5,76"
+          ],
+          [
+            "Hapvida/NotreDame · Coletivo por adesão · Coletiva",
+            "12",
+            "478,22",
+            "724,96",
+            "950,73",
+            "1513,86",
+            "2863,35",
+            "5,98"
+          ],
+          [
+            "Hapvida/NotreDame · Coletivo por adesão · Individual",
+            "12",
+            "351,76",
+            "534,69",
+            "690,36",
+            "1106,29",
+            "2103,75",
+            "5,98"
+          ],
+          [
+            "Hapvida/NotreDame · Individual ou familiar · Coletiva",
+            "7",
+            "751,87",
+            "1185,34",
+            "1513,63",
+            "2446,56",
+            "4501,18",
+            "5,97"
+          ],
+          [
+            "Hapvida/NotreDame · Individual ou familiar · Individual",
+            "7",
+            "355,24",
+            "595,72",
+            "716,31",
+            "1196,96",
+            "2119,02",
+            "5,97"
+          ],
+          [
+            "Unimed Uberaba · Coletivo empresarial · Coletiva",
+            "5",
+            "250,08",
+            "380,34",
+            "503,03",
+            "797,39",
+            "1499,74",
+            "6,00"
+          ],
+          [
+            "Unimed Uberaba · Coletivo empresarial · Individual",
+            "3",
+            "297,64",
+            "452,68",
+            "598,67",
+            "949,51",
+            "1784,89",
+            "6,00"
+          ],
+          [
+            "Unimed Uberaba · Coletivo por adesão · Coletiva",
+            "2",
+            "368,74",
+            "560,81",
+            "741,70",
+            "1177,48",
+            "2211,27",
+            "6,00"
+          ],
+          [
+            "Unimed Uberaba · Coletivo por adesão · Individual",
+            "1",
+            "317,43",
+            "482,78",
+            "638,48",
+            "1012,64",
+            "1903,54",
+            "6,00"
+          ],
+          [
+            "Unimed Uberaba · Individual ou familiar · Coletiva",
+            "2",
+            "188,14",
+            "276,26",
+            "345,42",
+            "588,40",
+            "1026,13",
+            "5,56"
+          ],
+          [
+            "Unimed Uberaba · Individual ou familiar · Individual",
+            "1",
+            "404,00",
+            "559,39",
+            "678,85",
+            "1228,62",
+            "2186,13",
+            "5,41"
+          ]
+        ]
+      },
+      {
+        "title": "4. Preço de referência: VCM NTRP jun/26, Uberaba",
+        "headers": [
+          "Comparação (média; mediana entre parênteses)",
+          "Nº",
+          "F1",
+          "F2",
+          "F3",
+          "F4",
+          "F5",
+          "F6",
+          "F7",
+          "F8",
+          "F9",
+          "F10"
+        ],
+        "rows": [
+          [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      {
+        "title": "5. Rede hospitalar (ANS produtos × prestadores)",
+        "headers": [
+          "Estabelecimento (CNES)",
+          "Município",
+          "No universo?",
+          "CNPJ",
+          "Tipo",
+          "Contrato",
+          "U/E",
+          "Nº planos"
+        ],
+        "rows": [
+          [
+            "Santa Casa De Misericordia De Uniao (2206552)",
+            "União de Minas",
+            "sim",
+            "20059028000101",
+            "Contratualizado",
+            "Direto",
+            "sim",
+            "4"
+          ]
+        ]
+      },
+      {
+        "title": "Validação do CAGED (Uberaba)",
+        "headers": [
+          "Período",
+          "Nosso microdado ()",
+          "Publicado",
+          "Δ"
+        ],
+        "rows": [
+          [
+            "jan–jul/2026",
+            "121 + 409 + 728 + 147 − 361 − 10 + 295 = +1.329",
+            "+1.331 (Jornal da Manhã citando o Novo CAGED, S)",
+            "2 ✅"
+          ],
+          [
+            "ago/2026",
+            "+218",
+            "+218 (idem)",
+            "0 ✅"
+          ],
+          [
+            "set–dez/2025",
+            "605 − 140 − 447 − 1.083 = −1.065",
+            "n.d. (o painel do MTE não é legível por máquina)",
+            "(explica o +482 em 12m)"
+          ],
+          [
+            "A fonte publicada é imprensa citando o CAGED. A coincidência de valores valida o método. O painel oficial do MTE não pôde ser lido automaticamente.",
+            "",
+            "",
+            ""
+          ]
+        ]
+      },
+      {
+        "title": "Método",
+        "headers": [
+          "#",
+          "Oportunidade",
+          "Mercado",
+          "Operadora hoje",
+          "Share",
+          "Meta cons.",
+          "Meta base",
+          "Vidas cons.",
+          "Vidas base",
+          "Receita/ano (R$ mi)"
+        ],
+        "rows": [
+          [
+            "O1",
+            "Empresarial PME — Uberaba",
+            "107.588",
+            "1",
+            "0,0%",
+            "1,0%",
+            "3,3%",
+            "+1.075",
+            "+3.539",
+            "5,8 – 19,1"
+          ],
+          [
+            "O2",
+            "Empresarial PME — limítrofes de Uberaba (L1)",
+            "22.693",
+            "0",
+            "0,0%",
+            "+1 p.p.",
+            "+3 p.p.",
+            "+226",
+            "+680",
+            "1,2 – 3,7"
+          ],
+          [
+            "O3",
+            "Coletivo por adesão — Uberaba",
+            "12.627",
+            "0",
+            "0,0%",
+            "2,0%",
+            "5,0%",
+            "+253",
+            "+631",
+            "1,4 – 3,4"
+          ],
+          [
+            "O4",
+            "Empresarial PME — Triângulo onde a Bensaúde já tem vidas (L3)",
+            "38.573",
+            "395",
+            "1,0%",
+            "+1 p.p.",
+            "+3 p.p.",
+            "+385",
+            "+1.158",
+            "2,1 – 6,2"
+          ],
+          [
+            "",
+            "Total",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "+1.939",
+            "+6.008",
+            "10,5 – 32,4"
+          ]
+        ]
+      },
+      {
+        "title": "Perfil etário (59+)",
+        "headers": [
+          "Modalidade",
+          "Operadora",
+          "Mercado ex-op."
+        ],
+        "rows": [
+          [
+            "Individual",
+            "23,9%",
+            "26,9%"
+          ],
+          [
+            "Empresarial",
+            "5,3%",
+            "11,4%"
+          ],
+          [
+            "Adesão",
+            "27,4%",
+            "25,3%"
+          ]
+        ]
+      },
+      {
+        "title": "Fora do dimensionamento: L2 Uberlândia (vidas ≥ 20% de Uberaba; 2º momento)",
+        "headers": [
+          "Município",
+          "Vidas",
+          "Empresarial",
+          "Líder"
+        ],
+        "rows": [
+          [
+            "Uberlândia",
+            "292.511",
+            "249.527",
+            "Unimed Uberlândia (384577) (38,5%)"
+          ]
+        ]
+      },
+      {
+        "title": "2. Insumos e fontes",
+        "headers": [
+          "Insumo",
+          "Fonte",
+          "Valor"
+        ],
+        "rows": [
+          [
+            "Mercado empresarial de Uberaba",
+            "ANS, PDA-024 MG ago/26 (médico-hospitalar, município de residência)",
+            "107.588"
+          ],
+          [
+            "Mercado de adesão de Uberaba",
+            "idem",
+            "12.627"
+          ],
+          [
+            "Mercado empresarial dos 8 limítrofes (L1)",
+            "idem",
+            "22.693"
+          ],
+          [
+            "Mercado empresarial do Triângulo onde a operadora já atua (L3)",
+            "idem",
+            "38.573"
+          ],
+          [
+            "Vidas da operadora",
+            "idem",
+            "1 empresarial em Uberaba · 395 empresariais no L3"
+          ],
+          [
+            "Carteira total da operadora",
+            "ANS, PDA-024 ago/26, todas as UFs",
+            "71.418 vidas"
+          ],
+          [
+            "Referência de entrante (EVO Saúde)",
+            "ANS, PDA-024 MG ago/26",
+            "3.543 empresariais = 3,29%"
+          ],
+          [
+            "Ticket médio",
+            "DIOPS H1/2026, conta 311 (R$ 184,1 mi) ÷ 68.305 vidas médias (VDA, médico-hospitalar) ÷ 6",
+            "R$ 449,28 por vida/mês"
+          ],
+          [
+            "Penetração média de MG (benchmark)",
+            "PDA-024 MG ago/26 ÷ IBGE estimativa 2026",
+            "5.898.117 ÷ 21.460.311 = 27,5%"
+          ]
+        ]
+      },
+      {
+        "title": "3. A conta de cada oportunidade",
+        "headers": [
+          "#",
+          "Mercado (vidas)",
+          "Hoje",
+          "Share-alvo cons. / base",
+          "Conta",
+          "Vidas"
+        ],
+        "rows": [
+          [
+            "O1",
+            "Empresarial · Uberaba: 107.588",
+            "1",
+            "1,0% / 3,29% (EVO)",
+            "107.588 × 1% − 1 · 107.588 × 3,29% − 1",
+            "+1.075 / +3.539"
+          ],
+          [
+            "O2",
+            "Empresarial · 8 limítrofes (L1): 22.693",
+            "0",
+            "+1 / +3 p.p. por município",
+            "mercado de cada município × p.p., somado (arredondamento por município)",
+            "+226 / +680"
+          ],
+          [
+            "O3",
+            "Adesão · Uberaba: 12.627",
+            "0",
+            "2% / 5%",
+            "12.627 × 2% · × 5%",
+            "+253 / +631"
+          ],
+          [
+            "O4",
+            "Empresarial · Triângulo onde já atua (L3): 38.573",
+            "395",
+            "+1 / +3 p.p. por município",
+            "sobre o share atual de cada município (1,0% no conjunto)",
+            "+385 / +1.158"
+          ],
+          [
+            "",
+            "Total",
+            "",
+            "",
+            "",
+            "+1.939 / +6.008"
+          ]
+        ]
+      },
+      {
+        "title": "5. Teste de sanidade: o que a meta pede por mês",
+        "headers": [
+          "Meta",
+          "Vidas/mês (24 meses)",
+          "Entradas no mercado de Uberaba por mês (ago/26)",
+          "Fatia das entradas"
+        ],
+        "rows": [
+          [
+            "O1 conservador",
+            "45",
+            "2.282 (empresarial)",
+            "~2%"
+          ],
+          [
+            "O1 base",
+            "147",
+            "2.282 (empresarial)",
+            "~6%"
+          ],
+          [
+            "O3 conservador",
+            "11",
+            "95 (adesão)",
+            "~11%"
+          ],
+          [
+            "O3 base",
+            "26",
+            "95 (adesão)",
+            "~28%"
+          ],
+          [
+            "Referência: EVO (entradas reais)",
+            "266",
+            "2.282 (empresarial)",
+            "~12%"
+          ]
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "id": "resumo",
+        "text": "★ Sumário executivo 71.418 vidas médico-hospitalares · PDA-024 ago/26, todas as UFs (4.625 em MG) 0,90% share no universo de 20 municípios (15º de 330) 2,9% share em adesão · empresarial 0,1% 92,9% sinistralidade 2025 (Medicina de Grupo: 76,3%) +1.939 a +6.008 vidas potenciais (+42% a +130% da carteira em MG) Mercado: 514.465 vidas médico-hospitalares, 36,4% de penetração (média de Minas Gerais: 27,5%) e 81% empresarial. Em Uberaba (praça nova), a Unimed Uberaba tem 55,5%. Lâminas: L1 Uberaba + 8 limítrofes (166.731 vidas; Bensaúde 3) · L2 Uberlândia (292.511; 2º momento, fora das metas) · L3 Triângulo onde o Bensaúde já tem vidas (55.223; Bensaúde 4.607, share 8,3%) · L4 consolidado (514.465). Pré-requisitos da praça: a área de comercialização NTRP do Bensaúde não tem nenhum município de MG (23 planos, só SP e MS), e não há hospital da operadora em Uberaba (ANS). Entrar exige registrar a praça num produto e contratualizar um hospital âncora. Preço de venda: na enfermaria, a tabela atual do Bensaúde é o 3º preço mais baixo de 7 produtos (50% a 54% abaixo da Unimed; 17% a 27% abaixo da EVO). No apartamento, é o 5º de 7, só 1% a 14% abaixo da EVO. Crescimento: +19,7% da operadora no universo (06/23 → 06/26), contra +4,7% do mercado. Financeiro: sinistralidade de 92,9% e margem de 1,6% em 2025; despesa comercial de 0,82% da receita (benchmark ANS: medicina de grupo de porte médio, 3,82%; mediana 2,85%). A operadora pertence à mantenedora do hospital Beneficência Portuguesa de Rio Preto: pouca folga de preço. Oportunidades: O1 Empresarial PME — Uberaba (+1.075 a +3.539) · O2 Empresarial PME — limítrofes de Uberaba (L1) (+226 a +680) · O3 Coletivo por adesão — Uberaba (+253 a +631) · O4 Empresarial PME — Triângulo onde o Bensaúde já tem vidas (L3) (+385 a +1.158). Todos os números vêm de fontes primárias (ANS, IBGE, MTE, sites das próprias entidades) e passaram por checagem de fatos, com segunda leitura independente. Premissas a validar: horizonte, metas, capacidade da rede e modelo comercial."
+      },
+      {
+        "id": "sec1",
+        "text": "01 Território, IBGE e emprego 1. Limítrofes de Uberaba (3170107): 9 municípios Extensão da divisa (km, aproximada pela malha): Uberlândia 122,1 · Nova Ponte 78,6 · Veríssimo 71,1 · Água Comprida 44,9 · Conquista 42,2 · Delta 31,2 · Conceição das Alagoas 26,9 · Sacramento 15,2 · Indianópolis 10,2 ⚠️ Uberaba tem 33,2 km de divisa sem município vizinho em MG (divisa estadual ou fronteira internacional); municípios fora de MG não foram incluídos. ⚠️ 25 município(s) da área de comercialização da operadora fora de MG (SP e MS) (códigos ['350420', '350810', '351110', '351550', '351690']): não incluídos no universo. 2. Universo do estudo: 20 municípios L1 · praça nova: Uberaba L2: Uberlândia L1 · limítrofes: Conceição das Alagoas, Sacramento, Nova Ponte, Delta, Conquista, Indianópolis, Veríssimo, Água Comprida L3 · Triângulo onde o Bensaúde já tem vidas: Frutal, Iturama, Campina Verde, Fronteira, Itapagipe, Carneirinho, Limeira do Oeste, São Francisco de Sales, União de Minas, Comendador Gomes População (Censo 2022): universo 1.323.153 · praça nova (1) 337.836 · demais 19 municípios 985.317 Estimativa 2026: universo 1.412.489 · praça nova 359.275 · demais 1.053.214 3. Indicadores socioeconômicos Renda = rendimento nominal mensal domiciliar per capita (Censo 2022, SIDRA 10295). PIB 2023 (SIDRA 5938) · PIB per capita oficial 2023 (IBGE Cidades 47001) · CEMPRE 2024 (SIDRA 9509) · IDHM 2010 (Atlas Brasil/Ipeadata). ⚠️ PIB per capita não é renda da população (produção ÷ habitantes). Para capacidade de pagamento, usar renda domiciliar per capita e salário formal. 4. Principal fonte de renda (VAB 2021, último ano municipal publicado · PAM 2025) Leitura: maior setor do VAB: Agropecuária em 9 de 20 · Indústria em 6 de 20 · Serviços (exc. adm. pública) em 5 de 20. Cultura agrícola principal (valor da produção): Cana-de-açúcar em 14 de 20 municípios. 5. Emprego formal por CNAE e porte: RAIS 2025 (vínculos ativos em 31/12) Leitura: 37.658 estabelecimentos com empregados (82,5% com 1–9 vínculos; 96,9% com 1–49) · 452.042 vínculos. 1ª seção CNAE: C em 8 · A em 6 · O em 4 · G em 2. Conferência RAIS × CEMPRE: a razão vínculos RAIS ÷ assalariados CEMPRE por município (esperado ~1,0–1,2; RAIS inclui estatutários e não-CNPJ):\nUberaba 1,08 · Uberlândia 1,06 · Frutal 1,19 · Iturama 1,10 · Conceição das Alagoas 1,29 · Sacramento 1,31 · Campina Verde 1,46 · Nova Ponte 1,51 · Fronteira 1,17 · Itapagipe 1,23 · Delta 1,06 · Carneirinho 1,44 · Limeira do Oeste 1,17 · Conquista 1,50 · Indianópolis 1,27 · São Francisco de Sales 1,42 · União de Minas 2,11 · Veríssimo 1,64 · Comendador Gomes 1,25 · Água Comprida 2,86 6. Novo CAGED: 12 meses (202509–202608) Validação do método (MOV + FOR − EXC): ⚠️ pendente: comparar 1 saldo publicado por prefeitura/MTE (Fase 4) com saldo_mes de."
+      },
+      {
+        "id": "sec2",
+        "text": "02 Mercado de saúde suplementar Fonte: PDA-024/ANS MG, só cobertura médico-hospitalar , município de residência (dicionário PDA-024). \"Aderidos\"/\"cancelados\" = movimentos na competência . Competências: ago/26 (atual), jun/26 (fluxo) e jun/23, jun/25, jun/26 (série). Cabeçalhos com o mesmo md5 em todas: ✅. Convenções: share com numerador e denominador no mesmo recorte · carteiro Bensaúde total = todos os municípios de MG (rótulo explícito) · operadora = registro ANS · grupo econômico por nome fantasia no CADOP · penetração = vidas ÷ população estimada. 1. Visão geral (ago/26) Carteiro Bensaúde total: 4.625 vidas (PDA-024 MG ago/26), 4.611 (99,7%) no universo. Por modalidade: Individual 2.796 · Empresarial 396 · Adesão 1.433. Contratação não identificada no universo: 97. 2. Por modalidade Top 8 por recorte: - Universo: 1º Unimed Uberlândia (384577) 22,4% · 2º Unimed Uberaba (354066) 19,7% · 3º Hapvida/NotreDame (grupo) 14,0% · 4º Unimed CNU (339679) 4,8% · 5º Unimed Belo Horizonte (343889) 4,2% · 6º Bradesco (005711) 3,8% · 7º Amil (326305) 3,6% · 8º Sul America (006246) 3,2%\n- Área de venda: 1º Unimed Uberaba (354066) 55,5% · 2º Hapvida/NotreDame (grupo) 17,3% · 3º Unimed CNU (339679) 5,2% · 4º Unimed Belo Horizonte (343889) 4,3% · 5º Evo Saude (423700) 2,5% · 6º Bradesco (005711) 1,9% · 7º Unimed Seguros Saúde S/A (000701) 1,8% · 8º Unimed de Ribeirao Preto (351202) 0,8%\n- Fora da área: 1º Unimed Uberlândia (384577) 30,5% · 2º Hapvida/NotreDame (grupo) 12,8% · 3º Unimed Uberaba (354066) 6,2% · 4º Amil (326305) 4,8% · 5º Unimed CNU (339679) 4,6% · 6º Bradesco (005711) 4,5% · 7º Unimed Belo Horizonte (343889) 4,2% · 8º Sul America (006246) 4,0% 3. Por município (ago/26) 4. Série histórica (PDA-024) Variação jun/23 → jun/26: mercado +4,7% (489.851 → 512.991) · Bensaúde no universo +19,7% (3.674 → 4.399); share 0,75% → 0,86%.\n- Individual: mercado −8,4%; Bensaúde −5,5% (2.928 → 2.768).\n- Empresarial: mercado +7,1%; Bensaúde +123,5% (149 → 333).\n- Adesão: mercado −0,1%; Bensaúde +117,4% (597 → 1.298). Carteira mais recente da operadora: 71.418 vidas médico-hospitalares (PDA-024/ANS ago/26, todas as UFs). Série da carteira total (VDA/ANS, médico-hospitalar): jun/23 53.265 · jun/25 62.176 · jun/26 69.562. A carteira em MG (PDA-024) é de 4.413 vidas em jun/26, 6,3% do total: a VDA é nacional e o PDA-024 deste estudo é só MG, por isso as duas bases não se comparam diretamente. Em dez/25 a VDA (66.541) confere com o Relatório de Administração 2025 da operadora (66.484; diferença de 0,09%). 5. Fluxo jun/26 → ago/26 ⚠️ Adesão do Bensaúde em ago/26: os aderidos e cancelados vêm quase todos da troca de beneficiários entre dois planos de adesão (812 aderidos no Flex 50 PCA Prata e 719 cancelados no plano anterior). É migração entre produtos, não venda nem perda de clientes. Anomalias detectadas por regra: - nenhuma 6. Perfil etário (faixas de reajuste ANS)"
+      },
+      {
+        "id": "sec3",
+        "text": "03 Raio-X do Bensaúde Carteira mais recente: 71.418 vidas médico-hospitalares (ANS PDA-024 2026-08, todas as UFs, médico-hospitalar). Por UF: SP 55.855 · MS 10.507 · MG 4.625 · GO 290 · MT 69 · PI 21 · TO 10. Por contratação: Individual ou Familiar 36.484 · Coletivo por Adesão 25.219 · Coletivo Empresarial 9.715.\nConcorrentes na mesma base: Unimed Uberlândia 139.071 · Unimed Uberaba 120.113 · Hapvida 4.321.673 · Hapvida Minas Gerais 461.422 · Unimed CNU 1.699.764 · Unimed Belo Horizonte 1.623.690 · Bradesco 3.391.379. Área de comercialização (NTRP, todas as UFs): 23 planos · 25 municípios (SP 22, MS 3). 1. Econômico-financeiro (DIOPS/ANS 1T2024–2T2026) Sinistralidade = conta 41 ÷ 311 (critério ANS) · resultado = 3 − 4 · margem = resultado ÷ 3 · liquidez = 12 ÷ 21 · acumulados no ano. Despesa de comercialização × porte (benchmark ANS) Bensaúde: 0,82% da receita em 2025 e 0,85% em H1/2026 · porte ANS: Médio · modalidade: Medicina de Grupo. Fonte: DIOPS/ANS (contas 43 ÷ 3) × porte ANS (IGR, última competência). Σ/Σ = peso do setor; mediana = operadora típica; autogestões fora do mercado (não vendem). Comparação regional e setorial Referência setorial Medicina de Grupo (derivada, soma DIOPS da modalidade): 2025 76,3% · 2024 76,6% · H1/2026 77,4% · H1/2025 76,0%. Filantropias: receita inclui hospital, então a margem não é comparável. 2. Qualidade regulatória IGR médio do porte (12 meses): Pequeno 36,65 · Grande 56,76 · Médio 41,12. PDA-040: a operadora não consta (arquivo de Mon, 19 Jan 2026 18:54:45 GMT\n); concorrentes que constam: ['348520']. 3. Produtos (PDA-008 × PDA-024) 163 produtos no PDA-008, 26 com vidas · 4.625 vidas com produto identificado no PDA-008 (carteira PDA-024: 4.625) · vidas nos planos da área de comercialização (NTRP): 2.127 (46,0%) ⚠️ Produtos ativos com cobertura em municípios fora da área de comercialização NTRP : Aparecida do Taboado, Auriflama, Buritama, Cassilândia, Catanduva, Fernandópolis, General Salgado, Ilha Solteira, Jales, José Bonifácio, Macaubal, Mirassol, Monte Aprazível, Nhandeara, Nova Granada, Palestina, Paranaíba, Paulo de Faria, Pereira Barreto, Pereiras, Potirendaba, Santa Fé do Sul, São José do Rio Preto, Tanabi, Urupês (cobertura ≠ comercialização). São municípios de SP e MS, fora do recorte deste estudo (MG). Situação: Suspenso: 2.498 (54,0%) · Ativo: 2.127 (46,0%) Contratação × situação: Individual ou familiar · Suspenso: 2.498 (54,0%) · Coletivo por adesão · Ativo: 1.433 (31,0%) · Coletivo empresarial · Ativo: 396 (8,6%) · Individual ou familiar · Ativo: 298 (6,4%) Acomodação: Coletiva: 3.831 (82,8%) · Individual: 791 (17,1%) · Não Informado: 3 (0,1%) Fator moderador: Coparticipação: 2.927 (63,3%) · Ausente: 1.214 (26,2%) · Franquia + Coparticipação: 484 (10,5%) Abrangência: Grupo de municípios: 4.625 (100,0%) Obstetrícia: Com Obstetrícia: 4.612 (99,7%) · Sem Obstetrícia: 13 (0,3%) Produtos suspensos com vidas: 2.498 vidas. O PDA-008 não informa se a suspensão foi pedida pela operadora ou determinada pela ANS: n.d. , levantar na reunião. 4. Preço de referência: VCM NTRP jun/26, Uberaba VCM = valor de referência da nota técnica; a venda é permitida entre −30% e +30% (dicionário ANS), portanto não é o preço cobrado . Só produtos ativos de abrangência local. 5. Rede hospitalar (ANS produtos × prestadores) Contexto (Fase 4): A operadora pertence à mantenedora do hospital Beneficência Portuguesa de Rio Preto. Sinistralidade de 92,9% em 2025 e 96,5% no H1/2026 (DIOPS): pouca folga de preço. 6. Pendências para a reunião Hospital âncora em Uberaba (Hélio Angotti, São Marcos, Hospital da Criança, São José, Beneficência Portuguesa de Uberaba) Produto e área de comercialização para Uberaba (Flex 50 PCA/PCE ou produto novo) Motivo da suspensão dos produtos individuais com vidas em MG (2.498 vidas) Abertura para administradora de benefícios (Lancers) na praça Cobertura de obstetrícia sem maternidade privada independente de volume"
+      },
+      {
+        "id": "sec4",
+        "text": "04 Pesquisa regional Como ler: - P = fonte primária: prefeitura, governo, empresa, entidade, ANS, CNES, INEP.\n- S = secundária (imprensa), só como sinal.\n- ✔︎ = relido diretamente na fonte primária. Resumo executivo O Bensaúde não tem rede hospitalar em Uberaba, e as duas líderes já são verticalizadas na cidade. - No PDA de prestadores hospitalares da ANS (recorte de Uberaba), o Bensaúde tem 0 linhas (P ✔︎).\n   - A Hapvida tem rede própria no Hospital Mário Palmério (CNES 2195585, mantenedora Sociedade Educacional Uberabense) (P ✔︎).\n   - A Unimed Uberaba tem rede própria no Hospital Unimed (CNES 9745041) (P ✔︎).\n   - Hospitais independentes, contratualizados por Unimed e Amil/Bradesco/SulAmérica: Hélio Angotti (2165058), Hospital da Criança (2164795), São Marcos (3435075), São José (2165481) e Beneficência Portuguesa \"1º de Dezembro\" (2164825) (P, ANS e CNES). O Bensaúde é o plano do hospital Beneficência Portuguesa de Rio Preto e vende com time próprio, sem administradora. - A sócia no CNPJ é a Associação Portuguesa de Beneficência de S. J. do Rio Preto (P).\n   - O site lista 7 corretores autorizados, 1 em Iturama/MG, e não cita nenhuma administradora (P).\n   - A despesa de comercialização é de 0,8% da receita (DIOPS, Fase 3). Há um precedente de expansão replicável. - Em 25/08/2026 o Bensaúde credenciou o Hospital CASSEMS em Três Lagoas/MS e fez agendas institucionais \"lideradas pelo Executivo Dênis Santana\", inclusive com a associação comercial local (ACITL) (P ✔︎).\n   - É o mesmo roteiro que Uberaba pede: hospital âncora, entidades e canal. A Unimed domina o canal associativo da região. ACIU, ACIUB, CAA/MG (OAB Saúde) e Sinpro Minas oferecem Unimed (P). Nenhuma entidade cita o Bensaúde. Os maiores grupos de pessoas físicas elegíveis e mensuráveis em Uberaba são:\n   - cerca de 24,4 mil universitários (INEP, Censo 2024: 14.687 presenciais e 9.682 em EaD) (P);\n   - quase 3 mil advogados (OAB 14ª Subseção, sem data) (P). A economia cresce por investimento industrial, mas o emprego formal cresce pouco. - Skala: R$ 150 mi e 600 empregos diretos e indiretos , inauguração em 2027 (Agência Minas, 17/04/2025) (P ✔︎).\n   - OXBO: R$ 50 mi e 70 empregos. Mosaic: mais de 1.300 funcionários (prefeitura) (P).\n   - H2V (Atlas Agro R$ 4,3 bi; H2Brazil R$ 7,8 bi): sem data firme nem empregos → tratar como upside.\n   - CAGED: saldo de +482 em 12 meses → o argumento é a troca de plano (PME, portabilidade), não novos empregados. Uberlândia (L2): - Mais de R$ 13,4 bi em anúncios privados em 2025 (prefeitura, 03/11/2025) (P).\n   - UFU: o contrato Unimed dos servidores termina em 31/10/2026 , \"a migração não será automática\" e a UFU orienta avaliar \"outra operadora ou administradora\" (P ✔︎, publicado em 21/09/2026). É uma janela para a Lancers, mas o Bensaúde não tem rede em Uberlândia , então essa oportunidade é da Lancers (outra operadora), não do Bensaúde agora. Validação do CAGED (Uberaba) Pontos para a reunião Rede: qual hospital âncora em Uberaba (Hélio Angotti, São Marcos, Hospital da Criança, São José, Beneficência Portuguesa de Uberaba)? Sem hospital, não há produto. Área de comercialização: incluir Uberaba (e limítrofes?) em qual produto: o Flex 50 (PCA e PCE) ou um produto novo? Produtos individuais suspensos em MG (2.498 vidas): a suspensão foi a pedido da operadora ou da ANS? Canal: o Bensaúde aceita uma administradora (Lancers) na praça, além do time próprio e dos corretores? Maternidade: fora da Unimed e do Mário Palmério (Hapvida) não há maternidade privada de volume (CNES). Como cobrir obstetrícia?"
+      },
+      {
+        "id": "sec5",
+        "text": "05 Oportunidades Lancers Método Potencial por município: mercado da modalidade × share-alvo − carteira atual; a meta nunca fica abaixo do share atual. Metas sugeridas pela Lancers, a validar com a operadora. Como o Bensaúde ainda não atua em Uberaba, as metas não podem partir de um share que ela já tenha na praça: em Uberaba o Bensaúde tem 2 vidas, e a área NTRP dela não tem nenhum município de MG (23 planos, todos em SP e MS). Âncoras usadas: acréscimos em p.p. (+1 no PME; +2/+5 na adesão; +1/+3 nos limítrofes e no L3) e, na meta base do O1, o share empresarial que a EVO Saúde (operadora entrante: 0 vidas em Uberaba em jun/25, 3.543 empresariais em ago/26, PDA-024) já alcança na cidade. Premissa de todas as metas: produto com Uberaba na área de comercialização (NTRP) + hospital âncora contratualizado. Horizonte de referência: 24 meses ( premissa a validar ). Receita: vidas × R$ 449,28 por vida/mês (contraprestação média H1/2026, DIOPS ÷ VDA) × 12. Ordem de grandeza. Sobre a carteira em MG (4.625 vidas; a carteira total médico-hospitalar é de 71.418, PDA-024 ago/26, todas as UFs): +41,9% a +129,9% ; sem a condicionada: +28,7% a +90,2%. O1. Empresarial PME — Uberaba Municípios: Uberaba Âncora: conservador 1,0% (+1 p.p.); base = share empresarial da EVO Saúde em Uberaba (3,3%), operadora que tinha 0 vidas na cidade em jun/25 O2. Empresarial PME — limítrofes de Uberaba (L1) Municípios: Conceição das Alagoas, Sacramento, Nova Ponte, Delta, Conquista, Indianópolis, Veríssimo, Água Comprida Âncora: conservador +1 p.p. e base +3 p.p. sobre o share empresarial atual de cada município ⚠️ Condição: Exige incluir os limítrofes na área de comercialização (NTRP) e rede de referência em Uberaba O3. Coletivo por adesão — Uberaba Municípios: Uberaba Âncora: conservador +2 p.p. e base +5 p.p. sobre o share de adesão em Uberaba (0,0%) O4. Empresarial PME — Triângulo onde o Bensaúde já tem vidas (L3) Municípios: Frutal, Iturama, Campina Verde, Fronteira, Itapagipe, Carneirinho, Limeira do Oeste, São Francisco de Sales, União de Minas, Comendador Gomes Âncora: conservador +1 p.p. e base +3 p.p. sobre o share empresarial atual de cada município ⚠️ Condição: Exige registrar os municípios de MG na área de comercialização (hoje a área NTRP do Bensaúde só tem SP e MS) Perfil etário (59+) Fora do dimensionamento: L2 Uberlândia (vidas ≥ 20% de Uberaba; 2º momento) Contexto A operadora variou +212 vidas no período do fluxo. O potencial mede o mercado alcançável e não separa o canal Lancers do time próprio da operadora: n.d. até combinar o modelo comercial. Premissas a validar Horizonte. 2. Metas. 3. Expansão de área (condicionada). 4. Capacidade de rede. 5. Modelo comercial Lancers × operadora."
+      },
+      {
+        "id": "sec6",
+        "text": "06 Metodologia do potencial 1. A ideia em uma frase O potencial é quantas vidas a operadora teria se conquistasse uma fatia pequena e definida do mercado que já existe . Não é projeção de crescimento do mercado nem estimativa de demanda. Potencial = (mercado da modalidade × share-alvo) − vidas que a operadora já tem. Três escolhas definem o resultado: qual mercado (denominador), qual share-alvo (meta) e qual horizonte. 2. Insumos e fontes 3. A conta de cada oportunidade Receita = vidas × R$ 449,28 × 12 = R$ 10,5 mi a R$ 32,4 mi por ano quando a carteira estiver formada (ordem de grandeza). 4. Premissas Mercado Fonte única e mesma competência: mercado e carteira do PDA-024/ANS MG ago/26; numerador e denominador no mesmo recorte. Município de residência do beneficiário, como a ANS publica. Mercado congelado em ago/26: sem crescimento de emprego ou penetração (Uberaba teve saldo de +482 empregos formais em 12 meses, CAGED). Joga a favor do conservadorismo. Denominador = todo o empresarial , inclusive grandes empresas e autogestões (a ANS não separa por porte). Por isso as metas em share são baixas de propósito. Só médico-hospitalar ; odontológico fora. Metas Sugestão da Lancers , a validar com a operadora; não é previsão. Sem âncora no share da própria operadora: 1 vida em Uberaba; os 42% de adesão em Iturama são praça histórica e não se transferem. Base do O1 = share da EVO em Uberaba (3,29%) : única entrante recente e mensurável na cidade (0 vidas em jun/25; 3.543 empresariais em ago/26). +p.p. sobre o share atual de cada município: respeita mercados diferentes e nunca fica abaixo do que já existe. Uberlândia (L2) fora do cálculo: 292 mil vidas e nenhuma rede da operadora; incluí-la inflaria o número sem base. Execução Horizonte de 24 meses , a validar (com 36 meses o ritmo mensal cai um terço). Pré-requisitos: produto com Uberaba na área de comercialização (NTRP) e hospital âncora contratado. Sem eles, o potencial é zero. Potencial líquido: estoque de vidas no fim do período, já descontados cancelamentos. Não separa canal: divisão entre Lancers, corretores e time próprio a combinar. Receita Ticket da carteira atual (mix individual e adesão, preços de Rio Preto), não o da tabela de Uberaba: ordem de grandeza. Não considera perfil etário das vidas novas, sinistralidade nem coparticipação. 5. Teste de sanidade: o que a meta pede por mês Empresarial é factível: a meta base pede pouco mais da metade do ritmo de entradas da EVO. Adesão base é a meta mais exigente: o fluxo de adesão em Uberaba é pequeno; depende de abrir entidades novas (DCEs da Uniube e da UFTM, OAB, conselhos), não de disputar o fluxo atual. 6. Ressalvas e perguntas prováveis A EVO cresceu de forma orgânica? Não totalmente: a carteira dela saltou de 28 para 3.053 vidas em set/25, num único mês (VDA/ANS; origem não pública). A meta base é um teto plausível, não um ritmo normal; o crescimento posterior, de ~180 vidas/mês, sustenta o O1 base. Share sobre vidas ou empresas? Sobre vidas: a ANS não publica número de contratos por município. Por que 24 meses? Convenção dos estudos da Lancers, premissa aberta. O ticket vale para Uberaba? Não exatamente. O preço que vale é o do comparativo de tabelas; o ticket só dá escala à receita. Entradas = QT_BENEFICIARIO_ADERIDO do PDA-024 MG ago/26, residentes em Uberaba. Benchmark de MG: segunda leitura pela base 047 da ANS (5.895.618 beneficiários médico-hospitalares em MG, 2026; diferença de 0,04%)."
+      }
+    ]
+  },
+  "precos": {
+    "file": "Bensaude_Uberaba_Comparativo_Precos.html",
+    "tables": [
+      {
+        "title": "1. Mapa de diferenças por faixa etária",
+        "headers": [
+          "Bensaúde vs…",
+          "0–18",
+          "19–23",
+          "24–28",
+          "29–33",
+          "34–38",
+          "39–43",
+          "44–48",
+          "49–53",
+          "54–58",
+          "59+"
+        ],
+        "rows": [
+          [
+            "Unimed Completo Regional · com copart. 10 de 10 faixas mais barata",
+            "−52%",
+            "−51%",
+            "−50%",
+            "−53%",
+            "−52%",
+            "−52%",
+            "−52%",
+            "−54%",
+            "−53%",
+            "−52%"
+          ],
+          [
+            "EVO Now · com copart. 10 de 10 faixas mais barata",
+            "−18%",
+            "−21%",
+            "−24%",
+            "−27%",
+            "−24%",
+            "−27%",
+            "−19%",
+            "−18%",
+            "−17%",
+            "−18%"
+          ],
+          [
+            "Hapvida Nosso Plano · copart. parcial 10 de 10 faixas mais barata",
+            "−16%",
+            "−12%",
+            "−8%",
+            "−12%",
+            "−11%",
+            "−14%",
+            "−16%",
+            "−16%",
+            "−35%",
+            "−14%"
+          ],
+          [
+            "Hapvida Nosso Médico · copart. parcial 9 de 10 faixas mais barata",
+            "−6%",
+            "−2%",
+            "+2%",
+            "−3%",
+            "−1%",
+            "−5%",
+            "−7%",
+            "−7%",
+            "−28%",
+            "−4%"
+          ],
+          [
+            "Hapvida Nosso Plano · com copart. 1 de 10 faixas mais barata",
+            "+11%",
+            "+16%",
+            "+21%",
+            "+16%",
+            "+17%",
+            "+13%",
+            "+11%",
+            "+10%",
+            "−14%",
+            "+14%"
+          ],
+          [
+            "Hapvida Nosso Médico · com copart. 1 de 10 faixas mais barata",
+            "+24%",
+            "+29%",
+            "+35%",
+            "+29%",
+            "+31%",
+            "+26%",
+            "+23%",
+            "+23%",
+            "−4%",
+            "+27%"
+          ],
+          [
+            "Posição da Bensaúde entre 7 produtos · 1º = mais barato",
+            "3º",
+            "3º",
+            "4º",
+            "3º",
+            "3º",
+            "3º",
+            "3º",
+            "3º",
+            "1º",
+            "3º"
+          ]
+        ]
+      },
+      {
+        "title": "3. Tabela de preços completa",
+        "headers": [
+          "Produto (R$/mês)",
+          "0–18",
+          "19–23",
+          "24–28",
+          "29–33",
+          "34–38",
+          "39–43",
+          "44–48",
+          "49–53",
+          "54–58",
+          "59+"
+        ],
+        "rows": [
+          [
+            "★ Bensaúde Flex 50 Prata · Adesão Adesão · AGSI, consulta de 08/10/2026",
+            "134,14",
+            "156,53",
+            "182,67",
+            "201,29",
+            "234,91",
+            "268,50",
+            "328,91",
+            "410,15",
+            "544,26",
+            "804,68"
+          ],
+          [
+            "Bensaúde Flex 50 Prata · PME PME · AGSI, consulta de 08/10/2026",
+            "125,96",
+            "146,99",
+            "171,53",
+            "189,02",
+            "220,57",
+            "252,11",
+            "308,83",
+            "385,11",
+            "511,04",
+            "755,56"
+          ],
+          [
+            "Bensaúde Flex 50 Prata · Adesão · Lins / Jales / Frutal (até 50 km) Adesão · AGSI, consulta de 08/10/2026",
+            "117,38",
+            "136,98",
+            "159,86",
+            "176,16",
+            "205,58",
+            "234,98",
+            "287,85",
+            "358,95",
+            "476,33",
+            "704,25"
+          ],
+          [
+            "Unimed Completo Regional · com copart. Empresarial (tabela sem faixa de vidas) · set/2026",
+            "278,82",
+            "320,67",
+            "368,77",
+            "424,09",
+            "487,70",
+            "560,90",
+            "684,24",
+            "889,51",
+            "1.156,19",
+            "1.671,85"
+          ],
+          [
+            "EVO Now · com copart. PME 2–29 vidas · jul/2026",
+            "163,11",
+            "199,00",
+            "238,79",
+            "274,60",
+            "307,55",
+            "369,06",
+            "405,99",
+            "499,35",
+            "659,13",
+            "975,53"
+          ],
+          [
+            "Hapvida Nosso Plano · copart. parcial PME 2–29 vidas (Super Simples) · promo 08/09–30/09/2026 (vencida)",
+            "158,93",
+            "178,00",
+            "199,36",
+            "229,26",
+            "263,65",
+            "313,74",
+            "392,18",
+            "490,23",
+            "833,39",
+            "933,40"
+          ],
+          [
+            "Hapvida Nosso Médico · copart. parcial PME 2–29 vidas (Super Simples) · promo 08/09–30/09/2026 (vencida)",
+            "143,17",
+            "160,35",
+            "179,59",
+            "206,53",
+            "237,51",
+            "282,64",
+            "353,30",
+            "441,63",
+            "750,77",
+            "840,86"
+          ],
+          [
+            "Hapvida Nosso Plano · com copart. PME 2–29 vidas (Super Simples) · promo 08/09–30/09/2026 (vencida)",
+            "120,59",
+            "135,06",
+            "151,27",
+            "173,96",
+            "200,05",
+            "238,06",
+            "297,58",
+            "371,98",
+            "632,37",
+            "708,25"
+          ],
+          [
+            "Hapvida Nosso Médico · com copart. PME 2–29 vidas (Super Simples) · promo 08/09–30/09/2026 (vencida)",
+            "108,03",
+            "120,99",
+            "135,51",
+            "155,84",
+            "179,22",
+            "213,27",
+            "266,59",
+            "333,24",
+            "566,51",
+            "634,49"
+          ]
+        ]
+      },
+      {
+        "title": "1. Mapa de diferenças por faixa etária",
+        "headers": [
+          "Bensaúde vs…",
+          "0–18",
+          "19–23",
+          "24–28",
+          "29–33",
+          "34–38",
+          "39–43",
+          "44–48",
+          "49–53",
+          "54–58",
+          "59+"
+        ],
+        "rows": [
+          [
+            "Unimed Completo Regional · com copart. 10 de 10 faixas mais barata",
+            "−46%",
+            "−45%",
+            "−44%",
+            "−47%",
+            "−46%",
+            "−46%",
+            "−46%",
+            "−48%",
+            "−47%",
+            "−46%"
+          ],
+          [
+            "EVO Now · com copart. 10 de 10 faixas mais barata",
+            "−2%",
+            "−6%",
+            "−9%",
+            "−12%",
+            "−9%",
+            "−14%",
+            "−3%",
+            "−2%",
+            "−1%",
+            "−2%"
+          ],
+          [
+            "Hapvida Nosso Plano · copart. parcial 1 de 10 faixas mais barata",
+            "+7%",
+            "+12%",
+            "+16%",
+            "+11%",
+            "+13%",
+            "+9%",
+            "+6%",
+            "+6%",
+            "−17%",
+            "+9%"
+          ],
+          [
+            "Hapvida Nosso Médico · copart. parcial 1 de 10 faixas mais barata",
+            "+19%",
+            "+24%",
+            "+29%",
+            "+24%",
+            "+26%",
+            "+21%",
+            "+18%",
+            "+18%",
+            "−8%",
+            "+21%"
+          ],
+          [
+            "Hapvida Nosso Plano · com copart. 0 de 10 faixas mais barata",
+            "+41%",
+            "+47%",
+            "+53%",
+            "+47%",
+            "+49%",
+            "+43%",
+            "+40%",
+            "+40%",
+            "+9%",
+            "+44%"
+          ],
+          [
+            "Hapvida Nosso Médico · com copart. 0 de 10 faixas mais barata",
+            "+58%",
+            "+64%",
+            "+71%",
+            "+64%",
+            "+66%",
+            "+60%",
+            "+57%",
+            "+56%",
+            "+22%",
+            "+61%"
+          ],
+          [
+            "Posição da Bensaúde entre 7 produtos · 1º = mais barato",
+            "5º",
+            "5º",
+            "5º",
+            "5º",
+            "5º",
+            "5º",
+            "5º",
+            "5º",
+            "3º",
+            "5º"
+          ]
+        ]
+      },
+      {
+        "title": "3. Tabela de preços completa",
+        "headers": [
+          "Produto (R$/mês)",
+          "0–18",
+          "19–23",
+          "24–28",
+          "29–33",
+          "34–38",
+          "39–43",
+          "44–48",
+          "49–53",
+          "54–58",
+          "59+"
+        ],
+        "rows": [
+          [
+            "★ Bensaúde Flex 50 Ouro · PME PME · AGSI, consulta de 08/10/2026",
+            "188,93",
+            "220,49",
+            "257,30",
+            "283,54",
+            "330,89",
+            "378,20",
+            "463,28",
+            "577,71",
+            "766,61",
+            "1.133,44"
+          ],
+          [
+            "Bensaúde Flex 50 Ouro · Adesão Adesão · AGSI, consulta de 08/10/2026",
+            "186,67",
+            "217,83",
+            "254,20",
+            "280,13",
+            "326,90",
+            "373,65",
+            "457,72",
+            "570,77",
+            "757,40",
+            "1.119,82"
+          ],
+          [
+            "Bensaúde Flex 50 Ouro · Adesão · Lins / Jales / Frutal (até 50 km) Adesão · AGSI, consulta de 08/10/2026",
+            "176,08",
+            "205,48",
+            "239,78",
+            "264,23",
+            "308,35",
+            "352,44",
+            "431,73",
+            "538,36",
+            "714,40",
+            "1.056,24"
+          ],
+          [
+            "Unimed Completo Regional · com copart. Empresarial (tabela sem faixa de vidas) · set/2026",
+            "348,53",
+            "400,81",
+            "460,93",
+            "530,07",
+            "609,53",
+            "701,02",
+            "855,31",
+            "1.111,90",
+            "1.445,36",
+            "2.089,99"
+          ],
+          [
+            "EVO Now · com copart. PME 2–29 vidas · jul/2026",
+            "192,47",
+            "234,83",
+            "281,78",
+            "324,03",
+            "362,91",
+            "438,90",
+            "479,06",
+            "589,24",
+            "777,78",
+            "1.151,12"
+          ],
+          [
+            "Hapvida Nosso Plano · copart. parcial PME 2–29 vidas (Super Simples) · promo 08/09–30/09/2026 (vencida)",
+            "176,41",
+            "197,58",
+            "221,29",
+            "254,48",
+            "292,65",
+            "348,25",
+            "435,31",
+            "544,14",
+            "925,04",
+            "1.036,04"
+          ],
+          [
+            "Hapvida Nosso Médico · copart. parcial PME 2–29 vidas (Super Simples) · promo 08/09–30/09/2026 (vencida)",
+            "158,89",
+            "177,96",
+            "199,32",
+            "229,22",
+            "263,60",
+            "313,68",
+            "392,10",
+            "490,13",
+            "833,22",
+            "933,21"
+          ],
+          [
+            "Hapvida Nosso Plano · com copart. PME 2–29 vidas (Super Simples) · promo 08/09–30/09/2026 (vencida)",
+            "133,86",
+            "149,92",
+            "167,91",
+            "193,10",
+            "222,07",
+            "264,26",
+            "330,33",
+            "412,91",
+            "701,95",
+            "786,18"
+          ],
+          [
+            "Hapvida Nosso Médico · com copart. PME 2–29 vidas (Super Simples) · promo 08/09–30/09/2026 (vencida)",
+            "119,91",
+            "134,30",
+            "150,42",
+            "172,98",
+            "198,93",
+            "236,73",
+            "295,91",
+            "369,89",
+            "628,81",
+            "704,27"
+          ]
+        ]
+      },
+      {
+        "title": "Coparticipação",
+        "headers": [
+          "Item",
+          "Bensaúde – Bem Fácil Flex 50 (Prata e Ouro; também Flex 50 Plus)",
+          "Unimed Uberaba – Completo Regional",
+          "EVO Saúde – EVO Now",
+          "Hapvida – Nosso Plano e Nosso Médico – coparticipação parcial",
+          "Hapvida – Nosso Plano e Nosso Médico – com coparticipação"
+        ],
+        "rows": [
+          [
+            "Consulta eletiva",
+            "Consultas: R$ 41,36",
+            "Consultas na rede ampla (dentro ou fora da área de ação): 50%",
+            "Consulta eletiva (rede): R$ 40,00",
+            "—",
+            "Consultas eletivas: 30%, limitado a R$ 20,00"
+          ],
+          [
+            "Consulta de urgência / PS",
+            "Emergência: R$ 83,78",
+            "Consultas PA (área de ação e demais localidades): 50%",
+            "Consulta em pronto-socorro: R$ 50,00",
+            "—",
+            "Consultas de urgência: 30%, limitado a R$ 55,00"
+          ],
+          [
+            "Exames simples",
+            "Exames e procedimentos: 50% limitado a R$ 83,78",
+            "Exames dos Grupos 1 e 2: 40% do valor praticado, limitado a R$ 120,00 por evento",
+            "Exames: 40%, limitado a R$ 100,00 por procedimento",
+            "—",
+            "Exames simples: 30%, limitado a R$ 15,00"
+          ],
+          [
+            "Exames complexos / especiais",
+            "Exames e procedimentos especiais: 50% limitado a R$ 264,08",
+            "Exames do Grupo 3: 40% do valor praticado, limitado a R$ 250,00 por evento",
+            "Exames: 40%, limitado a R$ 100,00 por procedimento",
+            "—",
+            "Exames complexos: 30%, limitado a R$ 55,00"
+          ],
+          [
+            "Terapias",
+            "Terapias: R$ 83,78",
+            "Fisioterapia; acupuntura, psicoterapia, terapia ocupacional, nutrição e fonoaudiologia: 40%, limitado a R$ 120,00 por evento",
+            "Terapias simples (por sessão): 40%, limitado a R$ 100,00",
+            "Demais terapias: valor fixo R$ 42,00",
+            "Demais terapias: valor fixo R$ 42,00"
+          ],
+          [
+            "Terapias especiais",
+            "Terapias especiais: R$ 264,08",
+            "Demais procedimentos e terapias: 40%, limitado a R$ 250,00 por evento",
+            "Terapias multidisciplinares (por sessão): 40%, limitado a R$ 100,00",
+            "Terapias especiais: valor fixo R$ 79,00",
+            "Terapias especiais: valor fixo R$ 79,00"
+          ],
+          [
+            "Internação – enfermaria",
+            "Internação: R$ 264,08",
+            "R$ 200,00 na área de ação / R$ 300,00 fora",
+            "Internações/cirurgias – enfermaria: R$ 100,00",
+            "não consta",
+            "não consta"
+          ],
+          [
+            "Internação – apartamento",
+            "Internação: R$ 264,08",
+            "R$ 300,00 na área de ação / R$ 340,00 fora",
+            "Internações/cirurgias – apartamento: R$ 150,00",
+            "não consta",
+            "não consta"
+          ],
+          [
+            "Alta complexidade",
+            "Quimioterapia, radioterapia e hemodiálise: R$ 528,17 por mês",
+            "não consta",
+            "não consta",
+            "não consta",
+            "não consta"
+          ],
+          [
+            "Outros",
+            "Consulta oftalmológica + pacote de exames de baixo custo*: R$ 83,78 (*nota não informada na fonte)",
+            "—",
+            "—",
+            "—",
+            "Cobrança por procedimento realizado"
+          ]
+        ]
+      },
+      {
+        "title": "Fontes e método",
+        "headers": [
+          "Operadora",
+          "Produto",
+          "Fonte",
+          "Data / observação"
+        ],
+        "rows": [
+          [
+            "Bensaúde",
+            "Bem Fácil Flex 50 (Prata ENF / Ouro APT) — todas as tabelas",
+            "AGSI, API /operators/prices, consulta de 08/10/2026 (conferida ao vivo)",
+            "Preço de venda"
+          ],
+          [
+            "Unimed Uberaba",
+            "Completo Regional (GM Empresarial), registros 461.162/10-4 e 461.161/10-6",
+            "PDF \"TABELA UNIMED UBERABA-SETEMBRO 2026\"",
+            "set/2026; tabela sem faixa de vidas"
+          ],
+          [
+            "EVO Saúde",
+            "EVO Now MG CE CP, registros 504.916.25-4 e 504.919.25-9",
+            "PDF \"TABELA VENDAS EVO SAÚDE\" (Uberaba/MG)",
+            "jul/2026; coluna 2–29 vidas"
+          ],
+          [
+            "Hapvida",
+            "Nosso Plano e Nosso Médico, copart. parcial e com copart.",
+            "PDF \"NOVA TABELA UBERABA – Super Simples de 02 a 29 vidas\"",
+            "Promocional 08/09–30/09/2026 — VENCIDA"
+          ],
+          [
+            "Coparticipação Bensaúde",
+            "Tabelas atuais Rio Preto e Lins/Frutal/Jales (idênticas)",
+            "Imagens enviadas pela Lancers",
+            "Sem data no documento"
+          ]
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "id": "resumo",
+        "text": "Resumo Onde a tabela de venda atual do Bensaúde ficaria na praça, faixa a faixa. Enfermaria 3º de 7 em preço (1º = mais barato) em 8 das 10 faixas Referência: Bensaúde Flex 50 Prata · Adesão Unimed Completo Regional · com copart. 10/10 EVO Now · com copart. 10/10 Hapvida Nosso Plano · copart. parcial 10/10 Hapvida Nosso Médico · copart. parcial 9/10 Hapvida Nosso Plano · com copart. 1/10 Hapvida Nosso Médico · com copart. 1/10 −40% Bensaúde +40% Barra = de quanto a quanto o Bensaúde fica abaixo (azul) ou acima (vermelho) de cada concorrente nas 10 faixas; pontos = cada faixa. Número = faixas em que o Bensaúde é mais barata. Apartamento 5º de 7 em preço (1º = mais barato) em 9 das 10 faixas Referência: Bensaúde Flex 50 Ouro · PME Unimed Completo Regional · com copart. 10/10 EVO Now · com copart. 10/10 Hapvida Nosso Plano · copart. parcial 1/10 Hapvida Nosso Médico · copart. parcial 1/10 Hapvida Nosso Plano · com copart. 0/10 Hapvida Nosso Médico · com copart. 0/10 −40% Bensaúde +40% +80% Barra = de quanto a quanto o Bensaúde fica abaixo (azul) ou acima (vermelho) de cada concorrente nas 10 faixas; pontos = cada faixa. Número = faixas em que o Bensaúde é mais barata. O que os números mostram Enfermaria (Bensaúde Flex 50 Prata · Adesão): 3º lugar em preço entre 7 produtos (1º = mais barato) em 8 das 10 faixas (exceções: 24–28: 4º; 54–58: 1º). vs Unimed Completo Regional · com copart.: mais barata em todas as faixas (50% a 54% abaixo). vs EVO Now · com copart.: mais barata em todas as faixas (17% a 27% abaixo). vs Hapvida Nosso Plano · copart. parcial: mais barata em todas as faixas (8% a 35% abaixo). vs Hapvida Nosso Médico · copart. parcial: mais barata em 9 de 10 faixas (mais cara só em 24–28); diferença de −28% a +2%. vs Hapvida Nosso Plano · com copart.: mais cara em 9 de 10 faixas (mais barata só em 54–58); diferença de −14% a +21%. vs Hapvida Nosso Médico · com copart.: mais cara em 9 de 10 faixas (mais barata só em 54–58); diferença de −4% a +35%. Apartamento (Bensaúde Flex 50 Ouro · PME): 5º lugar em preço entre 7 produtos (1º = mais barato) em 9 das 10 faixas (exceções: 54–58: 3º). vs Unimed Completo Regional · com copart.: mais barata em todas as faixas (44% a 48% abaixo). vs EVO Now · com copart.: mais barata em todas as faixas (1% a 14% abaixo). vs Hapvida Nosso Plano · copart. parcial: mais cara em 9 de 10 faixas (mais barata só em 54–58); diferença de −17% a +16%. vs Hapvida Nosso Médico · copart. parcial: mais cara em 9 de 10 faixas (mais barata só em 54–58); diferença de −8% a +29%. vs Hapvida Nosso Plano · com copart.: mais cara em todas as faixas (9% a 53% acima). vs Hapvida Nosso Médico · com copart.: mais cara em todas as faixas (22% a 71% acima). Quanto o apartamento custa a mais que a enfermaria (mesmo produto e modalidade, média das 10 faixas) Bensaúde Adesão geral (Ouro × Prata): +39% Bensaúde PME (Ouro × Prata): +50% Bensaúde Adesão Lins/Jales/Frutal (Ouro × Prata): +50% Unimed Completo Regional · com copart.: +25% EVO Now · com copart.: +18% Hapvida Nosso Plano · copart. parcial: +11% Hapvida Nosso Plano · com copart.: +11% Hapvida Nosso Médico · copart. parcial: +11% Hapvida Nosso Médico · com copart.: +11%"
+      },
+      {
+        "id": "enf",
+        "text": "Enfermaria Referência: Bensaúde Flex 50 Prata · Adesão contra 6 produtos de enfermaria em Uberaba. 1. Mapa de diferenças por faixa etária Cada célula = quanto o Bensaúde custa a menos (azul) ou a mais (vermelho) que o concorrente da linha. Passe o mouse para ver os dois preços. Bensaúde mais barato Bensaúde mais cara cor plena = diferença de 60% ou mais Por que a faixa 54–58 destoa: na tabela da Hapvida, a passagem de 49–53 para 54–58 tem reajuste de +70% e a de 54–58 para 59+ só +12% (quadro \"Reajuste por mudança de faixa etária\" do PDF). 2. Bensaúde × cada concorrente Bensaúde (referência) Concorrente do quadro R$/mês por faixa etária · mesma escala em todos os quadros desta acomodação · valor final = 59 anos ou mais vs Unimed Completo Regional · com copart. mais barata em todas as faixas (50% a 54% abaixo) vs EVO Now · com copart. mais barata em todas as faixas (17% a 27% abaixo) vs Hapvida Nosso Plano · copart. parcial mais barata em todas as faixas (8% a 35% abaixo) vs Hapvida Nosso Médico · copart. parcial mais barata em 9 de 10 faixas (mais cara só em 24–28); diferença de −28% a +2% vs Hapvida Nosso Plano · com copart. mais cara em 9 de 10 faixas (mais barata só em 54–58); diferença de −14% a +21% vs Hapvida Nosso Médico · com copart. mais cara em 9 de 10 faixas (mais barata só em 54–58); diferença de −4% a +35% 3. Tabela de preços completa"
+      },
+      {
+        "id": "apt",
+        "text": "Apartamento Referência: Bensaúde Flex 50 Ouro · PME contra 6 produtos de apartamento em Uberaba. 1. Mapa de diferenças por faixa etária Cada célula = quanto o Bensaúde custa a menos (azul) ou a mais (vermelho) que o concorrente da linha. Passe o mouse para ver os dois preços. Bensaúde mais barato Bensaúde mais cara cor plena = diferença de 60% ou mais Por que a faixa 54–58 destoa: na tabela da Hapvida, a passagem de 49–53 para 54–58 tem reajuste de +70% e a de 54–58 para 59+ só +12% (quadro \"Reajuste por mudança de faixa etária\" do PDF). 2. Bensaúde × cada concorrente Bensaúde (referência) Concorrente do quadro R$/mês por faixa etária · mesma escala em todos os quadros desta acomodação · valor final = 59 anos ou mais vs Unimed Completo Regional · com copart. mais barata em todas as faixas (44% a 48% abaixo) vs EVO Now · com copart. mais barata em todas as faixas (1% a 14% abaixo) vs Hapvida Nosso Plano · copart. parcial mais cara em 9 de 10 faixas (mais barata só em 54–58); diferença de −17% a +16% vs Hapvida Nosso Médico · copart. parcial mais cara em 9 de 10 faixas (mais barata só em 54–58); diferença de −8% a +29% vs Hapvida Nosso Plano · com copart. mais cara em todas as faixas (9% a 53% acima) vs Hapvida Nosso Médico · com copart. mais cara em todas as faixas (22% a 71% acima) 3. Tabela de preços completa"
+      },
+      {
+        "id": "copart",
+        "text": "Coparticipação Coluno Bensaúde destacada. Vale para Prata e Ouro. Redação original de cada tabela. \"—\" = a tabela não prevê cobrança para o item · \"não consta\" = o item não aparece na tabela. As linhas só alinham itens parecidos para leitura; não há simulação de uso. Fontes da coparticipação Bensaúde – Bem Fácil Flex 50 (Prata e Ouro; também Flex 50 Plus): fontes/bensaude/copart_bensaude_sjriopreto.jpeg + copart_bensaude_lins_frutal_jales.jpeg (idênticas); Plus = mesma regra (Cesar, 08/10) Unimed Uberaba – Completo Regional: fontes/concorrentes/unimed_uberaba_completo_regional_set2026.pdf, p. 2 (camada visível) EVO Saúde – EVO Now: fontes/concorrentes/evo_now_uberaba_jul2026.pdf, p. 1 Hapvida – Nosso Plano e Nosso Médico – coparticipação parcial: fontes/concorrentes/hapvida_super_simples_2a29_promo_set2026.pdf (quadro \"Coparticipação – Nosso Médico / Nosso Plano\") Hapvida – Nosso Plano e Nosso Médico – com coparticipação: fontes/concorrentes/hapvida_super_simples_2a29_promo_set2026.pdf (mesmo quadro) Outras condições citadas nas tabelas Unimed Uberaba Abrangência: grupo de municípios (Uberaba, Sacramento, Conceição das Alagoas, Veríssimo, Água Comprida, Campo Florido, Delta, Conquista, Santa Juliana) Carências: 30 dias (consultas e exames Grupo 1), 90 dias (Grupo 2 e fisioterapia), 180 dias (Grupo 3, terapias, internações), 300 dias (parto), 24 meses (DLP) Isenção de carência/CPT para contratos com mais de 30 vidas (condições na tabela) Opcionais: SOS Unimed R$ 8,00/pessoa; Unimed Aeromédica R$ 4,00/pessoa Tabela sem faixa de número de vidas EVO Saúde Coletivo empresarial PME 2 a 99 vidas; tabela 30–99 vidas 5% abaixo da 2–29 Redução de carências para quem vem de outro plano (sujeita a análise) MEI/empresário individual: mínimo 3 vidas e 6 meses de constituição Exige adesão dos sócios (ou justificativa formal) Hapvida Tabela promocional para contratos assinados de 08/09 a 30/09/2026 (vencida) Taxa de adesão: R$ 20,00 por usuário Carência de 60 dias para empresas até 29 vidas; isenção acima de 30 vidas Valores válidos para colaboradores domiciliados em Uberaba-MG Bensaúde Rede, abrangência e carências para Uberaba: n.d. (praça nova; Bensaúde ainda não definiu) Locais de consulta (tabela Rio Preto): consultórios credenciados; centro de diagnósticos e terapias; urgência no Hospital Beneficência Portuguesa; urgência em viagem pela Abramge"
+      },
+      {
+        "id": "fontes",
+        "text": "Fontes e método Somente preço de venda mensal por beneficiário (sem net e sem spread: cada produto/modalidade Bensaúde tem spread próprio). Enfermaria comparada só com enfermaria; apartamento só com apartamento. Todos os produtos são ambulatorial + hospitalar com obstetrícia. Referência = tabelo Bensaúde mais cara em cada acomodação (é a maior nas 10 faixas): ENF = Adesão Prata geral (AGSI 96224); APT = PME Ouro (AGSI 96227). Diferença = Bensaúde ÷ concorrente − 1. Posição = ordem de preço entre a referência e os 6 concorrentes da mesma acomodação (1º = mais barato). Tabelas de entidades de SP (ACEMI/Mirassol, sindicatos de Votuporanga e Lins) não entram no comparativo — estão na planilha (aba \"Bensaúde – todas\"). Conferência automática: cada preço dos concorrentes conferido na linha do PDF; Hapvida conferida pelos % de reajuste por faixa publicados; Bensaúde conferida contra a AGSI ao vivo."
+      }
+    ]
+  }
+}

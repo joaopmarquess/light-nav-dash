@@ -1,0 +1,52 @@
+.study-data { container-type: inline-size; min-width: 0; color: hsl(var(--foreground)); display: flex; flex-direction: column; gap: 20px; }
+.study-data-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid hsl(var(--border)); padding-bottom: 16px; }
+.study-data-heading h3 { font-size: 26px; font-weight: 700; }
+.study-data-heading p, .study-data-footnote { font-size: 13px; color: hsl(var(--muted-foreground)); }
+.study-data-kpis { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; }
+.study-data-kpi { padding: 16px 18px; border: 1px solid hsl(var(--border)); border-top: 4px solid hsl(var(--hospital-blue)); border-radius: 6px; background: hsl(var(--muted) / .4); }
+.study-data-kpi:nth-child(2) { border-top-color: hsl(var(--marketing-trust)); }
+.study-data-kpi:nth-child(3) { border-top-color: hsl(var(--hospital-gold)); }
+.study-data-kpi:nth-child(4) { border-top-color: hsl(var(--credential-nonmedical)); }
+.study-data-kpi strong { display: block; font-size: 32px; line-height: 1.2; margin: 6px 0; font-variant-numeric: tabular-nums; }
+.study-data-kpi span { font-size: 15px; font-weight: 600; }
+.study-data-kpi small { display: block; color: hsl(var(--muted-foreground)); font-size: 13px; }
+.study-data-columns { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); gap: 28px; }
+.study-data-section h4 { font-size: 20px; font-weight: 650; margin-bottom: 12px; }
+.study-data-section p { font-size: 15px; line-height: 1.55; }
+.study-data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.study-data-table th, .study-data-table td { padding: 10px 12px; border-bottom: 1px solid hsl(var(--border)); text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+.study-data-table thead { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
+.study-data-table tbody tr:nth-child(even) { background: hsl(var(--muted) / .35); }
+.study-data-table .data-reference { background: hsl(var(--accent)); font-weight: 650; }
+.study-data-notice { display: flex; gap: 12px; padding: 14px 18px; background: hsl(var(--marketing-offline)); border-left: 4px solid hsl(var(--hospital-gold)); font-size: 14px; line-height: 1.5; }
+.study-data-notice svg { width: 22px; height: 22px; flex-shrink: 0; }
+.study-data-price-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.study-data-price-list { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+.study-data-price { padding: 16px; border: 1px solid hsl(var(--border)); border-radius: 6px; min-width: 0; }
+.study-data-price.reference { background: hsl(var(--accent)); border-color: hsl(var(--hospital-blue)); }
+.study-data-price h4 { font-size: 15px; font-weight: 600; min-height: 42px; }
+.study-data-price strong { display: block; font-size: 27px; font-variant-numeric: tabular-nums; margin: 10px 0; }
+.study-data-price p { font-size: 13px; color: hsl(var(--muted-foreground)); }
+.study-data-price em { display: block; font-style: normal; font-size: 14px; margin-top: 10px; }
+.study-data-price-line { fill: none; stroke: hsl(var(--hospital-blue)); stroke-width: 2; }
+.study-data-spark { width: 100%; height: 40px; margin-top: 10px; }
+.study-data-opportunities { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; }
+.study-data-opportunity { border: 1px solid hsl(var(--border)); border-top: 4px solid hsl(var(--marketing-trust)); border-radius: 6px; padding: 18px; }
+.study-data-opportunity h4 { font-size: 19px; font-weight: 650; margin: 8px 0 4px; }
+.study-data-opportunity strong { display: block; font-size: 34px; font-variant-numeric: tabular-nums; margin: 20px 0 0; }
+.study-data-opportunity p { color: hsl(var(--muted-foreground)); font-size: 14px; }
+.study-data-opportunity dl { margin-top: 18px; font-size: 14px; }
+.study-data-opportunity dl div { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; border-top: 1px solid hsl(var(--border)); padding: 8px 0; }
+.study-data-premises { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; }
+.study-data-premise { border-top: 4px solid hsl(var(--hospital-blue)); padding: 16px 4px; }
+.study-data-premise:nth-child(2) { border-top-color: hsl(var(--marketing-trust)); }
+.study-data-premise:nth-child(3) { border-top-color: hsl(var(--hospital-gold)); }
+.study-data-premise:nth-child(4) { border-top-color: hsl(var(--credential-nonmedical)); }
+.study-data-premise h4 { font-size: 18px; font-weight: 650; margin-bottom: 10px; }
+.study-data-premise p { font-size: 14px; line-height: 1.6; }
+.study-data-dialog { width: calc(100vw - 48px); max-width: 1800px; max-height: calc(100dvh - 48px); display: flex; flex-direction: column; }
+.study-data-dialog-body { overflow: auto; min-height: 0; }
+.study-data-dialog-body table { min-width: 900px; }
+.study-data-dialog-body p { white-space: pre-line; font-size: 14px; line-height: 1.7; margin: 18px 0; }
+@container (max-width: 1100px) { .study-data-kpis,.study-data-opportunities,.study-data-premises { grid-template-columns: repeat(2,minmax(0,1fr)); } .study-data-columns { grid-template-columns: 1fr; } .study-data-price-list { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@container (max-width: 560px) { .study-data-kpis,.study-data-opportunities,.study-data-premises,.study-data-price-list { grid-template-columns: 1fr; } .study-data-kpi strong { font-size: 28px; } .study-data-heading h3 { font-size: 23px; } .study-data-table th,.study-data-table td { padding: 8px 4px; font-size: 12px; } }
