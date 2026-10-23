@@ -99,7 +99,7 @@ import AssistencialRelatorioExecutor from "@/components/AssistencialRelatorioExe
 import AssistencialReceitas2518 from "@/components/AssistencialReceitas2518";
 import Assistencial2518Prestadores from "@/components/Assistencial2518Prestadores";
 import { useConsultaState } from "@/lib/assistencialConsultaStore";
-import { Loader2, DollarSign, FlaskConical, ChevronDown } from "lucide-react";
+import { Loader2, DollarSign, FlaskConical } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 
