@@ -44,6 +44,15 @@ export default function SinistralidadePeriodosMV() {
     const comps = competenciasDoAno(new Date());
     setLoading(true); setError(null); setLinhas([]); setProgresso({ feito: 0, total: comps.length });
     try {
+      const ult = comps[comps.length - 1];
+      const rpc = await hostinger.rpc("sinistralidade_mv_competencias", { p_ano: ult.ano, p_ate_mes: ult.mes }).abortSignal(controller.signal);
+      if (controller.signal.aborted) return;
+      if (!rpc.error) {
+        const dados = (rpc.data ?? []) as { nr_ano: number; nr_mes: number; rec_cpp: number; rec_copart: number; rec_total: number; desp_total: number }[];
+        setLinhas(dados.map(d => ({ ano: d.nr_ano, mes: d.nr_mes, soma: { ...somaVazia(), recCpp: Number(d.rec_cpp), recCopart: Number(d.rec_copart), recTotal: Number(d.rec_total), despTotal: Number(d.desp_total) } })));
+        return;
+      }
+      // Função ainda não instalada: soma pela leitura linha a linha (lenta).
       const res: Linha[] = [];
       for (let i = 0; i < comps.length; i += 2) {
         const par = await Promise.all(comps.slice(i, i + 2).map(async c => ({ ...c, soma: await somarMes(c.ano, c.mes, controller.signal) })));
