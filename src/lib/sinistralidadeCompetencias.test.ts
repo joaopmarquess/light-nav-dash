@@ -39,10 +39,3 @@ describe("agrupamento por ano", () => {
     expect(r.map(a => [a.ano, a.soma.recTotal, a.meses.map(m => m.mes)])).toEqual([[2024, 1, [1]], [2025, 8, [1, 2]]]);
   });
 });
-
-import { mesValido } from "./sinistralidadeCompetencias";
-describe("meses válidos", () => {
-  const s = (rec: number, desp: number) => ({ ...somaVazia(), recTotal: rec, despTotal: desp });
-  it("despesa abaixo de 50% da receita é ignorada", () => expect(mesValido(s(36475311.1, 2059030.24))).toBe(false));
-  it("despesa exatamente 50% é mantida", () => expect(mesValido(s(100, 50))).toBe(true));
-});

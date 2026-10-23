@@ -3,7 +3,7 @@ import { AlertCircle, CalendarRange, ChevronDown, ChevronRight, Loader2, Refresh
 import { hostinger } from "@/lib/hostingerClient";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { agruparPorAno, anosSinistralidade, mesValido, saldoCompetencia, sinistralidade, somaVazia, somarTotais, type AnoAgrupado, type SomaCompetencia } from "@/lib/sinistralidadeCompetencias";
+import { agruparPorAno, anosSinistralidade, saldoCompetencia, sinistralidade, somaVazia, somarTotais, type AnoAgrupado, type SomaCompetencia } from "@/lib/sinistralidadeCompetencias";
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 type Col = "recCpp" | "recCopart" | "recTotal" | "despTotal" | "saldo" | "sin";
@@ -38,7 +38,7 @@ export default function SinistralidadePeriodosMV() {
         return (r.data ?? []) as Rpc[];
       }));
       if (controller.signal.aborted) return;
-      setAnos(agruparPorAno(res.flat().map(d => ({ ano: d.nr_ano, mes: d.nr_mes, soma: { ...somaVazia(), recCpp: Number(d.rec_cpp), recCopart: Number(d.rec_copart), recTotal: Number(d.rec_total), despTotal: Number(d.desp_total) } })).filter(m => mesValido(m.soma))));
+      setAnos(agruparPorAno(res.flat().map(d => ({ ano: d.nr_ano, mes: d.nr_mes, soma: { ...somaVazia(), recCpp: Number(d.rec_cpp), recCopart: Number(d.rec_copart), recTotal: Number(d.rec_total), despTotal: Number(d.desp_total) } }))));
     } catch {
       if (!controller.signal.aborted) setError("Não foi possível consultar a função sinistralidade_mv_competencias. Tente novamente.");
     } finally {
