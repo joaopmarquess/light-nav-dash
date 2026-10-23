@@ -28,7 +28,13 @@ const addMes = (d: string, n: number) => { const x = new Date(d.slice(0, 7) + "-
 const toMat = (r: Row): TransfMat => ({ cpf: String(r.nr_cpf ?? ""), mat: String(r.cd_mat_alternativa), nome: r.nm_beneficiario ?? "", vig: dia(r.dt_vigencia_beneficiario), desl: dia(r.dt_desligamento), vendedor: r.cd_vendedor == null ? null : Number(r.cd_vendedor), nmVendedor: r.nm_vendedor, motivo: r.cd_motivo_cancelamento == null ? null : Number(r.cd_motivo_cancelamento) });
 
 type F = { de: string; ate: string };
-const EMPTY = (): F => ({ de: inicioMes(), ate: hojeISO() });
+// Padrão: 01/01 do ano atual até o último dia do mês anterior (em janeiro, até hoje).
+const EMPTY = (): F => {
+  const h = hojeISO(), de = h.slice(0, 4) + "-01-01";
+  const u = new Date(inicioMes() + "T12:00:00"); u.setDate(0);
+  const ate = u.toISOString().slice(0, 10);
+  return { de, ate: ate < de ? h : ate };
+};
 type Sel = { tipo: Tipo; sub?: TipoReentrada; bloco?: BlocoMes } | null;
 
 export default function CarteiraTrialMov() {
