@@ -2,7 +2,7 @@ import { HOSPITAL_PALMERIO } from "@/lib/uberabaHospital";
 import campanha from "@/assets/uberaba-marketing-outdoor-sem-exclamacao.png";
 import operacaoDigital from "@/assets/uberaba-guias-operacao-digital.jpg";
 import outdoorImagem from "@/assets/uberaba-estudo-outdoor.jpg.asset.json";
-import estudoImagem from "@/assets/projeto-uberaba-home-transparente.svg.asset.json";
+import estudoImagem from "@/assets/projeto-uberaba-home-v2.svg.asset.json";
 
 // Keep decoded images alive across stage changes, including the first visit.
 const imagens: HTMLImageElement[] = [];

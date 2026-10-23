@@ -9,7 +9,7 @@ import { geographicToday } from "@/hooks/useCarteiraTrialGeo";
 import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
 
 import { UBERABA_ESTUDO } from "@/lib/uberabaEstudo";
-import estudoImagem from "@/assets/projeto-uberaba-home-transparente.svg.asset.json";
+import estudoImagem from "@/assets/projeto-uberaba-home-v2.svg.asset.json";
 
 const UberabaEstudoMapas = () => {
   const [selected, setSelected] = useState<"home" | "painel" | "uberaba" | "dados">("home");
