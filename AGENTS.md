@@ -1,6 +1,6 @@
 # Project rules
 - Keep Movimentação requests gated by an explicitly applied period; fetch monthly card counts from carteira_movimentacao_totais and lazily cache original RPC details per applied period only on eye/card clicks, preserving server-side classification and tested reconciliation to avoid eager pagination and rule drift.
-- Reuse fetched monthly totals for combined-chart bars; independently query and cache carteira_trial_kpis at UTC month-end dates after Calcular for the lives line, on a separate axis, never substituting net growth.
+- Reuse monthly totals for chart bars and selected-month indicators; cache KPI dates and lazy details per interval. Keep the full-period chart independent; its lives line uses carteira_trial_kpis at UTC month-end, never net growth.
 - Allocate Movimentação debugging and chart within a fixed-height animated grid, with the chart filling the remaining row, so opening details preserves its baseline and width without touching queries.
 - Keep Study Dados as local, typed presentations sourced from the supplied Lancers HTML tables; isolate price rankings and scenario totals in tested helpers, label historical dates and unapproved assumptions, and never merge these snapshots with live portfolio queries.
 - Use the shared Timeline presentation header and container-scoped styling for hospital, marketing, formalization and simplified operating-model screens; preserve typed content, calculations and complete-version institutional text so visual changes cannot affect business rules.

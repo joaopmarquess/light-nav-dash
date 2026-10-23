@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { type BlocoMes, type TransfPar, type TipoReentrada } from "@/lib/transferencias";
 import { podeCalcularMovimentacao, resumoMovimentacao } from "@/lib/movimentacaoResumo";
 import { normalizarVendedor } from "@/lib/vendedorTransferencia";
-import { mesesMovimentacao, somarTotaisMovimentacao, fluxoMensalMovimentacao, fechamentosMensaisMovimentacao, combinarFluxosEVidas, type VidasMensais, type FluxoMensal, type TotaisMovimentacao } from "@/lib/movimentacaoCarga";
+import { mesesMovimentacao, ultimosMesesMovimentacao, somarTotaisMovimentacao, fluxoMensalMovimentacao, fechamentosMensaisMovimentacao, combinarFluxosEVidas, type VidasMensais, type FluxoMensal, type TotaisMovimentacao } from "@/lib/movimentacaoCarga";
 import MovimentacaoCrescimentoMensal from "@/components/MovimentacaoCrescimentoMensal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,12 @@ type Sel = { tipo: Tipo; sub?: TipoReentrada; bloco?: BlocoMes } | null;
 export default function CarteiraTrialMov() {
   const [f, setF] = useState<F>(EMPTY());
   const [ap, setAp] = useState<F | null>(null);
+  const [mesSelecionado, setMesSelecionado] = useState<F | null>(null);
+  const periodoIndicadores = mesSelecionado ?? ap;
+  const [totaisMensais, setTotaisMensais] = useState<Record<string, TotaisMovimentacao>>({});
+  const [vidasSelecionadas, setVidasSelecionadas] = useState<{ ant: number | null; fin: number | null }>({ ant: null, fin: null });
+  const cacheVidas = useRef(new Map<string, Promise<number>>());
+  const cacheDetalhes = useRef(new Map<string, Ev[]>());
   const [evs, setEvs] = useState<Ev[]>([]);
   const [loading, setLoading] = useState(false);
   const [etapa, setEtapa] = useState("");
@@ -63,7 +69,7 @@ export default function CarteiraTrialMov() {
   useEffect(() => {
     if (!podeCalcularMovimentacao(ap)) return;
     let off = false;
-    setLoading(true); setErr(null); setTotais(null); setMensal([]);
+    setLoading(true); setErr(null); setTotais(null); setMensal([]); setTotaisMensais({});
     (async () => {
       try {
         const meses = mesesMovimentacao(ap);
@@ -84,6 +90,7 @@ export default function CarteiraTrialMov() {
         }
         if (!off) {
           setTotais(somarTotaisMovimentacao(rows));
+          setTotaisMensais(Object.fromEntries(rows.map((row, indice) => [meses[indice].de.slice(0, 7), somarTotaisMovimentacao([row])])));
           setMensal(rows.map((row, indice) => fluxoMensalMovimentacao(meses[indice].de.slice(0, 7), row)));
         }
       } catch (e: any) { if (!off) setErr(e.message); }
@@ -94,13 +101,16 @@ export default function CarteiraTrialMov() {
   // Movimentação calculada na base pela função carteira_movimentacao (regra de transferência no servidor).
   const precisaDetalhes = depuracaoAberta || sel !== null;
   useEffect(() => {
-    if (!podeCalcularMovimentacao(ap) || !precisaDetalhes || detalhesProntos || !totais) return;
+    if (!podeCalcularMovimentacao(periodoIndicadores) || !precisaDetalhes || detalhesProntos || !totais) return;
+    const chave = `${periodoIndicadores.de}/${periodoIndicadores.ate}`;
+    const cached = cacheDetalhes.current.get(chave);
+    if (cached) { setEvs(cached); setDetalhesProntos(true); setDetalhesLoading(false); return; }
     let off = false;
     (async () => {
       setDetalhesLoading(true); setDetalhesErro(null); setEvs([]); setCortado(false); setDetalhesEtapa("Carregando detalhes…");
       const rows: Row[] = [];
       // Divide o período em meses: cada mês é independente (a função liga ±1 mês), evitando tempo esgotado.
-      const meses = mesesMovimentacao(ap);
+      const meses = mesesMovimentacao(periodoIndicadores);
       const pag = (m: F, from: number) => hostinger.rpc("carteira_movimentacao", { p_de: m.de, p_ate: m.ate })
         .order("tipo").order("data").order("mat").range(from, from + 999);
       const doMes = async (m: F) => {
@@ -131,10 +141,37 @@ export default function CarteiraTrialMov() {
         } : undefined;
         return { tipo: x.tipo as Tipo, data: dia(x.data), r, par };
       });
-      if (!off) { setEvs(out); setDetalhesProntos(true); setDetalhesLoading(false); }
+      if (!off) { cacheDetalhes.current.set(chave, out); setEvs(out); setDetalhesProntos(true); setDetalhesLoading(false); }
     })();
     return () => { off = true; };
-  }, [ap, precisaDetalhes, detalhesProntos, totais]);
+  }, [periodoIndicadores, precisaDetalhes, detalhesProntos, totais]);
+
+  const consultarVidas = (d: string): Promise<number> => {
+    const cached = cacheVidas.current.get(d);
+    if (cached) return cached;
+    const request = Promise.resolve(hostinger.rpc("carteira_trial_kpis", { p_data: d, p_q: null, p_empresa: null, p_cidade: null }))
+      .then(({ data, error }: any) => {
+        if (error) throw new Error(error.message);
+        const r = Array.isArray(data) ? data[0] : data;
+        if (r?.ativos == null) throw new Error("Não foi possível consultar as vidas ativas.");
+        return Number(r.ativos);
+      }).catch((error: Error) => { cacheVidas.current.delete(d); throw error; });
+    cacheVidas.current.set(d, request);
+    return request;
+  };
+  useEffect(() => {
+    setVidasSelecionadas({ ant: null, fin: null });
+    if (!mesSelecionado) return;
+    let off = false;
+    const anterior = new Date(`${mesSelecionado.de}T00:00:00Z`);
+    anterior.setUTCDate(anterior.getUTCDate() - 1);
+    const final = new Date(`${mesSelecionado.ate}T00:00:00Z`);
+    final.setUTCDate(final.getUTCDate() + 1);
+    Promise.all([consultarVidas(anterior.toISOString().slice(0, 10)), consultarVidas(final.toISOString().slice(0, 10))])
+      .then(([ant, fin]) => { if (!off) setVidasSelecionadas({ ant, fin }); })
+      .catch((e: Error) => { if (!off) setErr(e.message); });
+    return () => { off = true; };
+  }, [mesSelecionado]);
 
   const dAnt = useMemo(() => { if (!ap) return ""; const d = new Date(ap.de + "T12:00:00"); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10); }, [ap?.de]);
   const dFin = useMemo(() => { if (!ap) return ""; const d = new Date(ap.ate + "T12:00:00"); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); }, [ap?.ate]);
@@ -143,20 +180,7 @@ export default function CarteiraTrialMov() {
     setVidas({ ant: null, fin: null });
     setVidasMensais([]); setMensalLoading(false); setMensalErro(null);
     if (!podeCalcularMovimentacao(ap)) return;
-    const cache = new Map<string, Promise<number>>();
-    const at = (d: string): Promise<number> => {
-      const cached = cache.get(d);
-      if (cached) return cached;
-      const request = Promise.resolve(hostinger.rpc("carteira_trial_kpis", { p_data: d, p_q: null, p_empresa: null, p_cidade: null }))
-        .then(({ data, error }: any) => {
-          if (error) throw new Error(error.message);
-          const r = Array.isArray(data) ? data[0] : data;
-          if (r?.ativos == null) throw new Error("Não foi possível consultar as vidas ativas.");
-          return Number(r.ativos);
-        });
-      cache.set(d, request);
-      return request;
-    };
+    const at = consultarVidas;
     Promise.all([at(dAnt), at(dFin)]).then(([ant, fin]) => { if (!off) setVidas({ ant, fin }); })
       .catch((e: Error) => { if (!off) setErr(e.message); });
     setMensalLoading(true);
@@ -175,7 +199,8 @@ export default function CarteiraTrialMov() {
     return () => { off = true; };
   }, [ap, dAnt, dFin]);
 
-  const kpi = totais ?? { e: 0, r: 0, s: 0, tp: 0, tm: 0 };
+  const kpi = (mesSelecionado ? totaisMensais[mesSelecionado.de.slice(0, 7)] : totais) ?? { e: 0, r: 0, s: 0, tp: 0, tm: 0 };
+  const vidasIndicadores = mesSelecionado ? vidasSelecionadas : vidas;
   const resumo = resumoMovimentacao(kpi.e, kpi.s, kpi.r, kpi.tp, kpi.tm);
 
   const bl = (x: Ev): BlocoMes | null => {
@@ -192,8 +217,9 @@ export default function CarteiraTrialMov() {
   const toggle = (t: Tipo, sub?: TipoReentrada, bloco?: BlocoMes) => setSel(same(t, sub, bloco) ? null : { tipo: t, sub, bloco });
   const nB = (t: Tipo, b: BlocoMes, sub?: TipoReentrada) => evs.filter((x) => x.tipo === t && bl(x) === b && (!sub || x.par?.tipo === sub)).length;
   const resetDetalhes = () => { setDepuracaoAberta(false); setSel(null); setEvs([]); setDetalhesProntos(false); setDetalhesErro(null); setDetalhesLoading(false); };
-  const buscar = () => { if (podeCalcularMovimentacao(f)) { resetDetalhes(); setAp({ ...f }); } };
-  const limpar = () => { resetDetalhes(); setTotais(null); setMensal([]); setF(EMPTY()); setAp(null); setErr(null); setLoading(false); setVidas({ ant: null, fin: null }); };
+  const buscar = () => { if (podeCalcularMovimentacao(f)) { resetDetalhes(); cacheVidas.current.clear(); cacheDetalhes.current.clear(); setMesSelecionado(null); setAp({ ...f }); } };
+  const limpar = () => { resetDetalhes(); setMesSelecionado(null); cacheVidas.current.clear(); cacheDetalhes.current.clear(); setTotais(null); setMensal([]); setTotaisMensais({}); setF(EMPTY()); setAp(null); setErr(null); setLoading(false); setVidas({ ant: null, fin: null }); };
+  const selecionarMes = (mes: F | null) => { resetDetalhes(); setErr(null); setMesSelecionado(mes); };
   const v = (n: number) => (detalhesLoading || !detalhesProntos ? "…" : num(n));
 
   const card = (label: string, value: number | null, Icon: typeof Users, negative = false, tipo: Tipo | null = null, neutral = false) => (
@@ -254,16 +280,23 @@ export default function CarteiraTrialMov() {
         <label className="text-xs text-muted-foreground">Até<Input type="date" value={f.ate} onChange={(e) => setF({ ...f, ate: e.target.value })} className="w-40" /></label>
         <Button onClick={buscar} disabled={loading || !podeCalcularMovimentacao(f)}><Search className="h-4 w-4 mr-1" />Calcular</Button>
         <Button variant="outline" onClick={limpar} disabled={loading}><X className="h-4 w-4 mr-1" />Limpar</Button>
+        {ap && !loading && !mensalLoading && totais && <div className="flex flex-wrap gap-2" role="group" aria-label="Período dos indicadores">
+          <Button variant={mesSelecionado ? "outline" : "default"} aria-pressed={!mesSelecionado} onClick={() => selecionarMes(null)}>Período completo</Button>
+          {ultimosMesesMovimentacao(ap).map(mes => <Button key={mes.de} variant={mesSelecionado?.de === mes.de ? "default" : "outline"} aria-pressed={mesSelecionado?.de === mes.de} title={`${fmtD(mes.de)} a ${fmtD(mes.ate)}`} onClick={() => selecionarMes(mes)}>
+            {new Intl.DateTimeFormat("pt-BR", { month: "short", year: "2-digit", timeZone: "UTC" }).format(new Date(`${mes.de}T00:00:00Z`))}
+          </Button>)}
+        </div>}
       </div>
 
       {ap && <>
+      {periodoIndicadores && <p className="text-xs text-muted-foreground">{fmtD(periodoIndicadores.de)} a {fmtD(periodoIndicadores.ate)}</p>}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
-        {card("Anterior", vidas.ant, Users, false, null, true)}
+        {card("Anterior", vidasIndicadores.ant, Users, false, null, true)}
         {card("Vendas", kpi.e, UserPlus, false, "Entrada")}
         {card("Cancelamentos", -kpi.s, UserMinus, true, "Saída")}
         {card("Reativações", kpi.r, RotateCcw, false, "Reativação")}
         {card("Transferências Líq.", resumo.transferenciasLiquidas, ArrowRightLeft, resumo.transferenciasLiquidas < 0)}
-        {card("Final", vidas.fin, Users, false, null, true)}
+        {card("Final", vidasIndicadores.fin, Users, false, null, true)}
         {card("Crescimento", resumo.crescimento, Scale, resumo.crescimento < 0)}
       </div>
       {err && <div className="p-4 text-center text-destructive">Erro: {err}</div>}
