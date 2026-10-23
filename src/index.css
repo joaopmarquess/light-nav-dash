@@ -91,6 +91,7 @@ All colors MUST be HSL.
     --chart-1: 205 85% 55%;
     --chart-2: 215 45% 35%;
     --chart-3: 168 60% 40%;
+    --chart-vidas: 215 70% 28%;
     --chart-4: 28 85% 55%;
     --chart-fat: 215 70% 28%;
     --chart-fat-light: 215 60% 62%;
@@ -189,6 +190,7 @@ All colors MUST be HSL.
     --chart-1: 205 85% 60%;
     --chart-2: 215 40% 70%;
     --chart-3: 168 55% 50%;
+    --chart-vidas: 215 65% 65%;
     --chart-4: 28 85% 60%;
     --chart-fat: 215 65% 45%;
     --chart-fat-light: 215 60% 70%;
@@ -216,8 +218,8 @@ All colors MUST be HSL.
 .movimentacao-key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
 .movimentacao-key-vendas { background: hsl(var(--chart-1)); }
 .movimentacao-key-saidas { background: hsl(var(--chart-desp)); }
-.movimentacao-key-vidas { width: 24px; height: 4px; background: hsl(var(--chart-3)); position: relative; }
-.movimentacao-key-vidas::after { content: ""; position: absolute; width: 10px; height: 10px; border-radius: 50%; background: hsl(var(--card)); border: 3px solid hsl(var(--chart-3)); top: -3px; left: 7px; }
+.movimentacao-key-vidas { width: 24px; height: 4px; background: hsl(var(--chart-vidas)); position: relative; }
+.movimentacao-key-vidas::after { content: ""; position: absolute; width: 10px; height: 10px; border-radius: 50%; background: hsl(var(--card)); border: 3px solid hsl(var(--chart-vidas)); top: -3px; left: 7px; }
 @media (max-width: 640px) { .movimentacao-chart .recharts-label-list { display: none; } }
 .timeline-heat { margin-top: 20px; }
 .study-home-image { background: var(--study-sky-background); }
