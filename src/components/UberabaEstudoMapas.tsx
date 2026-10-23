@@ -3,6 +3,7 @@ import UberabaMapa from "@/components/UberabaMapa";
 import UberabaShell from "@/components/UberabaShell";
 import UberabaDados from "@/components/UberabaDados";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Database, House, LayoutDashboard, MapPinned } from "lucide-react";
 import { geographicToday } from "@/hooks/useCarteiraTrialGeo";
 import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
@@ -22,7 +23,7 @@ const UberabaEstudoMapas = () => {
         <Button variant={selected === "home" ? "default" : "outline"} aria-pressed={selected === "home"} onClick={() => setSelected("home")}><House />Home</Button>
         <Button variant={selected === "painel" ? "default" : "outline"} aria-pressed={selected === "painel"} onClick={() => setSelected("painel")}><LayoutDashboard />Painel</Button>
         <Button variant={selected === "uberaba" ? "default" : "outline"} aria-pressed={selected === "uberaba"} onClick={() => setSelected("uberaba")}><MapPinned />Área</Button>
-        <Button variant={selected === "dados" ? "default" : "outline"} aria-pressed={selected === "dados"} onClick={() => setSelected("dados")}><Database />Dados</Button>
+        <Tooltip><TooltipTrigger asChild><Button variant={selected === "dados" ? "default" : "outline"} aria-pressed={selected === "dados"} onClick={() => setSelected("dados")}><Database />Dados</Button></TooltipTrigger><TooltipContent>Fonte: Antônio Justo e César Martins (Lancers)</TooltipContent></Tooltip>
       </div>
       <div ref={setToolbar} className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-3" />
       </div>
