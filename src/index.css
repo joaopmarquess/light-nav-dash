@@ -92,6 +92,8 @@ All colors MUST be HSL.
     --chart-2: 215 45% 35%;
     --chart-3: 168 60% 40%;
     --chart-vidas: 215 70% 28%;
+    --chart-sin-ok: 199 75% 52%;
+    --chart-sin-alerta: 4 85% 68%;
     --chart-4: 28 85% 55%;
     --chart-fat: 215 70% 28%;
     --chart-fat-light: 215 60% 62%;
@@ -191,6 +193,8 @@ All colors MUST be HSL.
     --chart-2: 215 40% 70%;
     --chart-3: 168 55% 50%;
     --chart-vidas: 215 65% 65%;
+    --chart-sin-ok: 199 70% 60%;
+    --chart-sin-alerta: 4 80% 70%;
     --chart-4: 28 85% 60%;
     --chart-fat: 215 65% 45%;
     --chart-fat-light: 215 60% 70%;

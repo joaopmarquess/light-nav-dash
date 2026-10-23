@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useId, useRef, useState } from "react";
 import { AlertCircle, CalendarRange, ChevronDown, ChevronRight, Loader2, RefreshCw } from "lucide-react";
 import { Area, CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { hostinger } from "@/lib/hostingerClient";
@@ -52,7 +52,12 @@ export default function SinistralidadePeriodosMV() {
 
   const alternar = (ano: number) => { setAbertos(s => { const n = new Set(s); n.has(ano) ? n.delete(ano) : n.add(ano); return n; }); };
   const sel = anos.find(a => a.ano === anoSel) ?? anos[anos.length - 1];
-  const serie = (sel?.meses ?? []).map(m => ({ mes: String(m.mes).padStart(2, "0"), saldo: saldoCompetencia(m.soma), limite: saldoLimiteSin(m.soma, 0.9) })).map(x => ({ ...x, azul: [x.limite, Math.max(x.saldo, x.limite)], vermelho: [Math.min(x.saldo, x.limite), x.limite] }));
+  const limiteAno = sel ? saldoLimiteSin(sel.soma, 0.9) / Math.max(1, sel.meses.length) : 0;
+  const serie = (sel?.meses ?? []).map(m => ({ mes: String(m.mes).padStart(2, "0"), saldo: saldoCompetencia(m.soma), limite: limiteAno }));
+  const topo = Math.max(limiteAno, ...serie.map(x => x.saldo));
+  const fundo = Math.min(limiteAno, ...serie.map(x => x.saldo));
+  const corte = topo > fundo ? (topo - limiteAno) / (topo - fundo) : 0.5;
+  const gradId = `sin-barriga-${useId().replace(/:/g, "")}`;
   const curto = (v: number) => `${(v / 1e6).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} mi`;
   const total = somarTotais(anos.map(a => a.soma));
   const forte = (k: Col) => (k === "recCpp" || k === "recCopart" ? "" : "font-semibold");
@@ -109,10 +114,13 @@ export default function SinistralidadePeriodosMV() {
                     <YAxis domain={dominioCentrado(serie.map(x => x.saldo), serie.map(x => x.limite))} allowDataOverflow tickFormatter={curto} stroke="hsl(var(--muted-foreground))" fontSize={12} width={70} />
                     <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" />
                     <Tooltip formatter={(v: number, n: string) => [fmt(v), n === "limite" ? "Limite Sin 90%" : "Saldo"]} labelFormatter={l => `${l}/${sel.ano}`} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
-                    <Area type="linear" dataKey="azul" stroke="none" fill="hsl(var(--chart-vidas))" fillOpacity={0.35} isAnimationActive={false} tooltipType="none" />
-                    <Area type="linear" dataKey="vermelho" stroke="none" fill="hsl(var(--destructive))" fillOpacity={0.2} isAnimationActive={false} tooltipType="none" />
+                    <defs><linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset={corte} stopColor="hsl(var(--chart-sin-ok))" stopOpacity={0.3} />
+                      <stop offset={corte} stopColor="hsl(var(--chart-sin-alerta))" stopOpacity={0.3} />
+                    </linearGradient></defs>
+                    <Area type="monotone" dataKey="saldo" baseValue={limiteAno} stroke="none" fill={`url(#${gradId})`} isAnimationActive={false} tooltipType="none" />
                     <Line type="linear" dataKey="limite" stroke="hsl(var(--destructive))" strokeWidth={2} strokeDasharray="6 4" dot={false} />
-                    <Line type="linear" dataKey="saldo" stroke="hsl(var(--chart-vidas))" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                    <Line type="monotone" dataKey="saldo" stroke="hsl(var(--chart-vidas))" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
