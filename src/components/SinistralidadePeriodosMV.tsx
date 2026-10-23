@@ -67,7 +67,7 @@ export default function SinistralidadePeriodosMV() {
       ) : error ? (
         <div role="alert" className="flex items-start gap-3 border-y border-border py-6"><AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" /><p className="text-sm text-muted-foreground">{error}</p></div>
       ) : (
-        <div className="min-h-0 mx-auto w-full max-w-5xl overflow-auto rounded-md border border-border">
+        <div className="min-h-0 w-full max-w-5xl overflow-auto rounded-md border border-border">
           <Table>
             <TableHeader><TableRow><TableHead>Período</TableHead>{cols.map(([l]) => <TableHead key={l} className="whitespace-nowrap text-right">{l}</TableHead>)}</TableRow></TableHeader>
             <TableBody>{anos.map(a => {
