@@ -117,7 +117,7 @@ export default function SinistralidadePeriodosMV() {
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                     <YAxis domain={dominioCentrado([...serie.map(x => x.saldo), breakeven, META], serie.map(x => x.limite))} allowDataOverflow tickFormatter={curto} stroke="hsl(var(--muted-foreground))" fontSize={12} width={70} />
-                    <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" />
+                    <ReferenceLine y={0} stroke="hsl(var(--chart-4))" strokeWidth={2.5} strokeDasharray="2 4" />
                     <ReferenceLine y={breakeven} stroke="hsl(var(--chart-3))" strokeWidth={2} strokeDasharray="2 4" label={{ value: "Breakeven 80%", position: "insideTopRight", fill: "hsl(var(--chart-3))", fontSize: 11 }} />
                     <ReferenceLine y={META} stroke="hsl(var(--chart-1))" strokeWidth={2} strokeDasharray="2 4" label={{ value: "3 mi", position: "insideTopLeft", fill: "hsl(var(--chart-1))", fontSize: 11 }} />
                     <Tooltip formatter={(v: number, n: string) => [fmt(v), n === "limite" ? "Limite Sin 90%" : "Saldo"]} labelFormatter={l => `${l}/${sel.ano}`} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
