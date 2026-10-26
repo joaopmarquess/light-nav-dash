@@ -15,7 +15,7 @@ const vidasIniciais: Record<string, number> = { PCA: 1000, PME_ADMINISTRADO: 100
 const padroes = padroesImportados.map(c => ({ ...c, condicao_comercial: 'Bensaúde Regra', total_vidas: vidasIniciais[c.produto_codigo] ?? c.total_vidas }));
 
 export const fontesSimulacao = { produtos, precos, condicoes, meses, faixas, padroes };
-export const sinistralidadePadrao = 70;
+export const sinistralidadePadrao = 65;
 export type ConfigSimulacao = { produto_codigo: string; tabela_preco: string; condicao_comercial: string; total_vidas: number; sinistralidade_percentual?: number };
 export function validarSinistralidade(value: number) {
   return Number.isFinite(value) && value >= 0;

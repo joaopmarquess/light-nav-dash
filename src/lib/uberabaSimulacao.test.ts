@@ -24,7 +24,7 @@ describe('Simulação comercial fornecida',()=>{
     expect(r.beneficiario.total).toBeCloseTo(44735657.7085,4);
   });
   it('resultado líquido Bensaúde desconta agenciamento do operacional',()=>{
-    const r=resumoSimulacao(padroesHistoricos.map(calcularSimulacao));
+    const r=resumoSimulacao(padroesHistoricos.map(c => calcularSimulacao({...c, sinistralidade_percentual: 70})));
     expect(r.bensaude.operacional).toBeCloseTo(6556100.90,2);
     expect(r.bensaude.liquido).toBeCloseTo(-2205267.00,2);
   });
@@ -44,18 +44,18 @@ describe('Simulação comercial fornecida',()=>{
     expect(consolidarSimulacao(padroesHistoricos.map(calcularSimulacao)).anual.agenciamento).toBeCloseTo(8761367.905,3);
   });
   it('Resultado Bensaúde é faturamento Bensaúde menos despesa assistencial, sem adesão ou agenciamento',()=>{
-    const rs=padroesHistoricos.map(calcularSimulacao);
+    const rs=padroesHistoricos.map(c => calcularSimulacao({...c, sinistralidade_percentual: 70}));
     rs.forEach(r=>r.mensal.forEach(m=>expect(m.resultado_bensaude).toBeCloseTo(m.bensaude-m.despesa_assistencial,8)));
     expect(rs[0].anual.resultado_bensaude).toBeCloseTo(781618.509,3);
     expect(consolidarSimulacao(rs).anual.resultado_bensaude).toBeCloseTo(6556100.90,2);
   });
-  it('usa Sinistralidade padrão de 70% em todas as modalidades',()=>{
-    expect(sinistralidadePadrao).toBe(70);
-    padroesHistoricos.forEach(c=>{
+  it('usa Sinistralidade padrão de 65% em todas as modalidades',()=>{
+    expect(sinistralidadePadrao).toBe(65);
+    fonte.padroes.forEach(c=>{
       const r=calcularSimulacao(c);
-      expect(r.anual.despesa_assistencial).toBeCloseTo(r.anual.faturamento * 0.70,7);
+      expect(r.anual.despesa_assistencial).toBeCloseTo(r.anual.faturamento * 0.65,7);
     });
-    expect(calcularSimulacao(padrao).anual.despesa_assistencial).toBeCloseTo(7816185.09,2);
+    expect(calcularSimulacao(padrao).anual.despesa_assistencial).toBeCloseTo(7257886.155,3);
   });
   it('calcula Despesa Assistencial como Faturamento × Sinistralidade por modalidade',()=>{
     const percentuais = [80,90,100,110];
