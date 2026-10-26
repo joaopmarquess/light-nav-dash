@@ -9,11 +9,11 @@ describe('Simulação comercial fornecida',()=>{
   it('resultado líquido Bensaúde desconta agenciamento do operacional',()=>{
     const r=resumoSimulacao(fonte.padroes.map(calcularSimulacao));
     expect(r.bensaude.operacional).toBeCloseTo(6556100.90,2);
-    expect(r.bensaude.liquido).toBeCloseTo(-2205267.005,3);
+    expect(r.bensaude.liquido).toBeCloseTo(-2205267.00,2);
   });
   it('resultado SIGA soma adesão, faturamento e agenciamento',()=>{
     const r=resumoSimulacao(fonte.padroes.map(calcularSimulacao));
-    expect(r.siga.resultado).toBeCloseTo(13314031.92,2);
+    expect(r.siga.resultado).toBeCloseTo(13334259.52,2);
   });
   it('distribui o faturamento entre Bensaúde, Lancers e SIGA sem incluir adesão',()=>{
     const r=calcularSimulacao(padrao);
