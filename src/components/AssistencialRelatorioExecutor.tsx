@@ -1043,7 +1043,7 @@ function buildPdf({
 
   // Texto da declaração + assinatura na última página
   const declText =
-    "Declaro que as informações acima são fidedignas e correspondem à exata expressão da verdade, refletindo os valores que efetivamente foram pagos a este Hospital, assumindo plena responsabilidade civil e administrativa pela veracidade dos dados ora prestados.";
+    "Declaro que as informações acima são fidedignas e correspondem à exata expressão da verdade, refletindo os valores que efetivamente foram pagos a este Hospital.";
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
