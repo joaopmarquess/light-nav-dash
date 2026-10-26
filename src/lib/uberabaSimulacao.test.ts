@@ -2,6 +2,22 @@ import { describe, expect, it } from 'vitest';
 import { calcularSimulacao, consolidarSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao } from './uberabaSimulacao';
 const padrao=fonte.padroes[0];
 describe('Simulação comercial fornecida',()=>{
+  it('agenciamento aplica cada percentual a uma mensalidade por venda, sem recorrência da carteira',()=>{
+    for (const condicao of fonte.condicoes) {
+      const original = fonte.padroes.find(c=>c.produto_codigo===condicao.produto_codigo);
+      if (!original) throw new Error('Modalidade sem configuração padrão.');
+      // Uma venda em dezembro: uma vida na faixa residual 59+, uma única mensalidade.
+      const r=calcularSimulacao({...original,condicao_comercial:condicao.condicao,total_vidas:1});
+      const preco=fonte.precos.find(p=>p.produto_codigo===condicao.produto_codigo && p.faixa_numero===10);
+      if (!preco) throw new Error('Mensalidade da faixa 59+ não encontrada.');
+      expect(r.vidasMes).toEqual([0,0,0,0,0,0,0,0,0,0,0,1]);
+      expect(r.anual.agenciamento).toBeCloseTo(preco.preco_siga*condicao.agenciamento_parcela_1,8);
+    }
+    const pca=calcularSimulacao(padrao);
+    // Janeiro reaparece apenas na segunda parcela (75%); não volta nos meses seguintes.
+    expect(pca.mensal[2].agenciamento).toBeCloseTo((pca.novasReceitas[1]+pca.novasReceitas[2])*0.75,8);
+    expect(pca.anual.agenciamento).toBeCloseTo(pca.novasReceitas.reduce((s,v,i)=>s+v*(i===11?0.75:1.5),0),8);
+  });
   it('total Beneficiário soma adesão e faturamento',()=>{
     const r=resumoSimulacao(fonte.padroes.map(calcularSimulacao));
     expect(r.beneficiario.total).toBeCloseTo(44735657.7085,4);
