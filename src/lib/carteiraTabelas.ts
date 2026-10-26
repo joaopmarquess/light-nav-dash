@@ -8,6 +8,7 @@ export type BenefTabela = {
   dt_vigencia_beneficiario: string | null;
   dt_desligamento: string | null;
   dt_reativacao: string | null;
+  vl_tmm?: number | null;
 };
 
 export const idadeEm = (nasc: string, ref: string) => {
@@ -38,12 +39,20 @@ export const planoOrFilter = (plano: string) =>
 export function agruparFaixas(rows: BenefTabela[], ref: string) {
   const enf = FAIXAS_ANS.map(() => new Set<string>());
   const apt = FAIXAS_ANS.map(() => new Set<string>());
+  const tEnf = FAIXAS_ANS.map(() => [] as number[]);
+  const tApt = FAIXAS_ANS.map(() => [] as number[]);
   for (const r of rows) {
     if (!r.nr_cpf || !r.dt_nascimento || !ativoEm(r, ref)) continue;
     const ac = (r.tp_acomodacao ?? "").toUpperCase();
     const alvo = ac === "PRATA" ? enf : ac === "OURO" ? apt : null;
     if (!alvo) continue;
-    alvo[faixaIndex(idadeEm(r.dt_nascimento, ref))].add(r.nr_cpf);
+    const i = faixaIndex(idadeEm(r.dt_nascimento, ref));
+    alvo[i].add(r.nr_cpf);
+    if (r.vl_tmm != null) (alvo === enf ? tEnf : tApt)[i].push(Number(r.vl_tmm));
   }
-  return FAIXAS_ANS.map((faixa, i) => ({ faixa, enfermaria: enf[i].size, apartamento: apt[i].size }));
+  const faixaTmm = (v: number[]) => (v.length ? { min: Math.min(...v), max: Math.max(...v) } : null);
+  return FAIXAS_ANS.map((faixa, i) => ({
+    faixa, enfermaria: enf[i].size, apartamento: apt[i].size, total: enf[i].size + apt[i].size,
+    tmmEnfermaria: faixaTmm(tEnf[i]), tmmApartamento: faixaTmm(tApt[i]),
+  }));
 }

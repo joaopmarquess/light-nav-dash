@@ -5,6 +5,8 @@ import { agruparFaixas, planoOrFilter, type BenefTabela } from "@/lib/carteiraTa
 
 const hoje = () => new Date().toISOString().slice(0, 10);
 const fmt = (n: number) => n.toLocaleString("pt-BR");
+const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const fmtTmm = (t: { min: number; max: number } | null) => (!t ? "—" : t.min === t.max ? brl(t.min) : `${brl(t.min)} – ${brl(t.max)}`);
 
 export default function CarteiraTabelas() {
   const [data, setData] = useState(hoje());
@@ -20,7 +22,7 @@ export default function CarteiraTabelas() {
       const rows: (BenefTabela & { nm_empresa_estipulante: string | null })[] = [];
       for (let from = 0; ; from += 1000) {
         const { data: chunk, error } = await hostinger.from("view_ecarteira")
-          .select("nr_cpf,tp_acomodacao,dt_nascimento,dt_vigencia_beneficiario,dt_desligamento,dt_reativacao,nm_empresa_estipulante,cd_matricula")
+          .select("nr_cpf,tp_acomodacao,dt_nascimento,dt_vigencia_beneficiario,dt_desligamento,dt_reativacao,vl_tmm,nm_empresa_estipulante,cd_matricula")
           .or(planoOrFilter(plano).slice(1, -1))
           .order("cd_matricula").range(from, from + 999);
         if (error) throw error;
@@ -34,10 +36,10 @@ export default function CarteiraTabelas() {
     } finally { setLoading(false); }
   };
 
-  const tot = res?.linhas.reduce((a, l) => ({ e: a.e + l.enfermaria, p: a.p + l.apartamento }), { e: 0, p: 0 });
+  const tot = res?.linhas.reduce((a, l) => ({ e: a.e + l.enfermaria, p: a.p + l.apartamento, t: a.t + l.total }), { e: 0, p: 0, t: 0 });
 
   return (
-    <section className="bg-card rounded-xl border border-border shadow-sm p-6 space-y-5 max-w-3xl">
+    <section className="bg-card rounded-xl border border-border shadow-sm p-6 space-y-5 max-w-6xl">
       <div className="flex flex-wrap gap-3 items-end">
         <label className="text-xs text-muted-foreground">Ativos em
           <input type="date" value={data} onChange={(e) => setData(e.target.value)} className="block h-10 px-3 mt-1 rounded-md border border-border bg-background text-sm text-foreground" />
@@ -59,6 +61,33 @@ export default function CarteiraTabelas() {
             <span className="text-muted-foreground">Estipulante do plano {res.plano}: </span>
             <span className="font-medium text-foreground">{res.estipulantes.length ? res.estipulantes.join(" · ") : "—"}</span>
           </div>
+          <div className="grid lg:grid-cols-2 gap-4 items-start">
+          <div>
+          <h3 className="text-sm font-semibold mb-2">Vidas (CPFs distintos)</h3>
+          <table className="w-full text-sm border border-border rounded-lg overflow-hidden">
+            <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
+              <tr><th className="px-3 py-2 text-left">Faixa etária</th><th className="px-3 py-2 text-right">Enfermaria</th><th className="px-3 py-2 text-right">Apartamento</th><th className="px-3 py-2 text-right">Total</th></tr>
+            </thead>
+            <tbody>
+              {res.linhas.map((l) => (
+                <tr key={l.faixa} className="border-t border-border">
+                  <td className="px-3 py-1.5">{l.faixa}</td>
+                  <td className="px-3 py-1.5 text-right tabular-nums">{fmt(l.enfermaria)}</td>
+                  <td className="px-3 py-1.5 text-right tabular-nums">{fmt(l.apartamento)}</td>
+                  <td className="px-3 py-1.5 text-right tabular-nums font-medium">{fmt(l.total)}</td>
+                </tr>
+              ))}
+              <tr className="border-t border-border font-semibold bg-muted/20">
+                <td className="px-3 py-1.5">Total</td>
+                <td className="px-3 py-1.5 text-right tabular-nums">{fmt(tot!.e)}</td>
+                <td className="px-3 py-1.5 text-right tabular-nums">{fmt(tot!.p)}</td>
+                <td className="px-3 py-1.5 text-right tabular-nums">{fmt(tot!.t)}</td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+          <div>
+          <h3 className="text-sm font-semibold mb-2">TMM (R$)</h3>
           <table className="w-full text-sm border border-border rounded-lg overflow-hidden">
             <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
               <tr><th className="px-3 py-2 text-left">Faixa etária</th><th className="px-3 py-2 text-right">Enfermaria</th><th className="px-3 py-2 text-right">Apartamento</th></tr>
@@ -67,17 +96,14 @@ export default function CarteiraTabelas() {
               {res.linhas.map((l) => (
                 <tr key={l.faixa} className="border-t border-border">
                   <td className="px-3 py-1.5">{l.faixa}</td>
-                  <td className="px-3 py-1.5 text-right tabular-nums">{fmt(l.enfermaria)}</td>
-                  <td className="px-3 py-1.5 text-right tabular-nums">{fmt(l.apartamento)}</td>
+                  <td className="px-3 py-1.5 text-right tabular-nums">{fmtTmm(l.tmmEnfermaria)}</td>
+                  <td className="px-3 py-1.5 text-right tabular-nums">{fmtTmm(l.tmmApartamento)}</td>
                 </tr>
               ))}
-              <tr className="border-t border-border font-semibold bg-muted/20">
-                <td className="px-3 py-1.5">Total</td>
-                <td className="px-3 py-1.5 text-right tabular-nums">{fmt(tot!.e)}</td>
-                <td className="px-3 py-1.5 text-right tabular-nums">{fmt(tot!.p)}</td>
-              </tr>
             </tbody>
           </table>
+          </div>
+          </div>
           <p className="text-xs text-muted-foreground">CPFs distintos ativos em {res.data.split("-").reverse().join("/")}; idade calculada nessa data. Enfermaria = PRATA, Apartamento = OURO.</p>
         </>
       )}
