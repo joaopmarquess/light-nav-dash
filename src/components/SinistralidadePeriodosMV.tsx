@@ -55,6 +55,8 @@ export default function SinistralidadePeriodosMV() {
   const alternar = (ano: number) => { setAbertos(s => { const n = new Set(s); n.has(ano) ? n.delete(ano) : n.add(ano); return n; }); };
   const sel = anos.find(a => a.ano === anoSel) ?? anos[anos.length - 1];
   const limiteAno = sel ? saldoLimiteSin(sel.soma, 0.9) / Math.max(1, sel.meses.length) : 0;
+  const breakeven = sel ? saldoLimiteSin(sel.soma, 0.8) / Math.max(1, sel.meses.length) : 0;
+  const META = 3_000_000;
   const serie = (sel?.meses ?? []).map(m => ({ mes: String(m.mes).padStart(2, "0"), saldo: saldoCompetencia(m.soma), limite: limiteAno }));
   const topo = Math.max(limiteAno, ...serie.map(x => x.saldo));
   const fundo = Math.min(limiteAno, ...serie.map(x => x.saldo));
@@ -114,8 +116,10 @@ export default function SinistralidadePeriodosMV() {
                   <ComposedChart data={serie} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                    <YAxis domain={dominioCentrado(serie.map(x => x.saldo), serie.map(x => x.limite))} allowDataOverflow tickFormatter={curto} stroke="hsl(var(--muted-foreground))" fontSize={12} width={70} />
+                    <YAxis domain={dominioCentrado([...serie.map(x => x.saldo), breakeven, META], serie.map(x => x.limite))} allowDataOverflow tickFormatter={curto} stroke="hsl(var(--muted-foreground))" fontSize={12} width={70} />
                     <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" />
+                    <ReferenceLine y={breakeven} stroke="hsl(var(--chart-3))" strokeWidth={2} strokeDasharray="2 4" label={{ value: "Breakeven 80%", position: "insideTopRight", fill: "hsl(var(--chart-3))", fontSize: 11 }} />
+                    <ReferenceLine y={META} stroke="hsl(var(--chart-1))" strokeWidth={2} strokeDasharray="2 4" label={{ value: "3 mi", position: "insideTopLeft", fill: "hsl(var(--chart-1))", fontSize: 11 }} />
                     <Tooltip formatter={(v: number, n: string) => [fmt(v), n === "limite" ? "Limite Sin 90%" : "Saldo"]} labelFormatter={l => `${l}/${sel.ano}`} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
                     <defs><linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
                       <stop offset={0} stopColor="hsl(var(--chart-sin-ok))" stopOpacity={0.8} />
