@@ -56,7 +56,9 @@ function Entes({ resultados }: { resultados: ResultadoSimulacao[] }) {
 }
 
 function PremissasImportadas() {
-  return <details className="sim-assumptions"><summary>Premissas e fontes (CSVs fornecidos em 26/10/2026)</summary><ul>
+  return <details className="sim-assumptions"><summary>Premissas e fontes (CSVs e %CART fornecidos em 26/10/2026)</summary><ul>
+    <li>Distribuição etária: %CART da imagem de Entradas Lancers, referência de 11.318 entradas, aplicada às quatro modalidades; faixas arredondadas por mês, com residual na faixa 59 ou mais.</li>
+    {fonte.faixas.map(f => <li key={f.faixa_numero}>{f.faixa_etaria}: {pct(f.percentual_normalizado)}</li>)}
     <li>Agenciamento: percentual × uma mensalidade de cada venda, em até cinco parcelas, pagas somente de janeiro a dezembro.</li>
     <li>Despesa Assistencial = faturamento × Sinistralidade informada por modalidade.</li>
     <li>Taxa de adesão paga pelo beneficiário diretamente à SIGA.</li>
