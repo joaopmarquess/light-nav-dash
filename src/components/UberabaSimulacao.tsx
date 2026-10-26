@@ -25,6 +25,9 @@ function PremissasCalculo() {
     <li>Fonte: CSVs fornecidos em 26/10/2026. Simulação de proposta comercial, não aprovação ou resultado realizado. Acomodação: Enfermaria.</li>
   </ul></details>;
 }
+function CenariosSelecionados({ resultados }: { resultados: ResultadoSimulacao[] }) {
+  return <Tabela titulo="Cenários selecionados" headers={['Modalidade','Tabela de preço','Condição comercial','Total de vidas','Mensalidade média ponderada','Sinistralidade']} rows={resultados.map(r=>[r.produto.produto_nome,r.config.tabela_preco,r.config.condicao_comercial,int(r.config.total_vidas),num(r.media),pct((r.config.sinistralidade_percentual ?? sinistralidadePadrao)/100)])} />;
+}
 function ResultadoFinal({ resultados }: { resultados: ResultadoSimulacao[] }) {
   const total = consolidarSimulacao(resultados);
   const cards = [
@@ -34,7 +37,6 @@ function ResultadoFinal({ resultados }: { resultados: ResultadoSimulacao[] }) {
     { label: 'Custo comercial', value: num(total.anual.agenciamento+total.anual.adesao), icon: BriefcaseBusiness },
   ];
   return <div className="sim-final"><h3>Resultado Final</h3><div className="sim-kpis">{cards.map(({label,value,icon:Icon})=><div className="sim-kpi" key={label}><Icon aria-hidden="true" /><p>{label}</p><strong>{value}</strong></div>)}</div>
-    <Tabela titulo="Cenários selecionados" headers={['Modalidade','Tabela de preço','Condição comercial','Total de vidas','Mensalidade média ponderada','Sinistralidade']} rows={resultados.map(r=>[r.produto.produto_nome,r.config.tabela_preco,r.config.condicao_comercial,int(r.config.total_vidas),num(r.media),pct((r.config.sinistralidade_percentual ?? sinistralidadePadrao)/100)])} />
     <Tabela titulo="Resultado entre as Partes (anual)" headers={['Modalidade','Bensaúde','SIGA','Lancers']} rows={resultados.map((r,i)=>[nomes[i],num(r.anual.bensaude),num(r.anual.siga),num(r.anual.lancers)])} footer={['Total',num(total.anual.bensaude),num(total.anual.siga),num(total.anual.lancers)]} />
     <Financeiro titulo="Visão mensal consolidada" mensal={total.mensal} anual={total.anual} />
     <Tabela titulo="Resultado anual por modalidade" headers={['Modalidade','Vidas','Faturamento','Despesa Assistencial','Lancers','SIGA','Bensaúde','Agenciamento SIGA','Taxa de adesão','Custo comercial']} rows={resultados.map((r,i)=>[nomes[i],int(r.anual.vidas),num(r.anual.faturamento),num(r.anual.despesa_assistencial),num(r.anual.lancers),num(r.anual.siga),num(r.anual.bensaude),num(r.anual.agenciamento),num(r.anual.adesao),num(r.anual.agenciamento+r.anual.adesao)])} footer={['Total',int(total.anual.vidas),num(total.anual.faturamento),num(total.anual.despesa_assistencial),num(total.anual.lancers),num(total.anual.siga),num(total.anual.bensaude),num(total.anual.agenciamento),num(total.anual.adesao),num(total.anual.agenciamento+total.anual.adesao)]} />
@@ -77,7 +79,7 @@ export default function UberabaSimulacao() {
   };
   return <article className="uberaba-simulation" aria-label="Simulador Comercial Bensaúde|Uberaba">
     <header className="sim-heading"><div><h2><Calculator />Simulador Comercial Bensaúde|Uberaba</h2><p>Enfermaria · Proposta comercial · Fonte: CSVs fornecidos em 26/10/2026</p></div><div className="flex gap-2"><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Exportar cenário para CSV" onClick={exportar}><Download /></Button></TooltipTrigger><TooltipContent>Exportar cenário atual para CSV</TooltipContent></Tooltip><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Imprimir Resultado Final" onClick={imprimir}><Printer /></Button></TooltipTrigger><TooltipContent>Imprimir Resultado Final</TooltipContent></Tooltip></div></header>
-    <nav className="sim-tabs" aria-label="Modalidades da Simulação"><Button variant={aba==='final'?'default':'outline'} aria-pressed={aba==='final'} onClick={()=>setAba('final')}>Resultado Final</Button>{fonte.produtos.map((p,i)=><Button key={p.produto_codigo} variant={aba===p.produto_codigo?'default':'outline'} aria-pressed={aba===p.produto_codigo} onClick={()=>setAba(p.produto_codigo)}>{nomes[i]}</Button>)}<Button variant={aba==='premissas'?'default':'outline'} aria-pressed={aba==='premissas'} onClick={()=>setAba('premissas')}><Info />Premissas</Button></nav>
+    <nav className="sim-tabs" aria-label="Modalidades da Simulação"><Button variant={aba==='final'?'default':'outline'} aria-pressed={aba==='final'} onClick={()=>setAba('final')}>Resultado Final</Button>{fonte.produtos.map((p,i)=><Button key={p.produto_codigo} variant={aba===p.produto_codigo?'default':'outline'} aria-pressed={aba===p.produto_codigo} onClick={()=>setAba(p.produto_codigo)}>{nomes[i]}</Button>)}<Button variant={aba==='cenarios'?'default':'outline'} aria-pressed={aba==='cenarios'} onClick={()=>setAba('cenarios')}>Cenários selecionados</Button><Button variant={aba==='premissas'?'default':'outline'} aria-pressed={aba==='premissas'} onClick={()=>setAba('premissas')}><Info />Premissas</Button></nav>
     {erro && <p role="alert" className="text-destructive">{erro}</p>}
     {selecionado && <div className="space-y-5"><h3>{selecionado.produto.produto_nome}</h3><div className="sim-controls">
       <label>Tabela de preço<Select value={selecionado.config.tabela_preco} onValueChange={v=>alterar(aba,{tabela_preco:v})}><SelectTrigger aria-label="Tabela de preço" className="sim-editable"><SelectValue /></SelectTrigger><SelectContent>{['Bensaúde','SIGA'].map(v=><SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></label>
@@ -92,6 +94,7 @@ export default function UberabaSimulacao() {
     <Tabela titulo="Distribuição de vidas por faixa etária" headers={['Faixa etária',...fonte.meses.map(m=>m.mes.slice(0,3)),'Total anual','% efetivo','Mensalidade']} rows={fonte.faixas.map((f,i)=>[f.faixa_etaria,...selecionado.faixasMes.map(m=>int(m[i])),int(selecionado.faixaAnual[i]),pct(selecionado.faixaAnual[i]/selecionado.config.total_vidas),num(selecionado.mensalidades[i])])} footer={['Total',...selecionado.vidasMes.map(int),int(selecionado.config.total_vidas),pct(1),num(selecionado.media)]} />
     <Financeiro titulo="Resumo financeiro mensal" mensal={selecionado.mensal} anual={selecionado.anual} /><PremissasCalculo /></div>}
     {aba==='premissas' && <PremissasImportadas />}
+    {aba==='cenarios' && <CenariosSelecionados resultados={resultados} />}
     <div ref={impressao} hidden={aba!=='final'}><ResultadoFinal resultados={resultados} /></div>
   </article>;
 }
