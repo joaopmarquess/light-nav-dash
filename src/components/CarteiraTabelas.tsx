@@ -6,7 +6,7 @@ import { agruparFaixas, planoOrFilter, type BenefTabela } from "@/lib/carteiraTa
 const hoje = () => new Date().toISOString().slice(0, 10);
 const fmt = (n: number) => n.toLocaleString("pt-BR");
 const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const fmtTmm = (t: { min: number; max: number } | null) => (!t ? "—" : t.min === t.max ? brl(t.min) : `${brl(t.min)} – ${brl(t.max)}`);
+const fmtTmm = (t: { min: number; max: number } | null) => (!t ? "—" : brl(t.max));
 
 export default function CarteiraTabelas() {
   const [data, setData] = useState(hoje());
