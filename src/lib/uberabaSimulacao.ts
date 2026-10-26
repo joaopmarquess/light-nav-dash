@@ -6,7 +6,10 @@ import faixas from '@/data/uberabaSimulacao/distribuicao_faixa_etaria.json';
 import padroes from '@/data/uberabaSimulacao/configuracao_padrao.json';
 
 export const fontesSimulacao = { produtos, precos, condicoes, meses, faixas, padroes };
-export type ConfigSimulacao = { produto_codigo: string; tabela_preco: string; condicao_comercial: string; total_vidas: number };
+export type ConfigSimulacao = { produto_codigo: string; tabela_preco: string; condicao_comercial: string; total_vidas: number; sinistralidade_percentual?: number };
+export function validarSinistralidade(value: number) {
+  return Number.isFinite(value) && value >= 0;
+}
 export const limitesVidas = { min: 1, max: 100000 };
 export function validarVidas(value: number) {
   return Number.isInteger(value) && value >= limitesVidas.min && value <= limitesVidas.max;
@@ -19,18 +22,21 @@ export const indicadoresSimulacao = [
   { key: 'vidas', label: 'Vidas vendidas no mês', integer: true },
   { key: 'acumuladas', label: 'Vidas acumuladas', integer: true },
   { key: 'faturamento', label: 'Faturamento cumulativo', integer: false },
+  { key: 'despesa_assistencial', label: 'Despesa Assistencial', integer: false },
   { key: 'lancers', label: 'Parte da Lancers', integer: false },
   { key: 'siga', label: 'Parte da SIGA', integer: false },
   { key: 'bensaude', label: 'Parte do Bensaúde', integer: false },
   { key: 'agenciamento', label: 'Agenciamento SIGA', integer: false },
   { key: 'adesao', label: 'Taxa de adesão', integer: false },
 ] as const;
-export type FinanceiroSimulacao = { vidas: number; acumuladas: number; faturamento: number; lancers: number; siga: number; bensaude: number; agenciamento: number; adesao: number };
+export type FinanceiroSimulacao = { vidas: number; acumuladas: number; faturamento: number; despesa_assistencial: number; lancers: number; siga: number; bensaude: number; agenciamento: number; adesao: number };
 export const numeroSimulacao = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 export const percentualSimulacao = (v: number) => `${numeroSimulacao(v * 100)}%`;
 export const inteiroSimulacao = (v: number) => v.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
 export function calcularSimulacao(config: ConfigSimulacao) {
   if (!validarVidas(config.total_vidas)) throw new Error('Total de vidas deve ser inteiro entre 1 e 100000.');
+  const sinistralidade = config.sinistralidade_percentual ?? 0;
+  if (!validarSinistralidade(sinistralidade)) throw new Error('Informe uma sinistralidade percentual válida, maior ou igual a zero.');
   const produto = produtos.find(p => p.produto_codigo === config.produto_codigo);
   const condicao = condicoes.find(c => c.produto_codigo === config.produto_codigo && c.condicao === config.condicao_comercial);
   const tabela = precos.filter(p => p.produto_codigo === config.produto_codigo).sort((a,b) => a.faixa_numero-b.faixa_numero);
@@ -43,7 +49,7 @@ export function calcularSimulacao(config: ConfigSimulacao) {
   let faturamento = 0, acumuladas = 0;
   const mensal: FinanceiroSimulacao[] = vidasMes.map((vidas,i) => {
     faturamento += novasReceitas[i]; acumuladas += vidas;
-    return { vidas, acumuladas, faturamento, lancers: faturamento * condicao.participacao_lancers, siga: faturamento * condicao.participacao_siga, bensaude: faturamento * condicao.participacao_bensaude,
+    return { vidas, acumuladas, faturamento, despesa_assistencial: faturamento * sinistralidade / 100, lancers: faturamento * condicao.participacao_lancers, siga: faturamento * condicao.participacao_siga, bensaude: faturamento * condicao.participacao_bensaude,
       agenciamento: parcelas.reduce((s,p,j) => s + p * (novasReceitas[i-j] ?? 0), 0), adesao: novasReceitas[i] * condicao.taxa_adesao };
   });
   const anual = totalizarSimulacao(mensal);
@@ -57,7 +63,7 @@ export function calcularSimulacao(config: ConfigSimulacao) {
 export type ResultadoSimulacao = ReturnType<typeof calcularSimulacao>;
 export function totalizarSimulacao(rows: FinanceiroSimulacao[]): FinanceiroSimulacao {
   const sum = (key: keyof FinanceiroSimulacao) => rows.reduce((s,r) => s+r[key],0);
-  return { vidas: sum('vidas'), acumuladas: rows.at(-1)?.acumuladas ?? 0, faturamento: sum('faturamento'), lancers: sum('lancers'), siga: sum('siga'), bensaude: sum('bensaude'), agenciamento: sum('agenciamento'), adesao: sum('adesao') };
+  return { vidas: sum('vidas'), acumuladas: rows.at(-1)?.acumuladas ?? 0, faturamento: sum('faturamento'), despesa_assistencial: sum('despesa_assistencial'), lancers: sum('lancers'), siga: sum('siga'), bensaude: sum('bensaude'), agenciamento: sum('agenciamento'), adesao: sum('adesao') };
 }
 export function consolidarSimulacao(resultados: ResultadoSimulacao[]) {
   const mensal = meses.map((_,i) => {
@@ -68,8 +74,8 @@ export function consolidarSimulacao(resultados: ResultadoSimulacao[]) {
 }
 export function csvSimulacao(resultados: ResultadoSimulacao[]) {
   const consolidated = consolidarSimulacao(resultados);
-  const rows: (string | number)[][] = [['Simulador Comercial Bensaúde|Uberaba'], ['Cenários selecionados'], ['Modalidade','Tabela de preço','Condição comercial','Total de vidas','Mensalidade média ponderada'],
-    ...resultados.map(r=>[r.produto.produto_nome,r.config.tabela_preco,r.config.condicao_comercial,r.config.total_vidas,numeroSimulacao(r.media)])];
+  const rows: (string | number)[][] = [['Simulador Comercial Bensaúde|Uberaba'], ['Cenários selecionados'], ['Modalidade','Tabela de preço','Condição comercial','Total de vidas','Mensalidade média ponderada','Sinistralidade'],
+    ...resultados.map(r=>[r.produto.produto_nome,r.config.tabela_preco,r.config.condicao_comercial,r.config.total_vidas,numeroSimulacao(r.media),percentualSimulacao((r.config.sinistralidade_percentual ?? 0)/100)])];
   for (const r of resultados) {
     rows.push([], [r.produto.produto_nome, 'Distribuição etária'], ['Faixa etária', ...meses.map(m=>m.mes),'Total anual','Percentual efetivo','Mensalidade']);
     faixas.forEach((f,i)=>rows.push([f.faixa_etaria, ...r.faixasMes.map(m=>m[i]),r.faixaAnual[i],percentualSimulacao(r.faixaAnual[i]/r.config.total_vidas),numeroSimulacao(r.mensalidades[i])]));

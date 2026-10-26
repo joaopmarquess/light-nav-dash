@@ -1,3 +1,4 @@
+- [ ] Incluir Sinistralidade editável por modalidade e Despesa Assistencial = Faturamento × Sinistralidade, com consolidação e exportações conferidas.
 - [x] Renomear a área antiga para vSinistralidade e incluir Sinistralidade > Períodos abaixo de Carteira; navegação e indisponibilidade da fonte conferidas com sessão autorizada, preservando a tela antiga.
 - [x] Corrigir Períodos para usar a mesma conexão Hostinger de vSinistralidade; leitura real da tabela confirmada sem erro, com 2.383.999 registros.
 - [x] Montar indicadores e detalhamento de Períodos com as colunas fornecidas; concluído nas solicitações anteriores com grid anual expansível, totais e gráfico.
