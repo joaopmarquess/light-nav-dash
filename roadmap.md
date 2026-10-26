@@ -1,6 +1,7 @@
 - [x] Renomear a área antiga para vSinistralidade e incluir Sinistralidade > Períodos abaixo de Carteira; navegação e indisponibilidade da fonte conferidas com sessão autorizada, preservando a tela antiga.
 - [x] Corrigir Períodos para usar a mesma conexão Hostinger de vSinistralidade; leitura real da tabela confirmada sem erro, com 2.383.999 registros.
 - [ ] Montar indicadores e detalhamento de Períodos com as colunas fornecidas; acesso confirmado, implementação dos totais ainda pendente.
+- [ ] Incluir Simulação em Estudo com quatro modalidades dos CSVs, cálculos testados, premissas, CSV e impressão; conferir navegação e cenário real.
 - [x] Preparar função sinistralidade_mv_periodos com blocos de 12 meses ancorados na maior competência; SQL testado em banco isolado, incluindo base vazia e histórico parcial. Instalação na Hostinger pelo responsável ainda necessária.
 - [x] Adicionar seleção dos últimos 12 meses após Calcular, com indicadores e detalhes do intervalo selecionado, preservando o gráfico do período; 12 testes aprovados e seleção de setembro com retorno ao período completo conferida com dados reais.
 - [x] Substituir gráfico de vidas pelo combinado mensal de vendas, saídas absolutas e crescimento, reaproveitando totais dos cards; dez testes aprovados e dados reais de agosto a outubro conferidos com seis barras e uma linha, sem erros.
