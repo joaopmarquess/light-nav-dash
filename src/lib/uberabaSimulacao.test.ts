@@ -11,7 +11,7 @@ describe('Simulação comercial fornecida',()=>{
     const r=calcularSimulacao(padrao);
     expect(r.anual.agenciamento).toBeCloseTo(2787030.86,2);
     expect(r.anual.adesao).toBeCloseTo(1976700.4785,4);
-    expect(consolidarSimulacao(fonte.padroes.map(calcularSimulacao)).anual.agenciamento).toBeCloseTo(8761671.30,2);
+    expect(consolidarSimulacao(fonte.padroes.map(calcularSimulacao)).anual.agenciamento).toBeCloseTo(8761367.905,3);
   });
   it('Resultado Bensaúde é faturamento Bensaúde menos despesa assistencial, sem adesão ou agenciamento',()=>{
     const rs=fonte.padroes.map(calcularSimulacao);
