@@ -23,14 +23,15 @@ export const indicadoresSimulacao = [
   { key: 'vidas', label: 'Vidas vendidas no mês', integer: true },
   { key: 'acumuladas', label: 'Vidas acumuladas', integer: true },
   { key: 'faturamento', label: 'Faturamento cumulativo', integer: false },
-  { key: 'despesa_assistencial', label: 'Despesa Assistencial', integer: false },
-  { key: 'lancers', label: 'Parte da Lancers', integer: false },
-  { key: 'siga', label: 'Parte da SIGA', integer: false },
-  { key: 'bensaude', label: 'Parte do Bensaúde', integer: false },
-  { key: 'agenciamento', label: 'Agenciamento SIGA', integer: false },
-  { key: 'adesao', label: 'Taxa de adesão', integer: false },
+  { key: 'bensaude', label: 'Faturamento Bensaúde', integer: false },
+  { key: 'lancers', label: 'Faturamento Lancers', integer: false },
+  { key: 'siga', label: 'Faturamento SIGA', integer: false },
+  { key: 'agenciamento', label: 'Agenciamento · custo Bensaúde / receita SIGA', integer: false },
+  { key: 'adesao', label: 'Taxa de adesão · beneficiário → SIGA', integer: false },
+  { key: 'despesa_assistencial', label: 'Despesa Assistencial · Bensaúde', integer: false },
+  { key: 'resultado_bensaude', label: 'Resultado Bensaúde', integer: false },
 ] as const;
-export type FinanceiroSimulacao = { vidas: number; acumuladas: number; faturamento: number; despesa_assistencial: number; lancers: number; siga: number; bensaude: number; agenciamento: number; adesao: number };
+export type FinanceiroSimulacao = { vidas: number; acumuladas: number; faturamento: number; despesa_assistencial: number; lancers: number; siga: number; bensaude: number; agenciamento: number; adesao: number; resultado_bensaude: number };
 export const numeroSimulacao = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 export const percentualSimulacao = (v: number) => `${numeroSimulacao(v * 100)}%`;
 export const inteiroSimulacao = (v: number) => v.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
@@ -50,7 +51,7 @@ export function calcularSimulacao(config: ConfigSimulacao) {
   let faturamento = 0, acumuladas = 0;
   const mensal: FinanceiroSimulacao[] = vidasMes.map((vidas,i) => {
     faturamento += novasReceitas[i]; acumuladas += vidas;
-    return { vidas, acumuladas, faturamento, despesa_assistencial: faturamento * sinistralidade / 100, lancers: faturamento * condicao.participacao_lancers, siga: faturamento * condicao.participacao_siga, bensaude: faturamento * condicao.participacao_bensaude,
+    return { vidas, acumuladas, faturamento, resultado_bensaude: faturamento * condicao.participacao_bensaude - faturamento * sinistralidade / 100, despesa_assistencial: faturamento * sinistralidade / 100, lancers: faturamento * condicao.participacao_lancers, siga: faturamento * condicao.participacao_siga, bensaude: faturamento * condicao.participacao_bensaude,
       agenciamento: parcelas.reduce((s,p,j) => s + p * (novasReceitas[i-j] ?? 0), 0), adesao: novasReceitas[i] * condicao.taxa_adesao };
   });
   const anual = totalizarSimulacao(mensal);
@@ -64,7 +65,7 @@ export function calcularSimulacao(config: ConfigSimulacao) {
 export type ResultadoSimulacao = ReturnType<typeof calcularSimulacao>;
 export function totalizarSimulacao(rows: FinanceiroSimulacao[]): FinanceiroSimulacao {
   const sum = (key: keyof FinanceiroSimulacao) => rows.reduce((s,r) => s+r[key],0);
-  return { vidas: sum('vidas'), acumuladas: rows.at(-1)?.acumuladas ?? 0, faturamento: sum('faturamento'), despesa_assistencial: sum('despesa_assistencial'), lancers: sum('lancers'), siga: sum('siga'), bensaude: sum('bensaude'), agenciamento: sum('agenciamento'), adesao: sum('adesao') };
+  return { vidas: sum('vidas'), acumuladas: rows.at(-1)?.acumuladas ?? 0, faturamento: sum('faturamento'), despesa_assistencial: sum('despesa_assistencial'), lancers: sum('lancers'), siga: sum('siga'), bensaude: sum('bensaude'), agenciamento: sum('agenciamento'), adesao: sum('adesao'), resultado_bensaude: sum('resultado_bensaude') };
 }
 export function consolidarSimulacao(resultados: ResultadoSimulacao[]) {
   const mensal = meses.map((_,i) => {
