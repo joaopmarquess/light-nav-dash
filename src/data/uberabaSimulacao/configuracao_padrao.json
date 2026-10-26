@@ -1,0 +1,26 @@
+[
+  {
+    "produto_codigo": "PCA",
+    "tabela_preco": "SIGA",
+    "condicao_comercial": "Réplica Bensaúde",
+    "total_vidas": 5000
+  },
+  {
+    "produto_codigo": "PME_ADMINISTRADO",
+    "tabela_preco": "SIGA",
+    "condicao_comercial": "Réplica Bensaúde",
+    "total_vidas": 5000
+  },
+  {
+    "produto_codigo": "PCE_50_99",
+    "tabela_preco": "SIGA",
+    "condicao_comercial": "Réplica Bensaúde",
+    "total_vidas": 5000
+  },
+  {
+    "produto_codigo": "PCE_100_MAIS",
+    "tabela_preco": "SIGA",
+    "condicao_comercial": "Réplica Bensaúde",
+    "total_vidas": 5000
+  }
+]

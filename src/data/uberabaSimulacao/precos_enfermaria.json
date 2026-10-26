@@ -1,0 +1,282 @@
+[
+  {
+    "produto_codigo": "PCA",
+    "faixa_numero": 1,
+    "faixa_etaria": "Faixa 1 — 00 a 18",
+    "preco_bensaude": 157.5,
+    "preco_siga": 166.06
+  },
+  {
+    "produto_codigo": "PCA",
+    "faixa_numero": 2,
+    "faixa_etaria": "Faixa 2 — 19 a 23",
+    "preco_bensaude": 183.8,
+    "preco_siga": 190.99
+  },
+  {
+    "produto_codigo": "PCA",
+    "faixa_numero": 3,
+    "faixa_etaria": "Faixa 3 — 24 a 28",
+    "preco_bensaude": 214.49,
+    "preco_siga": 219.64
+  },
+  {
+    "produto_codigo": "PCA",
+    "faixa_numero": 4,
+    "faixa_etaria": "Faixa 4 — 29 a 33",
+    "preco_bensaude": 236.36,
+    "preco_siga": 252.58
+  },
+  {
+    "produto_codigo": "PCA",
+    "faixa_numero": 5,
+    "faixa_etaria": "Faixa 5 — 34 a 38",
+    "preco_bensaude": 275.81,
+    "preco_siga": 290.47
+  },
+  {
+    "produto_codigo": "PCA",
+    "faixa_numero": 6,
+    "faixa_etaria": "Faixa 6 — 39 a 43",
+    "preco_bensaude": 315.24,
+    "preco_siga": 334.03
+  },
+  {
+    "produto_codigo": "PCA",
+    "faixa_numero": 7,
+    "faixa_etaria": "Faixa 7 — 44 a 48",
+    "preco_bensaude": 386.16,
+    "preco_siga": 407.5
+  },
+  {
+    "produto_codigo": "PCA",
+    "faixa_numero": 8,
+    "faixa_etaria": "Faixa 8 — 49 a 53",
+    "preco_bensaude": 481.54,
+    "preco_siga": 529.77
+  },
+  {
+    "produto_codigo": "PCA",
+    "faixa_numero": 9,
+    "faixa_etaria": "Faixa 9 — 54 a 58",
+    "preco_bensaude": 638.99,
+    "preco_siga": 688.7
+  },
+  {
+    "produto_codigo": "PCA",
+    "faixa_numero": 10,
+    "faixa_etaria": "Faixa 10 — 59 ou +",
+    "preco_bensaude": 944.73,
+    "preco_siga": 995.88
+  },
+  {
+    "produto_codigo": "PME_ADMINISTRADO",
+    "faixa_numero": 1,
+    "faixa_etaria": "Faixa 1 — 00 a 18",
+    "preco_bensaude": 157.5,
+    "preco_siga": 157.5
+  },
+  {
+    "produto_codigo": "PME_ADMINISTRADO",
+    "faixa_numero": 2,
+    "faixa_etaria": "Faixa 2 — 19 a 23",
+    "preco_bensaude": 183.8,
+    "preco_siga": 183.8
+  },
+  {
+    "produto_codigo": "PME_ADMINISTRADO",
+    "faixa_numero": 3,
+    "faixa_etaria": "Faixa 3 — 24 a 28",
+    "preco_bensaude": 214.49,
+    "preco_siga": 214.49
+  },
+  {
+    "produto_codigo": "PME_ADMINISTRADO",
+    "faixa_numero": 4,
+    "faixa_etaria": "Faixa 4 — 29 a 33",
+    "preco_bensaude": 236.36,
+    "preco_siga": 236.36
+  },
+  {
+    "produto_codigo": "PME_ADMINISTRADO",
+    "faixa_numero": 5,
+    "faixa_etaria": "Faixa 5 — 34 a 38",
+    "preco_bensaude": 275.81,
+    "preco_siga": 275.81
+  },
+  {
+    "produto_codigo": "PME_ADMINISTRADO",
+    "faixa_numero": 6,
+    "faixa_etaria": "Faixa 6 — 39 a 43",
+    "preco_bensaude": 315.24,
+    "preco_siga": 315.24
+  },
+  {
+    "produto_codigo": "PME_ADMINISTRADO",
+    "faixa_numero": 7,
+    "faixa_etaria": "Faixa 7 — 44 a 48",
+    "preco_bensaude": 386.16,
+    "preco_siga": 386.16
+  },
+  {
+    "produto_codigo": "PME_ADMINISTRADO",
+    "faixa_numero": 8,
+    "faixa_etaria": "Faixa 8 — 49 a 53",
+    "preco_bensaude": 481.54,
+    "preco_siga": 481.54
+  },
+  {
+    "produto_codigo": "PME_ADMINISTRADO",
+    "faixa_numero": 9,
+    "faixa_etaria": "Faixa 9 — 54 a 58",
+    "preco_bensaude": 638.99,
+    "preco_siga": 638.99
+  },
+  {
+    "produto_codigo": "PME_ADMINISTRADO",
+    "faixa_numero": 10,
+    "faixa_etaria": "Faixa 10 — 59 ou +",
+    "preco_bensaude": 944.73,
+    "preco_siga": 944.73
+  },
+  {
+    "produto_codigo": "PCE_50_99",
+    "faixa_numero": 1,
+    "faixa_etaria": "Faixa 1 — 00 a 18",
+    "preco_bensaude": 140.0,
+    "preco_siga": 147.21
+  },
+  {
+    "produto_codigo": "PCE_50_99",
+    "faixa_numero": 2,
+    "faixa_etaria": "Faixa 2 — 19 a 23",
+    "preco_bensaude": 163.38,
+    "preco_siga": 188.15
+  },
+  {
+    "produto_codigo": "PCE_50_99",
+    "faixa_numero": 3,
+    "faixa_etaria": "Faixa 3 — 24 a 28",
+    "preco_bensaude": 190.66,
+    "preco_siga": 215.51
+  },
+  {
+    "produto_codigo": "PCE_50_99",
+    "faixa_numero": 4,
+    "faixa_etaria": "Faixa 4 — 29 a 33",
+    "preco_bensaude": 210.1,
+    "preco_siga": 247.84
+  },
+  {
+    "produto_codigo": "PCE_50_99",
+    "faixa_numero": 5,
+    "faixa_etaria": "Faixa 5 — 34 a 38",
+    "preco_bensaude": 245.17,
+    "preco_siga": 277.56
+  },
+  {
+    "produto_codigo": "PCE_50_99",
+    "faixa_numero": 6,
+    "faixa_etaria": "Faixa 6 — 39 a 43",
+    "preco_bensaude": 280.22,
+    "preco_siga": 333.07
+  },
+  {
+    "produto_codigo": "PCE_50_99",
+    "faixa_numero": 7,
+    "faixa_etaria": "Faixa 7 — 44 a 48",
+    "preco_bensaude": 343.26,
+    "preco_siga": 366.41
+  },
+  {
+    "produto_codigo": "PCE_50_99",
+    "faixa_numero": 8,
+    "faixa_etaria": "Faixa 8 — 49 a 53",
+    "preco_bensaude": 428.03,
+    "preco_siga": 450.66
+  },
+  {
+    "produto_codigo": "PCE_50_99",
+    "faixa_numero": 9,
+    "faixa_etaria": "Faixa 9 — 54 a 58",
+    "preco_bensaude": 567.99,
+    "preco_siga": 594.87
+  },
+  {
+    "produto_codigo": "PCE_50_99",
+    "faixa_numero": 10,
+    "faixa_etaria": "Faixa 10 — 59 ou +",
+    "preco_bensaude": 839.76,
+    "preco_siga": 880.41
+  },
+  {
+    "produto_codigo": "PCE_100_MAIS",
+    "faixa_numero": 1,
+    "faixa_etaria": "Faixa 1 — 00 a 18",
+    "preco_bensaude": 131.25,
+    "preco_siga": 147.21
+  },
+  {
+    "produto_codigo": "PCE_100_MAIS",
+    "faixa_numero": 2,
+    "faixa_etaria": "Faixa 2 — 19 a 23",
+    "preco_bensaude": 153.17,
+    "preco_siga": 188.15
+  },
+  {
+    "produto_codigo": "PCE_100_MAIS",
+    "faixa_numero": 3,
+    "faixa_etaria": "Faixa 3 — 24 a 28",
+    "preco_bensaude": 178.74,
+    "preco_siga": 215.51
+  },
+  {
+    "produto_codigo": "PCE_100_MAIS",
+    "faixa_numero": 4,
+    "faixa_etaria": "Faixa 4 — 29 a 33",
+    "preco_bensaude": 196.97,
+    "preco_siga": 247.84
+  },
+  {
+    "produto_codigo": "PCE_100_MAIS",
+    "faixa_numero": 5,
+    "faixa_etaria": "Faixa 5 — 34 a 38",
+    "preco_bensaude": 229.85,
+    "preco_siga": 277.56
+  },
+  {
+    "produto_codigo": "PCE_100_MAIS",
+    "faixa_numero": 6,
+    "faixa_etaria": "Faixa 6 — 39 a 43",
+    "preco_bensaude": 262.7,
+    "preco_siga": 333.07
+  },
+  {
+    "produto_codigo": "PCE_100_MAIS",
+    "faixa_numero": 7,
+    "faixa_etaria": "Faixa 7 — 44 a 48",
+    "preco_bensaude": 321.8,
+    "preco_siga": 366.41
+  },
+  {
+    "produto_codigo": "PCE_100_MAIS",
+    "faixa_numero": 8,
+    "faixa_etaria": "Faixa 8 — 49 a 53",
+    "preco_bensaude": 401.28,
+    "preco_siga": 450.66
+  },
+  {
+    "produto_codigo": "PCE_100_MAIS",
+    "faixa_numero": 9,
+    "faixa_etaria": "Faixa 9 — 54 a 58",
+    "preco_bensaude": 532.49,
+    "preco_siga": 594.87
+  },
+  {
+    "produto_codigo": "PCE_100_MAIS",
+    "faixa_numero": 10,
+    "faixa_etaria": "Faixa 10 — 59 ou +",
+    "preco_bensaude": 787.28,
+    "preco_siga": 880.41
+  }
+]

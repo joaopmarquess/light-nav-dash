@@ -1,0 +1,62 @@
+[
+  {
+    "mes_numero": 1,
+    "mes": "Janeiro",
+    "percentual_anual": 0.05
+  },
+  {
+    "mes_numero": 2,
+    "mes": "Fevereiro",
+    "percentual_anual": 0.056
+  },
+  {
+    "mes_numero": 3,
+    "mes": "Março",
+    "percentual_anual": 0.062
+  },
+  {
+    "mes_numero": 4,
+    "mes": "Abril",
+    "percentual_anual": 0.068
+  },
+  {
+    "mes_numero": 5,
+    "mes": "Maio",
+    "percentual_anual": 0.074
+  },
+  {
+    "mes_numero": 6,
+    "mes": "Junho",
+    "percentual_anual": 0.08
+  },
+  {
+    "mes_numero": 7,
+    "mes": "Julho",
+    "percentual_anual": 0.086
+  },
+  {
+    "mes_numero": 8,
+    "mes": "Agosto",
+    "percentual_anual": 0.092
+  },
+  {
+    "mes_numero": 9,
+    "mes": "Setembro",
+    "percentual_anual": 0.096
+  },
+  {
+    "mes_numero": 10,
+    "mes": "Outubro",
+    "percentual_anual": 0.098
+  },
+  {
+    "mes_numero": 11,
+    "mes": "Novembro",
+    "percentual_anual": 0.1
+  },
+  {
+    "mes_numero": 12,
+    "mes": "Dezembro",
+    "percentual_anual": 0.138
+  }
+]

@@ -2,6 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+.uberaba-simulation { min-width: 0; color: hsl(var(--foreground)); font-size: 14px; }
+.sim-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; border-bottom:1px solid hsl(var(--border)); padding:12px 0 18px; }
+.sim-heading h2 { display:flex; align-items:center; gap:10px; font-size:22px; font-weight:700; color:hsl(var(--secondary-foreground)); overflow-wrap:anywhere; }
+.sim-heading h2 svg { width:24px; height:24px; flex-shrink:0; color:hsl(var(--primary)); }
+.sim-heading p { color:hsl(var(--muted-foreground)); margin-top:5px; font-size:12px; }
+.sim-tabs { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 22px; }
+.uberaba-simulation h3 { font-size:18px; font-weight:650; margin-bottom:16px; }
+.sim-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; margin-bottom:24px; }
+.sim-kpi { border:1px solid hsl(var(--border)); border-top:3px solid hsl(var(--primary)); border-radius:6px; padding:18px; background:hsl(var(--secondary)); position:relative; }
+.sim-kpi svg { width:20px; height:20px; color:hsl(var(--primary)); margin-bottom:12px; }
+.sim-kpi p { font-size:12px; color:hsl(var(--muted-foreground)); margin-bottom:5px; }
+.sim-kpi strong { font-size:22px; font-weight:650; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.sim-table-section { margin:22px 0; min-width:0; }
+.sim-table-section h4 { font-size:14px; font-weight:650; margin:0 0 10px; }
+.sim-table-scroll { max-height:520px; overflow:auto; border:1px solid hsl(var(--border)); border-radius:6px; }
+.sim-table-scroll table { width:100%; border-collapse:separate; border-spacing:0; font-size:12px; font-variant-numeric:tabular-nums; }
+.sim-table-scroll th,.sim-table-scroll td { padding:11px 13px; white-space:nowrap; border-bottom:1px solid hsl(var(--border)); text-align:right; }
+.sim-table-scroll thead th { position:sticky; top:0; z-index:1; background:hsl(var(--secondary)); color:hsl(var(--secondary-foreground)); font-weight:650; }
+.sim-table-scroll tr>*:first-child { text-align:left; white-space:normal; min-width:155px; }
+.sim-table-scroll tbody th { font-weight:500; }
+.sim-table-scroll tbody tr:nth-child(even) { background:hsl(var(--muted) / .5); }
+.sim-table-scroll tbody tr:hover { background:hsl(var(--accent)); }
+.sim-table-scroll tfoot { background:hsl(var(--secondary)); font-weight:700; }
+.sim-controls { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end; padding:18px 0; border-block:1px solid hsl(var(--border)); }
+.sim-controls label { display:flex; flex-direction:column; gap:7px; font-size:12px; color:hsl(var(--muted-foreground)); width:220px; max-width:100%; }
+.sim-controls label:nth-child(3) { width:170px; }
+.sim-controls .sim-editable { background:hsl(var(--accent)); border-color:hsl(var(--primary) / .4); color:hsl(var(--foreground)); }
+.sim-participations { display:flex; flex-wrap:wrap; gap:12px 30px; padding:5px 0; color:hsl(var(--muted-foreground)); font-size:13px; }
+.sim-participations strong { color:hsl(var(--secondary-foreground)); margin-left:8px; }
+.sim-assumptions { border-block:1px solid hsl(var(--border)); margin-top:24px; padding:16px 0; font-size:12px; color:hsl(var(--muted-foreground)); }
+.sim-assumptions summary { cursor:pointer; font-size:14px; color:hsl(var(--foreground)); font-weight:600; }
+.sim-assumptions ul { padding:12px 0 0 22px; list-style:disc; line-height:1.7; }
+@media(max-width:1100px) { .sim-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:600px) { .sim-heading h2 { font-size:18px; } .sim-kpi { padding:12px; } .sim-kpi strong { font-size:18px; } }
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
