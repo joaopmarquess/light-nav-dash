@@ -5,7 +5,7 @@ import { groupRowStyles, totalRowStyles } from "@/lib/pdfTheme";
 import PdfPreview from "@/components/PdfPreview";
 import type { RowInput } from "jspdf-autotable";
 
-type Prest = { cd: string; nome: string; endereco: string; telefones: string; valor: number };
+type Prest = { cd: string; nome: string; endereco: string; telefones: string; email: string; valor: number };
 type Grupo = { cidade: string; total: number; itens: Prest[] };
 
 const split = (l: string) => l.split(";").map((s) => s.trim());
@@ -43,12 +43,12 @@ export default function Assistencial2518Prestadores() {
           fetch("/data/2518_assistencial_processo.csv").then((r) => r.text()),
           fetch("/data/credenciados_2518.csv").then((r) => r.text()),
         ]);
-        const cred = new Map<string, { nome: string; cidade: string; end: string; tel: string }>();
+        const cred = new Map<string, { nome: string; cidade: string; end: string; tel: string; email: string }>();
         const cl = c.split(/\r?\n/).filter(Boolean);
         for (const l of cl.slice(1)) {
-          const [cd, ds, cid, end, fon, site] = split(l);
+          const [cd, ds, cid, end, fon, site, email] = split(l);
           const tel = [clean(fon), clean(site)].filter(Boolean).filter((v, i, arr) => arr.indexOf(v) === i).join(" / ");
-          cred.set(cd, { nome: ds, cidade: cid, end: clean(end), tel });
+          cred.set(cd, { nome: ds, cidade: cid, end: clean(end), tel, email: clean(email) });
         }
         const al = a.split(/\r?\n/).filter(Boolean);
         const h = split(al[0]);
@@ -59,7 +59,7 @@ export default function Assistencial2518Prestadores() {
           const cd = r[iCd] ?? "";
           const info = cred.get(cd);
           const p = acc.get(cd) ?? {
-            cd, nome: r[iDs] || info?.nome || "", endereco: info?.end ?? "", telefones: info?.tel ?? "",
+            cd, nome: r[iDs] || info?.nome || "", endereco: info?.end ?? "", telefones: info?.tel ?? "", email: info?.email ?? "",
             cidade: clean(info?.cidade) || "SEM CIDADE", valor: 0,
           };
           p.valor += num(r[iT]);
@@ -85,13 +85,13 @@ export default function Assistencial2518Prestadores() {
       const body: RowInput[] = [];
       sections.push(body);
       body.push([
-        { content: `${g.cidade}  (${g.itens.length})`, colSpan: 4, styles: { ...groupRowStyles, fontSize: 11, fontStyle: "bold", cellPadding: 2 } },
+        { content: `${g.cidade}  (${g.itens.length})`, colSpan: 5, styles: { ...groupRowStyles, fontSize: 11, fontStyle: "bold", cellPadding: 2 } },
         { content: fmt(g.total), styles: { ...groupRowStyles, fontSize: 11, fontStyle: "bold", halign: "right", cellPadding: 2 } },
       ]);
       for (const p of ordenarItens(g.itens, ordem)) {
         const st: Record<string, unknown> = p.topo ? { fontStyle: "bold" } : {};
         if (p.topo || p.fim) st.lineWidth = { top: p.topo ? 0.6 : 0.1, bottom: p.fim ? 0.6 : 0.1, left: 0.1, right: 0.1 }; if (p.topo || p.fim) st.lineColor = [0, 0, 0];
-        body.push([p.cd, p.nome, p.endereco, p.telefones, { content: fmt(p.valor), styles: { halign: "right" as const } }].map((c) => (typeof c === "string" ? { content: c, styles: st } : { ...c, styles: { ...c.styles, ...st } })));
+        body.push([p.cd, p.nome, p.endereco, p.telefones, p.email, { content: fmt(p.valor), styles: { halign: "right" as const } }].map((c) => (typeof c === "string" ? { content: c, styles: st } : { ...c, styles: { ...c.styles, ...st } })));
       }
     }
     return buildPdfTabela({
@@ -100,12 +100,12 @@ export default function Assistencial2518Prestadores() {
       title: "Relatório Despesas Assistenciais",
       plano: "SINDICATO DOS SERVIDORES PUBLICOS MUNICIPAIS DE JALES E REGIAO - SSPMJR",
       secao: "Prestadores por cidade — valor total por credenciado executor",
-      head: [["Código", "Credenciado", "Endereço", "Telefones", "Valor (R$)"]],
+      head: [["Código", "Credenciado", "Endereço", "Telefones", "E-mail", "Valor (R$)"]],
       body: [],
       sections,
       sectionLabels: (grupos ?? []).map((g) => g.cidade),
-      foot: [[{ content: "TOTAL", colSpan: 4, styles: totalRowStyles }, { content: fmt(total), styles: { ...totalRowStyles, halign: "right" } }]],
-      columnStyles: { 0: { cellWidth: 14 }, 1: { cellWidth: 52 }, 2: { cellWidth: 62 }, 3: { cellWidth: 34 }, 4: { cellWidth: 28, halign: "right" } },
+      foot: [[{ content: "TOTAL", colSpan: 5, styles: totalRowStyles }, { content: fmt(total), styles: { ...totalRowStyles, halign: "right" } }]],
+      columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 42 }, 2: { cellWidth: 48 }, 3: { cellWidth: 30 }, 4: { cellWidth: 36 }, 5: { cellWidth: 24, halign: "right" } },
       fontSize: 7,
     });
   };
@@ -132,14 +132,14 @@ export default function Assistencial2518Prestadores() {
       <div className="overflow-auto border border-border rounded-md">
         <table className="w-full text-xs [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border">
           <thead className="bg-muted/60 text-muted-foreground">
-            <tr><th className="p-2 text-left">Código</th><th className="p-2 text-left">Credenciado</th><th className="p-2 text-left">Endereço</th><th className="p-2 text-left">Telefones</th><th className="p-2 text-right">Valor (R$)</th></tr>
+            <tr><th className="p-2 text-left">Código</th><th className="p-2 text-left">Credenciado</th><th className="p-2 text-left">Endereço</th><th className="p-2 text-left">Telefones</th><th className="p-2 text-left">E-mail</th><th className="p-2 text-right">Valor (R$)</th></tr>
           </thead>
           <tbody>
             {grupos.map((g) => [
-              <tr key={g.cidade} onClick={() => setAbertas((s) => { const n = new Set(s); n.has(g.cidade) ? n.delete(g.cidade) : n.add(g.cidade); return n; })} className="border-t border-border bg-background hover:bg-muted/50 font-medium cursor-pointer select-none"><td colSpan={4} className="p-2">{abertas.has(g.cidade) ? "▾" : "▸"} {g.cidade} ({g.itens.length})</td><td className="p-2 text-right">{fmt(g.total)}</td></tr>,
+              <tr key={g.cidade} onClick={() => setAbertas((s) => { const n = new Set(s); n.has(g.cidade) ? n.delete(g.cidade) : n.add(g.cidade); return n; })} className="border-t border-border bg-background hover:bg-muted/50 font-medium cursor-pointer select-none"><td colSpan={5} className="p-2">{abertas.has(g.cidade) ? "▾" : "▸"} {g.cidade} ({g.itens.length})</td><td className="p-2 text-right">{fmt(g.total)}</td></tr>,
               ...(abertas.has(g.cidade) ? g.itens : []).map((p) => (
                 <tr key={g.cidade + p.cd} className="border-t border-border bg-muted/20">
-                  <td className="p-2">{p.cd}</td><td className="p-2">{p.nome}</td><td className="p-2">{p.endereco}</td><td className="p-2">{p.telefones}</td><td className="p-2 text-right">{fmt(p.valor)}</td>
+                  <td className="p-2">{p.cd}</td><td className="p-2">{p.nome}</td><td className="p-2">{p.endereco}</td><td className="p-2">{p.telefones}</td><td className="p-2 break-all">{p.email}</td><td className="p-2 text-right">{fmt(p.valor)}</td>
                 </tr>
               )),
             ])}
