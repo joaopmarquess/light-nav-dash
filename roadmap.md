@@ -1,3 +1,5 @@
+- [ ] Criar seção Resultado entre as Partes (anual), com as participações atuais do Bensaúde, da SIGA e da Lancers, sem alterar regras de descontos.
+- [ ] Retirar a expressão sob Sinistralidade e alinhar o campo com os demais.
 - [x] Incluir Sinistralidade editável por modalidade e Despesa Assistencial = Faturamento × Sinistralidade; 11 testes aprovados, PCA 80% e PME 90,5% independentes, consolidado, CSV, impressão e restauração conferidos com acesso autorizado; inicial 0% sem premissa fornecida.
 - [x] Renomear a área antiga para vSinistralidade e incluir Sinistralidade > Períodos abaixo de Carteira; navegação e indisponibilidade da fonte conferidas com sessão autorizada, preservando a tela antiga.
 - [x] Corrigir Períodos para usar a mesma conexão Hostinger de vSinistralidade; leitura real da tabela confirmada sem erro, com 2.383.999 registros.
