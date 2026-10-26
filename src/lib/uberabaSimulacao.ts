@@ -1,9 +1,18 @@
 import produtos from '@/data/uberabaSimulacao/produtos.json';
 import precos from '@/data/uberabaSimulacao/precos_enfermaria.json';
-import condicoes from '@/data/uberabaSimulacao/condicoes_comerciais.json';
+import condicoesImportadas from '@/data/uberabaSimulacao/condicoes_comerciais.json';
 import meses from '@/data/uberabaSimulacao/distribuicao_mensal.json';
 import faixas from '@/data/uberabaSimulacao/distribuicao_faixa_etaria.json';
-import padroes from '@/data/uberabaSimulacao/configuracao_padrao.json';
+import padroesImportados from '@/data/uberabaSimulacao/configuracao_padrao.json';
+
+// Condição solicitada pelo usuário, separada dos arquivos históricos fornecidos.
+const condicoes = [...condicoesImportadas, ...condicoesImportadas
+  .filter(c => c.condicao === 'Bensaúde')
+  .map(c => ({ ...c, condicao: 'Bensaúde Regra', agenciamento_parcela_1: 0.9,
+    agenciamento_parcela_2: 0, agenciamento_parcela_3: 0,
+    agenciamento_parcela_4: 0, agenciamento_parcela_5: 0 }))];
+const vidasIniciais: Record<string, number> = { PCA: 1000, PME_ADMINISTRADO: 1000, PCE_50_99: 2000, PCE_100_MAIS: 4000 };
+const padroes = padroesImportados.map(c => ({ ...c, condicao_comercial: 'Bensaúde Regra', total_vidas: vidasIniciais[c.produto_codigo] ?? c.total_vidas }));
 
 export const fontesSimulacao = { produtos, precos, condicoes, meses, faixas, padroes };
 export const sinistralidadePadrao = 70;
