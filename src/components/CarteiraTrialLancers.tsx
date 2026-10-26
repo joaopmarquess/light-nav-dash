@@ -34,7 +34,7 @@ export default function CarteiraTrialLancers() {
     for (let from = 0; from < LIMITE; from += 1000) {
       const { data, error } = await hostinger.from("view_ecarteira")
         .select("cd_mat_alternativa,nm_empresa_estipulante,dt_nascimento,vl_tmm,dt_vigencia_beneficiario")
-        .eq("tp_plano", "SAUDE").lte("cd_mat_alternativa", 399999999999)
+        .eq("tp_plano", "SAUDE").eq("tp_acomodacao", "PRATA").lte("cd_mat_alternativa", 399999999999)
         .ilike("nm_empresa_estipulante", "%lancers%")
         .gte("dt_vigencia_beneficiario", de).lte("dt_vigencia_beneficiario", `${ate}T23:59:59`)
         .order("cd_mat_alternativa").order("dt_vigencia_beneficiario").range(from, from + 999);
@@ -73,7 +73,7 @@ export default function CarteiraTrialLancers() {
         <button onClick={consultar} disabled={loading} className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Buscar"}
         </button>
-        <span className="text-xs text-muted-foreground ml-2">Estipulantes contendo "LANCERS" · {fmtD(de)} a {fmtD(ate)}</span>
+        <span className="text-xs text-muted-foreground ml-2">Estipulantes contendo "LANCERS" · Enfermaria (Prata) · {fmtD(de)} a {fmtD(ate)}</span>
       </div>
       {error && <div className="mb-3 text-sm text-destructive">Erro: {error}</div>}
       {loading && !rows && <div className="text-sm text-muted-foreground flex items-center"><Loader2 className="h-4 w-4 animate-spin mr-2" />Carregando…</div>}
