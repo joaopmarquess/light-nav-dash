@@ -1,7 +1,28 @@
 import { describe, expect, it } from 'vitest';
-import { calcularSimulacao, consolidarSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao } from './uberabaSimulacao';
+import { calcularSimulacao, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao } from './uberabaSimulacao';
 import padroesHistoricos from '@/data/uberabaSimulacao/configuracao_padrao.json';
 const padrao=padroesHistoricos[0];
+describe('Resumo consolidado por faixa etária', () => {
+  it('soma entradas e mensalidades por faixa das quatro modalidades, sem faturamento acumulado', () => {
+    const resultados=fonte.padroes.map(calcularSimulacao);
+    const resumo=consolidarFaixasSimulacao(resultados);
+    expect(resumo.total.entradas).toBe(8000);
+    resumo.linhas.forEach((l,i)=>{
+      expect(l.entradas).toBe(resultados.reduce((s,r)=>s+r.faixaAnual[i],0));
+      expect(l.tmm).toBeCloseTo(resultados.reduce((s,r)=>s+r.faixaAnual[i]*r.mensalidades[i],0),7);
+      expect(l.percentual).toBe(l.entradas/8000);
+      expect(l.ticket).toBeCloseTo(l.tmm/l.entradas,8);
+    });
+    expect(resumo.total.tmm).toBeCloseTo(resultados.reduce((s,r)=>s+r.novasReceitas.reduce((a,v)=>a+v,0),0),7);
+    expect(resumo.total.ticket).toBeCloseTo(resumo.total.tmm/8000,8);
+    expect(resumo.total.percentual).toBe(1);
+  });
+  it('recalcula após alterar as vidas e retorna zero sem entradas', () => {
+    const resultados=fonte.padroes.map((c,i)=>calcularSimulacao({...c,total_vidas:i===0?1500:c.total_vidas}));
+    expect(consolidarFaixasSimulacao(resultados).total.entradas).toBe(8500);
+    expect(consolidarFaixasSimulacao([]).total).toEqual({entradas:0,percentual:0,tmm:0,ticket:0});
+  });
+});
 describe('Simulação comercial fornecida',()=>{
   it('agenciamento aplica cada percentual a uma mensalidade por venda, sem recorrência da carteira',()=>{
     for (const condicao of fonte.condicoes) {

@@ -75,6 +75,16 @@ export function calcularSimulacao(config: ConfigSimulacao) {
     residualNegativo: faixasMes.some(m => m.some(v=>v<0)) || vidasMes.some(v=>v<0) };
 }
 export type ResultadoSimulacao = ReturnType<typeof calcularSimulacao>;
+export function consolidarFaixasSimulacao(resultados: ResultadoSimulacao[]) {
+  const totalEntradas = resultados.reduce((s, r) => s + r.config.total_vidas, 0);
+  const linhas = faixas.map((f, i) => {
+    const entradas = resultados.reduce((s, r) => s + r.faixaAnual[i], 0);
+    const tmm = resultados.reduce((s, r) => s + r.faixaAnual[i] * r.mensalidades[i], 0);
+    return { faixa: f.faixa_etaria.replace(/^Faixa \d+ — /, ''), entradas, percentual: totalEntradas > 0 ? entradas / totalEntradas : 0, tmm, ticket: entradas > 0 ? tmm / entradas : 0 };
+  });
+  const tmm = linhas.reduce((s, l) => s + l.tmm, 0);
+  return { linhas, total: { entradas: totalEntradas, percentual: totalEntradas > 0 ? 1 : 0, tmm, ticket: totalEntradas > 0 ? tmm / totalEntradas : 0 } };
+}
 export function totalizarSimulacao(rows: FinanceiroSimulacao[]): FinanceiroSimulacao {
   const sum = (key: keyof FinanceiroSimulacao) => rows.reduce((s,r) => s+r[key],0);
   return { vidas: sum('vidas'), acumuladas: rows.at(-1)?.acumuladas ?? 0, faturamento: sum('faturamento'), despesa_assistencial: sum('despesa_assistencial'), lancers: sum('lancers'), siga: sum('siga'), bensaude: sum('bensaude'), agenciamento: sum('agenciamento'), adesao: sum('adesao'), resultado_bensaude: sum('resultado_bensaude') };

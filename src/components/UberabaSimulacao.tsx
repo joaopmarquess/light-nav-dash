@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import UberabaSimulacaoFaixas from '@/components/UberabaSimulacaoFaixas';
 import { calcularSimulacao, csvSimulacao, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, type ConfigSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
 const nomes = ['PCA', 'PME', 'PCE 50 a 99', 'PCE 100+'];
@@ -101,7 +103,10 @@ export default function UberabaSimulacao() {
     <header className="sim-heading"><div><h2><Calculator />Simulador Comercial Bensaúde|Uberaba</h2><p>Enfermaria · Proposta comercial · Valores anuais</p></div><div className="flex gap-2"><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Exportar cenário para CSV" onClick={exportar}><Download /></Button></TooltipTrigger><TooltipContent>Exportar CSV</TooltipContent></Tooltip><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Imprimir simulação" onClick={imprimir}><Printer /></Button></TooltipTrigger><TooltipContent>Imprimir</TooltipContent></Tooltip></div></header>
     {erro && <p role="alert" className="text-destructive">{erro}</p>}
     <section aria-label="Variáveis por modalidade" className="rounded-md border border-border p-4">
-      <h3 className="mb-3">Variáveis</h3>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h3>Variáveis</h3>
+        <Dialog><DialogTrigger asChild><Button variant="outline"><Calculator className="mr-2 h-4 w-4" />Resumo por faixa etária</Button></DialogTrigger><UberabaSimulacaoFaixas resultados={resultados} /></Dialog>
+      </div>
       <div className="overflow-x-auto"><table className="w-full text-sm">
         <thead><tr className="text-left text-muted-foreground"><th className="px-2 py-1 text-center">Modalidade</th><th className="px-2 py-1 text-center">Tabela de preço</th><th className="px-2 py-1 text-center">Condição comercial</th><th className="px-2 py-1 text-center">Agenciamento</th><th className="px-2 py-1 text-center">Taxa de Adesão</th><th className="px-2 py-1 text-center">Participação Bensaúde</th><th className="px-2 py-1 text-center">Participação Lancers</th><th className="px-2 py-1 text-center">Participação SIGA</th><th className="px-2 py-1 text-center">Total de vidas</th><th className="px-2 py-1 text-center">Sinistralidade (%)</th><th className="px-2 py-1 text-center">Mensalidade média</th><th /></tr></thead>
         <tbody>{resultados.map((r, i) => { const c = r.config, cod = c.produto_codigo; const parcelas = [r.condicao.agenciamento_parcela_1, r.condicao.agenciamento_parcela_2, r.condicao.agenciamento_parcela_3, r.condicao.agenciamento_parcela_4, r.condicao.agenciamento_parcela_5]; const vt = vidaText[cod] ?? String(c.total_vidas); const st = sinText[cod] ?? String(c.sinistralidade_percentual ?? sinistralidadePadrao); return <tr key={cod} className="border-t border-border align-top">
