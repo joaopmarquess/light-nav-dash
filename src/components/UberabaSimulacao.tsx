@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { calcularSimulacao, consolidarSimulacao, csvSimulacao, fontesSimulacao as fonte, indicadoresSimulacao as indicadores, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, type ConfigSimulacao, type FinanceiroSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
+import { calcularSimulacao, consolidarSimulacao, csvSimulacao, fontesSimulacao as fonte, indicadoresSimulacao as indicadores, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, type ConfigSimulacao, type FinanceiroSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
 const nomes = ['PCA', 'PME', 'PCE 50 a 99', 'PCE 100+'];
 function Tabela({ titulo, headers, rows, footer }: { titulo: string; headers: string[]; rows: (string | number)[][]; footer?: (string | number)[] }) {
@@ -17,6 +17,7 @@ function PremissasCalculo() {
   return <details className="sim-assumptions"><summary>Premissas do cálculo</summary><ul>
     <li>Vidas arredondadas por mês; dezembro recebe o saldo residual para fechar o total anual. Em cada mês, a faixa 10 recebe o residual para fechar as vidas do mês.</li>
     <li>Faturamento cumulativo: receita das novas vidas somada ao faturamento do mês anterior, sem cancelamentos ou reajustes. O faturamento anual soma os 12 faturamentos cumulativos.</li>
+    <li>Despesa Assistencial = faturamento cumulativo × Sinistralidade informada para cada modalidade. O consolidado soma as despesas das modalidades; não altera as participações comerciais.</li>
     <li>Participações da Lancers, da SIGA e do Bensaúde aplicadas ao faturamento cumulativo, conforme condição selecionada.</li>
     <li>Agenciamento sobre a receita de novas vidas, com cinco parcelas aplicadas no mês da venda e nos quatro meses seguintes. O total anual considera somente pagamentos de janeiro a dezembro.</li>
     <li>Taxa de adesão sobre a receita das novas vidas. Custo comercial = agenciamento + taxa de adesão; não é descontado da participação do Bensaúde.</li>
@@ -33,9 +34,9 @@ function ResultadoFinal({ resultados }: { resultados: ResultadoSimulacao[] }) {
     { label: 'Custo comercial', value: num(total.anual.agenciamento+total.anual.adesao), icon: BriefcaseBusiness },
   ];
   return <div className="sim-final"><h3>Resultado Final</h3><div className="sim-kpis">{cards.map(({label,value,icon:Icon})=><div className="sim-kpi" key={label}><Icon aria-hidden="true" /><p>{label}</p><strong>{value}</strong></div>)}</div>
-    <Tabela titulo="Cenários selecionados" headers={['Modalidade','Tabela de preço','Condição comercial','Total de vidas','Mensalidade média ponderada']} rows={resultados.map(r=>[r.produto.produto_nome,r.config.tabela_preco,r.config.condicao_comercial,int(r.config.total_vidas),num(r.media)])} />
+    <Tabela titulo="Cenários selecionados" headers={['Modalidade','Tabela de preço','Condição comercial','Total de vidas','Mensalidade média ponderada','Sinistralidade']} rows={resultados.map(r=>[r.produto.produto_nome,r.config.tabela_preco,r.config.condicao_comercial,int(r.config.total_vidas),num(r.media),pct((r.config.sinistralidade_percentual ?? 0)/100)])} />
     <Financeiro titulo="Visão mensal consolidada" mensal={total.mensal} anual={total.anual} />
-    <Tabela titulo="Resultado anual por modalidade" headers={['Modalidade','Vidas','Faturamento','Lancers','SIGA','Bensaúde','Agenciamento SIGA','Taxa de adesão','Custo comercial']} rows={resultados.map((r,i)=>[nomes[i],int(r.anual.vidas),num(r.anual.faturamento),num(r.anual.lancers),num(r.anual.siga),num(r.anual.bensaude),num(r.anual.agenciamento),num(r.anual.adesao),num(r.anual.agenciamento+r.anual.adesao)])} footer={['Total',int(total.anual.vidas),num(total.anual.faturamento),num(total.anual.lancers),num(total.anual.siga),num(total.anual.bensaude),num(total.anual.agenciamento),num(total.anual.adesao),num(total.anual.agenciamento+total.anual.adesao)]} />
+    <Tabela titulo="Resultado anual por modalidade" headers={['Modalidade','Vidas','Faturamento','Despesa Assistencial','Lancers','SIGA','Bensaúde','Agenciamento SIGA','Taxa de adesão','Custo comercial']} rows={resultados.map((r,i)=>[nomes[i],int(r.anual.vidas),num(r.anual.faturamento),num(r.anual.despesa_assistencial),num(r.anual.lancers),num(r.anual.siga),num(r.anual.bensaude),num(r.anual.agenciamento),num(r.anual.adesao),num(r.anual.agenciamento+r.anual.adesao)])} footer={['Total',int(total.anual.vidas),num(total.anual.faturamento),num(total.anual.despesa_assistencial),num(total.anual.lancers),num(total.anual.siga),num(total.anual.bensaude),num(total.anual.agenciamento),num(total.anual.adesao),num(total.anual.agenciamento+total.anual.adesao)]} />
     <PremissasCalculo />
   </div>;
 }
@@ -50,10 +51,11 @@ function PremissasImportadas() {
   </div>;
 }
 export default function UberabaSimulacao() {
-  const [configuracoes,setConfiguracoes] = useState<ConfigSimulacao[]>(()=>fonte.padroes.map(c=>({...c})));
+  const [configuracoes,setConfiguracoes] = useState<ConfigSimulacao[]>(()=>fonte.padroes.map(c=>({...c,sinistralidade_percentual:0})));
   const [aba,setAba] = useState('final');
   const [erro,setErro] = useState('');
   const [vidaText,setVidaText] = useState<Record<string,string>>({});
+  const [sinText,setSinText] = useState<Record<string,string>>({});
   const impressao = useRef<HTMLDivElement>(null);
   const resultados = useMemo(()=>configuracoes.map(calcularSimulacao),[configuracoes]);
   const selecionado = resultados.find(r=>r.config.produto_codigo===aba);
@@ -80,7 +82,8 @@ export default function UberabaSimulacao() {
       <label>Tabela de preço<Select value={selecionado.config.tabela_preco} onValueChange={v=>alterar(aba,{tabela_preco:v})}><SelectTrigger aria-label="Tabela de preço" className="sim-editable"><SelectValue /></SelectTrigger><SelectContent>{['Bensaúde','SIGA'].map(v=><SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></label>
       <label>Condição comercial<Select value={selecionado.config.condicao_comercial} onValueChange={v=>alterar(aba,{condicao_comercial:v})}><SelectTrigger aria-label="Condição comercial" className="sim-editable"><SelectValue /></SelectTrigger><SelectContent>{fonte.condicoes.filter(c=>c.produto_codigo===aba).map(c=><SelectItem key={c.condicao} value={c.condicao}>{c.condicao}</SelectItem>)}</SelectContent></Select></label>
       <label>Total de vidas<Input aria-label="Total de vidas" className="sim-editable" type="number" min={1} max={100000} step={1} value={vidaText[aba] ?? selecionado.config.total_vidas} aria-invalid={!validarVidas(Number(vidaText[aba] ?? selecionado.config.total_vidas))} onChange={e=>{const v=e.target.value;setVidaText(p=>({...p,[aba]:v}));if(validarVidas(Number(v))) alterar(aba,{total_vidas:Number(v)});}} onBlur={()=>setVidaText(p=>({...p,[aba]:String(selecionado.config.total_vidas)}))} />{!validarVidas(Number(vidaText[aba] ?? selecionado.config.total_vidas)) && <span className="text-destructive">Informe um inteiro entre 1 e 100.000; mantido o último cenário válido.</span>}</label>
-      <Button variant="outline" onClick={()=>{const original=fonte.padroes.find(c=>c.produto_codigo===aba);if(original){alterar(aba,{...original});setVidaText(p=>({...p,[aba]:String(original.total_vidas)}));}}}><RotateCcw />Restaurar configuração padrão</Button>
+      <label>Sinistralidade (%)<Input aria-label="Sinistralidade (%)" className="sim-editable" type="text" inputMode="decimal" placeholder="Informe o percentual" value={sinText[aba] ?? selecionado.config.sinistralidade_percentual ?? 0} aria-invalid={sinText[aba] !== undefined && (sinText[aba].trim()==='' || !validarSinistralidade(Number(sinText[aba].replace(',','.'))))} onChange={e=>{const v=e.target.value;setSinText(p=>({...p,[aba]:v}));const percentual=Number(v.replace(',','.'));if(v.trim()!=='' && validarSinistralidade(percentual)) alterar(aba,{sinistralidade_percentual:percentual});}} onBlur={()=>setSinText(p=>({...p,[aba]:String(selecionado.config.sinistralidade_percentual ?? 0)}))} /><span>Premissa variável · inicial 0%, não definida</span></label>
+      <Button variant="outline" onClick={()=>{const original=fonte.padroes.find(c=>c.produto_codigo===aba);if(original){alterar(aba,{...original,sinistralidade_percentual:0});setSinText(p=>({...p,[aba]:'0'}));setVidaText(p=>({...p,[aba]:String(original.total_vidas)}));}}}><RotateCcw />Restaurar configuração padrão</Button>
     </div>
     {!selecionado.participacoesValidas && <p role="alert" className="text-destructive">As participações não somam 100%.</p>}
     {selecionado.residualNegativo && <p role="alert" className="text-destructive">O arredondamento solicitado gerou residual negativo na faixa 10. Resultado mantido conforme regra dos CSVs; revise a quantidade de vidas.</p>}

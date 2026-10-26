@@ -2,6 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { calcularSimulacao, consolidarSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas } from './uberabaSimulacao';
 const padrao=fonte.padroes[0];
 describe('Simulação comercial fornecida',()=>{
+  it('calcula Despesa Assistencial como Faturamento × Sinistralidade por modalidade',()=>{
+    const percentuais = [80,90,100,110];
+    const resultados = fonte.padroes.map((c,i)=>calcularSimulacao({...c,sinistralidade_percentual:percentuais[i]}));
+    resultados.forEach((r,i)=>{
+      r.mensal.forEach(m=>expect(m.despesa_assistencial).toBeCloseTo(m.faturamento * percentuais[i] / 100,8));
+      expect(r.anual.despesa_assistencial).toBeCloseTo(r.anual.faturamento * percentuais[i] / 100,7);
+    });
+    expect(resultados[0].anual.despesa_assistencial).toBeCloseTo(8932782.96,2);
+    const consolidado=consolidarSimulacao(resultados);
+    expect(consolidado.anual.despesa_assistencial).toBeCloseTo(resultados.reduce((s,r)=>s+r.anual.despesa_assistencial,0),7);
+    consolidado.mensal.forEach((m,i)=>expect(m.despesa_assistencial).toBeCloseTo(resultados.reduce((s,r)=>s+r.mensal[i].despesa_assistencial,0),8));
+    expect(calcularSimulacao({...padrao,sinistralidade_percentual:0}).anual.despesa_assistencial).toBe(0);
+  });
   it('aceita somente vidas inteiras entre 1 e 100000',()=>{
     expect([0,1,100000,100001,1.5,NaN].map(validarVidas)).toEqual([false,true,true,false,false,false]);
   });
