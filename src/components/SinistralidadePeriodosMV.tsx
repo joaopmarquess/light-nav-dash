@@ -110,7 +110,7 @@ export default function SinistralidadePeriodosMV() {
           </div>
           {sel && (
             <div className="w-full min-w-0 rounded-md border border-border bg-card p-4">
-              <h3 className="mb-3 text-base font-semibold text-foreground">Evolução mensal do saldo · {sel.ano}<span className="ml-3 text-xs font-normal text-muted-foreground">--- Limite Sin 90%</span></h3>
+              <h3 className="text-base font-semibold text-foreground">Evolução mensal do saldo · {sel.ano}</h3><ul className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-normal text-muted-foreground">{[["Saldo", "--chart-vidas", false], ["Sin 90%", "--destructive", true], ["Sin 80%", "--chart-3", true], ["R$ 3 mi", "--chart-1", false], ["R$ 0", "--chart-4", false]].map(([l, c, p]) => <li key={String(l)} className="inline-flex items-center gap-1.5"><svg width="22" height="6" aria-hidden="true"><line x1="0" y1="3" x2="22" y2="3" stroke={`hsl(var(${c}))`} strokeWidth={p ? 2 : 3} strokeDasharray={p ? "6 4" : undefined} /></svg>{l}</li>)}<li className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm" style={{ background: "hsl(var(--chart-sin-ok) / 0.8)" }} />Sin abaixo de 90%</li><li className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm" style={{ background: "hsl(var(--chart-sin-ok) / 0.25)" }} />Sin 90% a 100%</li><li className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm" style={{ background: "hsl(var(--destructive) / 0.8)" }} />Sin acima de 100%</li></ul>
               <div className="h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={serie} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
@@ -118,7 +118,7 @@ export default function SinistralidadePeriodosMV() {
                     <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                     <YAxis domain={dominioCentrado([...serie.map(x => x.saldo), breakeven, META], serie.map(x => x.limite))} allowDataOverflow tickFormatter={curto} stroke="hsl(var(--muted-foreground))" fontSize={12} width={70} />
                     <ReferenceLine y={0} stroke="hsl(var(--chart-4))" strokeWidth={2.5} />
-                    <ReferenceLine y={breakeven} stroke="hsl(var(--chart-3))" strokeWidth={2} strokeDasharray="2 4" label={{ value: "Breakeven 80%", position: "insideTopRight", fill: "hsl(var(--chart-3))", fontSize: 11 }} />
+                    <ReferenceLine y={breakeven} stroke="hsl(var(--chart-3))" strokeWidth={2} strokeDasharray="6 4" />
                     <ReferenceLine y={META} stroke="hsl(var(--chart-1))" strokeWidth={2} label={{ value: "3 mi", position: "insideTopLeft", fill: "hsl(var(--chart-1))", fontSize: 11 }} />
                     <Tooltip formatter={(v: number, n: string) => [fmt(v), n === "limite" ? "Limite Sin 90%" : "Saldo"]} labelFormatter={l => `${l}/${sel.ano}`} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
                     <defs><linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
