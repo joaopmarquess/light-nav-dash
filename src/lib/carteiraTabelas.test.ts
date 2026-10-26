@@ -14,6 +14,11 @@ describe("Tabelas da carteira", () => {
   });
   it("conta CPF distinto: PRATA em enfermaria e OURO em apartamento", () => {
     const t = agruparFaixas([b({}), b({}), b({ nr_cpf: "2", tp_acomodacao: "OURO" })], "2026-01-31");
-    expect(t[2]).toEqual({ faixa: "24 a 28", enfermaria: 1, apartamento: 1 });
+    expect(t[2]).toMatchObject({ faixa: "24 a 28", enfermaria: 1, apartamento: 1, total: 2 });
+  });
+  it("guarda TMM mínimo e máximo por faixa e acomodação", () => {
+    const t = agruparFaixas([b({ vl_tmm: 100 }), b({ nr_cpf: "3", vl_tmm: 150 })], "2026-01-31");
+    expect(t[2].tmmEnfermaria).toEqual({ min: 100, max: 150 });
+    expect(t[2].tmmApartamento).toBeNull();
   });
 });
