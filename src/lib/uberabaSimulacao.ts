@@ -2,7 +2,7 @@ import produtos from '@/data/uberabaSimulacao/produtos.json';
 import precos from '@/data/uberabaSimulacao/precos_enfermaria.json';
 import condicoesImportadas from '@/data/uberabaSimulacao/condicoes_comerciais.json';
 import meses from '@/data/uberabaSimulacao/distribuicao_mensal.json';
-import faixas from '@/data/uberabaSimulacao/distribuicao_faixa_etaria.json';
+import faixasImportadas from '@/data/uberabaSimulacao/distribuicao_faixa_etaria.json';
 import padroesImportados from '@/data/uberabaSimulacao/configuracao_padrao.json';
 
 // Condição solicitada pelo usuário, separada dos arquivos históricos fornecidos.
@@ -13,6 +13,9 @@ const condicoes = [...condicoesImportadas, ...condicoesImportadas
     agenciamento_parcela_4: 0, agenciamento_parcela_5: 0 }))];
 const vidasIniciais: Record<string, number> = { PCA: 1000, PME_ADMINISTRADO: 1000, PCE_50_99: 2000, PCE_100_MAIS: 4000 };
 const padroes = padroesImportados.map(c => ({ ...c, condicao_comercial: 'Bensaúde Regra', total_vidas: vidasIniciais[c.produto_codigo] ?? c.total_vidas }));
+// %CART da imagem fornecida em 26/10/2026, aplicado às quatro modalidades.
+const percentuaisCart = [0.2850, 0.0610, 0.1058, 0.1137, 0.0976, 0.1000, 0.0857, 0.0634, 0.0388, 0.0490];
+const faixas = faixasImportadas.map(f => ({ ...f, percentual_normalizado: percentuaisCart[f.faixa_numero - 1] }));
 
 export const fontesSimulacao = { produtos, precos, condicoes, meses, faixas, padroes };
 export const sinistralidadePadrao = 65;
