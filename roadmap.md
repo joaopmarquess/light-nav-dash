@@ -1,4 +1,4 @@
-- [ ] Mover Cenários selecionados para botão irmão de Premissas, preservando os cenários e cálculos atuais.
+- [x] Mover Cenários selecionados para botão irmão de Premissas; grid retirado do Resultado Final, cenário atualizado de 75% e navegação conferidos com acesso autorizado; 12 testes aprovados.
 - [x] Definir Sinistralidade padrão 70% nas quatro modalidades e restauração; 12 testes e fluxo autorizado conferidos.
 - [x] Criar seção Resultado entre as Partes (anual), com participações atuais do Bensaúde, da SIGA e da Lancers por modalidade e total, sem alterar descontos; tela e impressão conferidas, 11 testes aprovados.
 - [x] Retirar a expressão sob Sinistralidade e alinhar o campo com os demais; alinhamento visual e posição dos campos conferidos.
