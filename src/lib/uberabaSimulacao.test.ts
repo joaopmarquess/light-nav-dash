@@ -21,33 +21,33 @@ describe('Simulação comercial fornecida',()=>{
   });
   it('total Beneficiário soma adesão e faturamento',()=>{
     const r=resumoSimulacao(padroesHistoricos.map(calcularSimulacao));
-    expect(r.beneficiario.total).toBeCloseTo(44735657.7085,4);
+    expect(r.beneficiario.total).toBeCloseTo(35852729.1741,4);
   });
   it('resultado líquido Bensaúde desconta agenciamento do operacional',()=>{
     const r=resumoSimulacao(padroesHistoricos.map(c => calcularSimulacao({...c, sinistralidade_percentual: 70})));
-    expect(r.bensaude.operacional).toBeCloseTo(6556100.90,2);
-    expect(r.bensaude.liquido).toBeCloseTo(-2205267.00,2);
+    expect(r.bensaude.operacional).toBeCloseTo(5281309.0539,2);
+    expect(r.bensaude.liquido).toBeCloseTo(-1726321.5236,2);
   });
   it('resultado SIGA soma adesão, faturamento e agenciamento',()=>{
     const r=resumoSimulacao(padroesHistoricos.map(calcularSimulacao));
-    expect(r.siga.resultado).toBeCloseTo(13334259.52,2);
+    expect(r.siga.resultado).toBeCloseTo(10654850.0207,2);
   });
   it('distribui o faturamento entre Bensaúde, Lancers e SIGA sem incluir adesão',()=>{
     const r=calcularSimulacao(padrao);
-    expect(r.anual.bensaude+r.anual.lancers+r.anual.siga).toBeCloseTo(11165978.70,2);
+    expect(r.anual.bensaude+r.anual.lancers+r.anual.siga).toBeCloseTo(8870385.94,2);
     r.mensal.forEach(m=>expect(m.bensaude+m.lancers+m.siga).toBeCloseTo(m.faturamento,8));
   });
   it('mantém agenciamento como custo comercial Bensaúde e receita SIGA, separado da adesão direta',()=>{
     const r=calcularSimulacao(padrao);
-    expect(r.anual.agenciamento).toBeCloseTo(2787030.86,2);
-    expect(r.anual.adesao).toBeCloseTo(1976700.4785,4);
-    expect(consolidarSimulacao(padroesHistoricos.map(calcularSimulacao)).anual.agenciamento).toBeCloseTo(8761367.905,3);
+    expect(r.anual.agenciamento).toBeCloseTo(2211634.545,2);
+    expect(r.anual.adesao).toBeCloseTo(1567978.4241,4);
+    expect(consolidarSimulacao(padroesHistoricos.map(calcularSimulacao)).anual.agenciamento).toBeCloseTo(7007630.5775,3);
   });
   it('Resultado Bensaúde é faturamento Bensaúde menos despesa assistencial, sem adesão ou agenciamento',()=>{
     const rs=padroesHistoricos.map(c => calcularSimulacao({...c, sinistralidade_percentual: 70}));
     rs.forEach(r=>r.mensal.forEach(m=>expect(m.resultado_bensaude).toBeCloseTo(m.bensaude-m.despesa_assistencial,8)));
-    expect(rs[0].anual.resultado_bensaude).toBeCloseTo(781618.509,3);
-    expect(consolidarSimulacao(rs).anual.resultado_bensaude).toBeCloseTo(6556100.90,2);
+    expect(rs[0].anual.resultado_bensaude).toBeCloseTo(620927.0158,3);
+    expect(consolidarSimulacao(rs).anual.resultado_bensaude).toBeCloseTo(5281309.0539,2);
   });
   it('usa Sinistralidade padrão de 65% em todas as modalidades',()=>{
     expect(sinistralidadePadrao).toBe(65);
@@ -55,7 +55,7 @@ describe('Simulação comercial fornecida',()=>{
       const r=calcularSimulacao(c);
       expect(r.anual.despesa_assistencial).toBeCloseTo(r.anual.faturamento * 0.65,7);
     });
-    expect(calcularSimulacao(padrao).anual.despesa_assistencial).toBeCloseTo(7257886.155,3);
+    expect(calcularSimulacao(padrao).anual.despesa_assistencial).toBeCloseTo(5765750.861,3);
   });
   it('calcula Despesa Assistencial como Faturamento × Sinistralidade por modalidade',()=>{
     const percentuais = [80,90,100,110];
@@ -64,7 +64,7 @@ describe('Simulação comercial fornecida',()=>{
       r.mensal.forEach(m=>expect(m.despesa_assistencial).toBeCloseTo(m.faturamento * percentuais[i] / 100,8));
       expect(r.anual.despesa_assistencial).toBeCloseTo(r.anual.faturamento * percentuais[i] / 100,7);
     });
-    expect(resultados[0].anual.despesa_assistencial).toBeCloseTo(8932782.96,2);
+    expect(resultados[0].anual.despesa_assistencial).toBeCloseTo(7096308.752,2);
     const consolidado=consolidarSimulacao(resultados);
     expect(consolidado.anual.despesa_assistencial).toBeCloseTo(resultados.reduce((s,r)=>s+r.anual.despesa_assistencial,0),7);
     consolidado.mensal.forEach((m,i)=>expect(m.despesa_assistencial).toBeCloseTo(resultados.reduce((s,r)=>s+r.mensal[i].despesa_assistencial,0),8));
@@ -79,7 +79,7 @@ describe('Simulação comercial fornecida',()=>{
   it('ajusta dezembro e faixa 10, reconciliando vidas',()=>{
     const r=calcularSimulacao(padrao);
     expect(r.vidasMes).toEqual([250,280,310,340,370,400,430,460,480,490,500,690]);
-    expect(r.faixaAnual).toEqual([908,408,408,408,408,408,531,531,531,459]);
+    expect(r.faixaAnual).toEqual([1426,305,529,568,487,500,428,317,195,245]);
     for(const total of [1,7,10,99,5000,100000]){
       const s=calcularSimulacao({...padrao,total_vidas:total});
       expect(s.vidasMes.reduce((a,b)=>a+b,0)).toBe(total);
@@ -96,36 +96,36 @@ describe('Simulação comercial fornecida',()=>{
     const r=calcularSimulacao(padrao);
     expect(r.mensal[0].faturamento).toBeCloseTo(r.novasReceitas[0],8);
     expect(r.mensal[1].faturamento).toBeCloseTo(r.novasReceitas[0]+r.novasReceitas[1],8);
-    expect(r.anual.faturamento).toBeCloseTo(11165978.70,2);
+    expect(r.anual.faturamento).toBeCloseTo(8870385.94,2);
   });
   it('aplica participações ao acumulado e valida soma de 100%',()=>{
     const r=calcularSimulacao(padrao);
-    expect(r.anual.lancers).toBeCloseTo(2233195.74,2);
-    expect(r.anual.siga).toBeCloseTo(334979.361,3);
-    expect(r.anual.bensaude).toBeCloseTo(8597803.599,3);
+    expect(r.anual.lancers).toBeCloseTo(1774077.188,2);
+    expect(r.anual.siga).toBeCloseTo(266111.5782,3);
+    expect(r.anual.bensaude).toBeCloseTo(6830197.1738,3);
     expect(r.participacoesValidas).toBe(true);
   });
   it('parcela agenciamento sobre receita nova com defasagem, contando janeiro a dezembro',()=>{
     const r=calcularSimulacao(padrao);
     expect(r.mensal[0].agenciamento).toBeCloseTo(r.novasReceitas[0]*.75,8);
     expect(r.mensal[1].agenciamento).toBeCloseTo((r.novasReceitas[0]+r.novasReceitas[1])*.75,8);
-    expect(r.anual.agenciamento).toBeCloseTo(2787030.86,2);
+    expect(r.anual.agenciamento).toBeCloseTo(2211634.545,2);
     const pme=calcularSimulacao({...padroesHistoricos[1],condicao_comercial:'SIGA'});
     expect(pme.mensal[3].agenciamento).toBeCloseTo(pme.novasReceitas.slice(0,4).reduce((a,b)=>a+b,0)*.5,8);
     expect(pme.mensal[4].agenciamento).toBeCloseTo(pme.novasReceitas.slice(1,5).reduce((a,b)=>a+b,0)*.5,8);
   });
   it('aplica adesão sobre receita nova',()=>{
     const r=calcularSimulacao(padrao);
-    expect(r.anual.adesao).toBeCloseTo(1976700.4785,4);
+    expect(r.anual.adesao).toBeCloseTo(1567978.4241,4);
     expect(calcularSimulacao(padroesHistoricos[2]).anual.adesao).toBe(0);
   });
   it('consolida quatro cenários individuais sem somar vidas acumuladas no tempo',()=>{
     const total=consolidarSimulacao(padroesHistoricos.map(calcularSimulacao));
     expect(total.anual.vidas).toBe(20000);
     expect(total.anual.acumuladas).toBe(20000);
-    expect(total.anual.faturamento).toBeCloseTo(41820567.70,2);
-    expect(total.anual.bensaude).toBeCloseTo(35830498.29,2);
-    expect(total.anual.agenciamento+total.anual.adesao).toBeCloseTo(11676457.9135,4);
+    expect(total.anual.faturamento).toBeCloseTo(33537601.89,2);
+    expect(total.anual.bensaude).toBeCloseTo(28757630.3769,2);
+    expect(total.anual.agenciamento+total.anual.adesao).toBeCloseTo(9322757.8616,4);
   });
   it('exporta cenários individuais atuais e consolidado em CSV pt-BR',()=>{
     const cenarios=padroesHistoricos.map((c,i)=>calcularSimulacao({...c,total_vidas:i===0?1234:c.total_vidas}));
@@ -165,5 +165,22 @@ describe('Bensaúde Regra e cenário solicitado', () => {
     expect(r.anual.bensaude).toBeCloseTo(r.anual.faturamento * bensaude, 7);
     expect(r.anual.lancers).toBeCloseTo(r.anual.faturamento * lancers, 7);
     expect(r.anual.siga).toBeCloseTo(r.anual.faturamento * siga, 7);
+  });
+});
+
+
+describe('Distribuição etária %CART da imagem', () => {
+  it('usa os dez percentuais fornecidos na ordem das faixas, somando 100%', () => {
+    expect(fonte.faixas.map(f => f.percentual_normalizado)).toEqual([0.2850,0.0610,0.1058,0.1137,0.0976,0.1000,0.0857,0.0634,0.0388,0.0490]);
+    expect(fonte.faixas.reduce((s,f) => s+f.percentual_normalizado,0)).toBeCloseTo(1,12);
+  });
+  it.each(['PCA','PME_ADMINISTRADO','PCE_50_99','PCE_100_MAIS'])('%s aplica %CART às entradas mensais e mantém o residual em 59+', codigo => {
+    const config=fonte.padroes.find(c=>c.produto_codigo===codigo);
+    if (!config) throw new Error('Configuração ausente');
+    const r=calcularSimulacao(config);
+    r.faixasMes.forEach((faixas,i)=>{
+      expect(faixas.slice(0,9)).toEqual([.285,.061,.1058,.1137,.0976,.1,.0857,.0634,.0388].map(p=>Math.round(r.vidasMes[i]*p)));
+      expect(faixas.reduce((s,v)=>s+v,0)).toBe(r.vidasMes[i]);
+    });
   });
 });
