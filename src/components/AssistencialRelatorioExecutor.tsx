@@ -1043,34 +1043,17 @@ function buildPdf({
 
   // Texto da declaração + assinatura na última página
   const declText =
-    "Declaro que as informações acima são fidedignas e correspondem à exata expressão da verdade, refletindo os valores que efetivamente foram pagos a este Hospital.";
+    "Declaro que as informações acima são fidedignas e correspondem à exata expressão da verdade, refletindo os valores que efetivamente foram pagos a este Estabelecimento de Saúde.";
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
   const declLines = doc.splitTextToSize(declText, usableW);
-  const blockH = declLines.length * 5 + 46;
+  const blockH = declLines.length * 5 + 6;
   if (declY + blockH > pageH - marginB - 6) {
     doc.addPage();
     declY = marginT;
   }
   doc.text(declLines, marginL, declY, { align: "justify", maxWidth: usableW });
-  let y2 = declY + declLines.length * 5 + 16;
-
-  doc.setFontSize(10);
-  doc.text("___________________________, ____/_____/__________", pageW - marginR, y2, { align: "right" });
-  doc.setFontSize(8);
-  doc.setTextColor(...PDF_COLORS.muted);
-  doc.text("Local - Data", pageW - marginR, y2 + 4.5, { align: "right" });
-
-  y2 += 26;
-  const cx = pageW / 2;
-  const sigW = usableW * 0.6;
-  doc.setDrawColor(0);
-  doc.setLineWidth(0.3);
-  doc.line(cx - sigW / 2, y2, cx + sigW / 2, y2);
-  doc.setFontSize(9);
-  doc.setTextColor(0, 0, 0);
-  doc.text("Assinatura e Carimbo", cx, y2 + 5, { align: "center" });
 
   markSectionPages(`Declaração ${di}`, pgStart);
   for (let p = pgStart; p <= doc.getNumberOfPages(); p++) declByPage[p] = di + 1;
