@@ -112,10 +112,11 @@ export default function Assistencial2518Prestadores() {
   };
 
   const gerarXlsx = () => {
+    const n = Math.max(3, ...(grupos ?? []).flatMap((g) => g.itens.map((p) => p.email.split(" / ").filter(Boolean).length)));
     const rows = (grupos ?? []).flatMap((g) => g.itens.map((p) => {
       const es = p.email.split(" / ").map((e) => e.trim()).filter(Boolean);
       const extra: Record<string, string> = {};
-      for (let i = 0; i < Math.max(3, es.length); i++) extra[`email${i + 1}`] = es[i] ?? "";
+      for (let i = 0; i < n; i++) extra[`email${i + 1}`] = es[i] ?? "";
       return { Cidade: g.cidade, "Código": p.cd, Credenciado: p.nome, "Endereço": p.endereco, Telefones: p.telefones, "E-mail": p.email, ...extra, "Valor (R$)": p.valor };
     }));
     const ws = XLSX.utils.json_to_sheet(rows);
