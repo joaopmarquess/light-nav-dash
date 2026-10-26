@@ -3,6 +3,7 @@ import { FileDown, Loader2 } from "lucide-react";
 import { buildPdfTabela } from "@/lib/pdfTabela";
 import { groupRowStyles, totalRowStyles } from "@/lib/pdfTheme";
 import PdfPreview from "@/components/PdfPreview";
+import * as XLSX from "xlsx";
 import type { RowInput } from "jspdf-autotable";
 
 type Prest = { cd: string; nome: string; endereco: string; telefones: string; email: string; valor: number };
@@ -110,6 +111,20 @@ export default function Assistencial2518Prestadores() {
     });
   };
 
+  const gerarXlsx = () => {
+    const n = Math.max(3, ...(grupos ?? []).flatMap((g) => g.itens.map((p) => p.email.split(" / ").filter(Boolean).length)));
+    const rows = (grupos ?? []).flatMap((g) => g.itens.map((p) => {
+      const es = p.email.split(" / ").map((e) => e.trim()).filter(Boolean);
+      const extra: Record<string, string> = {};
+      for (let i = 0; i < n; i++) extra[`email${i + 1}`] = es[i] ?? "";
+      return { Cidade: g.cidade, "Código": p.cd, Credenciado: p.nome, "Endereço": p.endereco, Telefones: p.telefones, "E-mail": p.email, ...extra, "Valor (R$)": p.valor };
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Prestadores");
+    XLSX.writeFile(wb, "2518_prestadores.xlsx");
+  };
+
   const baixarDois = async () => {
     (await buildPdf("despesas")).save("2518_prestadores_geral.pdf");
     await new Promise((r) => setTimeout(r, 600));
@@ -124,6 +139,9 @@ export default function Assistencial2518Prestadores() {
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold">2518 Prestadores — total {fmt(total)}</h2>
         <div className="flex items-center gap-2">
+        <button onClick={gerarXlsx} className="h-9 px-3 rounded-md border border-border text-sm inline-flex items-center gap-2">
+          <FileDown className="h-4 w-4" /> Gerar XLSX
+        </button>
         <button onClick={() => setPreview(true)} className="h-9 px-3 rounded-md bg-primary text-primary-foreground text-sm inline-flex items-center gap-2">
           <FileDown className="h-4 w-4" /> Gerar PDF
         </button>
