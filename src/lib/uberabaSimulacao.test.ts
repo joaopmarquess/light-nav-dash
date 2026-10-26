@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { calcularSimulacao, consolidarSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas } from './uberabaSimulacao';
+import { calcularSimulacao, consolidarSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao } from './uberabaSimulacao';
 const padrao=fonte.padroes[0];
 describe('Simulação comercial fornecida',()=>{
+  it('usa Sinistralidade padrão de 70% em todas as modalidades',()=>{
+    expect(sinistralidadePadrao).toBe(70);
+    fonte.padroes.forEach(c=>{
+      const r=calcularSimulacao(c);
+      expect(r.anual.despesa_assistencial).toBeCloseTo(r.anual.faturamento * 0.70,7);
+    });
+    expect(calcularSimulacao(padrao).anual.despesa_assistencial).toBeCloseTo(7816185.09,2);
+  });
   it('calcula Despesa Assistencial como Faturamento × Sinistralidade por modalidade',()=>{
     const percentuais = [80,90,100,110];
     const resultados = fonte.padroes.map((c,i)=>calcularSimulacao({...c,sinistralidade_percentual:percentuais[i]}));

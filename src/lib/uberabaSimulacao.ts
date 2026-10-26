@@ -6,6 +6,7 @@ import faixas from '@/data/uberabaSimulacao/distribuicao_faixa_etaria.json';
 import padroes from '@/data/uberabaSimulacao/configuracao_padrao.json';
 
 export const fontesSimulacao = { produtos, precos, condicoes, meses, faixas, padroes };
+export const sinistralidadePadrao = 70;
 export type ConfigSimulacao = { produto_codigo: string; tabela_preco: string; condicao_comercial: string; total_vidas: number; sinistralidade_percentual?: number };
 export function validarSinistralidade(value: number) {
   return Number.isFinite(value) && value >= 0;
@@ -35,7 +36,7 @@ export const percentualSimulacao = (v: number) => `${numeroSimulacao(v * 100)}%`
 export const inteiroSimulacao = (v: number) => v.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
 export function calcularSimulacao(config: ConfigSimulacao) {
   if (!validarVidas(config.total_vidas)) throw new Error('Total de vidas deve ser inteiro entre 1 e 100000.');
-  const sinistralidade = config.sinistralidade_percentual ?? 0;
+  const sinistralidade = config.sinistralidade_percentual ?? sinistralidadePadrao;
   if (!validarSinistralidade(sinistralidade)) throw new Error('Informe uma sinistralidade percentual válida, maior ou igual a zero.');
   const produto = produtos.find(p => p.produto_codigo === config.produto_codigo);
   const condicao = condicoes.find(c => c.produto_codigo === config.produto_codigo && c.condicao === config.condicao_comercial);
@@ -75,7 +76,7 @@ export function consolidarSimulacao(resultados: ResultadoSimulacao[]) {
 export function csvSimulacao(resultados: ResultadoSimulacao[]) {
   const consolidated = consolidarSimulacao(resultados);
   const rows: (string | number)[][] = [['Simulador Comercial Bensaúde|Uberaba'], ['Cenários selecionados'], ['Modalidade','Tabela de preço','Condição comercial','Total de vidas','Mensalidade média ponderada','Sinistralidade'],
-    ...resultados.map(r=>[r.produto.produto_nome,r.config.tabela_preco,r.config.condicao_comercial,r.config.total_vidas,numeroSimulacao(r.media),percentualSimulacao((r.config.sinistralidade_percentual ?? 0)/100)])];
+    ...resultados.map(r=>[r.produto.produto_nome,r.config.tabela_preco,r.config.condicao_comercial,r.config.total_vidas,numeroSimulacao(r.media),percentualSimulacao((r.config.sinistralidade_percentual ?? sinistralidadePadrao)/100)])];
   for (const r of resultados) {
     rows.push([], [r.produto.produto_nome, 'Distribuição etária'], ['Faixa etária', ...meses.map(m=>m.mes),'Total anual','Percentual efetivo','Mensalidade']);
     faixas.forEach((f,i)=>rows.push([f.faixa_etaria, ...r.faixasMes.map(m=>m[i]),r.faixaAnual[i],percentualSimulacao(r.faixaAnual[i]/r.config.total_vidas),numeroSimulacao(r.mensalidades[i])]));
