@@ -14,6 +14,6 @@ describe("Tabelas da carteira", () => {
   });
   it("conta CPF distinto: PRATA em enfermaria e OURO em apartamento", () => {
     const t = agruparFaixas([b({}), b({}), b({ nr_cpf: "2", tp_acomodacao: "OURO" })], "2026-01-31");
-    expect(t[3]).toEqual({ faixa: "24 a 28", enfermaria: 1, apartamento: 1 });
+    expect(t[2]).toEqual({ faixa: "24 a 28", enfermaria: 1, apartamento: 1 });
   });
 });
