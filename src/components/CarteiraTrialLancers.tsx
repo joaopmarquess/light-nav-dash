@@ -8,6 +8,8 @@ const hoje = () => new Date().toISOString().slice(0, 10);
 const fmtD = (v: any) => (v ? String(v).slice(0, 10).split("-").reverse().join("/") : "—");
 const num = (n: number) => n.toLocaleString("pt-BR");
 const brl = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+export const percentualEntradasFaixa = (entradas: number, total: number) => total > 0 ? entradas / total * 100 : 0;
+export const ticketMedioEntradas = (tmm: number, entradas: number) => entradas > 0 ? tmm / entradas : 0;
 // Faixas etárias ANS
 const FAIXAS: [number, number, string][] = [
   [0, 18, "00 a 18"], [19, 23, "19 a 23"], [24, 28, "24 a 28"], [29, 33, "29 a 33"], [34, 38, "34 a 38"],
@@ -80,11 +82,11 @@ export default function CarteiraTrialLancers() {
       {rows && (
         <table className="w-full max-w-2xl text-sm [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border">
           <thead className="bg-muted/60 text-muted-foreground"><tr>
-            <th className="p-2 text-left">Faixa etária</th><th className="p-2 text-right">Entradas</th><th className="p-2 text-right">Soma TMM (R$)</th></tr></thead>
+            <th className="p-2 text-left">Faixa etária</th><th className="p-2 text-right">Entradas</th><th className="p-2 text-right">%CART</th><th className="p-2 text-right">Soma TMM (R$)</th><th className="p-2 text-right">Ticket médio</th></tr></thead>
           <tbody>{grid.map((g) => (
-            <tr key={g.faixa}><td className="p-2">{g.faixa}</td><td className="p-2 text-right tabular-nums">{num(g.qtd)}</td><td className="p-2 text-right tabular-nums">{brl(g.tmm)}</td></tr>))}</tbody>
+            <tr key={g.faixa}><td className="p-2">{g.faixa}</td><td className="p-2 text-right tabular-nums">{num(g.qtd)}</td><td className="p-2 text-right tabular-nums">{brl(percentualEntradasFaixa(g.qtd, tot.qtd))}%</td><td className="p-2 text-right tabular-nums">{brl(g.tmm)}</td><td className="p-2 text-right tabular-nums">{brl(ticketMedioEntradas(g.tmm, g.qtd))}</td></tr>))}</tbody>
           <tfoot className="font-semibold bg-muted/30"><tr>
-            <td className="p-2">Total</td><td className="p-2 text-right tabular-nums">{num(tot.qtd)}</td><td className="p-2 text-right tabular-nums">{brl(tot.tmm)}</td></tr></tfoot>
+            <td className="p-2">Total</td><td className="p-2 text-right tabular-nums">{num(tot.qtd)}</td><td className="p-2 text-right tabular-nums">{brl(percentualEntradasFaixa(tot.qtd, tot.qtd))}%</td><td className="p-2 text-right tabular-nums">{brl(tot.tmm)}</td><td className="p-2 text-right tabular-nums">{brl(ticketMedioEntradas(tot.tmm, tot.qtd))}</td></tr></tfoot>
         </table>
       )}
     </section>
