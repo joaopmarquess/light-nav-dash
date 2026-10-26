@@ -18,9 +18,10 @@ function PremissasCalculo() {
     <li>Vidas arredondadas por mês; dezembro recebe o saldo residual para fechar o total anual. Em cada mês, a faixa 10 recebe o residual para fechar as vidas do mês.</li>
     <li>Faturamento cumulativo: receita das novas vidas somada ao faturamento do mês anterior, sem cancelamentos ou reajustes. O faturamento anual soma os 12 faturamentos cumulativos.</li>
     <li>Despesa Assistencial = faturamento cumulativo × Sinistralidade informada para cada modalidade. O consolidado soma as despesas das modalidades; não altera as participações comerciais.</li>
-    <li>Participações da Lancers, da SIGA e do Bensaúde aplicadas ao faturamento cumulativo, conforme condição selecionada.</li>
+    <li>Faturamento pago pelo beneficiário distribuído entre o Bensaúde, a Lancers e a SIGA, conforme condição selecionada.</li>
+    <li>Resultado Bensaúde = Faturamento Bensaúde − Despesa Assistencial. Agenciamento apresentado separadamente, sem desconto nesta fórmula.</li>
     <li>Agenciamento sobre a receita de novas vidas, com cinco parcelas aplicadas no mês da venda e nos quatro meses seguintes. O total anual considera somente pagamentos de janeiro a dezembro.</li>
-    <li>Taxa de adesão sobre a receita das novas vidas. Custo comercial = agenciamento + taxa de adesão; não é descontado da participação do Bensaúde.</li>
+    <li>Agenciamento é custo comercial do Bensaúde e receita da SIGA. Taxa de adesão é paga pelo beneficiário diretamente à SIGA, fora do faturamento distribuído e sem compor custo do Bensaúde.</li>
     <li>Mensalidade média ponderada pela distribuição efetiva anual, após arredondamentos. Vidas acumuladas anuais representam o saldo de dezembro, não a soma mensal.</li>
     <li>Fonte: CSVs fornecidos em 26/10/2026. Simulação de proposta comercial, não aprovação ou resultado realizado. Acomodação: Enfermaria.</li>
   </ul></details>;
@@ -33,13 +34,15 @@ function ResultadoFinal({ resultados }: { resultados: ResultadoSimulacao[] }) {
   const cards = [
     { label: 'Vidas totais', value: int(total.anual.vidas), icon: Users },
     { label: 'Faturamento anual', value: num(total.anual.faturamento), icon: TrendingUp },
-    { label: 'Receita do Bensaúde', value: num(total.anual.bensaude), icon: Wallet },
-    { label: 'Custo comercial', value: num(total.anual.agenciamento+total.anual.adesao), icon: BriefcaseBusiness },
+    { label: 'Resultado Bensaúde', value: num(total.anual.resultado_bensaude), icon: Wallet },
+    { label: 'Custo comercial Bensaúde', value: num(total.anual.agenciamento), icon: BriefcaseBusiness },
   ];
   return <div className="sim-final"><h3>Resultado Final</h3><div className="sim-kpis">{cards.map(({label,value,icon:Icon})=><div className="sim-kpi" key={label}><Icon aria-hidden="true" /><p>{label}</p><strong>{value}</strong></div>)}</div>
-    <Tabela titulo="Resultado entre as Partes (anual)" headers={['Modalidade','Bensaúde','SIGA','Lancers']} rows={resultados.map((r,i)=>[nomes[i],num(r.anual.bensaude),num(r.anual.siga),num(r.anual.lancers)])} footer={['Total',num(total.anual.bensaude),num(total.anual.siga),num(total.anual.lancers)]} />
+    <Tabela titulo="Distribuição do Faturamento (anual)" headers={['Modalidade','Faturamento · beneficiário paga','Faturamento Bensaúde','Faturamento Lancers','Faturamento SIGA']} rows={resultados.map((r,i)=>[nomes[i],num(r.anual.faturamento),num(r.anual.bensaude),num(r.anual.lancers),num(r.anual.siga)])} footer={['Total',num(total.anual.faturamento),num(total.anual.bensaude),num(total.anual.lancers),num(total.anual.siga)]} />
+    <Tabela titulo="Agenciamento e Adesão (anual)" headers={['Modalidade','Custo comercial Bensaúde · agenciamento','Receita agenciamento SIGA','Adesão · beneficiário → SIGA']} rows={resultados.map((r,i)=>[nomes[i],num(r.anual.agenciamento),num(r.anual.agenciamento),num(r.anual.adesao)])} footer={['Total',num(total.anual.agenciamento),num(total.anual.agenciamento),num(total.anual.adesao)]} />
+    <Tabela titulo="Resultado entre as Partes (anual)" headers={['Modalidade','Faturamento Bensaúde','Despesa Assistencial · Bensaúde','Resultado Bensaúde','Faturamento Lancers','Faturamento SIGA']} rows={resultados.map((r,i)=>[nomes[i],num(r.anual.bensaude),num(r.anual.despesa_assistencial),num(r.anual.resultado_bensaude),num(r.anual.lancers),num(r.anual.siga)])} footer={['Total',num(total.anual.bensaude),num(total.anual.despesa_assistencial),num(total.anual.resultado_bensaude),num(total.anual.lancers),num(total.anual.siga)]} />
     <Financeiro titulo="Visão mensal consolidada" mensal={total.mensal} anual={total.anual} />
-    <Tabela titulo="Resultado anual por modalidade" headers={['Modalidade','Vidas','Faturamento','Despesa Assistencial','Lancers','SIGA','Bensaúde','Agenciamento SIGA','Taxa de adesão','Custo comercial']} rows={resultados.map((r,i)=>[nomes[i],int(r.anual.vidas),num(r.anual.faturamento),num(r.anual.despesa_assistencial),num(r.anual.lancers),num(r.anual.siga),num(r.anual.bensaude),num(r.anual.agenciamento),num(r.anual.adesao),num(r.anual.agenciamento+r.anual.adesao)])} footer={['Total',int(total.anual.vidas),num(total.anual.faturamento),num(total.anual.despesa_assistencial),num(total.anual.lancers),num(total.anual.siga),num(total.anual.bensaude),num(total.anual.agenciamento),num(total.anual.adesao),num(total.anual.agenciamento+total.anual.adesao)]} />
+    <Tabela titulo="Resultado anual por modalidade" headers={['Modalidade','Vidas','Faturamento','Faturamento Bensaúde','Faturamento Lancers','Faturamento SIGA','Agenciamento · custo Bensaúde / receita SIGA','Adesão · beneficiário → SIGA','Despesa Assistencial','Resultado Bensaúde']} rows={resultados.map((r,i)=>[nomes[i],int(r.anual.vidas),num(r.anual.faturamento),num(r.anual.bensaude),num(r.anual.lancers),num(r.anual.siga),num(r.anual.agenciamento),num(r.anual.adesao),num(r.anual.despesa_assistencial),num(r.anual.resultado_bensaude)])} footer={['Total',int(total.anual.vidas),num(total.anual.faturamento),num(total.anual.bensaude),num(total.anual.lancers),num(total.anual.siga),num(total.anual.agenciamento),num(total.anual.adesao),num(total.anual.despesa_assistencial),num(total.anual.resultado_bensaude)]} />
     <PremissasCalculo />
   </div>;
 }

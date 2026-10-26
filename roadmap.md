@@ -1,3 +1,4 @@
+- [x] Separar faturamento distribuído, agenciamento (custo Bensaúde/receita SIGA), adesão direta à SIGA e Resultado Bensaúde = Faturamento Bensaúde − Despesa Assistencial; 15 testes aprovados, totais, cenário PCA 80%, CSV e impressão conferidos com acesso autorizado.
 - [x] Mover Cenários selecionados para botão irmão de Premissas; grid retirado do Resultado Final, cenário atualizado de 75% e navegação conferidos com acesso autorizado; 12 testes aprovados.
 - [x] Definir Sinistralidade padrão 70% nas quatro modalidades e restauração; 12 testes e fluxo autorizado conferidos.
 - [x] Criar seção Resultado entre as Partes (anual), com participações atuais do Bensaúde, da SIGA e da Lancers por modalidade e total, sem alterar descontos; tela e impressão conferidas, 11 testes aprovados.

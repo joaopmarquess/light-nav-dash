@@ -2,6 +2,23 @@ import { describe, expect, it } from 'vitest';
 import { calcularSimulacao, consolidarSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao } from './uberabaSimulacao';
 const padrao=fonte.padroes[0];
 describe('Simulação comercial fornecida',()=>{
+  it('distribui o faturamento entre Bensaúde, Lancers e SIGA sem incluir adesão',()=>{
+    const r=calcularSimulacao(padrao);
+    expect(r.anual.bensaude+r.anual.lancers+r.anual.siga).toBeCloseTo(11165978.70,2);
+    r.mensal.forEach(m=>expect(m.bensaude+m.lancers+m.siga).toBeCloseTo(m.faturamento,8));
+  });
+  it('mantém agenciamento como custo comercial Bensaúde e receita SIGA, separado da adesão direta',()=>{
+    const r=calcularSimulacao(padrao);
+    expect(r.anual.agenciamento).toBeCloseTo(2787030.86,2);
+    expect(r.anual.adesao).toBeCloseTo(1976700.4785,4);
+    expect(consolidarSimulacao(fonte.padroes.map(calcularSimulacao)).anual.agenciamento).toBeCloseTo(8761367.905,3);
+  });
+  it('Resultado Bensaúde é faturamento Bensaúde menos despesa assistencial, sem adesão ou agenciamento',()=>{
+    const rs=fonte.padroes.map(calcularSimulacao);
+    rs.forEach(r=>r.mensal.forEach(m=>expect(m.resultado_bensaude).toBeCloseTo(m.bensaude-m.despesa_assistencial,8)));
+    expect(rs[0].anual.resultado_bensaude).toBeCloseTo(781618.509,3);
+    expect(consolidarSimulacao(rs).anual.resultado_bensaude).toBeCloseTo(6556100.90,2);
+  });
   it('usa Sinistralidade padrão de 70% em todas as modalidades',()=>{
     expect(sinistralidadePadrao).toBe(70);
     fonte.padroes.forEach(c=>{
