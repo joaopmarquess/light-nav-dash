@@ -18,12 +18,12 @@ export function distribuirResidual(total: number, percentuais: number[]) {
 export const indicadoresSimulacao = [
   { key: 'vidas', label: 'Vidas vendidas no mês', integer: true },
   { key: 'acumuladas', label: 'Vidas acumuladas', integer: true },
-  { key: 'faturamento', label: 'Faturamento cumulativo' },
-  { key: 'lancers', label: 'Parte da Lancers' },
-  { key: 'siga', label: 'Parte da SIGA' },
-  { key: 'bensaude', label: 'Parte do Bensaúde' },
-  { key: 'agenciamento', label: 'Agenciamento SIGA' },
-  { key: 'adesao', label: 'Taxa de adesão' },
+  { key: 'faturamento', label: 'Faturamento cumulativo', integer: false },
+  { key: 'lancers', label: 'Parte da Lancers', integer: false },
+  { key: 'siga', label: 'Parte da SIGA', integer: false },
+  { key: 'bensaude', label: 'Parte do Bensaúde', integer: false },
+  { key: 'agenciamento', label: 'Agenciamento SIGA', integer: false },
+  { key: 'adesao', label: 'Taxa de adesão', integer: false },
 ] as const;
 export type FinanceiroSimulacao = { vidas: number; acumuladas: number; faturamento: number; lancers: number; siga: number; bensaude: number; agenciamento: number; adesao: number };
 export const numeroSimulacao = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -79,5 +79,5 @@ export function csvSimulacao(resultados: ResultadoSimulacao[]) {
     r.mensal.forEach((m,j)=>rows.push([meses[j].mes,...indicadoresSimulacao.map(i=>i.integer ? m[i.key] : numeroSimulacao(m[i.key]))]));
     rows.push(['Total anual / vidas acumuladas finais',...indicadoresSimulacao.map(i=>i.integer ? r.anual[i.key] : numeroSimulacao(r.anual[i.key]))]);
   }
-  return '\uFEFF' + rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(';')).join('\r\n');
+  return '\uFEFF' + rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\r\n');
 }

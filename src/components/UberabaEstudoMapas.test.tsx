@@ -1,13 +1,14 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import UberabaEstudoMapas from "./UberabaEstudoMapas";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 vi.mock("@/components/UberabaMapa", () => ({ default: () => <div>Mapa regional selecionado</div> }));
 vi.mock("@/components/UberabaShell", () => ({ default: () => <input aria-label="Filtro do painel" /> }));
 
 describe("Estudo map selection", () => {
   it("defaults to Home and switches between Home, panel and area", () => {
-    render(<UberabaEstudoMapas />);
+    render(<TooltipProvider><UberabaEstudoMapas /></TooltipProvider>);
     expect(screen.getByRole("button", { name: "Home" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("region", { name: "Home do Estudo" })).toBeVisible();
     expect(screen.queryByText("Mapa regional selecionado")).toBeNull();

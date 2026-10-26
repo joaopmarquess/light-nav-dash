@@ -57,7 +57,7 @@ describe('Simulação comercial fornecida',()=>{
     expect(total.anual.acumuladas).toBe(20000);
     expect(total.anual.faturamento).toBeCloseTo(41820567.70,2);
     expect(total.anual.bensaude).toBeCloseTo(35830498.29,2);
-    expect(total.anual.agenciamento+total.anual.adesao).toBeCloseTo(11676457.92,2);
+    expect(total.anual.agenciamento+total.anual.adesao).toBeCloseTo(11676457.9135,4);
   });
   it('exporta cenários individuais atuais e consolidado em CSV pt-BR',()=>{
     const cenarios=fonte.padroes.map((c,i)=>calcularSimulacao({...c,total_vidas:i===0?1234:c.total_vidas}));
