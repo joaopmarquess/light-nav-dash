@@ -49,7 +49,10 @@ export interface AnoAgrupado { ano: number; soma: SomaCompetencia; meses: MesSom
 /** Últimos 3 anos: dois anteriores completos e o atual até o mês anterior ao corrente (UTC); o mês corrente é ignorado. */
 export function anosSinistralidade(hoje: Date): { ano: number; ateMes: number }[] {
   const a = hoje.getUTCFullYear();
-  const lista = [{ ano: a - 2, ateMes: 12 }, { ano: a - 1, ateMes: 12 }, { ano: a, ateMes: hoje.getUTCMonth() }];
+  // Anos fechados desde 2022 (início da base) + ano corrente até o último mês fechado
+  const lista = [];
+  for (let y = 2022; y < a; y++) lista.push({ ano: y, ateMes: 12 });
+  lista.push({ ano: a, ateMes: hoje.getUTCMonth() });
   return lista.filter(x => x.ateMes > 0);
 }
 
