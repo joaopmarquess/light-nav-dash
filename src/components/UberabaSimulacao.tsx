@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { calcularSimulacao, consolidarSimulacao, csvSimulacao, fontesSimulacao as fonte, indicadoresSimulacao as indicadores, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, type ConfigSimulacao, type FinanceiroSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
+import { calcularSimulacao, consolidarSimulacao, csvSimulacao, fontesSimulacao as fonte, indicadoresSimulacao as indicadores, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, type ConfigSimulacao, type FinanceiroSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
 const nomes = ['PCA', 'PME', 'PCE 50 a 99', 'PCE 100+'];
 function Tabela({ titulo, headers, rows, footer }: { titulo: string; headers: string[]; rows: (string | number)[][]; footer?: (string | number)[] }) {
@@ -28,6 +28,16 @@ function PremissasCalculo() {
 }
 function CenariosSelecionados({ resultados }: { resultados: ResultadoSimulacao[] }) {
   return <Tabela titulo="Cenários selecionados" headers={['Modalidade','Tabela de preço','Condição comercial','Total de vidas','Mensalidade média ponderada','Sinistralidade']} rows={resultados.map(r=>[r.produto.produto_nome,r.config.tabela_preco,r.config.condicao_comercial,int(r.config.total_vidas),num(r.media),pct((r.config.sinistralidade_percentual ?? sinistralidadePadrao)/100)])} />;
+}
+function Resumo({ resultados }: { resultados: ResultadoSimulacao[] }) {
+  const r = resumoSimulacao(resultados);
+  const quadros = [
+    { titulo: 'Beneficiário', linhas: [['Taxa de Adesão', r.beneficiario.adesao], ['Faturamento', r.beneficiario.faturamento], ['Total', r.beneficiario.total]] },
+    { titulo: 'Bensaúde', linhas: [['Faturamento', r.bensaude.faturamento], ['− Despesa Assistencial', -r.bensaude.despesa], ['= Resultado Operacional', r.bensaude.operacional], ['− Agenciamento', -r.bensaude.agenciamento], ['= Resultado Líquido', r.bensaude.liquido]] },
+    { titulo: 'Lancers', linhas: [['Faturamento', r.lancers.faturamento]] },
+    { titulo: 'SIGA', linhas: [['Taxa de Adesão', r.siga.adesao], ['Faturamento', r.siga.faturamento], ['Agenciamento', r.siga.agenciamento], ['Resultado', r.siga.resultado]] },
+  ];
+  return <section aria-label="Resumo anual"><h3 className="mb-5">Resumo · Anual</h3><div className="grid grid-cols-1 gap-4 xl:grid-cols-2">{quadros.map(q=><section key={q.titulo} aria-label={q.titulo} className="rounded-md border border-border bg-secondary p-5"><h4 className="mb-5 border-b border-border pb-3 text-lg font-semibold text-primary">{q.titulo}</h4><dl className="space-y-4">{q.linhas.map(([label,value],i)=><div key={String(label)} className={`flex flex-wrap items-baseline justify-between gap-2 ${i===q.linhas.length-1 ? 'border-t border-border pt-4 font-semibold' : ''}`}><dt className="text-sm">{label}</dt><dd className={`text-lg tabular-nums ${Number(value)<0 ? 'text-destructive' : 'text-foreground'}`}>{num(Number(value))}</dd></div>)}</dl></section>)}</div></section>;
 }
 function ResultadoFinal({ resultados }: { resultados: ResultadoSimulacao[] }) {
   const total = consolidarSimulacao(resultados);
@@ -58,7 +68,7 @@ function PremissasImportadas() {
 }
 export default function UberabaSimulacao() {
   const [configuracoes,setConfiguracoes] = useState<ConfigSimulacao[]>(()=>fonte.padroes.map(c=>({...c,sinistralidade_percentual:sinistralidadePadrao})));
-  const [aba,setAba] = useState('final');
+  const [aba,setAba] = useState('resumo');
   const [erro,setErro] = useState('');
   const [vidaText,setVidaText] = useState<Record<string,string>>({});
   const [sinText,setSinText] = useState<Record<string,string>>({});
@@ -82,7 +92,7 @@ export default function UberabaSimulacao() {
   };
   return <article className="uberaba-simulation" aria-label="Simulador Comercial Bensaúde|Uberaba">
     <header className="sim-heading"><div><h2><Calculator />Simulador Comercial Bensaúde|Uberaba</h2><p>Enfermaria · Proposta comercial · Fonte: CSVs fornecidos em 26/10/2026</p></div><div className="flex gap-2"><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Exportar cenário para CSV" onClick={exportar}><Download /></Button></TooltipTrigger><TooltipContent>Exportar cenário atual para CSV</TooltipContent></Tooltip><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Imprimir Resultado Final" onClick={imprimir}><Printer /></Button></TooltipTrigger><TooltipContent>Imprimir Resultado Final</TooltipContent></Tooltip></div></header>
-    <nav className="sim-tabs" aria-label="Modalidades da Simulação"><Button variant={aba==='final'?'default':'outline'} aria-pressed={aba==='final'} onClick={()=>setAba('final')}>Resultado Final</Button>{fonte.produtos.map((p,i)=><Button key={p.produto_codigo} variant={aba===p.produto_codigo?'default':'outline'} aria-pressed={aba===p.produto_codigo} onClick={()=>setAba(p.produto_codigo)}>{nomes[i]}</Button>)}<Button variant={aba==='cenarios'?'default':'outline'} aria-pressed={aba==='cenarios'} onClick={()=>setAba('cenarios')}>Cenários selecionados</Button><Button variant={aba==='premissas'?'default':'outline'} aria-pressed={aba==='premissas'} onClick={()=>setAba('premissas')}><Info />Premissas</Button></nav>
+    <nav className="sim-tabs" aria-label="Modalidades da Simulação"><Button variant={aba==='resumo'?'default':'outline'} aria-pressed={aba==='resumo'} onClick={()=>setAba('resumo')}>Resumo</Button><Button variant={aba==='final'?'default':'outline'} aria-pressed={aba==='final'} onClick={()=>setAba('final')}>Resultado Final</Button>{fonte.produtos.map((p,i)=><Button key={p.produto_codigo} variant={aba===p.produto_codigo?'default':'outline'} aria-pressed={aba===p.produto_codigo} onClick={()=>setAba(p.produto_codigo)}>{nomes[i]}</Button>)}<Button variant={aba==='cenarios'?'default':'outline'} aria-pressed={aba==='cenarios'} onClick={()=>setAba('cenarios')}>Cenários selecionados</Button><Button variant={aba==='premissas'?'default':'outline'} aria-pressed={aba==='premissas'} onClick={()=>setAba('premissas')}><Info />Premissas</Button></nav>
     {erro && <p role="alert" className="text-destructive">{erro}</p>}
     {selecionado && <div className="space-y-5"><h3>{selecionado.produto.produto_nome}</h3><div className="sim-controls">
       <label>Tabela de preço<Select value={selecionado.config.tabela_preco} onValueChange={v=>alterar(aba,{tabela_preco:v})}><SelectTrigger aria-label="Tabela de preço" className="sim-editable"><SelectValue /></SelectTrigger><SelectContent>{['Bensaúde','SIGA'].map(v=><SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></label>
@@ -96,6 +106,7 @@ export default function UberabaSimulacao() {
     <div className="sim-participations"><span>Lancers <strong>{pct(selecionado.condicao.participacao_lancers)}</strong></span><span>SIGA <strong>{pct(selecionado.condicao.participacao_siga)}</strong></span><span>Bensaúde <strong>{pct(selecionado.condicao.participacao_bensaude)}</strong></span><span>Mensalidade média <strong>{num(selecionado.media)}</strong></span></div>
     <Tabela titulo="Distribuição de vidas por faixa etária" headers={['Faixa etária',...fonte.meses.map(m=>m.mes.slice(0,3)),'Total anual','% efetivo','Mensalidade']} rows={fonte.faixas.map((f,i)=>[f.faixa_etaria,...selecionado.faixasMes.map(m=>int(m[i])),int(selecionado.faixaAnual[i]),pct(selecionado.faixaAnual[i]/selecionado.config.total_vidas),num(selecionado.mensalidades[i])])} footer={['Total',...selecionado.vidasMes.map(int),int(selecionado.config.total_vidas),pct(1),num(selecionado.media)]} />
     <Financeiro titulo="Resumo financeiro mensal" mensal={selecionado.mensal} anual={selecionado.anual} /><PremissasCalculo /></div>}
+    {aba==='resumo' && <Resumo resultados={resultados} />}
     {aba==='premissas' && <PremissasImportadas />}
     {aba==='cenarios' && <CenariosSelecionados resultados={resultados} />}
     <div ref={impressao} hidden={aba!=='final'}><ResultadoFinal resultados={resultados} /></div>

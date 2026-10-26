@@ -1,3 +1,4 @@
+- [x] Criar Resumo padrão com quatro quadros anuais e cálculos de total Beneficiário, operacional/líquido Bensaúde e resultado SIGA; 18 testes aprovados, abertura padrão e cenário PCA 80% conferidos; detalhamentos preservados.
 - [x] Separar faturamento distribuído, agenciamento (custo Bensaúde/receita SIGA), adesão direta à SIGA e Resultado Bensaúde = Faturamento Bensaúde − Despesa Assistencial; 15 testes aprovados, totais, cenário PCA 80%, CSV e impressão conferidos com acesso autorizado.
 - [x] Mover Cenários selecionados para botão irmão de Premissas; grid retirado do Resultado Final, cenário atualizado de 75% e navegação conferidos com acesso autorizado; 12 testes aprovados.
 - [x] Definir Sinistralidade padrão 70% nas quatro modalidades e restauração; 12 testes e fluxo autorizado conferidos.
