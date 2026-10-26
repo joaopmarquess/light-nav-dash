@@ -1,0 +1,52 @@
+[
+  {
+    "faixa_numero": 1,
+    "faixa_etaria": "Faixa 1 — 00 a 18",
+    "percentual_normalizado": 0.18181818181818182
+  },
+  {
+    "faixa_numero": 2,
+    "faixa_etaria": "Faixa 2 — 19 a 23",
+    "percentual_normalizado": 0.08181818181818182
+  },
+  {
+    "faixa_numero": 3,
+    "faixa_etaria": "Faixa 3 — 24 a 28",
+    "percentual_normalizado": 0.08181818181818182
+  },
+  {
+    "faixa_numero": 4,
+    "faixa_etaria": "Faixa 4 — 29 a 33",
+    "percentual_normalizado": 0.08181818181818182
+  },
+  {
+    "faixa_numero": 5,
+    "faixa_etaria": "Faixa 5 — 34 a 38",
+    "percentual_normalizado": 0.08181818181818182
+  },
+  {
+    "faixa_numero": 6,
+    "faixa_etaria": "Faixa 6 — 39 a 43",
+    "percentual_normalizado": 0.08181818181818182
+  },
+  {
+    "faixa_numero": 7,
+    "faixa_etaria": "Faixa 7 — 44 a 48",
+    "percentual_normalizado": 0.10606060606060605
+  },
+  {
+    "faixa_numero": 8,
+    "faixa_etaria": "Faixa 8 — 49 a 53",
+    "percentual_normalizado": 0.10606060606060605
+  },
+  {
+    "faixa_numero": 9,
+    "faixa_etaria": "Faixa 9 — 54 a 58",
+    "percentual_normalizado": 0.10606060606060605
+  },
+  {
+    "faixa_numero": 10,
+    "faixa_etaria": "Faixa 10 — 59 ou +",
+    "percentual_normalizado": 0.09090909090909091
+  }
+]

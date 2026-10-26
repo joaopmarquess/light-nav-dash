@@ -1,0 +1,30 @@
+[
+  {
+    "produto_codigo": "PCA",
+    "produto_nome": "PCA (Plano Coletivo por Adesão)",
+    "aba_origem": "PCA",
+    "acomodacao": "Enfermaria",
+    "ativo": true
+  },
+  {
+    "produto_codigo": "PME_ADMINISTRADO",
+    "produto_nome": "PME (Pequenas e Médias Empresas)",
+    "aba_origem": "PME_Administrado",
+    "acomodacao": "Enfermaria",
+    "ativo": true
+  },
+  {
+    "produto_codigo": "PCE_50_99",
+    "produto_nome": "PCE 50 a 99 Vidas (Plano Coletivo Empresarial 50 a 99 Vidas)",
+    "aba_origem": "PCE_50_99",
+    "acomodacao": "Enfermaria",
+    "ativo": true
+  },
+  {
+    "produto_codigo": "PCE_100_MAIS",
+    "produto_nome": "PCE 100+ (Plano Coletivo Empresarial 100 Vidas ou Mais)",
+    "aba_origem": "PCE_100_Mais",
+    "acomodacao": "Enfermaria",
+    "ativo": true
+  }
+]

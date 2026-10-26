@@ -1,0 +1,5 @@
+﻿produto_codigo,produto_nome,aba_origem,acomodacao,ativo
+PCA,PCA (Plano Coletivo por Adesão),PCA,Enfermaria,True
+PME_ADMINISTRADO,PME (Pequenas e Médias Empresas),PME_Administrado,Enfermaria,True
+PCE_50_99,PCE 50 a 99 Vidas (Plano Coletivo Empresarial 50 a 99 Vidas),PCE_50_99,Enfermaria,True
+PCE_100_MAIS,PCE 100+ (Plano Coletivo Empresarial 100 Vidas ou Mais),PCE_100_Mais,Enfermaria,True
