@@ -31,6 +31,17 @@ function ordenarItens(itens: Prest[], ordem: "despesas" | "enderecos"): (Prest &
   return [...blocos.values()].flatMap((b) => b.map((p, i) => ({ ...p, topo: i === 0 && b.length > 1, fim: i === b.length - 1 && b.length > 1 }))); // ordem de inserção = maior valor primeiro
 }
 
+/** "(DDD) 9XXXX-XXXX": DDD do primeiro telefone + primeiro número iniciado por 9. */
+export function supostoCelular(tel: string): string {
+  const ddd = tel.match(/\(\s*0?(\d{2})\s*\)/)?.[1];
+  if (!ddd) return "";
+  for (const parte of tel.split("/")) {
+    const d = parte.replace(/\(\s*\d{2,3}\s*\)/, "").replace(/\D/g, "");
+    if (d.startsWith("9") && d.length >= 9) return `(${ddd}) ${d.slice(0, 5)}-${d.slice(5, 9)}`;
+  }
+  return "";
+}
+
 export default function Assistencial2518Prestadores() {
   const [grupos, setGrupos] = useState<Grupo[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -117,7 +128,7 @@ export default function Assistencial2518Prestadores() {
       const es = p.email.split(" / ").map((e) => e.trim()).filter(Boolean);
       const extra: Record<string, string> = {};
       for (let i = 0; i < n; i++) extra[`email${i + 1}`] = es[i] ?? "";
-      return { Cidade: g.cidade, "Código": p.cd, Credenciado: p.nome, "Endereço": p.endereco, Telefones: p.telefones, "E-mail": p.email, ...extra, "Valor (R$)": p.valor };
+      return { "Código": p.cd, Credenciado: p.nome, "Endereço": p.endereco, Cidade: g.cidade, Telefones: p.telefones, "Suposto Celular": supostoCelular(p.telefones), "E-mail": p.email, ...extra, "Valor (R$)": p.valor };
     }));
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
