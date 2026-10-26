@@ -1,7 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { calcularSimulacao, consolidarSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao } from './uberabaSimulacao';
+import { calcularSimulacao, consolidarSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao } from './uberabaSimulacao';
 const padrao=fonte.padroes[0];
 describe('Simulação comercial fornecida',()=>{
+  it('total Beneficiário soma adesão e faturamento',()=>{
+    const r=resumoSimulacao(fonte.padroes.map(calcularSimulacao));
+    expect(r.beneficiario.total).toBeCloseTo(44735657.7085,4);
+  });
+  it('resultado líquido Bensaúde desconta agenciamento do operacional',()=>{
+    const r=resumoSimulacao(fonte.padroes.map(calcularSimulacao));
+    expect(r.bensaude.operacional).toBeCloseTo(6556100.90,2);
+    expect(r.bensaude.liquido).toBeCloseTo(-2205267.005,3);
+  });
+  it('resultado SIGA soma adesão, faturamento e agenciamento',()=>{
+    const r=resumoSimulacao(fonte.padroes.map(calcularSimulacao));
+    expect(r.siga.resultado).toBeCloseTo(13314031.92,2);
+  });
   it('distribui o faturamento entre Bensaúde, Lancers e SIGA sem incluir adesão',()=>{
     const r=calcularSimulacao(padrao);
     expect(r.anual.bensaude+r.anual.lancers+r.anual.siga).toBeCloseTo(11165978.70,2);

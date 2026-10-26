@@ -89,3 +89,12 @@ export function csvSimulacao(resultados: ResultadoSimulacao[]) {
   }
   return '\uFEFF' + rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\r\n');
 }
+export function resumoSimulacao(resultados: ResultadoSimulacao[]) {
+  const { anual: a } = consolidarSimulacao(resultados);
+  return {
+    beneficiario: { adesao: a.adesao, faturamento: a.faturamento, total: a.adesao + a.faturamento },
+    bensaude: { faturamento: a.bensaude, despesa: a.despesa_assistencial, operacional: a.bensaude - a.despesa_assistencial, agenciamento: a.agenciamento, liquido: a.bensaude - a.despesa_assistencial - a.agenciamento },
+    lancers: { faturamento: a.lancers },
+    siga: { adesao: a.adesao, faturamento: a.siga, agenciamento: a.agenciamento, resultado: a.adesao + a.siga + a.agenciamento },
+  };
+}
