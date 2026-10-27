@@ -1,3 +1,4 @@
+import { planoOrFilter } from "@/lib/carteiraTabelas";
 import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { hostinger } from "@/lib/hostingerClient";
@@ -29,17 +30,21 @@ export default function CarteiraTrialLancers() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [plano, setPlano] = useState("");
+  const [empresa, setEmpresa] = useState("");
 
   const consultar = async () => {
     setLoading(true); setError(null); setRows(null);
     const all: Row[] = [];
     for (let from = 0; from < LIMITE; from += 1000) {
-      const { data, error } = await hostinger.from("view_ecarteira")
+      let q = hostinger.from("view_ecarteira")
         .select("cd_mat_alternativa,nm_empresa_estipulante,dt_nascimento,vl_tmm,dt_vigencia_beneficiario")
         .eq("tp_plano", "SAUDE").eq("tp_acomodacao", "PRATA").lte("cd_mat_alternativa", 399999999999)
-        .ilike("nm_empresa_estipulante", "%lancers%")
         .gte("dt_vigencia_beneficiario", de).lte("dt_vigencia_beneficiario", `${ate}T23:59:59`)
         .order("cd_mat_alternativa").order("dt_vigencia_beneficiario").range(from, from + 999);
+      if (/^\d{4}$/.test(plano)) q = q.or(planoOrFilter(plano));
+      if (empresa.trim()) q = q.ilike("nm_empresa_estipulante", `%${empresa.trim()}%`);
+      const { data, error } = await q;
       if (error) { setError(error.message); setLoading(false); return; }
       all.push(...(data ?? []));
       if ((data ?? []).length < 1000) break;
@@ -72,10 +77,14 @@ export default function CarteiraTrialLancers() {
           <input type="date" value={de} onChange={(e) => setDe(e.target.value)} className={inp} /></div>
         <div><label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Até</label>
           <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} className={inp} /></div>
+        <div><label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Plano</label>
+          <input value={plano} onChange={(e) => setPlano(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="4 dígitos" className={`${inp} w-24`} /></div>
+        <div><label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Empresa estipulante</label>
+          <input value={empresa} onChange={(e) => setEmpresa(e.target.value)} placeholder="Todas" className={`${inp} w-56`} /></div>
         <button onClick={consultar} disabled={loading} className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Buscar"}
         </button>
-        <span className="text-xs text-muted-foreground ml-2">Estipulantes contendo "LANCERS" · Enfermaria (Prata) · {fmtD(de)} a {fmtD(ate)}</span>
+        <span className="text-xs text-muted-foreground ml-2">{plano ? `Plano ${plano} · ` : ""}{empresa.trim() ? `Estipulantes contendo "${empresa.trim().toUpperCase()}" · ` : "Todas as estipulantes · "}Enfermaria (Prata) · {fmtD(de)} a {fmtD(ate)}</span>
       </div>
       {error && <div className="mb-3 text-sm text-destructive">Erro: {error}</div>}
       {loading && !rows && <div className="text-sm text-muted-foreground flex items-center"><Loader2 className="h-4 w-4 animate-spin mr-2" />Carregando…</div>}
