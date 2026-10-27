@@ -15,13 +15,15 @@ const TABLE = "view_ecarteira";
 const valorDetalhe = (v: any) => (v == null || v === "" ? "—" : String(v).trim());
 function secoesDetalhe(sel: Row): [string, [string, any][]][] {
   return [
-                  ["Cadastro", [["Matrícula", fmtMat(sel.cd_mat_alternativa)], ["Contrato", sel.cd_contrato], ["Status", ST[sel.st][0]], ["Nascimento", fmtDate(sel.dt_nascimento)], ["Idade", sel.qt_idade], ["Faixa", sel.ds_faixa_etaria], ["Sexo", sel.tp_sexo]]],
+                  ["Cadastro", [["Beneficiário", sel.nm_beneficiario], ["Matrícula", fmtMat(sel.cd_mat_alternativa)], ["Contrato", sel.cd_contrato], ["Relacionamento", relacionamento(sel)], ["Titular", sel._titular ?? "Buscando…"], ["Status", ST[sel.st]?.[0] ?? sel.st], ["Nascimento", fmtDate(sel.dt_nascimento)], ["Idade", sel.qt_idade], ["Faixa", sel.ds_faixa_etaria], ["Sexo", sel.tp_sexo]]],
                   ["Plano", [["Plano", sel.ds_plano], ["Acomodação", sel.tp_acomodacao], ["Contratação", sel.tp_contratacao], ["Recuperação", sel.tp_recuperacao], ["PME", sel.sn_pme], ["Mensalidade", brl(sel.vl_tmm)], ["Últ. reajuste", fmtDate(sel.dt_ult_reajuste)]]],
                   ["Empresa / Local", [["Estipulante", sel.nm_empresa_estipulante], ["Resp. financeiro", sel.nm_resp_financeiro], ["Cidade", `${sel.nm_cidade_plano ?? "—"} / ${sel.cd_uf_plano ?? ""}`], ["Regional", sel.nm_regional_plano], ["Vendedor", sel.nm_vendedor]]],
                   ["Datas", [["Cadastro", fmtDate(sel.dt_cadastro)], ["Vigência contrato", fmtDate(sel.dt_vigencia_contrato)], ["Vigência beneficiário", fmtDate(sel.dt_vigencia_beneficiario)], ["Cancelamento", fmtDate(sel.dt_desligamento)], ["Reativação", fmtDate(sel.dt_reativacao)], ["Motivo cancel.", sel.ds_motivo_cancelamento]]],
   ] as any;
 }
-const tituloDetalhe = (sel: Row) => `${fmtMat(sel.cd_mat_alternativa)} | ${String(sel.nm_beneficiario ?? "").trim()}`;
+const tituloDetalhe = (_sel: Row) => "FICHA CADASTRAL";
+const matTitular = (m: any) => Math.floor(Number(m) / 100) * 100;
+const relacionamento = (sel: Row) => (Number(sel.cd_mat_alternativa) % 100 === 0 ? "Titular" : "Dependente");
 function textoDetalhe(sel: Row) {
   return [tituloDetalhe(sel), ...secoesDetalhe(sel).map(([t, it]) => `\n${t.toUpperCase()}\n` + it.map(([l, v]) => `${l}: ${valorDetalhe(v)}`).join("\n"))].join("\n");
 }
@@ -145,6 +147,13 @@ export default function CarteiraTrial() {
   useEffect(() => { if (!loading && !fim && df.status !== ALL && vis.length < 50 && raw.length > 0) setPage((p) => p + 1); }, [loading, fim, vis.length, df.status, raw.length]);
   const cnt = (k: string) => rows.filter((r) => r.st === k).length;
   const [sel, setSel] = useState<Row | null>(null);
+  useEffect(() => {
+    if (!sel || sel._titular !== undefined) return;
+    const m = sel.cd_mat_alternativa;
+    if (Number(m) % 100 === 0) { setSel({ ...sel, _titular: sel.nm_beneficiario ?? "—" }); return; }
+    hostinger.from(TABLE).select("nm_beneficiario").eq("cd_mat_alternativa", matTitular(m)).limit(1)
+      .then(({ data }) => setSel((cur) => (cur && cur.cd_mat_alternativa === m ? { ...cur, _titular: data?.[0]?.nm_beneficiario ?? "—" } : cur)));
+  }, [sel]);
 
   const dfKey = JSON.stringify({ ...df, status: df.status === "F" ? "F" : "", d: dRef, n: ap ? 1 : 0 });
   useEffect(() => { setPage(0); }, [dfKey, sort.key, sort.asc]);
@@ -274,7 +283,7 @@ export default function CarteiraTrial() {
         <SheetContent className="w-[480px] sm:max-w-[480px] overflow-auto">
           {sel && (
             <>
-              <SheetHeader><SheetTitle className="pr-8">{tituloDetalhe(sel)}</SheetTitle></SheetHeader>
+              <SheetHeader><SheetTitle className="pr-8 tracking-wide">{tituloDetalhe(sel)}</SheetTitle></SheetHeader>
               <div className="mt-4 space-y-4 text-sm">
                 {secoesDetalhe(sel).map(([t, items]: any) => (
                   <div key={t}>
