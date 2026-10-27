@@ -6,7 +6,11 @@ import faixasImportadas from '@/data/uberabaSimulacao/distribuicao_faixa_etaria.
 import padroesImportados from '@/data/uberabaSimulacao/configuracao_padrao.json';
 
 // Condição solicitada pelo usuário, separada dos arquivos históricos fornecidos.
-const condicoes = [...condicoesImportadas, ...condicoesImportadas
+// Ajuste solicitado: "Bensaúde" no PME com agenciamento de 150% (75% + 75%).
+const condicoesBase = condicoesImportadas.map(c => c.condicao === 'Bensaúde' && c.produto_codigo === 'PME_ADMINISTRADO'
+  ? { ...c, agenciamento_parcela_1: 0.75, agenciamento_parcela_2: 0.75, agenciamento_parcela_3: 0, agenciamento_parcela_4: 0, agenciamento_parcela_5: 0 }
+  : c);
+const condicoes = [...condicoesBase, ...condicoesImportadas
   .filter(c => c.condicao === 'Bensaúde')
   .map(c => ({ ...c, condicao: 'Bensaúde Regra', agenciamento_parcela_1: 0.9,
     agenciamento_parcela_2: 0, agenciamento_parcela_3: 0,
