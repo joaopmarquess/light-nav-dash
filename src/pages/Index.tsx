@@ -86,7 +86,23 @@ import CtrlDRE from "@/control/DRETrial";
 import CtrlContas from "@/control/ContasHub";
 import CtrlOrcamento from "@/control/OrcamentoTrial";
 import CtrlDashboards from "@/control/Dashboards";
-import { ListTree } from "lucide-react";
+import { ListTree, Users2, ArrowLeft } from "lucide-react";
+
+function EntradasComFaixas() {
+  const [faixas, setFaixas] = useState(false);
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-end">
+        <button type="button" onClick={() => setFaixas(v => !v)} title={faixas ? "Voltar às Entradas" : "Faixas Etárias"} aria-label={faixas ? "Voltar às Entradas" : "Faixas Etárias"}
+          className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground hover:bg-muted">
+          {faixas ? <ArrowLeft className="h-4 w-4" /> : <Users2 className="h-4 w-4" />}
+          {faixas ? "Entradas" : "Faixas Etárias"}
+        </button>
+      </div>
+      {faixas ? <CarteiraTrialLancers /> : <CarteiraTrialES key="ent" modo="entradas" />}
+    </div>
+  );
+}
 import OrcamentoFaturamento from "@/components/OrcamentoFaturamento";
 import UberabaShell from "@/components/UberabaShell";
 import UberabaMapa from "@/components/UberabaMapa";
@@ -216,7 +232,7 @@ const labItems: MenuItem[] = [
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   controlItem,
-  { icon: Users, label: "Carteira", children: [{ icon: Search, label: "Consulta", id: "Carteira · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira · Entradas" }, { icon: TrendingUp, label: "Entradas Lancers", id: "Carteira · Entradas Lancers" }, { icon: TrendingUp, label: "Saídas", id: "Carteira · Saídas" }, { icon: BarChart3, label: "Tabelas", id: "Carteira · Tabelas" }] },
+  { icon: Users, label: "Carteira", children: [{ icon: Search, label: "Consulta", id: "Carteira · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira · Entradas" }, { icon: TrendingUp, label: "Saídas", id: "Carteira · Saídas" }, { icon: BarChart3, label: "Tabelas", id: "Carteira · Tabelas" }] },
   { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }] },
 ];
 
@@ -655,9 +671,7 @@ const Index = () => {
           ) : active === "Gráfico Sinistralidade" ? (
             <SinistralidadeGraficos />
           ) : active === "Carteira · Entradas" ? (
-            <CarteiraTrialES key="ent" modo="entradas" />
-          ) : active === "Carteira · Entradas Lancers" ? (
-            <CarteiraTrialLancers />
+            <EntradasComFaixas />
           ) : active === "Carteira · Saídas" ? (
             <CarteiraTrialES key="sai" modo="saidas" />
           ) : active === "Carteira · Tabelas" ? (
