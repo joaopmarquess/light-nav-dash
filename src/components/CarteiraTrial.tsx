@@ -33,7 +33,7 @@ function imprimirDetalhe(sel: Row) {
   const corpo = secoesDetalhe(sel).map(([t, it]) => `<h2>${esc(t)}</h2><table>${it.map(([l, v]) => `<tr><th>${esc(l)}</th><td>${esc(valorDetalhe(v))}</td></tr>`).join("")}</table>`).join("");
   const w = window.open("", "_blank", "width=800,height=900");
   if (!w) { toast.error("Libere pop-ups para imprimir"); return; }
-  w.document.write(`<html><head><title>${esc(String(sel.nm_beneficiario ?? "Beneficiário"))}</title><style>body{font-family:Arial,sans-serif;font-size:12px;margin:24px}h1{font-size:18px}h2{font-size:12px;text-transform:uppercase;margin:16px 0 6px;border-bottom:1px solid #999}table{border-collapse:collapse;width:100%}th{text-align:left;width:160px;color:#555;font-weight:normal;padding:2px 0}td{padding:2px 0}</style></head><body><h1>${esc(String(sel.nm_beneficiario ?? ""))}</h1>${corpo}</body></html>`);
+  w.document.write(`<html><head><title>${esc(String(sel.nm_beneficiario ?? "Beneficiário"))}</title><style>@page{size:A4 portrait;margin:12mm}html,body{height:auto}body{font-family:Arial,sans-serif;font-size:11px;margin:0;line-height:1.25}h1{font-size:16px;margin:0 0 6px}h2{font-size:11px;text-transform:uppercase;margin:10px 0 4px;border-bottom:1px solid #999;break-after:avoid}table{page-break-inside:avoid}table{border-collapse:collapse;width:100%}th{text-align:left;width:160px;color:#555;font-weight:normal;padding:2px 0}td{padding:2px 0}</style></head><body><h1>${esc(String(sel.nm_beneficiario ?? ""))}</h1>${corpo}</body></html>`);
   w.document.close(); w.focus(); w.print();
 }
 const PAGE = 200;
