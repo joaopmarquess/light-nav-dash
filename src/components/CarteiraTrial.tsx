@@ -6,10 +6,36 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Download, Loader2, Search, X, Users, UserCheck, UserX, Building2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Download, Loader2, Search, X, Users, UserCheck, UserX, Building2, Copy, Printer } from "lucide-react";
+import { toast } from "sonner";
 
 type Row = Record<string, any>;
 const TABLE = "view_ecarteira";
+
+const valorDetalhe = (v: any) => (v == null || v === "" ? "—" : String(v).trim());
+function secoesDetalhe(sel: Row): [string, [string, any][]][] {
+  return [
+                  ["Cadastro", [["Matrícula", fmtMat(sel.cd_mat_alternativa)], ["Contrato", sel.cd_contrato], ["Status", ST[sel.st][0]], ["Nascimento", fmtDate(sel.dt_nascimento)], ["Idade", sel.qt_idade], ["Faixa", sel.ds_faixa_etaria], ["Sexo", sel.tp_sexo]]],
+                  ["Plano", [["Plano", sel.ds_plano], ["Acomodação", sel.tp_acomodacao], ["Contratação", sel.tp_contratacao], ["Recuperação", sel.tp_recuperacao], ["PME", sel.sn_pme], ["Mensalidade", brl(sel.vl_tmm)], ["Últ. reajuste", fmtDate(sel.dt_ult_reajuste)]]],
+                  ["Empresa / Local", [["Estipulante", sel.nm_empresa_estipulante], ["Resp. financeiro", sel.nm_resp_financeiro], ["Cidade", `${sel.nm_cidade_plano ?? "—"} / ${sel.cd_uf_plano ?? ""}`], ["Regional", sel.nm_regional_plano], ["Vendedor", sel.nm_vendedor]]],
+                  ["Datas", [["Cadastro", fmtDate(sel.dt_cadastro)], ["Vigência contrato", fmtDate(sel.dt_vigencia_contrato)], ["Vigência beneficiário", fmtDate(sel.dt_vigencia_beneficiario)], ["Cancelamento", fmtDate(sel.dt_desligamento)], ["Reativação", fmtDate(sel.dt_reativacao)], ["Motivo cancel.", sel.ds_motivo_cancelamento]]],
+  ] as any;
+}
+function textoDetalhe(sel: Row) {
+  return [sel.nm_beneficiario, ...secoesDetalhe(sel).map(([t, it]) => `\n${t.toUpperCase()}\n` + it.map(([l, v]) => `${l}: ${valorDetalhe(v)}`).join("\n"))].join("\n");
+}
+async function copiarDetalhe(sel: Row) {
+  try { await navigator.clipboard.writeText(textoDetalhe(sel)); toast.success("Dados copiados"); }
+  catch { toast.error("Não foi possível copiar"); }
+}
+function imprimirDetalhe(sel: Row) {
+  const esc = (x: string) => x.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
+  const corpo = secoesDetalhe(sel).map(([t, it]) => `<h2>${esc(t)}</h2><table>${it.map(([l, v]) => `<tr><th>${esc(l)}</th><td>${esc(valorDetalhe(v))}</td></tr>`).join("")}</table>`).join("");
+  const w = window.open("", "_blank", "width=800,height=900");
+  if (!w) { toast.error("Libere pop-ups para imprimir"); return; }
+  w.document.write(`<html><head><title>${esc(String(sel.nm_beneficiario ?? "Beneficiário"))}</title><style>body{font-family:Arial,sans-serif;font-size:12px;margin:24px}h1{font-size:18px}h2{font-size:12px;text-transform:uppercase;margin:16px 0 6px;border-bottom:1px solid #999}table{border-collapse:collapse;width:100%}th{text-align:left;width:160px;color:#555;font-weight:normal;padding:2px 0}td{padding:2px 0}</style></head><body><h1>${esc(String(sel.nm_beneficiario ?? ""))}</h1>${corpo}</body></html>`);
+  w.document.close(); w.focus(); w.print();
+}
 const PAGE = 200;
 
 const fmtD = (v: any) => v ? new Date(v).toLocaleDateString("pt-BR", { timeZone: "UTC" }) : "—";
@@ -247,14 +273,13 @@ export default function CarteiraTrial() {
         <SheetContent className="w-[480px] sm:max-w-[480px] overflow-auto">
           {sel && (
             <>
-              <SheetHeader><SheetTitle>{sel.nm_beneficiario}</SheetTitle></SheetHeader>
+              <SheetHeader><SheetTitle className="pr-8">{sel.nm_beneficiario}</SheetTitle></SheetHeader>
+              <div className="mt-2 flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => copiarDetalhe(sel)}><Copy className="h-4 w-4 mr-1" />Copiar</Button>
+                <Button size="sm" variant="outline" onClick={() => imprimirDetalhe(sel)}><Printer className="h-4 w-4 mr-1" />Imprimir</Button>
+              </div>
               <div className="mt-4 space-y-4 text-sm">
-                {[
-                  ["Cadastro", [["Matrícula", fmtMat(sel.cd_mat_alternativa)], ["Contrato", sel.cd_contrato], ["Status", ST[sel.st][0]], ["Nascimento", fmtDate(sel.dt_nascimento)], ["Idade", sel.qt_idade], ["Faixa", sel.ds_faixa_etaria], ["Sexo", sel.tp_sexo]]],
-                  ["Plano", [["Plano", sel.ds_plano], ["Acomodação", sel.tp_acomodacao], ["Contratação", sel.tp_contratacao], ["Recuperação", sel.tp_recuperacao], ["PME", sel.sn_pme], ["Mensalidade", brl(sel.vl_tmm)], ["Últ. reajuste", fmtDate(sel.dt_ult_reajuste)]]],
-                  ["Empresa / Local", [["Estipulante", sel.nm_empresa_estipulante], ["Resp. financeiro", sel.nm_resp_financeiro], ["Cidade", `${sel.nm_cidade_plano ?? "—"} / ${sel.cd_uf_plano ?? ""}`], ["Regional", sel.nm_regional_plano], ["Vendedor", sel.nm_vendedor]]],
-                  ["Datas", [["Cadastro", fmtDate(sel.dt_cadastro)], ["Vigência contrato", fmtDate(sel.dt_vigencia_contrato)], ["Vigência beneficiário", fmtDate(sel.dt_vigencia_beneficiario)], ["Cancelamento", fmtDate(sel.dt_desligamento)], ["Reativação", fmtDate(sel.dt_reativacao)], ["Motivo cancel.", sel.ds_motivo_cancelamento]]],
-                ].map(([t, items]: any) => (
+                {secoesDetalhe(sel).map(([t, items]: any) => (
                   <div key={t}>
                     <p className="text-xs font-semibold uppercase text-primary mb-2">{t}</p>
                     <dl className="grid grid-cols-[140px_1fr] gap-y-1">
