@@ -21,8 +21,9 @@ function secoesDetalhe(sel: Row): [string, [string, any][]][] {
                   ["Datas", [["Cadastro", fmtDate(sel.dt_cadastro)], ["Vigência contrato", fmtDate(sel.dt_vigencia_contrato)], ["Vigência beneficiário", fmtDate(sel.dt_vigencia_beneficiario)], ["Cancelamento", fmtDate(sel.dt_desligamento)], ["Reativação", fmtDate(sel.dt_reativacao)], ["Motivo cancel.", sel.ds_motivo_cancelamento]]],
   ] as any;
 }
+const tituloDetalhe = (sel: Row) => `${fmtMat(sel.cd_mat_alternativa)} | ${String(sel.nm_beneficiario ?? "").trim()}`;
 function textoDetalhe(sel: Row) {
-  return [sel.nm_beneficiario, ...secoesDetalhe(sel).map(([t, it]) => `\n${t.toUpperCase()}\n` + it.map(([l, v]) => `${l}: ${valorDetalhe(v)}`).join("\n"))].join("\n");
+  return [tituloDetalhe(sel), ...secoesDetalhe(sel).map(([t, it]) => `\n${t.toUpperCase()}\n` + it.map(([l, v]) => `${l}: ${valorDetalhe(v)}`).join("\n"))].join("\n");
 }
 async function copiarDetalhe(sel: Row) {
   try { await navigator.clipboard.writeText(textoDetalhe(sel)); toast.success("Dados copiados"); }
@@ -33,7 +34,7 @@ function imprimirDetalhe(sel: Row) {
   const corpo = secoesDetalhe(sel).map(([t, it]) => `<h2>${esc(t)}</h2><table>${it.map(([l, v]) => `<tr><th>${esc(l)}</th><td>${esc(valorDetalhe(v))}</td></tr>`).join("")}</table>`).join("");
   const w = window.open("", "_blank", "width=800,height=900");
   if (!w) { toast.error("Libere pop-ups para imprimir"); return; }
-  w.document.write(`<html><head><title>${esc(String(sel.nm_beneficiario ?? "Beneficiário"))}</title><style>@page{size:A4 portrait;margin:12mm}html,body{height:auto}body{font-family:Arial,sans-serif;font-size:11px;margin:0;line-height:1.25}h1{font-size:16px;margin:0 0 6px}h2{font-size:11px;text-transform:uppercase;margin:10px 0 4px;border-bottom:1px solid #999;break-after:avoid}table{page-break-inside:avoid}table{border-collapse:collapse;width:100%}th{text-align:left;width:160px;color:#555;font-weight:normal;padding:2px 0}td{padding:2px 0}</style></head><body><h1>${esc(String(sel.nm_beneficiario ?? ""))}</h1>${corpo}</body></html>`);
+  w.document.write(`<html><head><title>${esc(String(sel.nm_beneficiario ?? "Beneficiário"))}</title><style>@page{size:A4 portrait;margin:12mm}html,body{height:auto}body{font-family:Arial,sans-serif;font-size:11px;margin:0;line-height:1.25}h1{font-size:16px;margin:0 0 6px}h2{font-size:11px;text-transform:uppercase;margin:10px 0 4px;border-bottom:1px solid #999;break-after:avoid}table{page-break-inside:avoid}table{border-collapse:collapse;width:100%}th{text-align:left;width:160px;color:#555;font-weight:normal;padding:2px 0}td{padding:2px 0}</style></head><body><h1>${esc(tituloDetalhe(sel))}</h1>${corpo}</body></html>`);
   w.document.close(); w.focus(); w.print();
 }
 const PAGE = 200;
@@ -273,11 +274,7 @@ export default function CarteiraTrial() {
         <SheetContent className="w-[480px] sm:max-w-[480px] overflow-auto">
           {sel && (
             <>
-              <SheetHeader><SheetTitle className="pr-8">{sel.nm_beneficiario}</SheetTitle></SheetHeader>
-              <div className="mt-2 flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => copiarDetalhe(sel)}><Copy className="h-4 w-4 mr-1" />Copiar</Button>
-                <Button size="sm" variant="outline" onClick={() => imprimirDetalhe(sel)}><Printer className="h-4 w-4 mr-1" />Imprimir</Button>
-              </div>
+              <SheetHeader><SheetTitle className="pr-8">{tituloDetalhe(sel)}</SheetTitle></SheetHeader>
               <div className="mt-4 space-y-4 text-sm">
                 {secoesDetalhe(sel).map(([t, items]: any) => (
                   <div key={t}>
@@ -287,6 +284,10 @@ export default function CarteiraTrial() {
                     </dl>
                   </div>
                 ))}
+              </div>
+              <div className="mt-6 pt-4 border-t border-border flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => copiarDetalhe(sel)}><Copy className="h-4 w-4 mr-1" />Copiar</Button>
+                <Button size="sm" variant="outline" onClick={() => imprimirDetalhe(sel)}><Printer className="h-4 w-4 mr-1" />Imprimir</Button>
               </div>
             </>
           )}
