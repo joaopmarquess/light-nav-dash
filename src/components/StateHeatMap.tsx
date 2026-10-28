@@ -373,6 +373,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
               {psiquiatricos > 0 && <g transform="translate(20,0)" role="img" aria-label={`${name} / ${uf} — ${psiquiatricos} hospitais psiquiátricos`} data-psychiatric-hospital-city={`${uf}|${name}`}>
                 <title>{`${name} / ${uf} — ${psiquiatricos} hospitais psiquiátricos`}</title>
                 <rect x={-9} y={-9} width={18} height={18} fill="none" pointerEvents="all" />
+                <Hospital aria-hidden="true" x={-8} y={-8} width={16} height={16} fill="none" stroke="hsl(var(--map-state-border))" strokeWidth={5} />
                 <Hospital x={-8} y={-8} width={16} height={16} fill="none" stroke="hsl(var(--map-hospital-psychiatric))" strokeWidth={2.5} />
               </g>}
             </g>
