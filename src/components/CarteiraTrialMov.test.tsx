@@ -56,14 +56,14 @@ describe("consultas da Movimentação sob demanda", () => {
   it("preserva datas de Anterior e Final em De-1 e Até+1", async () => {
     render(<CarteiraTrialMov />); aplicar();
     await waitFor(() => expect(api.rpc).toHaveBeenCalledWith("carteira_trial_geo", { p_data: "2026-09-30" }));
-    await waitFor(() => expect(api.rpc).toHaveBeenCalledWith("carteira_trial_kpis", { p_data: "2026-10-23", p_q: null, p_empresa: null, p_cidade: null }));
+    await waitFor(() => expect(api.rpc).toHaveBeenCalledWith("carteira_trial_geo", { p_data: "2026-10-23" }));
   });
   it("consulta vidas no fechamento mensal e reutiliza os totais das barras sem buscar detalhes", async () => {
     render(<CarteiraTrialMov />); aplicar();
     await waitFor(() => expect(screen.getByRole("button", { name: "Abrir depuração" })).toBeEnabled());
-    await waitFor(() => expect(api.rpc).toHaveBeenCalledWith("carteira_trial_kpis", { p_data: "2026-10-31", p_q: null, p_empresa: null, p_cidade: null }));
-    expect(api.rpc.mock.calls.filter(([name]) => name === "carteira_trial_kpis")).toHaveLength(2);
-    expect(api.rpc.mock.calls.filter(([name]) => name === "carteira_trial_geo")).toHaveLength(1);
+    await waitFor(() => expect(api.rpc).toHaveBeenCalledWith("carteira_trial_geo", { p_data: "2026-10-31" }));
+    expect(api.rpc.mock.calls.filter(([name]) => name === "carteira_trial_kpis")).toHaveLength(0);
+    expect(api.rpc.mock.calls.filter(([name]) => name === "carteira_trial_geo")).toHaveLength(3);
     expect(api.rpc.mock.calls.filter(([name]) => name === "carteira_movimentacao_totais")).toHaveLength(1);
     expect(api.pages).not.toHaveBeenCalled();
   });

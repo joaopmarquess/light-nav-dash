@@ -148,30 +148,18 @@ export default function CarteiraTrialMov() {
     return () => { off = true; };
   }, [periodoIndicadores, precisaDetalhes, detalhesProntos, totais]);
 
+  // Vidas (Anterior, Final e linha do gráfico): mesma regra de "Ativos em" da Área Geográfica
+  // (carteira_trial_geo: por matrícula, só linhas E, datas até a referência).
   const consultarVidas = (d: string): Promise<number> => {
     const cached = cacheVidas.current.get(d);
-    if (cached) return cached;
-    const request = Promise.resolve(hostinger.rpc("carteira_trial_kpis", { p_data: d, p_q: null, p_empresa: null, p_cidade: null }))
-      .then(({ data, error }: any) => {
-        if (error) throw new Error(error.message);
-        const r = Array.isArray(data) ? data[0] : data;
-        if (r?.ativos == null) throw new Error("Não foi possível consultar as vidas ativas.");
-        return Number(r.ativos);
-      }).catch((error: Error) => { cacheVidas.current.delete(d); throw error; });
-    cacheVidas.current.set(d, request);
-    return request;
-  };
-  // "Anterior": mesmo conceito de "Ativos em" da Área Geográfica (carteira_trial_geo), na véspera do "De".
-  const cacheAnterior = useRef(new Map<string, Promise<number>>());
-  const consultarAnterior = (d: string): Promise<number> => {
-    const cached = cacheAnterior.current.get(d);
     if (cached) return cached;
     const request = Promise.resolve(hostinger.rpc("carteira_trial_geo", { p_data: d }))
       .then(({ data, error }: any) => {
         if (error) throw new Error(error.message);
-        return (data ?? []).reduce((s: number, r: any) => s + (Number(r.ativos) || 0), 0);
-      }).catch((error: Error) => { cacheAnterior.current.delete(d); throw error; });
-    cacheAnterior.current.set(d, request);
+        if (!Array.isArray(data)) throw new Error("Não foi possível consultar as vidas ativas.");
+        return data.reduce((s: number, r: any) => s + (Number(r.ativos) || 0), 0);
+      }).catch((error: Error) => { cacheVidas.current.delete(d); throw error; });
+    cacheVidas.current.set(d, request);
     return request;
   };
   useEffect(() => {
@@ -179,7 +167,7 @@ export default function CarteiraTrialMov() {
     if (!mesSelecionado) return;
     let off = false;
     const { anterior, final } = datasVidasIndicadores(mesSelecionado);
-    Promise.all([consultarAnterior(anterior), consultarVidas(final)])
+    Promise.all([consultarVidas(anterior), consultarVidas(final)])
       .then(([ant, fin]) => { if (!off) setVidasSelecionadas({ ant, fin }); })
       .catch((e: Error) => { if (!off) setErr(e.message); });
     return () => { off = true; };
@@ -194,7 +182,7 @@ export default function CarteiraTrialMov() {
     setVidasMensais([]); setMensalLoading(false); setMensalErro(null);
     if (!podeCalcularMovimentacao(ap)) return;
     const at = consultarVidas;
-    Promise.all([consultarAnterior(dAnt), at(dFin)]).then(([ant, fin]) => { if (!off) setVidas({ ant, fin }); })
+    Promise.all([consultarVidas(dAnt), at(dFin)]).then(([ant, fin]) => { if (!off) setVidas({ ant, fin }); })
       .catch((e: Error) => { if (!off) setErr(e.message); });
     setMensalLoading(true);
     (async () => {
