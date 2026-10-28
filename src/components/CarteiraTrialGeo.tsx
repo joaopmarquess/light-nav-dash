@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, Eye, EyeOff, Hospital, Loader2, Map as MapIcon, Scissors, Search, Slash } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Hospital, Loader2, Map as MapIcon, Scissors, Search, Slash, X } from "lucide-react";
 import { geographicToday, useCarteiraTrialGeo } from "@/hooks/useCarteiraTrialGeo";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 import { StateHeatMap } from "@/components/StateHeatMap";
@@ -129,7 +129,13 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
           </div>
         )}
       </div>
-      <Dialog open={cropOpen} onOpenChange={setCropOpen}>
+      <Dialog open={cropOpen} onOpenChange={(open) => {
+        if (!open && hospitalListType) {
+          setHospitalListType(null);
+          return;
+        }
+        setCropOpen(open);
+      }}>
         <DialogContent aria-describedby={undefined} className="flex h-[92vh] w-[95vw] max-w-none flex-col p-4">
           <div className="flex items-center gap-3 pr-8">
             <TooltipProvider delayDuration={150}><Tooltip><TooltipTrigger asChild>
@@ -148,7 +154,10 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
               </div>
             </div>
             {hospitalListType && <aside id="cidades-com-hospital" aria-label="Cidades com hospital" className="max-h-[45%] md:max-h-none md:w-[min(48%,640px)] shrink-0 overflow-auto border-t md:border-t-0 md:border-l border-border pt-3 md:pt-0 md:pl-4">
-              <h3 className="text-sm font-semibold mb-2">{hospitalListType === "geral" ? "Hospitais gerais" : "Hospitais psiquiátricos"}</h3>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <h3 className="text-sm font-semibold">{hospitalListType === "geral" ? "Hospitais gerais" : "Hospitais psiquiátricos"}</h3>
+                <Button type="button" variant="ghost" size="icon" title="Fechar lista" aria-label="Fechar lista" onClick={() => setHospitalListType(null)}><X /></Button>
+              </div>
               <Table>
                 <TableHeader><TableRow><TableHead>Cidade</TableHead><TableHead className="text-center">UF</TableHead><TableHead className="text-center">QT</TableHead><TableHead>Nome do Hospital</TableHead><TableHead className="text-center">Vidas</TableHead></TableRow></TableHeader>
                 <TableBody>{cidadesHospitalOrdenadas.map((row) => <TableRow key={`${row.uf}|${row.cidade}`}><TableCell className="py-2">{row.cidade}</TableCell><TableCell className="py-2 text-center">{row.uf}</TableCell><TableCell className="py-2 text-center tabular-nums">{row.quantidade}</TableCell><TableCell className="py-2">{row.hospitais.map(nome => <div key={nome} className="break-words mb-1 last:mb-0">{nome}</div>)}</TableCell><TableCell className="py-2 text-center tabular-nums">{row.vidas.toLocaleString("pt-BR")}</TableCell></TableRow>)}</TableBody>
