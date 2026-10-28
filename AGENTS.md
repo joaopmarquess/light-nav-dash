@@ -1,5 +1,5 @@
 # Project rules
-- Keep cropped-map hospital markers sourced from the preserved dated CSV and its typed city/UF index; never derive hospital availability from beneficiary counts or change map membership for markers.
+- Keep cropped-map hospital markers sourced from the preserved dated CSV and its typed city/UF index; keep user-supplied psychiatric highlights in a separate tested helper without changing source totals; never derive hospital availability from beneficiary counts or change map membership for markers.
 - Keep Movimentação requests gated by an explicitly applied period; fetch monthly card counts from carteira_movimentacao_totais and lazily cache original RPC details per applied period only on eye/card clicks, preserving server-side classification and tested reconciliation to avoid eager pagination and rule drift.
 - Reuse monthly totals for chart bars and selected-month indicators; cache KPI dates and lazy details per interval. Keep the full-period chart independent; its lives line uses carteira_trial_kpis at UTC month-end, never net growth.
 - Allocate Movimentação debugging and chart within a fixed-height animated grid, with the chart filling the remaining row, so opening details preserves its baseline and width without touching queries.

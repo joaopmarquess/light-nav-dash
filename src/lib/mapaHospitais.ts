@@ -32,3 +32,7 @@ export function ordenarCidadesComHospitais(cityTotalsByUF: Record<string, Record
 export function hospitaisDaCidade(cidade: string, uf: string) {
   return indice.get(chave(cidade, uf));
 }
+
+export function quantidadeHospitaisPsiquiatricos(cidade: string, uf: string) {
+  return chave(cidade, uf) === chave("São José do Rio Preto", "SP") ? 2 : 0;
+}
