@@ -3,7 +3,7 @@ import { geoCentroid, geoMercator, geoPath } from "d3-geo";
 import type { FeatureCollection, Feature, Geometry } from "geojson";
 import { Hospital, Loader2 } from "lucide-react";
 import { hospitaisDaCidade, quantidadeHospitaisPsiquiatricos } from "@/lib/mapaHospitais";
-import { insideMAA, isExplicitMAAMember, maaFillRole, outerMAARings, smoothMAAPath } from "@/lib/maaGeometry";
+import { insideMAA, isExplicitMAAMember, maaFillRole, outerMAARings, smoothMAAPath, smoothMunicipalDisplay } from "@/lib/maaGeometry";
 import { municipalHeatFill, municipalHeatNeighbors } from "@/lib/municipalHeatColors";
 
 // IBGE UF codes for municipality geojson from tbrugz/geodata-br
@@ -126,6 +126,14 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     }
     return m;
   }, [ufs, cityTotalsByUF]);
+
+  // Only the drawing uses simplified GO geometry; all counts, centroids and MAA rules use the originals.
+  const displayFeatures = useMemo(() => {
+    if (!features) return [];
+    const go = smoothMunicipalDisplay(features.filter((f) => f.properties._uf === "GO"));
+    let index = 0;
+    return features.map((f) => f.properties._uf === "GO" ? go[index++] ?? f : f);
+  }, [features]);
 
   // Centro principal: bloco contíguo de municípios com mais de 70 vidas que contém o maior município
   const coreData = useMemo(() => {
@@ -290,7 +298,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
           const name = f.properties?.name ?? "";
           const uf = f.properties._uf;
           const total = normalizedByUF[uf]?.[normalize(name)] ?? 0;
-          const d = pathFn(f) ?? "";
+          const d = pathFn(displayFeatures[i] ?? f) ?? "";
           return (
             <path
               key={i}
