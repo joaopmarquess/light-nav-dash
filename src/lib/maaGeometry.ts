@@ -44,9 +44,9 @@ export function maaFillRole(member: boolean, inside: boolean, lives: number) {
 }
 
 // Pixel-space simplification followed by short rounded corners, not changes to geography.
-export function smoothMAAPath(points: MapPoint[]): string {
+export function smoothMAAPath(points: MapPoint[], tolerance = 2): string {
   if (points.length < 4) return "";
-  const reduced = simplify(points.map(([x, y]) => ({ x, y })), 2, true);
+  const reduced = simplify(points.map(([x, y]) => ({ x, y })), tolerance, true);
   const first = reduced[0], last = reduced[reduced.length - 1];
   if (!first || !last) return "";
   if (first.x === last.x && first.y === last.y) reduced.pop();
@@ -59,6 +59,19 @@ export function smoothMAAPath(points: MapPoint[]): string {
     d += `Q${p.x},${p.y} ${(p.x + next.x) / 2},${(p.y + next.y) / 2}`;
   });
   return d + "Z";
+}
+// Rounded open display strokes retain endpoints and never add a closing border.
+export function smoothBoundaryStroke(points: MapPoint[], tolerance = 3): string {
+  if (points.length < 2) return "";
+  const reduced = simplify(points.map(([x, y]) => ({ x, y })), tolerance, true);
+  const first = reduced[0], last = reduced[reduced.length - 1];
+  if (!first || !last) return "";
+  let d = `M${first.x},${first.y}`;
+  for (let i = 1; i < reduced.length - 1; i++) {
+    const p = reduced[i], next = reduced[i + 1];
+    d += `Q${p.x},${p.y} ${(p.x + next.x) / 2},${(p.y + next.y) / 2}`;
+  }
+  return d + `L${last.x},${last.y}`;
 }
 // Display-only smoothing of municipal borders through shared topology arcs, so neighbours stay gap-free.
 export function smoothMunicipalDisplay<F extends GeoJSON.Feature>(features: F[], keepFraction = 0.12): F[] {
