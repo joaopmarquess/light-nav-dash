@@ -188,10 +188,11 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     const fc: FeatureCollection = { type: "FeatureCollection", features: (core || crop) && coreData ? features.filter((_, i) => coreData.set.has(i)) : features };
     const projection = geoMercator().fitExtent([[4, 4], [width - 4, height - 4]], fc);
     // Pull back the display only; the original MAA membership is unchanged.
-    if (core && coreData) {
+    if ((core || crop) && coreData) {
+      const f = crop ? 0.85 : 0.68;
       const [tx, ty] = projection.translate();
-      projection.scale(projection.scale() * 0.68);
-      projection.translate([width / 2 + (tx - width / 2) * 0.68, height / 2 + (ty - height / 2) * 0.68]);
+      projection.scale(projection.scale() * f);
+      projection.translate([width / 2 + (tx - width / 2) * f, height / 2 + (ty - height / 2) * f]);
     }
     return { pathFn: geoPath(projection), projection };
   }, [features, width, height, coreData, core, crop]);
