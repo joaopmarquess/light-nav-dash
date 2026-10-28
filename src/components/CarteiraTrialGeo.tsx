@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, Eye, EyeOff, Hospital, Loader2, Map as MapIcon, Scissors, Search } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Hospital, Loader2, Map as MapIcon, Scissors, Search, Slash } from "lucide-react";
 import { geographicToday, useCarteiraTrialGeo } from "@/hooks/useCarteiraTrialGeo";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 import { StateHeatMap } from "@/components/StateHeatMap";
@@ -126,11 +126,13 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
       </div>
       <Dialog open={cropOpen} onOpenChange={setCropOpen}>
         <DialogContent aria-describedby={undefined} className="flex h-[92vh] w-[95vw] max-w-none flex-col p-4">
-          <div className="flex items-center justify-between gap-3 pr-8">
-            <DialogTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Área de atuação recortada</DialogTitle>
+          <div className="flex items-center gap-3 pr-8">
             <TooltipProvider delayDuration={150}><Tooltip><TooltipTrigger asChild>
-              <Button type="button" variant={showHospitals ? "secondary" : "outline"} size="icon" aria-label={showHospitals ? "Ocultar hospitais" : "Mostrar hospitais"} aria-pressed={showHospitals} onClick={() => setShowHospitals((visible) => !visible)}><Hospital /></Button>
+              <Button type="button" variant={showHospitals ? "secondary" : "outline"} size="icon" aria-label={showHospitals ? "Ocultar hospitais" : "Mostrar hospitais"} aria-pressed={showHospitals} onClick={() => setShowHospitals((visible) => !visible)}>
+                <span className="relative inline-flex h-4 w-4" aria-hidden="true"><Hospital className="h-4 w-4" />{!showHospitals && <Slash className="absolute inset-0 h-4 w-4" />}</span>
+              </Button>
             </TooltipTrigger><TooltipContent>{showHospitals ? "Ocultar hospitais" : "Mostrar hospitais"}</TooltipContent></Tooltip></TooltipProvider>
+            <DialogTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Área de atuação recortada</DialogTitle>
           </div>
           <div className="min-h-0 flex-1">
             {cropOpen && <StateHeatMap trialScale crop showHospitals={showHospitals} showOverview={false} ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} />}
