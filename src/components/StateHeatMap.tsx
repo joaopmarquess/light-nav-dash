@@ -219,14 +219,14 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     }))).join(" ");
   }, [coreData, projection]);
   const maaLabels = useMemo(() => {
-    if (!core || !coreData || !features || !pathFn) return [];
+    if ((!core && !crop) || !coreData || !features || !pathFn) return [];
     return ufs.flatMap((uf) => {
       const visible = features.filter((f, i) => f.properties._uf === uf && coreData.show.has(i));
       if (!visible.length) return [];
       const [x, y] = pathFn.centroid({ type: "FeatureCollection", features: visible });
       return Number.isFinite(x) && Number.isFinite(y) ? [{ uf, x, y }] : [];
     });
-  }, [core, coreData, features, pathFn, key]);
+  }, [core, crop, coreData, features, pathFn, key]);
   const label = (x: number, y: number, t1: string, t2: string, k: string) => (
     <g key={k} transform={`translate(${x},${y})`} pointerEvents="none">
       <text textAnchor="middle" fontSize={14} fontWeight={700} fill="hsl(var(--foreground))" stroke="hsl(var(--background))" strokeWidth={3} paintOrder="stroke">{t1}</text>
@@ -283,10 +283,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
         role="img"
         aria-label={core ? "Mapa Área Atuação (MAA)" : `Mapa de calor por município — ${ufs.join(", ")}`}
       >
-        {crop && <defs><clipPath id="maa-crop-clip"><path d={maaOutline} /></clipPath></defs>}
-        <g clipPath={crop ? "url(#maa-crop-clip)" : undefined}>
         {features.map((f, i) => {
-          if (crop && coreData && !coreData.show.has(i) && !coreData.inside.has(i)) return null;
           const name = f.properties?.name ?? "";
           const uf = f.properties._uf;
           const total = normalizedByUF[uf]?.[normalize(name)] ?? 0;
@@ -339,7 +336,6 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
               pointerEvents="none"
             />
           ))}
-        </g>
         {coreData && (
           <path data-maa-outline d={maaOutline} fill="none" stroke="hsl(var(--map-maa-outline))" strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" pointerEvents="none" />
         )}
