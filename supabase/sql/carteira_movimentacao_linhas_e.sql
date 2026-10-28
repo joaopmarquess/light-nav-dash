@@ -1,6 +1,7 @@
 -- Carteira > Movimentação: Base apenas com linhas tp_linha = 'E'.
 -- Executar na base da Hostinger, inteiro. Muda só o filtro da Base nas duas funções
 -- (cards e detalhes), para que continuem batendo entre si.
+-- Transferências: ligação por nome do beneficiário + data de nascimento (antes: CPF, vazio na carga).
 
 CREATE OR REPLACE FUNCTION public.carteira_movimentacao_totais(p_de date, p_ate date)
  RETURNS TABLE(vendas bigint, cancelamentos bigint, reativacoes bigint, entradas_transferencia bigint, saidas_transferencia bigint)
@@ -27,7 +28,7 @@ begin
       v.dt_reativacao::date
     )
       v.cd_mat_alternativa::text as mat,
-      nullif(ltrim(regexp_replace(coalesce(v.nr_cpf::text, ''), '\D', '', 'g'), '0'), '') as cpfk,
+      (nullif(upper(regexp_replace(trim(v.nm_beneficiario), '\s+', ' ', 'g')), '') || '|' || v.dt_nascimento::date::text) as cpfk, -- chave de transferência: nome + nascimento
       v.dt_vigencia_beneficiario::date as vig,
       v.dt_desligamento::date as desl,
       v.dt_reativacao::date as reat,
@@ -98,7 +99,7 @@ with motT as (
 base as (
   select distinct on (v.cd_mat_alternativa, v.dt_vigencia_beneficiario::date, v.dt_desligamento::date, v.dt_reativacao::date)
     v.cd_mat_alternativa::text as mat,
-    nullif(ltrim(regexp_replace(coalesce(v.nr_cpf::text, ''), '\D', '', 'g'), '0'), '') as cpfk,
+    (nullif(upper(regexp_replace(trim(v.nm_beneficiario), '\s+', ' ', 'g')), '') || '|' || v.dt_nascimento::date::text) as cpfk, -- chave de transferência: nome + nascimento
     v.nr_cpf::text as cpf,
     v.nm_beneficiario as nome,
     v.nm_empresa_estipulante as empresa,
