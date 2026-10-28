@@ -1,0 +1,279 @@
+[
+  {
+    "cidade": "São José do Rio Preto",
+    "uf": "SP",
+    "quantidade": 3,
+    "hospitais": [
+      "Associação Portuguesa de Beneficência SJ Rio Preto",
+      "Hosp. Bezerra de Menezes",
+      "Hospital Andrade & Montanhez"
+    ]
+  },
+  {
+    "cidade": "Auriflama",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Sta. Casa de Miser. de Auriflama"
+    ]
+  },
+  {
+    "cidade": "Buritama",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Sta. Casa de Miser. São Francisco"
+    ]
+  },
+  {
+    "cidade": "Cassilândia",
+    "uf": "MS",
+    "quantidade": 1,
+    "hospitais": [
+      "Hosp. de Clínicas São Lucas"
+    ]
+  },
+  {
+    "cidade": "Estrela d'Oeste",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Irm. da Sta. Casa de Miser. de Estrela d'Oeste"
+    ]
+  },
+  {
+    "cidade": "Fernandópolis",
+    "uf": "SP",
+    "quantidade": 2,
+    "hospitais": [
+      "Hospital das Clínicas de Fernandópolis",
+      "Santa Casa de Fernandópolis"
+    ]
+  },
+  {
+    "cidade": "Frutal",
+    "uf": "MG",
+    "quantidade": 1,
+    "hospitais": [
+      "Hospital e Maternidade São José"
+    ]
+  },
+  {
+    "cidade": "General Salgado",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Sta. Casa de Miser. Nossa Sra. das Dores de General Salgado"
+    ]
+  },
+  {
+    "cidade": "Ibirá",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Sta. Casa de Miser. de Ibirá"
+    ]
+  },
+  {
+    "cidade": "Ilha Solteira",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Hospital Regional de Ilha Solteira"
+    ]
+  },
+  {
+    "cidade": "Iturama",
+    "uf": "MG",
+    "quantidade": 1,
+    "hospitais": [
+      "Casa de Saúde e Mat. Nossa Senhora Aparecida"
+    ]
+  },
+  {
+    "cidade": "Jaci",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Hosp. Nossa Sra. da Divina Providência"
+    ]
+  },
+  {
+    "cidade": "Jales",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Santa Casa de Misericórdia de Jales"
+    ]
+  },
+  {
+    "cidade": "José Bonifácio",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Sta. Casa de Miser. de José Bonifácio"
+    ]
+  },
+  {
+    "cidade": "Lins",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Santa Casa de Lins"
+    ]
+  },
+  {
+    "cidade": "Macaubal",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Sta. Casa de Macaubal"
+    ]
+  },
+  {
+    "cidade": "Mirassol",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Hospital Regional São Pedro na Providência de Deus"
+    ]
+  },
+  {
+    "cidade": "Monte Aprazível",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Irm. da Santa Casa de Miser. de Monte Aprazível"
+    ]
+  },
+  {
+    "cidade": "Nhandeara",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Hosp. São Domingos na Providência de Deus"
+    ]
+  },
+  {
+    "cidade": "Nova Granada",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Irm. da Sta. Casa Miser. Nova Granada"
+    ]
+  },
+  {
+    "cidade": "Novo Horizonte",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Irm. São José de Novo Horizonte"
+    ]
+  },
+  {
+    "cidade": "Olímpia",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Sta. Casa de Miser. de Olímpia"
+    ]
+  },
+  {
+    "cidade": "Ouroeste",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Hospital João Veloso"
+    ]
+  },
+  {
+    "cidade": "Paranaíba",
+    "uf": "MS",
+    "quantidade": 2,
+    "hospitais": [
+      "Hospital CASSEMS Unidade de Paranaíba",
+      "Sta. Casa de Miser. de Paranaíba"
+    ]
+  },
+  {
+    "cidade": "Paulo de Faria",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Irm. Sta. Casa de Miser. de Paulo de Faria"
+    ]
+  },
+  {
+    "cidade": "Penápolis",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Irm. da Sta. Casa de Miser. de Penápolis"
+    ]
+  },
+  {
+    "cidade": "Pereira Barreto",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Sta. Casa de Miser. de Pereira Barreto"
+    ]
+  },
+  {
+    "cidade": "Potirendaba",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Hospital Assistencial Potirendaba"
+    ]
+  },
+  {
+    "cidade": "Riolândia",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Hosp. Sta. Casa de Miser. de Riolândia"
+    ]
+  },
+  {
+    "cidade": "Santa Fé do Sul",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Irm. da Sta. Casa de Miser. de Sta. Fé do Sul"
+    ]
+  },
+  {
+    "cidade": "Tanabi",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Santa Casa São Vicente de Paulo de Tanabi"
+    ]
+  },
+  {
+    "cidade": "Três Lagoas",
+    "uf": "MS",
+    "quantidade": 1,
+    "hospitais": [
+      "Hosp. CASSEMS Unidade de Três Lagoas"
+    ]
+  },
+  {
+    "cidade": "Urupês",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Irm. de Misericórdia de Urupês"
+    ]
+  },
+  {
+    "cidade": "Votuporanga",
+    "uf": "SP",
+    "quantidade": 2,
+    "hospitais": [
+      "Casa de Saúde - Unimed Votuporanga",
+      "Santa Casa de Misericórdia de Votuporanga"
+    ]
+  }
+]

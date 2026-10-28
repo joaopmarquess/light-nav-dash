@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { geoCentroid, geoMercator, geoPath } from "d3-geo";
 import type { FeatureCollection, Feature, Geometry } from "geojson";
-import { Loader2 } from "lucide-react";
+import { Hospital, Loader2 } from "lucide-react";
+import { hospitaisDaCidade } from "@/lib/mapaHospitais";
 import { insideMAA, isExplicitMAAMember, maaFillRole, outerMAARings, smoothMAAPath } from "@/lib/maaGeometry";
 import { municipalHeatFill, municipalHeatNeighbors } from "@/lib/municipalHeatColors";
 
@@ -352,6 +353,22 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
           const p = projection([-54.8, -16.2]);
           return p ? label(p[0], p[1], "Outros", outrosTotal.toLocaleString("pt-BR") + " vidas", "lbl-outros") : null;
         })()}
+        {crop && features.map((feature) => {
+          const name = feature.properties.name ?? "";
+          const uf = feature.properties._uf;
+          const hospital = hospitaisDaCidade(name, uf);
+          if (!hospital) return null;
+          const [x, y] = pathFn.centroid(feature);
+          if (!Number.isFinite(x) || !Number.isFinite(y) || x < 12 || y < 12 || x > width - 12 || y > height - 12) return null;
+          const description = `${name} / ${uf} — ${hospital.quantidade} ${hospital.quantidade === 1 ? "hospital" : "hospitais"}: ${hospital.hospitais.join("; ")}`;
+          return (
+            <g key={`hospital-${uf}-${name}`} transform={`translate(${x},${y})`} role="img" aria-label={description} data-hospital-city={`${uf}|${name}`}>
+              <title>{description}</title>
+              <circle r={12} fill="hsl(var(--background))" stroke="hsl(var(--foreground))" strokeWidth={1} />
+              <Hospital x={-8} y={-8} width={16} height={16} stroke="hsl(var(--foreground))" strokeWidth={2} pointerEvents="none" />
+            </g>
+          );
+        })}
       </svg>
 
       {hover && (
