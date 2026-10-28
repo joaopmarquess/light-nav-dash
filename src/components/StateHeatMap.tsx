@@ -364,8 +364,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
           return (
             <g key={`hospital-${uf}-${name}`} transform={`translate(${x},${y})`} role="img" aria-label={description} data-hospital-city={`${uf}|${name}`}>
               <title>{description}</title>
-              <circle r={16} fill="hsl(var(--background))" stroke="hsl(var(--map-maa-outline))" strokeWidth={2.5} />
-              <Hospital x={-11} y={-11} width={22} height={22} stroke="hsl(var(--map-maa-outline))" strokeWidth={2.5} pointerEvents="none" />
+              <Hospital x={-8} y={-8} width={16} height={16} fill="none" stroke="hsl(var(--map-maa-outline))" strokeWidth={2.5} />
             </g>
           );
         })}
