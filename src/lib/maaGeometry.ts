@@ -1,4 +1,7 @@
 import simplify from "simplify-js";
+import { topology as topology_ } from "topojson-server";
+import { presimplify, quantile, simplify as simplifyTopo } from "topojson-simplify";
+import { feature } from "topojson-client";
 
 export type MapPoint = number[];
 
@@ -56,4 +59,13 @@ export function smoothMAAPath(points: MapPoint[]): string {
     d += `Q${p.x},${p.y} ${(p.x + next.x) / 2},${(p.y + next.y) / 2}`;
   });
   return d + "Z";
+}
+// Display-only smoothing of municipal borders through shared topology arcs, so neighbours stay gap-free.
+export function smoothMunicipalDisplay<F extends GeoJSON.Feature>(features: F[], keepFraction = 0.12): F[] {
+  if (features.length === 0) return features;
+  const topology = topology_({ m: { type: "FeatureCollection", features } as GeoJSON.FeatureCollection });
+  const prepared = presimplify(topology);
+  const simplified = simplifyTopo(prepared, quantile(prepared, 1 - keepFraction));
+  const out = feature(simplified, simplified.objects.m) as unknown as GeoJSON.FeatureCollection;
+  return features.map((original, i) => ({ ...original, geometry: out.features[i]?.geometry ?? original.geometry }));
 }
