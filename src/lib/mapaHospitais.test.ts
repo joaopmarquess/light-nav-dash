@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hospitaisDaCidade, indexarHospitais } from "./mapaHospitais";
+import { cidadesComHospitais, hospitaisDaCidade, indexarHospitais } from "./mapaHospitais";
 import cadastro from "@/data/hospitais/guia-medico-2026-10-28.json";
 
 describe("Hospitais do mapa recortado", () => {
@@ -12,6 +12,9 @@ describe("Hospitais do mapa recortado", () => {
     expect([...indice.values()][0].cidade).toBe("Com hospital");
   });
   it("reconcilia as 34 cidades e os 39 hospitais do CSV fornecido", () => {
+    expect(cidadesComHospitais).toHaveLength(34);
+    expect(cidadesComHospitais.reduce((sum, row) => sum + row.quantidade, 0)).toBe(39);
+    for (const row of cidadesComHospitais) expect(hospitaisDaCidade(row.cidade, row.uf)).toEqual(row);
     expect(indexarHospitais(cadastro).size).toBe(34);
     expect(cadastro.reduce((s, row) => s + row.quantidade, 0)).toBe(39);
     for (const row of cadastro) expect(row.hospitais.length).toBe(row.quantidade);
