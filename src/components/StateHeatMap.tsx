@@ -361,17 +361,18 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
           if (!hospital) return null;
           const [x, y] = pathFn.centroid(feature);
           if (!Number.isFinite(x) || !Number.isFinite(y) || x < 17 || y < 17 || x > width - 17 || y > height - 17) return null;
-          const description = `${name} / ${uf} — ${hospital.quantidade} ${hospital.quantidade === 1 ? "hospital" : "hospitais"}: ${hospital.hospitais.join("; ")}`;
+          const gerais = hospital.geral ?? [];
+          const description = `${name} / ${uf} — ${gerais.length} ${gerais.length === 1 ? "hospital geral" : "hospitais gerais"}: ${gerais.join("; ")}`;
           const psiquiatricos = quantidadeHospitaisPsiquiatricos(name, uf);
           return (
             <g key={`hospital-${uf}-${name}`} transform={`translate(${x},${y})`}>
-              <g role="img" aria-label={description} data-hospital-city={`${uf}|${name}`}>
+              {gerais.length > 0 && <g role="img" aria-label={description} data-hospital-city={`${uf}|${name}`}>
               <title>{description}</title>
               <rect x={-9} y={-9} width={18} height={18} fill="none" pointerEvents="all" />
               <Hospital x={-8} y={-8} width={16} height={16} fill="none" stroke="hsl(var(--map-maa-outline))" strokeWidth={2.5} />
-              </g>
-              {psiquiatricos > 0 && <g transform="translate(20,0)" role="img" aria-label={`${name} / ${uf} — ${psiquiatricos} hospitais psiquiátricos`} data-psychiatric-hospital-city={`${uf}|${name}`}>
-                <title>{`${name} / ${uf} — ${psiquiatricos} hospitais psiquiátricos`}</title>
+              </g>}
+              {psiquiatricos > 0 && <g transform={`translate(${gerais.length > 0 ? 20 : 0},0)`} role="img" aria-label={`${name} / ${uf} — ${psiquiatricos} hospitais psiquiátricos: ${hospital.psiquiatrico?.join("; ")}`} data-psychiatric-hospital-city={`${uf}|${name}`}>
+                <title>{`${name} / ${uf} — ${psiquiatricos} hospitais psiquiátricos: ${hospital.psiquiatrico?.join("; ")}`}</title>
                 <rect x={-9} y={-9} width={18} height={18} fill="none" pointerEvents="all" />
                 <Hospital aria-hidden="true" x={-8} y={-8} width={16} height={16} fill="none" stroke="hsl(var(--map-state-border))" strokeWidth={5} />
                 <Hospital x={-8} y={-8} width={16} height={16} fill="none" stroke="hsl(var(--map-hospital-psychiatric))" strokeWidth={2.5} />
