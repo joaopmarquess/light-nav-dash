@@ -1,0 +1,421 @@
+[
+  {
+    "cidade": "São José do Rio Preto",
+    "uf": "SP",
+    "quantidade": 3,
+    "hospitais": [
+      "Associação Portuguesa de Beneficência SJ Rio Preto",
+      "Hosp. Bezerra de Menezes",
+      "Hospital Andrade & Montanhez"
+    ],
+    "geral": [
+      "Associação Portuguesa de Beneficência SJ Rio Preto"
+    ],
+    "psiquiatrico": [
+      "Hosp. Bezerra de Menezes",
+      "Hospital Andrade & Montanhez"
+    ]
+  },
+  {
+    "cidade": "Auriflama",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Sta. Casa de Miser. de Auriflama"
+    ],
+    "geral": [
+      "Sta. Casa de Miser. de Auriflama"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Buritama",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Sta. Casa de Miser. São Francisco"
+    ],
+    "geral": [
+      "Sta. Casa de Miser. São Francisco"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Cassilândia",
+    "uf": "MS",
+    "quantidade": 1,
+    "hospitais": [
+      "Hosp. de Clínicas São Lucas"
+    ],
+    "geral": [
+      "Hosp. de Clínicas São Lucas"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Estrela d'Oeste",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Irm. da Sta. Casa de Miser. de Estrela d'Oeste"
+    ],
+    "geral": [
+      "Irm. da Sta. Casa de Miser. de Estrela d'Oeste"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Fernandópolis",
+    "uf": "SP",
+    "quantidade": 2,
+    "hospitais": [
+      "Hospital das Clínicas de Fernandópolis",
+      "Santa Casa de Fernandópolis"
+    ],
+    "geral": [
+      "Hospital das Clínicas de Fernandópolis",
+      "Santa Casa de Fernandópolis"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Frutal",
+    "uf": "MG",
+    "quantidade": 1,
+    "hospitais": [
+      "Hospital e Maternidade São José"
+    ],
+    "geral": [
+      "Hospital e Maternidade São José"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "General Salgado",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Sta. Casa de Miser. Nossa Sra. das Dores de General Salgado"
+    ],
+    "geral": [
+      "Sta. Casa de Miser. Nossa Sra. das Dores de General Salgado"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Ibirá",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Sta. Casa de Miser. de Ibirá"
+    ],
+    "geral": [
+      "Sta. Casa de Miser. de Ibirá"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Ilha Solteira",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Hospital Regional de Ilha Solteira"
+    ],
+    "geral": [
+      "Hospital Regional de Ilha Solteira"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Iturama",
+    "uf": "MG",
+    "quantidade": 1,
+    "hospitais": [
+      "Casa de Saúde e Mat. Nossa Senhora Aparecida"
+    ],
+    "geral": [
+      "Casa de Saúde e Mat. Nossa Senhora Aparecida"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Jaci",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Hosp. Nossa Sra. da Divina Providência"
+    ],
+    "geral": [
+      "Hosp. Nossa Sra. da Divina Providência"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Jales",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Santa Casa de Misericórdia de Jales"
+    ],
+    "geral": [
+      "Santa Casa de Misericórdia de Jales"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "José Bonifácio",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Sta. Casa de Miser. de José Bonifácio"
+    ],
+    "geral": [
+      "Sta. Casa de Miser. de José Bonifácio"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Lins",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Santa Casa de Lins"
+    ],
+    "geral": [
+      "Santa Casa de Lins"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Macaubal",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Sta. Casa de Macaubal"
+    ],
+    "geral": [
+      "Sta. Casa de Macaubal"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Mirassol",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Hospital Regional São Pedro na Providência de Deus"
+    ],
+    "geral": [
+      "Hospital Regional São Pedro na Providência de Deus"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Monte Aprazível",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Irm. da Santa Casa de Miser. de Monte Aprazível"
+    ],
+    "geral": [
+      "Irm. da Santa Casa de Miser. de Monte Aprazível"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Nhandeara",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Hosp. São Domingos na Providência de Deus"
+    ],
+    "geral": [
+      "Hosp. São Domingos na Providência de Deus"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Nova Granada",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Irm. da Sta. Casa Miser. Nova Granada"
+    ],
+    "geral": [
+      "Irm. da Sta. Casa Miser. Nova Granada"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Novo Horizonte",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Irm. São José de Novo Horizonte"
+    ],
+    "geral": [
+      "Irm. São José de Novo Horizonte"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Olímpia",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Sta. Casa de Miser. de Olímpia"
+    ],
+    "geral": [
+      "Sta. Casa de Miser. de Olímpia"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Ouroeste",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Hospital João Veloso"
+    ],
+    "geral": [
+      "Hospital João Veloso"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Paranaíba",
+    "uf": "MS",
+    "quantidade": 2,
+    "hospitais": [
+      "Hospital CASSEMS Unidade de Paranaíba",
+      "Sta. Casa de Miser. de Paranaíba"
+    ],
+    "geral": [
+      "Hospital CASSEMS Unidade de Paranaíba",
+      "Sta. Casa de Miser. de Paranaíba"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Paulo de Faria",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Irm. Sta. Casa de Miser. de Paulo de Faria"
+    ],
+    "geral": [
+      "Irm. Sta. Casa de Miser. de Paulo de Faria"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Penápolis",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Irm. da Sta. Casa de Miser. de Penápolis"
+    ],
+    "geral": [
+      "Irm. da Sta. Casa de Miser. de Penápolis"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Pereira Barreto",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Sta. Casa de Miser. de Pereira Barreto"
+    ],
+    "geral": [
+      "Sta. Casa de Miser. de Pereira Barreto"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Potirendaba",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Hospital Assistencial Potirendaba"
+    ],
+    "geral": [
+      "Hospital Assistencial Potirendaba"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Riolândia",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Hosp. Sta. Casa de Miser. de Riolândia"
+    ],
+    "geral": [
+      "Hosp. Sta. Casa de Miser. de Riolândia"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Santa Fé do Sul",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Irm. da Sta. Casa de Miser. de Sta. Fé do Sul"
+    ],
+    "geral": [
+      "Irm. da Sta. Casa de Miser. de Sta. Fé do Sul"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Tanabi",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Santa Casa São Vicente de Paulo de Tanabi"
+    ],
+    "geral": [
+      "Santa Casa São Vicente de Paulo de Tanabi"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Três Lagoas",
+    "uf": "MS",
+    "quantidade": 1,
+    "hospitais": [
+      "Hosp. CASSEMS Unidade de Três Lagoas"
+    ],
+    "geral": [
+      "Hosp. CASSEMS Unidade de Três Lagoas"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Urupês",
+    "uf": "SP",
+    "quantidade": 1,
+    "hospitais": [
+      "Irm. de Misericórdia de Urupês"
+    ],
+    "geral": [
+      "Irm. de Misericórdia de Urupês"
+    ],
+    "psiquiatrico": []
+  },
+  {
+    "cidade": "Votuporanga",
+    "uf": "SP",
+    "quantidade": 2,
+    "hospitais": [
+      "Casa de Saúde - Unimed Votuporanga",
+      "Santa Casa de Misericórdia de Votuporanga"
+    ],
+    "geral": [
+      "Casa de Saúde - Unimed Votuporanga",
+      "Santa Casa de Misericórdia de Votuporanga"
+    ],
+    "psiquiatrico": []
+  }
+]

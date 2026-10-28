@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ordenarCidadesComHospitais } from "@/lib/mapaHospitais";
+import { listarHospitaisPorTipo, type TipoHospital } from "@/lib/mapaHospitais";
 
 const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onDateChange, toolbarTarget }: { embedded?: boolean; mapOnly?: boolean; selectedDate?: string; onDateChange?: (date: string) => void; toolbarTarget?: HTMLElement | null }) => {
   const [localDate, setLocalDate] = useState(geographicToday);
@@ -21,7 +21,7 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
   const [showMAA, setShowMAA] = useState(false);
   const [cropOpen, setCropOpen] = useState(false);
   const [showHospitals, setShowHospitals] = useState(true);
-  const [showHospitalList, setShowHospitalList] = useState(false);
+  const [hospitalListType, setHospitalListType] = useState<TipoHospital | null>(null);
 
   const { total, porUF, ufTotals, cityTotalsByUF } = useMemo(() => {
     const ufTotals: Record<string, number> = {};
@@ -37,7 +37,7 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
     return { total, porUF, ufTotals, cityTotalsByUF: city };
   }, [rows]);
 
-  const cidadesHospitalOrdenadas = useMemo(() => ordenarCidadesComHospitais(cityTotalsByUF), [cityTotalsByUF]);
+  const cidadesHospitalOrdenadas = useMemo(() => hospitalListType ? listarHospitaisPorTipo(cityTotalsByUF, hospitalListType) : [], [cityTotalsByUF, hospitalListType]);
 
   if (sel && sel !== "CENTRO") {
     return (
@@ -142,14 +142,17 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
           <div className="min-h-0 flex-1 flex flex-col md:flex-row gap-4">
             <div className="relative min-h-0 min-w-0 flex-1">
               {cropOpen && <StateHeatMap trialScale crop showHospitals={showHospitals} showOverview={false} ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} />}
-              <Button type="button" variant="ghost" size="sm" className="absolute bottom-3 left-3 bg-background/90 gap-2" aria-expanded={showHospitalList} aria-controls="cidades-com-hospital" onClick={() => setShowHospitalList((visible) => !visible)}><Hospital className="text-[hsl(var(--map-maa-outline))]" />Hospitais</Button>
+              <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
+                <Button type="button" variant="ghost" size="sm" className="bg-background/90 gap-2" aria-expanded={hospitalListType === "geral"} aria-controls="cidades-com-hospital" onClick={() => setHospitalListType((tipo) => tipo === "geral" ? null : "geral")}><Hospital className="text-[hsl(var(--map-maa-outline))]" />Hospital Geral</Button>
+                <Button type="button" variant="ghost" size="sm" className="bg-background/90 gap-2" aria-expanded={hospitalListType === "psiquiatrico"} aria-controls="cidades-com-hospital" onClick={() => setHospitalListType((tipo) => tipo === "psiquiatrico" ? null : "psiquiatrico")}><span className="relative h-4 w-4" aria-hidden="true"><Hospital className="absolute inset-0 text-[hsl(var(--map-state-border))]" strokeWidth={5} /><Hospital className="absolute inset-0 text-[hsl(var(--map-hospital-psychiatric))]" strokeWidth={2.5} /></span>Hospital Psiquiátrico</Button>
+              </div>
             </div>
-            {showHospitalList && <aside id="cidades-com-hospital" aria-label="Cidades com hospital" className="max-h-[45%] md:max-h-none md:w-96 shrink-0 overflow-auto border-t md:border-t-0 md:border-l border-border pt-3 md:pt-0 md:pl-4">
-              <h3 className="text-sm font-semibold mb-2">Cidades com hospital</h3>
+            {hospitalListType && <aside id="cidades-com-hospital" aria-label="Cidades com hospital" className="max-h-[45%] md:max-h-none md:w-[min(48%,640px)] shrink-0 overflow-auto border-t md:border-t-0 md:border-l border-border pt-3 md:pt-0 md:pl-4">
+              <h3 className="text-sm font-semibold mb-2">{hospitalListType === "geral" ? "Hospitais gerais" : "Hospitais psiquiátricos"}</h3>
               <Table>
-                <TableHeader><TableRow><TableHead>Cidade</TableHead><TableHead className="text-center">UF</TableHead><TableHead className="text-center">Hospitais</TableHead><TableHead className="text-center">Vidas</TableHead></TableRow></TableHeader>
-                <TableBody>{cidadesHospitalOrdenadas.map((row) => <TableRow key={`${row.uf}|${row.cidade}`}><TableCell className="py-2">{row.cidade}</TableCell><TableCell className="py-2 text-center">{row.uf}</TableCell><TableCell className="py-2 text-center tabular-nums">{row.quantidade}</TableCell><TableCell className="py-2 text-center tabular-nums">{row.vidas.toLocaleString("pt-BR")}</TableCell></TableRow>)}</TableBody>
-                <TableFooter><TableRow><TableCell colSpan={2}>Total · {cidadesHospitalOrdenadas.length} cidades</TableCell><TableCell className="text-center tabular-nums">{cidadesHospitalOrdenadas.reduce((sum, row) => sum + row.quantidade, 0)}</TableCell><TableCell className="text-center tabular-nums">{cidadesHospitalOrdenadas.reduce((sum, row) => sum + row.vidas, 0).toLocaleString("pt-BR")}</TableCell></TableRow></TableFooter>
+                <TableHeader><TableRow><TableHead>Cidade</TableHead><TableHead className="text-center">UF</TableHead><TableHead className="text-center">QT</TableHead><TableHead>Nome do Hospital</TableHead><TableHead className="text-center">Vidas</TableHead></TableRow></TableHeader>
+                <TableBody>{cidadesHospitalOrdenadas.map((row) => <TableRow key={`${row.uf}|${row.cidade}`}><TableCell className="py-2">{row.cidade}</TableCell><TableCell className="py-2 text-center">{row.uf}</TableCell><TableCell className="py-2 text-center tabular-nums">{row.quantidade}</TableCell><TableCell className="py-2">{row.hospitais.map(nome => <div key={nome} className="break-words mb-1 last:mb-0">{nome}</div>)}</TableCell><TableCell className="py-2 text-center tabular-nums">{row.vidas.toLocaleString("pt-BR")}</TableCell></TableRow>)}</TableBody>
+                <TableFooter><TableRow><TableCell colSpan={2}>Total · {cidadesHospitalOrdenadas.length} cidades</TableCell><TableCell className="text-center tabular-nums">{cidadesHospitalOrdenadas.reduce((sum, row) => sum + row.quantidade, 0)}</TableCell><TableCell /><TableCell className="text-center tabular-nums">{cidadesHospitalOrdenadas.reduce((sum, row) => sum + row.vidas, 0).toLocaleString("pt-BR")}</TableCell></TableRow></TableFooter>
               </Table>
             </aside>}
           </div>

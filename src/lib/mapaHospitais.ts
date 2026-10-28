@@ -1,10 +1,14 @@
-import cadastro from "@/data/hospitais/guia-medico-2026-10-28.json";
+import cadastro from "@/data/hospitais/guia-medico-2026-10-28-tipo.json";
+
+export type TipoHospital = "geral" | "psiquiatrico";
 
 export interface HospitaisCidade {
   cidade: string;
   uf: string;
   quantidade: number;
   hospitais: string[];
+  geral?: string[];
+  psiquiatrico?: string[];
 }
 
 const chave = (cidade: string, uf: string) => `${uf.trim().toUpperCase()}|${cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[’‘]/g, "'").trim().toUpperCase()}`;
@@ -26,7 +30,12 @@ export function ordenarCidadesComHospitais(cityTotalsByUF: Record<string, Record
     }
   }
   return cidades.map((row) => ({ ...row, vidas: vidasPorCidade.get(chave(row.cidade, row.uf)) ?? 0 }))
-    .sort((a, b) => b.quantidade - a.quantidade || b.vidas - a.vidas || a.cidade.localeCompare(b.cidade, "pt-BR") || a.uf.localeCompare(b.uf));
+    .sort((a, b) => b.vidas - a.vidas || b.quantidade - a.quantidade || a.cidade.localeCompare(b.cidade, "pt-BR") || a.uf.localeCompare(b.uf));
+}
+
+export function listarHospitaisPorTipo(cityTotalsByUF: Record<string, Record<string, number>>, tipo: TipoHospital) {
+  const cidades = cidadesComHospitais.map((row) => ({ ...row, hospitais: row[tipo] ?? [], quantidade: row[tipo]?.length ?? 0 })).filter(row => row.quantidade > 0);
+  return ordenarCidadesComHospitais(cityTotalsByUF, cidades);
 }
 
 export function hospitaisDaCidade(cidade: string, uf: string) {
@@ -34,5 +43,5 @@ export function hospitaisDaCidade(cidade: string, uf: string) {
 }
 
 export function quantidadeHospitaisPsiquiatricos(cidade: string, uf: string) {
-  return chave(cidade, uf) === chave("São José do Rio Preto", "SP") ? 2 : 0;
+  return hospitaisDaCidade(cidade, uf)?.psiquiatrico?.length ?? 0;
 }
