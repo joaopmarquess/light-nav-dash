@@ -42,7 +42,7 @@ begin
       and (  (v.tp_linha = 'E' and v.dt_vigencia_beneficiario::date >= date_trunc('month', p_de)
                                and v.dt_vigencia_beneficiario::date <  date_trunc('month', p_ate) + interval '2 month')
           or (v.tp_linha = 'S' and v.dt_desligamento::date >= date_trunc('month', p_de) - interval '1 month'
-                               and v.dt_desligamento::date <= p_ate)
+                               and v.dt_desligamento::date <  date_trunc('month', p_ate) + interval '1 month')
           or (v.tp_linha = 'R' and v.dt_reativacao::date between p_de and p_ate))
   ),
   -- todas as entradas E da janela (para ligar saídas) e as do período
@@ -105,7 +105,7 @@ linhas as materialized (
     and (  (v.tp_linha = 'E' and v.dt_vigencia_beneficiario::date >= date_trunc('month', p_de)
                              and v.dt_vigencia_beneficiario::date <  date_trunc('month', p_ate) + interval '2 month')
         or (v.tp_linha = 'S' and v.dt_desligamento::date >= date_trunc('month', p_de) - interval '1 month'
-                             and v.dt_desligamento::date <= p_ate)
+                             and v.dt_desligamento::date <  date_trunc('month', p_ate) + interval '1 month')
         or (v.tp_linha = 'R' and v.dt_reativacao::date between p_de and p_ate))
 ),
 e_all as materialized (
