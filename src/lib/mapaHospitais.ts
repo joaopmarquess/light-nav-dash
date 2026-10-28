@@ -15,6 +15,8 @@ export function indexarHospitais(rows: readonly HospitaisCidade[]) {
 
 const indice = indexarHospitais(cadastro);
 
+export const cidadesComHospitais: readonly HospitaisCidade[] = [...indice.values()].sort((a, b) => a.cidade.localeCompare(b.cidade, "pt-BR") || a.uf.localeCompare(b.uf));
+
 export function hospitaisDaCidade(cidade: string, uf: string) {
   return indice.get(chave(cidade, uf));
 }
