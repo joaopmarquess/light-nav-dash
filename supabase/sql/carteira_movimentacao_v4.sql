@@ -1,10 +1,7 @@
 -- Carteira > Movimentação: regra nova nos cards Vendas e Cancelamentos (v4).
 -- Reativações e Transferências permanecem na regra original.
 -- Executar na base da Hostinger, inteiro.
--- * carteira_movimentacao_totais: Vendas pela regra nova (linhas E; transferência por
---   nome + nascimento com saída em linha S de motivo "Transferência").
---   Cancelamentos, Reativações e Transferências voltam exatamente à regra original.
--- * carteira_movimentacao (detalhes do olho): volta exatamente à versão original.
+-- Altera somente carteira_movimentacao_totais. Os detalhes do olho seguem na versão original.
 
 CREATE OR REPLACE FUNCTION public.carteira_movimentacao_totais(p_de date, p_ate date)
  RETURNS TABLE(vendas bigint, cancelamentos bigint, reativacoes bigint, entradas_transferencia bigint, saidas_transferencia bigint)
