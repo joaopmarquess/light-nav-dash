@@ -92,6 +92,7 @@ All colors MUST be HSL.
     --map-municipal-border: 0 0% 100%;
     --map-state-border: 0 0% 0%;
     --map-maa-outline: 0 78% 49%;
+    --map-hospital-psychiatric: 48 100% 50%;
     --map-outside-lives: 0 0% 88%;
     --uberaba-map-center: 137 42% 65%;
     --uberaba-map-ring-one: 137 43% 78%;
@@ -196,6 +197,7 @@ All colors MUST be HSL.
     --map-municipal-border: 0 0% 100%;
     --map-state-border: 0 0% 0%;
     --map-maa-outline: 0 85% 65%;
+    --map-hospital-psychiatric: 48 100% 60%;
     --map-outside-lives: 0 0% 68%;
     --uberaba-map-center: 137 38% 55%;
     --uberaba-map-ring-one: 137 30% 45%;

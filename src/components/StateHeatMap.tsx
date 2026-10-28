@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { geoCentroid, geoMercator, geoPath } from "d3-geo";
 import type { FeatureCollection, Feature, Geometry } from "geojson";
 import { Hospital, Loader2 } from "lucide-react";
-import { hospitaisDaCidade } from "@/lib/mapaHospitais";
+import { hospitaisDaCidade, quantidadeHospitaisPsiquiatricos } from "@/lib/mapaHospitais";
 import { insideMAA, isExplicitMAAMember, maaFillRole, outerMAARings, smoothMAAPath } from "@/lib/maaGeometry";
 import { municipalHeatFill, municipalHeatNeighbors } from "@/lib/municipalHeatColors";
 
@@ -362,11 +362,19 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
           const [x, y] = pathFn.centroid(feature);
           if (!Number.isFinite(x) || !Number.isFinite(y) || x < 17 || y < 17 || x > width - 17 || y > height - 17) return null;
           const description = `${name} / ${uf} — ${hospital.quantidade} ${hospital.quantidade === 1 ? "hospital" : "hospitais"}: ${hospital.hospitais.join("; ")}`;
+          const psiquiatricos = quantidadeHospitaisPsiquiatricos(name, uf);
           return (
-            <g key={`hospital-${uf}-${name}`} transform={`translate(${x},${y})`} role="img" aria-label={description} data-hospital-city={`${uf}|${name}`}>
+            <g key={`hospital-${uf}-${name}`} transform={`translate(${x},${y})`}>
+              <g role="img" aria-label={description} data-hospital-city={`${uf}|${name}`}>
               <title>{description}</title>
               <rect x={-9} y={-9} width={18} height={18} fill="none" pointerEvents="all" />
               <Hospital x={-8} y={-8} width={16} height={16} fill="none" stroke="hsl(var(--map-maa-outline))" strokeWidth={2.5} />
+              </g>
+              {psiquiatricos > 0 && <g transform="translate(20,0)" role="img" aria-label={`${name} / ${uf} — ${psiquiatricos} hospitais psiquiátricos`} data-psychiatric-hospital-city={`${uf}|${name}`}>
+                <title>{`${name} / ${uf} — ${psiquiatricos} hospitais psiquiátricos`}</title>
+                <rect x={-9} y={-9} width={18} height={18} fill="none" pointerEvents="all" />
+                <Hospital x={-8} y={-8} width={16} height={16} fill="none" stroke="hsl(var(--map-hospital-psychiatric))" strokeWidth={2.5} />
+              </g>}
             </g>
           );
         })}
