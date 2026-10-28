@@ -42,12 +42,13 @@ interface Props {
   core?: boolean;
   outlineOnly?: boolean;
   crop?: boolean;
+  showHospitals?: boolean;
   showOverview?: boolean;
 }
 
 type FeatWithUF = Feature<Geometry, { name?: string; _uf: string }>;
 
-export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, outrosTotal, trialScale, core, outlineOnly, crop, showOverview = true }: Props) {
+export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, outrosTotal, trialScale, core, outlineOnly, crop, showHospitals = true, showOverview = true }: Props) {
   const isArea = ufs.length > 1;
   const key = ufs.join("-");
   const [features, setFeatures] = useState<FeatWithUF[] | null>(null);
@@ -353,7 +354,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
           const p = projection([-54.8, -16.2]);
           return p ? label(p[0], p[1], "Outros", outrosTotal.toLocaleString("pt-BR") + " vidas", "lbl-outros") : null;
         })()}
-        {crop && features.map((feature) => {
+        {crop && showHospitals && features.map((feature) => {
           const name = feature.properties.name ?? "";
           const uf = feature.properties._uf;
           const hospital = hospitaisDaCidade(name, uf);
