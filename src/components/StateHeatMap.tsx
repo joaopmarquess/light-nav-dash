@@ -359,13 +359,13 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
           const hospital = hospitaisDaCidade(name, uf);
           if (!hospital) return null;
           const [x, y] = pathFn.centroid(feature);
-          if (!Number.isFinite(x) || !Number.isFinite(y) || x < 12 || y < 12 || x > width - 12 || y > height - 12) return null;
+          if (!Number.isFinite(x) || !Number.isFinite(y) || x < 17 || y < 17 || x > width - 17 || y > height - 17) return null;
           const description = `${name} / ${uf} — ${hospital.quantidade} ${hospital.quantidade === 1 ? "hospital" : "hospitais"}: ${hospital.hospitais.join("; ")}`;
           return (
             <g key={`hospital-${uf}-${name}`} transform={`translate(${x},${y})`} role="img" aria-label={description} data-hospital-city={`${uf}|${name}`}>
               <title>{description}</title>
-              <circle r={12} fill="hsl(var(--background))" stroke="hsl(var(--foreground))" strokeWidth={1} />
-              <Hospital x={-8} y={-8} width={16} height={16} stroke="hsl(var(--foreground))" strokeWidth={2} pointerEvents="none" />
+              <circle r={16} fill="hsl(var(--background))" stroke="hsl(var(--map-maa-outline))" strokeWidth={2.5} />
+              <Hospital x={-11} y={-11} width={22} height={22} stroke="hsl(var(--map-maa-outline))" strokeWidth={2.5} pointerEvents="none" />
             </g>
           );
         })}
