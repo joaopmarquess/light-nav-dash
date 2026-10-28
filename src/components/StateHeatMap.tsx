@@ -249,9 +249,9 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     }
     if (trialScale) {
       if (!total || total <= 0) return vizinhos.has(i) ? "hsl(var(--primary) / 0.12)" : "hsl(var(--muted))";
-      const lim = [100, 500, 1000, 5000];
-      const alphas = [0.42, 0.56, 0.7, 0.85, 1];
-      const t = lim.filter((l) => total >= l).length;
+      const lim = [100, 500, 1000, 3000, 5000];
+      const alphas = [0.4, 0.5, 0.6, 0.75, 0.88, 1];
+      const t = lim.filter((l) => total > l).length;
       return `hsl(var(--primary) / ${alphas[t]})`;
     }
     if (!total || total <= 0) return "hsl(var(--muted))";
