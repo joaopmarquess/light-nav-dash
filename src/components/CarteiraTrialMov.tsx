@@ -161,12 +161,25 @@ export default function CarteiraTrialMov() {
     cacheVidas.current.set(d, request);
     return request;
   };
+  // "Anterior": mesmo conceito de "Ativos em" da Área Geográfica (carteira_trial_geo), na véspera do "De".
+  const cacheAnterior = useRef(new Map<string, Promise<number>>());
+  const consultarAnterior = (d: string): Promise<number> => {
+    const cached = cacheAnterior.current.get(d);
+    if (cached) return cached;
+    const request = Promise.resolve(hostinger.rpc("carteira_trial_geo", { p_data: d }))
+      .then(({ data, error }: any) => {
+        if (error) throw new Error(error.message);
+        return (data ?? []).reduce((s: number, r: any) => s + (Number(r.ativos) || 0), 0);
+      }).catch((error: Error) => { cacheAnterior.current.delete(d); throw error; });
+    cacheAnterior.current.set(d, request);
+    return request;
+  };
   useEffect(() => {
     setVidasSelecionadas({ ant: null, fin: null });
     if (!mesSelecionado) return;
     let off = false;
     const { anterior, final } = datasVidasIndicadores(mesSelecionado);
-    Promise.all([consultarVidas(anterior), consultarVidas(final)])
+    Promise.all([consultarAnterior(anterior), consultarVidas(final)])
       .then(([ant, fin]) => { if (!off) setVidasSelecionadas({ ant, fin }); })
       .catch((e: Error) => { if (!off) setErr(e.message); });
     return () => { off = true; };
@@ -181,7 +194,7 @@ export default function CarteiraTrialMov() {
     setVidasMensais([]); setMensalLoading(false); setMensalErro(null);
     if (!podeCalcularMovimentacao(ap)) return;
     const at = consultarVidas;
-    Promise.all([at(dAnt), at(dFin)]).then(([ant, fin]) => { if (!off) setVidas({ ant, fin }); })
+    Promise.all([consultarAnterior(dAnt), at(dFin)]).then(([ant, fin]) => { if (!off) setVidas({ ant, fin }); })
       .catch((e: Error) => { if (!off) setErr(e.message); });
     setMensalLoading(true);
     (async () => {

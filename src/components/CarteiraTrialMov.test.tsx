@@ -11,6 +11,7 @@ beforeEach(() => {
   api.pages.mockResolvedValue({ data: [{ tipo: "T+", data: "2026-10-01", cpf: "123", mat: "2", mat_anterior: "1", saida: "2026-09-30", entrada: "2026-10-01", tipo_reentrada: "Pura" }], error: null });
   api.rpc.mockImplementation((name: string) => {
     if (name === "carteira_movimentacao_totais") return Promise.resolve({ data: [{ vendas: 11771, cancelamentos: 8049, reativacoes: 1179, entradas_transferencia: 2043, saidas_transferencia: 2019 }], error: null });
+    if (name === "carteira_trial_geo") return Promise.resolve({ data: [{ uf: "SP", cidade: "A", ativos: 60000 }, { uf: "MG", cidade: "B", ativos: 6000 }], error: null });
     if (name === "carteira_trial_kpis") return Promise.resolve({ data: [{ ativos: 66411 }], error: null });
     const query = { order: () => query, range: api.pages };
     return query;
@@ -54,14 +55,15 @@ describe("consultas da Movimentação sob demanda", () => {
   });
   it("preserva datas de Anterior e Final em De-1 e Até+1", async () => {
     render(<CarteiraTrialMov />); aplicar();
-    await waitFor(() => expect(api.rpc).toHaveBeenCalledWith("carteira_trial_kpis", { p_data: "2026-09-30", p_q: null, p_empresa: null, p_cidade: null }));
-    expect(api.rpc).toHaveBeenCalledWith("carteira_trial_kpis", { p_data: "2026-10-24", p_q: null, p_empresa: null, p_cidade: null });
+    await waitFor(() => expect(api.rpc).toHaveBeenCalledWith("carteira_trial_geo", { p_data: "2026-09-30" }));
+    await waitFor(() => expect(api.rpc).toHaveBeenCalledWith("carteira_trial_kpis", { p_data: "2026-10-23", p_q: null, p_empresa: null, p_cidade: null }));
   });
   it("consulta vidas no fechamento mensal e reutiliza os totais das barras sem buscar detalhes", async () => {
     render(<CarteiraTrialMov />); aplicar();
     await waitFor(() => expect(screen.getByRole("button", { name: "Abrir depuração" })).toBeEnabled());
     await waitFor(() => expect(api.rpc).toHaveBeenCalledWith("carteira_trial_kpis", { p_data: "2026-10-31", p_q: null, p_empresa: null, p_cidade: null }));
-    expect(api.rpc.mock.calls.filter(([name]) => name === "carteira_trial_kpis")).toHaveLength(3);
+    expect(api.rpc.mock.calls.filter(([name]) => name === "carteira_trial_kpis")).toHaveLength(2);
+    expect(api.rpc.mock.calls.filter(([name]) => name === "carteira_trial_geo")).toHaveLength(1);
     expect(api.rpc.mock.calls.filter(([name]) => name === "carteira_movimentacao_totais")).toHaveLength(1);
     expect(api.pages).not.toHaveBeenCalled();
   });
