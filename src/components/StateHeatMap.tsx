@@ -40,12 +40,13 @@ interface Props {
   trialScale?: boolean;
   core?: boolean;
   outlineOnly?: boolean;
+  crop?: boolean;
   showOverview?: boolean;
 }
 
 type FeatWithUF = Feature<Geometry, { name?: string; _uf: string }>;
 
-export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, outrosTotal, trialScale, core, outlineOnly, showOverview = true }: Props) {
+export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, outrosTotal, trialScale, core, outlineOnly, crop, showOverview = true }: Props) {
   const isArea = ufs.length > 1;
   const key = ufs.join("-");
   const [features, setFeatures] = useState<FeatWithUF[] | null>(null);
@@ -126,7 +127,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
 
   // Centro principal: bloco contíguo de municípios com mais de 70 vidas que contém o maior município
   const coreData = useMemo(() => {
-    if ((!core && !outlineOnly) || !features) return null;
+    if ((!core && !outlineOnly && !crop) || !features) return null;
     const rings = (g: any): number[][][] => (g.type === "Polygon" ? g.coordinates : g.type === "MultiPolygon" ? g.coordinates.flat() : []);
     const k = (c: number[]) => `${c[0].toFixed(4)},${c[1].toFixed(4)}`;
     const tot = features.map((f) => normalizedByUF[f.properties._uf]?.[normalize(f.properties?.name ?? "")] ?? 0);
@@ -180,11 +181,11 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     });
     const total = [...set].reduce((s, i) => s + tot[i], 0);
     return { set, show, inside, lines: outer, total };
-  }, [core, outlineOnly, features, normalizedByUF]);
+  }, [core, outlineOnly, crop, features, normalizedByUF]);
 
   const { pathFn, projection } = useMemo(() => {
     if (!features) return { pathFn: null, projection: null };
-    const fc: FeatureCollection = { type: "FeatureCollection", features: core && coreData ? features.filter((_, i) => coreData.set.has(i)) : features };
+    const fc: FeatureCollection = { type: "FeatureCollection", features: (core || crop) && coreData ? features.filter((_, i) => coreData.set.has(i)) : features };
     const projection = geoMercator().fitExtent([[4, 4], [width - 4, height - 4]], fc);
     // Pull back the display only; the original MAA membership is unchanged.
     if (core && coreData) {
@@ -193,7 +194,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
       projection.translate([width / 2 + (tx - width / 2) * 0.68, height / 2 + (ty - height / 2) * 0.68]);
     }
     return { pathFn: geoPath(projection), projection };
-  }, [features, width, height, coreData, core]);
+  }, [features, width, height, coreData, core, crop]);
   const overview = useMemo(() => {
     if (!core || !coreData || !features || !projection) return null;
     const overviewProjection = geoMercator().fitExtent([[12, 12], [248, 268]], {
@@ -282,7 +283,10 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
         role="img"
         aria-label={core ? "Mapa Área Atuação (MAA)" : `Mapa de calor por município — ${ufs.join(", ")}`}
       >
+        {crop && <defs><clipPath id="maa-crop-clip"><path d={maaOutline} /></clipPath></defs>}
+        <g clipPath={crop ? "url(#maa-crop-clip)" : undefined}>
         {features.map((f, i) => {
+          if (crop && coreData && !coreData.show.has(i) && !coreData.inside.has(i)) return null;
           const name = f.properties?.name ?? "";
           const uf = f.properties._uf;
           const total = normalizedByUF[uf]?.[normalize(name)] ?? 0;
@@ -335,6 +339,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
               pointerEvents="none"
             />
           ))}
+        </g>
         {coreData && (
           <path data-maa-outline d={maaOutline} fill="none" stroke="hsl(var(--map-maa-outline))" strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" pointerEvents="none" />
         )}

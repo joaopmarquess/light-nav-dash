@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, Eye, EyeOff, Loader2, Map as MapIcon, Search } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2, Map as MapIcon, Scissors, Search } from "lucide-react";
 import { geographicToday, useCarteiraTrialGeo } from "@/hooks/useCarteiraTrialGeo";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 import { StateHeatMap } from "@/components/StateHeatMap";
 import { UF_FLAGS } from "@/components/DWCarteira";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onDateChange, toolbarTarget }: { embedded?: boolean; mapOnly?: boolean; selectedDate?: string; onDateChange?: (date: string) => void; toolbarTarget?: HTMLElement | null }) => {
@@ -16,6 +17,7 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
   const error = queryError?.message;
   const [sel, setSel] = useState<"SP" | "MG" | "MS" | "GO" | "BRASIL" | "CENTRO" | null>(null);
   const [showMAA, setShowMAA] = useState(false);
+  const [cropOpen, setCropOpen] = useState(false);
 
   const { total, porUF, ufTotals, cityTotalsByUF } = useMemo(() => {
     const ufTotals: Record<string, number> = {};
@@ -62,6 +64,7 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
     <TooltipProvider delayDuration={150}><Tooltip><TooltipTrigger asChild>
       <Button type="button" variant={showMAA ? "secondary" : "outline"} size="icon" aria-label={showMAA ? "Ocultar MAA" : "Mostrar MAA"} aria-pressed={showMAA} onClick={() => setShowMAA((visible) => !visible)} className="h-12 w-12 [&_svg]:size-6">{showMAA ? <Eye /> : <EyeOff />}</Button>
     </TooltipTrigger><TooltipContent>{showMAA ? "Ocultar MAA" : "Mostrar MAA"}</TooltipContent></Tooltip></TooltipProvider>
+    <Button type="button" variant="outline" size="icon" title="Área de atuação recortada" aria-label="Área de atuação recortada" onClick={() => setCropOpen(true)} className="h-12 w-12 [&_svg]:size-6"><Scissors /></Button>
   </div>;
 
   return (
@@ -120,6 +123,14 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
           </div>
         )}
       </div>
+      <Dialog open={cropOpen} onOpenChange={setCropOpen}>
+        <DialogContent className="flex h-[92vh] w-[95vw] max-w-none flex-col p-4">
+          <DialogTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Área de atuação recortada</DialogTitle>
+          <div className="min-h-0 flex-1">
+            {cropOpen && <StateHeatMap trialScale crop showOverview={false} ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} />}
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
