@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, Eye, EyeOff, Hospital, List, Loader2, Map as MapIcon, Scissors, Search, Slash } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Hospital, Loader2, Map as MapIcon, Scissors, Search, Slash } from "lucide-react";
 import { geographicToday, useCarteiraTrialGeo } from "@/hooks/useCarteiraTrialGeo";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 import { StateHeatMap } from "@/components/StateHeatMap";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { cidadesComHospitais } from "@/lib/mapaHospitais";
+import { ordenarCidadesComHospitais } from "@/lib/mapaHospitais";
 
 const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onDateChange, toolbarTarget }: { embedded?: boolean; mapOnly?: boolean; selectedDate?: string; onDateChange?: (date: string) => void; toolbarTarget?: HTMLElement | null }) => {
   const [localDate, setLocalDate] = useState(geographicToday);
@@ -36,6 +36,8 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
     porUF.push({ uf: "Outros", total: total - porUF.reduce((s, r) => s + r.total, 0) });
     return { total, porUF, ufTotals, cityTotalsByUF: city };
   }, [rows]);
+
+  const cidadesHospitalOrdenadas = useMemo(() => ordenarCidadesComHospitais(cityTotalsByUF), [cityTotalsByUF]);
 
   if (sel && sel !== "CENTRO") {
     return (
@@ -135,19 +137,19 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
                 <span className="relative inline-flex h-4 w-4" aria-hidden="true"><Hospital className="h-4 w-4" />{!showHospitals && <Slash className="absolute inset-0 h-4 w-4" />}</span>
               </Button>
             </TooltipTrigger><TooltipContent>{showHospitals ? "Ocultar hospitais" : "Mostrar hospitais"}</TooltipContent></Tooltip></TooltipProvider>
-            <TooltipProvider delayDuration={150}><Tooltip><TooltipTrigger asChild>
-              <Button type="button" variant={showHospitalList ? "secondary" : "outline"} size="icon" aria-label={showHospitalList ? "Ocultar lista de hospitais" : "Listar cidades com hospital"} aria-pressed={showHospitalList} aria-controls="cidades-com-hospital" onClick={() => setShowHospitalList((visible) => !visible)}><List /></Button>
-            </TooltipTrigger><TooltipContent>{showHospitalList ? "Ocultar lista de hospitais" : "Listar cidades com hospital"}</TooltipContent></Tooltip></TooltipProvider>
             <DialogTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Área de atuação recortada</DialogTitle>
           </div>
           <div className="min-h-0 flex-1 flex flex-col md:flex-row gap-4">
-            <div className="min-h-0 min-w-0 flex-1">{cropOpen && <StateHeatMap trialScale crop showHospitals={showHospitals} showOverview={false} ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} />}</div>
+            <div className="relative min-h-0 min-w-0 flex-1">
+              {cropOpen && <StateHeatMap trialScale crop showHospitals={showHospitals} showOverview={false} ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} />}
+              <Button type="button" variant="ghost" size="sm" className="absolute bottom-3 left-3 bg-background/90 gap-2" aria-expanded={showHospitalList} aria-controls="cidades-com-hospital" onClick={() => setShowHospitalList((visible) => !visible)}><Hospital className="text-[hsl(var(--map-maa-outline))]" />Hospitais</Button>
+            </div>
             {showHospitalList && <aside id="cidades-com-hospital" aria-label="Cidades com hospital" className="max-h-[45%] md:max-h-none md:w-96 shrink-0 overflow-auto border-t md:border-t-0 md:border-l border-border pt-3 md:pt-0 md:pl-4">
               <h3 className="text-sm font-semibold mb-2">Cidades com hospital</h3>
               <Table>
-                <TableHeader><TableRow><TableHead>Cidade</TableHead><TableHead className="text-center">UF</TableHead><TableHead className="text-center">Hospitais</TableHead></TableRow></TableHeader>
-                <TableBody>{cidadesComHospitais.map((row) => <TableRow key={`${row.uf}|${row.cidade}`}><TableCell className="py-2">{row.cidade}</TableCell><TableCell className="py-2 text-center">{row.uf}</TableCell><TableCell className="py-2 text-center tabular-nums">{row.quantidade}</TableCell></TableRow>)}</TableBody>
-                <TableFooter><TableRow><TableCell colSpan={2}>Total · {cidadesComHospitais.length} cidades</TableCell><TableCell className="text-center tabular-nums">{cidadesComHospitais.reduce((sum, row) => sum + row.quantidade, 0)}</TableCell></TableRow></TableFooter>
+                <TableHeader><TableRow><TableHead>Cidade</TableHead><TableHead className="text-center">UF</TableHead><TableHead className="text-center">Hospitais</TableHead><TableHead className="text-center">Vidas</TableHead></TableRow></TableHeader>
+                <TableBody>{cidadesHospitalOrdenadas.map((row) => <TableRow key={`${row.uf}|${row.cidade}`}><TableCell className="py-2">{row.cidade}</TableCell><TableCell className="py-2 text-center">{row.uf}</TableCell><TableCell className="py-2 text-center tabular-nums">{row.quantidade}</TableCell><TableCell className="py-2 text-center tabular-nums">{row.vidas.toLocaleString("pt-BR")}</TableCell></TableRow>)}</TableBody>
+                <TableFooter><TableRow><TableCell colSpan={2}>Total · {cidadesHospitalOrdenadas.length} cidades</TableCell><TableCell className="text-center tabular-nums">{cidadesHospitalOrdenadas.reduce((sum, row) => sum + row.quantidade, 0)}</TableCell><TableCell className="text-center tabular-nums">{cidadesHospitalOrdenadas.reduce((sum, row) => sum + row.vidas, 0).toLocaleString("pt-BR")}</TableCell></TableRow></TableFooter>
               </Table>
             </aside>}
           </div>

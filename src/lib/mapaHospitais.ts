@@ -17,6 +17,18 @@ const indice = indexarHospitais(cadastro);
 
 export const cidadesComHospitais: readonly HospitaisCidade[] = [...indice.values()].sort((a, b) => a.cidade.localeCompare(b.cidade, "pt-BR") || a.uf.localeCompare(b.uf));
 
+export function ordenarCidadesComHospitais(cityTotalsByUF: Record<string, Record<string, number>>, cidades: readonly HospitaisCidade[] = cidadesComHospitais) {
+  const vidasPorCidade = new Map<string, number>();
+  for (const [uf, cidadesUF] of Object.entries(cityTotalsByUF)) {
+    for (const [cidade, vidas] of Object.entries(cidadesUF)) {
+      const id = chave(cidade, uf);
+      vidasPorCidade.set(id, (vidasPorCidade.get(id) ?? 0) + vidas);
+    }
+  }
+  return cidades.map((row) => ({ ...row, vidas: vidasPorCidade.get(chave(row.cidade, row.uf)) ?? 0 }))
+    .sort((a, b) => b.quantidade - a.quantidade || b.vidas - a.vidas || a.cidade.localeCompare(b.cidade, "pt-BR") || a.uf.localeCompare(b.uf));
+}
+
 export function hospitaisDaCidade(cidade: string, uf: string) {
   return indice.get(chave(cidade, uf));
 }
