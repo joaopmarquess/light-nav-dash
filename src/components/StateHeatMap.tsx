@@ -5,6 +5,7 @@ import { Hospital, Loader2 } from "lucide-react";
 import { hospitaisDaCidade, quantidadeHospitaisPsiquiatricos } from "@/lib/mapaHospitais";
 import { insideMAA, isExplicitMAAMember, maaFillRole, outerMAARings, smoothMAAPath, smoothMunicipalDisplay } from "@/lib/maaGeometry";
 import { municipalHeatFill, municipalHeatNeighbors } from "@/lib/municipalHeatColors";
+import { northernMunicipalArcs, partitionNorthernStateBoundary } from "@/lib/northernBoundaryDisplay";
 
 // IBGE UF codes for municipality geojson from tbrugz/geodata-br
 const UF_CODE: Record<string, string> = { SP: "35", MG: "31", MS: "50", GO: "52" };
@@ -238,6 +239,11 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
       return Number.isFinite(x) && Number.isFinite(y) ? [{ uf, x, y }] : [];
     });
   }, [core, crop, coreData, features, pathFn, key]);
+  const croppedStateBorders = useMemo(() => {
+    if (!crop || !features || !stateOutlines) return null;
+    const arcs = northernMunicipalArcs(features);
+    return stateOutlines.map((f) => partitionNorthernStateBoundary(f.geometry, arcs));
+  }, [crop, features, stateOutlines]);
   const label = (x: number, y: number, t1: string, t2: string, k: string) => (
     <g key={k} transform={`translate(${x},${y})`} pointerEvents="none">
       <text textAnchor="middle" fontSize={14} fontWeight={700} fill="hsl(var(--foreground))" stroke="hsl(var(--background))" strokeWidth={3} paintOrder="stroke">{t1}</text>
@@ -337,15 +343,26 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
         ))}
         {isArea &&
           stateOutlines?.map((f, i) => (
+            <g key={`state-outline-${i}`}>
             <path
-              key={`state-outline-${i}`}
-              d={pathFn(f) ?? ""}
+              d={pathFn(croppedStateBorders?.[i].regular ?? f) ?? ""}
               fill="none"
               stroke="hsl(var(--map-state-border))"
               strokeWidth={coreData ? 2.5 : 1.5}
               strokeLinejoin="round"
               pointerEvents="none"
             />
+            {croppedStateBorders && <path
+              data-northern-boundary="subtle"
+              d={pathFn(croppedStateBorders[i].subtle) ?? ""}
+              fill="none"
+              stroke="hsl(var(--map-state-border) / 0.4)"
+              strokeWidth={1.2}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              pointerEvents="none"
+            />}
+            </g>
           ))}
         {coreData && (
           <path data-maa-outline d={maaOutline} fill="none" stroke="hsl(var(--map-maa-outline))" strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" pointerEvents="none" />
