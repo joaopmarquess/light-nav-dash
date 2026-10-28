@@ -3,7 +3,7 @@ import { geoCentroid, geoMercator, geoPath } from "d3-geo";
 import type { FeatureCollection, Feature, Geometry } from "geojson";
 import { Hospital, Loader2 } from "lucide-react";
 import { hospitaisDaCidade, quantidadeHospitaisPsiquiatricos } from "@/lib/mapaHospitais";
-import { insideMAA, isExplicitMAAMember, maaFillRole, outerMAARings, smoothMAAPath, smoothMunicipalDisplay } from "@/lib/maaGeometry";
+import { insideMAA, isExplicitMAAMember, maaFillRole, outerMAARings, smoothMAAPath, smoothBoundaryStroke, smoothMunicipalDisplay } from "@/lib/maaGeometry";
 import { municipalHeatFill, municipalHeatNeighbors } from "@/lib/municipalHeatColors";
 import { northernMunicipalArcs, partitionNorthernStateBoundary } from "@/lib/northernBoundaryDisplay";
 
@@ -228,8 +228,8 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     if (!coreData || !projection) return "";
     return coreData.lines.map((ring) => smoothMAAPath(ring.flatMap((p) => {
       const projected = projection([p[0], p[1]]); return projected ? [projected] : [];
-    }))).join(" ");
-  }, [coreData, projection]);
+    }), crop ? 4 : 2)).join(" ");
+  }, [coreData, projection, crop]);
   const maaLabels = useMemo(() => {
     if ((!core && !crop) || !coreData || !features || !pathFn) return [];
     return ufs.flatMap((uf) => {
@@ -240,10 +240,17 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
     });
   }, [core, crop, coreData, features, pathFn, key]);
   const croppedStateBorders = useMemo(() => {
-    if (!crop || !features || !stateOutlines) return null;
+    if (!crop || !features || !stateOutlines || !projection) return null;
     const arcs = northernMunicipalArcs(features);
-    return stateOutlines.map((f) => partitionNorthernStateBoundary(f.geometry, arcs));
-  }, [crop, features, stateOutlines]);
+    return stateOutlines.map((f) => {
+      const borders = partitionNorthernStateBoundary(f.geometry, arcs);
+      const stroke = (lines: number[][][]) => lines.map((line) => smoothBoundaryStroke(line.flatMap((p) => {
+        const point = projection([p[0], p[1]]);
+        return point ? [point] : [];
+      }))).join(" ");
+      return { regular: stroke(borders.regular.coordinates), subtle: stroke(borders.subtle.coordinates) };
+    });
+  }, [crop, features, stateOutlines, projection]);
   const label = (x: number, y: number, t1: string, t2: string, k: string) => (
     <g key={k} transform={`translate(${x},${y})`} pointerEvents="none">
       <text textAnchor="middle" fontSize={14} fontWeight={700} fill="hsl(var(--foreground))" stroke="hsl(var(--background))" strokeWidth={3} paintOrder="stroke">{t1}</text>
@@ -345,16 +352,17 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
           stateOutlines?.map((f, i) => (
             <g key={`state-outline-${i}`}>
             <path
-              d={pathFn(croppedStateBorders?.[i].regular ?? f) ?? ""}
+              d={croppedStateBorders?.[i].regular ?? pathFn(f) ?? ""}
               fill="none"
-              stroke="hsl(var(--map-state-border))"
-              strokeWidth={coreData ? 2.5 : 1.5}
+              stroke={crop ? "hsl(var(--map-state-border) / 0.65)" : "hsl(var(--map-state-border))"}
+              strokeWidth={crop ? 1.5 : coreData ? 2.5 : 1.5}
               strokeLinejoin="round"
+              strokeLinecap="round"
               pointerEvents="none"
             />
             {croppedStateBorders && <path
               data-northern-boundary="subtle"
-              d={pathFn(croppedStateBorders[i].subtle) ?? ""}
+              d={croppedStateBorders[i].subtle}
               fill="none"
               stroke="hsl(var(--map-state-border) / 0.4)"
               strokeWidth={1.2}
@@ -365,7 +373,7 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
             </g>
           ))}
         {coreData && (
-          <path data-maa-outline d={maaOutline} fill="none" stroke="hsl(var(--map-maa-outline))" strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" pointerEvents="none" />
+          <path data-maa-outline d={maaOutline} fill="none" stroke={crop ? "hsl(var(--map-maa-outline) / 0.8)" : "hsl(var(--map-maa-outline))"} strokeWidth={crop ? 2 : 3} strokeLinejoin="round" strokeLinecap="round" pointerEvents="none" />
         )}
         {maaLabels.map(({ uf, x, y }) => (
           <text key={`maa-uf-${uf}`} x={x} y={y} textAnchor="middle" fontSize={20} fontWeight={700} fill="hsl(var(--map-state-border))" pointerEvents="none">{uf}</text>

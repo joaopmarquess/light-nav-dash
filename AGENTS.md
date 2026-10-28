@@ -22,6 +22,7 @@
 - Keep Uberaba credentialing reference selection and supplied summary values in a tested helper, separate from summary presentation, so visual changes cannot alter quantities or source precedence.
 - Keep MAA geometry and area classification in a focused helper, with tests, so map presentation does not change beneficiary counts or geographic membership.
 - Simplify only the projected display outline; classify municipalities using the original outer ring to preserve geographic membership.
+- Simplify and round cropped-map exterior and state strokes in projected pixel space only; keep open state runs open and preserve northern attenuation, original fitting and membership.
 - Simplify Goiás municipal display geometry through shared topology arcs only; retain original geometry for fitting, membership, centroids and counts so visual smoothing cannot change data or separate neighboring boundaries.
 - Keep localized northern state-border attenuation in a display-only helper matching shared municipal arcs; never alter original polygons, projection fitting, MAA membership or totals.
 - Derive the MAA locator rectangle from the main projection's inverse viewport corners, so the overview always represents the displayed region.
