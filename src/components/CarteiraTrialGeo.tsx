@@ -20,7 +20,7 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
   const [sel, setSel] = useState<"SP" | "MG" | "MS" | "GO" | "BRASIL" | "CENTRO" | null>(null);
   const [showMAA, setShowMAA] = useState(false);
   const [cropOpen, setCropOpen] = useState(false);
-  const [showHospitals, setShowHospitals] = useState(true);
+  const [showHospitals, setShowHospitals] = useState(false);
   const [hospitalListType, setHospitalListType] = useState<TipoHospital | null>(null);
 
   const { total, porUF, ufTotals, cityTotalsByUF } = useMemo(() => {
@@ -70,7 +70,7 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
     <TooltipProvider delayDuration={150}><Tooltip><TooltipTrigger asChild>
       <Button type="button" variant={showMAA ? "secondary" : "outline"} size="icon" aria-label={showMAA ? "Ocultar MAA" : "Mostrar MAA"} aria-pressed={showMAA} onClick={() => setShowMAA((visible) => !visible)} className="h-12 w-12 [&_svg]:size-6">{showMAA ? <Eye /> : <EyeOff />}</Button>
     </TooltipTrigger><TooltipContent>{showMAA ? "Ocultar MAA" : "Mostrar MAA"}</TooltipContent></Tooltip></TooltipProvider>
-    <Button type="button" variant="outline" size="icon" title="Área de atuação recortada" aria-label="Área de atuação recortada" onClick={() => setCropOpen(true)} className="h-12 w-12 [&_svg]:size-6"><Scissors /></Button>
+    <Button type="button" variant="outline" size="icon" title="Área de atuação recortada" aria-label="Área de atuação recortada" onClick={() => { setShowHospitals(false); setHospitalListType(null); setCropOpen(true); }} className="h-12 w-12 [&_svg]:size-6"><Scissors /></Button>
   </div>;
 
   return (
@@ -139,7 +139,7 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
         <DialogContent aria-describedby={undefined} className="flex h-[92vh] w-[95vw] max-w-none flex-col p-4">
           <div className="flex items-center gap-3 pr-8">
             <TooltipProvider delayDuration={150}><Tooltip><TooltipTrigger asChild>
-              <Button type="button" variant={showHospitals ? "secondary" : "outline"} size="icon" aria-label={showHospitals ? "Ocultar hospitais" : "Mostrar hospitais"} aria-pressed={showHospitals} onClick={() => setShowHospitals((visible) => !visible)}>
+              <Button type="button" variant={showHospitals ? "secondary" : "outline"} size="icon" aria-label={showHospitals ? "Ocultar hospitais" : "Mostrar hospitais"} aria-pressed={showHospitals} onClick={() => { setShowHospitals((visible) => !visible); setHospitalListType(null); }}>
                 <span className="relative inline-flex h-4 w-4" aria-hidden="true"><Hospital className="h-4 w-4" />{!showHospitals && <Slash className="absolute inset-0 h-4 w-4" />}</span>
               </Button>
             </TooltipTrigger><TooltipContent>{showHospitals ? "Ocultar hospitais" : "Mostrar hospitais"}</TooltipContent></Tooltip></TooltipProvider>
@@ -148,10 +148,10 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
           <div className="min-h-0 flex-1 flex flex-col md:flex-row gap-4">
             <div className="relative min-h-0 min-w-0 flex-1">
               {cropOpen && <StateHeatMap trialScale crop showHospitals={showHospitals} showOverview={false} ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} />}
-              <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
+              {showHospitals && <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
                 <Button type="button" variant="ghost" size="sm" className="bg-background/90 gap-2" aria-expanded={hospitalListType === "geral"} aria-controls="cidades-com-hospital" onClick={() => setHospitalListType((tipo) => tipo === "geral" ? null : "geral")}><Hospital className="text-[hsl(var(--map-maa-outline))]" />Hospital Geral</Button>
                 <Button type="button" variant="ghost" size="sm" className="bg-background/90 gap-2" aria-expanded={hospitalListType === "psiquiatrico"} aria-controls="cidades-com-hospital" onClick={() => setHospitalListType((tipo) => tipo === "psiquiatrico" ? null : "psiquiatrico")}><span className="relative h-4 w-4" aria-hidden="true"><Hospital className="absolute inset-0 text-[hsl(var(--map-state-border))]" strokeWidth={5} /><Hospital className="absolute inset-0 text-[hsl(var(--map-hospital-psychiatric))]" strokeWidth={2.5} /></span>Hospital Psiquiátrico</Button>
-              </div>
+              </div>}
             </div>
             {hospitalListType && <aside id="cidades-com-hospital" aria-label="Cidades com hospital" className="max-h-[45%] md:max-h-none md:w-[min(48%,640px)] shrink-0 overflow-auto border-t md:border-t-0 md:border-l border-border pt-3 md:pt-0 md:pl-4">
               <div className="flex items-center justify-between gap-2 mb-2">
