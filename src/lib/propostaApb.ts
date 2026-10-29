@@ -16,8 +16,10 @@ export const PRECOS_PROPOSTA: [number, number][] = [[110.53, 165.79], [128.99, 1
 export const PLANO_NOVO = "3990";
 export const PLANO_GRUPO = "GRUPO";
 export const COPART_PROPOSTA = 0.2; // copart = 20% da receita CPP
-/** Despesa fixa por vida: despesas do arquivo Menu ÷ vidas do arquivo (R$ 3.788.992,11 ÷ 1.113). */
-export const DESPESA_POR_VIDA = 3788992.11 / 1113;
+/** Despesa anual fixa da proposta (R$ 3.000.000,00), rateada pelas 854 vidas. */
+export const DESPESA_FIXA_PROPOSTA = 3_000_000;
+export const VIDAS_PROPOSTA = 854;
+export const DESPESA_POR_VIDA = DESPESA_FIXA_PROPOSTA / VIDAS_PROPOSTA;
 
 /** Projeção anual: CPP = mensalidade × 12; copart = 20% CPP; despesas fixas = vidas × despesa por vida.
  *  Sinistralidade = despesas ÷ receita total; saldo = receita total − despesas. */
