@@ -16,12 +16,14 @@ export const PRECOS_PROPOSTA: [number, number][] = [[110.53, 165.79], [128.99, 1
 export const PLANO_NOVO = "3990";
 export const PLANO_GRUPO = "GRUPO";
 export const COPART_PROPOSTA = 0.2; // copart = 20% da receita CPP
-export const SINISTRALIDADE_PROPOSTA = 0.8; // despesas = 80% da receita total
+/** Despesa fixa por vida: despesas do arquivo Menu ÷ vidas do arquivo (R$ 3.788.992,11 ÷ 1.113). */
+export const DESPESA_POR_VIDA = 3788992.11 / 1113;
 
-/** Projeção anual: CPP = mensalidade × 12; copart = 20% CPP; despesas = 80% (CPP + copart). */
-export function projecaoAnual(mensalidade: number) {
+/** Projeção anual: CPP = mensalidade × 12; copart = 20% CPP; despesas fixas = vidas × despesa por vida.
+ *  Sinistralidade = despesas ÷ receita total; saldo = receita total − despesas. */
+export function projecaoAnual(mensalidade: number, vidas: number) {
   const recCpp = mensalidade * 12, recCopart = recCpp * COPART_PROPOSTA, recTotal = recCpp + recCopart;
-  return { recCpp, recCopart, recTotal, despTotal: recTotal * SINISTRALIDADE_PROPOSTA };
+  return { recCpp, recCopart, recTotal, despTotal: vidas * DESPESA_POR_VIDA };
 }
 
 const num = (s: string) => Number((s || "0").replace(/\./g, "").replace(",", "."));
