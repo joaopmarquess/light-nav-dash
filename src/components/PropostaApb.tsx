@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, FileSpreadsheet, Users, UserCheck, Wallet, Receipt, CalendarDays, Printer, FileText } from "lucide-react";
+import { ChevronDown, ChevronRight, FileSpreadsheet, Users, UserCheck, Wallet, Receipt, CalendarDays, Printer, FileText, Save } from "lucide-react";
+import { lerDefaultsApb, gravarDefaultsApb, type DefaultsApb, type VariaveisApb } from "@/lib/propostaApbDefaults";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -32,12 +33,18 @@ export default function PropostaApb() {
   const [baseMenu, setBaseMenu] = useState<LinhaEmp[] | null>(null);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   // Níveis 3 e 4: mesma mecânica (vidas do cenário 1.242 titulares + 15%), cada um com suas próprias variáveis.
-  const VARS_PADRAO = { linEnf: 199.99, sinPct: 90, copartPct: 25, depBase: 125 };
-  const VARS_N3 = { linEnf: 249.17, sinPct: 99, copartPct: 25, depBase: 110 };
-  const [vars, setVars] = useState<Record<3 | 4, typeof VARS_PADRAO>>({ 3: VARS_N3, 4: VARS_PADRAO });
+  const [defaults, setDefaults] = useState<DefaultsApb>(() => lerDefaultsApb(window.localStorage));
+  const VARS_PADRAO = defaults[4];
+  const VARS_N3 = defaults[3];
+  const [vars, setVars] = useState<DefaultsApb>(() => ({ 3: { ...defaults[3] }, 4: { ...defaults[4] } }));
+  const [saveStatus, setSaveStatus] = useState("");
   const vk = (nivel >= 3 ? nivel : 3) as 3 | 4;
   const { linEnf, sinPct, copartPct, depBase } = vars[vk];
-  const setVar = (k: keyof typeof VARS_PADRAO) => (v: number) => setVars((x) => ({ ...x, [vk]: { ...x[vk], [k]: v } }));
+  const setVar = (k: keyof VariaveisApb) => (v: number) => { setSaveStatus(""); setVars((x) => ({ ...x, [vk]: { ...x[vk], [k]: v } })); };
+  const gravar = () => {
+    try { setDefaults(gravarDefaultsApb(window.localStorage, vk, vars[vk])); setSaveStatus("Padrão gravado."); }
+    catch { setSaveStatus("Não foi possível gravar neste navegador."); }
+  };
   const setLinEnf = setVar("linEnf"), setSinPct = setVar("sinPct"), setCopartPct = setVar("copartPct"), setDepBase = setVar("depBase");
   const linear = useMemo(() => tabelaLinear(linEnf), [linEnf]);
   const precoDep = useMemo(() => tabelaDependente(depBase), [depBase]);
@@ -131,7 +138,7 @@ export default function PropostaApb() {
           <legend className="px-1 text-xs font-semibold text-muted-foreground">Proposta Novo Plano</legend>
           <div className="flex gap-1">
           {([3, 4] as const).map((n) => <Button key={n} type="button" size="sm" variant={nivel === n ? "default" : "ghost"} aria-pressed={nivel === n} title={({ 3: "Novo plano - racional", 4: "Novo plano - estratégico" } as const)[n]} onClick={() => setNivel(n)}>{n === 3 ? "Racional" : "Estratégico"}</Button>)}
-          <Dialog modal={false} onOpenChange={(o) => o && setPos({ x: 0, y: 0 })}>
+          <Dialog modal={false} onOpenChange={(o) => { setSaveStatus(""); if (o) setPos({ x: 0, y: 0 }); }}>
             <DialogTrigger asChild><Button type="button" size="sm" variant="outline" tabIndex={nivel >= 3 ? 0 : -1} aria-hidden={nivel < 3} className={nivel >= 3 ? "" : "invisible pointer-events-none"}>Variáveis</Button></DialogTrigger>
             <DialogContent semFundo className="max-w-md shadow-2xl" style={{ transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))` }} onInteractOutside={(e) => e.preventDefault()}>
               <DialogHeader className="cursor-move select-none" onPointerDown={(e) => { const o = { x: e.clientX - pos.x, y: e.clientY - pos.y }; const mv = (ev: PointerEvent) => setPos({ x: ev.clientX - o.x, y: ev.clientY - o.y }); const up = () => { window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); }; window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up); }}><DialogTitle>Variáveis do Nível {nivel}</DialogTitle><p className="text-xs font-normal text-muted-foreground">Arraste por aqui para mover</p></DialogHeader>
@@ -148,6 +155,10 @@ export default function PropostaApb() {
                     <thead className="text-muted-foreground"><tr><th className="py-1 text-left">Faixa</th><th className="py-1 text-center">Enfermaria</th><th className="py-1 text-center">Apartamento</th></tr></thead>
                     <tbody>{FAIXAS_APB.map((f, i) => <tr key={f} className="border-t border-border"><td className="py-1 font-medium">{f}</td>{[0, 1].map((j) => <td key={j} className="px-1 py-1 text-right">{i === 0 && j === 0 ? <input aria-label="00 a 18 Enfermaria" type="number" step="0.01" min="0" value={depBase} onChange={(e) => setDepBase(Number(e.target.value) || 0)} className="w-full rounded border border-input bg-background px-2 py-1 text-right" /> : <span className="px-2">{brl(precoDep[i][j])}</span>}</td>)}</tr>)}</tbody>
                   </table>
+                </div>
+                <div className="flex items-center justify-end gap-3 border-t border-border pt-3">
+                  <span role="status" className="text-xs text-muted-foreground">{saveStatus}</span>
+                  <Button type="button" size="sm" onClick={gravar}><Save className="mr-2 h-4 w-4" />Gravar</Button>
                 </div>
               </div>
             </DialogContent>
