@@ -48,6 +48,8 @@ export default function PropostaApb() {
   const setLinEnf = setVar("linEnf"), setSinPct = setVar("sinPct"), setCopartPct = setVar("copartPct"), setDepBase = setVar("depBase");
   const linear = useMemo(() => tabelaLinear(linEnf), [linEnf]);
   const precoDep = useMemo(() => tabelaDependente(depBase), [depBase]);
+  const estrategicoTitular = tabelaLinear(vars[4].linEnf);
+  const estrategicoDependente = tabelaDependente(vars[4].depBase);
   const n5 = useMemo(() => gridsN5(linhasN4, linear, precoDep), [linhasN4, linear, precoDep]);
   const transf = nivel >= 3;
   // Transformar: todas as vidas migram para o plano novo 3990, com a tabela proposta.
@@ -119,10 +121,11 @@ export default function PropostaApb() {
             <div className="overflow-x-auto">
             <table className="w-full text-base">
               <thead>
-                <tr className="bg-primary text-primary-foreground"><th rowSpan={2} className="px-3 py-2 text-left align-bottom">Faixa etária</th>{[...PLANOS_APB, "Proposta"].map((p) => <th key={p} colSpan={2} className="border-l border-primary-foreground/30 px-3 py-1 text-center">{p}{COPART_DESC[p] && <div className="text-xs font-normal">{COPART_DESC[p]}{p in COPART_TIPO && <PropostaApbCopart tipo={COPART_TIPO[p as keyof typeof COPART_TIPO]} />}</div>}</th>)}</tr>
-                <tr className="bg-primary text-sm text-primary-foreground">{[...PLANOS_APB, "Proposta"].flatMap((p) => [<th key={p + "e"} className="border-l border-primary-foreground/30 px-2 py-1 text-center">Enfermaria</th>, <th key={p + "a"} className="px-2 py-1 text-center">Apartamento</th>])}</tr>
+                <tr className="bg-primary text-primary-foreground"><th rowSpan={3} className="px-3 py-2 text-left align-bottom">Faixa etária</th>{[...PLANOS_APB, "Proposta"].map((p) => <th key={p} colSpan={p === "Proposta" ? 4 : 2} rowSpan={p === "Proposta" ? 1 : 2} className="border-l border-primary-foreground/30 px-3 py-1 text-center">{p}{p === "Proposta" && <div className="text-xs font-normal">Estratégico</div>}{COPART_DESC[p] && <div className="text-xs font-normal">{COPART_DESC[p]}{p in COPART_TIPO && <PropostaApbCopart tipo={COPART_TIPO[p as keyof typeof COPART_TIPO]} />}</div>}</th>)}</tr>
+                <tr className="bg-primary text-sm text-primary-foreground">{["Titular", "Dependente"].map((r) => <th key={r} colSpan={2} className="border-l border-primary-foreground/30 px-2 py-1 text-center">{r}</th>)}</tr>
+                <tr className="bg-primary text-sm text-primary-foreground">{[...PLANOS_APB, "Titular", "Dependente"].flatMap((p) => [<th key={p + "e"} className="border-l border-primary-foreground/30 px-2 py-1 text-center">Enfermaria</th>, <th key={p + "a"} className="px-2 py-1 text-center">Apartamento</th>])}</tr>
               </thead>
-              <tbody>{FAIXAS_APB.map((f, i) => <tr key={f} className="border-t border-border"><td className="px-3 py-1.5 font-medium">{f}</td>{[...PLANOS_APB.map((p) => PRECOS_APB[p][i]), PRECOS_PROPOSTA[i]].flatMap((v, j) => [<td key={j + "e"} className={`border-l border-border px-3 py-2.5 text-center ${j === 3 ? "font-semibold" : ""}`}>{brl(v[0])}</td>, <td key={j + "a"} className={`px-3 py-2.5 text-center ${j === 3 ? "font-semibold" : ""}`}>{brl(v[1])}</td>])}</tr>)}</tbody>
+              <tbody>{FAIXAS_APB.map((f, i) => <tr key={f} className="border-t border-border"><td className="px-3 py-1.5 font-medium">{f}</td>{[...PLANOS_APB.map((p) => PRECOS_APB[p][i]), estrategicoTitular, estrategicoDependente[i]].flatMap((v, j) => [<td key={j + "e"} className={`border-l border-border px-3 py-2.5 text-center ${j >= 3 ? "font-semibold" : ""}`}>{brl(v[0])}</td>, <td key={j + "a"} className={`px-3 py-2.5 text-center ${j >= 3 ? "font-semibold" : ""}`}>{brl(v[1])}</td>])}</tr>)}</tbody>
             </table>
             </div>
           </DialogContent>
