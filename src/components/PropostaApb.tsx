@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, FileSpreadsheet, Users, UserCheck, Wallet, Receipt } from "lucide-react";
+import { ChevronDown, ChevronRight, FileSpreadsheet, Users, UserCheck, Wallet, Receipt, CalendarDays } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import PropostaApbSinistralidade from "@/components/PropostaApbSinistralidade";
 import { gerarPropostaPdf } from "@/lib/propostaApbPdf";
@@ -48,6 +48,9 @@ export default function PropostaApb() {
   }, { vidas: 0, tit: 0, enf: 0, mens: 0 });
   const vis = selOk === "Todos" ? planos : [selOk];
   const k = vis.reduce((a, p) => { const t = grids[p].total; return { vidas: a.vidas + t.total, tit: a.tit + t.enfTit + t.apTit, enf: a.enf + t.enfTit + t.enfDep, mens: a.mens + t.mensalidade }; }, { vidas: 0, tit: 0, enf: 0, mens: 0 });
+  const MEIO = [9, 21, 26, 31, 36, 41, 46, 51, 56, 64]; // ponto médio de cada faixa (59 ou + ≈ 64)
+  const idadeSoma = vis.reduce((a, p) => a + grids[p].faixas.reduce((b, f, i) => b + f.total * MEIO[i], 0), 0);
+  const idadeMedia = k.vidas ? idadeSoma / k.vidas : 0;
   const dataBr = data ? data.split("-").reverse().join("/") : "";
 
   const Linha = ({ f, bold }: { f: FaixaApb; bold?: boolean }) => (
@@ -98,11 +101,13 @@ export default function PropostaApb() {
       {nivel === 2 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 2: planos 2290, 2490 e 2890 agrupados como GRUPO, com preços e resultados atuais.</p>}
       {transf && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 3: todas as vidas dos planos 2290, 2490 e 2890 passam ao plano novo 3990, com a tabela proposta; projeção anual = vidas × preço × 12; copart 15% da CPP; sinistralidade 80%.</p>}
 
-      <section className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-        <Card icon={Users} label="Vidas ativas" value={n0(k.vidas)} sub={selOk === "Todos" || nivel > 1 ? undefined : `${pct(k.vidas, tot.vidas)} do total`} />
-        <Card icon={UserCheck} label="Titulares" value={n0(k.tit)} sub={`${pct(k.tit, k.vidas)} · ${n0(k.vidas - k.tit)} dependentes`} />
+      <section className="grid gap-2 sm:grid-cols-3 xl:grid-cols-6">
+        <Card icon={Users} label="Vidas ativas" value={n0(k.vidas)} />
+        <Card icon={UserCheck} label="Titulares" value={n0(k.tit)} sub={pct(k.tit, k.vidas)} />
+        <Card icon={Users} label="Dependentes" value={n0(k.vidas - k.tit)} sub={pct(k.vidas - k.tit, k.vidas)} />
+        <Card icon={CalendarDays} label="Idade média" value={`${idadeMedia.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} anos`} sub="Estimada pelo meio da faixa" />
         <Card icon={Wallet} label="Mensalidade total" value={brl(k.mens)} sub={`Anual: ${brl(k.mens * 12)}`} />
-        <Card icon={Receipt} label="Ticket médio" value={brl(k.vidas ? k.mens / k.vidas : 0)} sub={`Enfermaria ${pct(k.enf, k.vidas)} das vidas`} />
+        <Card icon={Receipt} label="Ticket médio" value={brl(k.vidas ? k.mens / k.vidas : 0)} />
       </section>
 
       <div className="grid flex-1 gap-2 xl:grid-cols-2">
