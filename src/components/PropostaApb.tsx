@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, FileSpreadsheet, Users, UserCheck, Wallet, Receipt } from "lucide-react";
 import PropostaApbSinistralidade from "@/components/PropostaApbSinistralidade";
 import csv from "@/data/propostaApb/vidas_precos_2026-10-29.csv?raw";
-import { parseApb, gridPlano, PLANOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, type FaixaApb } from "@/lib/propostaApb";
+import { parseApb, gridPlano, PLANOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, type FaixaApb } from "@/lib/propostaApb";
 
 const n0 = (v: number) => v.toLocaleString("pt-BR");
 const brl = (v: number | null) => (v == null ? "—" : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
@@ -18,14 +18,21 @@ const Card = ({ icon: Icon, label, value, sub }: { icon: typeof Users; label: st
 
 export default function PropostaApb() {
   const { data, linhas } = useMemo(() => parseApb(csv), []);
-  const [transf, setTransf] = useState(false);
+  const [nivel, setNivel] = useState<1 | 2 | 3>(1);
+  const transf = nivel === 3;
   // Transformar: todas as vidas migram para o plano novo 3990, com a tabela proposta.
-  const planos = transf ? [PLANO_NOVO] : PLANOS_APB;
-  const grids = useMemo(() => transf
-    ? { [PLANO_NOVO]: gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_NOVO })), PLANO_NOVO, PRECOS_PROPOSTA) }
-    : Object.fromEntries(PLANOS_APB.map((p) => [p, gridPlano(linhas, p)])), [linhas, transf]) as Record<string, ReturnType<typeof gridPlano>>;
+  // Nível 2: os três planos agrupados em GRUPO, com preços e resultado atuais (preço por faixa varia por plano → não exibido).
+  const planos = nivel === 3 ? [PLANO_NOVO] : nivel === 2 ? [PLANO_GRUPO] : PLANOS_APB;
+  const grids = useMemo(() => {
+    if (nivel === 3) return { [PLANO_NOVO]: gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_NOVO })), PLANO_NOVO, PRECOS_PROPOSTA) };
+    if (nivel === 2) {
+      const g = gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_GRUPO })), PLANO_GRUPO);
+      return { [PLANO_GRUPO]: { ...g, faixas: g.faixas.map((f) => ({ ...f, precoEnf: null, precoAp: null })) } };
+    }
+    return Object.fromEntries(PLANOS_APB.map((p) => [p, gridPlano(linhas, p)]));
+  }, [linhas, nivel]) as Record<string, ReturnType<typeof gridPlano>>;
   const [sel, setSel] = useState<string>("Todos");
-  const selOk = transf ? PLANO_NOVO : planos.includes(sel) ? sel : "Todos";
+  const selOk = nivel > 1 ? planos[0] : planos.includes(sel) ? sel : "Todos";
   const [abertos, setAbertos] = useState<Record<string, boolean>>({});
   const [rel, setRel] = useState(false);
 
@@ -56,18 +63,21 @@ export default function PropostaApb() {
           <p className="text-sm text-muted-foreground">Vidas ativas em {dataBr} nos planos 2290, 2490 e 2890 × preços de referência fornecidos (fotografia, não atualiza com a base).</p>
         </div>
         <div className="flex items-center gap-2">
-        <button type="button" onClick={() => setTransf((t) => !t)} className={`rounded-lg border px-3 py-2 text-sm font-medium ${transf ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card hover:bg-accent"}`}>{transf ? "Voltar ao atual" : "Transformar"}</button>
         <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
-          {(transf ? planos : ["Todos", ...planos]).map((p) => (
+          {([1, 2, 3] as const).map((n) => <button key={n} type="button" onClick={() => setNivel(n)} className={`rounded-md px-3 py-1.5 text-sm font-medium ${nivel === n ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>Nível {n}</button>)}
+        </div>
+        <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
+          {(nivel > 1 ? planos : ["Todos", ...planos]).map((p) => (
             <button key={p} type="button" onClick={() => setSel(p)} className={`rounded-md px-3 py-1.5 text-sm ${selOk === p ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>{p}</button>
           ))}
         </div>
         </div>
       </header>
-      {transf && <p className="rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm text-foreground">Modo Transformar: todas as vidas dos planos 2290, 2490 e 2890 passam ao plano novo 3990, com a tabela proposta; projeção anual = vidas × preço × 12; copart 16% da CPP; sinistralidade 75%.</p>}
+      {nivel === 2 && <p className="rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm text-foreground">Nível 2: planos 2290, 2490 e 2890 agrupados como GRUPO, com preços e resultados atuais.</p>}
+      {transf && <p className="rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm text-foreground">Nível 3: todas as vidas dos planos 2290, 2490 e 2890 passam ao plano novo 3990, com a tabela proposta; projeção anual = vidas × preço × 12; copart 16% da CPP; sinistralidade 75%.</p>}
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <Card icon={Users} label="Vidas ativas" value={n0(k.vidas)} sub={selOk === "Todos" || transf ? undefined : `${pct(k.vidas, tot.vidas)} do total`} />
+        <Card icon={Users} label="Vidas ativas" value={n0(k.vidas)} sub={selOk === "Todos" || nivel > 1 ? undefined : `${pct(k.vidas, tot.vidas)} do total`} />
         <Card icon={UserCheck} label="Titulares" value={n0(k.tit)} sub={`${pct(k.tit, k.vidas)} · ${n0(k.vidas - k.tit)} dependentes`} />
         <Card icon={Wallet} label="Mensalidade total" value={brl(k.mens)} sub={`Anual: ${brl(k.mens * 12)}`} />
         <Card icon={Receipt} label="Ticket médio" value={brl(k.vidas ? k.mens / k.vidas : 0)} sub={`Enfermaria ${pct(k.enf, k.vidas)} das vidas`} />
@@ -130,7 +140,7 @@ export default function PropostaApb() {
         </section>
       ))}
         </div>
-        <PropostaApbSinistralidade proj={transf ? grids : undefined} />
+        <PropostaApbSinistralidade proj={transf ? grids : undefined} grupo={nivel === 2} />
       </div>
       <p className="text-xs text-muted-foreground">Mensalidade = vidas × preço da faixa e acomodação. Ativo: vigência iniciada e sem desligamento na data; titular = matrícula final 00.</p>
     </div>
