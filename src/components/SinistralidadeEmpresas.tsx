@@ -37,7 +37,6 @@ function Grid({ titulo, linhas }: { titulo: string; linhas: LinhaEmp[] }) {
 export default function SinistralidadeEmpresas({ fonte = "mv" }: { fonte?: "mv" | "sb" | "menu" }) {
   const menu = fonte === "menu";
   const sb = fonte === "sb" || menu;
-  const ano = new Date().getFullYear();
   const [de, setDe] = useState("2025-09");
   const [ate, setAte] = useState("2026-08");
   const [empresa, setEmpresa] = useState("");
