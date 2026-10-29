@@ -3,6 +3,7 @@ import CarteiraTrialGeo from "@/components/CarteiraTrialGeo";
 import CarteiraTrialMov from "@/components/CarteiraTrialMov";
 import CarteiraTabelas from "@/components/CarteiraTabelas";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Home,
   TrendingUp,
@@ -231,6 +232,7 @@ const labItems: MenuItem[] = [
 
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
+  { icon: FileText, label: "Modelo Relatório de Controladoria" },
   controlItem,
   { icon: Users, label: "Carteira", children: [{ icon: Search, label: "Painel", id: "Carteira · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira · Entradas" }, { icon: TrendingUp, label: "Saídas", id: "Carteira · Saídas" }, { icon: BarChart3, label: "Tabelas", id: "Carteira · Tabelas" }] },
   { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }] },
@@ -239,6 +241,7 @@ const menuItems: MenuItem[] = [
 const LAB_IDS = new Set<string>(["Laboratory", ...labItems.flatMap((g) => g.children ? g.children.map((c) => c.id ?? c.label) : [g.label])]);
 
 const Index = () => {
+  const navigate = useNavigate();
   const [active, setActive] = useState("Home");
   const { nome, signOut } = useAuth();
   const [ctrlAba, setCtrlAba] = useState<string | null>(null);
@@ -316,6 +319,7 @@ const Index = () => {
             const button = (
               <button
                 onClick={() => {
+                  if (item.label === "Modelo Relatório de Controladoria") { navigate("/relatorio-controladoria"); return; }
                   if (hasChildren) {
                     if (collapsed) {
                       setCollapsed(false);
