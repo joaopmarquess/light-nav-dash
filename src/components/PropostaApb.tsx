@@ -119,7 +119,7 @@ export default function PropostaApb() {
           <DialogContent className="max-w-[90vw] text-base">
             <DialogHeader><DialogTitle>Tabelas de preço — 2290 × 2490 × 2890 × Proposta ({PLANO_NOVO})</DialogTitle></DialogHeader>
             <div className="overflow-x-auto">
-            <table className="w-full text-base">
+            <table className="w-full min-w-max text-base">
               <thead>
                 <tr className="bg-primary text-primary-foreground"><th rowSpan={3} className="px-3 py-2 text-left align-bottom">Faixa etária</th>{[...PLANOS_APB, "Proposta"].map((p) => <th key={p} colSpan={p === "Proposta" ? 4 : 2} rowSpan={p === "Proposta" ? 1 : 2} className="border-l border-primary-foreground/30 px-3 py-1 text-center">{p}{p === "Proposta" && <div className="text-xs font-normal">Estratégico</div>}{COPART_DESC[p] && <div className="text-xs font-normal">{COPART_DESC[p]}{p in COPART_TIPO && <PropostaApbCopart tipo={COPART_TIPO[p as keyof typeof COPART_TIPO]} />}</div>}</th>)}</tr>
                 <tr className="bg-primary text-sm text-primary-foreground">{["Titular", "Dependente"].map((r) => <th key={r} colSpan={2} className="border-l border-primary-foreground/30 px-2 py-1 text-center">{r}</th>)}</tr>
