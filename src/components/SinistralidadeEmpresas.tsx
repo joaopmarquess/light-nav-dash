@@ -15,7 +15,7 @@ export function Grid({ titulo, linhas }: { titulo: string; linhas: LinhaEmp[] })
   const Row = ({ f, bold }: { f: FaixaEmp; bold?: boolean }) => (
     <tr className={`border-t border-border ${bold ? "bg-muted font-semibold" : ""}`}>
       <td className="px-3 py-1.5 font-medium">{f.faixa}</td>
-      <td className="px-3 py-1.5 text-center">{f.vidas.toLocaleString("pt-BR")}</td>
+      <td className="px-3 py-1.5 text-center">{Math.round(f.vidas).toLocaleString("pt-BR")}</td>
       {[f.recCpp, f.recCopart, f.recTotal, f.despTotal].map((v, i) => <td key={i} className="px-3 py-1.5 text-right">{brl(v)}</td>)}
       <td className={`px-3 py-1.5 text-right ${f.saldo < 0 ? "text-destructive" : ""}`}>{brl(f.saldo)}</td>
       <td className="px-3 py-1.5 text-center">{pct(f.sin)}</td>
