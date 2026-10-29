@@ -44,7 +44,7 @@ export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?
   const total = gridFaixas(linhas).total;
   const planos = proj ? Object.keys(proj) : grupo ? ["GRUPO"] : PLANOS;
   const cards = [
-    { t: "Vidas", v: total.vidas.toLocaleString("pt-BR") },
+    { t: "Vidas", v: Math.round(total.vidas).toLocaleString("pt-BR") },
     { t: "Receita CPP", v: brl(total.recCpp) },
     { t: "Receita Copart", v: brl(total.recCopart) + rel(total.recCopart, total.recCpp) },
     { t: "Receita total", v: brl(total.recTotal) },
