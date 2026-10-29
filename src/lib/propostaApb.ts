@@ -15,10 +15,10 @@ export const PRECOS_APB: Record<string, [number, number][]> = {
 export const PRECOS_PROPOSTA: [number, number][] = [[110.53, 165.79], [128.99, 193.47], [150.53, 225.77], [165.88, 248.79], [193.58, 290.33], [221.26, 331.84], [271.04, 406.5], [337.98, 506.9], [448.5, 672.65], [663.1, 994.51]];
 export const PLANO_NOVO = "3990";
 export const PLANO_GRUPO = "GRUPO";
-export const COPART_PROPOSTA = 0.16; // copart = 16% da receita CPP
-export const SINISTRALIDADE_PROPOSTA = 0.75; // despesas = 75% da receita total
+export const COPART_PROPOSTA = 0.15; // copart = 15% da receita CPP
+export const SINISTRALIDADE_PROPOSTA = 0.8; // despesas = 80% da receita total
 
-/** Projeção anual: CPP = mensalidade × 12; copart = 16% CPP; despesas = 75% (CPP + copart). */
+/** Projeção anual: CPP = mensalidade × 12; copart = 15% CPP; despesas = 80% (CPP + copart). */
 export function projecaoAnual(mensalidade: number) {
   const recCpp = mensalidade * 12, recCopart = recCpp * COPART_PROPOSTA, recTotal = recCpp + recCopart;
   return { recCpp, recCopart, recTotal, despTotal: recTotal * SINISTRALIDADE_PROPOSTA };
