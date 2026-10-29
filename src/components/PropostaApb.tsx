@@ -100,7 +100,7 @@ export default function PropostaApb() {
         </div>
       </header>
       {nivel === 2 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 2: planos 2290, 2490 e 2890 agrupados como GRUPO, com preços e resultados atuais.</p>}
-      {nivel === 4 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 4: igual ao Nível 3, com 1.242 vidas nas quantidades por faixa fornecidas (titular/dependente e acomodação na proporção atual de cada faixa); despesas = receita total × sinistralidade do Nível 3.</p>}
+      {nivel === 4 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 4: igual ao Nível 3, com 1.242 titulares nas quantidades por faixa fornecidas + 15% de dependentes (186), distribuídos como hoje; despesas = receita total × sinistralidade do Nível 3.</p>}
       {nivel === 3 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 3: todas as vidas dos planos 2290, 2490 e 2890 passam ao plano novo 3990, com a tabela proposta; projeção anual = vidas × preço × 12; copart 20% da CPP; despesas fixas de R$ 2.950.000,00.</p>}
 
       <section className="grid gap-2 sm:grid-cols-3 xl:grid-cols-6">

@@ -65,21 +65,38 @@ export const idadeSomaPlanos = (linhas: LinhaApb[], planos: string[]) => {
   return linhas.filter((l) => todos || planos.includes(l.plano)).reduce((t, l) => t + l.idadeSoma, 0);
 };
 
-/** Nível 4: vidas fornecidas por faixa etária (total 1.242). Dentro de cada faixa, a divisão entre
- *  titular/dependente e enfermaria/apartamento segue a proporção atual daquela faixa (maior resto). */
+/** Nível 4: titulares fornecidos por faixa (total 1.242) + 15% de dependentes (186).
+ *  Titulares: dentro de cada faixa, acomodação na proporção atual dos titulares daquela faixa
+ *  (sem titulares na faixa, usa a proporção de todas as vidas da faixa). Dependentes: distribuição atual dos dependentes. Maior resto. */
 export const VIDAS_N4 = [5, 47, 165, 189, 172, 201, 218, 115, 75, 55];
-export function escalarVidas(linhas: LinhaApb[], porFaixa = VIDAS_N4): LinhaApb[] {
+export const DEP_PCT_N4 = 0.15;
+function ratear(linhas: LinhaApb[], out: LinhaApb[], idx: number[], alvo: number) {
+  const base = idx.reduce((t, i) => t + linhas[i].vidas, 0);
+  if (!base) return false;
+  const q = idx.map((i) => ({ i, x: (linhas[i].vidas * alvo) / base }));
+  q.forEach(({ i, x }) => { out[i].vidas += Math.floor(x); });
+  let resto = alvo - q.reduce((t, { x }) => t + Math.floor(x), 0);
+  [...q].sort((a, b) => (b.x % 1) - (a.x % 1)).forEach(({ i }) => { if (resto > 0) { out[i].vidas++; resto--; } });
+  return true;
+}
+export function escalarVidas(linhas: LinhaApb[], titPorFaixa = VIDAS_N4, depPct = DEP_PCT_N4): LinhaApb[] {
   const out = linhas.map((l) => ({ ...l, vidas: 0, idadeSoma: 0 }));
+  const all = linhas.map((_, i) => i);
   FAIXAS_APB.forEach((faixa, fi) => {
-    const alvo = porFaixa[fi] ?? 0;
-    const idx = linhas.map((_, i) => i).filter((i) => linhas[i].faixa === faixa);
-    const base = idx.reduce((t, i) => t + linhas[i].vidas, 0);
-    if (!base) return;
-    const q = idx.map((i) => ({ i, x: (linhas[i].vidas * alvo) / base }));
-    q.forEach(({ i, x }) => { out[i].vidas = Math.floor(x); });
-    let resto = alvo - q.reduce((t, { i }) => t + out[i].vidas, 0);
-    [...q].sort((a, b) => (b.x % 1) - (a.x % 1)).forEach(({ i }) => { if (resto > 0) { out[i].vidas++; resto--; } });
-    idx.forEach((i) => { out[i].idadeSoma = linhas[i].vidas ? (linhas[i].idadeSoma / linhas[i].vidas) * out[i].vidas : 0; });
+    const daFaixa = all.filter((i) => linhas[i].faixa === faixa);
+    const tit = daFaixa.filter((i) => linhas[i].rel === "Titular");
+    if (!ratear(linhas, out, tit, titPorFaixa[fi] ?? 0)) {
+      // sem titulares atuais na faixa: cria titulares com a proporção de acomodação da faixa
+      const peso = (a: string) => daFaixa.filter((i) => linhas[i].acom === a).reduce((t, i) => t + linhas[i].vidas, 0);
+      const alvo = titPorFaixa[fi] ?? 0, pe = peso("Enfermaria"), pa = peso("Apartamento");
+      const enf = pe + pa ? Math.round((alvo * pe) / (pe + pa)) : alvo;
+      const preco = (a: string) => linhas.find((l) => l.faixa === faixa && l.acom === a)?.preco ?? 0;
+      if (enf) out.push({ plano: linhas[0].plano, rel: "Titular", acom: "Enfermaria", faixa, vidas: enf, preco: preco("Enfermaria"), idadeSoma: 0 });
+      if (alvo - enf) out.push({ plano: linhas[0].plano, rel: "Titular", acom: "Apartamento", faixa, vidas: alvo - enf, preco: preco("Apartamento"), idadeSoma: 0 });
+    }
   });
-  return out;
+  const totTit = titPorFaixa.reduce((a, b) => a + b, 0);
+  ratear(linhas, out, all.filter((i) => linhas[i].rel === "Dependente"), Math.round(totTit * depPct));
+  out.forEach((l, i) => { const o = linhas[i]; if (o) l.idadeSoma = o.vidas ? (o.idadeSoma / o.vidas) * l.vidas : 0; });
+  return out.filter((l) => l.vidas > 0);
 }
