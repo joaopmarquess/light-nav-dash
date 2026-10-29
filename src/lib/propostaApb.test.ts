@@ -22,9 +22,10 @@ describe("Proposta APB", () => {
   });
 });
 
-import { COPART_PROPOSTA, SINISTRALIDADE_PROPOSTA } from "./propostaApb";
+import { COPART_PROPOSTA, projecaoAnual } from "./propostaApb";
 describe("premissas da proposta", () => {
-  it("copart 20% e sinistralidade 80%", () => { expect(COPART_PROPOSTA).toBe(0.2); expect(SINISTRALIDADE_PROPOSTA).toBe(0.8); });
+  it("copart 20%", () => expect(COPART_PROPOSTA).toBe(0.2));
+  it("despesas fixas de 854 vidas = 2.907.276,96", () => expect(projecaoAnual(0, 854).despTotal).toBeCloseTo(2907276.96, 1));
 });
 import { idadeSomaPlanos } from "./propostaApb";
 describe("idade média exata do snapshot", () => {
