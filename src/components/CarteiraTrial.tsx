@@ -279,7 +279,7 @@ export default function CarteiraTrial() {
                 const fmt = (x: number | null) => (x == null ? "—" : `${x.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`);
                 const [pif, pca, pce] = [pc(kpi?.PIF), pc(kpi?.PCA), pc(kpi?.PCE)];
                 const col = pca == null || pce == null ? null : pca + pce;
-                const td = "px-3 py-1 text-right tabular-nums";
+                const td = "px-3 py-1 text-right tabular-nums font-bold";
                 return (
                   <table className="text-lg text-foreground border-collapse">
                     <tbody>
@@ -292,6 +292,7 @@ export default function CarteiraTrial() {
             </div>
           ) : (
             <button key={st} title={tip} onClick={() => { if (st !== "A") return; const e = { ...f, status: st }; setF(e); setAp({ f: e, d: dataRef || new Date().toISOString().slice(0, 10) }); setGrid(true); }}
+              style={["PIF", "PCA", "PCE"].includes(st) ? { borderLeft: `6px solid hsl(var(--sigla-${st.toLowerCase()}))` } : undefined}
               className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-8 hover:bg-accent transition-colors">
               <I className="h-8 w-8 text-primary" />
               <p className="text-sm text-muted-foreground">{label}</p>
