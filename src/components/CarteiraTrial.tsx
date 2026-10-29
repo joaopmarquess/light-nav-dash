@@ -23,7 +23,7 @@ function secoesDetalhe(sel: Row): [string, [string, any][]][] {
 }
 const tituloDetalhe = (_sel: Row) => "FICHA CADASTRAL";
 const matTitular = (m: any) => Math.floor(Number(m) / 100) * 100;
-const relacionamento = (sel: Row) => (Number(sel.cd_mat_alternativa) % 100 === 0 ? "Titular" : "Dependente");
+const relacionamento = (sel: Row) => sel._relac === undefined ? "Buscando…" : sel._relac ? sel._relac.charAt(0) + sel._relac.slice(1).toLowerCase() : (Number(sel.cd_mat_alternativa) % 100 === 0 ? "Titular" : "Dependente");
 function textoDetalhe(sel: Row) {
   return [tituloDetalhe(sel), ...secoesDetalhe(sel).map(([t, it]) => `\n${t.toUpperCase()}\n` + it.map(([l, v]) => `${l}: ${valorDetalhe(v)}`).join("\n"))].join("\n");
 }
@@ -153,6 +153,14 @@ export default function CarteiraTrial() {
     if (Number(m) % 100 === 0) { setSel({ ...sel, _titular: sel.nm_beneficiario ?? "—" }); return; }
     hostinger.from(TABLE).select("nm_beneficiario").eq("cd_mat_alternativa", matTitular(m)).limit(1)
       .then(({ data }) => setSel((cur) => (cur && cur.cd_mat_alternativa === m ? { ...cur, _titular: data?.[0]?.nm_beneficiario ?? "—" } : cur)));
+  }, [sel]);
+
+  useEffect(() => {
+    if (!sel || sel._relac !== undefined) return;
+    const m = sel.cd_mat_alternativa;
+    const k = String(m);
+    hostinger.from("beneficiarios").select("tp_relacionamento").in("cd_mat_alternativa", [k, k.padStart(12, "0")]).limit(1)
+      .then(({ data }) => setSel((cur) => (cur && cur.cd_mat_alternativa === m ? { ...cur, _relac: data?.[0]?.tp_relacionamento ?? null } : cur)));
   }, [sel]);
 
   const dfKey = JSON.stringify({ ...df, status: df.status === "F" ? "F" : "", d: dRef, n: ap ? 1 : 0 });
