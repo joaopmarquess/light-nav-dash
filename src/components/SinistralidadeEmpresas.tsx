@@ -10,7 +10,7 @@ const pct = (v: number | null) => (v == null ? "—" : `${(v * 100).toLocaleStri
 const inp = "h-9 rounded-md border border-input bg-background px-2 text-sm";
 const COLS = ["Faixa", "Vidas", "Rec. CPP", "Rec. CPA", "Rec. Total", "Vr. Despesas", "Saldo", "Sinistralidade"];
 
-function Grid({ titulo, linhas }: { titulo: string; linhas: LinhaEmp[] }) {
+export function Grid({ titulo, linhas }: { titulo: string; linhas: LinhaEmp[] }) {
   const { faixas, total } = gridFaixas(linhas);
   const Row = ({ f, bold }: { f: FaixaEmp; bold?: boolean }) => (
     <tr className={`border-t border-border ${bold ? "bg-muted font-semibold" : ""}`}>

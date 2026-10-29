@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, FileSpreadsheet, Users, UserCheck, Wallet, Receipt } from "lucide-react";
+import PropostaApbSinistralidade from "@/components/PropostaApbSinistralidade";
 import csv from "@/data/propostaApb/vidas_precos_2026-10-29.csv?raw";
 import { parseApb, gridPlano, PLANOS_APB, type FaixaApb } from "@/lib/propostaApb";
 
@@ -119,7 +120,7 @@ export default function PropostaApb() {
         </section>
       ))}
         </div>
-        <section aria-label="Container direito" className="min-h-64 rounded-lg border border-dashed border-border bg-card p-4 shadow-sm" />
+        <PropostaApbSinistralidade />
       </div>
       <p className="text-xs text-muted-foreground">Mensalidade = vidas × preço da faixa e acomodação. Ativo: vigência iniciada e sem desligamento na data; titular = matrícula final 00.</p>
     </div>
