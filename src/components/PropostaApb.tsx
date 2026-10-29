@@ -116,18 +116,28 @@ export default function PropostaApb() {
       {nivel === 2 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 2: planos 2290, 2490 e 2890 agrupados como GRUPO, com preços e resultados atuais.</p>}
       {nivel === 4 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 4: igual ao Nível 3, com 1.242 titulares nas quantidades por faixa fornecidas + 15% de dependentes (186), distribuídos como hoje; despesas = receita total × sinistralidade do Nível 3.</p>}
       {nivel === 5 && (
-        <section className="rounded-lg border border-border bg-card p-3 shadow-sm">
-          <p className="mb-2 text-xs text-foreground">Nível 5: vidas do Nível 4 (1.242 titulares + 186 dependentes) no plano 3990; titulares com preço linear e dependentes com tabela por faixa (sugestão: tabela proposta do Nível 4); despesas = receita total × sinistralidade do Nível 3.</p>
-          <div className="flex flex-wrap items-start gap-4">
-            <div><div className="mb-1 text-sm font-semibold">Titular — preço linear</div>
-              {(["Enfermaria", "Apartamento"] as const).map((a, j) => <label key={a} className="mr-3 inline-flex items-center gap-1 text-xs">{a}<input type="number" step="0.01" min="0" value={linear[j]} onChange={(e) => { const v = Number(e.target.value) || 0; setLinear((x) => (j ? [x[0], v] : [v, x[1]])); }} className="w-24 rounded border border-input bg-background px-2 py-1 text-right" /></label>)}
-            </div>
-            <div className="flex-1"><div className="mb-1 flex items-center gap-2 text-sm font-semibold">Dependente — tabela por faixa<button type="button" onClick={() => setPrecoDep(PRECOS_PROPOSTA)} className="rounded border border-border px-2 py-0.5 text-xs font-normal hover:bg-accent">Restaurar sugestão</button></div>
-              <div className="grid grid-cols-5 gap-1 text-xs">{FAIXAS_APB.map((f, i) => <div key={f} className="rounded border border-border p-1"><div className="font-medium">{f}</div>{[0, 1].map((j) => <input key={j} aria-label={`${f} ${j ? "Apartamento" : "Enfermaria"}`} title={j ? "Apartamento" : "Enfermaria"} type="number" step="0.01" min="0" value={precoDep[i][j]} onChange={(e) => { const v = Number(e.target.value) || 0; setPrecoDep((x) => x.map((pp, k) => (k === i ? (j ? [pp[0], v] : [v, pp[1]]) : pp))); }} className="mt-0.5 w-full rounded border border-input bg-background px-1 py-0.5 text-right" />)}</div>)}</div>
-              <div className="mt-1 text-[11px] text-muted-foreground">Em cada faixa: 1º campo Enfermaria, 2º Apartamento.</div>
-            </div>
-          </div>
-        </section>
+        <div className="flex items-center justify-between gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 py-1 text-xs text-foreground">
+          <span className="truncate">Nível 5: vidas do Nível 4 no plano 3990; titulares com preço linear e dependentes com tabela por faixa; despesas = receita total × sinistralidade do Nível 3.</span>
+          <Dialog>
+            <DialogTrigger asChild><button type="button" className="shrink-0 rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90">Variáveis</button></DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader><DialogTitle>Variáveis do Nível 5</DialogTitle></DialogHeader>
+              <div className="space-y-4 text-sm">
+                <div>
+                  <div className="mb-2 font-semibold">Titular</div>
+                  <div className="flex gap-4">{(["Enfermaria", "Apartamento"] as const).map((a, j) => <label key={a} className="flex items-center gap-2">{a}:<input type="number" step="0.01" min="0" value={linear[j]} onChange={(e) => { const v = Number(e.target.value) || 0; setLinear((x) => (j ? [x[0], v] : [v, x[1]])); }} className="w-28 rounded border border-input bg-background px-2 py-1 text-right" /></label>)}</div>
+                </div>
+                <div>
+                  <div className="mb-2 flex items-center justify-between font-semibold">Dependente<button type="button" onClick={() => setPrecoDep(PRECOS_PROPOSTA)} className="rounded border border-border px-2 py-0.5 text-xs font-normal hover:bg-accent">Restaurar sugestão</button></div>
+                  <table className="w-full">
+                    <thead className="text-muted-foreground"><tr><th className="py-1 text-left">Faixa</th><th className="py-1 text-center">Enfermaria</th><th className="py-1 text-center">Apartamento</th></tr></thead>
+                    <tbody>{FAIXAS_APB.map((f, i) => <tr key={f} className="border-t border-border"><td className="py-1 font-medium">{f}</td>{[0, 1].map((j) => <td key={j} className="px-1 py-1"><input aria-label={`${f} ${j ? "Apartamento" : "Enfermaria"}`} type="number" step="0.01" min="0" value={precoDep[i][j]} onChange={(e) => { const v = Number(e.target.value) || 0; setPrecoDep((x) => x.map((pp, k) => (k === i ? (j ? [pp[0], v] : [v, pp[1]]) : pp))); }} className="w-full rounded border border-input bg-background px-2 py-1 text-right" /></td>)}</tr>)}</tbody>
+                  </table>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       )}
       {nivel === 3 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 3: todas as vidas dos planos 2290, 2490 e 2890 passam ao plano novo 3990, com a tabela proposta; projeção anual = vidas × preço × 12; copart 20% da CPP; despesas fixas de R$ 2.950.000,00.</p>}
 
