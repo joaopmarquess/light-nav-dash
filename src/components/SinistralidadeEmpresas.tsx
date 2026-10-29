@@ -34,8 +34,9 @@ function Grid({ titulo, linhas }: { titulo: string; linhas: LinhaEmp[] }) {
   );
 }
 
-export default function SinistralidadeEmpresas({ fonte = "mv" }: { fonte?: "mv" | "sb" }) {
-  const sb = fonte === "sb";
+export default function SinistralidadeEmpresas({ fonte = "mv" }: { fonte?: "mv" | "sb" | "menu" }) {
+  const menu = fonte === "menu";
+  const sb = fonte === "sb" || menu;
   const ano = new Date().getFullYear();
   const [de, setDe] = useState(sb ? "2025-09" : `${ano}-01`);
   const [ate, setAte] = useState(sb ? "2026-08" : `${ano}-${String(new Date().getMonth() + 1).padStart(2, "0")}`);
@@ -49,7 +50,7 @@ export default function SinistralidadeEmpresas({ fonte = "mv" }: { fonte?: "mv" 
     setLoading(true); setErro(null);
     const ps = parsePlanos(planos);
     if (sb) {
-      try { setLinhas(await carregarSb(competencia(de), competencia(ate), empresa, ps)); } catch (e) { setErro(String(e)); setLinhas(null); }
+      try { setLinhas(await carregarSb(competencia(de), competencia(ate), empresa, ps, menu ? "menu_sb_sinistralidade.csv" : undefined)); } catch (e) { setErro(String(e)); setLinhas(null); }
       setLoading(false); return;
     }
     const { data, error } = await hostinger.rpc("sinistralidade_mv_empresas", { p_de: competencia(de), p_ate: competencia(ate), p_empresa: empresa.trim() || null, p_planos: ps.length ? ps : null });
@@ -63,12 +64,12 @@ export default function SinistralidadeEmpresas({ fonte = "mv" }: { fonte?: "mv" 
   return (
     <div className="h-full space-y-5 overflow-auto">
       <header>
-        <h2 className="flex items-center gap-2 text-2xl font-semibold text-foreground"><Building2 className="h-6 w-6 text-primary" />{sb ? "Empresas SB" : "Empresas"}</h2>
-        <p className="text-sm text-muted-foreground">Sinistralidade por plano e faixa etária · Fonte: {sb ? "ard_mensal_sb_v2.csv (09/2025 a 08/2026)" : "view_eard_mensal + view_ecarteira"}</p>
+        <h2 className="flex items-center gap-2 text-2xl font-semibold text-foreground"><Building2 className="h-6 w-6 text-primary" />{menu ? "Empresas Menu" : sb ? "Empresas SB" : "Empresas"}</h2>
+        <p className="text-sm text-muted-foreground">Sinistralidade por plano e faixa etária · Fonte: {menu ? "MENU_SB_SINISTRALIDA.XLS (acumulado, sem competência)" : sb ? "ard_mensal_sb_v2.csv (09/2025 a 08/2026)" : "view_eard_mensal + view_ecarteira"}</p>
       </header>
       <div className="flex flex-wrap items-end gap-3 rounded-lg border border-border bg-card p-3 shadow-sm">
-        <label className="text-xs text-muted-foreground">De<br /><input type="month" value={de} onChange={(e) => setDe(e.target.value)} className={inp} /></label>
-        <label className="text-xs text-muted-foreground">Até<br /><input type="month" value={ate} onChange={(e) => setAte(e.target.value)} className={inp} /></label>
+        {!menu && <><label className="text-xs text-muted-foreground">De<br /><input type="month" value={de} onChange={(e) => setDe(e.target.value)} className={inp} /></label>
+        <label className="text-xs text-muted-foreground">Até<br /><input type="month" value={ate} onChange={(e) => setAte(e.target.value)} className={inp} /></label></>}
         <label className="text-xs text-muted-foreground">Estipulante<br /><input value={empresa} onChange={(e) => setEmpresa(e.target.value)} placeholder="parte do nome" className={`${inp} w-56`} /></label>
         <label className="text-xs text-muted-foreground">Planos (4 dígitos)<br /><input value={planos} onChange={(e) => setPlanos(e.target.value)} placeholder="ex.: 2290, 2490" className={`${inp} w-44`} /></label>
         <Button onClick={buscar} disabled={loading || !de || !ate} className="gap-2">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}Buscar</Button>
