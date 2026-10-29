@@ -24,8 +24,8 @@ export default function PropostaApb() {
   const grids = useMemo(() => transf
     ? { [PLANO_NOVO]: gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_NOVO })), PLANO_NOVO, PRECOS_PROPOSTA) }
     : Object.fromEntries(PLANOS_APB.map((p) => [p, gridPlano(linhas, p)])), [linhas, transf]) as Record<string, ReturnType<typeof gridPlano>>;
-  const selOk = planos.includes(sel) ? sel : "Todos";
   const [sel, setSel] = useState<string>("Todos");
+  const selOk = transf ? PLANO_NOVO : planos.includes(sel) ? sel : "Todos";
   const [abertos, setAbertos] = useState<Record<string, boolean>>({});
   const [rel, setRel] = useState(false);
 
@@ -59,7 +59,7 @@ export default function PropostaApb() {
         <button type="button" onClick={() => setTransf((t) => !t)} className={`rounded-lg border px-3 py-2 text-sm font-medium ${transf ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card hover:bg-accent"}`}>{transf ? "Voltar ao atual" : "Transformar"}</button>
         <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
           {(transf ? planos : ["Todos", ...planos]).map((p) => (
-            <button key={p} type="button" onClick={() => setSel(p)} className={`rounded-md px-3 py-1.5 text-sm ${sel === p ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>{p}</button>
+            <button key={p} type="button" onClick={() => setSel(p)} className={`rounded-md px-3 py-1.5 text-sm ${selOk === p ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>{p}</button>
           ))}
         </div>
         </div>
@@ -67,7 +67,7 @@ export default function PropostaApb() {
       {transf && <p className="rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm text-foreground">Modo Transformar: todas as vidas dos planos 2290, 2490 e 2890 passam ao plano novo 3990, com a tabela proposta; projeção anual = vidas × preço × 12; copart 16% da CPP; sinistralidade 75%.</p>}
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <Card icon={Users} label="Vidas ativas" value={n0(k.vidas)} sub={sel === "Todos" ? undefined : `${pct(k.vidas, tot.vidas)} do total`} />
+        <Card icon={Users} label="Vidas ativas" value={n0(k.vidas)} sub={selOk === "Todos" || transf ? undefined : `${pct(k.vidas, tot.vidas)} do total`} />
         <Card icon={UserCheck} label="Titulares" value={n0(k.tit)} sub={`${pct(k.tit, k.vidas)} · ${n0(k.vidas - k.tit)} dependentes`} />
         <Card icon={Wallet} label="Mensalidade total" value={brl(k.mens)} sub={`Anual: ${brl(k.mens * 12)}`} />
         <Card icon={Receipt} label="Ticket médio" value={brl(k.vidas ? k.mens / k.vidas : 0)} sub={`Enfermaria ${pct(k.enf, k.vidas)} das vidas`} />
@@ -75,7 +75,7 @@ export default function PropostaApb() {
 
       <div className="grid gap-5 xl:grid-cols-2">
         <div className="min-w-0 space-y-5">
-      {sel === "Todos" && (
+      {selOk === "Todos" && (
         <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
           <h3 className="mb-3 text-sm font-semibold text-foreground">Resumo por plano</h3>
           <table className="w-full text-sm">
