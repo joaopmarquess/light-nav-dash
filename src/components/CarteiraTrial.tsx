@@ -258,9 +258,9 @@ export default function CarteiraTrial() {
             ["T", Building2, "Contratos Ativos", kpi?.contratos],
             ["A", UserCheck, "Vidas Ativas", kpi?.ativos],
             ["MIX", Users, "Vidas Ativas por contratação", null],
-            ["PIF", UserCheck, "Vidas Ativas PIF", kpi?.PIF],
-            ["PCA", UserCheck, "Vidas Ativas PCA", kpi?.PCA],
-            ["PCE", UserCheck, "Vidas Ativas PCE", kpi?.PCE],
+            ["PIF", UserCheck, "PIF", kpi?.PIF],
+            ["PCA", UserCheck, "PCA", kpi?.PCA],
+            ["PCE", UserCheck, "PCE", kpi?.PCE],
           ] as const).map(([st, I, label, v]) => st === "MIX" ? (
             <div key={st} className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-8">
               <I className="h-8 w-8 text-primary" />
@@ -288,7 +288,7 @@ export default function CarteiraTrial() {
               <I className="h-8 w-8 text-primary" />
               <p className="text-sm text-muted-foreground">{label}</p>
               <p className="text-4xl font-semibold tabular-nums text-foreground">{!ap || v === -1 ? "—" : v == null ? "…" : v.toLocaleString("pt-BR")}</p>
-              {["PIF", "PCA", "PCE"].includes(st) && ap && kpi?.ativos && v != null && v >= 0 ? <p className="text-xs text-muted-foreground tabular-nums">{((v / kpi.ativos) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% das vidas ativas</p> : null}
+              {["PIF", "PCA", "PCE"].includes(st) && ap && kpi?.ativos && v != null && v >= 0 ? <p className="text-xs text-muted-foreground tabular-nums">{((v / kpi.ativos) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</p> : null}
             </button>
           ))}
         </div>
