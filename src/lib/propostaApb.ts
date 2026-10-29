@@ -11,6 +11,17 @@ export const PRECOS_APB: Record<string, [number, number][]> = {
   "2890": [[122.27, 184.16], [143.27, 214.91], [167.19, 250.79], [184.24, 276.37], [215, 322.52], [245.74, 368.64], [301.03, 451.58], [375.38, 563.12], [498.12, 747.26], [736.47, 1104.82]],
 };
 
+// Tabela proposta (Enfermaria, Apartamento) — mesma para todos os planos no modo "Transformar".
+export const PRECOS_PROPOSTA: [number, number][] = [[110.53, 165.79], [128.99, 193.47], [150.53, 225.77], [165.88, 248.79], [193.58, 290.33], [221.26, 331.84], [271.04, 406.5], [337.98, 506.9], [448.5, 672.65], [663.1, 994.51]];
+export const COPART_PROPOSTA = 0.16; // copart = 16% da receita CPP
+export const SINISTRALIDADE_PROPOSTA = 0.75; // despesas = 75% da receita total
+
+/** Projeção anual: CPP = mensalidade × 12; copart = 16% CPP; despesas = 75% (CPP + copart). */
+export function projecaoAnual(mensalidade: number) {
+  const recCpp = mensalidade * 12, recCopart = recCpp * COPART_PROPOSTA, recTotal = recCpp + recCopart;
+  return { recCpp, recCopart, recTotal, despTotal: recTotal * SINISTRALIDADE_PROPOSTA };
+}
+
 const num = (s: string) => Number((s || "0").replace(/\./g, "").replace(",", "."));
 
 export function parseApb(csv: string): { data: string; linhas: LinhaApb[] } {
@@ -28,13 +39,13 @@ export function parseApb(csv: string): { data: string; linhas: LinhaApb[] } {
 
 export interface FaixaApb { faixa: string; enfTit: number; enfDep: number; apTit: number; apDep: number; total: number; precoEnf: number | null; precoAp: number | null; mensalidade: number }
 
-export function gridPlano(linhas: LinhaApb[], plano: string): { faixas: FaixaApb[]; total: FaixaApb } {
+export function gridPlano(linhas: LinhaApb[], plano: string, precos?: [number, number][]): { faixas: FaixaApb[]; total: FaixaApb } {
   const faixas = FAIXAS_APB.map((faixa, i) => {
     const ls = linhas.filter((l) => l.plano === plano && l.faixa === faixa);
     const v = (a: string, r: string) => ls.filter((l) => l.acom === a && l.rel === r).reduce((s, l) => s + l.vidas, 0);
-    const p = (a: string) => PRECOS_APB[plano]?.[i]?.[a === "Enfermaria" ? 0 : 1] ?? ls.find((l) => l.acom === a)?.preco ?? null;
+    const p = (a: string) => precos?.[i]?.[a === "Enfermaria" ? 0 : 1] ?? PRECOS_APB[plano]?.[i]?.[a === "Enfermaria" ? 0 : 1] ?? ls.find((l) => l.acom === a)?.preco ?? null;
     const enfTit = v("Enfermaria", "Titular"), enfDep = v("Enfermaria", "Dependente"), apTit = v("Apartamento", "Titular"), apDep = v("Apartamento", "Dependente");
-    const mensalidade = ls.reduce((s, l) => s + l.vidas * l.preco, 0);
+    const mensalidade = ls.reduce((s, l) => s + l.vidas * (precos ? precos[i][l.acom === "Enfermaria" ? 0 : 1] : l.preco), 0);
     return { faixa, enfTit, enfDep, apTit, apDep, total: enfTit + enfDep + apTit + apDep, precoEnf: p("Enfermaria"), precoAp: p("Apartamento"), mensalidade };
   });
   const sum = (k: keyof FaixaApb) => faixas.reduce((s, f) => s + (f[k] as number), 0);
