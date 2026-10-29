@@ -125,20 +125,24 @@ export default function CarteiraTrial() {
   const [ap, setAp] = useState<{ f: Filters; d: string } | null>(() => ({ f: { ...EMPTY }, d: new Date().toISOString().slice(0, 10) }));
   const df = ap?.f ?? EMPTY;
   const dRef = ap?.d ?? "";
-  const buscar = () => setAp({ f: { ...f }, d: dataRef || new Date().toISOString().slice(0, 10) });
+  const buscar = () => (setGrid(true), setAp({ f: { ...f }, d: dataRef || new Date().toISOString().slice(0, 10) }));
   const rows = useMemo(() => agrupar(raw, dRef || new Date().toISOString().slice(0, 10)), [raw, dRef]);
   const [fim, setFim] = useState(false);
   const [grid, setGrid] = useState(false);
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [kpi, setKpi] = useState<{ ativos?: number; futuros?: number; cancelados?: number; total?: number } | null>(null);
+  const [kpi, setKpi] = useState<{ ativos?: number; futuros?: number; cancelados?: number; total?: number; contratos?: number } | null>(null);
   useEffect(() => {
     if (!ap) return;
     setKpi(null);
     hostinger.rpc("carteira_trial_kpis", { p_data: dRef, p_q: df.q.trim() || null, p_empresa: df.empresa.trim() || null, p_cidade: df.cidade.trim() || null }).then(({ data, error }: any) => {
       if (error) { console.error(error); return; }
       const r = Array.isArray(data) ? data[0] : data;
-      if (r) setKpi({ ativos: Number(r.ativos), futuros: Number(r.futuros), cancelados: Number(r.cancelados), total: Number(r.total) });
+      if (r) setKpi((k) => ({ ...k, ativos: Number(r.ativos), futuros: Number(r.futuros), cancelados: Number(r.cancelados), total: Number(r.total) }));
+    });
+    hostinger.rpc("carteira_trial_contratos", { p_data: dRef, p_q: df.q.trim() || null, p_empresa: df.empresa.trim() || null, p_cidade: df.cidade.trim() || null }).then(({ data, error }: any) => {
+      if (error) { console.error(error); setKpi((k) => ({ ...k, contratos: -1 })); return; }
+      setKpi((k) => ({ ...k, contratos: Number(data) }));
     });
   }, [ap]);
   const vis = useMemo(() => {
@@ -248,14 +252,15 @@ export default function CarteiraTrial() {
           {([
             ["A", UserCheck, "Ativos", kpi?.ativos],
             ["F", Users, "Futuros (vigência a iniciar)", kpi?.futuros],
-            ["C", UserX, "Cancelados", kpi?.cancelados],
+            ["T", Building2, "Contratos (titulares ativos)", kpi?.contratos],
           ] as const).map(([st, I, label, v]) => (
-            <button key={st} onClick={() => { const e = { ...f, status: st }; setF(e); setAp({ f: e, d: dataRef || new Date().toISOString().slice(0, 10) }); setGrid(true); }}
+            <button key={st} onClick={() => { if (st === "T") return; const e = { ...f, status: st }; setF(e); setAp({ f: e, d: dataRef || new Date().toISOString().slice(0, 10) }); setGrid(true); }}
               className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-8 hover:bg-accent transition-colors">
               <I className="h-8 w-8 text-primary" />
               <p className="text-sm text-muted-foreground">{label}</p>
-              <p className="text-4xl font-semibold tabular-nums text-foreground">{!ap ? "—" : v == null ? "…" : v.toLocaleString("pt-BR")}</p>
-              {ap && kpi?.total ? <p className="text-xs text-muted-foreground tabular-nums">{((Number(v ?? 0) / kpi.total) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% de {kpi.total.toLocaleString("pt-BR")} matrículas</p> : null}
+              <p className="text-4xl font-semibold tabular-nums text-foreground">{!ap || v === -1 ? "—" : v == null ? "…" : v.toLocaleString("pt-BR")}</p>
+              {st === "T" && v === -1 ? <p className="text-xs text-muted-foreground">Cálculo ainda não instalado na base</p> : null}
+              {st !== "T" && ap && kpi?.total ? <p className="text-xs text-muted-foreground tabular-nums">{((Number(v ?? 0) / kpi.total) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% de {kpi.total.toLocaleString("pt-BR")} matrículas</p> : null}
             </button>
           ))}
         </div>
