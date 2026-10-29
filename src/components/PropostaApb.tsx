@@ -96,12 +96,12 @@ export default function PropostaApb() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
         <Tooltip>
-          <TooltipTrigger asChild><Button type="button" size="icon" variant="outline" aria-label="Gerar Proposta" onClick={() => gerarPropostaPdf()}><Printer className="h-4 w-4" aria-hidden="true" /></Button></TooltipTrigger>
+          <TooltipTrigger asChild><Button type="button" size="icon" variant="outline" className="h-14" aria-label="Gerar Proposta" onClick={() => gerarPropostaPdf()}><Printer className="h-4 w-4" aria-hidden="true" /></Button></TooltipTrigger>
           <TooltipContent>Gerar Proposta</TooltipContent>
         </Tooltip>
         <Dialog>
           <Tooltip>
-            <TooltipTrigger asChild><DialogTrigger asChild><Button type="button" size="icon" variant="outline" aria-label="Tabela Proposta"><FileText className="h-4 w-4" aria-hidden="true" /></Button></DialogTrigger></TooltipTrigger>
+            <TooltipTrigger asChild><DialogTrigger asChild><Button type="button" size="icon" variant="outline" className="h-14" aria-label="Tabela Proposta"><FileText className="h-4 w-4" aria-hidden="true" /></Button></DialogTrigger></TooltipTrigger>
             <TooltipContent>Tabela Proposta</TooltipContent>
           </Tooltip>
           <DialogContent className="max-w-[90vw] text-base">
@@ -118,13 +118,13 @@ export default function PropostaApb() {
           </DialogContent>
         </Dialog>
         <div className="grid max-w-full grid-cols-2 items-stretch gap-2">
-        <fieldset className="min-w-0 rounded-lg border border-border bg-card px-2 pb-1.5">
+        <fieldset className="h-14 min-w-0 rounded-lg border border-border bg-card px-2 pb-1.5">
           <legend className="px-1 text-xs font-semibold text-muted-foreground">Planos Atuais</legend>
           <div className="flex justify-center gap-1">
             {([1, 2] as const).map((n) => <Button key={n} type="button" size="sm" variant={nivel === n ? "default" : "ghost"} aria-pressed={nivel === n} title={({ 1: "3 contratos - analítico", 2: "3 contratos - sintético" } as const)[n]} onClick={() => setNivel(n)}>{n === 1 ? "Analítico" : "Sintético"}</Button>)}
           </div>
         </fieldset>
-        <fieldset className="min-w-0 rounded-lg border border-border bg-card px-2 pb-1.5">
+        <fieldset className="h-14 min-w-0 rounded-lg border border-border bg-card px-2 pb-1.5">
           <legend className="px-1 text-xs font-semibold text-muted-foreground">Proposta Novo Plano</legend>
           <div className="flex gap-1">
           {([3, 4] as const).map((n) => <Button key={n} type="button" size="sm" variant={nivel === n ? "default" : "ghost"} aria-pressed={nivel === n} title={({ 3: "Novo plano - racional", 4: "Novo plano - estratégico" } as const)[n]} onClick={() => setNivel(n)}>{n === 3 ? "Racional" : "Estratégico"}</Button>)}
