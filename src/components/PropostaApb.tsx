@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import PropostaApbSinistralidade from "@/components/PropostaApbSinistralidade";
 import { gerarPropostaPdf } from "@/lib/propostaApbPdf";
 import PropostaApbCopart from "@/components/PropostaApbCopart";
-const COPART_DESC: Record<string, string> = { "2290": "Sem Coparticipação", "2490": "Use Bem com teto de R$ 300,00", "2890": "Fácil Flex com teto de R$ 600,00", "Proposta": "Fácil 50 sem teto" };
+const COPART_DESC: Record<string, string> = { "2290": "Sem Coparticipação", "2490": "Use Bem com teto de R$ 396,96", "2890": "Fácil Flex com teto de R$ 656,10", "Proposta": "Fácil 50 sem teto" };
 const COPART_TIPO = { "2490": "usebem", "2890": "flex", "Proposta": "facil50" } as const;
 import csv from "@/data/propostaApb/vidas_precos_2026-10-29.csv?raw";
 import { parseApb, gridPlano, PLANOS_APB, FAIXAS_APB, PRECOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, idadeSomaPlanos, type FaixaApb } from "@/lib/propostaApb";
