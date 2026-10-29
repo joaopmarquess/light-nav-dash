@@ -114,3 +114,10 @@ export function gridsN5(linhas: LinhaApb[], linear: [number, number], dep: [numb
   const faixas = g.faixas.map((f, i) => ({ ...f, precoEnf: null, precoAp: null, mensalidade: tit.faixas[i].mensalidade + dp.faixas[i].mensalidade }));
   return { tit, dep: dp, todos: { faixas, total: { ...g.total, mensalidade: tit.total.mensalidade + dp.total.mensalidade } } };
 }
+
+/** Nível 5: Apartamento = Enfermaria × 1,5. */
+export const FATOR_APTO_N5 = 1.5;
+export const tabelaLinear = (enf: number): [number, number] => [enf, enf * FATOR_APTO_N5];
+/** Dependentes: só a Enfermaria 00 a 18 é digitada; demais faixas seguem a variação % da tabela proposta; Apartamento = Enfermaria × 1,5. */
+export const tabelaDependente = (enf0018: number): [number, number][] =>
+  PRECOS_PROPOSTA.map(([e]) => tabelaLinear(enf0018 * (e / PRECOS_PROPOSTA[0][0])));

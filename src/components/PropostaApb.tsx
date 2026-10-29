@@ -7,7 +7,7 @@ import PropostaApbCopart from "@/components/PropostaApbCopart";
 const COPART_DESC: Record<string, string> = { "2290": "Sem Coparticipação", "2490": "Use Bem com teto de R$ 396,96", "2890": "Fácil Flex com teto de R$ 656,10", "Proposta": "Fácil 50 sem teto" };
 const COPART_TIPO = { "2490": "usebem", "2890": "flex", "Proposta": "facil50" } as const;
 import csv from "@/data/propostaApb/vidas_precos_2026-10-29.csv?raw";
-import { parseApb, gridPlano, PLANOS_APB, FAIXAS_APB, PRECOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, idadeSomaPlanos, escalarVidas, gridsN5, PRECO_TITULAR_2890, projecaoFaixas, type FaixaApb } from "@/lib/propostaApb";
+import { parseApb, gridPlano, PLANOS_APB, FAIXAS_APB, PRECOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, idadeSomaPlanos, escalarVidas, gridsN5, tabelaLinear, tabelaDependente, PRECO_TITULAR_2890, projecaoFaixas, type FaixaApb } from "@/lib/propostaApb";
 
 const n0 = (v: number) => v.toLocaleString("pt-BR");
 const brl = (v: number | null) => (v == null ? "—" : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
@@ -26,8 +26,10 @@ export default function PropostaApb() {
   const linhasN4 = useMemo(() => escalarVidas(linhas), [linhas]);
   const sinN3 = useMemo(() => projecaoFaixas(gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_NOVO })), PLANO_NOVO, PRECOS_PROPOSTA).faixas.map((f) => f.mensalidade)).sin, [linhas]);
   const [nivel, setNivel] = useState<1 | 2 | 3 | 4 | 5>(1);
-  const [linear, setLinear] = useState<[number, number]>(PRECO_TITULAR_2890);
-  const [precoDep, setPrecoDep] = useState<[number, number][]>(PRECOS_PROPOSTA);
+  const [linEnf, setLinEnf] = useState(PRECO_TITULAR_2890[0]);
+  const [depBase, setDepBase] = useState(PRECOS_PROPOSTA[0][0]);
+  const linear = useMemo(() => tabelaLinear(linEnf), [linEnf]);
+  const precoDep = useMemo(() => tabelaDependente(depBase), [depBase]);
   const n5 = useMemo(() => gridsN5(linhasN4, linear, precoDep), [linhasN4, linear, precoDep]);
   const transf = nivel >= 3;
   // Transformar: todas as vidas migram para o plano novo 3990, com a tabela proposta.
@@ -125,13 +127,13 @@ export default function PropostaApb() {
               <div className="space-y-4 text-sm">
                 <div>
                   <div className="mb-2 font-semibold">Titular</div>
-                  <div className="flex gap-4">{(["Enfermaria", "Apartamento"] as const).map((a, j) => <label key={a} className="flex items-center gap-2">{a}:<input type="number" step="0.01" min="0" value={linear[j]} onChange={(e) => { const v = Number(e.target.value) || 0; setLinear((x) => (j ? [x[0], v] : [v, x[1]])); }} className="w-28 rounded border border-input bg-background px-2 py-1 text-right" /></label>)}</div>
+                  <div className="flex gap-4"><label className="flex items-center gap-2">Enfermaria:<input type="number" step="0.01" min="0" value={linEnf} onChange={(e) => setLinEnf(Number(e.target.value) || 0)} className="w-28 rounded border border-input bg-background px-2 py-1 text-right" /></label><span className="flex items-center gap-2">Apartamento: <b>{brl(linear[1])}</b></span></div>
                 </div>
                 <div>
-                  <div className="mb-2 flex items-center justify-between font-semibold">Dependente<button type="button" onClick={() => setPrecoDep(PRECOS_PROPOSTA)} className="rounded border border-border px-2 py-0.5 text-xs font-normal hover:bg-accent">Restaurar sugestão</button></div>
+                  <div className="mb-2 flex items-center justify-between font-semibold">Dependente<button type="button" onClick={() => setDepBase(PRECOS_PROPOSTA[0][0])} className="rounded border border-border px-2 py-0.5 text-xs font-normal hover:bg-accent">Restaurar sugestão</button></div>
                   <table className="w-full">
                     <thead className="text-muted-foreground"><tr><th className="py-1 text-left">Faixa</th><th className="py-1 text-center">Enfermaria</th><th className="py-1 text-center">Apartamento</th></tr></thead>
-                    <tbody>{FAIXAS_APB.map((f, i) => <tr key={f} className="border-t border-border"><td className="py-1 font-medium">{f}</td>{[0, 1].map((j) => <td key={j} className="px-1 py-1"><input aria-label={`${f} ${j ? "Apartamento" : "Enfermaria"}`} type="number" step="0.01" min="0" value={precoDep[i][j]} onChange={(e) => { const v = Number(e.target.value) || 0; setPrecoDep((x) => x.map((pp, k) => (k === i ? (j ? [pp[0], v] : [v, pp[1]]) : pp))); }} className="w-full rounded border border-input bg-background px-2 py-1 text-right" /></td>)}</tr>)}</tbody>
+                    <tbody>{FAIXAS_APB.map((f, i) => <tr key={f} className="border-t border-border"><td className="py-1 font-medium">{f}</td>{[0, 1].map((j) => <td key={j} className="px-1 py-1 text-right">{i === 0 && j === 0 ? <input aria-label="00 a 18 Enfermaria" type="number" step="0.01" min="0" value={depBase} onChange={(e) => setDepBase(Number(e.target.value) || 0)} className="w-full rounded border border-input bg-background px-2 py-1 text-right" /> : <span className="px-2">{brl(precoDep[i][j])}</span>}</td>)}</tr>)}</tbody>
                   </table>
                 </div>
               </div>
