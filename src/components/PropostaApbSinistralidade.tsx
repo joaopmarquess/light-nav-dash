@@ -14,7 +14,7 @@ const pct = (v: number | null) => (v == null ? "—" : `${(v * 100).toLocaleStri
 type Grids = Record<string, ReturnType<typeof gridPlano>>;
 const deProjecao = (g: Grids): LinhaEmp[] => Object.keys(g).flatMap((p) => g[p].faixas.map((f) => ({ plano: p, faixa: f.faixa, vidas: f.total, ...projecaoAnual(f.mensalidade) })));
 
-export default function PropostaApbSinistralidade({ proj, grupo }: { proj?: Grids; grupo?: boolean }) {
+export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?: Grids; grupo?: boolean; fixo?: boolean }) {
   const [base, setLinhas] = useState<LinhaEmp[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [aberto, setAberto] = useState<string | null>(null);
@@ -43,19 +43,19 @@ export default function PropostaApbSinistralidade({ proj, grupo }: { proj?: Grid
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 [&_section]:p-3 [&_h3]:mb-1">
       <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
         <h3 className="text-base font-semibold text-foreground">{proj ? "Projeção anual — tabela proposta" : "Sinistralidade 09/2025 a 08/2026"}</h3>
-        <p className="mb-3 text-xs text-muted-foreground">{proj ? "Vidas atuais × preço proposto × 12 · copart 16% da CPP · sinistralidade 75%" : "Fonte: MENU_SB_SINISTRALIDA.XLS (mesma de Sinistralidade › Empresas Menu)"}</p>
+        <p className="mb-2 text-xs text-muted-foreground">{proj ? "Vidas atuais × preço proposto × 12 · copart 16% da CPP · sinistralidade 75%" : "Fonte: MENU_SB_SINISTRALIDA.XLS (mesma de Sinistralidade › Empresas Menu)"}</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {cards.map((c) => (
-            <div key={c.t} className="rounded-md border border-border p-3">
+            <div key={c.t} className="rounded-md border border-border px-2 py-1">
               <p className="text-xs text-muted-foreground">{c.t}</p>
-              <p className={`text-lg font-semibold ${c.neg ? "text-destructive" : "text-foreground"}`}>{c.v}</p>
+              <p className={`text-base font-semibold ${c.neg ? "text-destructive" : "text-foreground"}`}>{c.v}</p>
             </div>
           ))}
         </div>
-        <div className="mt-4 overflow-x-auto"><table className="w-full text-sm">
+        <div className="mt-2 overflow-x-auto"><table className="w-full text-xs">
           <thead className="text-muted-foreground"><tr><th className="px-2 py-1 text-left">Plano</th><th className="px-2 py-1 text-center">Vidas</th><th className="px-2 py-1 text-right">Rec. CPP</th><th className="px-2 py-1 text-right">Rec. Copart</th><th className="px-2 py-1 text-right">Rec. Total</th><th className="px-2 py-1 text-right">Despesas</th><th className="px-2 py-1 text-right">Saldo</th><th className="px-2 py-1 text-center">Sinistr.</th></tr></thead>
           <tbody>
             {planos.map((p) => {
@@ -78,10 +78,10 @@ export default function PropostaApbSinistralidade({ proj, grupo }: { proj?: Grid
       </section>
       {planos.map((p) => (
         <div key={p}>
-          <button type="button" onClick={() => setAberto(aberto === p ? null : p)} className="mb-2 flex w-full items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-left text-sm font-semibold shadow-sm hover:bg-accent">
+          {!fixo && <button type="button" onClick={() => setAberto(aberto === p ? null : p)} className="mb-1 flex w-full items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-left text-sm font-semibold shadow-sm hover:bg-accent">
             {aberto === p ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}Sinistralidade por faixa · Plano {p}
-          </button>
-          {aberto === p && <Grid titulo={`Plano ${p}`} linhas={linhas.filter((l) => l.plano === p)} />}
+          </button>}
+          {(fixo || aberto === p) && <Grid titulo={`Plano ${p}`} linhas={linhas.filter((l) => l.plano === p)} />}
         </div>
       ))}
     </div>
