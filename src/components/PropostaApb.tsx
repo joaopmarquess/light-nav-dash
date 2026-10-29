@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FileSpreadsheet, Users, UserCheck, Wallet, Receipt } from "lucide-react";
+import { ChevronDown, ChevronRight, FileSpreadsheet, Users, UserCheck, Wallet, Receipt } from "lucide-react";
 import csv from "@/data/propostaApb/vidas_precos_2026-10-29.csv?raw";
 import { parseApb, gridPlano, PLANOS_APB, type FaixaApb } from "@/lib/propostaApb";
 
@@ -19,6 +19,8 @@ export default function PropostaApb() {
   const { data, linhas } = useMemo(() => parseApb(csv), []);
   const grids = useMemo(() => Object.fromEntries(PLANOS_APB.map((p) => [p, gridPlano(linhas, p)])), [linhas]);
   const [sel, setSel] = useState<string>("Todos");
+  const [abertos, setAbertos] = useState<Record<string, boolean>>({});
+  const [rel, setRel] = useState(false);
 
   const tot = PLANOS_APB.reduce((a, p) => {
     const t = grids[p].total;
@@ -31,7 +33,7 @@ export default function PropostaApb() {
   const Linha = ({ f, bold }: { f: FaixaApb; bold?: boolean }) => (
     <tr className={`border-t border-border ${bold ? "bg-muted font-semibold" : ""}`}>
       <td className="px-3 py-1.5 text-left font-medium">{f.faixa}</td>
-      {[f.enfTit, f.enfDep, f.apTit, f.apDep].map((v, i) => <td key={i} className="px-3 py-1.5 text-center">{v ? n0(v) : "-"}</td>)}
+      {(rel ? [f.enfTit, f.enfDep, f.apTit, f.apDep] : [f.enfTit + f.enfDep, f.apTit + f.apDep]).map((v, i) => <td key={i} className="px-3 py-1.5 text-center">{v ? n0(v) : "-"}</td>)}
       <td className="px-3 py-1.5 text-center font-semibold">{n0(f.total)}</td>
       <td className="px-3 py-1.5 text-center">{brl(f.precoEnf)}</td>
       <td className="px-3 py-1.5 text-center">{brl(f.precoAp)}</td>
@@ -91,14 +93,19 @@ export default function PropostaApb() {
       )}
 
       {vis.map((p) => (
-        <section key={p} className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <h3 className="mb-3 text-base font-semibold text-foreground">Plano {p}</h3>
-          <div className="overflow-x-auto">
+        <section key={p} className="rounded-lg border border-border bg-card shadow-sm">
+          <button type="button" onClick={() => setAbertos((a) => ({ ...a, [p]: !a[p] }))} className="flex w-full items-center justify-between gap-2 p-4 text-left hover:bg-accent">
+            <span className="flex items-center gap-2 text-base font-semibold text-foreground">{abertos[p] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}Plano {p}</span>
+            <span className="text-sm text-muted-foreground">{n0(grids[p].total.total)} vidas · {brl(grids[p].total.mensalidade)}</span>
+          </button>
+          {abertos[p] && (
+          <div className="overflow-x-auto px-4 pb-4">
+            <div className="mb-2 flex justify-end"><button type="button" onClick={() => setRel((r) => !r)} className="rounded-md border border-border px-2 py-1 text-xs hover:bg-accent">{rel ? "Recolher Titular/Dependente" : "Expandir Titular/Dependente"}</button></div>
             <table className="w-full text-sm">
               <thead className="text-muted-foreground">
-                <tr><th rowSpan={3} className="px-3 py-1.5 text-left align-bottom">Faixa</th><th colSpan={5} className="border-b border-border px-3 py-1.5 text-center">Vidas</th><th colSpan={3} className="border-b border-border px-3 py-1.5 text-center">Preço</th></tr>
-                <tr><th colSpan={2} className="px-3 py-1 text-center">Enfermaria</th><th colSpan={2} className="px-3 py-1 text-center">Apartamento</th><th rowSpan={2} className="px-3 py-1 text-center align-bottom">Total</th><th rowSpan={2} className="px-3 py-1 text-center align-bottom">Enfermaria</th><th rowSpan={2} className="px-3 py-1 text-center align-bottom">Apartamento</th><th rowSpan={2} className="px-3 py-1 text-center align-bottom">Mensalidade</th></tr>
-                <tr>{["Titular", "Dependente", "Titular", "Dependente"].map((h, i) => <th key={i} className="px-3 py-1 text-center font-normal">{h}</th>)}</tr>
+                <tr><th rowSpan={rel ? 3 : 2} className="px-3 py-1.5 text-left align-bottom">Faixa</th><th colSpan={rel ? 5 : 3} className="border-b border-border px-3 py-1.5 text-center">Vidas</th><th colSpan={3} className="border-b border-border px-3 py-1.5 text-center">Preço</th></tr>
+                <tr><th colSpan={rel ? 2 : 1} rowSpan={rel ? 1 : 1} className="px-3 py-1 text-center">Enfermaria</th><th colSpan={rel ? 2 : 1} className="px-3 py-1 text-center">Apartamento</th><th rowSpan={rel ? 2 : 1} className="px-3 py-1 text-center align-bottom">Total</th><th rowSpan={rel ? 2 : 1} className="px-3 py-1 text-center align-bottom">Enfermaria</th><th rowSpan={rel ? 2 : 1} className="px-3 py-1 text-center align-bottom">Apartamento</th><th rowSpan={rel ? 2 : 1} className="px-3 py-1 text-center align-bottom">Mensalidade</th></tr>
+                {rel && <tr>{["Titular", "Dependente", "Titular", "Dependente"].map((h, i) => <th key={i} className="px-3 py-1 text-center font-normal">{h}</th>)}</tr>}
               </thead>
               <tbody>
                 {grids[p].faixas.map((f) => <Linha key={f.faixa} f={f} />)}
@@ -106,6 +113,7 @@ export default function PropostaApb() {
               </tbody>
             </table>
           </div>
+          )}
         </section>
       ))}
       <p className="text-xs text-muted-foreground">Mensalidade = vidas × preço da faixa e acomodação. Ativo: vigência iniciada e sem desligamento na data; titular = matrícula final 00.</p>

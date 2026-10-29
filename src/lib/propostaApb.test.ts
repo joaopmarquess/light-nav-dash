@@ -15,4 +15,9 @@ describe("Proposta APB", () => {
     expect(gridPlano(linhas, "2290").total.mensalidade).toBeCloseTo(12715.41, 2);
     expect(gridPlano(linhas, "2890").total.mensalidade).toBeCloseTo(163424.21, 2);
   });
+  it("preço aparece mesmo sem vidas", () => {
+    const f = gridPlano(linhas, "2290").faixas[9];
+    expect(f.apTit + f.apDep).toBe(0);
+    expect(f.precoAp).toBe(1043.28);
+  });
 });
