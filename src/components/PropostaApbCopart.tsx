@@ -17,8 +17,8 @@ export const LINHAS_COPART_FACIL50: L[] = [
 
 type Tipo = "usebem" | "flex" | "facil50";
 const CFG: Record<Tipo, { t: string; pct: string; teto: string | null; ilustr: boolean }> = {
-  usebem: { t: "2490 — Use Bem com teto de R$ 300,00", pct: "30%", teto: "R$ 300,00", ilustr: true },
-  flex: { t: "2890 — Fácil Flex com teto de R$ 600,00", pct: "40%", teto: "R$ 600,00", ilustr: true },
+  usebem: { t: "2490 — Use Bem com teto de R$ 396,96", pct: "30%", teto: "R$ 396,96", ilustr: true },
+  flex: { t: "2890 — Fácil Flex com teto de R$ 656,10", pct: "40%", teto: "R$ 656,10", ilustr: true },
   facil50: { t: "Proposta — Fácil 50 sem teto", pct: "50%", teto: null, ilustr: false },
 };
 
