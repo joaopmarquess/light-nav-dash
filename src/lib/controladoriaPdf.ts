@@ -82,6 +82,13 @@ export async function comporPdfRelatorio(report: ControladoriaReport): Promise<R
           rowPageBreak: "avoid", showHead: "everyPage", pageBreak: "auto",
           styles: { ...baseTableStyles().styles, fontSize: block.table.headers.length > 5 ? 7 : 8, cellPadding: 2.2, overflow: "linebreak" },
           columnStyles: { [block.table.headers.length - 1]: { halign: "right" } },
+          didParseCell: data => {
+            if (data.section !== "body") return;
+            const value = String(data.cell.raw);
+            if (value.includes("desfavorável")) data.cell.styles.textColor = colors.negative;
+            else if (value.includes("favorável")) data.cell.styles.textColor = [32, 122, 83];
+            else if (value.includes("atenção")) data.cell.styles.textColor = [151, 111, 22];
+          },
         });
         y = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y;
         y += 7;

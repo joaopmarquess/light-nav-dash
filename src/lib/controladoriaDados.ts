@@ -4,7 +4,7 @@ import { loadDreHostinger, type DreHRow } from "@/control/dreHostinger";
 import { mergeOrcamento } from "@/control/orcamentoLocal";
 import { realizadosOrcamento } from "@/control/orcamentoRegras";
 import { datasVidasIndicadores, mesesMovimentacao, somarTotaisMovimentacao } from "./movimentacaoCarga";
-import { dinheiro, numero, percentual, type ReportPeriod } from "./controladoriaRegras";
+import { avaliarDesvio, dinheiro, numero, percentual, type ReportPeriod } from "./controladoriaRegras";
 import { saldoCompetencia, sinistralidade, somaVazia, somarTotais, type SomaCompetencia } from "./sinistralidadeCompetencias";
 
 export const UNAVAILABLE = "Informação não disponível na fonte atual.";
@@ -97,7 +97,8 @@ export async function carregarRelatorio(period: ReportPeriod, progress: (message
     dre.cards = [{ label: "Resultado consolidado", value: dinheiro(total) }, ...groups.map(([label, v]) => ({ label: strip(label), value: dinheiro(v) }))];
     // Preserve every hierarchy path; do not sum subtotal rows again.
     dre.table = { headers: ["G1", "G2", "G3", "G4", "Valor"], rows: [...new Set(dreRows.map(r => [r.g1, r.g2, r.g3, r.g4].join("~")))].sort((a, b) => a.localeCompare(b, "pt-BR", { numeric: true })).map(key => { const gs = key.split("~"); return [...gs.map(strip), dinheiro(sum(dreRows.filter(r => [r.g1, r.g2, r.g3, r.g4].join("~") === key)))]; }) };
-    dre.chart = { title: "Resultado mensal da DRE (R$)", labels: monthly.map(m => m.de.slice(0, 7)), series: [{ label: "Resultado", values: monthly.map(m => sum(dreRows.filter(r => `${r.ano}-${String(r.mes).padStart(2, "0")}` === m.de.slice(0, 7)))) }] };
+    const covered = monthly.filter(m => dreRows.some(r => `${r.ano}-${String(r.mes).padStart(2, "0")}` === m.de.slice(0, 7)));
+    dre.chart = { title: "Resultado mensal da DRE (R$)", labels: covered.map(m => m.de.slice(0, 7)), series: [{ label: "Resultado", values: covered.map(m => sum(dreRows.filter(r => `${r.ano}-${String(r.mes).padStart(2, "0")}` === m.de.slice(0, 7)))) }] };
     dre.paragraphs = [`O resultado consolidado da DRE foi de ${dinheiro(total)} no período recuperado.`, `A estrutura mantém ${groups.length} grupos G1 e os respectivos desdobramentos G2, G3 e G4. Os valores são movimentos mensais, não saldos de encerramento.`];
     dre.considerations = [`Foram recuperadas ${new Set(dreRows.map(r => `${r.ano}-${r.mes}`)).size} de ${monthly.length} competências. Meses sem movimento retornado não são tratados como resultado zero confirmado.`];
   }
@@ -126,15 +127,20 @@ export async function carregarRelatorio(period: ReportPeriod, progress: (message
       orc.status = "available"; orc.introduction = "Comparação gerencial do orçamento vigente de 2026. O previsto e as projeções usam a fonte existente; o realizado reutiliza a classificação do balancete MV do CONTROL.";
       const fullReal = months.every(m => real.meses.has(m));
       orc.cards = [{ label: "Previsto", value: dinheiro(previsto) }, { label: fullReal ? "Realizado" : "Realizado disponível (parcial)", value: realizado === null ? "—" : dinheiro(realizado) }, { label: "Projetado disponível", value: projetado === null ? "—" : dinheiro(projetado) }];
-      orc.table = { headers: ["Item", "Previsto", "Realizado", "Projetado", "Desvio realizado − previsto"], rows: values.map(r => [strip(r.item), dinheiro(r.previsto), r.realizado === null ? "—" : dinheiro(r.realizado), r.projetado === null ? "—" : dinheiro(r.projetado), r.realizado === null || !fullReal ? "—" : dinheiro(r.realizado - r.previsto)]) };
-      orc.chart = { title: "Previsto e projeção disponível por mês (R$)", labels: monthly.map(m => m.de.slice(0, 7)), series: [{ label: "Previsto", values: months.map(m => rows.filter(r => r.mes === m).reduce((t, r) => t + r.previsto, 0)) }, ...(projetado === null ? [] : [{ label: "Projetado", values: months.map(m => rows.filter(r => r.mes === m).reduce((t, r) => t + r.projetado, 0)) }])] };
+      const nature = (item: string): "receita" | "despesa" | "indefinida" => /^(01|02)\|/.test(item) ? "receita" : /^(03|05|06|08|09|10|11)\|/.test(item) ? "despesa" : "indefinida";
+      orc.table = { headers: ["Item", "Previsto", "Realizado", "Projetado", "Desvio real. − prev."], rows: values.map(r => { const d = r.realizado === null || !fullReal ? null : avaliarDesvio(r.previsto, r.realizado, nature(r.item)); return [strip(r.item), dinheiro(r.previsto), r.realizado === null ? "—" : dinheiro(r.realizado), r.projetado === null ? "—" : dinheiro(r.projetado), d ? `${dinheiro(d.desvio)}\n${d.status}` : "—"]; }) };
+      const budgetMonths = months.filter(m => rows.some(r => r.mes === m));
+      const projectionFull = budgetMonths.every(m => rows.some(r => r.mes === m && r.projetado !== 0));
+      orc.chart = { title: "Previsto e projeção disponível por mês (R$)", labels: budgetMonths.map(m => `${years[0]}-${String(m).padStart(2, "0")}`), series: [{ label: "Previsto", values: budgetMonths.map(m => rows.filter(r => r.mes === m).reduce((t, r) => t + r.previsto, 0)) }, ...(projetado === null || !projectionFull ? [] : [{ label: "Projetado", values: budgetMonths.map(m => rows.filter(r => r.mes === m).reduce((t, r) => t + r.projetado, 0)) }])] };
       orc.paragraphs = [`O previsto consolidado é de ${dinheiro(previsto)}. ${realizado === null ? "Não há realizado confirmado para os meses selecionados." : `O realizado disponível é ${dinheiro(realizado)}${fullReal ? "." : ", com cobertura parcial do período."}`}`, projetado === null ? "Não há projeção identificada para este período na fonte atual." : `As projeções já registradas somam ${dinheiro(projetado)}. Não foi criada nova extrapolação financeira.`];
       orc.considerations = ["O orçamento atual possui referência fixa em 2026; meses fechados para o realizado seguem o CONTROL (até agosto/2026). Complementos locais existentes são mantidos e identificados como parte da fonte CONTROL.", "Desvios só são calculados com cobertura equivalente de competências. Ausência de realizado não significa execução zero; natureza de conta não identificada não recebe classificação favorável/desfavorável."];
       orc.children = ["Previsto", "Realizado", "Projetado", "Desvios"].map((name, i) => {
         const child = base(`orc-${i}`, `4.${i + 1} ${name}`, "CONTROL", orc.sourceFunction, period, generatedAt);
         child.introduction = ["Referência planejada para acompanhamento gerencial.", "Execução consolidada no período selecionado.", "Estimativa de encerramento com base nas informações disponíveis.", "Variações entre referência, realização e projeção."][i];
         const available = i === 0 || (i === 1 ? realizado !== null : i === 2 ? projetado !== null : fullReal && realizado !== null);
-        if (available) { child.status = "available"; child.cards = [{ label: name, value: i === 0 ? dinheiro(previsto) : i === 1 ? dinheiro(realizado ?? 0) : i === 2 ? dinheiro(projetado ?? 0) : dinheiro((realizado ?? 0) - previsto) }]; child.paragraphs = [orc.paragraphs[i === 0 || i === 1 ? 0 : 1], i === 3 ? "A diferença apresentada usa realizado menos previsto, apenas nas competências com realização confirmada. O sinal não determina, sozinho, a favorabilidade." : "Os valores deste bloco correspondem à mesma seleção aplicada na tabela gerencial e não constituem uma nova base de cálculo."]; child.considerations = [orc.considerations[i === 3 ? 1 : 0]]; }
+        if (available) { child.status = "available"; child.cards = [{ label: name, value: i === 0 ? dinheiro(previsto) : i === 1 ? dinheiro(realizado ?? 0) : i === 2 ? dinheiro(projetado ?? 0) : dinheiro((realizado ?? 0) - previsto) }]; child.paragraphs = [i === 3 ? `A variação do resultado consolidado entre realizado e previsto foi de ${dinheiro((realizado ?? 0) - previsto)}.` : orc.paragraphs[i === 0 || i === 1 ? 0 : 1], i === 3 ? "A diferença apresentada usa realizado menos previsto, apenas nas competências com realização confirmada. O sinal não determina, sozinho, a favorabilidade." : "Os valores deste bloco correspondem à mesma seleção aplicada na tabela gerencial e não constituem uma nova base de cálculo."]; child.considerations = [orc.considerations[i === 3 ? 1 : 0]];
+          if (i === 3) child.table = { headers: ["Comparação", "Variação"], rows: [["Realizado − Previsto", dinheiro((realizado ?? 0) - previsto)], ["Projetado − Previsto", projetado === null || !projectionFull ? "—" : dinheiro(projetado - previsto)], ["Realizado − Projetado", projetado === null || !projectionFull ? "—" : dinheiro((realizado ?? 0) - projetado)]] };
+        }
         return child;
       });
     }
