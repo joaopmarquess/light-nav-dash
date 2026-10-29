@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Download, Loader2, Search, X, Users, UserCheck, UserX, Building2, Copy, Printer } from "lucide-react";
+import { Eye, EyeOff, ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Download, Loader2, Search, X, Users, UserCheck, UserX, Building2, Copy, Printer } from "lucide-react";
 import { toast } from "sonner";
 
 type Row = Record<string, any>;
@@ -128,6 +128,7 @@ export default function CarteiraTrial() {
   const buscar = () => setAp({ f: { ...f }, d: dataRef || new Date().toISOString().slice(0, 10) });
   const rows = useMemo(() => agrupar(raw, dRef || new Date().toISOString().slice(0, 10)), [raw, dRef]);
   const [fim, setFim] = useState(false);
+  const [grid, setGrid] = useState(false);
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [kpi, setKpi] = useState<{ ativos?: number; futuros?: number; cancelados?: number; total?: number } | null>(null);
@@ -168,7 +169,7 @@ export default function CarteiraTrial() {
 
   useEffect(() => {
     let cancel = false;
-    if (!ap) return;
+    if (!ap || !grid) return;
     (async () => {
       setLoading(true);
       let q = applyFilters(hostinger.from(TABLE).select("*"), df, dRef);
@@ -184,7 +185,7 @@ export default function CarteiraTrial() {
       if (!cancel) setTotal(count ?? null);
     })();
     return () => { cancel = true; };
-  }, [dfKey, page, sort.key === "st" ? "" : sort.key, sort.asc]);
+  }, [dfKey, page, sort.key === "st" ? "" : sort.key, sort.asc, grid]);
 
   const pages = total ? Math.ceil(total / PAGE) : 1;
   const set = (k: keyof Filters, v: string) => setF((p) => ({ ...p, [k]: v }));
@@ -237,11 +238,29 @@ export default function CarteiraTrial() {
         <Button size="sm" onClick={buscar}><Search className="h-4 w-4 mr-1" />Buscar</Button>
         <div className="ml-auto flex gap-2">
           {activeChips.length > 0 && <Button variant="ghost" size="sm" onClick={() => { const e = { ...EMPTY, status: ALL }; setF(e); setAp({ f: e, d: dataRef || new Date().toISOString().slice(0, 10) }); }}><X className="h-4 w-4 mr-1" />Limpar</Button>}
+          <Button variant="outline" size="sm" onClick={() => setGrid((g) => !g)}>{grid ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}{grid ? "Ocultar lista" : "Mostrar lista"}</Button>
           <Button variant="outline" size="sm" onClick={exportCsv} disabled={!rows.length}><Download className="h-4 w-4 mr-1" />Exportar</Button>
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 bg-card border border-border rounded-xl overflow-hidden flex flex-col">
+      {!grid && (
+        <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-3 gap-4 content-start">
+          {([
+            ["A", UserCheck, "Ativos", kpi?.ativos],
+            ["F", Users, "Futuros (vigência a iniciar)", kpi?.futuros],
+            ["C", UserX, "Cancelados", kpi?.cancelados],
+          ] as const).map(([st, I, label, v]) => (
+            <button key={st} onClick={() => { const e = { ...f, status: st }; setF(e); setAp({ f: e, d: dataRef || new Date().toISOString().slice(0, 10) }); setGrid(true); }}
+              className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-8 hover:bg-accent transition-colors">
+              <I className="h-8 w-8 text-primary" />
+              <p className="text-sm text-muted-foreground">{label}</p>
+              <p className="text-4xl font-semibold tabular-nums text-foreground">{!ap ? "—" : v == null ? "…" : v.toLocaleString("pt-BR")}</p>
+              {ap && kpi?.total ? <p className="text-xs text-muted-foreground tabular-nums">{((Number(v ?? 0) / kpi.total) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% de {kpi.total.toLocaleString("pt-BR")} matrículas</p> : null}
+            </button>
+          ))}
+        </div>
+      )}
+      <div className={`flex-1 min-h-0 bg-card border border-border rounded-xl overflow-hidden flex-col ${grid ? "flex" : "hidden"}`}>
         <div className="flex-1 min-h-0 overflow-auto" onScroll={(e) => { const el = e.currentTarget; if (!loading && !fim && el.scrollTop + el.clientHeight > el.scrollHeight - 300) setPage((p) => p + 1); }}>
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-muted z-10">
