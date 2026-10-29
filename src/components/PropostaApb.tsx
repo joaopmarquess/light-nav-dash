@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, FileSpreadsheet, Users, UserCheck, Wallet, Receipt } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import PropostaApbSinistralidade from "@/components/PropostaApbSinistralidade";
 import csv from "@/data/propostaApb/vidas_precos_2026-10-29.csv?raw";
-import { parseApb, gridPlano, PLANOS_APB, PRECOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, type FaixaApb } from "@/lib/propostaApb";
+import { parseApb, gridPlano, PLANOS_APB, FAIXAS_APB, PRECOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, type FaixaApb } from "@/lib/propostaApb";
 
 const n0 = (v: number) => v.toLocaleString("pt-BR");
 const brl = (v: number | null) => (v == null ? "—" : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
@@ -64,6 +65,16 @@ export default function PropostaApb() {
           <p className="text-sm text-muted-foreground">Vidas ativas em {dataBr} nos planos 2290, 2490 e 2890 × preços de referência fornecidos (fotografia, não atualiza com a base).</p>
         </div>
         <div className="flex items-center gap-2">
+        <Dialog>
+          <DialogTrigger asChild><button type="button" className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium hover:bg-accent">Tabela Proposta</button></DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader><DialogTitle>Tabela Proposta — Plano {PLANO_NOVO}</DialogTitle></DialogHeader>
+            <table className="w-full text-sm">
+              <thead><tr className="bg-primary text-primary-foreground"><th className="px-3 py-2 text-left">Faixa etária</th><th className="px-3 py-2 text-center">Enfermaria</th><th className="px-3 py-2 text-center">Apartamento</th></tr></thead>
+              <tbody>{FAIXAS_APB.map((f, i) => <tr key={f} className="border-t border-border"><td className="px-3 py-1.5 font-medium">{f}</td><td className="px-3 py-1.5 text-center">{brl(PRECOS_PROPOSTA[i][0])}</td><td className="px-3 py-1.5 text-center">{brl(PRECOS_PROPOSTA[i][1])}</td></tr>)}</tbody>
+            </table>
+          </DialogContent>
+        </Dialog>
         <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
           {([1, 2, 3] as const).map((n) => <button key={n} type="button" onClick={() => setNivel(n)} className={`rounded-md px-3 py-1.5 text-sm font-medium ${nivel === n ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>Nível {n}</button>)}
         </div>
