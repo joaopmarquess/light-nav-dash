@@ -6,6 +6,7 @@ import { gridFaixas, type LinhaEmp } from "@/lib/sinistralidadeEmpresas";
 
 const PLANOS = ["2290", "2490", "2890"];
 const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const rel = (a: number, b: number) => (b ? ` (${Math.round((a / b) * 100).toLocaleString("pt-BR")}%)` : "");
 const pct = (v: number | null) => (v == null ? "—" : `${(v * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`);
 
 /** Container direito da Proposta APB: sinistralidade da mesma fonte de Sinistralidade › Empresas Menu. */
@@ -25,7 +26,7 @@ export default function PropostaApbSinistralidade() {
   const cards = [
     { t: "Vidas", v: total.vidas.toLocaleString("pt-BR") },
     { t: "Receita CPP", v: brl(total.recCpp) },
-    { t: "Receita Copart", v: brl(total.recCopart) },
+    { t: "Receita Copart", v: brl(total.recCopart) + rel(total.recCopart, total.recCpp) },
     { t: "Receita total", v: brl(total.recTotal) },
     { t: "Despesas", v: brl(total.despTotal) },
     { t: "Saldo", v: brl(total.saldo), neg: total.saldo < 0 },
@@ -55,7 +56,7 @@ export default function PropostaApbSinistralidade() {
                   <td className="px-2 py-1 font-medium">{p}</td>
                   <td className="px-2 py-1 text-center">{t.vidas.toLocaleString("pt-BR")}</td>
                   <td className="px-2 py-1 text-right">{brl(t.recCpp)}</td>
-                  <td className="px-2 py-1 text-right">{brl(t.recCopart)}</td>
+                  <td className="px-2 py-1 text-right">{brl(t.recCopart)}<span className="text-muted-foreground">{rel(t.recCopart, t.recCpp)}</span></td>
                   <td className="px-2 py-1 text-right">{brl(t.recTotal)}</td>
                   <td className="px-2 py-1 text-right">{brl(t.despTotal)}</td>
                   <td className={`px-2 py-1 text-right ${t.saldo < 0 ? "text-destructive" : ""}`}>{brl(t.saldo)}</td>
