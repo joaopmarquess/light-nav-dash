@@ -29,14 +29,16 @@ export const COPART_2890: [string, string, string][] = [
 
 type Tipo = "usebem" | "flex" | "facil50";
 const CFG: Record<Tipo, { t: string; pct: string; teto: string | null; ilustr: boolean }> = {
-  usebem: { t: "2490 — Use Bem com teto de R$ 396,96", pct: "30%", teto: "R$ 396,96", ilustr: true },
+  usebem: { t: "2490 — Use Bem com teto de R$ 396,96", pct: "30%", teto: "R$ 396,96", ilustr: false },
   flex: { t: "2890 — Fácil Flex com teto de R$ 656,10", pct: "", teto: "R$ 656,10", ilustr: false },
   facil50: { t: "Proposta — Fácil 50 sem teto", pct: "50%", teto: null, ilustr: false },
 };
 
 export default function PropostaApbCopart({ tipo }: { tipo: Tipo }) {
   const c = CFG[tipo];
-  const linhas = LINHAS_COPART_FACIL50.map((l) => (l.p === "-" ? l : { ...l, p: c.pct }));
+  const linhas = tipo === "usebem"
+    ? LINHAS_COPART_FACIL50.map((l) => (l.n === 1 ? { ...l, p: "-", v: "45,00" } : l.n === 4 ? { ...l, p: "-", v: "259,00" } : { ...l, p: "30%", v: "Sem limite" }))
+    : LINHAS_COPART_FACIL50;
   return (
     <Dialog>
       <DialogTrigger asChild>
