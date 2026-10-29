@@ -19,6 +19,8 @@ export const PDF_COLORS = {
   text: [0, 0, 0] as RGB,
   muted: [110, 120, 130] as RGB,
   negative: [178, 34, 34] as RGB,
+  favorable: [32, 122, 83] as RGB,
+  attention: [151, 111, 22] as RGB,
 };
 
 /** Título de seção: caixa alta, negrito, azul, com linha fina abaixo. */
