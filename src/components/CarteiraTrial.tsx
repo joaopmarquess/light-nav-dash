@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, EyeOff, ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Download, Loader2, Search, X, Users, UserCheck, UsersRound, Scale, HardHat, UserX, Building2, Copy, Printer } from "lucide-react";
+import { Eye, EyeOff, ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Download, Loader2, Search, X, Users, UserCheck, UsersRound, Handshake, Factory, UserX, Building2, Copy, Printer } from "lucide-react";
 import { toast } from "sonner";
 
 type Row = Record<string, any>;
@@ -259,8 +259,8 @@ export default function CarteiraTrial() {
             ["A", UserCheck, "Vidas Ativas", kpi?.ativos],
             ["MIX", Users, "Vidas Ativas por contratação", null],
             ["PIF", UsersRound, "PIF", kpi?.PIF],
-            ["PCA", Scale, "PCA", kpi?.PCA],
-            ["PCE", HardHat, "PCE", kpi?.PCE],
+            ["PCA", Handshake, "PCA", kpi?.PCA],
+            ["PCE", Factory, "PCE", kpi?.PCE],
           ] as const).map(([st, I, label, v]) => { const tip = st === "T" ? undefined : `Contratos Ativos: ${!ap || kpi?.contratos == null || kpi.contratos < 0 ? "—" : kpi.contratos.toLocaleString("pt-BR")}`; return st === "MIX" ? (
             <div key={st} title={tip} className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-8">
               <I className="h-8 w-8 text-primary" />
