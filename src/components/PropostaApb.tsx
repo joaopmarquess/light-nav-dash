@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, FileSpreadsheet, Users, UserCheck, Wallet, Receipt } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import PropostaApbSinistralidade from "@/components/PropostaApbSinistralidade";
+import PropostaApbCopart from "@/components/PropostaApbCopart";
+const COPART_DESC: Record<string, string> = { "2290": "Sem Coparticipação", "2490": "Fácil Flex com teto de R$ 600,00", "2890": "Fácil 50 sem teto" };
 import csv from "@/data/propostaApb/vidas_precos_2026-10-29.csv?raw";
 import { parseApb, gridPlano, PLANOS_APB, FAIXAS_APB, PRECOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, type FaixaApb } from "@/lib/propostaApb";
 
@@ -72,7 +74,7 @@ export default function PropostaApb() {
             <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-primary text-primary-foreground"><th rowSpan={2} className="px-3 py-2 text-left align-bottom">Faixa etária</th>{[...PLANOS_APB, "Proposta"].map((p) => <th key={p} colSpan={2} className="border-l border-primary-foreground/30 px-3 py-1 text-center">{p}</th>)}</tr>
+                <tr className="bg-primary text-primary-foreground"><th rowSpan={2} className="px-3 py-2 text-left align-bottom">Faixa etária</th>{[...PLANOS_APB, "Proposta"].map((p) => <th key={p} colSpan={2} className="border-l border-primary-foreground/30 px-3 py-1 text-center">{p}{COPART_DESC[p] && <div className="text-[11px] font-normal">{COPART_DESC[p]}{p === "2890" && <PropostaApbCopart />}</div>}</th>)}</tr>
                 <tr className="bg-primary text-xs text-primary-foreground">{[...PLANOS_APB, "Proposta"].flatMap((p) => [<th key={p + "e"} className="border-l border-primary-foreground/30 px-2 py-1 text-center">Enfermaria</th>, <th key={p + "a"} className="px-2 py-1 text-center">Apartamento</th>])}</tr>
               </thead>
               <tbody>{FAIXAS_APB.map((f, i) => <tr key={f} className="border-t border-border"><td className="px-3 py-1.5 font-medium">{f}</td>{[...PLANOS_APB.map((p) => PRECOS_APB[p][i]), PRECOS_PROPOSTA[i]].flatMap((v, j) => [<td key={j + "e"} className={`border-l border-border px-2 py-1.5 text-center ${j === 3 ? "font-semibold" : ""}`}>{brl(v[0])}</td>, <td key={j + "a"} className={`px-2 py-1.5 text-center ${j === 3 ? "font-semibold" : ""}`}>{brl(v[1])}</td>])}</tr>)}</tbody>
