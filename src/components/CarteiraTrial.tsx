@@ -131,7 +131,7 @@ export default function CarteiraTrial() {
   const [grid, setGrid] = useState(false);
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [kpi, setKpi] = useState<{ ativos?: number; futuros?: number; cancelados?: number; total?: number; contratos?: number; PIF?: number; PCA?: number; PCE?: number } | null>(null);
+  const [kpi, setKpi] = useState<{ ativos?: number; futuros?: number; cancelados?: number; total?: number; contratos?: number; PIF?: number; PCA?: number; PCE?: number; cPIF?: number; cPCA?: number; cPCE?: number } | null>(null);
   useEffect(() => {
     if (!ap) return;
     setKpi(null);
@@ -148,6 +148,11 @@ export default function CarteiraTrial() {
       if (error) { console.error(error); setKpi((k) => ({ ...k, PIF: -1, PCA: -1, PCE: -1 })); return; }
       const g = (x: string) => Number((data ?? []).find((r: any) => r.sigla === x)?.vidas ?? 0);
       setKpi((k) => ({ ...k, PIF: g("PIF"), PCA: g("PCA"), PCE: g("PCE") }));
+    });
+    hostinger.rpc("carteira_trial_siglas_contratos", { p_data: dRef, p_q: df.q.trim() || null, p_empresa: df.empresa.trim() || null, p_cidade: df.cidade.trim() || null }).then(({ data, error }: any) => {
+      if (error) { console.error(error); setKpi((k) => ({ ...k, cPIF: -1, cPCA: -1, cPCE: -1 })); return; }
+      const g = (x: string) => Number((data ?? []).find((r: any) => r.sigla === x)?.contratos ?? 0);
+      setKpi((k) => ({ ...k, cPIF: g("PIF"), cPCA: g("PCA"), cPCE: g("PCE") }));
     });
   }, [ap]);
   const vis = useMemo(() => {
@@ -261,7 +266,11 @@ export default function CarteiraTrial() {
             ["PIF", UsersRound, "PIF", kpi?.PIF],
             ["PCA", Handshake, "PCA", kpi?.PCA],
             ["PCE", Factory, "PCE", kpi?.PCE],
-          ] as const).map(([st, I, label, v]) => { const tip = st === "T" ? undefined : `Contratos Ativos: ${!ap || kpi?.contratos == null || kpi.contratos < 0 ? "—" : kpi.contratos.toLocaleString("pt-BR")}`; return st === "MIX" ? (
+          ] as const).map(([st, I, label, v]) => { const nf = (n?: number) => (!ap || n == null || n < 0 ? "—" : n.toLocaleString("pt-BR"));
+            const sm = (a?: number, b?: number) => (a == null || b == null || a < 0 || b < 0 ? undefined : a + b);
+            const tip = st === "T" ? undefined
+              : st === "MIX" ? `Contratos Ativos\nPlanos Individuais/Familiares: ${nf(kpi?.cPIF)}\nPlanos Coletivos: ${nf(sm(kpi?.cPCA, kpi?.cPCE))}`
+              : `Contratos Ativos: ${nf(st === "A" ? kpi?.contratos : (kpi as any)?.["c" + st])}`; return st === "MIX" ? (
             <div key={st} title={tip} className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-8">
               <I className="h-8 w-8 text-primary" />
               <p className="text-sm text-muted-foreground">{label}</p>
@@ -274,8 +283,8 @@ export default function CarteiraTrial() {
                 return (
                   <table className="text-lg text-foreground border-collapse">
                     <tbody>
-                      <tr><th className="px-3 py-1 text-right">PLANOS INDIVIDUAIS/FAMILIARES</th><td className={td}>{fmt(pif)}</td></tr>
-                      <tr><th className="px-3 py-1 text-right">PLANOS COLETIVOS</th><td className={td}>{fmt(col)}</td></tr>
+                      <tr><th className="px-3 py-1 text-right">PLANOS INDIVIDUAIS/FAMILIARES</th><td className={td}>{nf(kpi?.PIF)}</td><td className={td}>{fmt(pif)}</td></tr>
+                      <tr><th className="px-3 py-1 text-right">PLANOS COLETIVOS</th><td className={td}>{nf(sm(kpi?.PCA, kpi?.PCE))}</td><td className={td}>{fmt(col)}</td></tr>
                     </tbody>
                   </table>
                 );
