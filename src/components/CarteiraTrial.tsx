@@ -255,14 +255,14 @@ export default function CarteiraTrial() {
       {!grid && (
         <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-3 gap-4 content-start">
           {([
-            ["T", Building2, "Contratos Ativos", kpi?.contratos],
+            ["T", Building2, "Ativos em", null],
             ["A", UserCheck, "Vidas Ativas", kpi?.ativos],
             ["MIX", Users, "Vidas Ativas por contratação", null],
             ["PIF", UserCheck, "PIF", kpi?.PIF],
             ["PCA", UserCheck, "PCA", kpi?.PCA],
             ["PCE", UserCheck, "PCE", kpi?.PCE],
-          ] as const).map(([st, I, label, v]) => st === "MIX" ? (
-            <div key={st} className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-8">
+          ] as const).map(([st, I, label, v]) => { const tip = st === "T" ? undefined : `Contratos Ativos: ${!ap || kpi?.contratos == null || kpi.contratos < 0 ? "—" : kpi.contratos.toLocaleString("pt-BR")}`; return st === "MIX" ? (
+            <div key={st} title={tip} className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-8">
               <I className="h-8 w-8 text-primary" />
               <p className="text-sm text-muted-foreground">{label}</p>
               {(() => {
@@ -282,14 +282,14 @@ export default function CarteiraTrial() {
               })()}
             </div>
           ) : (
-            <button key={st} onClick={() => { if (st !== "A") return; const e = { ...f, status: st }; setF(e); setAp({ f: e, d: dataRef || new Date().toISOString().slice(0, 10) }); setGrid(true); }}
+            <button key={st} title={tip} onClick={() => { if (st !== "A") return; const e = { ...f, status: st }; setF(e); setAp({ f: e, d: dataRef || new Date().toISOString().slice(0, 10) }); setGrid(true); }}
               className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-8 hover:bg-accent transition-colors">
               <I className="h-8 w-8 text-primary" />
               <p className="text-sm text-muted-foreground">{label}</p>
-              <p className="text-4xl font-semibold tabular-nums text-foreground">{!ap || v === -1 ? "—" : v == null ? "…" : v.toLocaleString("pt-BR")}</p>
+              <p className="text-4xl font-semibold tabular-nums text-foreground">{st === "T" ? (ap ? ap.d.split("-").reverse().join("/") : "—") : !ap || v === -1 ? "—" : v == null ? "…" : v.toLocaleString("pt-BR")}</p>
               {["PIF", "PCA", "PCE"].includes(st) && ap && kpi?.ativos && v != null && v >= 0 ? <p className="text-xs text-muted-foreground tabular-nums">{((v / kpi.ativos) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</p> : null}
             </button>
-          ))}
+          ); })}
         </div>
       )}
       <div className={`flex-1 min-h-0 bg-card border border-border rounded-xl overflow-hidden flex-col ${grid ? "flex" : "hidden"}`}>
