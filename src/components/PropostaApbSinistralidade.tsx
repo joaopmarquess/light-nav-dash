@@ -14,6 +14,13 @@ const pct = (v: number | null) => (v == null ? "—" : `${(v * 100).toLocaleStri
 type Grids = Record<string, ReturnType<typeof gridPlano>>;
 const deProjecao = (g: Grids): LinhaEmp[] => Object.keys(g).flatMap((p) => g[p].faixas.map((f) => ({ plano: p, faixa: f.faixa, vidas: f.total, ...projecaoAnual(f.mensalidade) })));
 
+/** Consolida linhas de mesma faixa (vinham uma por plano). */
+export function porFaixa(ls: LinhaEmp[]): LinhaEmp[] {
+  const m = new Map<string, LinhaEmp>();
+  for (const l of ls) { const a = m.get(l.faixa); m.set(l.faixa, a ? { ...a, vidas: a.vidas + l.vidas, recCpp: a.recCpp + l.recCpp, recCopart: a.recCopart + l.recCopart, recTotal: a.recTotal + l.recTotal, despTotal: a.despTotal + l.despTotal } : { ...l }); }
+  return [...m.values()];
+}
+
 /** Nível 2: rateia "Sem faixa" entre as 10 faixas na proporção das vidas de cada faixa (vidas, receitas e despesas). */
 export function distribuirSemFaixa(ls: LinhaEmp[]): LinhaEmp[] {
   const sem = ls.filter((l) => !FAIXAS_EMP.includes(l.faixa)), com = ls.filter((l) => FAIXAS_EMP.includes(l.faixa));
@@ -41,7 +48,7 @@ export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?
   if (proj) linhas = deProjecao(proj);
   else if (grupo && linhas) {
     const g = grupo;
-    linhas = distribuirSemFaixa(linhas.map((l) => ({ ...l, plano: "GRUPO" }))).map((l) => ({ ...l, vidas: g.faixas.find((f) => f.faixa === l.faixa)?.total ?? 0 }));
+    linhas = porFaixa(distribuirSemFaixa(linhas.map((l) => ({ ...l, plano: "GRUPO" })))).map((l) => ({ ...l, vidas: g.faixas.find((f) => f.faixa === l.faixa)?.total ?? 0 }));
   }
   if (!linhas) return null;
   const total = gridFaixas(linhas).total;
