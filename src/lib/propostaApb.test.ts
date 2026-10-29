@@ -42,6 +42,9 @@ describe("idade média exata do snapshot", () => {
 import { escalarVidas } from "./propostaApb";
 describe("Nível 4", () => {
   const n4 = escalarVidas(linhas);
-  it("1.200 titulares", () => expect(n4.filter((l) => l.rel === "Titular").reduce((t, l) => t + l.vidas, 0)).toBe(1200));
-  it("180 dependentes (15%)", () => expect(n4.filter((l) => l.rel === "Dependente").reduce((t, l) => t + l.vidas, 0)).toBe(180));
+  it("total 1.242", () => expect(n4.reduce((t, l) => t + l.vidas, 0)).toBe(1242));
+  it("faixa 44 a 48 = 218 e 00 a 18 = 5", () => {
+    const f = (x: string) => n4.filter((l) => l.faixa === x).reduce((t, l) => t + l.vidas, 0);
+    expect(f("44 a 48")).toBe(218); expect(f("00 a 18")).toBe(5);
+  });
 });
