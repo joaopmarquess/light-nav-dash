@@ -38,3 +38,10 @@ describe("idade média exata do snapshot", () => {
   it("GRUPO usa a soma dos três", () => expect(idadeSomaPlanos(linhas, ["GRUPO"])).toBe(33193));
   it("2290 tem média 58", () => expect(idadeSomaPlanos(linhas, ["2290"]) / 20).toBe(58));
 });
+
+import { escalarVidas } from "./propostaApb";
+describe("Nível 4", () => {
+  const n4 = escalarVidas(linhas);
+  it("1.200 titulares", () => expect(n4.filter((l) => l.rel === "Titular").reduce((t, l) => t + l.vidas, 0)).toBe(1200));
+  it("180 dependentes (15%)", () => expect(n4.filter((l) => l.rel === "Dependente").reduce((t, l) => t + l.vidas, 0)).toBe(180));
+});
