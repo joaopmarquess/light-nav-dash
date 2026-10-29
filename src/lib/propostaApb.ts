@@ -104,3 +104,13 @@ export function escalarVidas(linhas: LinhaApb[], titPorFaixa = VIDAS_N4, depPct 
   out.forEach((l, i) => { const o = linhas[i]; if (o) l.idadeSoma = o.vidas ? (o.idadeSoma / o.vidas) * l.vidas : 0; });
   return out.filter((l) => l.vidas > 0);
 }
+
+/** Nível 5: vidas do Nível 4 no plano 3990; titulares com preço linear (qualquer idade) e dependentes com tabela por faixa, ambos editáveis. */
+export function gridsN5(linhas: LinhaApb[], linear: [number, number], dep: [number, number][]) {
+  const ls = linhas.map((l) => ({ ...l, plano: PLANO_NOVO }));
+  const tit = gridPlano(ls.filter((l) => l.rel === "Titular"), PLANO_NOVO, FAIXAS_APB.map(() => linear));
+  const dp = gridPlano(ls.filter((l) => l.rel === "Dependente"), PLANO_NOVO, dep);
+  const g = gridPlano(ls, PLANO_NOVO, dep);
+  const faixas = g.faixas.map((f, i) => ({ ...f, precoEnf: null, precoAp: null, mensalidade: tit.faixas[i].mensalidade + dp.faixas[i].mensalidade }));
+  return { tit, dep: dp, todos: { faixas, total: { ...g.total, mensalidade: tit.total.mensalidade + dp.total.mensalidade } } };
+}
