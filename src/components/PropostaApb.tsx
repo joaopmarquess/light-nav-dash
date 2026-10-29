@@ -56,7 +56,7 @@ export default function PropostaApb() {
   );
 
   return (
-    <div className={`h-full space-y-2 overflow-y-auto text-sm [scrollbar-gutter:stable] ${nivel > 1 ? "[&_table]:table-fixed [&_td]:whitespace-nowrap" : ""}`}><div className="space-y-2 [&_td]:py-0.5 [&_th]:py-0.5">
+    <div className={`h-full space-y-2 overflow-y-auto text-sm [scrollbar-gutter:stable] ${nivel > 1 ? "[&_table]:table-fixed [&_td]:whitespace-nowrap" : ""}`}><div className="flex min-h-full flex-col gap-2 [&_td]:py-0.5 [&_th]:py-0.5">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground"><FileSpreadsheet className="h-6 w-6 text-primary" />Proposta APB</h2>
@@ -83,8 +83,8 @@ export default function PropostaApb() {
         <Card icon={Receipt} label="Ticket médio" value={brl(k.vidas ? k.mens / k.vidas : 0)} sub={`Enfermaria ${pct(k.enf, k.vidas)} das vidas`} />
       </section>
 
-      <div className="grid gap-2 xl:grid-cols-2">
-        <div className={`min-w-0 ${nivel > 1 ? "flex flex-col" : "space-y-2"}`}>
+      <div className="grid flex-1 gap-2 xl:grid-cols-2">
+        <div className="flex min-w-0 flex-col gap-2">
       {selOk === "Todos" && (
         <section className="rounded-lg border border-border bg-card p-3 shadow-sm">
           <h3 className="mb-1 text-sm font-semibold text-foreground">Resumo por plano</h3>
@@ -116,7 +116,7 @@ export default function PropostaApb() {
       )}
 
       {vis.map((p) => (
-        <section key={p} className={`rounded-lg border border-border bg-card shadow-sm ${nivel > 1 ? "flex flex-1 flex-col" : ""}`}>
+        <section key={p} className={`rounded-lg border border-border bg-card shadow-sm flex flex-1 flex-col`}>
           <button type="button" disabled={nivel > 1} onClick={() => setAbertos((a) => ({ ...a, [p]: !a[p] }))} className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left enabled:hover:bg-accent">
             <span className="flex items-center gap-2 text-base font-semibold text-foreground">{nivel > 1 ? null : abertos[p] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}Plano {p}</span>
             <span className="text-sm text-muted-foreground">{n0(grids[p].total.total)} vidas · {brl(grids[p].total.mensalidade)}</span>
