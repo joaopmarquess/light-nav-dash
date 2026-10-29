@@ -65,7 +65,7 @@ export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?
   ];
 
   return (
-    <div className="space-y-2 [&_section]:p-3 [&_h3]:mb-1">
+    <div className="flex h-full flex-col gap-2 [&_section]:p-3 [&_h3]:mb-1">
       <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
         <h3 className="text-base font-semibold text-foreground">{proj ? "Projeção anual — tabela proposta" : "Sinistralidade 09/2025 a 08/2026"}</h3>
         <p className="mb-2 text-xs text-muted-foreground">{proj ? "Vidas atuais × preço proposto × 12 · copart 16% da CPP · sinistralidade 75%" : "Fonte: MENU_SB_SINISTRALIDA.XLS (mesma de Sinistralidade › Empresas Menu)"}</p>
@@ -99,8 +99,8 @@ export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?
         </table></div>
       </section>
       {planos.map((p) => (
-        <div key={p}>
-          {!fixo && <button type="button" onClick={() => setAberto(aberto === p ? null : p)} className="mb-1 flex w-full items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-left text-sm font-semibold shadow-sm hover:bg-accent">
+        <div key={p} className="flex flex-1 flex-col">
+          {!fixo && <button type="button" onClick={() => setAberto(aberto === p ? null : p)} className={`mb-1 flex w-full items-center gap-2 rounded-lg border ${aberto === p ? "" : "flex-1"} border-border bg-card px-3 py-1.5 text-left text-sm font-semibold shadow-sm hover:bg-accent`}>
             {aberto === p ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}Sinistralidade por faixa · Plano {p}
           </button>}
           {(fixo || aberto === p) && <Grid titulo={`Plano ${p}`} linhas={linhas.filter((l) => l.plano === p)} />}
