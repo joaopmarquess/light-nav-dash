@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, FileSpreadsheet, Users, UserCheck, Wallet, Receipt, CalendarDays } from "lucide-react";
+import { ChevronDown, ChevronRight, FileSpreadsheet, Users, UserCheck, Wallet, Receipt, CalendarDays, Printer, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import PropostaApbSinistralidade from "@/components/PropostaApbSinistralidade";
 import { gerarPropostaPdf } from "@/lib/propostaApbPdf";
 import PropostaApbCopart from "@/components/PropostaApbCopart";
@@ -94,9 +95,15 @@ export default function PropostaApb() {
           <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground"><FileSpreadsheet className="h-6 w-6 text-primary" />Proposta APB</h2>
         </div>
         <div className="flex flex-wrap items-end gap-2">
-        <button type="button" onClick={() => gerarPropostaPdf()} className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">Gerar Proposta</button>
+        <Tooltip>
+          <TooltipTrigger asChild><Button type="button" size="icon" aria-label="Gerar Proposta" onClick={() => gerarPropostaPdf()}><Printer className="h-4 w-4" aria-hidden="true" /></Button></TooltipTrigger>
+          <TooltipContent>Gerar Proposta</TooltipContent>
+        </Tooltip>
         <Dialog>
-          <DialogTrigger asChild><button type="button" className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium hover:bg-accent">Tabela Proposta</button></DialogTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild><DialogTrigger asChild><Button type="button" size="icon" variant="outline" aria-label="Tabela Proposta"><FileText className="h-4 w-4" aria-hidden="true" /></Button></DialogTrigger></TooltipTrigger>
+            <TooltipContent>Tabela Proposta</TooltipContent>
+          </Tooltip>
           <DialogContent className="max-w-[90vw] text-base">
             <DialogHeader><DialogTitle>Tabelas de preço — 2290 × 2490 × 2890 × Proposta ({PLANO_NOVO})</DialogTitle></DialogHeader>
             <div className="overflow-x-auto">
@@ -113,13 +120,13 @@ export default function PropostaApb() {
         <fieldset className="min-w-0 rounded-lg border border-border bg-card px-2 pb-1.5">
           <legend className="px-1 text-xs font-semibold text-muted-foreground">Planos Atuais</legend>
           <div className="flex gap-1">
-            {([1, 2] as const).map((n) => <Button key={n} type="button" size="sm" variant={nivel === n ? "default" : "ghost"} aria-pressed={nivel === n} title={({ 1: "3 contratos - analítico", 2: "3 contratos - sintético" } as const)[n]} onClick={() => setNivel(n)}>Nível {n}</Button>)}
+            {([1, 2] as const).map((n) => <Button key={n} type="button" size="sm" variant={nivel === n ? "default" : "ghost"} aria-pressed={nivel === n} title={({ 1: "3 contratos - analítico", 2: "3 contratos - sintético" } as const)[n]} onClick={() => setNivel(n)}>{n === 1 ? "Analítico" : "Sintético"}</Button>)}
           </div>
         </fieldset>
         <fieldset className="min-w-0 rounded-lg border border-border bg-card px-2 pb-1.5">
           <legend className="px-1 text-xs font-semibold text-muted-foreground">Proposta Novo Plano</legend>
           <div className="flex gap-1">
-          {([3, 4] as const).map((n) => <Button key={n} type="button" size="sm" variant={nivel === n ? "default" : "ghost"} aria-pressed={nivel === n} title={({ 3: "Novo plano - racional", 4: "Novo plano - estratégico" } as const)[n]} onClick={() => setNivel(n)}>Nível {n}</Button>)}
+          {([3, 4] as const).map((n) => <Button key={n} type="button" size="sm" variant={nivel === n ? "default" : "ghost"} aria-pressed={nivel === n} title={({ 3: "Novo plano - racional", 4: "Novo plano - estratégico" } as const)[n]} onClick={() => setNivel(n)}>{n === 3 ? "Racional" : "Estratégico"}</Button>)}
           <Dialog modal={false} onOpenChange={(o) => o && setPos({ x: 0, y: 0 })}>
             <DialogTrigger asChild><Button type="button" size="sm" variant="outline" tabIndex={nivel >= 3 ? 0 : -1} aria-hidden={nivel < 3} className={nivel >= 3 ? "" : "invisible pointer-events-none"}>Variáveis</Button></DialogTrigger>
             <DialogContent semFundo className="max-w-md shadow-2xl" style={{ transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))` }} onInteractOutside={(e) => e.preventDefault()}>
