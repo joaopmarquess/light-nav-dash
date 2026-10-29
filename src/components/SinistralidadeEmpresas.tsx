@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Building2, Loader2, Search } from "lucide-react";
 import { hostinger } from "@/lib/hostingerClient";
 import { Button } from "@/components/ui/button";
+import { carregarSb } from "@/lib/sinistralidadeEmpresasSb";
 import { competencia, gridFaixas, normFaixa, parsePlanos, type FaixaEmp, type LinhaEmp } from "@/lib/sinistralidadeEmpresas";
 
 const brl = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -33,10 +34,11 @@ function Grid({ titulo, linhas }: { titulo: string; linhas: LinhaEmp[] }) {
   );
 }
 
-export default function SinistralidadeEmpresas() {
+export default function SinistralidadeEmpresas({ fonte = "mv" }: { fonte?: "mv" | "sb" }) {
+  const sb = fonte === "sb";
   const ano = new Date().getFullYear();
-  const [de, setDe] = useState(`${ano}-01`);
-  const [ate, setAte] = useState(`${ano}-${String(new Date().getMonth() + 1).padStart(2, "0")}`);
+  const [de, setDe] = useState(sb ? "2025-09" : `${ano}-01`);
+  const [ate, setAte] = useState(sb ? "2026-08" : `${ano}-${String(new Date().getMonth() + 1).padStart(2, "0")}`);
   const [empresa, setEmpresa] = useState("");
   const [planos, setPlanos] = useState("");
   const [linhas, setLinhas] = useState<LinhaEmp[] | null>(null);
@@ -46,6 +48,10 @@ export default function SinistralidadeEmpresas() {
   const buscar = async () => {
     setLoading(true); setErro(null);
     const ps = parsePlanos(planos);
+    if (sb) {
+      try { setLinhas(await carregarSb(competencia(de), competencia(ate), empresa, ps)); } catch (e) { setErro(String(e)); setLinhas(null); }
+      setLoading(false); return;
+    }
     const { data, error } = await hostinger.rpc("sinistralidade_mv_empresas", { p_de: competencia(de), p_ate: competencia(ate), p_empresa: empresa.trim() || null, p_planos: ps.length ? ps : null });
     setLoading(false);
     if (error) { setErro(/does not exist|Could not find/i.test(error.message) ? "Cálculo ainda não instalado na base." : error.message); setLinhas(null); return; }
@@ -57,8 +63,8 @@ export default function SinistralidadeEmpresas() {
   return (
     <div className="h-full space-y-5 overflow-auto">
       <header>
-        <h2 className="flex items-center gap-2 text-2xl font-semibold text-foreground"><Building2 className="h-6 w-6 text-primary" />Empresas</h2>
-        <p className="text-sm text-muted-foreground">Sinistralidade por plano e faixa etária · Fonte: view_eard_mensal + view_ecarteira</p>
+        <h2 className="flex items-center gap-2 text-2xl font-semibold text-foreground"><Building2 className="h-6 w-6 text-primary" />{sb ? "Empresas SB" : "Empresas"}</h2>
+        <p className="text-sm text-muted-foreground">Sinistralidade por plano e faixa etária · Fonte: {sb ? "ard_mensal_sb_v2.csv (09/2025 a 08/2026)" : "view_eard_mensal + view_ecarteira"}</p>
       </header>
       <div className="flex flex-wrap items-end gap-3 rounded-lg border border-border bg-card p-3 shadow-sm">
         <label className="text-xs text-muted-foreground">De<br /><input type="month" value={de} onChange={(e) => setDe(e.target.value)} className={inp} /></label>
