@@ -53,3 +53,7 @@ export function gridPlano(linhas: LinhaApb[], plano: string, precos?: [number, n
   const sum = (k: keyof FaixaApb) => faixas.reduce((s, f) => s + (f[k] as number), 0);
   return { faixas, total: { faixa: "Total", enfTit: sum("enfTit"), enfDep: sum("enfDep"), apTit: sum("apTit"), apDep: sum("apDep"), total: sum("total"), precoEnf: null, precoAp: null, mensalidade: sum("mensalidade") } };
 }
+
+/** Soma das idades exatas (dt_nascimento) das vidas ativas em 29/10/2026, por plano — fotografia da carteira. */
+export const IDADE_SOMA_APB: Record<string, number> = { "2290": 1160, "2490": 8557, "2890": 23476 };
+export const idadeSomaPlanos = (planos: string[]) => planos.reduce((t, p) => t + (IDADE_SOMA_APB[p] ?? Object.values(IDADE_SOMA_APB).reduce((a, b) => a + b, 0)), 0);
