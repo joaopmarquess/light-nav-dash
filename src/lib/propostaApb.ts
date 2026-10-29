@@ -1,5 +1,5 @@
 // Proposta APB: agrega o snapshot de vidas ativas × preço de referência (CSV fornecido).
-export interface LinhaApb { plano: string; rel: "Titular" | "Dependente"; acom: "Enfermaria" | "Apartamento"; faixa: string; vidas: number; preco: number }
+export interface LinhaApb { plano: string; rel: "Titular" | "Dependente"; acom: "Enfermaria" | "Apartamento"; faixa: string; vidas: number; preco: number; idadeSoma: number }
 
 export const FAIXAS_APB = ["00 a 18", "19 a 23", "24 a 28", "29 a 33", "34 a 38", "39 a 43", "44 a 48", "49 a 53", "54 a 58", "59 ou +"];
 export const PLANOS_APB = ["2290", "2490", "2890"];
@@ -28,13 +28,14 @@ const num = (s: string) => Number((s || "0").replace(/\./g, "").replace(",", "."
 
 export function parseApb(csv: string): { data: string; linhas: LinhaApb[] } {
   const rows = csv.replace(/^\uFEFF/, "").trim().split(/\r?\n/).slice(1).map((l) => l.split(";"));
-  const linhas = rows.map(([, plano, rel, acom, faixa, vidas, preco]) => ({
+  const linhas = rows.map(([, plano, rel, acom, faixa, vidas, preco, idade]) => ({
     plano,
     rel: rel.toLowerCase().startsWith("t") ? "Titular" : "Dependente",
     acom: /prata|enf/i.test(acom) ? "Enfermaria" : "Apartamento",
     faixa: FAIXAS_APB.find((f) => f.slice(0, 2) === faixa.slice(0, 2)) ?? faixa,
     vidas: num(vidas),
     preco: num(preco),
+    idadeSoma: num(idade ?? "0"),
   })) as LinhaApb[];
   return { data: rows[0]?.[0] ?? "", linhas };
 }
@@ -54,6 +55,8 @@ export function gridPlano(linhas: LinhaApb[], plano: string, precos?: [number, n
   return { faixas, total: { faixa: "Total", enfTit: sum("enfTit"), enfDep: sum("enfDep"), apTit: sum("apTit"), apDep: sum("apDep"), total: sum("total"), precoEnf: null, precoAp: null, mensalidade: sum("mensalidade") } };
 }
 
-/** Soma das idades exatas (dt_nascimento) das vidas ativas em 29/10/2026, por plano — fotografia da carteira. */
-export const IDADE_SOMA_APB: Record<string, number> = { "2290": 1160, "2490": 8557, "2890": 23476 };
-export const idadeSomaPlanos = (planos: string[]) => planos.reduce((t, p) => t + (IDADE_SOMA_APB[p] ?? Object.values(IDADE_SOMA_APB).reduce((a, b) => a + b, 0)), 0);
+/** Soma das idades exatas (dt_nascimento na data_referencia do mesmo snapshot das vidas); GRUPO/3990 somam todos os planos. */
+export const idadeSomaPlanos = (linhas: LinhaApb[], planos: string[]) => {
+  const todos = planos.some((p) => !PLANOS_APB.includes(p));
+  return linhas.filter((l) => todos || planos.includes(l.plano)).reduce((t, l) => t + l.idadeSoma, 0);
+};

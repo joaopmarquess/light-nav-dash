@@ -48,7 +48,7 @@ export default function PropostaApb() {
   }, { vidas: 0, tit: 0, enf: 0, mens: 0 });
   const vis = selOk === "Todos" ? planos : [selOk];
   const k = vis.reduce((a, p) => { const t = grids[p].total; return { vidas: a.vidas + t.total, tit: a.tit + t.enfTit + t.apTit, enf: a.enf + t.enfTit + t.enfDep, mens: a.mens + t.mensalidade }; }, { vidas: 0, tit: 0, enf: 0, mens: 0 });
-  const idadeSoma = idadeSomaPlanos(vis); // idades exatas pela data de nascimento
+  const idadeSoma = idadeSomaPlanos(linhas, vis); // idades exatas pela data de nascimento
   const idadeMedia = k.vidas ? idadeSoma / k.vidas : 0;
   const dataBr = data ? data.split("-").reverse().join("/") : "";
 
