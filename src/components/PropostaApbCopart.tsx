@@ -15,10 +15,22 @@ export const LINHAS_COPART_FACIL50: L[] = [
   ...["Hemodiálise/diálise", "Quimioterapia", "Radioterapia"].map((s) => ({ n: 9, g: "Alta Complexidade", s, f: "Por Mês de Execução", p: "50%", v: "-" })),
 ];
 
+const S = "8 - Sessões", G7 = "7 - Gratuitos", G9 = "9 - Grupos";
+/** Valores de coparticipação do 2890 registrados no sistema (imagem fornecida). */
+export const COPART_2890: [string, string, string][] = [
+  ["1 - Consulta", "Consulta", "21,53"], ["1 - Consulta", "Consulta Oftalmologia + Exames Baixo Custo", "94,60"],
+  ["2 - Emergência", "Emergência", "21,53"], ["3 - Internação", "Internação", "215,41"], ["4 - Ressonância", "Ressonância", "85,43"],
+  ["5 - Tomografia", "Tomografia", "59,82"], ["6 - Ultrassom", "Ultrassonografia", "44,95"],
+  ...["Hemodiálise/diálise", "Quimioterapia", "Radioterapia", "Radioterapia Intervencionista", "Medicamentos Antineoplásicos"].map((t) => [G7, t, "0,00"] as [string, string, string]),
+  [S, "Acupuntura", "8,54"],
+  ...["Fisioterapia", "Fonoaudiologia", "Psicoterapia", "Terapia Ocupacional"].flatMap((t) => [[S, `${t} - Grupo A`, "8,54"], [S, `${t} - Grupo B`, "51,26"], [S, `${t} - Grupo C`, "85,43"]] as [string, string, string][]),
+  [G9, "Grupo A - de 0 a 199 CH's*", "8,54"], [G9, "Grupo B - de 200 a 399 CH's*", "51,26"], [G9, "Grupo C - de 400 a 599 CH's*", "85,43"], [G9, "Grupo D - a partir de 600 CH's*", "215,41"],
+];
+
 type Tipo = "usebem" | "flex" | "facil50";
 const CFG: Record<Tipo, { t: string; pct: string; teto: string | null; ilustr: boolean }> = {
   usebem: { t: "2490 — Use Bem com teto de R$ 396,96", pct: "30%", teto: "R$ 396,96", ilustr: true },
-  flex: { t: "2890 — Fácil Flex com teto de R$ 656,10", pct: "40%", teto: "R$ 656,10", ilustr: true },
+  flex: { t: "2890 — Fácil Flex com teto de R$ 656,10", pct: "", teto: "R$ 656,10", ilustr: false },
   facil50: { t: "Proposta — Fácil 50 sem teto", pct: "50%", teto: null, ilustr: false },
 };
 
@@ -33,7 +45,10 @@ export default function PropostaApbCopart({ tipo }: { tipo: Tipo }) {
       <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
         <DialogHeader><DialogTitle>Tabela de Coparticipação — {c.t}</DialogTitle></DialogHeader>
         {c.ilustr && <p className="rounded-md border border-primary/40 bg-primary/5 px-3 py-1.5 text-sm">Tabela ilustrativa: percentuais e limites a confirmar. Teto mensal de coparticipação: {c.teto}.</p>}
-        <table className="w-full border-collapse text-sm">
+        {tipo === "flex" ? <table className="w-full border-collapse text-sm">
+          <thead><tr className="bg-primary text-primary-foreground">{["Grupo", "Tipo", "Valor (R$)"].map((h) => <th key={h} className="border border-border px-2 py-1.5">{h}</th>)}</tr></thead>
+          <tbody>{COPART_2890.map(([g, t, v], i) => <tr key={i}><td className="border border-border px-2 py-1">{g}</td><td className="border border-border px-2 py-1">{t}</td><td className="border border-border px-2 py-1 text-right">{v}</td></tr>)}</tbody>
+        </table> : <table className="w-full border-collapse text-sm">
           <thead><tr className="bg-primary text-primary-foreground">{["#", "Grupo", "Subgrupo", "Forma de Cobrança", "% de Coparticipação", "Limite de Valor (R$)"].map((h) => <th key={h} className="border border-border px-2 py-1.5">{h}</th>)}</tr></thead>
           <tbody>{linhas.map((l, i) => {
             const first = i === 0 || linhas[i - 1].n !== l.n;
@@ -43,7 +58,7 @@ export default function PropostaApbCopart({ tipo }: { tipo: Tipo }) {
               <td className="border border-border px-2 py-1">{l.s}</td><td className="border border-border px-2 py-1">{l.f}</td><td className="border border-border px-2 py-1">{l.p}</td><td className="border border-border px-2 py-1">{l.v}</td>
             </tr>;
           })}</tbody>
-        </table>
+        </table>}
       </DialogContent>
     </Dialog>
   );
