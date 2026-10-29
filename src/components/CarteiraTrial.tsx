@@ -294,7 +294,7 @@ export default function CarteiraTrial() {
             <button key={st} title={tip} onClick={() => { if (st !== "A") return; const e = { ...f, status: st }; setF(e); setAp({ f: e, d: dataRef || new Date().toISOString().slice(0, 10) }); setGrid(true); }}
               style={["PIF", "PCA", "PCE"].includes(st) ? { borderLeft: `6px solid hsl(var(--sigla-${st.toLowerCase()}))` } : undefined}
               className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-8 hover:bg-accent transition-colors">
-              <I className="h-8 w-8 text-primary" />
+              <I className="h-8 w-8 text-primary" style={["PIF", "PCA", "PCE"].includes(st) ? { color: `hsl(var(--sigla-${st.toLowerCase()}))` } : undefined} />
               <p className="text-sm text-muted-foreground">{label}</p>
               <p className="text-4xl font-semibold tabular-nums text-foreground">{st === "T" ? (ap ? ap.d.split("-").reverse().join("/") : "—") : !ap || v === -1 ? "—" : v == null ? "…" : v.toLocaleString("pt-BR")}</p>
               {["PIF", "PCA", "PCE"].includes(st) && ap && kpi?.ativos && v != null && v >= 0 ? <p className="text-xs text-muted-foreground tabular-nums">{((v / kpi.ativos) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</p> : null}
