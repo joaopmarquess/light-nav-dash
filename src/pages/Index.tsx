@@ -120,6 +120,7 @@ import Assistencial2518Prestadores from "@/components/Assistencial2518Prestadore
 import { useConsultaState } from "@/lib/assistencialConsultaStore";
 import { Loader2, DollarSign, FlaskConical } from "lucide-react";
 import PropostaApb from "@/components/PropostaApb";
+import SinistralidadeEmpresas from "@/components/SinistralidadeEmpresas";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 
@@ -237,7 +238,7 @@ const menuItems: MenuItem[] = [
   { icon: FileText, label: "Modelo Relatório de Controladoria" },
   controlItem,
   { icon: Users, label: "Carteira", children: [{ icon: Search, label: "Painel", id: "Carteira · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira · Entradas" }, { icon: TrendingUp, label: "Saídas", id: "Carteira · Saídas" }, { icon: BarChart3, label: "Tabelas", id: "Carteira · Tabelas" }] },
-  { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }] },
+  { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }, { icon: Users, label: "Empresas", id: "Sinistralidade · Empresas" }] },
 ];
 
 const LAB_IDS = new Set<string>(["Laboratory", ...labItems.flatMap((g) => g.children ? g.children.map((c) => c.id ?? c.label) : [g.label])]);
@@ -602,6 +603,8 @@ const Index = () => {
             <SinistralidadePeriodo />
           ) : active === "Sinistralidade · Períodos" ? (
             <SinistralidadePeriodosMV />
+          ) : active === "Sinistralidade · Empresas" ? (
+            <SinistralidadeEmpresas />
           ) : active === "Proposta APB" ? (
             <PropostaApb />
           ) : active === "APB" ? (
