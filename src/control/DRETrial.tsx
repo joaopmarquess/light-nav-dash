@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { loadDreHostinger, type DreHRow } from "@/control/dreHostinger";
+import { grupoPainelDre } from "@/control/drePainel";
 
 // DRE (Trial): reconstruído do zero, só com o balancete MV + plano 9D (ver src/lib/dreHostinger.ts).
 const ANO = 2026;
@@ -48,13 +49,7 @@ function buildTree(rows: DreHRow[]): Node[] {
   return roots;
 }
 
-function itemDe(r: DreHRow): string | null {
-  if (/FINANCEIRO/i.test(r.g1)) return "fin";
-  if (/PRINCIPAL/i.test(r.g3)) return /FATUR|COPART/i.test(r.g4) ? "ent" : "desp";
-  if (/SECUND|COMERCIAL|IMPOSTOS DIRETOS|PROVIS/i.test(r.g3)) return "demais";
-  if (/ADMINISTRATIVO/i.test(r.g2)) return "adm";
-  return null; // demais linhas (Impostos Federais)
-}
+const itemDe = grupoPainelDre;
 const pctFmt = (v: number) => `${new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 }).format(v)}%`;
 
 const Barra = ({ ativa, onAba }: { ativa: "Painel" | "DRE"; onAba?: (a: "Painel" | "DRE") => void }) =>
