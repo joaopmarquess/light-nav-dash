@@ -36,14 +36,14 @@ export function distribuirSemFaixa(ls: LinhaEmp[]): LinhaEmp[] {
   return com.map((l) => { const w = l.vidas / totV; const r = { ...l }; ks.forEach((k) => { r[k] = l[k] + tot[k] * w; }); return r; });
 }
 
-export default function PropostaApbSinistralidade({ proj, grupo, fixo, sinFixa, copart }: { proj?: Grids; sinFixa?: number; copart?: number; grupo?: ReturnType<typeof gridPlano>; fixo?: boolean }) {
+export default function PropostaApbSinistralidade({ proj, grupo, fixo, sinFixa, copart, onBaseLoaded }: { proj?: Grids; sinFixa?: number; copart?: number; grupo?: ReturnType<typeof gridPlano>; fixo?: boolean; onBaseLoaded?: (linhas: LinhaEmp[]) => void }) {
   const [base, setLinhas] = useState<LinhaEmp[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [aberto, setAberto] = useState<string | null>(null);
 
   useEffect(() => {
-    carregarSb(0, 0, "", PLANOS, "menu_sb_sinistralidade.csv").then(setLinhas).catch((e) => setErro(String(e)));
-  }, []);
+    carregarSb(0, 0, "", PLANOS, "menu_sb_sinistralidade.csv").then((linhas) => { setLinhas(linhas); onBaseLoaded?.(linhas); }).catch((e) => setErro(String(e)));
+  }, [onBaseLoaded]);
 
   if (erro) return <section className="rounded-lg border border-border bg-card p-4 text-sm text-destructive">{erro}</section>;
   let linhas = base;
