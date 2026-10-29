@@ -24,8 +24,8 @@ const Card = ({ icon: Icon, label, value, sub }: { icon: typeof Users; label: st
 export default function PropostaApb() {
   const { data, linhas } = useMemo(() => parseApb(csv), []);
   const linhasN4 = useMemo(() => escalarVidas(linhas), [linhas]);
-  const sinN3 = useMemo(() => projecaoFaixas(gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_NOVO })), PLANO_NOVO, PRECOS_PROPOSTA).faixas.map((f) => f.mensalidade)).sin, [linhas]);
   const [nivel, setNivel] = useState<1 | 2 | 3 | 4>(1);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
   // Níveis 3 e 4: mesma mecânica (vidas do cenário 1.242 titulares + 15%), cada um com suas próprias variáveis.
   const VARS_PADRAO = { linEnf: 199.99, sinPct: 90, copartPct: 25, depBase: 125 };
   const [vars, setVars] = useState<Record<3 | 4, typeof VARS_PADRAO>>({ 3: VARS_PADRAO, 4: VARS_PADRAO });
