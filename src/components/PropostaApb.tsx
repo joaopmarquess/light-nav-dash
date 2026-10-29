@@ -14,8 +14,8 @@ const brl = (v: number | null) => (v == null ? "—" : v.toLocaleString("pt-BR",
 const pct = (a: number, b: number) => (b ? `${((a / b) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%` : "—");
 
 const Card = ({ icon: Icon, label, value, sub }: { icon: typeof Users; label: string; value: string; sub?: string }) => (
-  <div className="rounded-lg border border-border bg-card px-3 py-2 shadow-sm">
-    <div className="flex items-center gap-2 text-xs text-muted-foreground"><Icon className="h-4 w-4 text-primary" />{label}</div>
+  <div className="rounded-lg border border-border bg-card px-3 py-2 text-center shadow-sm">
+    <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground"><Icon className="h-4 w-4 text-primary" />{label}</div>
     <div className="mt-0.5 text-xl font-semibold text-foreground">{value}</div>
     {sub && <div className="text-xs text-muted-foreground">{sub}</div>}
   </div>
