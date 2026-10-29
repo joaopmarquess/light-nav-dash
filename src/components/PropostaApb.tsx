@@ -109,7 +109,7 @@ export default function PropostaApb() {
           </DialogContent>
         </Dialog>
         <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
-          {([1, 2, 3, 4] as const).map((n) => <button key={n} type="button" onClick={() => setNivel(n)} className={`rounded-md px-3 py-1.5 text-sm font-medium ${nivel === n ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>Nível {n}</button>)}
+          {([1, 2, 3, 4] as const).map((n) => <button key={n} type="button" title={({ 1: "3 contratos - analítico", 2: "3 contratos - sintético", 3: "Novo plano - racional", 4: "Novo plano - estratégico" } as const)[n]} onClick={() => setNivel(n)} className={`rounded-md px-3 py-1.5 text-sm font-medium ${nivel === n ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>Nível {n}</button>)}
           <Dialog modal={false} onOpenChange={(o) => o && setPos({ x: 0, y: 0 })}>
             <DialogTrigger asChild><button type="button" tabIndex={nivel >= 3 ? 0 : -1} aria-hidden={nivel < 3} className={`${nivel >= 3 ? "" : "invisible pointer-events-none"} rounded-md border border-primary px-3 py-1.5 text-sm text-primary hover:bg-accent`}>Variáveis</button></DialogTrigger>
             <DialogContent semFundo className="max-w-md shadow-2xl" style={{ transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))` }} onInteractOutside={(e) => e.preventDefault()}>
