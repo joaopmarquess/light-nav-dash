@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Building2, Loader2, Search } from "lucide-react";
 import { hostinger } from "@/lib/hostingerClient";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ function Grid({ titulo, linhas }: { titulo: string; linhas: LinhaEmp[] }) {
       <td className="px-3 py-1.5 font-medium">{f.faixa}</td>
       <td className="px-3 py-1.5 text-center">{f.vidas.toLocaleString("pt-BR")}</td>
       {[f.recCpp, f.recCopart, f.recTotal, f.despTotal].map((v, i) => <td key={i} className="px-3 py-1.5 text-right">{brl(v)}</td>)}
-      <td className={`px-3 py-1.5 text-right ${f.saldo > 0 ? "text-destructive" : ""}`}>{brl(f.saldo)}</td>
+      <td className={`px-3 py-1.5 text-right ${f.saldo < 0 ? "text-destructive" : ""}`}>{brl(f.saldo)}</td>
       <td className="px-3 py-1.5 text-center">{pct(f.sin)}</td>
     </tr>
   );
@@ -38,10 +38,10 @@ export default function SinistralidadeEmpresas({ fonte = "mv" }: { fonte?: "mv" 
   const menu = fonte === "menu";
   const sb = fonte === "sb" || menu;
   const ano = new Date().getFullYear();
-  const [de, setDe] = useState(sb ? "2025-09" : `${ano}-01`);
-  const [ate, setAte] = useState(sb ? "2026-08" : `${ano}-${String(new Date().getMonth() + 1).padStart(2, "0")}`);
+  const [de, setDe] = useState("2025-09");
+  const [ate, setAte] = useState("2026-08");
   const [empresa, setEmpresa] = useState("");
-  const [planos, setPlanos] = useState("");
+  const [planos, setPlanos] = useState("2290, 2490, 2890");
   const [linhas, setLinhas] = useState<LinhaEmp[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -58,6 +58,9 @@ export default function SinistralidadeEmpresas({ fonte = "mv" }: { fonte?: "mv" 
     if (error) { setErro(/does not exist|Could not find/i.test(error.message) ? "Cálculo ainda não instalado na base." : error.message); setLinhas(null); return; }
     setLinhas((data ?? []).map((d: Record<string, unknown>) => ({ plano: String(d.plano ?? "—"), faixa: normFaixa(d.faixa as string), vidas: Number(d.vidas), recCpp: Number(d.rec_cpp), recCopart: Number(d.rec_copart), recTotal: Number(d.rec_total), despTotal: Number(d.desp_total) })));
   };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { buscar(); }, []);
 
   const planosRes = linhas ? [...new Set(linhas.map((l) => l.plano))].sort() : [];
 
@@ -80,7 +83,7 @@ export default function SinistralidadeEmpresas({ fonte = "mv" }: { fonte?: "mv" 
         <>
           <Grid titulo="Total" linhas={linhas} />
           {planosRes.map((p) => <Grid key={p} titulo={`Plano ${p}`} linhas={linhas.filter((l) => l.plano === p)} />)}
-          <p className="text-xs text-muted-foreground">Vidas = matrículas diferentes no período. Saldo = despesas − receita total. Sinistralidade = despesas ÷ receita total.</p>
+          <p className="text-xs text-muted-foreground">Vidas = matrículas diferentes no período. Saldo = receita total − despesas. Sinistralidade = despesas ÷ receita total.</p>
         </>
       )}
     </div>
