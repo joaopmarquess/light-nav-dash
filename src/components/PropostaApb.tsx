@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, FileSpreadsheet, Users, UserCheck, Wallet, Receipt } from "lucide-react";
 import PropostaApbSinistralidade from "@/components/PropostaApbSinistralidade";
 import csv from "@/data/propostaApb/vidas_precos_2026-10-29.csv?raw";
-import { parseApb, gridPlano, PLANOS_APB, type FaixaApb } from "@/lib/propostaApb";
+import { parseApb, gridPlano, PLANOS_APB, PRECOS_PROPOSTA, type FaixaApb } from "@/lib/propostaApb";
 
 const n0 = (v: number) => v.toLocaleString("pt-BR");
 const brl = (v: number | null) => (v == null ? "—" : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
@@ -18,7 +18,8 @@ const Card = ({ icon: Icon, label, value, sub }: { icon: typeof Users; label: st
 
 export default function PropostaApb() {
   const { data, linhas } = useMemo(() => parseApb(csv), []);
-  const grids = useMemo(() => Object.fromEntries(PLANOS_APB.map((p) => [p, gridPlano(linhas, p)])), [linhas]);
+  const [transf, setTransf] = useState(false);
+  const grids = useMemo(() => Object.fromEntries(PLANOS_APB.map((p) => [p, gridPlano(linhas, p, transf ? PRECOS_PROPOSTA : undefined)])), [linhas, transf]);
   const [sel, setSel] = useState<string>("Todos");
   const [abertos, setAbertos] = useState<Record<string, boolean>>({});
   const [rel, setRel] = useState(false);
@@ -49,12 +50,16 @@ export default function PropostaApb() {
           <h2 className="flex items-center gap-2 text-2xl font-semibold text-foreground"><FileSpreadsheet className="h-6 w-6 text-primary" />Proposta APB</h2>
           <p className="text-sm text-muted-foreground">Vidas ativas em {dataBr} nos planos 2290, 2490 e 2890 × preços de referência fornecidos (fotografia, não atualiza com a base).</p>
         </div>
+        <div className="flex items-center gap-2">
+        <button type="button" onClick={() => setTransf((t) => !t)} className={`rounded-lg border px-3 py-2 text-sm font-medium ${transf ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card hover:bg-accent"}`}>{transf ? "Voltar ao atual" : "Transformar"}</button>
         <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
           {["Todos", ...PLANOS_APB].map((p) => (
             <button key={p} type="button" onClick={() => setSel(p)} className={`rounded-md px-3 py-1.5 text-sm ${sel === p ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>{p}</button>
           ))}
         </div>
+        </div>
       </header>
+      {transf && <p className="rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm text-foreground">Modo Transformar: preços pela tabela proposta (iguais para os três planos); projeção anual = vidas × preço × 12; copart 16% da CPP; sinistralidade 75%.</p>}
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Card icon={Users} label="Vidas ativas" value={n0(k.vidas)} sub={sel === "Todos" ? undefined : `${pct(k.vidas, tot.vidas)} do total`} />
@@ -120,7 +125,7 @@ export default function PropostaApb() {
         </section>
       ))}
         </div>
-        <PropostaApbSinistralidade />
+        <PropostaApbSinistralidade proj={transf ? Object.fromEntries(PLANOS_APB.map((p) => [p, grids[p]])) : undefined} />
       </div>
       <p className="text-xs text-muted-foreground">Mensalidade = vidas × preço da faixa e acomodação. Ativo: vigência iniciada e sem desligamento na data; titular = matrícula final 00.</p>
     </div>

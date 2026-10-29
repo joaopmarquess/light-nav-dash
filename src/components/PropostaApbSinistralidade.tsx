@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { Grid } from "@/components/SinistralidadeEmpresas";
 import { carregarSb } from "@/lib/sinistralidadeEmpresasSb";
+import { projecaoAnual, gridPlano } from "@/lib/propostaApb";
 import { gridFaixas, type LinhaEmp } from "@/lib/sinistralidadeEmpresas";
 
 const PLANOS = ["2290", "2490", "2890"];
@@ -10,8 +11,11 @@ const rel = (a: number, b: number) => (b ? ` (${((a / b) * 100).toLocaleString("
 const pct = (v: number | null) => (v == null ? "—" : `${(v * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`);
 
 /** Container direito da Proposta APB: sinistralidade da mesma fonte de Sinistralidade › Empresas Menu. */
-export default function PropostaApbSinistralidade() {
-  const [linhas, setLinhas] = useState<LinhaEmp[] | null>(null);
+type Grids = Record<string, ReturnType<typeof gridPlano>>;
+const deProjecao = (g: Grids): LinhaEmp[] => PLANOS.flatMap((p) => g[p].faixas.map((f) => ({ plano: p, faixa: f.faixa, vidas: f.total, ...projecaoAnual(f.mensalidade) })));
+
+export default function PropostaApbSinistralidade({ proj }: { proj?: Grids }) {
+  const [base, setLinhas] = useState<LinhaEmp[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [aberto, setAberto] = useState<string | null>(null);
 
@@ -20,8 +24,11 @@ export default function PropostaApbSinistralidade() {
   }, []);
 
   if (erro) return <section className="rounded-lg border border-border bg-card p-4 text-sm text-destructive">{erro}</section>;
-  if (!linhas) return <section className="flex items-center gap-2 rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando sinistralidade…</section>;
+  let linhas = base;
+  if (!linhas && !proj) return <section className="flex items-center gap-2 rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando sinistralidade…</section>;
 
+  if (proj) linhas = deProjecao(proj);
+  if (!linhas) return null;
   const total = gridFaixas(linhas).total;
   const cards = [
     { t: "Vidas", v: total.vidas.toLocaleString("pt-BR") },
@@ -36,8 +43,8 @@ export default function PropostaApbSinistralidade() {
   return (
     <div className="space-y-4">
       <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
-        <h3 className="text-base font-semibold text-foreground">Sinistralidade 09/2025 a 08/2026</h3>
-        <p className="mb-3 text-xs text-muted-foreground">Fonte: MENU_SB_SINISTRALIDA.XLS (mesma de Sinistralidade › Empresas Menu)</p>
+        <h3 className="text-base font-semibold text-foreground">{proj ? "Projeção anual — tabela proposta" : "Sinistralidade 09/2025 a 08/2026"}</h3>
+        <p className="mb-3 text-xs text-muted-foreground">{proj ? "Vidas atuais × preço proposto × 12 · copart 16% da CPP · sinistralidade 75%" : "Fonte: MENU_SB_SINISTRALIDA.XLS (mesma de Sinistralidade › Empresas Menu)"}</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {cards.map((c) => (
             <div key={c.t} className="rounded-md border border-border p-3">
