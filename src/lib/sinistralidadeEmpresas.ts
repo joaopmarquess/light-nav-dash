@@ -20,7 +20,7 @@ export function gridFaixas(linhas: LinhaEmp[]): { faixas: FaixaEmp[]; total: Fai
   const mk = (faixa: string, ls: LinhaEmp[]): FaixaEmp => {
     const s = (k: keyof LinhaEmp) => ls.reduce((a, l) => a + (l[k] as number), 0);
     const recTotal = s("recTotal"), despTotal = s("despTotal");
-    return { faixa, vidas: s("vidas"), recCpp: s("recCpp"), recCopart: s("recCopart"), recTotal, despTotal, saldo: despTotal - recTotal, sin: recTotal ? despTotal / recTotal : null };
+    return { faixa, vidas: s("vidas"), recCpp: s("recCpp"), recCopart: s("recCopart"), recTotal, despTotal, saldo: recTotal - despTotal, sin: recTotal ? despTotal / recTotal : null };
   };
   const extras = [...new Set(linhas.map((l) => l.faixa))].filter((f) => !FAIXAS_EMP.includes(f));
   const faixas = [...FAIXAS_EMP, ...extras].map((f) => mk(f, linhas.filter((l) => l.faixa === f)));
