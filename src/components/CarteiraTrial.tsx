@@ -131,6 +131,7 @@ export default function CarteiraTrial() {
   const [grid, setGrid] = useState(false);
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [suspensos, setSuspensos] = useState(false);
   const [kpi, setKpi] = useState<{ ativos?: number; futuros?: number; cancelados?: number; total?: number; contratos?: number; PIF?: number; PCA?: number; PCE?: number; cPIF?: number; cPCA?: number; cPCE?: number } | null>(null);
   useEffect(() => {
     if (!ap) return;
@@ -252,6 +253,7 @@ export default function CarteiraTrial() {
         <Button size="sm" onClick={buscar}><Search className="h-4 w-4 mr-1" />Buscar</Button>
         <div className="ml-auto flex gap-2">
           {activeChips.length > 0 && <Button variant="ghost" size="sm" onClick={() => { const e = { ...EMPTY, status: ALL }; setF(e); setAp({ f: e, d: dataRef || new Date().toISOString().slice(0, 10) }); }}><X className="h-4 w-4 mr-1" />Limpar</Button>}
+          {!grid && <Button variant="outline" size="sm" onClick={() => setSuspensos((s) => !s)}>{suspensos ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}{suspensos ? "Ocultar suspensos" : "Mostrar suspensos"}</Button>}
           <Button variant="outline" size="sm" onClick={() => setGrid((g) => !g)}>{grid ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}{grid ? "Ocultar lista" : "Mostrar lista"}</Button>
           <Button variant="outline" size="sm" onClick={exportCsv} disabled={!rows.length}><Download className="h-4 w-4 mr-1" />Exportar</Button>
         </div>
@@ -300,6 +302,11 @@ export default function CarteiraTrial() {
               {["PIF", "PCA", "PCE"].includes(st) && ap && kpi?.ativos && v != null && v >= 0 ? <p className="text-xs text-muted-foreground tabular-nums">{((v / kpi.ativos) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</p> : null}
             </button>
           ); })}
+          {suspensos && (
+            <div className="md:col-span-3 bg-card border border-border rounded-xl p-4 min-h-32">
+              <p className="text-sm font-medium text-muted-foreground">Suspensos</p>
+            </div>
+          )}
         </div>
       )}
       <div className={`flex-1 min-h-0 bg-card border border-border rounded-xl overflow-hidden flex-col ${grid ? "flex" : "hidden"}`}>
