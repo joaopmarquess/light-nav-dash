@@ -132,6 +132,7 @@ export default function CarteiraTrial() {
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [suspensos, setSuspensos] = useState(false);
+  const [sp, setSp] = useState<{ de: string; ate: string } | null>(null);
   const [susp, setSusp] = useState<{ sigla: string; motivo: string; faixa: string; vidas: number }[] | null | "erro">(null);
   const [kpi, setKpi] = useState<{ ativos?: number; futuros?: number; cancelados?: number; total?: number; contratos?: number; PIF?: number; PCA?: number; PCE?: number; cPIF?: number; cPCA?: number; cPCE?: number } | null>(null);
   useEffect(() => {
@@ -156,12 +157,16 @@ export default function CarteiraTrial() {
       const g = (x: string) => Number((data ?? []).find((r: any) => r.sigla === x)?.contratos ?? 0);
       setKpi((k) => ({ ...k, cPIF: g("PIF"), cPCA: g("PCA"), cPCE: g("PCE") }));
     });
+    setSp({ de: dRef, ate: dRef });
+  }, [ap]);
+  useEffect(() => {
+    if (!ap || !sp || !suspensos) return;
     setSusp(null);
-    hostinger.rpc("carteira_trial_suspensos", { p_data: dRef, p_q: df.q.trim() || null, p_empresa: df.empresa.trim() || null, p_cidade: df.cidade.trim() || null }).then(({ data, error }: any) => {
+    hostinger.rpc("carteira_trial_suspensos", { p_data: sp.ate, p_de: sp.de, p_q: ap.f.q.trim() || null, p_empresa: ap.f.empresa.trim() || null, p_cidade: ap.f.cidade.trim() || null }).then(({ data, error }: any) => {
       if (error) { console.error(error); setSusp("erro"); return; }
       setSusp((data ?? []).map((r: any) => ({ ...r, vidas: Number(r.vidas) })));
     });
-  }, [ap]);
+  }, [sp, suspensos]);
   const vis = useMemo(() => {
     const v = df.status === ALL ? rows : rows.filter((r) => r.st === df.status);
     return sort.key === "st" ? [...v].sort((a, b) => (sort.asc ? 1 : -1) * String(a.st).localeCompare(String(b.st))) : v;
@@ -310,7 +315,10 @@ export default function CarteiraTrial() {
           ); })}
           {suspensos && (
             <div className="md:col-span-3 bg-card border border-border rounded-xl p-4 min-h-32">
-              <p className="text-sm font-medium text-muted-foreground mb-3">Suspensos{ap ? ` em ${ap.d.split("-").reverse().join("/")}` : ""}</p>
+              <div className="flex flex-wrap items-center gap-3 mb-3">
+                <p className="text-sm font-medium text-muted-foreground">Suspensos</p>
+                {sp && <SuspPeriodo v={sp} onApply={setSp} />}
+              </div>
               {susp === "erro" ? <p className="text-sm text-muted-foreground">Cálculo ainda não instalado na base.</p>
                : !susp ? <p className="text-sm text-muted-foreground">{ap ? "Carregando…" : "Clique em Buscar."}</p>
                : (() => {
@@ -403,6 +411,18 @@ export default function CarteiraTrial() {
           )}
         </SheetContent>
       </Sheet>
+    </div>
+  );
+}
+
+function SuspPeriodo({ v, onApply }: { v: { de: string; ate: string }; onApply: (x: { de: string; ate: string }) => void }) {
+  const [de, setDe] = useState(v.de); const [ate, setAte] = useState(v.ate);
+  useEffect(() => { setDe(v.de); setAte(v.ate); }, [v.de, v.ate]);
+  return (
+    <div className="flex items-center gap-2 text-sm">
+      <span className="text-muted-foreground">De</span><Input type="date" className="h-8 w-40" value={de} onChange={(e) => setDe(e.target.value)} />
+      <span className="text-muted-foreground">Até</span><Input type="date" className="h-8 w-40" value={ate} onChange={(e) => setAte(e.target.value)} />
+      <Button size="sm" variant="outline" disabled={!de || !ate || de > ate} onClick={() => onApply({ de, ate })}>Aplicar</Button>
     </div>
   );
 }
