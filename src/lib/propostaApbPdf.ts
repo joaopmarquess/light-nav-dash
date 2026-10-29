@@ -5,7 +5,7 @@ import { LINHAS_COPART_FACIL50 } from "@/components/PropostaApbCopart";
 
 const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-export function gerarPropostaPdf() {
+export function montarPropostaPdf() {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const azul: [number, number, number] = [31, 78, 121];
   doc.setFontSize(18); doc.setTextColor(...azul); doc.text("Proposta APB", 14, 20);
@@ -28,5 +28,6 @@ export function gerarPropostaPdf() {
     startY: 24, head: [["#", "Grupo", "Subgrupo", "Forma de cobrança", "% copart.", "Limite (R$)"]], body,
     headStyles: { fillColor: azul, halign: "center" }, styles: { fontSize: 8.5, halign: "center", lineWidth: 0.1 }, theme: "grid",
   });
-  doc.save(`Proposta_APB_${PLANO_NOVO}.pdf`);
+  return doc;
 }
+export const gerarPropostaPdf = () => montarPropostaPdf().save(`Proposta_APB_${PLANO_NOVO}.pdf`);
