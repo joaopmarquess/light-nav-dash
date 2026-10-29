@@ -32,7 +32,7 @@ export default function PropostaApb() {
     return Object.fromEntries(PLANOS_APB.map((p) => [p, gridPlano(linhas, p)]));
   }, [linhas, nivel]) as Record<string, ReturnType<typeof gridPlano>>;
   const [sel, setSel] = useState<string>("Todos");
-  const selOk = nivel > 1 ? planos[0] : planos.includes(sel) ? sel : "Todos";
+  const selOk = nivel > 1 ? planos[0] : "Todos";
   const [abertos, setAbertos] = useState<Record<string, boolean>>({});
   const [rel, setRel] = useState(false);
 
@@ -66,11 +66,11 @@ export default function PropostaApb() {
         <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
           {([1, 2, 3] as const).map((n) => <button key={n} type="button" onClick={() => setNivel(n)} className={`rounded-md px-3 py-1.5 text-sm font-medium ${nivel === n ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>Nível {n}</button>)}
         </div>
-        <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
+        {nivel > 1 && <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
           {(nivel > 1 ? planos : ["Todos", ...planos]).map((p) => (
             <button key={p} type="button" onClick={() => setSel(p)} className={`rounded-md px-3 py-1.5 text-sm ${selOk === p ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>{p}</button>
           ))}
-        </div>
+        </div>}
         </div>
       </header>
       {nivel === 2 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 2: planos 2290, 2490 e 2890 agrupados como GRUPO, com preços e resultados atuais.</p>}
@@ -92,7 +92,7 @@ export default function PropostaApb() {
             <thead className="text-muted-foreground"><tr>{["Plano", "Vidas", "% vidas", "Titulares", "Dependentes", "Enfermaria", "Apartamento", "Mensalidade", "% receita", "Ticket médio"].map((h) => <th key={h} className="px-3 py-1.5 text-center first:text-left">{h}</th>)}</tr></thead>
             <tbody>
               {planos.map((p) => { const t = grids[p].total; return (
-                <tr key={p} className="border-t border-border cursor-pointer hover:bg-accent" onClick={() => setSel(p)}>
+                <tr key={p} className="border-t border-border">
                   <td className="px-3 py-1.5 font-semibold">{p}</td>
                   <td className="px-3 py-1.5 text-center">{n0(t.total)}</td>
                   <td className="px-3 py-1.5 text-center">{pct(t.total, tot.vidas)}</td>
