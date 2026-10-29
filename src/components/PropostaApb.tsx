@@ -7,7 +7,7 @@ import PropostaApbCopart from "@/components/PropostaApbCopart";
 const COPART_DESC: Record<string, string> = { "2290": "Sem Coparticipação", "2490": "Use Bem com teto de R$ 300,00", "2890": "Fácil Flex com teto de R$ 600,00", "Proposta": "Fácil 50 sem teto" };
 const COPART_TIPO = { "2490": "usebem", "2890": "flex", "Proposta": "facil50" } as const;
 import csv from "@/data/propostaApb/vidas_precos_2026-10-29.csv?raw";
-import { parseApb, gridPlano, PLANOS_APB, FAIXAS_APB, PRECOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, type FaixaApb } from "@/lib/propostaApb";
+import { parseApb, gridPlano, PLANOS_APB, FAIXAS_APB, PRECOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, idadeSomaPlanos, type FaixaApb } from "@/lib/propostaApb";
 
 const n0 = (v: number) => v.toLocaleString("pt-BR");
 const brl = (v: number | null) => (v == null ? "—" : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
@@ -48,8 +48,7 @@ export default function PropostaApb() {
   }, { vidas: 0, tit: 0, enf: 0, mens: 0 });
   const vis = selOk === "Todos" ? planos : [selOk];
   const k = vis.reduce((a, p) => { const t = grids[p].total; return { vidas: a.vidas + t.total, tit: a.tit + t.enfTit + t.apTit, enf: a.enf + t.enfTit + t.enfDep, mens: a.mens + t.mensalidade }; }, { vidas: 0, tit: 0, enf: 0, mens: 0 });
-  const MEIO = [9, 21, 26, 31, 36, 41, 46, 51, 56, 64]; // ponto médio de cada faixa (59 ou + ≈ 64)
-  const idadeSoma = vis.reduce((a, p) => a + grids[p].faixas.reduce((b, f, i) => b + f.total * MEIO[i], 0), 0);
+  const idadeSoma = idadeSomaPlanos(vis); // idades exatas pela data de nascimento
   const idadeMedia = k.vidas ? idadeSoma / k.vidas : 0;
   const dataBr = data ? data.split("-").reverse().join("/") : "";
 
@@ -104,7 +103,7 @@ export default function PropostaApb() {
         <Card icon={Users} label="Vidas ativas" value={n0(k.vidas)} />
         <Card icon={UserCheck} label="Titulares" value={n0(k.tit)} sub={pct(k.tit, k.vidas)} />
         <Card icon={Users} label="Dependentes" value={n0(k.vidas - k.tit)} sub={pct(k.vidas - k.tit, k.vidas)} />
-        <Card icon={CalendarDays} label="Idade média" value={`${idadeMedia.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} anos`} sub="Estimada pelo meio da faixa" />
+        <Card icon={CalendarDays} label="Idade média" value={`${idadeMedia.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} anos`} />
         <Card icon={Wallet} label="Mensalidade total" value={brl(k.mens)} sub={`Anual: ${brl(k.mens * 12)}`} />
         <Card icon={Receipt} label="Ticket médio" value={brl(k.vidas ? k.mens / k.vidas : 0)} />
       </section>
