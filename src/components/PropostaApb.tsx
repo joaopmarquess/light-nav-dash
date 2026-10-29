@@ -7,7 +7,7 @@ import PropostaApbCopart from "@/components/PropostaApbCopart";
 const COPART_DESC: Record<string, string> = { "2290": "Sem Coparticipação", "2490": "Use Bem com teto de R$ 396,96", "2890": "Fácil Flex com teto de R$ 656,10", "Proposta": "Fácil 50 sem teto" };
 const COPART_TIPO = { "2490": "usebem", "2890": "flex", "Proposta": "facil50" } as const;
 import csv from "@/data/propostaApb/vidas_precos_2026-10-29.csv?raw";
-import { parseApb, gridPlano, PLANOS_APB, FAIXAS_APB, PRECOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, idadeSomaPlanos, escalarVidas, PRECO_TITULAR_2890, projecaoFaixas, type FaixaApb } from "@/lib/propostaApb";
+import { parseApb, gridPlano, PLANOS_APB, FAIXAS_APB, PRECOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, idadeSomaPlanos, escalarVidas, gridsN5, PRECO_TITULAR_2890, projecaoFaixas, type FaixaApb } from "@/lib/propostaApb";
 
 const n0 = (v: number) => v.toLocaleString("pt-BR");
 const brl = (v: number | null) => (v == null ? "—" : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
@@ -25,13 +25,17 @@ export default function PropostaApb() {
   const { data, linhas } = useMemo(() => parseApb(csv), []);
   const linhasN4 = useMemo(() => escalarVidas(linhas), [linhas]);
   const sinN3 = useMemo(() => projecaoFaixas(gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_NOVO })), PLANO_NOVO, PRECOS_PROPOSTA).faixas.map((f) => f.mensalidade)).sin, [linhas]);
-  const [nivel, setNivel] = useState<1 | 2 | 3 | 4>(1);
+  const [nivel, setNivel] = useState<1 | 2 | 3 | 4 | 5>(1);
+  const [linear, setLinear] = useState<[number, number]>(PRECO_TITULAR_2890);
+  const [precoDep, setPrecoDep] = useState<[number, number][]>(PRECOS_PROPOSTA);
+  const n5 = useMemo(() => gridsN5(linhasN4, linear, precoDep), [linhasN4, linear, precoDep]);
   const transf = nivel >= 3;
   // Transformar: todas as vidas migram para o plano novo 3990, com a tabela proposta.
   // Nível 2: os três planos agrupados em GRUPO, com preços e resultado atuais (preço por faixa varia por plano → não exibido).
   const planos = nivel >= 3 ? [PLANO_NOVO] : nivel === 2 ? [PLANO_GRUPO] : PLANOS_APB;
   const grids = useMemo(() => {
     if (nivel === 3) return { [PLANO_NOVO]: gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_NOVO })), PLANO_NOVO, PRECOS_PROPOSTA) };
+    if (nivel === 5) return { [PLANO_NOVO]: n5.todos };
     if (nivel === 4) return { [PLANO_NOVO]: gridPlano(linhasN4.map((l) => ({ ...l, plano: PLANO_NOVO })), PLANO_NOVO, PRECOS_PROPOSTA) };
     if (nivel === 2) {
       const g = gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_GRUPO })), PLANO_GRUPO);
@@ -39,7 +43,7 @@ export default function PropostaApb() {
       return { [PLANO_GRUPO]: { ...g, faixas: g.faixas.map((f, i) => ({ ...f, precoEnf: media(i, 0), precoAp: media(i, 1) })) } };
     }
     return Object.fromEntries(PLANOS_APB.map((p) => [p, gridPlano(linhas, p)]));
-  }, [linhas, linhasN4, nivel]) as Record<string, ReturnType<typeof gridPlano>>;
+  }, [linhas, linhasN4, nivel, n5]) as Record<string, ReturnType<typeof gridPlano>>;
   // Plano 2890 (Nível 1): grid triplicado — Titular (preço linear), Dependente (tabela) e Todos (preço médio ponderado por vidas).
   const sub2890 = useMemo(() => {
     const ls = linhas.filter((l) => l.plano === "2890");
@@ -61,7 +65,7 @@ export default function PropostaApb() {
   }, { vidas: 0, tit: 0, enf: 0, mens: 0 });
   const vis = selOk === "Todos" ? planos : [selOk];
   const k = vis.reduce((a, p) => { const t = grids[p].total; return { vidas: a.vidas + t.total, tit: a.tit + t.enfTit + t.apTit, enf: a.enf + t.enfTit + t.enfDep, mens: a.mens + t.mensalidade }; }, { vidas: 0, tit: 0, enf: 0, mens: 0 });
-  const idadeSoma = idadeSomaPlanos(nivel === 4 ? linhasN4 : linhas, vis); // idades exatas pela data de nascimento
+  const idadeSoma = idadeSomaPlanos(nivel >= 4 ? linhasN4 : linhas, vis); // idades exatas pela data de nascimento
   const idadeMedia = k.vidas ? idadeSoma / k.vidas : 0;
   const dataBr = data ? data.split("-").reverse().join("/") : "";
 
@@ -100,7 +104,7 @@ export default function PropostaApb() {
           </DialogContent>
         </Dialog>
         <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
-          {([1, 2, 3, 4] as const).map((n) => <button key={n} type="button" onClick={() => setNivel(n)} className={`rounded-md px-3 py-1.5 text-sm font-medium ${nivel === n ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>Nível {n}</button>)}
+          {([1, 2, 3, 4, 5] as const).map((n) => <button key={n} type="button" onClick={() => setNivel(n)} className={`rounded-md px-3 py-1.5 text-sm font-medium ${nivel === n ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>Nível {n}</button>)}
         </div>
         {false && <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
           {(nivel > 1 ? planos : ["Todos", ...planos]).map((p) => (
@@ -111,6 +115,20 @@ export default function PropostaApb() {
       </header>
       {nivel === 2 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 2: planos 2290, 2490 e 2890 agrupados como GRUPO, com preços e resultados atuais.</p>}
       {nivel === 4 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 4: igual ao Nível 3, com 1.242 titulares nas quantidades por faixa fornecidas + 15% de dependentes (186), distribuídos como hoje; despesas = receita total × sinistralidade do Nível 3.</p>}
+      {nivel === 5 && (
+        <section className="rounded-lg border border-border bg-card p-3 shadow-sm">
+          <p className="mb-2 text-xs text-foreground">Nível 5: vidas do Nível 4 (1.242 titulares + 186 dependentes) no plano 3990; titulares com preço linear e dependentes com tabela por faixa (sugestão: tabela proposta do Nível 4); despesas = receita total × sinistralidade do Nível 3.</p>
+          <div className="flex flex-wrap items-start gap-4">
+            <div><div className="mb-1 text-sm font-semibold">Titular — preço linear</div>
+              {(["Enfermaria", "Apartamento"] as const).map((a, j) => <label key={a} className="mr-3 inline-flex items-center gap-1 text-xs">{a}<input type="number" step="0.01" min="0" value={linear[j]} onChange={(e) => { const v = Number(e.target.value) || 0; setLinear((x) => (j ? [x[0], v] : [v, x[1]])); }} className="w-24 rounded border border-input bg-background px-2 py-1 text-right" /></label>)}
+            </div>
+            <div className="flex-1"><div className="mb-1 flex items-center gap-2 text-sm font-semibold">Dependente — tabela por faixa<button type="button" onClick={() => setPrecoDep(PRECOS_PROPOSTA)} className="rounded border border-border px-2 py-0.5 text-xs font-normal hover:bg-accent">Restaurar sugestão</button></div>
+              <div className="grid grid-cols-5 gap-1 text-xs">{FAIXAS_APB.map((f, i) => <div key={f} className="rounded border border-border p-1"><div className="font-medium">{f}</div>{[0, 1].map((j) => <input key={j} aria-label={`${f} ${j ? "Apartamento" : "Enfermaria"}`} title={j ? "Apartamento" : "Enfermaria"} type="number" step="0.01" min="0" value={precoDep[i][j]} onChange={(e) => { const v = Number(e.target.value) || 0; setPrecoDep((x) => x.map((pp, k) => (k === i ? (j ? [pp[0], v] : [v, pp[1]]) : pp))); }} className="mt-0.5 w-full rounded border border-input bg-background px-1 py-0.5 text-right" />)}</div>)}</div>
+              <div className="mt-1 text-[11px] text-muted-foreground">Em cada faixa: 1º campo Enfermaria, 2º Apartamento.</div>
+            </div>
+          </div>
+        </section>
+      )}
       {nivel === 3 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 3: todas as vidas dos planos 2290, 2490 e 2890 passam ao plano novo 3990, com a tabela proposta; projeção anual = vidas × preço × 12; copart 20% da CPP; despesas fixas de R$ 2.950.000,00.</p>}
 
       <section className="grid gap-2 sm:grid-cols-3 xl:grid-cols-6">
@@ -163,7 +181,7 @@ export default function PropostaApb() {
           {(abertos[p] || nivel > 1) && (
           <div className={`overflow-x-auto px-3 pb-2 ${nivel > 1 ? "flex flex-1 flex-col" : ""}`}>
             <div className="mb-1 flex justify-end"><button type="button" onClick={() => setRel((r) => !r)} className="rounded-md border border-border px-2 py-1 text-xs hover:bg-accent">{rel ? "Recolher Titular/Dependente" : "Expandir Titular/Dependente"}</button></div>
-            {!(nivel === 1 && p === "2890") && (
+            {!(nivel === 1 && p === "2890") && nivel !== 5 && (
             <table className={`w-full text-sm ${nivel > 1 ? "h-full flex-1" : ""}`}>
               <thead className="text-muted-foreground">
                 <tr><th rowSpan={rel ? 3 : 2} className="px-3 py-1.5 text-left align-bottom">Faixa</th><th colSpan={rel ? 5 : 3} className="border-b border-border px-3 py-1.5 text-center">Vidas</th><th colSpan={3} className="border-b border-border px-3 py-1.5 text-center">Preço</th></tr>
@@ -176,7 +194,7 @@ export default function PropostaApb() {
               </tbody>
             </table>
             )}
-            {nivel === 1 && p === "2890" && sub2890.map(([nome, g]) => (
+            {((nivel === 1 && p === "2890") ? sub2890 : nivel === 5 ? ([["Titular × tabela linear", n5.tit], ["Dependente × tabela por faixa", n5.dep]] as const) : []).map(([nome, g]) => (
               <div key={nome} className="mb-3">
                 <div className="px-1 py-1 text-sm font-semibold text-foreground">{nome}</div>
             <table key={nome} className={`w-full text-sm ${nivel > 1 ? "h-full flex-1" : ""}`}>
@@ -197,7 +215,7 @@ export default function PropostaApb() {
         </section>
       ))}
         </div>
-        <PropostaApbSinistralidade proj={transf ? grids : undefined} sinFixa={nivel === 4 ? sinN3 : undefined} grupo={nivel === 2 ? grids[PLANO_GRUPO] : undefined} fixo={nivel > 1} />
+        <PropostaApbSinistralidade proj={transf ? grids : undefined} sinFixa={nivel >= 4 ? sinN3 : undefined} grupo={nivel === 2 ? grids[PLANO_GRUPO] : undefined} fixo={nivel > 1} />
       </div>
     </div></div>
   );

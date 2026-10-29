@@ -50,3 +50,16 @@ describe("Nível 4", () => {
     expect(soma((l) => l.rel === "Titular" && l.faixa === "00 a 18")).toBe(5);
   });
 });
+
+import { gridsN5 as _gridsN5, escalarVidas as _esc, parseApb as _parse, PRECOS_PROPOSTA as _PP } from "./propostaApb";
+import _csv from "@/data/propostaApb/vidas_precos_2026-10-29.csv?raw";
+describe("Nível 5", () => {
+  const ls = _esc(_parse(_csv).linhas);
+  it("titular paga preço linear e dependente a tabela; todos soma os dois", () => {
+    const r = _gridsN5(ls, [300, 450], _PP);
+    const t = r.tit.total;
+    expect(r.tit.total.mensalidade).toBeCloseTo((t.enfTit) * 300 + t.apTit * 450, 2);
+    expect(r.todos.total.mensalidade).toBeCloseTo(r.tit.total.mensalidade + r.dep.total.mensalidade, 2);
+    expect(r.todos.total.total).toBe(1428);
+  });
+});
