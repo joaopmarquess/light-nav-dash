@@ -131,7 +131,7 @@ export default function CarteiraTrial() {
   const [grid, setGrid] = useState(false);
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [kpi, setKpi] = useState<{ ativos?: number; futuros?: number; cancelados?: number; total?: number; contratos?: number } | null>(null);
+  const [kpi, setKpi] = useState<{ ativos?: number; futuros?: number; cancelados?: number; total?: number; contratos?: number; PIF?: number; PCA?: number; PCE?: number } | null>(null);
   useEffect(() => {
     if (!ap) return;
     setKpi(null);
@@ -143,6 +143,11 @@ export default function CarteiraTrial() {
     hostinger.rpc("carteira_trial_contratos", { p_data: dRef, p_q: df.q.trim() || null, p_empresa: df.empresa.trim() || null, p_cidade: df.cidade.trim() || null }).then(({ data, error }: any) => {
       if (error) { console.error(error); setKpi((k) => ({ ...k, contratos: -1 })); return; }
       setKpi((k) => ({ ...k, contratos: Number(data) }));
+    });
+    hostinger.rpc("carteira_trial_siglas", { p_data: dRef, p_q: df.q.trim() || null, p_empresa: df.empresa.trim() || null, p_cidade: df.cidade.trim() || null }).then(({ data, error }: any) => {
+      if (error) { console.error(error); setKpi((k) => ({ ...k, PIF: -1, PCA: -1, PCE: -1 })); return; }
+      const g = (x: string) => Number((data ?? []).find((r: any) => r.sigla === x)?.vidas ?? 0);
+      setKpi((k) => ({ ...k, PIF: g("PIF"), PCA: g("PCA"), PCE: g("PCE") }));
     });
   }, [ap]);
   const vis = useMemo(() => {
@@ -253,8 +258,11 @@ export default function CarteiraTrial() {
             ["A", UserCheck, "Vidas Ativas", kpi?.ativos],
             ["F", Users, "Vidas a iniciar", kpi?.futuros],
             ["T", Building2, "Contratos Ativos", kpi?.contratos],
+            ["PIF", UserCheck, "Vidas Ativas PIF", kpi?.PIF],
+            ["PCA", UserCheck, "Vidas Ativas PCA", kpi?.PCA],
+            ["PCE", UserCheck, "Vidas Ativas PCE", kpi?.PCE],
           ] as const).map(([st, I, label, v]) => (
-            <button key={st} onClick={() => { if (st === "T") return; const e = { ...f, status: st }; setF(e); setAp({ f: e, d: dataRef || new Date().toISOString().slice(0, 10) }); setGrid(true); }}
+            <button key={st} onClick={() => { if (st !== "A" && st !== "F") return; const e = { ...f, status: st }; setF(e); setAp({ f: e, d: dataRef || new Date().toISOString().slice(0, 10) }); setGrid(true); }}
               className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-8 hover:bg-accent transition-colors">
               <I className="h-8 w-8 text-primary" />
               <p className="text-sm text-muted-foreground">{label}</p>
