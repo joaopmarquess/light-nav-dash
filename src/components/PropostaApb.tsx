@@ -7,7 +7,7 @@ import PropostaApbCopart from "@/components/PropostaApbCopart";
 const COPART_DESC: Record<string, string> = { "2290": "Sem Coparticipação", "2490": "Use Bem com teto de R$ 396,96", "2890": "Fácil Flex com teto de R$ 656,10", "Proposta": "Fácil 50 sem teto" };
 const COPART_TIPO = { "2490": "usebem", "2890": "flex", "Proposta": "facil50" } as const;
 import csv from "@/data/propostaApb/vidas_precos_2026-10-29.csv?raw";
-import { parseApb, gridPlano, PLANOS_APB, FAIXAS_APB, PRECOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, idadeSomaPlanos, escalarVidas, projecaoFaixas, type FaixaApb } from "@/lib/propostaApb";
+import { parseApb, gridPlano, PLANOS_APB, FAIXAS_APB, PRECOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, idadeSomaPlanos, escalarVidas, PRECO_TITULAR_2890, projecaoFaixas, type FaixaApb } from "@/lib/propostaApb";
 
 const n0 = (v: number) => v.toLocaleString("pt-BR");
 const brl = (v: number | null) => (v == null ? "—" : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
@@ -40,6 +40,16 @@ export default function PropostaApb() {
     }
     return Object.fromEntries(PLANOS_APB.map((p) => [p, gridPlano(linhas, p)]));
   }, [linhas, linhasN4, nivel]) as Record<string, ReturnType<typeof gridPlano>>;
+  // Plano 2890 (Nível 1): grid triplicado — Titular (preço linear), Dependente (tabela) e Todos (preço médio ponderado por vidas).
+  const sub2890 = useMemo(() => {
+    const ls = linhas.filter((l) => l.plano === "2890");
+    const tit = gridPlano(ls.filter((l) => l.rel === "Titular"), "2890", FAIXAS_APB.map(() => PRECO_TITULAR_2890));
+    const dep = gridPlano(ls.filter((l) => l.rel === "Dependente"), "2890");
+    const g = gridPlano(ls, "2890");
+    const medio = (faixa: string, a: string) => { const x = ls.filter((l) => l.faixa === faixa && l.acom === a); const v = x.reduce((t, l) => t + l.vidas, 0); return v ? x.reduce((t, l) => t + l.vidas * l.preco, 0) / v : null; };
+    const todos = { ...g, faixas: g.faixas.map((f) => ({ ...f, precoEnf: medio(f.faixa, "Enfermaria"), precoAp: medio(f.faixa, "Apartamento") })) };
+    return [["Titular", tit], ["Dependente", dep], ["Todos (preço médio)", todos]] as const;
+  }, [linhas]);
   const [sel, setSel] = useState<string>("Todos");
   const selOk = nivel > 1 ? planos[0] : "Todos";
   const [abertos, setAbertos] = useState<Record<string, boolean>>({});
@@ -153,6 +163,7 @@ export default function PropostaApb() {
           {(abertos[p] || nivel > 1) && (
           <div className={`overflow-x-auto px-3 pb-2 ${nivel > 1 ? "flex flex-1 flex-col" : ""}`}>
             <div className="mb-1 flex justify-end"><button type="button" onClick={() => setRel((r) => !r)} className="rounded-md border border-border px-2 py-1 text-xs hover:bg-accent">{rel ? "Recolher Titular/Dependente" : "Expandir Titular/Dependente"}</button></div>
+            {!(nivel === 1 && p === "2890") && (
             <table className={`w-full text-sm ${nivel > 1 ? "h-full flex-1" : ""}`}>
               <thead className="text-muted-foreground">
                 <tr><th rowSpan={rel ? 3 : 2} className="px-3 py-1.5 text-left align-bottom">Faixa</th><th colSpan={rel ? 5 : 3} className="border-b border-border px-3 py-1.5 text-center">Vidas</th><th colSpan={3} className="border-b border-border px-3 py-1.5 text-center">Preço</th></tr>
@@ -164,6 +175,23 @@ export default function PropostaApb() {
                 <Linha f={grids[p].total} bold />
               </tbody>
             </table>
+            )}
+            {nivel === 1 && p === "2890" && sub2890.map(([nome, g]) => (
+              <div key={nome} className="mb-3">
+                <div className="px-1 py-1 text-sm font-semibold text-foreground">{nome}</div>
+            <table key={nome} className={`w-full text-sm ${nivel > 1 ? "h-full flex-1" : ""}`}>
+              <thead className="text-muted-foreground">
+                <tr><th rowSpan={rel ? 3 : 2} className="px-3 py-1.5 text-left align-bottom">Faixa</th><th colSpan={rel ? 5 : 3} className="border-b border-border px-3 py-1.5 text-center">Vidas</th><th colSpan={3} className="border-b border-border px-3 py-1.5 text-center">Preço</th></tr>
+                <tr><th colSpan={rel ? 2 : 1} rowSpan={rel ? 1 : 1} className="px-3 py-1 text-center">Enfermaria</th><th colSpan={rel ? 2 : 1} className="px-3 py-1 text-center">Apartamento</th><th rowSpan={rel ? 2 : 1} className="px-3 py-1 text-center align-bottom">Total</th><th rowSpan={rel ? 2 : 1} className="px-3 py-1 text-center align-bottom">Enfermaria</th><th rowSpan={rel ? 2 : 1} className="px-3 py-1 text-center align-bottom">Apartamento</th><th rowSpan={rel ? 2 : 1} className="px-3 py-1 text-center align-bottom">Mensalidade</th></tr>
+                {rel && <tr>{["Titular", "Dependente", "Titular", "Dependente"].map((h, i) => <th key={i} className="px-3 py-1 text-center font-normal">{h}</th>)}</tr>}
+              </thead>
+              <tbody>
+                {g.faixas.map((f) => <Linha key={f.faixa} f={f} />)}
+                <Linha f={g.total} bold />
+              </tbody>
+            </table>
+              </div>
+            ))}
           </div>
           )}
         </section>
