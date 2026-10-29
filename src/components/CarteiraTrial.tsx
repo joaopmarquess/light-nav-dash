@@ -259,8 +259,6 @@ export default function CarteiraTrial() {
               <I className="h-8 w-8 text-primary" />
               <p className="text-sm text-muted-foreground">{label}</p>
               <p className="text-4xl font-semibold tabular-nums text-foreground">{!ap || v === -1 ? "—" : v == null ? "…" : v.toLocaleString("pt-BR")}</p>
-              {st === "T" && v === -1 ? <p className="text-xs text-muted-foreground">Cálculo ainda não instalado na base</p> : null}
-              {st !== "T" && ap && kpi?.total ? <p className="text-xs text-muted-foreground tabular-nums">{((Number(v ?? 0) / kpi.total) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% de {kpi.total.toLocaleString("pt-BR")} matrículas</p> : null}
             </button>
           ))}
         </div>
