@@ -255,14 +255,30 @@ export default function CarteiraTrial() {
       {!grid && (
         <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-3 gap-4 content-start">
           {([
-            ["A", UserCheck, "Vidas Ativas", kpi?.ativos],
-            ["F", Users, "Vidas a iniciar", kpi?.futuros],
             ["T", Building2, "Contratos Ativos", kpi?.contratos],
+            ["A", UserCheck, "Vidas Ativas", kpi?.ativos],
+            ["MIX", Users, "Vidas Ativas por contratação", null],
             ["PIF", UserCheck, "Vidas Ativas PIF", kpi?.PIF],
             ["PCA", UserCheck, "Vidas Ativas PCA", kpi?.PCA],
             ["PCE", UserCheck, "Vidas Ativas PCE", kpi?.PCE],
-          ] as const).map(([st, I, label, v]) => (
-            <button key={st} onClick={() => { if (st !== "A" && st !== "F") return; const e = { ...f, status: st }; setF(e); setAp({ f: e, d: dataRef || new Date().toISOString().slice(0, 10) }); setGrid(true); }}
+          ] as const).map(([st, I, label, v]) => st === "MIX" ? (
+            <div key={st} className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-8">
+              <I className="h-8 w-8 text-primary" />
+              <p className="text-sm text-muted-foreground">{label}</p>
+              <div className="flex flex-col gap-1 w-full max-w-[220px]">
+                {(["PIF", "PCA", "PCE"] as const).map((x) => {
+                  const n = kpi?.[x];
+                  return (
+                    <div key={x} className="flex justify-between text-xl tabular-nums">
+                      <span className="font-semibold text-foreground">{x}</span>
+                      <span className="text-foreground">{!ap || n == null || n < 0 || !kpi?.ativos ? "—" : `${((n / kpi.ativos) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <button key={st} onClick={() => { if (st !== "A") return; const e = { ...f, status: st }; setF(e); setAp({ f: e, d: dataRef || new Date().toISOString().slice(0, 10) }); setGrid(true); }}
               className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-8 hover:bg-accent transition-colors">
               <I className="h-8 w-8 text-primary" />
               <p className="text-sm text-muted-foreground">{label}</p>
