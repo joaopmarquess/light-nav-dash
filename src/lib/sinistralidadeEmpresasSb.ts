@@ -31,8 +31,10 @@ export function agregarSb(regs: RegSb[], de: number, ate: number, empresa: strin
   return [...out.entries()].map(([k, l]) => ({ ...l, vidas: vidas.get(k)!.size }));
 }
 
-let cache: Promise<RegSb[]> | null = null;
-export async function carregarSb(de: number, ate: number, empresa: string, planos: string[]) {
-  cache ??= fetch("/data/ard_mensal_sb_v2.csv").then((r) => { if (!r.ok) throw new Error("CSV não encontrado"); return r.text(); }).then(parseSb);
-  return agregarSb(await cache, de, ate, empresa, planos);
+const caches = new Map<string, Promise<RegSb[]>>();
+/** arquivo "menu" não tem competência: período é ignorado. */
+export async function carregarSb(de: number, ate: number, empresa: string, planos: string[], arquivo = "ard_mensal_sb_v2.csv") {
+  if (!caches.has(arquivo)) caches.set(arquivo, fetch(`/data/${arquivo}`).then((r) => { if (!r.ok) throw new Error("CSV não encontrado"); return r.text(); }).then(parseSb));
+  const semPeriodo = arquivo !== "ard_mensal_sb_v2.csv";
+  return agregarSb(await caches.get(arquivo)!, semPeriodo ? 0 : de, semPeriodo ? 0 : ate, empresa, planos);
 }

@@ -238,7 +238,7 @@ const menuItems: MenuItem[] = [
   { icon: FileText, label: "Modelo Relatório de Controladoria" },
   controlItem,
   { icon: Users, label: "Carteira", children: [{ icon: Search, label: "Painel", id: "Carteira · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira · Entradas" }, { icon: TrendingUp, label: "Saídas", id: "Carteira · Saídas" }, { icon: BarChart3, label: "Tabelas", id: "Carteira · Tabelas" }] },
-  { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }, { icon: Users, label: "Empresas", id: "Sinistralidade · Empresas" }, { icon: Users, label: "Empresas SB", id: "Sinistralidade · Empresas SB" }] },
+  { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }, { icon: Users, label: "Empresas", id: "Sinistralidade · Empresas" }, { icon: Users, label: "Empresas SB", id: "Sinistralidade · Empresas SB" }, { icon: Users, label: "Empresas Menu", id: "Sinistralidade · Empresas Menu" }] },
 ];
 
 const LAB_IDS = new Set<string>(["Laboratory", ...labItems.flatMap((g) => g.children ? g.children.map((c) => c.id ?? c.label) : [g.label])]);
@@ -607,6 +607,8 @@ const Index = () => {
             <SinistralidadeEmpresas />
           ) : active === "Sinistralidade · Empresas SB" ? (
             <SinistralidadeEmpresas fonte="sb" />
+          ) : active === "Sinistralidade · Empresas Menu" ? (
+            <SinistralidadeEmpresas fonte="menu" />
           ) : active === "Proposta APB" ? (
             <PropostaApb />
           ) : active === "APB" ? (
