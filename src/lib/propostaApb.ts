@@ -16,8 +16,8 @@ export const PRECOS_PROPOSTA: [number, number][] = [[110.53, 165.79], [128.99, 1
 export const PLANO_NOVO = "3990";
 export const PLANO_GRUPO = "GRUPO";
 export const COPART_PROPOSTA = 0.2; // copart = 20% da receita CPP
-/** Despesa anual fixa da proposta (R$ 3.000.000,00). */
-export const DESPESA_FIXA_PROPOSTA = 3_000_000;
+/** Despesa anual fixa da proposta (R$ 2.950.000,00). */
+export const DESPESA_FIXA_PROPOSTA = 2_950_000;
 
 /** Projeção anual por faixa: CPP = mensalidade × 12; copart = CPP × 20%; receita total = CPP + copart;
  *  sinistralidade = despesa fixa ÷ receita total geral; despesas da faixa = receita total da faixa × sinistralidade. */
