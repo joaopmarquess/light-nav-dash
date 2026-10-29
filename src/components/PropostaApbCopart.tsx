@@ -37,7 +37,7 @@ const CFG: Record<Tipo, { t: string; pct: string; teto: string | null; ilustr: b
 export default function PropostaApbCopart({ tipo }: { tipo: Tipo }) {
   const c = CFG[tipo];
   const linhas = tipo === "usebem"
-    ? LINHAS_COPART_FACIL50.map((l) => (l.n === 1 ? { ...l, p: "-", v: "45,00" } : l.n === 4 ? { ...l, p: "-", v: "259,00" } : { ...l, p: "30%", v: "Sem limite" }))
+    ? LINHAS_COPART_FACIL50.map((l) => (l.n === 1 ? { ...l, p: "-", v: "28,39" } : l.n === 3 ? { ...l, p: "-", v: "47,06" } : l.n === 4 ? { ...l, p: "-", v: "284,35" } : { ...l, p: "30%", v: "Sem limite" }))
     : LINHAS_COPART_FACIL50;
   return (
     <Dialog>
