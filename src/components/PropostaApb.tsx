@@ -5,7 +5,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import PropostaApbSinistralidade from "@/components/PropostaApbSinistralidade";
-import { gerarPropostaPdf } from "@/lib/propostaApbPdf";
+import { montarPropostaPdf } from "@/lib/propostaApbPdf";
+import PropostaApbReport from "@/components/PropostaApbReport";
+import type jsPDF from "jspdf";
 import PropostaApbCopart from "@/components/PropostaApbCopart";
 const COPART_DESC: Record<string, string> = { "2290": "Sem Coparticipação", "2490": "Use Bem com teto de R$ 396,96", "2890": "Fácil Flex com teto de R$ 656,10", "Proposta": "Fácil 50 sem teto" };
 const COPART_TIPO = { "2490": "usebem", "2890": "flex", "Proposta": "facil50" } as const;
@@ -38,6 +40,7 @@ export default function PropostaApb() {
   const VARS_N3 = defaults[3];
   const [vars, setVars] = useState<DefaultsApb>(() => ({ 3: { ...defaults[3] }, 4: { ...defaults[4] } }));
   const [saveStatus, setSaveStatus] = useState("");
+  const [reportDoc, setReportDoc] = useState<jsPDF | null>(null);
   const vk = (nivel >= 3 ? nivel : 3) as 3 | 4;
   const { linEnf, sinPct, copartPct, depBase } = vars[vk];
   const setVar = (k: keyof VariaveisApb) => (v: number) => { setSaveStatus(""); setVars((x) => ({ ...x, [vk]: { ...x[vk], [k]: v } })); };
@@ -108,7 +111,7 @@ export default function PropostaApb() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
         <Tooltip>
-          <TooltipTrigger asChild><Button type="button" size="icon" variant="outline" className="h-14" aria-label="Gerar Proposta" onClick={() => gerarPropostaPdf()}><Printer className="h-4 w-4" aria-hidden="true" /></Button></TooltipTrigger>
+          <TooltipTrigger asChild><Button type="button" size="icon" variant="outline" className="h-14" aria-label="Gerar Proposta" onClick={() => setReportDoc(montarPropostaPdf(vars[4]))}><Printer className="h-4 w-4" aria-hidden="true" /></Button></TooltipTrigger>
           <TooltipContent>Gerar Proposta</TooltipContent>
         </Tooltip>
         <Dialog>
@@ -182,6 +185,7 @@ export default function PropostaApb() {
         </div>}
         </div>
       </header>
+      <PropostaApbReport doc={reportDoc} onClose={() => setReportDoc(null)} />
       {nivel === 2 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 2: planos 2290, 2490 e 2890 agrupados como GRUPO, com preços e resultados atuais.</p>}
       {nivel >= 3 && (
         <div className="flex items-center justify-between gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 py-1 text-xs text-foreground">
