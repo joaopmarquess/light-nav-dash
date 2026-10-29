@@ -66,7 +66,7 @@ export default function PropostaApb() {
         <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
           {([1, 2, 3] as const).map((n) => <button key={n} type="button" onClick={() => setNivel(n)} className={`rounded-md px-3 py-1.5 text-sm font-medium ${nivel === n ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>Nível {n}</button>)}
         </div>
-        {nivel > 1 && <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
+        {false && <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
           {(nivel > 1 ? planos : ["Todos", ...planos]).map((p) => (
             <button key={p} type="button" onClick={() => setSel(p)} className={`rounded-md px-3 py-1.5 text-sm ${selOk === p ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>{p}</button>
           ))}

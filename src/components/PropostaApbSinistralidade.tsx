@@ -43,6 +43,7 @@ export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?
 
   if (erro) return <section className="rounded-lg border border-border bg-card p-4 text-sm text-destructive">{erro}</section>;
   let linhas = base;
+  const vidasArquivo = grupo && base ? base.reduce((a, l) => a + l.vidas, 0) : null; // Nível 2: cards de cima mostram as vidas do arquivo
   if (!linhas && !proj) return <section className="flex items-center gap-2 rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando sinistralidade…</section>;
 
   if (proj) linhas = deProjecao(proj);
@@ -54,7 +55,7 @@ export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?
   const total = gridFaixas(linhas).total;
   const planos = proj ? Object.keys(proj) : grupo ? ["GRUPO"] : PLANOS;
   const cards = [
-    { t: "Vidas", v: Math.round(total.vidas).toLocaleString("pt-BR") },
+    { t: "Vidas", v: Math.round(vidasArquivo ?? total.vidas).toLocaleString("pt-BR") },
     { t: "Receita CPP", v: brl(total.recCpp) },
     { t: "Receita Copart", v: brl(total.recCopart) + rel(total.recCopart, total.recCpp) },
     { t: "Receita total", v: brl(total.recTotal) },
@@ -84,7 +85,7 @@ export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?
               return (
                 <tr key={p} className="border-t border-border">
                   <td className="px-2 py-1 font-medium">{p}</td>
-                  <td className="px-2 py-1 text-center">{Math.round(t.vidas).toLocaleString("pt-BR")}</td>
+                  <td className="px-2 py-1 text-center">{Math.round(vidasArquivo ?? t.vidas).toLocaleString("pt-BR")}</td>
                   <td className="px-2 py-1 text-right">{brl(t.recCpp)}</td>
                   <td className="px-2 py-1 text-right">{brl(t.recCopart)}<span className="text-muted-foreground">{rel(t.recCopart, t.recCpp)}</span></td>
                   <td className="px-2 py-1 text-right">{brl(t.recTotal)}</td>
