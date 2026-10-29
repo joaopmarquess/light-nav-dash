@@ -62,6 +62,8 @@ export default function PropostaApb() {
         <Card icon={Receipt} label="Ticket médio" value={brl(k.vidas ? k.mens / k.vidas : 0)} sub={`Enfermaria ${pct(k.enf, k.vidas)} das vidas`} />
       </section>
 
+      <div className="grid gap-5 xl:grid-cols-2">
+        <div className="min-w-0 space-y-5">
       {sel === "Todos" && (
         <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
           <h3 className="mb-3 text-sm font-semibold text-foreground">Resumo por plano</h3>
@@ -116,6 +118,9 @@ export default function PropostaApb() {
           )}
         </section>
       ))}
+        </div>
+        <section aria-label="Container direito" className="min-h-64 rounded-lg border border-dashed border-border bg-card p-4 shadow-sm" />
+      </div>
       <p className="text-xs text-muted-foreground">Mensalidade = vidas × preço da faixa e acomodação. Ativo: vigência iniciada e sem desligamento na data; titular = matrícula final 00.</p>
     </div>
   );
