@@ -267,6 +267,7 @@ export default function CarteiraTrial() {
               <I className="h-8 w-8 text-primary" />
               <p className="text-sm text-muted-foreground">{label}</p>
               <p className="text-4xl font-semibold tabular-nums text-foreground">{!ap || v === -1 ? "—" : v == null ? "…" : v.toLocaleString("pt-BR")}</p>
+              {["PIF", "PCA", "PCE"].includes(st) && ap && kpi?.ativos && v != null && v >= 0 ? <p className="text-xs text-muted-foreground tabular-nums">{((v / kpi.ativos) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% das vidas ativas</p> : null}
             </button>
           ))}
         </div>
