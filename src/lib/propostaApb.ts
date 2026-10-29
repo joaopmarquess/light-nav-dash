@@ -65,14 +65,14 @@ export const idadeSomaPlanos = (linhas: LinhaApb[], planos: string[]) => {
   return linhas.filter((l) => todos || planos.includes(l.plano)).reduce((t, l) => t + l.idadeSoma, 0);
 };
 
-/** Nível 4: titulares-alvo + % de dependentes, distribuídos nas mesmas proporções atuais por faixa/acomodação
- *  (titulares pela distribuição atual dos titulares; dependentes pela dos dependentes), com arredondamento pelo maior resto. */
-export const TITULARES_N4 = 1200;
-export const DEP_PCT_N4 = 0.15;
-export function escalarVidas(linhas: LinhaApb[], titulares = TITULARES_N4, depPct = DEP_PCT_N4): LinhaApb[] {
+/** Nível 4: vidas fornecidas por faixa etária (total 1.242). Dentro de cada faixa, a divisão entre
+ *  titular/dependente e enfermaria/apartamento segue a proporção atual daquela faixa (maior resto). */
+export const VIDAS_N4 = [5, 47, 165, 189, 172, 201, 218, 115, 75, 55];
+export function escalarVidas(linhas: LinhaApb[], porFaixa = VIDAS_N4): LinhaApb[] {
   const out = linhas.map((l) => ({ ...l, vidas: 0, idadeSoma: 0 }));
-  const distribuir = (rel: LinhaApb["rel"], alvo: number) => {
-    const idx = linhas.map((l, i) => i).filter((i) => linhas[i].rel === rel);
+  FAIXAS_APB.forEach((faixa, fi) => {
+    const alvo = porFaixa[fi] ?? 0;
+    const idx = linhas.map((_, i) => i).filter((i) => linhas[i].faixa === faixa);
     const base = idx.reduce((t, i) => t + linhas[i].vidas, 0);
     if (!base) return;
     const q = idx.map((i) => ({ i, x: (linhas[i].vidas * alvo) / base }));
@@ -80,8 +80,6 @@ export function escalarVidas(linhas: LinhaApb[], titulares = TITULARES_N4, depPc
     let resto = alvo - q.reduce((t, { i }) => t + out[i].vidas, 0);
     [...q].sort((a, b) => (b.x % 1) - (a.x % 1)).forEach(({ i }) => { if (resto > 0) { out[i].vidas++; resto--; } });
     idx.forEach((i) => { out[i].idadeSoma = linhas[i].vidas ? (linhas[i].idadeSoma / linhas[i].vidas) * out[i].vidas : 0; });
-  };
-  distribuir("Titular", titulares);
-  distribuir("Dependente", Math.round(titulares * depPct));
+  });
   return out;
 }
