@@ -27,7 +27,8 @@ describe("premissas da proposta", () => {
   it("copart 15% e sinistralidade 80%", () => { expect(COPART_PROPOSTA).toBe(0.15); expect(SINISTRALIDADE_PROPOSTA).toBe(0.8); });
 });
 import { idadeSomaPlanos } from "./propostaApb";
-describe("idade média exata", () => {
-  it("854 vidas com média 38,87 anos", () => expect(idadeSomaPlanos(["2290", "2490", "2890"]) / 854).toBeCloseTo(38.87, 2));
-  it("GRUPO usa a soma dos três", () => expect(idadeSomaPlanos(["GRUPO"])).toBe(33193));
+describe("idade média exata do snapshot", () => {
+  it("854 vidas com média 38,87 anos", () => expect(idadeSomaPlanos(linhas, ["2290", "2490", "2890"]) / 854).toBeCloseTo(38.87, 2));
+  it("GRUPO usa a soma dos três", () => expect(idadeSomaPlanos(linhas, ["GRUPO"])).toBe(33193));
+  it("2290 tem média 58", () => expect(idadeSomaPlanos(linhas, ["2290"]) / 20).toBe(58));
 });
