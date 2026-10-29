@@ -97,7 +97,7 @@ export default function PropostaApb() {
         </div>
       </header>
       {nivel === 2 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 2: planos 2290, 2490 e 2890 agrupados como GRUPO, com preços e resultados atuais.</p>}
-      {transf && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 3: todas as vidas dos planos 2290, 2490 e 2890 passam ao plano novo 3990, com a tabela proposta; projeção anual = vidas × preço × 12; copart 15% da CPP; sinistralidade 80%.</p>}
+      {transf && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 3: todas as vidas dos planos 2290, 2490 e 2890 passam ao plano novo 3990, com a tabela proposta; projeção anual = vidas × preço × 12; copart 20% da CPP; sinistralidade 80%.</p>}
 
       <section className="grid gap-2 sm:grid-cols-3 xl:grid-cols-6">
         <Card icon={Users} label="Vidas ativas" value={n0(k.vidas)} />

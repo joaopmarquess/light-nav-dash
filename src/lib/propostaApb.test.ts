@@ -24,7 +24,7 @@ describe("Proposta APB", () => {
 
 import { COPART_PROPOSTA, SINISTRALIDADE_PROPOSTA } from "./propostaApb";
 describe("premissas da proposta", () => {
-  it("copart 15% e sinistralidade 80%", () => { expect(COPART_PROPOSTA).toBe(0.15); expect(SINISTRALIDADE_PROPOSTA).toBe(0.8); });
+  it("copart 20% e sinistralidade 80%", () => { expect(COPART_PROPOSTA).toBe(0.2); expect(SINISTRALIDADE_PROPOSTA).toBe(0.8); });
 });
 import { idadeSomaPlanos } from "./propostaApb";
 describe("idade média exata do snapshot", () => {
