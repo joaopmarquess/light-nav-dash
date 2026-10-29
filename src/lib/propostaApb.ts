@@ -16,16 +16,16 @@ export const PRECOS_PROPOSTA: [number, number][] = [[110.53, 165.79], [128.99, 1
 export const PLANO_NOVO = "3990";
 export const PLANO_GRUPO = "GRUPO";
 export const COPART_PROPOSTA = 0.2; // copart = 20% da receita CPP
-/** Despesa anual fixa da proposta (R$ 3.000.000,00), rateada pelas 854 vidas. */
+/** Despesa anual fixa da proposta (R$ 3.000.000,00). */
 export const DESPESA_FIXA_PROPOSTA = 3_000_000;
-export const VIDAS_PROPOSTA = 854;
-export const DESPESA_POR_VIDA = DESPESA_FIXA_PROPOSTA / VIDAS_PROPOSTA;
 
-/** Projeção anual: CPP = mensalidade × 12; copart = 20% CPP; despesas fixas = vidas × despesa por vida.
- *  Sinistralidade = despesas ÷ receita total; saldo = receita total − despesas. */
-export function projecaoAnual(mensalidade: number, vidas: number) {
-  const recCpp = mensalidade * 12, recCopart = recCpp * COPART_PROPOSTA, recTotal = recCpp + recCopart;
-  return { recCpp, recCopart, recTotal, despTotal: vidas * DESPESA_POR_VIDA };
+/** Projeção anual por faixa: CPP = mensalidade × 12; copart = CPP × 20%; receita total = CPP + copart;
+ *  sinistralidade = despesa fixa ÷ receita total geral; despesas da faixa = receita total da faixa × sinistralidade. */
+export function projecaoFaixas(mensalidades: number[]) {
+  const base = mensalidades.map((m) => { const recCpp = m * 12, recCopart = recCpp * COPART_PROPOSTA; return { recCpp, recCopart, recTotal: recCpp + recCopart }; });
+  const total = base.reduce((t, b) => t + b.recTotal, 0);
+  const sin = total ? DESPESA_FIXA_PROPOSTA / total : 0;
+  return { sin, faixas: base.map((b) => ({ ...b, despTotal: b.recTotal * sin })) };
 }
 
 const num = (s: string) => Number((s || "0").replace(/\./g, "").replace(",", "."));

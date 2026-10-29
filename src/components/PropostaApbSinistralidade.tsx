@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { Grid } from "@/components/SinistralidadeEmpresas";
 import { carregarSb } from "@/lib/sinistralidadeEmpresasSb";
-import { projecaoAnual, gridPlano } from "@/lib/propostaApb";
+import { projecaoFaixas, gridPlano } from "@/lib/propostaApb";
 import { gridFaixas, FAIXAS_EMP, type LinhaEmp } from "@/lib/sinistralidadeEmpresas";
 
 const PLANOS = ["2290", "2490", "2890"];
@@ -12,7 +12,11 @@ const pct = (v: number | null) => (v == null ? "—" : `${(v * 100).toLocaleStri
 
 /** Container direito da Proposta APB: sinistralidade da mesma fonte de Sinistralidade › Empresas Menu. */
 type Grids = Record<string, ReturnType<typeof gridPlano>>;
-const deProjecao = (g: Grids): LinhaEmp[] => Object.keys(g).flatMap((p) => g[p].faixas.map((f) => ({ plano: p, faixa: f.faixa, vidas: f.total, ...projecaoAnual(f.mensalidade, f.total) })));
+const deProjecao = (g: Grids): LinhaEmp[] => {
+  const fs = Object.keys(g).flatMap((p) => g[p].faixas.map((f) => ({ p, f })));
+  const { faixas } = projecaoFaixas(fs.map(({ f }) => f.mensalidade));
+  return fs.map(({ p, f }, i) => ({ plano: p, faixa: f.faixa, vidas: f.total, ...faixas[i] }));
+};
 
 /** Consolida linhas de mesma faixa (vinham uma por plano). */
 export function porFaixa(ls: LinhaEmp[]): LinhaEmp[] {
@@ -68,7 +72,7 @@ export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?
     <div className="flex h-full flex-col gap-2 [&_section]:p-3 [&_h3]:mb-1">
       <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
         <h3 className="text-base font-semibold text-foreground">{proj ? "Projeção anual — tabela proposta" : "Sinistralidade 09/2025 a 08/2026"}</h3>
-        <p className="mb-2 text-xs text-muted-foreground">{proj ? "Vidas atuais × preço proposto × 12 · copart 20% da CPP · despesas fixas de R$ 3.000.000,00 rateadas por vida · sinistralidade = despesas ÷ receita total" : "Fonte: MENU_SB_SINISTRALIDA.XLS (mesma de Sinistralidade › Empresas Menu)"}</p>
+        <p className="mb-2 text-xs text-muted-foreground">{proj ? "Vidas atuais × preço proposto × 12 · copart 20% da CPP · despesas de R$ 3.000.000,00 · despesas da faixa = receita total × sinistralidade" : "Fonte: MENU_SB_SINISTRALIDA.XLS (mesma de Sinistralidade › Empresas Menu)"}</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {cards.map((c) => (
             <div key={c.t} className="rounded-md border border-border px-2 py-1">

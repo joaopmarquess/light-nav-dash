@@ -22,10 +22,15 @@ describe("Proposta APB", () => {
   });
 });
 
-import { COPART_PROPOSTA, projecaoAnual } from "./propostaApb";
+import { COPART_PROPOSTA, projecaoFaixas } from "./propostaApb";
 describe("premissas da proposta", () => {
   it("copart 20%", () => expect(COPART_PROPOSTA).toBe(0.2));
-  it("despesas fixas de 854 vidas = 3.000.000", () => expect(projecaoAnual(0, 854).despTotal).toBeCloseTo(3000000, 2));
+  it("despesas somam 3.000.000 e seguem receita × sinistralidade", () => {
+    const r = projecaoFaixas([100, 300]);
+    expect(r.faixas[0].recCopart).toBeCloseTo(240, 6);
+    expect(r.faixas.reduce((t, f) => t + f.despTotal, 0)).toBeCloseTo(3000000, 4);
+    expect(r.faixas[1].despTotal).toBeCloseTo(r.faixas[1].recTotal * r.sin, 6);
+  });
 });
 import { idadeSomaPlanos } from "./propostaApb";
 describe("idade média exata do snapshot", () => {
