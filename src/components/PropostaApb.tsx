@@ -94,9 +94,9 @@ export default function PropostaApb() {
         <div>
           <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground"><FileSpreadsheet className="h-6 w-6 text-primary" />Proposta APB</h2>
         </div>
-        <div className="flex flex-wrap items-end gap-2">
+        <div className="flex flex-wrap items-center gap-2">
         <Tooltip>
-          <TooltipTrigger asChild><Button type="button" size="icon" aria-label="Gerar Proposta" onClick={() => gerarPropostaPdf()}><Printer className="h-4 w-4" aria-hidden="true" /></Button></TooltipTrigger>
+          <TooltipTrigger asChild><Button type="button" size="icon" variant="outline" aria-label="Gerar Proposta" onClick={() => gerarPropostaPdf()}><Printer className="h-4 w-4" aria-hidden="true" /></Button></TooltipTrigger>
           <TooltipContent>Gerar Proposta</TooltipContent>
         </Tooltip>
         <Dialog>
@@ -117,9 +117,10 @@ export default function PropostaApb() {
             </div>
           </DialogContent>
         </Dialog>
+        <div className="grid max-w-full grid-cols-2 items-stretch gap-2">
         <fieldset className="min-w-0 rounded-lg border border-border bg-card px-2 pb-1.5">
           <legend className="px-1 text-xs font-semibold text-muted-foreground">Planos Atuais</legend>
-          <div className="flex gap-1">
+          <div className="flex justify-center gap-1">
             {([1, 2] as const).map((n) => <Button key={n} type="button" size="sm" variant={nivel === n ? "default" : "ghost"} aria-pressed={nivel === n} title={({ 1: "3 contratos - analítico", 2: "3 contratos - sintético" } as const)[n]} onClick={() => setNivel(n)}>{n === 1 ? "Analítico" : "Sintético"}</Button>)}
           </div>
         </fieldset>
@@ -150,6 +151,7 @@ export default function PropostaApb() {
           </Dialog>
           </div>
         </fieldset>
+        </div>
         {false && <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
           {(nivel > 1 ? planos : ["Todos", ...planos]).map((p) => (
             <button key={p} type="button" onClick={() => setSel(p)} className={`rounded-md px-3 py-1.5 text-sm ${selOk === p ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>{p}</button>
