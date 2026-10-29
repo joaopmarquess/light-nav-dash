@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, FileSpreadsheet, Users, UserCheck, Wallet, Receipt } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import PropostaApbSinistralidade from "@/components/PropostaApbSinistralidade";
+import { gerarPropostaPdf } from "@/lib/propostaApbPdf";
 import PropostaApbCopart from "@/components/PropostaApbCopart";
 const COPART_DESC: Record<string, string> = { "2290": "Sem Coparticipação", "2490": "Use Bem com teto de R$ 300,00", "2890": "Fácil Flex com teto de R$ 600,00", "Proposta": "Fácil 50 sem teto" };
 const COPART_TIPO = { "2490": "usebem", "2890": "flex", "Proposta": "facil50" } as const;
@@ -68,6 +69,7 @@ export default function PropostaApb() {
           <p className="text-sm text-muted-foreground">Vidas ativas em {dataBr} nos planos 2290, 2490 e 2890 × preços de referência fornecidos (fotografia, não atualiza com a base).</p>
         </div>
         <div className="flex items-center gap-2">
+        <button type="button" onClick={() => gerarPropostaPdf()} className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">Gerar Proposta</button>
         <Dialog>
           <DialogTrigger asChild><button type="button" className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium hover:bg-accent">Tabela Proposta</button></DialogTrigger>
           <DialogContent className="max-w-[90vw] text-base">
