@@ -12,7 +12,7 @@ const pct = (v: number | null) => (v == null ? "—" : `${(v * 100).toLocaleStri
 
 /** Container direito da Proposta APB: sinistralidade da mesma fonte de Sinistralidade › Empresas Menu. */
 type Grids = Record<string, ReturnType<typeof gridPlano>>;
-const deProjecao = (g: Grids): LinhaEmp[] => PLANOS.flatMap((p) => g[p].faixas.map((f) => ({ plano: p, faixa: f.faixa, vidas: f.total, ...projecaoAnual(f.mensalidade) })));
+const deProjecao = (g: Grids): LinhaEmp[] => Object.keys(g).flatMap((p) => g[p].faixas.map((f) => ({ plano: p, faixa: f.faixa, vidas: f.total, ...projecaoAnual(f.mensalidade) })));
 
 export default function PropostaApbSinistralidade({ proj }: { proj?: Grids }) {
   const [base, setLinhas] = useState<LinhaEmp[] | null>(null);
@@ -30,6 +30,7 @@ export default function PropostaApbSinistralidade({ proj }: { proj?: Grids }) {
   if (proj) linhas = deProjecao(proj);
   if (!linhas) return null;
   const total = gridFaixas(linhas).total;
+  const planos = proj ? Object.keys(proj) : PLANOS;
   const cards = [
     { t: "Vidas", v: total.vidas.toLocaleString("pt-BR") },
     { t: "Receita CPP", v: brl(total.recCpp) },
@@ -56,7 +57,7 @@ export default function PropostaApbSinistralidade({ proj }: { proj?: Grids }) {
         <div className="mt-4 overflow-x-auto"><table className="w-full text-sm">
           <thead className="text-muted-foreground"><tr><th className="px-2 py-1 text-left">Plano</th><th className="px-2 py-1 text-center">Vidas</th><th className="px-2 py-1 text-right">Rec. CPP</th><th className="px-2 py-1 text-right">Rec. Copart</th><th className="px-2 py-1 text-right">Rec. Total</th><th className="px-2 py-1 text-right">Despesas</th><th className="px-2 py-1 text-right">Saldo</th><th className="px-2 py-1 text-center">Sinistr.</th></tr></thead>
           <tbody>
-            {PLANOS.map((p) => {
+            {planos.map((p) => {
               const t = gridFaixas(linhas.filter((l) => l.plano === p)).total;
               return (
                 <tr key={p} className="border-t border-border">
@@ -74,7 +75,7 @@ export default function PropostaApbSinistralidade({ proj }: { proj?: Grids }) {
           </tbody>
         </table></div>
       </section>
-      {PLANOS.map((p) => (
+      {planos.map((p) => (
         <div key={p}>
           <button type="button" onClick={() => setAberto(aberto === p ? null : p)} className="mb-2 flex w-full items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-left text-sm font-semibold shadow-sm hover:bg-accent">
             {aberto === p ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}Sinistralidade por faixa · Plano {p}
