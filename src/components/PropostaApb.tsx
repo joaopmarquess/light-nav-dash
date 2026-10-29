@@ -3,7 +3,8 @@ import { ChevronDown, ChevronRight, FileSpreadsheet, Users, UserCheck, Wallet, R
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import PropostaApbSinistralidade from "@/components/PropostaApbSinistralidade";
 import PropostaApbCopart from "@/components/PropostaApbCopart";
-const COPART_DESC: Record<string, string> = { "2290": "Sem Coparticipação", "2490": "Fácil Flex com teto de R$ 600,00", "2890": "Fácil 50 sem teto" };
+const COPART_DESC: Record<string, string> = { "2290": "Sem Coparticipação", "2490": "Use Bem com teto de R$ 300,00", "2890": "Fácil Flex com teto de R$ 600,00", "Proposta": "Fácil 50 sem teto" };
+const COPART_TIPO = { "2490": "usebem", "2890": "flex", "Proposta": "facil50" } as const;
 import csv from "@/data/propostaApb/vidas_precos_2026-10-29.csv?raw";
 import { parseApb, gridPlano, PLANOS_APB, FAIXAS_APB, PRECOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, type FaixaApb } from "@/lib/propostaApb";
 
@@ -69,15 +70,15 @@ export default function PropostaApb() {
         <div className="flex items-center gap-2">
         <Dialog>
           <DialogTrigger asChild><button type="button" className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium hover:bg-accent">Tabela Proposta</button></DialogTrigger>
-          <DialogContent className="max-w-5xl">
+          <DialogContent className="max-w-[90vw] text-base">
             <DialogHeader><DialogTitle>Tabelas de preço — 2290 × 2490 × 2890 × Proposta ({PLANO_NOVO})</DialogTitle></DialogHeader>
             <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-base">
               <thead>
-                <tr className="bg-primary text-primary-foreground"><th rowSpan={2} className="px-3 py-2 text-left align-bottom">Faixa etária</th>{[...PLANOS_APB, "Proposta"].map((p) => <th key={p} colSpan={2} className="border-l border-primary-foreground/30 px-3 py-1 text-center">{p}{COPART_DESC[p] && <div className="text-[11px] font-normal">{COPART_DESC[p]}{p === "2890" && <PropostaApbCopart />}</div>}</th>)}</tr>
-                <tr className="bg-primary text-xs text-primary-foreground">{[...PLANOS_APB, "Proposta"].flatMap((p) => [<th key={p + "e"} className="border-l border-primary-foreground/30 px-2 py-1 text-center">Enfermaria</th>, <th key={p + "a"} className="px-2 py-1 text-center">Apartamento</th>])}</tr>
+                <tr className="bg-primary text-primary-foreground"><th rowSpan={2} className="px-3 py-2 text-left align-bottom">Faixa etária</th>{[...PLANOS_APB, "Proposta"].map((p) => <th key={p} colSpan={2} className="border-l border-primary-foreground/30 px-3 py-1 text-center">{p}{COPART_DESC[p] && <div className="text-xs font-normal">{COPART_DESC[p]}{p in COPART_TIPO && <PropostaApbCopart tipo={COPART_TIPO[p as keyof typeof COPART_TIPO]} />}</div>}</th>)}</tr>
+                <tr className="bg-primary text-sm text-primary-foreground">{[...PLANOS_APB, "Proposta"].flatMap((p) => [<th key={p + "e"} className="border-l border-primary-foreground/30 px-2 py-1 text-center">Enfermaria</th>, <th key={p + "a"} className="px-2 py-1 text-center">Apartamento</th>])}</tr>
               </thead>
-              <tbody>{FAIXAS_APB.map((f, i) => <tr key={f} className="border-t border-border"><td className="px-3 py-1.5 font-medium">{f}</td>{[...PLANOS_APB.map((p) => PRECOS_APB[p][i]), PRECOS_PROPOSTA[i]].flatMap((v, j) => [<td key={j + "e"} className={`border-l border-border px-2 py-1.5 text-center ${j === 3 ? "font-semibold" : ""}`}>{brl(v[0])}</td>, <td key={j + "a"} className={`px-2 py-1.5 text-center ${j === 3 ? "font-semibold" : ""}`}>{brl(v[1])}</td>])}</tr>)}</tbody>
+              <tbody>{FAIXAS_APB.map((f, i) => <tr key={f} className="border-t border-border"><td className="px-3 py-1.5 font-medium">{f}</td>{[...PLANOS_APB.map((p) => PRECOS_APB[p][i]), PRECOS_PROPOSTA[i]].flatMap((v, j) => [<td key={j + "e"} className={`border-l border-border px-3 py-2.5 text-center ${j === 3 ? "font-semibold" : ""}`}>{brl(v[0])}</td>, <td key={j + "a"} className={`px-3 py-2.5 text-center ${j === 3 ? "font-semibold" : ""}`}>{brl(v[1])}</td>])}</tr>)}</tbody>
             </table>
             </div>
           </DialogContent>
