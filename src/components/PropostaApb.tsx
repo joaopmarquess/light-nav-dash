@@ -67,12 +67,17 @@ export default function PropostaApb() {
         <div className="flex items-center gap-2">
         <Dialog>
           <DialogTrigger asChild><button type="button" className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium hover:bg-accent">Tabela Proposta</button></DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader><DialogTitle>Tabela Proposta — Plano {PLANO_NOVO}</DialogTitle></DialogHeader>
+          <DialogContent className="max-w-5xl">
+            <DialogHeader><DialogTitle>Tabelas de preço — 2290 × 2490 × 2890 × Proposta ({PLANO_NOVO})</DialogTitle></DialogHeader>
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead><tr className="bg-primary text-primary-foreground"><th className="px-3 py-2 text-left">Faixa etária</th><th className="px-3 py-2 text-center">Enfermaria</th><th className="px-3 py-2 text-center">Apartamento</th></tr></thead>
-              <tbody>{FAIXAS_APB.map((f, i) => <tr key={f} className="border-t border-border"><td className="px-3 py-1.5 font-medium">{f}</td><td className="px-3 py-1.5 text-center">{brl(PRECOS_PROPOSTA[i][0])}</td><td className="px-3 py-1.5 text-center">{brl(PRECOS_PROPOSTA[i][1])}</td></tr>)}</tbody>
+              <thead>
+                <tr className="bg-primary text-primary-foreground"><th rowSpan={2} className="px-3 py-2 text-left align-bottom">Faixa etária</th>{[...PLANOS_APB, "Proposta"].map((p) => <th key={p} colSpan={2} className="border-l border-primary-foreground/30 px-3 py-1 text-center">{p}</th>)}</tr>
+                <tr className="bg-primary text-xs text-primary-foreground">{[...PLANOS_APB, "Proposta"].flatMap((p) => [<th key={p + "e"} className="border-l border-primary-foreground/30 px-2 py-1 text-center">Enfermaria</th>, <th key={p + "a"} className="px-2 py-1 text-center">Apartamento</th>])}</tr>
+              </thead>
+              <tbody>{FAIXAS_APB.map((f, i) => <tr key={f} className="border-t border-border"><td className="px-3 py-1.5 font-medium">{f}</td>{[...PLANOS_APB.map((p) => PRECOS_APB[p][i]), PRECOS_PROPOSTA[i]].flatMap((v, j) => [<td key={j + "e"} className={`border-l border-border px-2 py-1.5 text-center ${j === 3 ? "font-semibold" : ""}`}>{brl(v[0])}</td>, <td key={j + "a"} className={`px-2 py-1.5 text-center ${j === 3 ? "font-semibold" : ""}`}>{brl(v[1])}</td>])}</tr>)}</tbody>
             </table>
+            </div>
           </DialogContent>
         </Dialog>
         <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
