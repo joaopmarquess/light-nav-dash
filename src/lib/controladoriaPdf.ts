@@ -1,4 +1,6 @@
 import { jsPDF } from "jspdf";
+import "core-js/actual/map/get-or-insert-computed";
+import "core-js/actual/weak-map/get-or-insert-computed";
 import autoTable from "jspdf-autotable";
 import { PDF_COLORS, baseTableStyles } from "./pdfTheme";
 import { dataBR } from "./controladoriaRegras";
