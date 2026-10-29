@@ -14,7 +14,7 @@ const pct = (v: number | null) => (v == null ? "—" : `${(v * 100).toLocaleStri
 type Grids = Record<string, ReturnType<typeof gridPlano>>;
 const deProjecao = (g: Grids): LinhaEmp[] => Object.keys(g).flatMap((p) => g[p].faixas.map((f) => ({ plano: p, faixa: f.faixa, vidas: f.total, ...projecaoAnual(f.mensalidade) })));
 
-export default function PropostaApbSinistralidade({ proj }: { proj?: Grids }) {
+export default function PropostaApbSinistralidade({ proj, grupo }: { proj?: Grids; grupo?: boolean }) {
   const [base, setLinhas] = useState<LinhaEmp[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [aberto, setAberto] = useState<string | null>(null);
@@ -28,9 +28,10 @@ export default function PropostaApbSinistralidade({ proj }: { proj?: Grids }) {
   if (!linhas && !proj) return <section className="flex items-center gap-2 rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando sinistralidade…</section>;
 
   if (proj) linhas = deProjecao(proj);
+  else if (grupo && linhas) linhas = linhas.map((l) => ({ ...l, plano: "GRUPO" }));
   if (!linhas) return null;
   const total = gridFaixas(linhas).total;
-  const planos = proj ? Object.keys(proj) : PLANOS;
+  const planos = proj ? Object.keys(proj) : grupo ? ["GRUPO"] : PLANOS;
   const cards = [
     { t: "Vidas", v: total.vidas.toLocaleString("pt-BR") },
     { t: "Receita CPP", v: brl(total.recCpp) },
