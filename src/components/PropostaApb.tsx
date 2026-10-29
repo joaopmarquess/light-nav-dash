@@ -69,7 +69,6 @@ export default function PropostaApb() {
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground"><FileSpreadsheet className="h-6 w-6 text-primary" />Proposta APB</h2>
-          <p className="text-sm text-muted-foreground">Vidas ativas em {dataBr} nos planos 2290, 2490 e 2890 × preços de referência fornecidos (fotografia, não atualiza com a base).</p>
         </div>
         <div className="flex items-center gap-2">
         <button type="button" onClick={() => gerarPropostaPdf()} className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">Gerar Proposta</button>
@@ -169,7 +168,6 @@ export default function PropostaApb() {
         </div>
         <PropostaApbSinistralidade proj={transf ? grids : undefined} grupo={nivel === 2 ? grids[PLANO_GRUPO] : undefined} fixo={nivel > 1} />
       </div>
-      <p className="text-xs text-muted-foreground">Mensalidade = vidas × preço da faixa e acomodação. Ativo: vigência iniciada e sem desligamento na data; titular = matrícula final 00.</p>
     </div></div>
   );
 }
