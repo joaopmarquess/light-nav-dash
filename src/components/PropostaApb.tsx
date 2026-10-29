@@ -26,7 +26,7 @@ export default function PropostaApb() {
   const linhasN4 = useMemo(() => escalarVidas(linhas), [linhas]);
   const sinN3 = useMemo(() => projecaoFaixas(gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_NOVO })), PLANO_NOVO, PRECOS_PROPOSTA).faixas.map((f) => f.mensalidade)).sin, [linhas]);
   const [nivel, setNivel] = useState<1 | 2 | 3 | 4 | 5>(1);
-  const [linEnf, setLinEnf] = useState(PRECO_TITULAR_2890[0]);
+  const [linEnf, setLinEnf] = useState(199.99);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [sinPct, setSinPct] = useState(90);
   const [copartPct, setCopartPct] = useState(25);
