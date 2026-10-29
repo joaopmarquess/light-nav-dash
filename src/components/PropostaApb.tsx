@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, FileSpreadsheet, Users, UserCheck, Wallet, Receipt, CalendarDays } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import PropostaApbSinistralidade from "@/components/PropostaApbSinistralidade";
 import { gerarPropostaPdf } from "@/lib/propostaApbPdf";
 import PropostaApbCopart from "@/components/PropostaApbCopart";
@@ -92,7 +93,7 @@ export default function PropostaApb() {
         <div>
           <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground"><FileSpreadsheet className="h-6 w-6 text-primary" />Proposta APB</h2>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-end gap-2">
         <button type="button" onClick={() => gerarPropostaPdf()} className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">Gerar Proposta</button>
         <Dialog>
           <DialogTrigger asChild><button type="button" className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium hover:bg-accent">Tabela Proposta</button></DialogTrigger>
@@ -109,10 +110,18 @@ export default function PropostaApb() {
             </div>
           </DialogContent>
         </Dialog>
-        <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
-          {([1, 2, 3, 4] as const).map((n) => <button key={n} type="button" title={({ 1: "3 contratos - analítico", 2: "3 contratos - sintético", 3: "Novo plano - racional", 4: "Novo plano - estratégico" } as const)[n]} onClick={() => setNivel(n)} className={`rounded-md px-3 py-1.5 text-sm font-medium ${nivel === n ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>Nível {n}</button>)}
+        <fieldset className="min-w-0 rounded-lg border border-border bg-card px-2 pb-1.5">
+          <legend className="px-1 text-xs font-semibold text-muted-foreground">Planos Atuais</legend>
+          <div className="flex gap-1">
+            {([1, 2] as const).map((n) => <Button key={n} type="button" size="sm" variant={nivel === n ? "default" : "ghost"} aria-pressed={nivel === n} title={({ 1: "3 contratos - analítico", 2: "3 contratos - sintético" } as const)[n]} onClick={() => setNivel(n)}>Nível {n}</Button>)}
+          </div>
+        </fieldset>
+        <fieldset className="min-w-0 rounded-lg border border-border bg-card px-2 pb-1.5">
+          <legend className="px-1 text-xs font-semibold text-muted-foreground">Proposta Novo Plano</legend>
+          <div className="flex gap-1">
+          {([3, 4] as const).map((n) => <Button key={n} type="button" size="sm" variant={nivel === n ? "default" : "ghost"} aria-pressed={nivel === n} title={({ 3: "Novo plano - racional", 4: "Novo plano - estratégico" } as const)[n]} onClick={() => setNivel(n)}>Nível {n}</Button>)}
           <Dialog modal={false} onOpenChange={(o) => o && setPos({ x: 0, y: 0 })}>
-            <DialogTrigger asChild><button type="button" tabIndex={nivel >= 3 ? 0 : -1} aria-hidden={nivel < 3} className={`${nivel >= 3 ? "" : "invisible pointer-events-none"} rounded-md border border-primary px-3 py-1.5 text-sm text-primary hover:bg-accent`}>Variáveis</button></DialogTrigger>
+            <DialogTrigger asChild><Button type="button" size="sm" variant="outline" tabIndex={nivel >= 3 ? 0 : -1} aria-hidden={nivel < 3} className={nivel >= 3 ? "" : "invisible pointer-events-none"}>Variáveis</Button></DialogTrigger>
             <DialogContent semFundo className="max-w-md shadow-2xl" style={{ transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))` }} onInteractOutside={(e) => e.preventDefault()}>
               <DialogHeader className="cursor-move select-none" onPointerDown={(e) => { const o = { x: e.clientX - pos.x, y: e.clientY - pos.y }; const mv = (ev: PointerEvent) => setPos({ x: ev.clientX - o.x, y: ev.clientY - o.y }); const up = () => { window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); }; window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up); }}><DialogTitle>Variáveis do Nível {nivel}</DialogTitle><p className="text-xs font-normal text-muted-foreground">Arraste por aqui para mover</p></DialogHeader>
               <div className="space-y-4 text-sm">
@@ -132,7 +141,8 @@ export default function PropostaApb() {
               </div>
             </DialogContent>
           </Dialog>
-        </div>
+          </div>
+        </fieldset>
         {false && <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
           {(nivel > 1 ? planos : ["Todos", ...planos]).map((p) => (
             <button key={p} type="button" onClick={() => setSel(p)} className={`rounded-md px-3 py-1.5 text-sm ${selOk === p ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>{p}</button>
