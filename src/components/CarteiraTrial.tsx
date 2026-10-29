@@ -132,6 +132,7 @@ export default function CarteiraTrial() {
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [suspensos, setSuspensos] = useState(false);
+  const [susp, setSusp] = useState<{ sigla: string; motivo: string; faixa: string; vidas: number }[] | null | "erro">(null);
   const [kpi, setKpi] = useState<{ ativos?: number; futuros?: number; cancelados?: number; total?: number; contratos?: number; PIF?: number; PCA?: number; PCE?: number; cPIF?: number; cPCA?: number; cPCE?: number } | null>(null);
   useEffect(() => {
     if (!ap) return;
@@ -154,6 +155,11 @@ export default function CarteiraTrial() {
       if (error) { console.error(error); setKpi((k) => ({ ...k, cPIF: -1, cPCA: -1, cPCE: -1 })); return; }
       const g = (x: string) => Number((data ?? []).find((r: any) => r.sigla === x)?.contratos ?? 0);
       setKpi((k) => ({ ...k, cPIF: g("PIF"), cPCA: g("PCA"), cPCE: g("PCE") }));
+    });
+    setSusp(null);
+    hostinger.rpc("carteira_trial_suspensos", { p_data: dRef, p_q: df.q.trim() || null, p_empresa: df.empresa.trim() || null, p_cidade: df.cidade.trim() || null }).then(({ data, error }: any) => {
+      if (error) { console.error(error); setSusp("erro"); return; }
+      setSusp((data ?? []).map((r: any) => ({ ...r, vidas: Number(r.vidas) })));
     });
   }, [ap]);
   const vis = useMemo(() => {
@@ -304,7 +310,26 @@ export default function CarteiraTrial() {
           ); })}
           {suspensos && (
             <div className="md:col-span-3 bg-card border border-border rounded-xl p-4 min-h-32">
-              <p className="text-sm font-medium text-muted-foreground">Suspensos</p>
+              <p className="text-sm font-medium text-muted-foreground mb-3">Suspensos{ap ? ` em ${ap.d.split("-").reverse().join("/")}` : ""}</p>
+              {susp === "erro" ? <p className="text-sm text-muted-foreground">Cálculo ainda não instalado na base.</p>
+               : !susp ? <p className="text-sm text-muted-foreground">{ap ? "Carregando…" : "Clique em Buscar."}</p>
+               : (() => {
+                const tot = susp.reduce((a, r) => a + r.vidas, 0);
+                const by = (k: "sigla" | "motivo" | "faixa", ord?: string[]) => { const m = new Map<string, number>(); susp.forEach((r) => m.set(r[k] ?? "—", (m.get(r[k] ?? "—") ?? 0) + r.vidas)); const e = [...m.entries()]; return ord ? ord.filter((o) => m.has(o)).map((o) => [o, m.get(o)!] as [string, number]) : e.sort((a, b) => b[1] - a[1]); };
+                const pct = (v: number, b?: number) => b ? ((v / b) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%" : "—";
+                const T = ({ t, rows }: { t: string; rows: [string, number][] }) => (
+                  <table className="text-sm w-full"><thead><tr className="text-muted-foreground"><th className="text-left font-medium py-1">{t}</th><th className="text-center font-medium">Vidas</th><th className="text-center font-medium">% suspensos</th></tr></thead>
+                    <tbody>{rows.map(([k, v]) => <tr key={k} className="border-t border-border"><td className="py-1">{k}</td><td className="text-center tabular-nums">{v.toLocaleString("pt-BR")}</td><td className="text-center tabular-nums">{pct(v, tot)}</td></tr>)}</tbody></table>);
+                return (
+                  <div className="space-y-4">
+                    <p className="text-sm"><span className="text-2xl font-bold tabular-nums">{tot.toLocaleString("pt-BR")}</span> vidas suspensas · <b>{pct(tot, kpi?.ativos)}</b> das Vidas Ativas</p>
+                    <div className="grid md:grid-cols-3 gap-6">
+                      <T t="Contratação" rows={by("sigla", ["PIF", "PCA", "PCE"])} />
+                      <T t="Dias suspenso" rows={by("faixa", ["0-30", "31-60", "61-90", "91-120", "120+"])} />
+                      <T t="Motivo" rows={by("motivo")} />
+                    </div>
+                  </div>);
+              })()}
             </div>
           )}
         </div>
