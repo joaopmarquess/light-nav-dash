@@ -7,7 +7,7 @@ import PropostaApbCopart from "@/components/PropostaApbCopart";
 const COPART_DESC: Record<string, string> = { "2290": "Sem Coparticipação", "2490": "Use Bem com teto de R$ 396,96", "2890": "Fácil Flex com teto de R$ 656,10", "Proposta": "Fácil 50 sem teto" };
 const COPART_TIPO = { "2490": "usebem", "2890": "flex", "Proposta": "facil50" } as const;
 import csv from "@/data/propostaApb/vidas_precos_2026-10-29.csv?raw";
-import { parseApb, gridPlano, PLANOS_APB, FAIXAS_APB, PRECOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, idadeSomaPlanos, escalarVidas, gridsN5, tabelaLinear, tabelaDependente, PRECO_TITULAR_2890, projecaoFaixas, type FaixaApb } from "@/lib/propostaApb";
+import { parseApb, gridPlano, PLANOS_APB, FAIXAS_APB, PRECOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, idadeSomaPlanos, escalarVidas, gridsN5, COPART_PROPOSTA, tabelaLinear, tabelaDependente, PRECO_TITULAR_2890, projecaoFaixas, type FaixaApb } from "@/lib/propostaApb";
 
 const n0 = (v: number) => v.toLocaleString("pt-BR");
 const brl = (v: number | null) => (v == null ? "—" : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
@@ -153,7 +153,11 @@ export default function PropostaApb() {
         <Card icon={Users} label="Dependentes" value={n0(k.vidas - k.tit)} sub={pct(k.vidas - k.tit, k.vidas)} />
         <Card icon={CalendarDays} label="Idade média" value={`${idadeMedia.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} anos`} />
         <Card icon={Wallet} label="Mensalidade total" value={brl(k.mens)} sub={`Anual: ${brl(k.mens * 12)}`} />
-        <Card icon={Receipt} label="Ticket médio" value={brl(k.vidas ? k.mens / k.vidas : 0)} />
+        {(() => { const tm = k.vidas ? k.mens / k.vidas : 0; const tc = nivel >= 3 ? tm * (nivel === 5 ? copartPct / 100 : COPART_PROPOSTA) : null; return (
+          <div className="rounded-lg border border-border bg-card px-3 py-2 text-center shadow-sm">
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground"><Receipt className="h-4 w-4 text-primary" />Ticket</div>
+            <div className="mt-0.5 grid grid-cols-3 gap-1">{([["Mens", tm], ["Copar", tc], ["Médio", tc == null ? null : tm + tc]] as const).map(([l, v]) => <div key={l}><div className="text-[11px] text-muted-foreground">Ticket {l}</div><div className={`text-sm font-semibold ${l === "Médio" ? "text-primary" : "text-foreground"}`}>{brl(v)}</div></div>)}</div>
+          </div>); })()}
       </section>
 
       <div className="grid flex-1 gap-2 xl:grid-cols-2">
