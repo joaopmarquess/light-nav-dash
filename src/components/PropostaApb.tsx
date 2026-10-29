@@ -101,8 +101,8 @@ export default function PropostaApb() {
         </Tooltip>
         <Dialog>
           <Tooltip>
-            <TooltipTrigger asChild><DialogTrigger asChild><Button type="button" size="icon" variant="outline" className="h-14" aria-label="Tabela Proposta"><FileText className="h-4 w-4" aria-hidden="true" /></Button></DialogTrigger></TooltipTrigger>
-            <TooltipContent>Tabela Proposta</TooltipContent>
+            <TooltipTrigger asChild><DialogTrigger asChild><Button type="button" size="icon" variant="outline" className="h-14" aria-label="Tabelas"><FileText className="h-4 w-4" aria-hidden="true" /></Button></DialogTrigger></TooltipTrigger>
+            <TooltipContent>Tabelas</TooltipContent>
           </Tooltip>
           <DialogContent className="max-w-[90vw] text-base">
             <DialogHeader><DialogTitle>Tabelas de preço — 2290 × 2490 × 2890 × Proposta ({PLANO_NOVO})</DialogTitle></DialogHeader>
