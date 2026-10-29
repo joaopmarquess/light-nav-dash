@@ -73,8 +73,8 @@ export default function PropostaApb() {
         </div>
         </div>
       </header>
-      {nivel === 2 && <p className="rounded-md border border-primary/40 bg-primary/5 px-3 py-1 text-xs text-foreground">Nível 2: planos 2290, 2490 e 2890 agrupados como GRUPO, com preços e resultados atuais.</p>}
-      {transf && <p className="rounded-md border border-primary/40 bg-primary/5 px-3 py-1 text-xs text-foreground">Nível 3: todas as vidas dos planos 2290, 2490 e 2890 passam ao plano novo 3990, com a tabela proposta; projeção anual = vidas × preço × 12; copart 16% da CPP; sinistralidade 75%.</p>}
+      {nivel === 2 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 2: planos 2290, 2490 e 2890 agrupados como GRUPO, com preços e resultados atuais.</p>}
+      {transf && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 3: todas as vidas dos planos 2290, 2490 e 2890 passam ao plano novo 3990, com a tabela proposta; projeção anual = vidas × preço × 12; copart 16% da CPP; sinistralidade 75%.</p>}
 
       <section className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
         <Card icon={Users} label="Vidas ativas" value={n0(k.vidas)} sub={selOk === "Todos" || nivel > 1 ? undefined : `${pct(k.vidas, tot.vidas)} do total`} />
@@ -116,15 +116,15 @@ export default function PropostaApb() {
       )}
 
       {vis.map((p) => (
-        <section key={p} className={`rounded-lg border border-border bg-card shadow-sm ${nivel > 1 ? "flex-1" : ""}`}>
+        <section key={p} className={`rounded-lg border border-border bg-card shadow-sm ${nivel > 1 ? "flex flex-1 flex-col" : ""}`}>
           <button type="button" disabled={nivel > 1} onClick={() => setAbertos((a) => ({ ...a, [p]: !a[p] }))} className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left enabled:hover:bg-accent">
             <span className="flex items-center gap-2 text-base font-semibold text-foreground">{nivel > 1 ? null : abertos[p] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}Plano {p}</span>
             <span className="text-sm text-muted-foreground">{n0(grids[p].total.total)} vidas · {brl(grids[p].total.mensalidade)}</span>
           </button>
           {(abertos[p] || nivel > 1) && (
-          <div className="overflow-x-auto px-3 pb-2">
+          <div className={`overflow-x-auto px-3 pb-2 ${nivel > 1 ? "flex flex-1 flex-col" : ""}`}>
             <div className="mb-1 flex justify-end"><button type="button" onClick={() => setRel((r) => !r)} className="rounded-md border border-border px-2 py-1 text-xs hover:bg-accent">{rel ? "Recolher Titular/Dependente" : "Expandir Titular/Dependente"}</button></div>
-            <table className="w-full text-sm">
+            <table className={`w-full text-sm ${nivel > 1 ? "h-full flex-1" : ""}`}>
               <thead className="text-muted-foreground">
                 <tr><th rowSpan={rel ? 3 : 2} className="px-3 py-1.5 text-left align-bottom">Faixa</th><th colSpan={rel ? 5 : 3} className="border-b border-border px-3 py-1.5 text-center">Vidas</th><th colSpan={3} className="border-b border-border px-3 py-1.5 text-center">Preço</th></tr>
                 <tr><th colSpan={rel ? 2 : 1} rowSpan={rel ? 1 : 1} className="px-3 py-1 text-center">Enfermaria</th><th colSpan={rel ? 2 : 1} className="px-3 py-1 text-center">Apartamento</th><th rowSpan={rel ? 2 : 1} className="px-3 py-1 text-center align-bottom">Total</th><th rowSpan={rel ? 2 : 1} className="px-3 py-1 text-center align-bottom">Enfermaria</th><th rowSpan={rel ? 2 : 1} className="px-3 py-1 text-center align-bottom">Apartamento</th><th rowSpan={rel ? 2 : 1} className="px-3 py-1 text-center align-bottom">Mensalidade</th></tr>
