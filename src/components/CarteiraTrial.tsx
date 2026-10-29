@@ -265,17 +265,22 @@ export default function CarteiraTrial() {
             <div key={st} className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-8">
               <I className="h-8 w-8 text-primary" />
               <p className="text-sm text-muted-foreground">{label}</p>
-              <div className="flex flex-col gap-1 w-full max-w-[220px]">
-                {(["PIF", "PCA", "PCE"] as const).map((x) => {
-                  const n = kpi?.[x];
-                  return (
-                    <div key={x} className="flex justify-between text-xl tabular-nums">
-                      <span className="font-semibold text-foreground">{x}</span>
-                      <span className="text-foreground">{!ap || n == null || n < 0 || !kpi?.ativos ? "—" : `${((n / kpi.ativos) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`}</span>
-                    </div>
-                  );
-                })}
-              </div>
+              {(() => {
+                const pc = (n?: number) => (!ap || n == null || n < 0 || !kpi?.ativos ? null : (n / kpi.ativos) * 100);
+                const fmt = (x: number | null) => (x == null ? "—" : `${x.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`);
+                const [pif, pca, pce] = [pc(kpi?.PIF), pc(kpi?.PCA), pc(kpi?.PCE)];
+                const col = pca == null || pce == null ? null : pca + pce;
+                const td = "border border-border px-3 py-1 text-right tabular-nums";
+                return (
+                  <table className="text-lg text-foreground border-collapse">
+                    <tbody>
+                      <tr><th className="border border-border px-3 py-1 text-right">PIF</th><td className={td}>{fmt(pif)}</td><td className={`${td} align-middle`}>{fmt(pif)}</td></tr>
+                      <tr><th className="border border-border px-3 py-1 text-right">PCA</th><td className={td}>{fmt(pca)}</td><td rowSpan={2} className={`${td} align-middle`}>{fmt(col)}</td></tr>
+                      <tr><th className="border border-border px-3 py-1 text-right">PCE</th><td className={td}>{fmt(pce)}</td></tr>
+                    </tbody>
+                  </table>
+                );
+              })()}
             </div>
           ) : (
             <button key={st} onClick={() => { if (st !== "A") return; const e = { ...f, status: st }; setF(e); setAp({ f: e, d: dataRef || new Date().toISOString().slice(0, 10) }); setGrid(true); }}
