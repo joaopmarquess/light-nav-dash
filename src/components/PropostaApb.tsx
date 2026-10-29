@@ -107,21 +107,8 @@ export default function PropostaApb() {
         </Dialog>
         <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
           {([1, 2, 3, 4, 5] as const).map((n) => <button key={n} type="button" onClick={() => setNivel(n)} className={`rounded-md px-3 py-1.5 text-sm font-medium ${nivel === n ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>Nível {n}</button>)}
-        </div>
-        {false && <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
-          {(nivel > 1 ? planos : ["Todos", ...planos]).map((p) => (
-            <button key={p} type="button" onClick={() => setSel(p)} className={`rounded-md px-3 py-1.5 text-sm ${selOk === p ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>{p}</button>
-          ))}
-        </div>}
-        </div>
-      </header>
-      {nivel === 2 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 2: planos 2290, 2490 e 2890 agrupados como GRUPO, com preços e resultados atuais.</p>}
-      {nivel === 4 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 4: igual ao Nível 3, com 1.242 titulares nas quantidades por faixa fornecidas + 15% de dependentes (186), distribuídos como hoje; despesas = receita total × sinistralidade do Nível 3.</p>}
-      {nivel === 5 && (
-        <div className="flex items-center justify-between gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 py-1 text-xs text-foreground">
-          <span className="truncate">Nível 5: vidas do Nível 4 no plano 3990; titulares com preço linear e dependentes com tabela por faixa; despesas = receita total × sinistralidade do Nível 3.</span>
           <Dialog>
-            <DialogTrigger asChild><button type="button" className="shrink-0 rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90">Variáveis</button></DialogTrigger>
+            <DialogTrigger asChild><button type="button" tabIndex={nivel === 5 ? 0 : -1} aria-hidden={nivel !== 5} className={`${nivel === 5 ? "" : "invisible pointer-events-none"} rounded-md border border-primary px-3 py-1.5 text-sm text-primary hover:bg-accent`}>Variáveis</button></DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader><DialogTitle>Variáveis do Nível 5</DialogTitle></DialogHeader>
               <div className="space-y-4 text-sm">
@@ -139,6 +126,20 @@ export default function PropostaApb() {
               </div>
             </DialogContent>
           </Dialog>
+        </div>
+        {false && <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
+          {(nivel > 1 ? planos : ["Todos", ...planos]).map((p) => (
+            <button key={p} type="button" onClick={() => setSel(p)} className={`rounded-md px-3 py-1.5 text-sm ${selOk === p ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>{p}</button>
+          ))}
+        </div>}
+        </div>
+      </header>
+      {nivel === 2 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 2: planos 2290, 2490 e 2890 agrupados como GRUPO, com preços e resultados atuais.</p>}
+      {nivel === 4 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 4: igual ao Nível 3, com 1.242 titulares nas quantidades por faixa fornecidas + 15% de dependentes (186), distribuídos como hoje; despesas = receita total × sinistralidade do Nível 3.</p>}
+      {nivel === 5 && (
+        <div className="flex items-center justify-between gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 py-1 text-xs text-foreground">
+          <span className="truncate">Nível 5: vidas do Nível 4 no plano 3990; titulares com preço linear e dependentes com tabela por faixa; despesas = receita total × sinistralidade do Nível 3.</span>
+
         </div>
       )}
       {nivel === 3 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 3: todas as vidas dos planos 2290, 2490 e 2890 passam ao plano novo 3990, com a tabela proposta; projeção anual = vidas × preço × 12; copart 20% da CPP; despesas fixas de R$ 2.950.000,00.</p>}
