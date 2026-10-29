@@ -274,9 +274,8 @@ export default function CarteiraTrial() {
                 return (
                   <table className="text-lg text-foreground border-collapse">
                     <tbody>
-                      <tr><th className="border border-border px-3 py-1 text-right">PIF</th><td className={td}>{fmt(pif)}</td><td className={`${td} align-middle`}>{fmt(pif)}</td></tr>
-                      <tr><th className="border border-border px-3 py-1 text-right">PCA</th><td className={td}>{fmt(pca)}</td><td rowSpan={2} className={`${td} align-middle`}>{fmt(col)}</td></tr>
-                      <tr><th className="border border-border px-3 py-1 text-right">PCE</th><td className={td}>{fmt(pce)}</td></tr>
+                      <tr><th className="border border-border px-3 py-1 text-right">PLANOS INDIVIDUAIS/FAMILIARES</th><td className={td}>{fmt(pif)}</td></tr>
+                      <tr><th className="border border-border px-3 py-1 text-right">PLANOS COLETIVOS</th><td className={td}>{fmt(col)}</td></tr>
                     </tbody>
                   </table>
                 );
@@ -288,7 +287,7 @@ export default function CarteiraTrial() {
               <I className="h-8 w-8 text-primary" />
               <p className="text-sm text-muted-foreground">{label}</p>
               <p className="text-4xl font-semibold tabular-nums text-foreground">{!ap || v === -1 ? "—" : v == null ? "…" : v.toLocaleString("pt-BR")}</p>
-              {["PIF", "PCA", "PCE"].includes(st) && ap && kpi?.ativos && v != null && v >= 0 ? <p className="text-xs text-muted-foreground tabular-nums">{((v / kpi.ativos) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</p> : null}
+              {["PIF", "PCA", "PCE"].includes(st) && ap && kpi?.ativos && v != null && v >= 0 ? <p className="text-xs text-muted-foreground tabular-nums">{((v / kpi.ativos) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</p> : null}
             </button>
           ))}
         </div>
