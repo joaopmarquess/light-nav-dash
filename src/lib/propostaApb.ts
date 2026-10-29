@@ -23,8 +23,8 @@ export const DESPESA_FIXA_PROPOSTA = 2_950_000;
 
 /** Projeção anual por faixa: CPP = mensalidade × 12; copart = CPP × 20%; receita total = CPP + copart;
  *  sinistralidade = despesa fixa ÷ receita total geral; despesas da faixa = receita total da faixa × sinistralidade. */
-export function projecaoFaixas(mensalidades: number[], sinFixa?: number) {
-  const base = mensalidades.map((m) => { const recCpp = m * 12, recCopart = recCpp * COPART_PROPOSTA; return { recCpp, recCopart, recTotal: recCpp + recCopart }; });
+export function projecaoFaixas(mensalidades: number[], sinFixa?: number, copart = COPART_PROPOSTA) {
+  const base = mensalidades.map((m) => { const recCpp = m * 12, recCopart = recCpp * copart; return { recCpp, recCopart, recTotal: recCpp + recCopart }; });
   const total = base.reduce((t, b) => t + b.recTotal, 0);
   const sin = sinFixa ?? (total ? DESPESA_FIXA_PROPOSTA / total : 0);
   return { sin, faixas: base.map((b) => ({ ...b, despTotal: b.recTotal * sin })) };

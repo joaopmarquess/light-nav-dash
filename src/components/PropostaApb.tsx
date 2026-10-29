@@ -27,6 +27,7 @@ export default function PropostaApb() {
   const sinN3 = useMemo(() => projecaoFaixas(gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_NOVO })), PLANO_NOVO, PRECOS_PROPOSTA).faixas.map((f) => f.mensalidade)).sin, [linhas]);
   const [nivel, setNivel] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [linEnf, setLinEnf] = useState(PRECO_TITULAR_2890[0]);
+  const [copartPct, setCopartPct] = useState(20);
   const [depBase, setDepBase] = useState(PRECOS_PROPOSTA[0][0]);
   const linear = useMemo(() => tabelaLinear(linEnf), [linEnf]);
   const precoDep = useMemo(() => tabelaDependente(depBase), [depBase]);
@@ -112,6 +113,7 @@ export default function PropostaApb() {
             <DialogContent className="max-w-md">
               <DialogHeader><DialogTitle>Variáveis do Nível 5</DialogTitle></DialogHeader>
               <div className="space-y-4 text-sm">
+                <label className="flex items-center gap-2 font-semibold">Coparticipação (% da CPP):<input aria-label="Coparticipação" type="number" step="0.1" min="0" value={copartPct} onChange={(e) => setCopartPct(Number(e.target.value) || 0)} className="w-24 rounded border border-input bg-background px-2 py-1 text-right font-normal" />%</label>
                 <div>
                   <div className="mb-2 font-semibold">Titular</div>
                   <div className="flex gap-4"><label className="flex items-center gap-2">Enfermaria:<input type="number" step="0.01" min="0" value={linEnf} onChange={(e) => setLinEnf(Number(e.target.value) || 0)} className="w-28 rounded border border-input bg-background px-2 py-1 text-right" /></label><span className="flex items-center gap-2">Apartamento: <b>{brl(linear[1])}</b></span></div>
@@ -228,7 +230,7 @@ export default function PropostaApb() {
         </section>
       ))}
         </div>
-        <PropostaApbSinistralidade proj={transf ? grids : undefined} sinFixa={nivel >= 4 ? sinN3 : undefined} grupo={nivel === 2 ? grids[PLANO_GRUPO] : undefined} fixo={nivel > 1} />
+        <PropostaApbSinistralidade proj={transf ? grids : undefined} sinFixa={nivel >= 4 ? sinN3 : undefined} copart={nivel === 5 ? copartPct / 100 : undefined} grupo={nivel === 2 ? grids[PLANO_GRUPO] : undefined} fixo={nivel > 1} />
       </div>
     </div></div>
   );
