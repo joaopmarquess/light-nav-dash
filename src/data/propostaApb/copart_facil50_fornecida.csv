@@ -1,0 +1,17 @@
+#	Grupo	Subgrupo	Forma de Cobrança	% de Coparticipação	Limite de Valor (R$)
+1	Consultas	Consulta	Por Consulta	-	45
+2	Consulta Oftalmológica + Pacote de Exames Baixo Custo*	Consulta Oftalmológica + Pacote de Exames Baixo Custo*	Por Consulta Oftalmológica + Pacote de Exames Baixo Custo*	-	60
+3	Emergência	Emergência	Por Atendimento	-	79
+4	Internação	Internação	Por Internação	-	250
+5	Exames e Procedimentos (De 0 a 399 CHs**)	Exames e Procedimentos	Por Exame e/ou Procedimento	50%	79
+6	Exames e Procedimentos Especiais (Acima de 399 CHs**)	Exames e Procedimentos Especiais	Por Exame e/ou Procedimento	50%	250
+7	Terapias (De 0 a 399 CHs**)	Acupuntura	Por Sessão	50%	79
+		Fisioterapia	Por Sessão	50%	79
+		Fonoaudiologia	Por Sessão	50%	79
+		Terapia Ocupacional	Por Sessão	50%	79
+		Psicoterapia	Por Sessão	50%	79
+8	Terapias Especiais (Acima de 399 CHs**)	Terapias Especiais	Por Sessão	50%	250
+9	Alta Complexidade	Medicamentos Antineoplásicos e de Efeitos Adversos/Imunobiológicos	Por Medicamento Dispensado	50%	-
+		Hemodiálise/diálise	Por Mês de Execução	50%	-
+		Quimioterapia	Por Mês de Execução	50%	-
+		Radioterapia	Por Mês de Execução	50%	
