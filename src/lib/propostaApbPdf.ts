@@ -14,7 +14,7 @@ export function montarPropostaPdf() {
   autoTable(doc, {
     startY: 44, head: [["Faixa etária", "Enfermaria", "Apartamento"]],
     body: FAIXAS_APB.map((f, i) => [f, brl(PRECOS_PROPOSTA[i][0]), brl(PRECOS_PROPOSTA[i][1])]),
-    headStyles: { fillColor: azul, halign: "center" }, columnStyles: { 1: { halign: "right" }, 2: { halign: "right" } }, styles: { fontSize: 10 },
+    headStyles: { fillColor: azul, halign: "center" }, columnStyles: { 0: { halign: "center" }, 1: { halign: "center" }, 2: { halign: "center" } }, styles: { fontSize: 10 },
   });
   doc.addPage();
   doc.setFontSize(13); doc.setTextColor(...azul); doc.text("2. Tabela de coparticipação — Fácil 50 sem teto", 14, 20);
