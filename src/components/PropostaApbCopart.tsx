@@ -1,8 +1,8 @@
 import { Eye } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-type L = { n: number; g: string; s: string; f: string; p: string; v: string };
-const LINHAS: L[] = [
+export type L = { n: number; g: string; s: string; f: string; p: string; v: string };
+export const LINHAS_COPART_FACIL50: L[] = [
   { n: 1, g: "Consultas", s: "Consulta", f: "Por Consulta", p: "-", v: "21,00" },
   { n: 2, g: "Consulta Oftalmológica + Pacote de Exames Baixo Custo*", s: "Consulta Oftalmológica + Pacote de Exames Baixo Custo*", f: "Por Consulta Oftalmológica + Pacote de Exames Baixo Custo*", p: "-", v: "42,00" },
   { n: 3, g: "Emergência", s: "Emergência", f: "Por Atendimento", p: "-", v: "79,00" },
@@ -24,7 +24,7 @@ const CFG: Record<Tipo, { t: string; pct: string; teto: string | null; ilustr: b
 
 export default function PropostaApbCopart({ tipo }: { tipo: Tipo }) {
   const c = CFG[tipo];
-  const linhas = LINHAS.map((l) => (l.p === "-" ? l : { ...l, p: c.pct }));
+  const linhas = LINHAS_COPART_FACIL50.map((l) => (l.p === "-" ? l : { ...l, p: c.pct }));
   return (
     <Dialog>
       <DialogTrigger asChild>
