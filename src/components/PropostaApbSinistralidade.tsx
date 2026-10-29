@@ -25,7 +25,7 @@ export function distribuirSemFaixa(ls: LinhaEmp[]): LinhaEmp[] {
   return com.map((l) => { const w = l.vidas / totV; const r = { ...l }; ks.forEach((k) => { r[k] = l[k] + tot[k] * w; }); return r; });
 }
 
-export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?: Grids; grupo?: boolean; fixo?: boolean }) {
+export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?: Grids; grupo?: ReturnType<typeof gridPlano>; fixo?: boolean }) {
   const [base, setLinhas] = useState<LinhaEmp[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [aberto, setAberto] = useState<string | null>(null);
@@ -39,7 +39,10 @@ export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?
   if (!linhas && !proj) return <section className="flex items-center gap-2 rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando sinistralidade…</section>;
 
   if (proj) linhas = deProjecao(proj);
-  else if (grupo && linhas) linhas = distribuirSemFaixa(linhas.map((l) => ({ ...l, plano: "GRUPO" })));
+  else if (grupo && linhas) {
+    const g = grupo;
+    linhas = distribuirSemFaixa(linhas.map((l) => ({ ...l, plano: "GRUPO" }))).map((l) => ({ ...l, vidas: g.faixas.find((f) => f.faixa === l.faixa)?.total ?? 0 }));
+  }
   if (!linhas) return null;
   const total = gridFaixas(linhas).total;
   const planos = proj ? Object.keys(proj) : grupo ? ["GRUPO"] : PLANOS;

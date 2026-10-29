@@ -140,7 +140,7 @@ export default function PropostaApb() {
         </section>
       ))}
         </div>
-        <PropostaApbSinistralidade proj={transf ? grids : undefined} grupo={nivel === 2} fixo={nivel > 1} />
+        <PropostaApbSinistralidade proj={transf ? grids : undefined} grupo={nivel === 2 ? grids[PLANO_GRUPO] : undefined} fixo={nivel > 1} />
       </div>
       <p className="text-xs text-muted-foreground">Mensalidade = vidas × preço da faixa e acomodação. Ativo: vigência iniciada e sem desligamento na data; titular = matrícula final 00.</p>
     </div></div>
