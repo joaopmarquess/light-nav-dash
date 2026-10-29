@@ -62,29 +62,34 @@ export async function carregarRelatorio(period: ReportPeriod, progress: (message
           totals.push(t[0]); lives.push(life);
         }
         const total = somarTotaisMovimentacao(totals);
+        const res = resumoMovimentacao(total.e, total.s, total.r, total.tp, total.tm);
         carteira.status = "available";
-        carteira.introduction = "Posição de vidas ativas e movimentação no período selecionado, mantendo a classificação utilizada no AXIS.";
-        carteira.cards = [{ label: "Base inicial", value: numero(initial) }, { label: "Base final", value: numero(final) }, { label: "Vendas", value: numero(total.e) }, { label: "Cancelamentos", value: numero(total.s) }];
-        carteira.table = { headers: ["Competência", "Vendas", "Cancelamentos", "Reativações", "Transf. + / −", "Vidas ativas"], rows: totals.map((r, i) => { const t = somarTotaisMovimentacao([r]); return [monthly[i].de.slice(0, 7), numero(t.e), numero(t.s), numero(t.r), `${numero(t.tp)} / ${numero(t.tm)}`, numero(lives[i])]; }) };
+        carteira.introduction = "Indicadores e evolução mensal conforme a visão padrão de Carteira › Movimentação, aplicados ao período do relatório.";
+        carteira.cards = [{ label: "Anterior", value: numero(initial) }, { label: "Vendas", value: numero(total.e) }, { label: "Cancelamentos", value: numero(-total.s) }, { label: "Reativações", value: numero(total.r) }, { label: "Transferências Líq.", value: numero(res.transferenciasLiquidas) }, { label: "Final", value: numero(final) }, { label: "Crescimento", value: numero(res.crescimento) }];
+        carteira.table = { headers: ["Competência", "Vendas", "Cancelamentos", "Reativações", "Transf. Líq.", "Crescimento", "Vidas ativas"], rows: totals.map((r, i) => { const t = somarTotaisMovimentacao([r]); const m = resumoMovimentacao(t.e, t.s, t.r, t.tp, t.tm); return [monthly[i].de.slice(0, 7), numero(t.e), numero(-t.s), numero(t.r), numero(m.transferenciasLiquidas), numero(m.crescimento), numero(lives[i])]; }) };
         carteira.chart = { title: "Evolução das vidas ativas", labels: monthly.map(m => m.de.slice(0, 7)), series: [{ label: "Vidas", values: lives }] };
-        carteira.paragraphs = [`A carteira passou de ${numero(initial)} para ${numero(final)} vidas ativas, uma variação líquida de ${numero(final - initial)} vidas no período.`, `Foram registradas ${numero(total.e)} vendas, ${numero(total.s)} cancelamentos e ${numero(total.r)} reativações. As transferências totalizaram ${numero(total.tp)} entradas e ${numero(total.tm)} saídas.`];
-        carteira.considerations = ["Suspensos permanecem nas vidas ativas. A base inicial corresponde ao dia anterior ao início; a base final, à data final selecionada."];
+        carteira.paragraphs = [`A carteira passou de ${numero(initial)} para ${numero(final)} vidas ativas no período.`, `Foram registradas ${numero(total.e)} vendas, ${numero(total.s)} cancelamentos e ${numero(total.r)} reativações; o saldo das transferências foi de ${numero(res.transferenciasLiquidas)} e o crescimento, de ${numero(res.crescimento)} vidas.`];
+        carteira.considerations = ["Suspensos permanecem nas vidas ativas. Anterior corresponde ao dia anterior ao início; Final, à data final selecionada."];
         const child = base("contratacao", "Vidas por contratação", "AXIS", "carteira_trial_siglas", period, generatedAt);
         try { const siglas = await rpc("carteira_trial_siglas", { p_data: period.ate }); child.status = siglas.length ? "available" : "unavailable"; child.table = { headers: ["Contratação", "Vidas", "% sobre vidas ativas"], rows: siglas.map(r => [String(r.sigla), numero(Number(r.vidas)), percentual(final ? Number(r.vidas) / final : null)]) }; } catch { child.status = "error"; child.notice = "Não foi possível consultar a composição por contratação."; }
         carteira.children = [child];
       })(),
       (async () => {
-        const responses = await Promise.all(years.map(ano => rpc("sinistralidade_mv_competencias", { p_ano: ano, p_ate_mes: Math.max(...monthly.filter(m => Number(m.de.slice(0, 4)) === ano).map(m => Number(m.de.slice(5, 7)))) })));
-        const rows = responses.flat().filter(r => monthly.some(m => m.de.slice(0, 7) === `${r.nr_ano}-${String(r.nr_mes).padStart(2, "0")}`));
-        if (!rows.length) return;
-        const sums: SomaCompetencia[] = rows.map(r => ({ ...somaVazia(), recCpp: Number(r.rec_cpp), recCopart: Number(r.rec_copart), recTotal: Number(r.rec_total), despTotal: Number(r.desp_total) }));
-        const total = somarTotais(sums);
-        assist.status = "available"; assist.introduction = "Receitas e despesas assistenciais por competência, conforme a fonte atual de Sinistralidade do AXIS.";
-        assist.cards = [{ label: "Despesa assistencial", value: dinheiro(total.despTotal) }, { label: "Receita total", value: dinheiro(total.recTotal) }, { label: "Sinistralidade", value: percentual(sinistralidade(total)) }, { label: "Saldo", value: dinheiro(saldoCompetencia(total)) }];
-        assist.table = { headers: ["Competência", "Receita total", "Despesa assistencial", "Saldo", "Sinistralidade"], rows: rows.map((r, i) => [`${r.nr_ano}-${String(r.nr_mes).padStart(2, "0")}`, dinheiro(sums[i].recTotal), dinheiro(sums[i].despTotal), dinheiro(saldoCompetencia(sums[i])), percentual(sinistralidade(sums[i]))]) };
-        assist.chart = { title: "Evolução de receitas e despesas assistenciais (R$)", labels: assist.table.rows.map(r => r[0]), series: [{ label: "Receita", values: sums.map(s => s.recTotal) }, { label: "Despesa", values: sums.map(s => s.despTotal) }] };
-        assist.paragraphs = [`A despesa assistencial consolidada atingiu ${dinheiro(total.despTotal)}, frente a ${dinheiro(total.recTotal)} de receitas recuperadas.`, `A sinistralidade foi de ${percentual(sinistralidade(total))}. O saldo entre as receitas e as despesas assistenciais foi de ${dinheiro(saldoCompetencia(total))}.`];
-        assist.considerations = [`Foram recuperadas ${rows.length} de ${monthly.length} competências selecionadas. A fonte agregada não detalha prestadores, produtos ou causas das variações.`];
+        // Sinistralidade › Períodos (visão padrão): todos os anos, com o(s) ano(s) do relatório expandido(s).
+        const responses = await Promise.all(anosSinistralidade(new Date()).map(({ ano, ateMes }) => rpc("sinistralidade_mv_competencias", { p_ano: ano, p_ate_mes: ateMes })));
+        const anos = agruparPorAno(responses.flat().map(d => ({ ano: Number(d.nr_ano), mes: Number(d.nr_mes), soma: { ...somaVazia(), recCpp: Number(d.rec_cpp), recCopart: Number(d.rec_copart), recTotal: Number(d.rec_total), despTotal: Number(d.desp_total) } })));
+        if (!anos.length) return;
+        const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const linha = (rotulo: string, s: SomaCompetencia) => [rotulo, fmt(s.recCpp), fmt(s.recCopart), fmt(s.recTotal), fmt(s.despTotal), fmt(saldoCompetencia(s)), percentual(sinistralidade(s))];
+        const noPeriodo = anos.flatMap(a => a.meses).filter(m => monthly.some(p => p.de.slice(0, 7) === `${m.ano}-${String(m.mes).padStart(2, "0")}`));
+        const total = somarTotais(noPeriodo.map(m => m.soma));
+        assist.status = "available"; assist.introduction = "Receitas e despesas por ano conforme a visão padrão de Sinistralidade › Períodos, com os meses do ano do relatório expandidos.";
+        assist.cards = noPeriodo.length ? [{ label: "Receita total (período)", value: dinheiro(total.recTotal) }, { label: "Despesa total (período)", value: dinheiro(total.despTotal) }, { label: "Saldo (período)", value: dinheiro(saldoCompetencia(total)) }, { label: "Sinistralidade (período)", value: percentual(sinistralidade(total)) }] : [];
+        assist.table = { headers: ["Período", "Rec. CPP", "Rec. Copart.", "Rec. Total", "Desp. Total", "Saldo", "Sin"], rows: [...anos.flatMap(a => [linha(String(a.ano), a.soma), ...(years.includes(a.ano) ? a.meses.map(m => linha(`   ${String(m.mes).padStart(2, "0")}/${a.ano}`, m.soma)) : [])]), linha("Total", somarTotais(anos.map(a => a.soma)))] };
+        const sel = anos.find(a => years.includes(a.ano)) ?? anos[anos.length - 1];
+        assist.chart = { title: `Evolução mensal do saldo · ${sel.ano} (R$)`, labels: sel.meses.map(m => `${sel.ano}-${String(m.mes).padStart(2, "0")}`), series: [{ label: "Saldo", values: sel.meses.map(m => saldoCompetencia(m.soma)) }] };
+        assist.paragraphs = noPeriodo.length ? [`No período do relatório, a despesa assistencial foi de ${dinheiro(total.despTotal)}, frente a ${dinheiro(total.recTotal)} de receitas, com sinistralidade de ${percentual(sinistralidade(total))}.`, `O saldo entre receitas e despesas assistenciais no período foi de ${dinheiro(saldoCompetencia(total))}.`] : ["Não há competências fechadas no período do relatório na fonte atual."];
+        assist.considerations = [`Foram recuperadas ${noPeriodo.length} de ${monthly.length} competências do período. A tabela reproduz todos os anos disponíveis na tela de Períodos.`];
       })(),
     ]), dreRequest.then(data => ({ data: data.flat(), error: null })).catch((error: Error) => ({ data: [] as DreHRow[], error })), budgetRequest,
   ]);
