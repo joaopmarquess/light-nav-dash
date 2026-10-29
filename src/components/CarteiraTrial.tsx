@@ -250,9 +250,9 @@ export default function CarteiraTrial() {
       {!grid && (
         <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-3 gap-4 content-start">
           {([
-            ["A", UserCheck, "Ativos", kpi?.ativos],
-            ["F", Users, "Futuros (vigência a iniciar)", kpi?.futuros],
-            ["T", Building2, "Contratos (titulares ativos)", kpi?.contratos],
+            ["A", UserCheck, "Vidas Ativas", kpi?.ativos],
+            ["F", Users, "Vidas a iniciar", kpi?.futuros],
+            ["T", Building2, "Contratos Ativos", kpi?.contratos],
           ] as const).map(([st, I, label, v]) => (
             <button key={st} onClick={() => { if (st === "T") return; const e = { ...f, status: st }; setF(e); setAp({ f: e, d: dataRef || new Date().toISOString().slice(0, 10) }); setGrid(true); }}
               className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-8 hover:bg-accent transition-colors">
