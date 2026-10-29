@@ -72,7 +72,7 @@ export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?
     <div className="flex h-full flex-col gap-2 [&_section]:p-3 [&_h3]:mb-1">
       <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
         <h3 className="text-base font-semibold text-foreground">{proj ? "Projeção anual — tabela proposta" : "Sinistralidade 09/2025 a 08/2026"}</h3>
-        <p className="mb-2 text-xs text-muted-foreground">{proj ? "Vidas atuais × preço proposto × 12 · copart 20% da CPP · despesas de R$ 3.000.000,00 · despesas da faixa = receita total × sinistralidade" : "Fonte: MENU_SB_SINISTRALIDA.XLS (mesma de Sinistralidade › Empresas Menu)"}</p>
+        <p className="mb-2 text-xs text-muted-foreground">{proj ? "Vidas atuais × preço proposto × 12 · copart 20% da CPP · despesas de R$ 2.950.000,00 · despesas da faixa = receita total × sinistralidade" : "Fonte: MENU_SB_SINISTRALIDA.XLS (mesma de Sinistralidade › Empresas Menu)"}</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {cards.map((c) => (
             <div key={c.t} className="rounded-md border border-border px-2 py-1">
