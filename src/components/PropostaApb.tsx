@@ -56,7 +56,7 @@ export default function PropostaApb() {
   );
 
   return (
-    <div className="h-full space-y-2 overflow-auto text-sm [&_td]:py-0.5 [&_th]:py-0.5">
+    <div className={`h-full space-y-2 overflow-y-auto text-sm [scrollbar-gutter:stable] ${nivel > 1 ? "[&_table]:table-fixed [&_td]:whitespace-nowrap" : ""}`}><div className="space-y-2 [&_td]:py-0.5 [&_th]:py-0.5">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground"><FileSpreadsheet className="h-6 w-6 text-primary" />Proposta APB</h2>
@@ -143,6 +143,6 @@ export default function PropostaApb() {
         <PropostaApbSinistralidade proj={transf ? grids : undefined} grupo={nivel === 2} fixo={nivel > 1} />
       </div>
       <p className="text-xs text-muted-foreground">Mensalidade = vidas × preço da faixa e acomodação. Ativo: vigência iniciada e sem desligamento na data; titular = matrícula final 00.</p>
-    </div>
+    </div></div>
   );
 }
