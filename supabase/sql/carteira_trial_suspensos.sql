@@ -1,10 +1,13 @@
 -- Carteira > Painel: quadro "Suspensos" (Mostrar suspensos).
+-- p_de/p_data = De/Até: suspensões iniciadas no período e ainda suspensas em Até.
 -- Executar na base da Hostinger, inteiro (requer public.sigla_contratacao).
 -- Suspensos continuam em Vidas Ativas: mesma regra de ativo e filtros dos cards.
 -- Suspenso na data = dt_ult_suspensao <= data e sem reativação da suspensão entre ela e a data.
 -- beneficiarios tem matrículas repetidas: uma linha por cd_mat_alternativa (última suspensão).
 
-CREATE OR REPLACE FUNCTION public.carteira_trial_suspensos(p_data date, p_q text DEFAULT NULL, p_empresa text DEFAULT NULL, p_cidade text DEFAULT NULL)
+DROP FUNCTION IF EXISTS public.carteira_trial_suspensos(date, text, text, text);
+
+CREATE OR REPLACE FUNCTION public.carteira_trial_suspensos(p_data date, p_q text DEFAULT NULL, p_empresa text DEFAULT NULL, p_cidade text DEFAULT NULL, p_de date DEFAULT NULL)
  RETURNS TABLE(sigla text, motivo text, faixa text, vidas bigint)
  LANGUAGE sql
  STABLE SECURITY DEFINER
@@ -35,6 +38,7 @@ AS $function$
       b.dt_ult_reat_suspensao::date as rs, nullif(b.ds_motivo_suspensao, 'None') as motivo
     from public.beneficiarios b
     where b.dt_ult_suspensao is not null and b.dt_ult_suspensao::date <= p_data
+      and (p_de is null or b.dt_ult_suspensao::date >= p_de)
     order by b.cd_mat_alternativa, b.dt_ult_suspensao desc
   )
   select a.sigla,
@@ -47,6 +51,6 @@ AS $function$
   group by 1, 2, 3;
 $function$;
 
-GRANT EXECUTE ON FUNCTION public.carteira_trial_suspensos(date, text, text, text) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.carteira_trial_suspensos(date, text, text, text, date) TO anon, authenticated;
 
 -- Conferência: SELECT * FROM public.carteira_trial_suspensos(CURRENT_DATE);
