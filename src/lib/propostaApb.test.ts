@@ -63,3 +63,14 @@ describe("Nível 5", () => {
     expect(r.todos.total.total).toBe(1428);
   });
 });
+
+import { tabelaDependente as _td, tabelaLinear as _tl } from "./propostaApb";
+describe("Nível 5 — variáveis", () => {
+  it("apartamento é enfermaria × 1,5", () => { expect(_tl(200)).toEqual([200, 300]); });
+  it("faixas seguem a variação % da tabela proposta a partir da 00 a 18", () => {
+    const t = _td(120);
+    expect(t[0]).toEqual([120, 180]);
+    expect(t[1][0]).toBeCloseTo(120 * 128.99 / 110.53, 6);
+    expect(t[9][1]).toBeCloseTo(120 * 663.1 / 110.53 * 1.5, 6);
+  });
+});
