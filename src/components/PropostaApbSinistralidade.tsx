@@ -3,7 +3,7 @@ import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { Grid } from "@/components/SinistralidadeEmpresas";
 import { carregarSb } from "@/lib/sinistralidadeEmpresasSb";
 import { projecaoAnual, gridPlano } from "@/lib/propostaApb";
-import { gridFaixas, type LinhaEmp } from "@/lib/sinistralidadeEmpresas";
+import { gridFaixas, FAIXAS_EMP, type LinhaEmp } from "@/lib/sinistralidadeEmpresas";
 
 const PLANOS = ["2290", "2490", "2890"];
 const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -13,6 +13,17 @@ const pct = (v: number | null) => (v == null ? "—" : `${(v * 100).toLocaleStri
 /** Container direito da Proposta APB: sinistralidade da mesma fonte de Sinistralidade › Empresas Menu. */
 type Grids = Record<string, ReturnType<typeof gridPlano>>;
 const deProjecao = (g: Grids): LinhaEmp[] => Object.keys(g).flatMap((p) => g[p].faixas.map((f) => ({ plano: p, faixa: f.faixa, vidas: f.total, ...projecaoAnual(f.mensalidade) })));
+
+/** Nível 2: rateia "Sem faixa" entre as 10 faixas na proporção das vidas de cada faixa (vidas, receitas e despesas). */
+export function distribuirSemFaixa(ls: LinhaEmp[]): LinhaEmp[] {
+  const sem = ls.filter((l) => !FAIXAS_EMP.includes(l.faixa)), com = ls.filter((l) => FAIXAS_EMP.includes(l.faixa));
+  const totV = com.reduce((a, l) => a + l.vidas, 0);
+  if (!sem.length || !totV) return ls;
+  const s = (k: keyof LinhaEmp) => sem.reduce((a, l) => a + (l[k] as number), 0);
+  const ks = ["vidas", "recCpp", "recCopart", "recTotal", "despTotal"] as const;
+  const tot = Object.fromEntries(ks.map((k) => [k, s(k)]));
+  return com.map((l) => { const w = l.vidas / totV; const r = { ...l }; ks.forEach((k) => { r[k] = l[k] + tot[k] * w; }); return r; });
+}
 
 export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?: Grids; grupo?: boolean; fixo?: boolean }) {
   const [base, setLinhas] = useState<LinhaEmp[] | null>(null);
@@ -28,7 +39,7 @@ export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?
   if (!linhas && !proj) return <section className="flex items-center gap-2 rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando sinistralidade…</section>;
 
   if (proj) linhas = deProjecao(proj);
-  else if (grupo && linhas) linhas = linhas.map((l) => ({ ...l, plano: "GRUPO" }));
+  else if (grupo && linhas) linhas = distribuirSemFaixa(linhas.map((l) => ({ ...l, plano: "GRUPO" })));
   if (!linhas) return null;
   const total = gridFaixas(linhas).total;
   const planos = proj ? Object.keys(proj) : grupo ? ["GRUPO"] : PLANOS;
