@@ -23,7 +23,8 @@
 - Keep explicit green Uberaba study-area inclusions in a tested helper, applying them after projection fitting so membership additions preserve the existing map framing and do not affect life-based colors.
 - Keep Uberaba credentialing reference selection and supplied summary values in a tested helper, separate from summary presentation, so visual changes cannot alter quantities or source precedence.
 - Keep MAA geometry and area classification in a focused helper, with tests, so map presentation does not change beneficiary counts or geographic membership.
-- Simplify only the projected display outline; classify municipalities using the original outer ring to preserve geographic membership.
+- Simplify display outlines only; classify cities using the original ring.
+- APB tickets reuse Menu loader rows; test monthly copart per Menu life in the APB helper.
 - Simplify and round cropped-map exterior and state strokes in projected pixel space only; keep open state runs open and preserve northern attenuation, original fitting and membership.
 - Simplify Goiás municipal display geometry through shared topology arcs only; retain original geometry for fitting, membership, centroids and counts so visual smoothing cannot change data or separate neighboring boundaries.
 - Keep localized northern state-border attenuation in a display-only helper matching shared municipal arcs; never alter original polygons, projection fitting, MAA membership or totals.
