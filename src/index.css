@@ -43,9 +43,9 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --sigla-pif: 152 60% 40%;
-    --sigla-pca: 212 80% 50%;
-    --sigla-pce: 32 90% 50%;
+    --sigla-pif: 28 90% 52%;
+    --sigla-pca: 205 85% 62%;
+    --sigla-pce: 220 75% 32%;
     --background: 210 40% 99%;
     --foreground: 215 30% 20%;
 
