@@ -105,7 +105,7 @@ export async function carregarRelatorio(period: ReportPeriod, progress: (message
     const p = resumoPainelDre(dreRows);
     const pf = (x: number) => percentual(p.pctFat(x));
     dre.cards = [{ label: "Resultado Líquido", value: dinheiro(p.liq) }, { label: "Margem líquida", value: pf(p.liq) }, { label: "Faturamento", value: dinheiro(p.fat) }, ...p.cards.map(([label, v]) => ({ label, value: `${dinheiro(v)} · ${pf(v)}` }))];
-    dre.table = { headers: ["DRE simplificado", "R$", "% fat."], rows: p.linhas.map(([l, v]) => [l, dinheiro(v), pf(v)]) };
+    dre.table = { headers: ["DRE simplificado", "R$", "% fat."], rows: p.linhas.map(([l, v]) => [l.replace(/−/g, "-"), dinheiro(v), pf(v)]) };
     const covered = monthly.filter(m => dreRows.some(r => `${r.ano}-${String(r.mes).padStart(2, "0")}` === m.de.slice(0, 7)));
     dre.chart = { title: "Resultado mensal da DRE (R$)", labels: covered.map(m => m.de.slice(0, 7)), series: [{ label: "Resultado", values: covered.map(m => resumoPainelDre(dreRows.filter(r => `${r.ano}-${String(r.mes).padStart(2, "0")}` === m.de.slice(0, 7))).liq) }] };
     dre.paragraphs = [`O resultado líquido foi de ${dinheiro(p.liq)}, com margem líquida de ${pf(p.liq)} sobre o faturamento de ${dinheiro(p.fat)}.`, `O EBITDA somou ${dinheiro(p.cards[3][1])} e o resultado antes dos impostos, ${dinheiro(p.cards[5][1])}. Os valores são movimentos mensais, não saldos de encerramento.`];
