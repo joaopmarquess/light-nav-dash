@@ -108,7 +108,7 @@ export default function PropostaApb() {
         <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
           {([1, 2, 3, 4, 5] as const).map((n) => <button key={n} type="button" onClick={() => setNivel(n)} className={`rounded-md px-3 py-1.5 text-sm font-medium ${nivel === n ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>Nível {n}</button>)}
           <Dialog>
-            <DialogTrigger asChild><button type="button" tabIndex={nivel === 5 ? 0 : -1} aria-hidden={nivel !== 5} className={`${nivel === 5 ? "" : "invisible pointer-events-none"} rounded-md border border-primary px-3 py-1.5 text-sm text-primary hover:bg-accent`}>>Variáveis</button></DialogTrigger>
+            <DialogTrigger asChild><button type="button" tabIndex={nivel === 5 ? 0 : -1} aria-hidden={nivel !== 5} className={`${nivel === 5 ? "" : "invisible pointer-events-none"} rounded-md border border-primary px-3 py-1.5 text-sm text-primary hover:bg-accent`}>Variáveis</button></DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader><DialogTitle>Variáveis do Nível 5</DialogTitle></DialogHeader>
               <div className="space-y-4 text-sm">
