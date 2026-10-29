@@ -132,9 +132,23 @@ export async function carregarRelatorio(period: ReportPeriod, progress: (message
       const projetado = values.some(r => r.projetado !== null) ? values.reduce((t, r) => t + (r.projetado ?? 0), 0) : null;
       orc.status = "available"; orc.introduction = "Comparação gerencial do orçamento vigente de 2026. O previsto e as projeções usam a fonte existente; o realizado reutiliza a classificação do balancete MV do CONTROL.";
       const fullReal = months.every(m => real.meses.has(m));
-      orc.cards = [{ label: "Previsto", value: dinheiro(previsto) }, { label: fullReal ? "Realizado" : "Realizado disponível (parcial)", value: realizado === null ? "—" : dinheiro(realizado) }, { label: "Projetado disponível", value: projetado === null ? "—" : dinheiro(projetado) }];
-      const nature = (item: string): "receita" | "despesa" | "indefinida" => /^(01|02)\|/.test(item) ? "receita" : /^(03|05|06|08|09|10|11)\|/.test(item) ? "despesa" : "indefinida";
-      orc.table = { headers: ["Item", "Previsto", "Realizado", "Projetado", "Desvio real. − prev."], rows: values.map(r => { const d = r.realizado === null || !fullReal ? null : avaliarDesvio(r.previsto, r.realizado, nature(r.item)); return [strip(r.item), dinheiro(r.previsto), r.realizado === null ? "—" : dinheiro(r.realizado), r.projetado === null ? "—" : dinheiro(r.projetado), d ? `${dinheiro(d.desvio)}\n${d.status}` : "—"]; }) };
+      // Control › Orçamento 2026 › DRE (visão padrão: grupos recolhidos, meses sem realizado exibem o Projetado), transposta para A4.
+      orc.introduction = "DRE do orçamento conforme Control › Orçamento 2026 › DRE: realizado do balancete MV nos meses fechados e projetado nos demais; linhas da tela apresentadas em colunas.";
+      const tela = aplicarRealizadoMv(rows, dreRows.filter(r => r.ano === 2026));
+      const { comReal, soma } = valoresOrcamento(tela);
+      const grupos = gruposOrcamentoDre(items);
+      const ultimo = comReal.size ? Math.max(...comReal) : 0;
+      const mesesTela = [...new Set(tela.map(r => r.mes))].sort((a, b) => a - b);
+      const nomes = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+      const colunas: [string, number[]][] = [];
+      for (const m of mesesTela) { colunas.push([`${nomes[m - 1]}/${years[0]}`, [m]]); if (m === ultimo && m !== mesesTela[mesesTela.length - 1]) colunas.push(["Parcial", mesesTela.filter(x => x <= ultimo)]); }
+      const rotuloAcum = mesesTela.every(m => comReal.has(m)) ? "Realizado" : "Projetado";
+      colunas.push([`Acumulado (${rotuloAcum})`, mesesTela]);
+      const f2 = (v: number) => Math.abs(v) < 0.005 ? "-" : (v < 0 ? `(${Math.abs(v).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })})` : v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+      const nomesCol = grupos.map(g => g.label);
+      orc.table = { headers: ["Competência", ...nomesCol, "Res. antes impostos", "Impostos Federais", "Resultado Líquido"], rows: colunas.map(([rot, ms]) => { const rai = soma(items, ms).realizado; return [rot, ...grupos.map(g => f2(soma(g.items, ms).realizado)), f2(rai), f2(impostosFederais(rai)), f2(resultadoLiquido(rai))]; }) };
+      const acum = soma(items, mesesTela);
+      orc.cards = [{ label: "Previsto · Res. antes impostos", value: dinheiro(acum.previsto) }, { label: `${rotuloAcum} · Res. antes impostos`, value: dinheiro(acum.realizado) }, { label: `${rotuloAcum} · Resultado Líquido`, value: dinheiro(resultadoLiquido(acum.realizado)) }];
       const budgetMonths = months.filter(m => rows.some(r => r.mes === m));
       const projectionFull = budgetMonths.every(m => rows.some(r => r.mes === m && r.projetado !== 0));
       orc.chart = { title: "Previsto e projeção disponível por mês (R$)", labels: budgetMonths.map(m => `${years[0]}-${String(m).padStart(2, "0")}`), series: [{ label: "Previsto", values: budgetMonths.map(m => rows.filter(r => r.mes === m).reduce((t, r) => t + r.previsto, 0)) }, ...(projetado === null || !projectionFull ? [] : [{ label: "Projetado", values: budgetMonths.map(m => rows.filter(r => r.mes === m).reduce((t, r) => t + r.projetado, 0)) }])] };
