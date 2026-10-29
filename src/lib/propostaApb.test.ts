@@ -25,7 +25,7 @@ describe("Proposta APB", () => {
 import { COPART_PROPOSTA, projecaoAnual } from "./propostaApb";
 describe("premissas da proposta", () => {
   it("copart 20%", () => expect(COPART_PROPOSTA).toBe(0.2));
-  it("despesas fixas de 854 vidas = 2.907.276,96", () => expect(projecaoAnual(0, 854).despTotal).toBeCloseTo(2907276.96, 1));
+  it("despesas fixas de 854 vidas = 3.000.000", () => expect(projecaoAnual(0, 854).despTotal).toBeCloseTo(3000000, 2));
 });
 import { idadeSomaPlanos } from "./propostaApb";
 describe("idade média exata do snapshot", () => {
