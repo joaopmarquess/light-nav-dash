@@ -27,6 +27,7 @@ export default function PropostaApb() {
   const sinN3 = useMemo(() => projecaoFaixas(gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_NOVO })), PLANO_NOVO, PRECOS_PROPOSTA).faixas.map((f) => f.mensalidade)).sin, [linhas]);
   const [nivel, setNivel] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [linEnf, setLinEnf] = useState(PRECO_TITULAR_2890[0]);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
   const [copartPct, setCopartPct] = useState(20);
   const [depBase, setDepBase] = useState(PRECOS_PROPOSTA[0][0]);
   const linear = useMemo(() => tabelaLinear(linEnf), [linEnf]);
@@ -108,10 +109,10 @@ export default function PropostaApb() {
         </Dialog>
         <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
           {([1, 2, 3, 4, 5] as const).map((n) => <button key={n} type="button" onClick={() => setNivel(n)} className={`rounded-md px-3 py-1.5 text-sm font-medium ${nivel === n ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>Nível {n}</button>)}
-          <Dialog>
+          <Dialog modal={false} onOpenChange={(o) => o && setPos({ x: 0, y: 0 })}>
             <DialogTrigger asChild><button type="button" tabIndex={nivel === 5 ? 0 : -1} aria-hidden={nivel !== 5} className={`${nivel === 5 ? "" : "invisible pointer-events-none"} rounded-md border border-primary px-3 py-1.5 text-sm text-primary hover:bg-accent`}>Variáveis</button></DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader><DialogTitle>Variáveis do Nível 5</DialogTitle></DialogHeader>
+            <DialogContent semFundo className="max-w-md shadow-2xl" style={{ transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))` }} onInteractOutside={(e) => e.preventDefault()}>
+              <DialogHeader className="cursor-move select-none" onPointerDown={(e) => { const o = { x: e.clientX - pos.x, y: e.clientY - pos.y }; const mv = (ev: PointerEvent) => setPos({ x: ev.clientX - o.x, y: ev.clientY - o.y }); const up = () => { window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); }; window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up); }}><DialogTitle>Variáveis do Nível 5</DialogTitle><p className="text-xs font-normal text-muted-foreground">Arraste por aqui para mover</p></DialogHeader>
               <div className="space-y-4 text-sm">
                 <label className="flex items-center gap-2 font-semibold">Coparticipação (% da CPP):<input aria-label="Coparticipação" type="number" step="0.1" min="0" value={copartPct} onChange={(e) => setCopartPct(Number(e.target.value) || 0)} className="w-24 rounded border border-input bg-background px-2 py-1 text-right font-normal" />%</label>
                 <div>
