@@ -150,7 +150,8 @@ export async function paginasRelatorio(pdf: ReportPdf, onPage: (src: string, ind
   const pdfjs = await import("pdfjs-dist");
   const worker = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
   pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
-  const loaded = await pdfjs.getDocument({ data: pdf.doc.output("arraybuffer") }).promise;
+  const task = pdfjs.getDocument({ data: pdf.doc.output("arraybuffer") });
+  const loaded = await task.promise;
   try {
     for (let i = 1; i <= loaded.numPages; i++) {
       const page = await loaded.getPage(i), viewport = page.getViewport({ scale: 1.7 });
@@ -159,5 +160,5 @@ export async function paginasRelatorio(pdf: ReportPdf, onPage: (src: string, ind
       await page.render({ canvasContext: ctx, viewport, canvas }).promise;
       onPage(canvas.toDataURL("image/png"), i); page.cleanup();
     }
-  } finally { await loaded.destroy(); }
+  } finally { await task.destroy(); }
 }
