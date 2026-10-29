@@ -119,6 +119,7 @@ import AssistencialReceitas2518 from "@/components/AssistencialReceitas2518";
 import Assistencial2518Prestadores from "@/components/Assistencial2518Prestadores";
 import { useConsultaState } from "@/lib/assistencialConsultaStore";
 import { Loader2, DollarSign, FlaskConical } from "lucide-react";
+import PropostaApb from "@/components/PropostaApb";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 
@@ -152,6 +153,7 @@ const controlItem: MenuItem = {
 };
 
 const labItems: MenuItem[] = [
+  { icon: FileText, label: "Proposta APB" },
   {
     icon: Users,
     label: "vCarteira",
@@ -600,6 +602,8 @@ const Index = () => {
             <SinistralidadePeriodo />
           ) : active === "Sinistralidade · Períodos" ? (
             <SinistralidadePeriodosMV />
+          ) : active === "Proposta APB" ? (
+            <PropostaApb />
           ) : active === "APB" ? (
             <SinistralidadeAPB />
           ) : active === "APB Top10" ? (

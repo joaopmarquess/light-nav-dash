@@ -8,6 +8,7 @@ const shortcuts = [
   { icon: FileText, label: "Controladoria", destination: "Control · DRE Gerencial PE" },
   { icon: CalendarRange, label: "Projeto Bensaúde|Uberaba", destination: "Uberaba Timeline" },
   { icon: FlaskConical, label: "Laboratory", destination: "Laboratory" },
+  { icon: FileText, label: "Proposta APB", destination: "Proposta APB" },
 ];
 
 const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => (
