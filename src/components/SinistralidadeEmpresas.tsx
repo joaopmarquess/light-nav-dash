@@ -10,7 +10,7 @@ const pct = (v: number | null) => (v == null ? "—" : `${(v * 100).toLocaleStri
 const inp = "h-9 rounded-md border border-input bg-background px-2 text-sm";
 const COLS = ["Faixa", "Vidas", "Rec. CPP", "Rec. CPA", "Rec. Total", "Vr. Despesas", "Saldo", "Sinistralidade"];
 
-export function Grid({ titulo, linhas }: { titulo: string; linhas: LinhaEmp[] }) {
+export function Grid({ titulo, linhas, fill }: { titulo: string; linhas: LinhaEmp[]; fill?: boolean }) {
   const { faixas, total } = gridFaixas(linhas);
   const Row = ({ f, bold }: { f: FaixaEmp; bold?: boolean }) => (
     <tr className={`border-t border-border ${bold ? "bg-muted font-semibold" : ""}`}>
@@ -22,10 +22,10 @@ export function Grid({ titulo, linhas }: { titulo: string; linhas: LinhaEmp[] })
     </tr>
   );
   return (
-    <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
+    <section className={`rounded-lg border border-border bg-card p-4 shadow-sm ${fill ? "flex flex-1 flex-col" : ""}`}>
       <h3 className="mb-3 text-base font-semibold text-foreground">{titulo}</h3>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+      <div className={`overflow-x-auto ${fill ? "flex flex-1 flex-col" : ""}`}>
+        <table className={`w-full text-sm ${fill ? "h-full flex-1" : ""}`}>
           <thead className="text-muted-foreground"><tr>{COLS.map((c, i) => <th key={c} className={`px-3 py-1.5 ${i === 0 ? "text-left" : "text-center"}`}>{c}</th>)}</tr></thead>
           <tbody>{faixas.map((f) => <Row key={f.faixa} f={f} />)}<Row f={total} bold /></tbody>
         </table>
