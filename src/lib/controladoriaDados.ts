@@ -94,18 +94,19 @@ export async function carregarRelatorio(period: ReportPeriod, progress: (message
     ]), dreRequest.then(data => ({ data: data.flat(), error: null })).catch((error: Error) => ({ data: [] as DreHRow[], error })), budgetRequest,
   ]);
   axisResults.forEach((result, i) => { if (result.status === "rejected") { const b = i === 0 ? carteira : assist; b.status = "error"; b.notice = "Não foi possível consultar os dados deste tópico. Atualize para tentar novamente."; } });
-  const dreRows = dreResult.data;
+  // Control › Controladoria › Painel: só meses fechados do balancete (até Ago/2026).
+  const dreRows = dreResult.data.filter(r => r.ano !== 2026 || r.mes <= 8);
   if (dreResult.error) { dre.status = "error"; dre.notice = "Não foi possível consultar a DRE do CONTROL."; }
   else if (dreRows.length) {
-    dre.status = "available"; dre.introduction = "Demonstração gerencial derivada do balancete MV e do plano de contas 9D, com a hierarquia e o tratamento de crédito menos débito utilizados no CONTROL.";
-    const total = sum(dreRows), groups = group(dreRows, "g1");
-    dre.cards = [{ label: "Resultado consolidado", value: dinheiro(total) }, ...groups.map(([label, v]) => ({ label: strip(label), value: dinheiro(v) }))];
-    // Preserve every hierarchy path; do not sum subtotal rows again.
-    dre.table = { headers: ["G1", "G2", "G3", "G4", "Valor"], rows: [...new Set(dreRows.map(r => [r.g1, r.g2, r.g3, r.g4].join("~")))].sort((a, b) => a.localeCompare(b, "pt-BR", { numeric: true })).map(key => { const gs = key.split("~"); return [...gs.map(strip), dinheiro(sum(dreRows.filter(r => [r.g1, r.g2, r.g3, r.g4].join("~") === key)))]; }) };
+    dre.status = "available"; dre.introduction = "Indicadores e DRE simplificado conforme Control › Controladoria › Painel, a partir do balancete MV e do plano de contas 9D.";
+    const p = resumoPainelDre(dreRows);
+    const pf = (x: number) => percentual(p.pctFat(x));
+    dre.cards = [{ label: "Resultado Líquido", value: dinheiro(p.liq) }, { label: "Margem líquida", value: pf(p.liq) }, { label: "Faturamento", value: dinheiro(p.fat) }, ...p.cards.map(([label, v]) => ({ label, value: `${dinheiro(v)} · ${pf(v)}` }))];
+    dre.table = { headers: ["DRE simplificado", "R$", "% fat."], rows: p.linhas.map(([l, v]) => [l, dinheiro(v), pf(v)]) };
     const covered = monthly.filter(m => dreRows.some(r => `${r.ano}-${String(r.mes).padStart(2, "0")}` === m.de.slice(0, 7)));
-    dre.chart = { title: "Resultado mensal da DRE (R$)", labels: covered.map(m => m.de.slice(0, 7)), series: [{ label: "Resultado", values: covered.map(m => sum(dreRows.filter(r => `${r.ano}-${String(r.mes).padStart(2, "0")}` === m.de.slice(0, 7)))) }] };
-    dre.paragraphs = [`O resultado consolidado da DRE foi de ${dinheiro(total)} no período recuperado.`, `A estrutura mantém ${groups.length} grupos G1 e os respectivos desdobramentos G2, G3 e G4. Os valores são movimentos mensais, não saldos de encerramento.`];
-    dre.considerations = [`Foram recuperadas ${new Set(dreRows.map(r => `${r.ano}-${r.mes}`)).size} de ${monthly.length} competências. Meses sem movimento retornado não são tratados como resultado zero confirmado.`];
+    dre.chart = { title: "Resultado mensal da DRE (R$)", labels: covered.map(m => m.de.slice(0, 7)), series: [{ label: "Resultado", values: covered.map(m => resumoPainelDre(dreRows.filter(r => `${r.ano}-${String(r.mes).padStart(2, "0")}` === m.de.slice(0, 7))).liq) }] };
+    dre.paragraphs = [`O resultado líquido foi de ${dinheiro(p.liq)}, com margem líquida de ${pf(p.liq)} sobre o faturamento de ${dinheiro(p.fat)}.`, `O EBITDA somou ${dinheiro(p.cards[3][1])} e o resultado antes dos impostos, ${dinheiro(p.cards[5][1])}. Os valores são movimentos mensais, não saldos de encerramento.`];
+    dre.considerations = [`Foram recuperadas ${new Set(dreRows.map(r => `${r.ano}-${r.mes}`)).size} de ${monthly.length} competências; o Painel considera apenas meses fechados (até agosto/2026). Meses sem movimento não são tratados como resultado zero confirmado.`];
   }
   dre.children = (["g2", "g3"] as const).map((level, i) => {
     const child = base(level, `3.${i + 1} ${level.toUpperCase()}`, "CONTROL", dre.sourceFunction, period, generatedAt);
