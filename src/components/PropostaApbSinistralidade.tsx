@@ -6,7 +6,7 @@ import { gridFaixas, type LinhaEmp } from "@/lib/sinistralidadeEmpresas";
 
 const PLANOS = ["2290", "2490", "2890"];
 const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const rel = (a: number, b: number) => (b ? ` (${Math.round((a / b) * 100).toLocaleString("pt-BR")}%)` : "");
+const rel = (a: number, b: number) => (b ? ` (${((a / b) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)` : "");
 const pct = (v: number | null) => (v == null ? "—" : `${(v * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`);
 
 /** Container direito da Proposta APB: sinistralidade da mesma fonte de Sinistralidade › Empresas Menu. */
