@@ -103,7 +103,7 @@ export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?
           {!fixo && <button type="button" onClick={() => setAberto(aberto === p ? null : p)} className={`mb-1 flex w-full items-center gap-2 rounded-lg border ${aberto === p ? "" : "flex-1"} border-border bg-card px-3 py-1.5 text-left text-sm font-semibold shadow-sm hover:bg-accent`}>
             {aberto === p ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}Sinistralidade por faixa · Plano {p}
           </button>}
-          {(fixo || aberto === p) && <Grid titulo={`Plano ${p}`} linhas={linhas.filter((l) => l.plano === p)} />}
+          {(fixo || aberto === p) && <Grid fill={fixo} titulo={`Plano ${p}`} linhas={linhas.filter((l) => l.plano === p)} />}
         </div>
       ))}
     </div>
