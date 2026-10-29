@@ -28,6 +28,7 @@ export default function PropostaApb() {
   const [nivel, setNivel] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [linEnf, setLinEnf] = useState(PRECO_TITULAR_2890[0]);
   const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [sinPct, setSinPct] = useState<number | null>(null);
   const [copartPct, setCopartPct] = useState(20);
   const [depBase, setDepBase] = useState(PRECOS_PROPOSTA[0][0]);
   const linear = useMemo(() => tabelaLinear(linEnf), [linEnf]);
@@ -114,6 +115,7 @@ export default function PropostaApb() {
             <DialogContent semFundo className="max-w-md shadow-2xl" style={{ transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))` }} onInteractOutside={(e) => e.preventDefault()}>
               <DialogHeader className="cursor-move select-none" onPointerDown={(e) => { const o = { x: e.clientX - pos.x, y: e.clientY - pos.y }; const mv = (ev: PointerEvent) => setPos({ x: ev.clientX - o.x, y: ev.clientY - o.y }); const up = () => { window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); }; window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up); }}><DialogTitle>Variáveis do Nível 5</DialogTitle><p className="text-xs font-normal text-muted-foreground">Arraste por aqui para mover</p></DialogHeader>
               <div className="space-y-4 text-sm">
+                <label className="flex items-center gap-2 font-semibold">Sinistralidade:<input aria-label="Sinistralidade" type="number" step="0.01" min="0" value={sinPct ?? Number((sinN3 * 100).toFixed(2))} onChange={(e) => setSinPct(Number(e.target.value) || 0)} className="w-24 rounded border border-input bg-background px-2 py-1 text-right font-normal" />%<button type="button" onClick={() => setSinPct(null)} className="rounded border border-border px-2 py-0.5 text-xs font-normal hover:bg-accent">Nível 3</button></label>
                 <label className="flex items-center gap-2 font-semibold">Coparticipação (% da CPP):<input aria-label="Coparticipação" type="number" step="0.1" min="0" value={copartPct} onChange={(e) => setCopartPct(Number(e.target.value) || 0)} className="w-24 rounded border border-input bg-background px-2 py-1 text-right font-normal" />%</label>
                 <div>
                   <div className="mb-2 font-semibold">Titular</div>
@@ -235,7 +237,7 @@ export default function PropostaApb() {
         </section>
       ))}
         </div>
-        <PropostaApbSinistralidade proj={transf ? grids : undefined} sinFixa={nivel >= 4 ? sinN3 : undefined} copart={nivel === 5 ? copartPct / 100 : undefined} grupo={nivel === 2 ? grids[PLANO_GRUPO] : undefined} fixo={nivel > 1} />
+        <PropostaApbSinistralidade proj={transf ? grids : undefined} sinFixa={nivel === 5 ? (sinPct ?? sinN3 * 100) / 100 : nivel === 4 ? sinN3 : undefined} copart={nivel === 5 ? copartPct / 100 : undefined} grupo={nivel === 2 ? grids[PLANO_GRUPO] : undefined} fixo={nivel > 1} />
       </div>
     </div></div>
   );
