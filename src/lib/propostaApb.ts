@@ -21,10 +21,10 @@ export const DESPESA_FIXA_PROPOSTA = 2_950_000;
 
 /** Projeção anual por faixa: CPP = mensalidade × 12; copart = CPP × 20%; receita total = CPP + copart;
  *  sinistralidade = despesa fixa ÷ receita total geral; despesas da faixa = receita total da faixa × sinistralidade. */
-export function projecaoFaixas(mensalidades: number[]) {
+export function projecaoFaixas(mensalidades: number[], sinFixa?: number) {
   const base = mensalidades.map((m) => { const recCpp = m * 12, recCopart = recCpp * COPART_PROPOSTA; return { recCpp, recCopart, recTotal: recCpp + recCopart }; });
   const total = base.reduce((t, b) => t + b.recTotal, 0);
-  const sin = total ? DESPESA_FIXA_PROPOSTA / total : 0;
+  const sin = sinFixa ?? (total ? DESPESA_FIXA_PROPOSTA / total : 0);
   return { sin, faixas: base.map((b) => ({ ...b, despTotal: b.recTotal * sin })) };
 }
 
@@ -64,3 +64,24 @@ export const idadeSomaPlanos = (linhas: LinhaApb[], planos: string[]) => {
   const todos = planos.some((p) => !PLANOS_APB.includes(p));
   return linhas.filter((l) => todos || planos.includes(l.plano)).reduce((t, l) => t + l.idadeSoma, 0);
 };
+
+/** Nível 4: titulares-alvo + % de dependentes, distribuídos nas mesmas proporções atuais por faixa/acomodação
+ *  (titulares pela distribuição atual dos titulares; dependentes pela dos dependentes), com arredondamento pelo maior resto. */
+export const TITULARES_N4 = 1200;
+export const DEP_PCT_N4 = 0.15;
+export function escalarVidas(linhas: LinhaApb[], titulares = TITULARES_N4, depPct = DEP_PCT_N4): LinhaApb[] {
+  const out = linhas.map((l) => ({ ...l, vidas: 0, idadeSoma: 0 }));
+  const distribuir = (rel: LinhaApb["rel"], alvo: number) => {
+    const idx = linhas.map((l, i) => i).filter((i) => linhas[i].rel === rel);
+    const base = idx.reduce((t, i) => t + linhas[i].vidas, 0);
+    if (!base) return;
+    const q = idx.map((i) => ({ i, x: (linhas[i].vidas * alvo) / base }));
+    q.forEach(({ i, x }) => { out[i].vidas = Math.floor(x); });
+    let resto = alvo - q.reduce((t, { i }) => t + out[i].vidas, 0);
+    [...q].sort((a, b) => (b.x % 1) - (a.x % 1)).forEach(({ i }) => { if (resto > 0) { out[i].vidas++; resto--; } });
+    idx.forEach((i) => { out[i].idadeSoma = linhas[i].vidas ? (linhas[i].idadeSoma / linhas[i].vidas) * out[i].vidas : 0; });
+  };
+  distribuir("Titular", titulares);
+  distribuir("Dependente", Math.round(titulares * depPct));
+  return out;
+}

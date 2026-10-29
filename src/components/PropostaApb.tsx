@@ -7,7 +7,7 @@ import PropostaApbCopart from "@/components/PropostaApbCopart";
 const COPART_DESC: Record<string, string> = { "2290": "Sem Coparticipação", "2490": "Use Bem com teto de R$ 396,96", "2890": "Fácil Flex com teto de R$ 656,10", "Proposta": "Fácil 50 sem teto" };
 const COPART_TIPO = { "2490": "usebem", "2890": "flex", "Proposta": "facil50" } as const;
 import csv from "@/data/propostaApb/vidas_precos_2026-10-29.csv?raw";
-import { parseApb, gridPlano, PLANOS_APB, FAIXAS_APB, PRECOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, idadeSomaPlanos, type FaixaApb } from "@/lib/propostaApb";
+import { parseApb, gridPlano, PLANOS_APB, FAIXAS_APB, PRECOS_APB, PRECOS_PROPOSTA, PLANO_NOVO, PLANO_GRUPO, idadeSomaPlanos, escalarVidas, projecaoFaixas, type FaixaApb } from "@/lib/propostaApb";
 
 const n0 = (v: number) => v.toLocaleString("pt-BR");
 const brl = (v: number | null) => (v == null ? "—" : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
@@ -23,20 +23,23 @@ const Card = ({ icon: Icon, label, value, sub }: { icon: typeof Users; label: st
 
 export default function PropostaApb() {
   const { data, linhas } = useMemo(() => parseApb(csv), []);
-  const [nivel, setNivel] = useState<1 | 2 | 3>(1);
-  const transf = nivel === 3;
+  const linhasN4 = useMemo(() => escalarVidas(linhas), [linhas]);
+  const sinN3 = useMemo(() => projecaoFaixas(gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_NOVO })), PLANO_NOVO, PRECOS_PROPOSTA).faixas.map((f) => f.mensalidade)).sin, [linhas]);
+  const [nivel, setNivel] = useState<1 | 2 | 3 | 4>(1);
+  const transf = nivel >= 3;
   // Transformar: todas as vidas migram para o plano novo 3990, com a tabela proposta.
   // Nível 2: os três planos agrupados em GRUPO, com preços e resultado atuais (preço por faixa varia por plano → não exibido).
-  const planos = nivel === 3 ? [PLANO_NOVO] : nivel === 2 ? [PLANO_GRUPO] : PLANOS_APB;
+  const planos = nivel >= 3 ? [PLANO_NOVO] : nivel === 2 ? [PLANO_GRUPO] : PLANOS_APB;
   const grids = useMemo(() => {
     if (nivel === 3) return { [PLANO_NOVO]: gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_NOVO })), PLANO_NOVO, PRECOS_PROPOSTA) };
+    if (nivel === 4) return { [PLANO_NOVO]: gridPlano(linhasN4.map((l) => ({ ...l, plano: PLANO_NOVO })), PLANO_NOVO, PRECOS_PROPOSTA) };
     if (nivel === 2) {
       const g = gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_GRUPO })), PLANO_GRUPO);
       const media = (i: number, a: 0 | 1) => PLANOS_APB.reduce((t, pl) => t + PRECOS_APB[pl][i][a], 0) / PLANOS_APB.length; // média simples das tabelas 2290/2490/2890
       return { [PLANO_GRUPO]: { ...g, faixas: g.faixas.map((f, i) => ({ ...f, precoEnf: media(i, 0), precoAp: media(i, 1) })) } };
     }
     return Object.fromEntries(PLANOS_APB.map((p) => [p, gridPlano(linhas, p)]));
-  }, [linhas, nivel]) as Record<string, ReturnType<typeof gridPlano>>;
+  }, [linhas, linhasN4, nivel]) as Record<string, ReturnType<typeof gridPlano>>;
   const [sel, setSel] = useState<string>("Todos");
   const selOk = nivel > 1 ? planos[0] : "Todos";
   const [abertos, setAbertos] = useState<Record<string, boolean>>({});
@@ -48,7 +51,7 @@ export default function PropostaApb() {
   }, { vidas: 0, tit: 0, enf: 0, mens: 0 });
   const vis = selOk === "Todos" ? planos : [selOk];
   const k = vis.reduce((a, p) => { const t = grids[p].total; return { vidas: a.vidas + t.total, tit: a.tit + t.enfTit + t.apTit, enf: a.enf + t.enfTit + t.enfDep, mens: a.mens + t.mensalidade }; }, { vidas: 0, tit: 0, enf: 0, mens: 0 });
-  const idadeSoma = idadeSomaPlanos(linhas, vis); // idades exatas pela data de nascimento
+  const idadeSoma = idadeSomaPlanos(nivel === 4 ? linhasN4 : linhas, vis); // idades exatas pela data de nascimento
   const idadeMedia = k.vidas ? idadeSoma / k.vidas : 0;
   const dataBr = data ? data.split("-").reverse().join("/") : "";
 
@@ -87,7 +90,7 @@ export default function PropostaApb() {
           </DialogContent>
         </Dialog>
         <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
-          {([1, 2, 3] as const).map((n) => <button key={n} type="button" onClick={() => setNivel(n)} className={`rounded-md px-3 py-1.5 text-sm font-medium ${nivel === n ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>Nível {n}</button>)}
+          {([1, 2, 3, 4] as const).map((n) => <button key={n} type="button" onClick={() => setNivel(n)} className={`rounded-md px-3 py-1.5 text-sm font-medium ${nivel === n ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>Nível {n}</button>)}
         </div>
         {false && <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
           {(nivel > 1 ? planos : ["Todos", ...planos]).map((p) => (
@@ -97,7 +100,8 @@ export default function PropostaApb() {
         </div>
       </header>
       {nivel === 2 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 2: planos 2290, 2490 e 2890 agrupados como GRUPO, com preços e resultados atuais.</p>}
-      {transf && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 3: todas as vidas dos planos 2290, 2490 e 2890 passam ao plano novo 3990, com a tabela proposta; projeção anual = vidas × preço × 12; copart 20% da CPP; despesas fixas de R$ 2.950.000,00.</p>}
+      {nivel === 4 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 4: igual ao Nível 3, com 1.200 titulares + 15% de dependentes (180), distribuídos como as 854 vidas atuais; despesas = receita total × sinistralidade do Nível 3.</p>}
+      {nivel === 3 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 3: todas as vidas dos planos 2290, 2490 e 2890 passam ao plano novo 3990, com a tabela proposta; projeção anual = vidas × preço × 12; copart 20% da CPP; despesas fixas de R$ 2.950.000,00.</p>}
 
       <section className="grid gap-2 sm:grid-cols-3 xl:grid-cols-6">
         <Card icon={Users} label="Vidas ativas" value={n0(k.vidas)} />
@@ -165,7 +169,7 @@ export default function PropostaApb() {
         </section>
       ))}
         </div>
-        <PropostaApbSinistralidade proj={transf ? grids : undefined} grupo={nivel === 2 ? grids[PLANO_GRUPO] : undefined} fixo={nivel > 1} />
+        <PropostaApbSinistralidade proj={transf ? grids : undefined} sinFixa={nivel === 4 ? sinN3 : undefined} grupo={nivel === 2 ? grids[PLANO_GRUPO] : undefined} fixo={nivel > 1} />
       </div>
     </div></div>
   );

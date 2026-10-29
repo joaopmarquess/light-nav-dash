@@ -12,9 +12,9 @@ const pct = (v: number | null) => (v == null ? "—" : `${(v * 100).toLocaleStri
 
 /** Container direito da Proposta APB: sinistralidade da mesma fonte de Sinistralidade › Empresas Menu. */
 type Grids = Record<string, ReturnType<typeof gridPlano>>;
-const deProjecao = (g: Grids): LinhaEmp[] => {
+const deProjecao = (g: Grids, sinFixa?: number): LinhaEmp[] => {
   const fs = Object.keys(g).flatMap((p) => g[p].faixas.map((f) => ({ p, f })));
-  const { faixas } = projecaoFaixas(fs.map(({ f }) => f.mensalidade));
+  const { faixas } = projecaoFaixas(fs.map(({ f }) => f.mensalidade), sinFixa);
   return fs.map(({ p, f }, i) => ({ plano: p, faixa: f.faixa, vidas: f.total, ...faixas[i] }));
 };
 
@@ -36,7 +36,7 @@ export function distribuirSemFaixa(ls: LinhaEmp[]): LinhaEmp[] {
   return com.map((l) => { const w = l.vidas / totV; const r = { ...l }; ks.forEach((k) => { r[k] = l[k] + tot[k] * w; }); return r; });
 }
 
-export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?: Grids; grupo?: ReturnType<typeof gridPlano>; fixo?: boolean }) {
+export default function PropostaApbSinistralidade({ proj, grupo, fixo, sinFixa }: { proj?: Grids; sinFixa?: number; grupo?: ReturnType<typeof gridPlano>; fixo?: boolean }) {
   const [base, setLinhas] = useState<LinhaEmp[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [aberto, setAberto] = useState<string | null>(null);
@@ -50,7 +50,7 @@ export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?
   const vidasArquivo = grupo && base ? base.reduce((a, l) => a + l.vidas, 0) : null; // Nível 2: cards de cima mostram as vidas do arquivo
   if (!linhas && !proj) return <section className="flex items-center gap-2 rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando sinistralidade…</section>;
 
-  if (proj) linhas = deProjecao(proj);
+  if (proj) linhas = deProjecao(proj, sinFixa);
   else if (grupo && linhas) {
     const g = grupo;
     linhas = porFaixa(distribuirSemFaixa(linhas.map((l) => ({ ...l, plano: "GRUPO" })))).map((l) => ({ ...l, vidas: g.faixas.find((f) => f.faixa === l.faixa)?.total ?? 0 }));
@@ -72,7 +72,7 @@ export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?
     <div className="flex h-full flex-col gap-2 [&_section]:p-3 [&_h3]:mb-1">
       <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
         <h3 className="text-base font-semibold text-foreground">{proj ? "Projeção anual — tabela proposta" : "Sinistralidade 09/2025 a 08/2026"}</h3>
-        <p className="mb-2 text-xs text-muted-foreground">{proj ? "Vidas atuais × preço proposto × 12 · copart 20% da CPP · despesas de R$ 2.950.000,00 · despesas da faixa = receita total × sinistralidade" : "Fonte: MENU_SB_SINISTRALIDA.XLS (mesma de Sinistralidade › Empresas Menu)"}</p>
+        <p className="mb-2 text-xs text-muted-foreground">{proj ? sinFixa != null ? `1.200 titulares + 15% dependentes × preço proposto × 12 · copart 20% da CPP · sinistralidade do Nível 3 (${(sinFixa * 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%) × receita total` : "Vidas atuais × preço proposto × 12 · copart 20% da CPP · despesas de R$ 2.950.000,00 · despesas da faixa = receita total × sinistralidade" : "Fonte: MENU_SB_SINISTRALIDA.XLS (mesma de Sinistralidade › Empresas Menu)"}</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {cards.map((c) => (
             <div key={c.t} className="rounded-md border border-border px-2 py-1 text-center">
