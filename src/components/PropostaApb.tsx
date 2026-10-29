@@ -25,12 +25,14 @@ export default function PropostaApb() {
   const { data, linhas } = useMemo(() => parseApb(csv), []);
   const linhasN4 = useMemo(() => escalarVidas(linhas), [linhas]);
   const sinN3 = useMemo(() => projecaoFaixas(gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_NOVO })), PLANO_NOVO, PRECOS_PROPOSTA).faixas.map((f) => f.mensalidade)).sin, [linhas]);
-  const [nivel, setNivel] = useState<1 | 2 | 3 | 4 | 5>(1);
-  const [linEnf, setLinEnf] = useState(199.99);
-  const [pos, setPos] = useState({ x: 0, y: 0 });
-  const [sinPct, setSinPct] = useState(90);
-  const [copartPct, setCopartPct] = useState(25);
-  const [depBase, setDepBase] = useState(125);
+  const [nivel, setNivel] = useState<1 | 2 | 3 | 4>(1);
+  // Níveis 3 e 4: mesma mecânica (vidas do cenário 1.242 titulares + 15%), cada um com suas próprias variáveis.
+  const VARS_PADRAO = { linEnf: 199.99, sinPct: 90, copartPct: 25, depBase: 125 };
+  const [vars, setVars] = useState<Record<3 | 4, typeof VARS_PADRAO>>({ 3: VARS_PADRAO, 4: VARS_PADRAO });
+  const vk = (nivel >= 3 ? nivel : 3) as 3 | 4;
+  const { linEnf, sinPct, copartPct, depBase } = vars[vk];
+  const setVar = (k: keyof typeof VARS_PADRAO) => (v: number) => setVars((x) => ({ ...x, [vk]: { ...x[vk], [k]: v } }));
+  const setLinEnf = setVar("linEnf"), setSinPct = setVar("sinPct"), setCopartPct = setVar("copartPct"), setDepBase = setVar("depBase");
   const linear = useMemo(() => tabelaLinear(linEnf), [linEnf]);
   const precoDep = useMemo(() => tabelaDependente(depBase), [depBase]);
   const n5 = useMemo(() => gridsN5(linhasN4, linear, precoDep), [linhasN4, linear, precoDep]);
@@ -39,9 +41,7 @@ export default function PropostaApb() {
   // Nível 2: os três planos agrupados em GRUPO, com preços e resultado atuais (preço por faixa varia por plano → não exibido).
   const planos = nivel >= 3 ? [PLANO_NOVO] : nivel === 2 ? [PLANO_GRUPO] : PLANOS_APB;
   const grids = useMemo(() => {
-    if (nivel === 3) return { [PLANO_NOVO]: gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_NOVO })), PLANO_NOVO, PRECOS_PROPOSTA) };
-    if (nivel === 5) return { [PLANO_NOVO]: n5.todos };
-    if (nivel === 4) return { [PLANO_NOVO]: gridPlano(linhasN4.map((l) => ({ ...l, plano: PLANO_NOVO })), PLANO_NOVO, PRECOS_PROPOSTA) };
+    if (nivel >= 3) return { [PLANO_NOVO]: n5.todos };
     if (nivel === 2) {
       const g = gridPlano(linhas.map((l) => ({ ...l, plano: PLANO_GRUPO })), PLANO_GRUPO);
       const media = (i: number, a: 0 | 1) => PLANOS_APB.reduce((t, pl) => t + PRECOS_APB[pl][i][a], 0) / PLANOS_APB.length; // média simples das tabelas 2290/2490/2890
@@ -70,7 +70,7 @@ export default function PropostaApb() {
   }, { vidas: 0, tit: 0, enf: 0, mens: 0 });
   const vis = selOk === "Todos" ? planos : [selOk];
   const k = vis.reduce((a, p) => { const t = grids[p].total; return { vidas: a.vidas + t.total, tit: a.tit + t.enfTit + t.apTit, enf: a.enf + t.enfTit + t.enfDep, mens: a.mens + t.mensalidade }; }, { vidas: 0, tit: 0, enf: 0, mens: 0 });
-  const idadeSoma = idadeSomaPlanos(nivel >= 4 ? linhasN4 : linhas, vis); // idades exatas pela data de nascimento
+  const idadeSoma = idadeSomaPlanos(nivel >= 3 ? linhasN4 : linhas, vis); // idades exatas pela data de nascimento
   const idadeMedia = k.vidas ? idadeSoma / k.vidas : 0;
   const dataBr = data ? data.split("-").reverse().join("/") : "";
 
@@ -109,11 +109,11 @@ export default function PropostaApb() {
           </DialogContent>
         </Dialog>
         <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
-          {([1, 2, 3, 4, 5] as const).map((n) => <button key={n} type="button" onClick={() => setNivel(n)} className={`rounded-md px-3 py-1.5 text-sm font-medium ${nivel === n ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>Nível {n}</button>)}
+          {([1, 2, 3, 4] as const).map((n) => <button key={n} type="button" onClick={() => setNivel(n)} className={`rounded-md px-3 py-1.5 text-sm font-medium ${nivel === n ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>Nível {n}</button>)}
           <Dialog modal={false} onOpenChange={(o) => o && setPos({ x: 0, y: 0 })}>
-            <DialogTrigger asChild><button type="button" tabIndex={nivel === 5 ? 0 : -1} aria-hidden={nivel !== 5} className={`${nivel === 5 ? "" : "invisible pointer-events-none"} rounded-md border border-primary px-3 py-1.5 text-sm text-primary hover:bg-accent`}>Variáveis</button></DialogTrigger>
+            <DialogTrigger asChild><button type="button" tabIndex={nivel >= 3 ? 0 : -1} aria-hidden={nivel < 3} className={`${nivel >= 3 ? "" : "invisible pointer-events-none"} rounded-md border border-primary px-3 py-1.5 text-sm text-primary hover:bg-accent`}>Variáveis</button></DialogTrigger>
             <DialogContent semFundo className="max-w-md shadow-2xl" style={{ transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))` }} onInteractOutside={(e) => e.preventDefault()}>
-              <DialogHeader className="cursor-move select-none" onPointerDown={(e) => { const o = { x: e.clientX - pos.x, y: e.clientY - pos.y }; const mv = (ev: PointerEvent) => setPos({ x: ev.clientX - o.x, y: ev.clientY - o.y }); const up = () => { window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); }; window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up); }}><DialogTitle>Variáveis do Nível 5</DialogTitle><p className="text-xs font-normal text-muted-foreground">Arraste por aqui para mover</p></DialogHeader>
+              <DialogHeader className="cursor-move select-none" onPointerDown={(e) => { const o = { x: e.clientX - pos.x, y: e.clientY - pos.y }; const mv = (ev: PointerEvent) => setPos({ x: ev.clientX - o.x, y: ev.clientY - o.y }); const up = () => { window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); }; window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up); }}><DialogTitle>Variáveis do Nível {nivel}</DialogTitle><p className="text-xs font-normal text-muted-foreground">Arraste por aqui para mover</p></DialogHeader>
               <div className="space-y-4 text-sm">
                 <label className="flex items-center gap-2 font-semibold">Sinistralidade:<input aria-label="Sinistralidade" type="number" step="0.01" min="0" value={sinPct} onChange={(e) => setSinPct(Number(e.target.value) || 0)} className="w-24 rounded border border-input bg-background px-2 py-1 text-right font-normal" />%<button type="button" onClick={() => setSinPct(90)} className="rounded border border-border px-2 py-0.5 text-xs font-normal hover:bg-accent">Padrão</button></label>
                 <label className="flex items-center gap-2 font-semibold">Coparticipação (% da CPP):<input aria-label="Coparticipação" type="number" step="0.1" min="0" value={copartPct} onChange={(e) => setCopartPct(Number(e.target.value) || 0)} className="w-24 rounded border border-input bg-background px-2 py-1 text-right font-normal" />%</label>
@@ -140,14 +140,12 @@ export default function PropostaApb() {
         </div>
       </header>
       {nivel === 2 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 2: planos 2290, 2490 e 2890 agrupados como GRUPO, com preços e resultados atuais.</p>}
-      {nivel === 4 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 4: igual ao Nível 3, com 1.242 titulares nas quantidades por faixa fornecidas + 15% de dependentes (186), distribuídos como hoje; despesas = receita total × sinistralidade do Nível 3.</p>}
-      {nivel === 5 && (
+      {nivel >= 3 && (
         <div className="flex items-center justify-between gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 py-1 text-xs text-foreground">
-          <span className="truncate">Nível 5: vidas do Nível 4 no plano 3990; titulares com preço linear e dependentes com tabela por faixa; despesas = receita total × sinistralidade do Nível 3.</span>
+          <span className="truncate">Nível {nivel}: 1.242 titulares + 15% dependentes no plano 3990; titulares com preço linear e dependentes com tabela por faixa; despesas = receita total × sinistralidade.</span>
 
         </div>
       )}
-      {nivel === 3 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 3: todas as vidas dos planos 2290, 2490 e 2890 passam ao plano novo 3990, com a tabela proposta; projeção anual = vidas × preço × 12; copart 20% da CPP; despesas fixas de R$ 2.950.000,00.</p>}
 
       <section className="grid gap-2 sm:grid-cols-3 xl:grid-cols-6">
         <Card icon={Users} label="Vidas ativas" value={n0(k.vidas)} />
@@ -155,7 +153,7 @@ export default function PropostaApb() {
         <Card icon={Users} label="Dependentes" value={n0(k.vidas - k.tit)} sub={pct(k.vidas - k.tit, k.vidas)} />
         <Card icon={CalendarDays} label="Idade média" value={`${idadeMedia.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} anos`} />
         <Card icon={Wallet} label="Mensalidade total" value={brl(k.mens)} sub={`Anual: ${brl(k.mens * 12)}`} />
-        {(() => { const tm = k.vidas ? k.mens / k.vidas : 0; const tc = nivel >= 3 ? tm * (nivel === 5 ? copartPct / 100 : COPART_PROPOSTA) : null; return (
+        {(() => { const tm = k.vidas ? k.mens / k.vidas : 0; const tc = nivel >= 3 ? tm * (copartPct / 100) : null; return (
           <div className="rounded-lg border border-border bg-card px-3 py-2 text-center shadow-sm">
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground"><Receipt className="h-4 w-4 text-primary" />Ticket</div>
             <div className="mt-0.5 grid grid-cols-3 gap-1">{([["Mens", tm], ["Copar", tc], ["Médio", tc == null ? null : tm + tc]] as const).map(([l, v]) => <div key={l}><div className="text-[11px] text-muted-foreground">Ticket {l}</div><div className={`text-sm font-semibold ${l === "Médio" ? "text-primary" : "text-foreground"}`}>{brl(v)}</div></div>)}</div>
@@ -203,7 +201,7 @@ export default function PropostaApb() {
           {(abertos[p] || nivel > 1) && (
           <div className={`overflow-x-auto px-3 pb-2 ${nivel > 1 ? "flex flex-1 flex-col" : ""}`}>
             <div className="mb-1 flex justify-end"><button type="button" onClick={() => setRel((r) => !r)} className="rounded-md border border-border px-2 py-1 text-xs hover:bg-accent">{rel ? "Recolher Titular/Dependente" : "Expandir Titular/Dependente"}</button></div>
-            {!(nivel === 1 && p === "2890") && nivel !== 5 && (
+            {!(nivel === 1 && p === "2890") && nivel < 3 && (
             <table className={`w-full text-sm ${nivel > 1 ? "h-full flex-1" : ""}`}>
               <thead className="text-muted-foreground">
                 <tr><th rowSpan={rel ? 3 : 2} className="px-3 py-1.5 text-left align-bottom">Faixa</th><th colSpan={rel ? 5 : 3} className="border-b border-border px-3 py-1.5 text-center">Vidas</th><th colSpan={3} className="border-b border-border px-3 py-1.5 text-center">Preço</th></tr>
@@ -216,7 +214,7 @@ export default function PropostaApb() {
               </tbody>
             </table>
             )}
-            {((nivel === 1 && p === "2890") ? sub2890 : nivel === 5 ? ([["Titular × tabela linear", n5.tit], ["Dependente × tabela por faixa", n5.dep]] as const) : []).map(([nome, g]) => (
+            {((nivel === 1 && p === "2890") ? sub2890 : nivel >= 3 ? ([["Titular × tabela linear", n5.tit], ["Dependente × tabela por faixa", n5.dep]] as const) : []).map(([nome, g]) => (
               <div key={nome} className="mb-3">
                 <div className="px-1 py-1 text-sm font-semibold text-foreground">{nome}</div>
             <table key={nome} className={`w-full text-sm ${nivel > 1 ? "h-full flex-1" : ""}`}>
@@ -237,7 +235,7 @@ export default function PropostaApb() {
         </section>
       ))}
         </div>
-        <PropostaApbSinistralidade proj={transf ? grids : undefined} sinFixa={nivel === 5 ? sinPct / 100 : nivel === 4 ? sinN3 : undefined} copart={nivel === 5 ? copartPct / 100 : undefined} grupo={nivel === 2 ? grids[PLANO_GRUPO] : undefined} fixo={nivel > 1} />
+        <PropostaApbSinistralidade proj={transf ? grids : undefined} sinFixa={nivel >= 3 ? sinPct / 100 : undefined} copart={nivel >= 3 ? copartPct / 100 : undefined} grupo={nivel === 2 ? grids[PLANO_GRUPO] : undefined} fixo={nivel > 1} />
       </div>
     </div></div>
   );
