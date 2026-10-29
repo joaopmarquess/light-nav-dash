@@ -18,6 +18,12 @@ export const PRECOS_PROPOSTA: [number, number][] = [[110.53, 165.79], [128.99, 1
 export const PLANO_NOVO = "3990";
 export const PLANO_GRUPO = "GRUPO";
 export const COPART_PROPOSTA = 0.2; // copart = 20% da receita CPP
+/** Ticket mensal histórico: copart anual / 12 / vidas da mesma fonte Menu; ausência não é zero. */
+export function ticketCopartAtual(linhas: { vidas: number; recCopart: number }[] | null): number | null {
+  if (!linhas?.length) return null;
+  const vidas = linhas.reduce((s, l) => s + l.vidas, 0);
+  return vidas > 0 ? linhas.reduce((s, l) => s + l.recCopart, 0) / 12 / vidas : null;
+}
 /** Despesa anual fixa da proposta (R$ 2.950.000,00). */
 export const DESPESA_FIXA_PROPOSTA = 2_950_000;
 

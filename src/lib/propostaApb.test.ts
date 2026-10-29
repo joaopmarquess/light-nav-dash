@@ -1,8 +1,19 @@
 import { describe, it, expect } from "vitest";
 import csv from "@/data/propostaApb/vidas_precos_2026-10-29.csv?raw";
-import { parseApb, gridPlano } from "./propostaApb";
+import { parseApb, gridPlano, ticketCopartAtual } from "./propostaApb";
 
 const { linhas } = parseApb(csv);
+
+describe("ticket copart dos níveis 1 e 2", () => {
+  it("divide copart anual por 12 meses e pelas vidas da mesma fonte", () => {
+    expect(ticketCopartAtual([{ vidas: 20, recCopart: 0 }, { vidas: 198, recCopart: 120000 }, { vidas: 895, recCopart: 240000 }])).toBeCloseTo(360000 / 12 / 1113, 10);
+  });
+  it("preserva indisponibilidade em vez de mostrar zero", () => {
+    expect(ticketCopartAtual(null)).toBeNull();
+    expect(ticketCopartAtual([])).toBeNull();
+    expect(ticketCopartAtual([{ vidas: 0, recCopart: 100 }])).toBeNull();
+  });
+});
 
 describe("Proposta APB", () => {
   it("totaliza 854 vidas", () => expect(linhas.reduce((s, l) => s + l.vidas, 0)).toBe(854));
