@@ -13,7 +13,7 @@ describe("Proposta APB", () => {
   });
   it("mensalidade = vidas × preço", () => {
     expect(gridPlano(linhas, "2290").total.mensalidade).toBeCloseTo(12715.41, 2);
-    expect(gridPlano(linhas, "2890").total.mensalidade).toBeCloseTo(163424.21, 2);
+    expect(gridPlano(linhas, "2890").total.mensalidade).toBeCloseTo(153037.73, 2);
   });
   it("preço aparece mesmo sem vidas", () => {
     const f = gridPlano(linhas, "2290").faixas[9];

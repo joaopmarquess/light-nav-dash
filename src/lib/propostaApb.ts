@@ -10,6 +10,8 @@ export const PRECOS_APB: Record<string, [number, number][]> = {
   "2490": [[224.86, 337.3], ...Array.from({ length: 9 }, () => [326.99, 490.5] as [number, number])],
   "2890": [[122.27, 184.16], [143.27, 214.91], [167.19, 250.79], [184.24, 276.37], [215, 322.52], [245.74, 368.64], [301.03, 451.58], [375.38, 563.12], [498.12, 747.26], [736.47, 1104.82]],
 };
+/** Titulares do 2890: preço único para todas as idades (Enfermaria, Apartamento). */
+export const PRECO_TITULAR_2890: [number, number] = [249.17, 373.76];
 
 // Tabela proposta (Enfermaria, Apartamento) — mesma para todos os planos no modo "Transformar".
 export const PRECOS_PROPOSTA: [number, number][] = [[110.53, 165.79], [128.99, 193.47], [150.53, 225.77], [165.88, 248.79], [193.58, 290.33], [221.26, 331.84], [271.04, 406.5], [337.98, 506.9], [448.5, 672.65], [663.1, 994.51]];
@@ -41,6 +43,8 @@ export function parseApb(csv: string): { data: string; linhas: LinhaApb[] } {
     preco: num(preco),
     idadeSoma: num(idade ?? "0"),
   })) as LinhaApb[];
+  // 2890: titulares com preço linear (00 a 999 anos); dependentes seguem a tabela por faixa.
+  for (const l of linhas) if (l.plano === "2890" && l.rel === "Titular") l.preco = PRECO_TITULAR_2890[l.acom === "Enfermaria" ? 0 : 1];
   return { data: rows[0]?.[0] ?? "", linhas };
 }
 
