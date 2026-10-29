@@ -128,7 +128,7 @@ export default function PropostaApb() {
               <tbody>{FAIXAS_APB.map((f, i) => <tr key={f} className="border-t border-border">
                 <td className="px-3 py-1.5 font-medium">{f}</td>
                 {PLANOS_APB.flatMap((p) => [<td key={p + "e"} className="border-l border-border px-3 py-2.5 text-center">{brl(PRECOS_APB[p][i][0])}</td>, <td key={p + "a"} className="px-3 py-2.5 text-center">{brl(PRECOS_APB[p][i][1])}</td>])}
-                {i === 0 && estrategicoTitular.map((v, j) => <td key={`titular-${j}`} rowSpan={FAIXAS_APB.length} className={`px-3 py-2.5 text-center align-middle font-semibold ${j === 0 ? "border-l border-border" : ""}`}>{brl(v)}</td>)}
+                {i === 0 && estrategicoTitular.map((v, j) => <td key={`titular-${j}`} rowSpan={FAIXAS_APB.length} className="border-x border-border px-3 py-2.5 text-center align-middle font-semibold">{brl(v)}</td>)}
                 <td className="border-l border-border px-3 py-2.5 text-center font-semibold">{brl(estrategicoDependente[i][0])}</td>
                 <td className="px-3 py-2.5 text-center font-semibold">{brl(estrategicoDependente[i][1])}</td>
               </tr>)}</tbody>
