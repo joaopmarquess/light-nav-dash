@@ -261,7 +261,7 @@ export default function CarteiraTrial() {
 
       {!grid && (
         <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-3 gap-4 content-start">
-          {([
+          {!suspensos && ([
             ["T", Building2, "Ativos em", null],
             ["A", UserCheck, "Vidas Ativas", kpi?.ativos],
             ["MIX", Users, "Vidas Ativas por contratação", null],
