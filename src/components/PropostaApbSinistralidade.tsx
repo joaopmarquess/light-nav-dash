@@ -75,7 +75,7 @@ export default function PropostaApbSinistralidade({ proj, grupo, fixo }: { proj?
         <p className="mb-2 text-xs text-muted-foreground">{proj ? "Vidas atuais × preço proposto × 12 · copart 20% da CPP · despesas de R$ 2.950.000,00 · despesas da faixa = receita total × sinistralidade" : "Fonte: MENU_SB_SINISTRALIDA.XLS (mesma de Sinistralidade › Empresas Menu)"}</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {cards.map((c) => (
-            <div key={c.t} className="rounded-md border border-border px-2 py-1">
+            <div key={c.t} className="rounded-md border border-border px-2 py-1 text-center">
               <p className="truncate text-xs text-muted-foreground">{c.t}</p>
               <p className={`truncate text-base font-semibold ${c.neg ? "text-destructive" : "text-foreground"}`}>{c.v}</p>
             </div>
