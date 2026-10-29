@@ -9,10 +9,10 @@ const brl = (v: number | null) => (v == null ? "—" : v.toLocaleString("pt-BR",
 const pct = (a: number, b: number) => (b ? `${((a / b) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%` : "—");
 
 const Card = ({ icon: Icon, label, value, sub }: { icon: typeof Users; label: string; value: string; sub?: string }) => (
-  <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-    <div className="flex items-center gap-2 text-sm text-muted-foreground"><Icon className="h-4 w-4 text-primary" />{label}</div>
-    <div className="mt-2 text-2xl font-semibold text-foreground">{value}</div>
-    {sub && <div className="mt-1 text-xs text-muted-foreground">{sub}</div>}
+  <div className="rounded-lg border border-border bg-card px-3 py-2 shadow-sm">
+    <div className="flex items-center gap-2 text-xs text-muted-foreground"><Icon className="h-4 w-4 text-primary" />{label}</div>
+    <div className="mt-0.5 text-xl font-semibold text-foreground">{value}</div>
+    {sub && <div className="text-xs text-muted-foreground">{sub}</div>}
   </div>
 );
 
@@ -56,10 +56,10 @@ export default function PropostaApb() {
   );
 
   return (
-    <div className="h-full space-y-5 overflow-auto">
+    <div className="h-full space-y-2 overflow-auto text-sm [&_td]:py-0.5 [&_th]:py-0.5">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="flex items-center gap-2 text-2xl font-semibold text-foreground"><FileSpreadsheet className="h-6 w-6 text-primary" />Proposta APB</h2>
+          <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground"><FileSpreadsheet className="h-6 w-6 text-primary" />Proposta APB</h2>
           <p className="text-sm text-muted-foreground">Vidas ativas em {dataBr} nos planos 2290, 2490 e 2890 × preços de referência fornecidos (fotografia, não atualiza com a base).</p>
         </div>
         <div className="flex items-center gap-2">
@@ -73,21 +73,21 @@ export default function PropostaApb() {
         </div>
         </div>
       </header>
-      {nivel === 2 && <p className="rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm text-foreground">Nível 2: planos 2290, 2490 e 2890 agrupados como GRUPO, com preços e resultados atuais.</p>}
-      {transf && <p className="rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm text-foreground">Nível 3: todas as vidas dos planos 2290, 2490 e 2890 passam ao plano novo 3990, com a tabela proposta; projeção anual = vidas × preço × 12; copart 16% da CPP; sinistralidade 75%.</p>}
+      {nivel === 2 && <p className="rounded-md border border-primary/40 bg-primary/5 px-3 py-1 text-xs text-foreground">Nível 2: planos 2290, 2490 e 2890 agrupados como GRUPO, com preços e resultados atuais.</p>}
+      {transf && <p className="rounded-md border border-primary/40 bg-primary/5 px-3 py-1 text-xs text-foreground">Nível 3: todas as vidas dos planos 2290, 2490 e 2890 passam ao plano novo 3990, com a tabela proposta; projeção anual = vidas × preço × 12; copart 16% da CPP; sinistralidade 75%.</p>}
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
         <Card icon={Users} label="Vidas ativas" value={n0(k.vidas)} sub={selOk === "Todos" || nivel > 1 ? undefined : `${pct(k.vidas, tot.vidas)} do total`} />
         <Card icon={UserCheck} label="Titulares" value={n0(k.tit)} sub={`${pct(k.tit, k.vidas)} · ${n0(k.vidas - k.tit)} dependentes`} />
         <Card icon={Wallet} label="Mensalidade total" value={brl(k.mens)} sub={`Anual: ${brl(k.mens * 12)}`} />
         <Card icon={Receipt} label="Ticket médio" value={brl(k.vidas ? k.mens / k.vidas : 0)} sub={`Enfermaria ${pct(k.enf, k.vidas)} das vidas`} />
       </section>
 
-      <div className="grid gap-5 xl:grid-cols-2">
-        <div className="min-w-0 space-y-5">
+      <div className="grid gap-2 xl:grid-cols-2">
+        <div className={`min-w-0 ${nivel > 1 ? "flex flex-col" : "space-y-2"}`}>
       {selOk === "Todos" && (
-        <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <h3 className="mb-3 text-sm font-semibold text-foreground">Resumo por plano</h3>
+        <section className="rounded-lg border border-border bg-card p-3 shadow-sm">
+          <h3 className="mb-1 text-sm font-semibold text-foreground">Resumo por plano</h3>
           <table className="w-full text-sm">
             <thead className="text-muted-foreground"><tr>{["Plano", "Vidas", "% vidas", "Titulares", "Dependentes", "Enfermaria", "Apartamento", "Mensalidade", "% receita", "Ticket médio"].map((h) => <th key={h} className="px-3 py-1.5 text-center first:text-left">{h}</th>)}</tr></thead>
             <tbody>
@@ -116,14 +116,14 @@ export default function PropostaApb() {
       )}
 
       {vis.map((p) => (
-        <section key={p} className="rounded-lg border border-border bg-card shadow-sm">
-          <button type="button" onClick={() => setAbertos((a) => ({ ...a, [p]: !a[p] }))} className="flex w-full items-center justify-between gap-2 p-4 text-left hover:bg-accent">
-            <span className="flex items-center gap-2 text-base font-semibold text-foreground">{abertos[p] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}Plano {p}</span>
+        <section key={p} className={`rounded-lg border border-border bg-card shadow-sm ${nivel > 1 ? "flex-1" : ""}`}>
+          <button type="button" disabled={nivel > 1} onClick={() => setAbertos((a) => ({ ...a, [p]: !a[p] }))} className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left enabled:hover:bg-accent">
+            <span className="flex items-center gap-2 text-base font-semibold text-foreground">{nivel > 1 ? null : abertos[p] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}Plano {p}</span>
             <span className="text-sm text-muted-foreground">{n0(grids[p].total.total)} vidas · {brl(grids[p].total.mensalidade)}</span>
           </button>
-          {abertos[p] && (
-          <div className="overflow-x-auto px-4 pb-4">
-            <div className="mb-2 flex justify-end"><button type="button" onClick={() => setRel((r) => !r)} className="rounded-md border border-border px-2 py-1 text-xs hover:bg-accent">{rel ? "Recolher Titular/Dependente" : "Expandir Titular/Dependente"}</button></div>
+          {(abertos[p] || nivel > 1) && (
+          <div className="overflow-x-auto px-3 pb-2">
+            <div className="mb-1 flex justify-end"><button type="button" onClick={() => setRel((r) => !r)} className="rounded-md border border-border px-2 py-1 text-xs hover:bg-accent">{rel ? "Recolher Titular/Dependente" : "Expandir Titular/Dependente"}</button></div>
             <table className="w-full text-sm">
               <thead className="text-muted-foreground">
                 <tr><th rowSpan={rel ? 3 : 2} className="px-3 py-1.5 text-left align-bottom">Faixa</th><th colSpan={rel ? 5 : 3} className="border-b border-border px-3 py-1.5 text-center">Vidas</th><th colSpan={3} className="border-b border-border px-3 py-1.5 text-center">Preço</th></tr>
@@ -140,7 +140,7 @@ export default function PropostaApb() {
         </section>
       ))}
         </div>
-        <PropostaApbSinistralidade proj={transf ? grids : undefined} grupo={nivel === 2} />
+        <PropostaApbSinistralidade proj={transf ? grids : undefined} grupo={nivel === 2} fixo={nivel > 1} />
       </div>
       <p className="text-xs text-muted-foreground">Mensalidade = vidas × preço da faixa e acomodação. Ativo: vigência iniciada e sem desligamento na data; titular = matrícula final 00.</p>
     </div>
