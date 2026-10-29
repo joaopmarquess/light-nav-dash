@@ -270,12 +270,12 @@ export default function CarteiraTrial() {
                 const fmt = (x: number | null) => (x == null ? "—" : `${x.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`);
                 const [pif, pca, pce] = [pc(kpi?.PIF), pc(kpi?.PCA), pc(kpi?.PCE)];
                 const col = pca == null || pce == null ? null : pca + pce;
-                const td = "border border-border px-3 py-1 text-right tabular-nums";
+                const td = "px-3 py-1 text-right tabular-nums";
                 return (
                   <table className="text-lg text-foreground border-collapse">
                     <tbody>
-                      <tr><th className="border border-border px-3 py-1 text-right">PLANOS INDIVIDUAIS/FAMILIARES</th><td className={td}>{fmt(pif)}</td></tr>
-                      <tr><th className="border border-border px-3 py-1 text-right">PLANOS COLETIVOS</th><td className={td}>{fmt(col)}</td></tr>
+                      <tr><th className="px-3 py-1 text-right">PLANOS INDIVIDUAIS/FAMILIARES</th><td className={td}>{fmt(pif)}</td></tr>
+                      <tr><th className="px-3 py-1 text-right">PLANOS COLETIVOS</th><td className={td}>{fmt(col)}</td></tr>
                     </tbody>
                   </table>
                 );
