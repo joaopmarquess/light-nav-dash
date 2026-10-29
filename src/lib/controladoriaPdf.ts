@@ -86,8 +86,8 @@ export async function comporPdfRelatorio(report: ControladoriaReport): Promise<R
             if (data.section !== "body") return;
             const value = String(data.cell.raw);
             if (value.includes("desfavorável")) data.cell.styles.textColor = colors.negative;
-            else if (value.includes("favorável")) data.cell.styles.textColor = [32, 122, 83];
-            else if (value.includes("atenção")) data.cell.styles.textColor = [151, 111, 22];
+            else if (value.includes("favorável")) data.cell.styles.textColor = colors.favorable;
+            else if (value.includes("atenção")) data.cell.styles.textColor = colors.attention;
           },
         });
         y = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y;

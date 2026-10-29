@@ -42,7 +42,12 @@ export default function RelatorioControladoria() {
     finally { if (current === generation.current) setBusy(false); }
   };
   const download = () => { if (pdf && report) pdf.doc.save(`Relatorio_Controladoria_${report.period.de}_${report.period.ate}.pdf`); };
-  const gotoPage = (page: number) => viewer.current?.querySelector(`[data-page="${page}"]`)?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  const gotoPage = (page: number) => {
+    const container = viewer.current;
+    const target = container?.querySelector<HTMLElement>(`[data-page="${page}"]`);
+    if (!container || !target) return;
+    container.scrollTo({ top: target.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop - 24, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  };
   return <div className={`control-report ${preview ? "control-report-preview" : ""}`}>
     <header className="control-report-header">
       <Button asChild variant="ghost" size="icon"><Link to="/" aria-label="Voltar ao AXIS" title="Voltar ao AXIS"><ArrowLeft /></Link></Button>
