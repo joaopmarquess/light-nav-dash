@@ -21,3 +21,8 @@ describe("Proposta APB", () => {
     expect(f.precoAp).toBe(1043.28);
   });
 });
+
+import { COPART_PROPOSTA, SINISTRALIDADE_PROPOSTA } from "./propostaApb";
+describe("premissas da proposta", () => {
+  it("copart 15% e sinistralidade 80%", () => { expect(COPART_PROPOSTA).toBe(0.15); expect(SINISTRALIDADE_PROPOSTA).toBe(0.8); });
+});
