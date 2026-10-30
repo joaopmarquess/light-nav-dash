@@ -2,7 +2,7 @@ import CarteiraTrial from "@/components/CarteiraTrial";
 import CarteiraTrialGeo from "@/components/CarteiraTrialGeo";
 import CarteiraTrialMov from "@/components/CarteiraTrialMov";
 import CarteiraTabelas from "@/components/CarteiraTabelas";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Home,
@@ -88,6 +88,7 @@ import CtrlContas from "@/control/ContasHub";
 import CtrlOrcamento from "@/control/OrcamentoTrial";
 import CtrlDashboards from "@/control/Dashboards";
 import CtrlRelatorio from "@/control/RelatorioControladoria";
+import CtrlSimulador from "@/control/Simulador";
 import { DRE_FULL_NAME, DRE_MENU_NAME, REPORT_FULL_NAME, SLIDES_SHORT_TEXT, SLIDES_MEDIUM_TEXT, SLIDES_LONG_TEXT } from "@/control/dreLabels";
 import { ListTree, Users2, ArrowLeft } from "lucide-react";
 
@@ -150,6 +151,7 @@ const controlItem: MenuItem = {
       { icon: FileText, label: "Relatório", id: "Control · Relatório" },
       { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente" },
       { icon: TrendingUp, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
+      { icon: FlaskConical, label: "Simulador", id: "Control · Simulador" },
       { icon: BarChart3, label: SLIDES_SHORT_TEXT, id: "Control · Dashboards" },
       { icon: Settings, label: "Configurações", id: "__cfg_control__" },
       { icon: ListTree, label: "Contas", id: "Control · Contas", nivel: 2 },
@@ -244,16 +246,24 @@ const menuItems: MenuItem[] = [
 ];
 
 const LAB_IDS = new Set<string>(["Laboratory", ...labItems.flatMap((g) => g.children ? g.children.map((c) => c.id ?? c.label) : [g.label])]);
+const onControlSimulatorViewState = (_enabled: boolean[]) => {};
 
 const Index = () => {
   const navigate = useNavigate();
-  const [active, setActive] = useState("Home");
+  const [active, setActiveState] = useState("Home");
+  const [ctrlSimDirty, setCtrlSimDirty] = useState(false);
+  const [ctrlSimBusy, setCtrlSimBusy] = useState(false);
+  const setActive = useCallback((next: string) => {
+    if (ctrlSimBusy) return;
+    if (active === "Control · Simulador" && next !== active && ctrlSimDirty && !window.confirm("Há alterações não salvas. Deseja sair e descartá-las?")) return;
+    setActiveState(next);
+  }, [active, ctrlSimBusy, ctrlSimDirty]);
   const { nome, signOut } = useAuth();
   const [ctrlAba, setCtrlAba] = useState<string | null>(null);
   const [ctrlOrcDre, setCtrlOrcDre] = useState(false);
   const [ctrlCfgOpen, setCtrlCfgOpen] = useState(false);
   const [ctrlDreDre, setCtrlDreDre] = useState(false);
-  const controlTitle = active === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : active === "Control · Relatório" ? REPORT_FULL_NAME : active === "Control · Dashboards" ? SLIDES_LONG_TEXT : active === "Control · Orçamento Vigente" ? "Orçamento 2026" : active === "Control · Orçamento 2027" ? "Orçamento 2027" : active === "Control · Contas" ? "Contas" : null;
+  const controlTitle = active === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : active === "Control · Relatório" ? REPORT_FULL_NAME : active === "Control · Dashboards" ? SLIDES_LONG_TEXT : active === "Control · Orçamento Vigente" ? "Orçamento 2026" : active === "Control · Orçamento 2027" ? "Orçamento 2027" : active === "Control · Simulador" ? "Simulador" : active === "Control · Contas" ? "Contas" : null;
   const controlSubtitle = active === "Control · Dashboards" ? SLIDES_MEDIUM_TEXT : null;
   useEffect(() => {
     if (active === "Control · Orçamento 2027") return;
@@ -290,7 +300,7 @@ const Index = () => {
       window.removeEventListener("open-bi-overview", biHandler);
       window.removeEventListener("open-unimed-uberaba", unimedHandler);
     };
-  }, []);
+  }, [setActive]);
 
   useEffect(() => {
     if (active !== "Área Geográfica" && ativosDrillNome) setAtivosDrillNome(null);
@@ -301,7 +311,7 @@ const Index = () => {
     active !== "Consulta" && (consulta.loading || (consulta.triggered && !consulta.revealed && !!consulta.periodo));
 
   return (
-    <div className="h-screen overflow-hidden flex w-full bg-background">
+    <div className={`h-screen overflow-hidden flex w-full bg-background ${active === "Control · Simulador" ? "control-simulator-shell" : ""}`}>
       <aside
         className={`${collapsed ? "w-16" : "w-64"} border-r border-border bg-card flex flex-col transition-all duration-200`}
       >
@@ -535,7 +545,7 @@ const Index = () => {
             <div className="h-9 w-9 rounded-full bg-accent flex items-center justify-center text-primary text-sm font-semibold">
               {(nome ?? "U").charAt(0).toUpperCase()}
             </div>
-            <button onClick={signOut} title="Sair"
+            <button disabled={ctrlSimBusy} onClick={() => { if (!ctrlSimDirty || window.confirm("Há alterações não salvas. Deseja sair e descartá-las?")) signOut(); }} title="Sair"
               className="flex items-center gap-1.5 h-9 px-3 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-primary transition-colors">
               <LogOut className="h-4 w-4" /> Sair
             </button>
@@ -672,6 +682,8 @@ const Index = () => {
             <Promocoes />
           ) : active === "Administradoras" ? (
             <AdministradorasSim />
+          ) : active === "Control · Simulador" ? (
+            <CtrlSimulador onViewState={onControlSimulatorViewState} onDirty={setCtrlSimDirty} onBusy={setCtrlSimBusy} />
           ) : active === "Control · DRE Gerencial PE" ? (
             ctrlDreDre ? <CtrlDRE onAba={() => setCtrlDreDre(false)} /> : <CtrlDRE painel onAba={() => setCtrlDreDre(true)} />
           ) : active === "Control · Contas" ? (
