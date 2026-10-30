@@ -3,9 +3,9 @@ import { BookOpen, CalendarRange, FileBarChart2, FileDown, Eye, Loader2, Refresh
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { carregarRelatorio, type ControladoriaReport } from "@/lib/relatorioControladoria/controladoriaDados";
-import { dataBR, periodoRelatorio } from "@/lib/relatorioControladoria/controladoriaRegras";
-import { comporPdfRelatorio, paginasRelatorio, type ReportPdf } from "@/lib/relatorioControladoria/controladoriaPdf";
+import { carregarRelatorio, type ControladoriaReport } from "@/control/relatorio/controladoriaDados";
+import { dataBR, periodoRelatorio } from "@/control/relatorio/controladoriaRegras";
+import { comporPdfRelatorio, paginasRelatorio, type ReportPdf } from "@/control/relatorio/controladoriaPdf";
 
 const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 export default function RelatorioControladoria() {

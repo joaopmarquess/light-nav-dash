@@ -1,14 +1,14 @@
 import { hostinger } from "@/lib/hostingerClient";
 import { supabase } from "@/integrations/supabase/client";
-import { loadDreHostinger, type DreHRow } from "@/lib/dreHostinger";
-import { mergeOrcamento } from "@/lib/orcamentoLocal";
-import { realizadosOrcamento } from "./orcamentoRegras";
+import { loadDreHostinger, type DreHRow } from "@/control/dreHostinger";
+import { mergeOrcamento } from "@/control/orcamentoLocal";
+import { realizadosOrcamento } from "@/control/orcamentoRegras";
 import { datasVidasIndicadores, mesesMovimentacao, somarTotaisMovimentacao } from "./movimentacaoCarga";
 import { dinheiro, numero, percentual, type ReportPeriod } from "./controladoriaRegras";
 import { agruparPorAno, anosSinistralidade, saldoCompetencia, sinistralidade, somaVazia, somarTotais, type SomaCompetencia } from "./sinistralidadeCompetencias";
 import { resumoMovimentacao } from "./movimentacaoResumo";
-import { resumoPainelDre } from "./drePainel";
-import { aplicarRealizadoMv, gruposOrcamentoDre, impostosFederais, resultadoLiquido, valoresOrcamento } from "./orcamentoDre";
+import { resumoPainelDre } from "@/control/drePainel";
+import { aplicarRealizadoMv, gruposOrcamentoDre, impostosFederais, resultadoLiquido, valoresOrcamento } from "@/control/orcamentoDre";
 
 export const UNAVAILABLE = "Informação não disponível na fonte atual.";
 export type ReportTable = { headers: string[]; rows: string[][] };
