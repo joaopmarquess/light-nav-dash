@@ -30,3 +30,17 @@ describe("Paginação do balancete Control", () => {
     expect(bal.filter(c => c.filters.nr_mes === 7).map(c => c.range)).toEqual([[0, 999], [1000, 1999]]);
   });
 });
+describe("período de Demonstrações", () => {
+  it("usa o último mês cujas contas 41 superam R$ 20 milhões", async () => {
+    const { ultimoMesContas41 } = await import("./dreHostinger");
+    expect(ultimoMesContas41([
+      { nr_mes: 8, vl_debito: 26_000_000, vl_credito: 0 },
+      { nr_mes: 9, vl_debito: 29_000_000, vl_credito: 0 },
+      { nr_mes: 10, vl_debito: 0, vl_credito: 0 },
+    ])).toBe(9);
+  });
+  it("não aceita exatamente R$ 20 milhões", async () => {
+    const { ultimoMesContas41 } = await import("./dreHostinger");
+    expect(ultimoMesContas41([{ nr_mes: 9, vl_debito: 20_000_000, vl_credito: 0 }])).toBe(0);
+  });
+});

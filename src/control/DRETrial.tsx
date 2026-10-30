@@ -1,21 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChevronRight } from "lucide-react";
-import { loadDreHostinger, type DreHRow } from "@/control/dreHostinger";
+import { loadDreHostinger, loadMesesDemonstracoes, type DreHRow } from "@/control/dreHostinger";
 import { DRE_FULL_NAME } from "@/control/dreLabels";
 import { grupoPainelDre } from "@/control/drePainel";
 import { Button } from "@/components/ui/button";
 
-// DRE (Trial): reconstruído do zero, só com o balancete MV + plano 9D (ver src/lib/dreHostinger.ts).
+// DRE (Trial): reconstruído do zero, só com o balancete MV + plano 9D (ver src/control/dreHostinger.ts).
 const ANO = 2026;
 const NOMES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 type Col = { label: string; meses: number[]; kind: "mes" | "ano" };
-// Até Ago/2026, sem subtotais de trimestre; última coluna = total Jan–Ago
-const ULTIMO_MES = 8;
-const ATE = Array.from({ length: ULTIMO_MES }, (_, i) => i + 1);
-const COLS: Col[] = [
-  ...ATE.map((m): Col => ({ label: `${NOMES[m - 1]}/${ANO}`, meses: [m], kind: "mes" })),
-  { label: `Jan–Ago/${ANO}`, meses: ATE, kind: "ano" },
-];
+// Período: jan até o último mês em que as contas 41 superam R$ 20 milhões; última coluna = acumulado
 const colCls = (c: Col) => (c.kind === "ano" ? "bg-accent font-bold" : "");
 const novo = (cols: Col[]) => cols.map(() => 0);
 const somar = (arr: number[], r: DreHRow, cols: Col[]) => cols.forEach((c, i) => { if (c.meses.includes(r.mes)) arr[i] += r.valor; });
@@ -75,18 +69,30 @@ type DRETrialProps = {
   historico?: boolean;
 };
 
-const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses = ATE, historico = false }: DRETrialProps = {}) => {
+const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, historico = false }: DRETrialProps = {}) => {
+  const [mesesAuto, setMesesAuto] = useState<number[] | null>(null);
+  const meses = mesesProp ?? mesesAuto;
   const [rows, setRows] = useState<DreHRow[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [open, setOpen] = useState<Record<string, boolean>>({});
-  const periodo = meses.length ? `${NOMES[(meses[0] ?? 1) - 1]}–${NOMES[(meses[meses.length - 1] ?? 12) - 1]}/${ano}` : String(ano);
-  const cols = useMemo<Col[]>(() => dados ? [
+  const periodo = meses?.length ? `${NOMES[(meses[0] ?? 1) - 1]}–${NOMES[(meses[meses.length - 1] ?? 12) - 1]}/${ano}` : String(ano);
+  const cols = useMemo<Col[]>(() => meses ? [
     ...meses.map((m): Col => ({ label: `${NOMES[m - 1]}/${ano}`, meses: [m], kind: "mes" })),
     { label: periodo, meses, kind: "ano" },
-  ] : COLS, [dados, meses, ano, periodo]);
+  ] : [], [meses, ano, periodo]);
+
+  useEffect(() => {
+    if (mesesProp || dados) return;
+    let cancelado = false;
+    setMesesAuto(null);
+    loadMesesDemonstracoes(ano).then((m) => { if (!cancelado) setMesesAuto(m); }).catch((e) => { if (!cancelado) { setErro(e?.message || String(e)); setMesesAuto([]); } });
+    return () => { cancelado = true; };
+  }, [mesesProp, dados, ano]);
 
   useEffect(() => {
     if (dados) { setRows(dados); setErro(null); return; }
+    if (!meses) { setRows(null); return; }
+    if (!meses.length) { setRows([]); return; }
     let cancelado = false;
     loadDreHostinger(ano, meses).then((r) => { if (!cancelado) setRows(r); }).catch((e) => { if (!cancelado) { setErro(e?.message || String(e)); setRows([]); } });
     return () => { cancelado = true; };
