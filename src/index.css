@@ -8,6 +8,23 @@
   --report-shadow: 0 4px 22px hsl(210 30% 20% / 0.09);
 }
 .control-report { display:flex; flex-direction:column; height:100%; flex:1; min-height:0; background:hsl(var(--background)); color:hsl(var(--foreground)); min-width:0; }
+.control-simulator-shell main > div { min-width: 0; }
+.control-simulator-shell fieldset { min-width: 0; }
+.control-simulator-shell fieldset section > div:first-child,
+.control-simulator-shell fieldset fieldset > div:first-child { flex-wrap: wrap; }
+@media (max-width: 760px) {
+  .control-simulator-shell > aside { width: 4rem; flex-shrink: 0; }
+  .control-simulator-shell > aside nav button { justify-content: center; padding-inline: 0.5rem; }
+  .control-simulator-shell > aside nav button span,
+  .control-simulator-shell > aside nav button > svg:nth-of-type(2),
+  .control-simulator-shell > aside nav .mt-1 { display: none; }
+  .control-simulator-shell header { padding-inline: 1rem; gap: 0.5rem; }
+  .control-simulator-shell header > div:last-child > span,
+  .control-simulator-shell header > div:last-child > div { display: none; }
+  .control-simulator-shell main { padding: 0.75rem; }
+  .control-simulator-shell fieldset .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row; }
+  .control-simulator-shell fieldset .grid .text-lg { font-size: 0.875rem; overflow-wrap: anywhere; }
+}
 .control-report-header { display:flex; align-items:center; gap:12px; padding:16px 24px; border-bottom:1px solid hsl(var(--border)); flex-shrink:0; }
 .control-report-header h1 { overflow-wrap:anywhere; }
 .control-report-config { display:flex; align-items:flex-end; flex-wrap:wrap; gap:12px; padding:18px 24px; border-bottom:1px solid hsl(var(--border)); }
