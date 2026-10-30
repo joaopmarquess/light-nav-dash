@@ -1,6 +1,15 @@
 # Atualização Control — 30/10/2026
 
-Referência: snapshot atual do CONTROL, commit 666c855e, lido pelas ferramentas entre projetos.
+Referência atual: snapshot CONTROL 62e79820, lido pelas ferramentas entre projetos. A validação anterior abaixo refere-se ao snapshot 666c855e.
+
+## Nova atualização
+- Simulador trazido para Control com Otimista, Pessimista e Realista, oito etapas por visão, gravação, retomada, bloqueios, reabertura e exclusão confirmada.
+- Simulações privadas próprias do AXIS, com leitura por proprietário e escrita exclusivamente por funções validadas; concorrência e campos obrigatórios conferidos.
+- Orçamento 2027 usa o modelo compartilhado com o Simulador; orçamento comum conserva armazenamento control:orc27:, separado do orçamento AXIS. DRE atualizado com suporte da referência, sem expor DRE Trial ou Histórico como novos menus.
+- 51 testes aprovados. Sessão autorizada percorreu criação, alteração de PIF para 35.817, gravação, retorno e leitura persistida, três visões e 24 etapas; campos nulos, versão antiga e registro indisponível rejeitados.
+- PDF final baixado: 27 páginas A4 paisagem, capturas das oito telas por visão e comparativo. Captura adaptada para ignorar imagens externas ao Simulador; página da visão Otimista inspecionada visualmente.
+- Simulações criadas apenas para teste excluídas, sem registros de teste remanescentes; orçamento comum retomou valores próprios. Relatório permaneceu disponível. Build sem erros.
+- Não importados registros privados do CONTROL. Para transportar simulações anteriores, exportar as simulações e respectivas visões, etapas e campos na conversa do CONTROL e enviar o arquivo aqui. Não foi realizada comparação autenticada na origem nem publicação automática.
 
 ## Corrigido
 - Organização: Demonstrações, Relatório, Orçamento 2026, Orçamento 2027, Slides, Configurações > Contas.
