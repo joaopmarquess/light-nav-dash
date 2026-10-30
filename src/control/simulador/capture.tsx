@@ -47,7 +47,15 @@ async function shot(model: ReturnType<typeof viewModel>, stage: number): Promise
     host.querySelectorAll<HTMLButtonElement>("button").forEach(btn => { if (/Restaurar/.test(btn.textContent ?? "")) btn.style.visibility = "hidden"; });
     host.style.width = "max-content"; host.style.minWidth = "1500px";
     await wait(250);
-    const canvas = await html2canvas(host, { scale: 2, backgroundColor: getComputedStyle(host).backgroundColor, logging: false });
+    const canvas = await html2canvas(host, {
+      scale: 2,
+      backgroundColor: getComputedStyle(host).backgroundColor,
+      logging: false,
+      imageTimeout: 1000,
+      // Ignore unrelated AXIS images in the cloned document; broken remote media
+      // must not delay each of the 24 simulator-only captures.
+      ignoreElements: element => element.tagName === "IMG" && !host.contains(element),
+    });
     return { data: canvas.toDataURL("image/jpeg", 0.92), w: canvas.width, h: canvas.height };
   } finally {
     root.unmount();
