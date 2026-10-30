@@ -7,7 +7,7 @@
   --report-canvas: 210 20% 94%;
   --report-shadow: 0 4px 22px hsl(210 30% 20% / 0.09);
 }
-.control-report { display:flex; flex-direction:column; height:100dvh; background:hsl(var(--background)); color:hsl(var(--foreground)); min-width:0; }
+.control-report { display:flex; flex-direction:column; height:100%; flex:1; min-height:0; background:hsl(var(--background)); color:hsl(var(--foreground)); min-width:0; }
 .control-report-header { display:flex; align-items:center; gap:12px; padding:16px 24px; border-bottom:1px solid hsl(var(--border)); flex-shrink:0; }
 .control-report-header h1 { overflow-wrap:anywhere; }
 .control-report-config { display:flex; align-items:flex-end; flex-wrap:wrap; gap:12px; padding:18px 24px; border-bottom:1px solid hsl(var(--border)); }
