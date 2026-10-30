@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { loadDreHostinger, loadMesesDemonstracoes, type DreHRow } from "@/control/dreHostinger";
-import { DRE_FULL_NAME } from "@/control/dreLabels";
 import { grupoPainelDre } from "@/control/drePainel";
+import { DRE_FULL_NAME } from "@/control/dreLabels";
 import { Button } from "@/components/ui/button";
 
 // DRE (Trial): reconstruído do zero, só com o balancete MV + plano 9D (ver src/control/dreHostinger.ts).
@@ -120,7 +120,7 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
   useEffect(() => {
     const o: Record<string, boolean> = {};
     const walk = (ns: Node[]) => ns.forEach((n) => {
-      if (n.children.length && !/ADMINISTRATIVO|FINANCEIRO/i.test(n.label)) { o[n.key] = true; walk(n.children); }
+      if (n.children.length && !/FINANCEIRO/i.test(n.label)) { o[n.key] = true; walk(n.children); }
     });
     walk(tree);
     setOpen(o);
@@ -132,16 +132,16 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
       const has = n.children.length > 0;
       const isOpen = open[n.key];
       return [
-        <tr key={n.key} className={`border-b border-border ${depth === 0 ? "bg-accent/50 font-semibold" : ""}`}>
-          <td className="py-2 pr-4 whitespace-nowrap sticky left-0 bg-card" style={{ paddingLeft: `${0.75 + depth * 1.25}rem` }}>
+        <tr key={n.key} className={"group transition-colors hover:bg-muted " + (depth === 0 ? "border-y-2 border-foreground/60 font-bold" : depth === 1 ? "border-y-2 border-foreground/40 font-bold" : depth === 2 ? "border-y border-foreground/25" : "border-b border-border")}>
+          <td className={`${historico ? "py-[3px]" : "py-2"} pr-4 whitespace-nowrap sticky left-0 bg-card group-hover:bg-muted transition-colors`} style={{ paddingLeft: `${0.75 + depth * 1.25}rem` }}>
             <Button variant="ghost" type="button" disabled={!has} onClick={() => setOpen((p) => ({ ...p, [n.key]: !p[n.key] }))}
-              className="h-auto p-0 flex items-center gap-1.5 text-left text-foreground disabled:cursor-default disabled:opacity-100">
+              className={`h-auto p-0 flex items-center gap-1.5 text-left text-foreground disabled:cursor-default disabled:opacity-100 ${depth <= 1 ? "font-bold" : ""}`}>
               <ChevronRight className={`h-4 w-4 shrink-0 transition-transform ${has ? "" : "invisible"} ${isOpen ? "rotate-90" : ""}`} />
               {n.label}
             </Button>
           </td>
           {n.valores.map((v, i) => (
-            <td key={i} className={`py-2 px-4 text-right tabular-nums whitespace-nowrap ${colCls(cols[i])} ${depth === 0 && v < 0 ? "text-destructive" : "text-foreground"}`}>{fmt(v)}</td>
+            <td key={i} className={`${historico ? "py-[3px]" : "py-2"} px-4 text-right tabular-nums whitespace-nowrap ${colCls(cols[i])} text-foreground`}>{fmt(v)}</td>
           ))}
         </tr>,
         ...(has && isOpen ? render(n.children, depth + 1) : []),
@@ -231,31 +231,34 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
 
   return (
     <div className={`flex flex-col ${historico ? "h-full" : "h-[calc(100vh-9rem)]"} min-h-0`}>
-    <section className="bg-card rounded-xl border border-border shadow-sm flex-1 flex flex-col min-h-0">
+    <section className="bg-card rounded-xl border border-border shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
       <div className="flex-1 min-h-0 overflow-auto">
         {!rows ? (
           <div className="p-6 text-sm text-muted-foreground">Carregando…</div>
         ) : erro ? (
           <div className="p-6 text-sm text-destructive">Erro ao carregar: {erro}</div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-card">
-              <tr className="border-b border-border text-muted-foreground">
+          <table className="w-full h-full text-sm">
+            <thead className="sticky top-0 z-10 bg-primary text-primary-foreground shadow-md">
+              <tr>
                 <th className="py-2 px-4 text-left font-medium">Item</th>
                 {cols.map((c) => (
-                  <th key={c.label} className={`py-2 px-4 text-right font-medium whitespace-nowrap ${c.kind === "ano" ? "bg-accent/40 text-foreground" : ""}`}>{c.label}</th>
+                  <th key={c.label} className={`py-2 px-4 text-right font-medium whitespace-nowrap ${c.kind === "ano" ? "bg-primary-foreground/15" : ""}`}>{c.label}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {render(tree, 0)}
-              <tr className="bg-accent font-bold">
+              {!historico && <tr aria-hidden className="h-full"><td colSpan={cols.length + 1} /></tr>}
+            </tbody>
+            <tfoot className="sticky bottom-0 z-10 bg-primary text-primary-foreground shadow-[0_-4px_8px_-2px_hsl(var(--foreground)/0.2)]">
+              <tr className="font-bold">
                 <td className="py-2.5 px-4">RESULTADO</td>
                 {total.map((v, i) => (
-                  <td key={i} className={`py-2.5 px-4 text-right tabular-nums whitespace-nowrap ${v < 0 ? "text-destructive" : "text-foreground"}`}>{fmt(v)}</td>
+                  <td key={i} className="py-2.5 px-4 text-right tabular-nums whitespace-nowrap">{fmt(v)}</td>
                 ))}
               </tr>
-            </tbody>
+            </tfoot>
           </table>
         )}
       </div>
