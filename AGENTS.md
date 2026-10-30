@@ -1,7 +1,7 @@
 # Project rules
 - Synchronize Control through scoped modules and shared accounting helpers; preserve AXIS clients/report topics, namespace ordinary budget storage, and persist staged simulations through owner-scoped Cloud tables and checked RPCs with concurrency guards so reference resets never affect other AXIS menus.
 - Keep cropped-map hospital markers and general/psychiatric lists sourced from the preserved dated typed CSV and its city/UF index; use tested type filtering and lives/count/name ranking without changing source totals, map membership or beneficiary counts.
-- Keep Movimentação requests gated by an explicitly applied period; fetch monthly card counts from carteira_movimentacao_totais and lazily cache original RPC details per applied period only on eye/card clicks, preserving server-side classification and tested reconciliation to avoid eager pagination and rule drift.
+- Keep Movimentação requests gated by an explicitly applied period; fetch monthly card counts from carteira_movimentacao_totais and lazily cache RPC details per period on eye/card clicks, keeping server-side classification to avoid eager pagination.
 - Reuse monthly totals for chart bars and selected-month indicators; cache KPI dates and lazy details per interval. Keep the full-period chart independent; its lives line uses UTC month-end active counts, never net growth.
 - Allocate Movimentação debugging and chart within a fixed-height animated grid, with the chart filling the remaining row, so opening details preserves its baseline and width without touching queries.
 - Compute all Movimentação lives (Anterior at De-1, Final at Até, chart month-ends) as summed carteira_trial_geo counts, so they match the Área Geográfica "Ativos em" rule.
