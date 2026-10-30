@@ -1,7 +1,7 @@
 # Project rules
 - Synchronize Control through scoped modules and shared accounting helpers; preserve AXIS clients/report topics, namespace ordinary budget storage, and persist staged simulations through owner-scoped Cloud tables and checked RPCs with concurrency guards so reference resets never affect other AXIS menus.
 - Keep cropped-map hospital markers and general/psychiatric lists sourced from the preserved dated typed CSV and its city/UF index; use tested type filtering and lives/count/name ranking without changing source totals, map membership or beneficiary counts.
-- Keep Movimentação requests gated by an explicitly applied period; fetch monthly card counts from carteira_movimentacao_totais and lazily cache original RPC details per applied period only on eye/card clicks, preserving server-side classification and tested reconciliation to avoid eager pagination and rule drift.
+- Keep Movimentação requests gated by an explicitly applied period; fetch monthly card counts from carteira_movimentacao_totais and lazily cache RPC details per period on eye/card clicks, keeping server-side classification to avoid eager pagination.
 - Reuse monthly totals for chart bars and selected-month indicators; cache KPI dates and lazy details per interval. Keep the full-period chart independent; its lives line uses UTC month-end active counts, never net growth.
 - Allocate Movimentação debugging and chart within a fixed-height animated grid, with the chart filling the remaining row, so opening details preserves its baseline and width without touching queries.
 - Compute all Movimentação lives (Anterior at De-1, Final at Até, chart month-ends) as summed carteira_trial_geo counts, so they match the Área Geográfica "Ativos em" rule.
@@ -22,8 +22,7 @@
 - Store the full institutional Study text in a dedicated data module consumed by Study Home; retain legacy complete-stage content while exposing only the live project presentations, and preserve the internal navigation ID separately from displayed project naming.
 - Keep explicit green Uberaba study-area inclusions in a tested helper, applying them after projection fitting so membership additions preserve the existing map framing and do not affect life-based colors.
 - Keep Uberaba credentialing reference selection and supplied summary values in a tested helper, separate from summary presentation, so visual changes cannot alter quantities or source precedence.
-- Keep MAA geometry and area classification in a focused helper, with tests, so map presentation does not change beneficiary counts or geographic membership.
-- Simplify display outlines only; classify cities using the original ring.
+- Keep MAA geometry and area classification in a focused helper, with tests, so map presentation does not change beneficiary counts or geographic membership; simplify display outlines only, classifying cities by the original ring.
 - APB: test Menu tickets/defaults; preview the Strategic PDF itself before download.
 - Simplify and round cropped-map exterior and state strokes in projected pixel space only; keep open state runs open and preserve northern attenuation, original fitting and membership.
 - Simplify Goiás municipal display geometry through shared topology arcs only; retain original geometry for fitting, membership, centroids and counts so visual smoothing cannot change data or separate neighboring boundaries.
@@ -34,3 +33,4 @@
 - Render the MAA magnifier within the geographic screen's shared date/total layout rather than a fullscreen overlay, so opening and returning preserve the selected date and inline map state.- Render the simplified Implantação stage from a tested typed data helper where undefined dates/owners display "Em definição"; keep Operação Iniciada as expected result.
 - Keep the Uberaba presentation route as static 16:9 screenshot snapshots listed in src/assets/apresentacao/slides.json; it must never import live screens, so the original project stays untouched.
 - Share the frozen-slide PDF exporter between the project header and presentation; write exactly one full-bleed 16:9 page per decoded snapshot and abort on missing images, avoiding browser print settings and partial exports.
+- Carteira › Painel loads Hostinger data per selected cd_matricula only; its status/expense rules live in tested src/lib/painelBeneficiario.ts.
