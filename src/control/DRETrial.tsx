@@ -49,20 +49,21 @@ const itemDe = grupoPainelDre;
 const pctFmt = (v: number) => `${new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 }).format(v)}%`;
 
 export type DemoAba = "Painel" | "DRE" | "Histórico";
-export const Barra = ({ ativa, onAba, extra }: { ativa: DemoAba; onAba?: (a: DemoAba) => void; historico?: boolean; extra?: React.ReactNode }) => {
+export const Barra = ({ ativa, onAba, extra, filho }: { ativa: DemoAba; onAba?: (a: DemoAba) => void; historico?: boolean; extra?: React.ReactNode; filho?: React.ReactNode }) => {
   const [aberto, setAberto] = useState(true);
   return onAba ? (
     <div className="sticky bottom-0 z-20 shrink-0 bg-background py-4 flex justify-center">
       <div className="relative">
       {extra && (
-        <div aria-hidden={!aberto} className={`absolute left-full top-1/2 z-0 ml-2 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${aberto ? "-translate-y-1/2 translate-x-0 opacity-100" : "pointer-events-none -translate-y-1/2 -translate-x-[calc(100%+0.5rem)] opacity-0"}`}>
-          <div className="inline-flex gap-0.5 rounded-full bg-muted/95 backdrop-blur p-1.5 border border-border shadow-[0_6px_14px_-2px_hsl(var(--foreground)/0.28),inset_0_1px_3px_hsl(var(--foreground)/0.12)] whitespace-nowrap">{extra}</div>
+        <div aria-hidden={!aberto} className={`absolute left-full top-1/2 z-0 ml-2 flex items-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${aberto ? "-translate-y-1/2 translate-x-0 opacity-100" : "pointer-events-none -translate-y-1/2 -translate-x-[calc(100%+0.5rem)] opacity-0"}`}>
+          <div className="inline-flex gap-0.5 rounded-full bg-card/95 backdrop-blur p-1.5 border border-border shadow-[0_6px_14px_-2px_hsl(var(--foreground)/0.28),inset_0_1px_3px_hsl(var(--foreground)/0.12)] whitespace-nowrap">{extra}</div>
+          {filho && <div className="relative ml-3 inline-flex gap-0.5 rounded-full bg-card/90 p-1 border border-border shadow-[0_8px_16px_-2px_hsl(var(--foreground)/0.32),inset_0_1px_4px_hsl(var(--foreground)/0.16)] whitespace-nowrap">{filho}</div>}
         </div>
       )}
       <div className="relative z-10 inline-flex gap-0.5 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_0_16px_2px_hsl(var(--foreground)/0.18)]">
         {(["Painel", "DRE", "Histórico"] as const).map((a) => (
           <Button variant="ghost" title={a === "DRE" ? DRE_FULL_NAME : undefined} key={a} aria-expanded={a === "Histórico" && extra ? aberto : undefined} onClick={() => (a !== ativa ? onAba(a) : a === "Histórico" && extra && setAberto((v) => !v))}
-            className={`rounded-full px-3 py-1 text-[13px] h-auto font-medium transition-all duration-200 ${a === "Histórico" && extra ? "inline-flex items-center gap-1 text-foreground/80 hover:text-primary hover:bg-card" : a === ativa ? "bg-primary text-primary-foreground shadow-md shadow-primary/30" : "text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5"}`}>{a}{a === "Histórico" && extra && (aberto ? <ChevronLeft className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />)}</Button>
+            className={`rounded-full px-3 py-1 text-[13px] h-auto font-medium transition-all duration-200 ${a === "Histórico" && !extra ? "inline-flex items-center gap-1 " : ""}${a === "Histórico" && extra ? "inline-flex items-center gap-1 text-foreground/80 hover:text-primary hover:bg-card" : a === ativa ? "bg-primary text-primary-foreground shadow-md shadow-primary/30" : "text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5"}`}>{a}{a === "Histórico" && (extra && aberto ? <ChevronLeft className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />)}</Button>
         ))}
       </div>
       </div>
