@@ -345,7 +345,7 @@ export default function PainelBeneficiario() {
                     <BarChart data={eard.map((r) => ({ comp: fmtComp(r.dt_competencia), ...Object.fromEntries(CATEGORIAS_DESPESA.map((c) => [c.label, Number(r[c.key] ?? 0)])) }))}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" /><XAxis dataKey="comp" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} width={55} />
                       <Tooltip formatter={(v: number) => fmtR(v)} /><Legend wrapperStyle={{ fontSize: 11 }} />
-                      {CATEGORIAS_DESPESA.map((c, i) => <Bar key={c.key} dataKey={c.label} stackId="d" fill={`hsl(var(--chart-${(i % 5) + 1}, var(--primary)))`} />)}
+                      {CATEGORIAS_DESPESA.map((c, i) => <Bar key={c.key} dataKey={c.label} stackId="d" fill={`hsl(var(--chart-${(i % 5) + 1}))`} />)}
                     </BarChart>
                   </ResponsiveContainer></div>
                 </div>
