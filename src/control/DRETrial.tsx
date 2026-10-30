@@ -17,8 +17,8 @@ const COLS: Col[] = [
   { label: `Jan–Ago/${ANO}`, meses: ATE, kind: "ano" },
 ];
 const colCls = (c: Col) => (c.kind === "ano" ? "bg-accent font-bold" : "");
-const novo = () => COLS.map(() => 0);
-const somar = (arr: number[], r: DreHRow) => COLS.forEach((c, i) => { if (c.meses.includes(r.mes)) arr[i] += r.valor; });
+const novo = (cols: Col[]) => cols.map(() => 0);
+const somar = (arr: number[], r: DreHRow, cols: Col[]) => cols.forEach((c, i) => { if (c.meses.includes(r.mes)) arr[i] += r.valor; });
 
 type Node = { key: string; label: string; valores: number[]; children: Node[] };
 
@@ -28,7 +28,7 @@ const fmt = (v: number) => {
   return v < 0 ? `(${s})` : s;
 };
 
-function buildTree(rows: DreHRow[]): Node[] {
+function buildTree(rows: DreHRow[], cols: Col[]): Node[] {
   const roots: Node[] = [];
   const map = new Map<string, Node>();
   for (const r of rows) {
@@ -39,12 +39,12 @@ function buildTree(rows: DreHRow[]): Node[] {
       path += "~" + g;
       let n = map.get(path);
       if (!n) {
-        n = { key: path, label: strip(g), valores: novo(), children: [] };
+        n = { key: path, label: strip(g), valores: novo(cols), children: [] };
         map.set(path, n);
         list.push(n);
         list.sort((a, b) => a.key.localeCompare(b.key, "pt-BR", { numeric: true }));
       }
-      somar(n.valores, r);
+      somar(n.valores, r, cols);
       list = n.children;
     }
   }
@@ -66,16 +66,33 @@ const Barra = ({ ativa, onAba }: { ativa: "Painel" | "DRE"; onAba?: (a: "Painel"
     </div>
   ) : null;
 
-const DRETrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (a: "Painel" | "DRE") => void } = {}) => {
+type DRETrialProps = {
+  painel?: boolean;
+  onAba?: (a: "Painel" | "DRE") => void;
+  dados?: DreHRow[];
+  ano?: number;
+  meses?: number[];
+  historico?: boolean;
+};
+
+const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses = ATE, historico = false }: DRETrialProps = {}) => {
   const [rows, setRows] = useState<DreHRow[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [open, setOpen] = useState<Record<string, boolean>>({});
+  const periodo = meses.length ? `${NOMES[(meses[0] ?? 1) - 1]}–${NOMES[(meses[meses.length - 1] ?? 12) - 1]}/${ano}` : String(ano);
+  const cols = useMemo<Col[]>(() => dados ? [
+    ...meses.map((m): Col => ({ label: `${NOMES[m - 1]}/${ano}`, meses: [m], kind: "mes" })),
+    { label: periodo, meses, kind: "ano" },
+  ] : COLS, [dados, meses, ano, periodo]);
 
   useEffect(() => {
-    loadDreHostinger(ANO, ATE).then(setRows).catch((e) => { setErro(e?.message || String(e)); setRows([]); });
-  }, []);
+    if (dados) { setRows(dados); setErro(null); return; }
+    let cancelado = false;
+    loadDreHostinger(ano, meses).then((r) => { if (!cancelado) setRows(r); }).catch((e) => { if (!cancelado) { setErro(e?.message || String(e)); setRows([]); } });
+    return () => { cancelado = true; };
+  }, [dados, ano, meses]);
 
-  const tree = useMemo(() => buildTree(rows || []), [rows]);
+  const tree = useMemo(() => buildTree(rows || [], cols), [rows, cols]);
   useEffect(() => {
     const o: Record<string, boolean> = {};
     const walk = (ns: Node[]) => ns.forEach((n) => {
@@ -84,7 +101,7 @@ const DRETrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (a: "Pa
     walk(tree);
     setOpen(o);
   }, [tree]);
-  const total = useMemo(() => { const t = novo(); for (const r of rows || []) somar(t, r); return t; }, [rows]);
+  const total = useMemo(() => { const t = novo(cols); for (const r of rows || []) somar(t, r, cols); return t; }, [rows, cols]);
 
   const render = (nodes: Node[], depth: number): JSX.Element[] =>
     nodes.flatMap((n) => {
@@ -93,14 +110,14 @@ const DRETrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (a: "Pa
       return [
         <tr key={n.key} className={`border-b border-border ${depth === 0 ? "bg-accent/50 font-semibold" : ""}`}>
           <td className="py-2 pr-4 whitespace-nowrap sticky left-0 bg-card" style={{ paddingLeft: `${0.75 + depth * 1.25}rem` }}>
-            <button type="button" disabled={!has} onClick={() => setOpen((p) => ({ ...p, [n.key]: !p[n.key] }))}
-              className="flex items-center gap-1.5 text-left text-foreground disabled:cursor-default">
+            <Button variant="ghost" type="button" disabled={!has} onClick={() => setOpen((p) => ({ ...p, [n.key]: !p[n.key] }))}
+              className="h-auto p-0 flex items-center gap-1.5 text-left text-foreground disabled:cursor-default disabled:opacity-100">
               <ChevronRight className={`h-4 w-4 shrink-0 transition-transform ${has ? "" : "invisible"} ${isOpen ? "rotate-90" : ""}`} />
               {n.label}
-            </button>
+            </Button>
           </td>
           {n.valores.map((v, i) => (
-            <td key={i} className={`py-2 px-4 text-right tabular-nums whitespace-nowrap ${colCls(COLS[i])} ${depth === 0 && v < 0 ? "text-destructive" : "text-foreground"}`}>{fmt(v)}</td>
+            <td key={i} className={`py-2 px-4 text-right tabular-nums whitespace-nowrap ${colCls(cols[i])} ${depth === 0 && v < 0 ? "text-destructive" : "text-foreground"}`}>{fmt(v)}</td>
           ))}
         </tr>,
         ...(has && isOpen ? render(n.children, depth + 1) : []),
@@ -140,15 +157,15 @@ const DRETrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (a: "Pa
       ["(=) Resultado Líquido", liq, 2],
     ];
     return (
-      <div className="flex flex-col gap-3 h-[calc(100vh-9rem)] overflow-y-auto">
+      <div className={`flex flex-col gap-3 ${historico ? "h-full min-h-0" : "h-[calc(100vh-9rem)]"} overflow-y-auto`}>
         <div className="rounded-xl bg-primary text-primary-foreground shadow-md px-4 py-1.5 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <div className="text-xs uppercase tracking-widest opacity-80">Resultado Líquido Jan–Ago/{ANO}</div>
+            <div className="text-xs uppercase tracking-widest opacity-80">Resultado Líquido {periodo}</div>
             <div className="text-xl font-bold tabular-nums leading-tight">R$ {fmt(liq)}</div>
           </div>
           <div className="text-right text-xs leading-tight">
             <div><span className="opacity-80">Margem líquida </span><span className="text-base font-semibold tabular-nums">{pf(liq)}</span></div>
-            <div className="opacity-80">Faturamento R$ {fmt(fat)} · Realizado do balancete</div>
+            <div className="opacity-80">Faturamento R$ {fmt(fat)} · {historico ? "Histórico do arquivo" : "Realizado do balancete"}</div>
           </div>
         </div>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
@@ -168,7 +185,7 @@ const DRETrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (a: "Pa
         </div>
         <section className="rounded-2xl border border-border bg-card shadow-sm px-3 py-2 flex-1 flex flex-col">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-            <h3 className="text-base font-semibold text-foreground">{DRE_FULL_NAME} · Jan–Ago/{ANO}</h3>
+            <h3 className="text-base font-semibold text-foreground">{DRE_FULL_NAME} · {periodo}</h3>
             <span className="text-xs uppercase tracking-wide text-muted-foreground">R$ · % fat.</span>
           </div>
           <div className="flex-1 flex flex-col justify-between gap-0.5">
@@ -189,7 +206,7 @@ const DRETrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (a: "Pa
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-9rem)] min-h-0">
+    <div className={`flex flex-col ${historico ? "h-full" : "h-[calc(100vh-9rem)]"} min-h-0`}>
     <section className="bg-card rounded-xl border border-border shadow-sm flex-1 flex flex-col min-h-0">
       <div className="flex-1 min-h-0 overflow-auto">
         {!rows ? (
@@ -201,7 +218,7 @@ const DRETrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (a: "Pa
             <thead className="sticky top-0 bg-card">
               <tr className="border-b border-border text-muted-foreground">
                 <th className="py-2 px-4 text-left font-medium">Item</th>
-                {COLS.map((c) => (
+                {cols.map((c) => (
                   <th key={c.label} className={`py-2 px-4 text-right font-medium whitespace-nowrap ${c.kind === "ano" ? "bg-accent/40 text-foreground" : ""}`}>{c.label}</th>
                 ))}
               </tr>

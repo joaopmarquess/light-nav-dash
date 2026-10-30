@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState, type SetStateAction } from "react";
+import { SimulatorContext } from "@/control/simulador/context";
+import { DEFAULT_MODEL, calculateBudget, type BudgetModel } from "@/control/simulador/model";
 import { RotateCcw, ChevronLeft, ChevronDown, ChevronRight } from "lucide-react";
 import { DRE_FULL_NAME } from "@/control/dreLabels";
 import { Button } from "@/components/ui/button";
@@ -6,28 +8,28 @@ import { Button } from "@/components/ui/button";
 const parseBR = (v: string) => Number(v.replace(/\./g, "").replace(",", ".")) || 0;
 
 const NumInput = ({ value, dec, className, onChange }: { value: number; dec: number; className: string; onChange: (v: number) => void }) => {
+  const simulator = useContext(SimulatorContext);
   const [edit, setEdit] = useState<string | null>(null);
   const shown = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: dec, maximumFractionDigits: dec }).format(value);
   return (
     <input
       type="text"
       inputMode="decimal"
+      disabled={simulator?.readOnly}
+      aria-invalid={simulator ? !Number.isFinite(value) : undefined}
+      title={simulator && !Number.isFinite(value) ? "Informe um número válido." : undefined}
       className={className}
       value={edit ?? shown}
-      onFocus={() => setEdit(shown)}
-      onChange={(e) => { setEdit(e.target.value); onChange(parseBR(e.target.value)); }}
-      onBlur={() => setEdit(null)}
+      onFocus={() => {if(!simulator || (edit===null&&Number.isFinite(value)))setEdit(shown);}}
+      onChange={(e) => { setEdit(e.target.value); const raw = e.target.value.trim(); const valid = /^-?(?:\d{1,3}(?:\.\d{3})*|\d+)(?:,\d+)?$/.test(raw); onChange(simulator ? valid ? Number(raw.replace(/\./g, "").replace(",", ".")) : NaN : parseBR(raw)); }}
+      onBlur={() => {if(!simulator || Number.isFinite(value))setEdit(null);}}
     />
   );
 };
 
 type Linha = { id: string; vidas: number; ticket: number; entradas: number; saidas: number };
 type Campo = "vidas" | "ticket" | "entradas" | "saidas";
-const BASE: Linha[] = [
-  { id: "PIF", vidas: 35816, ticket: 598.83, entradas: 104, saidas: 312 },
-  { id: "PCA", vidas: 26406, ticket: 317.56, entradas: 742, saidas: 260 },
-  { id: "PCE", vidas: 10359, ticket: 276.70, entradas: 449, saidas: 222 },
-];
+const BASE: Linha[] = DEFAULT_MODEL.rows;
 
 /** Negativos entre parênteses */
 const par = (v: number, s: string) => (v < 0 && s !== "0" && !/^0(,0+)?$/.test(s) ? `(${s})` : s);
@@ -38,12 +40,16 @@ const n2 = (v: number) =>
 const ABAS = ["Faturamento", "Coparticipação", "Despesas Assistenciais", "Demais Operacionais", "Despesas Administrativas", "Financeiro", "DRE"];
 
 const usePersist = <T,>(k: string, d: T) => {
-  const [v, setV] = useState<T>(() => { try { const x = localStorage.getItem("control:orc27:" + k); return x ? JSON.parse(x) : d; } catch { return d; } });
-  useEffect(() => { localStorage.setItem("control:orc27:" + k, JSON.stringify(v)); }, [k, v]);
-  return [v, setV] as const;
+  const simulator = useContext(SimulatorContext);
+  const [v, setV] = useState<T>(() => { if(simulator)return d;try { const x = localStorage.getItem("control:orc27:" + k); return x ? JSON.parse(x) : d; } catch { return d; } });
+  useEffect(() => { if (!simulator) localStorage.setItem("control:orc27:" + k, JSON.stringify(v)); }, [k, v, simulator]);
+  const current = simulator ? simulator.model[k as keyof BudgetModel] as T : v;
+  const update = (next: SetStateAction<T>) => { if (simulator) { if (!simulator.readOnly) simulator.update(k as keyof BudgetModel, typeof next === "function" ? (next as (old: T) => T)(current) : next); } else setV(next); };
+  return [current, update] as const;
 };
 
 const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial }: { home?: boolean; onSimulacao?: (aba: string) => void; onPainel?: () => void; abaInicial?: string }) => {
+  const simulator = useContext(SimulatorContext);
   const [rows, setRows] = usePersist("rows", BASE);
   const [aba, setAba] = useState(abaInicial || "Faturamento");
   const [reaj, setReaj] = usePersist("reaj_v2", 1.05);
@@ -70,15 +76,10 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
   const tV26 = sum((r) => r.vidas), tM26 = sum(mensal26);
   const tV27 = sum(vidas27), tM27 = sum(mensal27);
 
+  const financial = calculateBudget({rows: rows as BudgetModel["rows"],reaj_v2:reaj,rec_v2:rec,sinLiq_v2:sinLiq,rede_v2:rede,demaisOp,admPc_v4:admPc,admTot_v4:admTot,finPc_v2:finPc});
+  const annual = (vs:number[]) => vs.reduce((a,b)=>a+b,0);
   if (home) {
-    const fM = Array.from({ length: 12 }, (_, k) => sum((r) => (r.vidas + (k + 1) * (r.entradas - r.saidas)) * tk(r, k + 1)));
-    const pcOp = demaisOp.reduce((a, b) => a + b, 0);
-    let fat = 0, prim = 0, sec = 0, adm = 0, fin = 0, rai = 0, imp = 0;
-    fM.forEach((f) => {
-      const ent = f * (1 + rec / 100), p = ent - ent * sinLiq / 100, s = -f * pcOp / 100, a = f * admTot / 100, fi = f * finPc / 100;
-      const r = p + s - a + fi;
-      fat += f; prim += p; sec += s; adm += a; fin += fi; rai += r; imp += r > 0 ? r * 0.34 : 0;
-    });
+    const fat=annual(financial.fat),prim=annual(financial.prim),sec=-annual(financial.demais),adm=annual(financial.adm),fin=annual(financial.fin),rai=annual(financial.rai),imp=annual(financial.imp);
     const tot = prim + sec, ebitda = tot - adm, liq = rai - imp;
     const mi = (v: number) => `R$ ${n2(v)}`;
     const pf = (v: number) => (fat ? `${n2((v / fat) * 100)}%` : "-");
@@ -92,7 +93,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
       ["Impostos Federais", -imp, "34% do resultado mensal, quando positivo"],
     ];
     return (
-      <div className="flex flex-col gap-3 h-[calc(100vh-9rem)] overflow-y-auto">
+      <div className={simulator ? "flex flex-col gap-3 min-h-0" : "flex flex-col gap-3 h-[calc(100vh-9rem)] overflow-y-auto"}>
         <div className="rounded-xl bg-primary text-primary-foreground shadow-md px-4 py-1.5 flex flex-wrap items-center justify-between gap-4" title="Antes dos Impostos − Impostos Federais">
           <div>
             <div className="text-xs uppercase tracking-widest opacity-80">Resultado Líquido 2027</div>
@@ -154,7 +155,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
         })()}
         {onSimulacao && (
           <div className="mt-auto sticky bottom-0 z-20 shrink-0 bg-background py-4 flex justify-center"><div className="inline-flex flex-nowrap whitespace-nowrap justify-center gap-0.5 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_0_16px_2px_hsl(var(--foreground)/0.18)]">
-            <button className="rounded-full px-3 py-1 text-[13px] font-medium transition-all duration-200 bg-primary text-primary-foreground shadow-md shadow-primary/30">Painel</button>
+            <Button variant="ghost" className="rounded-full px-3 py-1 text-[13px] font-medium transition-all duration-200 bg-primary text-primary-foreground shadow-md shadow-primary/30">Painel</Button>
             {ABAS.map((a) => (
               <Button variant="ghost" title={a === "DRE" ? DRE_FULL_NAME : undefined} key={a} onClick={() => onSimulacao(a)} className="rounded-full px-3 py-1 text-[13px] font-medium transition-all duration-200 text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5 h-auto">{a}</Button>
             ))}
@@ -164,7 +165,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
     );
   }
 
-  const inp = "w-24 h-5 rounded border border-border px-2 py-0 text-right tabular-nums font-semibold bg-yellow-100/60";
+  const inp = "w-24 h-5 rounded border border-border px-2 py-0 text-right tabular-nums font-semibold bg-accent/60";
   const td = "px-2 py-0.5 text-right tabular-nums whitespace-nowrap";
   const tot = (v: string) => <span className="inline-block w-24 px-2 text-right">{v}</span>;
 
@@ -173,8 +174,8 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
   const totLinha = (r: Linha) => MESES.slice(1).reduce((s, _, j) => s + mesVal(r, j + 1), 0);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-9rem)]">
-    <div className="relative flex-1 min-h-0 overflow-hidden flex flex-col gap-2 p-1 pb-24">
+    <div className={simulator ? "flex flex-col min-h-0" : "flex flex-col h-[calc(100vh-9rem)]"}>
+    <div className={simulator ? "relative flex flex-col gap-2 p-1 [&>div.absolute]:static [&>div.absolute]:order-last" : "relative flex-1 min-h-0 overflow-hidden flex flex-col gap-2 p-1 pb-24"}>
     {aba === "Faturamento" && (() => {
       const fT = rows.reduce((s, r) => s + totLinha(r), 0), a26 = tM26 * 12;
       const C = ({ t, v, f, c, neg }: { t: string; v: string; f: string; c: string; neg?: boolean }) => (
@@ -211,18 +212,20 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
             </div>))}
         </div>);
     })()}
-    {aba !== "DRE" && (<section className="bg-card rounded-xl border border-border shadow-sm px-2 py-1 space-y-0.5">
+    {aba !== "DRE" && (<fieldset disabled={!!simulator && (simulator.readOnly || simulator.stage !== 1)} className="bg-card rounded-xl border border-border shadow-sm px-2 py-1 space-y-0.5 min-w-0">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold cursor-help" title="Mensal 2026 = Vidas × Ticket; Anual = Mensal × 12. Mensal 2027 = média mensal de jan/27 a dez/27; Anual 2027 = Total 2027. Crescimento = (Entradas − Saídas) × 12. Vidas 2027 = Vidas 2026 + Crescimento. Ticket 2027 = Ticket 2026. Ticket total = Mensal total ÷ Vidas totais.">Orçamento — Faturamento 2026 × 2027</h3>
         <div className="flex items-center gap-2">
-        <label className="text-sm text-muted-foreground">Reajuste mensal (%)</label>
-        <NumInput dec={2} className="w-24 rounded border border-border px-2 py-0 h-5 text-right tabular-nums font-semibold bg-yellow-100/60" value={reaj} onChange={setReaj} />
-        <button
+        <label className="text-sm text-muted-foreground">{simulator ? "Correção de discrepâncias (%)" : "Reajuste mensal (%)"}</label>
+        {simulator
+          ? <input readOnly disabled value={reaj.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})} className="w-24 rounded border border-border px-2 py-0 h-5 text-right tabular-nums font-semibold bg-muted text-muted-foreground cursor-not-allowed" />
+          : <NumInput dec={2} className="w-24 rounded border border-border px-2 py-0 h-5 text-right tabular-nums font-semibold bg-accent/60" value={reaj} onChange={setReaj} />}
+        <Button variant="ghost"
           onClick={() => { setRows(BASE); setReaj(1.05); }}
           className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-0 text-sm hover:bg-muted"
         >
           <RotateCcw className="h-4 w-4" /> Restaurar
-        </button>
+        </Button>
         </div>
       </div>
       <div className="overflow-x-auto">
@@ -267,9 +270,9 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
             ))}
             <tr className="border-t-2 border-border bg-muted/60 font-semibold">
               <td className="px-2 py-0">{aba === "Faturamento" ? "FATURAMENTO" : (
-                <button onClick={() => setPlanosAbertos((v) => !v)} className="inline-flex items-center gap-1 hover:text-primary">
+                <Button variant="ghost" onClick={() => setPlanosAbertos((v) => !v)} className="inline-flex items-center gap-1 hover:text-primary">
                   {planosAbertos ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}FATURAMENTO
-                </button>
+                </Button>
               )}</td>
               <td className="px-2 py-1 text-center tabular-nums border-l border-border">{tot(n0(tV26))}</td>
               <td className="px-2 py-1 text-center tabular-nums">{tot(n2(tV26 ? tM26 / tV26 : 0))}</td>
@@ -286,7 +289,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
           </tbody>
         </table>
       </div>
-    </section>)}
+    </fieldset>)}
     {aba === "Coparticipação" ? (() => {
       const M = MESES.slice(1);
       const fat = M.map((_, k) => sum((r) => mesVal(r, k + 1)));
@@ -304,10 +307,10 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold cursor-help" title="Coparticipação = Faturamento × % Recuperação. Total = Faturamento + Coparticipação.">Coparticipação — jan/27 a dez/27</h3>
             <label className="ml-4 text-sm text-muted-foreground">% Recuperação</label>
-            <NumInput dec={2} className="w-24 rounded border border-border px-2 py-0.5 h-6 text-right tabular-nums font-semibold bg-yellow-100/60" value={rec} onChange={setRec} />
-            <button onClick={() => setRec(9.75)} className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-md text-sm border border-border bg-card hover:bg-accent transition-colors">
+            <NumInput dec={2} className="w-24 rounded border border-border px-2 py-0.5 h-6 text-right tabular-nums font-semibold bg-accent/60" value={rec} onChange={setRec} />
+            <Button variant="ghost" onClick={() => setRec(9.75)} className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-md text-sm border border-border bg-card hover:bg-accent transition-colors">
               <RotateCcw className="h-3.5 w-3.5" /> Restaurar
-            </button>
+            </Button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm border-separate border-spacing-y-px">
@@ -342,7 +345,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
           <td className={`${td} border-l border-border font-semibold`}>{n2(t(vs))}</td>
         </tr>
       );
-      const campo = "w-24 rounded border border-border px-2 py-0.5 h-6 text-right tabular-nums font-semibold bg-yellow-100/60";
+      const campo = "w-24 rounded border border-border px-2 py-0.5 h-6 text-right tabular-nums font-semibold bg-accent/60";
       return (
         <section className="bg-card rounded-xl border border-border shadow-sm p-2 space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
@@ -352,9 +355,9 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
             <label className="ml-4 text-sm text-muted-foreground">% Rede</label>
             <NumInput dec={2} className={campo} value={rede} onChange={setRede} />
             <span className="ml-auto rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm cursor-help" title="Total das Despesas Assistenciais ÷ Total do Faturamento">Sinistralidade Bruta: <b className="tabular-nums">{t(fatM) ? `${n2((t(desp) / t(fatM)) * 100)}%` : "-"}</b></span>
-            <button onClick={() => { setSinLiq(89); setRede(57); }} className="flex items-center gap-1 px-2 py-0.5 rounded-md text-sm border border-border bg-card hover:bg-accent transition-colors">
+            <Button variant="ghost" onClick={() => { setSinLiq(89); setRede(57); }} className="flex items-center gap-1 px-2 py-0.5 rounded-md text-sm border border-border bg-card hover:bg-accent transition-colors">
               <RotateCcw className="h-3.5 w-3.5" /> Restaurar
-            </button>
+            </Button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm border-separate border-spacing-y-0.5">
@@ -404,9 +407,9 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
         <tr key={nome + (filho ? "-f" : "")} className={`group transition-colors hover:bg-muted/80 ${cl}`}>
           <td className={`sticky left-0 z-10 bg-inherit px-3 py-0.5 leading-tight whitespace-nowrap ${filho ? "pl-10 text-sm text-foreground/80" : "font-semibold tracking-wide"}`}>
             {key ? (
-              <button onClick={() => setDreAbertos((p) => ({ ...p, [key]: !p[key] }))} className="inline-flex items-center gap-1.5 hover:text-primary">
+              <Button variant="ghost" onClick={() => setDreAbertos((p) => ({ ...p, [key]: !p[key] }))} className="inline-flex items-center gap-1.5 hover:text-primary">
                 <span className="grid h-4 w-4 place-items-center rounded-full bg-primary/10 text-primary">{dreAbertos[key] ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}</span>{nome}
-              </button>
+              </Button>
             ) : <span className={filho ? "" : "pl-6"}>{nome}</span>}
           </td>
           {vs.map((v, k) => <td key={k} className={`px-2 py-0.5 leading-tight text-right tabular-nums whitespace-nowrap ${filho ? "text-sm text-foreground/80" : ""} ${RES.has(nome) ? cls(v) : ""}`}>{n2(v)}</td>)}
@@ -457,14 +460,14 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
       const fin = fatM.map((v) => v * finPc / 100);
       const t = (vs: number[]) => vs.reduce((a, b) => a + b, 0);
       const cls = (v: number) => (v < 0 ? "text-destructive" : "");
-      const campo = "w-24 rounded border border-border px-2 py-0.5 h-6 text-right tabular-nums font-semibold bg-yellow-100/60";
+      const campo = "w-24 rounded border border-border px-2 py-0.5 h-6 text-right tabular-nums font-semibold bg-accent/60";
       return (
         <section className="bg-card rounded-xl border border-border shadow-sm p-2 space-y-1">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold cursor-help" title="Financeiro = Faturamento do mês × % Financeiro.">Financeiro — jan/27 a dez/27</h3>
-            <button onClick={() => setFinPc(4.56)} className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-md text-sm border border-border bg-card hover:bg-accent transition-colors">
+            <Button variant="ghost" onClick={() => setFinPc(4.56)} className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-md text-sm border border-border bg-card hover:bg-accent transition-colors">
               <RotateCcw className="h-3.5 w-3.5" /> Restaurar
-            </button>
+            </Button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -507,15 +510,15 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
       const vert = demais.reduce((a, b) => a + b, 0);
       const t = (vs: number[]) => vs.reduce((a, b) => a + b, 0);
       const cls = (_v: number) => "";
-      const campo = "w-24 rounded border border-border px-2 py-0.5 h-6 text-right tabular-nums font-semibold bg-yellow-100/60";
+      const campo = "w-24 rounded border border-border px-2 py-0.5 h-6 text-right tabular-nums font-semibold bg-accent/60";
       return (
         <section className="bg-card rounded-xl border border-border shadow-sm p-2 space-y-1">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold cursor-help" title="Cada linha = Faturamento do mês × % da linha. Total = soma das linhas. Vertical = soma dos %.">{aba} — jan/27 a dez/27</h3>
             <span className="ml-auto rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm">Vertical: <b className="tabular-nums">{n2(vert)}%</b></span>
-            <button onClick={() => { if (isAdm) { setAdmPc([4.43, 1.09, 0.72, 1.52]); setAdmTot(7.76); } else setDemaisOp([0.97, 0.87, 1.94, 1.29]); }} className="flex items-center gap-1 px-2 py-0.5 rounded-md text-sm border border-border bg-card hover:bg-accent transition-colors">
+            <Button variant="ghost" onClick={() => { if (isAdm) { setAdmPc([4.43, 1.09, 0.72, 1.52]); setAdmTot(7.76); } else setDemaisOp([0.97, 0.87, 1.94, 1.29]); }} className="flex items-center gap-1 px-2 py-0.5 rounded-md text-sm border border-border bg-card hover:bg-accent transition-colors">
               <RotateCcw className="h-3.5 w-3.5" /> Restaurar
-            </button>
+            </Button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -592,15 +595,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
     </section>
     )}
     {(() => {
-      const fM = Array.from({ length: 12 }, (_, k) => sum((r) => (r.vidas + (k + 1) * (r.entradas - r.saidas)) * tk(r, k + 1)));
-      const pcOp = demaisOp.reduce((a, b) => a + b, 0);
-      let prim = 0, sec = 0, adm = 0, fin = 0, rai = 0, imp = 0;
-      const fT = fM.reduce((a, b) => a + b, 0);
-      fM.forEach((f) => {
-        const ent = f * (1 + rec / 100), p = ent - ent * sinLiq / 100, s = -f * pcOp / 100, a = f * admTot / 100, fi = f * finPc / 100;
-        const r = p + s - a + fi;
-        prim += p; sec += s; adm += a; fin += fi; rai += r; imp += r > 0 ? r * 0.34 : 0;
-      });
+      const fT=annual(financial.fat),prim=annual(financial.prim),sec=-annual(financial.demais),adm=annual(financial.adm),fin=annual(financial.fin),rai=annual(financial.rai),imp=annual(financial.imp);
       const tot = prim + sec, ebitda = tot - adm;
       const cards: [string, number, string][] = [
         ["Operacionais Primários", prim, "Entradas Operacionais − Despesas Assistenciais"],
@@ -633,8 +628,8 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
       );
     })()}
     </div>
-    {<div className="shrink-0 py-2 flex justify-center"><div className="inline-flex flex-nowrap whitespace-nowrap justify-center gap-0.5 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_0_16px_2px_hsl(var(--foreground)/0.18)]">
-      {onPainel && <button onClick={onPainel} className="rounded-full px-3 py-0.5 text-[13px] font-medium transition-all duration-200 text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5">Painel</button>}
+    {!simulator && <div className="shrink-0 py-2 flex justify-center"><div className="inline-flex flex-nowrap whitespace-nowrap justify-center gap-0.5 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_0_16px_2px_hsl(var(--foreground)/0.18)]">
+      {onPainel && <Button variant="ghost" onClick={onPainel} className="rounded-full px-3 py-0.5 text-[13px] font-medium transition-all duration-200 text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5">Painel</Button>}
       {ABAS.map((a) => (
         <Button variant="ghost"
           title={a === "DRE" ? DRE_FULL_NAME : undefined}
