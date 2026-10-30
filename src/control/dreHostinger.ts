@@ -16,6 +16,25 @@ async function fetchAll(table: string, build: (q: any) => any): Promise<any[]> {
 
 const clean = (s: string | null) => (!s || s === "-" ? "" : s);
 
+export const LIMITE_CONTAS_41 = 20_000_000;
+type Mov41 = { nr_mes: number | string; vl_debito: number | string | null; vl_credito: number | string | null };
+
+/** Último mês em que o montante das contas 9D 41 (débito − crédito) supera R$ 20 milhões. */
+export function ultimoMesContas41(movs: Mov41[]): number {
+  const soma = new Map<number, number>();
+  for (const r of movs) soma.set(Number(r.nr_mes), (soma.get(Number(r.nr_mes)) ?? 0) + (Number(r.vl_debito) || 0) - (Number(r.vl_credito) || 0));
+  return Math.max(0, ...Array.from(soma).filter(([, v]) => v > LIMITE_CONTAS_41).map(([m]) => m));
+}
+
+export async function loadMesesDemonstracoes(ano = 2026): Promise<number[]> {
+  const movs = await Promise.all(Array.from({ length: 12 }, (_, i) => i + 1).map((m) =>
+    fetchAll("demonstracoes_contabeis_oracle_mv", (q) =>
+      q.select("nr_mes,cd_conta_contabil,vl_debito,vl_credito").eq("nr_ano", ano).eq("nr_mes", m)
+        .gte("cd_conta_contabil", 410000000).lte("cd_conta_contabil", 419999999)
+        .order("cd_conta_contabil").order("vl_debito").order("vl_credito")))).then((a) => a.flat());
+  return Array.from({ length: ultimoMesContas41(movs) }, (_, i) => i + 1);
+}
+
 /**
  * DRE montado direto do balancete MV (demonstracoes_contabeis_oracle_mv), agrupado pelo plano 9D
  * (plano_contas_icontabil, _9d = cd_conta_contabil de 9 dígitos). Valor = movimento do mês
