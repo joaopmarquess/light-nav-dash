@@ -85,6 +85,7 @@ import AdministradorasSim from "@/components/AdministradorasSim";
 import ControlPainel from "@/control/OrcamentoFaturamento";
 import PainelBeneficiario from "@/components/PainelBeneficiario";
 import CtrlDRE from "@/control/DRETrial";
+import CtrlHistoricoDRE from "@/control/HistoricoDRE";
 import CtrlContas from "@/control/ContasHub";
 import CtrlOrcamento from "@/control/OrcamentoTrial";
 import CtrlDashboards from "@/control/Dashboards";
@@ -263,7 +264,7 @@ const Index = () => {
   const [ctrlAba, setCtrlAba] = useState<string | null>(null);
   const [ctrlOrcDre, setCtrlOrcDre] = useState(false);
   const [ctrlCfgOpen, setCtrlCfgOpen] = useState(false);
-  const [ctrlDreDre, setCtrlDreDre] = useState(false);
+  const [ctrlDreAba, setCtrlDreAba] = useState<"Painel" | "DRE" | "Histórico">("Painel");
   const controlTitle = active === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : active === "Control · Relatório" ? REPORT_FULL_NAME : active === "Control · Dashboards" ? SLIDES_LONG_TEXT : active === "Control · Orçamento Vigente" ? "Orçamento 2026" : active === "Control · Orçamento 2027" ? "Orçamento 2027" : active === "Control · Simulador" ? "Simulador" : active === "Control · Contas" ? "Contas" : null;
   const controlSubtitle = active === "Control · Dashboards" ? SLIDES_MEDIUM_TEXT : null;
   useEffect(() => {
@@ -686,7 +687,7 @@ const Index = () => {
           ) : active === "Control · Simulador" ? (
             <CtrlSimulador onViewState={onControlSimulatorViewState} onDirty={setCtrlSimDirty} onBusy={setCtrlSimBusy} />
           ) : active === "Control · DRE Gerencial PE" ? (
-            ctrlDreDre ? <CtrlDRE onAba={() => setCtrlDreDre(false)} /> : <CtrlDRE painel onAba={() => setCtrlDreDre(true)} />
+            ctrlDreAba === "Histórico" ? <CtrlHistoricoDRE onAba={setCtrlDreAba} /> : ctrlDreAba === "DRE" ? <CtrlDRE onAba={setCtrlDreAba} /> : <CtrlDRE painel onAba={setCtrlDreAba} />
           ) : active === "Control · Contas" ? (
             <CtrlContas />
           ) : active === "Control · Orçamento Vigente" ? (
