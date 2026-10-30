@@ -241,7 +241,7 @@ const labItems: MenuItem[] = [
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   controlItem,
-  { icon: Users, label: "Carteira", children: [{ icon: Search, label: "Painel", id: "Carteira · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira · Entradas" }, { icon: TrendingUp, label: "Saídas", id: "Carteira · Saídas" }, { icon: BarChart3, label: "Tabelas", id: "Carteira · Tabelas" }] },
+  { icon: Users, label: "Carteira", children: [{ icon: Search, label: "Consulta", id: "Carteira · Consulta" }, { icon: LayoutDashboard, label: "Painel", id: "Carteira · Painel" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira · Entradas" }, { icon: TrendingUp, label: "Saídas", id: "Carteira · Saídas" }, { icon: BarChart3, label: "Tabelas", id: "Carteira · Tabelas" }] },
   { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }, { icon: Users, label: "Empresas", id: "Sinistralidade · Empresas" }, { icon: Users, label: "Empresas SB", id: "Sinistralidade · Empresas SB" }, { icon: Users, label: "Empresas Menu", id: "Sinistralidade · Empresas Menu" }] },
 ];
 
@@ -720,6 +720,11 @@ const Index = () => {
             <CarteiraTrialGeo />
           ) : active === "Carteira · Consulta" ? (
             <CarteiraTrial />
+          ) : active === "Carteira · Painel" ? (
+            <section className="rounded-lg border border-border bg-card p-8 shadow-sm">
+              <h2 className="text-xl font-semibold text-foreground">Painel</h2>
+              <p className="mt-2 text-sm text-muted-foreground">Em construção — aguardando definição do conteúdo.</p>
+            </section>
           ) : active === "Laboratory" ? (
             labMenuAberto ? null : <section className="rounded-lg border border-border bg-card p-8 shadow-sm" aria-labelledby="lab-home-title">
               <h2 id="lab-home-title" className="flex items-center gap-3 text-2xl font-semibold text-foreground"><FlaskConical className="h-6 w-6 text-primary" />Laboratory</h2>
