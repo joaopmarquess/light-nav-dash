@@ -720,6 +720,11 @@ const Index = () => {
             <CarteiraTrialGeo />
           ) : active === "Carteira · Consulta" ? (
             <CarteiraTrial />
+          ) : active === "Carteira · Painel" ? (
+            <section className="rounded-lg border border-border bg-card p-8 shadow-sm">
+              <h2 className="text-xl font-semibold text-foreground">Painel</h2>
+              <p className="mt-2 text-sm text-muted-foreground">Em construção — aguardando definição do conteúdo.</p>
+            </section>
           ) : active === "Laboratory" ? (
             labMenuAberto ? null : <section className="rounded-lg border border-border bg-card p-8 shadow-sm" aria-labelledby="lab-home-title">
               <h2 id="lab-home-title" className="flex items-center gap-3 text-2xl font-semibold text-foreground"><FlaskConical className="h-6 w-6 text-primary" />Laboratory</h2>
