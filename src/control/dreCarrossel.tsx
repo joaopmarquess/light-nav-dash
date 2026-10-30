@@ -4,6 +4,8 @@ import {
 } from "recharts";
 import { loadDreHostinger, type DreHRow } from "@/control/dreHostinger";
 
+import { DRE_FULL_NAME } from "@/control/dreLabels";
+
 const ANO = 2026;
 const MESES = [1, 2, 3, 4, 5, 6, 7, 8];
 const NOMES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago"];
@@ -92,7 +94,7 @@ export function useDreCarrossel() {
     const sinMin = Math.max(0, Math.floor(Math.min(...sinis.map((x) => x.Sinistralidade)) / 10) * 10 - 10);
     const comp = somaPor("g1");
     const top = somaPor("g3").slice(0, 10);
-    const sub = `DRE Controladoria · Jan–Ago/${ANO}`;
+    const sub = `${DRE_FULL_NAME} · Jan–Ago/${ANO}`;
     return [
       { title: "Resultado acumulado", subtitle: sub, chart: (
         <ComposedChart data={mensal} margin={{ top: 24, right: 24, left: 8, bottom: 0 }}>

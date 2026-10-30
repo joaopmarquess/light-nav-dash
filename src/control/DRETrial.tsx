@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { loadDreHostinger, type DreHRow } from "@/control/dreHostinger";
+import { DRE_FULL_NAME } from "@/control/dreLabels";
 import { grupoPainelDre } from "@/control/drePainel";
+import { Button } from "@/components/ui/button";
 
 // DRE (Trial): reconstruído do zero, só com o balancete MV + plano 9D (ver src/lib/dreHostinger.ts).
 const ANO = 2026;
@@ -57,8 +59,8 @@ const Barra = ({ ativa, onAba }: { ativa: "Painel" | "DRE"; onAba?: (a: "Painel"
     <div className="sticky bottom-0 z-20 shrink-0 bg-background py-4 flex justify-center">
       <div className="inline-flex gap-0.5 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_0_16px_2px_hsl(var(--foreground)/0.18)]">
         {(["Painel", "DRE"] as const).map((a) => (
-          <button key={a} onClick={() => a !== ativa && onAba(a)}
-            className={`rounded-full px-3 py-1 text-[13px] font-medium transition-all duration-200 ${a === ativa ? "bg-primary text-primary-foreground shadow-md shadow-primary/30" : "text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5"}`}>{a}</button>
+          <Button variant="ghost" title={a === "DRE" ? DRE_FULL_NAME : undefined} key={a} onClick={() => a !== ativa && onAba(a)}
+            className={`rounded-full px-3 py-1 text-[13px] h-auto font-medium transition-all duration-200 ${a === ativa ? "bg-primary text-primary-foreground shadow-md shadow-primary/30" : "text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5"}`}>{a}</Button>
         ))}
       </div>
     </div>
@@ -165,8 +167,8 @@ const DRETrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (a: "Pa
           ))}
         </div>
         <section className="rounded-2xl border border-border bg-card shadow-sm px-3 py-2 flex-1 flex flex-col">
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="text-base font-semibold text-foreground">DRE simplificado Jan–Ago/{ANO}</h3>
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+            <h3 className="text-base font-semibold text-foreground">{DRE_FULL_NAME} · Jan–Ago/{ANO}</h3>
             <span className="text-xs uppercase tracking-wide text-muted-foreground">R$ · % fat.</span>
           </div>
           <div className="flex-1 flex flex-col justify-between gap-0.5">

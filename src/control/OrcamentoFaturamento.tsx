@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { RotateCcw, ChevronLeft, ChevronDown, ChevronRight } from "lucide-react";
+import { DRE_FULL_NAME } from "@/control/dreLabels";
+import { Button } from "@/components/ui/button";
 
 const parseBR = (v: string) => Number(v.replace(/\./g, "").replace(",", ".")) || 0;
 
@@ -36,8 +38,8 @@ const n2 = (v: number) =>
 const ABAS = ["Faturamento", "Coparticipação", "Despesas Assistenciais", "Demais Operacionais", "Despesas Administrativas", "Financeiro", "DRE"];
 
 const usePersist = <T,>(k: string, d: T) => {
-  const [v, setV] = useState<T>(() => { try { const x = localStorage.getItem("orc27:" + k); return x ? JSON.parse(x) : d; } catch { return d; } });
-  useEffect(() => { localStorage.setItem("orc27:" + k, JSON.stringify(v)); }, [k, v]);
+  const [v, setV] = useState<T>(() => { try { const x = localStorage.getItem("control:orc27:" + k); return x ? JSON.parse(x) : d; } catch { return d; } });
+  useEffect(() => { localStorage.setItem("control:orc27:" + k, JSON.stringify(v)); }, [k, v]);
   return [v, setV] as const;
 };
 
@@ -132,8 +134,8 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
           ];
           return (
             <section className="rounded-2xl border border-border bg-card shadow-sm px-3 py-2 flex-1 flex flex-col">
-              <div className="flex items-center justify-between mb-1">
-                <h3 className="text-base font-semibold text-foreground">DRE simplificado 2027</h3>
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                <h3 className="text-base font-semibold text-foreground">{DRE_FULL_NAME} · 2027</h3>
                 <span className="text-xs uppercase tracking-wide text-muted-foreground">R$ · % fat.</span>
               </div>
               <div className="flex-1 flex flex-col justify-between gap-0.5">
@@ -154,7 +156,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
           <div className="mt-auto sticky bottom-0 z-20 shrink-0 bg-background py-4 flex justify-center"><div className="inline-flex flex-nowrap whitespace-nowrap justify-center gap-0.5 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_0_16px_2px_hsl(var(--foreground)/0.18)]">
             <button className="rounded-full px-3 py-1 text-[13px] font-medium transition-all duration-200 bg-primary text-primary-foreground shadow-md shadow-primary/30">Painel</button>
             {ABAS.map((a) => (
-              <button key={a} onClick={() => onSimulacao(a)} className="rounded-full px-3 py-1 text-[13px] font-medium transition-all duration-200 text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5">{a}</button>
+              <Button variant="ghost" title={a === "DRE" ? DRE_FULL_NAME : undefined} key={a} onClick={() => onSimulacao(a)} className="rounded-full px-3 py-1 text-[13px] font-medium transition-all duration-200 text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5 h-auto">{a}</Button>
             ))}
           </div></div>
         )}
@@ -422,7 +424,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
       return (
         <section className="bg-card rounded-xl border border-border shadow-sm px-3 py-0.5 space-y-1">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold cursor-help" title="Resultado antes dos impostos = Entradas Operacionais − Despesas Assistenciais − Demais Operacionais − Despesas Administrativas + Financeiro. Impostos Federais = 34% do resultado antes dos impostos, quando positivo (senão 0). Resultado Líquido = antes dos impostos − Impostos Federais.">DRE — jan/27 a dez/27</h3>
+            <h3 className="text-sm font-semibold cursor-help" title={DRE_FULL_NAME}>{DRE_FULL_NAME} · jan/27 a dez/27</h3>
             <span className="ml-auto rounded-md border border-border bg-muted/60 px-2 py-0.5 text-sm cursor-help" title="Resultado Total ÷ Faturamento Total">Margem: <b className="tabular-nums">{tF ? `${n2((t(resLiq) / tF) * 100)}%` : "-"}</b></span>
 
           </div>
@@ -634,13 +636,14 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
     {<div className="shrink-0 py-2 flex justify-center"><div className="inline-flex flex-nowrap whitespace-nowrap justify-center gap-0.5 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_0_16px_2px_hsl(var(--foreground)/0.18)]">
       {onPainel && <button onClick={onPainel} className="rounded-full px-3 py-0.5 text-[13px] font-medium transition-all duration-200 text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5">Painel</button>}
       {ABAS.map((a) => (
-        <button
+        <Button variant="ghost"
+          title={a === "DRE" ? DRE_FULL_NAME : undefined}
           key={a}
           onClick={() => setAba(a)}
           className={aba === a ? "rounded-full px-3 py-0.5 text-[13px] font-medium transition-all duration-200 bg-primary text-primary-foreground shadow-md shadow-primary/30" : "rounded-full px-3 py-0.5 text-[13px] font-medium transition-all duration-200 text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5"}
         >
           {a}
-        </button>
+        </Button>
       ))}
     </div></div>}
     </div>

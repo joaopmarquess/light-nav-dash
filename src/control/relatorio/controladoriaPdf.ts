@@ -1,3 +1,4 @@
+import { DRE_FULL_NAME, REPORT_FULL_NAME } from "@/control/dreLabels";
 import { jsPDF } from "jspdf";
 import "core-js/actual/map/get-or-insert-computed";
 import "core-js/actual/weak-map/get-or-insert-computed";
@@ -10,7 +11,7 @@ import axisLogo from "@/assets/axis-report-logo.png.asset.json";
 export type ReportPdf = { doc: jsPDF; contents: { id: string; title: string; page: number }[] };
 export async function comporPdfRelatorio(report: ControladoriaReport): Promise<ReportPdf> {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
-  doc.setProperties({ title: "Relatório de Controladoria — AXIS / CONTROL", subject: `${report.period.de} a ${report.period.ate}`, creator: "AXIS / CONTROL" });
+  doc.setProperties({ title: `${REPORT_FULL_NAME} — AXIS / CONTROL`, subject: `${report.period.de} a ${report.period.ate}`, creator: "AXIS / CONTROL" });
   const colors = PDF_COLORS, margin = 19, width = 172, bottom = 276;
   const contents: ReportPdf["contents"] = [];
   let y = 28;
@@ -40,11 +41,11 @@ export async function comporPdfRelatorio(report: ControladoriaReport): Promise<R
   } catch { text(20, true, colors.navy); doc.text("AXIS / CONTROL", margin, 34); }
   doc.setFillColor(...colors.navy); doc.rect(0, 65, 210, 119, "F");
   doc.setFillColor(...colors.blue); doc.rect(0, 65, 5, 119, "F");
-  text(28, true, colors.headText); doc.text(["RELATÓRIO DE", "CONTROLADORIA"], margin, 102);
+  text(24, true, colors.headText); doc.text(doc.splitTextToSize(REPORT_FULL_NAME, width), margin, 100);
   text(12, false, colors.headText); doc.text(["Visão econômica, assistencial", "e administrativa"], margin, 137);
   text(11, true, colors.headText); doc.text(`${dataBR(report.period.de)} a ${dataBR(report.period.ate)}`, margin, 164);
   text(12, true, colors.navy); doc.text("AXIS / CONTROL", margin, 212);
-  text(10, false, colors.muted); doc.text("Carteira · Assistencial · DRE · Orçamento", margin, 224);
+  text(10, false, colors.muted); doc.text(doc.splitTextToSize(`Carteira · Assistencial · ${DRE_FULL_NAME} · Orçamento`, width), margin, 219);
   doc.setDrawColor(...colors.lightBlue); doc.setLineWidth(1); doc.line(margin, 237, 191, 237);
   text(9, false, colors.muted); doc.text(`Gerado em ${new Date(report.generatedAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`, margin, 252);
   page(); // Sumário is always page two, filled after actual pagination.
@@ -139,16 +140,18 @@ export async function comporPdfRelatorio(report: ControladoriaReport): Promise<R
     const nested = !/^\d\. |Conclusão/.test(item.title);
     text(nested ? 10 : 11, !nested, nested ? colors.muted : colors.navy);
     const x = nested ? margin + 5 : margin;
-    doc.text(item.title, x, y);
+    const lines = doc.splitTextToSize(item.title, width - 15) as string[];
+    const height = Math.max(nested ? 10 : 14, lines.length * 5 + 5);
+    doc.text(lines, x, y);
     doc.text(String(item.page), 191, y, { align: "right" });
-    doc.link(x, y - 4, width, 6, { pageNumber: item.page });
-    doc.setDrawColor(...colors.gridLine); doc.setLineWidth(0.15); doc.line(x, y + 3, 191, y + 3);
-    y += nested ? 10 : 14;
+    doc.link(x, y - 4, width, height, { pageNumber: item.page });
+    doc.setDrawColor(...colors.gridLine); doc.setLineWidth(0.15); doc.line(x, y + height - 5, 191, y + height - 5);
+    y += height;
   });
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
-    if (i > 2) { text(8, false, colors.muted); doc.text("AXIS / CONTROL · Relatório de Controladoria", margin, 15); doc.text(`${dataBR(report.period.de)} a ${dataBR(report.period.ate)}`, 191, 15, { align: "right" }); }
+    if (i > 2) { text(8, false, colors.muted); doc.text(`AXIS / CONTROL · ${REPORT_FULL_NAME}`, margin, 15); doc.text(`${dataBR(report.period.de)} a ${dataBR(report.period.ate)}`, 191, 15, { align: "right" }); }
     text(8, false, colors.muted); doc.text(`p. ${i} de ${totalPages}`, 191, 287, { align: "right" });
   }
   return { doc, contents };

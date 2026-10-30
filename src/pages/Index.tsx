@@ -88,6 +88,7 @@ import CtrlContas from "@/control/ContasHub";
 import CtrlOrcamento from "@/control/OrcamentoTrial";
 import CtrlDashboards from "@/control/Dashboards";
 import CtrlRelatorio from "@/control/RelatorioControladoria";
+import { DRE_FULL_NAME, DRE_MENU_NAME, REPORT_FULL_NAME, SLIDES_SHORT_TEXT, SLIDES_MEDIUM_TEXT, SLIDES_LONG_TEXT } from "@/control/dreLabels";
 import { ListTree, Users2, ArrowLeft } from "lucide-react";
 
 function EntradasComFaixas() {
@@ -145,11 +146,11 @@ const controlItem: MenuItem = {
     icon: DollarSign,
     label: "Control",
     children: [
-      { icon: FileText, label: "Controladoria", id: "Control · DRE Gerencial PE" },
+      { icon: FileText, label: DRE_MENU_NAME, id: "Control · DRE Gerencial PE" },
+      { icon: FileText, label: "Relatório", id: "Control · Relatório" },
       { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente" },
       { icon: TrendingUp, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
-      { icon: BarChart3, label: "Carrossel", id: "Control · Dashboards" },
-      { icon: FileText, label: "Relatório", id: "Control · Relatório" },
+      { icon: BarChart3, label: SLIDES_SHORT_TEXT, id: "Control · Dashboards" },
       { icon: Settings, label: "Configurações", id: "__cfg_control__" },
       { icon: ListTree, label: "Contas", id: "Control · Contas", nivel: 2 },
     ],
@@ -252,6 +253,13 @@ const Index = () => {
   const [ctrlOrcDre, setCtrlOrcDre] = useState(false);
   const [ctrlCfgOpen, setCtrlCfgOpen] = useState(false);
   const [ctrlDreDre, setCtrlDreDre] = useState(false);
+  const controlTitle = active === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : active === "Control · Relatório" ? REPORT_FULL_NAME : active === "Control · Dashboards" ? SLIDES_LONG_TEXT : active === "Control · Orçamento Vigente" ? "Orçamento 2026" : active === "Control · Orçamento 2027" ? "Orçamento 2027" : active === "Control · Contas" ? "Contas" : null;
+  const controlSubtitle = active === "Control · Dashboards" ? SLIDES_MEDIUM_TEXT : null;
+  useEffect(() => {
+    if (active === "Control · Orçamento 2027") return;
+    Object.keys(localStorage).filter(k => k.startsWith("control:orc27:")).forEach(k => localStorage.removeItem(k));
+    setCtrlAba(null);
+  }, [active]);
   const [abaOrc, setAbaOrc] = useState("Faturamento");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [labOpen, setLabOpen] = useState<Record<string, boolean>>({});
@@ -378,6 +386,7 @@ const Index = () => {
                       return (
                         <button
                           key={child.label}
+                          title={child.id === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : child.id === "Control · Relatório" ? REPORT_FULL_NAME : child.id === "Control · Dashboards" ? SLIDES_LONG_TEXT : undefined}
                           onClick={() => child.id === "__cfg_control__" ? setCtrlCfgOpen((o) => !o) : setActive((child.id ?? child.label))}
                           className={`w-full flex items-center gap-3 ${child.nivel === 2 ? "pl-14" : "pl-9"} pr-3 py-2 rounded-lg text-sm transition-colors ${
                             childActive
@@ -475,8 +484,8 @@ const Index = () => {
       <div className="flex-1 flex flex-col min-h-0 min-w-0">
         <header className="h-20 border-b border-border bg-card flex items-center justify-between px-8">
           <div>
-            <h1 className="text-xl font-semibold text-foreground">{active === "Uberaba Timeline" ? "Projeto Bensaúde|Uberaba" : active}</h1>
-            <p className="text-xs text-muted-foreground">AXIS | Executive Intelligence Platform</p>
+            <h1 className="text-xl font-semibold text-foreground">{controlTitle ?? (active === "Uberaba Timeline" ? "Projeto Bensaúde|Uberaba" : active)}</h1>
+            {controlTitle ? controlSubtitle && <p className="text-xs text-muted-foreground">{controlSubtitle}</p> : <p className="text-xs text-muted-foreground">AXIS | Executive Intelligence Platform</p>}
           </div>
           <div className="flex items-center gap-3">
             {(active === "Área Geográfica" || active === "Dashboard" || active === "Ativos por Cidade") && (

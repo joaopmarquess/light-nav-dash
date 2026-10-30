@@ -3,6 +3,9 @@ import { CalendarDays, ChevronRight, ChevronsDownUp, ChevronsUpDown, Coins, Tren
 import { supabase } from "@/integrations/supabase/client";
 import { mergeOrcamento } from "@/control/orcamentoLocal";
 import { loadDreHostinger, type DreHRow } from "@/control/dreHostinger";
+import { DRE_FULL_NAME } from "@/control/dreLabels";
+import { Button } from "@/components/ui/button";
+
 import { itemDe } from "@/control/orcamentoRegras";
 
 type Row = { item: string; mes: number; previsto: number; realizado: number; projetado: number };
@@ -37,8 +40,8 @@ const Barra = ({ ativa, onAba }: { ativa: "Painel" | "DRE"; onAba?: (a: "Painel"
     <div className="sticky bottom-0 z-20 shrink-0 bg-background py-4 flex justify-center">
       <div className="inline-flex gap-0.5 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_0_16px_2px_hsl(var(--foreground)/0.18)]">
         {(["Painel", "DRE"] as const).map((a) => (
-          <button key={a} onClick={() => a !== ativa && onAba(a)}
-            className={`rounded-full px-3 py-1 text-[13px] font-medium transition-all duration-200 ${a === ativa ? "bg-primary text-primary-foreground shadow-md shadow-primary/30" : "text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5"}`}>{a}</button>
+          <Button variant="ghost" title={a === "DRE" ? DRE_FULL_NAME : undefined} key={a} onClick={() => a !== ativa && onAba(a)}
+            className={`rounded-full px-3 py-1 text-[13px] h-auto font-medium transition-all duration-200 ${a === ativa ? "bg-primary text-primary-foreground shadow-md shadow-primary/30" : "text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5"}`}>{a}</Button>
         ))}
       </div>
     </div>
@@ -114,7 +117,8 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
     const mesesComReal = new Set((rows || []).filter((r) => Math.abs(r.realizado) >= 0.005).map((r) => r.mes));
     for (const r of rows || []) {
       if (!m.has(r.item)) m.set(r.item, new Map());
-      const im = m.get(r.item)!;
+      const im = m.get(r.item);
+      if (!im) continue;
       const cur = im.get(r.mes) || { previsto: 0, realizado: 0, projetado: 0 };
       const real = mesesComReal.has(r.mes) ? r.realizado : fonteFutura === "previsto" ? r.previsto : r.projetado;
       im.set(r.mes, {
@@ -441,8 +445,8 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
           ))}
         </div>
         <section className="rounded-2xl border border-border bg-card shadow-sm px-3 py-2 flex-1 flex flex-col">
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="text-base font-semibold text-foreground">DRE simplificado 2026</h3>
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+            <h3 className="text-base font-semibold text-foreground">{DRE_FULL_NAME} · 2026</h3>
             <div className="flex items-center gap-3">
               <div className="inline-flex rounded-md border border-border overflow-hidden text-[12px]">
                 {(["projetado", "previsto"] as const).map((k) => (
@@ -614,8 +618,8 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                     let realizado: number;
                     let projetado: number;
                     if (isRatio) {
-                      const num = sumVals(node.ratio!.num, c);
-                      const den = sumVals(node.ratio!.den, c);
+                      const num = sumVals(node.ratio?.num ?? [], c);
+                      const den = sumVals(node.ratio?.den ?? [], c);
                       previsto = Math.abs(den.previsto) >= 0.005 ? (Math.abs(num.previsto) / Math.abs(den.previsto)) * 100 : 0;
                       realizado = Math.abs(den.realizado) >= 0.005 ? (Math.abs(num.realizado) / Math.abs(den.realizado)) * 100 : 0;
                       projetado = Math.abs(den.projetado) >= 0.005 ? (Math.abs(num.projetado) / Math.abs(den.projetado)) * 100 : 0;
