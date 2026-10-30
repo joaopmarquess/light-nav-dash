@@ -38,8 +38,8 @@ const n2 = (v: number) =>
 const ABAS = ["Faturamento", "Coparticipação", "Despesas Assistenciais", "Demais Operacionais", "Despesas Administrativas", "Financeiro", "DRE"];
 
 const usePersist = <T,>(k: string, d: T) => {
-  const [v, setV] = useState<T>(() => { try { const x = localStorage.getItem("orc27:" + k); return x ? JSON.parse(x) : d; } catch { return d; } });
-  useEffect(() => { localStorage.setItem("orc27:" + k, JSON.stringify(v)); }, [k, v]);
+  const [v, setV] = useState<T>(() => { try { const x = localStorage.getItem("control:orc27:" + k); return x ? JSON.parse(x) : d; } catch { return d; } });
+  useEffect(() => { localStorage.setItem("control:orc27:" + k, JSON.stringify(v)); }, [k, v]);
   return [v, setV] as const;
 };
 
