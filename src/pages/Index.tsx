@@ -235,7 +235,6 @@ const labItems: MenuItem[] = [
 
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
-  { icon: FileText, label: "Modelo Relatório de Controladoria" },
   controlItem,
   { icon: Users, label: "Carteira", children: [{ icon: Search, label: "Painel", id: "Carteira · Consulta" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira · Entradas" }, { icon: TrendingUp, label: "Saídas", id: "Carteira · Saídas" }, { icon: BarChart3, label: "Tabelas", id: "Carteira · Tabelas" }] },
   { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }, { icon: Users, label: "Empresas", id: "Sinistralidade · Empresas" }, { icon: Users, label: "Empresas SB", id: "Sinistralidade · Empresas SB" }, { icon: Users, label: "Empresas Menu", id: "Sinistralidade · Empresas Menu" }] },
@@ -322,7 +321,6 @@ const Index = () => {
             const button = (
               <button
                 onClick={() => {
-                  if (item.label === "Modelo Relatório de Controladoria") { navigate("/relatorio-controladoria"); return; }
                   if (hasChildren) {
                     if (collapsed) {
                       setCollapsed(false);
