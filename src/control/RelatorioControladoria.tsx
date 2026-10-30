@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { DRE_FULL_NAME, REPORT_FULL_NAME } from "@/control/dreLabels";
 import { BookOpen, CalendarRange, FileBarChart2, FileDown, Eye, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,14 +51,14 @@ export default function RelatorioControladoria() {
   return <div className={`control-report ${preview ? "control-report-preview" : ""}`}>
     <header className="control-report-header">
       <FileBarChart2 className="h-6 w-6 text-primary" />
-      <h1 className="text-xl font-semibold text-foreground">Modelo Relatório de Controladoria</h1>
+      <h1 className="text-xl font-semibold text-foreground">{REPORT_FULL_NAME}</h1>
       {preview && <Button variant="outline" className="ml-auto" onClick={() => setPreview(false)}>Voltar ao relatório</Button>}
     </header>
     {!preview && <section className="control-report-config" aria-label="Configuração do relatório">
       <label>Ano<Input aria-label="Ano" type="number" min={1900} max={2200} value={ano} onChange={e => setAno(Number(e.target.value))} disabled={busy} /></label>
       <label>Mês<Select value={mes} onValueChange={setMes} disabled={busy}><SelectTrigger aria-label="Mês"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="0">Todos</SelectItem>{months.map((name, i) => <SelectItem key={name} value={String(i + 1)}>{name}</SelectItem>)}</SelectContent></Select></label>
       <label>Trimestre<Select value={tri} onValueChange={setTri} disabled={busy}><SelectTrigger aria-label="Trimestre"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="0">Todos</SelectItem>{[1, 2, 3, 4].map(t => <SelectItem key={t} value={String(t)}>{t}º trimestre</SelectItem>)}</SelectContent></Select></label>
-      <Button onClick={() => void generate()} disabled={busy}><FileBarChart2 />Gerar Relatório</Button>
+      <Button title={REPORT_FULL_NAME} onClick={() => void generate()} disabled={busy}><FileBarChart2 />Gerar Relatório</Button>
       <Button variant="outline" onClick={() => void generate(true)} disabled={busy || !report}><RefreshCw />Atualizar Dados</Button>
       <Button variant="outline" onClick={() => { setPreview(true); gotoPage(1); }} disabled={busy || !pdf || !pages.length}><Eye />Visualizar PDF</Button>
       <Button variant="outline" onClick={download} disabled={busy || !pdf || !pages.length}><FileDown />Gerar PDF</Button>
@@ -66,10 +67,10 @@ export default function RelatorioControladoria() {
     {busy && <p role="status" className="flex items-center gap-2 border-b border-border px-6 py-3 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />{status}</p>}
     {report && <div className="control-report-applied"><CalendarRange className="h-4 w-4" /><strong>{dataBR(report.period.de)} a {dataBR(report.period.ate)}</strong><span>{busy ? "" : status}</span></div>}
     <div className="control-report-body">
-      {!preview && pdf && <nav className="control-report-toc" aria-label="Tópicos do relatório"><h2><BookOpen className="h-4 w-4" />Sumário</h2><Button variant="ghost" onClick={() => gotoPage(1)}>Capa</Button>{pdf.contents.map(item => <Button key={item.id} variant="ghost" onClick={() => gotoPage(item.page)}><span>{item.title}</span><span className="text-muted-foreground">{item.page}</span></Button>)}</nav>}
-      <div ref={viewer} className="control-report-viewer" aria-label="Relatório de Controladoria">
-        {!pages.length && !busy && <div className="control-report-empty"><FileBarChart2 className="h-12 w-12 text-primary" /><h2>Relatório de Controladoria</h2><span>AXIS / CONTROL</span></div>}
-        {pages.map((src, i) => <figure key={`${report?.generatedAt}-${i}`} data-page={i + 1} className="control-report-page"><img src={src} alt={`Relatório de Controladoria — página ${i + 1} de ${pdf?.doc.getNumberOfPages() ?? pages.length}`} /></figure>)}
+      {!preview && pdf && <nav className="control-report-toc" aria-label="Tópicos do relatório"><h2><BookOpen className="h-4 w-4" />Sumário</h2><Button variant="ghost" onClick={() => gotoPage(1)}>Capa</Button>{pdf.contents.map(item => <Button key={item.id} variant="ghost" title={item.id === "dre" ? DRE_FULL_NAME : item.title} onClick={() => gotoPage(item.page)}><span>{item.id === "dre" ? "DRE" : item.title}</span><span className="text-muted-foreground">{item.page}</span></Button>)}</nav>}
+      <div ref={viewer} className="control-report-viewer" aria-label={REPORT_FULL_NAME}>
+        {!pages.length && !busy && <div className="control-report-empty"><FileBarChart2 className="h-12 w-12 text-primary" /><h2>{REPORT_FULL_NAME}</h2><span>AXIS / CONTROL</span></div>}
+        {pages.map((src, i) => <figure key={`${report?.generatedAt}-${i}`} data-page={i + 1} className="control-report-page"><img src={src} alt={`${REPORT_FULL_NAME} — página ${i + 1} de ${pdf?.doc.getNumberOfPages() ?? pages.length}`} /></figure>)}
         {report && <div className="sr-only">{report.blocks.map(block => <section key={block.id}><h2>{block.title}</h2>{block.paragraphs.map(p => <p key={p}>{p}</p>)}{block.notice && <p>{block.notice}</p>}{block.cards.map(card => <p key={card.label}>{card.label}: {card.value}</p>)}</section>)}</div>}
       </div>
     </div>

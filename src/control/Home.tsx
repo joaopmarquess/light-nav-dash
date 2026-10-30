@@ -1,13 +1,16 @@
+import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, Coins, Percent, FileText, BarChart3, LayoutDashboard, Activity, Landmark, Wallet, Banknote } from "lucide-react";
 import { useContabilidadeCharts, fmtBRLFull } from "@/control/contabilidadeCharts";
+import { DRE_FULL_NAME, REPORT_FULL_NAME, SLIDES_SHORT_TEXT, SLIDES_MEDIUM_TEXT, SLIDES_LONG_TEXT } from "@/control/dreLabels";
 
 const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
 const pct = (v: number) => `${v.toFixed(1)}%`;
 
 const shortcuts = [
+  { icon: Landmark, label: "DRE Trial", title: "DRE", desc: DRE_FULL_NAME },
+  { icon: FileText, label: "Relatório", title: "Relatório", desc: REPORT_FULL_NAME },
   { icon: Coins, label: "Orçamento", title: "Orçamento 2026", desc: "Previsto x realizado" },
-  { icon: LayoutDashboard, label: "Dashboards", title: "Carrossel", desc: "Carrossel de indicadores" },
-  { icon: FileText, label: "Relatório", title: "Relatório", desc: "Relatório de Controladoria" },
+  { icon: LayoutDashboard, label: "Dashboards", title: SLIDES_SHORT_TEXT, desc: SLIDES_MEDIUM_TEXT },
 ];
 
 const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
@@ -52,13 +55,6 @@ const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
 
   return (
     <div className="space-y-6 h-full overflow-y-auto">
-      <section className="bg-card rounded-xl border border-border shadow-sm p-6">
-        <h2 className="text-2xl font-semibold text-foreground">Bem-vindo ao Control</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Plataforma de Controladoria
-        </p>
-      </section>
-
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((k) => {
           const Icon = k.icon;
@@ -81,8 +77,9 @@ const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
           {shortcuts.map((s) => {
             const Icon = s.icon;
             return (
-              <button
+              <Button variant="ghost"
                 key={s.label}
+                title={s.label === "Dashboards" ? SLIDES_LONG_TEXT : s.label === "DRE Trial" ? DRE_FULL_NAME : s.desc}
                 onClick={() => onNavigate(s.label)}
                 className="group flex items-start gap-3 p-3 rounded-lg border border-border bg-background hover:border-primary/40 hover:bg-accent/50 transition-colors text-left"
               >
@@ -91,9 +88,9 @@ const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
                 </div>
                 <div className="min-w-0">
                   <div className="text-sm font-medium text-foreground truncate">{s.title}</div>
-                  <div className="text-xs text-muted-foreground truncate">{s.desc}</div>
+                  <div className="text-xs text-muted-foreground break-words">{s.desc}</div>
                 </div>
-              </button>
+              </Button>
             );
           })}
         </div>

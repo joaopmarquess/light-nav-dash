@@ -1,3 +1,4 @@
+import { DRE_FULL_NAME } from "@/control/dreLabels";
 import { hostinger } from "@/lib/hostingerClient";
 import { supabase } from "@/integrations/supabase/client";
 import { loadDreHostinger, type DreHRow } from "@/control/dreHostinger";
@@ -43,7 +44,7 @@ export async function carregarRelatorio(period: ReportPeriod, progress: (message
   const years = [...new Set(monthly.map(m => Number(m.de.slice(0, 4))))];
   const carteira = base("carteira", "1. Carteira", "AXIS", "carteira_movimentacao_totais; carteira_trial_geo; carteira_trial_siglas", period, generatedAt);
   const assist = base("assistencial", "2. Despesas Assistenciais", "AXIS", "sinistralidade_mv_competencias / view_eard_mensal", period, generatedAt);
-  const dre = base("dre", "3. DRE Gerencial", "CONTROL", "loadDreHostinger / demonstracoes_contabeis_oracle_mv + plano_contas_icontabil", period, generatedAt);
+  const dre = base("dre", `3. ${DRE_FULL_NAME}`, "CONTROL", "loadDreHostinger / demonstracoes_contabeis_oracle_mv + plano_contas_icontabil", period, generatedAt);
   const orc = base("orcamento", "4. Orçamento", "CONTROL", "orcamento_2026; mergeOrcamento; loadDreHostinger; realizadosOrcamento", period, generatedAt);
   progress("Consultando AXIS e CONTROL…");
   // Reuse the exact CONTROL financial treatment, with one fetch shared by DRE and budget.
@@ -101,13 +102,13 @@ export async function carregarRelatorio(period: ReportPeriod, progress: (message
   const dreRows = dreResult.data.filter(r => r.ano !== 2026 || r.mes <= 8);
   if (dreResult.error) { dre.status = "error"; dre.notice = "Não foi possível consultar a DRE do CONTROL."; }
   else if (dreRows.length) {
-    dre.status = "available"; dre.introduction = "Indicadores e DRE simplificado conforme Control › Controladoria › Painel, a partir do balancete MV e do plano de contas 9D.";
+    dre.status = "available"; dre.introduction = `Indicadores de ${DRE_FULL_NAME} conforme Control › Demonstrações › Painel, a partir do balancete MV e do plano de contas 9D.`;
     const p = resumoPainelDre(dreRows);
     const pf = (x: number) => percentual(p.pctFat(x));
     dre.cards = [{ label: "Resultado Líquido", value: dinheiro(p.liq) }, { label: "Margem líquida", value: pf(p.liq) }, { label: "Faturamento", value: dinheiro(p.fat) }, ...p.cards.map(([label, v]) => ({ label, value: `${dinheiro(v)} · ${pf(v)}` }))];
-    dre.table = { headers: ["DRE simplificado", "R$", "% fat."], rows: p.linhas.map(([l, v]) => [l.replace(/−/g, "-"), dinheiro(v), pf(v)]) };
+    dre.table = { headers: [DRE_FULL_NAME, "R$", "% fat."], rows: p.linhas.map(([l, v]) => [l.replace(/−/g, "-"), dinheiro(v), pf(v)]) };
     const covered = monthly.filter(m => dreRows.some(r => `${r.ano}-${String(r.mes).padStart(2, "0")}` === m.de.slice(0, 7)));
-    dre.chart = { title: "Resultado mensal da DRE (R$)", labels: covered.map(m => m.de.slice(0, 7)), series: [{ label: "Resultado", values: covered.map(m => resumoPainelDre(dreRows.filter(r => `${r.ano}-${String(r.mes).padStart(2, "0")}` === m.de.slice(0, 7))).liq) }] };
+    dre.chart = { title: `Resultado mensal · ${DRE_FULL_NAME} (R$)`, labels: covered.map(m => m.de.slice(0, 7)), series: [{ label: "Resultado", values: covered.map(m => resumoPainelDre(dreRows.filter(r => `${r.ano}-${String(r.mes).padStart(2, "0")}` === m.de.slice(0, 7))).liq) }] };
     dre.paragraphs = [`O resultado líquido foi de ${dinheiro(p.liq)}, com margem líquida de ${pf(p.liq)} sobre o faturamento de ${dinheiro(p.fat)}.`, `O EBITDA somou ${dinheiro(p.cards[3][1])} e o resultado antes dos impostos, ${dinheiro(p.cards[5][1])}. Os valores são movimentos mensais, não saldos de encerramento.`];
     dre.considerations = [`Foram recuperadas ${new Set(dreRows.map(r => `${r.ano}-${r.mes}`)).size} de ${monthly.length} competências; o Painel considera apenas meses fechados (até agosto/2026). Meses sem movimento não são tratados como resultado zero confirmado.`];
   }
@@ -136,7 +137,7 @@ export async function carregarRelatorio(period: ReportPeriod, progress: (message
       orc.status = "available"; orc.introduction = "Comparação gerencial do orçamento vigente de 2026. O previsto e as projeções usam a fonte existente; o realizado reutiliza a classificação do balancete MV do CONTROL.";
       const fullReal = months.every(m => real.meses.has(m));
       // Control › Orçamento 2026 › DRE (visão padrão: grupos recolhidos, meses sem realizado exibem o Projetado), transposta para A4.
-      orc.introduction = "DRE do orçamento conforme Control › Orçamento 2026 › DRE: realizado do balancete MV nos meses fechados e projetado nos demais; linhas da tela apresentadas em colunas.";
+      orc.introduction = `${DRE_FULL_NAME} do orçamento conforme Control › Orçamento 2026 › DRE: realizado do balancete MV nos meses fechados e projetado nos demais; linhas da tela apresentadas em colunas.`;
       const tela = aplicarRealizadoMv(rows, dreRows.filter(r => r.ano === 2026));
       const { comReal, soma } = valoresOrcamento(tela);
       const grupos = gruposOrcamentoDre(items);
