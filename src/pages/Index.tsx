@@ -83,6 +83,7 @@ import Promocoes from "@/components/Promocoes";
 import UberabaHospitais from "@/components/UberabaHospitais";
 import AdministradorasSim from "@/components/AdministradorasSim";
 import ControlPainel from "@/control/OrcamentoFaturamento";
+import PainelBeneficiario from "@/components/PainelBeneficiario";
 import CtrlDRE from "@/control/DRETrial";
 import CtrlContas from "@/control/ContasHub";
 import CtrlOrcamento from "@/control/OrcamentoTrial";
