@@ -98,12 +98,213 @@ export type Database = {
         }
         Relationships: []
       }
+      simulador_campos: {
+        Row: {
+          created_at: string
+          field: string
+          id: string
+          simulation_id: string
+          stage_id: string
+          updated_at: string
+          user_id: string
+          value: Json
+          view_id: string
+        }
+        Insert: {
+          created_at?: string
+          field: string
+          id?: string
+          simulation_id: string
+          stage_id: string
+          updated_at?: string
+          user_id: string
+          value: Json
+          view_id: string
+        }
+        Update: {
+          created_at?: string
+          field?: string
+          id?: string
+          simulation_id?: string
+          stage_id?: string
+          updated_at?: string
+          user_id?: string
+          value?: Json
+          view_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simulador_campos_simulation_id_fkey"
+            columns: ["simulation_id"]
+            isOneToOne: false
+            referencedRelation: "simulador_simulacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "simulador_campos_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "simulador_etapas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "simulador_campos_view_id_fkey"
+            columns: ["view_id"]
+            isOneToOne: false
+            referencedRelation: "simulador_visoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      simulador_etapas: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+          simulation_id: string
+          stage: number
+          status: string
+          updated_at: string
+          user_id: string
+          view_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          id?: string
+          simulation_id: string
+          stage: number
+          status?: string
+          updated_at?: string
+          user_id: string
+          view_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+          simulation_id?: string
+          stage?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+          view_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simulador_etapas_simulation_id_fkey"
+            columns: ["simulation_id"]
+            isOneToOne: false
+            referencedRelation: "simulador_simulacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "simulador_etapas_view_id_fkey"
+            columns: ["view_id"]
+            isOneToOne: false
+            referencedRelation: "simulador_visoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      simulador_simulacoes: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      simulador_visoes: {
+        Row: {
+          created_at: string
+          id: string
+          position: number
+          simulation_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          position: number
+          simulation_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          position?: number
+          simulation_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simulador_visoes_simulation_id_fkey"
+            columns: ["simulation_id"]
+            isOneToOne: false
+            referencedRelation: "simulador_simulacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      simulador_action: {
+        Args: {
+          p_action: string
+          p_data?: Json
+          p_name?: string
+          p_simulation?: string
+          p_stage?: number
+          p_view?: number
+        }
+        Returns: string
+      }
+      simulador_action_checked: {
+        Args: {
+          p_action: string
+          p_data?: Json
+          p_expected_updated_at?: string
+          p_name?: string
+          p_simulation?: string
+          p_stage?: number
+          p_view?: number
+        }
+        Returns: string
+      }
+      simulador_delete: { Args: { p_simulation: string }; Returns: undefined }
+      simulador_validate_stage: {
+        Args: { p_data: Json; p_stage: number }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
