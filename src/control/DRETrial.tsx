@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { loadDreHostinger, loadMesesDemonstracoes, type DreHRow } from "@/control/dreHostinger";
 import { DRE_FULL_NAME } from "@/control/dreLabels";
 import { grupoPainelDre } from "@/control/drePainel";
@@ -48,31 +48,45 @@ function buildTree(rows: DreHRow[], cols: Col[]): Node[] {
 const itemDe = grupoPainelDre;
 const pctFmt = (v: number) => `${new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 }).format(v)}%`;
 
-const Barra = ({ ativa, onAba }: { ativa: "Painel" | "DRE"; onAba?: (a: "Painel" | "DRE") => void }) =>
-  onAba ? (
+export type DemoAba = "Painel" | "DRE" | "Histórico";
+export const Barra = ({ ativa, onAba, extra }: { ativa: DemoAba; onAba?: (a: DemoAba) => void; historico?: boolean; extra?: React.ReactNode }) => {
+  const [aberto, setAberto] = useState(true);
+  return onAba ? (
     <div className="sticky bottom-0 z-20 shrink-0 bg-background py-4 flex justify-center">
-      <div className="inline-flex gap-0.5 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_0_16px_2px_hsl(var(--foreground)/0.18)]">
-        {(["Painel", "DRE"] as const).map((a) => (
-          <Button variant="ghost" title={a === "DRE" ? DRE_FULL_NAME : undefined} key={a} onClick={() => a !== ativa && onAba(a)}
-            className={`rounded-full px-3 py-1 text-[13px] h-auto font-medium transition-all duration-200 ${a === ativa ? "bg-primary text-primary-foreground shadow-md shadow-primary/30" : "text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5"}`}>{a}</Button>
+      <div className="relative">
+      {extra && (
+        <div aria-hidden={!aberto} className={`absolute left-full top-1/2 z-0 ml-2 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${aberto ? "-translate-y-1/2 translate-x-0 opacity-100" : "pointer-events-none -translate-y-1/2 -translate-x-[calc(100%+0.5rem)] opacity-0"}`}>
+          <div className="inline-flex gap-0.5 rounded-full bg-muted/95 backdrop-blur p-1.5 border border-border shadow-[0_6px_14px_-2px_hsl(var(--foreground)/0.28),inset_0_1px_3px_hsl(var(--foreground)/0.12)] whitespace-nowrap">{extra}</div>
+        </div>
+      )}
+      <div className="relative z-10 inline-flex gap-0.5 rounded-full bg-card/90 backdrop-blur p-1.5 border border-border shadow-[0_0_16px_2px_hsl(var(--foreground)/0.18)]">
+        {(["Painel", "DRE", "Histórico"] as const).map((a) => (
+          <Button variant="ghost" title={a === "DRE" ? DRE_FULL_NAME : undefined} key={a} aria-expanded={a === "Histórico" && extra ? aberto : undefined} onClick={() => (a !== ativa ? onAba(a) : a === "Histórico" && extra && setAberto((v) => !v))}
+            className={`rounded-full px-3 py-1 text-[13px] h-auto font-medium transition-all duration-200 ${a === "Histórico" && extra ? "inline-flex items-center gap-1 text-foreground/80 hover:text-primary hover:bg-card" : a === ativa ? "bg-primary text-primary-foreground shadow-md shadow-primary/30" : "text-foreground/70 hover:text-primary hover:bg-card hover:shadow-sm hover:-translate-y-0.5"}`}>{a}{a === "Histórico" && extra && (aberto ? <ChevronLeft className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />)}</Button>
         ))}
+      </div>
       </div>
     </div>
   ) : null;
+};
 
 type DRETrialProps = {
   painel?: boolean;
-  onAba?: (a: "Painel" | "DRE") => void;
+  onAba?: (a: DemoAba) => void;
   dados?: DreHRow[];
   ano?: number;
   meses?: number[];
   historico?: boolean;
 };
 
+// Cache em memória: trocar Painel/DRE/Histórico não recarrega nem pisca a tela.
+const cacheMeses = new Map<number, number[]>();
+const cacheRows = new Map<string, DreHRow[]>();
+
 const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, historico = false }: DRETrialProps = {}) => {
-  const [mesesAuto, setMesesAuto] = useState<number[] | null>(null);
+  const [mesesAuto, setMesesAuto] = useState<number[] | null>(() => cacheMeses.get(ano) ?? null);
   const meses = mesesProp ?? mesesAuto;
-  const [rows, setRows] = useState<DreHRow[] | null>(null);
+  const [rows, setRows] = useState<DreHRow[] | null>(() => dados ?? (meses ? cacheRows.get(`${ano}:${meses.join(",")}`) ?? null : null));
   const [erro, setErro] = useState<string | null>(null);
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const periodo = meses?.length ? `${NOMES[(meses[0] ?? 1) - 1]}–${NOMES[(meses[meses.length - 1] ?? 12) - 1]}/${ano}` : String(ano);
@@ -84,8 +98,9 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
   useEffect(() => {
     if (mesesProp || dados) return;
     let cancelado = false;
+    if (cacheMeses.has(ano)) { setMesesAuto(cacheMeses.get(ano)!); return; }
     setMesesAuto(null);
-    loadMesesDemonstracoes(ano).then((m) => { if (!cancelado) setMesesAuto(m); }).catch((e) => { if (!cancelado) { setErro(e?.message || String(e)); setMesesAuto([]); } });
+    loadMesesDemonstracoes(ano).then((m) => { cacheMeses.set(ano, m); if (!cancelado) setMesesAuto(m); }).catch((e) => { if (!cancelado) { setErro(e?.message || String(e)); setMesesAuto([]); } });
     return () => { cancelado = true; };
   }, [mesesProp, dados, ano]);
 
@@ -94,7 +109,9 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
     if (!meses) { setRows(null); return; }
     if (!meses.length) { setRows([]); return; }
     let cancelado = false;
-    loadDreHostinger(ano, meses).then((r) => { if (!cancelado) setRows(r); }).catch((e) => { if (!cancelado) { setErro(e?.message || String(e)); setRows([]); } });
+    const k = `${ano}:${meses.join(",")}`;
+    if (cacheRows.has(k)) { setRows(cacheRows.get(k)!); return; }
+    loadDreHostinger(ano, meses).then((r) => { cacheRows.set(k, r); if (!cancelado) setRows(r); }).catch((e) => { if (!cancelado) { setErro(e?.message || String(e)); setRows([]); } });
     return () => { cancelado = true; };
   }, [dados, ano, meses]);
 
@@ -206,7 +223,7 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
             ))}
           </div>
         </section>
-        <Barra ativa="Painel" onAba={onAba} />
+        <Barra ativa="Painel" onAba={onAba} historico={historico} />
       </div>
     );
   }
@@ -242,7 +259,7 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
         )}
       </div>
     </section>
-    <Barra ativa="DRE" onAba={onAba} />
+    <Barra ativa="DRE" onAba={onAba} historico={historico} />
     </div>
   );
 };
