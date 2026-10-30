@@ -7,6 +7,7 @@ const pct = (v: number) => `${v.toFixed(1)}%`;
 const shortcuts = [
   { icon: Coins, label: "Orçamento", title: "Orçamento 2026", desc: "Previsto x realizado" },
   { icon: LayoutDashboard, label: "Dashboards", title: "Carrossel", desc: "Carrossel de indicadores" },
+  { icon: FileText, label: "Relatório", title: "Relatório", desc: "Relatório de Controladoria" },
 ];
 
 const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {

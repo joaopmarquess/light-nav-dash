@@ -87,6 +87,7 @@ import CtrlDRE from "@/control/DRETrial";
 import CtrlContas from "@/control/ContasHub";
 import CtrlOrcamento from "@/control/OrcamentoTrial";
 import CtrlDashboards from "@/control/Dashboards";
+import CtrlRelatorio from "@/control/RelatorioControladoria";
 import { ListTree, Users2, ArrowLeft } from "lucide-react";
 
 function EntradasComFaixas() {
@@ -148,6 +149,7 @@ const controlItem: MenuItem = {
       { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente" },
       { icon: TrendingUp, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
       { icon: BarChart3, label: "Carrossel", id: "Control · Dashboards" },
+      { icon: FileText, label: "Relatório", id: "Control · Relatório" },
       { icon: Settings, label: "Configurações", id: "__cfg_control__" },
       { icon: ListTree, label: "Contas", id: "Control · Contas", nivel: 2 },
     ],
@@ -667,6 +669,8 @@ const Index = () => {
             <CtrlContas />
           ) : active === "Control · Orçamento Vigente" ? (
             ctrlOrcDre ? <CtrlOrcamento onAba={() => setCtrlOrcDre(false)} /> : <CtrlOrcamento painel onAba={() => setCtrlOrcDre(true)} />
+          ) : active === "Control · Relatório" ? (
+            <CtrlRelatorio />
           ) : active === "Control · Dashboards" ? (
             <CtrlDashboards />
           ) : active === "Control · Orçamento 2027" ? (
