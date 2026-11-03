@@ -3,12 +3,15 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { loadDreHostinger, loadMesesDemonstracoes, type DreHRow } from "@/control/dreHostinger";
 import { grupoPainelDre } from "@/control/drePainel";
 import { DRE_FULL_NAME } from "@/control/dreLabels";
+import { initialDreExpansion } from "@/control/dreExpansion";
+import { dreMargin, formatDreMargin } from "@/control/dreMargin";
 import { Button } from "@/components/ui/button";
 
-// DRE (Trial): reconstruído do zero, só com o balancete MV + plano 9D (ver src/control/dreHostinger.ts).
+// DRE (Trial): reconstruído do zero, só com o balancete MV + plano 9D (ver src/lib/dreHostinger.ts).
 const ANO = 2026;
 const NOMES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-type Col = { label: string; meses: number[]; kind: "mes" | "ano" };
+export type DreColumn = { label: string; meses: number[]; kind: "mes" | "ano" };
+type Col = DreColumn;
 // Período: jan até o último mês em que as contas 41 superam R$ 20 milhões; última coluna = acumulado
 const colCls = (c: Col) => (c.kind === "ano" ? "bg-accent font-bold" : "");
 const novo = (cols: Col[]) => cols.map(() => 0);
@@ -78,28 +81,34 @@ type DRETrialProps = {
   ano?: number;
   meses?: number[];
   historico?: boolean;
+  colunas?: DreColumn[];
+  semBarra?: boolean;
+  alturaCompleta?: boolean;
+  recolhidoInicial?: boolean;
+  faturamento?: number[];
 };
 
 // Cache em memória: trocar Painel/DRE/Histórico não recarrega nem pisca a tela.
 const cacheMeses = new Map<number, number[]>();
 const cacheRows = new Map<string, DreHRow[]>();
 
-const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, historico = false }: DRETrialProps = {}) => {
+const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, historico = false, colunas, semBarra = false, alturaCompleta = false, recolhidoInicial = false, faturamento }: DRETrialProps = {}) => {
   const [mesesAuto, setMesesAuto] = useState<number[] | null>(() => cacheMeses.get(ano) ?? null);
   const meses = mesesProp ?? mesesAuto;
   const [rows, setRows] = useState<DreHRow[] | null>(() => dados ?? (meses ? cacheRows.get(`${ano}:${meses.join(",")}`) ?? null : null));
   const [erro, setErro] = useState<string | null>(null);
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const periodo = meses?.length ? `${NOMES[(meses[0] ?? 1) - 1]}–${NOMES[(meses[meses.length - 1] ?? 12) - 1]}/${ano}` : String(ano);
-  const cols = useMemo<Col[]>(() => meses ? [
+  const cols = useMemo<Col[]>(() => colunas ?? (meses ? [
     ...meses.map((m): Col => ({ label: `${NOMES[m - 1]}/${ano}`, meses: [m], kind: "mes" })),
     { label: periodo, meses, kind: "ano" },
-  ] : [], [meses, ano, periodo]);
+  ] : []), [meses, ano, periodo, colunas]);
 
   useEffect(() => {
     if (mesesProp || dados) return;
     let cancelado = false;
-    if (cacheMeses.has(ano)) { setMesesAuto(cacheMeses.get(ano)!); return; }
+    const cachedMonths = cacheMeses.get(ano);
+    if (cachedMonths) { setMesesAuto(cachedMonths); return; }
     setMesesAuto(null);
     loadMesesDemonstracoes(ano).then((m) => { cacheMeses.set(ano, m); if (!cancelado) setMesesAuto(m); }).catch((e) => { if (!cancelado) { setErro(e?.message || String(e)); setMesesAuto([]); } });
     return () => { cancelado = true; };
@@ -111,20 +120,16 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
     if (!meses.length) { setRows([]); return; }
     let cancelado = false;
     const k = `${ano}:${meses.join(",")}`;
-    if (cacheRows.has(k)) { setRows(cacheRows.get(k)!); return; }
+    const cachedRows = cacheRows.get(k);
+    if (cachedRows) { setRows(cachedRows); return; }
     loadDreHostinger(ano, meses).then((r) => { cacheRows.set(k, r); if (!cancelado) setRows(r); }).catch((e) => { if (!cancelado) { setErro(e?.message || String(e)); setRows([]); } });
     return () => { cancelado = true; };
   }, [dados, ano, meses]);
 
   const tree = useMemo(() => buildTree(rows || [], cols), [rows, cols]);
   useEffect(() => {
-    const o: Record<string, boolean> = {};
-    const walk = (ns: Node[]) => ns.forEach((n) => {
-      if (n.children.length && !/FINANCEIRO/i.test(n.label)) { o[n.key] = true; walk(n.children); }
-    });
-    walk(tree);
-    setOpen(o);
-  }, [tree]);
+    setOpen(initialDreExpansion(tree, recolhidoInicial));
+  }, [tree, recolhidoInicial]);
   const total = useMemo(() => { const t = novo(cols); for (const r of rows || []) somar(t, r, cols); return t; }, [rows, cols]);
 
   const render = (nodes: Node[], depth: number): JSX.Element[] =>
@@ -230,7 +235,7 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
   }
 
   return (
-    <div className={`flex flex-col ${historico ? "h-full" : "h-[calc(100vh-9rem)]"} min-h-0`}>
+    <div className={`flex flex-col ${historico || alturaCompleta ? "h-full" : "h-[calc(100vh-9rem)]"} min-h-0`}>
     <section className="bg-card rounded-xl border border-border shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
       <div className="flex-1 min-h-0 overflow-auto">
         {!rows ? (
@@ -252,18 +257,23 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
               {!historico && <tr aria-hidden className="h-full"><td colSpan={cols.length + 1} /></tr>}
             </tbody>
             <tfoot className="sticky bottom-0 z-10 bg-primary text-primary-foreground shadow-[0_-4px_8px_-2px_hsl(var(--foreground)/0.2)]">
+              {faturamento && <tr className="border-b border-primary-foreground/30 bg-primary-foreground/30 font-bold">
+                <td className="py-2.5 px-4">Faturamento</td>
+                {faturamento.map((v, i) => <td key={i} className="py-2.5 px-4 text-right tabular-nums whitespace-nowrap">{fmt(v)}</td>)}
+              </tr>}
               <tr className="font-bold">
                 <td className="py-2.5 px-4">RESULTADO</td>
-                {total.map((v, i) => (
-                  <td key={i} className="py-2.5 px-4 text-right tabular-nums whitespace-nowrap">{fmt(v)}</td>
-                ))}
+                {total.map((v, i) => {
+                  const margem = dreMargin(v, faturamento?.[i]);
+                  return <td key={i} className="py-2.5 px-4 text-right tabular-nums whitespace-nowrap">{fmt(v)}{faturamento && <span className="ml-2 font-normal">{formatDreMargin(margem)}</span>}</td>;
+                })}
               </tr>
             </tfoot>
           </table>
         )}
       </div>
     </section>
-    <Barra ativa="DRE" onAba={onAba} historico={historico} />
+    {!semBarra && <Barra ativa="DRE" onAba={onAba} historico={historico} />}
     </div>
   );
 };

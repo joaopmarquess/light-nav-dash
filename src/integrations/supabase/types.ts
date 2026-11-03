@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      bench_quarter_cache: {
+        Row: {
+          payload: Json
+          quarter: number
+          revision: number
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          payload: Json
+          quarter: number
+          revision?: number
+          updated_at?: string
+          user_id: string
+          year: number
+        }
+        Update: {
+          payload?: Json
+          quarter?: number
+          revision?: number
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
       dre_gerencial_2t2026: {
         Row: {
           g1: string | null
