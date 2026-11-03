@@ -7,4 +7,5 @@ describe("AXIS privileges", () => {
   it("empty permissions deny common users", () => expect(canAccess({status:"ok",role:"user",permissions:[]}, "Home")).toBe(false));
   it("partial grant does not include sibling submenus", () => { const a: AxisAccess={status:"ok",role:"user",permissions:["Carteira · Consulta"]}; expect(canAccess(a,"Carteira · Consulta")).toBe(true); expect(canAccess(a,"Carteira · Painel")).toBe(false); });
   it("pending and blocked users cannot access menus", () => { for(const status of ["pending","blocked"]) expect(canAccess({status,role:"master",permissions:["Home"]},"Home")).toBe(false); });
+  it("Orçamento permission allows its internal simulation but not Control simulator", () => {const a:AxisAccess={status:"ok",role:"user",permissions:["Painel Orçamento"]};expect(canAccess(a,"Simulação")).toBe(true);expect(canAccess(a,"Control · Simulador")).toBe(false);});
 });

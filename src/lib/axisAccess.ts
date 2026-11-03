@@ -4,5 +4,6 @@ export function canAccess(access: AxisAccess, menu: string): boolean {
   if (access.status !== "ok") return false;
   if (access.role === "admin") return true;
   if (menu === "Configurações") return false;
-  return access.role === "master" || access.permissions.includes(menu);
+  const destination = menu === "Simulação" ? "Painel Orçamento" : menu;
+  return access.role === "master" || access.permissions.includes(destination);
 }

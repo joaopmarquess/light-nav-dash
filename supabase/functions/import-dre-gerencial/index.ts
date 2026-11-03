@@ -9,9 +9,11 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (!await authorizeAxis(req, "Configurações")) return new Response(JSON.stringify({error:"Acesso não autorizado"}), {status:403,headers:{...corsHeaders,"Content-Type":"application/json"}});
   try {
+    const url=Deno.env.get("SUPABASE_URL"),key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!url || !key) throw new Error("Serviço indisponível");
     const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      url,
+      key,
     );
     const text = await (await fetch(CSV_URL)).text();
     const lines = text.replace(/^\uFEFF/, "").trim().split(/\r?\n/);
@@ -37,12 +39,12 @@ Deno.serve(async (req) => {
       if (error) throw error;
     }
     return new Response(JSON.stringify({ inserted: rows.length }), {
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
