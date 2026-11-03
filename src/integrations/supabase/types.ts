@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      axis_access_users: {
+        Row: {
+          activated_at: string | null
+          created_at: string
+          email: string
+          invite_digest: string | null
+          invite_expires_at: string | null
+          nome: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string
+          email: string
+          invite_digest?: string | null
+          invite_expires_at?: string | null
+          nome?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string
+          email?: string
+          invite_digest?: string | null
+          invite_expires_at?: string | null
+          nome?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      axis_menu_permissions: {
+        Row: {
+          menu_id: string
+          user_id: string
+        }
+        Insert: {
+          menu_id: string
+          user_id: string
+        }
+        Update: {
+          menu_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "axis_menu_permissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "axis_access_users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       bench_quarter_cache: {
         Row: {
           payload: Json
@@ -299,11 +358,52 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      axis_access_snapshot: { Args: never; Returns: Json }
+      axis_admin_save_user: {
+        Args: {
+          p_nome: string
+          p_permissions: string[]
+          p_role: string
+          p_status: string
+          p_user: string
+        }
+        Returns: undefined
+      }
+      axis_can_access: {
+        Args: { _menu: string; _user_id: string }
+        Returns: boolean
+      }
+      axis_is_admin: { Args: { _user_id: string }; Returns: boolean }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       simulador_action: {
         Args: {
           p_action: string
@@ -334,7 +434,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "master" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -461,6 +561,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "master", "user"],
+    },
   },
 } as const
