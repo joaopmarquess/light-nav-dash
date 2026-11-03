@@ -34,4 +34,4 @@
 - Keep the Uberaba presentation route as static 16:9 screenshot snapshots listed in src/assets/apresentacao/slides.json; it must never import live screens, so the original project stays untouched.
 - Share the frozen-slide PDF exporter between the project header and presentation; write exactly one full-bleed 16:9 page per decoded snapshot and abort on missing images, avoiding browser print settings and partial exports.
 - Carteira › Painel loads Hostinger data per selected cd_matricula only; its status/expense rules live in tested src/lib/painelBeneficiario.ts.
-- Share axisNavigation across menus and access settings; protected roles and server grants govern access/manual invites. Hostinger anonymous reads still require external protection.
+- Share axisNavigation and exact invite-origin validation (including editor preview); enforce roles/server grants. Hostinger anonymous reads need external protection.

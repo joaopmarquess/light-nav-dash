@@ -2,6 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { z } from "npm:zod@3";
 import { authorizeAxis } from "../_shared/axisAuthorization.ts";
+import { isAxisInviteOriginAllowed } from "../_shared/axisInviteOrigin.ts";
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...corsHeaders,"Content-Type":"application/json","Cache-Control":"no-store"}});
 const digest=async(value:string)=>Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(value))),n=>n.toString(16).padStart(2,"0")).join("");
 const input=z.discriminatedUnion("action",[
@@ -48,9 +49,7 @@ Deno.serve(async req=>{
     // The callback may only use the requesting app's origin, never an arbitrary external host.
     const origin=new URL(body.origin).origin;
     const requestOrigin=req.headers.get("Origin");
-    const projectId=Deno.env.get("SUPABASE_URL") ? "627def1f-fd7a-43f0-b494-ed91ad01bed2" : "";
-    const allowed=["https://axisbensaude.lovable.app","http://localhost:8080",`https://id-preview--${projectId}.lovable.app`,`https://preview--${projectId}.lovable.app`, `https://${projectId}.lovable.app`].includes(origin);
-    if(!allowed||requestOrigin!==origin) return json({error:"Endereço de convite inválido."},400);
+    if(!isAxisInviteOriginAllowed(origin,requestOrigin)) return json({error:"Endereço de convite inválido."},400);
     const email=body.email.toLowerCase();
     const {data:existing}=await admin.from("axis_access_users").select("*").eq("email",email).maybeSingle();
     if(existing) {
