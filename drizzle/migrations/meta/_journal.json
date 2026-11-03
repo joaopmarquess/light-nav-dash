@@ -29,6 +29,13 @@
       "when": 1793736753833,
       "tag": "0003_axis_user_access_and_manual_invites",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793737003029,
+      "tag": "0004_axis_enforce_cloud_menu_access",
+      "breakpoints": true
     }
   ]
 }
