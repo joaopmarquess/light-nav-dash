@@ -20,8 +20,8 @@
 - Compose simplified Timeline Study with a single selected view and reuse the standalone Uberaba dashboard for its Panel option to keep data and interactions consistent; share dated geographic queries and tested municipal heat-color/neighbor helpers. Uberaba's color toggle paints MG/GO/SP/MS on its own geometry while preserving its projection, zoom, study rings and labels; never replace it with the geographic screen.
 - Study maps expose optional toolbar portal targets to place their existing controls alongside the shared presentation header without duplicating state; standalone map toolbars remain unchanged.
 - Store the full institutional Study text in a dedicated data module consumed by Study Home; retain legacy complete-stage content while exposing only the live project presentations, and preserve the internal navigation ID separately from displayed project naming.
-- Keep explicit green Uberaba study-area inclusions in a tested helper, applying them after projection fitting so membership additions preserve the existing map framing and do not affect life-based colors.
-- Keep Uberaba credentialing reference selection and supplied summary values in a tested helper, separate from summary presentation, so visual changes cannot alter quantities or source precedence.
+- Test explicit green Uberaba inclusions after fitting to preserve framing and life-based colors.
+- Test Uberaba credentialing reference selection and supplied summaries separately from presentation to preserve quantities and source precedence.
 - Keep MAA geometry and area classification in a focused helper, with tests, so map presentation does not change beneficiary counts or geographic membership; simplify display outlines only, classifying cities by the original ring.
 - APB: test Menu tickets/defaults; preview the Strategic PDF itself before download.
 - Simplify and round cropped-map exterior and state strokes in projected pixel space only; keep open state runs open and preserve northern attenuation, original fitting and membership.
@@ -34,3 +34,4 @@
 - Keep the Uberaba presentation route as static 16:9 screenshot snapshots listed in src/assets/apresentacao/slides.json; it must never import live screens, so the original project stays untouched.
 - Share the frozen-slide PDF exporter between the project header and presentation; write exactly one full-bleed 16:9 page per decoded snapshot and abort on missing images, avoiding browser print settings and partial exports.
 - Carteira › Painel loads Hostinger data per selected cd_matricula only; its status/expense rules live in tested src/lib/painelBeneficiario.ts.
+- Share axisNavigation across menus and access settings; protected roles and server grants govern access/manual invites. Hostinger anonymous reads still require external protection.

@@ -1,10 +1,13 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { authorizeAxis } from "../_shared/axisAuthorization.ts";
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 const CSV_URL =
   "https://dexbensaude.lovable.app/__l5e/assets-v1/93caada5-a0e1-4a3d-873d-f7be01a5d727/dre_gerencial_2t2026.csv";
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: { "Access-Control-Allow-Origin": "*" } });
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (!await authorizeAxis(req, "Configurações")) return new Response(JSON.stringify({error:"Acesso não autorizado"}), {status:403,headers:{...corsHeaders,"Content-Type":"application/json"}});
   try {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
