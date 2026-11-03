@@ -3,6 +3,7 @@ import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { z } from "npm:zod@3";
 import { availableQuarters, quarterFilename } from "./quarterFiles.ts";
 import { CACHE_REVISION, cacheIsFresh } from "./cachePolicy.ts";
+import { authorizeAxis } from "../_shared/axisAuthorization.ts";
 
 const base = "https://dadosabertos.ans.gov.br/FTP/PDA/demonstracoes_contabeis/";
 const cadop = "https://dadosabertos.ans.gov.br/FTP/PDA/operadoras_de_plano_de_saude_ativas/Relatorio_cadop.csv";
@@ -31,6 +32,7 @@ Deno.serve(async req => {
   const cloud = createClient(url, key);
   const { data, error } = await cloud.auth.getClaims(auth.slice(7));
   if (error || !data?.claims?.sub) return json({ error: "Login necessário" }, 401);
+  if (!await authorizeAxis(req, "Control · Bench C")) return json({ error: "Acesso não autorizado" }, 403);
   try {
     const input = schema.safeParse(await req.json());
     if (!input.success) return json({ error: "Consulta inválida" }, 400);

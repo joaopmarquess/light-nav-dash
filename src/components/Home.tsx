@@ -1,5 +1,6 @@
 import { ArrowUpRight, FlaskConical, CalendarRange, FileText, Map as MapIcon, ArrowRightLeft, Percent } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAxisAccess } from "@/hooks/useAxisAccess";
 
 const shortcuts = [
   { icon: ArrowRightLeft, label: "Movimentação", destination: "Carteira · Movimentação" },
@@ -11,7 +12,9 @@ const shortcuts = [
   { icon: FileText, label: "Proposta APB", destination: "Proposta APB" },
 ];
 
-const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => (
+const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
+ const { can } = useAxisAccess();
+ return (
   <div className="space-y-8">
     <header>
       <h2 className="text-2xl font-semibold text-foreground">Bem-vindo ao AXIS</h2>
@@ -20,7 +23,7 @@ const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => (
     <section aria-labelledby="home-atalhos">
       <h3 id="home-atalhos" className="mb-4 text-sm font-semibold text-foreground">Atalhos</h3>
       <div className="flex flex-wrap gap-3">
-        {shortcuts.map(({ icon: Icon, label, destination }) => (
+        {shortcuts.filter(s => can(s.destination)).map(({ icon: Icon, label, destination }) => (
           <Button key={label} variant="secondary" onClick={() => onNavigate(destination)} className="h-12 gap-3 px-5">
             <Icon />
             {label}
@@ -31,5 +34,6 @@ const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => (
     </section>
   </div>
 );
+};
 
 export default Home;
