@@ -136,6 +136,7 @@ import { APP_VERSION, BUILD_ID } from "@/lib/version";
 import logoFull from "@/assets/axis-logo.png.asset.json";
 import logoIcon from "@/assets/axis-icon.png.asset.json";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 
 
 
@@ -545,6 +546,23 @@ const Index = () => {
                 </div>
               </div>
             )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Configurações"
+                  aria-pressed={active === "Configurações"}
+                  disabled={ctrlSimBusy}
+                  onClick={() => setActive("Configurações")}
+                  className={cn("h-9 w-9 shrink-0 text-muted-foreground hover:text-primary", active === "Configurações" && "bg-accent text-primary")}
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Configurações</TooltipContent>
+            </Tooltip>
             <span className="text-sm text-muted-foreground">Olá, {nome ?? "Usuário"}</span>
             <div className="h-9 w-9 rounded-full bg-accent flex items-center justify-center text-primary text-sm font-semibold">
               {(nome ?? "U").charAt(0).toUpperCase()}
@@ -735,6 +753,8 @@ const Index = () => {
                 O Laboratory é a área experimental do AXIS, uma incubadora de projetos. Aqui ficam protótipos, simulações, estudos e novas análises que ainda estão sendo testados e amadurecidos. Os dados e as telas podem mudar, e alguns resultados são preliminares. Quando um projeto se prova útil e confiável, ele sai do Laboratory e passa a fazer parte do AXIS.
               </p>
             </section>
+          ) : active === "Configurações" ? (
+            <section aria-label="Configurações" className="h-full" />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : active === "Assistencial" ? (
