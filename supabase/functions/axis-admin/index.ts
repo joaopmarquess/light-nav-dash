@@ -48,7 +48,8 @@ Deno.serve(async req=>{
     // The callback may only use the requesting app's origin, never an arbitrary external host.
     const origin=new URL(body.origin).origin;
     const requestOrigin=req.headers.get("Origin");
-    const allowed=origin==="https://axisbensaude.lovable.app"||origin==="http://localhost:8080"||/^https:\/\/(?:id-preview--|preview--|627def1f-fd7a-43f0-b494-ed91ad01bed2)[a-z0-9-]*\.lovable\.app$/.test(origin);
+    const projectId=Deno.env.get("SUPABASE_URL") ? "627def1f-fd7a-43f0-b494-ed91ad01bed2" : "";
+    const allowed=["https://axisbensaude.lovable.app","http://localhost:8080",`https://id-preview--${projectId}.lovable.app`,`https://preview--${projectId}.lovable.app`, `https://${projectId}.lovable.app`].includes(origin);
     if(!allowed||requestOrigin!==origin) return json({error:"Endereço de convite inválido."},400);
     const email=body.email.toLowerCase();
     const {data:existing}=await admin.from("axis_access_users").select("*").eq("email",email).maybeSingle();
@@ -64,8 +65,11 @@ Deno.serve(async req=>{
     const expires=new Date(Date.now()+60*60*1000).toISOString();
     const saved=await admin.from("axis_access_users").upsert({user_id:user.id,email,nome:body.nome,status:"pending",invite_digest:await digest(token),invite_expires_at:expires,updated_at:new Date().toISOString()});
     if(saved.error) return json({error:"Não foi possível gravar o cadastro."},500);
-    const roleSave=await admin.from("user_roles").upsert({user_id:user.id,role:body.role},{onConflict:"user_id,role"});
-    if(roleSave.error) return json({error:"Não foi possível gravar o perfil."},500);
-    return json({ok:true,user_id:user.id,expires_at:expires,link:`${origin}/ativar#token_hash=${encodeURIComponent(token)}&type=${type}`});
+    if(!existing) {
+      const roleSave=await admin.from("user_roles").insert({user_id:user.id,role:body.role});
+      if(roleSave.error) return json({error:"Não foi possível gravar o perfil."},500);
+    }
+    const destination=origin==="http://localhost:8080"?origin:"https://axisbensaude.lovable.app";
+    return json({ok:true,user_id:user.id,expires_at:expires,link:`${destination}/ativar#token_hash=${encodeURIComponent(token)}&type=${type}`});
   }catch {return json({error:"Não foi possível concluir a solicitação."},500);}
 });
