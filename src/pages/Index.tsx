@@ -91,7 +91,8 @@ import CtrlOrcamento from "@/control/OrcamentoTrial";
 import CtrlDashboards from "@/control/Dashboards";
 import CtrlRelatorio from "@/control/RelatorioControladoria";
 import CtrlSimulador from "@/control/Simulador";
-import { DRE_FULL_NAME, DRE_MENU_NAME, REPORT_FULL_NAME, SLIDES_SHORT_TEXT, SLIDES_MEDIUM_TEXT, SLIDES_LONG_TEXT } from "@/control/dreLabels";
+import CtrlBench from "@/control/BenchC";
+import { BENCH_SHORT_TEXT, BENCH_LONG_TEXT, DRE_FULL_NAME, DRE_MENU_NAME, REPORT_FULL_NAME, SLIDES_SHORT_TEXT, SLIDES_MEDIUM_TEXT, SLIDES_LONG_TEXT } from "@/control/dreLabels";
 import { ListTree, Users2, ArrowLeft } from "lucide-react";
 
 function EntradasComFaixas() {
@@ -150,6 +151,7 @@ const controlItem: MenuItem = {
     label: "Control",
     children: [
       { icon: FileText, label: DRE_MENU_NAME, id: "Control · DRE Gerencial PE" },
+      { icon: BarChart3, label: BENCH_SHORT_TEXT, id: "Control · Bench C" },
       { icon: FileText, label: "Relatório", id: "Control · Relatório" },
       { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente" },
       { icon: TrendingUp, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
@@ -265,7 +267,7 @@ const Index = () => {
   const [ctrlOrcDre, setCtrlOrcDre] = useState(false);
   const [ctrlCfgOpen, setCtrlCfgOpen] = useState(false);
   const [ctrlDreAba, setCtrlDreAba] = useState<"Painel" | "DRE" | "Histórico">("Painel");
-  const controlTitle = active === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : active === "Control · Relatório" ? REPORT_FULL_NAME : active === "Control · Dashboards" ? SLIDES_LONG_TEXT : active === "Control · Orçamento Vigente" ? "Orçamento 2026" : active === "Control · Orçamento 2027" ? "Orçamento 2027" : active === "Control · Simulador" ? "Simulador" : active === "Control · Contas" ? "Contas" : null;
+  const controlTitle = active === "Control · Bench C" ? BENCH_LONG_TEXT : active === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : active === "Control · Relatório" ? REPORT_FULL_NAME : active === "Control · Dashboards" ? SLIDES_LONG_TEXT : active === "Control · Orçamento Vigente" ? "Orçamento 2026" : active === "Control · Orçamento 2027" ? "Orçamento 2027" : active === "Control · Simulador" ? "Simulador" : active === "Control · Contas" ? "Contas" : null;
   const controlSubtitle = active === "Control · Dashboards" ? SLIDES_MEDIUM_TEXT : null;
   useEffect(() => {
     if (active === "Control · Orçamento 2027") return;
@@ -398,7 +400,7 @@ const Index = () => {
                       return (
                         <button
                           key={child.label}
-                          title={child.id === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : child.id === "Control · Relatório" ? REPORT_FULL_NAME : child.id === "Control · Dashboards" ? SLIDES_LONG_TEXT : undefined}
+                          title={child.id === "Control · Bench C" ? BENCH_LONG_TEXT : child.id === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : child.id === "Control · Relatório" ? REPORT_FULL_NAME : child.id === "Control · Dashboards" ? SLIDES_LONG_TEXT : undefined}
                           onClick={() => child.id === "__cfg_control__" ? setCtrlCfgOpen((o) => !o) : setActive((child.id ?? child.label))}
                           className={`w-full flex items-center gap-3 ${child.nivel === 2 ? "pl-14" : "pl-9"} pr-3 py-2 rounded-lg text-sm transition-colors ${
                             childActive
@@ -688,6 +690,8 @@ const Index = () => {
             <CtrlSimulador onViewState={onControlSimulatorViewState} onDirty={setCtrlSimDirty} onBusy={setCtrlSimBusy} />
           ) : active === "Control · DRE Gerencial PE" ? (
             ctrlDreAba === "Histórico" ? <CtrlHistoricoDRE onAba={setCtrlDreAba} /> : ctrlDreAba === "DRE" ? <CtrlDRE onAba={setCtrlDreAba} /> : <CtrlDRE painel onAba={setCtrlDreAba} />
+          ) : active === "Control · Bench C" ? (
+            <div className="h-[calc(100vh-9rem)] min-h-0"><CtrlBench /></div>
           ) : active === "Control · Contas" ? (
             <CtrlContas />
           ) : active === "Control · Orçamento Vigente" ? (
