@@ -1,5 +1,5 @@
 # Project rules
-- Synchronize Control through scoped modules and shared accounting helpers; preserve AXIS clients/report topics, namespace ordinary budget storage, and persist staged simulations through owner-scoped Cloud tables and checked RPCs with concurrency guards so reference resets never affect other AXIS menus.
+- Read subdirectory AGENTS.md before editing. Sync scoped Control with shared accounting helpers; preserve AXIS clients/report topics, budget namespace and owner-scoped checked simulator RPCs so reference resets never affect other menus.
 - Keep cropped-map hospital markers and general/psychiatric lists sourced from the preserved dated typed CSV and its city/UF index; use tested type filtering and lives/count/name ranking without changing source totals, map membership or beneficiary counts.
 - Keep Movimentação requests gated by an explicitly applied period; fetch monthly card counts from carteira_movimentacao_totais and lazily cache RPC details per period on eye/card clicks, keeping server-side classification to avoid eager pagination.
 - Reuse monthly totals for chart bars and selected-month indicators; cache KPI dates and lazy details per interval. Keep the full-period chart independent; its lives line uses UTC month-end active counts, never net growth.
