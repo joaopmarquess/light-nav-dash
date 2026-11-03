@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { canAccess, deniedAccess, type AxisAccess } from "@/lib/axisAccess";
-const Context = createContext({ access: deniedAccess, loading: true, can: (_menu: string) => false, refresh: async () => {} });
+const Context = createContext<{access:AxisAccess;loading:boolean;can:(menu:string)=>boolean;refresh:()=>Promise<void>}>({ access: deniedAccess, loading: true, can: (_menu: string) => false, refresh: async () => {} });
 export function AxisAccessProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const client = useQueryClient();
