@@ -140,129 +140,29 @@ import { Button } from "@/components/ui/button";
 
 
 
-type MenuItem = {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  children?: { icon: React.ComponentType<{ className?: string }>; label: string; id?: string; nivel?: number }[];
-  lab?: MenuItem[];
-};
-
-const controlItem: MenuItem = {
-    icon: DollarSign,
-    label: "Control",
-    children: [
-      { icon: FileText, label: DRE_MENU_NAME, id: "Control · DRE Gerencial PE" },
-      { icon: BarChart3, label: BENCH_SHORT_TEXT, id: "Control · Bench C" },
-      { icon: FileText, label: "Relatório", id: "Control · Relatório" },
-      { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente" },
-      { icon: TrendingUp, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
-      { icon: FlaskConical, label: "Simulador", id: "Control · Simulador" },
-      { icon: BarChart3, label: SLIDES_SHORT_TEXT, id: "Control · Dashboards" },
-      { icon: Settings, label: "Configurações", id: "__cfg_control__" },
-      { icon: ListTree, label: "Contas", id: "Control · Contas", nivel: 2 },
-    ],
-};
-
-const labItems: MenuItem[] = [
-  { icon: FileText, label: "Proposta APB" },
-  {
-    icon: Users,
-    label: "vCarteira",
-    children: [
-      { icon: Search, label: "Painel" },
-      { icon: UserCheck, label: "Área Geográfica" },
-      { icon: UserCheck, label: "Ativos por Cidade" },
-      { icon: TrendingUp, label: "Vendas" },
-      { icon: TrendingUp, label: "Vendas ate 08/2026" },
-      { icon: TrendingUp, label: "Cancelamentos" },
-      { icon: LayoutDashboard, label: "Dashboard" },
-      { icon: BarChart3, label: "Gráfico Carteira" },
-      { icon: Building2, label: "Mapa" },
-    ],
-  },
-  {
-    icon: Percent,
-    label: "vSinistralidade",
-    children: [
-      { icon: UserCheck, label: "Planos/Empresas" },
-      { icon: CalendarCheck, label: "Período" },
-      { icon: LayoutDashboard, label: "Cidades" },
-      { icon: BarChart3, label: "Gráfico Sinistralidade" },
-      { icon: CalendarCheck, label: "Ultra-X" },
-      { icon: LayoutDashboard, label: "PBI U12" },
-    ],
-  },
-  {
-    icon: Stethoscope,
-    label: "Assistencial",
-    children: [
-      
-      { icon: CalendarCheck, label: "Por Competência" },
-      { icon: Search, label: "Consulta" },
-      { icon: Stethoscope, label: "Relatório Plano Executor" },
-      { icon: Stethoscope, label: "2518 Despesas" },
-      { icon: Stethoscope, label: "2518 Receitas" },
-      { icon: Stethoscope, label: "2518 Declarações" },
-      { icon: Stethoscope, label: "2518 Prestadores" },
-    ],
-  },
-  {
-    icon: Trophy,
-    label: "Simulações",
-    children: [
-      { icon: Trophy, label: "Premiação 4T 2026" },
-      { icon: Users, label: "Administradoras" },
-    ],
-  },
-  {
-    icon: Building2,
-    label: "Uberaba",
-    children: [
-      { icon: LayoutDashboard, label: "Painel", id: "Uberaba" },
-      { icon: Building2, label: "Mapa", id: "Uberaba Mapa" },
-      { icon: LayoutDashboard, label: "Projeto Bensaúde|Uberaba", id: "Uberaba Timeline" },
-    ],
-  },
-  {
-    icon: Coins,
-    label: "Orçamento ",
-    children: [{ icon: LayoutDashboard, label: "Painel", id: "Painel Orçamento" }],
-  },
-  {
-    icon: FileText,
-    label: "Outros",
-    children: [
-      { icon: CalendarCheck, label: "APB" },
-      { icon: CalendarCheck, label: "APB Top10" },
-      { icon: CalendarCheck, label: "APB Faturas" },
-      { icon: CalendarCheck, label: "APB Ativos" },
-      { icon: CalendarCheck, label: "Bensaúde U12|202606" },
-      { icon: CalendarCheck, label: "Bensaúde U12|202607" },
-    ],
-  },
-  { icon: LayoutDashboard, label: "B.I. Overview" },
-];
-
-const menuItems: MenuItem[] = [
-  { icon: Home, label: "Home" },
-  controlItem,
-  { icon: Users, label: "Carteira", children: [{ icon: Search, label: "Consulta", id: "Carteira · Consulta" }, { icon: LayoutDashboard, label: "Painel", id: "Carteira · Painel" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira · Movimentação" }, { icon: TrendingUp, label: "Entradas", id: "Carteira · Entradas" }, { icon: TrendingUp, label: "Saídas", id: "Carteira · Saídas" }, { icon: BarChart3, label: "Tabelas", id: "Carteira · Tabelas" }] },
-  { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }, { icon: Users, label: "Empresas", id: "Sinistralidade · Empresas" }, { icon: Users, label: "Empresas SB", id: "Sinistralidade · Empresas SB" }, { icon: Users, label: "Empresas Menu", id: "Sinistralidade · Empresas Menu" }] },
-];
-
-const LAB_IDS = new Set<string>(["Laboratory", ...labItems.flatMap((g) => g.children ? g.children.map((c) => c.id ?? c.label) : [g.label])]);
+import AxisSettings from "@/components/AxisSettings";
+import { useAxisAccess } from "@/hooks/useAxisAccess";
+import { menuItems, labItems, LAB_IDS } from "@/lib/axisNavigation";
 const onControlSimulatorViewState = (_enabled: boolean[]) => {};
 
 const Index = () => {
   const navigate = useNavigate();
   const [active, setActiveState] = useState("Home");
+  const { can, loading: accessLoading } = useAxisAccess();
+  const visibleMenus = menuItems.map(g => ({ ...g, children: g.children?.filter(c => c.id === "__cfg_control__" ? can("Control · Contas") : can(c.id ?? c.label)) })).filter(g => g.children ? g.children.length > 0 : can(g.label));
+  const visibleLabs = labItems.map(g => ({ ...g, children: g.children?.filter(c => can(c.id ?? c.label)) })).filter(g => g.children ? g.children.length > 0 : can(g.label));
   const [ctrlSimDirty, setCtrlSimDirty] = useState(false);
   const [ctrlSimBusy, setCtrlSimBusy] = useState(false);
   const setActive = useCallback((next: string) => {
-    if (ctrlSimBusy) return;
+    if (ctrlSimBusy || !can(next)) return;
     if (active === "Control · Simulador" && next !== active && ctrlSimDirty && !window.confirm("Há alterações não salvas. Deseja sair e descartá-las?")) return;
     setActiveState(next);
-  }, [active, ctrlSimBusy, ctrlSimDirty]);
+  }, [active, ctrlSimBusy, ctrlSimDirty, can]);
+  useEffect(() => {
+    if (accessLoading || can(active)) return;
+    const first = visibleMenus.flatMap(g => g.children ? g.children.filter(c => c.id !== "__cfg_control__").map(c => c.id ?? c.label) : [g.label])[0] ?? visibleLabs.flatMap(g => g.children ? g.children.map(c => c.id ?? c.label) : [g.label])[0];
+    setActiveState(first ?? "__no_access__");
+  }, [accessLoading, active, can]);
   const { nome, signOut } = useAuth();
   const [ctrlAba, setCtrlAba] = useState<string | null>(null);
   const [ctrlOrcDre, setCtrlOrcDre] = useState(false);
@@ -338,7 +238,7 @@ const Index = () => {
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           <TooltipProvider delayDuration={150}>
-          {menuItems.map((item) => {
+          {visibleMenus.map((item) => {
             const isActive = active === item.label;
             const hasChildren = !!item.children || !!item.lab;
             const isOpen = openGroups[item.label];
@@ -546,7 +446,7 @@ const Index = () => {
                 </div>
               </div>
             )}
-            <Tooltip>
+            {can("Configurações") && <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   type="button"
@@ -562,7 +462,7 @@ const Index = () => {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Configurações</TooltipContent>
-            </Tooltip>
+            </Tooltip>}
             <span className="text-sm text-muted-foreground">Olá, {nome ?? "Usuário"}</span>
             <div className="h-9 w-9 rounded-full bg-accent flex items-center justify-center text-primary text-sm font-semibold">
               {(nome ?? "U").charAt(0).toUpperCase()}
@@ -577,10 +477,10 @@ const Index = () => {
         <main className={`flex-1 min-h-0 overflow-hidden flex flex-col ${active === "Área Geográfica" || active === "Dashboard" ? "" : "p-8"}`}>
           {LAB_IDS.has(active) && (
             <nav aria-label="Menu Laboratory" className="mb-4 flex shrink-0 flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-2 shadow-sm">
-              <button type="button" onClick={() => setActive("Laboratory")} className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-primary hover:bg-accent`}>
+              <button disabled={!can("Laboratory")} type="button" onClick={() => setActive("Laboratory")} className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-primary hover:bg-accent`}>
                 <FlaskConical className="h-4 w-4" />Laboratory
               </button>
-              {labItems.map((g) => {
+              {visibleLabs.map((g) => {
                 const filhos = g.children ?? [{ icon: g.icon, label: g.label }];
                 const ativo = filhos.some((c) => (c.id ?? c.label) === active);
                 if (!g.children) return (
@@ -604,7 +504,7 @@ const Index = () => {
             </nav>
           )}
           <div className="min-h-0 flex-1">
-          {active === "Área Geográfica" ? (
+          {accessLoading ? <p className="text-sm text-muted-foreground">Carregando acessos…</p> : !can(active) ? <p className="text-sm text-muted-foreground">Nenhum menu autorizado. Solicite acesso ao administrador.</p> : active === "Área Geográfica" ? (
             <AtivosEm dateValue={dateValue} />
           ) : active === "Ativos por Cidade" ? (
             <AtivosCidade dateValue={dateValue} />
@@ -754,7 +654,7 @@ const Index = () => {
               </p>
             </section>
           ) : active === "Configurações" ? (
-            <section aria-label="Configurações" className="h-full" />
+            <AxisSettings />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : active === "Assistencial" ? (
