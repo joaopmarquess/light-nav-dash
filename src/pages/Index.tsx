@@ -159,7 +159,11 @@ const Index = () => {
     setActiveState(next);
   }, [active, ctrlSimBusy, ctrlSimDirty, can]);
   useEffect(() => {
-    if (accessLoading || can(active)) return;
+    if (accessLoading || (active !== "__no_access__" && can(active))) return;
+    if (can("Home")) {
+      setActiveState("Home");
+      return;
+    }
     const first = visibleMenus.flatMap(g => g.children ? g.children.filter(c => c.id !== "__cfg_control__").map(c => c.id ?? c.label) : [g.label])[0] ?? visibleLabs.flatMap(g => g.children ? g.children.map(c => c.id ?? c.label) : [g.label])[0];
     setActiveState(first ?? "__no_access__");
   }, [accessLoading, active, can]);
