@@ -9,10 +9,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { menuItems, labItems } from "@/lib/axisNavigation";
+import { axisPermissionGroups as groups } from "@/lib/axisNavigation";
 import { toast } from "sonner";
 type AccessUser={user_id:string;email:string;nome:string;role:"admin"|"master"|"user";status:"pending"|"ok"|"blocked";activated_at:string|null;permissions:string[]};
-const groups=[...menuItems.map(g=>({label:g.label,items:g.children?.filter(c=>c.id!=="__cfg_control__").map(c=>({id:c.id??c.label,label:c.label}))??[{id:g.label,label:g.label}]})),{label:"Laboratory",items:[{id:"Laboratory",label:"Laboratory"},...labItems.flatMap(g=>g.children?g.children.map(c=>({id:c.id??c.label,label:`${g.label.trim()} · ${c.label}`})):[{id:g.label,label:g.label}])]}];
 export default function AxisSettings(){
  const {can}=useAxisAccess();
  const [users,setUsers]=useState<AccessUser[]>([]),[selected,setSelected]=useState(""),[tab,setTab]=useState("users");
