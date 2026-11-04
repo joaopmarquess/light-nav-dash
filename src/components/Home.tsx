@@ -3,14 +3,17 @@ import { Button } from "@/components/ui/button";
 import { useAxisAccess } from "@/hooks/useAxisAccess";
 
 import { homeShortcuts } from "@/lib/axisNavigation";
+import HomeControlCards from "@/components/HomeControlCards";
 
 const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
  const { can } = useAxisAccess();
  return (
-  <div className="space-y-8">
+  <div className="h-full overflow-y-auto space-y-8">
     <header>
       <h2 className="text-2xl font-semibold text-foreground">Bem-vindo ao AXIS</h2>
     </header>
+
+    {can("Control · DRE Gerencial PE") && <HomeControlCards />}
 
     <section aria-labelledby="home-atalhos">
       <h3 id="home-atalhos" className="mb-4 text-sm font-semibold text-foreground">Atalhos</h3>
