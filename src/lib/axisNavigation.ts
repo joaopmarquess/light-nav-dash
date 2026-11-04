@@ -1,4 +1,4 @@
-import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree } from "lucide-react";
+import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree, ArrowRightLeft, Map as MapIcon, CalendarRange } from "lucide-react";
 import { BENCH_SHORT_TEXT, DRE_MENU_NAME, SLIDES_SHORT_TEXT } from "@/control/dreLabels";
 export type MenuItem = {
   icon: React.ComponentType<{ className?: string }>;
@@ -111,3 +111,23 @@ export const menuItems: MenuItem[] = [
 ];
 
 export const LAB_IDS = new Set<string>(["Laboratory", ...labItems.flatMap((g) => g.children ? g.children.map((c) => c.id ?? c.label) : [g.label])]);
+
+export const homeShortcuts = [
+  { icon: ArrowRightLeft, label: "Movimentação", destination: "Carteira · Movimentação" },
+  { icon: MapIcon, label: "Área Geográfica", destination: "Carteira · Área Geográfica" },
+  { icon: Percent, label: "Período", destination: "Sinistralidade · Períodos" },
+  { icon: FileText, label: "Controladoria", destination: "Control · DRE Gerencial PE" },
+  { icon: CalendarRange, label: "Projeto Bensaúde|Uberaba", destination: "Uberaba Timeline" },
+  { icon: FlaskConical, label: "Laboratory", destination: "Laboratory" },
+  { icon: FileText, label: "Proposta APB", destination: "Proposta APB" },
+];
+
+export const axisPermissionGroups = [
+  ...menuItems.map(g => ({
+    label: g.label,
+    items: g.label === "Home"
+      ? [{ id: "Home", label: "Home" }, ...homeShortcuts.map(s => ({ id: s.destination, label: s.label }))]
+      : g.children?.filter(c => c.id !== "__cfg_control__").map(c => ({ id: c.id ?? c.label, label: c.label })) ?? [{ id: g.label, label: g.label }],
+  })),
+  { label: "Laboratory", items: [{ id: "Laboratory", label: "Laboratory" }, ...labItems.flatMap(g => g.children ? g.children.map(c => ({ id: c.id ?? c.label, label: `${g.label.trim()} · ${c.label}` })) : [{ id: g.label, label: g.label }])] },
+];

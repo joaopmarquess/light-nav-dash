@@ -1,16 +1,8 @@
-import { ArrowUpRight, FlaskConical, CalendarRange, FileText, Map as MapIcon, ArrowRightLeft, Percent } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAxisAccess } from "@/hooks/useAxisAccess";
 
-const shortcuts = [
-  { icon: ArrowRightLeft, label: "Movimentação", destination: "Carteira · Movimentação" },
-  { icon: MapIcon, label: "Área Geográfica", destination: "Carteira · Área Geográfica" },
-  { icon: Percent, label: "Período", destination: "Sinistralidade · Períodos" },
-  { icon: FileText, label: "Controladoria", destination: "Control · DRE Gerencial PE" },
-  { icon: CalendarRange, label: "Projeto Bensaúde|Uberaba", destination: "Uberaba Timeline" },
-  { icon: FlaskConical, label: "Laboratory", destination: "Laboratory" },
-  { icon: FileText, label: "Proposta APB", destination: "Proposta APB" },
-];
+import { homeShortcuts } from "@/lib/axisNavigation";
 
 const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
  const { can } = useAxisAccess();
@@ -23,7 +15,7 @@ const Home = ({ onNavigate }: { onNavigate: (label: string) => void }) => {
     <section aria-labelledby="home-atalhos">
       <h3 id="home-atalhos" className="mb-4 text-sm font-semibold text-foreground">Atalhos</h3>
       <div className="flex flex-wrap gap-3">
-        {shortcuts.filter(s => can(s.destination)).map(({ icon: Icon, label, destination }) => (
+        {homeShortcuts.filter(s => can(s.destination)).map(({ icon: Icon, label, destination }) => (
           <Button key={label} variant="secondary" onClick={() => onNavigate(destination)} className="h-12 gap-3 px-5">
             <Icon />
             {label}
