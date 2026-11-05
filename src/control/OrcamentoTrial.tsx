@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { CalendarDays, ChevronRight, SquareMinus, SquarePlus, ChevronsDownUp, ChevronsUpDown, Coins, TrendingUp, TrendingDown } from "lucide-react";
+import { CalendarDays, ChevronRight, ChevronUp, SquareMinus, SquarePlus, ChevronsDownUp, ChevronsUpDown, Coins, TrendingUp, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { mergeOrcamento } from "@/control/orcamentoLocal";
 import { projetarPorVariacaoMedia } from "@/control/projecaoOrcamento";
@@ -56,7 +56,9 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
   const [fonteFutura, setFonteFutura] = useState<"projetado" | "previsto">("projetado");
   const [visao, setVisao] = useState<"original" | "orcamento">("orcamento");
   const orig = visao === "original";
-  const sub = (c: { key: string }) => !orig && !!openCols[c.key];
+  const sub = (c: Col) => !orig && !futuro(c) && !!openCols[c.key];
+  /** Mês ainda sem realizado (após o gatilho): mostra só Projetado/Previsto, sem expandir */
+  const futuro = (c: Col) => c.kind === "mes" && c.meses.every((m) => m > ultimoReal);
   const toggleCol = (k: string) => setOpenCols((p) => ({ ...p, [k]: !p[k] }));
 
   useEffect(() => {
@@ -587,12 +589,15 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                     className={`text-right font-medium px-1.5 py-0.5 whitespace-nowrap ${sub(c) ? "" : "border-l-2 border-l-foreground/40"} ${headClass(c.kind)}`}
                   >
                     <button
-                      onClick={() => !orig && toggleCol(c.key)}
+                      onClick={() => !orig && !futuro(c) && toggleCol(c.key)}
                       className="inline-flex items-center gap-1 hover:text-primary"
-                      title={openCols[c.key] ? "Ocultar previsto e projetado" : "Mostrar previsto e projetado"}
+                      title={futuro(c) ? undefined : openCols[c.key] ? "Ocultar previsto e projetado" : "Mostrar previsto e projetado"}
                     >
-                      {!orig && (openCols[c.key] ? <SquareMinus className="h-3.5 w-3.5" /> : <SquarePlus className="h-3.5 w-3.5" />)}
-                      {c.kind === "mes" ? `${c.label} realizado` : c.key === "parcial" ? "Acumulado Realizado" : c.label}
+                      {!orig && !futuro(c) && (openCols[c.key] ? <SquareMinus className="h-3.5 w-3.5" /> : <SquarePlus className="h-3.5 w-3.5" />)}
+                      {futuro(c)
+                        ? `${c.label} ${fonteFutura === "previsto" ? "previsto" : "projetado"}`
+                        : c.kind === "mes" ? (sub(c) ? `${c.label} realizado` : c.label)
+                        : c.key === "parcial" ? (sub(c) ? "Acumulado Realizado" : "Acumulado") : c.label}
                     </button>
                   </th>
                 </Fragment>
@@ -614,7 +619,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                   >
                     {isGroup ? (
                       <button onClick={() => toggleRow(node.id)} className="inline-flex items-center gap-1 hover:text-primary">
-                        {openRows[node.id] ? <SquareMinus className="h-3.5 w-3.5" /> : <SquarePlus className="h-3.5 w-3.5" />}
+                        <ChevronUp className={`h-3.5 w-3.5 transition-transform ${openRows[node.id] ? "" : "rotate-180"}`} />
                         {node.label}
                       </button>
                     ) : (
