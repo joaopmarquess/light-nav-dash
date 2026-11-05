@@ -5,7 +5,6 @@ import { podeCalcularMovimentacao, resumoMovimentacao } from "@/lib/movimentacao
 import { normalizarVendedor } from "@/lib/vendedorTransferencia";
 import { datasVidasIndicadores, mesesMovimentacao, janelaMesesMovimentacao, somarTotaisMovimentacao, fluxoMensalMovimentacao, fechamentosMensaisMovimentacao, combinarFluxosEVidas, type VidasMensais, type FluxoMensal, type TotaisMovimentacao } from "@/lib/movimentacaoCarga";
 import MovimentacaoCrescimentoMensal from "@/components/MovimentacaoCrescimentoMensal";
-import MovimentacaoEvolucaoMensal from "@/components/MovimentacaoEvolucaoMensal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X, UserPlus, UserMinus, Scale, RotateCcw, ArrowRightLeft, LogIn, LogOut, Users, Eye, EyeOff, LoaderCircle, ChevronLeft, ChevronRight, TrendingUp } from "lucide-react";
@@ -55,7 +54,6 @@ export default function CarteiraTrialMov() {
   const [loading, setLoading] = useState(false);
   const [etapa, setEtapa] = useState("");
   const [err, setErr] = useState<string | null>(null);
-  const [evolucaoAberta, setEvolucaoAberta] = useState(false);
   const [cortado, setCortado] = useState(false);
   const [vidas, setVidas] = useState<{ ant: number | null; fin: number | null }>({ ant: null, fin: null });
   const [sel, setSel] = useState<Sel>(null);
@@ -283,7 +281,6 @@ export default function CarteiraTrialMov() {
         <label className="text-xs text-muted-foreground">Até<Input type="date" value={f.ate} onChange={(e) => setF({ ...f, ate: e.target.value })} className="w-40" /></label>
         <Button onClick={buscar} disabled={loading || !podeCalcularMovimentacao(f)}><Search className="h-4 w-4 mr-1" />Calcular</Button>
         <Button variant="outline" onClick={limpar} disabled={loading}><X className="h-4 w-4 mr-1" />Limpar</Button>
-        <Button variant={evolucaoAberta ? "default" : "outline"} aria-pressed={evolucaoAberta} onClick={() => setEvolucaoAberta(v => !v)}><TrendingUp className="h-4 w-4 mr-1" />Evolução Mensal</Button>
         {ap && janelaMeses && !loading && !mensalLoading && totais && <div className="flex min-w-0 basis-full justify-center sm:basis-72 sm:flex-1" role="group" aria-label="Período dos indicadores">
           <div className="grid w-fit max-w-full grid-cols-[auto_2rem_minmax(0,1fr)_2rem] items-center gap-0">
           <Button variant="ghost" className={`h-10 rounded-none border-b-2 px-3 text-lg shadow-none transition-colors hover:bg-transparent hover:text-primary ${!mesSelecionado ? "border-primary font-semibold text-primary" : "border-transparent text-muted-foreground"}`} aria-pressed={!mesSelecionado} onClick={() => selecionarMes(null)}>Período completo</Button>
@@ -297,7 +294,6 @@ export default function CarteiraTrialMov() {
           </div>
         </div>}
       </div>
-      {evolucaoAberta && <MovimentacaoEvolucaoMensal />}
 
       {ap && <>
       {periodoIndicadores && <p className="text-xs text-muted-foreground">{fmtD(periodoIndicadores.de)} a {fmtD(periodoIndicadores.ate)}</p>}

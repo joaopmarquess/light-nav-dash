@@ -3,7 +3,8 @@ import { hostinger } from "@/lib/hostingerClient";
 import { CartesianGrid, LabelList, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChevronRight, LoaderCircle } from "lucide-react";
 
-const ANOS = [2023, 2024, 2025, 2026];
+const ANO_ATUAL = new Date().getUTCFullYear();
+const ANOS_OPCOES = Array.from({ length: ANO_ATUAL - 2019 + 1 }, (_, i) => 2019 + i);
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 const CORES = ["hsl(var(--muted-foreground))", "hsl(var(--chart-2, 160 60% 40%))", "hsl(var(--chart-4, 35 90% 50%))", "hsl(var(--primary))"];
 const cache = new Map<string, number>();

@@ -1,6 +1,7 @@
 import CarteiraTrial from "@/components/CarteiraTrial";
 import CarteiraTrialGeo from "@/components/CarteiraTrialGeo";
 import CarteiraTrialMov from "@/components/CarteiraTrialMov";
+import MovimentacaoEvolucaoMensal from "@/components/MovimentacaoEvolucaoMensal";
 import CarteiraTabelas from "@/components/CarteiraTabelas";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -644,6 +645,8 @@ const Index = () => {
             <CarteiraTabelas />
           ) : active === "Carteira · Movimentação" ? (
             <CarteiraTrialMov />
+          ) : active === "Carteira · Evolução Mensal" ? (
+            <MovimentacaoEvolucaoMensal />
           ) : active === "Carteira · Área Geográfica" ? (
             <CarteiraTrialGeo />
           ) : active === "Carteira · Consulta" ? (
