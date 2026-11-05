@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
-import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { LoaderCircle } from "lucide-react";
 
 const ANOS = [2023, 2024, 2025, 2026];
@@ -105,11 +105,12 @@ export default function MovimentacaoEvolucaoMensal() {
         lote.forEach((x, k) => res.set(`${x.a}-${x.m}`, v[k]));
       }
       if (off) return;
-      setDados(MESES.map((mes, m) => {
-        const o: Record<string, any> = { mes };
-        ANOS.forEach((a) => { if (res.has(`${a}-${m}`)) o[a] = res.get(`${a}-${m}`); });
-        return o;
-      }));
+      const pts: Record<string, any>[] = [];
+      ANOS.forEach((a) => {
+        if (res.has(`${a}-11`)) pts.push({ mes: String(a), vidas: res.get(`${a}-11`) });
+        else MESES.forEach((m, i) => { if (res.has(`${a}-${i}`)) pts.push({ mes: `${m}/${String(a).slice(2)}`, vidas: res.get(`${a}-${i}`) }); });
+      });
+      setDados(pts);
     })().catch((e: Error) => !off && setErr(e.message));
     return () => { off = true; };
   }, []);
@@ -133,8 +134,7 @@ export default function MovimentacaoEvolucaoMensal() {
               <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" />
               <YAxis stroke="hsl(var(--muted-foreground))" domain={["auto", "auto"]} tickFormatter={(v) => Number(v).toLocaleString("pt-BR")} width={70} />
               <Tooltip formatter={(v: any) => Number(v).toLocaleString("pt-BR")} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
-              <Legend />
-              {ANOS.map((a, i) => <Line key={a} type="monotone" dataKey={String(a)} name={String(a)} stroke={CORES[i]} strokeWidth={a === 2026 ? 3 : 2} dot={{ r: 3 }} connectNulls={false} />)}
+              <Line type="monotone" dataKey="vidas" name="Vidas" stroke="hsl(var(--primary))" strokeWidth={3} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
