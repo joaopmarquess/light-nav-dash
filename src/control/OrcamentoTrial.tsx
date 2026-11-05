@@ -2,7 +2,8 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { CalendarDays, ChevronRight, ChevronsDownUp, ChevronsUpDown, Coins, TrendingUp, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { mergeOrcamento } from "@/control/orcamentoLocal";
-import { loadDreHostinger, type DreHRow } from "@/control/dreHostinger";
+import { projetarPorVariacaoMedia } from "@/control/projecaoOrcamento";
+import { loadMesesDemonstracoes, loadDreHostinger, type DreHRow } from "@/control/dreHostinger";
 import { DRE_FULL_NAME } from "@/control/dreLabels";
 import { Button } from "@/components/ui/button";
 
@@ -68,7 +69,10 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
           .order("nr_mes");
         if (error) throw error;
         // Realizado vem do balancete MV: só meses com movimento substituem o realizado
-        const mv = await loadDreHostinger(2026, [1, 2, 3, 4, 5, 6, 7, 8]); // só meses fechados (até Ago)
+        // Mesmo gatilho de Demonstrações: último mês com contas 41 acima de R$ 20 milhões
+        const fechados = await loadMesesDemonstracoes(2026);
+        const ultimoFechado = fechados.length ? Math.max(...fechados) : 0;
+        const mv = fechados.length ? await loadDreHostinger(2026, fechados) : [];
         const real = new Map<string, number>();
         const mesesMv = new Set<number>();
         for (const r of mv) {
@@ -82,7 +86,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
           for (const [k, v] of real) { const [i, m] = k.split("~"); if (Number(m) === mes && norm(i) === norm(item)) return v; }
           return 0;
         };
-        setRows(
+        setRows(projetarPorVariacaoMedia(
           mergeOrcamento(
             (data || []).map((r) => ({
               item: r.item || "",
@@ -91,8 +95,9 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
               realizado: Number(r.realizado) || 0,
               projetado: Number((r as { projetado?: number }).projetado) || 0,
             }))
-          ).map((r) => (mesesMv.has(r.mes) ? { ...r, realizado: realDe(r.item, r.mes) } : { ...r, realizado: 0 }))
-        );
+          ).map((r) => (mesesMv.has(r.mes) && r.mes <= ultimoFechado ? { ...r, realizado: realDe(r.item, r.mes) } : { ...r, realizado: 0 })),
+          ultimoFechado
+        ));
       } catch (e: unknown) {
         setError(e instanceof Error ? e.message : String(e));
         setRows(mergeOrcamento([]));
