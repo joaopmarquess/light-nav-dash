@@ -129,7 +129,7 @@ export default function MovimentacaoEvolucaoMensal() {
       {err ? <p className="text-sm text-destructive">{err}</p> : !dados ? (
         <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando vidas de 2023 a 2026…</p>
       ) : (
-        <div className="h-[380px]">
+        <div className="h-[380px] rounded-lg border border-border bg-background p-3 shadow-sm">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={dados} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
