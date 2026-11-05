@@ -63,7 +63,6 @@ BEGIN
   from d join a on d.dt >= a.dt and d.dt < a.prox
   group by d.dt
   order by d.dt;
-;
   GET DIAGNOSTICS n = ROW_COUNT;
   RETURN n;
 END;
