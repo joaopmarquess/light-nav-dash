@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { CalendarDays, ChevronRight, ChevronsDownUp, ChevronsUpDown, Coins, TrendingUp, TrendingDown } from "lucide-react";
+import { CalendarDays, ChevronRight, SquareMinus, SquarePlus, ChevronsDownUp, ChevronsUpDown, Coins, TrendingUp, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { mergeOrcamento } from "@/control/orcamentoLocal";
 import { projetarPorVariacaoMedia } from "@/control/projecaoOrcamento";
@@ -574,7 +574,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
               {COLS.map((c) => (
                 <Fragment key={c.key}>
                   {sub(c) && (
-                    <th className={`text-right font-normal px-1.5 py-0.5 text-[11px] whitespace-nowrap border-l border-border bg-muted/60 text-orange-500`}>
+                    <th className={`text-right font-normal px-1.5 py-0.5 text-[11px] whitespace-nowrap border-l-2 border-l-foreground/40 bg-muted/60 text-orange-500`}>
                       {c.label} {c.key === "parcial" ? "Previsto" : "previsto"}
                     </th>
                   )}
@@ -584,14 +584,14 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                     </th>
                   )}
                   <th
-                    className={`text-right font-medium px-1.5 py-0.5 whitespace-nowrap ${sub(c) ? "" : "border-l border-border"} ${headClass(c.kind)}`}
+                    className={`text-right font-medium px-1.5 py-0.5 whitespace-nowrap ${sub(c) ? "" : "border-l-2 border-l-foreground/40"} ${headClass(c.kind)}`}
                   >
                     <button
                       onClick={() => !orig && toggleCol(c.key)}
                       className="inline-flex items-center gap-1 hover:text-primary"
                       title={openCols[c.key] ? "Ocultar previsto e projetado" : "Mostrar previsto e projetado"}
                     >
-                      {!orig && <ChevronRight className={`h-3 w-3 transition-transform ${openCols[c.key] ? "rotate-90" : ""}`} />}
+                      {!orig && (openCols[c.key] ? <SquareMinus className="h-3.5 w-3.5" /> : <SquarePlus className="h-3.5 w-3.5" />)}
                       {c.kind === "mes" ? `${c.label} realizado` : c.key === "parcial" ? "Acumulado Realizado" : c.label}
                     </button>
                   </th>
@@ -614,7 +614,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                   >
                     {isGroup ? (
                       <button onClick={() => toggleRow(node.id)} className="inline-flex items-center gap-1 hover:text-primary">
-                        <ChevronRight className={`h-3 w-3 transition-transform ${openRows[node.id] ? "rotate-90" : ""}`} />
+                        {openRows[node.id] ? <SquareMinus className="h-3.5 w-3.5" /> : <SquarePlus className="h-3.5 w-3.5" />}
                         {node.label}
                       </button>
                     ) : (
@@ -643,7 +643,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                       <Fragment key={c.key}>
                         {sub(c) && (
                           <td
-                            className="px-1.5 py-1.5 text-right tabular-nums whitespace-nowrap border-l border-border bg-muted/30 text-orange-500"
+                            className="px-1.5 py-1.5 text-right tabular-nums whitespace-nowrap border-l-2 border-l-foreground/40 bg-muted/30 text-orange-500"
                             onContextMenu={(e) => !isRatio && showPctTip(e, c, previsto, `${c.label} {c.key === "parcial" ? "Previsto" : "previsto"}`)}
                           >
                             {show(previsto)}
@@ -658,7 +658,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                           </td>
                         )}
                         <td
-                          className={`px-1.5 py-1.5 text-right tabular-nums whitespace-nowrap cursor-help ${orig ? "text-orange-500" : corReal(c)} ${sub(c) ? "" : "border-l border-border"} ${bodyClass(c.kind)}`}
+                          className={`px-1.5 py-1.5 text-right tabular-nums whitespace-nowrap cursor-help ${orig ? "text-orange-500" : corReal(c)} ${sub(c) ? "" : "border-l-2 border-l-foreground/40"} ${bodyClass(c.kind)}`}
                           onMouseEnter={(e) => showTip(e, title, previsto, realizado, { invert: isRatio, pp: isRatio, projetado: showProj(c) ? projetado : null })}
                           onMouseMove={(e) => showTip(e, title, previsto, realizado, { invert: isRatio, pp: isRatio, projetado: showProj(c) ? projetado : null })}
 
@@ -688,7 +688,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                 return (
                   <Fragment key={c.key}>
                     {sub(c) && (
-                      <td className={`px-1.5 py-2 text-right tabular-nums whitespace-nowrap border-l border-border text-orange-500 ${neg(previsto)}`}>
+                      <td className={`px-1.5 py-2 text-right tabular-nums whitespace-nowrap border-l-2 border-l-foreground/40 text-orange-500 ${neg(previsto)}`}>
                         {fmt(previsto)}
                       </td>
                     )}
@@ -698,7 +698,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                       </td>
                     )}
                     <td
-                      className={`px-1.5 py-2 text-right tabular-nums whitespace-nowrap cursor-help ${orig ? "text-orange-500" : corReal(c)} ${neg(orig ? previsto : realizado)} ${sub(c) ? "" : "border-l border-border"}`}
+                      className={`px-1.5 py-2 text-right tabular-nums whitespace-nowrap cursor-help ${orig ? "text-orange-500" : corReal(c)} ${neg(orig ? previsto : realizado)} ${sub(c) ? "" : "border-l-2 border-l-foreground/40"}`}
                       onMouseEnter={(e) => showTip(e, `${nome} — ${c.label}`, previsto, realizado, { projetado: showProj(c) ? projetado : null })}
                       onMouseMove={(e) => showTip(e, `${nome} — ${c.label}`, previsto, realizado, { projetado: showProj(c) ? projetado : null })}
                       onMouseLeave={() => !tip?.pinned && setTip(null)}
