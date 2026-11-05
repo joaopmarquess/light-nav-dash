@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { CartesianGrid, LabelList, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ChevronRight, LoaderCircle } from "lucide-react";
+import { ChevronRight, Download, LoaderCircle } from "lucide-react";
+import * as XLSX from "xlsx";
 
 const ANO_ATUAL = new Date().getUTCFullYear();
 const ANOS_OPCOES = Array.from({ length: ANO_ATUAL - 2019 + 1 }, (_, i) => 2019 + i);
@@ -90,8 +91,29 @@ function GridVidas({ datas, de, ate }: { datas: Data[]; de: number; ate: number 
         <tr key={`${km}-${p}`} className="text-muted-foreground"><td className="px-3 py-1 pl-8">{ano}</td><td className="px-3 py-1 pl-8">{MESES[l.m]}</td><td className="px-3 py-1">{p}</td><td className="px-3 py-1 text-right tabular-nums">{nf(l[p])}</td></tr>));
     });
   });
+  const baixar = () => {
+    const linhasX: (string | number)[][] = [["Ano", "Mês", "Plano", "Vidas"]];
+    anos.forEach((ano) => {
+      const ms = linhas.filter((l) => l.a === ano);
+      linhasX.push([ano, "", "Total", ms[0].total]);
+      ms.forEach((l) => {
+        linhasX.push([ano, MESES[l.m], "Total", l.total]);
+        (["PIF", "PCA", "PCE"] as const).forEach((p) => linhasX.push([ano, MESES[l.m], p, l[p]]));
+      });
+    });
+    const ws = XLSX.utils.aoa_to_sheet(linhasX);
+    ws["!cols"] = [{ wch: 8 }, { wch: 6 }, { wch: 8 }, { wch: 12 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Evolução Mensal");
+    XLSX.writeFile(wb, `evolucao_mensal_vidas_${de}-${ate}.xlsx`);
+  };
   return (
     <div className="max-h-[480px] overflow-auto">
+      <div className="mb-2 flex justify-end">
+        <button type="button" onClick={baixar} title="Baixar grid expandido (xlsx)" aria-label="Baixar grid expandido em xlsx" className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium hover:bg-muted">
+          <Download className="h-4 w-4" />xlsx
+        </button>
+      </div>
       <table className="w-full text-sm">
         <thead className="sticky top-0 bg-muted">
           <tr><th className="px-3 py-2 text-left">Ano</th><th className="px-3 py-2 text-left">Mês</th><th className="px-3 py-2 text-left">Plano</th><th className="px-3 py-2 text-right">Vidas</th></tr>
