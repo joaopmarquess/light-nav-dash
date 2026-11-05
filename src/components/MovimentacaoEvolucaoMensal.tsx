@@ -42,7 +42,7 @@ async function carregarRapida(de: number, ate: number): Promise<Linha[] | null> 
   const k = `${de}-${ate}`;
   if (rapidaCache.has(k)) return rapidaCache.get(k)!;
   const { data, error } = await hostinger.rpc("carteira_evolucao_mensal", { p_de: de, p_ate: ate });
-  if (error) { if (/function|schema cache|not find/i.test(error.message)) { rapidaIndisponivel = true; return null; } throw new Error(error.message); }
+  if (error) { if (/function|schema cache|not find|timing out|timeout|canceling/i.test(error.message)) { rapidaIndisponivel = true; return null; } throw new Error(error.message); }
   const out = (data ?? []).map((r: any) => ({ a: +r.ano, m: +r.mes - 1, total: +r.total, PIF: +r.pif, PCA: +r.pca, PCE: +r.pce }));
   rapidaCache.set(k, out);
   return out;
