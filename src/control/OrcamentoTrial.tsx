@@ -137,7 +137,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
     for (const m of meses) {
       out.push({ key: `m:${m}`, label: MES_LABEL[m - 1] || String(m), meses: [m], kind: "mes" });
       if (m === ultimo && m !== meses[meses.length - 1]) {
-        out.push({ key: "parcial", label: "Parcial", meses: meses.filter((x) => x <= ultimo), kind: "total" });
+        out.push({ key: "parcial", label: "Acumulado", meses: meses.filter((x) => x <= ultimo), kind: "total" });
       }
     }
     const todosReal = meses.length > 0 && meses.every((m) => comReal.includes(m));
@@ -567,12 +567,12 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                 <Fragment key={c.key}>
                   {sub(c) && (
                     <th className={`text-right font-normal px-1.5 py-0.5 text-[11px] whitespace-nowrap border-l border-border bg-muted/60 text-orange-500`}>
-                      {c.label} · Previsto
+                      {c.label} {c.key === "parcial" ? "Previsto" : "previsto"}
                     </th>
                   )}
                   {sub(c) && showProj(c) && (
                     <th className="text-right font-normal px-1.5 py-0.5 text-[11px] whitespace-nowrap border-l border-border bg-muted/60">
-                      {c.label} · Projetado
+                      {c.label} projetado
                     </th>
                   )}
                   <th
@@ -584,7 +584,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                       title={openCols[c.key] ? "Ocultar previsto e projetado" : "Mostrar previsto e projetado"}
                     >
                       {!orig && <ChevronRight className={`h-3 w-3 transition-transform ${openCols[c.key] ? "rotate-90" : ""}`} />}
-                      {c.label}
+                      {c.kind === "mes" ? `${c.label} realizado` : c.key === "parcial" ? "Acumulado Realizado" : c.label}
                     </button>
                   </th>
                 </Fragment>
@@ -636,7 +636,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                         {sub(c) && (
                           <td
                             className="px-1.5 py-1.5 text-right tabular-nums whitespace-nowrap border-l border-border bg-muted/30 text-orange-500"
-                            onContextMenu={(e) => !isRatio && showPctTip(e, c, previsto, `${c.label} · Previsto`)}
+                            onContextMenu={(e) => !isRatio && showPctTip(e, c, previsto, `${c.label} {c.key === "parcial" ? "Previsto" : "previsto"}`)}
                           >
                             {show(previsto)}
                           </td>
@@ -644,7 +644,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                         {sub(c) && showProj(c) && (
                           <td
                             className="px-1.5 py-1.5 text-right tabular-nums whitespace-nowrap border-l border-border bg-muted/30 text-foreground/80"
-                            onContextMenu={(e) => !isRatio && showPctTip(e, c, projetado, `${c.label} · Projetado`)}
+                            onContextMenu={(e) => !isRatio && showPctTip(e, c, projetado, `${c.label} projetado`)}
                           >
                             {show(projetado)}
                           </td>
