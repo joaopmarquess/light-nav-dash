@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { CartesianGrid, LabelList, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChevronRight, LoaderCircle } from "lucide-react";
 
-const ANOS = [2023, 2024, 2025, 2026];
+const ANO_ATUAL = new Date().getUTCFullYear();
+const ANOS_OPCOES = Array.from({ length: ANO_ATUAL - 2019 + 1 }, (_, i) => 2019 + i);
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 const CORES = ["hsl(var(--muted-foreground))", "hsl(var(--chart-2, 160 60% 40%))", "hsl(var(--chart-4, 35 90% 50%))", "hsl(var(--primary))"];
 const cache = new Map<string, number>();
@@ -90,15 +91,19 @@ export default function MovimentacaoEvolucaoMensal() {
   const [dados, setDados] = useState<Record<string, any>[] | null>(null);
   const [err, setErr] = useState("");
   const [grid, setGrid] = useState(false);
-  const [datas] = useState(() => {
+  const [de, setDe] = useState(2019);
+  const [ate, setAte] = useState(ANO_ATUAL);
+  const ANOS = useMemo(() => ANOS_OPCOES.filter((a) => a >= de && a <= ate), [de, ate]);
+  const datas = useMemo(() => {
     const hoje = new Date().toISOString().slice(0, 10);
     return ANOS.flatMap((a) => MESES.map((_, m) => ({ a, m, d: fimMes(a, m) })))
       .filter((x) => x.d.slice(0, 7) <= hoje.slice(0, 7))
       .map((x) => ({ ...x, d: x.d > hoje ? hoje : x.d }));
-  });
+  }, [ANOS]);
 
   useEffect(() => {
     let off = false;
+    setDados(null); setErr("");
     (async () => {
       const res = new Map<string, number>();
       for (let i = 0; i < datas.length; i += 6) {
@@ -115,19 +120,26 @@ export default function MovimentacaoEvolucaoMensal() {
       setDados(pts);
     })().catch((e: Error) => !off && setErr(e.message));
     return () => { off = true; };
-  }, []);
+  }, [datas, ANOS]);
 
+  const sel = "rounded-md border border-border bg-background px-2 py-1.5 text-sm";
   return (
     <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
       <div className="mb-2 flex items-center justify-between gap-2">
         <h3 className="text-base font-semibold">Evolução mensal de vidas ativas</h3>
+        <div className="flex items-center gap-2">
+        <label className="text-sm text-muted-foreground">De</label>
+        <select className={sel} value={de} onChange={(e) => { const v = +e.target.value; setDe(v); if (v > ate) setAte(v); }}>{ANOS_OPCOES.map((a) => <option key={a}>{a}</option>)}</select>
+        <label className="text-sm text-muted-foreground">Até</label>
+        <select className={sel} value={ate} onChange={(e) => { const v = +e.target.value; setAte(v); if (v < de) setDe(v); }}>{ANOS_OPCOES.map((a) => <option key={a}>{a}</option>)}</select>
         <button type="button" onClick={() => setGrid((g) => !g)} className="rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-muted">
           {grid ? "Ocultar grid" : "Gerar grid"}
         </button>
+        </div>
       </div>
       {grid && <div className="mb-4"><GridVidas datas={datas} /></div>}
       {err ? <p className="text-sm text-destructive">{err}</p> : !dados ? (
-        <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando vidas de 2023 a 2026…</p>
+        <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando vidas de {de} a {ate}…</p>
       ) : (
         <div className="h-[380px] rounded-lg border border-border bg-background p-3 shadow-sm">
           <ResponsiveContainer width="100%" height="100%">
