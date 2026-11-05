@@ -49,28 +49,37 @@ function GridVidas({ datas }: { datas: { a: number; m: number; d: string }[] }) 
     })().catch((e: Error) => !off && setErr(e.message));
     return () => { off = true; };
   }, [datas]);
+  const [abertos, setAbertos] = useState<Set<string>>(new Set());
   const nf = (n: number) => n.toLocaleString("pt-BR");
   if (err) return <p className="text-sm text-destructive">{err}</p>;
   if (!linhas) return <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Gerando grid…</p>;
+  const tog = (k: string) => setAbertos((s) => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n; });
+  const Btn = ({ k }: { k: string }) => (
+    <button type="button" onClick={() => tog(k)} aria-label={abertos.has(k) ? "Recolher" : "Expandir"} className="mr-2 inline-flex h-4 w-4 items-center justify-center rounded-sm border border-border text-[10px] leading-none">{abertos.has(k) ? "−" : "+"}</button>
+  );
+  const planos = [["Total", "total"], ["PIF", "PIF"], ["PCA", "PCA"], ["PCE", "PCE"]] as const;
+  const anos = [...new Set(linhas.map((l) => l.a))].sort((x, y) => y - x);
+  const rows: JSX.Element[] = [];
+  planos.forEach(([nome, campo]) => {
+    const ultimo = linhas[0];
+    rows.push(<tr key={nome} className="border-t border-border bg-muted/40 font-semibold"><td className="px-3 py-1.5"><Btn k={nome} />{nome}</td><td /><td /><td className="px-3 py-1.5 text-right tabular-nums">{nf(ultimo[campo])}</td></tr>);
+    if (!abertos.has(nome)) return;
+    anos.forEach((ano) => {
+      const ms = linhas.filter((l) => l.a === ano);
+      const k = `${nome}-${ano}`;
+      rows.push(<tr key={k} className="border-t border-border/60"><td /><td className="px-3 py-1"><Btn k={k} />{ano}</td><td /><td className="px-3 py-1 text-right tabular-nums">{nf(ms[0][campo])}</td></tr>);
+      if (abertos.has(k)) ms.forEach((l) => rows.push(<tr key={`${k}-${l.m}`} className="text-muted-foreground"><td /><td /><td className="px-3 py-1 pl-9">{MESES[l.m]}</td><td className="px-3 py-1 text-right tabular-nums">{nf(l[campo])}</td></tr>));
+    });
+  });
   return (
     <div className="max-h-[480px] overflow-auto rounded-md border border-border">
       <table className="w-full text-sm">
         <thead className="sticky top-0 bg-muted">
-          <tr><th className="px-3 py-2 text-left">Mês</th><th className="px-3 py-2 text-left">Ano</th><th className="px-3 py-2 text-left">Nível</th><th className="px-3 py-2 text-right">Vidas</th></tr>
+          <tr><th className="px-3 py-2 text-left">Plano</th><th className="px-3 py-2 text-left">Ano</th><th className="px-3 py-2 text-left">Mês</th><th className="px-3 py-2 text-right">Vidas</th></tr>
         </thead>
-        <tbody>
-          {linhas.flatMap((l) => [
-            <tr key={`${l.a}-${l.m}-t`} className="border-t border-border bg-muted/40 font-semibold">
-              <td className="px-3 py-1.5">{MESES[l.m]}</td><td className="px-3 py-1.5">{l.a}</td><td className="px-3 py-1.5">Total</td><td className="px-3 py-1.5 text-right tabular-nums">{nf(l.total)}</td>
-            </tr>,
-            ...(["PIF", "PCA", "PCE"] as const).map((k) => (
-              <tr key={`${l.a}-${l.m}-${k}`} className="text-muted-foreground">
-                <td className="px-3 py-1">{MESES[l.m]}</td><td className="px-3 py-1">{l.a}</td><td className="py-1 pl-8 pr-3">{k}</td><td className="px-3 py-1 text-right tabular-nums">{nf(l[k])}</td>
-              </tr>
-            )),
-          ])}
-        </tbody>
+        <tbody>{rows}</tbody>
       </table>
+      <p className="px-3 py-1.5 text-xs text-muted-foreground">Vidas de Plano e Ano = último mês disponível do período.</p>
     </div>
   );
 }
