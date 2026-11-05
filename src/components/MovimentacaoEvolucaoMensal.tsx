@@ -96,7 +96,6 @@ function GridVidas({ datas, de, ate }: { datas: Data[]; de: number; ate: number 
     anos.forEach((ano) => {
       const ms = linhas.filter((l) => l.a === ano);
       ms.forEach((l) => {
-        linhasX.push([ano, MESES[l.m], "Total", l.total]);
         (["PIF", "PCA", "PCE"] as const).forEach((p) => linhasX.push([ano, MESES[l.m], p, l[p]]));
       });
     });
