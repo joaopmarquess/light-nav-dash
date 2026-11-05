@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { CartesianGrid, LabelList, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChevronRight, LoaderCircle } from "lucide-react";
 
 const ANOS = [2023, 2024, 2025, 2026];
@@ -131,12 +131,12 @@ export default function MovimentacaoEvolucaoMensal() {
       ) : (
         <div className="h-[380px] rounded-lg border border-border bg-background p-3 shadow-sm">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={dados} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
+            <LineChart data={dados} margin={{ top: 24, right: 20, left: 10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" />
               <YAxis stroke="hsl(var(--muted-foreground))" domain={["auto", "auto"]} tickFormatter={(v) => Number(v).toLocaleString("pt-BR")} width={70} />
               <Tooltip formatter={(v: any) => Number(v).toLocaleString("pt-BR")} contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
-              <Line type="monotone" dataKey="vidas" name="Vidas" stroke="hsl(var(--primary))" strokeWidth={3} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="vidas" name="Vidas" stroke="hsl(var(--primary))" strokeWidth={3} dot={{ r: 3 }}><LabelList dataKey="vidas" position="top" offset={8} fontSize={11} fill="hsl(var(--foreground))" formatter={(v: any) => Number(v).toLocaleString("pt-BR")} /></Line>
             </LineChart>
           </ResponsiveContainer>
         </div>
