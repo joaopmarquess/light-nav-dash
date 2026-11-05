@@ -58,7 +58,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
   const orig = visao === "original";
   const sub = (c: Col) => !orig && !futuro(c) && !!openCols[c.key];
   /** Mês ainda sem realizado (após o gatilho): mostra só Projetado/Previsto, sem expandir */
-  const futuro = (c: Col) => c.kind === "mes" && c.meses.every((m) => m > ultimoReal);
+  const futuro = (c: Col) => c.key === "acum" || (c.kind === "mes" && c.meses.every((m) => m > ultimoReal));
   const toggleCol = (k: string) => setOpenCols((p) => ({ ...p, [k]: !p[k] }));
 
   useEffect(() => {
@@ -144,11 +144,11 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
     for (const m of meses) {
       out.push({ key: `m:${m}`, label: MES_LABEL[m - 1] || String(m), meses: [m], kind: "mes" });
       if (m === ultimo && m !== meses[meses.length - 1]) {
-        out.push({ key: "parcial", label: "Acumulado", meses: meses.filter((x) => x <= ultimo), kind: "total" });
+        out.push({ key: "parcial", label: "Parcial", meses: meses.filter((x) => x <= ultimo), kind: "total" });
       }
     }
     const todosReal = meses.length > 0 && meses.every((m) => comReal.includes(m));
-    const labelAcum = todosReal ? "Realizado" : fonteFutura === "previsto" ? "Previsto" : "Projetado";
+    const labelAcum = todosReal ? "Final Realizado" : fonteFutura === "previsto" ? "Final Previsto" : "Final Projetado";
     if (meses.length) out.push({ key: "acum", label: labelAcum, meses, kind: "total" });
     return out;
   }, [meses, rows, fonteFutura]);
@@ -381,7 +381,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
         : "text-foreground/80";
   /** Projetado só existe após o último mês realizado (gatilho das contas 41) */
   const ultimoReal = Math.max(0, ...(rows || []).filter((r) => Math.abs(r.realizado) >= 0.005).map((r) => r.mes));
-  const showProj = (c: Col) => c.key === "parcial" || c.meses.some((m) => m > ultimoReal);
+  const showProj = (c: Col) => c.key !== "parcial" && c.meses.some((m) => m > ultimoReal);
 
   if (!rows) {
     return (
@@ -594,10 +594,11 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                       title={futuro(c) ? undefined : openCols[c.key] ? "Ocultar previsto e projetado" : "Mostrar previsto e projetado"}
                     >
                       {!orig && !futuro(c) && (openCols[c.key] ? <SquareMinus className="h-3.5 w-3.5" /> : <SquarePlus className="h-3.5 w-3.5" />)}
-                      {futuro(c)
+                      {c.key === "acum" ? c.label
+                        : futuro(c)
                         ? `${c.label} ${fonteFutura === "previsto" ? "previsto" : "projetado"}`
                         : c.kind === "mes" ? (sub(c) ? `${c.label} realizado` : c.label)
-                        : c.key === "parcial" ? (sub(c) ? "Acumulado Realizado" : "Acumulado") : c.label}
+                        : c.key === "parcial" ? (sub(c) ? "Parcial Realizado" : "Parcial") : c.label}
                     </button>
                   </th>
                 </Fragment>
