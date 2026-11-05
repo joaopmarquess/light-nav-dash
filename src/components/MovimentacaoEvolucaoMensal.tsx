@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { LoaderCircle } from "lucide-react";
+import { ChevronRight, LoaderCircle } from "lucide-react";
 
 const ANOS = [2023, 2024, 2025, 2026];
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -55,31 +55,33 @@ function GridVidas({ datas }: { datas: { a: number; m: number; d: string }[] }) 
   if (!linhas) return <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Gerando grid…</p>;
   const tog = (k: string) => setAbertos((s) => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n; });
   const Btn = ({ k }: { k: string }) => (
-    <button type="button" onClick={() => tog(k)} aria-label={abertos.has(k) ? "Recolher" : "Expandir"} className="mr-2 inline-flex h-4 w-4 items-center justify-center rounded-sm border border-border text-[10px] leading-none">{abertos.has(k) ? "−" : "+"}</button>
+    <button type="button" onClick={() => tog(k)} aria-label={abertos.has(k) ? "Recolher" : "Expandir"} className="mr-1 inline-flex h-4 w-4 items-center justify-center align-middle">
+      <ChevronRight className={`h-4 w-4 transition-transform ${abertos.has(k) ? "rotate-90" : ""}`} />
+    </button>
   );
-  const planos = [["Total", "total"], ["PIF", "PIF"], ["PCA", "PCA"], ["PCE", "PCE"]] as const;
   const anos = [...new Set(linhas.map((l) => l.a))].sort((x, y) => y - x);
   const rows: JSX.Element[] = [];
-  planos.forEach(([nome, campo]) => {
-    const ultimo = linhas[0];
-    rows.push(<tr key={nome} className="border-t border-border bg-muted/40 font-semibold"><td className="px-3 py-1.5"><Btn k={nome} />{nome}</td><td /><td /><td className="px-3 py-1.5 text-right tabular-nums">{nf(ultimo[campo])}</td></tr>);
-    if (!abertos.has(nome)) return;
-    anos.forEach((ano) => {
-      const ms = linhas.filter((l) => l.a === ano);
-      const k = `${nome}-${ano}`;
-      rows.push(<tr key={k} className="border-t border-border/60"><td /><td className="px-3 py-1">{ms.length < 12 ? <Btn k={k} /> : <span className="mr-2 inline-block w-4" />}{ano}</td><td /><td className="px-3 py-1 text-right tabular-nums">{nf(ms[0][campo])}</td></tr>);
-      if (ms.length < 12 && abertos.has(k)) ms.forEach((l) => rows.push(<tr key={`${k}-${l.m}`} className="text-muted-foreground"><td /><td /><td className="px-3 py-1 pl-9">{MESES[l.m]}</td><td className="px-3 py-1 text-right tabular-nums">{nf(l[campo])}</td></tr>));
+  anos.forEach((ano) => {
+    const ms = linhas.filter((l) => l.a === ano);
+    const ka = String(ano);
+    rows.push(<tr key={ka} className="border-t border-border bg-muted/40 font-semibold"><td className="px-3 py-1.5"><Btn k={ka} />{ano}</td><td /><td /><td className="px-3 py-1.5 text-right tabular-nums">{nf(ms[0].total)}</td></tr>);
+    if (!abertos.has(ka)) return;
+    ms.forEach((l) => {
+      const km = `${ano}-${l.m}`;
+      rows.push(<tr key={km} className="border-t border-border/60"><td className="px-3 py-1 pl-8">{ano}</td><td className="px-3 py-1"><Btn k={km} />{MESES[l.m]}</td><td /><td className="px-3 py-1 text-right tabular-nums">{nf(l.total)}</td></tr>);
+      if (abertos.has(km)) (["PIF", "PCA", "PCE"] as const).forEach((p) => rows.push(
+        <tr key={`${km}-${p}`} className="text-muted-foreground"><td className="px-3 py-1 pl-8">{ano}</td><td className="px-3 py-1 pl-8">{MESES[l.m]}</td><td className="px-3 py-1">{p}</td><td className="px-3 py-1 text-right tabular-nums">{nf(l[p])}</td></tr>));
     });
   });
   return (
     <div className="max-h-[480px] overflow-auto rounded-md border border-border">
       <table className="w-full text-sm">
         <thead className="sticky top-0 bg-muted">
-          <tr><th className="px-3 py-2 text-left">Plano</th><th className="px-3 py-2 text-left">Ano</th><th className="px-3 py-2 text-left">Mês</th><th className="px-3 py-2 text-right">Vidas</th></tr>
+          <tr><th className="px-3 py-2 text-left">Ano</th><th className="px-3 py-2 text-left">Mês</th><th className="px-3 py-2 text-left">Plano</th><th className="px-3 py-2 text-right">Vidas</th></tr>
         </thead>
         <tbody>{rows}</tbody>
       </table>
-      <p className="px-3 py-1.5 text-xs text-muted-foreground">Vidas de Plano e Ano = último mês disponível do período.</p>
+      <p className="px-3 py-1.5 text-xs text-muted-foreground">Vidas do ano = último mês disponível.</p>
     </div>
   );
 }
