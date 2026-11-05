@@ -57,7 +57,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
   const [error, setError] = useState<string | null>(null);
   const [tip, setTip] = useState<{ d: TipData; x: number; y: number; pinned?: boolean } | null>(null);
   const [openCols, setOpenCols] = useState<Record<string, boolean>>({});
-  const [fonteFutura, setFonteFutura] = useState<FonteFutura>("v2");
+  const [fonteFutura, setFonteFutura] = useState<FonteFutura>("projetado");
   const [visao, setVisao] = useState<"original" | "orcamento">("orcamento");
   const orig = visao === "original";
   const sub = (c: { key: string }) => !orig && !!openCols[c.key];
