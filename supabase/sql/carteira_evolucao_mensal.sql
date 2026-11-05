@@ -1,5 +1,6 @@
 -- Carteira > Evolução Mensal: vidas ativas no fim de cada mês, total e por PIF/PCA/PCE,
--- numa única chamada (substitui ~2 chamadas por mês).
+-- numa única chamada. v2: calcula a situação de cada matrícula só nas datas de evento
+-- (vigência/desligamento/reativação) e cruza os intervalos com os fins de mês (rápido).
 -- Executar na base da Hostinger, inteiro (requer public.sigla_contratacao).
 -- Regra de ativo igual a carteira_trial_geo ("Ativos em"): linhas E, SAUDE, matrícula <= 399999999999;
 -- maior vigência/desligamento/reativação <= data; ativo se tem vigência e
@@ -23,27 +24,38 @@ AS $function$
     from public.view_ecarteira
     where tp_plano = 'SAUDE' and tp_linha = 'E' and cd_mat_alternativa <= 399999999999
   ),
-  m as (
-    select d.dt, e.mat,
-      max(e.vig) filter (where e.vig <= d.dt) vig,
-      max(e.des) filter (where e.des <= d.dt) des,
-      max(e.rea) filter (where e.rea <= d.dt) rea,
-      (array_agg(e.sigla order by e.vig desc nulls last) filter (where e.vig <= d.dt))[1] sigla
-    from e join d on e.vig <= d.dt
-    group by d.dt, e.mat
+  ev as (            -- um evento por data e tipo
+    select mat, vig dt, vig v, null::date ds, null::date r, to_char(vig, 'YYYYMMDD') || coalesce(sigla, '') vs from e where vig is not null
+    union all select mat, des, null, des, null, null from e where des is not null
+    union all select mat, rea, null, null, rea, null from e where rea is not null
+  ),
+  p as (             -- colapsa por matrícula/data
+    select mat, dt, max(v) v, max(ds) ds, max(r) r, max(vs) vs from ev group by mat, dt
+  ),
+  s as (             -- situação acumulada a partir de cada data de evento
+    select mat, dt,
+      lead(dt) over w1 prox,
+      max(v) over w v, max(ds) over w ds, max(r) over w r,
+      substr(max(vs) over w, 9) sigla
+    from p
+    window w as (partition by mat order by dt rows between unbounded preceding and current row),
+           w1 as (partition by mat order by dt)
+  ),
+  a as (
+    select dt, coalesce(prox, 'infinity'::date) prox, sigla from s
+    where v is not null and (ds is null or (r is not null and r > ds))
   )
-  select extract(year from dt)::int, extract(month from dt)::int,
+  select extract(year from d.dt)::int, extract(month from d.dt)::int,
          count(*),
-         count(*) filter (where sigla = 'PIF'),
-         count(*) filter (where sigla = 'PCA'),
-         count(*) filter (where sigla = 'PCE')
-  from m
-  where vig is not null and (des is null or (rea is not null and rea > des))
-  group by dt
-  order by dt;
+         count(*) filter (where a.sigla = 'PIF'),
+         count(*) filter (where a.sigla = 'PCA'),
+         count(*) filter (where a.sigla = 'PCE')
+  from d join a on d.dt >= a.dt and d.dt < a.prox
+  group by d.dt
+  order by d.dt;
 $function$;
 
 GRANT EXECUTE ON FUNCTION public.carteira_evolucao_mensal(int, int) TO anon, authenticated;
 
--- Conferência (deve bater com sum(ativos) de carteira_trial_geo na mesma data):
+-- Conferência (deve bater com sum(ativos) de carteira_trial_geo na mesma data, ex.: 31/12/2025 = 66.386):
 -- SELECT * FROM public.carteira_evolucao_mensal(2019, 2026);
