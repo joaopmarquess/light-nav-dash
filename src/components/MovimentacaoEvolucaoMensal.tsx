@@ -67,8 +67,8 @@ function GridVidas({ datas }: { datas: { a: number; m: number; d: string }[] }) 
     anos.forEach((ano) => {
       const ms = linhas.filter((l) => l.a === ano);
       const k = `${nome}-${ano}`;
-      rows.push(<tr key={k} className="border-t border-border/60"><td /><td className="px-3 py-1"><Btn k={k} />{ano}</td><td /><td className="px-3 py-1 text-right tabular-nums">{nf(ms[0][campo])}</td></tr>);
-      if (abertos.has(k)) ms.forEach((l) => rows.push(<tr key={`${k}-${l.m}`} className="text-muted-foreground"><td /><td /><td className="px-3 py-1 pl-9">{MESES[l.m]}</td><td className="px-3 py-1 text-right tabular-nums">{nf(l[campo])}</td></tr>));
+      rows.push(<tr key={k} className="border-t border-border/60"><td /><td className="px-3 py-1">{ms.length < 12 ? <Btn k={k} /> : <span className="mr-2 inline-block w-4" />}{ano}</td><td /><td className="px-3 py-1 text-right tabular-nums">{nf(ms[0][campo])}</td></tr>);
+      if (ms.length < 12 && abertos.has(k)) ms.forEach((l) => rows.push(<tr key={`${k}-${l.m}`} className="text-muted-foreground"><td /><td /><td className="px-3 py-1 pl-9">{MESES[l.m]}</td><td className="px-3 py-1 text-right tabular-nums">{nf(l[campo])}</td></tr>));
     });
   });
   return (
