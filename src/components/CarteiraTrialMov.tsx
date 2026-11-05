@@ -297,6 +297,7 @@ export default function CarteiraTrialMov() {
           </div>
         </div>}
       </div>
+      {evolucaoAberta && <MovimentacaoEvolucaoMensal />}
 
       {ap && <>
       {periodoIndicadores && <p className="text-xs text-muted-foreground">{fmtD(periodoIndicadores.de)} a {fmtD(periodoIndicadores.ate)}</p>}
