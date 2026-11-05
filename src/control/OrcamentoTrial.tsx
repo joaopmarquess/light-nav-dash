@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 
 import { realizadosOrcamento } from "@/control/orcamentoRegras";
 import { projetadoV2 } from "@/control/orcamentoProjecao";
+import { MEDIDAS, medidasOrcamento, type Medida } from "@/control/orcamentoGrid";
+type Valores = { previsto: number; realizado: number; projetado: number; v2: number; efetivo: number };
 
 type Row = { item: string; mes: number; previsto: number; realizado: number; projetado: number };
 const FONTES = { projetado: "Projetado", v2: "Projetado v2", previsto: "Previsto" } as const;
@@ -107,19 +109,21 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
 
   /** item -> mes -> { previsto, realizado, projetado } */
   const map = useMemo(() => {
-    const m = new Map<string, Map<number, { previsto: number; realizado: number; projetado: number }>>();
+    const m = new Map<string, Map<number, Valores>>();
     const v2 = projetadoV2(rows ?? [], mesesComRealSet);
     // Apenas meses posteriores ao corte usam o Projetado ou o Previsto.
     for (const r of rows || []) {
       if (!m.has(r.item)) m.set(r.item, new Map());
       const im = m.get(r.item);
       if (!im) continue;
-      const cur = im.get(r.mes) || { previsto: 0, realizado: 0, projetado: 0 };
+      const cur = im.get(r.mes) || { previsto: 0, realizado: 0, projetado: 0, v2: 0, efetivo: 0 };
       const real = mesesComRealSet.has(r.mes) ? r.realizado : fonteFutura === "v2" ? v2(r.item, r.mes) : fonteFutura === "previsto" ? r.previsto : r.projetado;
       im.set(r.mes, {
         previsto: cur.previsto + r.previsto,
         realizado: cur.realizado + real,
         projetado: cur.projetado + r.projetado,
+        v2: cur.v2 + v2(r.item, r.mes),
+        efetivo: cur.efetivo + (mesesComRealSet.has(r.mes) ? r.realizado : 0),
       });
     }
     return m;
@@ -146,26 +150,34 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
     let previsto = 0;
     let realizado = 0;
     let projetado = 0;
+    let v2 = 0;
+    let efetivo = 0;
     for (const m of col.meses) {
       const v = im?.get(m);
       previsto += v?.previsto ?? 0;
       realizado += v?.realizado ?? 0;
       projetado += v?.projetado ?? 0;
+      v2 += v?.v2 ?? 0;
+      efetivo += v?.efetivo ?? 0;
     }
-    return { previsto, realizado, projetado };
+    return { previsto, realizado, projetado, v2, efetivo };
   };
 
   const sumVals = (its: string[], col: Col) => {
     let previsto = 0;
     let realizado = 0;
     let projetado = 0;
+    let v2 = 0;
+    let efetivo = 0;
     for (const it of its) {
       const v = cellVals(it, col);
       previsto += v.previsto;
       realizado += v.realizado;
       projetado += v.projetado;
+      v2 += v.v2;
+      efetivo += v.efetivo;
     }
-    return { previsto, realizado, projetado };
+    return { previsto, realizado, projetado, v2, efetivo };
   };
 
   const totalVals = (col: Col) => sumVals(items, col);
@@ -364,6 +376,10 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
   /** Projetado só existe de julho a dezembro */
   const showProj = (c: Col) => c.meses.some((m) => m >= 7);
 
+  const gridMedidas = (c: Col): (Medida | "realizado")[] => orig ? ["previsto"] : sub(c) ? medidasOrcamento(c.meses, mesesComRealSet) : ["realizado"];
+  const gridLabel = (c: Col, medida: Medida | "realizado") => medida === "realizado" ? c.label : `${c.key === "acum" ? "Ano" : c.label} · ${MEDIDAS[medida]}`;
+  const gridColor = (medida: Medida | "realizado") => medida === "previsto" ? "text-muted-foreground" : medida === "efetivo" ? "text-primary" : "text-foreground";
+
   if (!rows) {
     return (
       <section className="bg-card rounded-xl border border-border shadow-sm p-6 text-sm text-muted-foreground">
@@ -554,32 +570,16 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                   })()}
                 </span>
               </th>
-              {COLS.map((c) => (
-                <Fragment key={c.key}>
-                  {sub(c) && (
-                    <th className={`text-right font-normal px-1.5 py-0.5 text-[11px] whitespace-nowrap border-l border-border bg-muted/60 text-orange-500`}>
-                      {c.label} · Previsto
-                    </th>
-                  )}
-                  {sub(c) && showProj(c) && (
-                    <th className="text-right font-normal px-1.5 py-0.5 text-[11px] whitespace-nowrap border-l border-border bg-muted/60">
-                      {c.label} · Projetado
-                    </th>
-                  )}
-                  <th
-                    className={`text-right font-medium px-1.5 py-0.5 whitespace-nowrap ${sub(c) ? "" : "border-l border-border"} ${headClass(c.kind)}`}
-                  >
-                    <button
-                      onClick={() => !orig && toggleCol(c.key)}
-                      className="inline-flex items-center gap-1 hover:text-primary"
-                      title={openCols[c.key] ? "Ocultar previsto e projetado" : "Mostrar previsto e projetado"}
-                    >
-                      {!orig && <ChevronRight className={`h-3 w-3 transition-transform ${openCols[c.key] ? "rotate-90" : ""}`} />}
-                      {c.label}
-                    </button>
-                  </th>
-                </Fragment>
-              ))}
+              {COLS.map((c) => gridMedidas(c).map((medida, index) => (
+                <th key={`${c.key}:${medida}`} className={`text-right font-medium px-1.5 py-0.5 whitespace-nowrap border-l border-border ${headClass(c.kind)}`}>
+                  {index === 0 ? (
+                    <Button variant="ghost" onClick={() => !orig && toggleCol(c.key)} className="h-auto rounded-none px-0 py-0 text-xs" title={sub(c) ? "Recolher medidas" : "Mostrar medidas"}>
+                      {!orig && <ChevronRight className={`h-3 w-3 transition-transform ${sub(c) ? "rotate-90" : ""}`} />}
+                      {gridLabel(c, medida)}
+                    </Button>
+                  ) : gridLabel(c, medida)}
+                </th>
+              )))}
             </tr>
           </thead>
           <tbody>
@@ -605,53 +605,23 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                     )}
                   </td>
                   {COLS.map((c) => {
-                    let previsto: number;
-                    let realizado: number;
-                    let projetado: number;
+                    let valores: Valores;
                     if (isRatio) {
                       const num = sumVals(node.ratio?.num ?? [], c);
                       const den = sumVals(node.ratio?.den ?? [], c);
-                      previsto = Math.abs(den.previsto) >= 0.005 ? (Math.abs(num.previsto) / Math.abs(den.previsto)) * 100 : 0;
-                      realizado = Math.abs(den.realizado) >= 0.005 ? (Math.abs(num.realizado) / Math.abs(den.realizado)) * 100 : 0;
-                      projetado = Math.abs(den.projetado) >= 0.005 ? (Math.abs(num.projetado) / Math.abs(den.projetado)) * 100 : 0;
-                    } else {
-                      const v = sumVals(node.items, c);
-                      previsto = v.previsto;
-                      realizado = v.realizado;
-                      projetado = v.projetado;
-                    }
-                    const title = `${node.label} — ${c.label}`;
-                    const show = (v: number) => (isRatio ? (Math.abs(v) < 0.005 ? "-" : pctFmt(v)) : fmt(v));
-                    return (
-                      <Fragment key={c.key}>
-                        {sub(c) && (
-                          <td
-                            className="px-1.5 py-1.5 text-right tabular-nums whitespace-nowrap border-l border-border bg-muted/30 text-orange-500"
-                            onContextMenu={(e) => !isRatio && showPctTip(e, c, previsto, `${c.label} · Previsto`)}
-                          >
-                            {show(previsto)}
-                          </td>
-                        )}
-                        {sub(c) && showProj(c) && (
-                          <td
-                            className="px-1.5 py-1.5 text-right tabular-nums whitespace-nowrap border-l border-border bg-muted/30 text-foreground/80"
-                            onContextMenu={(e) => !isRatio && showPctTip(e, c, projetado, `${c.label} · Projetado`)}
-                          >
-                            {show(projetado)}
-                          </td>
-                        )}
-                        <td
-                          className={`px-1.5 py-1.5 text-right tabular-nums whitespace-nowrap cursor-help ${orig ? "text-orange-500" : corReal(c)} ${sub(c) ? "" : "border-l border-border"} ${bodyClass(c.kind)}`}
-                          onMouseEnter={(e) => showTip(e, title, previsto, realizado, { invert: isRatio, pp: isRatio, projetado: showProj(c) ? projetado : null })}
-                          onMouseMove={(e) => showTip(e, title, previsto, realizado, { invert: isRatio, pp: isRatio, projetado: showProj(c) ? projetado : null })}
-
-                          onMouseLeave={() => !tip?.pinned && setTip(null)}
-                          onContextMenu={(e) => !isRatio && showPctTip(e, c, realizado, `${c.label} · Realizado`)}
-                        >
-                          {show(orig ? previsto : realizado)}
-                        </td>
-                      </Fragment>
-                    );
+                      const ratio = (key: keyof Valores) => Math.abs(den[key]) >= 0.005 ? Math.abs(num[key]) / Math.abs(den[key]) * 100 : 0;
+                      valores = { previsto: ratio("previsto"), realizado: ratio("realizado"), projetado: ratio("projetado"), v2: ratio("v2"), efetivo: ratio("efetivo") };
+                    } else valores = sumVals(node.items, c);
+                    const show = (v: number) => isRatio ? (Math.abs(v) < 0.005 ? "-" : pctFmt(v)) : fmt(v);
+                    return gridMedidas(c).map((medida) => (
+                      <td key={`${c.key}:${medida}`} className={`px-1.5 py-1.5 text-right tabular-nums whitespace-nowrap cursor-help border-l border-border ${gridColor(medida)} ${bodyClass(c.kind)}`}
+                        onMouseEnter={(e) => showTip(e, `${node.label} — ${gridLabel(c, medida)}`, valores.previsto, valores[medida], { invert: isRatio, pp: isRatio, projetado: showProj(c) ? valores.projetado : null })}
+                        onMouseMove={(e) => showTip(e, `${node.label} — ${gridLabel(c, medida)}`, valores.previsto, valores[medida], { invert: isRatio, pp: isRatio, projetado: showProj(c) ? valores.projetado : null })}
+                        onMouseLeave={() => !tip?.pinned && setTip(null)}
+                        onContextMenu={(e) => !isRatio && showPctTip(e, c, valores[medida], gridLabel(c, medida))}>
+                        {show(valores[medida])}
+                      </td>
+                    ));
                   })}
                 </tr>
               );
@@ -666,31 +636,16 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
               <td className={`px-3 py-2 sticky left-0 ${tdCls}`}>{nome}</td>
               {COLS.map((c) => {
                 const t = totalVals(c);
-                const previsto = fn(t.previsto), realizado = fn(t.realizado), projetado = fn(t.projetado);
-                const neg = (x: number) => (nome !== "Impostos Federais" && x < 0 ? "text-rose-600" : "");
-                return (
-                  <Fragment key={c.key}>
-                    {sub(c) && (
-                      <td className={`px-1.5 py-2 text-right tabular-nums whitespace-nowrap border-l border-border text-orange-500 ${neg(previsto)}`}>
-                        {fmt(previsto)}
-                      </td>
-                    )}
-                    {sub(c) && showProj(c) && (
-                      <td className={`px-1.5 py-2 text-right tabular-nums whitespace-nowrap border-l border-border text-foreground/80 ${neg(projetado)}`}>
-                        {fmt(projetado)}
-                      </td>
-                    )}
-                    <td
-                      className={`px-1.5 py-2 text-right tabular-nums whitespace-nowrap cursor-help ${orig ? "text-orange-500" : corReal(c)} ${neg(orig ? previsto : realizado)} ${sub(c) ? "" : "border-l border-border"}`}
-                      onMouseEnter={(e) => showTip(e, `${nome} — ${c.label}`, previsto, realizado, { projetado: showProj(c) ? projetado : null })}
-                      onMouseMove={(e) => showTip(e, `${nome} — ${c.label}`, previsto, realizado, { projetado: showProj(c) ? projetado : null })}
-                      onMouseLeave={() => !tip?.pinned && setTip(null)}
-                      onContextMenu={(e) => showPctTip(e, c, realizado, `${c.label} · ${nome}`)}
-                    >
-                      {fmt(orig ? previsto : realizado)}
+                return gridMedidas(c).map((medida) => {
+                  const valor = fn(t[medida]);
+                  return (
+                    <td key={`${c.key}:${medida}`} className={`px-1.5 py-2 text-right tabular-nums whitespace-nowrap cursor-help border-l border-border ${gridColor(medida)}`}
+                      onMouseEnter={(e) => showTip(e, `${nome} — ${gridLabel(c, medida)}`, fn(t.previsto), valor, { projetado: showProj(c) ? fn(t.projetado) : null })}
+                      onMouseLeave={() => !tip?.pinned && setTip(null)}>
+                      {fmt(valor)}
                     </td>
-                  </Fragment>
-                );
+                  );
+                });
               })}
             </tr>
             ))}
