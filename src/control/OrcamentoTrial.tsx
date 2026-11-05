@@ -2,11 +2,11 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { CalendarDays, ChevronRight, ChevronsDownUp, ChevronsUpDown, Coins, TrendingUp, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { mergeOrcamento } from "@/control/orcamentoLocal";
-import { loadDreHostinger, type DreHRow } from "@/control/dreHostinger";
+import { loadDreHostinger, loadMesesDemonstracoes } from "@/control/dreHostinger";
 import { DRE_FULL_NAME } from "@/control/dreLabels";
 import { Button } from "@/components/ui/button";
 
-import { itemDe } from "@/control/orcamentoRegras";
+import { realizadosOrcamento } from "@/control/orcamentoRegras";
 
 type Row = { item: string; mes: number; previsto: number; realizado: number; projetado: number };
 
@@ -49,6 +49,7 @@ const Barra = ({ ativa, onAba }: { ativa: "Painel" | "DRE"; onAba?: (a: "Painel"
 
 const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (a: "Painel" | "DRE") => void } = {}) => {
   const [rows, setRows] = useState<Row[] | null>(null);
+  const [mesesComRealSet, setMesesComRealSet] = useState<Set<number>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [tip, setTip] = useState<{ d: TipData; x: number; y: number; pinned?: boolean } | null>(null);
   const [openCols, setOpenCols] = useState<Record<string, boolean>>({});
@@ -67,21 +68,11 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
           .order("item")
           .order("nr_mes");
         if (error) throw error;
-        // Realizado vem do balancete MV: só meses com movimento substituem o realizado
-        const mv = await loadDreHostinger(2026, [1, 2, 3, 4, 5, 6, 7, 8]); // só meses fechados (até Ago)
-        const real = new Map<string, number>();
-        const mesesMv = new Set<number>();
-        for (const r of mv) {
-          const it = itemDe(r);
-          if (!it) continue;
-          real.set(`${it}~${r.mes}`, (real.get(`${it}~${r.mes}`) || 0) + r.valor);
-          if (Math.abs(r.valor) >= 0.005) mesesMv.add(r.mes);
-        }
-        const norm = (x: string) => x.replace(/\s+/g, "").toUpperCase();
-        const realDe = (item: string, mes: number) => {
-          for (const [k, v] of real) { const [i, m] = k.split("~"); if (Number(m) === mes && norm(i) === norm(item)) return v; }
-          return 0;
-        };
+        // Mesmo corte das Demonstrações; valores zerados não reabrem meses fechados.
+        const periodo = await loadMesesDemonstracoes(2026);
+        const mv = periodo.length ? await loadDreHostinger(2026, periodo) : [];
+        const real = realizadosOrcamento(mv, periodo);
+        setMesesComRealSet(real.meses);
         setRows(
           mergeOrcamento(
             (data || []).map((r) => ({
@@ -91,7 +82,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
               realizado: Number(r.realizado) || 0,
               projetado: Number((r as { projetado?: number }).projetado) || 0,
             }))
-          ).map((r) => (mesesMv.has(r.mes) ? { ...r, realizado: realDe(r.item, r.mes) } : { ...r, realizado: 0 }))
+          ).map((r) => ({ ...r, realizado: real.valor(r.item, r.mes) }))
         );
       } catch (e: unknown) {
         setError(e instanceof Error ? e.message : String(e));
@@ -113,14 +104,13 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
   /** item -> mes -> { previsto, realizado, projetado } */
   const map = useMemo(() => {
     const m = new Map<string, Map<number, { previsto: number; realizado: number; projetado: number }>>();
-    // Meses sem nenhum realizado exibem o Projetado ou o Previsto (conforme a chave)
-    const mesesComReal = new Set((rows || []).filter((r) => Math.abs(r.realizado) >= 0.005).map((r) => r.mes));
+    // Apenas meses posteriores ao corte usam o Projetado ou o Previsto.
     for (const r of rows || []) {
       if (!m.has(r.item)) m.set(r.item, new Map());
       const im = m.get(r.item);
       if (!im) continue;
       const cur = im.get(r.mes) || { previsto: 0, realizado: 0, projetado: 0 };
-      const real = mesesComReal.has(r.mes) ? r.realizado : fonteFutura === "previsto" ? r.previsto : r.projetado;
+      const real = mesesComRealSet.has(r.mes) ? r.realizado : fonteFutura === "previsto" ? r.previsto : r.projetado;
       im.set(r.mes, {
         previsto: cur.previsto + r.previsto,
         realizado: cur.realizado + real,
@@ -128,10 +118,10 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
       });
     }
     return m;
-  }, [rows, fonteFutura]);
+  }, [rows, fonteFutura, mesesComRealSet]);
 
   const COLS = useMemo<Col[]>(() => {
-    const comReal = (rows || []).filter((r) => Math.abs(r.realizado) >= 0.005).map((r) => r.mes);
+    const comReal = Array.from(mesesComRealSet);
     const ultimo = comReal.length ? Math.max(...comReal) : 0;
     const out: Col[] = [];
     for (const m of meses) {
@@ -144,7 +134,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
     const labelAcum = todosReal ? "Realizado" : fonteFutura === "previsto" ? "Previsto" : "Projetado";
     if (meses.length) out.push({ key: "acum", label: labelAcum, meses, kind: "total" });
     return out;
-  }, [meses, rows, fonteFutura]);
+  }, [meses, mesesComRealSet, fonteFutura]);
 
   const cellVals = (item: string, col: Col) => {
     const im = map.get(item);
@@ -359,10 +349,6 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
   const headClass = (k: Col["kind"]) =>
     k === "total" ? "bg-primary/15 text-foreground" : "bg-background text-foreground";
   const bodyClass = (k: Col["kind"]) => (k === "total" ? "bg-primary/10 font-semibold" : "");
-  const mesesComRealSet = useMemo(
-    () => new Set((rows || []).filter((r) => Math.abs(r.realizado) >= 0.005).map((r) => r.mes)),
-    [rows],
-  );
   /** Cor da coluna principal: azul se tem realizado; senão a cor do tipo exibido */
   const corReal = (c: Col) =>
     c.meses.some((m) => mesesComRealSet.has(m))
