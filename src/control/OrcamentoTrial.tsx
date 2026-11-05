@@ -7,8 +7,12 @@ import { DRE_FULL_NAME } from "@/control/dreLabels";
 import { Button } from "@/components/ui/button";
 
 import { realizadosOrcamento } from "@/control/orcamentoRegras";
+import { projetadoV2 } from "@/control/orcamentoProjecao";
 
 type Row = { item: string; mes: number; previsto: number; realizado: number; projetado: number };
+const FONTES = { projetado: "Projetado", v2: "Projetado v2", previsto: "Previsto" } as const;
+type FonteFutura = keyof typeof FONTES;
+const fontes = Object.keys(FONTES) as FonteFutura[];
 
 const MES_LABEL = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
@@ -53,7 +57,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
   const [error, setError] = useState<string | null>(null);
   const [tip, setTip] = useState<{ d: TipData; x: number; y: number; pinned?: boolean } | null>(null);
   const [openCols, setOpenCols] = useState<Record<string, boolean>>({});
-  const [fonteFutura, setFonteFutura] = useState<"projetado" | "previsto">("projetado");
+  const [fonteFutura, setFonteFutura] = useState<FonteFutura>("v2");
   const [visao, setVisao] = useState<"original" | "orcamento">("orcamento");
   const orig = visao === "original";
   const sub = (c: { key: string }) => !orig && !!openCols[c.key];
@@ -104,13 +108,14 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
   /** item -> mes -> { previsto, realizado, projetado } */
   const map = useMemo(() => {
     const m = new Map<string, Map<number, { previsto: number; realizado: number; projetado: number }>>();
+    const v2 = projetadoV2(rows ?? [], mesesComRealSet);
     // Apenas meses posteriores ao corte usam o Projetado ou o Previsto.
     for (const r of rows || []) {
       if (!m.has(r.item)) m.set(r.item, new Map());
       const im = m.get(r.item);
       if (!im) continue;
       const cur = im.get(r.mes) || { previsto: 0, realizado: 0, projetado: 0 };
-      const real = mesesComRealSet.has(r.mes) ? r.realizado : fonteFutura === "previsto" ? r.previsto : r.projetado;
+      const real = mesesComRealSet.has(r.mes) ? r.realizado : fonteFutura === "v2" ? v2(r.item, r.mes) : fonteFutura === "previsto" ? r.previsto : r.projetado;
       im.set(r.mes, {
         previsto: cur.previsto + r.previsto,
         realizado: cur.realizado + real,
@@ -131,7 +136,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
       }
     }
     const todosReal = meses.length > 0 && meses.every((m) => comReal.includes(m));
-    const labelAcum = todosReal ? "Realizado" : fonteFutura === "previsto" ? "Previsto" : "Projetado";
+    const labelAcum = todosReal ? "Realizado" : FONTES[fonteFutura];
     if (meses.length) out.push({ key: "acum", label: labelAcum, meses, kind: "total" });
     return out;
   }, [meses, mesesComRealSet, fonteFutura]);
@@ -412,7 +417,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
           <div className="text-right text-xs leading-tight">
             <div><span className="opacity-80">Margem líquida </span><span className="text-base font-semibold tabular-nums">{pf(liq)}</span></div>
             <div className="opacity-80">Faturamento R$ {fmt(fat)} · Resultado parcial (Jan a {MES_LABEL[Math.max(...parc.meses) - 1]}) R$ {fmt(parcial)}</div>
-            <div className="opacity-80">Meses abertos com o {fonteFutura === "previsto" ? "Previsto" : "Projetado"}</div>
+            <div className="opacity-80">Meses abertos com o {FONTES[fonteFutura]}</div>
           </div>
         </div>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
@@ -435,10 +440,10 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
             <h3 className="text-base font-semibold text-foreground">{DRE_FULL_NAME} · 2026</h3>
             <div className="flex items-center gap-3">
               <div className="inline-flex rounded-md border border-border overflow-hidden text-[12px]">
-                {(["projetado", "previsto"] as const).map((k) => (
-                  <button key={k} onClick={() => setFonteFutura(k)} className={`px-2.5 py-0.5 transition-colors ${fonteFutura === k ? "bg-primary text-primary-foreground" : "bg-card hover:bg-accent"}`}>
-                    {k === "projetado" ? "Projetado" : "Previsto"}
-                  </button>
+                {fontes.map((k) => (
+                  <Button variant="ghost" aria-pressed={fonteFutura === k} key={k} onClick={() => setFonteFutura(k)} className={`h-auto rounded-none px-2.5 py-0.5 text-xs transition-colors ${fonteFutura === k ? "bg-primary text-primary-foreground" : "bg-card hover:bg-accent"}`}>
+                    {FONTES[k]}
+                  </Button>
                 ))}
               </div>
               <span className="text-xs uppercase tracking-wide text-muted-foreground">R$ · % fat.</span>
@@ -480,7 +485,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
           { label: `Entradas ${acum.label}`, bar: "border-l-teal-500", value: fmt(entradas), hint: "Faturamento + coparticipação", cls: "text-foreground/80" },
           { label: `Desp. Assistenciais ${acum.label}`, bar: "border-l-rose-600", value: fmt(desp), hint: "Ano", cls: "text-foreground/80" },
           { label: `Sinistralidade ${acum.label}`, bar: "border-l-orange-500", value: pctFmt(sin), hint: "Desp. assistenciais ÷ entradas", cls: "text-foreground/80" },
-          { label: `Resultado ${acum.label}`, bar: "border-l-primary", value: fmt(a.realizado), hint: `Com ${fonteFutura === "previsto" ? "previsto" : "projetado"} nos meses abertos`, cls: a.realizado < 0 ? "text-rose-600" : "text-foreground/80" },
+          { label: `Resultado ${acum.label}`, bar: "border-l-primary", value: fmt(a.realizado), hint: `Com ${FONTES[fonteFutura]} nos meses abertos`, cls: a.realizado < 0 ? "text-rose-600" : "text-foreground/80" },
         ];
         return (
           <div className="grid grid-flow-col auto-cols-fr gap-3 p-3 bg-card rounded-xl border border-border shadow-sm">
@@ -507,14 +512,14 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
           ))}
         </div>
         <div className="inline-flex rounded-md border border-border overflow-hidden">
-          {(["projetado", "previsto"] as const).map((k) => (
-            <button
+          {fontes.map((k) => (
+            <Button variant="ghost" aria-pressed={fonteFutura === k}
               key={k}
               onClick={() => setFonteFutura(k)}
-              className={`px-2.5 py-0.5 transition-colors ${fonteFutura === k ? "bg-primary text-primary-foreground" : "bg-card hover:bg-accent"}`}
+              className={`h-auto rounded-none px-2.5 py-0.5 text-xs transition-colors ${fonteFutura === k ? "bg-primary text-primary-foreground" : "bg-card hover:bg-accent"}`}
             >
-              {k === "projetado" ? "Projetado" : "Previsto"}
-            </button>
+              {FONTES[k]}
+            </Button>
           ))}
         </div>
       </div>
