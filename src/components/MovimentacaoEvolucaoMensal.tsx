@@ -96,11 +96,11 @@ function GridVidas({ datas, de, ate }: { datas: Data[]; de: number; ate: number 
     anos.forEach((ano) => {
       const ms = linhas.filter((l) => l.a === ano);
       ms.forEach((l) => {
-        (["PIF", "PCA", "PCE"] as const).forEach((p) => linhasX.push([ano, MESES[l.m], p, l[p]]));
+        (["PIF", "PCA", "PCE"] as const).forEach((p) => linhasX.push([ano, `${String(l.m + 1).padStart(2, "0")}/${ano}`, p, l[p]]));
       });
     });
     const ws = XLSX.utils.aoa_to_sheet(linhasX);
-    ws["!cols"] = [{ wch: 8 }, { wch: 6 }, { wch: 8 }, { wch: 12 }];
+    ws["!cols"] = [{ wch: 8 }, { wch: 10 }, { wch: 8 }, { wch: 12 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Evolução Mensal");
     XLSX.writeFile(wb, `evolucao_mensal_vidas_${de}-${ate}.xlsx`);
