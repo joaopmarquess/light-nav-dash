@@ -162,6 +162,8 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
       realizado += v?.realizado ?? 0;
       projetado += v?.projetado ?? 0;
     }
+    // Acumulado parcial: só meses realizados, então o projetado é o próprio realizado
+    if (col.key === "parcial") projetado = realizado;
     return { previsto, realizado, projetado };
   };
 
@@ -377,7 +379,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
         : "text-foreground/80";
   /** Projetado só existe após o último mês realizado (gatilho das contas 41) */
   const ultimoReal = Math.max(0, ...(rows || []).filter((r) => Math.abs(r.realizado) >= 0.005).map((r) => r.mes));
-  const showProj = (c: Col) => c.meses.some((m) => m > ultimoReal);
+  const showProj = (c: Col) => c.key === "parcial" || c.meses.some((m) => m > ultimoReal);
 
   if (!rows) {
     return (
