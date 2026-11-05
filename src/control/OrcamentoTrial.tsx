@@ -546,7 +546,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
         <table className="w-full text-[13px] leading-normal">
           <thead className="bg-muted/50 text-muted-foreground sticky top-0 z-10">
             <tr>
-              <th className="text-left font-medium px-3 py-0.5 sticky left-0 bg-muted/50">
+              <th className="text-left font-medium px-3 py-0.5 sticky left-0 z-20 bg-muted">
                 <span className="inline-flex items-center gap-2">
                   Item
                   {(() => {
@@ -592,7 +592,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                   className={`border-t border-border hover:bg-accent/40 ${isGroup ? "font-semibold bg-muted/20" : ""} ${node.label === "Financeiro" ? "font-semibold" : ""} ${isRatio ? "italic" : ""}`}
                 >
                   <td
-                    className={`px-3 py-1.5 sticky left-0 whitespace-nowrap ${isGroup ? "bg-muted/20" : "bg-card"}`}
+                    className={`px-3 py-1.5 sticky left-0 z-10 whitespace-nowrap ${isGroup ? "bg-muted" : "bg-card"}`}
                     style={{ paddingLeft: `${0.75 + depth * 0.8}rem` }}
                   >
                     {isGroup ? (

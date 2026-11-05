@@ -2,6 +2,7 @@
 - Reuse parameterized DRETrial for quarterly views; tested expansion and margin helpers preserve default Demonstrations and Historical DRE behavior.
 - OrçamentoTrial loads actuals only for loadMesesDemonstracoes's period and shares realizadosOrcamento; use that explicit period for values, partial totals and month classification so zero actuals cannot reopen closed months.
 - Keep future-budget projection in the tested orcamentoProjecao helper per item and closed interval; the source selector changes only open-month values, preserving original projections and actuals.
+- Use the tested orcamentoGrid measure selector for expanded columns; actual-only totals must exclude future values and future intervals must omit actual columns.
 - Derive Bench accounting/management classification, revenue and graph results through shared tested helpers so switching views never changes totals or performs extra financial queries.
 - Bench loads only the shared Hostinger chart through authenticated bench-c; fixed official URLs and validated claims protect proxy access, and owner-scoped Cloud caching keeps sessions isolated.
 - Prepare historical quarters sequentially after foreground readiness; cancel background work on navigation, evict inactive browser payloads and use tested refresh/cache helpers for freshness, manual bypass and truthful partial progress.
