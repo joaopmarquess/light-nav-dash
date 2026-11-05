@@ -21,16 +21,17 @@ export function itemDe(r: DreHRow): string | null {
   return null;
 }
 
-export function realizadosOrcamento(mv: DreHRow[]) {
+export function realizadosOrcamento(mv: DreHRow[], mesesFechados?: number[]) {
   const valores = new Map<string, number>();
-  const meses = new Set<number>();
+  const meses = new Set<number>(mesesFechados);
   const chave = (item: string, mes: number) => `${item.replace(/\s+/g, "").toUpperCase()}~${mes}`;
   for (const row of mv) {
+    if (mesesFechados && !meses.has(row.mes)) continue;
     const item = itemDe(row);
     if (!item) continue;
     const k = chave(item, row.mes);
     valores.set(k, (valores.get(k) ?? 0) + row.valor);
-    if (Math.abs(row.valor) >= 0.005) meses.add(row.mes);
+    if (!mesesFechados && Math.abs(row.valor) >= 0.005) meses.add(row.mes);
   }
   return { meses, valor: (item: string, mes: number) => valores.get(chave(item, mes)) ?? 0 };
 }
