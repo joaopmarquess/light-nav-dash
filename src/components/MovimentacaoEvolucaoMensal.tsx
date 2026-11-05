@@ -20,8 +20,8 @@ async function vidas(d: string) {
   return n;
 }
 
-const siglasCache = new Map<string, Record<string, number>>();
-async function siglas(d: string) {
+const siglasCache = new Map<string, Record<"PIF" | "PCA" | "PCE", number>>();
+async function siglas(d: string): Promise<Record<"PIF" | "PCA" | "PCE", number>> {
   if (siglasCache.has(d)) return siglasCache.get(d)!;
   const { data, error } = await hostinger.rpc("carteira_trial_siglas", { p_data: d, p_q: null, p_empresa: null, p_cidade: null });
   if (error) throw new Error(error.message);
