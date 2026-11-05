@@ -375,8 +375,9 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
       : fonteFutura === "previsto"
         ? "text-orange-500"
         : "text-foreground/80";
-  /** Projetado só existe de julho a dezembro */
-  const showProj = (c: Col) => c.meses.some((m) => m >= 7);
+  /** Projetado só existe após o último mês realizado (gatilho das contas 41) */
+  const ultimoReal = Math.max(0, ...(rows || []).filter((r) => Math.abs(r.realizado) >= 0.005).map((r) => r.mes));
+  const showProj = (c: Col) => c.meses.some((m) => m > ultimoReal);
 
   if (!rows) {
     return (
