@@ -120,8 +120,8 @@ export default function BenchVidas() {
       </div>
       {carregando ? <p role="status" className="py-8 text-sm text-muted-foreground">Carregando {ano}…</p> : erro ? <div role="alert" className="py-8 text-sm text-destructive">{erro}<Button variant="outline" className="ml-3" onClick={() => setTentativa(t => t + 1)}>Tentar novamente</Button></div> : meses.length ? <>
         <div className="bench-kpis">
-          <div className="bench-kpi" aria-label="Vidas no De"><p className="bench-kpi-title">Vidas no De<Users aria-hidden="true" /></p><p className="bench-kpi-value">{nf(saldoInicial?.saldo ?? null)}</p><p className="bench-kpi-date">{saldoInicial ? competenciaVidas(saldoInicial.competencia) : "—"}</p></div>
-          <div className="bench-kpi bench-kpi-final" aria-label="Vidas no Para"><p className="bench-kpi-title">Vidas no Para<UserCheck aria-hidden="true" /></p><p className="bench-kpi-value">{nf(saldoFinal?.saldo ?? null)}</p><p className="bench-kpi-date">{saldoFinal ? competenciaVidas(saldoFinal.competencia) : "—"}</p></div>
+          <div className="bench-kpi" aria-label="Inicial"><p className="bench-kpi-title">Inicial<Users aria-hidden="true" /></p><p className="bench-kpi-value">{nf(saldoInicial?.saldo ?? null)}</p><p className="bench-kpi-date">{saldoInicial ? competenciaVidas(saldoInicial.competencia) : "—"}</p></div>
+          <div className="bench-kpi bench-kpi-final" aria-label="Final"><p className="bench-kpi-title">Final<UserCheck aria-hidden="true" /></p><p className="bench-kpi-value">{nf(saldoFinal?.saldo ?? null)}</p><p className="bench-kpi-date">{saldoFinal ? competenciaVidas(saldoFinal.competencia) : "—"}</p></div>
           <div className="bench-kpi bench-kpi-growth" aria-label="Crescimento"><p className="bench-kpi-title">Crescimento<TrendingUp aria-hidden="true" /></p><p className="bench-kpi-value">{nf(crescimento)}</p><p className="bench-kpi-date">{saldoInicial && saldoFinal ? `${competenciaVidas(saldoInicial.competencia)}–${competenciaVidas(saldoFinal.competencia)}` : "—"}</p></div>
         </div>
         <Bloco titulo="Gráfico" aberto={graficoAberto} alternar={() => setGraficoAberto(s => !s)}>
