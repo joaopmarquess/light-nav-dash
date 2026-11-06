@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Search, User, FileText, Wallet, Activity, History, LayoutGrid } from "lucide-react";
+import { Loader2, Search, User, FileText, Wallet, Activity, History, LayoutGrid, X } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { hostinger } from "@/lib/hostingerClient";
 import { Button } from "@/components/ui/button";
@@ -82,6 +82,12 @@ export default function PainelBeneficiario() {
   const [eard, setEard] = useState<EardRow[] | null>(null);
   const [eardLoading, setEardLoading] = useState(false);
   const [comp, setComp] = useState<number | null>(null);
+
+  function limpar() {
+    setTermo(""); setCodigo({ plano: "", contrato: "", dep: "" });
+    setErro(null); setResultados(null); setMat(null); setAba("resumo");
+    setMovs([]); setCad(null); setEard(null); setComp(null);
+  }
 
   async function buscar() {
     const t = termo.trim();
@@ -188,6 +194,11 @@ export default function PainelBeneficiario() {
           <Button type="button" onClick={buscar} disabled={buscando}
             className={modo === "alternativa" ? "h-10 shrink-0 px-3" : "h-12 px-6"}>
             {buscando && <Loader2 className="h-4 w-4 animate-spin" />}Pesquisar
+          </Button>
+          <Button type="button" variant="outline" size="icon" onClick={limpar}
+            aria-label="Limpar consulta" title="Limpar consulta" disabled={buscando || carregando || eardLoading}
+            className={modo === "alternativa" ? "h-10 w-10 shrink-0" : "h-12 w-12 shrink-0"}>
+            <X className="h-4 w-4" />
           </Button>
         </div>
         </div>
