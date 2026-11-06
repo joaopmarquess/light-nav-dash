@@ -1,3 +1,4 @@
+- [ ] Substituir fonte do Bench Vidas pela planilha anexada, sem inferir lacunas e selecionando a versão mensal mais recente; testar e conferir tela.
 - [x] Incluir cinco filtros em Saídas com Só cancelamentos default; sete testes aprovados e alternância autenticada conferida em 11/05/2026: oito cancelamentos, uma transferência e nove no Todos; Reativados e Suspensos vazios nesse dia.
 - [x] Restringir Carteira Saídas às linhas S: dois testes aprovados, filtro tp_linha=eq.S confirmado nas consultas e grid real de 11/05/2026 conferido; Entradas e Movimentação preservadas.
 - [x] Adicionar dicas de origem nos seis títulos de Saídas; Data conferida na tela como view_ecarteira.dt_desligamento, demais mapeamentos conferidos na consulta.
