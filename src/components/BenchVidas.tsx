@@ -7,15 +7,18 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import fonte from "@/data/benchVidas/operadoras_vidas_3_produtos_201901_202610.csv?raw";
-import { competenciaVidas, mesesBenchVidas, nomeBenchVidas, parseBenchVidas, PLANOS_VIDAS, resumoBenchVidas, ROTULOS_VIDAS, TIPOS_VIDAS, type MesVidas, type TipoVidas } from "@/lib/benchVidas";
+import fonte from "@/data/benchVidas/bench_vidas_unificado_2024_2025_2026.csv?raw";
+import { competenciaVidas, mesesBenchVidas, nomeBenchVidas, parseBenchVidasUnificado, PLANOS_VIDAS, resumoBenchVidas, ROTULOS_VIDAS, TIPOS_VIDAS, type MesVidas, type TipoVidas } from "@/lib/benchVidas";
 
-const dados = parseBenchVidas(fonte);
-const operadoras = [...new Map(dados.map(r => [r.operadora, { reg: r.operadora, nome: nomeBenchVidas(r.nome) }])).values()];
+const importacao = parseBenchVidasUnificado(fonte);
+const dados = importacao.dados;
+const nomes: Record<string, string> = { "366561": "Bensaúde", "327417": "Austaclínicas", "350249": "H.B. Saúde", "335100": "Unimed Rio Preto" };
+const operadoras = [...new Map(dados.map(r => [r.operadora, { reg: r.operadora, nome: nomes[r.operadora] ?? nomeBenchVidas(r.nome) }])).values()];
+const competencias = dados.map(r => r.competencia).sort();
 const anos = [...new Set(dados.map(r => r.ano))].sort((a, b) => a - b);
 const segmentos = [...new Set(dados.map(r => r.segmentacao))];
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-const nf = (valor: number) => valor.toLocaleString("pt-BR");
+const nf = (valor: number | null) => valor === null ? "Não informado" : valor.toLocaleString("pt-BR");
 const cores: Record<TipoVidas, string> = { saldo: "hsl(var(--primary))", adesoes: "hsl(var(--chart-2))", cancelamentos: "hsl(var(--destructive))" };
 
 function Bloco({ titulo, aberto, alternar, children, acao }: { titulo: string; aberto: boolean; alternar: () => void; children: ReactNode; acao?: ReactNode }) {
@@ -35,7 +38,7 @@ function GridVidas({ meses, plano, tipo }: { meses: MesVidas[]; plano: string; t
   const toggle = (key: string) => setAbertos(s => { const next = new Set(s); next.has(key) ? next.delete(key) : next.add(key); return next; });
   const expansor = (key: string, label: string) => <Button variant="ghost" size="icon" aria-label={`${abertos.has(key) ? "Recolher" : "Expandir"} ${label}`} aria-expanded={abertos.has(key)} onClick={() => toggle(key)} className="mr-1 h-6 w-6"><ChevronRight className={`h-4 w-4 transition-transform motion-reduce:transition-none ${abertos.has(key) ? "rotate-90" : ""}`} /></Button>;
   const resumo = resumoBenchVidas(meses);
-  const celulas = (valores: Record<TipoVidas, number>) => tipos.map(t => <td key={t} className="border-l border-border px-3 py-2 text-right tabular-nums">{nf(valores[t])}</td>);
+  const celulas = (valores: Record<TipoVidas, number | null>) => tipos.map(t => <td key={t} className="border-l border-border px-3 py-2 text-right tabular-nums">{nf(valores[t])}</td>);
   return <div className="max-h-[460px] overflow-auto">
     <table className="w-full min-w-[620px] text-sm">
       <thead className="sticky top-0 z-10 bg-muted"><tr><th className="px-3 py-2 text-left">Ano</th><th className="px-3 py-2 text-left">Mês</th><th className="px-3 py-2 text-left">Contratação</th>{tipos.map(t => <th key={t} className="border-l border-border px-3 py-2 text-right">{ROTULOS_VIDAS[t]}</th>)}</tr></thead>
@@ -47,7 +50,7 @@ function GridVidas({ meses, plano, tipo }: { meses: MesVidas[]; plano: string; t
   </div>;
 }
 
-function FragmentoMes({ mes, aberto, expansor, planos, celulas }: { mes: MesVidas; aberto: boolean; expansor: ReactNode; planos: typeof PLANOS_VIDAS[number][]; celulas: (v: Record<TipoVidas, number>) => ReactNode }) {
+function FragmentoMes({ mes, aberto, expansor, planos, celulas }: { mes: MesVidas; aberto: boolean; expansor: ReactNode; planos: typeof PLANOS_VIDAS[number][]; celulas: (v: Record<TipoVidas, number | null>) => ReactNode }) {
   return <>
     <tr className="border-t border-border font-medium"><td className="px-3 py-2 pl-10">{mes.ano}</td><td className="px-3 py-1.5">{expansor}{MESES[mes.mes - 1]}</td><td>Total</td>{celulas(mes)}</tr>
     {aberto && planos.map(p => <tr key={p} className="border-t border-border/50 text-muted-foreground"><td className="px-3 py-2 pl-10">{mes.ano}</td><td className="px-3 py-2 pl-10">{MESES[mes.mes - 1]}</td><td className="px-3 py-2">{p}</td>{celulas(mes.planos[p])}</tr>)}
@@ -71,7 +74,7 @@ export default function BenchVidas() {
   const opcoes = operadoras.filter(o => !selecionadas.includes(o.reg) && `${o.nome} ${o.reg}`.toLocaleLowerCase("pt-BR").includes(busca.toLocaleLowerCase("pt-BR")));
   const tipos = tipo === "todos" ? TIPOS_VIDAS : TIPOS_VIDAS.filter(t => t === tipo);
   const baixar = () => {
-    const rows = dados.filter(r => r.operadora === operadora && r.ano === ano && (plano === "todos" || plano === r.plano) && (tipo === "todos" || tipo === r.tipo) && (segmentacao === "todos" || segmentacao === r.segmentacao)).map(r => [nomeBenchVidas(r.nome), competenciaVidas(r.competencia), r.plano, ROTULOS_VIDAS[r.tipo], r.vidas]);
+    const rows = dados.filter(r => r.operadora === operadora && r.ano === ano && (plano === "todos" || plano === r.plano) && (tipo === "todos" || tipo === r.tipo) && (segmentacao === "todos" || segmentacao === r.segmentacao)).map(r => [nomeBenchVidas(r.nome), competenciaVidas(r.competencia), r.plano, ROTULOS_VIDAS[r.tipo], r.vidas ?? "Não informado"]);
     const ws = XLSX.utils.aoa_to_sheet([["Operadora", "Mês", "Contratação", "Tipo", "Vidas"], ...rows]);
     ws["!cols"] = [{ wch: 32 }, { wch: 12 }, { wch: 14 }, { wch: 20 }, { wch: 12 }];
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Bench Vidas"); XLSX.writeFile(wb, `bench_vidas_${operadora}_${ano}.xlsx`);
@@ -95,7 +98,8 @@ export default function BenchVidas() {
         <label className="flex items-center gap-2 text-sm">Segmentação<Select value={segmentacao} onValueChange={setSegmentacao}><SelectTrigger aria-label="Segmentação" className="w-44"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todas</SelectItem>{segmentos.map(s => <SelectItem key={s} value={s}>{s === "plano_saude" ? "Plano de saúde" : s}</SelectItem>)}</SelectContent></Select></label>
         <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label="Limpar filtros" onClick={() => { setPlano("todos"); setTipo("saldo"); setSegmentacao("todos"); }}><X className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Limpar filtros</TooltipContent></Tooltip>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-2 text-sm"><strong>{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} · {ano}</span></strong><span className="text-xs text-muted-foreground">CSV provisório · 01/2019–10/2026</span></div>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-sm"><strong>{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} · {ano}</span></strong><span className="text-xs text-muted-foreground">Planilha unificada · {competenciaVidas(competencias[0])}–{competenciaVidas(competencias[competencias.length - 1])}</span></div>
+      <p className="text-xs text-muted-foreground">Fonte: BENCH_VIDAS_Unificado_2024_2025_2026_Corrigido_Final.xlsx · {nf(importacao.semCompetencia)} linhas sem competência normalizada fora da série mensal · {nf(importacao.versoesAnteriores)} linhas de versões anteriores desconsideradas.</p>
       {meses.length ? <>
         <div className="grid grid-cols-1 divide-y divide-border border-y border-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
           {TIPOS_VIDAS.map(t => <div key={t} className="px-4 py-3"><p className="text-xs text-muted-foreground">{ROTULOS_VIDAS[t]} · {t === "saldo" ? competenciaVidas(meses.at(-1)?.competencia ?? "") : ano}</p><p className="mt-1 text-xl font-semibold tabular-nums">{nf(resumo[t])}</p></div>)}
@@ -112,7 +116,7 @@ export default function BenchVidas() {
         </Bloco>
         <Bloco titulo="Grid" aberto={gridAberto} alternar={() => setGridAberto(s => !s)} acao={<Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={baixar} aria-label="Baixar Bench Vidas em xlsx"><Download className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Baixar grid expandido (xlsx)</TooltipContent></Tooltip>}>
           <GridVidas key={`${operadora}-${ano}-${plano}-${tipo}-${segmentacao}`} meses={meses} plano={plano} tipo={tipo} />
-          <p className="mt-2 text-xs text-muted-foreground">Saldo anual: último mês disponível. Adesões e cancelamentos: soma dos meses disponíveis. Valores preservados do CSV provisório.</p>
+          <p className="mt-2 text-xs text-muted-foreground">Saldo anual: último mês disponível. Adesões e cancelamentos: soma dos meses disponíveis; campos ausentes permanecem Não informado. Referência mais recente por operadora e mês.</p>
         </Bloco>
       </> : <p role="status" className="py-8 text-sm text-muted-foreground">Nenhum registro para os filtros selecionados.</p>}
     </div>
