@@ -2,8 +2,8 @@ import { PLANOS_VIDAS, type BenchVida, type PlanoVidas } from "./benchVidas";
 
 export function escalaVidasAns(total: number | null) {
   const saldo = Math.max(0, total ?? 0);
-  const limite = saldo > 0 ? saldo * 1.1 : 1;
-  return { dominio: [0, limite] as [number, number], marcas: saldo > 0 ? [0, saldo * 0.9, limite] : [0, 0.9, 1] };
+  const limite = saldo > 0 ? saldo * 1.5 : 1;
+  return { dominio: [0, limite] as [number, number], marcas: saldo > 0 ? [0, saldo, limite] : [0, 2 / 3, 1] };
 }
 
 export function planosDisponiveisAns(dados: BenchVida[], operadora: string, ano: number, segmentacao = "todos", competencia?: string): PlanoVidas[] {

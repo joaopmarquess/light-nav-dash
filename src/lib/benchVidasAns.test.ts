@@ -5,13 +5,13 @@ import { mesesBenchVidas, resumoBenchVidas } from "./benchVidas";
 
 const registros: RegistroAnsVidas[] = [["366561", "202609", "1", 36425, 0], ["366561", "202609", "2", 9904, 0], ["366561", "202609", "3", 25550, 0]];
 describe("ANS DBC historical base", () => {
-  it("sets the lives axis to zero, ninety and one hundred ten percent of the displayed total", () => {
+  it("sets the lives axis to zero, one hundred and one hundred fifty percent of the displayed total", () => {
     const escala = escalaVidasAns(200);
     expect(escala.dominio[0]).toBe(0);
-    expect(escala.dominio[1]).toBeCloseTo(220);
+    expect(escala.dominio[1]).toBeCloseTo(300);
     expect(escala.marcas[0]).toBe(0);
-    expect(escala.marcas[1]).toBeCloseTo(180);
-    expect(escala.marcas[2]).toBeCloseTo(220);
+    expect(escala.marcas[1]).toBeCloseTo(200);
+    expect(escala.marcas[2]).toBeCloseTo(300);
   });
   it("keeps an empty or zero lives axis non-degenerate", () => {
     expect(escalaVidasAns(0).dominio).toEqual([0, 1]);
