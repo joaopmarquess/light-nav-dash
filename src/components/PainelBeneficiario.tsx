@@ -11,8 +11,9 @@ import {
 
 type Modo = "nome" | "cpf" | "matricula" | "contrato" | "alternativa";
 const MODOS: { id: Modo; label: string }[] = [
+  { id: "alternativa", label: "Código" },
   { id: "nome", label: "Nome" }, { id: "cpf", label: "CPF" }, { id: "matricula", label: "Matrícula" },
-  { id: "alternativa", label: "Código (mat. alternativa)" }, { id: "contrato", label: "Contrato" },
+  { id: "contrato", label: "Contrato" },
 ];
 const ABAS = [
   { id: "resumo", label: "Resumo", icon: LayoutGrid }, { id: "benef", label: "Beneficiário", icon: User },
@@ -151,15 +152,16 @@ export default function PainelBeneficiario() {
       </header>
 
       <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+        <div className={modo === "alternativa" ? "grid w-fit max-w-full" : ""}>
         <div className="flex flex-wrap gap-1.5 mb-3">
           {MODOS.map((m) => (
-            <button key={m.id} type="button" onClick={() => setModo(m.id)}
-              className={`h-7 rounded-full border px-3 text-xs transition-colors ${modo === m.id ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground hover:text-foreground"}`}>
+            <Button key={m.id} type="button" variant="outline" onClick={() => setModo(m.id)}
+              className={`h-7 rounded-full px-3 py-0 text-xs transition-colors ${modo === m.id ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : "border-border text-muted-foreground hover:text-foreground"}`}>
               {m.label}
-            </button>
+            </Button>
           ))}
         </div>
-        <div className="flex flex-wrap items-end gap-2">
+        <div className={modo === "alternativa" ? "flex w-0 min-w-full flex-wrap items-end gap-2 sm:flex-nowrap" : "flex flex-wrap items-end gap-2"}>
           {modo === "alternativa" ? (
             <div className="grid min-w-0 flex-1 basis-full grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,0.7fr)] gap-2 sm:basis-0">
               {([
@@ -173,7 +175,7 @@ export default function PainelBeneficiario() {
                     value={codigo[key]} placeholder={"0".repeat(tamanho)}
                     onChange={(e) => setCodigo((anterior) => ({ ...anterior, [key]: e.target.value.replace(/\D/g, "").slice(0, tamanho) }))}
                     onKeyDown={(e) => e.key === "Enter" && buscar()}
-                    className="h-12 text-base tabular-nums" />
+                    className="h-10 px-2 text-sm tabular-nums" />
                 </label>
               ))}
             </div>
@@ -184,9 +186,10 @@ export default function PainelBeneficiario() {
               className="h-12 w-full rounded-lg border border-border bg-background pl-11 pr-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
           </div>}
           <Button type="button" onClick={buscar} disabled={buscando}
-            className="h-12 px-6">
+            className={modo === "alternativa" ? "order-first h-10 shrink-0 px-3" : "h-12 px-6"}>
             {buscando && <Loader2 className="h-4 w-4 animate-spin" />}Pesquisar
           </Button>
+        </div>
         </div>
         {erro && <p className="mt-2 text-xs text-destructive">{erro}</p>}
         {resultados && resultados.length === 0 && <p className="mt-2 text-xs text-muted-foreground">Nenhum beneficiário encontrado.</p>}
