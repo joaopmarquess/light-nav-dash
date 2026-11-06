@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ChevronRight, Download, Plus, X } from "lucide-react";
 import BenchVidasGrafico from "./BenchVidasGrafico";
 import * as XLSX from "xlsx";
@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import catalogo from "@/data/benchVidas/ans/catalogo.json";
-import { adaptarVidasAns, carregarVidasAns, nomeOperadoraAns, planosDisponiveisAns } from "@/lib/benchVidasAns";
+import { adaptarVidasAns, carregarVidasAns, crescimentoPeriodoVidasAns, nomeOperadoraAns, planosDisponiveisAns } from "@/lib/benchVidasAns";
 import { competenciaVidas, mesesBenchVidas, nomeBenchVidas, PLANOS_VIDAS, resumoBenchVidas, ROTULOS_VIDAS, TIPOS_VIDAS, type BenchVida, type MesVidas, type TipoVidas } from "@/lib/benchVidas";
 
 const nomes: Record<string, string> = { "366561": "Bensaúde", "327417": "Austaclínicas", "350249": "H.B. Saúde", "335100": "Unimed Rio Preto" };
@@ -81,7 +81,13 @@ export default function BenchVidas() {
   const planoAtual = planosDisponiveis.some(p => p === plano) ? plano : "todos";
   const meses = useMemo(() => mesesBenchVidas(dados, operadora, ano, planoAtual, segmentacao), [dados, operadora, ano, planoAtual, segmentacao]);
   const planosPorMes = useMemo(() => new Map(meses.map(m => [m.competencia, planosDisponiveisAns(dados, operadora, ano, segmentacao, m.competencia)])), [dados, operadora, ano, segmentacao, meses]);
-  const resumo = resumoBenchVidas(meses);
+  const chaveIndicadores = `${operadora}-${ano}-${planoAtual}-${segmentacao}`;
+  const [indicadores, setIndicadores] = useState<{ chave: string; meses: MesVidas[] | null } | null>(null);
+  const atualizarIndicadores = useCallback((serie: MesVidas[] | null) => setIndicadores({ chave: chaveIndicadores, meses: serie }), [chaveIndicadores]);
+  const mesesIndicadores = indicadores?.chave === chaveIndicadores ? indicadores.meses : null;
+  const saldoFinal = mesesIndicadores?.at(-1);
+  const saldoInicial = mesesIndicadores?.[0];
+  const crescimento = mesesIndicadores ? crescimentoPeriodoVidasAns(mesesIndicadores) : null;
   const atual = operadoras.find(o => o.reg === operadora);
   const opcoes = operadoras.filter(o => !selecionadas.includes(o.reg) && `${o.nome} ${o.nomeCompleto} ${o.reg}`.toLocaleLowerCase("pt-BR").includes(busca.toLocaleLowerCase("pt-BR")));
   const baixar = () => {
@@ -110,11 +116,12 @@ export default function BenchVidas() {
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm"><strong>{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} · {ano}</span></strong><span className="text-xs text-muted-foreground">ANS · {competenciaVidas(catalogo.inicio)}–{competenciaVidas(catalogo.fim)}</span></div>
       {carregando ? <p role="status" className="py-8 text-sm text-muted-foreground">Carregando {ano}…</p> : erro ? <div role="alert" className="py-8 text-sm text-destructive">{erro}<Button variant="outline" className="ml-3" onClick={() => setTentativa(t => t + 1)}>Tentar novamente</Button></div> : meses.length ? <>
-        <div className="border-y border-border">
-          <div className="px-4 py-3"><p className="text-xs text-muted-foreground">{ROTULOS_VIDAS.saldo} · {competenciaVidas(meses.at(-1)?.competencia ?? "")}</p><p className="mt-1 text-xl font-semibold tabular-nums">{nf(resumo.saldo)}</p></div>
+        <div className="grid grid-cols-1 border-y border-border sm:grid-cols-2">
+          <div className="px-4 py-3"><p className="text-xs text-muted-foreground">{ROTULOS_VIDAS.saldo}{saldoFinal ? ` · ${competenciaVidas(saldoFinal.competencia)}` : ""}</p><p className="mt-1 text-xl font-semibold tabular-nums">{nf(saldoFinal?.saldo ?? null)}</p></div>
+          <div className="border-t border-border px-4 py-3 sm:border-l sm:border-t-0" aria-label="Crescimento no Período"><p className="text-xs text-muted-foreground">Crescimento no Período{saldoInicial && saldoFinal ? ` · ${competenciaVidas(saldoInicial.competencia)}–${competenciaVidas(saldoFinal.competencia)}` : ""}</p><p className="mt-1 text-xl font-semibold tabular-nums">{nf(crescimento)}</p></div>
         </div>
         <Bloco titulo="Gráfico" aberto={graficoAberto} alternar={() => setGraficoAberto(s => !s)}>
-          <BenchVidasGrafico meses={meses} ano={ano} operadora={operadora} nome={atual?.nome} plano={planoAtual} segmentacao={segmentacao} />
+          <BenchVidasGrafico meses={meses} ano={ano} operadora={operadora} nome={atual?.nome} plano={planoAtual} segmentacao={segmentacao} onDadosChange={atualizarIndicadores} />
         </Bloco>
         <Bloco titulo="Grid" aberto={gridAberto} alternar={() => setGridAberto(s => !s)} acao={<Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={baixar} aria-label="Baixar Bench Vidas em xlsx"><Download className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Baixar grid expandido (xlsx)</TooltipContent></Tooltip>}>
           <GridVidas key={`${operadora}-${ano}-${planoAtual}-${tipo}-${segmentacao}`} meses={meses} plano={planoAtual} tipo={tipo} planosPorMes={planosPorMes} />

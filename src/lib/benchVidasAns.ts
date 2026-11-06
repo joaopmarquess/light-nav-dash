@@ -5,6 +5,13 @@ export function periodoPadraoVidasAns(data = new Date()) {
   return { de: ano, ate: ano };
 }
 
+export function crescimentoPeriodoVidasAns(meses: { competencia: string; saldo: number | null }[]) {
+  const ordenados = [...meses].sort((a, b) => a.competencia.localeCompare(b.competencia));
+  const inicial = ordenados[0]?.saldo;
+  const final = ordenados.at(-1)?.saldo;
+  return inicial == null || final == null ? null : final - inicial;
+}
+
 export function escalaVidasAns(total: number | null) {
   const saldo = Math.max(0, total ?? 0);
   const arredondar = (valor: number) => Math.ceil(valor / 10000) * 10000;
