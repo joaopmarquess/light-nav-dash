@@ -8,11 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import catalogo from "@/data/benchVidas/ans/catalogo.json";
-import { adaptarVidasAns, carregarVidasAns } from "@/lib/benchVidasAns";
+import { adaptarVidasAns, carregarVidasAns, escalaVidasAns, nomeOperadoraAns, planosDisponiveisAns } from "@/lib/benchVidasAns";
 import { competenciaVidas, mesesBenchVidas, nomeBenchVidas, PLANOS_VIDAS, resumoBenchVidas, ROTULOS_VIDAS, TIPOS_VIDAS, type BenchVida, type MesVidas, type TipoVidas } from "@/lib/benchVidas";
 
 const nomes: Record<string, string> = { "366561": "Bensaúde", "327417": "Austaclínicas", "350249": "H.B. Saúde", "335100": "Unimed Rio Preto" };
-const operadoras = catalogo.operadoras.map(o => ({ ...o, nome: nomes[o.reg] ?? o.nome }));
+const operadoras = catalogo.operadoras.map(o => ({ ...o, nomeCompleto: o.nome, nome: nomeOperadoraAns(nomes[o.reg] ?? o.nome) }));
 const nomesOps = new Map(operadoras.map(o => [o.reg, o.nome]));
 const anos = catalogo.anos;
 const segmentos = ["Plano de saúde", "Odontológico"];
@@ -30,10 +30,9 @@ function Bloco({ titulo, aberto, alternar, children, acao }: { titulo: string; a
   </section>;
 }
 
-function GridVidas({ meses, plano, tipo }: { meses: MesVidas[]; plano: string; tipo: string }) {
+function GridVidas({ meses, plano, tipo, planosPorMes }: { meses: MesVidas[]; plano: string; tipo: string; planosPorMes: Map<string, typeof PLANOS_VIDAS[number][]> }) {
   const [abertos, setAbertos] = useState<Set<string>>(new Set());
   const tipos = tipo === "todos" ? [...TIPOS_VIDAS] : TIPOS_VIDAS.filter(t => t === tipo);
-  const planos = plano === "todos" ? [...PLANOS_VIDAS] : PLANOS_VIDAS.filter(p => p === plano);
   const toggle = (key: string) => setAbertos(s => { const next = new Set(s); next.has(key) ? next.delete(key) : next.add(key); return next; });
   const expansor = (key: string, label: string) => <Button variant="ghost" size="icon" aria-label={`${abertos.has(key) ? "Recolher" : "Expandir"} ${label}`} aria-expanded={abertos.has(key)} onClick={() => toggle(key)} className="mr-1 h-6 w-6"><ChevronRight className={`h-4 w-4 transition-transform motion-reduce:transition-none ${abertos.has(key) ? "rotate-90" : ""}`} /></Button>;
   const resumo = resumoBenchVidas(meses);
@@ -43,7 +42,7 @@ function GridVidas({ meses, plano, tipo }: { meses: MesVidas[]; plano: string; t
       <thead className="sticky top-0 z-10 bg-muted"><tr><th className="px-3 py-2 text-left">Ano</th><th className="px-3 py-2 text-left">Mês</th><th className="px-3 py-2 text-left">Contratação</th>{tipos.map(t => <th key={t} className="border-l border-border px-3 py-2 text-right">{ROTULOS_VIDAS[t]}</th>)}</tr></thead>
       <tbody>
         <tr className="border-t border-border bg-muted/40 font-semibold"><td className="px-3 py-1.5">{expansor("ano", String(meses[0]?.ano))}{meses[0]?.ano}</td><td className="px-3 py-2 text-muted-foreground">{meses.length} trimestres</td><td>Total</td>{celulas(resumo)}</tr>
-        {abertos.has("ano") && [...meses].reverse().map(m => <FragmentoMes key={m.competencia} mes={m} aberto={abertos.has(m.competencia)} expansor={expansor(m.competencia, competenciaVidas(m.competencia))} planos={planos} celulas={celulas} />)}
+        {abertos.has("ano") && [...meses].reverse().map(m => <FragmentoMes key={m.competencia} mes={m} aberto={abertos.has(m.competencia)} expansor={expansor(m.competencia, competenciaVidas(m.competencia))} planos={(planosPorMes.get(m.competencia) ?? []).filter(p => plano === "todos" || p === plano)} celulas={celulas} />)}
       </tbody>
     </table>
   </div>;
@@ -79,13 +78,17 @@ export default function BenchVidas() {
     }).catch(() => { if (ativo) setErro("Não foi possível carregar os dados da ANS."); }).finally(() => { if (ativo) setCarregando(false); });
     return () => { ativo = false; };
   }, [ano, tentativa]);
-  const meses = useMemo(() => mesesBenchVidas(dados, operadora, ano, plano, segmentacao), [dados, operadora, ano, plano, segmentacao]);
+  const planosDisponiveis = useMemo(() => planosDisponiveisAns(dados, operadora, ano, segmentacao), [dados, operadora, ano, segmentacao]);
+  const planoAtual = planosDisponiveis.some(p => p === plano) ? plano : "todos";
+  const meses = useMemo(() => mesesBenchVidas(dados, operadora, ano, planoAtual, segmentacao), [dados, operadora, ano, planoAtual, segmentacao]);
+  const planosPorMes = useMemo(() => new Map(meses.map(m => [m.competencia, planosDisponiveisAns(dados, operadora, ano, segmentacao, m.competencia)])), [dados, operadora, ano, segmentacao, meses]);
   const resumo = resumoBenchVidas(meses);
   const atual = operadoras.find(o => o.reg === operadora);
-  const opcoes = operadoras.filter(o => !selecionadas.includes(o.reg) && `${o.nome} ${o.reg}`.toLocaleLowerCase("pt-BR").includes(busca.toLocaleLowerCase("pt-BR")));
+  const escala = escalaVidasAns(meses.map(m => m.saldo));
+  const opcoes = operadoras.filter(o => !selecionadas.includes(o.reg) && `${o.nome} ${o.nomeCompleto} ${o.reg}`.toLocaleLowerCase("pt-BR").includes(busca.toLocaleLowerCase("pt-BR")));
   const tipos = TIPOS_VIDAS.filter(t => t === tipo);
   const baixar = () => {
-    const rows = dados.filter(r => r.operadora === operadora && r.ano === ano && (plano === "todos" || plano === r.plano) && tipo === r.tipo && (segmentacao === "todos" || segmentacao === r.segmentacao)).map(r => [nomeBenchVidas(r.nome), competenciaVidas(r.competencia), r.plano, ROTULOS_VIDAS[r.tipo], r.vidas ?? "Não informado"]);
+    const rows = dados.filter(r => r.operadora === operadora && r.ano === ano && (planoAtual === "todos" || planoAtual === r.plano) && tipo === r.tipo && (segmentacao === "todos" || segmentacao === r.segmentacao)).map(r => [nomeBenchVidas(r.nome), competenciaVidas(r.competencia), r.plano, ROTULOS_VIDAS[r.tipo], r.vidas ?? "Não informado"]);
     const ws = XLSX.utils.aoa_to_sheet([["Operadora", "Mês", "Contratação", "Tipo", "Vidas"], ...rows]);
     ws["!cols"] = [{ wch: 32 }, { wch: 12 }, { wch: 14 }, { wch: 20 }, { wch: 12 }];
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Bench Vidas"); XLSX.writeFile(wb, `bench_vidas_${operadora}_${ano}.xlsx`);
@@ -104,7 +107,7 @@ export default function BenchVidas() {
     <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
       <div className="flex flex-wrap items-center gap-3 border-y border-border py-3">
         <span className="text-sm font-semibold">Filtros</span>
-        <label className="flex items-center gap-2 text-sm">Contratação<Select value={plano} onValueChange={setPlano}><SelectTrigger aria-label="Contratação" className="w-32"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todas</SelectItem>{PLANOS_VIDAS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></label>
+        <label className="flex items-center gap-2 text-sm">Contratação<Select value={planoAtual} onValueChange={setPlano}><SelectTrigger aria-label="Contratação" className="w-32"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todas</SelectItem>{planosDisponiveis.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></label>
         <label className="flex items-center gap-2 text-sm">Segmentação<Select value={segmentacao} onValueChange={setSegmentacao}><SelectTrigger aria-label="Segmentação" className="w-44"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todas</SelectItem>{segmentos.map(s => <SelectItem key={s} value={s}>{s === "plano_saude" ? "Plano de saúde" : s}</SelectItem>)}</SelectContent></Select></label>
         <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label="Limpar filtros" onClick={() => { setPlano("todos"); setSegmentacao("todos"); }}><X className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Limpar filtros</TooltipContent></Tooltip>
       </div>
@@ -118,14 +121,14 @@ export default function BenchVidas() {
           <div className="mb-2 flex flex-wrap gap-4 text-xs text-muted-foreground">{tipos.map(t => <span key={t}>{ROTULOS_VIDAS[t]}</span>)}</div>
           <div className="h-[300px] w-full" role="img" aria-label={`Evolução de ${tipos.map(t => ROTULOS_VIDAS[t]).join(", ")} de ${atual?.nome} em ${ano}`}>
             <ResponsiveContainer width="100%" height="100%"><LineChart data={meses.map(m => ({ ...m, label: MESES[m.mes - 1] }))} margin={{ top: 16, right: 20, left: 8, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" /><YAxis width={70} tickFormatter={v => nf(Number(v))} stroke="hsl(var(--muted-foreground))" />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" /><YAxis width={70} domain={escala.dominio} ticks={escala.marcas} allowDataOverflow tickFormatter={v => Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 0 })} stroke="hsl(var(--muted-foreground))" />
               <ChartTooltip labelFormatter={(_, payload) => competenciaVidas(String(payload[0]?.payload?.competencia ?? ""))} formatter={(v: number) => nf(v)} contentStyle={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }} />
               {tipos.map(t => <Line key={t} type="monotone" name={ROTULOS_VIDAS[t]} dataKey={t} stroke={cores[t]} strokeWidth={2.5} dot={{ r: 3 }} isAnimationActive={false} />)}
             </LineChart></ResponsiveContainer>
           </div>
         </Bloco>
         <Bloco titulo="Grid" aberto={gridAberto} alternar={() => setGridAberto(s => !s)} acao={<Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={baixar} aria-label="Baixar Bench Vidas em xlsx"><Download className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Baixar grid expandido (xlsx)</TooltipContent></Tooltip>}>
-          <GridVidas key={`${operadora}-${ano}-${plano}-${tipo}-${segmentacao}`} meses={meses} plano={plano} tipo={tipo} />
+          <GridVidas key={`${operadora}-${ano}-${planoAtual}-${tipo}-${segmentacao}`} meses={meses} plano={planoAtual} tipo={tipo} planosPorMes={planosPorMes} />
           <p className="mt-2 text-xs text-muted-foreground">Saldo anual: último trimestre disponível, sem somar estoques. Quantidades de vínculos, não de pessoas únicas. Contratação combinada preservada sem distribuição entre PIF e PCE.</p>
         </Bloco>
       </> : <p role="status" className="py-8 text-sm text-muted-foreground">Nenhum registro para os filtros selecionados.</p>}
