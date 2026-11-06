@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { ChevronRight, Download, Plus, X } from "lucide-react";
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from "recharts";
+import BenchVidasGrafico from "./BenchVidasGrafico";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import catalogo from "@/data/benchVidas/ans/catalogo.json";
-import { adaptarVidasAns, carregarVidasAns, escalaVidasAns, nomeOperadoraAns, planosDisponiveisAns } from "@/lib/benchVidasAns";
+import { adaptarVidasAns, carregarVidasAns, nomeOperadoraAns, planosDisponiveisAns } from "@/lib/benchVidasAns";
 import { competenciaVidas, mesesBenchVidas, nomeBenchVidas, PLANOS_VIDAS, resumoBenchVidas, ROTULOS_VIDAS, TIPOS_VIDAS, type BenchVida, type MesVidas, type TipoVidas } from "@/lib/benchVidas";
 
 const nomes: Record<string, string> = { "366561": "Bensaúde", "327417": "Austaclínicas", "350249": "H.B. Saúde", "335100": "Unimed Rio Preto" };
@@ -18,7 +18,6 @@ const anos = catalogo.anos;
 const segmentos = ["Plano de saúde", "Odontológico"];
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 const nf = (valor: number | null) => valor === null ? "Não informado" : valor.toLocaleString("pt-BR");
-const cores: Record<TipoVidas, string> = { saldo: "hsl(var(--primary))", adesoes: "hsl(var(--chart-2))", cancelamentos: "hsl(var(--destructive))" };
 
 function Bloco({ titulo, aberto, alternar, children, acao }: { titulo: string; aberto: boolean; alternar: () => void; children: ReactNode; acao?: ReactNode }) {
   return <section className="shrink-0 rounded-lg border border-border bg-card shadow-sm">
@@ -84,9 +83,7 @@ export default function BenchVidas() {
   const planosPorMes = useMemo(() => new Map(meses.map(m => [m.competencia, planosDisponiveisAns(dados, operadora, ano, segmentacao, m.competencia)])), [dados, operadora, ano, segmentacao, meses]);
   const resumo = resumoBenchVidas(meses);
   const atual = operadoras.find(o => o.reg === operadora);
-  const escala = escalaVidasAns(resumo.saldo);
   const opcoes = operadoras.filter(o => !selecionadas.includes(o.reg) && `${o.nome} ${o.nomeCompleto} ${o.reg}`.toLocaleLowerCase("pt-BR").includes(busca.toLocaleLowerCase("pt-BR")));
-  const tipos = TIPOS_VIDAS.filter(t => t === tipo);
   const baixar = () => {
     const rows = dados.filter(r => r.operadora === operadora && r.ano === ano && (planoAtual === "todos" || planoAtual === r.plano) && tipo === r.tipo && (segmentacao === "todos" || segmentacao === r.segmentacao)).map(r => [nomeBenchVidas(r.nome), competenciaVidas(r.competencia), r.plano, ROTULOS_VIDAS[r.tipo], r.vidas ?? "Não informado"]);
     const ws = XLSX.utils.aoa_to_sheet([["Operadora", "Mês", "Contratação", "Tipo", "Vidas"], ...rows]);
@@ -118,14 +115,7 @@ export default function BenchVidas() {
           <div className="px-4 py-3"><p className="text-xs text-muted-foreground">{ROTULOS_VIDAS.saldo} · {competenciaVidas(meses.at(-1)?.competencia ?? "")}</p><p className="mt-1 text-xl font-semibold tabular-nums">{nf(resumo.saldo)}</p></div>
         </div>
         <Bloco titulo="Gráfico" aberto={graficoAberto} alternar={() => setGraficoAberto(s => !s)}>
-          <div className="mb-2 flex flex-wrap gap-4 text-xs text-muted-foreground">{tipos.map(t => <span key={t}>{ROTULOS_VIDAS[t]}</span>)}</div>
-          <div className="h-[180px] w-full" role="img" aria-label={`Evolução de ${tipos.map(t => ROTULOS_VIDAS[t]).join(", ")} de ${atual?.nome} em ${ano}`}>
-            <ResponsiveContainer width="100%" height="100%"><LineChart data={meses.map(m => ({ ...m, label: MESES[m.mes - 1] }))} margin={{ top: 16, right: 20, left: 8, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" /><YAxis width={70} domain={escala.dominio} ticks={escala.marcas} interval={0} allowDataOverflow tickFormatter={v => Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 0 })} stroke="hsl(var(--muted-foreground))" />
-              <ChartTooltip labelFormatter={(_, payload) => competenciaVidas(String(payload[0]?.payload?.competencia ?? ""))} formatter={(v: number) => nf(v)} contentStyle={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }} />
-              {tipos.map(t => <Line key={t} type="monotone" name={ROTULOS_VIDAS[t]} dataKey={t} stroke={cores[t]} strokeWidth={1.25} dot={{ r: 2 }} isAnimationActive={false} />)}
-            </LineChart></ResponsiveContainer>
-          </div>
+          <BenchVidasGrafico meses={meses} ano={ano} operadora={operadora} nome={atual?.nome} plano={planoAtual} segmentacao={segmentacao} />
         </Bloco>
         <Bloco titulo="Grid" aberto={gridAberto} alternar={() => setGridAberto(s => !s)} acao={<Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={baixar} aria-label="Baixar Bench Vidas em xlsx"><Download className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Baixar grid expandido (xlsx)</TooltipContent></Tooltip>}>
           <GridVidas key={`${operadora}-${ano}-${planoAtual}-${tipo}-${segmentacao}`} meses={meses} plano={planoAtual} tipo={tipo} planosPorMes={planosPorMes} />
