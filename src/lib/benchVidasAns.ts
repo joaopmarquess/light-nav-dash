@@ -55,6 +55,7 @@ export function nomeOperadoraAns(nome: string): string {
     return local ? `Unimed ${titulo(local)}` : "Unimed";
   }
   const primeiro = limpo.split(" ")[0] ?? "";
+  if (/^(?:\p{L}\.){2,}$/u.test(primeiro) || /^[BCDFGHJKLMNPQRSTVWXYZ]{2,5}$/i.test(primeiro)) return primeiro.toLocaleUpperCase("pt-BR");
   return /^bensa[uú]de$/i.test(primeiro) ? "Bensaúde" : titulo(primeiro);
 }
 

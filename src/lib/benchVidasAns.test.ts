@@ -62,6 +62,11 @@ describe("ANS DBC historical base", () => {
     expect(nomeOperadoraAns("BRADESCO SAÚDE S/A")).toBe("Bradesco");
     expect(nomeOperadoraAns("BENSAUDE PLANO DE ASSISTENCIA MEDICA")).toBe("Bensaúde");
   });
+  it("preserves uppercase operator initials", () => {
+    expect(nomeOperadoraAns("H.b. Saúde")).toBe("H.B.");
+    expect(nomeOperadoraAns("h.b. saúde")).toBe("H.B.");
+    expect(nomeOperadoraAns("CCG SAÚDE")).toBe("CCG");
+  });
   it("retains the Unimed city rather than the legal suffix", () => {
     expect(nomeOperadoraAns("UNIMED DE RIO CLARO SP COOPERATIVA DE TRABA")).toBe("Unimed Rio Claro");
     expect(nomeOperadoraAns("UNIMED PELOTAS/RS - COOPERATIVA DE ASSISTÊN")).toBe("Unimed Pelotas");
