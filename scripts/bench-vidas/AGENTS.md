@@ -1,0 +1,1 @@
+- Rebuild the official quarterly ANS snapshot from fixed public sources, verify source row totals before aggregating by operator/competence/contract, and upload year partitions as immutable assets; the app never fetches DBC payloads during navigation.

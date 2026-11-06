@@ -21,7 +21,8 @@ export function carregarVidasAns(ano: number): Promise<RegistroAnsVidas[]> {
   if (existente) return existente;
   const fonte = arquivos[`../data/benchVidas/ans/${ano}.asset.json`]?.default;
   if (!fonte) return Promise.reject(new Error("Ano indisponível na base ANS."));
-  const request = fetch(fonte.url).then(async response => {
+  const url = typeof window !== "undefined" && window.location.hostname === "localhost" ? new URL(fonte.url, "https://axisbensaude.lovable.app").href : fonte.url;
+  const request = fetch(url).then(async response => {
     if (!response.ok) throw new Error("Não foi possível carregar a base ANS.");
     const registros: unknown = await response.json();
     if (!Array.isArray(registros) || registros.some(r => !Array.isArray(r) || r.length !== 5)) throw new Error("Base ANS inválida.");
