@@ -7,6 +7,7 @@ import { datasVidasIndicadores, mesesMovimentacao, janelaMesesMovimentacao, soma
 import MovimentacaoCrescimentoMensal from "@/components/MovimentacaoCrescimentoMensal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Search, X, UserPlus, UserMinus, Scale, RotateCcw, ArrowRightLeft, LogIn, LogOut, Users, Eye, EyeOff, LoaderCircle, ChevronLeft, ChevronRight, TrendingUp } from "lucide-react";
 
 type Row = Record<string, any>;
@@ -263,7 +264,11 @@ export default function CarteiraTrialMov() {
       </h3>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[460px] text-sm">
-          <thead className="border-y bg-muted/40 text-muted-foreground"><tr><th className="w-[49%] py-3 text-left" />{["Pura", "Revenda", "Total"].map(h => <th key={h} className="px-4 py-3 text-right font-medium">{h}</th>)}</tr></thead>
+          <thead className="border-y bg-muted/40 text-muted-foreground"><tr><th className="w-[49%] py-3 text-left" />{[
+            { label: "Direta", dica: "Sem a ação de um vendedor" },
+            { label: "Revenda", dica: "Um vendedor agiu nesta transferência" },
+            { label: "Total", dica: "" },
+          ].map(h => <th key={h.label} className="px-4 py-3 text-right font-medium">{h.dica ? <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><span tabIndex={0} className="cursor-help">{h.label}</span></TooltipTrigger><TooltipContent>{h.dica}</TooltipContent></Tooltip></TooltipProvider> : h.label}</th>)}</tr></thead>
           <tbody>{linhas.map(l => <tr key={l.bloco} className="border-b"><th title={l.dica} className="py-3 pr-3 text-left font-normal">{l.label}</th><td>{celula("Pura", l.bloco)}</td><td>{celula("Revenda", l.bloco)}</td><td className="font-semibold">{celula(undefined, l.bloco)}</td></tr>)}</tbody>
           <tfoot className="border-b bg-muted/30 font-semibold"><tr><th className="py-3 text-left">Total</th><td>{celula("Pura")}</td><td>{celula("Revenda")}</td><td>{celula()}</td></tr></tfoot>
         </table>
@@ -329,7 +334,7 @@ export default function CarteiraTrialMov() {
       {sel && !depuracaoAberta && detalhesErro && <div role="alert" className="text-destructive">Erro: {detalhesErro}</div>}
       {sel && !loading && !detalhesLoading && detalhesProntos && (
         <div className="rounded-xl border bg-card overflow-auto max-h-[60vh]">
-          <div className="px-4 py-2 text-sm font-medium border-b">{sel.tipo}{sel.sub ? ` · ${sel.sub}` : ""} · {num(lista.length)} registro(s){isT ? " · ligação por CPF" : ""}</div>
+          <div className="px-4 py-2 text-sm font-medium border-b">{sel.tipo}{sel.sub ? ` · ${sel.sub === "Pura" ? "Direta" : sel.sub}` : ""} · {num(lista.length)} registro(s){isT ? " · ligação por CPF" : ""}</div>
           <table className="w-full text-xs">
             <thead className="bg-muted/40 sticky top-0">
               <tr>{(isT ? ["CPF", "Beneficiário", "Matrícula anterior", "Saída", "Motivo", "Matrícula nova", "Entrada", "Vendedor (reentrada)", "Tipo"] : ["Data", "Matrícula", "Beneficiário", "Empresa", "Vendedor"]).map((h) => <th key={h} className="px-3 py-1.5 text-left">{h}</th>)}</tr>
@@ -345,7 +350,7 @@ export default function CarteiraTrialMov() {
                   <td className="px-3 py-1 whitespace-nowrap">{fmtMat(e.par.matNova)}</td>
                   <td className="px-3 py-1">{fmtD(e.par.entrada)}</td>
                   <td className="px-3 py-1">{e.par.vendedor ?? ""} {e.par.nmVendedor ?? ""}</td>
-                  <td className="px-3 py-1">{e.par.tipo}</td>
+                  <td className="px-3 py-1">{e.par.tipo === "Pura" ? "Direta" : e.par.tipo}</td>
                 </tr>
               ) : (
                 <tr key={i} className="border-t">
