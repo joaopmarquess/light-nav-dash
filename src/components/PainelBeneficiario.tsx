@@ -12,7 +12,7 @@ import {
 type Modo = "nome" | "cpf" | "matricula" | "contrato" | "alternativa";
 const MODOS: { id: Modo; label: string }[] = [
   { id: "alternativa", label: "Código" },
-  { id: "nome", label: "Nome" }, { id: "cpf", label: "CPF" }, { id: "matricula", label: "Matrícula" },
+  { id: "cpf", label: "CPF" }, { id: "nome", label: "Nome" }, { id: "matricula", label: "Matrícula MV" },
   { id: "contrato", label: "Contrato" },
 ];
 const ABAS = [
