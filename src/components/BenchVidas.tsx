@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import catalogo from "@/data/benchVidas/ans/catalogo.json";
-import { adaptarVidasAns, carregarVidasAns, nomeOperadoraAns, planosDisponiveisAns } from "@/lib/benchVidasAns";
+import { adaptarVidasAns, carregarVidasAns, escalaVidasAns, nomeOperadoraAns, planosDisponiveisAns } from "@/lib/benchVidasAns";
 import { competenciaVidas, mesesBenchVidas, nomeBenchVidas, PLANOS_VIDAS, resumoBenchVidas, ROTULOS_VIDAS, TIPOS_VIDAS, type BenchVida, type MesVidas, type TipoVidas } from "@/lib/benchVidas";
 
 const nomes: Record<string, string> = { "366561": "Bensaúde", "327417": "Austaclínicas", "350249": "H.B. Saúde", "335100": "Unimed Rio Preto" };
@@ -84,6 +84,7 @@ export default function BenchVidas() {
   const planosPorMes = useMemo(() => new Map(meses.map(m => [m.competencia, planosDisponiveisAns(dados, operadora, ano, segmentacao, m.competencia)])), [dados, operadora, ano, segmentacao, meses]);
   const resumo = resumoBenchVidas(meses);
   const atual = operadoras.find(o => o.reg === operadora);
+  const escala = escalaVidasAns(meses.map(m => m.saldo));
   const opcoes = operadoras.filter(o => !selecionadas.includes(o.reg) && `${o.nome} ${o.nomeCompleto} ${o.reg}`.toLocaleLowerCase("pt-BR").includes(busca.toLocaleLowerCase("pt-BR")));
   const tipos = TIPOS_VIDAS.filter(t => t === tipo);
   const baixar = () => {
@@ -120,7 +121,7 @@ export default function BenchVidas() {
           <div className="mb-2 flex flex-wrap gap-4 text-xs text-muted-foreground">{tipos.map(t => <span key={t}>{ROTULOS_VIDAS[t]}</span>)}</div>
           <div className="h-[300px] w-full" role="img" aria-label={`Evolução de ${tipos.map(t => ROTULOS_VIDAS[t]).join(", ")} de ${atual?.nome} em ${ano}`}>
             <ResponsiveContainer width="100%" height="100%"><LineChart data={meses.map(m => ({ ...m, label: MESES[m.mes - 1] }))} margin={{ top: 16, right: 20, left: 8, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" /><YAxis width={70} tickFormatter={v => nf(Number(v))} stroke="hsl(var(--muted-foreground))" />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" /><YAxis width={70} domain={escala.dominio} ticks={escala.marcas} allowDataOverflow tickFormatter={v => Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 0 })} stroke="hsl(var(--muted-foreground))" />
               <ChartTooltip labelFormatter={(_, payload) => competenciaVidas(String(payload[0]?.payload?.competencia ?? ""))} formatter={(v: number) => nf(v)} contentStyle={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }} />
               {tipos.map(t => <Line key={t} type="monotone" name={ROTULOS_VIDAS[t]} dataKey={t} stroke={cores[t]} strokeWidth={2.5} dot={{ r: 3 }} isAnimationActive={false} />)}
             </LineChart></ResponsiveContainer>

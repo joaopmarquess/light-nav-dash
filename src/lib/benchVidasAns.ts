@@ -1,5 +1,11 @@
 import { PLANOS_VIDAS, type BenchVida, type PlanoVidas } from "./benchVidas";
 
+export function escalaVidasAns(saldos: (number | null)[]) {
+  const maximo = Math.max(0, ...saldos.map(s => s ?? 0));
+  const limite = maximo > 0 ? maximo * 1.1 : 1;
+  return { dominio: [0, limite] as [number, number], marcas: [0, limite / 2, limite] };
+}
+
 export function planosDisponiveisAns(dados: BenchVida[], operadora: string, ano: number, segmentacao = "todos", competencia?: string): PlanoVidas[] {
   const presentes = new Set(dados.filter(r => r.operadora === operadora && r.ano === ano && r.tipo === "saldo" && (segmentacao === "todos" || r.segmentacao === segmentacao) && (!competencia || r.competencia === competencia)).map(r => r.plano));
   return PLANOS_VIDAS.filter(p => presentes.has(p));
