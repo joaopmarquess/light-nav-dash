@@ -10,6 +10,7 @@ import { Eye, EyeOff, ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Download, L
 import { toast } from "sonner";
 import { periodoInicialSuspensos } from "@/lib/consultaSuspensos";
 import SuspensosContratacao from "@/components/SuspensosContratacao";
+import { loadConsultaSuspensos } from "@/lib/loadConsultaSuspensos";
 
 type Row = Record<string, any>;
 const TABLE = "view_ecarteira";
@@ -75,7 +76,7 @@ function calcStatus(r: Row, hoje: string): "A" | "F" | "C" {
   if (can && can <= hoje && !(rea && rea <= hoje && rea > can)) return "C";
   return "A";
 }
-const ST: Record<string, [string, any]> = { A: ["Ativo", "default"], F: ["Futuro", "secondary"], C: ["Cancelado", "destructive"] };
+const ST: Record<string, [string, any]> = { A: ["Ativo", "default"], F: ["Futuro", "secondary"], C: ["Cancelado", "destructive"], S: ["Suspenso", "secondary"] };
 const COLS: { key: string; label: string; fmt?: (v: any) => string; align?: "right" }[] = [
   { key: "cd_mat_alternativa", label: "Matrícula", fmt: (v) => fmtMat(v) },
   { key: "nm_beneficiario", label: "Beneficiário" },
@@ -127,12 +128,16 @@ export default function CarteiraTrial() {
   const [ap, setAp] = useState<{ f: Filters; d: string } | null>(() => ({ f: { ...EMPTY }, d: new Date().toISOString().slice(0, 10) }));
   const df = ap?.f ?? EMPTY;
   const dRef = ap?.d ?? "";
-  const buscar = () => { if (!suspensos) setGrid(true); setAp({ f: { ...f }, d: suspensos ? sp.ate : dataRef || new Date().toISOString().slice(0, 10) }); };
-  const rows = useMemo(() => agrupar(raw, dRef || new Date().toISOString().slice(0, 10)), [raw, dRef]);
+  const buscar = () => { if (!suspensos || f.status === "S") setGrid(true); setAp({ f: { ...f }, d: suspensos || f.status === "S" ? sp.ate : dataRef || new Date().toISOString().slice(0, 10) }); };
+  const rows = useMemo<Row[]>(() => {
+    const agrupadas = agrupar(raw, dRef || new Date().toISOString().slice(0, 10));
+    return df.status === "S" ? agrupadas.filter((r) => r.st === "A").map((r) => ({ ...r, st: "S" })) : agrupadas;
+  }, [raw, dRef, df.status]);
   const [fim, setFim] = useState(false);
   const [grid, setGrid] = useState(false);
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [listError, setListError] = useState<string | null>(null);
   const [suspensos, setSuspensos] = useState(false);
   const [sp, setSp] = useState(periodoInicialSuspensos);
   const [susp, setSusp] = useState<{ sigla: string; motivo: string; faixa: string; vidas: number }[] | null | "erro">(null);
@@ -175,7 +180,7 @@ export default function CarteiraTrial() {
     const v = df.status === ALL ? rows : rows.filter((r) => r.st === df.status);
     return sort.key === "st" ? [...v].sort((a, b) => (sort.asc ? 1 : -1) * String(a.st).localeCompare(String(b.st))) : v;
   }, [rows, df.status, sort]);
-  useEffect(() => { if (!loading && !fim && df.status !== ALL && vis.length < 50 && raw.length > 0) setPage((p) => p + 1); }, [loading, fim, vis.length, df.status, raw.length]);
+  useEffect(() => { if (!loading && !fim && df.status !== ALL && df.status !== "S" && vis.length < 50 && raw.length > 0) setPage((p) => p + 1); }, [loading, fim, vis.length, df.status, raw.length]);
   const cnt = (k: string) => rows.filter((r) => r.st === k).length;
   const [sel, setSel] = useState<Row | null>(null);
   useEffect(() => {
@@ -194,7 +199,7 @@ export default function CarteiraTrial() {
       .then(({ data }) => setSel((cur) => (cur && cur.cd_mat_alternativa === m ? { ...cur, _relac: data?.[0]?.tp_relacionamento ?? null } : cur)));
   }, [sel]);
 
-  const dfKey = JSON.stringify({ ...df, status: df.status === "F" ? "F" : "", d: dRef, n: ap ? 1 : 0 });
+  const dfKey = JSON.stringify({ ...df, status: ["F", "S"].includes(df.status) ? df.status : "", d: dRef, de: df.status === "S" ? sp.de : "", n: ap ? 1 : 0 });
   useEffect(() => { setPage(0); }, [dfKey, sort.key, sort.asc]);
 
   useEffect(() => {
@@ -202,6 +207,33 @@ export default function CarteiraTrial() {
     if (!ap || !grid) return;
     (async () => {
       setLoading(true);
+      setListError(null);
+      if (df.status === "S") {
+        setRaw([]);
+        try {
+          const matriculas = await loadConsultaSuspensos({ de: sp.de, ate: dRef }, () => cancel);
+          const all: Row[] = [];
+          for (let i = 0; i < matriculas.length; i += 100) {
+            for (let from = 0; ; from += 1000) {
+              const { data, error } = await applyFilters(hostinger.from(TABLE).select("*"), df, dRef)
+                .in("cd_mat_alternativa", matriculas.slice(i, i + 100)).order("cd_mat_alternativa")
+                .range(from, from + 999);
+              if (error) throw error;
+              if (cancel) return;
+              all.push(...(data ?? []).map(normalizarVendedor));
+              if ((data?.length ?? 0) < 1000) break;
+            }
+          }
+          if (cancel) return;
+          all.sort((a, b) => (sort.asc ? 1 : -1) * String(a[sort.key] ?? "").localeCompare(String(b[sort.key] ?? ""), "pt-BR", { numeric: true }));
+          setRaw(all);
+          setTotal(agrupar(all, dRef).filter((r) => r.st === "A").length);
+          setFim(true);
+        } catch {
+          if (!cancel) { setListError("Não foi possível carregar os suspensos. Tente buscar novamente."); setFim(true); setTotal(null); }
+        } finally { if (!cancel) setLoading(false); }
+        return;
+      }
       let q = applyFilters(hostinger.from(TABLE).select("*"), df, dRef);
       if (sort.key && sort.key !== "st") q = q.order(sort.key, { ascending: sort.asc, nullsFirst: false });
       const { data, error } = await q.range(page * PAGE, page * PAGE + PAGE - 1);
@@ -244,7 +276,7 @@ export default function CarteiraTrial() {
   return (
     <div className="h-full flex flex-col gap-4 min-h-0">
       <div className="flex flex-wrap items-center gap-2 shrink-0 bg-card border border-border rounded-xl p-3">
-        {suspensos && !grid ? <SuspPeriodo v={sp} onApply={(periodo) => { setSp(periodo); setDataRef(periodo.ate); setAp({ f: { ...f }, d: periodo.ate }); }} /> : <label className="flex items-center gap-2 text-sm text-muted-foreground">Ativos em:
+        {(suspensos && !grid) || f.status === "S" ? <SuspPeriodo v={sp} onApply={(periodo) => { setSp(periodo); setDataRef(periodo.ate); setAp({ f: { ...f }, d: periodo.ate }); }} /> : <label className="flex items-center gap-2 text-sm text-muted-foreground">Ativos em:
           <Input type="date" className="w-40" value={dataRef} onChange={(e) => setDataRef(e.target.value)} />
         </label>}
         <span className="text-sm text-muted-foreground">Total de Ativos: <b className="text-foreground tabular-nums">{!ap ? "—" : kpi?.ativos == null ? "…" : kpi.ativos.toLocaleString("pt-BR")}</b></span>
@@ -255,7 +287,7 @@ export default function CarteiraTrial() {
         <Input className="w-48" placeholder="Empresa" value={f.empresa} onChange={(e) => set("empresa", e.target.value)} />
         <Input className="w-40" placeholder="Cidade" value={f.cidade} onChange={(e) => set("cidade", e.target.value)} />
         {([
-          ["status", "Status", [["A", "Ativo"], ["F", "Futuro"], ["C", "Cancelado"]]],
+          ["status", "Status", [["A", "Ativo"], ["F", "Futuro"], ["C", "Cancelado"], ["S", "Suspensos"]]],
         ] as [keyof Filters, string, string[][]][]).map(([k, label, opts]) => (
           <Select key={k} value={f[k]} onValueChange={(v) => set(k, v)}>
             <SelectTrigger className="w-32"><SelectValue placeholder={label} /></SelectTrigger>
@@ -269,7 +301,7 @@ export default function CarteiraTrial() {
         <div className="ml-auto flex gap-2">
           {activeChips.length > 0 && <Button variant="ghost" size="sm" onClick={() => { const e = { ...EMPTY, status: ALL }; setF(e); setAp({ f: e, d: dataRef || new Date().toISOString().slice(0, 10) }); }}><X className="h-4 w-4 mr-1" />Limpar</Button>}
           {!grid && <Button variant="outline" size="sm" onClick={() => setSuspensos((s) => !s)}>{suspensos ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}{suspensos ? "Ocultar suspensos" : "Mostrar suspensos"}</Button>}
-          <Button variant="outline" size="sm" onClick={() => setGrid((g) => !g)}>{grid ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}{grid ? "Ocultar lista" : "Mostrar lista"}</Button>
+          <Button variant="outline" size="sm" onClick={() => { if (!grid) setAp({ f: { ...f }, d: f.status === "S" ? sp.ate : dataRef }); setGrid((g) => !g); }}>{grid ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}{grid ? "Ocultar lista" : "Mostrar lista"}</Button>
           <Button variant="outline" size="sm" onClick={exportCsv} disabled={!rows.length}><Download className="h-4 w-4 mr-1" />Exportar</Button>
         </div>
       </div>
@@ -346,7 +378,8 @@ export default function CarteiraTrial() {
         </div>
       )}
       <div className={`flex-1 min-h-0 bg-card border border-border rounded-xl overflow-hidden flex-col ${grid ? "flex" : "hidden"}`}>
-        <div className="flex-1 min-h-0 overflow-auto" onScroll={(e) => { const el = e.currentTarget; if (!loading && !fim && el.scrollTop + el.clientHeight > el.scrollHeight - 300) setPage((p) => p + 1); }}>
+        {listError && <p role="alert" className="p-3 text-sm text-destructive">{listError}</p>}
+        <div className="flex-1 min-h-0 overflow-auto" onScroll={(e) => { const el = e.currentTarget; if (df.status !== "S" && !loading && !fim && el.scrollTop + el.clientHeight > el.scrollHeight - 300) setPage((p) => p + 1); }}>
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-muted z-10">
               <tr>
@@ -383,7 +416,7 @@ export default function CarteiraTrial() {
           <span className="inline-flex items-center gap-2">
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             {(() => {
-              const n = !ap ? 0 : df.status === "A" ? kpi?.ativos : df.status === "F" ? kpi?.futuros : df.status === "C" ? kpi?.cancelados : kpi?.total;
+              const n = !ap ? 0 : df.status === "S" ? loading ? null : total : df.status === "A" ? kpi?.ativos : df.status === "F" ? kpi?.futuros : df.status === "C" ? kpi?.cancelados : kpi?.total;
               return n == null ? "…" : n.toLocaleString("pt-BR");
             })()} registros selecionados
           </span>
