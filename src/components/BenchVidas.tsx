@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import catalogo from "@/data/benchVidas/ans/catalogo.json";
-import { adaptarVidasAns, carregarVidasAns, crescimentoPeriodoVidasAns, nomeOperadoraAns, planosDisponiveisAns } from "@/lib/benchVidasAns";
+import { adaptarVidasAns, carregarVidasAns, crescimentoPeriodoVidasAns, nomeOperadoraAns, percentualCrescimentoVidasAns, planosDisponiveisAns } from "@/lib/benchVidasAns";
 import { competenciaVidas, mesesBenchVidas, nomeBenchVidas, PLANOS_VIDAS, resumoBenchVidas, ROTULOS_VIDAS, TIPOS_VIDAS, type BenchVida, type MesVidas, type TipoVidas } from "@/lib/benchVidas";
 
 const nomes: Record<string, string> = { "366561": "Bensaúde", "327417": "Austaclínicas", "350249": "H.B. Saúde", "335100": "Unimed Rio Preto" };
@@ -88,6 +88,7 @@ export default function BenchVidas() {
   const saldoFinal = mesesIndicadores?.at(-1);
   const saldoInicial = mesesIndicadores?.[0];
   const crescimento = mesesIndicadores ? crescimentoPeriodoVidasAns(mesesIndicadores) : null;
+  const percentualCrescimento = percentualCrescimentoVidasAns(saldoInicial?.saldo, crescimento);
   const atual = operadoras.find(o => o.reg === operadora);
   const opcoes = operadoras.filter(o => !selecionadas.includes(o.reg) && `${o.nome} ${o.nomeCompleto} ${o.reg}`.toLocaleLowerCase("pt-BR").includes(busca.toLocaleLowerCase("pt-BR")));
   const baixar = () => {
@@ -122,7 +123,7 @@ export default function BenchVidas() {
         <div className="bench-kpis">
           <div className="bench-kpi" aria-label="Inicial"><p className="bench-kpi-title">Inicial<Users aria-hidden="true" /></p><p className="bench-kpi-value">{nf(saldoInicial?.saldo ?? null)}</p><p className="bench-kpi-date">{saldoInicial ? competenciaVidas(saldoInicial.competencia) : "—"}</p></div>
           <div className="bench-kpi bench-kpi-final" aria-label="Final"><p className="bench-kpi-title">Final<UserCheck aria-hidden="true" /></p><p className="bench-kpi-value">{nf(saldoFinal?.saldo ?? null)}</p><p className="bench-kpi-date">{saldoFinal ? competenciaVidas(saldoFinal.competencia) : "—"}</p></div>
-          <div className="bench-kpi bench-kpi-growth" aria-label="Crescimento"><p className="bench-kpi-title">Crescimento<TrendingUp aria-hidden="true" /></p><p className="bench-kpi-value">{nf(crescimento)}</p><p className="bench-kpi-date">{saldoInicial && saldoFinal ? `${competenciaVidas(saldoInicial.competencia)}–${competenciaVidas(saldoFinal.competencia)}` : "—"}</p></div>
+          <div className="bench-kpi bench-kpi-growth" aria-label="Crescimento"><p className="bench-kpi-title">Crescimento<TrendingUp aria-hidden="true" /></p><p className="bench-kpi-value">{nf(crescimento)}{crescimento !== null && <span className="ml-1 text-sm font-medium">({percentualCrescimento === null ? "—" : `${percentualCrescimento.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}%`})</span>}</p><p className="bench-kpi-date">{saldoInicial && saldoFinal ? `${competenciaVidas(saldoInicial.competencia)}–${competenciaVidas(saldoFinal.competencia)}` : "—"}</p></div>
         </div>
         <Bloco titulo="Gráfico" aberto={graficoAberto} alternar={() => setGraficoAberto(s => !s)}>
           <BenchVidasGrafico meses={meses} ano={ano} operadora={operadora} nome={atual?.nome} plano={planoAtual} segmentacao={segmentacao} onDadosChange={atualizarIndicadores} />

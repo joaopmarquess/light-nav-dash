@@ -16,6 +16,10 @@ export function crescimentoPeriodoVidasAns(meses: { competencia: string; saldo: 
   return inicial == null || final == null ? null : final - inicial;
 }
 
+export function percentualCrescimentoVidasAns(inicial: number | null | undefined, crescimento: number | null) {
+  return inicial == null || inicial === 0 || crescimento === null ? null : crescimento / inicial * 100;
+}
+
 export function escalaVidasAns(total: number | null) {
   const saldo = Math.max(0, total ?? 0);
   const arredondar = (valor: number) => Math.ceil(valor / 10000) * 10000;
