@@ -5,6 +5,7 @@ import { hostinger } from "@/lib/hostingerClient";
 import { useGruposVendedor, useGruposMotivo } from "@/lib/vendedorGrupo";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { filtrarLinhasSaidas } from "@/lib/carteiraLinhas";
+import { FILTRO_SAIDAS_DEFAULT, incluirSaida, type FiltroSaidas } from "@/lib/saidasFiltro";
 
 type Row = Record<string, any>;
 type Modo = "entradas" | "saidas";
@@ -27,6 +28,8 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
   const [groupBy, setGroupBy] = useState(modo === "saidas" ? "motivo" : "grupo");
   const [filtro, setFiltro] = useState("");
   const [chave, setChave] = useState<"venda" | "outros">("venda");
+  const [tipoSaida, setTipoSaida] = useState<FiltroSaidas>(FILTRO_SAIDAS_DEFAULT);
+  const [periodoAplicado, setPeriodoAplicado] = useState({ de, ate });
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +44,7 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
     const all: Row[] = [];
     for (let from = 0; from < LIMITE; from += 1000) {
       const consulta = hostinger.from("view_ecarteira")
-        .select(`cd_mat_alternativa,cd_vendedor,nm_beneficiario,ds_plano,nm_vendedor,nm_empresa_estipulante,nm_cidade_plano,cd_uf_plano,ds_motivo_cancelamento,cd_motivo_cancelamento,${campo}`)
+        .select(`cd_mat_alternativa,cd_vendedor,nm_beneficiario,ds_plano,nm_vendedor,nm_empresa_estipulante,nm_cidade_plano,cd_uf_plano,ds_motivo_cancelamento,cd_motivo_cancelamento,${campo}${modo === "saidas" ? ",dt_reativacao" : ""}`)
         .eq("tp_plano", "SAUDE").lte("cd_mat_alternativa", 399999999999)
         .gte(campo, de).lte(campo, `${ate}T23:59:59`)
         .order("cd_mat_alternativa").order(campo).range(from, from + 999);
@@ -55,6 +58,7 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
     const m = new Map<string, Row>();
     for (const r of all) m.set(`${r.cd_mat_alternativa}|${String(r[campo]).slice(0, 10)}`, r);
     setRows([...m.values()]);
+    setPeriodoAplicado({ de, ate });
     setLoading(false);
   };
 
@@ -64,11 +68,13 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
     if (!rows) return null;
     const f = filtro.trim().toLowerCase();
     const ehOutros = (r: Row) => ["NEV", "OUTROS"].includes(String(grupos[r.cd_vendedor] ?? "").toUpperCase());
-    const base = modo === "saidas" ? rows : rows.filter((r) => (chave === "outros") === ehOutros(r));
+    const base = modo === "saidas"
+      ? rows.filter((r) => incluirSaida(tipoSaida, motivos[r.cd_motivo_cancelamento]?.gp, r.dt_desligamento, r.dt_reativacao, periodoAplicado))
+      : rows.filter((r) => (chave === "outros") === ehOutros(r));
     if (!f) return base;
     return base.filter((r) => [r.nm_beneficiario, r.ds_plano, r.nm_vendedor, r.nm_empresa_estipulante, r.cd_mat_alternativa]
       .some((v) => String(v ?? "").toLowerCase().includes(f)));
-  }, [rows, filtro, chave, grupos, modo]);
+  }, [rows, filtro, chave, grupos, modo, tipoSaida, motivos, periodoAplicado]);
 
   const gb = modo === "entradas" ? "vendedor" : groupBy;
   const grouped = useMemo(() => {
@@ -132,6 +138,16 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
           <input type="date" value={de} onChange={(e) => setDe(e.target.value)} className={inp} /></div>
         <div><label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Até</label>
           <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} className={inp} /></div>
+        {modo === "saidas" && <div>
+          <label htmlFor="filtro-saidas" className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Saídas</label>
+          <select id="filtro-saidas" value={tipoSaida} onChange={(e) => { setTipoSaida(e.target.value as FiltroSaidas); setExpanded({}); }} className={inp}>
+            <option value="cancelamentos">Só cancelamentos</option>
+            <option value="transferencias">Transferências</option>
+            <option value="reativados">Reativados</option>
+            <option value="suspensos">Suspensos</option>
+            <option value="todos">Todos</option>
+          </select>
+        </div>}
         {modo === "saidas" && <div><label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Agrupar por</label>
           <select value={groupBy} onChange={(e) => setGroupBy(e.target.value)} className={inp}>
             {modo === "saidas" && <option value="motivo">Grupo de motivo</option>}
