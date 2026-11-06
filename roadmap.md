@@ -1,3 +1,5 @@
+- [x] Preparar função Hostinger de classificação ordenada preservando grupos existentes; prioridades, carga inicial, idempotência e novos códigos testados em PostgreSQL isolado UTF-8; arquivo SQL entregue.
+- [ ] Instalar e validar classificação dos motivos na Hostinger: depende de Dênis executar o arquivo; incremental preparado para beneficiarios, cuja origem física precisa ser confirmada na instalação.
 - [x] Criar Carteira › Bench Vidas com CSV provisório, filtros, navegação Operadoras/Ano, gráfico aberto e grid recolhido expansível Ano/Mês/Contratação; 21 testes aprovados, troca/inclusão de OPS, anos, totais de outubro e download xlsx conferidos com acesso autorizado, sem alterar dados reais.
 - [x] Separar Código do Painel em Plano/Contrato/Dep, completar zeros; 11 testes aprovados e busca real autenticada com retorno conferido, campos verificados em desktop e celular.
 - [x] Incluir Demonstrações nos atalhos/permissões Home e três cards Control acima dos atalhos; dados reais Jan–Set/2026 e navegação conferidos, 19 testes aprovados, fonte e acessos preservados.
