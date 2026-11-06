@@ -61,7 +61,7 @@ export default function BenchVidas() {
   const [operadora, setOperadora] = useState("366561");
   const [ano, setAno] = useState(anos.at(-1) ?? 2026);
   const [plano, setPlano] = useState("todos");
-  const [tipo, setTipo] = useState("saldo");
+  const tipo = "saldo";
   const [segmentacao, setSegmentacao] = useState("todos");
   const [graficoAberto, setGraficoAberto] = useState(true);
   const [gridAberto, setGridAberto] = useState(false);
@@ -105,9 +105,8 @@ export default function BenchVidas() {
       <div className="flex flex-wrap items-center gap-3 border-y border-border py-3">
         <span className="text-sm font-semibold">Filtros</span>
         <label className="flex items-center gap-2 text-sm">Contratação<Select value={plano} onValueChange={setPlano}><SelectTrigger aria-label="Contratação" className="w-32"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todas</SelectItem>{PLANOS_VIDAS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></label>
-        <label className="flex items-center gap-2 text-sm">Tipo<Select value={tipo} onValueChange={setTipo}><SelectTrigger aria-label="Tipo" className="w-44"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todos</SelectItem>{TIPOS_VIDAS.map(t => <SelectItem key={t} value={t}>{ROTULOS_VIDAS[t]}</SelectItem>)}</SelectContent></Select></label>
         <label className="flex items-center gap-2 text-sm">Segmentação<Select value={segmentacao} onValueChange={setSegmentacao}><SelectTrigger aria-label="Segmentação" className="w-44"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todas</SelectItem>{segmentos.map(s => <SelectItem key={s} value={s}>{s === "plano_saude" ? "Plano de saúde" : s}</SelectItem>)}</SelectContent></Select></label>
-        <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label="Limpar filtros" onClick={() => { setPlano("todos"); setTipo("saldo"); setSegmentacao("todos"); }}><X className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Limpar filtros</TooltipContent></Tooltip>
+        <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label="Limpar filtros" onClick={() => { setPlano("todos"); setSegmentacao("todos"); }}><X className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Limpar filtros</TooltipContent></Tooltip>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm"><strong>{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} · {ano}</span></strong><span className="text-xs text-muted-foreground">ANS · {competenciaVidas(catalogo.inicio)}–{competenciaVidas(catalogo.fim)}</span></div>
       <p className="text-xs text-muted-foreground">Fonte: microdados ANS por operadora · {catalogo.arquivos.length} arquivos trimestrais · {nf(operadoras.length)} operadoras no histórico · Adesões e cancelamentos não disponíveis nesta fonte.</p>
