@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, Search, User, FileText, Wallet, Activity, History, LayoutGrid, X } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { hostinger } from "@/lib/hostingerClient";
@@ -70,6 +70,7 @@ export default function PainelBeneficiario() {
   const [modo, setModo] = useState<Modo>("nome");
   const [termo, setTermo] = useState("");
   const [codigo, setCodigo] = useState({ plano: "", contrato: "", dep: "" });
+  const planoRef = useRef<HTMLInputElement>(null);
   const [buscando, setBuscando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [resultados, setResultados] = useState<CarteiraRow[] | null>(null);
@@ -83,10 +84,15 @@ export default function PainelBeneficiario() {
   const [eardLoading, setEardLoading] = useState(false);
   const [comp, setComp] = useState<number | null>(null);
 
+  useEffect(() => {
+    if (modo === "alternativa") planoRef.current?.focus();
+  }, [modo]);
+
   function limpar() {
     setTermo(""); setCodigo({ plano: "", contrato: "", dep: "" });
     setErro(null); setResultados(null); setMat(null); setAba("resumo");
     setMovs([]); setCad(null); setEard(null); setComp(null);
+    if (modo === "alternativa") planoRef.current?.focus();
   }
 
   async function buscar() {
@@ -178,6 +184,7 @@ export default function PainelBeneficiario() {
                 <label key={key} htmlFor={`codigo-${key}`} className="min-w-0 space-y-1 text-xs text-muted-foreground">
                   <span>{label}</span>
                   <Input id={`codigo-${key}`} type="text" inputMode="numeric" maxLength={tamanho}
+                    ref={key === "plano" ? planoRef : undefined}
                     value={codigo[key]} placeholder={"0".repeat(tamanho)}
                     onChange={(e) => setCodigo((anterior) => ({ ...anterior, [key]: e.target.value.replace(/\D/g, "").slice(0, tamanho) }))}
                     onKeyDown={(e) => e.key === "Enter" && buscar()}
