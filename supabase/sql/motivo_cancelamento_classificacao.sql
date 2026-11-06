@@ -58,22 +58,7 @@ CREATE OR REPLACE FUNCTION public.motivo_cancelamento_grupos_atualizar()
 RETURNS bigint LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public AS $$
 DECLARE n bigint;
 BEGIN
-  WITH fonte AS (
-    SELECT coalesce(v.cd_motivo_cancelamento,0)::integer AS codigo,
-      string_agg(DISTINCT nullif(btrim(v.ds_motivo_cancelamento),''), ' | '
-        ORDER BY nullif(btrim(v.ds_motivo_cancelamento),'')) AS descricao
-    FROM public.view_ecarteira v
-    WHERE v.dt_desligamento IS NOT NULL
-      AND NOT EXISTS (
-        SELECT 1 FROM public.motivo_cancelamento_grupo g
-        WHERE g.cd_motivo_cancelamento=coalesce(v.cd_motivo_cancelamento,0)
-          AND nullif(btrim(g.gp_motivo_cancelamento),'') IS NOT NULL
-          AND upper(btrim(g.gp_motivo_cancelamento)) NOT IN ('SEM GRUPO ATRIBUÍDO','SEM GRUPO ATRIBUIDO','SEM GRUPO DE MOTIVO','SEM GRUPO MOTIVOS')
-      )
-    GROUP BY coalesce(v.cd_motivo_cancelamento,0)
-  )
   INSERT INTO public.motivo_cancelamento_grupo AS g VALUES
-    -- Inserção via SELECT abaixo; nenhum código existente é sobrescrito.
     (0,'SEM MOTIVO INFORMADO','Sem Registro')
     ON CONFLICT (cd_motivo_cancelamento) DO NOTHING;
 
