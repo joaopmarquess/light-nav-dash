@@ -58,7 +58,8 @@ CREATE OR REPLACE FUNCTION public.motivo_cancelamento_grupos_atualizar()
 RETURNS bigint LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public AS $$
 DECLARE n bigint;
 BEGIN
-  INSERT INTO public.motivo_cancelamento_grupo AS g VALUES
+  INSERT INTO public.motivo_cancelamento_grupo AS g
+    (cd_motivo_cancelamento,ds_motivo_cancelamento_sb,gp_motivo_cancelamento) VALUES
     (0,'SEM MOTIVO INFORMADO','Sem Registro')
     ON CONFLICT (cd_motivo_cancelamento) DO NOTHING;
 
@@ -97,10 +98,16 @@ DECLARE c integer; d text;
 BEGIN
   IF NEW.cd_motivo_deslig IS NULL THEN RETURN NEW; END IF;
   c := NEW.cd_motivo_deslig::integer;
-  IF EXISTS (SELECT 1 FROM public.motivo_cancelamento_grupo WHERE cd_motivo_cancelamento=c) THEN RETURN NEW; END IF;
+  IF EXISTS (SELECT 1 FROM public.motivo_cancelamento_grupo
+    WHERE cd_motivo_cancelamento=c AND nullif(btrim(gp_motivo_cancelamento),'') IS NOT NULL
+      AND upper(btrim(gp_motivo_cancelamento)) NOT IN ('SEM GRUPO ATRIBUÍDO','SEM GRUPO ATRIBUIDO','SEM GRUPO DE MOTIVO','SEM GRUPO MOTIVOS')) THEN RETURN NEW; END IF;
   d := coalesce(nullif(btrim(NEW.ds_motivo_deslig),''),'SEM MOTIVO INFORMADO');
-  INSERT INTO public.motivo_cancelamento_grupo VALUES (c,d,public.motivo_cancelamento_classificar(d))
-    ON CONFLICT (cd_motivo_cancelamento) DO NOTHING;
+  INSERT INTO public.motivo_cancelamento_grupo AS g
+    (cd_motivo_cancelamento,ds_motivo_cancelamento_sb,gp_motivo_cancelamento)
+    VALUES (c,d,public.motivo_cancelamento_classificar(d))
+    ON CONFLICT (cd_motivo_cancelamento) DO UPDATE SET
+      gp_motivo_cancelamento=public.motivo_cancelamento_classificar(d,g.gp_motivo_cancelamento)
+    WHERE g.gp_motivo_cancelamento IS DISTINCT FROM public.motivo_cancelamento_classificar(d,g.gp_motivo_cancelamento);
   RETURN NEW;
 END $$;
 REVOKE ALL ON FUNCTION public.motivo_cancelamento_beneficiario_aplicar() FROM PUBLIC, anon, authenticated;
