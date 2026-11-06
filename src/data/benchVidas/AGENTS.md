@@ -1,0 +1,1 @@
+- Preserve the provisional uploaded CSV verbatim; Bench Vidas reads this local snapshot only, so experimental operator data never replaces live Carteira or official accounting data.

@@ -27,3 +27,13 @@ describe("Home shortcut permissions", () => {
     for (const item of items.filter(i => i.id !== "Home")) expect(canAccess(access, item.id)).toBe(false);
   });
 });
+
+describe("Bench Vidas permission", () => {
+  it("provides a dedicated Carteira permission without granting other submenus", () => {
+    const items = axisPermissionGroups.find(g => g.label === "Carteira")?.items ?? [];
+    expect(items.find(i => i.label === "Bench Vidas")?.id).toBe("Carteira · Bench Vidas");
+    const access: AxisAccess = { status: "ok", role: "user", permissions: ["Carteira · Bench Vidas"] };
+    expect(canAccess(access, "Carteira · Bench Vidas")).toBe(true);
+    expect(canAccess(access, "Carteira · Movimentação")).toBe(false);
+  });
+});

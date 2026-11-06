@@ -1,0 +1,121 @@
+import { useMemo, useState, type ReactNode } from "react";
+import { ChevronRight, Download, Plus, X } from "lucide-react";
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from "recharts";
+import * as XLSX from "xlsx";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import fonte from "@/data/benchVidas/operadoras_vidas_3_produtos_201901_202610.csv?raw";
+import { competenciaVidas, mesesBenchVidas, nomeBenchVidas, parseBenchVidas, PLANOS_VIDAS, resumoBenchVidas, ROTULOS_VIDAS, TIPOS_VIDAS, type MesVidas, type TipoVidas } from "@/lib/benchVidas";
+
+const dados = parseBenchVidas(fonte);
+const operadoras = [...new Map(dados.map(r => [r.operadora, { reg: r.operadora, nome: nomeBenchVidas(r.nome) }])).values()];
+const anos = [...new Set(dados.map(r => r.ano))].sort((a, b) => a - b);
+const segmentos = [...new Set(dados.map(r => r.segmentacao))];
+const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+const nf = (valor: number) => valor.toLocaleString("pt-BR");
+const cores: Record<TipoVidas, string> = { saldo: "hsl(var(--primary))", adesoes: "hsl(var(--chart-2))", cancelamentos: "hsl(var(--destructive))" };
+
+function Bloco({ titulo, aberto, alternar, children, acao }: { titulo: string; aberto: boolean; alternar: () => void; children: ReactNode; acao?: ReactNode }) {
+  return <section className="shrink-0 rounded-lg border border-border bg-card shadow-sm">
+    <div className="flex items-center justify-between px-2">
+      <Button variant="ghost" onClick={alternar} aria-expanded={aberto} className="h-10 flex-1 justify-start gap-2 text-sm font-semibold"><ChevronRight className={`h-4 w-4 transition-transform motion-reduce:transition-none ${aberto ? "rotate-90" : ""}`} />{titulo}</Button>
+      {aberto && acao}
+    </div>
+    {aberto && <div className="border-t border-border p-3">{children}</div>}
+  </section>;
+}
+
+function GridVidas({ meses, plano, tipo }: { meses: MesVidas[]; plano: string; tipo: string }) {
+  const [abertos, setAbertos] = useState<Set<string>>(new Set());
+  const tipos = tipo === "todos" ? [...TIPOS_VIDAS] : TIPOS_VIDAS.filter(t => t === tipo);
+  const planos = plano === "todos" ? [...PLANOS_VIDAS] : PLANOS_VIDAS.filter(p => p === plano);
+  const toggle = (key: string) => setAbertos(s => { const next = new Set(s); next.has(key) ? next.delete(key) : next.add(key); return next; });
+  const expansor = (key: string, label: string) => <Button variant="ghost" size="icon" aria-label={`${abertos.has(key) ? "Recolher" : "Expandir"} ${label}`} aria-expanded={abertos.has(key)} onClick={() => toggle(key)} className="mr-1 h-6 w-6"><ChevronRight className={`h-4 w-4 transition-transform motion-reduce:transition-none ${abertos.has(key) ? "rotate-90" : ""}`} /></Button>;
+  const resumo = resumoBenchVidas(meses);
+  const celulas = (valores: Record<TipoVidas, number>) => tipos.map(t => <td key={t} className="border-l border-border px-3 py-2 text-right tabular-nums">{nf(valores[t])}</td>);
+  return <div className="max-h-[460px] overflow-auto">
+    <table className="w-full min-w-[620px] text-sm">
+      <thead className="sticky top-0 z-10 bg-muted"><tr><th className="px-3 py-2 text-left">Ano</th><th className="px-3 py-2 text-left">Mês</th><th className="px-3 py-2 text-left">Contratação</th>{tipos.map(t => <th key={t} className="border-l border-border px-3 py-2 text-right">{ROTULOS_VIDAS[t]}</th>)}</tr></thead>
+      <tbody>
+        <tr className="border-t border-border bg-muted/40 font-semibold"><td className="px-3 py-1.5">{expansor("ano", String(meses[0]?.ano))}{meses[0]?.ano}</td><td className="px-3 py-2 text-muted-foreground">{meses.length}/12 meses</td><td>Total</td>{celulas(resumo)}</tr>
+        {abertos.has("ano") && [...meses].reverse().map(m => <FragmentoMes key={m.competencia} mes={m} aberto={abertos.has(m.competencia)} expansor={expansor(m.competencia, competenciaVidas(m.competencia))} planos={planos} celulas={celulas} />)}
+      </tbody>
+    </table>
+  </div>;
+}
+
+function FragmentoMes({ mes, aberto, expansor, planos, celulas }: { mes: MesVidas; aberto: boolean; expansor: ReactNode; planos: typeof PLANOS_VIDAS[number][]; celulas: (v: Record<TipoVidas, number>) => ReactNode }) {
+  return <>
+    <tr className="border-t border-border font-medium"><td className="px-3 py-2 pl-10">{mes.ano}</td><td className="px-3 py-1.5">{expansor}{MESES[mes.mes - 1]}</td><td>Total</td>{celulas(mes)}</tr>
+    {aberto && planos.map(p => <tr key={p} className="border-t border-border/50 text-muted-foreground"><td className="px-3 py-2 pl-10">{mes.ano}</td><td className="px-3 py-2 pl-10">{MESES[mes.mes - 1]}</td><td className="px-3 py-2">{p}</td>{celulas(mes.planos[p])}</tr>)}
+  </>;
+}
+
+export default function BenchVidas() {
+  const [selecionadas, setSelecionadas] = useState(operadoras.map(o => o.reg));
+  const [operadora, setOperadora] = useState("366561");
+  const [ano, setAno] = useState(anos.at(-1) ?? 2026);
+  const [plano, setPlano] = useState("todos");
+  const [tipo, setTipo] = useState("saldo");
+  const [segmentacao, setSegmentacao] = useState("todos");
+  const [graficoAberto, setGraficoAberto] = useState(true);
+  const [gridAberto, setGridAberto] = useState(false);
+  const [opsAberto, setOpsAberto] = useState(false);
+  const [busca, setBusca] = useState("");
+  const meses = useMemo(() => mesesBenchVidas(dados, operadora, ano, plano, segmentacao), [operadora, ano, plano, segmentacao]);
+  const resumo = resumoBenchVidas(meses);
+  const atual = operadoras.find(o => o.reg === operadora);
+  const opcoes = operadoras.filter(o => !selecionadas.includes(o.reg) && `${o.nome} ${o.reg}`.toLocaleLowerCase("pt-BR").includes(busca.toLocaleLowerCase("pt-BR")));
+  const tipos = tipo === "todos" ? TIPOS_VIDAS : TIPOS_VIDAS.filter(t => t === tipo);
+  const baixar = () => {
+    const rows = dados.filter(r => r.operadora === operadora && r.ano === ano && (plano === "todos" || plano === r.plano) && (tipo === "todos" || tipo === r.tipo) && (segmentacao === "todos" || segmentacao === r.segmentacao)).map(r => [nomeBenchVidas(r.nome), competenciaVidas(r.competencia), r.plano, ROTULOS_VIDAS[r.tipo], r.vidas]);
+    const ws = XLSX.utils.aoa_to_sheet([["Operadora", "Mês", "Contratação", "Tipo", "Vidas"], ...rows]);
+    ws["!cols"] = [{ wch: 32 }, { wch: 12 }, { wch: 14 }, { wch: 20 }, { wch: 12 }];
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Bench Vidas"); XLSX.writeFile(wb, `bench_vidas_${operadora}_${ano}.xlsx`);
+  };
+  return <div className="flex h-full min-h-0 flex-col gap-3">
+    <div className="flex shrink-0 justify-center">
+      <div aria-label="Operadoras" className="flex max-w-full flex-wrap items-center justify-center gap-1 rounded-full border border-border bg-card p-1.5 shadow-sm">
+        <span className="px-3 text-sm font-semibold">Operadoras</span>
+        {selecionadas.map(reg => { const op = operadoras.find(o => o.reg === reg); return <div key={reg} className="flex items-center gap-0.5">
+          <Button variant="ghost" aria-pressed={operadora === reg} title={`ANS ${reg}`} onClick={() => setOperadora(reg)} className={`h-auto min-h-8 max-w-72 whitespace-normal rounded-full text-sm ${operadora === reg ? "bg-primary text-primary-foreground" : "bg-muted"}`}>{op?.nome}</Button>
+          {reg !== "366561" && <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" title={`Retirar ${op?.nome}`} aria-label={`Retirar ${op?.nome}`} onClick={() => { setSelecionadas(s => s.filter(r => r !== reg)); if (operadora === reg) setOperadora("366561"); }}><X className="h-3 w-3" /></Button>}
+        </div>; })}
+        <Popover open={opsAberto} onOpenChange={setOpsAberto}><PopoverTrigger asChild><Button variant="ghost" className="h-8 gap-1 rounded-full"><Plus className="h-4 w-4" />Incluir OPS</Button></PopoverTrigger><PopoverContent className="w-80 max-w-[calc(100vw-2rem)] p-2"><Input autoFocus aria-label="Buscar operadora" placeholder="Buscar por nome ou registro ANS" value={busca} onChange={e => setBusca(e.target.value)} /><div className="mt-2 max-h-60 overflow-auto">{opcoes.map(o => <Button key={o.reg} variant="ghost" className="h-auto w-full justify-start whitespace-normal text-left" onClick={() => { setSelecionadas(s => [...s, o.reg]); setOperadora(o.reg); setOpsAberto(false); setBusca(""); }}>{o.nome} · {o.reg}</Button>)}{!opcoes.length && <p className="p-2 text-sm text-muted-foreground">Nenhuma operadora disponível.</p>}</div></PopoverContent></Popover>
+      </div>
+    </div>
+    <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+      <div className="flex flex-wrap items-center gap-3 border-y border-border py-3">
+        <span className="text-sm font-semibold">Filtros</span>
+        <label className="flex items-center gap-2 text-sm">Contratação<Select value={plano} onValueChange={setPlano}><SelectTrigger aria-label="Contratação" className="w-32"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todas</SelectItem>{PLANOS_VIDAS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></label>
+        <label className="flex items-center gap-2 text-sm">Tipo<Select value={tipo} onValueChange={setTipo}><SelectTrigger aria-label="Tipo" className="w-44"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todos</SelectItem>{TIPOS_VIDAS.map(t => <SelectItem key={t} value={t}>{ROTULOS_VIDAS[t]}</SelectItem>)}</SelectContent></Select></label>
+        <label className="flex items-center gap-2 text-sm">Segmentação<Select value={segmentacao} onValueChange={setSegmentacao}><SelectTrigger aria-label="Segmentação" className="w-44"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todas</SelectItem>{segmentos.map(s => <SelectItem key={s} value={s}>{s === "plano_saude" ? "Plano de saúde" : s}</SelectItem>)}</SelectContent></Select></label>
+        <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label="Limpar filtros" onClick={() => { setPlano("todos"); setTipo("saldo"); setSegmentacao("todos"); }}><X className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Limpar filtros</TooltipContent></Tooltip>
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-sm"><strong>{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} · {ano}</span></strong><span className="text-xs text-muted-foreground">CSV provisório · 01/2019–10/2026</span></div>
+      {meses.length ? <>
+        <div className="grid grid-cols-1 divide-y divide-border border-y border-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          {TIPOS_VIDAS.map(t => <div key={t} className="px-4 py-3"><p className="text-xs text-muted-foreground">{ROTULOS_VIDAS[t]} · {t === "saldo" ? competenciaVidas(meses.at(-1)?.competencia ?? "") : ano}</p><p className="mt-1 text-xl font-semibold tabular-nums">{nf(resumo[t])}</p></div>)}
+        </div>
+        <Bloco titulo="Gráfico" aberto={graficoAberto} alternar={() => setGraficoAberto(s => !s)}>
+          <div className="mb-2 flex flex-wrap gap-4 text-xs text-muted-foreground">{tipos.map(t => <span key={t}>{ROTULOS_VIDAS[t]}</span>)}</div>
+          <div className="h-[300px] w-full" role="img" aria-label={`Evolução de ${tipos.map(t => ROTULOS_VIDAS[t]).join(", ")} de ${atual?.nome} em ${ano}`}>
+            <ResponsiveContainer width="100%" height="100%"><LineChart data={meses.map(m => ({ ...m, label: MESES[m.mes - 1] }))} margin={{ top: 16, right: 20, left: 8, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" /><YAxis width={70} tickFormatter={v => nf(Number(v))} stroke="hsl(var(--muted-foreground))" />
+              <ChartTooltip labelFormatter={(_, payload) => competenciaVidas(String(payload[0]?.payload?.competencia ?? ""))} formatter={(v: number) => nf(v)} contentStyle={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }} />
+              {tipos.map(t => <Line key={t} type="monotone" name={ROTULOS_VIDAS[t]} dataKey={t} stroke={cores[t]} strokeWidth={2.5} dot={{ r: 3 }} isAnimationActive={false} />)}
+            </LineChart></ResponsiveContainer>
+          </div>
+        </Bloco>
+        <Bloco titulo="Grid" aberto={gridAberto} alternar={() => setGridAberto(s => !s)} acao={<Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={baixar} aria-label="Baixar Bench Vidas em xlsx"><Download className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Baixar grid expandido (xlsx)</TooltipContent></Tooltip>}>
+          <GridVidas key={`${operadora}-${ano}-${plano}-${tipo}-${segmentacao}`} meses={meses} plano={plano} tipo={tipo} />
+          <p className="mt-2 text-xs text-muted-foreground">Saldo anual: último mês disponível. Adesões e cancelamentos: soma dos meses disponíveis. Valores preservados do CSV provisório.</p>
+        </Bloco>
+      </> : <p role="status" className="py-8 text-sm text-muted-foreground">Nenhum registro para os filtros selecionados.</p>}
+    </div>
+    <nav aria-label="Anos do Bench Vidas" className="flex shrink-0 justify-center pb-2 pt-1"><div className="flex max-w-full flex-wrap items-center justify-center gap-0.5 rounded-full border border-border bg-card p-1.5 shadow-sm"><span className="px-3 text-sm font-semibold">Ano</span>{anos.map(a => <Button key={a} variant="ghost" aria-pressed={ano === a} onClick={() => setAno(a)} className={`h-8 rounded-full px-3 ${ano === a ? "bg-primary text-primary-foreground" : "text-foreground/70"}`}>{a}</Button>)}</div></nav>
+  </div>;
+}

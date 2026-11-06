@@ -2,6 +2,7 @@ import CarteiraTrial from "@/components/CarteiraTrial";
 import CarteiraTrialGeo from "@/components/CarteiraTrialGeo";
 import CarteiraTrialMov from "@/components/CarteiraTrialMov";
 import MovimentacaoEvolucaoMensal from "@/components/MovimentacaoEvolucaoMensal";
+import BenchVidas from "@/components/BenchVidas";
 import CarteiraTabelas from "@/components/CarteiraTabelas";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -647,6 +648,8 @@ const Index = () => {
             <CarteiraTrialMov />
           ) : active === "Carteira · Evolução Mensal" ? (
             <MovimentacaoEvolucaoMensal />
+          ) : active === "Carteira · Bench Vidas" ? (
+            <div className="flex-1 min-h-0"><BenchVidas /></div>
           ) : active === "Carteira · Área Geográfica" ? (
             <CarteiraTrialGeo />
           ) : active === "Carteira · Consulta" ? (
