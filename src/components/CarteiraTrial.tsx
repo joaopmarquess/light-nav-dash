@@ -129,7 +129,7 @@ export default function CarteiraTrial() {
   const df = ap?.f ?? EMPTY;
   const dRef = ap?.d ?? "";
   const buscar = () => { if (!suspensos || f.status === "S") setGrid(true); setAp({ f: { ...f }, d: suspensos || f.status === "S" ? sp.ate : dataRef || new Date().toISOString().slice(0, 10) }); };
-  const rows = useMemo(() => {
+  const rows = useMemo<Row[]>(() => {
     const agrupadas = agrupar(raw, dRef || new Date().toISOString().slice(0, 10));
     return df.status === "S" ? agrupadas.filter((r) => r.st === "A").map((r) => ({ ...r, st: "S" })) : agrupadas;
   }, [raw, dRef, df.status]);
