@@ -111,8 +111,8 @@ export default function BenchVidas() {
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm"><strong>{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} · {ano}</span></strong><span className="text-xs text-muted-foreground">ANS · {competenciaVidas(catalogo.inicio)}–{competenciaVidas(catalogo.fim)}</span></div>
       <p className="text-xs text-muted-foreground">Fonte: microdados ANS por operadora · {catalogo.arquivos.length} arquivos trimestrais · {nf(operadoras.length)} operadoras no histórico · Adesões e cancelamentos não disponíveis nesta fonte.</p>
       {carregando ? <p role="status" className="py-8 text-sm text-muted-foreground">Carregando {ano}…</p> : erro ? <div role="alert" className="py-8 text-sm text-destructive">{erro}<Button variant="outline" className="ml-3" onClick={() => setTentativa(t => t + 1)}>Tentar novamente</Button></div> : meses.length ? <>
-        <div className="grid grid-cols-1 divide-y divide-border border-y border-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-          {TIPOS_VIDAS.map(t => <div key={t} className="px-4 py-3"><p className="text-xs text-muted-foreground">{ROTULOS_VIDAS[t]} · {t === "saldo" ? competenciaVidas(meses.at(-1)?.competencia ?? "") : ano}</p><p className="mt-1 text-xl font-semibold tabular-nums">{nf(resumo[t])}</p></div>)}
+        <div className="border-y border-border">
+          <div className="px-4 py-3"><p className="text-xs text-muted-foreground">{ROTULOS_VIDAS.saldo} · {competenciaVidas(meses.at(-1)?.competencia ?? "")}</p><p className="mt-1 text-xl font-semibold tabular-nums">{nf(resumo.saldo)}</p></div>
         </div>
         <Bloco titulo="Gráfico" aberto={graficoAberto} alternar={() => setGraficoAberto(s => !s)}>
           <div className="mb-2 flex flex-wrap gap-4 text-xs text-muted-foreground">{tipos.map(t => <span key={t}>{ROTULOS_VIDAS[t]}</span>)}</div>
