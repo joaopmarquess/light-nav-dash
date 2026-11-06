@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Loader2, Search, User, FileText, Wallet, Activity, History, LayoutGrid } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { hostinger } from "@/lib/hostingerClient";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
-  CATEGORIAS_DESPESA, despesaMes, linhaDoTempo, porCompetencia, receitaMes, registroAtual, resumoEard, statusInfo,
+  CATEGORIAS_DESPESA, comporCodigoAlternativo, despesaMes, linhaDoTempo, porCompetencia, receitaMes, registroAtual, resumoEard, statusInfo,
   type CarteiraRow, type EardRow,
 } from "@/lib/painelBeneficiario";
 
@@ -66,6 +68,7 @@ function Card({ label, value, sub }: { label: string; value: React.ReactNode; su
 export default function PainelBeneficiario() {
   const [modo, setModo] = useState<Modo>("nome");
   const [termo, setTermo] = useState("");
+  const [codigo, setCodigo] = useState({ plano: "", contrato: "", dep: "" });
   const [buscando, setBuscando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [resultados, setResultados] = useState<CarteiraRow[] | null>(null);
@@ -81,11 +84,12 @@ export default function PainelBeneficiario() {
 
   async function buscar() {
     const t = termo.trim();
-    if (!t) return;
+    if (modo !== "alternativa" && !t) return;
     setErro(null); setBuscando(true); setResultados(null);
     try {
       let q = hostinger.from("view_ecarteira").select(COLS_BUSCA).eq("tp_plano", "SAUDE").limit(300);
-      const dig = t.replace(/\D/g, "");
+      const dig = modo === "alternativa" ? comporCodigoAlternativo(codigo.plano, codigo.contrato, codigo.dep) : t.replace(/\D/g, "");
+      if (modo === "alternativa") setCodigo({ plano: dig.slice(0, 4), contrato: dig.slice(4, 10), dep: dig.slice(-2) });
       if (modo === "nome") { if (t.length < 3) throw new Error("Digite ao menos 3 letras do nome."); q = q.ilike("nm_beneficiario", `%${t.toUpperCase()}%`); }
       else if (!dig) throw new Error("Informe apenas números para este tipo de pesquisa.");
       else if (modo === "cpf") q = q.eq("nr_cpf", String(Number(dig)));
@@ -155,17 +159,34 @@ export default function PainelBeneficiario() {
             </button>
           ))}
         </div>
-        <div className="flex gap-2">
-          <div className="relative flex-1">
+        <div className="flex flex-wrap items-end gap-2">
+          {modo === "alternativa" ? (
+            <div className="grid min-w-0 flex-1 basis-full grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,0.7fr)] gap-2 sm:basis-0">
+              {([
+                { key: "plano", label: "Plano", tamanho: 4 },
+                { key: "contrato", label: "Contrato", tamanho: 6 },
+                { key: "dep", label: "Dep", tamanho: 2 },
+              ] as const).map(({ key, label, tamanho }) => (
+                <label key={key} htmlFor={`codigo-${key}`} className="min-w-0 space-y-1 text-xs text-muted-foreground">
+                  <span>{label}</span>
+                  <Input id={`codigo-${key}`} type="text" inputMode="numeric" maxLength={tamanho}
+                    value={codigo[key]} placeholder={"0".repeat(tamanho)}
+                    onChange={(e) => setCodigo((anterior) => ({ ...anterior, [key]: e.target.value.replace(/\D/g, "").slice(0, tamanho) }))}
+                    onKeyDown={(e) => e.key === "Enter" && buscar()}
+                    className="h-12 text-base tabular-nums" />
+                </label>
+              ))}
+            </div>
+          ) : <div className="relative min-w-0 flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
             <input value={termo} onChange={(e) => setTermo(e.target.value)} onKeyDown={(e) => e.key === "Enter" && buscar()} autoFocus
-              placeholder={modo === "nome" ? "Pesquisar por nome (parte do nome)…" : `Pesquisar por ${MODOS.find((x) => x.id === modo)!.label.toLowerCase()}…`}
+              placeholder={modo === "nome" ? "Pesquisar por nome (parte do nome)…" : `Pesquisar por ${MODOS.find((x) => x.id === modo)?.label.toLowerCase() ?? "código"}…`}
               className="h-12 w-full rounded-lg border border-border bg-background pl-11 pr-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-          </div>
-          <button type="button" onClick={buscar} disabled={buscando}
-            className="inline-flex h-12 items-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
+          </div>}
+          <Button type="button" onClick={buscar} disabled={buscando}
+            className="h-12 px-6">
             {buscando && <Loader2 className="h-4 w-4 animate-spin" />}Pesquisar
-          </button>
+          </Button>
         </div>
         {erro && <p className="mt-2 text-xs text-destructive">{erro}</p>}
         {resultados && resultados.length === 0 && <p className="mt-2 text-xs text-muted-foreground">Nenhum beneficiário encontrado.</p>}
