@@ -161,9 +161,9 @@ export default function PainelBeneficiario() {
             </Button>
           ))}
         </div>
-        <div className={modo === "alternativa" ? "flex w-0 min-w-full items-end gap-2" : "flex flex-wrap items-end gap-2"}>
+        <div className={modo === "alternativa" ? "flex w-0 min-w-full flex-wrap items-end gap-2 sm:flex-nowrap" : "flex flex-wrap items-end gap-2"}>
           {modo === "alternativa" ? (
-            <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,0.7fr)] gap-2">
+            <div className="grid min-w-0 flex-1 basis-full grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,0.7fr)] gap-2 sm:basis-0">
               {([
                 { key: "plano", label: "Plano", tamanho: 4 },
                 { key: "contrato", label: "Contrato", tamanho: 6 },
