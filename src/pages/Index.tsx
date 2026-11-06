@@ -2,6 +2,7 @@ import CarteiraTrial from "@/components/CarteiraTrial";
 import CarteiraTrialGeo from "@/components/CarteiraTrialGeo";
 import CarteiraTrialMov from "@/components/CarteiraTrialMov";
 import MovimentacaoEvolucaoMensal from "@/components/MovimentacaoEvolucaoMensal";
+import BenchVidas from "@/components/BenchVidas";
 import CarteiraTabelas from "@/components/CarteiraTabelas";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -479,7 +480,7 @@ const Index = () => {
           </div>
         </header>
 
-        <main className={`flex-1 min-h-0 overflow-hidden flex flex-col ${active === "Área Geográfica" || active === "Dashboard" ? "" : "p-8"}`}>
+        <main className={`flex-1 min-h-0 overflow-hidden flex flex-col ${active === "Área Geográfica" || active === "Dashboard" ? "" : active === "Carteira · Bench Vidas" ? "p-3 sm:p-8" : "p-8"}`}>
           {LAB_IDS.has(active) && (
             <nav aria-label="Menu Laboratory" className="mb-4 flex shrink-0 flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-2 shadow-sm">
               <button disabled={!can("Laboratory")} type="button" onClick={() => setActive("Laboratory")} className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-primary hover:bg-accent`}>
@@ -647,6 +648,8 @@ const Index = () => {
             <CarteiraTrialMov />
           ) : active === "Carteira · Evolução Mensal" ? (
             <MovimentacaoEvolucaoMensal />
+          ) : active === "Carteira · Bench Vidas" ? (
+            <div className="h-full min-h-0"><BenchVidas /></div>
           ) : active === "Carteira · Área Geográfica" ? (
             <CarteiraTrialGeo />
           ) : active === "Carteira · Consulta" ? (

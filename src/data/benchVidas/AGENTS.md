@@ -1,0 +1,2 @@
+- Preserve the provisional uploaded CSV verbatim; Bench Vidas reads this local snapshot only, so experimental operator data never replaces live Carteira or official accounting data.
+- Derive filters and totals through the tested benchVidas helper: annual stock is the last supplied monthly saldo, while adhesions and cancellations sum available months; never infer saldo from net movement.
