@@ -1,10 +1,17 @@
 import { describe, expect, it } from "vitest";
 import catalogo from "@/data/benchVidas/ans/catalogo.json";
-import { adaptarVidasAns, crescimentoPeriodoVidasAns, escalaVidasAns, limitesPeriodoVidasAns, nomeOperadoraAns, periodoPadraoVidasAns, planosDisponiveisAns, type RegistroAnsVidas } from "./benchVidasAns";
+import { adaptarVidasAns, crescimentoPeriodoVidasAns, escalaVidasAns, limitesPeriodoVidasAns, nomeOperadoraAns, percentualCrescimentoVidasAns, periodoPadraoVidasAns, planosDisponiveisAns, type RegistroAnsVidas } from "./benchVidasAns";
 import { mesesBenchVidas, resumoBenchVidas } from "./benchVidas";
 
 const registros: RegistroAnsVidas[] = [["366561", "202609", "1", 36425, 0], ["366561", "202609", "2", 9904, 0], ["366561", "202609", "3", 25550, 0]];
 describe("ANS DBC historical base", () => {
+  it("computes growth percentage against the initial balance", () => {
+    expect(percentualCrescimentoVidasAns(41978.75, 33583)).toBe(80);
+    expect(percentualCrescimentoVidasAns(100, -20)).toBe(-20);
+    expect(percentualCrescimentoVidasAns(100, 0)).toBe(0);
+    expect(percentualCrescimentoVidasAns(0, 100)).toBeNull();
+    expect(percentualCrescimentoVidasAns(null, 100)).toBeNull();
+  });
   it("initializes the period picker with the smallest and largest available years", () => {
     expect(limitesPeriodoVidasAns(catalogo.anos)).toEqual({ de: 2011, ate: 2026 });
     expect(limitesPeriodoVidasAns([2025, 2019, 2024])).toEqual({ de: 2019, ate: 2025 });
