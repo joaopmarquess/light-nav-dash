@@ -1,4 +1,5 @@
 - [ ] Conferir dicas de origem dos campos no grid de Saídas e consultar situação atual da matrícula 15/025283-04.
+- [ ] Explicar por que 15/025283-04 aparece sem motivo, comparando cadastro e linhas históricas sem modificar registros.
 - [x] Preparar função Hostinger de classificação ordenada preservando grupos existentes; prioridades, carga inicial, idempotência e novos códigos testados em PostgreSQL isolado UTF-8; arquivo SQL entregue.
 - [x] Instalação Hostinger confirmada por Dênis e leitura real validada: 66 códigos, nenhum sem grupo, oito categorias incluindo Sem Registro; prioridades e preservação de grupos conferidas via função instalada. Incremental testado em banco isolado, sem inserir registros artificiais na produção.
 - [x] Criar Carteira › Bench Vidas com CSV provisório, filtros, navegação Operadoras/Ano, gráfico aberto e grid recolhido expansível Ano/Mês/Contratação; 21 testes aprovados, troca/inclusão de OPS, anos, totais de outubro e download xlsx conferidos com acesso autorizado, sem alterar dados reais.
