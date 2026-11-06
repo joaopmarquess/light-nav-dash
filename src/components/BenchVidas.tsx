@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { ChevronRight, Download, Plus, X } from "lucide-react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from "recharts";
 import * as XLSX from "xlsx";
@@ -7,16 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import fonte from "@/data/benchVidas/bench_vidas_unificado_2024_2025_2026.csv?raw";
-import { competenciaVidas, mesesBenchVidas, nomeBenchVidas, parseBenchVidasUnificado, PLANOS_VIDAS, resumoBenchVidas, ROTULOS_VIDAS, TIPOS_VIDAS, type MesVidas, type TipoVidas } from "@/lib/benchVidas";
+import catalogo from "@/data/benchVidas/ans/catalogo.json";
+import { adaptarVidasAns, carregarVidasAns } from "@/lib/benchVidasAns";
+import { competenciaVidas, mesesBenchVidas, nomeBenchVidas, PLANOS_VIDAS, resumoBenchVidas, ROTULOS_VIDAS, TIPOS_VIDAS, type BenchVida, type MesVidas, type TipoVidas } from "@/lib/benchVidas";
 
-const importacao = parseBenchVidasUnificado(fonte);
-const dados = importacao.dados;
 const nomes: Record<string, string> = { "366561": "Bensaúde", "327417": "Austaclínicas", "350249": "H.B. Saúde", "335100": "Unimed Rio Preto" };
-const operadoras = [...new Map(dados.map(r => [r.operadora, { reg: r.operadora, nome: nomes[r.operadora] ?? nomeBenchVidas(r.nome) }])).values()];
-const competencias = dados.map(r => r.competencia).sort();
-const anos = [...new Set(dados.map(r => r.ano))].sort((a, b) => a - b);
-const segmentos = [...new Set(dados.map(r => r.segmentacao))];
+const operadoras = catalogo.operadoras.map(o => ({ ...o, nome: nomes[o.reg] ?? o.nome }));
+const nomesOps = new Map(operadoras.map(o => [o.reg, o.nome]));
+const anos = catalogo.anos;
+const segmentos = ["Plano de saúde", "Odontológico"];
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 const nf = (valor: number | null) => valor === null ? "Não informado" : valor.toLocaleString("pt-BR");
 const cores: Record<TipoVidas, string> = { saldo: "hsl(var(--primary))", adesoes: "hsl(var(--chart-2))", cancelamentos: "hsl(var(--destructive))" };
@@ -43,7 +42,7 @@ function GridVidas({ meses, plano, tipo }: { meses: MesVidas[]; plano: string; t
     <table className="w-full min-w-[620px] text-sm">
       <thead className="sticky top-0 z-10 bg-muted"><tr><th className="px-3 py-2 text-left">Ano</th><th className="px-3 py-2 text-left">Mês</th><th className="px-3 py-2 text-left">Contratação</th>{tipos.map(t => <th key={t} className="border-l border-border px-3 py-2 text-right">{ROTULOS_VIDAS[t]}</th>)}</tr></thead>
       <tbody>
-        <tr className="border-t border-border bg-muted/40 font-semibold"><td className="px-3 py-1.5">{expansor("ano", String(meses[0]?.ano))}{meses[0]?.ano}</td><td className="px-3 py-2 text-muted-foreground">{meses.length}/12 meses</td><td>Total</td>{celulas(resumo)}</tr>
+        <tr className="border-t border-border bg-muted/40 font-semibold"><td className="px-3 py-1.5">{expansor("ano", String(meses[0]?.ano))}{meses[0]?.ano}</td><td className="px-3 py-2 text-muted-foreground">{meses.length} trimestres</td><td>Total</td>{celulas(resumo)}</tr>
         {abertos.has("ano") && [...meses].reverse().map(m => <FragmentoMes key={m.competencia} mes={m} aberto={abertos.has(m.competencia)} expansor={expansor(m.competencia, competenciaVidas(m.competencia))} planos={planos} celulas={celulas} />)}
       </tbody>
     </table>
@@ -58,7 +57,7 @@ function FragmentoMes({ mes, aberto, expansor, planos, celulas }: { mes: MesVida
 }
 
 export default function BenchVidas() {
-  const [selecionadas, setSelecionadas] = useState(operadoras.map(o => o.reg));
+  const [selecionadas, setSelecionadas] = useState(["366561", "327417", "350249", "335100"]);
   const [operadora, setOperadora] = useState("366561");
   const [ano, setAno] = useState(anos.at(-1) ?? 2026);
   const [plano, setPlano] = useState("todos");
@@ -68,7 +67,19 @@ export default function BenchVidas() {
   const [gridAberto, setGridAberto] = useState(false);
   const [opsAberto, setOpsAberto] = useState(false);
   const [busca, setBusca] = useState("");
-  const meses = useMemo(() => mesesBenchVidas(dados, operadora, ano, plano, segmentacao), [operadora, ano, plano, segmentacao]);
+  const [dados, setDados] = useState<BenchVida[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState("");
+  const [tentativa, setTentativa] = useState(0);
+  useEffect(() => {
+    let ativo = true;
+    setCarregando(true); setErro(""); setDados([]);
+    carregarVidasAns(ano).then(registros => {
+      if (ativo) setDados(adaptarVidasAns(registros, nomesOps));
+    }).catch(() => { if (ativo) setErro("Não foi possível carregar os dados da ANS."); }).finally(() => { if (ativo) setCarregando(false); });
+    return () => { ativo = false; };
+  }, [ano, tentativa]);
+  const meses = useMemo(() => mesesBenchVidas(dados, operadora, ano, plano, segmentacao), [dados, operadora, ano, plano, segmentacao]);
   const resumo = resumoBenchVidas(meses);
   const atual = operadoras.find(o => o.reg === operadora);
   const opcoes = operadoras.filter(o => !selecionadas.includes(o.reg) && `${o.nome} ${o.reg}`.toLocaleLowerCase("pt-BR").includes(busca.toLocaleLowerCase("pt-BR")));
@@ -98,9 +109,9 @@ export default function BenchVidas() {
         <label className="flex items-center gap-2 text-sm">Segmentação<Select value={segmentacao} onValueChange={setSegmentacao}><SelectTrigger aria-label="Segmentação" className="w-44"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todas</SelectItem>{segmentos.map(s => <SelectItem key={s} value={s}>{s === "plano_saude" ? "Plano de saúde" : s}</SelectItem>)}</SelectContent></Select></label>
         <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label="Limpar filtros" onClick={() => { setPlano("todos"); setTipo("saldo"); setSegmentacao("todos"); }}><X className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Limpar filtros</TooltipContent></Tooltip>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-2 text-sm"><strong>{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} · {ano}</span></strong><span className="text-xs text-muted-foreground">Planilha unificada · {competenciaVidas(competencias[0])}–{competenciaVidas(competencias[competencias.length - 1])}</span></div>
-      <p className="text-xs text-muted-foreground">Fonte: BENCH_VIDAS_Unificado_2024_2025_2026_Corrigido_Final.xlsx · {nf(importacao.semCompetencia)} linhas sem competência normalizada fora da série mensal · {nf(importacao.versoesAnteriores)} linhas de versões anteriores desconsideradas.</p>
-      {meses.length ? <>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-sm"><strong>{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} · {ano}</span></strong><span className="text-xs text-muted-foreground">ANS · {competenciaVidas(catalogo.inicio)}–{competenciaVidas(catalogo.fim)}</span></div>
+      <p className="text-xs text-muted-foreground">Fonte: microdados ANS por operadora · {catalogo.arquivos.length} arquivos trimestrais · {nf(operadoras.length)} operadoras no histórico · Adesões e cancelamentos não disponíveis nesta fonte.</p>
+      {carregando ? <p role="status" className="py-8 text-sm text-muted-foreground">Carregando {ano}…</p> : erro ? <div role="alert" className="py-8 text-sm text-destructive">{erro}<Button variant="outline" className="ml-3" onClick={() => setTentativa(t => t + 1)}>Tentar novamente</Button></div> : meses.length ? <>
         <div className="grid grid-cols-1 divide-y divide-border border-y border-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
           {TIPOS_VIDAS.map(t => <div key={t} className="px-4 py-3"><p className="text-xs text-muted-foreground">{ROTULOS_VIDAS[t]} · {t === "saldo" ? competenciaVidas(meses.at(-1)?.competencia ?? "") : ano}</p><p className="mt-1 text-xl font-semibold tabular-nums">{nf(resumo[t])}</p></div>)}
         </div>
@@ -116,7 +127,7 @@ export default function BenchVidas() {
         </Bloco>
         <Bloco titulo="Grid" aberto={gridAberto} alternar={() => setGridAberto(s => !s)} acao={<Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={baixar} aria-label="Baixar Bench Vidas em xlsx"><Download className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Baixar grid expandido (xlsx)</TooltipContent></Tooltip>}>
           <GridVidas key={`${operadora}-${ano}-${plano}-${tipo}-${segmentacao}`} meses={meses} plano={plano} tipo={tipo} />
-          <p className="mt-2 text-xs text-muted-foreground">Saldo anual: último mês disponível. Adesões e cancelamentos: soma dos meses disponíveis; campos ausentes permanecem Não informado. Referência mais recente por operadora e mês.</p>
+          <p className="mt-2 text-xs text-muted-foreground">Saldo anual: último trimestre disponível, sem somar estoques. Quantidades de vínculos, não de pessoas únicas. Contratação combinada preservada sem distribuição entre PIF e PCE.</p>
         </Bloco>
       </> : <p role="status" className="py-8 text-sm text-muted-foreground">Nenhum registro para os filtros selecionados.</p>}
     </div>

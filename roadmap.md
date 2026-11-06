@@ -1,3 +1,4 @@
+- [x] Criar base pesquisável ANS e trocar fonte do Bench Vidas: 62 DBCs, 1.679 OPS, 3.490.950 linhas reconciliadas, partições por ano; 12 testes aprovados, busca Bradesco, 2011, grid Bensaúde setembro/2026 (71.879) e xlsx conferidos; sem atualização automática.
 - [x] Substituir fonte do Bench Vidas pela planilha anexada: lacunas sem inferência, versão mensal mais recente, oito testes aprovados; totais reais de janeiro a junho/2026, expansão, troca de operadora e download conferidos com acesso autorizado.
 - [x] Incluir cinco filtros em Saídas com Só cancelamentos default; sete testes aprovados e alternância autenticada conferida em 11/05/2026: oito cancelamentos, uma transferência e nove no Todos; Reativados e Suspensos vazios nesse dia.
 - [x] Restringir Carteira Saídas às linhas S: dois testes aprovados, filtro tp_linha=eq.S confirmado nas consultas e grid real de 11/05/2026 conferido; Entradas e Movimentação preservadas.

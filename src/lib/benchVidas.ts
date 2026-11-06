@@ -2,7 +2,7 @@ import Papa from "papaparse";
 
 export const TIPOS_VIDAS = ["saldo", "adesoes", "cancelamentos"] as const;
 export type TipoVidas = typeof TIPOS_VIDAS[number];
-export const PLANOS_VIDAS = ["PIF", "PCA", "PCE", "Não informado"] as const;
+export const PLANOS_VIDAS = ["PIF", "PCA", "PCE", "Não informado", "PIF + PCE"] as const;
 export type PlanoVidas = typeof PLANOS_VIDAS[number];
 export const ROTULOS_VIDAS: Record<TipoVidas, string> = { saldo: "Saldo de vidas", adesoes: "Adesões", cancelamentos: "Cancelamentos" };
 export type BenchVida = { operadora: string; nome: string; competencia: string; ano: number; mes: number; segmentacao: string; plano: PlanoVidas; tipo: TipoVidas; vidas: number | null };
@@ -56,7 +56,7 @@ export function mesesBenchVidas(dados: BenchVida[], operadora: string, ano: numb
   dados.filter(r => r.operadora === operadora && r.ano === ano && (plano === "todos" || r.plano === plano) && (segmentacao === "todos" || r.segmentacao === segmentacao)).forEach(r => {
     let mes = meses.get(r.competencia);
     if (!mes) {
-      mes = { competencia: r.competencia, ano: r.ano, mes: r.mes, saldo: 0, adesoes: 0, cancelamentos: 0, planos: { PIF: { saldo: 0, adesoes: 0, cancelamentos: 0 }, PCA: { saldo: 0, adesoes: 0, cancelamentos: 0 }, PCE: { saldo: 0, adesoes: 0, cancelamentos: 0 }, "Não informado": { saldo: 0, adesoes: 0, cancelamentos: 0 } } };
+      mes = { competencia: r.competencia, ano: r.ano, mes: r.mes, saldo: 0, adesoes: 0, cancelamentos: 0, planos: { PIF: { saldo: 0, adesoes: 0, cancelamentos: 0 }, PCA: { saldo: 0, adesoes: 0, cancelamentos: 0 }, PCE: { saldo: 0, adesoes: 0, cancelamentos: 0 }, "Não informado": { saldo: 0, adesoes: 0, cancelamentos: 0 }, "PIF + PCE": { saldo: 0, adesoes: 0, cancelamentos: 0 } } };
       meses.set(r.competencia, mes);
     }
     mes[r.tipo] = somar(mes[r.tipo], r.vidas);

@@ -1,3 +1,4 @@
-- Preserve uploaded sources verbatim and read only the active local worksheet CSV conversion; keep the old provisional CSV archived, so Bench Vidas never replaces live Carteira or official accounting data.
+- Preserve uploaded sources verbatim as archives; Bench Vidas now reads the official ANS DBC quarterly aggregates via year-partitioned assets, never replacing live Carteira or official accounting data.
+- Keep ANS decoding reproducible and reconcile medical plus dental with source totals; catalog every competence and source checksum, preserve combined contracting codes, and never infer monthly snapshots or movements from quarterly stock.
 - Parse unified worksheet columns and source-version selection in the tested benchVidas helper; preserve missing quantities as null and retain all source rows in the local conversion for auditability.
 - Derive filters and totals through the tested benchVidas helper: annual stock is the last supplied monthly saldo, while adhesions and cancellations sum available months; never infer saldo from net movement.
