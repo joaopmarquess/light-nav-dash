@@ -83,9 +83,9 @@ export default function BenchVidas() {
   const resumo = resumoBenchVidas(meses);
   const atual = operadoras.find(o => o.reg === operadora);
   const opcoes = operadoras.filter(o => !selecionadas.includes(o.reg) && `${o.nome} ${o.reg}`.toLocaleLowerCase("pt-BR").includes(busca.toLocaleLowerCase("pt-BR")));
-  const tipos = tipo === "todos" ? TIPOS_VIDAS : TIPOS_VIDAS.filter(t => t === tipo);
+  const tipos = TIPOS_VIDAS.filter(t => t === tipo);
   const baixar = () => {
-    const rows = dados.filter(r => r.operadora === operadora && r.ano === ano && (plano === "todos" || plano === r.plano) && (tipo === "todos" || tipo === r.tipo) && (segmentacao === "todos" || segmentacao === r.segmentacao)).map(r => [nomeBenchVidas(r.nome), competenciaVidas(r.competencia), r.plano, ROTULOS_VIDAS[r.tipo], r.vidas ?? "Não informado"]);
+    const rows = dados.filter(r => r.operadora === operadora && r.ano === ano && (plano === "todos" || plano === r.plano) && tipo === r.tipo && (segmentacao === "todos" || segmentacao === r.segmentacao)).map(r => [nomeBenchVidas(r.nome), competenciaVidas(r.competencia), r.plano, ROTULOS_VIDAS[r.tipo], r.vidas ?? "Não informado"]);
     const ws = XLSX.utils.aoa_to_sheet([["Operadora", "Mês", "Contratação", "Tipo", "Vidas"], ...rows]);
     ws["!cols"] = [{ wch: 32 }, { wch: 12 }, { wch: 14 }, { wch: 20 }, { wch: 12 }];
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Bench Vidas"); XLSX.writeFile(wb, `bench_vidas_${operadora}_${ano}.xlsx`);
