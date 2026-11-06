@@ -1,4 +1,4 @@
-- [ ] Criar Carteira › Bench Vidas com CSV provisório, filtros, navegação Operadoras/Ano, gráfico e grid expansível; testar cálculos e fluxo autorizado.
+- [x] Criar Carteira › Bench Vidas com CSV provisório, filtros, navegação Operadoras/Ano, gráfico aberto e grid recolhido expansível Ano/Mês/Contratação; 21 testes aprovados, troca/inclusão de OPS, anos, totais de outubro e download xlsx conferidos com acesso autorizado, sem alterar dados reais.
 - [x] Separar Código do Painel em Plano/Contrato/Dep, completar zeros; 11 testes aprovados e busca real autenticada com retorno conferido, campos verificados em desktop e celular.
 - [x] Incluir Demonstrações nos atalhos/permissões Home e três cards Control acima dos atalhos; dados reais Jan–Set/2026 e navegação conferidos, 19 testes aprovados, fonte e acessos preservados.
 - [x] Criar Configurações › Usuários e Permissões, convites individuais por link sem e-mail e conclusão OK; 38 testes aprovados, cadastro/permissões/ativação/login e bloqueio administrativo, RPCs e rota direta conferidos; conta de teste removida, sem publicação.

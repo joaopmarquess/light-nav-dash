@@ -78,7 +78,7 @@ export default function BenchVidas() {
   };
   return <div className="flex h-full min-h-0 flex-col gap-3">
     <div className="flex shrink-0 justify-center">
-      <div aria-label="Operadoras" className="flex max-w-full flex-wrap items-center justify-center gap-1 rounded-full border border-border bg-card p-1.5 shadow-sm">
+      <div aria-label="Operadoras" className="flex max-h-44 max-w-full flex-wrap items-center justify-center gap-1 overflow-y-auto rounded-lg border border-border bg-card p-1.5 shadow-sm sm:max-h-none sm:rounded-full">
         <span className="px-3 text-sm font-semibold">Operadoras</span>
         {selecionadas.map(reg => { const op = operadoras.find(o => o.reg === reg); return <div key={reg} className="flex items-center gap-0.5">
           <Button variant="ghost" aria-pressed={operadora === reg} title={`ANS ${reg}`} onClick={() => setOperadora(reg)} className={`h-auto min-h-8 max-w-72 whitespace-normal rounded-full text-sm ${operadora === reg ? "bg-primary text-primary-foreground" : "bg-muted"}`}>{op?.nome}</Button>
