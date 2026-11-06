@@ -90,6 +90,7 @@ export default function BenchVidas() {
   const crescimento = mesesIndicadores ? crescimentoPeriodoVidasAns(mesesIndicadores) : null;
   const percentualCrescimento = percentualCrescimentoVidasAns(saldoInicial?.saldo, crescimento);
   const atual = operadoras.find(o => o.reg === operadora);
+  const opsComparacao = useMemo(() => selecionadas.map(reg => ({ reg, nome: nomesOps.get(reg) ?? `ANS ${reg}` })), [selecionadas]);
   const opcoes = operadoras.filter(o => !selecionadas.includes(o.reg) && `${o.nome} ${o.nomeCompleto} ${o.reg}`.toLocaleLowerCase("pt-BR").includes(busca.toLocaleLowerCase("pt-BR")));
   const baixar = () => {
     const rows = dados.filter(r => r.operadora === operadora && r.ano === ano && (planoAtual === "todos" || planoAtual === r.plano) && tipo === r.tipo && (segmentacao === "todos" || segmentacao === r.segmentacao)).map(r => [nomeBenchVidas(r.nome), competenciaVidas(r.competencia), r.plano, ROTULOS_VIDAS[r.tipo], r.vidas ?? "Não informado"]);
@@ -126,7 +127,7 @@ export default function BenchVidas() {
           <div className="bench-kpi bench-kpi-growth" aria-label="Crescimento"><p className="bench-kpi-title">Crescimento<TrendingUp aria-hidden="true" /></p><p className="bench-kpi-value">{nf(crescimento)}{crescimento !== null && <span className="ml-1 text-sm font-medium">({percentualCrescimento === null ? "—" : `${percentualCrescimento.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`})</span>}</p><p className="bench-kpi-date">{saldoInicial && saldoFinal ? `${competenciaVidas(saldoInicial.competencia)}–${competenciaVidas(saldoFinal.competencia)}` : "—"}</p></div>
         </div>
         <Bloco titulo="Gráfico" aberto={graficoAberto} alternar={() => setGraficoAberto(s => !s)}>
-          <BenchVidasGrafico meses={meses} ano={ano} operadora={operadora} nome={atual?.nome} plano={planoAtual} segmentacao={segmentacao} onDadosChange={atualizarIndicadores} />
+          <BenchVidasGrafico meses={meses} ano={ano} operadora={operadora} nome={atual?.nome} plano={planoAtual} segmentacao={segmentacao} onDadosChange={atualizarIndicadores} opsSelecionadas={opsComparacao} />
         </Bloco>
         <Bloco titulo="Grid" aberto={gridAberto} alternar={() => setGridAberto(s => !s)} acao={<Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={baixar} aria-label="Baixar Bench Vidas em xlsx"><Download className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Baixar grid expandido (xlsx)</TooltipContent></Tooltip>}>
           <GridVidas key={`${operadora}-${ano}-${planoAtual}-${tipo}-${segmentacao}`} meses={meses} plano={planoAtual} tipo={tipo} planosPorMes={planosPorMes} />

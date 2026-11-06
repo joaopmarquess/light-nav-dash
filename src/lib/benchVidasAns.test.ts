@@ -1,10 +1,18 @@
 import { describe, expect, it } from "vitest";
 import catalogo from "@/data/benchVidas/ans/catalogo.json";
-import { adaptarVidasAns, crescimentoPeriodoVidasAns, escalaVidasAns, limitesPeriodoVidasAns, nomeOperadoraAns, percentualCrescimentoVidasAns, periodoPadraoVidasAns, planosDisponiveisAns, type RegistroAnsVidas } from "./benchVidasAns";
+import { adaptarVidasAns, compararOperadorasVidasAns, crescimentoPeriodoVidasAns, escalaVidasAns, limitesPeriodoVidasAns, nomeOperadoraAns, percentualCrescimentoVidasAns, periodoPadraoVidasAns, planosDisponiveisAns, type RegistroAnsVidas } from "./benchVidasAns";
 import { mesesBenchVidas, resumoBenchVidas } from "./benchVidas";
 
 const registros: RegistroAnsVidas[] = [["366561", "202609", "1", 36425, 0], ["366561", "202609", "2", 9904, 0], ["366561", "202609", "3", 25550, 0]];
 describe("ANS DBC historical base", () => {
+  it("compares every selected operator in the same period without filling missing balances", () => {
+    const dados = adaptarVidasAns([...registros, ["x", "202603", "1", 100, 5], ["x", "202609", "1", 120, 6], ["z", "202609", "1", 999, 0], ["x", "202503", "1", 80, 0]], new Map());
+    expect(compararOperadorasVidasAns(dados, ["366561", "x"], 2026, 2026)).toEqual([
+      { competencia: "202603", saldos: { "366561": null, x: 105 } },
+      { competencia: "202609", saldos: { "366561": 71879, x: 126 } },
+    ]);
+    expect(compararOperadorasVidasAns(dados, ["366561", "x"], 2026, 2026, "PIF", "Plano de saúde").at(-1)?.saldos).toEqual({ "366561": 36425, x: 120 });
+  });
   it("computes growth percentage against the initial balance", () => {
     expect(percentualCrescimentoVidasAns(41978.75, 33583)).toBe(80);
     expect(percentualCrescimentoVidasAns(100, -20)).toBe(-20);
