@@ -109,7 +109,6 @@ export default function BenchVidas() {
         <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label="Limpar filtros" onClick={() => { setPlano("todos"); setSegmentacao("todos"); }}><X className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Limpar filtros</TooltipContent></Tooltip>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm"><strong>{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} · {ano}</span></strong><span className="text-xs text-muted-foreground">ANS · {competenciaVidas(catalogo.inicio)}–{competenciaVidas(catalogo.fim)}</span></div>
-      <p className="text-xs text-muted-foreground">Fonte: microdados ANS por operadora · {catalogo.arquivos.length} arquivos trimestrais · {nf(operadoras.length)} operadoras no histórico · Adesões e cancelamentos não disponíveis nesta fonte.</p>
       {carregando ? <p role="status" className="py-8 text-sm text-muted-foreground">Carregando {ano}…</p> : erro ? <div role="alert" className="py-8 text-sm text-destructive">{erro}<Button variant="outline" className="ml-3" onClick={() => setTentativa(t => t + 1)}>Tentar novamente</Button></div> : meses.length ? <>
         <div className="border-y border-border">
           <div className="px-4 py-3"><p className="text-xs text-muted-foreground">{ROTULOS_VIDAS.saldo} · {competenciaVidas(meses.at(-1)?.competencia ?? "")}</p><p className="mt-1 text-xl font-semibold tabular-nums">{nf(resumo.saldo)}</p></div>
