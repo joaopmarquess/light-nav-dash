@@ -8,6 +8,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, EyeOff, ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Download, Loader2, Search, X, Users, UserCheck, UsersRound, Handshake, Factory, UserX, Building2, Copy, Printer } from "lucide-react";
 import { toast } from "sonner";
+import { periodoInicialSuspensos } from "@/lib/consultaSuspensos";
+import SuspensosContratacao from "@/components/SuspensosContratacao";
 
 type Row = Record<string, any>;
 const TABLE = "view_ecarteira";
@@ -125,14 +127,14 @@ export default function CarteiraTrial() {
   const [ap, setAp] = useState<{ f: Filters; d: string } | null>(() => ({ f: { ...EMPTY }, d: new Date().toISOString().slice(0, 10) }));
   const df = ap?.f ?? EMPTY;
   const dRef = ap?.d ?? "";
-  const buscar = () => (setGrid(true), setAp({ f: { ...f }, d: dataRef || new Date().toISOString().slice(0, 10) }));
+  const buscar = () => { if (!suspensos) setGrid(true); setAp({ f: { ...f }, d: suspensos ? sp.ate : dataRef || new Date().toISOString().slice(0, 10) }); };
   const rows = useMemo(() => agrupar(raw, dRef || new Date().toISOString().slice(0, 10)), [raw, dRef]);
   const [fim, setFim] = useState(false);
   const [grid, setGrid] = useState(false);
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [suspensos, setSuspensos] = useState(false);
-  const [sp, setSp] = useState<{ de: string; ate: string } | null>(null);
+  const [sp, setSp] = useState(periodoInicialSuspensos);
   const [susp, setSusp] = useState<{ sigla: string; motivo: string; faixa: string; vidas: number }[] | null | "erro">(null);
   const [kpi, setKpi] = useState<{ ativos?: number; futuros?: number; cancelados?: number; total?: number; contratos?: number; PIF?: number; PCA?: number; PCE?: number; cPIF?: number; cPCA?: number; cPCE?: number } | null>(null);
   useEffect(() => {
@@ -157,16 +159,18 @@ export default function CarteiraTrial() {
       const g = (x: string) => Number((data ?? []).find((r: any) => r.sigla === x)?.contratos ?? 0);
       setKpi((k) => ({ ...k, cPIF: g("PIF"), cPCA: g("PCA"), cPCE: g("PCE") }));
     });
-    setSp({ de: dRef, ate: dRef });
   }, [ap]);
   useEffect(() => {
     if (!ap || !sp || !suspensos) return;
+    let cancelled = false;
     setSusp(null);
     hostinger.rpc("carteira_trial_suspensos", { p_data: sp.ate, p_de: sp.de, p_q: ap.f.q.trim() || null, p_empresa: ap.f.empresa.trim() || null, p_cidade: ap.f.cidade.trim() || null }).then(({ data, error }: any) => {
+      if (cancelled) return;
       if (error) { console.error(error); setSusp("erro"); return; }
       setSusp((data ?? []).map((r: any) => ({ ...r, vidas: Number(r.vidas) })));
     });
-  }, [sp, suspensos]);
+    return () => { cancelled = true; };
+  }, [sp, suspensos, ap]);
   const vis = useMemo(() => {
     const v = df.status === ALL ? rows : rows.filter((r) => r.st === df.status);
     return sort.key === "st" ? [...v].sort((a, b) => (sort.asc ? 1 : -1) * String(a.st).localeCompare(String(b.st))) : v;
@@ -240,9 +244,9 @@ export default function CarteiraTrial() {
   return (
     <div className="h-full flex flex-col gap-4 min-h-0">
       <div className="flex flex-wrap items-center gap-2 shrink-0 bg-card border border-border rounded-xl p-3">
-        <label className="flex items-center gap-2 text-sm text-muted-foreground">Ativos em:
+        {suspensos && !grid ? <SuspPeriodo v={sp} onApply={(periodo) => { setSp(periodo); setDataRef(periodo.ate); setAp({ f: { ...f }, d: periodo.ate }); }} /> : <label className="flex items-center gap-2 text-sm text-muted-foreground">Ativos em:
           <Input type="date" className="w-40" value={dataRef} onChange={(e) => setDataRef(e.target.value)} />
-        </label>
+        </label>}
         <span className="text-sm text-muted-foreground">Total de Ativos: <b className="text-foreground tabular-nums">{!ap ? "—" : kpi?.ativos == null ? "…" : kpi.ativos.toLocaleString("pt-BR")}</b></span>
         <div className="relative w-72">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -317,13 +321,12 @@ export default function CarteiraTrial() {
             <div className="md:col-span-3 bg-card border border-border rounded-xl p-4 min-h-32">
               <div className="flex flex-wrap items-center gap-3 mb-3">
                 <p className="text-sm font-medium text-muted-foreground">Suspensos</p>
-                {sp && <SuspPeriodo v={sp} onApply={setSp} />}
               </div>
               {susp === "erro" ? <p className="text-sm text-muted-foreground">Cálculo ainda não instalado na base.</p>
                : !susp ? <p className="text-sm text-muted-foreground">{ap ? "Carregando…" : "Clique em Buscar."}</p>
                : (() => {
                 const tot = susp.reduce((a, r) => a + r.vidas, 0);
-                const by = (k: "sigla" | "motivo" | "faixa", ord?: string[]) => { const m = new Map<string, number>(); susp.forEach((r) => m.set(r[k] ?? "—", (m.get(r[k] ?? "—") ?? 0) + r.vidas)); const e = [...m.entries()]; return ord ? ord.filter((o) => m.has(o)).map((o) => [o, m.get(o)!] as [string, number]) : e.sort((a, b) => b[1] - a[1]); };
+                const by = (k: "sigla" | "motivo" | "faixa", ord?: string[]) => { const m = new Map<string, number>(); susp.forEach((r) => m.set(r[k] ?? "—", (m.get(r[k] ?? "—") ?? 0) + r.vidas)); const e = [...m.entries()]; return ord ? ord.filter((o) => m.has(o)).map((o) => [o, m.get(o) ?? 0] as [string, number]) : e.sort((a, b) => b[1] - a[1]); };
                 const pct = (v: number, b?: number) => b ? ((v / b) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%" : "—";
                 const T = ({ t, rows }: { t: string; rows: [string, number][] }) => (
                   <table className="text-sm w-full"><thead><tr className="text-muted-foreground"><th className="text-left font-medium py-1">{t}</th><th className="text-center font-medium">Vidas</th><th className="text-center font-medium">% suspensos</th></tr></thead>
@@ -332,7 +335,7 @@ export default function CarteiraTrial() {
                   <div className="space-y-4">
                     <p className="text-sm"><span className="text-2xl font-bold tabular-nums">{tot.toLocaleString("pt-BR")}</span> vidas suspensas · <b>{pct(tot, kpi?.ativos)}</b> das Vidas Ativas</p>
                     <div className="grid md:grid-cols-3 gap-6">
-                      <T t="Contratação" rows={by("sigla", ["PIF", "PCA", "PCE"])} />
+                      <SuspensosContratacao key={JSON.stringify({ sp, df })} rows={by("sigla", ["PIF", "PCA", "PCE"])} total={tot} params={{ p_data: sp.ate, p_de: sp.de, p_q: df.q.trim() || null, p_empresa: df.empresa.trim() || null, p_cidade: df.cidade.trim() || null }} />
                       <T t="Dias suspenso" rows={by("faixa", ["0-30", "31-60", "61-90", "91-120", "120+"])} />
                       <T t="Motivo" rows={by("motivo")} />
                     </div>
@@ -419,7 +422,7 @@ function SuspPeriodo({ v, onApply }: { v: { de: string; ate: string }; onApply: 
   const [de, setDe] = useState(v.de); const [ate, setAte] = useState(v.ate);
   useEffect(() => { setDe(v.de); setAte(v.ate); }, [v.de, v.ate]);
   return (
-    <div className="flex items-center gap-2 text-sm">
+    <div className="flex flex-wrap items-center gap-2 text-sm">
       <span className="text-muted-foreground">De</span><Input type="date" className="h-8 w-40" value={de} onChange={(e) => setDe(e.target.value)} />
       <span className="text-muted-foreground">Até</span><Input type="date" className="h-8 w-40" value={ate} onChange={(e) => setAte(e.target.value)} />
       <Button size="sm" variant="outline" disabled={!de || !ate || de > ate} onClick={() => onApply({ de, ate })}>Aplicar</Button>
