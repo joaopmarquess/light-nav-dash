@@ -3,6 +3,29 @@
 @tailwind utilities;
 
 :root {
+  --bench-shadow: 0 3px 12px hsl(var(--foreground) / 0.05);
+}
+.bench-vidas .bench-panel { border-radius: 8px; border: 1px solid hsl(var(--border)); background: hsl(var(--card)); box-shadow: var(--bench-shadow); overflow: hidden; }
+.bench-vidas .bench-panel-heading { background: hsl(var(--secondary) / .65); padding: 3px 10px; }
+.bench-vidas .bench-panel-heading svg { color: hsl(var(--chart-1)); }
+.bench-vidas .bench-panel-body { border-top: 1px solid hsl(var(--border)); padding: 16px; }
+.bench-vidas .bench-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.bench-vidas .bench-kpi { --bench-tone: var(--chart-1); min-width: 0; min-height: 114px; border: 1px solid hsl(var(--bench-tone) / .24); border-top: 3px solid hsl(var(--bench-tone)); border-radius: 8px; background: hsl(var(--bench-tone) / .08); padding: 16px 18px; box-shadow: var(--bench-shadow); }
+.bench-vidas .bench-kpi-final { --bench-tone: var(--chart-3); }
+.bench-vidas .bench-kpi-growth { --bench-tone: var(--chart-4); }
+.bench-vidas .bench-kpi-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; font-weight: 600; color: hsl(var(--foreground)); }
+.bench-vidas .bench-kpi-title svg { color: hsl(var(--bench-tone)); width: 20px; height: 20px; flex-shrink: 0; }
+.bench-vidas .bench-kpi-value { font-size: 28px; font-weight: 700; line-height: 1.25; font-variant-numeric: tabular-nums; color: hsl(var(--foreground)); margin-top: 8px; overflow-wrap: anywhere; }
+.bench-vidas .bench-kpi-date { font-size: 11px; color: hsl(var(--muted-foreground)); margin-top: 5px; }
+.bench-vidas .bench-filters { background: hsl(var(--secondary) / .4); border-block: 1px solid hsl(var(--border)); padding: 12px; }
+.bench-vidas .bench-panel table thead { background: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); }
+@media (max-width: 639px) {
+  .bench-vidas .bench-kpis { grid-template-columns: 1fr; gap: 10px; }
+  .bench-vidas .bench-kpi { min-height: 104px; padding: 14px 16px; }
+  .bench-vidas .bench-panel-body { padding: 12px; }
+}
+
+:root {
   --report-paper: 0 0% 100%;
   --report-canvas: 210 20% 94%;
   --report-shadow: 0 4px 22px hsl(210 30% 20% / 0.09);

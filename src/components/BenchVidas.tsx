@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { ChevronRight, Download, Plus, X } from "lucide-react";
+import { ChevronRight, Download, Plus, X, Users, UserCheck, TrendingUp } from "lucide-react";
 import BenchVidasGrafico from "./BenchVidasGrafico";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
@@ -20,12 +20,12 @@ const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "O
 const nf = (valor: number | null) => valor === null ? "Não informado" : valor.toLocaleString("pt-BR");
 
 function Bloco({ titulo, aberto, alternar, children, acao }: { titulo: string; aberto: boolean; alternar: () => void; children: ReactNode; acao?: ReactNode }) {
-  return <section className="shrink-0 rounded-lg border border-border bg-card shadow-sm">
-    <div className="flex items-center justify-between px-2">
+  return <section className="bench-panel shrink-0">
+    <div className="bench-panel-heading flex items-center justify-between">
       <Button variant="ghost" onClick={alternar} aria-expanded={aberto} className="h-10 flex-1 justify-start gap-2 text-sm font-semibold"><ChevronRight className={`h-4 w-4 transition-transform motion-reduce:transition-none ${aberto ? "rotate-90" : ""}`} />{titulo}</Button>
       {aberto && acao}
     </div>
-    {aberto && <div className="border-t border-border p-3">{children}</div>}
+    {aberto && <div className="bench-panel-body">{children}</div>}
   </section>;
 }
 
@@ -96,7 +96,7 @@ export default function BenchVidas() {
     ws["!cols"] = [{ wch: 32 }, { wch: 12 }, { wch: 14 }, { wch: 20 }, { wch: 12 }];
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Bench Vidas"); XLSX.writeFile(wb, `bench_vidas_${operadora}_${ano}.xlsx`);
   };
-  return <div className="flex h-full min-h-0 flex-col gap-3">
+  return <div className="bench-vidas flex h-full min-h-0 flex-col gap-3">
     <div className="flex shrink-0 justify-center">
       <div aria-label="Operadoras" className="flex max-h-44 max-w-full flex-wrap items-center justify-center gap-1 overflow-y-auto rounded-lg border border-border bg-card p-1.5 shadow-sm sm:max-h-none sm:rounded-full">
         <span className="px-3 text-sm font-semibold">Operadoras</span>
@@ -108,7 +108,7 @@ export default function BenchVidas() {
       </div>
     </div>
     <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-      <div className="flex flex-wrap items-center gap-3 border-y border-border py-3">
+      <div className="bench-filters flex flex-wrap items-center gap-3">
         <span className="text-sm font-semibold">Filtros</span>
         <label className="flex items-center gap-2 text-sm">Contratação<Select value={planoAtual} onValueChange={setPlano}><SelectTrigger aria-label="Contratação" className="w-32"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todas</SelectItem>{planosDisponiveis.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></label>
         <label className="flex items-center gap-2 text-sm">Segmentação<Select value={segmentacao} onValueChange={setSegmentacao}><SelectTrigger aria-label="Segmentação" className="w-44"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todas</SelectItem>{segmentos.map(s => <SelectItem key={s} value={s}>{s === "plano_saude" ? "Plano de saúde" : s}</SelectItem>)}</SelectContent></Select></label>
@@ -116,10 +116,10 @@ export default function BenchVidas() {
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm"><strong>{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} · {ano}</span></strong><span className="text-xs text-muted-foreground">ANS · {competenciaVidas(catalogo.inicio)}–{competenciaVidas(catalogo.fim)}</span></div>
       {carregando ? <p role="status" className="py-8 text-sm text-muted-foreground">Carregando {ano}…</p> : erro ? <div role="alert" className="py-8 text-sm text-destructive">{erro}<Button variant="outline" className="ml-3" onClick={() => setTentativa(t => t + 1)}>Tentar novamente</Button></div> : meses.length ? <>
-        <div className="grid grid-cols-1 border-y border-border sm:grid-cols-3">
-          <div className="px-4 py-3" aria-label="Vidas no De"><p className="text-xs text-muted-foreground">Vidas no De{saldoInicial ? ` · ${competenciaVidas(saldoInicial.competencia)}` : ""}</p><p className="mt-1 text-xl font-semibold tabular-nums">{nf(saldoInicial?.saldo ?? null)}</p></div>
-          <div className="border-t border-border px-4 py-3 sm:border-l sm:border-t-0" aria-label="Vidas no Para"><p className="text-xs text-muted-foreground">Vidas no Para{saldoFinal ? ` · ${competenciaVidas(saldoFinal.competencia)}` : ""}</p><p className="mt-1 text-xl font-semibold tabular-nums">{nf(saldoFinal?.saldo ?? null)}</p></div>
-          <div className="border-t border-border px-4 py-3 sm:border-l sm:border-t-0" aria-label="Crescimento"><p className="text-xs text-muted-foreground">Crescimento{saldoInicial && saldoFinal ? ` · ${competenciaVidas(saldoInicial.competencia)}–${competenciaVidas(saldoFinal.competencia)}` : ""}</p><p className="mt-1 text-xl font-semibold tabular-nums">{nf(crescimento)}</p></div>
+        <div className="bench-kpis">
+          <div className="bench-kpi" aria-label="Vidas no De"><p className="bench-kpi-title">Vidas no De<Users aria-hidden="true" /></p><p className="bench-kpi-value">{nf(saldoInicial?.saldo ?? null)}</p><p className="bench-kpi-date">{saldoInicial ? competenciaVidas(saldoInicial.competencia) : "—"}</p></div>
+          <div className="bench-kpi bench-kpi-final" aria-label="Vidas no Para"><p className="bench-kpi-title">Vidas no Para<UserCheck aria-hidden="true" /></p><p className="bench-kpi-value">{nf(saldoFinal?.saldo ?? null)}</p><p className="bench-kpi-date">{saldoFinal ? competenciaVidas(saldoFinal.competencia) : "—"}</p></div>
+          <div className="bench-kpi bench-kpi-growth" aria-label="Crescimento"><p className="bench-kpi-title">Crescimento<TrendingUp aria-hidden="true" /></p><p className="bench-kpi-value">{nf(crescimento)}</p><p className="bench-kpi-date">{saldoInicial && saldoFinal ? `${competenciaVidas(saldoInicial.competencia)}–${competenciaVidas(saldoFinal.competencia)}` : "—"}</p></div>
         </div>
         <Bloco titulo="Gráfico" aberto={graficoAberto} alternar={() => setGraficoAberto(s => !s)}>
           <BenchVidasGrafico meses={meses} ano={ano} operadora={operadora} nome={atual?.nome} plano={planoAtual} segmentacao={segmentacao} onDadosChange={atualizarIndicadores} />
