@@ -186,7 +186,7 @@ export default function PainelBeneficiario() {
               className="h-12 w-full rounded-lg border border-border bg-background pl-11 pr-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
           </div>}
           <Button type="button" onClick={buscar} disabled={buscando}
-            className={modo === "alternativa" ? "order-first h-10 shrink-0 px-3" : "h-12 px-6"}>
+            className={modo === "alternativa" ? "h-10 shrink-0 px-3" : "h-12 px-6"}>
             {buscando && <Loader2 className="h-4 w-4 animate-spin" />}Pesquisar
           </Button>
         </div>
