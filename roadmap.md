@@ -1,3 +1,4 @@
+- [ ] Restringir Carteira Saídas às linhas S, testar filtro e conferir dados reais e dicas dos títulos.
 - [ ] Conferir dicas de origem dos campos no grid de Saídas e consultar situação atual da matrícula 15/025283-04.
 - [ ] Explicar por que 15/025283-04 aparece sem motivo, comparando cadastro e linhas históricas sem modificar registros.
 - [x] Preparar função Hostinger de classificação ordenada preservando grupos existentes; prioridades, carga inicial, idempotência e novos códigos testados em PostgreSQL isolado UTF-8; arquivo SQL entregue.
