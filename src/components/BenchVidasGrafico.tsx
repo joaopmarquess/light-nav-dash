@@ -7,7 +7,7 @@ import catalogo from "@/data/benchVidas/ans/catalogo.json";
 import { adaptarVidasAns, carregarVidasAns, escalaVidasAns, periodoPadraoVidasAns } from "@/lib/benchVidasAns";
 import { competenciaVidas, mesesBenchVidas, type MesVidas } from "@/lib/benchVidas";
 
-export default function BenchVidasGrafico({ meses, ano, operadora, nome, plano, segmentacao }: { meses: MesVidas[]; ano: number; operadora: string; nome?: string; plano: string; segmentacao: string }) {
+export default function BenchVidasGrafico({ meses, ano, operadora, nome, plano, segmentacao, onDadosChange }: { meses: MesVidas[]; ano: number; operadora: string; nome?: string; plano: string; segmentacao: string; onDadosChange: (dados: MesVidas[] | null) => void }) {
   const [de, setDe] = useState(() => String(periodoPadraoVidasAns().de));
   const [ate, setAte] = useState(() => String(periodoPadraoVidasAns().ate));
   const [editandoPeriodo, setEditandoPeriodo] = useState(false);
@@ -29,6 +29,9 @@ export default function BenchVidasGrafico({ meses, ano, operadora, nome, plano, 
     return () => { ativo = false; };
   }, [periodo, operadora, plano, segmentacao, tentativa]);
   const dados = periodo ? serie : meses;
+  useEffect(() => {
+    onDadosChange(carregando || erro ? null : dados);
+  }, [dados, carregando, erro, onDadosChange]);
   const variosAnos = periodo !== null && periodo.de !== periodo.ate;
   const marcasAnuais = dados.filter((m, i) => i === 0 || m.ano !== dados[i - 1].ano).map(m => m.competencia);
   const escala = escalaVidasAns(dados.at(-1)?.saldo ?? 0);

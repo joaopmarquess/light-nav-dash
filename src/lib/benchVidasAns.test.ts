@@ -1,10 +1,17 @@
 import { describe, expect, it } from "vitest";
 import catalogo from "@/data/benchVidas/ans/catalogo.json";
-import { adaptarVidasAns, escalaVidasAns, nomeOperadoraAns, periodoPadraoVidasAns, planosDisponiveisAns, type RegistroAnsVidas } from "./benchVidasAns";
+import { adaptarVidasAns, crescimentoPeriodoVidasAns, escalaVidasAns, nomeOperadoraAns, periodoPadraoVidasAns, planosDisponiveisAns, type RegistroAnsVidas } from "./benchVidasAns";
 import { mesesBenchVidas, resumoBenchVidas } from "./benchVidas";
 
 const registros: RegistroAnsVidas[] = [["366561", "202609", "1", 36425, 0], ["366561", "202609", "2", 9904, 0], ["366561", "202609", "3", 25550, 0]];
 describe("ANS DBC historical base", () => {
+  it("calculates period growth as final balance minus initial balance without summing stocks", () => {
+    expect(crescimentoPeriodoVidasAns([{ competencia: "202609", saldo: 71879 }, { competencia: "202603", saldo: 71427 }, { competencia: "202606", saldo: 71501 }])).toBe(452);
+    expect(crescimentoPeriodoVidasAns([{ competencia: "202403", saldo: 100 }, { competencia: "202609", saldo: 80 }])).toBe(-20);
+    expect(crescimentoPeriodoVidasAns([{ competencia: "202609", saldo: 71879 }])).toBe(0);
+    expect(crescimentoPeriodoVidasAns([])).toBeNull();
+    expect(crescimentoPeriodoVidasAns([{ competencia: "202603", saldo: null }, { competencia: "202609", saldo: 71879 }])).toBeNull();
+  });
   it("defaults both period boundaries to the current year", () => {
     expect(periodoPadraoVidasAns(new Date(2026, 10, 6))).toEqual({ de: 2026, ate: 2026 });
     expect(periodoPadraoVidasAns(new Date(2027, 0, 1))).toEqual({ de: 2027, ate: 2027 });
