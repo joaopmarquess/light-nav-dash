@@ -1,3 +1,4 @@
+- [ ] Criar base pesquisável ANS Bench Vidas com todas as operadoras desde 2011; converter 62 DBCs, validar totais, carregar por ano e conferir busca/grid/exportação.
 - [x] Substituir fonte do Bench Vidas pela planilha anexada: lacunas sem inferência, versão mensal mais recente, oito testes aprovados; totais reais de janeiro a junho/2026, expansão, troca de operadora e download conferidos com acesso autorizado.
 - [x] Incluir cinco filtros em Saídas com Só cancelamentos default; sete testes aprovados e alternância autenticada conferida em 11/05/2026: oito cancelamentos, uma transferência e nove no Todos; Reativados e Suspensos vazios nesse dia.
 - [x] Restringir Carteira Saídas às linhas S: dois testes aprovados, filtro tp_linha=eq.S confirmado nas consultas e grid real de 11/05/2026 conferido; Entradas e Movimentação preservadas.
