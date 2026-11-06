@@ -79,7 +79,7 @@ export default function BenchVidas() {
     }).catch(() => { if (ativo) setErro("Não foi possível carregar os dados da ANS."); }).finally(() => { if (ativo) setCarregando(false); });
     return () => { ativo = false; };
   }, [ano, tentativa]);
-  const meses = useMemo(() => mesesBenchVidas(dados, operadora, ano, plano, segmentacao), [operadora, ano, plano, segmentacao]);
+  const meses = useMemo(() => mesesBenchVidas(dados, operadora, ano, plano, segmentacao), [dados, operadora, ano, plano, segmentacao]);
   const resumo = resumoBenchVidas(meses);
   const atual = operadoras.find(o => o.reg === operadora);
   const opcoes = operadoras.filter(o => !selecionadas.includes(o.reg) && `${o.nome} ${o.reg}`.toLocaleLowerCase("pt-BR").includes(busca.toLocaleLowerCase("pt-BR")));
