@@ -3,6 +3,7 @@ import { Loader2 } from "lucide-react";
 import { normalizarVendedor } from "@/lib/vendedorTransferencia";
 import { hostinger } from "@/lib/hostingerClient";
 import { useGruposVendedor, useGruposMotivo } from "@/lib/vendedorGrupo";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Row = Record<string, any>;
 type Modo = "entradas" | "saidas";
@@ -89,10 +90,23 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
                         <div className="max-h-80 overflow-auto border-t border-border/60">
                           <table className="w-full text-xs">
                             <thead className="bg-muted/40 sticky top-0"><tr>
-                              <th className="px-3 py-1.5 text-left">Matrícula</th><th className="px-3 py-1.5 text-left">Beneficiário</th>
-                              <th className="px-3 py-1.5 text-left">Plano</th><th className="px-3 py-1.5 text-left">Vendedor</th>
-                              {modo === "saidas" && <th className="px-3 py-1.5 text-left">Motivo</th>}
-                              <th className="px-3 py-1.5 text-left">Data</th></tr></thead>
+                              {[
+                                { titulo: "Matrícula", origem: "view_ecarteira.cd_mat_alternativa (formatado para exibição)" },
+                                { titulo: "Beneficiário", origem: "view_ecarteira.nm_beneficiario" },
+                                { titulo: "Plano", origem: "view_ecarteira.ds_plano" },
+                                { titulo: "Vendedor", origem: "view_ecarteira.nm_vendedor; código 274 em view_ecarteira.cd_vendedor é exibido como TRANSFERENCIA DE CONTRATO" },
+                                ...(modo === "saidas" ? [{ titulo: "Motivo", origem: "motivo_cancelamento_grupo.ds_motivo_cancelamento_sb, vinculado por cd_motivo_cancelamento; na ausência, view_ecarteira.ds_motivo_cancelamento" }] : []),
+                                { titulo: "Data", origem: `view_ecarteira.${campo}` },
+                              ].map(({ titulo, origem }) => (
+                                <th key={titulo} className="px-3 py-1.5 text-left">
+                                  {modo === "saidas" ? (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild><span tabIndex={0} className="cursor-help border-b border-dotted border-muted-foreground/60">{titulo}</span></TooltipTrigger>
+                                      <TooltipContent className="max-w-sm break-words">{origem}</TooltipContent>
+                                    </Tooltip>
+                                  ) : titulo}
+                                </th>
+                              ))}</tr></thead>
                             <tbody>{its.map((r, i) => (
                               <tr key={i} className="border-t border-border/60">
                                 <td className="px-3 py-1 whitespace-nowrap tabular-nums">{fmtMat(r.cd_mat_alternativa)}</td>
