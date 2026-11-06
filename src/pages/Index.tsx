@@ -649,7 +649,7 @@ const Index = () => {
           ) : active === "Carteira · Evolução Mensal" ? (
             <MovimentacaoEvolucaoMensal />
           ) : active === "Carteira · Bench Vidas" ? (
-            <div className="flex-1 min-h-0"><BenchVidas /></div>
+            <div className="h-full min-h-0"><BenchVidas /></div>
           ) : active === "Carteira · Área Geográfica" ? (
             <CarteiraTrialGeo />
           ) : active === "Carteira · Consulta" ? (
