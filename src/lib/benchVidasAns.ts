@@ -1,4 +1,20 @@
-import type { BenchVida, PlanoVidas } from "./benchVidas";
+import { PLANOS_VIDAS, type BenchVida, type PlanoVidas } from "./benchVidas";
+
+export function planosDisponiveisAns(dados: BenchVida[], operadora: string, ano: number, segmentacao = "todos", competencia?: string): PlanoVidas[] {
+  const presentes = new Set(dados.filter(r => r.operadora === operadora && r.ano === ano && r.tipo === "saldo" && (segmentacao === "todos" || r.segmentacao === segmentacao) && (!competencia || r.competencia === competencia)).map(r => r.plano));
+  return PLANOS_VIDAS.filter(p => presentes.has(p));
+}
+
+export function nomeOperadoraAns(nome: string): string {
+  const titulo = (texto: string) => texto.toLocaleLowerCase("pt-BR").replace(/(^|[\s/\-])\p{L}/gu, s => s.toLocaleUpperCase("pt-BR")).replace(/\b(De|Do|Da|Dos|Das|E)\b/g, s => s.toLowerCase());
+  const limpo = nome.trim().replace(/\s+/g, " ");
+  if (/\bUNIMED\b/i.test(limpo)) {
+    const local = limpo.replace(/^.*?\bUNIMED\b[\s-]*/i, "").replace(/^(?:DE|DO|DA)\s+/i, "").split(/\s*[-–]\s*(?=COOP|SOC|FED|CONF)|\b(?:COOP\w*\.?|SOCIEDADE|SOC\.|FEDERA\w*|FED\.|CONF\w*|SEGUROS)\b/i)[0].replace(/(?:[/,\s-]+)(?:AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)$/i, "").replace(/[\s,-]+$/, "");
+    return local ? `Unimed ${titulo(local)}` : "Unimed";
+  }
+  const primeiro = limpo.split(" ")[0] ?? "";
+  return /^bensa[uú]de$/i.test(primeiro) ? "Bensaúde" : titulo(primeiro);
+}
 
 export type RegistroAnsVidas = [string, string, string, number, number];
 const contratos: Record<string, PlanoVidas> = { "0": "Não informado", "1": "PIF", "2": "PCE", "3": "PCA", "4": "PIF + PCE" };
