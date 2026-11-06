@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
-import { ChartLine } from "lucide-react";
+import { ChartLine, Undo2 } from "lucide-react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import catalogo from "@/data/benchVidas/ans/catalogo.json";
-import { adaptarVidasAns, carregarVidasAns, escalaVidasAns } from "@/lib/benchVidasAns";
+import { adaptarVidasAns, carregarVidasAns, escalaVidasAns, periodoPadraoVidasAns } from "@/lib/benchVidasAns";
 import { competenciaVidas, mesesBenchVidas, type MesVidas } from "@/lib/benchVidas";
 
 export default function BenchVidasGrafico({ meses, ano, operadora, nome, plano, segmentacao }: { meses: MesVidas[]; ano: number; operadora: string; nome?: string; plano: string; segmentacao: string }) {
-  const [de, setDe] = useState(String(ano));
-  const [ate, setAte] = useState(String(ano));
-  const [periodo, setPeriodo] = useState<{ de: number; ate: number } | null>(null);
+  const [de, setDe] = useState(() => String(periodoPadraoVidasAns().de));
+  const [ate, setAte] = useState(() => String(periodoPadraoVidasAns().ate));
+  const [periodo, setPeriodo] = useState<{ de: number; ate: number } | null>(periodoPadraoVidasAns);
   const [serie, setSerie] = useState<MesVidas[]>([]);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState("");
@@ -36,7 +36,8 @@ export default function BenchVidasGrafico({ meses, ano, operadora, nome, plano, 
   return <>
     <div className="mb-3 flex flex-wrap items-center gap-3">
       {anos(de, setDe, "De")}{anos(ate, setAte, "Até")}
-      <Button variant="outline" className="gap-2" disabled={invalido || carregando} onClick={() => { setPeriodo({ de: Number(de), ate: Number(ate) }); setTentativa(t => t + 1); }}><ChartLine className="h-4 w-4" />Gerar gráfico</Button>
+      <Button variant="outline" className="gap-2" disabled={invalido || carregando} onClick={() => { setPeriodo({ de: Number(de), ate: Number(ate) }); setTentativa(t => t + 1); }}><ChartLine className="h-4 w-4" />Por Período</Button>
+      <Button variant="outline" size="icon" aria-label="Desfazer período" title="Voltar ao ano atual" onClick={() => { const padrao = periodoPadraoVidasAns(); setDe(String(padrao.de)); setAte(String(padrao.ate)); setPeriodo(padrao); setTentativa(t => t + 1); }}><Undo2 className="h-4 w-4" /></Button>
       {invalido && <span role="alert" className="text-sm text-destructive">De deve ser anterior ou igual a Até.</span>}
     </div>
     {carregando ? <div role="status" className="flex h-[180px] items-center justify-center text-sm text-muted-foreground">Carregando gráfico…</div> : erro ? <div role="alert" className="flex h-[180px] items-center justify-center text-sm text-destructive">{erro}</div> : !dados.length ? <div role="status" className="flex h-[180px] items-center justify-center text-sm text-muted-foreground">Nenhum registro no período selecionado.</div> : <>

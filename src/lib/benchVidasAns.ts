@@ -1,5 +1,10 @@
 import { PLANOS_VIDAS, type BenchVida, type PlanoVidas } from "./benchVidas";
 
+export function periodoPadraoVidasAns(data = new Date()) {
+  const ano = data.getFullYear();
+  return { de: ano, ate: ano };
+}
+
 export function escalaVidasAns(total: number | null) {
   const saldo = Math.max(0, total ?? 0);
   const arredondar = (valor: number) => Math.ceil(valor / 10000) * 10000;

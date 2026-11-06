@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import catalogo from "@/data/benchVidas/ans/catalogo.json";
-import { adaptarVidasAns, escalaVidasAns, nomeOperadoraAns, planosDisponiveisAns, type RegistroAnsVidas } from "./benchVidasAns";
+import { adaptarVidasAns, escalaVidasAns, nomeOperadoraAns, periodoPadraoVidasAns, planosDisponiveisAns, type RegistroAnsVidas } from "./benchVidasAns";
 import { mesesBenchVidas, resumoBenchVidas } from "./benchVidas";
 
 const registros: RegistroAnsVidas[] = [["366561", "202609", "1", 36425, 0], ["366561", "202609", "2", 9904, 0], ["366561", "202609", "3", 25550, 0]];
 describe("ANS DBC historical base", () => {
+  it("defaults both period boundaries to the current year", () => {
+    expect(periodoPadraoVidasAns(new Date(2026, 10, 6))).toEqual({ de: 2026, ate: 2026 });
+    expect(periodoPadraoVidasAns(new Date(2027, 0, 1))).toEqual({ de: 2027, ate: 2027 });
+  });
   it("rounds ninety and one hundred eighty percent upward to ten thousand", () => {
     const escala = escalaVidasAns(71879);
     expect(escala.dominio).toEqual([0, 130000]);
