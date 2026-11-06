@@ -5,17 +5,18 @@ import { mesesBenchVidas, resumoBenchVidas } from "./benchVidas";
 
 const registros: RegistroAnsVidas[] = [["366561", "202609", "1", 36425, 0], ["366561", "202609", "2", 9904, 0], ["366561", "202609", "3", 25550, 0]];
 describe("ANS DBC historical base", () => {
-  it("sets the lives axis to zero, one hundred and one hundred fifty percent of the displayed total", () => {
-    const escala = escalaVidasAns(200);
-    expect(escala.dominio[0]).toBe(0);
-    expect(escala.dominio[1]).toBeCloseTo(300);
-    expect(escala.marcas[0]).toBe(0);
-    expect(escala.marcas[1]).toBeCloseTo(200);
-    expect(escala.marcas[2]).toBeCloseTo(300);
+  it("rounds ninety and one hundred eighty percent upward to ten thousand", () => {
+    const escala = escalaVidasAns(71879);
+    expect(escala.dominio).toEqual([0, 130000]);
+    expect(escala.marcas).toEqual([0, 70000, 130000]);
+  });
+  it("preserves exact ten-thousand boundaries and avoids duplicate marks", () => {
+    expect(escalaVidasAns(100000).marcas).toEqual([0, 90000, 180000]);
+    expect(escalaVidasAns(200).marcas).toEqual([0, 10000]);
   });
   it("keeps an empty or zero lives axis non-degenerate", () => {
-    expect(escalaVidasAns(0).dominio).toEqual([0, 1]);
-    expect(escalaVidasAns(null).dominio).toEqual([0, 1]);
+    expect(escalaVidasAns(0).dominio).toEqual([0, 10000]);
+    expect(escalaVidasAns(null).dominio).toEqual([0, 10000]);
   });
   it("omits absent contracting categories for the selected operator", () => {
     const dados = adaptarVidasAns([...registros, ["x", "202609", "0", 4, 0], ["x", "202609", "4", 10, 0]], new Map());
