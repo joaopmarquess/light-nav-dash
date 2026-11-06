@@ -9,7 +9,7 @@ export function nomeOperadoraAns(nome: string): string {
   const titulo = (texto: string) => texto.toLocaleLowerCase("pt-BR").replace(/(^|[\s/\-])\p{L}/gu, s => s.toLocaleUpperCase("pt-BR")).replace(/\b(De|Do|Da|Dos|Das|E)\b/g, s => s.toLowerCase());
   const limpo = nome.trim().replace(/\s+/g, " ");
   if (/\bUNIMED\b/i.test(limpo)) {
-    const local = limpo.replace(/^.*?\bUNIMED\b[\s-]*/i, "").replace(/^(?:DE|DO|DA)\s+/i, "").split(/\s*[-–]\s*(?=COOP|SOC|FED|CONF)|\b(?:COOP\w*\.?|SOCIEDADE|SOC\.|FEDERA\w*|FED\.|CONF\w*|SEGUROS)\b/i)[0].replace(/(?:[/,\s-]+)(?:AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)$/i, "").replace(/[\s,-]+$/, "");
+    const local = limpo.replace(/^.*?\bUNIMED\b[\s-]*/i, "").replace(/^DE\s+/i, "").split(/\s*[-–]\s*(?=COOP|SOC|FED|CONF)|\b(?:COOP\w*\.?|SOCIEDADE|SOC\.|FEDERA\w*|FED\.|CONF\w*)(?=[\s.]|$)/i)[0].trim().replace(/(?:[/,\s-]+)(?:AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)$/i, "").replace(/[\s,-]+$/, "");
     return local ? `Unimed ${titulo(local)}` : "Unimed";
   }
   const primeiro = limpo.split(" ")[0] ?? "";
