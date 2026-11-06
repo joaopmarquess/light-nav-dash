@@ -33,5 +33,5 @@
 - Render the MAA magnifier within the geographic screen's shared date/total layout rather than a fullscreen overlay, so opening and returning preserve the selected date and inline map state.- Render the simplified Implantação stage from a tested typed data helper where undefined dates/owners display "Em definição"; keep Operação Iniciada as expected result.
 - Keep the Uberaba presentation route as static 16:9 screenshot snapshots listed in src/assets/apresentacao/slides.json; it must never import live screens, so the original project stays untouched.
 - Share the frozen-slide PDF exporter between the project header and presentation; write exactly one full-bleed 16:9 page per decoded snapshot and abort on missing images, avoiding browser print settings and partial exports.
-- Carteira › Painel loads Hostinger data per selected cd_matricula only; its status/expense rules live in tested src/lib/painelBeneficiario.ts.
+- Carteira › Painel loads Hostinger data per selected cd_matricula only; its status/expense and alternative-code composition rules live in tested src/lib/painelBeneficiario.ts.
 - Share axisNavigation and exact invite-origin validation (including editor preview); enforce roles/server grants. Hostinger anonymous reads need external protection.

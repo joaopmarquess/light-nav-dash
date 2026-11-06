@@ -1,9 +1,34 @@
 import { describe, it, expect } from "vitest";
-import { registroAtual, statusInfo, resumoEard, porCompetencia, type EardRow } from "./painelBeneficiario";
+import { comporCodigoAlternativo, registroAtual, statusInfo, resumoEard, porCompetencia, type EardRow } from "./painelBeneficiario";
 
 const mes = (c: number, cpp: number, outros: number): EardRow => ({ dt_competencia: c, vl_rec_cpp: cpp, vl_rec_copart: 0, vl_rec_outros: 0, vl_desp_consulta: 0, vl_desp_urgencia: 0, vl_desp_internacao: 0, vl_desp_terapia: 0, vl_desp_exame: 0, vl_desp_outros: outros });
 
 describe("painel beneficiário", () => {
+  it("Plano ocupa os quatro primeiros dígitos", () => {
+    expect(comporCodigoAlternativo("2490", "123456", "78").slice(0, 4)).toBe("2490");
+  });
+  it("Contrato ocupa seis dígitos a partir do quinto", () => {
+    expect(comporCodigoAlternativo("2490", "123456", "78").slice(4, 10)).toBe("123456");
+  });
+  it("Dep ocupa os dois últimos dígitos", () => {
+    expect(comporCodigoAlternativo("2490", "123456", "78").slice(-2)).toBe("78");
+  });
+  it("completa entradas curtas com zeros à esquerda em cada parte", () => {
+    expect(comporCodigoAlternativo("12", "345", "6")).toBe("001200034506");
+  });
+  it("Dep vazio busca o titular 00", () => {
+    expect(comporCodigoAlternativo("2490", "123456", "")).toBe("249012345600");
+  });
+  it("não pesquisa sem Plano ou Contrato", () => {
+    expect(() => comporCodigoAlternativo("", "123456", "00")).toThrow();
+    expect(() => comporCodigoAlternativo("2490", "", "00")).toThrow();
+  });
+  it("rejeita campos acima do limite ou não numéricos", () => {
+    expect(() => comporCodigoAlternativo("12345", "123456", "00")).toThrow();
+    expect(() => comporCodigoAlternativo("2490", "1234567", "00")).toThrow();
+    expect(() => comporCodigoAlternativo("2490", "123456", "123")).toThrow();
+    expect(() => comporCodigoAlternativo("ABCD", "123456", "00")).toThrow();
+  });
   it("situação atual é o movimento Saúde mais recente", () => {
     const r = registroAtual([
       { cd_matricula: 1, tp_plano: "SAUDE", tp_status: "A", dt_momento: "2020-01-01" },

@@ -1,3 +1,4 @@
+- [ ] Separar Código do Painel em Plano/Contrato/Dep, completar zeros e validar busca real e testes.
 - [x] Incluir Demonstrações nos atalhos/permissões Home e três cards Control acima dos atalhos; dados reais Jan–Set/2026 e navegação conferidos, 19 testes aprovados, fonte e acessos preservados.
 - [x] Criar Configurações › Usuários e Permissões, convites individuais por link sem e-mail e conclusão OK; 38 testes aprovados, cadastro/permissões/ativação/login e bloqueio administrativo, RPCs e rota direta conferidos; conta de teste removida, sem publicação.
 - [ ] Completar proteção dos dados externos: depende de restringir acesso anônimo na Hostinger e verificar funções externas cadastrar-conta/alterar-plano, cujos códigos não estão disponíveis aqui. Os menus e os serviços próprios conferidos já aplicam os privilégios.

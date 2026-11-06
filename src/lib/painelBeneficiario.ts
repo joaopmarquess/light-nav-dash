@@ -35,6 +35,22 @@ export const CATEGORIAS_DESPESA = [
 
 const n = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : Number(v) || 0);
 
+/** Código de pesquisa: Plano (4) + Contrato (6) + Dep (2). */
+export function comporCodigoAlternativo(plano: string, contrato: string, dep: string): string {
+  const partes = [
+    { valor: plano.trim(), tamanho: 4, nome: "Plano" },
+    { valor: contrato.trim(), tamanho: 6, nome: "Contrato" },
+    { valor: dep.trim(), tamanho: 2, nome: "Dep" },
+  ];
+  if (!partes[0].valor || !partes[1].valor) throw new Error("Informe Plano e Contrato.");
+  return partes.map(({ valor, tamanho, nome }) => {
+    if (!/^\d*$/.test(valor) || valor.length > tamanho) {
+      throw new Error(`${nome} deve conter até ${tamanho} dígitos numéricos.`);
+    }
+    return valor.padStart(tamanho, "0");
+  }).join("");
+}
+
 /** Situação atual = movimento mais recente (dt_momento) da linha Saúde. */
 export function registroAtual(rows: CarteiraRow[]): CarteiraRow | null {
   const saude = rows.filter((r) => (r.tp_plano ?? "").toUpperCase() === "SAUDE");
