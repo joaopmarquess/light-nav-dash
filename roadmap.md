@@ -4,3 +4,4 @@
 - [x] Validar regras e navegação com dados reais.
 - [x] Reduzir altura e espessura do gráfico.
 - [x] Escala em zero, 90% e 180% do saldo total, arredondada para a dezena de milhar acima.
+- [x] Adicionar De/Até por ano e Gerar gráfico, preservando o grid anual.
