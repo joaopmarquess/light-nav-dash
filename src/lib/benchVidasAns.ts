@@ -5,6 +5,10 @@ export function periodoPadraoVidasAns(data = new Date()) {
   return { de: ano, ate: ano };
 }
 
+export function limitesPeriodoVidasAns(anos: number[]) {
+  return anos.length ? { de: Math.min(...anos), ate: Math.max(...anos) } : periodoPadraoVidasAns();
+}
+
 export function crescimentoPeriodoVidasAns(meses: { competencia: string; saldo: number | null }[]) {
   const ordenados = [...meses].sort((a, b) => a.competencia.localeCompare(b.competencia));
   const inicial = ordenados[0]?.saldo;

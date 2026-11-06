@@ -4,12 +4,12 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import catalogo from "@/data/benchVidas/ans/catalogo.json";
-import { adaptarVidasAns, carregarVidasAns, escalaVidasAns, periodoPadraoVidasAns } from "@/lib/benchVidasAns";
+import { adaptarVidasAns, carregarVidasAns, escalaVidasAns, limitesPeriodoVidasAns, periodoPadraoVidasAns } from "@/lib/benchVidasAns";
 import { competenciaVidas, mesesBenchVidas, type MesVidas } from "@/lib/benchVidas";
 
 export default function BenchVidasGrafico({ meses, ano, operadora, nome, plano, segmentacao, onDadosChange }: { meses: MesVidas[]; ano: number; operadora: string; nome?: string; plano: string; segmentacao: string; onDadosChange: (dados: MesVidas[] | null) => void }) {
-  const [de, setDe] = useState(() => String(periodoPadraoVidasAns().de));
-  const [ate, setAte] = useState(() => String(periodoPadraoVidasAns().ate));
+  const [de, setDe] = useState(() => String(limitesPeriodoVidasAns(catalogo.anos).de));
+  const [ate, setAte] = useState(() => String(limitesPeriodoVidasAns(catalogo.anos).ate));
   const [editandoPeriodo, setEditandoPeriodo] = useState(false);
   const [periodo, setPeriodo] = useState<{ de: number; ate: number } | null>(periodoPadraoVidasAns);
   const [serie, setSerie] = useState<MesVidas[]>([]);
@@ -39,7 +39,7 @@ export default function BenchVidasGrafico({ meses, ano, operadora, nome, plano, 
   const anos = (valor: string, alterar: (v: string) => void, label: string) => <label className="flex items-center gap-2 text-sm">{label}<Select value={valor} onValueChange={alterar}><SelectTrigger aria-label={`${label} ano do gráfico`} className="w-24"><SelectValue /></SelectTrigger><SelectContent>{catalogo.anos.map(a => <SelectItem key={a} value={String(a)}>{a}</SelectItem>)}</SelectContent></Select></label>;
   return <>
     <div className="mb-3 flex flex-wrap items-center gap-3">
-      <Button variant="outline" className="gap-2" aria-expanded={editandoPeriodo} onClick={() => setEditandoPeriodo(true)}><ChartLine className="h-4 w-4" />Por Período</Button>
+      <Button variant="outline" className="gap-2" aria-expanded={editandoPeriodo} onClick={() => { if (!editandoPeriodo) { const limites = limitesPeriodoVidasAns(catalogo.anos); setDe(String(limites.de)); setAte(String(limites.ate)); } setEditandoPeriodo(true); }}><ChartLine className="h-4 w-4" />Por Período</Button>
       {editandoPeriodo && <>
         {anos(de, setDe, "De")}{anos(ate, setAte, "Até")}
         <Button variant="outline" disabled={invalido || carregando} onClick={() => { setPeriodo({ de: Number(de), ate: Number(ate) }); setTentativa(t => t + 1); }}>Aplicar</Button>
