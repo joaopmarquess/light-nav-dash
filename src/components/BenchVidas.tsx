@@ -121,7 +121,7 @@ export default function BenchVidas() {
           <div className="mb-2 flex flex-wrap gap-4 text-xs text-muted-foreground">{tipos.map(t => <span key={t}>{ROTULOS_VIDAS[t]}</span>)}</div>
           <div className="h-[180px] w-full" role="img" aria-label={`Evolução de ${tipos.map(t => ROTULOS_VIDAS[t]).join(", ")} de ${atual?.nome} em ${ano}`}>
             <ResponsiveContainer width="100%" height="100%"><LineChart data={meses.map(m => ({ ...m, label: MESES[m.mes - 1] }))} margin={{ top: 16, right: 20, left: 8, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" /><YAxis width={70} domain={escala.dominio} ticks={escala.marcas} allowDataOverflow tickFormatter={v => Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 0 })} stroke="hsl(var(--muted-foreground))" />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" /><YAxis width={70} domain={escala.dominio} ticks={escala.marcas} interval={0} allowDataOverflow tickFormatter={v => Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 0 })} stroke="hsl(var(--muted-foreground))" />
               <ChartTooltip labelFormatter={(_, payload) => competenciaVidas(String(payload[0]?.payload?.competencia ?? ""))} formatter={(v: number) => nf(v)} contentStyle={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }} />
               {tipos.map(t => <Line key={t} type="monotone" name={ROTULOS_VIDAS[t]} dataKey={t} stroke={cores[t]} strokeWidth={1.25} dot={{ r: 2 }} isAnimationActive={false} />)}
             </LineChart></ResponsiveContainer>
