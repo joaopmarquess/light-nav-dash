@@ -1,4 +1,19 @@
-import { PLANOS_VIDAS, type BenchVida, type PlanoVidas } from "./benchVidas";
+import { mesesBenchVidas, PLANOS_VIDAS, type BenchVida, type PlanoVidas } from "./benchVidas";
+
+export function compararOperadorasVidasAns(dados: BenchVida[], operadoras: string[], de: number, ate: number, plano = "todos", segmentacao = "todos") {
+  const pontos = new Map<string, { competencia: string; saldos: Record<string, number | null> }>();
+  const anos = [...new Set(dados.filter(d => d.ano >= de && d.ano <= ate).map(d => d.ano))];
+  for (const operadora of operadoras) {
+    for (const ano of anos) {
+      for (const mes of mesesBenchVidas(dados, operadora, ano, plano, segmentacao)) {
+        const ponto = pontos.get(mes.competencia) ?? { competencia: mes.competencia, saldos: Object.fromEntries(operadoras.map(reg => [reg, null])) };
+        ponto.saldos[operadora] = mes.saldo;
+        pontos.set(mes.competencia, ponto);
+      }
+    }
+  }
+  return [...pontos.values()].sort((a, b) => a.competencia.localeCompare(b.competencia));
+}
 
 export function periodoPadraoVidasAns(data = new Date()) {
   const ano = data.getFullYear();
