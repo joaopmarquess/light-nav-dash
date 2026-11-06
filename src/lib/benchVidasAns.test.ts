@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import catalogo from "@/data/benchVidas/ans/catalogo.json";
-import { adaptarVidasAns, crescimentoPeriodoVidasAns, escalaVidasAns, nomeOperadoraAns, periodoPadraoVidasAns, planosDisponiveisAns, type RegistroAnsVidas } from "./benchVidasAns";
+import { adaptarVidasAns, crescimentoPeriodoVidasAns, escalaVidasAns, limitesPeriodoVidasAns, nomeOperadoraAns, periodoPadraoVidasAns, planosDisponiveisAns, type RegistroAnsVidas } from "./benchVidasAns";
 import { mesesBenchVidas, resumoBenchVidas } from "./benchVidas";
 
 const registros: RegistroAnsVidas[] = [["366561", "202609", "1", 36425, 0], ["366561", "202609", "2", 9904, 0], ["366561", "202609", "3", 25550, 0]];
 describe("ANS DBC historical base", () => {
+  it("initializes the period picker with the smallest and largest available years", () => {
+    expect(limitesPeriodoVidasAns(catalogo.anos)).toEqual({ de: 2011, ate: 2026 });
+    expect(limitesPeriodoVidasAns([2025, 2019, 2024])).toEqual({ de: 2019, ate: 2025 });
+  });
   it("calculates period growth as final balance minus initial balance without summing stocks", () => {
     expect(crescimentoPeriodoVidasAns([{ competencia: "202609", saldo: 71879 }, { competencia: "202603", saldo: 71427 }, { competencia: "202606", saldo: 71501 }])).toBe(452);
     expect(crescimentoPeriodoVidasAns([{ competencia: "202403", saldo: 100 }, { competencia: "202609", saldo: 80 }])).toBe(-20);
