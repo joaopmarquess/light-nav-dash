@@ -1,2 +1,3 @@
-- Preserve the provisional uploaded CSV verbatim; Bench Vidas reads this local snapshot only, so experimental operator data never replaces live Carteira or official accounting data.
+- Preserve uploaded sources verbatim and read only the active local worksheet CSV conversion; keep the old provisional CSV archived, so Bench Vidas never replaces live Carteira or official accounting data.
+- Parse unified worksheet columns and source-version selection in the tested benchVidas helper; preserve missing quantities as null and retain all source rows in the local conversion for auditability.
 - Derive filters and totals through the tested benchVidas helper: annual stock is the last supplied monthly saldo, while adhesions and cancellations sum available months; never infer saldo from net movement.
