@@ -20,9 +20,18 @@ const valor = (s: SomaCompetencia, k: Col) => {
 
 interface Rpc { nr_ano: number; nr_mes: number; rec_cpp: number; rec_copart: number; rec_total: number; desp_total: number }
 
+type Visao = "geral" | "facil50" | "demais";
+const VISOES: { id: Visao; label: string; titulo: string }[] = [
+  { id: "geral", label: "Geral", titulo: "Todos os planos" },
+  { id: "facil50", label: "Fácil 50", titulo: "Somente planos Fácil 50" },
+  { id: "demais", label: "Demais", titulo: "Todos menos Fácil 50" },
+];
+
 export default function SinistralidadePeriodosMV() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [visao, setVisao] = useState<Visao>("geral");
+  const cache = useRef(new Map<Visao, AnoAgrupado[]>());
   const [anos, setAnos] = useState<AnoAgrupado[]>([]);
   const [abertos, setAbertos] = useState<Set<number>>(new Set());
   const [expandido, setExpandido] = useState(false);
@@ -30,27 +39,40 @@ export default function SinistralidadePeriodosMV() {
   const [anoSel, setAnoSel] = useState<number | null>(null);
   const ctrl = useRef<AbortController | null>(null);
 
-  const carregar = useCallback(async () => {
+  const carregar = useCallback(async (v: Visao, forcar = false) => {
     ctrl.current?.abort();
+    setError(null);
+    const salvo = cache.current.get(v);
+    if (salvo && !forcar) { setAnos(salvo); setLoading(false); return; }
     const controller = new AbortController();
     ctrl.current = controller;
-    setLoading(true); setError(null);
+    setLoading(true);
     try {
       const res = await Promise.all(anosSinistralidade(new Date()).map(async ({ ano, ateMes }) => {
-        const r = await hostinger.rpc("sinistralidade_mv_competencias", { p_ano: ano, p_ate_mes: ateMes }).abortSignal(controller.signal);
+        // Geral continua na função original; Fácil 50 e Demais usam a função com visão.
+        const r = v === "geral"
+          ? await hostinger.rpc("sinistralidade_mv_competencias", { p_ano: ano, p_ate_mes: ateMes }).abortSignal(controller.signal)
+          : await hostinger.rpc("sinistralidade_mv_competencias_grupo", { p_ano: ano, p_ate_mes: ateMes, p_grupo: v }).abortSignal(controller.signal);
         if (r.error) throw r.error;
         return (r.data ?? []) as Rpc[];
       }));
       if (controller.signal.aborted) return;
-      setAnos(agruparPorAno(res.flat().map(d => ({ ano: d.nr_ano, mes: d.nr_mes, soma: { ...somaVazia(), recCpp: Number(d.rec_cpp), recCopart: Number(d.rec_copart), recTotal: Number(d.rec_total), despTotal: Number(d.desp_total) } }))));
-    } catch {
-      if (!controller.signal.aborted) setError("Não foi possível consultar a função sinistralidade_mv_competencias. Tente novamente.");
+      const agrupado = agruparPorAno(res.flat().map(d => ({ ano: d.nr_ano, mes: d.nr_mes, soma: { ...somaVazia(), recCpp: Number(d.rec_cpp), recCopart: Number(d.rec_copart), recTotal: Number(d.rec_total), despTotal: Number(d.desp_total) } })));
+      cache.current.set(v, agrupado);
+      setAnos(agrupado);
+    } catch (e) {
+      if (controller.signal.aborted) return;
+      const msg = String((e as { message?: string })?.message ?? e);
+      setError(v !== "geral" && /does not exist|Could not find/i.test(msg)
+        ? "O cálculo das visões Fácil 50 e Demais ainda não foi instalado na base de sinistralidade."
+        : "Não foi possível consultar a sinistralidade. Tente novamente.");
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
   }, []);
 
-  useEffect(() => { void carregar(); return () => ctrl.current?.abort(); }, [carregar]);
+  useEffect(() => { void carregar(visao); }, [carregar, visao]);
+  useEffect(() => () => ctrl.current?.abort(), []);
 
   const alternar = (ano: number) => { setAbertos(s => { const n = new Set(s); n.has(ano) ? n.delete(ano) : n.add(ano); return n; }); };
   const sel = anos.find(a => a.ano === anoSel) ?? anos[anos.length - 1];
@@ -72,9 +94,16 @@ export default function SinistralidadePeriodosMV() {
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 id="sin-periodos-title" className="flex items-center gap-2 text-2xl font-semibold text-foreground"><CalendarRange className="h-6 w-6 text-primary" />Períodos</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Sinistralidade · Receitas e despesas por ano · Fonte: view_eard_mensal</p>
+          <p className="mt-1 text-sm text-muted-foreground">Sinistralidade · {VISOES.find(x => x.id === visao)?.titulo} · Receitas e despesas por ano · Fonte: view_eard_mensal</p>
         </div>
-        <Button variant="outline" disabled={loading} onClick={() => void carregar()}><RefreshCw className={loading ? "animate-spin" : ""} />Atualizar</Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <div role="group" aria-label="Visão" className="inline-flex rounded-md border border-border bg-muted/40 p-0.5">
+            {VISOES.map(x => (
+              <Button key={x.id} size="sm" variant={visao === x.id ? "default" : "ghost"} aria-pressed={visao === x.id} title={x.titulo} onClick={() => setVisao(x.id)} className="h-8 px-3">{x.label}</Button>
+            ))}
+          </div>
+          <Button variant="outline" disabled={loading} onClick={() => void carregar(visao, true)}><RefreshCw className={loading ? "animate-spin" : ""} />Atualizar</Button>
+        </div>
       </header>
 
       {loading ? (
