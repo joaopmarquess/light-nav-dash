@@ -1,1 +1,2 @@
 - Sinistralidade MV expense totals sum all six view_eard_mensal expense columns (consulta, urgência, internação, terapia, exame, outros) in every SQL function and in src/lib + src/control/relatorio sinistralidadeCompetencias helpers, so ratios never omit expense categories.
+- Sinistralidade Períodos views (Geral/Fácil 50/Demais) keep Geral on sinistralidade_mv_competencias and use sinistralidade_mv_competencias_grupo only for filtered views, classifying Fácil 50 per matrícula via beneficiarios MV plan codes, because 4-digit plan codes also hold legacy Odonto members.
