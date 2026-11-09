@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Eye, RotateCcw, Save } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { COPART_PROPOSTA_2027, NOTAS_COPART_2027, LIMITES_PADRAO, chaveCopart, fmtLimite, gravarLimitesCopart, lerLimitesCopart, type LimitesCopart } from "@/lib/propostaApbCopart";
+import { COPART_PROPOSTA_2027, NOTAS_COPART_2027, LIMITES_PADRAO, chaveCopart, chavePct, fmtLimite, fmtPct, gravarLimitesCopart, pctEditavel, lerLimitesCopart, type LimitesCopart } from "@/lib/propostaApbCopart";
 
 export type L = { n: number; g: string; s: string; f: string; p: string; v: string };
 /** Estrutura base da tabela 2490 (Use Bem), que aplica seus próprios valores por grupo. */
@@ -71,7 +71,7 @@ function TabelaProposta() {
     </table>
     <div className="flex flex-wrap items-center justify-end gap-2">
       {status && <span className="text-xs text-muted-foreground">{status}</span>}
-      {invalido && <span className="text-xs text-destructive">Informe valores válidos (R$ 0,00 ou mais).</span>}
+      {invalido && <span className="text-xs text-destructive">Informe valores válidos (limite de R$ 0,00 ou mais; percentual de 0 a 100).</span>}
       <Button type="button" size="sm" variant="outline" onClick={restaurar}><RotateCcw className="mr-2 h-4 w-4" />Restaurar tabela</Button>
       <Button type="button" size="sm" onClick={gravar} disabled={invalido || !alterado}><Save className="mr-2 h-4 w-4" />Gravar</Button>
     </div>
