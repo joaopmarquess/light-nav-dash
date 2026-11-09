@@ -78,7 +78,7 @@ function TabelaProposta() {
 }
 
 export default function PropostaApbCopart({ tipo }: { tipo: Tipo }) {
-  const linhas = LINHAS_BASE_USEBEM.map((l) => (l.n === 1 ? { ...l, v: "28,39" } : l.n === 3 ? { ...l, v: "47,06" } : l.n === 4 ? { ...l, v: "284,35" } : l.n === 2 ? { ...l, v: "60,00" } : { ...l, p: "30%", v: "Sem limite" }));
+  const linhas = LINHAS_BASE_USEBEM.map((l) => (l.n === 1 ? { ...l, v: "28,39" } : l.n === 3 ? { ...l, v: "47,06" } : l.n === 4 ? { ...l, v: "284,35" } : { ...l, p: "30%", v: "Sem limite" }));
   return (
     <Dialog>
       <DialogTrigger asChild>
