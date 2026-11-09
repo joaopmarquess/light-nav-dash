@@ -41,17 +41,21 @@ const td = "border border-border px-2 py-1";
 
 function TabelaProposta() {
   const [salvos, setSalvos] = useState<LimitesCopart>(() => lerLimitesCopart(window.localStorage));
-  const [edit, setEdit] = useState<Record<string, string>>(() => Object.fromEntries(Object.entries(salvos).map(([k, v]) => [k, fmtLimite(v)])));
+  const fmt = (k: string, v: number) => (k.startsWith("pct|") ? fmtPct(v) : fmtLimite(v));
+  const [edit, setEdit] = useState<Record<string, string>>(() => Object.fromEntries(Object.entries(salvos).map(([k, v]) => [k, fmt(k, v)])));
   const [status, setStatus] = useState("");
-  const parse = (t: string) => { const v = Number(t.trim().replace(/\./g, "").replace(",", ".")); return t.trim() !== "" && Number.isFinite(v) && v >= 0 ? v : null; };
-  const valores = Object.fromEntries(Object.entries(edit).map(([k, t]) => [k, parse(t)]));
+  const parse = (t: string, k = "") => { const v = Number(t.trim().replace("%", "").replace(/\./g, "").replace(",", ".")); return t.trim() !== "" && Number.isFinite(v) && v >= 0 && (!k.startsWith("pct|") || v <= 100) ? v : null; };
+  const valores = Object.fromEntries(Object.entries(edit).map(([k, t]) => [k, parse(t, k)]));
   const invalido = Object.values(valores).some((v) => v == null);
   const alterado = !invalido && Object.keys(salvos).some((k) => Math.round((valores[k] as number) * 100) !== Math.round(salvos[k] * 100));
   const gravar = () => {
-    try { setSalvos(gravarLimitesCopart(window.localStorage, valores as LimitesCopart)); setStatus("Limites gravados."); }
+    try { setSalvos(gravarLimitesCopart(window.localStorage, valores as LimitesCopart)); setStatus("Valores gravados."); }
     catch { setStatus("Não foi possível gravar neste navegador."); }
   };
-  const restaurar = () => { setEdit(Object.fromEntries(Object.entries(LIMITES_PADRAO).map(([k, v]) => [k, fmtLimite(v)]))); setStatus("Valores da tabela fornecida restaurados. Clique em Gravar para manter."); };
+  const campo = (k: string, label: string, largura: string) => <input aria-label={label} inputMode="decimal" value={edit[k]} onChange={(e) => { setStatus(""); setEdit((x) => ({ ...x, [k]: e.target.value })); }}
+    onBlur={() => { const v = parse(edit[k], k); if (v != null) setEdit((x) => ({ ...x, [k]: fmt(k, v) })); }}
+    className={`${largura} rounded border bg-background px-2 py-0.5 text-right ${valores[k] == null ? "border-destructive" : "border-input"}`} />;
+  const restaurar = () => { setEdit(Object.fromEntries(Object.entries(LIMITES_PADRAO).map(([k, v]) => [k, fmt(k, v)]))); setStatus("Valores da tabela fornecida restaurados. Clique em Gravar para manter."); };
   const L = COPART_PROPOSTA_2027;
   return <>
     <table className="w-full border-collapse text-sm">
@@ -60,10 +64,8 @@ function TabelaProposta() {
         const first = i === 0 || L[i - 1].n !== l.n, span = L.filter((x) => x.n === l.n).length, k = chaveCopart(l);
         return <tr key={k}>
           {first && <><td rowSpan={span} className={`${td} text-center`}>{l.n}</td><td rowSpan={span} className={`${td} font-medium`}>{l.g}{l.nota && <span className="ml-1 font-normal text-primary">{l.nota}</span>}</td></>}
-          <td className={td}>{l.s}</td><td className={td}>{l.f}</td><td className={`${td} text-center`}>{l.p}</td>
-          <td className={`${td} text-right`}><input aria-label={`Limite ${l.s}`} inputMode="decimal" value={edit[k]} onChange={(e) => { setStatus(""); setEdit((x) => ({ ...x, [k]: e.target.value })); }}
-            onBlur={() => { const v = parse(edit[k]); if (v != null) setEdit((x) => ({ ...x, [k]: fmtLimite(v) })); }}
-            className={`w-24 rounded border bg-background px-2 py-0.5 text-right ${valores[k] == null ? "border-destructive" : "border-input"}`} /></td>
+          <td className={td}>{l.s}</td><td className={td}>{l.f}</td><td className={`${td} text-center`}>{pctEditavel(l) ? <span className="inline-flex items-center gap-1">{campo(chavePct(l), `Percentual ${l.s}`, "w-14")}%</span> : l.p}</td>
+          <td className={`${td} text-right`}>{campo(k, `Limite ${l.s}`, "w-24")}</td>
         </tr>;
       })}</tbody>
     </table>
