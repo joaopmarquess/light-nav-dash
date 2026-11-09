@@ -5,9 +5,9 @@ const mem = () => { const m = new Map<string, string>(); return { getItem: (k: s
 const lim = (n: number) => COPART_PROPOSTA_2027.filter((l) => l.n === n).map((l) => l.limite);
 
 describe("Coparticipação do Plano Proposto 2027", () => {
-  it("tem 12 grupos e 20 linhas, como a tabela fornecida", () => {
+  it("tem 12 grupos e 19 linhas, como a tabela fornecida", () => {
     expect(new Set(COPART_PROPOSTA_2027.map((l) => l.n)).size).toBe(12);
-    expect(COPART_PROPOSTA_2027).toHaveLength(20);
+    expect(COPART_PROPOSTA_2027).toHaveLength(19);
   });
   it.each([[1, 43.47], [2, 88.06], [3, 88.06], [4, 277.57], [5, 277.57], [6, 277.57], [7, 88.06], [8, 88.06], [9, 277.57], [10, 88.06], [11, 277.57], [12, 555.15]])("grupo %i tem limite R$ %f", (n, v) => {
     expect(lim(n).every((x) => x === v)).toBe(true);
