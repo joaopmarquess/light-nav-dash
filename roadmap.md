@@ -10,4 +10,4 @@
 ## Sinistralidade › Períodos
 - [x] Botões Geral / Fácil 50 / Demais.
 - [x] Outubro/2026 fora (despesas incompletas): parar dois meses antes do mês atual.
-- [ ] Conferir as visões na tela após instalar o script na base.
+- [x] Conferir as visões na tela após instalar o script na base.
