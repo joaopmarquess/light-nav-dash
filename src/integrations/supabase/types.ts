@@ -397,6 +397,7 @@ export type Database = {
         Returns: boolean
       }
       axis_is_admin: { Args: { _user_id: string }; Returns: boolean }
+      axis_user_registered: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -426,6 +427,14 @@ export type Database = {
           p_view?: number
         }
         Returns: string
+      }
+      simulador_autores: {
+        Args: never
+        Returns: {
+          email: string
+          nome: string
+          user_id: string
+        }[]
       }
       simulador_delete: { Args: { p_simulation: string }; Returns: undefined }
       simulador_validate_stage: {
