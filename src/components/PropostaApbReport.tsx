@@ -39,7 +39,7 @@ export default function PropostaApbReport({ doc, onClose }: { doc: jsPDF | null;
   return <Dialog open={doc !== null} onOpenChange={(open) => { if (!open) onClose(); }}>
     <DialogContent className="flex h-[92vh] max-w-5xl flex-col gap-3">
       <DialogHeader className="pr-8"><DialogTitle>Proposta APB — Estratégico</DialogTitle></DialogHeader>
-      <div className="flex justify-end"><Button variant="outline" size="sm" disabled={!pronto || !!erro} onClick={() => doc?.save("Proposta_APB_3990_Estrategico.pdf")}><Download className="mr-2 h-4 w-4" />Baixar PDF</Button></div>
+      <div className="flex justify-end"><Button variant="outline" size="sm" disabled={!pronto || !!erro} onClick={() => doc?.save("Proposta_APB_Unificado_2027_Estrategico.pdf")}><Download className="mr-2 h-4 w-4" />Baixar PDF</Button></div>
       <div className="min-h-0 flex-1 overflow-y-auto bg-muted p-3">
         {erro && <p role="alert" className="text-destructive">{erro}</p>}
         {!pronto && !erro && <div role="status" className="flex items-center justify-center gap-2 py-4 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Preparando relatório…</div>}
