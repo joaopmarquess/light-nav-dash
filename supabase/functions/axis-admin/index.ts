@@ -9,6 +9,7 @@ const digest=async(value:string)=>Array.from(new Uint8Array(await crypto.subtle.
 const input=z.discriminatedUnion("action",[
   z.object({action:z.literal("list")}),
   z.object({action:z.literal("invite"),email:z.string().trim().email().max(255),nome:z.string().trim().max(150),role:z.enum(["user","master"]),origin:z.string().url()}),
+  z.object({action:z.literal("delete"),user_id:z.string().uuid()}),
   z.object({action:z.literal("complete"),token:z.string().min(10).max(500),password:z.string().min(8).max(128)}),
 ]);
 Deno.serve(async req=>{
@@ -46,6 +47,18 @@ Deno.serve(async req=>{
       const [users,roles,permissions]=await Promise.all([admin.from("axis_access_users").select("user_id,email,nome,status,created_at,activated_at,invite_expires_at").order("created_at"),admin.from("user_roles").select("user_id,role"),admin.from("axis_menu_permissions").select("user_id,menu_id")]);
       if(users.error||roles.error||permissions.error) return json({error:"Não foi possível consultar os usuários."},500);
       return json({users:(users.data??[]).map(u=>({...u,role:roles.data?.find(r=>r.user_id===u.user_id)?.role??"user",permissions:permissions.data?.filter(p=>p.user_id===u.user_id).map(p=>p.menu_id)??[]}))});
+    }
+    if(body.action==="delete") {
+      // The main administrator can never be removed, including by themselves.
+      if(body.user_id===identity.user.id) return json({error:"Você não pode excluir o próprio usuário."});
+      const isAdmin=await admin.from("user_roles").select("role").eq("user_id",body.user_id).eq("role","admin").maybeSingle();
+      if(isAdmin.error) return json({error:"Não foi possível conferir o perfil."},500);
+      if(isAdmin.data) return json({error:"O administrador principal não pode ser excluído."});
+      const removed=await admin.from("axis_access_users").delete().eq("user_id",body.user_id);
+      if(removed.error) return json({error:"Não foi possível excluir o cadastro."},500);
+      const gone=await admin.auth.admin.deleteUser(body.user_id);
+      if(gone.error&&!/not.?found/i.test(gone.error.message)) return json({error:"Cadastro removido, mas a conta de acesso não foi excluída. Tente novamente."},500);
+      return json({ok:true});
     }
     // The callback may only use the requesting app's origin, never an arbitrary external host.
     const origin=new URL(body.origin).origin;
