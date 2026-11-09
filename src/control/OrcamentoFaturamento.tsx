@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState, type SetStateAction } from "react";
 import { SimulatorContext } from "@/control/simulador/context";
-import { DEFAULT_MODEL, calculateBudget, type BudgetModel } from "@/control/simulador/model";
+import { DEFAULT_MODEL, admPartes, admTotal, calculateBudget, type BudgetModel } from "@/control/simulador/model";
 import { RotateCcw, ChevronLeft, ChevronDown, ChevronRight } from "lucide-react";
 import { DRE_FULL_NAME } from "@/control/dreLabels";
 import { Button } from "@/components/ui/button";
@@ -58,7 +58,9 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
   const [rede, setRede] = usePersist("rede_v2", 57);
   const [demaisOp, setDemaisOp] = usePersist("demaisOp", [0.97, 0.87, 1.94, 1.29]);
   const [admPc, setAdmPc] = usePersist("admPc_v4", [4.43, 1.09, 0.72, 1.52]);
-  const [admTot, setAdmTot] = usePersist("admTot_v4", 7.76);
+  const [admTotGravado, setAdmTot] = usePersist("admTot_v4", 7.76);
+  const admP = admPartes(admPc, admTotGravado), admTot = admTotal(admP);
+  const setAdmParte = (i: number, v: number) => { const n = admP.map((x, j) => (j === i ? v : x)); setAdmPc(n); setAdmTot(admTotal(n)); };
   const [finPc, setFinPc] = usePersist("finPc_v2", 4.56);
   const [planosAbertos, setPlanosAbertos] = useState(false);
   const [dreAbertos, setDreAbertos] = useState<Record<string, boolean>>({});
@@ -76,7 +78,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
   const tV26 = sum((r) => r.vidas), tM26 = sum(mensal26);
   const tV27 = sum(vidas27), tM27 = sum(mensal27);
 
-  const financial = calculateBudget({rows: rows as BudgetModel["rows"],reaj_v2:reaj,rec_v2:rec,sinLiq_v2:sinLiq,rede_v2:rede,demaisOp,admPc_v4:admPc,admTot_v4:admTot,finPc_v2:finPc});
+  const financial = calculateBudget({rows: rows as BudgetModel["rows"],reaj_v2:reaj,rec_v2:rec,sinLiq_v2:sinLiq,rede_v2:rede,demaisOp,admPc_v4:admP,admTot_v4:admTot,finPc_v2:finPc});
   const annual = (vs:number[]) => vs.reduce((a,b)=>a+b,0);
   if (home) {
     const fat=annual(financial.fat),prim=annual(financial.prim),sec=-annual(financial.demais),adm=annual(financial.adm),fin=annual(financial.fin),rai=annual(financial.rai),imp=annual(financial.imp);
@@ -195,12 +197,11 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
       const F = Array.from({ length: 12 }, (_, k) => sum((r) => mesVal(r, k + 1))).reduce((a, b) => a + b, 0);
       const pf = (v: number) => (F ? `${n2((v / F) * 100)}% do fat.` : "");
       const cop = F * rec / 100, ent = F + cop, desp = ent * sinLiq / 100;
-      const adD = admTot - admPc[0] - admPc[1] - admPc[2];
       let L: [string, number, string][] = [];
       if (aba === "Coparticipação") L = [["Faturamento", F, ""], ["Coparticipação", cop, `${n2(rec)}% recuperação`], ["Copart. média mensal", cop / 12, ""], ["Entradas Operacionais", ent, ""]];
       else if (aba === "Despesas Assistenciais") L = [["Entradas Operacionais", ent, ""], ["Rede", desp * rede / 100, `${n2(rede)}% das despesas`], ["Benê", desp * (100 - rede) / 100, `${n2(100 - rede)}% das despesas`], ["Despesas Assistenciais", desp, F ? `Sin. bruta ${n2((desp / F) * 100)}%` : ""]];
       else if (aba === "Demais Operacionais") { const N = ["Comercialização", "Impostos Diretos", "Provisões", "Secundárias"]; L = N.map((n, i) => [n, F * demaisOp[i] / 100, pf(F * demaisOp[i] / 100)] as [string, number, string]); const t = F * demaisOp.reduce((a, b) => a + b, 0) / 100; L.push(["Total", t, pf(t)]); }
-      else if (aba === "Despesas Administrativas") { const P = [admPc[0], admPc[1], admPc[2], adD]; L = ["Pessoal", "Informática", "Marketing", "Demais"].map((n, i) => [n, F * P[i] / 100, pf(F * P[i] / 100)] as [string, number, string]); L.push(["Total", F * admTot / 100, pf(F * admTot / 100)]); }
+      else if (aba === "Despesas Administrativas") { const P = admP; L = ["Pessoal", "Informática", "Marketing", "Demais"].map((n, i) => [n, F * P[i] / 100, pf(F * P[i] / 100)] as [string, number, string]); L.push(["Total", F * admTot / 100, pf(F * admTot / 100)]); }
       else if (aba === "Financeiro") L = [["Faturamento", F, ""], ["Entradas Operacionais", ent, ""], ["Financeiro médio mensal", F * finPc / 1200, ""], ["Financeiro", F * finPc / 100, pf(F * finPc / 100)]];
       return (
         <div className="absolute left-1 right-1 bottom-4 grid gap-2" style={{ gridTemplateColumns: `repeat(${L.length}, minmax(0, 1fr))` }}>
@@ -395,12 +396,11 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
       const cls = (v: number) => (v < 0 ? "text-destructive" : "");
       const rd = desp.map((v) => v * rede / 100);
       const bn = desp.map((v, k) => v - rd[k]);
-      const admDemais = admTot - admPc[0] - admPc[1] - admPc[2];
       const filhos: Record<string, [string, number[]][]> = {
         ENT: [["FATURAMENTO", fatM], ["COPARTICIPAÇÃO", cop]],
         DESP: [["REDE", rd.map((v) => -v)], ["BENÊ", bn.map((v) => -v)]],
         OP: ["COMERCIALIZAÇÃO", "IMPOSTOS DIRETOS", "PROVISÕES", "SECUNDÁRIAS"].map((n, i) => [n, fatM.map((v) => -v * demaisOp[i] / 100)] as [string, number[]]),
-        ADM: (["PESSOAL", "INFORMÁTICA", "MARKETING", "DEMAIS"] as const).map((n, i) => [n, fatM.map((v) => -v * (i === 3 ? admDemais : admPc[i]) / 100)] as [string, number[]]),
+        ADM: (["PESSOAL", "INFORMÁTICA", "MARKETING", "DEMAIS"] as const).map((n, i) => [n, fatM.map((v) => -v * admP[i] / 100)] as [string, number[]]),
       };
       const RES = new Set(["FINANCEIRO", "RESULTADO ANTES DOS IMPOSTOS", "RESULTADO LÍQUIDO"]);
       const row = (nome: string, vs: number[], cl: string, key?: string, filho = false) => (
@@ -501,8 +501,8 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
       const M = MESES.slice(1);
       const isAdm = aba === "Despesas Administrativas";
       const NOMES = isAdm ? ["PESSOAL", "INFORMÁTICA", "MARKETING", "DEMAIS"] : ["COMERCIALIZAÇÃO", "IMPOSTOS DIRETOS", "PROVISÕES", "SECUNDÁRIAS"];
-      const demais = isAdm ? [admPc[0], admPc[1], admPc[2], admTot - admPc[0] - admPc[1] - admPc[2]] : demaisOp;
-      const setDemais = isAdm ? setAdmPc : setDemaisOp;
+      const demais = isAdm ? admP : demaisOp;
+      const setDemais = (i: number, v: number) => (isAdm ? setAdmParte(i, v) : setDemaisOp((p) => p.map((x, j) => (j === i ? v : x))));
       const TOTNOME = isAdm ? "DESPESAS ADMINISTRATIVAS" : "DEMAIS OPERACIONAIS";
       const fatM = M.map((_, k) => sum((r) => mesVal(r, k + 1)));
       const linhas = demais.map((pc) => fatM.map((v) => v * pc / 100));
@@ -540,14 +540,14 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
                 {linhas.map((l, i) => (
                   <tr key={i} className={`${i === 0 ? "border-t-2" : "border-t"} border-border`}>
                     <td className="px-2 py-0.5 font-medium whitespace-nowrap">{NOMES[i]}</td>
-                    <td className="px-2 py-0.5 text-right">{isAdm && i === 3 ? <span className="inline-block w-24 px-2 text-right tabular-nums">{n2(demais[i])}</span> : <NumInput dec={2} className={campo} value={demais[i]} onChange={(v) => setDemais((p) => p.map((x, j) => (j === i ? v : x)))} />}</td>
+                    <td className="px-2 py-0.5 text-right"><NumInput dec={2} className={campo} value={demais[i]} onChange={(v) => setDemais(i, v)} /></td>
                     {l.map((v, k) => <td key={k} className={`${td} ${cls(v)}`}>{n2(v)}</td>)}
                     <td className={`${td} border-l border-border font-semibold ${cls(t(l))}`}>{n2(t(l))}</td>
                   </tr>
                 ))}
                 <tr className="border-t border-border bg-muted/60 font-semibold">
                   <td className="px-2 py-0.5 whitespace-nowrap">{TOTNOME}</td>
-                  <td className="px-2 py-0.5 text-right tabular-nums">{isAdm ? <NumInput dec={2} className={campo} value={admTot} onChange={setAdmTot} /> : `${n2(vert)}%`}</td>
+                  <td className="px-2 py-0.5 text-right tabular-nums"><span className="inline-block w-24 px-2 text-right tabular-nums">{n2(vert)}</span></td>
                   {totM.map((v, k) => <td key={k} className={`${td} ${cls(v)}`}>{n2(v)}</td>)}
                   <td className={`${td} border-l border-border ${cls(t(totM))}`}>{n2(t(totM))}</td>
                 </tr>
