@@ -36,6 +36,13 @@
       "when": 1793737003029,
       "tag": "0004_axis_enforce_cloud_menu_access",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794226721688,
+      "tag": "0005_simulador_shared_read",
+      "breakpoints": true
     }
   ]
 }

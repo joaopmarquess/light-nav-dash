@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { admPartes, admTotal, calculateBudget, DEFAULT_MODEL, ETAPAS, modelSchema, pdfEligible, progress, resume, stageData, stageUnlocked, viewUnlocked, type SimulationRecord } from "./model";
+import { admPartes, admTotal, authorLabel, ownsSimulation, calculateBudget, DEFAULT_MODEL, ETAPAS, modelSchema, pdfEligible, progress, resume, stageData, stageUnlocked, viewUnlocked, type SimulationRecord } from "./model";
 import { createSimulatorPdf, stageRows } from "./pdf";
 const simulation=():SimulationRecord=>({id:'test',name:'Planejamento',user_id:'owner',status:'in_progress',created_at:new Date().toISOString(),updated_at:new Date().toISOString(),simulador_visoes:[0,1,2].map(position=>({id:`v${position}`,position,status:position===0?'in_progress':'blocked',updated_at:new Date().toISOString(),simulador_etapas:ETAPAS.map((_,stage)=>({stage,status:position===0&&stage===0?'not_started':'blocked',data:stageData(DEFAULT_MODEL,stage),updated_at:new Date().toISOString()}))}))});
 describe('Simulador — regras de integridade',()=>{
+  it('simulação de outro usuário é somente leitura; só o criador edita',()=>{const s=simulation();expect(ownsSimulation(s,'owner')).toBe(true);expect(ownsSimulation(s,'outro')).toBe(false);expect(ownsSimulation(s,null)).toBe(false);});
+  it('grid identifica o usuário AXIS que criou a simulação',()=>{expect(authorLabel({...simulation(),autor:'Ingrid Andrade'})).toBe('Ingrid Andrade');expect(authorLabel(simulation())).toBe('Usuário AXIS');});
   it('Pessimista exige Otimista gravada',()=>{const s=simulation();expect(viewUnlocked(s,1)).toBe(false);s.simulador_visoes[0].status='completed';expect(viewUnlocked(s,1)).toBe(true);});
   it('Realista exige as duas visões anteriores gravadas',()=>{const s=simulation();s.simulador_visoes[0].status='completed';expect(viewUnlocked(s,2)).toBe(false);s.simulador_visoes[1].status='completed';expect(viewUnlocked(s,2)).toBe(true);});
   it('avançar exige salvar todas as etapas anteriores',()=>{const v=simulation().simulador_visoes[0];expect(stageUnlocked(v,1)).toBe(false);v.simulador_etapas[0].status='completed';expect(stageUnlocked(v,1)).toBe(true);expect(stageUnlocked(v,2)).toBe(false);});

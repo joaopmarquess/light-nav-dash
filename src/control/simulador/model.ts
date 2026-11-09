@@ -33,7 +33,10 @@ export function stageData(model: BudgetModel, stage: number) {
 }
 export type StageRecord = { stage: number; status: string; data: Record<string, unknown>; updated_at: string };
 export type ViewRecord = { id: string; position: number; status: string; updated_at: string; simulador_etapas: StageRecord[] };
-export type SimulationRecord = { id: string; name: string; user_id: string; status: string; created_at: string; updated_at: string; simulador_visoes: ViewRecord[] };
+export type SimulationRecord = { id: string; name: string; user_id: string; status: string; created_at: string; updated_at: string; simulador_visoes: ViewRecord[]; autor?: string };
+/** Everyone with Simulator access sees all simulations; only the creator edits or deletes. */
+export function ownsSimulation(sim: SimulationRecord, userId: string | null | undefined) { return !!userId && sim.user_id === userId; }
+export function authorLabel(sim: SimulationRecord) { return sim.autor?.trim() || "Usuário AXIS"; }
 export function viewModel(view: ViewRecord): BudgetModel { return { ...structuredClone(DEFAULT_MODEL), ...Object.assign({}, ...[...view.simulador_etapas].sort((a, b) => a.stage - b.stage).map(s => s.data)) }; }
 export function stageUnlocked(view: ViewRecord, stage: number) { return view.simulador_etapas.filter(s => s.stage < stage).every(s => s.status === "completed") && view.simulador_etapas.filter(s => s.stage < stage).length === stage; }
 export function viewUnlocked(sim: SimulationRecord, position: number) { return sim.simulador_visoes.filter(v => v.position < position).every(v => v.status === "completed") && sim.simulador_visoes.filter(v => v.position < position).length === position; }
