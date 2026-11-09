@@ -1,18 +1,22 @@
-import { Eye } from "lucide-react";
+import { useState } from "react";
+import { Eye, RotateCcw, Save } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { COPART_PROPOSTA_2027, NOTAS_COPART_2027, LIMITES_PADRAO, chaveCopart, fmtLimite, gravarLimitesCopart, lerLimitesCopart, type LimitesCopart } from "@/lib/propostaApbCopart";
 
 export type L = { n: number; g: string; s: string; f: string; p: string; v: string };
-export const LINHAS_COPART_FACIL50: L[] = [
-  { n: 1, g: "Consultas", s: "Consulta", f: "Por Consulta", p: "-", v: "45,00" },
-  { n: 2, g: "Consulta Oftalmológica + Pacote de Exames Baixo Custo*", s: "Consulta Oftalmológica + Pacote de Exames Baixo Custo*", f: "Por Consulta Oftalmológica + Pacote de Exames Baixo Custo*", p: "-", v: "60,00" },
-  { n: 3, g: "Emergência", s: "Emergência", f: "Por Atendimento", p: "-", v: "79,00" },
-  { n: 4, g: "Internação", s: "Internação", f: "Por Internação", p: "-", v: "250,00" },
-  { n: 5, g: "Exames e Procedimentos (De 0 a 399 CHs**)", s: "Exames e Procedimentos", f: "Por Exame e/ou Procedimento", p: "50%", v: "79,00" },
-  { n: 6, g: "Exames e Procedimentos Especiais (Acima de 399 CHs**)", s: "Exames e Procedimentos Especiais", f: "Por Exame e/ou Procedimento", p: "50%", v: "250,00" },
-  ...["Acupuntura", "Fisioterapia", "Fonoaudiologia", "Terapia Ocupacional", "Psicoterapia"].map((s) => ({ n: 7, g: "Terapias (De 0 a 399 CHs**)", s, f: "Por Sessão", p: "50%", v: "79,00" })),
-  { n: 8, g: "Terapias Especiais (Acima de 399 CHs**)", s: "Terapias Especiais", f: "Por Sessão", p: "50%", v: "250,00" },
-  { n: 9, g: "Alta Complexidade", s: "Medicamentos Antineoplásicos e de Efeitos Adversos/Imunobiológicos", f: "Por Medicamento Dispensado", p: "50%", v: "-" },
-  ...["Hemodiálise/diálise", "Quimioterapia", "Radioterapia"].map((s) => ({ n: 9, g: "Alta Complexidade", s, f: "Por Mês de Execução", p: "50%", v: "-" })),
+/** Estrutura base da tabela 2490 (Use Bem), que aplica seus próprios valores por grupo. */
+const LINHAS_BASE_USEBEM: L[] = [
+  { n: 1, g: "Consultas", s: "Consulta", f: "Por Consulta", p: "-", v: "" },
+  { n: 2, g: "Consulta Oftalmológica + Pacote de Exames Baixo Custo*", s: "Consulta Oftalmológica + Pacote de Exames Baixo Custo*", f: "Por Consulta Oftalmológica + Pacote de Exames Baixo Custo*", p: "-", v: "" },
+  { n: 3, g: "Emergência", s: "Emergência", f: "Por Atendimento", p: "-", v: "" },
+  { n: 4, g: "Internação", s: "Internação", f: "Por Internação", p: "-", v: "" },
+  { n: 5, g: "Exames e Procedimentos (De 0 a 399 CHs**)", s: "Exames e Procedimentos", f: "Por Exame e/ou Procedimento", p: "", v: "" },
+  { n: 6, g: "Exames e Procedimentos Especiais (Acima de 399 CHs**)", s: "Exames e Procedimentos Especiais", f: "Por Exame e/ou Procedimento", p: "", v: "" },
+  ...["Acupuntura", "Fisioterapia", "Fonoaudiologia", "Terapia Ocupacional", "Psicoterapia"].map((s) => ({ n: 7, g: "Terapias (De 0 a 399 CHs**)", s, f: "Por Sessão", p: "", v: "" })),
+  { n: 8, g: "Terapias Especiais (Acima de 399 CHs**)", s: "Terapias Especiais", f: "Por Sessão", p: "", v: "" },
+  { n: 9, g: "Alta Complexidade", s: "Medicamentos Antineoplásicos e de Efeitos Adversos/Imunobiológicos", f: "Por Medicamento Dispensado", p: "", v: "" },
+  ...["Hemodiálise/diálise", "Quimioterapia", "Radioterapia"].map((s) => ({ n: 9, g: "Alta Complexidade", s, f: "Por Mês de Execução", p: "", v: "" })),
 ];
 
 const S = "8 - Sessões", G7 = "7 - Gratuitos", G9 = "9 - Grupos";
@@ -28,36 +32,71 @@ export const COPART_2890: [string, string, string][] = [
 ];
 
 type Tipo = "usebem" | "flex" | "facil50";
-const CFG: Record<Tipo, { t: string; pct: string; teto: string | null; ilustr: boolean }> = {
-  usebem: { t: "2490 — Use Bem com teto de R$ 396,96", pct: "30%", teto: "R$ 396,96", ilustr: false },
-  flex: { t: "2890 — Fácil Flex com teto de R$ 656,10", pct: "", teto: "R$ 656,10", ilustr: false },
-  facil50: { t: "Proposta — Fácil 50 sem teto", pct: "50%", teto: null, ilustr: false },
+const TITULO: Record<Tipo, string> = {
+  usebem: "2490 — Use Bem com teto de R$ 396,96",
+  flex: "2890 — Fácil Flex com teto de R$ 656,10",
+  facil50: "Plano Proposto Unificado 2027 — Fácil 50 sem teto",
 };
+const td = "border border-border px-2 py-1";
+
+function TabelaProposta() {
+  const [salvos, setSalvos] = useState<LimitesCopart>(() => lerLimitesCopart(window.localStorage));
+  const [edit, setEdit] = useState<Record<string, string>>(() => Object.fromEntries(Object.entries(salvos).map(([k, v]) => [k, fmtLimite(v)])));
+  const [status, setStatus] = useState("");
+  const parse = (t: string) => { const v = Number(t.trim().replace(/\./g, "").replace(",", ".")); return t.trim() !== "" && Number.isFinite(v) && v >= 0 ? v : null; };
+  const valores = Object.fromEntries(Object.entries(edit).map(([k, t]) => [k, parse(t)]));
+  const invalido = Object.values(valores).some((v) => v == null);
+  const alterado = !invalido && Object.keys(salvos).some((k) => Math.round((valores[k] as number) * 100) !== Math.round(salvos[k] * 100));
+  const gravar = () => {
+    try { setSalvos(gravarLimitesCopart(window.localStorage, valores as LimitesCopart)); setStatus("Limites gravados."); }
+    catch { setStatus("Não foi possível gravar neste navegador."); }
+  };
+  const restaurar = () => { setEdit(Object.fromEntries(Object.entries(LIMITES_PADRAO).map(([k, v]) => [k, fmtLimite(v)]))); setStatus("Valores da tabela fornecida restaurados. Clique em Gravar para manter."); };
+  const L = COPART_PROPOSTA_2027;
+  return <>
+    <table className="w-full border-collapse text-sm">
+      <thead><tr className="bg-primary text-primary-foreground">{["#", "Grupo", "Subgrupo", "Forma de Cobrança", "% de Coparticipação", "Limite de Valor (R$)"].map((h) => <th key={h} className="border border-border px-2 py-1.5">{h}</th>)}</tr></thead>
+      <tbody>{L.map((l, i) => {
+        const first = i === 0 || L[i - 1].n !== l.n, span = L.filter((x) => x.n === l.n).length, k = chaveCopart(l);
+        return <tr key={k}>
+          {first && <><td rowSpan={span} className={`${td} text-center`}>{l.n}</td><td rowSpan={span} className={`${td} font-medium`}>{l.g}{l.nota && <span className="ml-1 font-normal text-primary">{l.nota}</span>}</td></>}
+          <td className={td}>{l.s}</td><td className={td}>{l.f}</td><td className={`${td} text-center`}>{l.p}</td>
+          <td className={`${td} text-right`}><input aria-label={`Limite ${l.s}`} inputMode="decimal" value={edit[k]} onChange={(e) => { setStatus(""); setEdit((x) => ({ ...x, [k]: e.target.value })); }}
+            onBlur={() => { const v = parse(edit[k]); if (v != null) setEdit((x) => ({ ...x, [k]: fmtLimite(v) })); }}
+            className={`w-24 rounded border bg-background px-2 py-0.5 text-right ${valores[k] == null ? "border-destructive" : "border-input"}`} /></td>
+        </tr>;
+      })}</tbody>
+    </table>
+    <div className="flex flex-wrap items-center justify-end gap-2">
+      {status && <span className="text-xs text-muted-foreground">{status}</span>}
+      {invalido && <span className="text-xs text-destructive">Informe valores válidos (R$ 0,00 ou mais).</span>}
+      <Button type="button" size="sm" variant="outline" onClick={restaurar}><RotateCcw className="mr-2 h-4 w-4" />Restaurar tabela</Button>
+      <Button type="button" size="sm" onClick={gravar} disabled={invalido || !alterado}><Save className="mr-2 h-4 w-4" />Gravar</Button>
+    </div>
+    <div className="space-y-1 text-xs text-muted-foreground">{NOTAS_COPART_2027.map((t) => <p key={t}>{t}</p>)}</div>
+  </>;
+}
 
 export default function PropostaApbCopart({ tipo }: { tipo: Tipo }) {
-  const c = CFG[tipo];
-  const linhas = tipo === "usebem"
-    ? LINHAS_COPART_FACIL50.map((l) => (l.n === 1 ? { ...l, p: "-", v: "28,39" } : l.n === 3 ? { ...l, p: "-", v: "47,06" } : l.n === 4 ? { ...l, p: "-", v: "284,35" } : { ...l, p: "30%", v: "Sem limite" }))
-    : LINHAS_COPART_FACIL50;
+  const linhas = LINHAS_BASE_USEBEM.map((l) => (l.n === 1 ? { ...l, v: "28,39" } : l.n === 3 ? { ...l, v: "47,06" } : l.n === 4 ? { ...l, v: "284,35" } : { ...l, p: "30%", v: "Sem limite" }));
   return (
     <Dialog>
       <DialogTrigger asChild>
         <button type="button" title="Ver tabela de coparticipação" className="ml-1 inline-flex align-middle opacity-90 hover:opacity-100"><Eye className="h-3.5 w-3.5" /></button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
-        <DialogHeader><DialogTitle>Tabela de Coparticipação — {c.t}</DialogTitle></DialogHeader>
-        {c.ilustr && <p className="rounded-md border border-primary/40 bg-primary/5 px-3 py-1.5 text-sm">Tabela ilustrativa: percentuais e limites a confirmar. Teto mensal de coparticipação: {c.teto}.</p>}
-        {tipo === "flex" ? <table className="w-full border-collapse text-sm">
+      <DialogContent className="max-h-[90vh] max-w-5xl space-y-2 overflow-y-auto text-foreground">
+        <DialogHeader><DialogTitle>Tabela de Coparticipação — {TITULO[tipo]}</DialogTitle></DialogHeader>
+        {tipo === "facil50" ? <TabelaProposta /> : tipo === "flex" ? <table className="w-full border-collapse text-sm">
           <thead><tr className="bg-primary text-primary-foreground">{["Grupo", "Tipo", "Valor (R$)"].map((h) => <th key={h} className="border border-border px-2 py-1.5">{h}</th>)}</tr></thead>
-          <tbody>{COPART_2890.map(([g, t, v], i) => <tr key={i}><td className="border border-border px-2 py-1">{g}</td><td className="border border-border px-2 py-1">{t}</td><td className="border border-border px-2 py-1 text-right">{v}</td></tr>)}</tbody>
+          <tbody>{COPART_2890.map(([g, t, v], i) => <tr key={i}><td className={td}>{g}</td><td className={td}>{t}</td><td className={`${td} text-right`}>{v}</td></tr>)}</tbody>
         </table> : <table className="w-full border-collapse text-sm">
           <thead><tr className="bg-primary text-primary-foreground">{["#", "Grupo", "Subgrupo", "Forma de Cobrança", "% de Coparticipação", "Limite de Valor (R$)"].map((h) => <th key={h} className="border border-border px-2 py-1.5">{h}</th>)}</tr></thead>
           <tbody>{linhas.map((l, i) => {
             const first = i === 0 || linhas[i - 1].n !== l.n;
             const span = linhas.filter((x) => x.n === l.n).length;
             return <tr key={i} className="text-center">
-              {first && <><td rowSpan={span} className="border border-border px-2 py-1">{l.n}</td><td rowSpan={span} className="border border-border px-2 py-1 font-medium">{l.g}</td></>}
-              <td className="border border-border px-2 py-1">{l.s}</td><td className="border border-border px-2 py-1">{l.f}</td><td className="border border-border px-2 py-1">{l.p}</td><td className="border border-border px-2 py-1">{l.v}</td>
+              {first && <><td rowSpan={span} className={td}>{l.n}</td><td rowSpan={span} className={`${td} font-medium`}>{l.g}</td></>}
+              <td className={td}>{l.s}</td><td className={td}>{l.f}</td><td className={td}>{l.p}</td><td className={td}>{l.v}</td>
             </tr>;
           })}</tbody>
         </table>}

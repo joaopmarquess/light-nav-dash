@@ -9,6 +9,7 @@ import { montarPropostaPdf } from "@/lib/propostaApbPdf";
 import PropostaApbReport from "@/components/PropostaApbReport";
 import type jsPDF from "jspdf";
 import PropostaApbCopart from "@/components/PropostaApbCopart";
+import { lerLimitesCopart } from "@/lib/propostaApbCopart";
 const COPART_DESC: Record<string, string> = { "2290": "Sem Coparticipação", "2490": "Use Bem com teto de R$ 396,96", "2890": "Fácil Flex com teto de R$ 656,10", "Proposta": "Fácil 50 sem teto" };
 const COPART_TIPO = { "2490": "usebem", "2890": "flex", "Proposta": "facil50" } as const;
 import csv from "@/data/propostaApb/vidas_precos_2026-10-29.csv?raw";
@@ -111,7 +112,7 @@ export default function PropostaApb() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
         <Tooltip>
-          <TooltipTrigger asChild><Button type="button" size="icon" variant="outline" className="h-14" aria-label="Gerar Proposta" onClick={() => setReportDoc(montarPropostaPdf(vars[4]))}><Printer className="h-4 w-4" aria-hidden="true" /></Button></TooltipTrigger>
+          <TooltipTrigger asChild><Button type="button" size="icon" variant="outline" className="h-14" aria-label="Gerar Proposta" onClick={() => setReportDoc(montarPropostaPdf(vars[4], lerLimitesCopart(window.localStorage)))}><Printer className="h-4 w-4" aria-hidden="true" /></Button></TooltipTrigger>
           <TooltipContent>Gerar Proposta</TooltipContent>
         </Tooltip>
         <Dialog>
