@@ -12,7 +12,7 @@ import { downloadSimulatorPdf } from "@/control/simulador/pdf";
 
 const date = (s: string) => new Date(s).toLocaleString("pt-BR");
 export default function Simulador({ requestedView, onViewState, onDirty, onBusy }: { requestedView?: { position: number; nonce: number }; onViewState: (enabled: boolean[]) => void; onDirty: (dirty: boolean) => void; onBusy: (busy:boolean)=>void }) {
-  const { user } = useAuth();
+  const { user, nome } = useAuth();
   const [list,setList]=useState<SimulationRecord[]>([]), [selected,setSelected]=useState<string|null>(null);
   const [position,setPosition]=useState(0), [stage,setStage]=useState(0), [model,setModel]=useState<BudgetModel|null>(null);
   const [dirty,setDirty]=useState(false), [busy,setBusy]=useState(false), [loading,setLoading]=useState(true), [loadError,setLoadError]=useState(false);
@@ -45,7 +45,7 @@ export default function Simulador({ requestedView, onViewState, onDirty, onBusy 
   const readOnly=view?.status==='completed'||!mine;
   return <div className="h-full min-h-0 flex flex-col gap-3">
     {!sim ? <>
-      <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-semibold">Simulações</h2><Button onClick={()=>{setName("");setNewOpen(true);}}><Plus/>Nova simulação</Button></div>
+      <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-semibold">Simulações</h2><Button onClick={()=>{setName(nome??"");setNewOpen(true);}}><Plus/>Nova simulação</Button></div>
       <div className="flex-1 overflow-auto">
         {loading?<div className="flex gap-2 items-center text-muted-foreground"><Loader2 className="animate-spin h-4 w-4"/>Carregando simulações…</div>:loadError?<Button variant="outline" onClick={()=>execute(async()=>{await refresh();setLoadError(false);})}>Tentar novamente</Button>:list.length===0?<div className="py-12 text-center text-muted-foreground">Nenhuma simulação cadastrada.</div>:<table className="w-full text-sm"><thead className="border-b border-border text-muted-foreground"><tr>{["Identificação","Usuário","Criada em","Atualizada em","Visão / etapa","Conclusão","Status",""].map(t=><th key={t} className="text-left px-3 py-3 whitespace-nowrap">{t}</th>)}</tr></thead><tbody>{list.map(s=>{const r=resume(s),own=ownsSimulation(s,user?.id);return <tr key={s.id} className="border-b border-border"><td className="px-3 py-4 font-medium max-w-64 break-words">{s.name}</td><td className="px-3 max-w-56 break-words">{authorLabel(s)}{ownsSimulation(s,user?.id)&&<span className="ml-1 text-xs text-muted-foreground">(você)</span>}</td><td className="px-3 whitespace-nowrap">{date(s.created_at)}</td><td className="px-3 whitespace-nowrap">{date(s.updated_at)}</td><td className="px-3">{s.status==='completed'?'Concluída':`${VISOES[r.view]} · ${ETAPAS[r.stage]}`}</td><td className="px-3 tabular-nums">{progress(s)}%</td><td className="px-3 whitespace-nowrap">{s.status==='completed'?'Concluída':'Em preenchimento'}</td><td className="px-3"><div className="flex gap-2"><Button variant="outline" onClick={()=>open(s)}>{s.status==='completed'||!own?'Visualizar':'Continuar'}<ChevronRight/></Button>{pdfEligible(s)&&<Button disabled={busy} variant="ghost" onClick={()=>pdf(s)}><Download/>Gerar PDF</Button>}{own&&<Button disabled={busy} variant="ghost" size="icon" title="Apagar simulação" aria-label="Apagar simulação" onClick={()=>setToDelete(s)}><Trash2/></Button>}</div></td></tr>;})}</tbody></table>}
       </div>
