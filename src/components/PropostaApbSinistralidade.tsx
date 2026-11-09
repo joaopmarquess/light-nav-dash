@@ -88,7 +88,7 @@ export default function PropostaApbSinistralidade({ proj, grupo, fixo, sinFixa, 
               const t = gridFaixas(linhas.filter((l) => l.plano === p)).total;
               return (
                 <tr key={p} className="border-t border-border">
-                  <td className="px-2 py-1 font-medium">{p}</td>
+                  <td className="px-2 py-1 font-medium leading-tight !whitespace-normal">{p}</td>
                   <td className="px-2 py-1 text-center">{Math.round(vidasArquivo ?? t.vidas).toLocaleString("pt-BR")}</td>
                   <td className="px-2 py-1 text-right">{brl(t.recCpp)}</td>
                   <td className="px-2 py-1 text-right">{brl(t.recCopart)}<span className="text-muted-foreground">{rel(t.recCopart, t.recCpp)}</span></td>
