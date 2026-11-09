@@ -50,6 +50,8 @@ Deno.serve(async req=>{
     }
     if(body.action==="delete") {
       // The main administrator can never be removed, including by themselves.
+      const requester=await admin.from("user_roles").select("role").eq("user_id",identity.user.id).eq("role","admin").maybeSingle();
+      if(requester.error||!requester.data) return json({error:"Somente o administrador principal pode excluir usuários."},403);
       if(body.user_id===identity.user.id) return json({error:"Você não pode excluir o próprio usuário."});
       const isAdmin=await admin.from("user_roles").select("role").eq("user_id",body.user_id).eq("role","admin").maybeSingle();
       if(isAdmin.error) return json({error:"Não foi possível conferir o perfil."},500);
