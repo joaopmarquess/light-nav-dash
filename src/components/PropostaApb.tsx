@@ -55,7 +55,7 @@ export default function PropostaApb() {
   const estrategicoDependente = tabelaDependente(vars[4].depBase);
   const n5 = useMemo(() => gridsN5(linhasN4, linear, precoDep), [linhasN4, linear, precoDep]);
   const transf = nivel >= 3;
-  // Transformar: todas as vidas migram para o plano novo 3990, com a tabela proposta.
+  // Transformar: todas as vidas migram para o plano novo Unificado 2027, com a tabela proposta.
   // Nível 2: os três planos agrupados em GRUPO, com preços e resultado atuais (preço por faixa varia por plano → não exibido).
   const planos = nivel >= 3 ? [PLANO_NOVO] : nivel === 2 ? [PLANO_GRUPO] : PLANOS_APB;
   const grids = useMemo(() => {
@@ -189,7 +189,7 @@ export default function PropostaApb() {
       {nivel === 2 && <p className="rounded-md border border-primary/40 bg-primary/5 truncate px-3 py-1 text-xs text-foreground">Nível 2: planos 2290, 2490 e 2890 agrupados como GRUPO, com preços e resultados atuais.</p>}
       {nivel >= 3 && (
         <div className="flex items-center justify-between gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 py-1 text-xs text-foreground">
-          <span className="truncate">Nível {nivel}: 1.242 titulares + 15% dependentes no plano 3990; titulares com preço linear e dependentes com tabela por faixa; despesas = receita total × sinistralidade.</span>
+          <span className="truncate">Nível {nivel}: 1.242 titulares + 15% dependentes no plano {PLANO_NOVO}; titulares com preço linear e dependentes com tabela por faixa; despesas = receita total × sinistralidade.</span>
 
         </div>
       )}

@@ -15,7 +15,7 @@ export const PRECO_TITULAR_2890: [number, number] = [249.17, 373.76];
 
 // Tabela proposta (Enfermaria, Apartamento) — mesma para todos os planos no modo "Transformar".
 export const PRECOS_PROPOSTA: [number, number][] = [[110.53, 165.79], [128.99, 193.47], [150.53, 225.77], [165.88, 248.79], [193.58, 290.33], [221.26, 331.84], [271.04, 406.5], [337.98, 506.9], [448.5, 672.65], [663.1, 994.51]];
-export const PLANO_NOVO = "3990";
+export const PLANO_NOVO = "Unificado 2027";
 export const PLANO_GRUPO = "GRUPO";
 export const COPART_PROPOSTA = 0.2; // copart = 20% da receita CPP
 /** Ticket mensal histórico: copart anual / 12 / vidas da mesma fonte Menu; ausência não é zero. */
@@ -69,7 +69,7 @@ export function gridPlano(linhas: LinhaApb[], plano: string, precos?: [number, n
   return { faixas, total: { faixa: "Total", enfTit: sum("enfTit"), enfDep: sum("enfDep"), apTit: sum("apTit"), apDep: sum("apDep"), total: sum("total"), precoEnf: null, precoAp: null, mensalidade: sum("mensalidade") } };
 }
 
-/** Soma das idades exatas (dt_nascimento na data_referencia do mesmo snapshot das vidas); GRUPO/3990 somam todos os planos. */
+/** Soma das idades exatas (dt_nascimento na data_referencia do mesmo snapshot das vidas); GRUPO/Unificado 2027 somam todos os planos. */
 export const idadeSomaPlanos = (linhas: LinhaApb[], planos: string[]) => {
   const todos = planos.some((p) => !PLANOS_APB.includes(p));
   return linhas.filter((l) => todos || planos.includes(l.plano)).reduce((t, l) => t + l.idadeSoma, 0);
@@ -111,7 +111,7 @@ export function escalarVidas(linhas: LinhaApb[], titPorFaixa = VIDAS_N4, depPct 
   return out.filter((l) => l.vidas > 0);
 }
 
-/** Nível 5: vidas do Nível 4 no plano 3990; titulares com preço linear (qualquer idade) e dependentes com tabela por faixa, ambos editáveis. */
+/** Nível 5: vidas do Nível 4 no plano Unificado 2027; titulares com preço linear (qualquer idade) e dependentes com tabela por faixa, ambos editáveis. */
 export function gridsN5(linhas: LinhaApb[], linear: [number, number], dep: [number, number][]) {
   const ls = linhas.map((l) => ({ ...l, plano: PLANO_NOVO }));
   const tit = gridPlano(ls.filter((l) => l.rel === "Titular"), PLANO_NOVO, FAIXAS_APB.map(() => linear));
