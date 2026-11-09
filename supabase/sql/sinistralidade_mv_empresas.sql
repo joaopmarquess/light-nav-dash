@@ -21,7 +21,8 @@ AS $function$
          sum(coalesce(v.vl_rec_cpp, 0)),
          sum(coalesce(v.vl_rec_copart, 0)),
          sum(coalesce(v.vl_rec_cpp, 0) + coalesce(v.vl_rec_copart, 0) + coalesce(v.vl_rec_outros, 0)),
-         sum(coalesce(v.vl_desp_consulta, 0) + coalesce(v.vl_desp_urgencia, 0) + coalesce(v.vl_desp_outros, 0))
+         sum(coalesce(v.vl_desp_consulta, 0) + coalesce(v.vl_desp_urgencia, 0) + coalesce(v.vl_desp_internacao, 0)
+             + coalesce(v.vl_desp_terapia, 0) + coalesce(v.vl_desp_exame, 0) + coalesce(v.vl_desp_outros, 0))
   from public.view_eard_mensal v
   join cart k on k.cd_matricula = v.cd_matricula
   where v.dt_competencia between p_de and p_ate
