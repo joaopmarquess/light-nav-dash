@@ -11,6 +11,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { axisPermissionGroups as groups } from "@/lib/axisNavigation";
 import { toast } from "sonner";
+// Reads the message an edge function sent with a non-2xx status, falling back to a generic text.
+async function functionMessage(error:unknown,fallback:string){try{const body=await (error as {context?:Response})?.context?.json?.();return typeof body?.error==="string"?body.error:fallback;}catch{return fallback;}}
 type AccessUser={user_id:string;email:string;nome:string;role:"admin"|"master"|"user";status:"pending"|"ok"|"blocked";activated_at:string|null;permissions:string[]};
 export default function AxisSettings(){
  const {can}=useAxisAccess();
@@ -19,17 +21,17 @@ export default function AxisSettings(){
  const [editing,setEditing]=useState<AccessUser|null>(null),[dialog,setDialog]=useState(false),[nome,setNome]=useState(""),[email,setEmail]=useState(""),[role,setRole]=useState<"user"|"master">("user"),[blocked,setBlocked]=useState(false);
  const [permissions,setPermissions]=useState<string[]>([]),[link,setLink]=useState(""),[expiry,setExpiry]=useState("");
  const active=users.find(u=>u.user_id===selected);
- async function load(){setError("");const {data,error}=await supabase.functions.invoke("axis-admin",{body:{action:"list"}});if(error||data?.error){setError(data?.error??"Não foi possível carregar os usuários.");return;}setUsers(data.users);}
+ async function load(){setError("");const {data,error}=await supabase.functions.invoke("axis-admin",{body:{action:"list"}});if(error||data?.error){setError(data?.error??await functionMessage(error,"Não foi possível carregar os usuários."));return;}setUsers(data.users);}
  useEffect(()=>{void load();},[]);
  useEffect(()=>{setPermissions(active?.permissions??[]);},[selected,users]);
  function form(user?:AccessUser){setEditing(user??null);setNome(user?.nome??"");setEmail(user?.email??"");setRole(user?.role==="master"?"master":"user");setBlocked(user?.status==="blocked");setLink("");setError("");setDialog(true);}
  async function save(e:FormEvent){e.preventDefault();setBusy(true);setError("");try{
   if(editing){const {error}=await supabase.rpc("axis_admin_save_user",{p_user:editing.user_id,p_nome:nome,p_role:role,p_status:blocked?"blocked":editing.activated_at?"ok":"pending",p_permissions:editing.permissions});if(error)throw error;setDialog(false);toast.success("Usuário atualizado.");}
-  else {const {data,error}=await supabase.functions.invoke("axis-admin",{body:{action:"invite",email,nome,role,origin:window.location.origin}});if(error||data?.error)throw new Error(data?.error??"Não foi possível gerar o convite.");setLink(data.link);setExpiry(data.expires_at);setSelected(data.user_id);toast.success("Usuário cadastrado. Compartilhe o link individual.");}
+  else {const {data,error}=await supabase.functions.invoke("axis-admin",{body:{action:"invite",email,nome,role,origin:window.location.origin}});if(error||data?.error)throw new Error(data?.error??await functionMessage(error,"Não foi possível gerar o convite."));setLink(data.link);setExpiry(data.expires_at);setSelected(data.user_id);toast.success("Usuário cadastrado. Compartilhe o link individual.");}
   await load();
  }catch(e){setError(e instanceof Error?e.message:"Não foi possível salvar.");}finally{setBusy(false);}}
  async function savePermissions(){if(!active||active.role==="admin")return;setBusy(true);const {error}=await supabase.rpc("axis_admin_save_user",{p_user:active.user_id,p_nome:active.nome,p_role:active.role,p_status:active.status,p_permissions:permissions});setBusy(false);if(error){setError("Não foi possível salvar os acessos.");return;}toast.success("Permissões gravadas.");await load();}
- async function regenerate(u:AccessUser){setBusy(true);setError("");const {data,error}=await supabase.functions.invoke("axis-admin",{body:{action:"invite",email:u.email,nome:u.nome,role:u.role,origin:window.location.origin}});setBusy(false);if(error||data?.error){setError(data?.error??"Não foi possível gerar outro link.");return;}form();setEmail(u.email);setNome(u.nome);setLink(data.link);setExpiry(data.expires_at);await load();}
+ async function regenerate(u:AccessUser){setBusy(true);setError("");const {data,error}=await supabase.functions.invoke("axis-admin",{body:{action:"invite",email:u.email,nome:u.nome,role:u.role,origin:window.location.origin}});setBusy(false);if(error||data?.error){toast.error(data?.error??await functionMessage(error,"Não foi possível gerar outro link."));return;}form();setEmail(u.email);setNome(u.nome);setLink(data.link);setExpiry(data.expires_at);await load();}
  const toggle=(ids:string[],checked:boolean)=>setPermissions(p=>checked?[...new Set([...p,...ids])]:p.filter(id=>!ids.includes(id)));
  async function copy(){try{await navigator.clipboard.writeText(link);toast.success("Link copiado.");}catch{setError("Selecione e copie o link abaixo.");}}
  if(!can("Configurações"))return null;
