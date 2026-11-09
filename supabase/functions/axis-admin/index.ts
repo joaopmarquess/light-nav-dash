@@ -3,6 +3,7 @@ import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { z } from "npm:zod@3";
 import { authorizeAxis } from "../_shared/axisAuthorization.ts";
 import { isAxisInviteOriginAllowed } from "../_shared/axisInviteOrigin.ts";
+// Expected business outcomes (cooldown, duplicate e-mail) return 200 with an error field so the UI shows them as notices, not app failures.
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...corsHeaders,"Content-Type":"application/json","Cache-Control":"no-store"}});
 const digest=async(value:string)=>Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(value))),n=>n.toString(16).padStart(2,"0")).join("");
 const input=z.discriminatedUnion("action",[
@@ -54,8 +55,8 @@ Deno.serve(async req=>{
     const {data:existing}=await admin.from("axis_access_users").select("*").eq("email",email).maybeSingle();
     if(existing) {
       const r=await admin.from("user_roles").select("role").eq("user_id",existing.user_id).eq("role","admin").maybeSingle();
-      if(r.data||existing.status!=="pending") return json({error:"Usuário já cadastrado. Edite os acessos na lista."},409);
-      if(Date.now()-Date.parse(existing.updated_at)<30000) return json({error:"Aguarde 30 segundos antes de gerar outro link."},429);
+      if(r.data||existing.status!=="pending") return json({error:"Usuário já cadastrado. Edite os acessos na lista.",code:"already_registered"});
+      if(Date.now()-Date.parse(existing.updated_at)<30000) return json({error:`Aguarde ${Math.ceil((30000-(Date.now()-Date.parse(existing.updated_at)))/1000)} segundos antes de gerar outro link.`,code:"retry_later"});
     }
     const type=existing?"recovery":"invite";
     const generated=await admin.auth.admin.generateLink({type,email,options:{redirectTo:`${origin}/ativar`,data:{nome:body.nome}}});
