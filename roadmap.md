@@ -7,3 +7,7 @@
 - [x] Adicionar De/Até por ano e Gerar gráfico, preservando o grid anual.
 - [x] Comparar todas as OPS selecionadas no período do gráfico por ícone mostrar/ocultar.
 - [x] Entregar relatório padrão de todas as ações de 06/11/2026, incluindo o ajuste final.
+## Sinistralidade › Períodos
+- [x] Botões Geral / Fácil 50 / Demais.
+- [x] Outubro/2026 fora (despesas incompletas): parar dois meses antes do mês atual.
+- [ ] Conferir as visões na tela após instalar o script na base.
