@@ -49,13 +49,17 @@ export interface MesSoma { ano: number; mes: number; soma: SomaCompetencia }
 export interface AnoAgrupado { ano: number; soma: SomaCompetencia; meses: MesSoma[] }
 
 /** Últimos 3 anos: dois anteriores completos e o atual até o mês anterior ao corrente (UTC); o mês corrente é ignorado. */
+/** Defasagem das despesas: o mês anterior ao atual ainda não tem despesas completas. */
+export const DEFASAGEM_DESPESAS_MESES = 2;
+
 export function anosSinistralidade(hoje: Date): { ano: number; ateMes: number }[] {
-  const a = hoje.getUTCFullYear();
-  // Anos fechados desde 2022 (início da base) + ano corrente até o último mês fechado
+  // Último mês com despesas completas = mês atual menos a defasagem (em novembro, vai até setembro).
+  const ultimo = hoje.getUTCFullYear() * 12 + hoje.getUTCMonth() - DEFASAGEM_DESPESAS_MESES;
+  const anoFim = Math.floor(ultimo / 12);
   const lista = [];
-  for (let y = 2022; y < a; y++) lista.push({ ano: y, ateMes: 12 });
-  lista.push({ ano: a, ateMes: hoje.getUTCMonth() });
-  return lista.filter(x => x.ateMes > 0);
+  for (let y = 2022; y < anoFim; y++) lista.push({ ano: y, ateMes: 12 });
+  lista.push({ ano: anoFim, ateMes: (ultimo % 12) + 1 });
+  return lista;
 }
 
 /** Domínio vertical com a média da linha limite sempre no centro. */
