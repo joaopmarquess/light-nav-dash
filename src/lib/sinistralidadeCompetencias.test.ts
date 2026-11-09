@@ -12,6 +12,12 @@ describe("somas por competência", () => {
     expect(s.recCopart).toBe(20);
     expect(s.recTotal).toBe(123);
   });
+  it("despesa total inclui internação, terapia e exame (dez/2025: 84,40%, não 34,59%)", () => {
+    const s = acumular(somaVazia(), [{ vl_desp_consulta: 2275140, vl_desp_urgencia: 1476669, vl_desp_internacao: 9058510, vl_desp_terapia: 2395460, vl_desp_exame: 5337295, vl_desp_outros: 7910636, vl_rec_cpp: 30913276, vl_rec_copart: 2446302, vl_rec_outros: 353809 }]);
+    expect(s.despTotal).toBe(28453710);
+    expect(s.internacao).toBe(9058510);
+    expect(((s.despTotal / s.recTotal) * 100).toFixed(2)).toBe("84.40");
+  });
   it("total geral soma as competências", () => {
     const a = acumular(somaVazia(), [{ vl_desp_consulta: 2 }]);
     expect(somarTotais([a, a]).despTotal).toBe(4);

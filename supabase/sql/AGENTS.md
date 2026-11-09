@@ -1,0 +1,1 @@
+- Sinistralidade MV expense totals sum all six view_eard_mensal expense columns (consulta, urgência, internação, terapia, exame, outros) in every SQL function and in src/lib + src/control/relatorio sinistralidadeCompetencias helpers, so ratios never omit expense categories.

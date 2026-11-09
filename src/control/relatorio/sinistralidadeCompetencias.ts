@@ -1,25 +1,27 @@
-export const CAMPOS_DESP = ["vl_desp_consulta", "vl_desp_urgencia", "vl_desp_outros"] as const;
+export const CAMPOS_DESP = ["vl_desp_consulta", "vl_desp_urgencia", "vl_desp_internacao", "vl_desp_terapia", "vl_desp_exame", "vl_desp_outros"] as const;
 export const CAMPOS_REC = ["vl_rec_cpp", "vl_rec_copart", "vl_rec_outros"] as const;
 export type LinhaEard = Partial<Record<(typeof CAMPOS_DESP)[number] | (typeof CAMPOS_REC)[number], number | string | null>>;
 
 export interface SomaCompetencia {
-  consulta: number; urgencia: number; outros: number; despTotal: number;
+  consulta: number; urgencia: number; internacao: number; terapia: number; exame: number; outros: number; despTotal: number;
   recCpp: number; recCopart: number; recTotal: number;
 }
 
 const n = (v: unknown) => Number(v ?? 0) || 0;
 
 export function somaVazia(): SomaCompetencia {
-  return { consulta: 0, urgencia: 0, outros: 0, despTotal: 0, recCpp: 0, recCopart: 0, recTotal: 0 };
+  return { consulta: 0, urgencia: 0, internacao: 0, terapia: 0, exame: 0, outros: 0, despTotal: 0, recCpp: 0, recCopart: 0, recTotal: 0 };
 }
 
-/** Despesa total = consulta + urgência + outros; receita total = cpp + copart + outros. */
+/** Despesa total = consulta + urgência + internação + terapia + exame + outros; receita total = cpp + copart + outros. */
 export function acumular(s: SomaCompetencia, linhas: LinhaEard[]): SomaCompetencia {
   const r = { ...s };
   for (const l of linhas) {
     const c = n(l.vl_desp_consulta), u = n(l.vl_desp_urgencia), o = n(l.vl_desp_outros);
+    const it = n(l.vl_desp_internacao), te = n(l.vl_desp_terapia), ex = n(l.vl_desp_exame);
     const p = n(l.vl_rec_cpp), cp = n(l.vl_rec_copart), ro = n(l.vl_rec_outros);
-    r.consulta += c; r.urgencia += u; r.outros += o; r.despTotal += c + u + o;
+    r.consulta += c; r.urgencia += u; r.internacao += it; r.terapia += te; r.exame += ex; r.outros += o;
+    r.despTotal += c + u + it + te + ex + o;
     r.recCpp += p; r.recCopart += cp; r.recTotal += p + cp + ro;
   }
   return r;
