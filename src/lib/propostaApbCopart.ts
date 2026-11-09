@@ -24,19 +24,28 @@ export const NOTAS_COPART_2027 = [
 ];
 
 export const chaveCopart = (l: Pick<LinhaCopart, "n" | "s">) => `${l.n}|${l.s}`;
+/** Somente o grupo 12 (Alta Complexidade) tem percentual de coparticipação editável. */
+export const GRUPO_PCT_EDITAVEL = 12;
+export const pctEditavel = (l: Pick<LinhaCopart, "n">) => l.n === GRUPO_PCT_EDITAVEL;
+export const chavePct = (l: Pick<LinhaCopart, "n" | "s">) => `pct|${chaveCopart(l)}`;
+const pctNum = (p: string) => Number(p.replace("%", "").replace(",", "."));
+/** Valores gravados: limites em R$ (chave n|subgrupo) e percentuais do grupo 12 (chave pct|n|subgrupo). */
 export type LimitesCopart = Record<string, number>;
-export const LIMITES_PADRAO: LimitesCopart = Object.fromEntries(COPART_PROPOSTA_2027.map((l) => [chaveCopart(l), l.limite]));
+export const LIMITES_PADRAO: LimitesCopart = Object.fromEntries([
+  ...COPART_PROPOSTA_2027.map((l) => [chaveCopart(l), l.limite]),
+  ...COPART_PROPOSTA_2027.filter(pctEditavel).map((l) => [chavePct(l), pctNum(l.p)]),
+]);
 
 const KEY = "apb-copart-limites-2027-v1";
 type StorageApb = Pick<Storage, "getItem" | "setItem">;
-const valido = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v) && v >= 0;
+const validoK = (k: string, v: unknown): v is number => typeof v === "number" && Number.isFinite(v) && v >= 0 && (!k.startsWith("pct|") || v <= 100);
 
 /** Lê os limites gravados; linhas ausentes ou inválidas ficam com o valor da tabela fornecida. */
 export function lerLimitesCopart(storage: StorageApb): LimitesCopart {
   const out = { ...LIMITES_PADRAO };
   try {
     const saved = JSON.parse(storage.getItem(KEY) ?? "null");
-    if (saved && typeof saved === "object") for (const k of Object.keys(out)) if (valido(saved[k])) out[k] = saved[k];
+    if (saved && typeof saved === "object") for (const k of Object.keys(out)) if (validoK(k, saved[k])) out[k] = saved[k];
   } catch { /* Manter a tabela fornecida se o armazenamento estiver indisponível ou inválido. */ }
   return out;
 }
@@ -44,7 +53,7 @@ export function lerLimitesCopart(storage: StorageApb): LimitesCopart {
 export function gravarLimitesCopart(storage: StorageApb, limites: LimitesCopart): LimitesCopart {
   const out: LimitesCopart = {};
   for (const k of Object.keys(LIMITES_PADRAO)) {
-    if (!valido(limites[k])) throw new Error("Valores inválidos");
+    if (!validoK(k, limites[k])) throw new Error("Valores inválidos");
     out[k] = Math.round(limites[k] * 100) / 100;
   }
   storage.setItem(KEY, JSON.stringify(out));
@@ -52,6 +61,7 @@ export function gravarLimitesCopart(storage: StorageApb, limites: LimitesCopart)
 }
 
 export const linhasComLimites = (limites: LimitesCopart): LinhaCopart[] =>
-  COPART_PROPOSTA_2027.map((l) => ({ ...l, limite: limites[chaveCopart(l)] ?? l.limite }));
+  COPART_PROPOSTA_2027.map((l) => ({ ...l, limite: limites[chaveCopart(l)] ?? l.limite, p: pctEditavel(l) && limites[chavePct(l)] != null ? `${fmtPct(limites[chavePct(l)])}%` : l.p }));
 
 export const fmtLimite = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+export const fmtPct = (v: number) => v.toLocaleString("pt-BR", { maximumFractionDigits: 2 });

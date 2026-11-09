@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COPART_PROPOSTA_2027, LIMITES_PADRAO, chaveCopart, gravarLimitesCopart, lerLimitesCopart, linhasComLimites } from "./propostaApbCopart";
+import { COPART_PROPOSTA_2027, LIMITES_PADRAO, chaveCopart, chavePct, gravarLimitesCopart, lerLimitesCopart, linhasComLimites } from "./propostaApbCopart";
 
 const mem = () => { const m = new Map<string, string>(); return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => void m.set(k, v) }; };
 const lim = (n: number) => COPART_PROPOSTA_2027.filter((l) => l.n === n).map((l) => l.limite);
@@ -24,6 +24,23 @@ describe("Coparticipação do Plano Proposto 2027", () => {
     const lido = lerLimitesCopart(s);
     expect(lido[k]).toBe(50);
     expect(linhasComLimites(lido).find((l) => l.n === 4)?.limite).toBe(277.57);
+  });
+  it("somente o grupo 12 tem percentual editável, iniciando em 50%", () => {
+    const pcts = Object.entries(LIMITES_PADRAO).filter(([k]) => k.startsWith("pct|"));
+    expect(pcts).toHaveLength(4);
+    expect(pcts.every(([k, v]) => k.startsWith("pct|12|") && v === 50)).toBe(true);
+  });
+  it("grava percentual do grupo 12 e reflete só na linha alterada", () => {
+    const s = mem(), k = chavePct({ n: 12, s: "Quimioterapia" });
+    gravarLimitesCopart(s, { ...LIMITES_PADRAO, [k]: 30 });
+    const linhas = linhasComLimites(lerLimitesCopart(s));
+    expect(linhas.find((l) => l.s === "Quimioterapia")?.p).toBe("30%");
+    expect(linhas.find((l) => l.s === "Radioterapia")?.p).toBe("50%");
+    expect(linhas.find((l) => l.n === 11)?.p).toBe("50%");
+  });
+  it("recusa percentual acima de 100%", () => {
+    const k = chavePct({ n: 12, s: "Radioterapia" });
+    expect(() => gravarLimitesCopart(mem(), { ...LIMITES_PADRAO, [k]: 101 })).toThrow();
   });
   it("recusa limite negativo", () => {
     const k = chaveCopart({ n: 4, s: "Internação" });
