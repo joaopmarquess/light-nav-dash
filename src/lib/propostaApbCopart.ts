@@ -19,7 +19,7 @@ export const COPART_PROPOSTA_2027: LinhaCopart[] = [
 ];
 
 export const NOTAS_COPART_2027 = [
-  "* Os exames incluídos no pacote são os listados a seguir e serão executados com base na necessidade e quantidade requisitada pelo médico assistente: a) Avaliação de Vias Lacrimais (Teste de Schirmer) – Monocular; b) Curva Tensional Diária – Binocular; c) Exame de Motilidade Ocular (Teste Ortóptico) – Binocular; d) Fundoscopia Sob Mediarses – Binocular; e) Gonioscopia – Binocular; f) Mapeamento de Retina (Oftalmoscopia Indireta) – Monocular; g) Oftalmodinamometria – Monocular; h) Potencial de Acuidade Visual – Monocular; i) Potencial Evocado Visual (PEV); j) Retinografia Monocular; k) Teste do Reflexo Vermelho em Recém Nato (Teste Do Olhinho); l) Tonometria – Binocular; m) Visão Subnormal – Monocular.",
+  "* Os exames incluídos no pacote são os listados a seguir e serão executados com base na necessidade e quantidade requisitada pelo médico assistente: a) Avaliação de Vias Lacrimais (Teste de Schirmer) – Monocular; b) Curva Tensional Diária – Binocular; c) Exame de Motilidade Ocular (Teste Ortóptico) – Binocular; d) Fundoscopia Sob Medriases – Binocular; e) Gonioscopia – Binocular; f) Mapeamento de Retina (Oftalmoscopia Indireta) – Monocular; g) Oftalmodinamometria – Monocular; h) Potencial de Acuidade Visual – Monocular; i) Potencial Evocado Visual (PEV); j) Retinografia Monocular; k) Teste do Reflexo Vermelho em Recém Nato (Teste Do Olhinho); l) Tonometria – Binocular; m) Visão Subnormal – Monocular.",
   "** CHs é a sigla para Coeficiente de Honorários – utilizada como unidade básica para o cálculo dos honorários pago pela OPERADORA ao profissional prestador de serviços assistenciais.",
 ];
 
