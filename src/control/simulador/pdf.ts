@@ -43,7 +43,7 @@ export function createSimulatorPdf(sim: SimulationRecord, responsible: string, s
         table([["Plano","Vidas 2026","Ticket médio","Mensal 2026","Anual 2026","Entradas/mês","Saídas/mês","Crescimento","Vidas 2027","Mensal 2027","Anual 2027"]],m.rows.map(r=>{const annual=total(months.map((_,i)=>(r.vidas+(i+1)*(r.entradas-r.saidas))*r.ticket*Math.pow(1+m.reaj_v2/100,i)));return [r.id,fmt(r.vidas),fmt(r.ticket),fmt(r.vidas*r.ticket),fmt(r.vidas*r.ticket*12),fmt(r.entradas),fmt(r.saidas),fmt(12*(r.entradas-r.saidas)),fmt(r.vidas+12*(r.entradas-r.saidas)),fmt(annual/12),fmt(annual)];}),y); y=last()+6;
         doc.setFontSize(9); doc.text(`Correção de discrepâncias: ${fmt(m.reaj_v2)}%`,14,y); y+=8;
       } else if (!img && stage>1 && stage<7) {
-        const params: Record<number,string>={2:`Recuperação: ${fmt(m.rec_v2)}%`,3:`Sinistralidade líquida: ${fmt(m.sinLiq_v2)}% · Rede: ${fmt(m.rede_v2)}%`,4:`Percentuais: ${m.demaisOp.map(fmt).join("% · ")}%`,5:`Pessoal: ${fmt(m.admPc_v4[0])}% · Informática: ${fmt(m.admPc_v4[1])}% · Marketing: ${fmt(m.admPc_v4[2])}% · Total: ${fmt(m.admTot_v4)}%`,6:`Financeiro: ${fmt(m.finPc_v2)}%`};
+        const params: Record<number,string>={2:`Recuperação: ${fmt(m.rec_v2)}%`,3:`Sinistralidade líquida: ${fmt(m.sinLiq_v2)}% · Rede: ${fmt(m.rede_v2)}%`,4:`Percentuais: ${m.demaisOp.map(fmt).join("% · ")}%`,5:(()=>{const p=admPartes(m.admPc_v4,m.admTot_v4);return `Pessoal: ${fmt(p[0])}% · Informática: ${fmt(p[1])}% · Marketing: ${fmt(p[2])}% · Demais: ${fmt(p[3])}% · Total: ${fmt(admTotal(p))}%`;})(),6:`Financeiro: ${fmt(m.finPc_v2)}%`};
         doc.setFontSize(9); doc.text(params[stage],14,y); y+=10;
       }
       if (img) {

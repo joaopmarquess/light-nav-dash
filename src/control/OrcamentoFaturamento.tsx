@@ -547,7 +547,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
                 ))}
                 <tr className="border-t border-border bg-muted/60 font-semibold">
                   <td className="px-2 py-0.5 whitespace-nowrap">{TOTNOME}</td>
-                  <td className="px-2 py-0.5 text-right tabular-nums"><span className="inline-block w-24 px-2 text-right tabular-nums">{n2(vert)}</span></td>
+                  <td className="px-2 py-0.5 text-right tabular-nums">{isAdm ? <span className="inline-block w-24 px-2 text-right tabular-nums" title="Soma de Pessoal, Informática, Marketing e Demais">{n2(vert)}</span> : `${n2(vert)}%`}</td>
                   {totM.map((v, k) => <td key={k} className={`${td} ${cls(v)}`}>{n2(v)}</td>)}
                   <td className={`${td} border-l border-border ${cls(t(totM))}`}>{n2(t(totM))}</td>
                 </tr>
