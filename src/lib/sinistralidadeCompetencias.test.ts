@@ -37,8 +37,12 @@ describe("saldo e sin", () => {
 
 import { agruparPorAno, anosSinistralidade } from "./sinistralidadeCompetencias";
 describe("agrupamento por ano", () => {
-  it("anos 2022 a 2025 completos e 2026 até setembro (ignora o mês corrente)", () =>
-    expect(anosSinistralidade(new Date("2026-10-23T12:00:00Z"))).toEqual([{ ano: 2022, ateMes: 12 }, { ano: 2023, ateMes: 12 }, { ano: 2024, ateMes: 12 }, { ano: 2025, ateMes: 12 }, { ano: 2026, ateMes: 9 }]));
+  it("em novembro/2026 vai até setembro: outubro ainda não tem despesas", () =>
+    expect(anosSinistralidade(new Date("2026-11-09T12:00:00Z"))).toEqual([{ ano: 2022, ateMes: 12 }, { ano: 2023, ateMes: 12 }, { ano: 2024, ateMes: 12 }, { ano: 2025, ateMes: 12 }, { ano: 2026, ateMes: 9 }]));
+  it("em fevereiro/2027 vai até dezembro/2026, sem mês de 2027", () =>
+    expect(anosSinistralidade(new Date("2027-02-10T12:00:00Z")).at(-1)).toEqual({ ano: 2026, ateMes: 12 }));
+  it("em janeiro/2027 vai até novembro/2026", () =>
+    expect(anosSinistralidade(new Date("2027-01-10T12:00:00Z")).at(-1)).toEqual({ ano: 2026, ateMes: 11 }));
   it("soma os meses de cada ano", () => {
     const s = (v: number) => ({ ...somaVazia(), recTotal: v });
     const r = agruparPorAno([{ ano: 2025, mes: 2, soma: s(5) }, { ano: 2024, mes: 1, soma: s(1) }, { ano: 2025, mes: 1, soma: s(3) }]);
