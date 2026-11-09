@@ -52,7 +52,17 @@ export default function SinistralidadeEmpresas({ fonte = "mv" }: { fonte?: "mv" 
       try { setLinhas(await carregarSb(competencia(de), competencia(ate), empresa, ps, menu ? "menu_sb_sinistralidade.csv" : undefined)); } catch (e) { setErro(String(e)); setLinhas(null); }
       setLoading(false); return;
     }
-    const { data, error } = await hostinger.rpc("sinistralidade_mv_empresas", { p_de: competencia(de), p_ate: competencia(ate), p_empresa: empresa.trim() || null, p_planos: ps.length ? ps : null });
+    // A base devolve no máximo 1.000 linhas por chamada; busca em páginas para não cortar totais.
+    const args = { p_de: competencia(de), p_ate: competencia(ate), p_empresa: empresa.trim() || null, p_planos: ps.length ? ps : null };
+    let data: Record<string, unknown>[] = [];
+    let error: { message: string } | null = null;
+    for (let i = 0; ; i += 1000) {
+      const r = await hostinger.rpc("sinistralidade_mv_empresas", args).order("plano").order("faixa").range(i, i + 999);
+      if (r.error) { error = r.error; break; }
+      const page = (r.data ?? []) as Record<string, unknown>[];
+      data = data.concat(page);
+      if (page.length < 1000) break;
+    }
     setLoading(false);
     if (error) { setErro(/does not exist|Could not find/i.test(error.message) ? "Cálculo ainda não instalado na base." : error.message); setLinhas(null); return; }
     setLinhas((data ?? []).map((d: Record<string, unknown>) => ({ plano: String(d.plano ?? "—"), faixa: normFaixa(d.faixa as string), vidas: Number(d.vidas), recCpp: Number(d.rec_cpp), recCopart: Number(d.rec_copart), recTotal: Number(d.rec_total), despTotal: Number(d.desp_total) })));
