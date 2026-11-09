@@ -2,7 +2,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { baseTableStyles, PDF_COLORS } from "@/control/relatorio/pdfTheme";
 import type { ViewShots } from "./capture";
-import { calculateBudget, ETAPAS, pdfEligible, total, viewModel, VISOES, type BudgetModel, type SimulationRecord } from "./model";
+import { admPartes, admTotal, calculateBudget, ETAPAS, pdfEligible, total, viewModel, VISOES, type BudgetModel, type SimulationRecord } from "./model";
 
 const fmt = (v: number) => new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
 const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
