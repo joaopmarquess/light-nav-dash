@@ -139,10 +139,13 @@ describe("Evolução Produtos — período", () => {
   ];
   const dois = meses.slice(0, 2);
   it("coluna Total soma o período", () => {
-    const g = montarGrade(dois, "Vidas", { vidas: vid, fin: null })!;
-    expect(g.periodo.valores.PCA.F50).toBe(30);
-    expect(g.periodo.subtotais.PIF).toBe(10);
-    expect(g.periodo.total).toBe(40);
+    const p = somaPeriodo(produtosPorMes(dois, vid));
+    expect(p.valores.PCA.F50).toBe(30);
+    expect(p.subtotais.PIF).toBe(10);
+    expect(p.total).toBe(40);
+  });
+  it("Vidas não somam no período: coluna Total vazia", () => {
+    expect(montarGrade(dois, "Vidas", { vidas: vid, fin: null })!.periodo).toBeNull();
   });
   it("coluna Total fica sem dado se algum mês não tem dado", () => {
     expect(somaPeriodo(produtosPorMes(meses.slice(0, 3), vid)).total).toBeNull();
@@ -153,7 +156,7 @@ describe("Evolução Produtos — período", () => {
     expect(g.meses[0].subtotais.PCA).toBe(10);
     expect(g.meses[0].total).toBe(10);
     expect(g.meses[1].total).toBe(20);
-    expect(g.periodo.total).toBe(30);
+    expect(somaPeriodo(g.meses).total).toBe(30);
     expect(g.meses[0].valores.PIF.COP).toBe(5);
   });
   it("Sinistralidade com produto selecionado e no Total do período usa a razão das somas", () => {
