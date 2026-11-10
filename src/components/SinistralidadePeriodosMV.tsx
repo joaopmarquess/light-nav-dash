@@ -5,7 +5,7 @@ import { hostinger } from "@/lib/hostingerClient";
 import { carregarUltimaCompetenciaValida, limparCacheSinistralidade, totaisDoAno } from "@/lib/sinistralidadeValida";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { agruparPorAno, anosSinistralidade, dominioCentrado, saldoCompetencia, saldoLimiteSin, sinistralidade, somaVazia, somarTotais, type AnoAgrupado, type SomaCompetencia } from "@/lib/sinistralidadeCompetencias";
+import { agruparPorAno, ANO_INICIO_SINISTRALIDADE, anosSinistralidade, dominioCentrado, saldoCompetencia, saldoLimiteSin, sinistralidade, somaVazia, somarTotais, type AnoAgrupado, type SomaCompetencia } from "@/lib/sinistralidadeCompetencias";
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 type Col = "recCpp" | "recCopart" | "recTotal" | "despTotal" | "saldo" | "sin";
