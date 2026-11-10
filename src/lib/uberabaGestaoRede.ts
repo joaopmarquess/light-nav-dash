@@ -3,7 +3,8 @@ export type ChaveGestaoRede =
   | "valorVidaPaulo" | "valorVidaAdeir"
   | "tetoPaulo" | "tetoAdeir"
   | "numeroVidasTotal"
-  | "adiantamentoPaulo" | "adiantamentoAdeir";
+  | "adiantamentoPaulo" | "adiantamentoAdeir"
+  | "ticket";
 
 export type VariaveisGestaoRede = Record<ChaveGestaoRede, number>;
 
@@ -17,6 +18,7 @@ export const CAMPOS_GESTAO_REDE: CampoGestaoRede[] = [
   { chave: "numeroVidasTotal", label: "Número Vidas total", tipo: "inteiro" },
   { chave: "adiantamentoPaulo", label: "Adiantamento Paulo", tipo: "moeda" },
   { chave: "adiantamentoAdeir", label: "Adiantamento Adeir", tipo: "moeda" },
+  { chave: "ticket", label: "Ticket", tipo: "moeda" },
 ];
 
 /** Valores iniciais definidos em 10/11/2026: teto 15.000, adiantamento 7.500, valor por vida 1,00 e 10.000 vidas ao longo do ano. */
@@ -25,6 +27,7 @@ export const GESTAO_REDE_PADRAO: VariaveisGestaoRede = {
   tetoPaulo: 15000, tetoAdeir: 15000,
   numeroVidasTotal: 10000,
   adiantamentoPaulo: 7500, adiantamentoAdeir: 7500,
+  ticket: 299.99,
 };
 
 export const MESES_GESTAO_REDE = 12;
@@ -47,6 +50,8 @@ export type LinhaGestaoRede = {
   mes: number; entradas: number; vidas: number;
   antecipacaoPaulo: number; antecipacaoAdeir: number; antecipacaoTotal: number;
   mensalPaulo: number; mensalAdeir: number; mensalTotal: number;
+  /** Vidas acumuladas do mês × ticket. */
+  faturamento: number;
   tipoPaulo: TipoMes; tipoAdeir: TipoMes;
   tetoPaulo: boolean; tetoAdeir: boolean;
 };
@@ -85,17 +90,18 @@ export function calcularGestaoRede(v: VariaveisGestaoRede): LinhaGestaoRede[] {
     mes: i + 1, entradas: entradas[i], vidas: q,
     antecipacaoPaulo: ap.valores[i], antecipacaoAdeir: aa.valores[i], antecipacaoTotal: r2(ap.valores[i] + aa.valores[i]),
     mensalPaulo: mp[i], mensalAdeir: ma[i], mensalTotal: r2(mp[i] + ma[i]),
+    faturamento: r2(q * v.ticket),
     tipoPaulo: ap.tipos[i], tipoAdeir: aa.tipos[i],
     tetoPaulo: bp[i] > v.tetoPaulo, tetoAdeir: ba[i] > v.tetoAdeir,
   }));
 }
 
 export function totaisGestaoRede(linhas: LinhaGestaoRede[]) {
-  const soma = (k: "antecipacaoPaulo" | "antecipacaoAdeir" | "antecipacaoTotal" | "mensalPaulo" | "mensalAdeir" | "mensalTotal" | "entradas") =>
+  const soma = (k: "antecipacaoPaulo" | "antecipacaoAdeir" | "antecipacaoTotal" | "mensalPaulo" | "mensalAdeir" | "mensalTotal" | "entradas" | "faturamento") =>
     r2(linhas.reduce((s, l) => s + l[k], 0));
   return {
     antecipacaoPaulo: soma("antecipacaoPaulo"), antecipacaoAdeir: soma("antecipacaoAdeir"), antecipacaoTotal: soma("antecipacaoTotal"),
-    mensalPaulo: soma("mensalPaulo"), mensalAdeir: soma("mensalAdeir"), mensalTotal: soma("mensalTotal"), entradas: soma("entradas"),
+    mensalPaulo: soma("mensalPaulo"), mensalAdeir: soma("mensalAdeir"), mensalTotal: soma("mensalTotal"), entradas: soma("entradas"), faturamento: soma("faturamento"),
   };
 }
 

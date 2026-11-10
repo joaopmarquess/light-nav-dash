@@ -15,6 +15,7 @@ import {
 const campo = (k: ChaveGestaoRede) => CAMPOS_GESTAO_REDE.find((c) => c.chave === k)!;
 const textos = (v: VariaveisGestaoRede) => Object.fromEntries(CAMPOS_GESTAO_REDE.map((c) => [c.chave, formatarCampo(c, v[c.chave])])) as Record<ChaveGestaoRede, string>;
 const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const fmtMoeda = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtInt = (v: number) => v.toLocaleString("pt-BR", { maximumFractionDigits: 0 });
 
 const GRUPOS: { titulo: string; chaves: ChaveGestaoRede[] }[] = [
@@ -22,6 +23,7 @@ const GRUPOS: { titulo: string; chaves: ChaveGestaoRede[] }[] = [
   { titulo: "Teto", chaves: ["tetoPaulo", "tetoAdeir"] },
   { titulo: "Adiantamento", chaves: ["adiantamentoPaulo", "adiantamentoAdeir"] },
   { titulo: "Vidas", chaves: ["numeroVidasTotal"] },
+  { titulo: "Ticket", chaves: ["ticket"] },
 ];
 const nomeCurto = (c: CampoGestaoRede) => c.label.replace(/^(Valor Vida|Teto|Adiantamento) /, "");
 
@@ -80,7 +82,7 @@ export default function UberabaGestaoRede() {
               const erro = invalido(c);
               return (
                 <div key={k} className="grid grid-cols-[4.5rem_1fr] items-center gap-2">
-                  <Label htmlFor={`gr-${k}`} className="text-xs text-muted-foreground" title={c.label}>{k === "numeroVidasTotal" ? "Total" : nomeCurto(c)}</Label>
+                  <Label htmlFor={`gr-${k}`} className="text-xs text-muted-foreground" title={c.label}>{k === "numeroVidasTotal" ? "Total" : k === "ticket" ? "Valor" : nomeCurto(c)}</Label>
                   <Input
                     id={`gr-${k}`}
                     aria-label={c.label}
@@ -111,11 +113,13 @@ export default function UberabaGestaoRede() {
               <th />
               <th colSpan={3} className={cn("px-3 py-2 text-center text-sm font-semibold text-foreground", sep)}>Antecipação</th>
               <th colSpan={5} className={cn("px-3 py-2 text-center text-sm font-semibold text-foreground", sep)}>Mensal</th>
+              <th className={sep} />
             </tr>
             <tr className="border-b border-border bg-muted/40">
               <th className="px-3 py-2 text-center text-xs font-semibold text-muted-foreground">Mês</th>
               <th className={cn(th, sep)}>Paulo</th><th className={th}>Adeir</th><th className={th}>Total</th>
               <th className={cn(th, sep)} title="Vidas que entram no mês">Entradas</th><th className={th} title="Vidas acumuladas no fim do mês">Vidas</th><th className={th}>Paulo</th><th className={th}>Adeir</th><th className={th}>Total</th>
+              <th className={cn(th, sep)} title="Vidas do mês × ticket">Faturamento</th>
             </tr>
           </thead>
           <tbody>
@@ -131,6 +135,7 @@ export default function UberabaGestaoRede() {
                   <td className="px-3 py-1.5 text-right tabular-nums" title={l?.tetoPaulo ? "Limitado ao teto" : undefined}>{l ? fmt(l.mensalPaulo) : "—"}</td>
                   <td className="px-3 py-1.5 text-right tabular-nums" title={l?.tetoAdeir ? "Limitado ao teto" : undefined}>{l ? fmt(l.mensalAdeir) : "—"}</td>
                   <td className="px-3 py-1.5 text-right font-medium tabular-nums">{l ? fmt(l.mensalTotal) : "—"}</td>
+                  <td className={cn("px-3 py-1.5 text-right font-medium tabular-nums", sep)}>{l ? fmtMoeda(l.faturamento) : "—"}</td>
                 </tr>
               );
             })}
@@ -147,12 +152,13 @@ export default function UberabaGestaoRede() {
                 <td className="px-3 py-2 text-right tabular-nums">{fmt(totais.mensalPaulo)}</td>
                 <td className="px-3 py-2 text-right tabular-nums">{fmt(totais.mensalAdeir)}</td>
                 <td className="px-3 py-2 text-right tabular-nums">{fmt(totais.mensalTotal)}</td>
+                <td className={cn("px-3 py-2 text-right tabular-nums", sep)}>{fmtMoeda(totais.faturamento)}</td>
               </tr>
             </tfoot>
           )}
         </table>
         <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
-          Vidas: o total entra em partes iguais ao longo dos {MESES_GESTAO_REDE} meses. Mensal: vidas acumuladas × valor por vida, limitado ao teto. Antecipação: meses 1 a {MESES_ADIANTAMENTO} pagam o adiantamento; os {MESES_ADIANTAMENTO} últimos meses abatem o que foi adiantado a mais, em partes iguais.
+          Vidas: o total entra em partes iguais ao longo dos {MESES_GESTAO_REDE} meses. Mensal: vidas acumuladas × valor por vida, limitado ao teto. Faturamento: vidas do mês × ticket. Antecipação: meses 1 a {MESES_ADIANTAMENTO} pagam o adiantamento; os {MESES_ADIANTAMENTO} últimos meses abatem o que foi adiantado a mais, em partes iguais.
         </p>
       </section>
     </div>
