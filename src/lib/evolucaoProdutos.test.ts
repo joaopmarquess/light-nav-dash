@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { financeiroPorMes, mesesPeriodo, PERIODO_EVOLUCAO_PRODUTOS, produtosPorMes, subtotalTipo, totalGeral, vidasPorMes } from "./evolucaoProdutos";
+import { financeiroPorMes, perCapita, mesesPeriodo, PERIODO_EVOLUCAO_PRODUTOS, produtosPorMes, subtotalTipo, totalGeral, vidasPorMes } from "./evolucaoProdutos";
 
 describe("Evolução Produtos — período", () => {
   const meses = mesesPeriodo(PERIODO_EVOLUCAO_PRODUTOS.de, PERIODO_EVOLUCAO_PRODUTOS.ate);
@@ -95,5 +95,18 @@ describe("Evolução Produtos — período", () => {
     expect(s[0].subtotais.PIF).toBeCloseTo(90 / 61, 10);
     expect(s[0].total).toBeCloseTo(170 / 190.5, 10);
     expect(s[1].total).toBeNull();
+  });
+  it("Per capita divide cada célula, subtotal e total pelas vidas correspondentes", () => {
+    const vidas = produtosPorMes(meses, [
+      { ano: 2025, mes: 10, sigla: "PCA", produto: "F50", vidas: 10 },
+      { ano: 2025, mes: 10, sigla: "PIF", produto: "COP", vidas: 5 },
+    ]);
+    const pc = perCapita(financeiroPorMes(meses, fin, "Receita"), vidas);
+    expect(pc[0].valores.PCA.F50).toBe(10.05);
+    expect(pc[0].valores.PIF.COP).toBe(10);
+    expect(pc[0].valores.PIF.CONV).toBeNull();
+    expect(pc[0].subtotais.PIF).toBe(10);
+    expect(pc[0].total).toBeCloseTo(150.5 / 15, 10);
+    expect(pc[1].total).toBeNull();
   });
 });
