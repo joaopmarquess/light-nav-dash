@@ -4,9 +4,9 @@ import { CAMPOS_GESTAO_REDE, GESTAO_REDE_PADRAO, antecipacaoPessoa, distribuirVi
 const memoria = () => { const m = new Map<string, string>(); return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => void m.set(k, v) }; };
 
 describe("Gestão Rede variables", () => {
-  it("lists the seven requested variables in order", () => {
+  it("lists the requested variables in order", () => {
     expect(CAMPOS_GESTAO_REDE.map((c) => c.label)).toEqual([
-      "Valor Vida Paulo", "Valor Vida Adeir", "Teto Paulo", "Teto Adeir", "Número Vidas total", "Adiantamento Paulo", "Adiantamento Adeir",
+      "Valor Vida Paulo", "Valor Vida Adeir", "Teto Paulo", "Teto Adeir", "Número Vidas total", "Adiantamento Paulo", "Adiantamento Adeir", "Ticket",
     ]);
   });
   it("parses pt-BR numbers and rejects invalid text", () => {
@@ -53,6 +53,11 @@ describe("Gestão Rede monthly grid", () => {
     expect(p.slice(10)).toEqual([3333.5, 3333.5]);
     expect(linhas[10].tipoPaulo).toBe("recuperacao");
     expect(linhas[9].tipoPaulo).toBe("mensal");
+  });
+  it("Faturamento = month lives × ticket 299,99", () => {
+    expect(GESTAO_REDE_PADRAO.ticket).toBe(299.99);
+    expect(linhas[0].faturamento).toBe(249891.67); // 833 × 299,99
+    expect(linhas[11].faturamento).toBe(2999900); // 10.000 × 299,99
   });
   it("total antecipação equals total mensal", () => {
     const t = totaisGestaoRede(linhas);

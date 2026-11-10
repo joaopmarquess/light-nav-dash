@@ -16,3 +16,4 @@
 - [x] Tela com as sete variáveis (Valor Vida, Teto, Adiantamento de Paulo e Adeir; Número Vidas total).
 - [x] Quadro Antecipação × Mensal por mês, semelhante ao anexo.
 - [x] Novos padrões (teto 15.000), vidas distribuídas por mês e abatimento nos 2 últimos meses.
+- [x] Variável Ticket (299,99) e coluna Faturamento (vidas do mês × ticket).
