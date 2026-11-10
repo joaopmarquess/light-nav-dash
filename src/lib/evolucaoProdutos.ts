@@ -25,8 +25,20 @@ export function mesesPeriodo(de: { ano: number; mes: number }, ate: { ano: numbe
   return out;
 }
 
-/** Junta as vidas por ano/mês aos meses do período; meses sem dado ficam null (sem inferência). */
-export function vidasPorMes(meses: MesEvolucao[], linhas: { ano: number; mes: number; total: number | string | null }[]) {
-  const idx = new Map(linhas.map((l) => [`${l.ano}-${l.mes}`, l.total == null ? null : Number(l.total)]));
-  return meses.map((m) => ({ ...m, vidas: idx.get(`${m.ano}-${m.mes}`) ?? null }));
+export const TIPOS_PLANO = ["PIF", "PCA", "PCE"] as const;
+export type TipoPlano = (typeof TIPOS_PLANO)[number];
+
+type Num = number | string | null | undefined;
+export type LinhaMensal = { ano: number; mes: number; total: Num; pif?: Num; pca?: Num; pce?: Num };
+
+const num = (v: Num) => (v == null ? null : Number(v));
+
+/** Junta as vidas por ano/mês aos meses do período; meses ou tipos sem dado ficam null (sem inferência). */
+export function vidasPorMes(meses: MesEvolucao[], linhas: LinhaMensal[]) {
+  const idx = new Map(linhas.map((l) => [`${l.ano}-${l.mes}`, l]));
+  return meses.map((m) => {
+    const l = idx.get(`${m.ano}-${m.mes}`);
+    const porTipo: Record<TipoPlano, number | null> = { PIF: num(l?.pif), PCA: num(l?.pca), PCE: num(l?.pce) };
+    return { ...m, vidas: num(l?.total), porTipo };
+  });
 }

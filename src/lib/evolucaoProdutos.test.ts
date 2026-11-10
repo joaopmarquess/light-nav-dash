@@ -18,4 +18,13 @@ describe("Evolução Produtos — período", () => {
     expect(r[0].vidas).toBe(65191);
     expect(r[1].vidas).toBeNull();
   });
+  it("abre o mês em PIF, PCA e PCE sem inventar tipo ausente", () => {
+    const r = vidasPorMes(meses, [
+      { ano: 2025, mes: 10, total: 65191, pif: 37823, pca: "19536", pce: 7832 },
+      { ano: 2025, mes: 11, total: 65781 },
+    ]);
+    expect(r[0].porTipo).toEqual({ PIF: 37823, PCA: 19536, PCE: 7832 });
+    expect(r[0].porTipo.PIF! + r[0].porTipo.PCA! + r[0].porTipo.PCE!).toBe(r[0].vidas);
+    expect(r[1].porTipo).toEqual({ PIF: null, PCA: null, PCE: null });
+  });
 });
