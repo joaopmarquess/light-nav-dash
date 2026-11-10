@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { comporCodigoAlternativo, registroAtual, statusInfo, resumoEard, porCompetencia, periodoAssistencial, resultadoAssistencial, type EardRow } from "./painelBeneficiario";
+import { comporCodigoAlternativo, registroAtual, statusInfo, resumoEard, porCompetencia, periodoAssistencial, resultadoAssistencial, faixaFamilia, membrosFamilia, type EardRow } from "./painelBeneficiario";
 
 const mes = (c: number, cpp: number, outros: number): EardRow => ({ dt_competencia: c, vl_rec_cpp: cpp, vl_rec_copart: 0, vl_rec_outros: 0, vl_desp_consulta: 0, vl_desp_urgencia: 0, vl_desp_internacao: 0, vl_desp_terapia: 0, vl_desp_exame: 0, vl_desp_outros: outros });
 
@@ -83,5 +83,29 @@ describe("assistencial do beneficiário (12 meses)", () => {
     const r = resultadoAssistencial([linha(202508, 999, 0, 0, 999), linha(202608, 100, 0, 0, 50)], [202607, 202608]);
     expect(r.meses[0].temDado).toBe(false);
     expect(r.total.totalReceitas).toBe(100);
+  });
+});
+
+describe("grupo familiar (mesmo Plano e mesmo Contrato)", () => {
+  it("código 0018 007957 00 abrange os Dep 00 a 99 do mesmo plano e contrato", () => {
+    expect(faixaFamilia(1800795700)).toEqual({ de: 1800795700, ate: 1800795799 });
+  });
+  it("um dependente encontra a mesma família do titular", () => {
+    expect(faixaFamilia("001800795703")).toEqual(faixaFamilia(1800795700));
+  });
+  it("outro contrato no mesmo plano não entra na família", () => {
+    expect(faixaFamilia(1800795800)!.de).not.toBe(faixaFamilia(1800795700)!.de);
+  });
+  it("sem código alternativo não há família", () => {
+    expect(faixaFamilia(null)).toBeNull();
+    expect(faixaFamilia("0")).toBeNull();
+  });
+  it("lista um membro por matrícula, com o titular primeiro", () => {
+    const m = membrosFamilia([
+      { cd_matricula: 2, tp_plano: "SAUDE", cd_mat_alternativa: 1800795701, nm_beneficiario: "MARIA", dt_momento: "2024-01-01" },
+      { cd_matricula: 1, tp_plano: "SAUDE", cd_mat_alternativa: 1800795700, nm_beneficiario: "DIVINO", dt_momento: "2020-01-01" },
+      { cd_matricula: 1, tp_plano: "SAUDE", cd_mat_alternativa: 1800795700, nm_beneficiario: "DIVINO", dt_momento: "2026-01-01" },
+    ]);
+    expect(m.map((x) => [x.cd_matricula, x.dep])).toEqual([[1, "00"], [2, "01"]]);
   });
 });
