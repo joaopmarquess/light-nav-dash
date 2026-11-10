@@ -137,7 +137,7 @@ export function produtosPorMes(meses: MesEvolucao[], linhas: LinhaProduto[], pro
 }
 
 // Indicadores financeiros (evolucao_produtos_financeiro, view_eard_mensal):
-// Receita = vl_rec_cpp; Coparticipação = vl_rec_copart + vl_rec_outros; Total Receitas = Receita + Coparticipação;
+// Receita = vl_rec_cpp + vl_rec_outros; Coparticipação = vl_rec_copart; Total Receitas = Receita + Coparticipação;
 // Despesas = seis colunas de despesa; Saldo = Total Receitas − Despesas;
 // Sinistralidade = Despesas ÷ Total Receitas, sempre como razão das somas (nunca soma de percentuais).
 export type LinhaFinanceira = {
@@ -145,10 +145,11 @@ export type LinhaFinanceira = {
   rec_cpp: Num; rec_copart: Num; rec_outros: Num; desp_total: Num; rec_total?: Num;
 };
 const n0 = (v: Num) => Number(v) || 0;
-const coparticipacao = (l: LinhaFinanceira) => n0(l.rec_copart) + n0(l.rec_outros);
-const totalReceitas = (l: LinhaFinanceira) => n0(l.rec_cpp) + coparticipacao(l);
+const receita = (l: LinhaFinanceira) => n0(l.rec_cpp) + n0(l.rec_outros);
+const coparticipacao = (l: LinhaFinanceira) => n0(l.rec_copart);
+const totalReceitas = (l: LinhaFinanceira) => receita(l) + coparticipacao(l);
 export const INDICADORES_FINANCEIROS = {
-  Receita: (l: LinhaFinanceira) => n0(l.rec_cpp),
+  Receita: receita,
   "Coparticipação": coparticipacao,
   "Total Receitas": totalReceitas,
   Despesas: (l: LinhaFinanceira) => n0(l.desp_total),

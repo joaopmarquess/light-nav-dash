@@ -62,16 +62,16 @@ describe("Evolução Produtos — período", () => {
     { nr_ano: 2025, nr_mes: 10, sigla: "PIF", produto: "COP", rec_cpp: 50, rec_copart: 10, rec_outros: 1, desp_total: 90 },
     { nr_ano: 2025, nr_mes: 10, sigla: "PIF", produto: null, rec_cpp: 7, rec_copart: 0, rec_outros: 0, desp_total: 2 },
   ];
-  it("Receita usa somente vl_rec_cpp, sem inferir produto ausente", () => {
+  it("Receita soma vl_rec_cpp e vl_rec_outros, sem inferir produto ausente", () => {
     const rec = financeiroPorMes(meses, fin, "Receita");
-    expect(rec[0].valores.PCA.F50).toBe(100.5);
-    expect(rec[0].valores.PIF).toEqual({ CONV: 0, F50: 0, COP: 50 });
-    expect(rec[0].total).toBe(150.5);
+    expect(rec[0].valores.PCA.F50).toBe(109.5);
+    expect(rec[0].valores.PIF).toEqual({ CONV: 0, F50: 0, COP: 51 });
+    expect(rec[0].total).toBe(160.5);
     expect(rec[0].foraDosTotais).toBe(7);
     expect(rec[1].valores.PCA.F50).toBeNull();
   });
-  it("Coparticipação soma vl_rec_copart e vl_rec_outros", () => {
-    expect(financeiroPorMes(meses, fin, "Coparticipação")[0].total).toBe(40);
+  it("Coparticipação usa somente vl_rec_copart", () => {
+    expect(financeiroPorMes(meses, fin, "Coparticipação")[0].total).toBe(30);
   });
   it("Total Receitas = Receita + Coparticipação (com outras receitas)", () => {
     const t = financeiroPorMes(meses, fin, "Total Receitas");
