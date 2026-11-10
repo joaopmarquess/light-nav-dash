@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mesesPeriodo, PERIODO_EVOLUCAO_PRODUTOS, vidasPorMes } from "./evolucaoProdutos";
+import { mesesPeriodo, PERIODO_EVOLUCAO_PRODUTOS, produtosPorMes, vidasPorMes } from "./evolucaoProdutos";
 
 describe("Evolução Produtos — período", () => {
   const meses = mesesPeriodo(PERIODO_EVOLUCAO_PRODUTOS.de, PERIODO_EVOLUCAO_PRODUTOS.ate);
@@ -26,5 +26,17 @@ describe("Evolução Produtos — período", () => {
     expect(r[0].porTipo).toEqual({ PIF: 37823, PCA: 19536, PCE: 7832 });
     expect(r[0].porTipo.PIF! + r[0].porTipo.PCA! + r[0].porTipo.PCE!).toBe(r[0].vidas);
     expect(r[1].porTipo).toEqual({ PIF: null, PCA: null, PCE: null });
+  });
+  it("abre cada tipo de plano em Convencional, Fácil 50 e Outros coparticipativos", () => {
+    const r = produtosPorMes(meses, [
+      { ano: 2025, mes: 10, sigla: "PIF", produto: "CONV", vidas: 19818 },
+      { ano: 2025, mes: 10, sigla: "PIF", produto: "F50", vidas: "3809" },
+      { ano: 2025, mes: 10, sigla: "PIF", produto: "COP", vidas: 14196 },
+      { ano: 2025, mes: 10, sigla: "PCA", produto: "F50", vidas: 12628 },
+    ]);
+    expect(r[0].valores.PIF).toEqual({ CONV: 19818, F50: 3809, COP: 14196 });
+    expect(r[0].valores.PIF.CONV! + r[0].valores.PIF.F50! + r[0].valores.PIF.COP!).toBe(37823);
+    expect(r[0].valores.PCA).toEqual({ CONV: 0, F50: 12628, COP: 0 });
+    expect(r[1].valores.PCE).toEqual({ CONV: null, F50: null, COP: null });
   });
 });

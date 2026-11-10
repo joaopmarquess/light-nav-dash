@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import { hostinger } from "@/lib/hostingerClient";
-import { mesesPeriodo, PERIODO_EVOLUCAO_PRODUTOS, TIPOS_PLANO, vidasPorMes, type LinhaMensal } from "@/lib/evolucaoProdutos";
+import {
+  mesesPeriodo, PERIODO_EVOLUCAO_PRODUTOS, produtosPorMes, TIPOS_PLANO, TIPOS_PRODUTO, vidasPorMes,
+  type LinhaMensal, type LinhaProduto,
+} from "@/lib/evolucaoProdutos";
 
 const MESES = mesesPeriodo(PERIODO_EVOLUCAO_PRODUTOS.de, PERIODO_EVOLUCAO_PRODUTOS.ate);
 type Linha = ReturnType<typeof vidasPorMes>[number];
@@ -28,6 +31,18 @@ async function carregar(): Promise<Linha[]> {
   return cache;
 }
 
+type LinhaProd = ReturnType<typeof produtosPorMes>[number];
+let cacheProd: LinhaProd[] | null = null;
+
+async function carregarProdutos(): Promise<LinhaProd[]> {
+  if (cacheProd) return cacheProd;
+  const { de, ate } = PERIODO_EVOLUCAO_PRODUTOS;
+  const { data, error } = await hostinger.rpc("carteira_evolucao_produtos", { p_de: de.ano, p_ate: ate.ano });
+  if (error) throw new Error(error.message);
+  cacheProd = produtosPorMes(MESES, (Array.isArray(data) ? data : []) as LinhaProduto[]);
+  return cacheProd;
+}
+
 const DESC_TIPO: Record<(typeof TIPOS_PLANO)[number], string> = {
   PIF: "Pessoa física (individual/familiar)",
   PCA: "Coletivo por adesão",
@@ -39,6 +54,13 @@ const SemDado = () => <span className="text-sm font-normal text-muted-foreground
 const EvolucaoProdutos = () => {
   const [dados, setDados] = useState<Linha[] | null>(cache);
   const [err, setErr] = useState<string | null>(null);
+  const [prod, setProd] = useState<LinhaProd[] | null>(cacheProd);
+  const [errProd, setErrProd] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (prod) return;
+    carregarProdutos().then(setProd).catch((e) => setErrProd(e instanceof Error ? e.message : String(e)));
+  }, [prod]);
 
   useEffect(() => {
     if (dados) return;
@@ -121,6 +143,63 @@ const EvolucaoProdutos = () => {
           </div>
         </section>
       )}
+
+      <section className="mt-4 rounded-xl border border-border bg-card p-5 shadow-sm">
+        <header className="mb-4">
+          <h2 className="text-lg font-semibold text-foreground">Vidas por tipo de produto</h2>
+          <p className="text-sm text-muted-foreground">Cada tipo de plano aberto em Convencional, Fácil 50 e Outros coparticipativos</p>
+        </header>
+        {errProd ? (
+          /could not find the function/i.test(errProd) ? (
+            <p className="text-sm text-muted-foreground">Aguardando a instalação do cálculo por tipo de produto na base de carteira.</p>
+          ) : (
+            <p className="text-sm text-destructive">Não foi possível carregar os tipos de produto: {errProd}</p>
+          )
+        ) : !prod ? (
+          <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando tipos de produto…</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1200px] border-separate border-spacing-x-1.5 border-spacing-y-1 text-center">
+              <thead>
+                <tr>
+                  <th scope="col" className="w-16 px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tipo</th>
+                  <th scope="col" className="w-44 px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Produto</th>
+                  {prod.map((m) => (
+                    <th key={m.dataFim} scope="col" className="rounded-lg bg-primary px-2 py-2 text-sm font-semibold text-primary-foreground" title={`Ativos em ${m.dataFim.split("-").reverse().join("/")}`}>
+                      {m.rotulo}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              {TIPOS_PLANO.map((t) => (
+                <tbody key={t}>
+                  {t !== "PIF" && <tr aria-hidden="true"><td colSpan={prod.length + 2} className="h-2 p-0" /></tr>}
+                  {TIPOS_PRODUTO.map((p, i) => (
+                    <tr key={p.id}>
+                      {i === 0 && (
+                        <th scope="rowgroup" rowSpan={TIPOS_PRODUTO.length} className="rounded-lg bg-secondary px-2 text-left align-middle text-sm font-bold text-secondary-foreground" title={DESC_TIPO[t]}>
+                          {t}
+                        </th>
+                      )}
+                      <th scope="row" className="rounded-lg bg-muted/60 px-2 py-2 text-left text-sm font-medium text-foreground" title={p.descricao}>
+                        {p.rotulo}
+                      </th>
+                      {prod.map((m) => {
+                        const v = m.valores[t][p.id];
+                        return (
+                          <td key={m.dataFim} className="rounded-lg border border-border bg-accent/30 px-2 py-2 text-sm font-semibold tabular-nums text-foreground">
+                            {v == null ? <SemDado /> : fmt(v)}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              ))}
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 };
