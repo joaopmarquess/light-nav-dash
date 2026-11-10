@@ -2,10 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, Search, User, FileText, Wallet, Activity, History, LayoutGrid, X } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { hostinger } from "@/lib/hostingerClient";
+import { carregarUltimaCompetenciaValida } from "@/lib/sinistralidadeValida";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  CATEGORIAS_DESPESA, comporCodigoAlternativo, despesaMes, faixaFamilia, linhaDoTempo, membrosFamilia, periodoAssistencial, porCompetencia, receitaMes, registroAtual, resultadoAssistencial, resumoEard, statusInfo,
+  CATEGORIAS_DESPESA, comporCodigoAlternativo, despesaMes, faixaFamilia, linhaDoTempo, membrosFamilia, periodoAssistencial, ateUltimaValida, porCompetencia, receitaMes, registroAtual, resultadoAssistencial, resumoEard, statusInfo,
   type CarteiraRow, type EardRow, type MembroFamilia, type ResultadoMes,
 } from "@/lib/painelBeneficiario";
 
@@ -84,11 +85,11 @@ type Escopo = (typeof ESCOPOS)[number];
 type EardFamilia = EardRow & { cd_matricula: number };
 type Familia = { membros: MembroFamilia[]; eard: EardFamilia[] };
 
-function ResultadoAssistencial({ eard, escopo, onEscopo, familia, familiaLoading, familiaErro }: {
-  eard: EardRow[]; escopo: Escopo; onEscopo: (e: Escopo) => void;
+function ResultadoAssistencial({ eard, ate, escopo, onEscopo, familia, familiaLoading, familiaErro }: {
+  eard: EardRow[]; ate: number; escopo: Escopo; onEscopo: (e: Escopo) => void;
   familia: Familia | null; familiaLoading: boolean; familiaErro: string | null;
 }) {
-  const meses = useMemo(() => periodoAssistencial(), []);
+  const meses = useMemo(() => periodoAssistencial(ate), [ate]);
   const fonte = escopo === "Família" ? familia?.eard ?? [] : eard;
   const { meses: linhas, total } = useMemo(() => resultadoAssistencial(fonte, meses), [fonte, meses]);
   const porMembro = useMemo(() => (escopo === "Família" && familia
@@ -191,6 +192,8 @@ export default function PainelBeneficiario() {
   const [eard, setEard] = useState<EardRow[] | null>(null);
   const [eardLoading, setEardLoading] = useState(false);
   const [comp, setComp] = useState<number | null>(null);
+  // Última competência válida da base (despesas acima de R$ 20 milhões), AAAAMM.
+  const [ultimaValida, setUltimaValida] = useState<number | null>(null);
   const [escopo, setEscopo] = useState<Escopo>("Beneficiário");
   const [familia, setFamilia] = useState<Familia | null>(null);
   const [familiaLoading, setFamiliaLoading] = useState(false);
@@ -250,11 +253,10 @@ export default function PainelBeneficiario() {
       setEardLoading(true);
       let qe = hostinger.from("view_eard_mensal").select(COLS_EARD).eq("cd_matricula", m).order("dt_competencia", { ascending: false }).limit(1000); // mais recentes primeiro: o limite nunca corta o período assistencial
       if (contrato) qe = qe.eq("cd_contrato_mv", contrato); // filtro por contrato acelera a consulta
-      qe.then(({ data, error }) => {
-        if (!error) { const g = porCompetencia((data ?? []) as unknown as EardRow[]); setEard(g); setComp(g.at(-1)?.dt_competencia ?? null); }
+      Promise.all([qe, ultimaCompetencia()]).then(([{ data, error }, ult]) => {
+        if (!error && ult != null) { const g = ateUltimaValida(porCompetencia((data ?? []) as unknown as EardRow[]), ult); setEard(g); setComp(g.at(-1)?.dt_competencia ?? null); }
         else setEard([]);
-        setEardLoading(false);
-      });
+      }).catch(() => setEard([])).finally(() => setEardLoading(false));
     } catch (e: any) { setErro(e?.message ?? String(e)); }
     finally { setCarregando(false); }
   }
@@ -268,6 +270,14 @@ export default function PainelBeneficiario() {
   const eventos = useMemo(() => linhaDoTempo(movs, cad), [movs, cad]);
   const idade = atual?.dt_nascimento ? Math.floor((Date.now() - new Date(atual.dt_nascimento).getTime()) / 31557600000) : cad?.nr_idade_atual;
 
+
+  /** Última competência válida (AAAAMM) ou null quando nenhum mês passa de R$ 20 milhões de despesa. */
+  async function ultimaCompetencia(): Promise<number | null> {
+    const u = await carregarUltimaCompetenciaValida();
+    const v = u ? u.ano * 100 + u.mes : null;
+    setUltimaValida(v);
+    return v;
+  }
 
   async function carregarFamilia() {
     if (familia || familiaLoading) return;
@@ -283,7 +293,9 @@ export default function PainelBeneficiario() {
       const membros = membrosFamilia(rows);
       const mats = membros.map((x) => x.cd_matricula);
       if (!mats.length && mat) mats.push(mat);
-      const meses = periodoAssistencial();
+      const ult = await ultimaCompetencia();
+      if (ult == null) throw new Error("Nenhum mês da base tem despesas acima de R$ 20 milhões.");
+      const meses = periodoAssistencial(ult);
       const contratos = [...new Set(rows.map((r) => r.cd_contrato).filter((c) => c != null))];
       let q = hostinger.from("view_eard_mensal").select(`cd_matricula,${COLS_EARD}`).in("cd_matricula", mats)
         .gte("dt_competencia", meses[0]).lte("dt_competencia", meses.at(-1)!).limit(10000);
