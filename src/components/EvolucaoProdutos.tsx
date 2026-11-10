@@ -69,9 +69,9 @@ const TITULOS: Record<Visao, string> = {
   Sinistralidade: "Sinistralidade por tipo de produto (%)",
 };
 const DICAS: Partial<Record<Visao, string>> = {
-  Receita: "Mensalidade (vl_rec_cpp) · view_eard_mensal",
-  "Coparticipação": "Coparticipação (vl_rec_copart) + outras receitas (vl_rec_outros) · view_eard_mensal",
-  "Total Receitas": "Receita (vl_rec_cpp) + Coparticipação (vl_rec_copart + vl_rec_outros) · view_eard_mensal",
+  Receita: "Mensalidade (vl_rec_cpp) + outras receitas (vl_rec_outros) · view_eard_mensal",
+  "Coparticipação": "Coparticipação (vl_rec_copart) · view_eard_mensal",
+  "Total Receitas": "Receita (vl_rec_cpp + vl_rec_outros) + Coparticipação (vl_rec_copart) · view_eard_mensal",
   Despesas: "Consulta + urgência + internação + terapia + exame + outros · view_eard_mensal",
   Saldo: "Total Receitas − Despesas · view_eard_mensal",
   Sinistralidade: "Despesas ÷ Total Receitas · view_eard_mensal",

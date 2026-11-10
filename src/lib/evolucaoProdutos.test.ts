@@ -62,16 +62,16 @@ describe("Evolução Produtos — período", () => {
     { nr_ano: 2025, nr_mes: 10, sigla: "PIF", produto: "COP", rec_cpp: 50, rec_copart: 10, rec_outros: 1, desp_total: 90 },
     { nr_ano: 2025, nr_mes: 10, sigla: "PIF", produto: null, rec_cpp: 7, rec_copart: 0, rec_outros: 0, desp_total: 2 },
   ];
-  it("Receita usa somente vl_rec_cpp, sem inferir produto ausente", () => {
+  it("Receita soma vl_rec_cpp e vl_rec_outros, sem inferir produto ausente", () => {
     const rec = financeiroPorMes(meses, fin, "Receita");
-    expect(rec[0].valores.PCA.F50).toBe(100.5);
-    expect(rec[0].valores.PIF).toEqual({ CONV: 0, F50: 0, COP: 50 });
-    expect(rec[0].total).toBe(150.5);
+    expect(rec[0].valores.PCA.F50).toBe(109.5);
+    expect(rec[0].valores.PIF).toEqual({ CONV: 0, F50: 0, COP: 51 });
+    expect(rec[0].total).toBe(160.5);
     expect(rec[0].foraDosTotais).toBe(7);
     expect(rec[1].valores.PCA.F50).toBeNull();
   });
-  it("Coparticipação soma vl_rec_copart e vl_rec_outros", () => {
-    expect(financeiroPorMes(meses, fin, "Coparticipação")[0].total).toBe(40);
+  it("Coparticipação usa somente vl_rec_copart", () => {
+    expect(financeiroPorMes(meses, fin, "Coparticipação")[0].total).toBe(30);
   });
   it("Total Receitas = Receita + Coparticipação (com outras receitas)", () => {
     const t = financeiroPorMes(meses, fin, "Total Receitas");
@@ -102,11 +102,11 @@ describe("Evolução Produtos — período", () => {
       { ano: 2025, mes: 10, sigla: "PIF", produto: "COP", vidas: 5 },
     ]);
     const pc = perCapita(financeiroPorMes(meses, fin, "Receita"), vidas);
-    expect(pc[0].valores.PCA.F50).toBe(10.05);
-    expect(pc[0].valores.PIF.COP).toBe(10);
+    expect(pc[0].valores.PCA.F50).toBeCloseTo(10.95, 10);
+    expect(pc[0].valores.PIF.COP).toBeCloseTo(10.2, 10);
     expect(pc[0].valores.PIF.CONV).toBeNull();
-    expect(pc[0].subtotais.PIF).toBe(10);
-    expect(pc[0].total).toBeCloseTo(150.5 / 15, 10);
+    expect(pc[0].subtotais.PIF).toBeCloseTo(10.2, 10);
+    expect(pc[0].total).toBeCloseTo(160.5 / 15, 10);
     expect(pc[1].total).toBeNull();
   });
   it("período inicial: 12 meses até dois meses antes do mês atual", () => {
@@ -165,7 +165,7 @@ describe("Evolução Produtos — período", () => {
   it("Per capita no Total do período = soma do valor ÷ soma das vidas", () => {
     const f2 = [...fin, { nr_ano: 2025, nr_mes: 11, sigla: "PCA", produto: "F50", rec_cpp: 70.5, rec_copart: 0, rec_outros: 0, desp_total: 100 }];
     const g = montarGrade(dois, "Receita", { vidas: vid, fin: f2 }, { perCapita: true })!;
-    expect(g.periodo.total).toBeCloseTo(221 / 40, 10);
-    expect(g.periodo.valores.PCA.F50).toBeCloseTo(171 / 30, 10);
+    expect(g.periodo.total).toBeCloseTo(231 / 40, 10);
+    expect(g.periodo.valores.PCA.F50).toBeCloseTo(180 / 30, 10);
   });
 });
