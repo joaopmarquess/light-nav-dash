@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mesesPeriodo, PERIODO_EVOLUCAO_PRODUTOS, produtosPorMes, subtotalTipo, totalGeral, vidasPorMes } from "./evolucaoProdutos";
+import { financeiroPorMes, mesesPeriodo, PERIODO_EVOLUCAO_PRODUTOS, produtosPorMes, subtotalTipo, totalGeral, vidasPorMes } from "./evolucaoProdutos";
 
 describe("Evolução Produtos — período", () => {
   const meses = mesesPeriodo(PERIODO_EVOLUCAO_PRODUTOS.de, PERIODO_EVOLUCAO_PRODUTOS.ate);
@@ -56,5 +56,20 @@ describe("Evolução Produtos — período", () => {
     expect(subtotalTipo(r[0].valores, "PCE")).toBe(7832);
     expect(totalGeral(r[0].valores)).toBe(65191);
     expect(totalGeral(r[1].valores)).toBeNull();
+  });
+  it("monta Receita, Coparticipação e Despesas pela mesma grade, sem inferir produto ausente", () => {
+    const linhas = [
+      { nr_ano: 2025, nr_mes: 10, sigla: "PCA", produto: "F50", rec_total: "120.5", rec_copart: 20, desp_total: 80 },
+      { nr_ano: 2025, nr_mes: 10, sigla: "PIF", produto: "COP", rec_total: 60, rec_copart: 10, desp_total: 10 },
+      { nr_ano: 2025, nr_mes: 10, sigla: "PIF", produto: null, rec_total: 7, rec_copart: 0, desp_total: 2 },
+    ];
+    const rec = financeiroPorMes(meses, linhas, "Receita");
+    expect(rec[0].valores.PCA.F50).toBe(120.5);
+    expect(rec[0].valores.PIF).toEqual({ CONV: 0, F50: 0, COP: 60 });
+    expect(totalGeral(rec[0].valores)).toBe(180.5);
+    expect(rec[0].foraDosTotais).toBe(7);
+    expect(financeiroPorMes(meses, linhas, "Coparticipação")[0].valores.PCA.F50).toBe(20);
+    expect(financeiroPorMes(meses, linhas, "Despesas")[0].foraDosTotais).toBe(2);
+    expect(rec[1].valores.PCA.F50).toBeNull();
   });
 });

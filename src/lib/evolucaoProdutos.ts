@@ -53,17 +53,24 @@ export type TipoProduto = (typeof TIPOS_PRODUTO)[number]["id"];
 
 export type LinhaProduto = { ano: number; mes: number; sigla: string; produto: string; vidas: Num };
 
-/**
- * Vidas por tipo de plano e tipo de produto em cada mês. Mês sem nenhuma linha fica null (sem inferência);
- * em mês calculado, combinação ausente significa zero vidas.
- */
-export function produtosPorMes(meses: MesEvolucao[], linhas: LinhaProduto[]) {
+type LinhaGrade = { ano: number; mes: number; sigla: string | null; produto: string | null; valor: Num };
+
+/** Grade tipo de plano × tipo de produto por mês; mês sem linha fica null, combinação ausente em mês com dado = 0. */
+function gradePorMes(meses: MesEvolucao[], linhas: LinhaGrade[]) {
   const idx = new Map<string, number>();
   const comDado = new Set<string>();
+  const fora = new Map<string, number>();
+  const siglas = new Set<string>(TIPOS_PLANO);
+  const produtos = new Set<string>(TIPOS_PRODUTO.map((p) => p.id));
   for (const l of linhas) {
-    comDado.add(`${l.ano}-${l.mes}`);
-    const k = `${l.ano}-${l.mes}|${String(l.sigla).trim().toUpperCase()}|${String(l.produto).trim().toUpperCase()}`;
-    idx.set(k, (idx.get(k) ?? 0) + (Number(l.vidas) || 0));
+    const mes = `${Number(l.ano)}-${Number(l.mes)}`;
+    comDado.add(mes);
+    const sg = String(l.sigla ?? "").trim().toUpperCase();
+    const pr = String(l.produto ?? "").trim().toUpperCase();
+    const v = Number(l.valor) || 0;
+    if (!siglas.has(sg) || !produtos.has(pr)) { fora.set(mes, (fora.get(mes) ?? 0) + v); continue; }
+    const k = `${mes}|${sg}|${pr}`;
+    idx.set(k, (idx.get(k) ?? 0) + v);
   }
   return meses.map((m) => {
     const chave = `${m.ano}-${m.mes}`;
@@ -73,11 +80,34 @@ export function produtosPorMes(meses: MesEvolucao[], linhas: LinhaProduto[]) {
       valores[t] = {} as Record<TipoProduto, number | null>;
       for (const p of TIPOS_PRODUTO) valores[t][p.id] = tem ? idx.get(`${chave}|${t}|${p.id}`) ?? 0 : null;
     }
-    return { ...m, valores };
+    return { ...m, valores, foraDosTotais: fora.get(chave) ?? 0 };
   });
 }
 
-type ValoresMes = ReturnType<typeof produtosPorMes>[number]["valores"];
+/**
+ * Vidas por tipo de plano e tipo de produto em cada mês. Mês sem nenhuma linha fica null (sem inferência);
+ * em mês calculado, combinação ausente significa zero vidas.
+ */
+export function produtosPorMes(meses: MesEvolucao[], linhas: LinhaProduto[]) {
+  return gradePorMes(meses, linhas.map((l) => ({ ano: l.ano, mes: l.mes, sigla: l.sigla, produto: l.produto, valor: l.vidas })));
+}
+
+// Receita, Coparticipação e Despesas (evolucao_produtos_financeiro, view_eard_mensal).
+// Receita = CPP + copart + outros; Despesas = seis colunas de despesa; Coparticipação = vl_rec_copart.
+export type LinhaFinanceira = {
+  nr_ano: number; nr_mes: number; sigla: string | null; produto: string | null;
+  rec_total: Num; rec_copart: Num; desp_total: Num;
+};
+export const INDICADORES_FINANCEIROS = { Receita: "rec_total", "Coparticipação": "rec_copart", Despesas: "desp_total" } as const;
+export type IndicadorFinanceiro = keyof typeof INDICADORES_FINANCEIROS;
+
+/** Grade financeira por mês; valores fora de PIF/PCA/PCE ou sem produto ficam em foraDosTotais (sem inferência). */
+export function financeiroPorMes(meses: MesEvolucao[], linhas: LinhaFinanceira[], indicador: IndicadorFinanceiro) {
+  const campo = INDICADORES_FINANCEIROS[indicador];
+  return gradePorMes(meses, linhas.map((l) => ({ ano: l.nr_ano, mes: l.nr_mes, sigla: l.sigla, produto: l.produto, valor: l[campo] })));
+}
+
+type ValoresMes = ReturnType<typeof gradePorMes>[number]["valores"];
 
 /** Subtotal de um tipo de plano (soma dos três produtos); null quando o mês não tem dado. */
 export function subtotalTipo(valores: ValoresMes, tipo: TipoPlano): number | null {
