@@ -233,7 +233,7 @@ const EvolucaoProdutos = () => {
             </h2>
           </header>
           {erro ? (
-            <Aviso erro={erro} onRetry={visao === "Vidas" ? buscarVidas : buscarFin} />
+            <Aviso erro={erro} onRetry={visao === "Vidas" || !errFin ? buscarVidas : buscarFin} />
           ) : !linhas ? (
             <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando…</p>
           ) : (
