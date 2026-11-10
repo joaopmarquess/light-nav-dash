@@ -271,10 +271,11 @@ export function montarGrade(
   visao: "Vidas" | IndicadorFinanceiro,
   dados: { vidas: LinhaProduto[] | null; fin: LinhaFinanceira[] | null },
   opcoes: { perCapita?: boolean; produto?: TipoProduto | null } = {},
-): { meses: GradeComTotais[]; periodo: Celulas } | null {
+): { meses: GradeComTotais[]; periodo: Celulas | null } | null {
   const produto = opcoes.produto ?? null;
   const vidas = dados.vidas ? produtosPorMes(meses, dados.vidas, produto) : null;
-  if (visao === "Vidas") return vidas ? { meses: vidas, periodo: somaPeriodo(vidas) } : null;
+  // Vidas são posição de fim de mês: não se somam no período, então a coluna Total fica vazia.
+  if (visao === "Vidas") return vidas ? { meses: vidas, periodo: null } : null;
   if (!dados.fin) return null;
   const fin = dados.fin;
   if (visao === "Sinistralidade") {

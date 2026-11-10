@@ -139,10 +139,13 @@ describe("Evolução Produtos — período", () => {
   ];
   const dois = meses.slice(0, 2);
   it("coluna Total soma o período", () => {
-    const g = montarGrade(dois, "Vidas", { vidas: vid, fin: null })!;
-    expect(g.periodo.valores.PCA.F50).toBe(30);
-    expect(g.periodo.subtotais.PIF).toBe(10);
-    expect(g.periodo.total).toBe(40);
+    const p = somaPeriodo(produtosPorMes(dois, vid));
+    expect(p.valores.PCA.F50).toBe(30);
+    expect(p.subtotais.PIF).toBe(10);
+    expect(p.total).toBe(40);
+  });
+  it("Vidas não somam no período: coluna Total vazia", () => {
+    expect(montarGrade(dois, "Vidas", { vidas: vid, fin: null })!.periodo).toBeNull();
   });
   it("coluna Total fica sem dado se algum mês não tem dado", () => {
     expect(somaPeriodo(produtosPorMes(meses.slice(0, 3), vid)).total).toBeNull();
@@ -153,19 +156,19 @@ describe("Evolução Produtos — período", () => {
     expect(g.meses[0].subtotais.PCA).toBe(10);
     expect(g.meses[0].total).toBe(10);
     expect(g.meses[1].total).toBe(20);
-    expect(g.periodo.total).toBe(30);
+    expect(somaPeriodo(g.meses).total).toBe(30);
     expect(g.meses[0].valores.PIF.COP).toBe(5);
   });
   it("Sinistralidade com produto selecionado e no Total do período usa a razão das somas", () => {
     const f2 = [...fin, { nr_ano: 2025, nr_mes: 11, sigla: "PCA", produto: "F50", rec_cpp: 70.5, rec_copart: 0, rec_outros: 0, desp_total: 100 }];
     const g = montarGrade(dois, "Sinistralidade", { vidas: null, fin: f2 }, { produto: "F50" })!;
     expect(g.meses[0].total).toBeCloseTo(80 / 129.5, 10);
-    expect(g.periodo.total).toBeCloseTo(180 / 200, 10);
+    expect(g.periodo!.total).toBeCloseTo(180 / 200, 10);
   });
   it("Per capita no Total do período = soma do valor ÷ soma das vidas", () => {
     const f2 = [...fin, { nr_ano: 2025, nr_mes: 11, sigla: "PCA", produto: "F50", rec_cpp: 70.5, rec_copart: 0, rec_outros: 0, desp_total: 100 }];
     const g = montarGrade(dois, "Receita", { vidas: vid, fin: f2 }, { perCapita: true })!;
-    expect(g.periodo.total).toBeCloseTo(231 / 40, 10);
-    expect(g.periodo.valores.PCA.F50).toBeCloseTo(180 / 30, 10);
+    expect(g.periodo!.total).toBeCloseTo(231 / 40, 10);
+    expect(g.periodo!.valores.PCA.F50).toBeCloseTo(180 / 30, 10);
   });
 });

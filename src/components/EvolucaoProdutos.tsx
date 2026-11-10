@@ -77,6 +77,10 @@ const DICAS: Partial<Record<Visao, string>> = {
   Sinistralidade: "Despesas ÷ Total Receitas · view_eard_mensal",
 };
 
+// Coluna Total sem soma (Vidas são posição de fim de mês, não se acumulam no período).
+const SemSoma = ({ claro = false }: { claro?: boolean }) => (
+  <span title="Vidas são contadas no fim de cada mês e não se somam no período" className={`text-sm font-normal ${claro ? "text-primary-foreground/80" : "text-muted-foreground"}`}>—</span>
+);
 const Valor = ({ v, claro = false, fmt = fmtInt }: { v: number | null; claro?: boolean; fmt?: Fmt }) =>
   v == null ? <span className={`text-sm font-normal ${claro ? "text-primary-foreground/80" : "text-muted-foreground"}`}>Sem dado</span> : <>{fmt(v)}</>;
 
@@ -94,7 +98,7 @@ function Aviso({ erro, onRetry }: { erro: string; onRetry: () => void }) {
 }
 
 type GradeProps = {
-  linhas: GradeComTotais[]; periodo: Celulas; fmt?: Fmt;
+  linhas: GradeComTotais[]; periodo: Celulas | null; fmt?: Fmt;
   produto: TipoProduto | null; onProduto: (p: TipoProduto | null) => void;
 };
 
@@ -116,7 +120,7 @@ function Grade({ linhas, periodo, fmt = fmtInt, produto, onProduto }: GradeProps
                 {m.rotulo}
               </th>
             ))}
-            <th scope="col" title="Soma do período" className="rounded-lg bg-secondary px-2 py-1 text-sm font-bold text-secondary-foreground ring-1 ring-primary/40">
+            <th scope="col" title={periodo ? "Soma do período" : "Vidas não se somam no período"} className="rounded-lg bg-secondary px-2 py-1 text-sm font-bold text-secondary-foreground ring-1 ring-primary/40">
               Total
             </th>
           </tr>
@@ -151,7 +155,7 @@ function Grade({ linhas, periodo, fmt = fmtInt, produto, onProduto }: GradeProps
                     </td>
                   ))}
                   <td className={`${fraco} ${thTotal} border border-primary/30 bg-accent/60 text-foreground transition-opacity`}>
-                    <Valor v={periodo.valores[t][p.id]} fmt={fmt} />
+                    {periodo ? <Valor v={periodo.valores[t][p.id]} fmt={fmt} /> : <SemSoma />}
                   </td>
                 </tr>
               );
@@ -166,7 +170,7 @@ function Grade({ linhas, periodo, fmt = fmtInt, produto, onProduto }: GradeProps
                 </td>
               ))}
               <td className={`${thTotal} border border-primary/40 bg-secondary text-secondary-foreground`}>
-                <Valor v={periodo.subtotais[t]} fmt={fmt} />
+                {periodo ? <Valor v={periodo.subtotais[t]} fmt={fmt} /> : <SemSoma />}
               </td>
             </tr>
           </tbody>
@@ -183,7 +187,7 @@ function Grade({ linhas, periodo, fmt = fmtInt, produto, onProduto }: GradeProps
               </td>
             ))}
             <td className="rounded-lg bg-primary px-2 py-1.5 text-base font-bold tabular-nums text-primary-foreground ring-2 ring-primary/40 ring-offset-1 ring-offset-card">
-              <Valor v={periodo.total} claro fmt={fmt} />
+              {periodo ? <Valor v={periodo.total} claro fmt={fmt} /> : <SemSoma claro />}
             </td>
           </tr>
         </tfoot>
