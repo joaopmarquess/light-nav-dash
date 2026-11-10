@@ -1,0 +1,1 @@
+- Home › Evolução Produtos reads month-end lives from carteira_evolucao_mensal (fallback carteira_trial_geo) with its period in tested src/lib/evolucaoProdutos.ts, so counts match the "Ativos em" rule; add product levels there.

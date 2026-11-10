@@ -1,4 +1,4 @@
-import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree, ArrowRightLeft, Map as MapIcon, CalendarRange } from "lucide-react";
+import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree, ArrowRightLeft, Map as MapIcon, CalendarRange, Layers } from "lucide-react";
 import { BENCH_SHORT_TEXT, DRE_MENU_NAME, SLIDES_SHORT_TEXT } from "@/control/dreLabels";
 export type MenuItem = {
   icon: React.ComponentType<{ className?: string }>;
@@ -121,6 +121,7 @@ export const homeShortcuts = [
   { icon: CalendarRange, label: "Projeto Bensaúde|Uberaba", destination: "Uberaba Timeline" },
   { icon: FlaskConical, label: "Laboratory", destination: "Laboratory" },
   { icon: FileText, label: "Proposta APB", destination: "Proposta APB" },
+  { icon: Layers, label: "Evolução Produtos", destination: "Evolução Produtos" },
 ];
 
 export const axisPermissionGroups = [

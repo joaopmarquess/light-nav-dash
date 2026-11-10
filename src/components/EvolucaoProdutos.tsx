@@ -1,0 +1,82 @@
+import { useEffect, useState } from "react";
+import { LoaderCircle } from "lucide-react";
+import { hostinger } from "@/lib/hostingerClient";
+import { mesesPeriodo, PERIODO_EVOLUCAO_PRODUTOS, vidasPorMes } from "@/lib/evolucaoProdutos";
+
+const MESES = mesesPeriodo(PERIODO_EVOLUCAO_PRODUTOS.de, PERIODO_EVOLUCAO_PRODUTOS.ate);
+type Linha = ReturnType<typeof vidasPorMes>[number];
+let cache: Linha[] | null = null;
+const fmt = (n: number) => n.toLocaleString("pt-BR");
+
+async function carregar(): Promise<Linha[]> {
+  if (cache) return cache;
+  const { de, ate } = PERIODO_EVOLUCAO_PRODUTOS;
+  const { data, error } = await hostinger.rpc("carteira_evolucao_mensal", { p_de: de.ano, p_ate: ate.ano });
+  let linhas: { ano: number; mes: number; total: number | null }[];
+  if (!error && Array.isArray(data) && data.length) {
+    linhas = data as any;
+  } else {
+    // Reserva: mesma regra "Ativos em", uma consulta por fim de mês.
+    linhas = await Promise.all(MESES.map(async (m) => {
+      const r = await hostinger.rpc("carteira_trial_geo", { p_data: m.dataFim });
+      if (r.error) throw new Error(r.error.message);
+      const total = (Array.isArray(r.data) ? r.data : []).reduce((s: number, x: any) => s + (Number(x.ativos) || 0), 0);
+      return { ano: m.ano, mes: m.mes, total };
+    }));
+  }
+  cache = vidasPorMes(MESES, linhas);
+  return cache;
+}
+
+const EvolucaoProdutos = () => {
+  const [dados, setDados] = useState<Linha[] | null>(cache);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (dados) return;
+    carregar().then(setDados).catch((e) => setErr(e instanceof Error ? e.message : String(e)));
+  }, [dados]);
+
+  return (
+    <div className="h-full overflow-y-auto">
+      <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
+        <header className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Vidas ativas no fim do mês</h2>
+            <p className="text-sm text-muted-foreground">Out/2025 a Set/2026 · posição no último dia de cada mês</p>
+          </div>
+        </header>
+        {err ? (
+          <p className="text-sm text-destructive">Não foi possível carregar as vidas: {err}</p>
+        ) : !dados ? (
+          <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando vidas…</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[960px] border-separate border-spacing-x-1.5 text-center">
+              <thead>
+                <tr>
+                  {dados.map((m) => (
+                    <th key={m.dataFim} scope="col" className="rounded-t-lg bg-primary px-2 py-2 text-sm font-semibold text-primary-foreground" title={`Ativos em ${m.dataFim.split("-").reverse().join("/")}`}>
+                      {m.rotulo}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {dados.map((m) => (
+                    <td key={m.dataFim} className="rounded-b-lg border border-t-0 border-border bg-accent/40 px-2 py-3 text-lg font-semibold tabular-nums text-foreground">
+                      {m.vidas == null ? <span className="text-sm font-normal text-muted-foreground">Sem dado</span> : fmt(m.vidas)}
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+};
+
+export default EvolucaoProdutos;
