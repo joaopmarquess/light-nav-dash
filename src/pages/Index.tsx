@@ -129,7 +129,6 @@ import Assistencial2518Prestadores from "@/components/Assistencial2518Prestadore
 import { useConsultaState } from "@/lib/assistencialConsultaStore";
 import { Loader2, DollarSign, FlaskConical } from "lucide-react";
 import PropostaApb from "@/components/PropostaApb";
-import SinistralidadeEmpresas from "@/components/SinistralidadeEmpresas";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 
@@ -551,12 +550,6 @@ const Index = () => {
             <SinistralidadePeriodo />
           ) : active === "Sinistralidade · Períodos" ? (
             <SinistralidadePeriodosMV />
-          ) : active === "Sinistralidade · Empresas" ? (
-            <SinistralidadeEmpresas />
-          ) : active === "Sinistralidade · Empresas SB" ? (
-            <SinistralidadeEmpresas fonte="sb" />
-          ) : active === "Sinistralidade · Empresas Menu" ? (
-            <SinistralidadeEmpresas fonte="menu" />
           ) : active === "Proposta APB" ? (
             <PropostaApb />
           ) : active === "APB" ? (
@@ -647,7 +640,7 @@ const Index = () => {
             <CarteiraTabelas />
           ) : active === "Carteira · Movimentação" ? (
             <CarteiraTrialMov />
-          ) : active === "Evolução Produtos" ? (
+          ) : active === "Evolução Produtos" || active === "Sinistralidade · Evolução Produtos" ? (
             <EvolucaoProdutos />
           ) : active === "Carteira · Evolução Mensal" ? (
             <MovimentacaoEvolucaoMensal />
