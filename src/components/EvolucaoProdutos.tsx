@@ -127,7 +127,7 @@ function Grade({ linhas, periodo, fmt = fmtInt, produto, onProduto }: GradeProps
             {TIPOS_PRODUTO.map((p, i) => {
               const fraco = apagado(p.id);
               return (
-                <tr key={p.id} className={fraco ? "opacity-35 transition-opacity" : "transition-opacity"}>
+                <tr key={p.id} className={fraco ? "opacity-40 transition-opacity" : "transition-opacity"}>
                   {i === 0 && (
                     <th scope="rowgroup" rowSpan={TIPOS_PRODUTO.length + 1} className="rounded-lg bg-secondary px-2 text-left align-middle text-sm font-bold text-secondary-foreground" title={DESC_TIPO[t]}>
                       {t}
