@@ -312,11 +312,11 @@ export default function PainelBeneficiario() {
 
   return (
     <section className="space-y-5">
-      <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+      <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
         <div className={`min-w-0 ${painelBenef ? "lg:w-[min(36rem,45%)] lg:shrink-0" : "w-full"}`}>
         <div className={modo === "alternativa" ? "grid w-fit max-w-full" : ""}>
-        <div className="flex flex-wrap gap-1.5 mb-3">
+        <div className="flex flex-wrap gap-1.5 mb-2">
           {MODOS.map((m) => (
             <Button key={m.id} type="button" variant="outline" onClick={() => setModo(m.id)}
               className={`h-7 rounded-full px-3 py-0 text-xs transition-colors ${modo === m.id ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : "border-border text-muted-foreground hover:text-foreground"}`}>
@@ -347,41 +347,41 @@ export default function PainelBeneficiario() {
             <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
             <input value={termo} onChange={(e) => setTermo(e.target.value)} onKeyDown={(e) => e.key === "Enter" && buscar()} autoFocus
               placeholder={modo === "nome" ? "Pesquisar por nome (parte do nome)…" : `Pesquisar por ${MODOS.find((x) => x.id === modo)?.label.toLowerCase() ?? "código"}…`}
-              className="h-12 w-full rounded-lg border border-border bg-background pl-11 pr-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              className="h-10 w-full rounded-lg border border-border bg-background pl-11 pr-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
           </div>}
           <Button type="button" onClick={buscar} disabled={buscando}
-            className={modo === "alternativa" ? "h-10 shrink-0 px-3" : "h-12 px-6"}>
+            className={modo === "alternativa" ? "h-10 shrink-0 px-3" : "h-10 px-6"}>
             {buscando && <Loader2 className="h-4 w-4 animate-spin" />}Pesquisar
           </Button>
           <Button type="button" variant="outline" size="icon" onClick={limpar}
             aria-label="Limpar consulta" title="Limpar consulta" disabled={buscando || carregando || eardLoading}
-            className={modo === "alternativa" ? "h-10 w-10 shrink-0" : "h-12 w-12 shrink-0"}>
+            className="h-10 w-10 shrink-0">
             <X className="h-4 w-4" />
           </Button>
         </div>
         </div>
         </div>
         {painelBenef && (
-          <div className="min-w-0 flex-1 border-t border-border pt-4 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
+          <div className="min-w-0 flex-1 border-t border-border pt-3 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
             {carregando || !atual ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando beneficiário…</div>
             ) : (
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Beneficiário selecionado</div>
-                  <h3 className="text-xl font-semibold text-foreground">{atual.nm_beneficiario}</h3>
-                  <div className="mt-1 flex flex-wrap gap-x-4 text-sm text-muted-foreground">
+                  <h3 className="text-lg font-semibold leading-tight text-foreground">{atual.nm_beneficiario}</h3>
+                  <div className="mt-0.5 flex flex-wrap gap-x-4 text-sm text-muted-foreground">
                     {fmtCpf(atual.nr_cpf ?? cad?.nr_cpf) && <span>CPF {fmtCpf(atual.nr_cpf ?? cad?.nr_cpf)}</span>}
                     <span>Matrícula {atual.cd_matricula}</span>
                     {idade != null && <span>{idade} anos</span>}
                     {SEXO[atual.tp_sexo] && <span>{SEXO[atual.tp_sexo]}</span>}
                   </div>
-                  <div className="mt-1 flex flex-wrap gap-x-4 text-sm text-foreground">
+                  <div className="flex flex-wrap gap-x-4 text-sm text-foreground">
                     <span>{atual.ds_plano}</span><span>Contrato {atual.cd_contrato}</span>
                     {!vazio(atual.nm_empresa_estipulante) && <span className="text-muted-foreground">{atual.nm_empresa_estipulante}</span>}
                   </div>
                 </div>
-                <span className={`shrink-0 rounded-full border px-4 py-1.5 text-sm font-semibold ${TONE[st.tone]}`}>{st.label}</span>
+                <span className={`shrink-0 rounded-full border px-3 py-1 text-sm font-semibold ${TONE[st.tone]}`}>{st.label}</span>
               </div>
             )}
           </div>
