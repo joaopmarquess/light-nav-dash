@@ -300,11 +300,6 @@ export default function PainelBeneficiario() {
 
   return (
     <section className="space-y-5">
-      <header>
-        <h2 className="text-xl font-semibold text-foreground">Painel</h2>
-        <p className="text-sm text-muted-foreground">Central de Consulta do Beneficiário</p>
-      </header>
-
       <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
         <div className={`min-w-0 ${painelBenef ? "lg:w-[min(36rem,45%)] lg:shrink-0" : "w-full"}`}>
