@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, Search, User, FileText, Wallet, Activity, History, LayoutGrid, X } from "lucide-react";
+import { Loader2, Search, User, Users, FileText, Wallet, Activity, History, LayoutGrid, X } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { hostinger } from "@/lib/hostingerClient";
 import { carregarUltimaCompetenciaValida } from "@/lib/sinistralidadeValida";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  CATEGORIAS_DESPESA, comporCodigoAlternativo, despesaMes, faixaFamilia, linhaDoTempo, membrosFamilia, periodoAssistencial, ateUltimaValida, porCompetencia, receitaMes, registroAtual, resultadoAssistencial, resumoEard, statusInfo,
+  CATEGORIAS_DESPESA, comporCodigoAlternativo, despesaMes, faixaFamilia, grupoFamiliar, linhaDoTempo, membrosFamilia, periodoAssistencial, ateUltimaValida, porCompetencia, receitaMes, registroAtual, resultadoAssistencial, resumoEard, statusInfo,
   type CarteiraRow, type EardRow, type MembroFamilia, type ResultadoMes,
 } from "@/lib/painelBeneficiario";
 
@@ -19,7 +19,8 @@ const MODOS: { id: Modo; label: string }[] = [
 const ABAS = [
   { id: "resumo", label: "Resumo", icon: LayoutGrid }, { id: "benef", label: "Beneficiário", icon: User },
   { id: "contrato", label: "Contrato e Plano", icon: FileText }, { id: "fin", label: "Financeiro", icon: Wallet },
-  { id: "assist", label: "Assistencial", icon: Activity }, { id: "hist", label: "Histórico", icon: History },
+  { id: "assist", label: "Assistencial", icon: Activity }, { id: "familia", label: "Grupo Familiar", icon: Users },
+  { id: "hist", label: "Histórico", icon: History },
 ] as const;
 type Aba = (typeof ABAS)[number]["id"];
 
@@ -83,7 +84,52 @@ const LINHAS_RESULTADO: { key: keyof ResultadoMes; label: string; tip: string; d
 const ESCOPOS = ["Beneficiário", "Família"] as const;
 type Escopo = (typeof ESCOPOS)[number];
 type EardFamilia = EardRow & { cd_matricula: number };
-type Familia = { membros: MembroFamilia[]; eard: EardFamilia[] };
+type Familia = { membros: MembroFamilia[]; eard: EardFamilia[]; ate: number };
+
+function GrupoFamiliar({ familia, loading, erro, matSelecionada }: { familia: Familia | null; loading: boolean; erro: string | null; matSelecionada: number | null }) {
+  const meses = useMemo(() => (familia ? periodoAssistencial(familia.ate) : []), [familia]);
+  const g = useMemo(() => (familia ? grupoFamiliar(familia.membros, familia.eard, meses) : null), [familia, meses]);
+  if (erro) return <p className="text-sm text-destructive">{erro}</p>;
+  if (loading || !familia || !g) return <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando o grupo familiar…</div>;
+  return (
+    <div className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Membros do contrato do titular</h4>
+        <span className="text-xs text-muted-foreground">
+          {familia.membros.length} {familia.membros.length === 1 ? "pessoa" : "pessoas"} · mesmo Plano e Contrato · sinistralidade U12 de {fmtComp(meses[0])} a {fmtComp(meses.at(-1)!)}
+        </span>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs tabular-nums">
+          <thead className="bg-muted/50 text-[10px] uppercase text-muted-foreground">
+            <tr>
+              <th className="px-2 py-1.5 text-left">Dep</th><th className="px-2 text-left">Nome</th><th className="px-2 text-left">Relacionamento</th><th className="px-2 text-left">Status</th>
+              <th className="px-2 text-right" title="dt_nascimento">Nascimento</th>
+              <th className="px-2 text-right" title="vl_tmm · situação mais recente">Mensalidade</th>
+              <th className="px-2 text-right" title="Despesas ÷ Total Receitas dos últimos 12 meses válidos">% Sinistralidade U12</th>
+            </tr>
+          </thead>
+          <tbody>{g.linhas.map(({ membro: m, mensalidade, sinistralidadeU12, temDado }) => (
+            <tr key={m.cd_matricula} className={`border-t border-border ${m.cd_matricula === matSelecionada ? "bg-primary/5 font-medium" : ""}`}>
+              <td className="px-2 py-1.5">{m.dep}</td><td className="px-2">{m.nm_beneficiario}</td>
+              <td className="px-2">{m.tp_relacionamento ?? "—"}</td><td className="px-2">{statusInfo(m.tp_status).label}</td>
+              <td className="px-2 text-right">{fmtD(m.dt_nascimento) ?? "—"}</td>
+              <td className="px-2 text-right">{fmtR(mensalidade)}</td>
+              <td className="px-2 text-right">{temDado ? fmtPct(sinistralidadeU12) : <span className="text-muted-foreground">sem registros</span>}</td>
+            </tr>))}
+          </tbody>
+          <tfoot>
+            <tr className="border-t-2 border-border bg-muted/40 font-semibold">
+              <td className="px-2 py-1.5" colSpan={5}>Total do grupo</td>
+              <td className="px-2 text-right">{fmtR(g.total.mensalidade)}</td>
+              <td className="px-2 text-right">{fmtPct(g.total.sinistralidadeU12)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  );
+}
 
 function ResultadoAssistencial({ eard, ate, escopo, onEscopo, familia, familiaLoading, familiaErro }: {
   eard: EardRow[]; ate: number; escopo: Escopo; onEscopo: (e: Escopo) => void;
@@ -286,7 +332,7 @@ export default function PainelBeneficiario() {
     setFamiliaLoading(true); setFamiliaErro(null);
     try {
       const { data, error } = await hostinger.from("view_ecarteira")
-        .select("cd_matricula,cd_mat_alternativa,nm_beneficiario,tp_relacionamento,tp_status,dt_momento,tp_plano,cd_contrato")
+        .select("cd_matricula,cd_mat_alternativa,nm_beneficiario,tp_relacionamento,tp_status,dt_momento,tp_plano,cd_contrato,dt_nascimento,vl_tmm")
         .eq("tp_plano", "SAUDE").gte("cd_mat_alternativa", faixa.de).lte("cd_mat_alternativa", faixa.ate).limit(2000);
       if (error) throw error;
       const rows = (data ?? []) as unknown as CarteiraRow[];
@@ -302,7 +348,7 @@ export default function PainelBeneficiario() {
       if (contratos.length) q = q.in("cd_contrato_mv", contratos); // filtro por contrato acelera a consulta
       const e = await q;
       if (e.error) throw e.error;
-      setFamilia({ membros, eard: (e.data ?? []) as unknown as EardFamilia[] });
+      setFamilia({ membros, eard: (e.data ?? []) as unknown as EardFamilia[], ate: ult });
     } catch (err: any) { setFamiliaErro(err?.message ?? String(err)); }
     finally { setFamiliaLoading(false); }
   }
@@ -424,7 +470,7 @@ export default function PainelBeneficiario() {
         <>
           <nav aria-label="Seções do beneficiário" className="flex shrink-0 flex-wrap gap-1 border-b border-border">
             {ABAS.map((a) => (
-              <button key={a.id} type="button" aria-pressed={aba === a.id} onClick={() => setAba(a.id)}
+              <button key={a.id} type="button" aria-pressed={aba === a.id} onClick={() => { setAba(a.id); if (a.id === "familia") carregarFamilia(); }}
                 className={`-mb-px inline-flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm transition-colors ${aba === a.id ? "border-primary font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
                 <a.icon className="h-4 w-4" />{a.label}
               </button>
@@ -570,6 +616,8 @@ export default function PainelBeneficiario() {
               </div>
             </div>
           ))}
+
+          {aba === "familia" && <GrupoFamiliar familia={familia} loading={familiaLoading} erro={familiaErro} matSelecionada={mat} />}
 
           {aba === "hist" && (
             <ol className="relative ml-3 border-l border-border">

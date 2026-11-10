@@ -167,13 +167,31 @@ export function faixaFamilia(matAlternativa: unknown): { de: number; ate: number
   return { de: base, ate: base + 99 };
 }
 
-export type MembroFamilia = { cd_matricula: number; nm_beneficiario: string; dep: string; tp_relacionamento?: string | null; tp_status?: string | null };
+export type MembroFamilia = { cd_matricula: number; nm_beneficiario: string; dep: string; tp_relacionamento?: string | null; tp_status?: string | null; dt_nascimento?: string | null; vl_tmm?: number | null };
 /** Um membro por matrícula (situação mais recente da linha Saúde), titular (Dep 00) primeiro. */
 export function membrosFamilia(rows: CarteiraRow[]): MembroFamilia[] {
   const m = new Map<number, CarteiraRow[]>();
   for (const r of rows) m.set(r.cd_matricula, [...(m.get(r.cd_matricula) ?? []), r]);
   return [...m.values()].map((rs) => {
     const a = registroAtual(rs)!;
-    return { cd_matricula: a.cd_matricula, nm_beneficiario: String(a.nm_beneficiario ?? ""), dep: String(a.cd_mat_alternativa ?? "").padStart(12, "0").slice(-2), tp_relacionamento: a.tp_relacionamento, tp_status: a.tp_status };
+    return { cd_matricula: a.cd_matricula, nm_beneficiario: String(a.nm_beneficiario ?? ""), dep: String(a.cd_mat_alternativa ?? "").padStart(12, "0").slice(-2), tp_relacionamento: a.tp_relacionamento, tp_status: a.tp_status,
+      dt_nascimento: a.dt_nascimento ?? null, vl_tmm: a.vl_tmm == null || a.vl_tmm === "" ? null : Number(a.vl_tmm) };
   }).sort((x, y) => x.dep.localeCompare(y.dep) || x.nm_beneficiario.localeCompare(y.nm_beneficiario));
+}
+
+export type LinhaGrupoFamiliar = { membro: MembroFamilia; mensalidade: number | null; sinistralidadeU12: number | null; temDado: boolean };
+/** Grupo Familiar: mensalidade atual (vl_tmm) e sinistralidade dos últimos 12 meses válidos por membro;
+ *  no total, mensalidades somadas e sinistralidade como razão das somas do grupo. */
+export function grupoFamiliar(membros: MembroFamilia[], eard: (EardRow & { cd_matricula: number })[], meses: number[]) {
+  const linhas: LinhaGrupoFamiliar[] = membros.map((m) => {
+    const t = resultadoAssistencial(eard.filter((r) => r.cd_matricula === m.cd_matricula), meses).total;
+    return { membro: m, mensalidade: m.vl_tmm ?? null, sinistralidadeU12: t.temDado ? t.sinistralidade : null, temDado: t.temDado };
+  });
+  const doGrupo = new Set(membros.map((m) => m.cd_matricula));
+  const t = resultadoAssistencial(eard.filter((r) => doGrupo.has(r.cd_matricula)), meses).total;
+  const mens = linhas.filter((l) => l.mensalidade != null);
+  return {
+    linhas,
+    total: { mensalidade: mens.length ? mens.reduce((s, l) => s + l.mensalidade!, 0) : null, sinistralidadeU12: t.temDado ? t.sinistralidade : null },
+  };
 }

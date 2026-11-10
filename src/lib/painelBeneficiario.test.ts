@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { comporCodigoAlternativo, registroAtual, statusInfo, resumoEard, porCompetencia, periodoAssistencial, ateUltimaValida, resultadoAssistencial, faixaFamilia, membrosFamilia, type EardRow } from "./painelBeneficiario";
+import { comporCodigoAlternativo, registroAtual, statusInfo, resumoEard, porCompetencia, periodoAssistencial, ateUltimaValida, resultadoAssistencial, faixaFamilia, membrosFamilia, grupoFamiliar, type EardRow } from "./painelBeneficiario";
 
 const mes = (c: number, cpp: number, outros: number): EardRow => ({ dt_competencia: c, vl_rec_cpp: cpp, vl_rec_copart: 0, vl_rec_outros: 0, vl_desp_consulta: 0, vl_desp_urgencia: 0, vl_desp_internacao: 0, vl_desp_terapia: 0, vl_desp_exame: 0, vl_desp_outros: outros });
 
@@ -110,5 +110,26 @@ describe("grupo familiar (mesmo Plano e mesmo Contrato)", () => {
       { cd_matricula: 1, tp_plano: "SAUDE", cd_mat_alternativa: 1800795700, nm_beneficiario: "DIVINO", dt_momento: "2026-01-01" },
     ]);
     expect(m.map((x) => [x.cd_matricula, x.dep])).toEqual([[1, "00"], [2, "01"]]);
+  });
+  it("Grupo Familiar: sinistralidade U12 por membro e do grupo como razão das somas", () => {
+    const meses = periodoAssistencial(202609);
+    const membros = [
+      { cd_matricula: 1, nm_beneficiario: "TITULAR", dep: "00", vl_tmm: 500 },
+      { cd_matricula: 2, nm_beneficiario: "DEPENDENTE", dep: "01", vl_tmm: 300 },
+    ];
+    const eard = [
+      { ...mes(202609, 1000, 500), cd_matricula: 1 },
+      { ...mes(202609, 1000, 1500), cd_matricula: 2 },
+      { ...mes(202509, 1000, 9000), cd_matricula: 1 }, // fora dos 12 meses
+    ];
+    const g = grupoFamiliar(membros, eard, meses);
+    expect(g.linhas.map((l) => l.sinistralidadeU12)).toEqual([0.5, 1.5]);
+    expect(g.total.sinistralidadeU12).toBe(1);
+    expect(g.total.mensalidade).toBe(800);
+  });
+  it("Grupo Familiar: membro sem registros fica sem sinistralidade", () => {
+    const g = grupoFamiliar([{ cd_matricula: 9, nm_beneficiario: "X", dep: "02", vl_tmm: null }], [], periodoAssistencial(202609));
+    expect(g.linhas[0].sinistralidadeU12).toBeNull();
+    expect(g.total.mensalidade).toBeNull();
   });
 });
