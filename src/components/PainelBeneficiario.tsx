@@ -311,7 +311,7 @@ export default function PainelBeneficiario() {
   const EardPend = () => <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando dados assistenciais…</div>;
 
   return (
-    <section className="space-y-5">
+    <section className="flex min-h-full flex-col gap-5">
       <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
         <div className={`min-w-0 ${painelBenef ? "lg:w-[min(36rem,45%)] lg:shrink-0" : "w-full"}`}>
@@ -421,16 +421,6 @@ export default function PainelBeneficiario() {
             <Card label="Despesa assistencial" value={eardLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : ultimo ? fmtR(despesaMes(ultimo)) : "—"} sub={ultimo ? `competência ${fmtComp(ultimo.dt_competencia)}` : eard ? "sem registros" : undefined} />
           </div>
 
-          <nav aria-label="Seções do beneficiário" className="overflow-x-auto py-1">
-            <div className="mx-auto flex w-max gap-0.5 rounded-full border border-border bg-card p-1.5 shadow-sm">
-              {ABAS.map((a) => (
-                <Button key={a.id} type="button" variant={aba === a.id ? "default" : "ghost"} aria-pressed={aba === a.id}
-                  onClick={() => setAba(a.id)} className="h-8 rounded-full px-3 text-[13px]">
-                  <a.icon className="h-4 w-4" />{a.label}
-                </Button>
-              ))}
-            </div>
-          </nav>
 
           {aba === "resumo" && (
             <div className="grid gap-4 lg:grid-cols-2">
@@ -583,6 +573,16 @@ export default function PainelBeneficiario() {
               ))}
             </ol>
           )}
+          <nav aria-label="Seções do beneficiário" className="sticky bottom-3 z-20 mt-auto overflow-x-auto py-1">
+            <div className="mx-auto flex w-max gap-0.5 rounded-full border border-border bg-card/95 p-1.5 shadow-lg backdrop-blur">
+              {ABAS.map((a) => (
+                <Button key={a.id} type="button" variant={aba === a.id ? "default" : "ghost"} aria-pressed={aba === a.id}
+                  onClick={() => setAba(a.id)} className="h-8 rounded-full px-3 text-[13px]">
+                  <a.icon className="h-4 w-4" />{a.label}
+                </Button>
+              ))}
+            </div>
+          </nav>
         </>
       )}
     </section>
