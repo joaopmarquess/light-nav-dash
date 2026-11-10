@@ -1,6 +1,7 @@
 // Home › Evolução Produtos: vidas ativas no último dia de cada mês.
 // Regra de ativo = "Ativos em" (carteira_trial_geo / carteira_evolucao_mensal, view_ecarteira).
-// beneficiarios e view_eard_mensal entram quando os níveis por produto forem abertos.
+// Tipo de produto (carteira_evolucao_produtos): Fácil 50 = plano MV 168–173; demais pela recuperação
+// (CONVENCIONAL / COPARTICIPACAO) da vigência mais recente da matrícula.
 
 export const PERIODO_EVOLUCAO_PRODUTOS = { de: { ano: 2025, mes: 10 }, ate: { ano: 2026, mes: 9 } } as const;
 
@@ -40,5 +41,38 @@ export function vidasPorMes(meses: MesEvolucao[], linhas: LinhaMensal[]) {
     const l = idx.get(`${m.ano}-${m.mes}`);
     const porTipo: Record<TipoPlano, number | null> = { PIF: num(l?.pif), PCA: num(l?.pca), PCE: num(l?.pce) };
     return { ...m, vidas: num(l?.total), porTipo };
+  });
+}
+
+export const TIPOS_PRODUTO = [
+  { id: "CONV", rotulo: "Convencional", descricao: "Integral, sem coparticipação" },
+  { id: "F50", rotulo: "Fácil 50", descricao: "Planos MV 168 a 173" },
+  { id: "COP", rotulo: "Outros coparticipativos", descricao: "Com coparticipação, fora do Fácil 50" },
+] as const;
+export type TipoProduto = (typeof TIPOS_PRODUTO)[number]["id"];
+
+export type LinhaProduto = { ano: number; mes: number; sigla: string; produto: string; vidas: Num };
+
+/**
+ * Vidas por tipo de plano e tipo de produto em cada mês. Mês sem nenhuma linha fica null (sem inferência);
+ * em mês calculado, combinação ausente significa zero vidas.
+ */
+export function produtosPorMes(meses: MesEvolucao[], linhas: LinhaProduto[]) {
+  const idx = new Map<string, number>();
+  const comDado = new Set<string>();
+  for (const l of linhas) {
+    comDado.add(`${l.ano}-${l.mes}`);
+    const k = `${l.ano}-${l.mes}|${String(l.sigla).trim().toUpperCase()}|${String(l.produto).trim().toUpperCase()}`;
+    idx.set(k, (idx.get(k) ?? 0) + (Number(l.vidas) || 0));
+  }
+  return meses.map((m) => {
+    const chave = `${m.ano}-${m.mes}`;
+    const tem = comDado.has(chave);
+    const valores = {} as Record<TipoPlano, Record<TipoProduto, number | null>>;
+    for (const t of TIPOS_PLANO) {
+      valores[t] = {} as Record<TipoProduto, number | null>;
+      for (const p of TIPOS_PRODUTO) valores[t][p.id] = tem ? idx.get(`${chave}|${t}|${p.id}`) ?? 0 : null;
+    }
+    return { ...m, valores };
   });
 }
