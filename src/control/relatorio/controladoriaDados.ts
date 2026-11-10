@@ -6,7 +6,7 @@ import { mergeOrcamento } from "@/control/orcamentoLocal";
 import { realizadosOrcamento } from "@/control/orcamentoRegras";
 import { datasVidasIndicadores, mesesMovimentacao, somarTotaisMovimentacao } from "./movimentacaoCarga";
 import { dinheiro, numero, percentual, type ReportPeriod } from "./controladoriaRegras";
-import { agruparPorAno, anosSinistralidade, saldoCompetencia, sinistralidade, somaVazia, somarTotais, type SomaCompetencia } from "./sinistralidadeCompetencias";
+import { agruparPorAno, ANO_INICIO_SINISTRALIDADE, ateCompetencia, ultimaCompetenciaValida, type TotalCompetencia, saldoCompetencia, sinistralidade, somaVazia, somarTotais, type SomaCompetencia } from "./sinistralidadeCompetencias";
 import { resumoMovimentacao } from "./movimentacaoResumo";
 import { resumoPainelDre } from "@/control/drePainel";
 import { aplicarRealizadoMv, gruposOrcamentoDre, impostosFederais, resultadoLiquido, valoresOrcamento } from "@/control/orcamentoDre";
@@ -80,8 +80,13 @@ export async function carregarRelatorio(period: ReportPeriod, progress: (message
       })(),
       (async () => {
         // Sinistralidade › Períodos (visão padrão): todos os anos, com o(s) ano(s) do relatório expandido(s).
-        const responses = await Promise.all(anosSinistralidade(new Date()).map(({ ano, ateMes }) => rpc("sinistralidade_mv_competencias", { p_ano: ano, p_ate_mes: ateMes })));
-        const anos = agruparPorAno(responses.flat().map(d => ({ ano: Number(d.nr_ano), mes: Number(d.nr_mes), soma: { ...somaVazia(), recCpp: Number(d.rec_cpp), recCopart: Number(d.rec_copart), recTotal: Number(d.rec_total), despTotal: Number(d.desp_total) } })));
+        // Vai até a última competência com despesas acima de R$ 20 milhões (meses seguintes ainda incompletos).
+        const todosAnos = Array.from({ length: new Date().getUTCFullYear() - ANO_INICIO_SINISTRALIDADE + 1 }, (_, i) => ANO_INICIO_SINISTRALIDADE + i);
+        const brutos = (await Promise.all(todosAnos.map(ano => rpc("sinistralidade_mv_competencias", { p_ano: ano, p_ate_mes: 12 })))).flat();
+        const ultima = ultimaCompetenciaValida(brutos as TotalCompetencia[]);
+        if (!ultima) return;
+        const responses = brutos.filter(d => ateCompetencia(Number(d.nr_ano), Number(d.nr_mes), ultima));
+        const anos = agruparPorAno(responses.map(d => ({ ano: Number(d.nr_ano), mes: Number(d.nr_mes), soma: { ...somaVazia(), recCpp: Number(d.rec_cpp), recCopart: Number(d.rec_copart), recTotal: Number(d.rec_total), despTotal: Number(d.desp_total) } })));
         if (!anos.length) return;
         const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const linha = (rotulo: string, s: SomaCompetencia) => [rotulo, fmt(s.recCpp), fmt(s.recCopart), fmt(s.recTotal), fmt(s.despTotal), fmt(saldoCompetencia(s)), percentual(sinistralidade(s))];
