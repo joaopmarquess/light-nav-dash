@@ -163,7 +163,9 @@ describe("Evolução Produtos — período", () => {
     expect(g.periodo.total).toBeCloseTo(180 / 200, 10);
   });
   it("Per capita no Total do período = soma do valor ÷ soma das vidas", () => {
-    const g = montarGrade(dois, "Receita", { vidas: vid, fin }, { perCapita: true })!;
-    expect(g.periodo.total).toBeCloseTo(150.5 / 40, 10);
+    const f2 = [...fin, { nr_ano: 2025, nr_mes: 11, sigla: "PCA", produto: "F50", rec_cpp: 70.5, rec_copart: 0, rec_outros: 0, desp_total: 100 }];
+    const g = montarGrade(dois, "Receita", { vidas: vid, fin: f2 }, { perCapita: true })!;
+    expect(g.periodo.total).toBeCloseTo(221 / 40, 10);
+    expect(g.periodo.valores.PCA.F50).toBeCloseTo(171 / 30, 10);
   });
 });
