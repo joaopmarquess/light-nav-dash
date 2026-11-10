@@ -35,4 +35,3 @@
 - Share the frozen-slide PDF exporter between the project header and presentation; write exactly one full-bleed 16:9 page per decoded snapshot and abort on missing images, avoiding browser print settings and partial exports.
 - Carteira › Painel loads Hostinger data per selected cd_matricula only; its status/expense and alternative-code composition rules live in tested src/lib/painelBeneficiario.ts.
 - Share axisNavigation and exact invite-origin validation (including editor preview); enforce roles/server grants. Hostinger anonymous reads need external protection.
-- Home › Evolução Produtos reads month-end lives from carteira_evolucao_mensal (fallback carteira_trial_geo) with its period in tested src/lib/evolucaoProdutos.ts, so counts match the "Ativos em" rule; add product levels there.
