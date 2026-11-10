@@ -150,10 +150,11 @@ const EvolucaoProdutos = () => {
           <p className="text-sm text-muted-foreground">Cada tipo de plano aberto em Convencional, Fácil 50 e Outros coparticipativos</p>
         </header>
         {errProd ? (
-          <p className="text-sm text-muted-foreground">
-            A abertura por tipo de produto ainda não está disponível na base de carteira.
-            <span className="block text-xs">Detalhe: {errProd}</span>
-          </p>
+          /could not find the function/i.test(errProd) ? (
+            <p className="text-sm text-muted-foreground">Aguardando a instalação do cálculo por tipo de produto na base de carteira.</p>
+          ) : (
+            <p className="text-sm text-destructive">Não foi possível carregar os tipos de produto: {errProd}</p>
+          )
         ) : !prod ? (
           <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando tipos de produto…</p>
         ) : (
