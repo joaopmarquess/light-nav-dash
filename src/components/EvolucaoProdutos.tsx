@@ -2,8 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Check, LoaderCircle, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { hostinger } from "@/lib/hostingerClient";
+import { carregarUltimaCompetenciaValida } from "@/lib/sinistralidadeValida";
 import {
-  anoMesCampo, INDICADORES_PER_CAPITA, lerAnoMes, mascaraAnoMes, mesesPeriodo, montarGrade, periodoAte, periodoPadrao,
+  anoMesCampo, financeiroAteUltimaValida, INDICADORES_PER_CAPITA, lerAnoMes, mascaraAnoMes, mesesPeriodo, montarGrade, periodoAte, periodoPadrao,
   TIPOS_PLANO, TIPOS_PRODUTO, validarAte, type AnoMes, type Celulas, type GradeComTotais, type IndicadorFinanceiro,
   type LinhaFinanceira, type LinhaProduto, type TipoProduto,
 } from "@/lib/evolucaoProdutos";
@@ -201,10 +202,10 @@ function Grade({ linhas, periodo, fmt = fmtInt, produto, onProduto }: GradeProps
   );
 }
 
-const EvolucaoProdutos = () => {
+function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
   const [visao, setVisao] = useState<Visao>("Vidas");
   const [modo, setModo] = useState<Modo>("Total");
-  const [periodo, setPeriodo] = useState<Periodo>(() => periodoAplicado ?? periodoPadrao(new Date()));
+  const [periodo, setPeriodo] = useState<Periodo>(() => periodoAplicado ?? periodoPadrao(ultima));
   const [produto, setProduto] = useState<TipoProduto | null>(null);
   const [ateCampo, setAteCampo] = useState(() => anoMesCampo(periodo.ate));
   const meses = useMemo(() => mesesPeriodo(periodo.de, periodo.ate), [periodo]);
@@ -228,7 +229,7 @@ const EvolucaoProdutos = () => {
   }, [periodo]);
 
   const vidasLinhas = vidasBrutas?.k === k ? vidasBrutas.linhas : null;
-  const fin = finBruto?.k === k ? finBruto.linhas : null;
+  const fin = useMemo(() => (finBruto?.k === k ? financeiroAteUltimaValida(finBruto.linhas, ultima) : null), [finBruto, k, ultima]);
 
   useEffect(() => { buscarVidas(); }, [buscarVidas]);
   // Financeiro só é buscado ao abrir uma visão financeira (uma vez por período para todas).
@@ -263,7 +264,7 @@ const EvolucaoProdutos = () => {
           onSubmit={(e) => { e.preventDefault(); aplicar(); }}
           className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 shadow-sm"
         >
-          <span className="flex items-center gap-1.5 text-sm text-muted-foreground" title="Sempre 12 meses até o mês final">
+          <span className="flex items-center gap-1.5 text-sm text-muted-foreground" title={`Sempre 12 meses até o mês final · valores em R$ até ${anoMesCampo(ultima)}, último mês com despesas acima de R$ 20 milhões`}>
             De
             <span className="w-[4.5rem] text-center text-sm tabular-nums text-foreground">{deMostrado}</span>
           </span>
@@ -336,6 +337,27 @@ const EvolucaoProdutos = () => {
         </section>
       </div>
     </div>
+  );
+};
+
+/** Abre no último mês com despesas acima de R$ 20 milhões (competência válida da sinistralidade). */
+const EvolucaoProdutos = () => {
+  const [ultima, setUltima] = useState<AnoMes | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+  const buscar = useCallback(() => {
+    setErro(null);
+    carregarUltimaCompetenciaValida()
+      .then((u) => (u ? setUltima(u) : setErro("nenhum mês da base tem despesas acima de R$ 20 milhões")))
+      .catch((e) => setErro(e instanceof Error ? e.message : String(e)));
+  }, []);
+  useEffect(() => { buscar(); }, [buscar]);
+  if (ultima) return <TelaEvolucaoProdutos ultima={ultima} />;
+  return (
+    <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
+      {erro ? <Aviso erro={erro} onRetry={buscar} /> : (
+        <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando…</p>
+      )}
+    </section>
   );
 };
 
