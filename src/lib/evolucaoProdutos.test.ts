@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { financeiroPorMes, perCapita, mesesPeriodo, PERIODO_EVOLUCAO_PRODUTOS, produtosPorMes, subtotalTipo, totalGeral, vidasPorMes } from "./evolucaoProdutos";
+import { financeiroPorMes, perCapita, lerAnoMes, mascaraAnoMes, mesesPeriodo, periodoPadrao, produtosPorMes, validarPeriodo, subtotalTipo, totalGeral, vidasPorMes } from "./evolucaoProdutos";
 
 describe("Evolução Produtos — período", () => {
-  const meses = mesesPeriodo(PERIODO_EVOLUCAO_PRODUTOS.de, PERIODO_EVOLUCAO_PRODUTOS.ate);
+  const meses = mesesPeriodo({ ano: 2025, mes: 10 }, { ano: 2026, mes: 9 });
   it("vai de 10/2025 a 09/2026, 12 meses", () => {
     expect(meses).toHaveLength(12);
     expect(meses[0].rotulo).toBe("Out/25");
@@ -108,5 +108,22 @@ describe("Evolução Produtos — período", () => {
     expect(pc[0].subtotais.PIF).toBe(10);
     expect(pc[0].total).toBeCloseTo(150.5 / 15, 10);
     expect(pc[1].total).toBeNull();
+  });
+  it("período inicial: 12 meses até dois meses antes do mês atual", () => {
+    expect(periodoPadrao(new Date(Date.UTC(2026, 10, 10)))).toEqual({ de: { ano: 2025, mes: 10 }, ate: { ano: 2026, mes: 9 } });
+    expect(periodoPadrao(new Date(Date.UTC(2027, 1, 5)))).toEqual({ de: { ano: 2026, mes: 1 }, ate: { ano: 2026, mes: 12 } });
+  });
+  it("valida o filtro De/Até", () => {
+    const hoje = new Date(Date.UTC(2026, 10, 10));
+    expect(lerAnoMes("10/2025")).toEqual({ ano: 2025, mes: 10 });
+    expect(lerAnoMes("13/2025")).toBeNull();
+    expect(lerAnoMes("10/25")).toBeNull();
+    expect(mascaraAnoMes("102025")).toBe("10/2025");
+    expect(mascaraAnoMes("10/20a25x")).toBe("10/2025");
+    expect(validarPeriodo(lerAnoMes("10/2025"), lerAnoMes("09/2026"), hoje)).toBeNull();
+    expect(validarPeriodo(lerAnoMes("09/2026"), lerAnoMes("10/2025"), hoje)).not.toBeNull();
+    expect(validarPeriodo(lerAnoMes("12/2018"), lerAnoMes("10/2025"), hoje)).not.toBeNull();
+    expect(validarPeriodo(lerAnoMes("01/2026"), lerAnoMes("12/2026"), hoje)).not.toBeNull();
+    expect(validarPeriodo(lerAnoMes("01/2026"), lerAnoMes("11/2026"), hoje)).toBeNull();
   });
 });
