@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { financeiroPorMes, perCapita, lerAnoMes, mascaraAnoMes, mesesPeriodo, periodoPadrao, produtosPorMes, validarAte, periodoAte, montarGrade, somaPeriodo, subtotalTipo, totalGeral, vidasPorMes } from "./evolucaoProdutos";
+import { financeiroPorMes, perCapita, lerAnoMes, mascaraAnoMes, mesesPeriodo, periodoPadrao, financeiroAteUltimaValida, produtosPorMes, validarAte, periodoAte, montarGrade, somaPeriodo, subtotalTipo, totalGeral, vidasPorMes } from "./evolucaoProdutos";
 
 describe("Evolução Produtos — período", () => {
   const meses = mesesPeriodo({ ano: 2025, mes: 10 }, { ano: 2026, mes: 9 });
@@ -109,9 +109,13 @@ describe("Evolução Produtos — período", () => {
     expect(pc[0].total).toBeCloseTo(160.5 / 15, 10);
     expect(pc[1].total).toBeNull();
   });
-  it("período inicial: 12 meses até dois meses antes do mês atual", () => {
-    expect(periodoPadrao(new Date(Date.UTC(2026, 10, 10)))).toEqual({ de: { ano: 2025, mes: 10 }, ate: { ano: 2026, mes: 9 } });
-    expect(periodoPadrao(new Date(Date.UTC(2027, 1, 5)))).toEqual({ de: { ano: 2026, mes: 1 }, ate: { ano: 2026, mes: 12 } });
+  it("período inicial: 12 meses até a última competência válida", () => {
+    expect(periodoPadrao({ ano: 2026, mes: 9 })).toEqual({ de: { ano: 2025, mes: 10 }, ate: { ano: 2026, mes: 9 } });
+    expect(periodoPadrao({ ano: 2026, mes: 12 })).toEqual({ de: { ano: 2026, mes: 1 }, ate: { ano: 2026, mes: 12 } });
+  });
+  it("valores em R$ depois da última competência válida ficam fora", () => {
+    const l = (nr_ano: number, nr_mes: number) => ({ nr_ano, nr_mes, sigla: "PIF", produto: "F50", rec_cpp: 1, rec_copart: 0, rec_outros: 0, desp_total: 1 });
+    expect(financeiroAteUltimaValida([l(2026, 9), l(2026, 10), l(2027, 1)], { ano: 2026, mes: 9 }).map((x) => x.nr_mes)).toEqual([9]);
   });
   it("valida o filtro De/Até", () => {
     const hoje = new Date(Date.UTC(2026, 10, 10));

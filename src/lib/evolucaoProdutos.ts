@@ -3,8 +3,6 @@
 // Tipo de produto (carteira_evolucao_produtos): Fácil 50 = plano MV 168–173; demais pela recuperação
 // (CONVENCIONAL / COPARTICIPACAO) da vigência mais recente da matrícula.
 
-import { DEFASAGEM_DESPESAS_MESES } from "./sinistralidadeCompetencias";
-
 export type AnoMes = { ano: number; mes: number };
 /** Primeiro mês que a tela aceita (início do cálculo de vidas na carteira). */
 export const INICIO_EVOLUCAO_PRODUTOS: AnoMes = { ano: 2019, mes: 1 };
@@ -12,9 +10,9 @@ export const INICIO_EVOLUCAO_PRODUTOS: AnoMes = { ano: 2019, mes: 1 };
 const idxMes = (a: AnoMes) => a.ano * 12 + (a.mes - 1);
 const deIdx = (i: number): AnoMes => ({ ano: Math.floor(i / 12), mes: (i % 12) + 1 });
 
-/** Período inicial: os 12 meses até o último mês com despesas completas (mês atual − defasagem, em UTC). */
-export function periodoPadrao(hoje: Date): { de: AnoMes; ate: AnoMes } {
-  const ate = hoje.getUTCFullYear() * 12 + hoje.getUTCMonth() - DEFASAGEM_DESPESAS_MESES;
+/** Período inicial: os 12 meses até a última competência válida (despesas da base acima de R$ 20 milhões). */
+export function periodoPadrao(ultimaValida: AnoMes): { de: AnoMes; ate: AnoMes } {
+  const ate = idxMes(ultimaValida);
   return { de: deIdx(ate - 11), ate: deIdx(ate) };
 }
 
@@ -145,6 +143,9 @@ export type LinhaFinanceira = {
   rec_cpp: Num; rec_copart: Num; rec_outros: Num; desp_total: Num; rec_total?: Num;
 };
 const n0 = (v: Num) => Number(v) || 0;
+/** Valores em R$ só até a última competência válida; meses seguintes (despesas incompletas) ficam "Sem dado". */
+export const financeiroAteUltimaValida = (linhas: LinhaFinanceira[], ultima: AnoMes) =>
+  linhas.filter((l) => idxMes({ ano: Number(l.nr_ano), mes: Number(l.nr_mes) }) <= idxMes(ultima));
 const receita = (l: LinhaFinanceira) => n0(l.rec_cpp) + n0(l.rec_outros);
 const coparticipacao = (l: LinhaFinanceira) => n0(l.rec_copart);
 const totalReceitas = (l: LinhaFinanceira) => receita(l) + coparticipacao(l);

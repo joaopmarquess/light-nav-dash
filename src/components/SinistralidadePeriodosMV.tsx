@@ -2,9 +2,10 @@ import { Fragment, useCallback, useEffect, useId, useRef, useState } from "react
 import { AlertCircle, CalendarRange, ChevronDown, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, RefreshCw } from "lucide-react";
 import { Area, CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { hostinger } from "@/lib/hostingerClient";
+import { carregarUltimaCompetenciaValida, limparCacheSinistralidade, totaisDoAno } from "@/lib/sinistralidadeValida";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { agruparPorAno, anosSinistralidade, dominioCentrado, saldoCompetencia, saldoLimiteSin, sinistralidade, somaVazia, somarTotais, type AnoAgrupado, type SomaCompetencia } from "@/lib/sinistralidadeCompetencias";
+import { agruparPorAno, ANO_INICIO_SINISTRALIDADE, anosSinistralidade, dominioCentrado, saldoCompetencia, saldoLimiteSin, sinistralidade, somaVazia, somarTotais, type AnoAgrupado, type SomaCompetencia } from "@/lib/sinistralidadeCompetencias";
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 type Col = "recCpp" | "recCopart" | "recTotal" | "despTotal" | "saldo" | "sin";
@@ -48,11 +49,15 @@ export default function SinistralidadePeriodosMV() {
     ctrl.current = controller;
     setLoading(true);
     try {
-      const res = await Promise.all(anosSinistralidade(new Date()).map(async ({ ano, ateMes }) => {
+      if (forcar) limparCacheSinistralidade();
+      // Vai até a última competência com despesas acima de R$ 20 milhões (meses seguintes ainda incompletos).
+      if (v === "geral") for (let a = ANO_INICIO_SINISTRALIDADE; a <= new Date().getUTCFullYear(); a++) void totaisDoAno(a).catch(() => undefined); // busca os anos em paralelo
+      const ultima = await carregarUltimaCompetenciaValida();
+      if (!ultima) throw new Error("sem-competencia-valida");
+      const res = await Promise.all(anosSinistralidade(ultima).map(async ({ ano, ateMes }) => {
         // Geral continua na função original; Fácil 50 e Demais usam a função com visão.
-        const r = v === "geral"
-          ? await hostinger.rpc("sinistralidade_mv_competencias", { p_ano: ano, p_ate_mes: ateMes }).abortSignal(controller.signal)
-          : await hostinger.rpc("sinistralidade_mv_competencias_grupo", { p_ano: ano, p_ate_mes: ateMes, p_grupo: v }).abortSignal(controller.signal);
+        if (v === "geral") return (await totaisDoAno(ano)).filter(d => Number(d.nr_mes) <= ateMes);
+        const r = await hostinger.rpc("sinistralidade_mv_competencias_grupo", { p_ano: ano, p_ate_mes: ateMes, p_grupo: v }).abortSignal(controller.signal);
         if (r.error) throw r.error;
         return (r.data ?? []) as Rpc[];
       }));
@@ -63,7 +68,9 @@ export default function SinistralidadePeriodosMV() {
     } catch (e) {
       if (controller.signal.aborted) return;
       const msg = String((e as { message?: string })?.message ?? e);
-      setError(v !== "geral" && /does not exist|Could not find/i.test(msg)
+      setError(msg === "sem-competencia-valida"
+        ? "Nenhum mês da base tem despesas acima de R$ 20 milhões."
+        : v !== "geral" && /does not exist|Could not find/i.test(msg)
         ? "O cálculo das visões Fácil 50 e Demais ainda não foi instalado na base de sinistralidade."
         : "Não foi possível consultar a sinistralidade. Tente novamente.");
     } finally {
