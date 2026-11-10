@@ -4,6 +4,7 @@ import CarteiraTrialMov from "@/components/CarteiraTrialMov";
 import EvolucaoProdutos from "@/components/EvolucaoProdutos";
 import MovimentacaoEvolucaoMensal from "@/components/MovimentacaoEvolucaoMensal";
 import BenchVidas from "@/components/BenchVidas";
+import LaboratoryNav from "@/components/LaboratoryNav";
 import CarteiraTabelas from "@/components/CarteiraTabelas";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -480,36 +481,11 @@ const Index = () => {
           </div>
         </header>
 
-        <main className={`flex-1 min-h-0 overflow-hidden flex flex-col ${active === "Área Geográfica" || active === "Dashboard" ? "" : active === "Carteira · Bench Vidas" ? "p-3 sm:p-8" : "p-8"}`}>
+        <main className={`flex-1 min-h-0 overflow-hidden flex ${LAB_IDS.has(active) ? "flex-row gap-4" : "flex-col"} ${active === "Área Geográfica" || active === "Dashboard" ? "" : active === "Carteira · Bench Vidas" ? "p-3 sm:p-8" : "p-8"}`}>
           {LAB_IDS.has(active) && (
-            <nav aria-label="Menu Laboratory" className="mb-4 flex shrink-0 flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-2 shadow-sm">
-              <button disabled={!can("Laboratory")} type="button" onClick={() => setActive("Laboratory")} className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-primary hover:bg-accent`}>
-                <FlaskConical className="h-4 w-4" />Laboratory
-              </button>
-              {visibleLabs.map((g) => {
-                const filhos = g.children ?? [{ icon: g.icon, label: g.label }];
-                const ativo = filhos.some((c) => (c.id ?? c.label) === active);
-                if (!g.children) return (
-                  <button key={g.label} type="button" onClick={() => setActive(g.label)} className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm ${ativo ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-accent"}`}><g.icon className="h-4 w-4" />{g.label}</button>
-                );
-                return (
-                  <DropdownMenu key={g.label} onOpenChange={(o) => setLabMenuAberto(o ? g.label : null)}>
-                    <DropdownMenuTrigger className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm ${ativo ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-accent"}`}>
-                      <g.icon className="h-4 w-4" />{g.label.trim()}<ChevronDown className="h-3 w-3" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                      {filhos.map((c) => (
-                        <DropdownMenuItem key={c.id ?? c.label} onSelect={() => setActive(c.id ?? c.label)}>
-                          <c.icon className="mr-2 h-4 w-4" />{c.label}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                );
-              })}
-            </nav>
+            <LaboratoryNav items={visibleLabs} active={active} canHome={can("Laboratory")} onSelect={setActive} onMenuOpenChange={setLabMenuAberto} />
           )}
-          <div className="min-h-0 flex-1">
+          <div className="min-h-0 min-w-0 flex-1">
           {accessLoading ? <p className="text-sm text-muted-foreground">Carregando acessos…</p> : !can(active) ? <p className="text-sm text-muted-foreground">Nenhum menu autorizado. Solicite acesso ao administrador.</p> : active === "Área Geográfica" ? (
             <AtivosEm dateValue={dateValue} />
           ) : active === "Ativos por Cidade" ? (
