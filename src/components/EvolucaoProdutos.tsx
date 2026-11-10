@@ -55,8 +55,8 @@ const DICAS: Partial<Record<Visao, string>> = {
   Despesas: "Consulta + urgência + internação + terapia + exame + outros · view_eard_mensal",
 };
 
-const Valor = ({ v }: { v: number | null }) =>
-  v == null ? <span className="text-sm font-normal text-muted-foreground">Sem dado</span> : <>{fmtInt(v)}</>;
+const Valor = ({ v, claro = false }: { v: number | null; claro?: boolean }) =>
+  v == null ? <span className={`text-sm font-normal ${claro ? "text-primary-foreground/80" : "text-muted-foreground"}`}>Sem dado</span> : <>{fmtInt(v)}</>;
 
 const naoInstalado = (e: string) => /could not find the function/i.test(e);
 
@@ -128,7 +128,7 @@ function Grade({ linhas }: { linhas: LinhaGrade[] }) {
             </th>
             {linhas.map((m) => (
               <td key={m.dataFim} className="rounded-lg bg-primary px-2 py-1.5 text-base font-bold tabular-nums text-primary-foreground">
-                <Valor v={totalGeral(m.valores)} />
+                <Valor v={totalGeral(m.valores)} claro />
               </td>
             ))}
           </tr>
