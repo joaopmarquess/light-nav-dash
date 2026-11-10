@@ -205,7 +205,7 @@ const EvolucaoProdutos = () => {
               aria-pressed={modo === m}
               disabled={!aceitaPerCapita}
               onClick={() => setModo(m)}
-              className={`h-8 rounded-full px-4 text-sm ${modo === m ? "bg-secondary font-semibold text-secondary-foreground hover:bg-secondary hover:text-secondary-foreground" : "bg-muted"}`}
+              className={`h-8 rounded-full px-4 text-sm ${modo === m ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "bg-muted"}`}
             >
               {m}
             </Button>
