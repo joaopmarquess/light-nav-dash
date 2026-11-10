@@ -51,7 +51,7 @@ function Campo({ label, value }: { label: string; value: React.ReactNode }) {
 }
 function Bloco({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
+    <div className="rounded-lg border border-border bg-muted/20 p-4">
       <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{titulo}</h4>
       <div className="grid grid-cols-2 gap-x-4 gap-y-3 md:grid-cols-3">{children}</div>
     </div>
@@ -103,7 +103,7 @@ function ResultadoAssistencial({ eard, ate, escopo, onEscopo, familia, familiaLo
     return <span className={l.key === "saldo" && v < 0 ? "text-destructive" : undefined}>{fmtDec(v)}</span>;
   };
   return (
-    <div className="space-y-3 rounded-lg border border-border bg-card p-4">
+    <div className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <div className="flex flex-wrap items-center gap-3">
           <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Receitas, despesas, saldo e sinistralidade</h4>
@@ -311,8 +311,8 @@ export default function PainelBeneficiario() {
   const EardPend = () => <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando dados assistenciais…</div>;
 
   return (
-    <section className="flex min-h-full flex-col gap-5">
-      <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
+    <section className="flex h-full min-h-0 flex-col gap-3">
+      <div className="shrink-0 rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
         <div className={`min-w-0 ${painelBenef ? "lg:w-[min(36rem,45%)] lg:shrink-0" : "w-full"}`}>
         <div className={modo === "alternativa" ? "grid w-fit max-w-full" : ""}>
@@ -422,8 +422,18 @@ export default function PainelBeneficiario() {
 
       {atual && !carregando && (
         <>
-
-
+          <nav aria-label="Seções do beneficiário" className="shrink-0 overflow-x-auto py-0.5">
+            <div className="mx-auto flex w-max gap-0.5 rounded-full border border-border bg-card p-1.5 shadow-sm">
+              {ABAS.map((a) => (
+                <Button key={a.id} type="button" variant={aba === a.id ? "default" : "ghost"} aria-pressed={aba === a.id}
+                  onClick={() => setAba(a.id)} className="h-8 rounded-full px-3 text-[13px]">
+                  <a.icon className="h-4 w-4" />{a.label}
+                </Button>
+              ))}
+            </div>
+          </nav>
+          {/* Formato único: um só quadro de conteúdo, limitado ao fim da tela, com rolagem interna. */}
+          <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border border-border bg-card p-4 shadow-sm">
           {aba === "resumo" && (
             <div className="grid gap-4 lg:grid-cols-2">
               <Bloco titulo="Dados principais">
@@ -432,7 +442,7 @@ export default function PainelBeneficiario() {
                 <Campo label="Contrato" value={atual.cd_contrato} /><Campo label="Estipulante" value={atual.nm_empresa_estipulante} />
                 <Campo label="Vigência" value={fmtD(atual.dt_vigencia_beneficiario)} /><Campo label="Status" value={st.label} />
               </Bloco>
-              <div className="rounded-lg border border-border bg-card p-4">
+              <div className="rounded-lg border border-border bg-muted/20 p-4">
                 <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Assistencial e financeiro (todo o histórico)</h4>
                 {eardLoading ? <EardPend /> : resumo && eard!.length ? (
                   <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -532,7 +542,7 @@ export default function PainelBeneficiario() {
                 </div>
               )}
               <div className="grid gap-4 lg:grid-cols-3">
-                <div className="rounded-lg border border-border bg-card p-4 lg:col-span-2">
+                <div className="rounded-lg border border-border bg-muted/20 p-4 lg:col-span-2">
                   <h4 className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Evolução mensal da despesa assistencial</h4>
                   <div className="h-64"><ResponsiveContainer>
                     <BarChart data={eard.map((r) => ({ comp: fmtComp(r.dt_competencia), ...Object.fromEntries(CATEGORIAS_DESPESA.map((c) => [c.label, Number(r[c.key] ?? 0)])) }))}>
@@ -542,7 +552,7 @@ export default function PainelBeneficiario() {
                     </BarChart>
                   </ResponsiveContainer></div>
                 </div>
-                <div className="rounded-lg border border-border bg-card p-4">
+                <div className="rounded-lg border border-border bg-muted/20 p-4">
                   <h4 className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Composição (todo o histórico)</h4>
                   {resumo!.porCategoria.map((c) => { const p = resumo!.despesa > 0 ? (c.valor / resumo!.despesa) * 100 : 0; return (
                     <div key={c.key} className="mb-2">
@@ -575,16 +585,7 @@ export default function PainelBeneficiario() {
               ))}
             </ol>
           )}
-          <nav aria-label="Seções do beneficiário" className="sticky bottom-3 z-20 mt-auto overflow-x-auto py-1">
-            <div className="mx-auto flex w-max gap-0.5 rounded-full border border-border bg-card/95 p-1.5 shadow-lg backdrop-blur">
-              {ABAS.map((a) => (
-                <Button key={a.id} type="button" variant={aba === a.id ? "default" : "ghost"} aria-pressed={aba === a.id}
-                  onClick={() => setAba(a.id)} className="h-8 rounded-full px-3 text-[13px]">
-                  <a.icon className="h-4 w-4" />{a.label}
-                </Button>
-              ))}
-            </div>
-          </nav>
+          </div>
         </>
       )}
     </section>
