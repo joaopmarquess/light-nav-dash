@@ -70,30 +70,30 @@ describe("Evolução Produtos — período", () => {
     expect(rec[0].foraDosTotais).toBe(7);
     expect(rec[1].valores.PCA.F50).toBeNull();
   });
-  it("Coparticipação usa vl_rec_copart", () => {
-    expect(financeiroPorMes(meses, fin, "Coparticipação")[0].total).toBe(30);
+  it("Coparticipação soma vl_rec_copart e vl_rec_outros", () => {
+    expect(financeiroPorMes(meses, fin, "Coparticipação")[0].total).toBe(40);
   });
-  it("Total Receitas = Receita + Coparticipação (sem outras receitas)", () => {
+  it("Total Receitas = Receita + Coparticipação (com outras receitas)", () => {
     const t = financeiroPorMes(meses, fin, "Total Receitas");
-    expect(t[0].valores.PCA.F50).toBe(120.5);
-    expect(t[0].subtotais.PIF).toBe(60);
-    expect(t[0].total).toBe(180.5);
+    expect(t[0].valores.PCA.F50).toBe(129.5);
+    expect(t[0].subtotais.PIF).toBe(61);
+    expect(t[0].total).toBe(190.5);
   });
   it("Despesas soma desp_total", () => {
     expect(financeiroPorMes(meses, fin, "Despesas")[0].total).toBe(170);
   });
   it("Saldo = Total Receitas − Despesas", () => {
     const s = financeiroPorMes(meses, fin, "Saldo");
-    expect(s[0].valores.PCA.F50).toBe(40.5);
-    expect(s[0].subtotais.PIF).toBe(-30);
-    expect(s[0].total).toBe(10.5);
+    expect(s[0].valores.PCA.F50).toBe(49.5);
+    expect(s[0].subtotais.PIF).toBe(-29);
+    expect(s[0].total).toBe(20.5);
   });
   it("Sinistralidade = Despesas ÷ Total Receitas, com subtotal e total pela razão das somas", () => {
     const s = financeiroPorMes(meses, fin, "Sinistralidade");
-    expect(s[0].valores.PIF.COP).toBe(1.5);
+    expect(s[0].valores.PIF.COP).toBeCloseTo(90 / 61, 10);
     expect(s[0].valores.PIF.CONV).toBeNull();
-    expect(s[0].subtotais.PIF).toBe(1.5);
-    expect(s[0].total).toBeCloseTo(170 / 180.5, 10);
+    expect(s[0].subtotais.PIF).toBeCloseTo(90 / 61, 10);
+    expect(s[0].total).toBeCloseTo(170 / 190.5, 10);
     expect(s[1].total).toBeNull();
   });
 });
