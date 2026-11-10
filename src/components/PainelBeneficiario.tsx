@@ -422,15 +422,13 @@ export default function PainelBeneficiario() {
 
       {atual && !carregando && (
         <>
-          <nav aria-label="Seções do beneficiário" className="shrink-0 overflow-x-auto py-0.5">
-            <div className="mx-auto flex w-max gap-0.5 rounded-full border border-border bg-card p-1.5 shadow-sm">
-              {ABAS.map((a) => (
-                <Button key={a.id} type="button" variant={aba === a.id ? "default" : "ghost"} aria-pressed={aba === a.id}
-                  onClick={() => setAba(a.id)} className="h-8 rounded-full px-3 text-[13px]">
-                  <a.icon className="h-4 w-4" />{a.label}
-                </Button>
-              ))}
-            </div>
+          <nav aria-label="Seções do beneficiário" className="flex shrink-0 flex-wrap gap-1 border-b border-border">
+            {ABAS.map((a) => (
+              <button key={a.id} type="button" aria-pressed={aba === a.id} onClick={() => setAba(a.id)}
+                className={`-mb-px inline-flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm transition-colors ${aba === a.id ? "border-primary font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
+                <a.icon className="h-4 w-4" />{a.label}
+              </button>
+            ))}
           </nav>
           {/* Formato único: um só quadro de conteúdo, limitado ao fim da tela, com rolagem interna. */}
           <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border border-border bg-card p-4 shadow-sm">
