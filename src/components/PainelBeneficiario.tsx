@@ -59,10 +59,10 @@ function Bloco({ titulo, children }: { titulo: string; children: React.ReactNode
 }
 function Card({ label, value, sub }: { label: string; value: React.ReactNode; sub?: string }) {
   return (
-    <div className="rounded-lg border border-border bg-card px-4 py-3">
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="mt-1 text-lg font-semibold text-foreground truncate">{value}</div>
-      {sub && <div className="text-[11px] text-muted-foreground">{sub}</div>}
+    <div className="rounded-lg border border-border bg-card px-3 py-1.5">
+      <div className="text-[10px] uppercase leading-tight tracking-wide text-muted-foreground">{label}</div>
+      <div className="truncate text-base font-semibold leading-snug text-foreground">{value}</div>
+      {sub && <div className="truncate text-[11px] leading-tight text-muted-foreground">{sub}</div>}
     </div>
   );
 }
@@ -412,7 +412,7 @@ export default function PainelBeneficiario() {
 
       {atual && !carregando && (
         <>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-6">
             <Card label="Status" value={st.label} sub={atual.tp_status === "S" ? fmtD(atual.dt_suspensao) ?? undefined : atual.tp_status === "C" ? `desde ${fmtD(atual.dt_desligamento) ?? "—"}` : undefined} />
             <Card label="Plano" value={atual.cd_plano_alternativo ?? atual.cd_plano} sub={atual.tp_acomodacao ?? undefined} />
             <Card label="Idade" value={idade ?? "—"} sub={atual.ds_faixa_etaria ?? undefined} />
