@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { comporCodigoAlternativo, registroAtual, statusInfo, resumoEard, porCompetencia, type EardRow } from "./painelBeneficiario";
+import { comporCodigoAlternativo, registroAtual, statusInfo, resumoEard, porCompetencia, periodoAssistencial, resultadoAssistencial, type EardRow } from "./painelBeneficiario";
 
 const mes = (c: number, cpp: number, outros: number): EardRow => ({ dt_competencia: c, vl_rec_cpp: cpp, vl_rec_copart: 0, vl_rec_outros: 0, vl_desp_consulta: 0, vl_desp_urgencia: 0, vl_desp_internacao: 0, vl_desp_terapia: 0, vl_desp_exame: 0, vl_desp_outros: outros });
 
@@ -49,5 +49,39 @@ describe("painel beneficiário", () => {
     const g = porCompetencia([mes(202410, 100, 10), mes(202409, 50, 0), mes(202410, 20, 5)]);
     expect(g.map((x) => x.dt_competencia)).toEqual([202409, 202410]);
     expect(g[1].vl_rec_cpp).toBe(120);
+  });
+});
+
+describe("assistencial do beneficiário (12 meses)", () => {
+  const linha = (c: number, cpp: number, copart: number, outros: number, desp: number): EardRow => ({ ...mes(c, cpp, desp), vl_rec_copart: copart, vl_rec_outros: outros });
+  it("em novembro/2026 o período vai de 09/2025 a 08/2026", () => {
+    const p = periodoAssistencial(new Date(2026, 10, 10));
+    expect(p).toHaveLength(12);
+    expect(p[0]).toBe(202509);
+    expect(p.at(-1)).toBe(202608);
+  });
+  it("em fevereiro/2027 o período vai de 12/2025 a 11/2026", () => {
+    const p = periodoAssistencial(new Date(2027, 1, 1));
+    expect([p[0], p.at(-1)]).toEqual([202512, 202611]);
+  });
+  it("receita soma mensalidade e outras receitas; total receitas inclui coparticipação", () => {
+    const r = resultadoAssistencial([linha(202608, 400, 50, 10, 0)], [202608]).meses[0];
+    expect(r.receita).toBe(410);
+    expect(r.copart).toBe(50);
+    expect(r.totalReceitas).toBe(460);
+  });
+  it("saldo = total receitas − despesas e sinistralidade = despesas ÷ total receitas", () => {
+    const r = resultadoAssistencial([linha(202608, 400, 50, 10, 230)], [202608]).meses[0];
+    expect(r.saldo).toBe(230);
+    expect(r.sinistralidade).toBe(0.5);
+  });
+  it("sinistralidade do período é a razão das somas, não a soma dos percentuais", () => {
+    const t = resultadoAssistencial([linha(202607, 100, 0, 0, 200), linha(202608, 300, 0, 0, 0)], [202607, 202608]).total;
+    expect(t.sinistralidade).toBe(0.5);
+  });
+  it("meses fora do período não entram e meses sem registro ficam sem dado", () => {
+    const r = resultadoAssistencial([linha(202508, 999, 0, 0, 999), linha(202608, 100, 0, 0, 50)], [202607, 202608]);
+    expect(r.meses[0].temDado).toBe(false);
+    expect(r.total.totalReceitas).toBe(100);
   });
 });
