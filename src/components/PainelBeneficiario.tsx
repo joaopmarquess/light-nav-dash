@@ -5,8 +5,8 @@ import { hostinger } from "@/lib/hostingerClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  CATEGORIAS_DESPESA, comporCodigoAlternativo, despesaMes, linhaDoTempo, porCompetencia, receitaMes, registroAtual, resumoEard, statusInfo,
-  type CarteiraRow, type EardRow,
+  CATEGORIAS_DESPESA, comporCodigoAlternativo, despesaMes, linhaDoTempo, periodoAssistencial, porCompetencia, receitaMes, registroAtual, resultadoAssistencial, resumoEard, statusInfo,
+  type CarteiraRow, type EardRow, type ResultadoMes,
 } from "@/lib/painelBeneficiario";
 
 type Modo = "nome" | "cpf" | "matricula" | "contrato" | "alternativa";
@@ -62,6 +62,62 @@ function Card({ label, value, sub }: { label: string; value: React.ReactNode; su
       <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
       <div className="mt-1 text-lg font-semibold text-foreground truncate">{value}</div>
       {sub && <div className="text-[11px] text-muted-foreground">{sub}</div>}
+    </div>
+  );
+}
+
+const fmtDec = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtPct = (v: number | null) => (v == null ? "—" : `${(v * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`);
+const MES_ABREV = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+const fmtMesCurto = (c: number) => `${MES_ABREV[(c % 100) - 1]}/${String(Math.floor(c / 100)).slice(2)}`;
+const LINHAS_RESULTADO: { key: keyof ResultadoMes; label: string; tip: string; destaque?: boolean; pct?: boolean }[] = [
+  { key: "receita", label: "Receita", tip: "vl_rec_cpp + vl_rec_outros" },
+  { key: "copart", label: "Coparticipação", tip: "vl_rec_copart" },
+  { key: "totalReceitas", label: "Total Receitas", tip: "Receita + Coparticipação", destaque: true },
+  { key: "despesa", label: "Despesas", tip: "Soma das seis colunas vl_desp_*", destaque: true },
+  { key: "saldo", label: "Saldo", tip: "Total Receitas − Despesas", destaque: true },
+  { key: "sinistralidade", label: "Sinistralidade", tip: "Despesas ÷ Total Receitas", pct: true },
+];
+
+function ResultadoAssistencial({ eard }: { eard: EardRow[] }) {
+  const meses = useMemo(() => periodoAssistencial(), []);
+  const { meses: linhas, total } = useMemo(() => resultadoAssistencial(eard, meses), [eard, meses]);
+  const celula = (m: ResultadoMes, l: (typeof LINHAS_RESULTADO)[number]) => {
+    if (!m.temDado) return <span className="text-muted-foreground/60">—</span>;
+    if (l.pct) return fmtPct(m.sinistralidade);
+    const v = m[l.key] as number;
+    return <span className={l.key === "saldo" && v < 0 ? "text-destructive" : undefined}>{fmtDec(v)}</span>;
+  };
+  return (
+    <div className="space-y-3 rounded-lg border border-border bg-card p-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Receitas, despesas, saldo e sinistralidade</h4>
+        <span className="text-xs text-muted-foreground">{fmtComp(meses[0])} a {fmtComp(meses.at(-1)!)} · 12 meses</span>
+      </div>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Card label="Total Receitas" value={total.temDado ? fmtR(total.totalReceitas) : "—"} sub="no período" />
+        <Card label="Despesas" value={total.temDado ? fmtR(total.despesa) : "—"} sub="no período" />
+        <Card label="Saldo" value={total.temDado ? <span className={total.saldo < 0 ? "text-destructive" : undefined}>{fmtR(total.saldo)}</span> : "—"} sub="Total Receitas − Despesas" />
+        <Card label="Sinistralidade" value={total.temDado ? fmtPct(total.sinistralidade) : "—"} sub="Despesas ÷ Total Receitas" />
+      </div>
+      {!total.temDado ? <p className="text-sm text-muted-foreground">Sem registros desta matrícula no período.</p> : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs tabular-nums">
+            <thead className="bg-muted/50 text-[10px] uppercase text-muted-foreground">
+              <tr><th className="sticky left-0 bg-muted px-2 py-1.5 text-left">Indicador</th>
+                {linhas.map((m) => <th key={m.comp} className="px-2 text-right font-semibold text-foreground">{fmtMesCurto(m.comp)}</th>)}
+                <th className="px-2 text-right font-semibold text-foreground">Total</th></tr>
+            </thead>
+            <tbody>{LINHAS_RESULTADO.map((l) => (
+              <tr key={l.key} className={`border-t border-border ${l.destaque ? "font-medium" : ""}`}>
+                <td className="sticky left-0 bg-card px-2 py-1.5 text-left" title={l.tip}>{l.label}</td>
+                {linhas.map((m) => <td key={m.comp} className="whitespace-nowrap px-2 text-right">{celula(m, l)}</td>)}
+                <td className="whitespace-nowrap bg-muted/40 px-2 text-right font-semibold">{celula(total, l)}</td>
+              </tr>))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
@@ -134,7 +190,7 @@ export default function PainelBeneficiario() {
       const atual = registroAtual(rows);
       const contrato = b.data?.[0]?.cd_contrato_mv ?? atual?.cd_contrato;
       setEardLoading(true);
-      let qe = hostinger.from("view_eard_mensal").select(COLS_EARD).eq("cd_matricula", m).order("dt_competencia").limit(1000);
+      let qe = hostinger.from("view_eard_mensal").select(COLS_EARD).eq("cd_matricula", m).order("dt_competencia", { ascending: false }).limit(1000); // mais recentes primeiro: o limite nunca corta o período assistencial
       if (contrato) qe = qe.eq("cd_contrato_mv", contrato); // filtro por contrato acelera a consulta
       qe.then(({ data, error }) => {
         if (!error) { const g = porCompetencia((data ?? []) as unknown as EardRow[]); setEard(g); setComp(g.at(-1)?.dt_competencia ?? null); }
@@ -365,8 +421,9 @@ export default function PainelBeneficiario() {
             </div>
           )}
 
-          {aba === "assist" && (eardLoading ? <EardPend /> : !eard || eard.length === 0 ? <p className="text-sm text-muted-foreground">Sem registros assistenciais para esta matrícula.</p> : (
+          {aba === "assist" && (eardLoading ? <EardPend /> : !eard || eard.length === 0 ? <div className="space-y-4"><ResultadoAssistencial eard={[]} /><p className="text-sm text-muted-foreground">Sem registros assistenciais para esta matrícula.</p></div> : (
             <div className="space-y-4">
+              <ResultadoAssistencial eard={eard} />
               <div className="flex items-center gap-2 text-sm">
                 <span className="text-muted-foreground">Competência</span>
                 <select value={comp ?? ""} onChange={(e) => setComp(Number(e.target.value))} className="h-8 rounded-md border border-border bg-background px-2 text-sm">

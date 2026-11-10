@@ -127,3 +127,35 @@ export function linhaDoTempo(rows: CarteiraRow[], cad?: Record<string, any> | nu
   }
   return ev.sort((x, y) => x.data.localeCompare(y.data));
 }
+
+/** Assistencial: últimos 12 meses terminando três meses antes do mês atual (nov/2026 → 09/2025 a 08/2026). */
+export const DEFASAGEM_ASSISTENCIAL_MESES = 3;
+const somaMes = (aaaamm: number, delta: number) => {
+  const t = Math.floor(aaaamm / 100) * 12 + (aaaamm % 100) - 1 + delta;
+  return Math.floor(t / 12) * 100 + (t % 12) + 1;
+};
+export function periodoAssistencial(hoje: Date = new Date()): number[] {
+  const atual = hoje.getFullYear() * 100 + hoje.getMonth() + 1;
+  const ate = somaMes(atual, -DEFASAGEM_ASSISTENCIAL_MESES);
+  return Array.from({ length: 12 }, (_, i) => somaMes(ate, i - 11));
+}
+
+export type ResultadoMes = {
+  comp: number; temDado: boolean;
+  receita: number; copart: number; totalReceitas: number; despesa: number; saldo: number; sinistralidade: number | null;
+};
+/** Receita = mensalidade + outras receitas; Total Receitas = Receita + Coparticipação;
+ *  Saldo = Total Receitas − Despesas; Sinistralidade = Despesas ÷ Total Receitas (razão das somas no total). */
+export function resultadoAssistencial(rows: EardRow[], meses: number[]): { meses: ResultadoMes[]; total: ResultadoMes } {
+  const porMes = new Map(porCompetencia(rows).map((r) => [r.dt_competencia, r]));
+  const monta = (comp: number, receita: number, copart: number, despesa: number, temDado: boolean): ResultadoMes => {
+    const totalReceitas = receita + copart;
+    return { comp, temDado, receita, copart, totalReceitas, despesa, saldo: totalReceitas - despesa, sinistralidade: totalReceitas > 0 ? despesa / totalReceitas : null };
+  };
+  const lista = meses.map((c) => {
+    const r = porMes.get(c);
+    return r ? monta(c, n(r.vl_rec_cpp) + n(r.vl_rec_outros), n(r.vl_rec_copart), despesaMes(r), true) : monta(c, 0, 0, 0, false);
+  });
+  const s = (k: "receita" | "copart" | "despesa") => lista.reduce((a, m) => a + m[k], 0);
+  return { meses: lista, total: monta(0, s("receita"), s("copart"), s("despesa"), lista.some((m) => m.temDado)) };
+}
