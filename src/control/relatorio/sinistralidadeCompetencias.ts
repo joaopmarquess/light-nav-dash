@@ -48,17 +48,32 @@ export const sinistralidade = (s: SomaCompetencia) => (s.recTotal ? s.despTotal 
 export interface MesSoma { ano: number; mes: number; soma: SomaCompetencia }
 export interface AnoAgrupado { ano: number; soma: SomaCompetencia; meses: MesSoma[] }
 
-/** Últimos 3 anos: dois anteriores completos e o atual até o mês anterior ao corrente (UTC); o mês corrente é ignorado. */
-/** Defasagem das despesas: o mês anterior ao atual ainda não tem despesas completas. */
-export const DEFASAGEM_DESPESAS_MESES = 2;
+/** Mês válido: competência (mm/aaaa) com despesa total acima de R$ 20 milhões. */
+export const DESPESA_MINIMA_COMPETENCIA = 20_000_000;
+/** Primeiro ano da base de sinistralidade. */
+export const ANO_INICIO_SINISTRALIDADE = 2022;
+export type Competencia = { ano: number; mes: number };
+export type TotalCompetencia = { nr_ano: number | string; nr_mes: number | string; desp_total: number | string | null };
 
-export function anosSinistralidade(hoje: Date): { ano: number; ateMes: number }[] {
-  // Último mês com despesas completas = mês atual menos a defasagem (em novembro, vai até setembro).
-  const ultimo = hoje.getUTCFullYear() * 12 + hoje.getUTCMonth() - DEFASAGEM_DESPESAS_MESES;
-  const anoFim = Math.floor(ultimo / 12);
+/** Última competência válida: a mais recente com despesa total acima de R$ 20 milhões (null se nenhuma). */
+export function ultimaCompetenciaValida(totais: TotalCompetencia[]): Competencia | null {
+  let k: number | null = null;
+  for (const t of totais) {
+    if (!((Number(t.desp_total) || 0) > DESPESA_MINIMA_COMPETENCIA)) continue;
+    const i = Number(t.nr_ano) * 12 + Number(t.nr_mes) - 1;
+    if (k == null || i > k) k = i;
+  }
+  return k == null ? null : { ano: Math.floor(k / 12), mes: (k % 12) + 1 };
+}
+
+/** Competência até a última válida (inclusive); os meses seguintes ainda não têm despesas completas. */
+export const ateCompetencia = (ano: number, mes: number, ultima: Competencia) => ano * 12 + mes <= ultima.ano * 12 + ultima.mes;
+
+/** Anos de 2022 até a última competência válida; o último ano vai até o mês dela. */
+export function anosSinistralidade(ultima: Competencia): { ano: number; ateMes: number }[] {
   const lista = [];
-  for (let y = 2022; y < anoFim; y++) lista.push({ ano: y, ateMes: 12 });
-  lista.push({ ano: anoFim, ateMes: (ultimo % 12) + 1 });
+  for (let y = ANO_INICIO_SINISTRALIDADE; y < ultima.ano; y++) lista.push({ ano: y, ateMes: 12 });
+  lista.push({ ano: ultima.ano, ateMes: ultima.mes });
   return lista;
 }
 
