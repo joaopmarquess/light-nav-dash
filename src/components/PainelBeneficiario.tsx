@@ -294,6 +294,7 @@ export default function PainelBeneficiario() {
     } catch (err: any) { setFamiliaErro(err?.message ?? String(err)); }
     finally { setFamiliaLoading(false); }
   }
+  const painelBenef = carregando || (!!atual && mat != null);
   function mudarEscopo(e: Escopo) { setEscopo(e); if (e === "Família") carregarFamilia(); }
   const EardPend = () => <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando dados assistenciais…</div>;
 
@@ -305,6 +306,8 @@ export default function PainelBeneficiario() {
       </header>
 
       <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+        <div className={`min-w-0 ${painelBenef ? "lg:w-[min(36rem,45%)] lg:shrink-0" : "w-full"}`}>
         <div className={modo === "alternativa" ? "grid w-fit max-w-full" : ""}>
         <div className="flex flex-wrap gap-1.5 mb-3">
           {MODOS.map((m) => (
@@ -350,6 +353,33 @@ export default function PainelBeneficiario() {
           </Button>
         </div>
         </div>
+        </div>
+        {painelBenef && (
+          <div className="min-w-0 flex-1 border-t border-border pt-4 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
+            {carregando || !atual ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando beneficiário…</div>
+            ) : (
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Beneficiário selecionado</div>
+                  <h3 className="text-xl font-semibold text-foreground">{atual.nm_beneficiario}</h3>
+                  <div className="mt-1 flex flex-wrap gap-x-4 text-sm text-muted-foreground">
+                    {fmtCpf(atual.nr_cpf ?? cad?.nr_cpf) && <span>CPF {fmtCpf(atual.nr_cpf ?? cad?.nr_cpf)}</span>}
+                    <span>Matrícula {atual.cd_matricula}</span>
+                    {idade != null && <span>{idade} anos</span>}
+                    {SEXO[atual.tp_sexo] && <span>{SEXO[atual.tp_sexo]}</span>}
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-x-4 text-sm text-foreground">
+                    <span>{atual.ds_plano}</span><span>Contrato {atual.cd_contrato}</span>
+                    {!vazio(atual.nm_empresa_estipulante) && <span className="text-muted-foreground">{atual.nm_empresa_estipulante}</span>}
+                  </div>
+                </div>
+                <span className={`shrink-0 rounded-full border px-4 py-1.5 text-sm font-semibold ${TONE[st.tone]}`}>{st.label}</span>
+              </div>
+            )}
+          </div>
+        )}
+        </div>
         {erro && <p className="mt-2 text-xs text-destructive">{erro}</p>}
         {resultados && resultados.length === 0 && <p className="mt-2 text-xs text-muted-foreground">Nenhum beneficiário encontrado.</p>}
         {resultados && resultados.length > 1 && (
@@ -373,30 +403,8 @@ export default function PainelBeneficiario() {
         )}
       </div>
 
-      {carregando && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando beneficiário…</div>}
-
       {atual && !carregando && (
         <>
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Beneficiário selecionado</div>
-                <h3 className="text-2xl font-semibold text-foreground">{atual.nm_beneficiario}</h3>
-                <div className="mt-1 flex flex-wrap gap-x-4 text-sm text-muted-foreground">
-                  {fmtCpf(atual.nr_cpf ?? cad?.nr_cpf) && <span>CPF {fmtCpf(atual.nr_cpf ?? cad?.nr_cpf)}</span>}
-                  <span>Matrícula {atual.cd_matricula}</span>
-                  {idade != null && <span>{idade} anos</span>}
-                  {SEXO[atual.tp_sexo] && <span>{SEXO[atual.tp_sexo]}</span>}
-                </div>
-                <div className="mt-1 flex flex-wrap gap-x-4 text-sm text-foreground">
-                  <span>{atual.ds_plano}</span><span>Contrato {atual.cd_contrato}</span>
-                  {!vazio(atual.nm_empresa_estipulante) && <span className="text-muted-foreground">{atual.nm_empresa_estipulante}</span>}
-                </div>
-              </div>
-              <span className={`rounded-full border px-4 py-1.5 text-sm font-semibold ${TONE[st.tone]}`}>{st.label}</span>
-            </div>
-          </div>
-
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
             <Card label="Status" value={st.label} sub={atual.tp_status === "S" ? fmtD(atual.dt_suspensao) ?? undefined : atual.tp_status === "C" ? `desde ${fmtD(atual.dt_desligamento) ?? "—"}` : undefined} />
             <Card label="Plano" value={atual.cd_plano_alternativo ?? atual.cd_plano} sub={atual.tp_acomodacao ?? undefined} />
