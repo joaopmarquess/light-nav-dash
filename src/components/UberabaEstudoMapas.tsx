@@ -3,6 +3,7 @@ import UberabaMapa from "@/components/UberabaMapa";
 import UberabaShell from "@/components/UberabaShell";
 import UberabaDados from "@/components/UberabaDados";
 import UberabaSimulacao from "@/components/UberabaSimulacao";
+import UberabaGestaoRede from "@/components/UberabaGestaoRede";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Calculator, Database, House, LayoutDashboard, MapPinned, Network } from "lucide-react";
@@ -39,7 +40,7 @@ const UberabaEstudoMapas = () => {
         {selected === "uberaba" && <UberabaMapa embedded selectedDate={date} toolbarTarget={toolbar} />}
         {selected === "dados" && <UberabaDados />}
         {selected === "simulacao" && <UberabaSimulacao />}
-        {selected === "gestaoRede" && <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-border bg-card p-10 text-sm text-muted-foreground">Em definição</div>}
+        {selected === "gestaoRede" && <UberabaGestaoRede />}
       </section>
     </div>
   );
