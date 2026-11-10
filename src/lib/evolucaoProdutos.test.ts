@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mesesPeriodo, PERIODO_EVOLUCAO_PRODUTOS, produtosPorMes, vidasPorMes } from "./evolucaoProdutos";
+import { mesesPeriodo, PERIODO_EVOLUCAO_PRODUTOS, produtosPorMes, subtotalTipo, totalGeral, vidasPorMes } from "./evolucaoProdutos";
 
 describe("Evolução Produtos — período", () => {
   const meses = mesesPeriodo(PERIODO_EVOLUCAO_PRODUTOS.de, PERIODO_EVOLUCAO_PRODUTOS.ate);
@@ -38,5 +38,23 @@ describe("Evolução Produtos — período", () => {
     expect(r[0].valores.PIF.CONV! + r[0].valores.PIF.F50! + r[0].valores.PIF.COP!).toBe(37823);
     expect(r[0].valores.PCA).toEqual({ CONV: 0, F50: 12628, COP: 0 });
     expect(r[1].valores.PCE).toEqual({ CONV: null, F50: null, COP: null });
+  });
+  it("soma subtotais por tipo e o total geral do mês", () => {
+    const r = produtosPorMes(meses, [
+      { ano: 2025, mes: 10, sigla: "PIF", produto: "CONV", vidas: 19818 },
+      { ano: 2025, mes: 10, sigla: "PIF", produto: "F50", vidas: 3809 },
+      { ano: 2025, mes: 10, sigla: "PIF", produto: "COP", vidas: 14196 },
+      { ano: 2025, mes: 10, sigla: "PCA", produto: "CONV", vidas: 2211 },
+      { ano: 2025, mes: 10, sigla: "PCA", produto: "F50", vidas: 12628 },
+      { ano: 2025, mes: 10, sigla: "PCA", produto: "COP", vidas: 4697 },
+      { ano: 2025, mes: 10, sigla: "PCE", produto: "CONV", vidas: 1416 },
+      { ano: 2025, mes: 10, sigla: "PCE", produto: "F50", vidas: 3305 },
+      { ano: 2025, mes: 10, sigla: "PCE", produto: "COP", vidas: 3111 },
+    ]);
+    expect(subtotalTipo(r[0].valores, "PIF")).toBe(37823);
+    expect(subtotalTipo(r[0].valores, "PCA")).toBe(19536);
+    expect(subtotalTipo(r[0].valores, "PCE")).toBe(7832);
+    expect(totalGeral(r[0].valores)).toBe(65191);
+    expect(totalGeral(r[1].valores)).toBeNull();
   });
 });

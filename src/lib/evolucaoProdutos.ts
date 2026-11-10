@@ -76,3 +76,17 @@ export function produtosPorMes(meses: MesEvolucao[], linhas: LinhaProduto[]) {
     return { ...m, valores };
   });
 }
+
+type ValoresMes = ReturnType<typeof produtosPorMes>[number]["valores"];
+
+/** Subtotal de um tipo de plano (soma dos três produtos); null quando o mês não tem dado. */
+export function subtotalTipo(valores: ValoresMes, tipo: TipoPlano): number | null {
+  const vs = TIPOS_PRODUTO.map((p) => valores[tipo][p.id]);
+  return vs.some((v) => v == null) ? null : vs.reduce<number>((s, v) => s + (v as number), 0);
+}
+
+/** Total geral do mês (PIF + PCA + PCE); null quando o mês não tem dado. */
+export function totalGeral(valores: ValoresMes): number | null {
+  const vs = TIPOS_PLANO.map((t) => subtotalTipo(valores, t));
+  return vs.some((v) => v == null) ? null : vs.reduce<number>((s, v) => s + (v as number), 0);
+}
