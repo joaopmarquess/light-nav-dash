@@ -48,8 +48,8 @@ const EvolucaoProdutos = () => {
 
   return (
     <div className="h-full overflow-y-auto">
-      <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
-        <header className="mb-4">
+      <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
+        <header className="mb-3">
           <h2 className="text-lg font-semibold text-foreground">Vidas por tipo de produto</h2>
         </header>
         {errProd ? (
@@ -65,13 +65,13 @@ const EvolucaoProdutos = () => {
           <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando tipos de produto…</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1200px] border-separate border-spacing-x-1.5 border-spacing-y-1 text-center">
+            <table className="w-full min-w-[1200px] border-separate border-spacing-x-1.5 border-spacing-y-[3px] text-center">
               <thead>
                 <tr>
-                  <th scope="col" className="w-16 px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tipo</th>
-                  <th scope="col" className="w-44 px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Produto</th>
+                  <th scope="col" className="w-16 px-2 py-1 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tipo</th>
+                  <th scope="col" className="w-44 px-2 py-1 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Produto</th>
                   {prod.map((m) => (
-                    <th key={m.dataFim} scope="col" className="rounded-lg bg-primary px-2 py-2 text-sm font-semibold text-primary-foreground" title={`Ativos em ${m.dataFim.split("-").reverse().join("/")}`}>
+                    <th key={m.dataFim} scope="col" className="rounded-lg bg-primary px-2 py-1 text-sm font-semibold text-primary-foreground" title={`Ativos em ${m.dataFim.split("-").reverse().join("/")}`}>
                       {m.rotulo}
                     </th>
                   ))}
@@ -79,7 +79,7 @@ const EvolucaoProdutos = () => {
               </thead>
               {TIPOS_PLANO.map((t) => (
                 <tbody key={t}>
-                  {t !== "PIF" && <tr aria-hidden="true"><td colSpan={colunas} className="h-2 p-0" /></tr>}
+                  {t !== "PIF" && <tr aria-hidden="true"><td colSpan={colunas} className="h-1 p-0" /></tr>}
                   {TIPOS_PRODUTO.map((p, i) => (
                     <tr key={p.id}>
                       {i === 0 && (
@@ -87,22 +87,22 @@ const EvolucaoProdutos = () => {
                           {t}
                         </th>
                       )}
-                      <th scope="row" className="rounded-lg bg-muted/60 px-2 py-2 text-left text-sm font-medium text-foreground" title={p.descricao}>
+                      <th scope="row" className="rounded-lg bg-muted/60 px-2 py-1 text-left text-sm font-medium text-foreground" title={p.descricao}>
                         {p.rotulo}
                       </th>
                       {prod.map((m) => (
-                        <td key={m.dataFim} className="rounded-lg border border-border bg-accent/30 px-2 py-2 text-sm font-semibold tabular-nums text-foreground">
+                        <td key={m.dataFim} className="rounded-lg border border-border bg-accent/30 px-2 py-1 text-sm font-semibold tabular-nums text-foreground">
                           <Valor v={m.valores[t][p.id]} />
                         </td>
                       ))}
                     </tr>
                   ))}
                   <tr>
-                    <th scope="row" className="rounded-lg bg-secondary px-2 py-2 text-left text-sm font-bold text-secondary-foreground">
+                    <th scope="row" className="rounded-lg bg-secondary px-2 py-1 text-left text-sm font-bold text-secondary-foreground">
                       Subtotal {t}
                     </th>
                     {prod.map((m) => (
-                      <td key={m.dataFim} className="rounded-lg border border-primary/30 bg-secondary px-2 py-2 text-sm font-bold tabular-nums text-secondary-foreground">
+                      <td key={m.dataFim} className="rounded-lg border border-primary/30 bg-secondary px-2 py-1 text-sm font-bold tabular-nums text-secondary-foreground">
                         <Valor v={subtotalTipo(m.valores, t)} />
                       </td>
                     ))}
@@ -110,13 +110,13 @@ const EvolucaoProdutos = () => {
                 </tbody>
               ))}
               <tfoot>
-                <tr aria-hidden="true"><td colSpan={colunas} className="h-2 p-0" /></tr>
+                <tr aria-hidden="true"><td colSpan={colunas} className="h-1 p-0" /></tr>
                 <tr>
-                  <th scope="row" colSpan={2} className="rounded-lg bg-primary px-3 py-2.5 text-left text-sm font-bold uppercase tracking-wide text-primary-foreground">
+                  <th scope="row" colSpan={2} className="rounded-lg bg-primary px-3 py-1.5 text-left text-sm font-bold uppercase tracking-wide text-primary-foreground">
                     Total Geral
                   </th>
                   {prod.map((m) => (
-                    <td key={m.dataFim} className="rounded-lg bg-primary px-2 py-2.5 text-base font-bold tabular-nums text-primary-foreground">
+                    <td key={m.dataFim} className="rounded-lg bg-primary px-2 py-1.5 text-base font-bold tabular-nums text-primary-foreground">
                       <Valor v={totalGeral(m.valores)} />
                     </td>
                   ))}
