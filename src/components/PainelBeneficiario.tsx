@@ -89,6 +89,12 @@ type Familia = { membros: MembroFamilia[]; eard: EardFamilia[]; ate: number };
 function GrupoFamiliar({ familia, loading, erro, matSelecionada }: { familia: Familia | null; loading: boolean; erro: string | null; matSelecionada: number | null }) {
   const meses = useMemo(() => (familia ? periodoAssistencial(familia.ate) : []), [familia]);
   const g = useMemo(() => (familia ? grupoFamiliar(familia.membros, familia.eard, meses) : null), [familia, meses]);
+  const valoresU12 = (t: ResultadoMes) => (<>
+    <td className="whitespace-nowrap px-2 text-right">{fmtDec(t.receita)}</td>
+    <td className="whitespace-nowrap px-2 text-right">{fmtDec(t.copart)}</td>
+    <td className="whitespace-nowrap px-2 text-right">{fmtDec(t.despesa)}</td>
+    <td className={`whitespace-nowrap px-2 text-right ${t.saldo < 0 ? "text-destructive" : ""}`}>{fmtDec(t.saldo)}</td>
+  </>);
   if (erro) return <p className="text-sm text-destructive">{erro}</p>;
   if (loading || !familia || !g) return <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando o grupo familiar…</div>;
   return (
@@ -103,25 +109,31 @@ function GrupoFamiliar({ familia, loading, erro, matSelecionada }: { familia: Fa
         <table className="w-full text-xs tabular-nums">
           <thead className="bg-muted/50 text-[10px] uppercase text-muted-foreground">
             <tr>
-              <th className="px-2 py-1.5 text-left">Dep</th><th className="px-2 text-left">Nome</th><th className="px-2 text-left">Relacionamento</th><th className="px-2 text-left">Status</th>
-              <th className="px-2 text-right" title="dt_nascimento">Nascimento</th>
-              <th className="px-2 text-right" title="vl_tmm · situação mais recente">Mensalidade</th>
-              <th className="px-2 text-right" title="Despesas ÷ Total Receitas dos últimos 12 meses válidos">% Sinistralidade U12</th>
+              <th className="px-2 py-1.5 text-left" title="Dependente">Dep</th><th className="px-2 text-left">Nome</th><th className="px-2 text-left" title="Relacionamento">Relac.</th><th className="px-2 text-left">Status</th>
+              <th className="px-2 text-right" title="Nascimento · dt_nascimento">Nasc.</th>
+              <th className="px-2 text-right" title="Mensalidade · vl_tmm da situação mais recente">Mens.</th>
+              <th className="px-2 text-right" title="Receita U12 · vl_rec_cpp + vl_rec_outros">Rec.</th>
+              <th className="px-2 text-right" title="Coparticipação U12 · vl_rec_copart">Copart.</th>
+              <th className="px-2 text-right" title="Despesa U12 · soma das seis colunas vl_desp_*">Desp.</th>
+              <th className="px-2 text-right" title="Saldo U12 · Receita + Coparticipação − Despesa">Saldo</th>
+              <th className="px-2 text-right" title="Sinistralidade U12 · Despesa ÷ (Receita + Coparticipação)">% Sin. U12</th>
             </tr>
           </thead>
-          <tbody>{g.linhas.map(({ membro: m, mensalidade, sinistralidadeU12, temDado }) => (
+          <tbody>{g.linhas.map(({ membro: m, mensalidade, u12, sinistralidadeU12, temDado }) => (
             <tr key={m.cd_matricula} className={`border-t border-border ${m.cd_matricula === matSelecionada ? "bg-primary/5 font-medium" : ""}`}>
               <td className="px-2 py-1.5">{m.dep}</td><td className="px-2">{m.nm_beneficiario}</td>
               <td className="px-2">{m.tp_relacionamento ?? "—"}</td><td className="px-2">{statusInfo(m.tp_status).label}</td>
               <td className="px-2 text-right">{fmtD(m.dt_nascimento) ?? "—"}</td>
-              <td className="px-2 text-right">{fmtR(mensalidade)}</td>
-              <td className="px-2 text-right">{temDado ? fmtPct(sinistralidadeU12) : <span className="text-muted-foreground">sem registros</span>}</td>
+              <td className="whitespace-nowrap px-2 text-right">{fmtR(mensalidade)}</td>
+              {temDado ? valoresU12(u12) : <td colSpan={4} className="px-2 text-right text-muted-foreground">sem registros no período</td>}
+              <td className="px-2 text-right">{temDado ? fmtPct(sinistralidadeU12) : "—"}</td>
             </tr>))}
           </tbody>
           <tfoot>
             <tr className="border-t-2 border-border bg-muted/40 font-semibold">
               <td className="px-2 py-1.5" colSpan={5}>Total do grupo</td>
-              <td className="px-2 text-right">{fmtR(g.total.mensalidade)}</td>
+              <td className="whitespace-nowrap px-2 text-right">{fmtR(g.total.mensalidade)}</td>
+              {g.total.u12.temDado ? valoresU12(g.total.u12) : <td colSpan={4} className="px-2 text-right">—</td>}
               <td className="px-2 text-right">{fmtPct(g.total.sinistralidadeU12)}</td>
             </tr>
           </tfoot>
