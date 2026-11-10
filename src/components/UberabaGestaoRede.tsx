@@ -14,7 +14,7 @@ import {
 
 const campo = (k: ChaveGestaoRede) => CAMPOS_GESTAO_REDE.find((c) => c.chave === k)!;
 const textos = (v: VariaveisGestaoRede) => Object.fromEntries(CAMPOS_GESTAO_REDE.map((c) => [c.chave, formatarCampo(c, v[c.chave])])) as Record<ChaveGestaoRede, string>;
-const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtMoeda = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtInt = (v: number) => v.toLocaleString("pt-BR", { maximumFractionDigits: 0 });
 
