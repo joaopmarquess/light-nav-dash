@@ -122,6 +122,7 @@ export const homeShortcuts = [
   { icon: FlaskConical, label: "Laboratory", destination: "Laboratory" },
   { icon: FileText, label: "Proposta APB", destination: "Proposta APB" },
   { icon: Layers, label: "Evolução Produtos", destination: "Evolução Produtos" },
+  { icon: LayoutDashboard, label: "Painel", destination: "Carteira · Painel" },
 ];
 
 export const axisPermissionGroups = [
