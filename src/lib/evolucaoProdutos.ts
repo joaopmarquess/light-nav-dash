@@ -151,6 +151,27 @@ export function financeiroPorMes(meses: MesEvolucao[], linhas: LinhaFinanceira[]
   });
 }
 
+/** Indicadores que aceitam a chave Per capita (Receita até Saldo). */
+export const INDICADORES_PER_CAPITA: readonly IndicadorFinanceiro[] = ["Receita", "Coparticipação", "Total Receitas", "Despesas", "Saldo"];
+
+/**
+ * Per capita: cada célula, subtotal e total dividido pelas vidas da mesma célula, subtotal e total do mês
+ * (razão das somas). Sem vidas (null ou zero) fica null; nada é inferido.
+ */
+export function perCapita(valores: GradeComTotais[], vidas: GradeComTotais[]): GradeComTotais[] {
+  const idx = new Map(vidas.map((v) => [`${v.ano}-${v.mes}`, v]));
+  return valores.map((m) => {
+    const v = idx.get(`${m.ano}-${m.mes}`);
+    const out = {} as GradeComTotais["valores"];
+    for (const t of TIPOS_PLANO) {
+      out[t] = {} as GradeComTotais["valores"][TipoPlano];
+      for (const p of TIPOS_PRODUTO) out[t][p.id] = razao(m.valores[t][p.id], v?.valores[t][p.id] ?? null);
+    }
+    const subtotais = Object.fromEntries(TIPOS_PLANO.map((t) => [t, razao(m.subtotais[t], v?.subtotais[t] ?? null)])) as Record<TipoPlano, number | null>;
+    return { ...m, valores: out, subtotais, total: razao(m.total, v?.total ?? null), foraDosTotais: 0 };
+  });
+}
+
 type ValoresMes = ReturnType<typeof gradePorMes>[number]["valores"];
 
 /** Subtotal de um tipo de plano (soma dos três produtos); null quando o mês não tem dado. */

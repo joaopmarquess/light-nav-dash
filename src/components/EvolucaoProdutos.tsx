@@ -3,7 +3,7 @@ import { LoaderCircle, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { hostinger } from "@/lib/hostingerClient";
 import {
-  financeiroPorMes, mesesPeriodo, PERIODO_EVOLUCAO_PRODUTOS, produtosPorMes, TIPOS_PLANO, TIPOS_PRODUTO,
+  financeiroPorMes, INDICADORES_PER_CAPITA, mesesPeriodo, perCapita, PERIODO_EVOLUCAO_PRODUTOS, produtosPorMes, TIPOS_PLANO, TIPOS_PRODUTO,
   type IndicadorFinanceiro, type LinhaFinanceira, type LinhaProduto,
 } from "@/lib/evolucaoProdutos";
 
@@ -46,6 +46,9 @@ const DESC_TIPO: Record<(typeof TIPOS_PLANO)[number], string> = {
 
 const VISOES = ["Vidas", "Receita", "Coparticipação", "Total Receitas", "Despesas", "Saldo", "Sinistralidade"] as const;
 type Visao = (typeof VISOES)[number];
+
+const MODOS = ["Total", "Per capita"] as const;
+type Modo = (typeof MODOS)[number];
 
 const TITULOS: Record<Visao, string> = {
   Vidas: "Vidas por tipo de produto",
@@ -155,6 +158,7 @@ function Grade({ linhas, fmt = fmtInt }: { linhas: LinhaGrade[]; fmt?: Fmt }) {
 
 const EvolucaoProdutos = () => {
   const [visao, setVisao] = useState<Visao>("Vidas");
+  const [modo, setModo] = useState<Modo>("Total");
   const [vidas, setVidas] = useState<LinhaGrade[] | null>(cacheVidas);
   const [errVidas, setErrVidas] = useState<string | null>(null);
   const [fin, setFin] = useState<LinhaFinanceira[] | null>(cacheFin);
@@ -173,17 +177,40 @@ const EvolucaoProdutos = () => {
   // Financeiro só é buscado ao abrir uma visão financeira (uma vez para todas).
   useEffect(() => { if (visao !== "Vidas" && !fin && !errFin) buscarFin(); }, [visao, fin, errFin, buscarFin]);
 
-  const gradeFin = useMemo(
-    () => (fin && visao !== "Vidas" ? financeiroPorMes(MESES, fin, visao as IndicadorFinanceiro) : null),
-    [fin, visao],
-  );
+  const aceitaPerCapita = INDICADORES_PER_CAPITA.includes(visao as IndicadorFinanceiro);
+  const emPerCapita = modo === "Per capita" && aceitaPerCapita;
+  const gradeFin = useMemo(() => {
+    if (!fin || visao === "Vidas") return null;
+    const g = financeiroPorMes(MESES, fin, visao as IndicadorFinanceiro);
+    if (!emPerCapita) return g;
+    return vidas ? perCapita(g, vidas) : null;
+  }, [fin, visao, emPerCapita, vidas]);
 
-  const erro = visao === "Vidas" ? errVidas : errFin;
+  const erro = visao === "Vidas" ? errVidas : errFin ?? (emPerCapita ? errVidas : null);
   const linhas = visao === "Vidas" ? vidas : gradeFin;
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
-      <nav aria-label="Indicadores" className="flex shrink-0 justify-center">
+      <nav aria-label="Indicadores" className="flex shrink-0 flex-wrap items-center justify-center gap-3">
+        <div
+          role="group"
+          aria-label="Total ou per capita"
+          title={aceitaPerCapita ? "Per capita = valor ÷ vidas no último dia do mês" : "Vale de Receita até Saldo"}
+          className="flex items-center gap-1 rounded-full border border-border bg-card p-1.5 shadow-sm"
+        >
+          {MODOS.map((m) => (
+            <Button
+              key={m}
+              variant="ghost"
+              aria-pressed={modo === m}
+              disabled={!aceitaPerCapita}
+              onClick={() => setModo(m)}
+              className={`h-8 rounded-full px-4 text-sm ${modo === m ? "bg-secondary font-semibold text-secondary-foreground hover:bg-secondary hover:text-secondary-foreground" : "bg-muted"}`}
+            >
+              {m}
+            </Button>
+          ))}
+        </div>
         <div className="flex max-w-full flex-wrap items-center justify-center gap-1 rounded-lg border border-border bg-card p-1.5 shadow-sm sm:rounded-full">
           {VISOES.map((v) => (
             <Button
@@ -201,7 +228,9 @@ const EvolucaoProdutos = () => {
       <div className="min-h-0 flex-1 overflow-y-auto">
         <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
           <header className="mb-3">
-            <h2 className="text-lg font-semibold text-foreground" title={DICAS[visao]}>{TITULOS[visao]}</h2>
+            <h2 className="text-lg font-semibold text-foreground" title={DICAS[visao]}>
+              {emPerCapita ? TITULOS[visao].replace("(R$)", "· per capita (R$ por vida)") : TITULOS[visao]}
+            </h2>
           </header>
           {erro ? (
             <Aviso erro={erro} onRetry={visao === "Vidas" ? buscarVidas : buscarFin} />
