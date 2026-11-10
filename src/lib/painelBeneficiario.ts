@@ -128,17 +128,16 @@ export function linhaDoTempo(rows: CarteiraRow[], cad?: Record<string, any> | nu
   return ev.sort((x, y) => x.data.localeCompare(y.data));
 }
 
-/** Assistencial: últimos 12 meses terminando três meses antes do mês atual (nov/2026 → 09/2025 a 08/2026). */
-export const DEFASAGEM_ASSISTENCIAL_MESES = 3;
+/** Assistencial: 12 meses terminando na última competência válida (AAAAMM; despesas da base acima de R$ 20 milhões). */
 const somaMes = (aaaamm: number, delta: number) => {
   const t = Math.floor(aaaamm / 100) * 12 + (aaaamm % 100) - 1 + delta;
   return Math.floor(t / 12) * 100 + (t % 12) + 1;
 };
-export function periodoAssistencial(hoje: Date = new Date()): number[] {
-  const atual = hoje.getFullYear() * 100 + hoje.getMonth() + 1;
-  const ate = somaMes(atual, -DEFASAGEM_ASSISTENCIAL_MESES);
+export function periodoAssistencial(ate: number): number[] {
   return Array.from({ length: 12 }, (_, i) => somaMes(ate, i - 11));
 }
+/** Remove competências posteriores à última válida (despesas ainda incompletas na base). */
+export const ateUltimaValida = <T extends { dt_competencia: number }>(rows: T[], ultima: number) => rows.filter((r) => Number(r.dt_competencia) <= ultima);
 
 export type ResultadoMes = {
   comp: number; temDado: boolean;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { comporCodigoAlternativo, registroAtual, statusInfo, resumoEard, porCompetencia, periodoAssistencial, resultadoAssistencial, faixaFamilia, membrosFamilia, type EardRow } from "./painelBeneficiario";
+import { comporCodigoAlternativo, registroAtual, statusInfo, resumoEard, porCompetencia, periodoAssistencial, ateUltimaValida, resultadoAssistencial, faixaFamilia, membrosFamilia, type EardRow } from "./painelBeneficiario";
 
 const mes = (c: number, cpp: number, outros: number): EardRow => ({ dt_competencia: c, vl_rec_cpp: cpp, vl_rec_copart: 0, vl_rec_outros: 0, vl_desp_consulta: 0, vl_desp_urgencia: 0, vl_desp_internacao: 0, vl_desp_terapia: 0, vl_desp_exame: 0, vl_desp_outros: outros });
 
@@ -54,15 +54,18 @@ describe("painel beneficiário", () => {
 
 describe("assistencial do beneficiário (12 meses)", () => {
   const linha = (c: number, cpp: number, copart: number, outros: number, desp: number): EardRow => ({ ...mes(c, cpp, desp), vl_rec_copart: copart, vl_rec_outros: outros });
-  it("em novembro/2026 o período vai de 09/2025 a 08/2026", () => {
-    const p = periodoAssistencial(new Date(2026, 10, 10));
+  it("com última competência válida em 09/2026, o período vai de 10/2025 a 09/2026", () => {
+    const p = periodoAssistencial(202609);
     expect(p).toHaveLength(12);
-    expect(p[0]).toBe(202509);
-    expect(p.at(-1)).toBe(202608);
+    expect(p[0]).toBe(202510);
+    expect(p.at(-1)).toBe(202609);
   });
-  it("em fevereiro/2027 o período vai de 12/2025 a 11/2026", () => {
-    const p = periodoAssistencial(new Date(2027, 1, 1));
-    expect([p[0], p.at(-1)]).toEqual([202512, 202611]);
+  it("com última válida em 12/2026, o período vai de 01/2026 a 12/2026", () => {
+    const p = periodoAssistencial(202612);
+    expect([p[0], p.at(-1)]).toEqual([202601, 202612]);
+  });
+  it("competências depois da última válida saem do Assistencial", () => {
+    expect(ateUltimaValida([mes(202608, 1, 1), mes(202609, 1, 1), mes(202610, 1, 1)], 202609).map((r) => r.dt_competencia)).toEqual([202608, 202609]);
   });
   it("receita soma mensalidade e outras receitas; total receitas inclui coparticipação", () => {
     const r = resultadoAssistencial([linha(202608, 400, 50, 10, 0)], [202608]).meses[0];
