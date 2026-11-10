@@ -48,7 +48,7 @@ describe("Gestão Rede monthly grid", () => {
   });
   it("recovers the advance in the last month when no month reaches the cap", () => {
     const { valores, tipos } = antecipacaoPessoa([100, 100, 100, 100], 500, 1000);
-    expect(valores).toEqual([500, 500, 100, -500]);
+    expect(valores).toEqual([500, 500, 100, -700]);
     expect(tipos[3]).toBe("recuperacao");
   });
 });
