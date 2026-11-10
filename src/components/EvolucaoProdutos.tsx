@@ -10,6 +10,9 @@ import {
 const MESES = mesesPeriodo(PERIODO_EVOLUCAO_PRODUTOS.de, PERIODO_EVOLUCAO_PRODUTOS.ate);
 const { de: DE, ate: ATE } = PERIODO_EVOLUCAO_PRODUTOS;
 const fmtInt = (n: number) => Math.round(n).toLocaleString("pt-BR");
+// Receita, Coparticipação e Despesas: formato #,#0 (duas casas decimais, padrão pt-BR).
+const fmtDec = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+type Fmt = (n: number) => string;
 
 type LinhaGrade = ReturnType<typeof produtosPorMes>[number];
 
@@ -55,8 +58,8 @@ const DICAS: Partial<Record<Visao, string>> = {
   Despesas: "Consulta + urgência + internação + terapia + exame + outros · view_eard_mensal",
 };
 
-const Valor = ({ v, claro = false }: { v: number | null; claro?: boolean }) =>
-  v == null ? <span className={`text-sm font-normal ${claro ? "text-primary-foreground/80" : "text-muted-foreground"}`}>Sem dado</span> : <>{fmtInt(v)}</>;
+const Valor = ({ v, claro = false, fmt = fmtInt }: { v: number | null; claro?: boolean; fmt?: Fmt }) =>
+  v == null ? <span className={`text-sm font-normal ${claro ? "text-primary-foreground/80" : "text-muted-foreground"}`}>Sem dado</span> : <>{fmt(v)}</>;
 
 const naoInstalado = (e: string) => /could not find the function/i.test(e);
 
@@ -71,7 +74,7 @@ function Aviso({ erro, onRetry }: { erro: string; onRetry: () => void }) {
   );
 }
 
-function Grade({ linhas }: { linhas: LinhaGrade[] }) {
+function Grade({ linhas, fmt = fmtInt }: { linhas: LinhaGrade[]; fmt?: Fmt }) {
   const colunas = linhas.length + 2;
   const fora = linhas.filter((m) => m.foraDosTotais);
   return (
@@ -103,7 +106,7 @@ function Grade({ linhas }: { linhas: LinhaGrade[] }) {
                 </th>
                 {linhas.map((m) => (
                   <td key={m.dataFim} className="rounded-lg border border-border bg-accent/30 px-2 py-1 text-sm font-semibold tabular-nums text-foreground">
-                    <Valor v={m.valores[t][p.id]} />
+                    <Valor v={m.valores[t][p.id]} fmt={fmt} />
                   </td>
                 ))}
               </tr>
@@ -114,7 +117,7 @@ function Grade({ linhas }: { linhas: LinhaGrade[] }) {
               </th>
               {linhas.map((m) => (
                 <td key={m.dataFim} className="rounded-lg border border-primary/30 bg-secondary px-2 py-1 text-sm font-bold tabular-nums text-secondary-foreground">
-                  <Valor v={subtotalTipo(m.valores, t)} />
+                  <Valor v={subtotalTipo(m.valores, t)} fmt={fmt} />
                 </td>
               ))}
             </tr>
@@ -128,7 +131,7 @@ function Grade({ linhas }: { linhas: LinhaGrade[] }) {
             </th>
             {linhas.map((m) => (
               <td key={m.dataFim} className="rounded-lg bg-primary px-2 py-1.5 text-base font-bold tabular-nums text-primary-foreground">
-                <Valor v={totalGeral(m.valores)} claro />
+                <Valor v={totalGeral(m.valores)} claro fmt={fmt} />
               </td>
             ))}
           </tr>
@@ -136,7 +139,7 @@ function Grade({ linhas }: { linhas: LinhaGrade[] }) {
       </table>
       {fora.length > 0 && (
         <p className="mt-2 text-xs text-muted-foreground">
-          Fora dos totais (sem tipo de plano ou produto informado): {fora.map((m) => `${m.rotulo} ${fmtInt(m.foraDosTotais)}`).join(" · ")}
+          Fora dos totais (sem tipo de plano ou produto informado): {fora.map((m) => `${m.rotulo} ${fmt(m.foraDosTotais)}`).join(" · ")}
         </p>
       )}
     </div>
@@ -198,7 +201,7 @@ const EvolucaoProdutos = () => {
           ) : !linhas ? (
             <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando…</p>
           ) : (
-            <Grade linhas={linhas} />
+            <Grade linhas={linhas} fmt={visao === "Vidas" ? fmtInt : fmtDec} />
           )}
         </section>
       </div>
