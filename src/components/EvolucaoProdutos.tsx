@@ -3,8 +3,8 @@ import { LoaderCircle, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { hostinger } from "@/lib/hostingerClient";
 import {
-  financeiroPorMes, mesesPeriodo, PERIODO_EVOLUCAO_PRODUTOS, produtosPorMes, subtotalTipo, TIPOS_PLANO, TIPOS_PRODUTO,
-  totalGeral, type IndicadorFinanceiro, type LinhaFinanceira, type LinhaProduto,
+  financeiroPorMes, mesesPeriodo, PERIODO_EVOLUCAO_PRODUTOS, produtosPorMes, TIPOS_PLANO, TIPOS_PRODUTO,
+  type IndicadorFinanceiro, type LinhaFinanceira, type LinhaProduto,
 } from "@/lib/evolucaoProdutos";
 
 const MESES = mesesPeriodo(PERIODO_EVOLUCAO_PRODUTOS.de, PERIODO_EVOLUCAO_PRODUTOS.ate);
@@ -12,6 +12,7 @@ const { de: DE, ate: ATE } = PERIODO_EVOLUCAO_PRODUTOS;
 const fmtInt = (n: number) => Math.round(n).toLocaleString("pt-BR");
 // Receita, Coparticipação e Despesas: formato #,#0 (duas casas decimais, padrão pt-BR).
 const fmtDec = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtPct = (n: number) => `${(n * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 type Fmt = (n: number) => string;
 
 type LinhaGrade = ReturnType<typeof produtosPorMes>[number];
@@ -43,19 +44,25 @@ const DESC_TIPO: Record<(typeof TIPOS_PLANO)[number], string> = {
   PCE: "Coletivo empresarial",
 };
 
-const VISOES = ["Vidas", "Receita", "Coparticipação", "Despesas"] as const;
+const VISOES = ["Vidas", "Receita", "Coparticipação", "Total Receitas", "Despesas", "Saldo", "Sinistralidade"] as const;
 type Visao = (typeof VISOES)[number];
 
 const TITULOS: Record<Visao, string> = {
   Vidas: "Vidas por tipo de produto",
   Receita: "Receita por tipo de produto (R$)",
   "Coparticipação": "Coparticipação por tipo de produto (R$)",
+  "Total Receitas": "Total Receitas por tipo de produto (R$)",
   Despesas: "Despesas por tipo de produto (R$)",
+  Saldo: "Saldo por tipo de produto (R$)",
+  Sinistralidade: "Sinistralidade por tipo de produto (%)",
 };
 const DICAS: Partial<Record<Visao, string>> = {
-  Receita: "Mensalidade (vl_rec_cpp) + coparticipação (vl_rec_copart) + outras receitas (vl_rec_outros) · view_eard_mensal",
+  Receita: "Mensalidade (vl_rec_cpp) · view_eard_mensal",
   "Coparticipação": "Receita de coparticipação (vl_rec_copart) · view_eard_mensal",
+  "Total Receitas": "Receita (vl_rec_cpp) + Coparticipação (vl_rec_copart) · view_eard_mensal",
   Despesas: "Consulta + urgência + internação + terapia + exame + outros · view_eard_mensal",
+  Saldo: "Total Receitas − Despesas · view_eard_mensal",
+  Sinistralidade: "Despesas ÷ Total Receitas · view_eard_mensal",
 };
 
 const Valor = ({ v, claro = false, fmt = fmtInt }: { v: number | null; claro?: boolean; fmt?: Fmt }) =>
@@ -117,7 +124,7 @@ function Grade({ linhas, fmt = fmtInt }: { linhas: LinhaGrade[]; fmt?: Fmt }) {
               </th>
               {linhas.map((m) => (
                 <td key={m.dataFim} className="rounded-lg border border-primary/30 bg-secondary px-2 py-1 text-sm font-bold tabular-nums text-secondary-foreground">
-                  <Valor v={subtotalTipo(m.valores, t)} fmt={fmt} />
+                  <Valor v={m.subtotais[t]} fmt={fmt} />
                 </td>
               ))}
             </tr>
@@ -131,7 +138,7 @@ function Grade({ linhas, fmt = fmtInt }: { linhas: LinhaGrade[]; fmt?: Fmt }) {
             </th>
             {linhas.map((m) => (
               <td key={m.dataFim} className="rounded-lg bg-primary px-2 py-1.5 text-base font-bold tabular-nums text-primary-foreground">
-                <Valor v={totalGeral(m.valores)} claro fmt={fmt} />
+                <Valor v={m.total} claro fmt={fmt} />
               </td>
             ))}
           </tr>
@@ -163,7 +170,7 @@ const EvolucaoProdutos = () => {
   }, []);
 
   useEffect(() => { if (!vidas) buscarVidas(); }, [vidas, buscarVidas]);
-  // Financeiro só é buscado ao abrir Receita, Coparticipação ou Despesas (uma vez para as três).
+  // Financeiro só é buscado ao abrir uma visão financeira (uma vez para todas).
   useEffect(() => { if (visao !== "Vidas" && !fin && !errFin) buscarFin(); }, [visao, fin, errFin, buscarFin]);
 
   const gradeFin = useMemo(
@@ -201,7 +208,7 @@ const EvolucaoProdutos = () => {
           ) : !linhas ? (
             <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando…</p>
           ) : (
-            <Grade linhas={linhas} fmt={visao === "Vidas" ? fmtInt : fmtDec} />
+            <Grade linhas={linhas} fmt={visao === "Vidas" ? fmtInt : visao === "Sinistralidade" ? fmtPct : fmtDec} />
           )}
         </section>
       </div>
