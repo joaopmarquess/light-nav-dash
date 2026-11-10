@@ -294,6 +294,7 @@ export default function PainelBeneficiario() {
     } catch (err: any) { setFamiliaErro(err?.message ?? String(err)); }
     finally { setFamiliaLoading(false); }
   }
+  const painelBenef = carregando || (!!atual && mat != null);
   function mudarEscopo(e: Escopo) { setEscopo(e); if (e === "Família") carregarFamilia(); }
   const EardPend = () => <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando dados assistenciais…</div>;
 
