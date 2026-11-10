@@ -14,4 +14,4 @@
 ## Estudo Uberaba › Gestão Rede
 - [x] Botão Gestão Rede na etapa Estudo.
 - [x] Tela com as sete variáveis (Valor Vida, Teto, Adiantamento de Paulo e Adeir; Número Vidas total).
-- [ ] Quadro Antecipação × Mensal por mês, semelhante ao anexo (aguarda confirmação da regra de recuperação).
+- [x] Quadro Antecipação × Mensal por mês, semelhante ao anexo (regra de recuperação a confirmar com Dênis).
