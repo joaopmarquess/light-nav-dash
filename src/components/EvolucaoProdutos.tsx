@@ -51,9 +51,6 @@ const EvolucaoProdutos = () => {
       <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
         <header className="mb-4">
           <h2 className="text-lg font-semibold text-foreground">Vidas por tipo de produto</h2>
-          <p className="text-sm text-muted-foreground">
-            Out/2025 a Set/2026 · posição no último dia de cada mês · cada tipo de plano aberto em Convencional, Fácil 50 e Outros coparticipativos
-          </p>
         </header>
         {errProd ? (
           <div className="flex flex-wrap items-center gap-3">
