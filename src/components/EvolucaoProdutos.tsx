@@ -172,20 +172,21 @@ const EvolucaoProdutos = () => {
               </thead>
               {TIPOS_PLANO.map((t) => (
                 <tbody key={t}>
+                  {t !== "PIF" && <tr aria-hidden="true"><td colSpan={prod.length + 2} className="h-2 p-0" /></tr>}
                   {TIPOS_PRODUTO.map((p, i) => (
                     <tr key={p.id}>
                       {i === 0 && (
-                        <th scope="rowgroup" rowSpan={TIPOS_PRODUTO.length} className={`rounded-lg bg-secondary px-2 text-left align-middle text-sm font-bold text-secondary-foreground ${t !== "PIF" ? "border-t-8 border-card" : ""}`} title={DESC_TIPO[t]}>
+                        <th scope="rowgroup" rowSpan={TIPOS_PRODUTO.length} className="rounded-lg bg-secondary px-2 text-left align-middle text-sm font-bold text-secondary-foreground" title={DESC_TIPO[t]}>
                           {t}
                         </th>
                       )}
-                      <th scope="row" className={`rounded-lg bg-muted/60 px-2 py-2 text-left text-sm font-medium text-foreground ${i === 0 && t !== "PIF" ? "border-t-8 border-card" : ""}`} title={p.descricao}>
+                      <th scope="row" className="rounded-lg bg-muted/60 px-2 py-2 text-left text-sm font-medium text-foreground" title={p.descricao}>
                         {p.rotulo}
                       </th>
                       {prod.map((m) => {
                         const v = m.valores[t][p.id];
                         return (
-                          <td key={m.dataFim} className={`rounded-lg border border-border bg-accent/30 px-2 py-2 text-sm font-semibold tabular-nums text-foreground ${i === 0 && t !== "PIF" ? "border-t-8 border-t-card" : ""}`}>
+                          <td key={m.dataFim} className="rounded-lg border border-border bg-accent/30 px-2 py-2 text-sm font-semibold tabular-nums text-foreground">
                             {v == null ? <SemDado /> : fmt(v)}
                           </td>
                         );
