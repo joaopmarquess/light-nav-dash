@@ -18,14 +18,20 @@ export function periodoPadrao(hoje: Date): { de: AnoMes; ate: AnoMes } {
   return { de: deIdx(ate - 11), ate: deIdx(ate) };
 }
 
-/** "AAAA-MM" (valor do campo de mês) → AnoMes; inválido → null. */
+/** "mm/aaaa" → AnoMes; incompleto ou inválido → null. */
 export function lerAnoMes(v: string): AnoMes | null {
-  const m = /^(\d{4})-(\d{2})$/.exec(v.trim());
+  const m = /^(\d{2})\/(\d{4})$/.exec(v.trim());
   if (!m) return null;
-  const ano = Number(m[1]), mes = Number(m[2]);
+  const mes = Number(m[1]), ano = Number(m[2]);
   return mes >= 1 && mes <= 12 ? { ano, mes } : null;
 }
-export const anoMesCampo = (a: AnoMes) => `${a.ano}-${String(a.mes).padStart(2, "0")}`;
+/** AnoMes → "mm/aaaa". */
+export const anoMesCampo = (a: AnoMes) => `${String(a.mes).padStart(2, "0")}/${a.ano}`;
+/** Máscara de digitação mm/aaaa: só dígitos, barra automática após o mês. */
+export function mascaraAnoMes(v: string): string {
+  const d = v.replace(/\D/g, "").slice(0, 6);
+  return d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d;
+}
 
 /** Mensagem de erro do filtro De/Até, ou null quando o período é válido. */
 export function validarPeriodo(de: AnoMes | null, ate: AnoMes | null, hoje: Date): string | null {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { financeiroPorMes, perCapita, lerAnoMes, mesesPeriodo, periodoPadrao, produtosPorMes, validarPeriodo, subtotalTipo, totalGeral, vidasPorMes } from "./evolucaoProdutos";
+import { financeiroPorMes, perCapita, lerAnoMes, mascaraAnoMes, mesesPeriodo, periodoPadrao, produtosPorMes, validarPeriodo, subtotalTipo, totalGeral, vidasPorMes } from "./evolucaoProdutos";
 
 describe("Evolução Produtos — período", () => {
   const meses = mesesPeriodo({ ano: 2025, mes: 10 }, { ano: 2026, mes: 9 });
@@ -115,12 +115,15 @@ describe("Evolução Produtos — período", () => {
   });
   it("valida o filtro De/Até", () => {
     const hoje = new Date(Date.UTC(2026, 10, 10));
-    expect(lerAnoMes("2025-10")).toEqual({ ano: 2025, mes: 10 });
-    expect(lerAnoMes("2025-13")).toBeNull();
-    expect(validarPeriodo(lerAnoMes("2025-10"), lerAnoMes("2026-09"), hoje)).toBeNull();
-    expect(validarPeriodo(lerAnoMes("2026-09"), lerAnoMes("2025-10"), hoje)).not.toBeNull();
-    expect(validarPeriodo(lerAnoMes("2018-12"), lerAnoMes("2025-10"), hoje)).not.toBeNull();
-    expect(validarPeriodo(lerAnoMes("2026-01"), lerAnoMes("2026-12"), hoje)).not.toBeNull();
-    expect(validarPeriodo(lerAnoMes("2026-01"), lerAnoMes("2026-11"), hoje)).toBeNull();
+    expect(lerAnoMes("10/2025")).toEqual({ ano: 2025, mes: 10 });
+    expect(lerAnoMes("13/2025")).toBeNull();
+    expect(lerAnoMes("10/25")).toBeNull();
+    expect(mascaraAnoMes("102025")).toBe("10/2025");
+    expect(mascaraAnoMes("10/20a25x")).toBe("10/2025");
+    expect(validarPeriodo(lerAnoMes("10/2025"), lerAnoMes("09/2026"), hoje)).toBeNull();
+    expect(validarPeriodo(lerAnoMes("09/2026"), lerAnoMes("10/2025"), hoje)).not.toBeNull();
+    expect(validarPeriodo(lerAnoMes("12/2018"), lerAnoMes("10/2025"), hoje)).not.toBeNull();
+    expect(validarPeriodo(lerAnoMes("01/2026"), lerAnoMes("12/2026"), hoje)).not.toBeNull();
+    expect(validarPeriodo(lerAnoMes("01/2026"), lerAnoMes("11/2026"), hoje)).toBeNull();
   });
 });

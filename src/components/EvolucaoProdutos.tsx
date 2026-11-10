@@ -3,7 +3,7 @@ import { Check, LoaderCircle, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { hostinger } from "@/lib/hostingerClient";
 import {
-  anoMesCampo, financeiroPorMes, INDICADORES_PER_CAPITA, INICIO_EVOLUCAO_PRODUTOS, lerAnoMes, mesesPeriodo, perCapita, periodoPadrao,
+  anoMesCampo, financeiroPorMes, INDICADORES_PER_CAPITA, lerAnoMes, mascaraAnoMes, mesesPeriodo, perCapita, periodoPadrao,
   produtosPorMes, TIPOS_PLANO, TIPOS_PRODUTO, validarPeriodo, type AnoMes, type IndicadorFinanceiro, type LinhaFinanceira, type LinhaProduto,
 } from "@/lib/evolucaoProdutos";
 
@@ -120,7 +120,7 @@ function Grade({ linhas, fmt = fmtInt }: { linhas: LinhaGrade[]; fmt?: Fmt }) {
                     {t}
                   </th>
                 )}
-                <th scope="row" className="rounded-lg bg-muted/60 px-2 py-1 text-left text-sm font-medium text-foreground" title={p.descricao}>
+                <th scope="row" className="whitespace-nowrap rounded-lg bg-muted/60 px-2 py-1 text-left text-sm font-medium text-foreground" title={p.descricao}>
                   {p.rotulo}
                 </th>
                 {linhas.map((m) => (
@@ -211,9 +211,6 @@ const EvolucaoProdutos = () => {
     periodoAplicado = novo;
     setPeriodo(novo);
   };
-  const hoje = new Date();
-  const maxCampo = anoMesCampo({ ano: hoje.getUTCFullYear(), mes: hoje.getUTCMonth() + 1 });
-  const minCampo = anoMesCampo(INICIO_EVOLUCAO_PRODUTOS);
 
   const aceitaPerCapita = INDICADORES_PER_CAPITA.includes(visao as IndicadorFinanceiro);
   const emPerCapita = modo === "Per capita" && aceitaPerCapita;
@@ -237,13 +234,15 @@ const EvolucaoProdutos = () => {
         >
           <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
             De
-            <input type="month" required min={minCampo} max={maxCampo} value={deCampo} onChange={(e) => setDeCampo(e.target.value)}
-              className="h-8 rounded-md border border-input bg-background px-2 text-sm text-foreground" />
+            <input inputMode="numeric" placeholder="mm/aaaa" maxLength={7} aria-label={"De (mm/aaaa)"} value={deCampo}
+              onChange={(e) => setDeCampo(mascaraAnoMes(e.target.value))}
+              className="h-8 w-[5.5rem] rounded-md border border-input bg-background px-2 text-center text-sm tabular-nums text-foreground" />
           </label>
           <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
             Até
-            <input type="month" required min={minCampo} max={maxCampo} value={ateCampo} onChange={(e) => setAteCampo(e.target.value)}
-              className="h-8 rounded-md border border-input bg-background px-2 text-sm text-foreground" />
+            <input inputMode="numeric" placeholder="mm/aaaa" maxLength={7} aria-label={"Até (mm/aaaa)"} value={ateCampo}
+              onChange={(e) => setAteCampo(mascaraAnoMes(e.target.value))}
+              className="h-8 w-[5.5rem] rounded-md border border-input bg-background px-2 text-center text-sm tabular-nums text-foreground" />
           </label>
           <Button type="submit" size="sm" disabled={!!erroPeriodo || !alterado} title={erroPeriodo ?? "Aplicar o período"}
             className="h-8 rounded-full px-3">
