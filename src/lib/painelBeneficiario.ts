@@ -159,3 +159,22 @@ export function resultadoAssistencial(rows: EardRow[], meses: number[]): { meses
   const s = (k: "receita" | "copart" | "despesa") => lista.reduce((a, m) => a + m[k], 0);
   return { meses: lista, total: monta(0, s("receita"), s("copart"), s("despesa"), lista.some((m) => m.temDado)) };
 }
+
+/** Família = mesmo Plano (4) e mesmo Contrato (6) do código alternativo, qualquer Dep (00–99). */
+export function faixaFamilia(matAlternativa: unknown): { de: number; ate: number } | null {
+  const d = String(matAlternativa ?? "").replace(/\D/g, "");
+  if (!d || /^0+$/.test(d) || d.length > 12) return null;
+  const base = Math.floor(Number(d) / 100) * 100;
+  return { de: base, ate: base + 99 };
+}
+
+export type MembroFamilia = { cd_matricula: number; nm_beneficiario: string; dep: string; tp_relacionamento?: string | null; tp_status?: string | null };
+/** Um membro por matrícula (situação mais recente da linha Saúde), titular (Dep 00) primeiro. */
+export function membrosFamilia(rows: CarteiraRow[]): MembroFamilia[] {
+  const m = new Map<number, CarteiraRow[]>();
+  for (const r of rows) m.set(r.cd_matricula, [...(m.get(r.cd_matricula) ?? []), r]);
+  return [...m.values()].map((rs) => {
+    const a = registroAtual(rs)!;
+    return { cd_matricula: a.cd_matricula, nm_beneficiario: String(a.nm_beneficiario ?? ""), dep: String(a.cd_mat_alternativa ?? "").padStart(12, "0").slice(-2), tp_relacionamento: a.tp_relacionamento, tp_status: a.tp_status };
+  }).sort((x, y) => x.dep.localeCompare(y.dep) || x.nm_beneficiario.localeCompare(y.nm_beneficiario));
+}
