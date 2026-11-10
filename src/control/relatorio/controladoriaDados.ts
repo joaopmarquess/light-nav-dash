@@ -83,7 +83,7 @@ export async function carregarRelatorio(period: ReportPeriod, progress: (message
         // Vai até a última competência com despesas acima de R$ 20 milhões (meses seguintes ainda incompletos).
         const todosAnos = Array.from({ length: new Date().getUTCFullYear() - ANO_INICIO_SINISTRALIDADE + 1 }, (_, i) => ANO_INICIO_SINISTRALIDADE + i);
         const brutos = (await Promise.all(todosAnos.map(ano => rpc("sinistralidade_mv_competencias", { p_ano: ano, p_ate_mes: 12 })))).flat();
-        const ultima = ultimaCompetenciaValida(brutos as TotalCompetencia[]);
+        const ultima = ultimaCompetenciaValida(brutos as unknown as TotalCompetencia[]);
         if (!ultima) return;
         const responses = brutos.filter(d => ateCompetencia(Number(d.nr_ano), Number(d.nr_mes), ultima));
         const anos = agruparPorAno(responses.map(d => ({ ano: Number(d.nr_ano), mes: Number(d.nr_mes), soma: { ...somaVazia(), recCpp: Number(d.rec_cpp), recCopart: Number(d.rec_copart), recTotal: Number(d.rec_total), despTotal: Number(d.desp_total) } })));
