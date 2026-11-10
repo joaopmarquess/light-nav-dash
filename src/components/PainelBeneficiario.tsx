@@ -354,8 +354,8 @@ export default function PainelBeneficiario() {
             {carregando || !atual ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando beneficiário…</div>
             ) : (
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
                   <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Beneficiário selecionado</div>
                   <h3 className="text-xl font-semibold text-foreground">{atual.nm_beneficiario}</h3>
                   <div className="mt-1 flex flex-wrap gap-x-4 text-sm text-muted-foreground">
