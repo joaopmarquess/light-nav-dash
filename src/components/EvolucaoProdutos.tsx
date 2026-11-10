@@ -1,14 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { LoaderCircle, RotateCw } from "lucide-react";
+import { Check, LoaderCircle, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { hostinger } from "@/lib/hostingerClient";
 import {
-  financeiroPorMes, INDICADORES_PER_CAPITA, mesesPeriodo, perCapita, PERIODO_EVOLUCAO_PRODUTOS, produtosPorMes, TIPOS_PLANO, TIPOS_PRODUTO,
-  type IndicadorFinanceiro, type LinhaFinanceira, type LinhaProduto,
+  anoMesCampo, financeiroPorMes, INDICADORES_PER_CAPITA, INICIO_EVOLUCAO_PRODUTOS, lerAnoMes, mesesPeriodo, perCapita, periodoPadrao,
+  produtosPorMes, TIPOS_PLANO, TIPOS_PRODUTO, validarPeriodo, type AnoMes, type IndicadorFinanceiro, type LinhaFinanceira, type LinhaProduto,
 } from "@/lib/evolucaoProdutos";
 
-const MESES = mesesPeriodo(PERIODO_EVOLUCAO_PRODUTOS.de, PERIODO_EVOLUCAO_PRODUTOS.ate);
-const { de: DE, ate: ATE } = PERIODO_EVOLUCAO_PRODUTOS;
 const fmtInt = (n: number) => Math.round(n).toLocaleString("pt-BR");
 // Receita, Coparticipação e Despesas: formato #,#0 (duas casas decimais, padrão pt-BR).
 const fmtDec = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -16,27 +14,38 @@ const fmtPct = (n: number) => `${(n * 100).toLocaleString("pt-BR", { minimumFrac
 type Fmt = (n: number) => string;
 
 type LinhaGrade = ReturnType<typeof produtosPorMes>[number];
+type Periodo = { de: AnoMes; ate: AnoMes };
+const chave = (p: Periodo) => `${anoMesCampo(p.de)}|${anoMesCampo(p.ate)}`;
 
-let cacheVidas: LinhaGrade[] | null = null;
-async function carregarVidas(): Promise<LinhaGrade[]> {
-  if (cacheVidas) return cacheVidas;
-  const { data, error } = await hostinger.rpc("carteira_evolucao_produtos", { p_de: DE.ano, p_ate: ATE.ano });
+// Cache por período aplicado (vidas pelos anos do período; financeiro pelos meses AAAAMM).
+const cacheVidas = new Map<string, LinhaProduto[]>();
+async function carregarVidas(p: Periodo): Promise<LinhaProduto[]> {
+  const k = `${p.de.ano}|${p.ate.ano}`;
+  const c = cacheVidas.get(k);
+  if (c) return c;
+  const { data, error } = await hostinger.rpc("carteira_evolucao_produtos", { p_de: p.de.ano, p_ate: p.ate.ano });
   if (error) throw new Error(error.message);
-  cacheVidas = produtosPorMes(MESES, (Array.isArray(data) ? data : []) as LinhaProduto[]);
-  return cacheVidas;
+  const linhas = (Array.isArray(data) ? data : []) as LinhaProduto[];
+  cacheVidas.set(k, linhas);
+  return linhas;
 }
 
-let cacheFin: LinhaFinanceira[] | null = null;
-async function carregarFinanceiro(): Promise<LinhaFinanceira[]> {
-  if (cacheFin) return cacheFin;
+const cacheFin = new Map<string, LinhaFinanceira[]>();
+async function carregarFinanceiro(p: Periodo): Promise<LinhaFinanceira[]> {
+  const k = chave(p);
+  const c = cacheFin.get(k);
+  if (c) return c;
   const { data, error } = await hostinger.rpc("evolucao_produtos_financeiro", {
-    p_de: DE.ano * 100 + DE.mes,
-    p_ate: ATE.ano * 100 + ATE.mes,
+    p_de: p.de.ano * 100 + p.de.mes,
+    p_ate: p.ate.ano * 100 + p.ate.mes,
   });
   if (error) throw new Error(error.message);
-  cacheFin = (Array.isArray(data) ? data : []) as LinhaFinanceira[];
-  return cacheFin;
+  const linhas = (Array.isArray(data) ? data : []) as LinhaFinanceira[];
+  cacheFin.set(k, linhas);
+  return linhas;
 }
+
+let periodoAplicado: Periodo | null = null;
 
 const DESC_TIPO: Record<(typeof TIPOS_PLANO)[number], string> = {
   PIF: "Pessoa física (individual/familiar)",
@@ -159,32 +168,61 @@ function Grade({ linhas, fmt = fmtInt }: { linhas: LinhaGrade[]; fmt?: Fmt }) {
 const EvolucaoProdutos = () => {
   const [visao, setVisao] = useState<Visao>("Vidas");
   const [modo, setModo] = useState<Modo>("Total");
-  const [vidas, setVidas] = useState<LinhaGrade[] | null>(cacheVidas);
+  const [periodo, setPeriodo] = useState<Periodo>(() => periodoAplicado ?? periodoPadrao(new Date()));
+  const [deCampo, setDeCampo] = useState(() => anoMesCampo(periodo.de));
+  const [ateCampo, setAteCampo] = useState(() => anoMesCampo(periodo.ate));
+  const meses = useMemo(() => mesesPeriodo(periodo.de, periodo.ate), [periodo]);
+  const [vidasBrutas, setVidasBrutas] = useState<{ k: string; linhas: LinhaProduto[] } | null>(null);
   const [errVidas, setErrVidas] = useState<string | null>(null);
-  const [fin, setFin] = useState<LinhaFinanceira[] | null>(cacheFin);
+  const [finBruto, setFinBruto] = useState<{ k: string; linhas: LinhaFinanceira[] } | null>(null);
   const [errFin, setErrFin] = useState<string | null>(null);
+  const k = chave(periodo);
 
   const buscarVidas = useCallback(() => {
     setErrVidas(null);
-    carregarVidas().then(setVidas).catch((e) => setErrVidas(e instanceof Error ? e.message : String(e)));
-  }, []);
+    const alvo = periodo;
+    carregarVidas(alvo).then((linhas) => setVidasBrutas({ k: chave(alvo), linhas }))
+      .catch((e) => setErrVidas(e instanceof Error ? e.message : String(e)));
+  }, [periodo]);
   const buscarFin = useCallback(() => {
     setErrFin(null);
-    carregarFinanceiro().then(setFin).catch((e) => setErrFin(e instanceof Error ? e.message : String(e)));
-  }, []);
+    const alvo = periodo;
+    carregarFinanceiro(alvo).then((linhas) => setFinBruto({ k: chave(alvo), linhas }))
+      .catch((e) => setErrFin(e instanceof Error ? e.message : String(e)));
+  }, [periodo]);
 
-  useEffect(() => { if (!vidas) buscarVidas(); }, [vidas, buscarVidas]);
-  // Financeiro só é buscado ao abrir uma visão financeira (uma vez para todas).
-  useEffect(() => { if (visao !== "Vidas" && !fin && !errFin) buscarFin(); }, [visao, fin, errFin, buscarFin]);
+  const vidas = useMemo(
+    () => (vidasBrutas?.k === k ? produtosPorMes(meses, vidasBrutas.linhas) : null),
+    [vidasBrutas, k, meses],
+  );
+  const fin = finBruto?.k === k ? finBruto.linhas : null;
+
+  useEffect(() => { buscarVidas(); }, [buscarVidas]);
+  // Financeiro só é buscado ao abrir uma visão financeira (uma vez por período para todas).
+  useEffect(() => { if (visao !== "Vidas") buscarFin(); }, [visao === "Vidas", buscarFin]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const deSel = lerAnoMes(deCampo);
+  const ateSel = lerAnoMes(ateCampo);
+  const erroPeriodo = validarPeriodo(deSel, ateSel, new Date());
+  const alterado = deCampo !== anoMesCampo(periodo.de) || ateCampo !== anoMesCampo(periodo.ate);
+  const aplicar = () => {
+    if (erroPeriodo || !deSel || !ateSel) return;
+    const novo = { de: deSel, ate: ateSel };
+    periodoAplicado = novo;
+    setPeriodo(novo);
+  };
+  const hoje = new Date();
+  const maxCampo = anoMesCampo({ ano: hoje.getUTCFullYear(), mes: hoje.getUTCMonth() + 1 });
+  const minCampo = anoMesCampo(INICIO_EVOLUCAO_PRODUTOS);
 
   const aceitaPerCapita = INDICADORES_PER_CAPITA.includes(visao as IndicadorFinanceiro);
   const emPerCapita = modo === "Per capita" && aceitaPerCapita;
   const gradeFin = useMemo(() => {
     if (!fin || visao === "Vidas") return null;
-    const g = financeiroPorMes(MESES, fin, visao as IndicadorFinanceiro);
+    const g = financeiroPorMes(meses, fin, visao as IndicadorFinanceiro);
     if (!emPerCapita) return g;
     return vidas ? perCapita(g, vidas) : null;
-  }, [fin, visao, emPerCapita, vidas]);
+  }, [fin, visao, emPerCapita, vidas, meses]);
 
   const erro = visao === "Vidas" ? errVidas : errFin ?? (emPerCapita ? errVidas : null);
   const linhas = visao === "Vidas" ? vidas : gradeFin;
@@ -192,6 +230,26 @@ const EvolucaoProdutos = () => {
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
       <nav aria-label="Indicadores" className="flex shrink-0 flex-wrap items-center justify-center gap-3">
+        <form
+          aria-label="Período"
+          onSubmit={(e) => { e.preventDefault(); aplicar(); }}
+          className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 shadow-sm"
+        >
+          <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            De
+            <input type="month" required min={minCampo} max={maxCampo} value={deCampo} onChange={(e) => setDeCampo(e.target.value)}
+              className="h-8 rounded-md border border-input bg-background px-2 text-sm text-foreground" />
+          </label>
+          <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            Até
+            <input type="month" required min={minCampo} max={maxCampo} value={ateCampo} onChange={(e) => setAteCampo(e.target.value)}
+              className="h-8 rounded-md border border-input bg-background px-2 text-sm text-foreground" />
+          </label>
+          <Button type="submit" size="sm" disabled={!!erroPeriodo || !alterado} title={erroPeriodo ?? "Aplicar o período"}
+            className="h-8 rounded-full px-3">
+            <Check className="mr-1 h-3.5 w-3.5" />Aplicar
+          </Button>
+        </form>
         <div
           role="group"
           aria-label="Total ou per capita"
@@ -232,6 +290,7 @@ const EvolucaoProdutos = () => {
               {emPerCapita ? TITULOS[visao].replace("(R$)", "· per capita (R$ por vida)") : TITULOS[visao]}
             </h2>
           </header>
+          {erroPeriodo && alterado && <p className="mb-2 text-sm text-destructive">{erroPeriodo}</p>}
           {erro ? (
             <Aviso erro={erro} onRetry={visao === "Vidas" || !errFin ? buscarVidas : buscarFin} />
           ) : !linhas ? (
