@@ -27,10 +27,11 @@ describe("Estudo map selection", () => {
     expect(screen.queryByText("Mapa regional selecionado")).toBeNull();
   });
 
-  it("opens the Gestão Rede view as a placeholder awaiting definition", () => {
+  it("opens the Gestão Rede view with its variables", () => {
     render(<TooltipProvider><UberabaEstudoMapas /></TooltipProvider>);
     fireEvent.click(screen.getByRole("button", { name: "Gestão Rede" }));
     expect(screen.getByRole("button", { name: "Gestão Rede" })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("region", { name: "Gestão Rede" })).toHaveTextContent("Em definição");
+    expect(screen.getByLabelText("Valor Vida Paulo")).toBeVisible();
+    expect(screen.getByLabelText("Número Vidas total")).toBeVisible();
   });
 });

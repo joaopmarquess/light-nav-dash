@@ -11,3 +11,7 @@
 - [x] Botões Geral / Fácil 50 / Demais.
 - [x] Corte em todas as telas de sinistralidade: último mês com despesas acima de R$ 20 milhões.
 - [x] Conferir as visões na tela após instalar o script na base.
+## Estudo Uberaba › Gestão Rede
+- [x] Botão Gestão Rede na etapa Estudo.
+- [x] Tela com as sete variáveis (Valor Vida, Teto, Adiantamento de Paulo e Adeir; Número Vidas total).
+- [x] Quadro Antecipação × Mensal por mês, semelhante ao anexo (regra de recuperação a confirmar com Dênis).
