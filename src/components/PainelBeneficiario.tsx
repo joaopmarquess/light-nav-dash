@@ -311,7 +311,7 @@ export default function PainelBeneficiario() {
   const EardPend = () => <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando dados assistenciais…</div>;
 
   return (
-    <section className="flex h-full min-h-0 flex-col gap-3">
+    <section className="flex h-full min-h-0 flex-col gap-1.5">
       <div className="shrink-0 rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
         <div className={`min-w-0 ${painelBenef ? "lg:w-[min(36rem,45%)] lg:shrink-0" : "w-full"}`}>
