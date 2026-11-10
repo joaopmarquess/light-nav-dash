@@ -421,14 +421,16 @@ export default function PainelBeneficiario() {
             <Card label="Despesa assistencial" value={eardLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : ultimo ? fmtR(despesaMes(ultimo)) : "—"} sub={ultimo ? `competência ${fmtComp(ultimo.dt_competencia)}` : eard ? "sem registros" : undefined} />
           </div>
 
-          <div className="flex flex-wrap gap-1 border-b border-border">
-            {ABAS.map((a) => (
-              <button key={a.id} type="button" onClick={() => setAba(a.id)}
-                className={`-mb-px inline-flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm transition-colors ${aba === a.id ? "border-primary font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
-                <a.icon className="h-4 w-4" />{a.label}
-              </button>
-            ))}
-          </div>
+          <nav aria-label="Seções do beneficiário" className="overflow-x-auto py-1">
+            <div className="mx-auto flex w-max gap-0.5 rounded-full border border-border bg-card p-1.5 shadow-sm">
+              {ABAS.map((a) => (
+                <Button key={a.id} type="button" variant={aba === a.id ? "default" : "ghost"} aria-pressed={aba === a.id}
+                  onClick={() => setAba(a.id)} className="h-8 rounded-full px-3 text-[13px]">
+                  <a.icon className="h-4 w-4" />{a.label}
+                </Button>
+              ))}
+            </div>
+          </nav>
 
           {aba === "resumo" && (
             <div className="grid gap-4 lg:grid-cols-2">
