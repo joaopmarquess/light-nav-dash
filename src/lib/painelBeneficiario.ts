@@ -179,19 +179,19 @@ export function membrosFamilia(rows: CarteiraRow[]): MembroFamilia[] {
   }).sort((x, y) => x.dep.localeCompare(y.dep) || x.nm_beneficiario.localeCompare(y.nm_beneficiario));
 }
 
-export type LinhaGrupoFamiliar = { membro: MembroFamilia; mensalidade: number | null; sinistralidadeU12: number | null; temDado: boolean };
+export type LinhaGrupoFamiliar = { membro: MembroFamilia; mensalidade: number | null; u12: ResultadoMes; sinistralidadeU12: number | null; temDado: boolean };
 /** Grupo Familiar: mensalidade atual (vl_tmm) e sinistralidade dos últimos 12 meses válidos por membro;
  *  no total, mensalidades somadas e sinistralidade como razão das somas do grupo. */
 export function grupoFamiliar(membros: MembroFamilia[], eard: (EardRow & { cd_matricula: number })[], meses: number[]) {
   const linhas: LinhaGrupoFamiliar[] = membros.map((m) => {
     const t = resultadoAssistencial(eard.filter((r) => r.cd_matricula === m.cd_matricula), meses).total;
-    return { membro: m, mensalidade: m.vl_tmm ?? null, sinistralidadeU12: t.temDado ? t.sinistralidade : null, temDado: t.temDado };
+    return { membro: m, mensalidade: m.vl_tmm ?? null, u12: t, sinistralidadeU12: t.temDado ? t.sinistralidade : null, temDado: t.temDado };
   });
   const doGrupo = new Set(membros.map((m) => m.cd_matricula));
   const t = resultadoAssistencial(eard.filter((r) => doGrupo.has(r.cd_matricula)), meses).total;
   const mens = linhas.filter((l) => l.mensalidade != null);
   return {
     linhas,
-    total: { mensalidade: mens.length ? mens.reduce((s, l) => s + l.mensalidade!, 0) : null, sinistralidadeU12: t.temDado ? t.sinistralidade : null },
+    total: { mensalidade: mens.length ? mens.reduce((s, l) => s + l.mensalidade!, 0) : null, u12: t, sinistralidadeU12: t.temDado ? t.sinistralidade : null },
   };
 }

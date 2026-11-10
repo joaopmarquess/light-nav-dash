@@ -126,6 +126,8 @@ describe("grupo familiar (mesmo Plano e mesmo Contrato)", () => {
     expect(g.linhas.map((l) => l.sinistralidadeU12)).toEqual([0.5, 1.5]);
     expect(g.total.sinistralidadeU12).toBe(1);
     expect(g.total.mensalidade).toBe(800);
+    expect([g.total.u12.receita, g.total.u12.despesa, g.total.u12.saldo]).toEqual([2000, 2000, 0]);
+    expect(g.linhas[1].u12.saldo).toBe(-500);
   });
   it("Grupo Familiar: membro sem registros fica sem sinistralidade", () => {
     const g = grupoFamiliar([{ cd_matricula: 9, nm_beneficiario: "X", dep: "02", vl_tmm: null }], [], periodoAssistencial(202609));
