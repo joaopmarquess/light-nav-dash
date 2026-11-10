@@ -7,8 +7,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
-  CAMPOS_GESTAO_REDE, GESTAO_REDE_PADRAO, VIDAS_MES_PADRAO, MESES_ADIANTAMENTO,
-  calcularGestaoRede, formatarCampo, gravarGestaoRede, gravarVidasMes, lerGestaoRede, lerVidasMes, parseNumeroBR, totaisGestaoRede,
+  CAMPOS_GESTAO_REDE, GESTAO_REDE_PADRAO, MESES_ADIANTAMENTO, MESES_GESTAO_REDE,
+  calcularGestaoRede, formatarCampo, gravarGestaoRede, lerGestaoRede, parseNumeroBR, totaisGestaoRede,
   type CampoGestaoRede, type ChaveGestaoRede, type TipoMes, type VariaveisGestaoRede,
 } from "@/lib/uberabaGestaoRede";
 
@@ -28,7 +28,7 @@ const nomeCurto = (c: CampoGestaoRede) => c.label.replace(/^(Valor Vida|Teto|Adi
 const DICA_TIPO: Record<TipoMes, string> = {
   adiantamento: "Adiantamento",
   mensal: "Igual ao mensal",
-  recuperacao: "Mensal menos o adiantado a mais, em partes iguais nos meses que alcançam o teto",
+  recuperacao: `Mensal menos o adiantado a mais nos ${MESES_ADIANTAMENTO} primeiros meses, em partes iguais`,
 };
 
 function CelulaAntecipacao({ valor, tipo }: { valor: number; tipo: TipoMes }) {
@@ -44,32 +44,27 @@ function CelulaAntecipacao({ valor, tipo }: { valor: number; tipo: TipoMes }) {
 
 export default function UberabaGestaoRede() {
   const [gravado, setGravado] = useState<VariaveisGestaoRede>(() => lerGestaoRede(localStorage));
-  const [vidasGravadas, setVidasGravadas] = useState<number[]>(() => lerVidasMes(localStorage));
   const [edit, setEdit] = useState(() => textos(gravado));
-  const [vidasEdit, setVidasEdit] = useState<string[]>(() => vidasGravadas.map(fmtInt));
 
   const numeros = useMemo(() => Object.fromEntries(CAMPOS_GESTAO_REDE.map((c) => [c.chave, parseNumeroBR(edit[c.chave])])) as VariaveisGestaoRede, [edit]);
-  const vidas = useMemo(() => vidasEdit.map(parseNumeroBR), [vidasEdit]);
   const invalido = (c: CampoGestaoRede) => !Number.isFinite(numeros[c.chave]) || numeros[c.chave] < 0;
-  const vidaInvalida = (i: number) => !Number.isFinite(vidas[i]) || vidas[i] < 0;
-  const algumInvalido = CAMPOS_GESTAO_REDE.some(invalido) || vidas.some((_, i) => vidaInvalida(i));
-  const alterado = CAMPOS_GESTAO_REDE.some((c) => numeros[c.chave] !== gravado[c.chave]) || vidas.some((v, i) => v !== vidasGravadas[i]);
+  const algumInvalido = CAMPOS_GESTAO_REDE.some(invalido);
+  const alterado = CAMPOS_GESTAO_REDE.some((c) => numeros[c.chave] !== gravado[c.chave]);
 
-  const linhas = useMemo(() => (algumInvalido ? null : calcularGestaoRede(numeros, vidas)), [algumInvalido, numeros, vidas]);
+  const linhas = useMemo(() => (algumInvalido ? null : calcularGestaoRede(numeros)), [algumInvalido, numeros]);
   const totais = linhas ? totaisGestaoRede(linhas) : null;
 
   const gravar = () => {
     try {
       const salvo = gravarGestaoRede(localStorage, numeros);
-      const v = gravarVidasMes(localStorage, vidas);
-      setGravado(salvo); setVidasGravadas(v);
-      setEdit(textos(salvo)); setVidasEdit(v.map(fmtInt));
+      setGravado(salvo);
+      setEdit(textos(salvo));
       toast({ title: "Gestão Rede gravada" });
     } catch (e) {
       toast({ title: "Não foi possível gravar", description: e instanceof Error ? e.message : undefined, variant: "destructive" });
     }
   };
-  const restaurar = () => { setEdit(textos(GESTAO_REDE_PADRAO)); setVidasEdit(VIDAS_MES_PADRAO.map(fmtInt)); };
+  const restaurar = () => setEdit(textos(GESTAO_REDE_PADRAO));
 
   const th = "px-3 py-2 text-right text-xs font-semibold text-muted-foreground";
   const sep = "border-l border-border";
@@ -115,35 +110,26 @@ export default function UberabaGestaoRede() {
             <tr className="border-b border-border">
               <th />
               <th colSpan={3} className={cn("px-3 py-2 text-center text-sm font-semibold text-foreground", sep)}>Antecipação</th>
-              <th colSpan={4} className={cn("px-3 py-2 text-center text-sm font-semibold text-foreground", sep)}>Mensal</th>
+              <th colSpan={5} className={cn("px-3 py-2 text-center text-sm font-semibold text-foreground", sep)}>Mensal</th>
             </tr>
             <tr className="border-b border-border bg-muted/40">
               <th className="px-3 py-2 text-center text-xs font-semibold text-muted-foreground">Mês</th>
               <th className={cn(th, sep)}>Paulo</th><th className={th}>Adeir</th><th className={th}>Total</th>
-              <th className={cn(th, sep)}>Vidas</th><th className={th}>Paulo</th><th className={th}>Adeir</th><th className={th}>Total</th>
+              <th className={cn(th, sep)} title="Vidas que entram no mês">Entradas</th><th className={th} title="Vidas acumuladas no fim do mês">Vidas</th><th className={th}>Paulo</th><th className={th}>Adeir</th><th className={th}>Total</th>
             </tr>
           </thead>
           <tbody>
-            {vidasEdit.map((txt, i) => {
+            {Array.from({ length: MESES_GESTAO_REDE }, (_, i) => {
               const l = linhas?.[i];
               return (
                 <tr key={i} className="border-b border-border/60 last:border-0 hover:bg-muted/30">
                   <td className="px-3 py-1.5 text-center tabular-nums text-muted-foreground">{i + 1}</td>
                   {l ? <><CelulaAntecipacao valor={l.antecipacaoPaulo} tipo={l.tipoPaulo} /><CelulaAntecipacao valor={l.antecipacaoAdeir} tipo={l.tipoAdeir} /></> : <><td /><td /></>}
                   <td className="px-3 py-1.5 text-right font-medium tabular-nums">{l ? fmt(l.antecipacaoTotal) : "—"}</td>
-                  <td className={cn("px-1.5 py-1 text-right", sep)}>
-                    <Input
-                      aria-label={`Vidas mês ${i + 1}`}
-                      inputMode="numeric"
-                      value={txt}
-                      aria-invalid={vidaInvalida(i)}
-                      onChange={(e) => setVidasEdit((s) => s.map((x, j) => (j === i ? e.target.value : x)))}
-                      onBlur={() => { if (!vidaInvalida(i)) setVidasEdit((s) => s.map((x, j) => (j === i ? fmtInt(vidas[i]) : x))); }}
-                      className={cn("ml-auto h-7 w-28 text-right tabular-nums", vidaInvalida(i) && "border-destructive")}
-                    />
-                  </td>
-                  <td className="px-3 py-1.5 text-right tabular-nums">{l ? fmt(l.mensalPaulo) : "—"}</td>
-                  <td className="px-3 py-1.5 text-right tabular-nums">{l ? fmt(l.mensalAdeir) : "—"}</td>
+                  <td className={cn("px-3 py-1.5 text-right tabular-nums text-muted-foreground", sep)}>{l ? fmtInt(l.entradas) : "—"}</td>
+                  <td className="px-3 py-1.5 text-right tabular-nums">{l ? fmtInt(l.vidas) : "—"}</td>
+                  <td className="px-3 py-1.5 text-right tabular-nums" title={l?.tetoPaulo ? "Limitado ao teto" : undefined}>{l ? fmt(l.mensalPaulo) : "—"}</td>
+                  <td className="px-3 py-1.5 text-right tabular-nums" title={l?.tetoAdeir ? "Limitado ao teto" : undefined}>{l ? fmt(l.mensalAdeir) : "—"}</td>
                   <td className="px-3 py-1.5 text-right font-medium tabular-nums">{l ? fmt(l.mensalTotal) : "—"}</td>
                 </tr>
               );
@@ -156,7 +142,8 @@ export default function UberabaGestaoRede() {
                 <td className={cn("px-3 py-2 text-right tabular-nums", sep)}>{fmt(totais.antecipacaoPaulo)}</td>
                 <td className="px-3 py-2 text-right tabular-nums">{fmt(totais.antecipacaoAdeir)}</td>
                 <td className="px-3 py-2 text-right tabular-nums">{fmt(totais.antecipacaoTotal)}</td>
-                <td className={cn("px-3 py-2", sep)} />
+                <td className={cn("px-3 py-2 text-right tabular-nums", sep)}>{fmtInt(totais.entradas)}</td>
+                <td className="px-3 py-2" />
                 <td className="px-3 py-2 text-right tabular-nums">{fmt(totais.mensalPaulo)}</td>
                 <td className="px-3 py-2 text-right tabular-nums">{fmt(totais.mensalAdeir)}</td>
                 <td className="px-3 py-2 text-right tabular-nums">{fmt(totais.mensalTotal)}</td>
@@ -165,7 +152,7 @@ export default function UberabaGestaoRede() {
           )}
         </table>
         <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
-          Antecipação: meses 1 a {MESES_ADIANTAMENTO} pagam o adiantamento; depois, o mensal (vidas × valor por vida). O valor adiantado a mais é descontado em partes iguais nos meses em que o mensal alcança o teto.
+          Vidas: o total entra em partes iguais ao longo dos {MESES_GESTAO_REDE} meses. Mensal: vidas acumuladas × valor por vida, limitado ao teto. Antecipação: meses 1 a {MESES_ADIANTAMENTO} pagam o adiantamento; os {MESES_ADIANTAMENTO} últimos meses abatem o que foi adiantado a mais, em partes iguais.
         </p>
       </section>
     </div>

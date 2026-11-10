@@ -19,87 +19,88 @@ export const CAMPOS_GESTAO_REDE: CampoGestaoRede[] = [
   { chave: "adiantamentoAdeir", label: "Adiantamento Adeir", tipo: "moeda" },
 ];
 
-/** Valores iniciais do quadro fornecido em 10/11/2026 (Teto 7.500 inferido do mês em que a recuperação começa). */
+/** Valores iniciais definidos em 10/11/2026: teto 15.000, adiantamento 7.500, valor por vida 1,00 e 10.000 vidas ao longo do ano. */
 export const GESTAO_REDE_PADRAO: VariaveisGestaoRede = {
   valorVidaPaulo: 1, valorVidaAdeir: 1,
-  tetoPaulo: 7500, tetoAdeir: 7500,
+  tetoPaulo: 15000, tetoAdeir: 15000,
   numeroVidasTotal: 10000,
   adiantamentoPaulo: 7500, adiantamentoAdeir: 7500,
 };
 
-/** Vidas por mês do quadro fornecido (meses 1 a 12). */
-export const VIDAS_MES_PADRAO = [300, 600, 1200, 2000, 2800, 3600, 4400, 5200, 6000, 6800, 7500, 10000];
-/** Meses iniciais pagos com o adiantamento. */
+export const MESES_GESTAO_REDE = 12;
+/** Meses iniciais pagos com o adiantamento; o mesmo número de meses finais abate esses adiantamentos. */
 export const MESES_ADIANTAMENTO = 2;
 
+/**
+ * Distribui o Número Vidas total em entradas iguais ao longo dos meses (diferença de arredondamento espalhada),
+ * retornando as vidas acumuladas no fim de cada mês; o último mês alcança exatamente o total.
+ */
+export function distribuirVidas(total: number, meses = MESES_GESTAO_REDE): { entradas: number[]; vidas: number[] } {
+  const t = Math.max(0, Math.round(total));
+  const vidas = Array.from({ length: meses }, (_, i) => Math.round((t * (i + 1)) / meses));
+  const entradas = vidas.map((v, i) => v - (i ? vidas[i - 1] : 0));
+  return { entradas, vidas };
+}
+
+export type TipoMes = "adiantamento" | "mensal" | "recuperacao";
 export type LinhaGestaoRede = {
-  mes: number; vidas: number;
+  mes: number; entradas: number; vidas: number;
   antecipacaoPaulo: number; antecipacaoAdeir: number; antecipacaoTotal: number;
   mensalPaulo: number; mensalAdeir: number; mensalTotal: number;
   tipoPaulo: TipoMes; tipoAdeir: TipoMes;
+  tetoPaulo: boolean; tetoAdeir: boolean;
 };
-export type TipoMes = "adiantamento" | "mensal" | "recuperacao";
 
 const r2 = (v: number) => Math.round(v * 100) / 100;
 
 /**
- * Antecipação de uma pessoa: nos primeiros meses paga o adiantamento; depois paga o mensal (vidas × valor por vida);
- * o que foi adiantado além do mensal é descontado, em partes iguais, nos meses em que o mensal alcança o teto
- * (se nenhum mês alcançar, no último). Assim o total antecipado é igual ao total mensal.
+ * Antecipação de uma pessoa: os primeiros meses pagam o adiantamento; os seguintes pagam o mensal; os últimos meses
+ * (mesma quantidade dos adiantados) pagam o mensal menos o que foi adiantado além do mensal, em partes iguais.
+ * Assim o total antecipado é igual ao total mensal.
  */
-export function antecipacaoPessoa(mensal: number[], adiantamento: number, teto: number): { valores: number[]; tipos: TipoMes[] } {
+export function antecipacaoPessoa(mensal: number[], adiantamento: number): { valores: number[]; tipos: TipoMes[] } {
   const n = mensal.length;
-  const nAd = Math.min(MESES_ADIANTAMENTO, n);
-  const tipos: TipoMes[] = mensal.map((_, i) => (i < nAd ? "adiantamento" : "mensal"));
+  const nAd = Math.min(MESES_ADIANTAMENTO, Math.floor(n / 2));
+  const tipos: TipoMes[] = mensal.map((_, i) => (i < nAd ? "adiantamento" : i >= n - nAd ? "recuperacao" : "mensal"));
   const valores = mensal.map((m, i) => (i < nAd ? adiantamento : m));
-  const excesso = mensal.slice(0, nAd).reduce((s, m) => s + (adiantamento - m), 0);
-  let recup = mensal.map((m, i) => (i >= nAd && m >= teto ? i : -1)).filter((i) => i >= 0);
-  if (!recup.length && n > nAd) recup = [n - 1];
-  if (recup.length) {
-    const base = recup.reduce((s, i) => s + mensal[i], 0);
-    const parte = (base - excesso) / recup.length;
-    for (const i of recup) { valores[i] = r2(parte); tipos[i] = "recuperacao"; }
+  if (nAd) {
+    const excesso = mensal.slice(0, nAd).reduce((s, m) => s + (adiantamento - m), 0);
+    const base = mensal.slice(n - nAd).reduce((s, m) => s + m, 0);
+    const parte = (base - excesso) / nAd;
+    for (let i = n - nAd; i < n; i++) valores[i] = parte;
   }
   return { valores: valores.map(r2), tipos };
 }
 
-export function calcularGestaoRede(v: VariaveisGestaoRede, vidas: number[]): LinhaGestaoRede[] {
-  const mp = vidas.map((q) => r2(q * v.valorVidaPaulo));
-  const ma = vidas.map((q) => r2(q * v.valorVidaAdeir));
-  const ap = antecipacaoPessoa(mp, v.adiantamentoPaulo, v.tetoPaulo);
-  const aa = antecipacaoPessoa(ma, v.adiantamentoAdeir, v.tetoAdeir);
+/** Mensal de cada pessoa = vidas acumuladas × valor por vida, limitado ao teto. */
+export function calcularGestaoRede(v: VariaveisGestaoRede): LinhaGestaoRede[] {
+  const { entradas, vidas } = distribuirVidas(v.numeroVidasTotal);
+  const bruto = (valor: number) => vidas.map((q) => r2(q * valor));
+  const bp = bruto(v.valorVidaPaulo), ba = bruto(v.valorVidaAdeir);
+  const mp = bp.map((m) => Math.min(m, v.tetoPaulo));
+  const ma = ba.map((m) => Math.min(m, v.tetoAdeir));
+  const ap = antecipacaoPessoa(mp, v.adiantamentoPaulo);
+  const aa = antecipacaoPessoa(ma, v.adiantamentoAdeir);
   return vidas.map((q, i) => ({
-    mes: i + 1, vidas: q,
+    mes: i + 1, entradas: entradas[i], vidas: q,
     antecipacaoPaulo: ap.valores[i], antecipacaoAdeir: aa.valores[i], antecipacaoTotal: r2(ap.valores[i] + aa.valores[i]),
     mensalPaulo: mp[i], mensalAdeir: ma[i], mensalTotal: r2(mp[i] + ma[i]),
     tipoPaulo: ap.tipos[i], tipoAdeir: aa.tipos[i],
+    tetoPaulo: bp[i] > v.tetoPaulo, tetoAdeir: ba[i] > v.tetoAdeir,
   }));
 }
 
 export function totaisGestaoRede(linhas: LinhaGestaoRede[]) {
-  const soma = (k: keyof LinhaGestaoRede) => r2(linhas.reduce((s, l) => s + (l[k] as number), 0));
+  const soma = (k: "antecipacaoPaulo" | "antecipacaoAdeir" | "antecipacaoTotal" | "mensalPaulo" | "mensalAdeir" | "mensalTotal" | "entradas") =>
+    r2(linhas.reduce((s, l) => s + l[k], 0));
   return {
     antecipacaoPaulo: soma("antecipacaoPaulo"), antecipacaoAdeir: soma("antecipacaoAdeir"), antecipacaoTotal: soma("antecipacaoTotal"),
-    mensalPaulo: soma("mensalPaulo"), mensalAdeir: soma("mensalAdeir"), mensalTotal: soma("mensalTotal"), vidas: soma("vidas"),
+    mensalPaulo: soma("mensalPaulo"), mensalAdeir: soma("mensalAdeir"), mensalTotal: soma("mensalTotal"), entradas: soma("entradas"),
   };
 }
 
-const KEY_VIDAS = "uberaba-gestao-rede-vidas-v1";
-export function lerVidasMes(storage: Pick<Storage, "getItem">): number[] {
-  try {
-    const saved = JSON.parse(storage.getItem(KEY_VIDAS) ?? "null");
-    if (Array.isArray(saved) && saved.length === VIDAS_MES_PADRAO.length && saved.every((x) => typeof x === "number" && Number.isFinite(x) && x >= 0)) return saved.map(Math.round);
-  } catch { /* usar o quadro fornecido */ }
-  return [...VIDAS_MES_PADRAO];
-}
-export function gravarVidasMes(storage: Pick<Storage, "setItem">, vidas: number[]): number[] {
-  if (vidas.length !== VIDAS_MES_PADRAO.length || !vidas.every((x) => Number.isFinite(x) && x >= 0)) throw new Error("Vidas por mês inválidas");
-  const out = vidas.map(Math.round);
-  storage.setItem(KEY_VIDAS, JSON.stringify(out));
-  return out;
-}
-
-const KEY = "uberaba-gestao-rede-v1";
+/** v2: novos valores iniciais (teto 15.000) substituem gravações feitas com o padrão anterior. */
+const KEY = "uberaba-gestao-rede-v2";
 type StorageGR = Pick<Storage, "getItem" | "setItem">;
 const valido = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v) && v >= 0;
 const normalizar = (c: CampoGestaoRede, v: number) => (c.tipo === "inteiro" ? Math.round(v) : Math.round(v * 100) / 100);
