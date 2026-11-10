@@ -107,7 +107,7 @@ export const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   controlItem,
   { icon: Users, label: "Carteira", children: [{ icon: Search, label: "Consulta", id: "Carteira · Consulta" }, { icon: LayoutDashboard, label: "Painel", id: "Carteira · Painel" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira · Movimentação" }, { icon: TrendingUp, label: "Evolução Mensal", id: "Carteira · Evolução Mensal" }, { icon: BarChart3, label: "Bench Vidas", id: "Carteira · Bench Vidas" }, { icon: TrendingUp, label: "Entradas", id: "Carteira · Entradas" }, { icon: TrendingUp, label: "Saídas", id: "Carteira · Saídas" }, { icon: BarChart3, label: "Tabelas", id: "Carteira · Tabelas" }] },
-  { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }, { icon: Users, label: "Empresas", id: "Sinistralidade · Empresas" }, { icon: Users, label: "Empresas SB", id: "Sinistralidade · Empresas SB" }, { icon: Users, label: "Empresas Menu", id: "Sinistralidade · Empresas Menu" }] },
+  { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }, { icon: Layers, label: "Evolução Produtos", id: "Sinistralidade · Evolução Produtos" }] },
 ];
 
 export const LAB_IDS = new Set<string>(["Laboratory", ...labItems.flatMap((g) => g.children ? g.children.map((c) => c.id ?? c.label) : [g.label])]);

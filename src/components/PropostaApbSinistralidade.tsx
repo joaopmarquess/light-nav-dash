@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
-import { Grid } from "@/components/SinistralidadeEmpresas";
+import { Grid } from "@/components/SinistralidadeGrid";
 import { carregarSb } from "@/lib/sinistralidadeEmpresasSb";
 import { projecaoFaixas, gridPlano } from "@/lib/propostaApb";
 import { gridFaixas, FAIXAS_EMP, type LinhaEmp } from "@/lib/sinistralidadeEmpresas";
@@ -10,7 +10,7 @@ const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", curren
 const rel = (a: number, b: number) => (b ? ` (${((a / b) * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)` : "");
 const pct = (v: number | null) => (v == null ? "—" : `${(v * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`);
 
-/** Container direito da Proposta APB: sinistralidade da mesma fonte de Sinistralidade › Empresas Menu. */
+/** Container direito da Proposta APB: sinistralidade da planilha MENU_SB_SINISTRALIDA.XLS. */
 type Grids = Record<string, ReturnType<typeof gridPlano>>;
 const deProjecao = (g: Grids, sinFixa?: number, copart?: number): LinhaEmp[] => {
   const fs = Object.keys(g).flatMap((p) => g[p].faixas.map((f) => ({ p, f })));
@@ -72,7 +72,7 @@ export default function PropostaApbSinistralidade({ proj, grupo, fixo, sinFixa, 
     <div className="flex h-full flex-col gap-2 [&_section]:p-3 [&_h3]:mb-1">
       <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
         <h3 className="text-base font-semibold text-foreground">{proj ? "Projeção anual — tabela proposta" : "Sinistralidade 09/2025 a 08/2026"}</h3>
-        <p className="mb-2 text-xs text-muted-foreground">{proj ? sinFixa != null ? `1.242 titulares + 15% dependentes × preço proposto × 12 · copart ${((copart ?? 0.2) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% da CPP · sinistralidade (${(sinFixa * 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%) × receita total` : "Vidas atuais × preço proposto × 12 · copart 20% da CPP · despesas de R$ 2.950.000,00 · despesas da faixa = receita total × sinistralidade" : "Fonte: MENU_SB_SINISTRALIDA.XLS (mesma de Sinistralidade › Empresas Menu)"}</p>
+        <p className="mb-2 text-xs text-muted-foreground">{proj ? sinFixa != null ? `1.242 titulares + 15% dependentes × preço proposto × 12 · copart ${((copart ?? 0.2) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}% da CPP · sinistralidade (${(sinFixa * 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%) × receita total` : "Vidas atuais × preço proposto × 12 · copart 20% da CPP · despesas de R$ 2.950.000,00 · despesas da faixa = receita total × sinistralidade" : "Fonte: MENU_SB_SINISTRALIDA.XLS"}</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {cards.map((c) => (
             <div key={c.t} className="rounded-md border border-border px-2 py-1 text-center">

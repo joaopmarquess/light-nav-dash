@@ -38,3 +38,15 @@ describe("Bench Vidas permission", () => {
     expect(canAccess(access, "Carteira · Movimentação")).toBe(false);
   });
 });
+describe("Sinistralidade submenus", () => {
+  const items = axisPermissionGroups.find(g => g.label === "Sinistralidade")?.items ?? [];
+  it("lists only Períodos and Evolução Produtos", () => {
+    expect(items.map(i => i.label)).toEqual(["Períodos", "Evolução Produtos"]);
+  });
+  it("Evolução Produtos in Sinistralidade is its own permission, independent of the Home shortcut", () => {
+    const access: AxisAccess = { status: "ok", role: "user", permissions: ["Sinistralidade · Evolução Produtos"] };
+    expect(canAccess(access, "Sinistralidade · Evolução Produtos")).toBe(true);
+    expect(canAccess(access, "Evolução Produtos")).toBe(false);
+    expect(canAccess(access, "Sinistralidade · Períodos")).toBe(false);
+  });
+});
