@@ -35,14 +35,27 @@ describe("saldo e sin", () => {
   it("sin sem receita fica vazio", () => expect(sinistralidade(somaVazia())).toBeNull());
 });
 
-import { agruparPorAno, anosSinistralidade } from "./sinistralidadeCompetencias";
+import { agruparPorAno, anosSinistralidade, ultimaCompetenciaValida, ateCompetencia } from "./sinistralidadeCompetencias";
+describe("competência válida = despesa total acima de R$ 20 milhões", () => {
+  const t = (nr_ano: number, nr_mes: number, desp_total: number) => ({ nr_ano, nr_mes, desp_total });
+  it("set/2026 (R$ 32 mi) é a última válida; out/2026 (R$ 14,3 mi), nov e dez ficam fora", () =>
+    expect(ultimaCompetenciaValida([t(2026, 8, 29_239_593), t(2026, 9, 32_011_080), t(2026, 10, 14_257_762), t(2026, 11, 226_720), t(2026, 12, 0)])).toEqual({ ano: 2026, mes: 9 }));
+  it("exatamente R$ 20 milhões não é válido", () =>
+    expect(ultimaCompetenciaValida([t(2026, 1, 25_000_000), t(2026, 2, 20_000_000)])).toEqual({ ano: 2026, mes: 1 }));
+  it("aceita valores em texto e sem mês válido devolve null", () => {
+    expect(ultimaCompetenciaValida([{ nr_ano: "2026", nr_mes: "3", desp_total: "20000000.01" }])).toEqual({ ano: 2026, mes: 3 });
+    expect(ultimaCompetenciaValida([t(2026, 10, 14_000_000)])).toBeNull();
+  });
+  it("meses antigos abaixo de R$ 20 milhões continuam antes do corte", () => {
+    expect(ateCompetencia(2024, 1, { ano: 2026, mes: 9 })).toBe(true);
+    expect(ateCompetencia(2026, 10, { ano: 2026, mes: 9 })).toBe(false);
+  });
+});
 describe("agrupamento por ano", () => {
-  it("em novembro/2026 vai até setembro: outubro ainda não tem despesas", () =>
-    expect(anosSinistralidade(new Date("2026-11-09T12:00:00Z"))).toEqual([{ ano: 2022, ateMes: 12 }, { ano: 2023, ateMes: 12 }, { ano: 2024, ateMes: 12 }, { ano: 2025, ateMes: 12 }, { ano: 2026, ateMes: 9 }]));
-  it("em fevereiro/2027 vai até dezembro/2026, sem mês de 2027", () =>
-    expect(anosSinistralidade(new Date("2027-02-10T12:00:00Z")).at(-1)).toEqual({ ano: 2026, ateMes: 12 }));
-  it("em janeiro/2027 vai até novembro/2026", () =>
-    expect(anosSinistralidade(new Date("2027-01-10T12:00:00Z")).at(-1)).toEqual({ ano: 2026, ateMes: 11 }));
+  it("com última válida em set/2026, vai de 2022 a setembro de 2026", () =>
+    expect(anosSinistralidade({ ano: 2026, mes: 9 })).toEqual([{ ano: 2022, ateMes: 12 }, { ano: 2023, ateMes: 12 }, { ano: 2024, ateMes: 12 }, { ano: 2025, ateMes: 12 }, { ano: 2026, ateMes: 9 }]));
+  it("com última válida em dez/2026, o ano de 2027 não aparece", () =>
+    expect(anosSinistralidade({ ano: 2026, mes: 12 }).map(a => a.ano)).toEqual([2022, 2023, 2024, 2025, 2026]));
   it("soma os meses de cada ano", () => {
     const s = (v: number) => ({ ...somaVazia(), recTotal: v });
     const r = agruparPorAno([{ ano: 2025, mes: 2, soma: s(5) }, { ano: 2024, mes: 1, soma: s(1) }, { ano: 2025, mes: 1, soma: s(3) }]);
@@ -54,5 +67,4 @@ import { saldoLimiteSin } from "./sinistralidadeCompetencias";
 it("limite Sin 90% = 10% da receita total", () => expect(saldoLimiteSin({ ...somaVazia(), recTotal: 1000 }, 0.9)).toBeCloseTo(100));
 
 import { dominioCentrado } from "./sinistralidadeCompetencias";
-it("em janeiro o ano corrente não aparece", () => expect(anosSinistralidade(new Date("2027-01-10T12:00:00Z")).map(a => a.ano)).toEqual([2022, 2023, 2024, 2025, 2026]));
 it("linha limite fica no centro do eixo", () => { const [a, b] = dominioCentrado([0, 500], [100, 300]); expect((a + b) / 2).toBe(200); });
