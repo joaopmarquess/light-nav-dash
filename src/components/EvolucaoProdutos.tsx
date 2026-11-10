@@ -125,15 +125,16 @@ function Grade({ linhas, periodo, fmt = fmtInt, produto, onProduto }: GradeProps
           <tbody key={t}>
             {t !== "PIF" && <tr aria-hidden="true"><td colSpan={colunas} className="h-1 p-0" /></tr>}
             {TIPOS_PRODUTO.map((p, i) => {
-              const fraco = apagado(p.id);
+              // Só as células do produto ficam claras; a coluna Tipo mantém a cor normal.
+              const fraco = apagado(p.id) ? "opacity-40" : "";
               return (
-                <tr key={p.id} className={fraco ? "opacity-40 transition-opacity" : "transition-opacity"}>
+                <tr key={p.id}>
                   {i === 0 && (
                     <th scope="rowgroup" rowSpan={TIPOS_PRODUTO.length + 1} className="rounded-lg bg-secondary px-2 text-left align-middle text-sm font-bold text-secondary-foreground" title={DESC_TIPO[t]}>
                       {t}
                     </th>
                   )}
-                  <th scope="row" className="whitespace-nowrap rounded-lg bg-muted/60 p-0 text-left text-sm font-medium text-foreground">
+                  <th scope="row" className={`${fraco} whitespace-nowrap rounded-lg bg-muted/60 p-0 text-left text-sm font-medium text-foreground transition-opacity`}>
                     <button
                       type="button"
                       aria-pressed={produto === p.id}
@@ -145,11 +146,11 @@ function Grade({ linhas, periodo, fmt = fmtInt, produto, onProduto }: GradeProps
                     </button>
                   </th>
                   {linhas.map((m) => (
-                    <td key={m.dataFim} className="rounded-lg border border-border bg-accent/30 px-2 py-1 text-sm font-semibold tabular-nums text-foreground">
+                    <td key={m.dataFim} className={`${fraco} rounded-lg border border-border bg-accent/30 px-2 py-1 text-sm font-semibold tabular-nums text-foreground transition-opacity`}>
                       <Valor v={m.valores[t][p.id]} fmt={fmt} />
                     </td>
                   ))}
-                  <td className={`${thTotal} border border-primary/30 bg-accent/60 text-foreground`}>
+                  <td className={`${fraco} ${thTotal} border border-primary/30 bg-accent/60 text-foreground transition-opacity`}>
                     <Valor v={periodo.valores[t][p.id]} fmt={fmt} />
                   </td>
                 </tr>
