@@ -338,7 +338,7 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
       </div>
     </div>
   );
-};
+}
 
 /** Abre no último mês com despesas acima de R$ 20 milhões (competência válida da sinistralidade). */
 const EvolucaoProdutos = () => {
