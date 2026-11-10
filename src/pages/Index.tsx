@@ -1,6 +1,7 @@
 import CarteiraTrial from "@/components/CarteiraTrial";
 import CarteiraTrialGeo from "@/components/CarteiraTrialGeo";
 import CarteiraTrialMov from "@/components/CarteiraTrialMov";
+import EvolucaoProdutos from "@/components/EvolucaoProdutos";
 import MovimentacaoEvolucaoMensal from "@/components/MovimentacaoEvolucaoMensal";
 import BenchVidas from "@/components/BenchVidas";
 import CarteiraTabelas from "@/components/CarteiraTabelas";
@@ -646,6 +647,8 @@ const Index = () => {
             <CarteiraTabelas />
           ) : active === "Carteira · Movimentação" ? (
             <CarteiraTrialMov />
+          ) : active === "Evolução Produtos" ? (
+            <EvolucaoProdutos />
           ) : active === "Carteira · Evolução Mensal" ? (
             <MovimentacaoEvolucaoMensal />
           ) : active === "Carteira · Bench Vidas" ? (
