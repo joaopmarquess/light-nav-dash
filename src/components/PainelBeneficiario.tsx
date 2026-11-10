@@ -5,8 +5,8 @@ import { hostinger } from "@/lib/hostingerClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  CATEGORIAS_DESPESA, comporCodigoAlternativo, despesaMes, linhaDoTempo, periodoAssistencial, porCompetencia, receitaMes, registroAtual, resultadoAssistencial, resumoEard, statusInfo,
-  type CarteiraRow, type EardRow, type ResultadoMes,
+  CATEGORIAS_DESPESA, comporCodigoAlternativo, despesaMes, faixaFamilia, linhaDoTempo, membrosFamilia, periodoAssistencial, porCompetencia, receitaMes, registroAtual, resultadoAssistencial, resumoEard, statusInfo,
+  type CarteiraRow, type EardRow, type MembroFamilia, type ResultadoMes,
 } from "@/lib/painelBeneficiario";
 
 type Modo = "nome" | "cpf" | "matricula" | "contrato" | "alternativa";
@@ -79,9 +79,22 @@ const LINHAS_RESULTADO: { key: keyof ResultadoMes; label: string; tip: string; d
   { key: "sinistralidade", label: "Sinistralidade", tip: "Despesas ÷ Total Receitas", pct: true },
 ];
 
-function ResultadoAssistencial({ eard }: { eard: EardRow[] }) {
+const ESCOPOS = ["Beneficiário", "Família"] as const;
+type Escopo = (typeof ESCOPOS)[number];
+type EardFamilia = EardRow & { cd_matricula: number };
+type Familia = { membros: MembroFamilia[]; eard: EardFamilia[] };
+
+function ResultadoAssistencial({ eard, escopo, onEscopo, familia, familiaLoading, familiaErro }: {
+  eard: EardRow[]; escopo: Escopo; onEscopo: (e: Escopo) => void;
+  familia: Familia | null; familiaLoading: boolean; familiaErro: string | null;
+}) {
   const meses = useMemo(() => periodoAssistencial(), []);
-  const { meses: linhas, total } = useMemo(() => resultadoAssistencial(eard, meses), [eard, meses]);
+  const fonte = escopo === "Família" ? familia?.eard ?? [] : eard;
+  const { meses: linhas, total } = useMemo(() => resultadoAssistencial(fonte, meses), [fonte, meses]);
+  const porMembro = useMemo(() => (escopo === "Família" && familia
+    ? familia.membros.map((m) => ({ m, t: resultadoAssistencial(familia.eard.filter((r) => r.cd_matricula === m.cd_matricula), meses).total }))
+    : []), [escopo, familia, meses]);
+  const aguardando = escopo === "Família" && (familiaLoading || (!familia && !familiaErro));
   const celula = (m: ResultadoMes, l: (typeof LINHAS_RESULTADO)[number]) => {
     if (!m.temDado) return <span className="text-muted-foreground/60">—</span>;
     if (l.pct) return fmtPct(m.sinistralidade);
@@ -91,16 +104,34 @@ function ResultadoAssistencial({ eard }: { eard: EardRow[] }) {
   return (
     <div className="space-y-3 rounded-lg border border-border bg-card p-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Receitas, despesas, saldo e sinistralidade</h4>
+        <div className="flex flex-wrap items-center gap-3">
+          <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Receitas, despesas, saldo e sinistralidade</h4>
+          <div role="group" aria-label="Beneficiário ou família" title="Família = mesmo Plano e mesmo Contrato, todos os dependentes"
+            className="flex items-center gap-1 rounded-full border border-border bg-card p-1 shadow-sm">
+            {ESCOPOS.map((e) => (
+              <Button key={e} type="button" variant="ghost" aria-pressed={escopo === e} onClick={() => onEscopo(e)}
+                className={`h-7 rounded-full px-3 text-xs ${escopo === e ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "bg-muted"}`}>
+                {e}
+              </Button>
+            ))}
+          </div>
+        </div>
         <span className="text-xs text-muted-foreground">{fmtComp(meses[0])} a {fmtComp(meses.at(-1)!)} · 12 meses</span>
       </div>
+      {escopo === "Família" && familia && (
+        <p className="text-xs text-muted-foreground">
+          Grupo familiar · {familia.membros.length} {familia.membros.length === 1 ? "pessoa" : "pessoas"} no mesmo Plano e Contrato
+        </p>
+      )}
+      {aguardando ? <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando o grupo familiar…</div>
+        : escopo === "Família" && familiaErro ? <p className="text-sm text-destructive">{familiaErro}</p> : (<>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Card label="Total Receitas" value={total.temDado ? fmtR(total.totalReceitas) : "—"} sub="no período" />
         <Card label="Despesas" value={total.temDado ? fmtR(total.despesa) : "—"} sub="no período" />
         <Card label="Saldo" value={total.temDado ? <span className={total.saldo < 0 ? "text-destructive" : undefined}>{fmtR(total.saldo)}</span> : "—"} sub="Total Receitas − Despesas" />
         <Card label="Sinistralidade" value={total.temDado ? fmtPct(total.sinistralidade) : "—"} sub="Despesas ÷ Total Receitas" />
       </div>
-      {!total.temDado ? <p className="text-sm text-muted-foreground">Sem registros desta matrícula no período.</p> : (
+      {!total.temDado ? <p className="text-sm text-muted-foreground">{escopo === "Família" ? "Sem registros do grupo familiar no período." : "Sem registros desta matrícula no período."}</p> : (
         <div className="overflow-x-auto">
           <table className="w-full text-xs tabular-nums">
             <thead className="bg-muted/50 text-[10px] uppercase text-muted-foreground">
@@ -118,6 +149,27 @@ function ResultadoAssistencial({ eard }: { eard: EardRow[] }) {
           </table>
         </div>
       )}
+      {porMembro.length > 0 && (
+        <div className="overflow-x-auto">
+          <h5 className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Por membro da família · total do período</h5>
+          <table className="w-full text-xs tabular-nums">
+            <thead className="bg-muted/50 text-[10px] uppercase text-muted-foreground">
+              <tr><th className="px-2 py-1.5 text-left">Dep</th><th className="px-2 text-left">Nome</th><th className="px-2 text-left">Relacionamento</th><th className="px-2 text-left">Status</th>
+                <th className="px-2 text-right">Total Receitas</th><th className="px-2 text-right">Despesas</th><th className="px-2 text-right">Saldo</th><th className="px-2 text-right">Sinistralidade</th></tr>
+            </thead>
+            <tbody>{porMembro.map(({ m, t }) => (
+              <tr key={m.cd_matricula} className="border-t border-border">
+                <td className="px-2 py-1.5">{m.dep}</td><td className="px-2">{m.nm_beneficiario}</td><td className="px-2">{m.tp_relacionamento ?? "—"}</td><td className="px-2">{statusInfo(m.tp_status).label}</td>
+                {t.temDado ? (<>
+                  <td className="px-2 text-right">{fmtDec(t.totalReceitas)}</td><td className="px-2 text-right">{fmtDec(t.despesa)}</td>
+                  <td className={`px-2 text-right ${t.saldo < 0 ? "text-destructive" : ""}`}>{fmtDec(t.saldo)}</td><td className="px-2 text-right">{fmtPct(t.sinistralidade)}</td>
+                </>) : <td colSpan={4} className="px-2 text-right text-muted-foreground">sem registros no período</td>}
+              </tr>))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      </>)}
     </div>
   );
 }
@@ -139,6 +191,10 @@ export default function PainelBeneficiario() {
   const [eard, setEard] = useState<EardRow[] | null>(null);
   const [eardLoading, setEardLoading] = useState(false);
   const [comp, setComp] = useState<number | null>(null);
+  const [escopo, setEscopo] = useState<Escopo>("Beneficiário");
+  const [familia, setFamilia] = useState<Familia | null>(null);
+  const [familiaLoading, setFamiliaLoading] = useState(false);
+  const [familiaErro, setFamiliaErro] = useState<string | null>(null);
 
   useEffect(() => {
     if (modo === "alternativa") planoRef.current?.focus();
@@ -148,6 +204,7 @@ export default function PainelBeneficiario() {
     setTermo(""); setCodigo({ plano: "", contrato: "", dep: "" });
     setErro(null); setResultados(null); setMat(null); setAba("resumo");
     setMovs([]); setCad(null); setEard(null); setComp(null);
+    setEscopo("Beneficiário"); setFamilia(null); setFamiliaErro(null);
     if (modo === "alternativa") planoRef.current?.focus();
   }
 
@@ -178,6 +235,7 @@ export default function PainelBeneficiario() {
 
   async function selecionar(m: number) {
     setMat(m); setAba("resumo"); setCarregando(true); setMovs([]); setCad(null); setEard(null); setComp(null); setErro(null);
+    setEscopo("Beneficiário"); setFamilia(null); setFamiliaErro(null); setFamiliaLoading(false);
     try {
       const [a, b] = await Promise.all([
         hostinger.from("view_ecarteira").select("*").eq("cd_matricula", m).limit(500),
@@ -210,6 +268,33 @@ export default function PainelBeneficiario() {
   const eventos = useMemo(() => linhaDoTempo(movs, cad), [movs, cad]);
   const idade = atual?.dt_nascimento ? Math.floor((Date.now() - new Date(atual.dt_nascimento).getTime()) / 31557600000) : cad?.nr_idade_atual;
 
+
+  async function carregarFamilia() {
+    if (familia || familiaLoading) return;
+    const faixa = faixaFamilia(atual?.cd_mat_alternativa ?? cad?.cd_mat_alternativa);
+    if (!faixa) { setFamiliaErro("Beneficiário sem código alternativo: não dá para identificar o grupo familiar."); return; }
+    setFamiliaLoading(true); setFamiliaErro(null);
+    try {
+      const { data, error } = await hostinger.from("view_ecarteira")
+        .select("cd_matricula,cd_mat_alternativa,nm_beneficiario,tp_relacionamento,tp_status,dt_momento,tp_plano,cd_contrato")
+        .eq("tp_plano", "SAUDE").gte("cd_mat_alternativa", faixa.de).lte("cd_mat_alternativa", faixa.ate).limit(2000);
+      if (error) throw error;
+      const rows = (data ?? []) as unknown as CarteiraRow[];
+      const membros = membrosFamilia(rows);
+      const mats = membros.map((x) => x.cd_matricula);
+      if (!mats.length && mat) mats.push(mat);
+      const meses = periodoAssistencial();
+      const contratos = [...new Set(rows.map((r) => r.cd_contrato).filter((c) => c != null))];
+      let q = hostinger.from("view_eard_mensal").select(`cd_matricula,${COLS_EARD}`).in("cd_matricula", mats)
+        .gte("dt_competencia", meses[0]).lte("dt_competencia", meses.at(-1)!).limit(10000);
+      if (contratos.length) q = q.in("cd_contrato_mv", contratos); // filtro por contrato acelera a consulta
+      const e = await q;
+      if (e.error) throw e.error;
+      setFamilia({ membros, eard: (e.data ?? []) as unknown as EardFamilia[] });
+    } catch (err: any) { setFamiliaErro(err?.message ?? String(err)); }
+    finally { setFamiliaLoading(false); }
+  }
+  function mudarEscopo(e: Escopo) { setEscopo(e); if (e === "Família") carregarFamilia(); }
   const EardPend = () => <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando dados assistenciais…</div>;
 
   return (
@@ -421,9 +506,9 @@ export default function PainelBeneficiario() {
             </div>
           )}
 
-          {aba === "assist" && (eardLoading ? <EardPend /> : !eard || eard.length === 0 ? <div className="space-y-4"><ResultadoAssistencial eard={[]} /><p className="text-sm text-muted-foreground">Sem registros assistenciais para esta matrícula.</p></div> : (
+          {aba === "assist" && (eardLoading ? <EardPend /> : !eard || eard.length === 0 ? <div className="space-y-4"><ResultadoAssistencial eard={[]} escopo={escopo} onEscopo={mudarEscopo} familia={familia} familiaLoading={familiaLoading} familiaErro={familiaErro} /><p className="text-sm text-muted-foreground">Sem registros assistenciais para esta matrícula.</p></div> : (
             <div className="space-y-4">
-              <ResultadoAssistencial eard={eard} />
+              <ResultadoAssistencial eard={eard} escopo={escopo} onEscopo={mudarEscopo} familia={familia} familiaLoading={familiaLoading} familiaErro={familiaErro} />
               <div className="flex items-center gap-2 text-sm">
                 <span className="text-muted-foreground">Competência</span>
                 <select value={comp ?? ""} onChange={(e) => setComp(Number(e.target.value))} className="h-8 rounded-md border border-border bg-background px-2 text-sm">
