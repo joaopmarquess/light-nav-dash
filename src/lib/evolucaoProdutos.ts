@@ -3,7 +3,38 @@
 // Tipo de produto (carteira_evolucao_produtos): Fácil 50 = plano MV 168–173; demais pela recuperação
 // (CONVENCIONAL / COPARTICIPACAO) da vigência mais recente da matrícula.
 
-export const PERIODO_EVOLUCAO_PRODUTOS = { de: { ano: 2025, mes: 10 }, ate: { ano: 2026, mes: 9 } } as const;
+import { DEFASAGEM_DESPESAS_MESES } from "./sinistralidadeCompetencias";
+
+export type AnoMes = { ano: number; mes: number };
+/** Primeiro mês que a tela aceita (início do cálculo de vidas na carteira). */
+export const INICIO_EVOLUCAO_PRODUTOS: AnoMes = { ano: 2019, mes: 1 };
+
+const idxMes = (a: AnoMes) => a.ano * 12 + (a.mes - 1);
+const deIdx = (i: number): AnoMes => ({ ano: Math.floor(i / 12), mes: (i % 12) + 1 });
+
+/** Período inicial: os 12 meses até o último mês com despesas completas (mês atual − defasagem, em UTC). */
+export function periodoPadrao(hoje: Date): { de: AnoMes; ate: AnoMes } {
+  const ate = hoje.getUTCFullYear() * 12 + hoje.getUTCMonth() - DEFASAGEM_DESPESAS_MESES;
+  return { de: deIdx(ate - 11), ate: deIdx(ate) };
+}
+
+/** "AAAA-MM" (valor do campo de mês) → AnoMes; inválido → null. */
+export function lerAnoMes(v: string): AnoMes | null {
+  const m = /^(\d{4})-(\d{2})$/.exec(v.trim());
+  if (!m) return null;
+  const ano = Number(m[1]), mes = Number(m[2]);
+  return mes >= 1 && mes <= 12 ? { ano, mes } : null;
+}
+export const anoMesCampo = (a: AnoMes) => `${a.ano}-${String(a.mes).padStart(2, "0")}`;
+
+/** Mensagem de erro do filtro De/Até, ou null quando o período é válido. */
+export function validarPeriodo(de: AnoMes | null, ate: AnoMes | null, hoje: Date): string | null {
+  if (!de || !ate) return "Informe De e Até no formato mm/aaaa.";
+  if (idxMes(de) > idxMes(ate)) return "O mês De deve ser anterior ou igual ao mês Até.";
+  if (idxMes(de) < idxMes(INICIO_EVOLUCAO_PRODUTOS)) return "A base começa em 01/2019.";
+  if (idxMes(ate) > hoje.getUTCFullYear() * 12 + hoje.getUTCMonth()) return "O mês Até não pode ser posterior ao mês atual.";
+  return null;
+}
 
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
