@@ -31,7 +31,11 @@ const DESC_TIPO: Record<(typeof TIPOS_PLANO)[number], string> = {
 const Valor = ({ v }: { v: number | null }) =>
   v == null ? <span className="text-sm font-normal text-muted-foreground">Sem dado</span> : <>{fmt(v)}</>;
 
+const VISOES = ["Vidas", "Receita", "Coparticipação", "Despesas"] as const;
+type Visao = (typeof VISOES)[number];
+
 const EvolucaoProdutos = () => {
+  const [visao, setVisao] = useState<Visao>("Vidas");
   const [prod, setProd] = useState<LinhaProd[] | null>(cacheProd);
   const [errProd, setErrProd] = useState<string | null>(null);
 
@@ -47,7 +51,29 @@ const EvolucaoProdutos = () => {
   const colunas = MESES.length + 2;
 
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      <nav aria-label="Indicadores" className="flex shrink-0 justify-center">
+        <div className="flex max-w-full flex-wrap items-center justify-center gap-1 rounded-lg border border-border bg-card p-1.5 shadow-sm sm:rounded-full">
+          {VISOES.map((v) => (
+            <Button
+              key={v}
+              variant="ghost"
+              aria-pressed={visao === v}
+              onClick={() => setVisao(v)}
+              className={`h-8 rounded-full px-4 text-sm ${visao === v ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "bg-muted"}`}
+            >
+              {v}
+            </Button>
+          ))}
+        </div>
+      </nav>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+      {visao !== "Vidas" ? (
+        <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-foreground">{visao} por tipo de produto</h2>
+          <p className="mt-2 text-sm text-muted-foreground">Em definição.</p>
+        </section>
+      ) : (
       <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
         <header className="mb-3">
           <h2 className="text-lg font-semibold text-foreground">Vidas por tipo de produto</h2>
@@ -126,6 +152,8 @@ const EvolucaoProdutos = () => {
           </div>
         )}
       </section>
+      )}
+      </div>
     </div>
   );
 };
