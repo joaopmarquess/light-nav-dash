@@ -88,23 +88,66 @@ function gradePorMes(meses: MesEvolucao[], linhas: LinhaGrade[]) {
  * Vidas por tipo de plano e tipo de produto em cada mês. Mês sem nenhuma linha fica null (sem inferência);
  * em mês calculado, combinação ausente significa zero vidas.
  */
-export function produtosPorMes(meses: MesEvolucao[], linhas: LinhaProduto[]) {
-  return gradePorMes(meses, linhas.map((l) => ({ ano: l.ano, mes: l.mes, sigla: l.sigla, produto: l.produto, valor: l.vidas })));
+export function produtosPorMes(meses: MesEvolucao[], linhas: LinhaProduto[]): GradeComTotais[] {
+  return comTotais(gradePorMes(meses, linhas.map((l) => ({ ano: l.ano, mes: l.mes, sigla: l.sigla, produto: l.produto, valor: l.vidas }))));
 }
 
-// Receita, Coparticipação e Despesas (evolucao_produtos_financeiro, view_eard_mensal).
-// Receita = CPP + copart + outros; Despesas = seis colunas de despesa; Coparticipação = vl_rec_copart.
+// Indicadores financeiros (evolucao_produtos_financeiro, view_eard_mensal):
+// Receita = vl_rec_cpp; Coparticipação = vl_rec_copart; Total Receitas = Receita + Coparticipação;
+// Despesas = seis colunas de despesa; Saldo = Total Receitas − Despesas;
+// Sinistralidade = Despesas ÷ Total Receitas, sempre como razão das somas (nunca soma de percentuais).
 export type LinhaFinanceira = {
   nr_ano: number; nr_mes: number; sigla: string | null; produto: string | null;
-  rec_total: Num; rec_copart: Num; desp_total: Num;
+  rec_cpp: Num; rec_copart: Num; desp_total: Num; rec_total?: Num; rec_outros?: Num;
 };
-export const INDICADORES_FINANCEIROS = { Receita: "rec_total", "Coparticipação": "rec_copart", Despesas: "desp_total" } as const;
-export type IndicadorFinanceiro = keyof typeof INDICADORES_FINANCEIROS;
+const n0 = (v: Num) => Number(v) || 0;
+const totalReceitas = (l: LinhaFinanceira) => n0(l.rec_cpp) + n0(l.rec_copart);
+export const INDICADORES_FINANCEIROS = {
+  Receita: (l: LinhaFinanceira) => n0(l.rec_cpp),
+  "Coparticipação": (l: LinhaFinanceira) => n0(l.rec_copart),
+  "Total Receitas": totalReceitas,
+  Despesas: (l: LinhaFinanceira) => n0(l.desp_total),
+  Saldo: (l: LinhaFinanceira) => totalReceitas(l) - n0(l.desp_total),
+} as const;
+export type IndicadorFinanceiro = keyof typeof INDICADORES_FINANCEIROS | "Sinistralidade";
 
-/** Grade financeira por mês; valores fora de PIF/PCA/PCE ou sem produto ficam em foraDosTotais (sem inferência). */
-export function financeiroPorMes(meses: MesEvolucao[], linhas: LinhaFinanceira[], indicador: IndicadorFinanceiro) {
-  const campo = INDICADORES_FINANCEIROS[indicador];
-  return gradePorMes(meses, linhas.map((l) => ({ ano: l.nr_ano, mes: l.nr_mes, sigla: l.sigla, produto: l.produto, valor: l[campo] })));
+const gradeFin = (meses: MesEvolucao[], linhas: LinhaFinanceira[], valor: (l: LinhaFinanceira) => number) =>
+  gradePorMes(meses, linhas.map((l) => ({ ano: l.nr_ano, mes: l.nr_mes, sigla: l.sigla, produto: l.produto, valor: valor(l) })));
+
+/** Grade com subtotais por tipo e total geral prontos para exibição. */
+export type GradeComTotais = ReturnType<typeof gradePorMes>[number] & {
+  subtotais: Record<TipoPlano, number | null>; total: number | null;
+};
+
+/** Acrescenta subtotais (soma dos produtos) e total geral (soma dos tipos) a uma grade aditiva. */
+export function comTotais(grade: ReturnType<typeof gradePorMes>): GradeComTotais[] {
+  return grade.map((m) => ({
+    ...m,
+    subtotais: Object.fromEntries(TIPOS_PLANO.map((t) => [t, subtotalTipo(m.valores, t)])) as Record<TipoPlano, number | null>,
+    total: totalGeral(m.valores),
+  }));
+}
+
+const razao = (a: number | null, b: number | null) => (a == null || b == null || b === 0 ? null : a / b);
+
+/**
+ * Grade financeira por mês; valores fora de PIF/PCA/PCE ou sem produto ficam em foraDosTotais (sem inferência).
+ * Sinistralidade (fração, 0,85 = 85%) divide Despesas por Total Receitas em cada célula, subtotal e total.
+ */
+export function financeiroPorMes(meses: MesEvolucao[], linhas: LinhaFinanceira[], indicador: IndicadorFinanceiro): GradeComTotais[] {
+  if (indicador !== "Sinistralidade") return comTotais(gradeFin(meses, linhas, INDICADORES_FINANCEIROS[indicador]));
+  const desp = comTotais(gradeFin(meses, linhas, INDICADORES_FINANCEIROS.Despesas));
+  const rec = comTotais(gradeFin(meses, linhas, totalReceitas));
+  return desp.map((d, i) => {
+    const r = rec[i];
+    const valores = {} as GradeComTotais["valores"];
+    for (const t of TIPOS_PLANO) {
+      valores[t] = {} as GradeComTotais["valores"][TipoPlano];
+      for (const p of TIPOS_PRODUTO) valores[t][p.id] = razao(d.valores[t][p.id], r.valores[t][p.id]);
+    }
+    const subtotais = Object.fromEntries(TIPOS_PLANO.map((t) => [t, razao(d.subtotais[t], r.subtotais[t])])) as Record<TipoPlano, number | null>;
+    return { ...d, valores, subtotais, total: razao(d.total, r.total), foraDosTotais: 0 };
+  });
 }
 
 type ValoresMes = ReturnType<typeof gradePorMes>[number]["valores"];
