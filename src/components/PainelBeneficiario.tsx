@@ -521,9 +521,9 @@ export default function PainelBeneficiario() {
             </div>
           )}
 
-          {aba === "assist" && (eardLoading ? <EardPend /> : !eard || eard.length === 0 ? <div className="space-y-4"><ResultadoAssistencial eard={[]} escopo={escopo} onEscopo={mudarEscopo} familia={familia} familiaLoading={familiaLoading} familiaErro={familiaErro} /><p className="text-sm text-muted-foreground">Sem registros assistenciais para esta matrícula.</p></div> : (
+          {aba === "assist" && (eardLoading ? <EardPend /> : !eard || eard.length === 0 ? <div className="space-y-4">{ultimaValida != null && <ResultadoAssistencial eard={[]} ate={ultimaValida} escopo={escopo} onEscopo={mudarEscopo} familia={familia} familiaLoading={familiaLoading} familiaErro={familiaErro} />}<p className="text-sm text-muted-foreground">Sem registros assistenciais para esta matrícula.</p></div> : (
             <div className="space-y-4">
-              <ResultadoAssistencial eard={eard} escopo={escopo} onEscopo={mudarEscopo} familia={familia} familiaLoading={familiaLoading} familiaErro={familiaErro} />
+              <ResultadoAssistencial eard={eard} ate={ultimaValida!} escopo={escopo} onEscopo={mudarEscopo} familia={familia} familiaLoading={familiaLoading} familiaErro={familiaErro} />
               <div className="flex items-center gap-2 text-sm">
                 <span className="text-muted-foreground">Competência</span>
                 <select value={comp ?? ""} onChange={(e) => setComp(Number(e.target.value))} className="h-8 rounded-md border border-border bg-background px-2 text-sm">
