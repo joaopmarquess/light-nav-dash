@@ -75,7 +75,7 @@ export default function UberabaGestaoRede() {
   const sep = "border-l border-border";
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4 lg:flex-row lg:items-start">
+    <div className="flex min-h-0 flex-col gap-4 pb-6 lg:flex-row lg:items-start">
       <aside aria-label="Variáveis" className="w-full shrink-0 space-y-4 rounded-lg border border-border bg-card p-4 shadow-sm lg:w-64">
         {GRUPOS.map((g) => (
           <fieldset key={g.titulo} className="space-y-2">
@@ -131,7 +131,7 @@ export default function UberabaGestaoRede() {
                   <td className="px-3 py-1.5 text-center tabular-nums text-muted-foreground">{i + 1}</td>
                   {l ? <><CelulaAntecipacao valor={l.antecipacaoPaulo} tipo={l.tipoPaulo} /><CelulaAntecipacao valor={l.antecipacaoAdeir} tipo={l.tipoAdeir} /></> : <><td /><td /></>}
                   <td className="px-3 py-1.5 text-right font-medium tabular-nums">{l ? fmt(l.antecipacaoTotal) : "—"}</td>
-                  <td className={cn("px-1.5 py-1", sep)}>
+                  <td className={cn("px-1.5 py-1 text-right", sep)}>
                     <Input
                       aria-label={`Vidas mês ${i + 1}`}
                       inputMode="numeric"
@@ -139,7 +139,7 @@ export default function UberabaGestaoRede() {
                       aria-invalid={vidaInvalida(i)}
                       onChange={(e) => setVidasEdit((s) => s.map((x, j) => (j === i ? e.target.value : x)))}
                       onBlur={() => { if (!vidaInvalida(i)) setVidasEdit((s) => s.map((x, j) => (j === i ? fmtInt(vidas[i]) : x))); }}
-                      className={cn("h-7 text-right tabular-nums", vidaInvalida(i) && "border-destructive")}
+                      className={cn("ml-auto h-7 w-28 text-right tabular-nums", vidaInvalida(i) && "border-destructive")}
                     />
                   </td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{l ? fmt(l.mensalPaulo) : "—"}</td>
