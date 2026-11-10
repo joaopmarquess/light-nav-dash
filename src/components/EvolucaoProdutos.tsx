@@ -3,8 +3,9 @@ import { Check, LoaderCircle, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { hostinger } from "@/lib/hostingerClient";
 import {
-  anoMesCampo, financeiroPorMes, INDICADORES_PER_CAPITA, lerAnoMes, mascaraAnoMes, mesesPeriodo, perCapita, periodoPadrao,
-  produtosPorMes, TIPOS_PLANO, TIPOS_PRODUTO, validarPeriodo, type AnoMes, type IndicadorFinanceiro, type LinhaFinanceira, type LinhaProduto,
+  anoMesCampo, INDICADORES_PER_CAPITA, lerAnoMes, mascaraAnoMes, mesesPeriodo, montarGrade, periodoAte, periodoPadrao,
+  TIPOS_PLANO, TIPOS_PRODUTO, validarAte, type AnoMes, type Celulas, type GradeComTotais, type IndicadorFinanceiro,
+  type LinhaFinanceira, type LinhaProduto, type TipoProduto,
 } from "@/lib/evolucaoProdutos";
 
 const fmtInt = (n: number) => Math.round(n).toLocaleString("pt-BR");
@@ -13,7 +14,6 @@ const fmtDec = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits:
 const fmtPct = (n: number) => `${(n * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 type Fmt = (n: number) => string;
 
-type LinhaGrade = ReturnType<typeof produtosPorMes>[number];
 type Periodo = { de: AnoMes; ate: AnoMes };
 const chave = (p: Periodo) => `${anoMesCampo(p.de)}|${anoMesCampo(p.ate)}`;
 
@@ -93,12 +93,20 @@ function Aviso({ erro, onRetry }: { erro: string; onRetry: () => void }) {
   );
 }
 
-function Grade({ linhas, fmt = fmtInt }: { linhas: LinhaGrade[]; fmt?: Fmt }) {
-  const colunas = linhas.length + 2;
+type GradeProps = {
+  linhas: GradeComTotais[]; periodo: Celulas; fmt?: Fmt;
+  produto: TipoProduto | null; onProduto: (p: TipoProduto | null) => void;
+};
+
+function Grade({ linhas, periodo, fmt = fmtInt, produto, onProduto }: GradeProps) {
+  const colunas = linhas.length + 3;
   const fora = linhas.filter((m) => m.foraDosTotais);
+  // Produto selecionado: os demais ficam em segundo plano (tons claros).
+  const apagado = (id: TipoProduto) => produto != null && produto !== id;
+  const thTotal = "rounded-lg px-2 py-1 text-sm font-bold tabular-nums";
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[1200px] border-separate border-spacing-x-1.5 border-spacing-y-[3px] text-center">
+      <table className="w-full min-w-[1280px] border-separate border-spacing-x-1.5 border-spacing-y-[3px] text-center">
         <thead>
           <tr>
             <th scope="col" className="w-16 px-2 py-1 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tipo</th>
@@ -108,28 +116,45 @@ function Grade({ linhas, fmt = fmtInt }: { linhas: LinhaGrade[]; fmt?: Fmt }) {
                 {m.rotulo}
               </th>
             ))}
+            <th scope="col" title="Soma do período" className="rounded-lg bg-secondary px-2 py-1 text-sm font-bold text-secondary-foreground ring-1 ring-primary/40">
+              Total
+            </th>
           </tr>
         </thead>
         {TIPOS_PLANO.map((t) => (
           <tbody key={t}>
             {t !== "PIF" && <tr aria-hidden="true"><td colSpan={colunas} className="h-1 p-0" /></tr>}
-            {TIPOS_PRODUTO.map((p, i) => (
-              <tr key={p.id}>
-                {i === 0 && (
-                  <th scope="rowgroup" rowSpan={TIPOS_PRODUTO.length + 1} className="rounded-lg bg-secondary px-2 text-left align-middle text-sm font-bold text-secondary-foreground" title={DESC_TIPO[t]}>
-                    {t}
+            {TIPOS_PRODUTO.map((p, i) => {
+              const fraco = apagado(p.id);
+              return (
+                <tr key={p.id} className={fraco ? "opacity-35 transition-opacity" : "transition-opacity"}>
+                  {i === 0 && (
+                    <th scope="rowgroup" rowSpan={TIPOS_PRODUTO.length + 1} className="rounded-lg bg-secondary px-2 text-left align-middle text-sm font-bold text-secondary-foreground" title={DESC_TIPO[t]}>
+                      {t}
+                    </th>
+                  )}
+                  <th scope="row" className="whitespace-nowrap rounded-lg bg-muted/60 p-0 text-left text-sm font-medium text-foreground">
+                    <button
+                      type="button"
+                      aria-pressed={produto === p.id}
+                      title={produto === p.id ? "Clique para voltar a todos os produtos" : `${p.descricao} · clique para somar só ${p.rotulo}`}
+                      onClick={() => onProduto(produto === p.id ? null : p.id)}
+                      className={`w-full rounded-lg px-2 py-1 text-left hover:bg-accent ${produto === p.id ? "font-semibold text-primary ring-1 ring-primary" : ""}`}
+                    >
+                      {p.rotulo}
+                    </button>
                   </th>
-                )}
-                <th scope="row" className="whitespace-nowrap rounded-lg bg-muted/60 px-2 py-1 text-left text-sm font-medium text-foreground" title={p.descricao}>
-                  {p.rotulo}
-                </th>
-                {linhas.map((m) => (
-                  <td key={m.dataFim} className="rounded-lg border border-border bg-accent/30 px-2 py-1 text-sm font-semibold tabular-nums text-foreground">
-                    <Valor v={m.valores[t][p.id]} fmt={fmt} />
+                  {linhas.map((m) => (
+                    <td key={m.dataFim} className="rounded-lg border border-border bg-accent/30 px-2 py-1 text-sm font-semibold tabular-nums text-foreground">
+                      <Valor v={m.valores[t][p.id]} fmt={fmt} />
+                    </td>
+                  ))}
+                  <td className={`${thTotal} border border-primary/30 bg-accent/60 text-foreground`}>
+                    <Valor v={periodo.valores[t][p.id]} fmt={fmt} />
                   </td>
-                ))}
-              </tr>
-            ))}
+                </tr>
+              );
+            })}
             <tr>
               <th scope="row" className="rounded-lg bg-secondary px-2 py-1 text-left text-sm font-bold text-secondary-foreground">
                 Subtotal {t}
@@ -139,6 +164,9 @@ function Grade({ linhas, fmt = fmtInt }: { linhas: LinhaGrade[]; fmt?: Fmt }) {
                   <Valor v={m.subtotais[t]} fmt={fmt} />
                 </td>
               ))}
+              <td className={`${thTotal} border border-primary/40 bg-secondary text-secondary-foreground`}>
+                <Valor v={periodo.subtotais[t]} fmt={fmt} />
+              </td>
             </tr>
           </tbody>
         ))}
@@ -153,6 +181,9 @@ function Grade({ linhas, fmt = fmtInt }: { linhas: LinhaGrade[]; fmt?: Fmt }) {
                 <Valor v={m.total} claro fmt={fmt} />
               </td>
             ))}
+            <td className="rounded-lg bg-primary px-2 py-1.5 text-base font-bold tabular-nums text-primary-foreground ring-2 ring-primary/40 ring-offset-1 ring-offset-card">
+              <Valor v={periodo.total} claro fmt={fmt} />
+            </td>
           </tr>
         </tfoot>
       </table>
@@ -169,7 +200,7 @@ const EvolucaoProdutos = () => {
   const [visao, setVisao] = useState<Visao>("Vidas");
   const [modo, setModo] = useState<Modo>("Total");
   const [periodo, setPeriodo] = useState<Periodo>(() => periodoAplicado ?? periodoPadrao(new Date()));
-  const [deCampo, setDeCampo] = useState(() => anoMesCampo(periodo.de));
+  const [produto, setProduto] = useState<TipoProduto | null>(null);
   const [ateCampo, setAteCampo] = useState(() => anoMesCampo(periodo.ate));
   const meses = useMemo(() => mesesPeriodo(periodo.de, periodo.ate), [periodo]);
   const [vidasBrutas, setVidasBrutas] = useState<{ k: string; linhas: LinhaProduto[] } | null>(null);
@@ -191,38 +222,33 @@ const EvolucaoProdutos = () => {
       .catch((e) => setErrFin(e instanceof Error ? e.message : String(e)));
   }, [periodo]);
 
-  const vidas = useMemo(
-    () => (vidasBrutas?.k === k ? produtosPorMes(meses, vidasBrutas.linhas) : null),
-    [vidasBrutas, k, meses],
-  );
+  const vidasLinhas = vidasBrutas?.k === k ? vidasBrutas.linhas : null;
   const fin = finBruto?.k === k ? finBruto.linhas : null;
 
   useEffect(() => { buscarVidas(); }, [buscarVidas]);
   // Financeiro só é buscado ao abrir uma visão financeira (uma vez por período para todas).
   useEffect(() => { if (visao !== "Vidas") buscarFin(); }, [visao === "Vidas", buscarFin]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const deSel = lerAnoMes(deCampo);
   const ateSel = lerAnoMes(ateCampo);
-  const erroPeriodo = validarPeriodo(deSel, ateSel, new Date());
-  const alterado = deCampo !== anoMesCampo(periodo.de) || ateCampo !== anoMesCampo(periodo.ate);
+  const erroPeriodo = validarAte(ateSel, new Date());
+  const deMostrado = ateSel && !erroPeriodo ? anoMesCampo(periodoAte(ateSel).de) : "—";
+  const alterado = ateCampo !== anoMesCampo(periodo.ate);
   const aplicar = () => {
-    if (erroPeriodo || !deSel || !ateSel) return;
-    const novo = { de: deSel, ate: ateSel };
+    if (erroPeriodo || !ateSel) return;
+    const novo = periodoAte(ateSel);
     periodoAplicado = novo;
     setPeriodo(novo);
   };
 
   const aceitaPerCapita = INDICADORES_PER_CAPITA.includes(visao as IndicadorFinanceiro);
   const emPerCapita = modo === "Per capita" && aceitaPerCapita;
-  const gradeFin = useMemo(() => {
-    if (!fin || visao === "Vidas") return null;
-    const g = financeiroPorMes(meses, fin, visao as IndicadorFinanceiro);
-    if (!emPerCapita) return g;
-    return vidas ? perCapita(g, vidas) : null;
-  }, [fin, visao, emPerCapita, vidas, meses]);
+  const grade = useMemo(
+    () => montarGrade(meses, visao, { vidas: vidasLinhas, fin }, { perCapita: emPerCapita, produto }),
+    [meses, visao, vidasLinhas, fin, emPerCapita, produto],
+  );
 
   const erro = visao === "Vidas" ? errVidas : errFin ?? (emPerCapita ? errVidas : null);
-  const linhas = visao === "Vidas" ? vidas : gradeFin;
+  const rotuloProduto = TIPOS_PRODUTO.find((p) => p.id === produto)?.rotulo;
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
@@ -232,12 +258,10 @@ const EvolucaoProdutos = () => {
           onSubmit={(e) => { e.preventDefault(); aplicar(); }}
           className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 shadow-sm"
         >
-          <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1.5 text-sm text-muted-foreground" title="Sempre 12 meses até o mês final">
             De
-            <input inputMode="numeric" placeholder="mm/aaaa" maxLength={7} aria-label={"De (mm/aaaa)"} value={deCampo}
-              onChange={(e) => setDeCampo(mascaraAnoMes(e.target.value))}
-              className="h-8 w-[5.5rem] rounded-md border border-input bg-background px-2 text-center text-sm tabular-nums text-foreground" />
-          </label>
+            <span className="w-[4.5rem] text-center text-sm tabular-nums text-foreground">{deMostrado}</span>
+          </span>
           <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
             Até
             <input inputMode="numeric" placeholder="mm/aaaa" maxLength={7} aria-label={"Até (mm/aaaa)"} value={ateCampo}
@@ -284,18 +308,25 @@ const EvolucaoProdutos = () => {
       </nav>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
-          <header className="mb-3">
+          <header className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1">
             <h2 className="text-lg font-semibold text-foreground" title={DICAS[visao]}>
               {emPerCapita ? TITULOS[visao].replace("(R$)", "· per capita (R$ por vida)") : TITULOS[visao]}
             </h2>
+            {rotuloProduto && (
+              <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                Subtotais e totais somando só <span className="font-semibold text-primary">{rotuloProduto}</span>
+                <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setProduto(null)}>Ver todos</Button>
+              </p>
+            )}
           </header>
           {erroPeriodo && alterado && <p className="mb-2 text-sm text-destructive">{erroPeriodo}</p>}
           {erro ? (
             <Aviso erro={erro} onRetry={visao === "Vidas" || !errFin ? buscarVidas : buscarFin} />
-          ) : !linhas ? (
+          ) : !grade ? (
             <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando…</p>
           ) : (
-            <Grade linhas={linhas} fmt={visao === "Vidas" ? fmtInt : visao === "Sinistralidade" ? fmtPct : fmtDec} />
+            <Grade linhas={grade.meses} periodo={grade.periodo} produto={produto} onProduto={setProduto}
+              fmt={visao === "Vidas" ? fmtInt : visao === "Sinistralidade" ? fmtPct : fmtDec} />
           )}
         </section>
       </div>
