@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { financeiroPorMes, perCapita, lerAnoMes, mascaraAnoMes, mesesPeriodo, periodoPadrao, produtosPorMes, validarPeriodo, subtotalTipo, totalGeral, vidasPorMes } from "./evolucaoProdutos";
+import { financeiroPorMes, perCapita, lerAnoMes, mascaraAnoMes, mesesPeriodo, periodoPadrao, produtosPorMes, validarAte, periodoAte, montarGrade, somaPeriodo, subtotalTipo, totalGeral, vidasPorMes } from "./evolucaoProdutos";
 
 describe("Evolução Produtos — período", () => {
   const meses = mesesPeriodo({ ano: 2025, mes: 10 }, { ano: 2026, mes: 9 });
@@ -120,10 +120,52 @@ describe("Evolução Produtos — período", () => {
     expect(lerAnoMes("10/25")).toBeNull();
     expect(mascaraAnoMes("102025")).toBe("10/2025");
     expect(mascaraAnoMes("10/20a25x")).toBe("10/2025");
-    expect(validarPeriodo(lerAnoMes("10/2025"), lerAnoMes("09/2026"), hoje)).toBeNull();
-    expect(validarPeriodo(lerAnoMes("09/2026"), lerAnoMes("10/2025"), hoje)).not.toBeNull();
-    expect(validarPeriodo(lerAnoMes("12/2018"), lerAnoMes("10/2025"), hoje)).not.toBeNull();
-    expect(validarPeriodo(lerAnoMes("01/2026"), lerAnoMes("12/2026"), hoje)).not.toBeNull();
-    expect(validarPeriodo(lerAnoMes("01/2026"), lerAnoMes("11/2026"), hoje)).toBeNull();
+    expect(validarAte(lerAnoMes("09/2026"), hoje)).toBeNull();
+    expect(validarAte(lerAnoMes("11/2026"), hoje)).toBeNull();
+    expect(validarAte(lerAnoMes("12/2026"), hoje)).not.toBeNull();
+    expect(validarAte(lerAnoMes("12/2019"), hoje)).toBeNull();
+    expect(validarAte(lerAnoMes("11/2019"), hoje)).not.toBeNull();
+    expect(validarAte(null, hoje)).not.toBeNull();
+  });
+  it("o período é sempre de 12 meses até o mês final (09/2026 → 10/2025 a 09/2026)", () => {
+    expect(periodoAte({ ano: 2026, mes: 9 })).toEqual({ de: { ano: 2025, mes: 10 }, ate: { ano: 2026, mes: 9 } });
+    expect(periodoAte({ ano: 2026, mes: 12 })).toEqual({ de: { ano: 2026, mes: 1 }, ate: { ano: 2026, mes: 12 } });
+  });
+  const vid = [
+    { ano: 2025, mes: 10, sigla: "PCA", produto: "F50", vidas: 10 },
+    { ano: 2025, mes: 10, sigla: "PIF", produto: "COP", vidas: 5 },
+    { ano: 2025, mes: 11, sigla: "PCA", produto: "F50", vidas: 20 },
+    { ano: 2025, mes: 11, sigla: "PIF", produto: "COP", vidas: 5 },
+  ];
+  const dois = meses.slice(0, 2);
+  it("coluna Total soma o período", () => {
+    const g = montarGrade(dois, "Vidas", { vidas: vid, fin: null })!;
+    expect(g.periodo.valores.PCA.F50).toBe(30);
+    expect(g.periodo.subtotais.PIF).toBe(10);
+    expect(g.periodo.total).toBe(40);
+  });
+  it("coluna Total fica sem dado se algum mês não tem dado", () => {
+    expect(somaPeriodo(produtosPorMes(meses.slice(0, 3), vid)).total).toBeNull();
+  });
+  it("produto selecionado: subtotais e totais somam só esse produto", () => {
+    const g = montarGrade(dois, "Vidas", { vidas: vid, fin: null }, { produto: "F50" })!;
+    expect(g.meses[0].subtotais.PIF).toBe(0);
+    expect(g.meses[0].subtotais.PCA).toBe(10);
+    expect(g.meses[0].total).toBe(10);
+    expect(g.meses[1].total).toBe(20);
+    expect(g.periodo.total).toBe(30);
+    expect(g.meses[0].valores.PIF.COP).toBe(5);
+  });
+  it("Sinistralidade com produto selecionado e no Total do período usa a razão das somas", () => {
+    const f2 = [...fin, { nr_ano: 2025, nr_mes: 11, sigla: "PCA", produto: "F50", rec_cpp: 70.5, rec_copart: 0, rec_outros: 0, desp_total: 100 }];
+    const g = montarGrade(dois, "Sinistralidade", { vidas: null, fin: f2 }, { produto: "F50" })!;
+    expect(g.meses[0].total).toBeCloseTo(80 / 129.5, 10);
+    expect(g.periodo.total).toBeCloseTo(180 / 200, 10);
+  });
+  it("Per capita no Total do período = soma do valor ÷ soma das vidas", () => {
+    const f2 = [...fin, { nr_ano: 2025, nr_mes: 11, sigla: "PCA", produto: "F50", rec_cpp: 70.5, rec_copart: 0, rec_outros: 0, desp_total: 100 }];
+    const g = montarGrade(dois, "Receita", { vidas: vid, fin: f2 }, { perCapita: true })!;
+    expect(g.periodo.total).toBeCloseTo(221 / 40, 10);
+    expect(g.periodo.valores.PCA.F50).toBeCloseTo(171 / 30, 10);
   });
 });

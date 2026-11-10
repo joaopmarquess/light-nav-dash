@@ -33,12 +33,19 @@ export function mascaraAnoMes(v: string): string {
   return d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d;
 }
 
-/** Mensagem de erro do filtro De/Até, ou null quando o período é válido. */
-export function validarPeriodo(de: AnoMes | null, ate: AnoMes | null, hoje: Date): string | null {
-  if (!de || !ate) return "Informe De e Até no formato mm/aaaa.";
-  if (idxMes(de) > idxMes(ate)) return "O mês De deve ser anterior ou igual ao mês Até.";
-  if (idxMes(de) < idxMes(INICIO_EVOLUCAO_PRODUTOS)) return "A base começa em 01/2019.";
-  if (idxMes(ate) > hoje.getUTCFullYear() * 12 + hoje.getUTCMonth()) return "O mês Até não pode ser posterior ao mês atual.";
+/** Meses que a tela sempre mostra: o mês final escolhido e os 11 anteriores. */
+export const MESES_PERIODO = 12;
+
+/** Período de 12 meses que termina no mês final escolhido (ex.: 09/2026 → 10/2025 a 09/2026). */
+export function periodoAte(ate: AnoMes): { de: AnoMes; ate: AnoMes } {
+  return { de: deIdx(idxMes(ate) - (MESES_PERIODO - 1)), ate };
+}
+
+/** Mensagem de erro do mês final, ou null quando é válido. */
+export function validarAte(ate: AnoMes | null, hoje: Date): string | null {
+  if (!ate) return "Informe o mês final no formato mm/aaaa.";
+  if (idxMes(periodoAte(ate).de) < idxMes(INICIO_EVOLUCAO_PRODUTOS)) return `A base começa em 01/2019; o mês final deve ser ${anoMesCampo(deIdx(idxMes(INICIO_EVOLUCAO_PRODUTOS) + MESES_PERIODO - 1))} ou posterior.`;
+  if (idxMes(ate) > hoje.getUTCFullYear() * 12 + hoje.getUTCMonth()) return "O mês final não pode ser posterior ao mês atual.";
   return null;
 }
 
@@ -125,8 +132,8 @@ function gradePorMes(meses: MesEvolucao[], linhas: LinhaGrade[]) {
  * Vidas por tipo de plano e tipo de produto em cada mês. Mês sem nenhuma linha fica null (sem inferência);
  * em mês calculado, combinação ausente significa zero vidas.
  */
-export function produtosPorMes(meses: MesEvolucao[], linhas: LinhaProduto[]): GradeComTotais[] {
-  return comTotais(gradePorMes(meses, linhas.map((l) => ({ ano: l.ano, mes: l.mes, sigla: l.sigla, produto: l.produto, valor: l.vidas }))));
+export function produtosPorMes(meses: MesEvolucao[], linhas: LinhaProduto[], produto: TipoProduto | null = null): GradeComTotais[] {
+  return comTotais(gradePorMes(meses, linhas.map((l) => ({ ano: l.ano, mes: l.mes, sigla: l.sigla, produto: l.produto, valor: l.vidas }))), produto);
 }
 
 // Indicadores financeiros (evolucao_produtos_financeiro, view_eard_mensal):
@@ -157,12 +164,15 @@ export type GradeComTotais = ReturnType<typeof gradePorMes>[number] & {
   subtotais: Record<TipoPlano, number | null>; total: number | null;
 };
 
-/** Acrescenta subtotais (soma dos produtos) e total geral (soma dos tipos) a uma grade aditiva. */
-export function comTotais(grade: ReturnType<typeof gradePorMes>): GradeComTotais[] {
+/**
+ * Acrescenta subtotais (soma dos produtos) e total geral (soma dos tipos) a uma grade aditiva.
+ * Com um produto selecionado, subtotais e total somam somente esse produto.
+ */
+export function comTotais(grade: ReturnType<typeof gradePorMes>, produto: TipoProduto | null = null): GradeComTotais[] {
   return grade.map((m) => ({
     ...m,
-    subtotais: Object.fromEntries(TIPOS_PLANO.map((t) => [t, subtotalTipo(m.valores, t)])) as Record<TipoPlano, number | null>,
-    total: totalGeral(m.valores),
+    subtotais: Object.fromEntries(TIPOS_PLANO.map((t) => [t, subtotalTipo(m.valores, t, produto)])) as Record<TipoPlano, number | null>,
+    total: totalGeral(m.valores, produto),
   }));
 }
 
@@ -172,10 +182,10 @@ const razao = (a: number | null, b: number | null) => (a == null || b == null ||
  * Grade financeira por mês; valores fora de PIF/PCA/PCE ou sem produto ficam em foraDosTotais (sem inferência).
  * Sinistralidade (fração, 0,85 = 85%) divide Despesas por Total Receitas em cada célula, subtotal e total.
  */
-export function financeiroPorMes(meses: MesEvolucao[], linhas: LinhaFinanceira[], indicador: IndicadorFinanceiro): GradeComTotais[] {
-  if (indicador !== "Sinistralidade") return comTotais(gradeFin(meses, linhas, INDICADORES_FINANCEIROS[indicador]));
-  const desp = comTotais(gradeFin(meses, linhas, INDICADORES_FINANCEIROS.Despesas));
-  const rec = comTotais(gradeFin(meses, linhas, totalReceitas));
+export function financeiroPorMes(meses: MesEvolucao[], linhas: LinhaFinanceira[], indicador: IndicadorFinanceiro, produto: TipoProduto | null = null): GradeComTotais[] {
+  if (indicador !== "Sinistralidade") return comTotais(gradeFin(meses, linhas, INDICADORES_FINANCEIROS[indicador]), produto);
+  const desp = comTotais(gradeFin(meses, linhas, INDICADORES_FINANCEIROS.Despesas), produto);
+  const rec = comTotais(gradeFin(meses, linhas, totalReceitas), produto);
   return desp.map((d, i) => {
     const r = rec[i];
     const valores = {} as GradeComTotais["valores"];
@@ -211,14 +221,68 @@ export function perCapita(valores: GradeComTotais[], vidas: GradeComTotais[]): G
 
 type ValoresMes = ReturnType<typeof gradePorMes>[number]["valores"];
 
-/** Subtotal de um tipo de plano (soma dos três produtos); null quando o mês não tem dado. */
-export function subtotalTipo(valores: ValoresMes, tipo: TipoPlano): number | null {
-  const vs = TIPOS_PRODUTO.map((p) => valores[tipo][p.id]);
+/** Subtotal de um tipo de plano (soma dos três produtos, ou só do produto selecionado); null quando o mês não tem dado. */
+export function subtotalTipo(valores: ValoresMes, tipo: TipoPlano, produto: TipoProduto | null = null): number | null {
+  const vs = TIPOS_PRODUTO.filter((p) => !produto || p.id === produto).map((p) => valores[tipo][p.id]);
   return vs.some((v) => v == null) ? null : vs.reduce<number>((s, v) => s + (v as number), 0);
 }
 
-/** Total geral do mês (PIF + PCA + PCE); null quando o mês não tem dado. */
-export function totalGeral(valores: ValoresMes): number | null {
-  const vs = TIPOS_PLANO.map((t) => subtotalTipo(valores, t));
+/** Total geral do mês (PIF + PCA + PCE, ou só o produto selecionado); null quando o mês não tem dado. */
+export function totalGeral(valores: ValoresMes, produto: TipoProduto | null = null): number | null {
+  const vs = TIPOS_PLANO.map((t) => subtotalTipo(valores, t, produto));
   return vs.some((v) => v == null) ? null : vs.reduce<number>((s, v) => s + (v as number), 0);
+}
+
+/** Células de uma coluna da grade (valores, subtotais e total). */
+export type Celulas = Pick<GradeComTotais, "valores" | "subtotais" | "total">;
+
+const somaMeses = (vs: (number | null)[]) =>
+  vs.length === 0 || vs.some((v) => v == null) ? null : vs.reduce<number>((s, v) => s + (v as number), 0);
+
+/** Coluna Total: soma do período em cada célula; se algum mês não tem dado, a célula fica null (sem inferência). */
+export function somaPeriodo(grade: GradeComTotais[]): Celulas {
+  const valores = {} as Celulas["valores"];
+  for (const t of TIPOS_PLANO) {
+    valores[t] = {} as Celulas["valores"][TipoPlano];
+    for (const p of TIPOS_PRODUTO) valores[t][p.id] = somaMeses(grade.map((m) => m.valores[t][p.id]));
+  }
+  const subtotais = Object.fromEntries(TIPOS_PLANO.map((t) => [t, somaMeses(grade.map((m) => m.subtotais[t]))])) as Record<TipoPlano, number | null>;
+  return { valores, subtotais, total: somaMeses(grade.map((m) => m.total)) };
+}
+
+function razaoCelulas(a: Celulas, b: Celulas): Celulas {
+  const valores = {} as Celulas["valores"];
+  for (const t of TIPOS_PLANO) {
+    valores[t] = {} as Celulas["valores"][TipoPlano];
+    for (const p of TIPOS_PRODUTO) valores[t][p.id] = razao(a.valores[t][p.id], b.valores[t][p.id]);
+  }
+  const subtotais = Object.fromEntries(TIPOS_PLANO.map((t) => [t, razao(a.subtotais[t], b.subtotais[t])])) as Record<TipoPlano, number | null>;
+  return { valores, subtotais, total: razao(a.total, b.total) };
+}
+
+/**
+ * Grade completa de uma visão: meses + coluna Total do período. Valores aditivos somam o período;
+ * Sinistralidade e Per capita usam a razão das somas do período (nunca soma de razões).
+ * Com produto selecionado, subtotais e totais (de linha e de coluna) consideram só esse produto.
+ */
+export function montarGrade(
+  meses: MesEvolucao[],
+  visao: "Vidas" | IndicadorFinanceiro,
+  dados: { vidas: LinhaProduto[] | null; fin: LinhaFinanceira[] | null },
+  opcoes: { perCapita?: boolean; produto?: TipoProduto | null } = {},
+): { meses: GradeComTotais[]; periodo: Celulas } | null {
+  const produto = opcoes.produto ?? null;
+  const vidas = dados.vidas ? produtosPorMes(meses, dados.vidas, produto) : null;
+  if (visao === "Vidas") return vidas ? { meses: vidas, periodo: somaPeriodo(vidas) } : null;
+  if (!dados.fin) return null;
+  const fin = dados.fin;
+  if (visao === "Sinistralidade") {
+    const desp = somaPeriodo(financeiroPorMes(meses, fin, "Despesas", produto));
+    const rec = somaPeriodo(financeiroPorMes(meses, fin, "Total Receitas", produto));
+    return { meses: financeiroPorMes(meses, fin, "Sinistralidade", produto), periodo: razaoCelulas(desp, rec) };
+  }
+  const g = financeiroPorMes(meses, fin, visao, produto);
+  if (!opcoes.perCapita || !INDICADORES_PER_CAPITA.includes(visao)) return { meses: g, periodo: somaPeriodo(g) };
+  if (!vidas) return null;
+  return { meses: perCapita(g, vidas), periodo: razaoCelulas(somaPeriodo(g), somaPeriodo(vidas)) };
 }
