@@ -51,6 +51,7 @@ export default function SinistralidadePeriodosMV() {
     try {
       if (forcar) limparCacheSinistralidade();
       // Vai até a última competência com despesas acima de R$ 20 milhões (meses seguintes ainda incompletos).
+      if (v === "geral") for (let a = ANO_INICIO_SINISTRALIDADE; a <= new Date().getUTCFullYear(); a++) void totaisDoAno(a).catch(() => undefined); // busca os anos em paralelo
       const ultima = await carregarUltimaCompetenciaValida();
       if (!ultima) throw new Error("sem-competencia-valida");
       const res = await Promise.all(anosSinistralidade(ultima).map(async ({ ano, ateMes }) => {
