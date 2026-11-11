@@ -3,6 +3,7 @@ import { BarChart3, Building2, Hospital } from "lucide-react";
 import InteligenciaUberaba from "@/components/InteligenciaUberaba";
 import InteligenciaUnimed from "@/components/InteligenciaUnimed";
 import UberabaHospitais from "@/components/UberabaHospitais";
+import EstudoSubNav from "@/components/EstudoSubNav";
 
 type Tab = "ops" | "unimed" | "hospitais";
 
@@ -28,6 +29,7 @@ const UberabaShell = ({ embedded = false, extraTabs = [] }: { embedded?: boolean
 
   return (
     <div className="flex h-full flex-col gap-3">
+      {embedded ? <EstudoSubNav itens={tabs} ativo={tab} onSelect={setTab} label="Seções do Painel" /> : (
       <div className="flex flex-wrap gap-2">
         {tabs.map((t) => {
           const Icon = t.icon;
@@ -50,6 +52,7 @@ const UberabaShell = ({ embedded = false, extraTabs = [] }: { embedded?: boolean
           );
         })}
       </div>
+      )}
       <div className={embedded ? "min-w-0" : "min-h-0 flex-1 overflow-auto pr-1"}>
         {extra ? extra.content : tab === "ops" ? <InteligenciaUberaba /> : tab === "unimed" ? <InteligenciaUnimed /> : <UberabaHospitais />}
       </div>

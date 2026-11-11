@@ -4,6 +4,7 @@ import UberabaSimulacao from "@/components/UberabaSimulacao";
 import UberabaGestaoRede from "@/components/UberabaGestaoRede";
 import UberabaTabelasComerciais, { ReferenciaButton } from "@/components/UberabaTabelasComerciais";
 import UberabaRedeAssistencial from "@/components/UberabaRedeAssistencial";
+import EstudoSubNav from "@/components/EstudoSubNav";
 
 type Aba = "simulacao" | "gestaoRede" | "comercial" | "rede";
 
@@ -20,26 +21,7 @@ const UberabaEstudoSimulacoes = () => {
   const atual = ABAS.find((a) => a.id === aba)!;
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-2">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Simulações do Estudo">
-        {ABAS.map((a) => {
-          const Icon = a.icon;
-          const on = aba === a.id;
-          return (
-            <button
-              key={a.id}
-              onClick={() => setAba(a.id)}
-              aria-pressed={on}
-              className={`inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm transition-colors ${on ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-foreground hover:bg-muted"}`}
-            >
-              <Icon className="h-4 w-4" />
-              {a.label}
-            </button>
-          );
-        })}
-      </div>
-      {aba === "comercial" && <div className="ml-auto"><ReferenciaButton /></div>}
-      </div>
+      <EstudoSubNav itens={ABAS} ativo={aba} onSelect={(id) => setAba(id as Aba)} label="Simulações do Estudo" extra={aba === "comercial" ? <ReferenciaButton /> : undefined} />
       <section aria-label={atual.label} className="min-w-0">
         {aba === "simulacao" && <UberabaSimulacao />}
         {aba === "gestaoRede" && <UberabaGestaoRede />}
