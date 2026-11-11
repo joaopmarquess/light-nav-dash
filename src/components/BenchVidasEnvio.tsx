@@ -3,19 +3,18 @@ import { AlertTriangle, CheckCircle2, Loader2, PauseCircle } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client";
 import { avaliarEnvio, type EnvioRegistro } from "@/lib/benchVidasEnvio";
 
-const ID = "mensal-sp-mg";
 const nf = (v: number) => v.toLocaleString("pt-BR");
 const hora = (iso: string) => new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 const duracao = (ms: number) => { const m = Math.floor(ms / 60_000); return m < 1 ? `${Math.max(1, Math.floor(ms / 1000))} s` : m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`; };
 
-/** Termômetro do envio dos dados mensais de SP e MG; lê a contagem real gravada pelo programa de envio. */
+/** Termômetro do envio mais recente dos dados mensais; lê a contagem real gravada pelo programa de envio. */
 export function BenchVidasEnvio() {
   const [registro, setRegistro] = useState<(EnvioRegistro & { rotulo: string }) | null>(null);
   const [agora, setAgora] = useState(() => Date.now());
   useEffect(() => {
     let ativo = true;
     const ler = async () => {
-      const { data } = await supabase.from("bench_vidas_envio").select("*").eq("id", ID).maybeSingle();
+      const { data } = await supabase.from("bench_vidas_envio").select("*").order("atualizado_em", { ascending: false }).limit(1).maybeSingle();
       if (ativo) { setRegistro(data); setAgora(Date.now()); }
     };
     ler();
