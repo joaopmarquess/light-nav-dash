@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ChevronRight, Download, Plus, X, Users, UserCheck, TrendingUp } from "lucide-react";
 import BenchVidasGrafico from "./BenchVidasGrafico";
+import BenchVidasMensal from "./BenchVidasMensal";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -153,9 +154,6 @@ export default function BenchVidas() {
   const navegacao = <SubmenuBenchVidas visao={visao} alterar={setVisao} />;
   return <div className="h-full min-h-0">
     <div className={visao === "trimestral" ? "h-full min-h-0" : "hidden"}><BenchVidasTrimestral navegacao={navegacao} /></div>
-    {visao === "mensal" && <div className="flex h-full min-h-0 flex-col gap-3">
-      <div className="flex shrink-0 justify-center">{navegacao}</div>
-      <p role="status" className="py-8 text-center text-sm text-muted-foreground">Visão mensal em preparação.</p>
-    </div>}
+    {visao === "mensal" && <BenchVidasMensal navegacao={navegacao} />}
   </div>;
 }

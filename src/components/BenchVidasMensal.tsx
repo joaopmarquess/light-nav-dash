@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { ChevronRight, Download, Search, TrendingDown, TrendingUp, UserCheck, UserPlus, Users, X } from "lucide-react";
+import { ChevronRight, Download, Search, TrendingDown, UserCheck, UserPlus, Users, X } from "lucide-react";
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip as Dica, XAxis, YAxis } from "recharts";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import catalogoJson from "@/data/benchVidas/mensal/catalogo.json";
 import { nomeOperadoraAns } from "@/lib/benchVidasAns";
-import { agregarMensal, ajustarFiltros, anosDoPeriodo, CAMPOS_MENSAL, camposCompativeis, competenciaMensal, cuboPara, INDICADORES_MENSAL, opcoesCampo, periodoPadrao, resumoMensal, rotuloValor, totalPeriodo, valorIndicador, type CampoMensal, type CatalogoMensal, type Filtros, type IndicadorMensal } from "@/lib/benchVidasMensal";
+import { agregarMensal, ajustarFiltros, campoDisponivel, anosDoPeriodo, CAMPOS_MENSAL, camposCompativeis, competenciaMensal, cuboPara, INDICADORES_MENSAL, opcoesCampo, periodoPadrao, resumoMensal, rotuloValor, totalPeriodo, valorIndicador, type CampoMensal, type CatalogoMensal, type Filtros, type IndicadorMensal } from "@/lib/benchVidasMensal";
 import { carregarVidasMensal } from "@/lib/benchVidasMensalDados";
 
 const catalogo = catalogoJson as unknown as CatalogoMensal & { inicio: string; fim: string; competencias: string[]; origem: string; operadoras: { reg: string; razaoSocial: string; modalidade: string }[] };
@@ -73,11 +73,15 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
   const resumo = resumoMensal(resultado.total, resultado.competencias);
   const compativeis = useMemo(() => new Set(camposCompativeis(detalhar, filtros)), [detalhar, filtros]);
   const atual = OPERADORAS.find(o => o.reg === operadora);
-  // Valores com movimento no período carregado, para listar só o que existe na operadora.
+  // Valores existentes na operadora e no período carregado, para listar só o que aparece nos dados.
   const presentes = useMemo(() => {
-    const semFiltro = (c: CampoMensal) => agregarMensal(linhas, cubo, catalogo, { de, ate, detalhar: c, filtros: Object.fromEntries(Object.entries(filtros).filter(([k]) => k !== c)) as Filtros });
-    return (c: CampoMensal) => new Set(cuboPara(detalhar, filtros) === cubo ? semFiltro(c).linhas.map(l => l.indice) : []);
-  }, [linhas, cubo, de, ate, detalhar, filtros]);
+    const memo = new Map<CampoMensal, Set<number>>();
+    return (c: CampoMensal): Set<number> | undefined => {
+      if (!campoDisponivel(cubo, c)) return undefined;
+      if (!memo.has(c)) memo.set(c, new Set(agregarMensal(linhas, cubo, catalogo, { de, ate, detalhar: c, filtros: Object.fromEntries(Object.entries(filtros).filter(([k]) => k !== c)) as Filtros }).linhas.map(l => l.indice)));
+      return memo.get(c);
+    };
+  }, [linhas, cubo, de, ate, filtros]);
 
   const escolherDetalhar = (c: CampoMensal) => { setDetalhar(c); setFiltros(f => { const { [c]: _, ...resto } = f; return ajustarFiltros(c, resto); }); };
   const alterarFiltro = (c: CampoMensal, v?: number) => setFiltros(f => { const n = { ...f }; if (v === undefined) delete n[c]; else n[c] = v; return n; });
@@ -125,10 +129,10 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
           {CAMPOS_MENSAL.filter(c => c.id !== detalhar).map(c => {
             const ok = compativeis.has(c.id); const valor = filtros[c.id];
             const controle = BUSCA.includes(c.id)
-              ? <FiltroBusca campo={c.id} valor={valor} alterar={v => alterarFiltro(c.id, v)} disponiveis={c.id === "municipio" && cubo !== "M" ? undefined : presentes(c.id)} />
+              ? <FiltroBusca campo={c.id} valor={valor} alterar={v => alterarFiltro(c.id, v)} disponiveis={presentes(c.id)} />
               : <Select value={valor === undefined ? "todos" : String(valor)} onValueChange={v => alterarFiltro(c.id, v === "todos" ? undefined : Number(v))}>
                   <SelectTrigger aria-label={c.rotulo} className="h-9 w-40"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{opcoesCampo(catalogo, c.id).filter(o => cubo === cuboPara(detalhar, { ...filtros, [c.id]: o.indice }) ? presentes(c.id).has(o.indice) || valor === o.indice : true).map(o => <SelectItem key={o.indice} value={String(o.indice)}>{o.rotulo}</SelectItem>)}</SelectContent>
+                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{opcoesCampo(catalogo, c.id).filter(o => { const p = presentes(c.id); return !p || p.has(o.indice) || valor === o.indice; }).map(o => <SelectItem key={o.indice} value={String(o.indice)}>{o.rotulo}</SelectItem>)}</SelectContent>
                 </Select>;
             return <label key={c.id} className={`flex items-center gap-1.5 text-xs ${ok ? "" : "opacity-45"}`}>
               <span className={valor !== undefined ? "font-semibold text-primary" : "text-muted-foreground"}>{c.rotulo}</span>
