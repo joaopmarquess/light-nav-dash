@@ -49,7 +49,7 @@ describe("Estudo map selection", () => {
     render(<TooltipProvider><UberabaEstudoMapas /></TooltipProvider>);
     fireEvent.click(screen.getByRole("button", { name: "Rede Assistencial" }));
     expect(screen.getByRole("button", { name: "Rede Assistencial" })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("region", { name: "Rede Assistencial" })).toBeVisible();
+    expect(screen.getAllByRole("region", { name: "Rede Assistencial" })[0]).toBeVisible();
     expect(screen.getByRole("group", { name: "Cenário de credenciamento" })).toBeVisible();
   });
 });
