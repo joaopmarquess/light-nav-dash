@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { agregarMensal, ajustarFiltros, camposCompativeis, cuboPara, periodoPadrao, resumoMensal, totalPeriodo, type CatalogoMensal } from "./benchVidasMensal";
+import { agregarMensal, opcoesCampo, ajustarFiltros, camposCompativeis, cuboPara, periodoPadrao, resumoMensal, totalPeriodo, type CatalogoMensal } from "./benchVidasMensal";
 
 const catalogo = {
   valores: { uf: ["MG", "SP"], sexo: ["F", "M"], faixa: [], faixaReaj: [], vigencia: [], contratacao: ["Coletivo Empresarial", "Individual ou Familiar"], segmentacao: [], abrangencia: [], cobertura: ["Médico-hospitalar"], vinculo: ["Titular"], plano: [] },
@@ -55,5 +55,13 @@ describe("Bench Vidas Mensal", () => {
   it("período padrão: 12 meses até a última competência", () => {
     const comps = Array.from({ length: 65 }, (_, i) => { const m = 202105 + 0; const total = Math.floor(m / 100) * 12 + (m % 100) - 1 + i; return Math.floor(total / 12) * 100 + (total % 12) + 1; });
     expect(periodoPadrao(comps)).toEqual({ de: 202510, ate: 202609 });
+  });
+  it("Tipo Produto: Plano Odonto reúne toda segmentação com \"odonto\" no nome; Plano de Saúde, as demais", () => {
+    const cat = { ...catalogo, valores: { ...catalogo.valores, segmentacao: ["Ambulatorial", "Ambulatorial + Hospitalar com obstetrícia + Odontológico", "Odontológico", "Referência"] } } as CatalogoMensal;
+    const linhas = [0, 1, 2, 3].map((seg, i) => [202608, 0, 0, 0, 0, 0, 0, seg, 0, 0, 0, [10, 20, 30, 40][i], 0, 0]);
+    const ativos = (tipoProduto: number) => agregarMensal(linhas, "A", cat, { de: 202608, ate: 202608, detalhar: "uf", filtros: { tipoProduto } }).total.get(202608)?.ativos;
+    expect(ativos(0)).toBe(50);
+    expect(ativos(1)).toBe(50);
+    expect(opcoesCampo(cat, "tipoProduto").map(o => o.rotulo)).toEqual(["Plano de Saúde", "Plano Odonto"]);
   });
 });
