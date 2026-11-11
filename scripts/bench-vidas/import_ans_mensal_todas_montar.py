@@ -46,7 +46,7 @@ idx = {c: {v: i for i, v in enumerate(vs)} for c, vs in ordem.items()}
 
 def prontos(y, cubo):
     # Somente arquivos UF/mes concluidos (o .json de metadados e gravado por ultimo na etapa 1).
-    return [f for f in sorted(prontos(y, cubo)) if Path(f[: -len(f"_{cubo}.parquet")] + ".json").exists()]
+    return [f for f in sorted(glob.glob(str(PAR / f"{y}??_*_{cubo}.parquet"))) if Path(f[: -len(f"_{cubo}.parquet")] + ".json").exists()]
 
 def ano(y):
     tot = pd.concat([pd.read_parquet(f).assign(comp=int(Path(f).name[:6])) for f in prontos(y, "T")])
