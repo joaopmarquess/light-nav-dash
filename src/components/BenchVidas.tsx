@@ -141,7 +141,7 @@ function BenchVidasTrimestral({ navegacao }: { navegacao: ReactNode }) {
   </div>;
 }
 export type VisaoBenchVidas = "trimestral" | "mensal";
-export const VISOES_BENCH_VIDAS: { id: VisaoBenchVidas; rotulo: string }[] = [{ id: "trimestral", rotulo: "Trimestral" }, { id: "mensal", rotulo: "Mensal" }];
+export const VISOES_BENCH_VIDAS: { id: VisaoBenchVidas; rotulo: string }[] = [{ id: "mensal", rotulo: "Mensal" }, { id: "trimestral", rotulo: "Trimestral" }];
 
 function SubmenuBenchVidas({ visao, alterar }: { visao: VisaoBenchVidas; alterar: (v: VisaoBenchVidas) => void }) {
   return <nav aria-label="Visões do Bench Vidas" className="flex shrink-0 items-center gap-0.5 rounded-full border border-border bg-card p-1.5 shadow-sm">
@@ -150,12 +150,12 @@ function SubmenuBenchVidas({ visao, alterar }: { visao: VisaoBenchVidas; alterar
 }
 
 export default function BenchVidas() {
-  const [visao, setVisao] = useState<VisaoBenchVidas>("trimestral");
-  const [mensalAberto, setMensalAberto] = useState(false);
-  useEffect(() => { if (visao === "mensal") setMensalAberto(true); }, [visao]);
+  const [visao, setVisao] = useState<VisaoBenchVidas>("mensal");
+  const [trimestralAberto, setTrimestralAberto] = useState(false);
+  useEffect(() => { if (visao === "trimestral") setTrimestralAberto(true); }, [visao]);
   const navegacao = <SubmenuBenchVidas visao={visao} alterar={setVisao} />;
   return <div className="h-full min-h-0">
-    <div className={visao === "trimestral" ? "h-full min-h-0" : "hidden"}><BenchVidasTrimestral navegacao={navegacao} /></div>
-    {mensalAberto && <div className={visao === "mensal" ? "h-full min-h-0" : "hidden"}><Suspense fallback={<p role="status" className="py-8 text-sm text-muted-foreground">Carregando visão mensal…</p>}><BenchVidasMensal navegacao={navegacao} /></Suspense></div>}
+    {trimestralAberto && <div className={visao === "trimestral" ? "h-full min-h-0" : "hidden"}><BenchVidasTrimestral navegacao={navegacao} /></div>}
+    <div className={visao === "mensal" ? "h-full min-h-0" : "hidden"}><Suspense fallback={<p role="status" className="py-8 text-sm text-muted-foreground">Carregando visão mensal…</p>}><BenchVidasMensal navegacao={navegacao} /></Suspense></div>
   </div>;
 }

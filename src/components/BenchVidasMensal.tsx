@@ -12,7 +12,6 @@ import catalogoJson from "@/data/benchVidas/mensal/catalogo.json";
 import { nomeOperadoraAns } from "@/lib/benchVidasAns";
 import { agregarMensal, ajustarFiltros, campoDisponivel, anosDoPeriodo, CAMPOS_MENSAL, camposCompativeis, competenciaMensal, cuboPara, INDICADORES_MENSAL, opcoesCampo, periodoPadrao, resumoMensal, rotuloValor, totalPeriodo, valorIndicador, type CampoMensal, type CatalogoMensal, type Filtros, type IndicadorMensal } from "@/lib/benchVidasMensal";
 import { carregarVidasMensal } from "@/lib/benchVidasMensalDados";
-import { BenchVidasEnvio } from "@/components/BenchVidasEnvio";
 import { BenchVidasAtualizar } from "@/components/BenchVidasAtualizar";
 
 const catalogo = catalogoJson as unknown as CatalogoMensal & { inicio: string; fim: string; competencias: string[]; origem: string; operadoras: { reg: string; razaoSocial: string; modalidade: string }[] };
@@ -126,7 +125,6 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
       <BenchVidasAtualizar ultima={catalogo.fim} />
     </div>
     <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-      <BenchVidasEnvio />
       <div className="bench-filters space-y-2.5">
         <div className="flex flex-wrap items-center gap-3">
           <span className="w-16 text-sm font-semibold">Período</span>
