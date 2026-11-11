@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { MODELO, MARKETING, FORMALIZACAO, IMPLANTACAO } from "@/components/UberabaTimelineEtapas";
+import { MODELO } from "@/components/UberabaTimelineEtapas";
 import { Button } from "@/components/ui/button";
 import UberabaEstudoMapas from "@/components/UberabaEstudoMapas";
 import UberabaMarketing from "@/components/UberabaMarketing";
@@ -42,7 +42,6 @@ const SUB_PLANO = [
   { nome: "Implantação", icone: Rocket },
 ] as const;
 type SubPlano = (typeof SUB_PLANO)[number]["nome"];
-void MARKETING; void FORMALIZACAO; void IMPLANTACAO;
 
 // Faixa de datas: os itens planejados do cronograma (datas inalteradas), cada um levando à etapa/submenu correspondente.
 const destinoAgenda = (item: string): { etapa: string; sub?: SubPlano; numero: string } => {
