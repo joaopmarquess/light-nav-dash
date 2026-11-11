@@ -135,7 +135,7 @@ const UberabaTimeline = () => {
               </div>
               {sub === null && <div className="modelo-fronts">
                 {[
-                  { nome: "Comercial", texto: "PCA / ACIU, PCE 50 a 99 e PCE 100+", cor: "comercial" },
+                  { nome: "Comercial", texto: "PCA Adm., PCE Adm. e PCE 100+", cor: "comercial" },
                   { nome: "Rede Assistencial", texto: "Referências médicas, diagnóstico e terapia e profissionais não médicos", cor: "rede" },
                   { nome: "Guias", texto: "Carteirinha virtual, autorização online, auditoria remota e atendimento digital", cor: "guias" },
                 ].map((f, i) => <section key={f.nome} className={`modelo-front modelo-front-${f.cor}`}><span>{i + 1}</span><h3>{f.nome}</h3><p>{f.texto}</p><Button variant="outline" onClick={() => setSub(f.nome as "Comercial" | "Rede Assistencial" | "Guias")}>{f.nome}</Button></section>)}

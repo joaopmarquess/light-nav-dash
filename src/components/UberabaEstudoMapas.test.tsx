@@ -34,4 +34,14 @@ describe("Estudo map selection", () => {
     expect(screen.getByLabelText("Valor Vida Paulo")).toBeVisible();
     expect(screen.getByLabelText("Número Vidas total")).toBeVisible();
   });
+
+  it("opens the Comercial tables with their indices", () => {
+    render(<TooltipProvider><UberabaEstudoMapas /></TooltipProvider>);
+    fireEvent.click(screen.getByRole("button", { name: "Comercial" }));
+    expect(screen.getByRole("region", { name: "Comercial" })).toBeVisible();
+    expect(screen.getByLabelText("Índice PCA Adm. x Referência")).toHaveValue("90");
+    expect(screen.getByLabelText("Índice PCE Adm. x Referência")).toHaveValue("80");
+    expect(screen.getByLabelText("Índice PCE 100+ x Referência")).toHaveValue("70");
+    expect(screen.getByRole("button", { name: "Referência" })).toBeVisible();
+  });
 });

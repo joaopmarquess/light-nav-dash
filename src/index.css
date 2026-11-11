@@ -841,7 +841,9 @@ All colors MUST be HSL.
 .comercial-medias { --commercial-color: hsl(var(--hospital-blue)); }
 .comercial-grandes { --commercial-color: hsl(var(--credential-nonmedical)); }
 .comercial-card > div:first-child { flex-wrap: wrap; padding: 16px; }
-.comercial-card > div:first-child > p:last-child { color: var(--commercial-color); }
+.comercial-card > div:first-child > p + p { color: var(--commercial-color); }
+.comercial-indice { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: hsl(var(--credential-secondary)); }
+.comercial-indice input { font-size: 15px; font-weight: 700; color: hsl(var(--credential-text)); background: hsl(var(--hospital-surface)); border-color: var(--commercial-color); }
 .comercial-table thead { background: hsl(var(--credential-head)); }
 .comercial-table tbody tr { border-top: 1px solid hsl(var(--hospital-frame)); background: hsl(var(--hospital-surface)); }
 .comercial-table tbody tr:nth-child(even) { background: hsl(var(--credential-alt)); }
