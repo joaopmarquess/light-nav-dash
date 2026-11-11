@@ -58,14 +58,29 @@ export function ajustarFiltros(detalhar: CampoMensal, filtros: Filtros): Filtros
   return Object.fromEntries(Object.entries(base).filter(([c]) => campoDisponivel(final, c as CampoMensal))) as Filtros;
 }
 
+/** Opção agrupada do filtro de Segmentação: todas as segmentações médico-hospitalares (tudo, exceto Odontológico). */
+export const SEGMENTACAO_PLANO_SAUDE = -1;
+const SEGMENTACAO_ODONTO = "Odontológico";
+/** Índices reais do catálogo que uma opção de filtro representa. */
+export function indicesDaOpcao(catalogo: CatalogoMensal, campo: CampoMensal, indice: number): number[] {
+  if (campo === "segmentacao" && indice === SEGMENTACAO_PLANO_SAUDE)
+    return catalogo.valores.segmentacao.map((v, i) => [v, i] as const).filter(([v]) => v !== SEGMENTACAO_ODONTO).map(([, i]) => i);
+  return [indice];
+}
+
 export function rotuloValor(catalogo: CatalogoMensal, campo: CampoMensal, indice: number): string {
+  if (campo === "segmentacao" && indice === SEGMENTACAO_PLANO_SAUDE) return "Plano de saúde";
   if (campo === "municipio") { const m = catalogo.municipios[indice]; return m ? `${m[1]} · ${m[2]}` : "—"; }
   const valor = catalogo.valores[campo]?.[indice] ?? "—";
   return ROTULOS_FIXOS[campo]?.[valor] ?? valor;
 }
 export function opcoesCampo(catalogo: CatalogoMensal, campo: CampoMensal): { indice: number; rotulo: string }[] {
   const n = campo === "municipio" ? catalogo.municipios.length : catalogo.valores[campo]?.length ?? 0;
-  return Array.from({ length: n }, (_, indice) => ({ indice, rotulo: rotuloValor(catalogo, campo, indice) }));
+  const opcoes = Array.from({ length: n }, (_, indice) => ({ indice, rotulo: rotuloValor(catalogo, campo, indice) }));
+  if (campo !== "segmentacao") return opcoes;
+  // Segmentação: primeiro "Plano de saúde" e "Odontológico"; depois o detalhe das segmentações de plano de saúde.
+  const odonto = opcoes.filter(o => o.rotulo === SEGMENTACAO_ODONTO);
+  return [{ indice: SEGMENTACAO_PLANO_SAUDE, rotulo: "Plano de saúde" }, ...odonto, ...opcoes.filter(o => o.rotulo !== SEGMENTACAO_ODONTO)];
 }
 
 function valorCampo(cubo: Cubo, campo: CampoMensal, linha: number[], catalogo: CatalogoMensal, ufIndice: Map<string, number>): number | undefined {
@@ -85,7 +100,7 @@ export type ResultadoMensal = {
 /** Soma os cubos pelo campo detalhado, nas competências do período e com os filtros informados. */
 export function agregarMensal(linhas: number[][], cubo: Cubo, catalogo: CatalogoMensal, opcoes: { de: number; ate: number; detalhar: CampoMensal; filtros: Filtros }): ResultadoMensal {
   const ufIndice = new Map(catalogo.valores.uf.map((v, i) => [v, i]));
-  const filtros = Object.entries(opcoes.filtros) as [CampoMensal, number][];
+  const filtros = (Object.entries(opcoes.filtros) as [CampoMensal, number][]).map(([campo, v]) => [campo, new Set(indicesDaOpcao(catalogo, campo, v))] as const);
   const grupos = new Map<number, Map<number, Medidas>>(); const total = new Map<number, Medidas>(); const comps = new Set<number>();
   const somar = (mapa: Map<number, Medidas>, comp: number, l: number[]) => {
     const m = mapa.get(comp) ?? { ativos: 0, aderidos: 0, cancelados: 0 };
@@ -94,7 +109,7 @@ export function agregarMensal(linhas: number[][], cubo: Cubo, catalogo: Catalogo
   for (const l of linhas) {
     const comp = l[0];
     if (comp < opcoes.de || comp > opcoes.ate) continue;
-    if (filtros.some(([campo, v]) => valorCampo(cubo, campo, l, catalogo, ufIndice) !== v)) continue;
+    if (filtros.some(([campo, aceitos]) => { const v = valorCampo(cubo, campo, l, catalogo, ufIndice); return v === undefined || !aceitos.has(v); })) continue;
     comps.add(comp);
     const chave = valorCampo(cubo, opcoes.detalhar, l, catalogo, ufIndice) ?? -1;
     if (!grupos.has(chave)) grupos.set(chave, new Map());
