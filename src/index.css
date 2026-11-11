@@ -1051,3 +1051,6 @@ All colors MUST be HSL.
 .modelo-comercial .frente-stages-2col .guias-number { width: 28px; height: 28px; font-size: 14px; }
 .modelo-comercial .frente-stages-2col .guias-stage { padding-top: 4px; padding-bottom: 4px; }
 .modelo-comercial .frente-stages-2col .guias-stage p.frente-descricao { line-height: 1.25; }
+.modelo-guias-aberta .modelo-comercial:has(.frente-stages-2col) .guias-figure { min-height: 230px; }
+.modelo-comercial .frente-stages-2col .guias-stage h3 { line-height: 1.2; }
+.modelo-comercial .frente-stages-2col .guias-stage p.frente-descricao { margin-top: 0; }
