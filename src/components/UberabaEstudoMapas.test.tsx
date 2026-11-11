@@ -47,24 +47,24 @@ describe("Estudo view selection", () => {
     expect(screen.queryByLabelText("Filtro do painel")).toBeNull();
   });
 
-  it("groups Simulação, Gestão Rede, Comercial and Rede Assistencial under Simulações", () => {
+  it("lists the Simulações sub-buttons with the new names in the requested order", () => {
     abrir();
     fireEvent.click(screen.getByRole("button", { name: "Simulações" }));
     const grupo = screen.getByRole("group", { name: "Simulações do Estudo" });
-    expect(Array.from(grupo.querySelectorAll("button")).map((b) => b.textContent)).toEqual(["Simulação", "Gestão Rede", "Comercial", "Rede Assistencial"]);
-    expect(screen.getByRole("button", { name: "Simulação" })).toHaveAttribute("aria-pressed", "true");
+    expect(Array.from(grupo.querySelectorAll("button")).map((b) => b.textContent)).toEqual(["Condições Comerciais", "Resultados Comerciais", "Condições Rede", "Resultados Rede"]);
+    expect(screen.getByRole("button", { name: "Condições Comerciais" })).toHaveAttribute("aria-pressed", "true");
   });
 
   it("opens the Gestão Rede view with its variables", () => {
     abrir();
-    abrirSimulacoes("Gestão Rede");
+    abrirSimulacoes("Resultados Rede");
     expect(screen.getByLabelText("Valor Vida Paulo")).toBeVisible();
     expect(screen.getByLabelText("Número Vidas total")).toBeVisible();
   });
 
   it("opens the Comercial tables with their indices", () => {
     abrir();
-    abrirSimulacoes("Comercial");
+    abrirSimulacoes("Resultados Comerciais");
     expect(screen.getByLabelText("Índice PCA Adm. x Referência")).toHaveValue("90");
     expect(screen.getByLabelText("Índice PCE Adm. x Referência")).toHaveValue("80");
     expect(screen.getByLabelText("Índice PCE 100+ x Referência")).toHaveValue("70");
@@ -73,8 +73,8 @@ describe("Estudo view selection", () => {
 
   it("opens the Rede Assistencial view inside Simulações", () => {
     abrir();
-    abrirSimulacoes("Rede Assistencial");
-    expect(screen.getByRole("button", { name: "Rede Assistencial" })).toHaveAttribute("aria-pressed", "true");
+    abrirSimulacoes("Condições Rede");
+    expect(screen.getByRole("button", { name: "Condições Rede" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("group", { name: "Cenário de credenciamento" })).toBeVisible();
   });
 });
