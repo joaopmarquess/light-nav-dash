@@ -1049,3 +1049,5 @@ All colors MUST be HSL.
 .modelo-comercial .comercial-indicators[style*="--indicadores: 12"] li:nth-child(7) { border-left: 0; }
 .modelo-comercial .frente-stages-2col { gap: 6px; }
 .modelo-comercial .frente-stages-2col .guias-number { width: 28px; height: 28px; font-size: 14px; }
+.modelo-comercial .frente-stages-2col .guias-stage { padding-top: 4px; padding-bottom: 4px; }
+.modelo-comercial .frente-stages-2col .guias-stage p.frente-descricao { line-height: 1.25; }
