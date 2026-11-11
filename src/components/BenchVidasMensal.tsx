@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ChevronRight, Download, Plus, Search, TrendingDown, UserCheck, UserPlus, Users, X } from "lucide-react";
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip as Dica, XAxis, YAxis } from "recharts";
 import * as XLSX from "xlsx";
@@ -144,7 +144,7 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
               ? <FiltroBusca campo={c.id} valor={valor} alterar={v => alterarFiltro(c.id, v)} disponiveis={presentes(c.id)} />
               : <Select value={valor === undefined ? "todos" : String(valor)} onValueChange={v => alterarFiltro(c.id, v === "todos" ? undefined : Number(v))}>
                   <SelectTrigger aria-label={c.rotulo} className="h-9 w-40"><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{opcoesCampo(catalogo, c.id).filter(o => { const p = presentes(c.id); return !p || valor === o.indice || indicesDaOpcao(catalogo, c.id, o.indice).some(i => p.has(i)); }).map(o => <Fragment key={o.indice}>{c.id === "segmentacao" && o.indice >= 0 && o.rotulo !== "Odontológico" && primeiraDetalhe(o.indice) && <SelectSeparator />}<SelectItem value={String(o.indice)}>{o.rotulo}</SelectItem></Fragment>)}</SelectContent>
+                  <SelectContent><SelectItem value="todos">Todos</SelectItem>{opcoesCampo(catalogo, c.id).filter(o => { const p = presentes(c.id); return !p || valor === o.indice || indicesDaOpcao(catalogo, c.id, o.indice).some(i => p.has(i)); }).map((o, i, lista) => <Fragment key={o.indice}>{c.id === "segmentacao" && i > 0 && o.indice >= 0 && o.rotulo !== "Odontológico" && (lista[i - 1].indice < 0 || lista[i - 1].rotulo === "Odontológico") && <SelectSeparator />}<SelectItem value={String(o.indice)}>{o.rotulo}</SelectItem></Fragment>)}</SelectContent>
                 </Select>;
             return <label key={c.id} className={`flex items-center gap-1.5 text-xs ${ok ? "" : "opacity-45"}`}>
               <span className={valor !== undefined ? "font-semibold text-primary" : "text-muted-foreground"}>{c.rotulo}</span>

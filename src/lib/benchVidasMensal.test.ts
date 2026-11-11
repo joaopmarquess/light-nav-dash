@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { agregarMensal, ajustarFiltros, camposCompativeis, cuboPara, periodoPadrao, resumoMensal, totalPeriodo, type CatalogoMensal } from "./benchVidasMensal";
+import { SEGMENTACAO_PLANO_SAUDE, agregarMensal, opcoesCampo, ajustarFiltros, camposCompativeis, cuboPara, periodoPadrao, resumoMensal, totalPeriodo, type CatalogoMensal } from "./benchVidasMensal";
 
 const catalogo = {
   valores: { uf: ["MG", "SP"], sexo: ["F", "M"], faixa: [], faixaReaj: [], vigencia: [], contratacao: ["Coletivo Empresarial", "Individual ou Familiar"], segmentacao: [], abrangencia: [], cobertura: ["Médico-hospitalar"], vinculo: ["Titular"], plano: [] },
@@ -55,5 +55,18 @@ describe("Bench Vidas Mensal", () => {
   it("período padrão: 12 meses até a última competência", () => {
     const comps = Array.from({ length: 65 }, (_, i) => { const m = 202105 + 0; const total = Math.floor(m / 100) * 12 + (m % 100) - 1 + i; return Math.floor(total / 12) * 100 + (total % 12) + 1; });
     expect(periodoPadrao(comps)).toEqual({ de: 202510, ate: 202609 });
+  });
+  it("Segmentação: Plano de saúde reúne tudo menos Odontológico, e as duas opções vêm primeiro", () => {
+    const cat = { ...catalogo, valores: { ...catalogo.valores, segmentacao: ["Ambulatorial", "Odontológico", "Referência"] } } as CatalogoMensal;
+    const linhas = [
+      [202608, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 1, 0],
+      [202608, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 20, 2, 0],
+      [202608, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 30, 3, 0],
+    ];
+    const saude = agregarMensal(linhas, "A", cat, { de: 202608, ate: 202608, detalhar: "uf", filtros: { segmentacao: SEGMENTACAO_PLANO_SAUDE } });
+    expect(saude.total.get(202608)?.ativos).toBe(40);
+    const odonto = agregarMensal(linhas, "A", cat, { de: 202608, ate: 202608, detalhar: "uf", filtros: { segmentacao: 1 } });
+    expect(odonto.total.get(202608)?.ativos).toBe(20);
+    expect(opcoesCampo(cat, "segmentacao").slice(0, 2).map(o => o.rotulo)).toEqual(["Plano de saúde", "Odontológico"]);
   });
 });
