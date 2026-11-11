@@ -31,10 +31,11 @@ describe("Project stage navigation", () => {
     expect(screen.queryByText(/Etapa \d+ de \d+/)).toBeNull();
   });
 
-  it("lists the seven stages in the dropdown and opens the chosen one", () => {
+  it("lists the six stages (without Hospital Mário Palmério) in the dropdown and opens the chosen one", () => {
     render(<TooltipProvider><UberabaTimeline /></TooltipProvider>);
     abrirMenu();
-    expect(screen.getAllByRole("menuitem")).toHaveLength(8);
+    expect(screen.getAllByRole("menuitem")).toHaveLength(7);
+    expect(screen.queryByRole("menuitem", { name: /Hospital Mário Palmério/ })).toBeNull();
     expect(screen.getAllByRole("menuitem")[0]).toHaveTextContent("0Home");
     fireEvent.click(screen.getByRole("menuitem", { name: /Modelo de Atuação/ }));
     expect(screen.getByRole("button", { name: "Etapa do projeto: Modelo de Atuação" })).toBeVisible();
