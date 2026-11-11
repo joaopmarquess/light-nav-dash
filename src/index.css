@@ -1009,7 +1009,7 @@ All colors MUST be HSL.
 .modelo-comercial .comercial-grupo-titulo { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; color: hsl(var(--hospital-navy)); }
 .modelo-comercial .comercial-grupo-titulo::before { content: ""; width: 4px; height: 16px; border-radius: 2px; background: hsl(var(--hospital-gold)); }
 .modelo-comercial .comercial-grupo-titulo::after { content: ""; flex: 1; height: 1px; background: hsl(var(--hospital-frame)); }
-.modelo-comercial .guias-stages { flex: 1; grid-template-rows: none; grid-auto-rows: auto; align-content: start; }
+.modelo-comercial .guias-stages { flex: 1; grid-template-rows: none; grid-auto-rows: auto; flex: 1; }
 .modelo-comercial .guias-stage h3 { text-transform: uppercase; }
 .modelo-comercial .comercial-subitens { display: flex; flex-wrap: wrap; gap: 2px 22px; margin-top: 3px; padding-left: 12px; border-left: 2px solid hsl(var(--guias-auditoria) / .45); }
 .modelo-comercial .comercial-subitens li { display: flex; align-items: center; gap: 8px; color: hsl(var(--hospital-secondary)); font-size: 13px; font-weight: 600; line-height: 1.4; }
@@ -1030,7 +1030,7 @@ All colors MUST be HSL.
 .uberaba-guias .guias-indicators li + li { border-left: 1px solid hsl(var(--hospital-frame)); }
 
 /* Plano de Ação no formato do Modelo de Atuação (extensões opcionais de UberabaModeloFrente) */
-.modelo-comercial .frente-stages-2col { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; grid-auto-rows: auto; align-content: start; }
+.modelo-comercial .frente-stages-2col { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; grid-auto-rows: auto; flex: 1; }
 .modelo-comercial .frente-stages-2col .guias-stage::after { display: none; }
 .modelo-comercial .guias-stage p.frente-descricao { margin-top: 1px; }
 .modelo-comercial .frente-figure-contain { background: hsl(var(--hospital-surface)); border: 1px solid hsl(var(--hospital-frame)); }
