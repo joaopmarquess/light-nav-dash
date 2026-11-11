@@ -50,7 +50,7 @@ const UberabaEstudoMapas = ({ navTarget }: { navTarget?: HTMLElement | null } = 
         </article>}
         {selected === "painel" && <UberabaShell embedded extraTabs={PAINEL_EXTRAS} />}
         {selected === "uberaba" && <UberabaMapa embedded selectedDate={date} toolbarTarget={toolbar} />}
-        {selected === "simulacoes" && <UberabaEstudoSimulacoes toolbarTarget={toolbar} />}
+        {selected === "simulacoes" && <UberabaEstudoSimulacoes />}
       </section>
     </div>
   );
