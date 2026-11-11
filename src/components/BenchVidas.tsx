@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ChevronRight, Download, Plus, X, Users, UserCheck, TrendingUp } from "lucide-react";
 import BenchVidasGrafico from "./BenchVidasGrafico";
+import BenchVidasMensal from "./BenchVidasMensal";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -150,12 +151,11 @@ function SubmenuBenchVidas({ visao, alterar }: { visao: VisaoBenchVidas; alterar
 
 export default function BenchVidas() {
   const [visao, setVisao] = useState<VisaoBenchVidas>("trimestral");
+  const [mensalAberto, setMensalAberto] = useState(false);
+  useEffect(() => { if (visao === "mensal") setMensalAberto(true); }, [visao]);
   const navegacao = <SubmenuBenchVidas visao={visao} alterar={setVisao} />;
   return <div className="h-full min-h-0">
     <div className={visao === "trimestral" ? "h-full min-h-0" : "hidden"}><BenchVidasTrimestral navegacao={navegacao} /></div>
-    {visao === "mensal" && <div className="flex h-full min-h-0 flex-col gap-3">
-      <div className="flex shrink-0 justify-center">{navegacao}</div>
-      <p role="status" className="py-8 text-center text-sm text-muted-foreground">Visão mensal em preparação.</p>
-    </div>}
+    {mensalAberto && <div className={visao === "mensal" ? "h-full min-h-0" : "hidden"}><BenchVidasMensal navegacao={navegacao} /></div>}
   </div>;
 }
