@@ -44,12 +44,16 @@ for cubo, cols in CUBOS.items():
 ordem = {c: sorted(vs, key=lambda v: (v == NI or v.startswith("Não"), faixa_ordem(v) if c in ("faixa", "faixaReaj") else 0, plain(v))) for c, vs in valores.items()}
 idx = {c: {v: i for i, v in enumerate(vs)} for c, vs in ordem.items()}
 
+def prontos(y, cubo):
+    # Somente arquivos UF/mes concluidos (o .json de metadados e gravado por ultimo na etapa 1).
+    return [f for f in sorted(prontos(y, cubo)) if Path(f[: -len(f"_{cubo}.parquet")] + ".json").exists()]
+
 def ano(y):
-    tot = pd.concat([pd.read_parquet(f).assign(comp=int(Path(f).name[:6])) for f in glob.glob(str(PAR / f"{y}??_*_T.parquet"))])
+    tot = pd.concat([pd.read_parquet(f).assign(comp=int(Path(f).name[:6])) for f in prontos(y, "T")])
     tot = tot.groupby(["CD_OPERADORA", "comp"])[Q].sum()
     partes = []
     for cubo, cols in CUBOS.items():
-        df = pd.concat([pd.read_parquet(f).assign(comp=int(Path(f).name[:6])) for f in glob.glob(str(PAR / f"{y}??_*_{cubo}.parquet"))], ignore_index=True)
+        df = pd.concat([pd.read_parquet(f).assign(comp=int(Path(f).name[:6])) for f in prontos(y, cubo)], ignore_index=True)
         for c in cols:
             v = limpa(df[c])
             df[c] = v.map(midx) if c == "CD_MUNICIPIO" else v.map(idx[CAMPO[c]])
