@@ -108,9 +108,11 @@ export const PLANO_IMPLANTACAO_UBERABA: ModeloFrenteContent = {
       numero: e.numero,
       titulo: e.titulo,
       cor: cor(i),
-      descricao: [e.entrega, `Critério de avanço: ${e.criterio}`, `Prazo: ${textoDefinicao(e.prazo)} • Responsável: ${textoDefinicao(e.responsavel)}`],
+      // Prazo/responsável só aparecem no quadro quando definidos; os demais ficam "Em definição" na nota da tela.
+      descricao: [e.entrega, `Critério de avanço: ${e.criterio}`, ...(e.prazo || e.responsavel ? [`Prazo: ${textoDefinicao(e.prazo)} • Responsável: ${textoDefinicao(e.responsavel)}`] : [])],
     })),
   }],
+  nota: implant.etapas.some((e) => !e.prazo || !e.responsavel) ? "Prazos e responsáveis das etapas: Em definição." : undefined,
   imagem_url: implantacaoImagem,
   imagem_alt: "Equipe de projeto e enfermeira planejam as etapas da implantação em um quadro com notas.",
   imagem_placeholder: "Imagem da implantação",
