@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { ChevronRight, Download, Plus, Search, TrendingDown, UserCheck, UserPlus, Users, X } from "lucide-react";
+import { ArrowRightLeft, ChevronRight, Download, Plus, Search, TrendingDown, UserCheck, UserPlus, Users, X } from "lucide-react";
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip as Dica, XAxis, YAxis } from "recharts";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
@@ -165,11 +165,12 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
         : erro ? <div role="alert" className="py-8 text-sm text-destructive">{erro}<Button variant="outline" className="ml-3" onClick={() => setTentativa(t => t + 1)}>Tentar novamente</Button></div>
         : !resumo ? <p role="status" className="py-8 text-sm text-muted-foreground">Nenhum registro para os filtros selecionados.</p>
         : <>
-          <div className="bench-kpis bench-kpis-4">
+          <div className="bench-kpis bench-kpis-4 bench-kpis-5">
             <div className="bench-kpi" aria-label="Ativos no início"><p className="bench-kpi-title">Ativos no início<Users aria-hidden="true" /></p><p className="bench-kpi-value">{nf(resumo.ativosInicio)}</p><p className="bench-kpi-date">{competenciaMensal(resumo.inicio)}</p></div>
-            <div className="bench-kpi bench-kpi-final" aria-label="Ativos no fim"><p className="bench-kpi-title">Ativos no fim<UserCheck aria-hidden="true" /></p><p className="bench-kpi-value">{nf(resumo.ativosFim)}<span className="ml-1 text-sm font-medium">({sinal(resumo.variacao)}{resumo.percentual === null ? "" : ` · ${resumo.percentual.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`})</span></p><p className="bench-kpi-date">{competenciaMensal(resumo.fim)}</p></div>
             <div className="bench-kpi bench-kpi-adesao" aria-label="Adesões"><p className="bench-kpi-title">Adesões<UserPlus aria-hidden="true" /></p><p className="bench-kpi-value">{nf(resumo.aderidos)}</p><p className="bench-kpi-date">soma {competenciaMensal(resumo.inicio)}–{competenciaMensal(resumo.fim)}</p></div>
-            <div className="bench-kpi bench-kpi-cancel" aria-label="Cancelamentos"><p className="bench-kpi-title">Cancelamentos<TrendingDown aria-hidden="true" /></p><p className="bench-kpi-value">{nf(resumo.cancelados)}<span className="ml-1 text-sm font-medium">(saldo {sinal(resumo.aderidos - resumo.cancelados)})</span></p><p className="bench-kpi-date">soma {competenciaMensal(resumo.inicio)}–{competenciaMensal(resumo.fim)}</p></div>
+            <div className="bench-kpi bench-kpi-cancel" aria-label="Cancelamentos"><p className="bench-kpi-title">Cancelamentos<TrendingDown aria-hidden="true" /></p><p className="bench-kpi-value">{nf(resumo.cancelados)}</p><p className="bench-kpi-date">soma {competenciaMensal(resumo.inicio)}–{competenciaMensal(resumo.fim)}</p></div>
+            <div className="bench-kpi bench-kpi-saldo" aria-label="Saldo"><p className="bench-kpi-title">Saldo<ArrowRightLeft aria-hidden="true" /></p><p className="bench-kpi-value">{sinal(resumo.aderidos - resumo.cancelados)}</p><p className="bench-kpi-date">adesões − cancelamentos {competenciaMensal(resumo.inicio)}–{competenciaMensal(resumo.fim)}</p></div>
+            <div className="bench-kpi bench-kpi-final" aria-label="Ativos no fim"><p className="bench-kpi-title">Ativos no fim<UserCheck aria-hidden="true" /></p><p className="bench-kpi-value">{nf(resumo.ativosFim)}<span className="ml-1 text-sm font-medium">({sinal(resumo.variacao)}{resumo.percentual === null ? "" : ` · ${resumo.percentual.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`})</span></p><p className="bench-kpi-date">{competenciaMensal(resumo.fim)}</p></div>
           </div>
           <Bloco titulo="Gráfico" aberto={graficoAberto} alternar={() => setGraficoAberto(s => !s)}>
             <div className="h-72 w-full">
