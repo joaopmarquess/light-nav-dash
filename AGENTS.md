@@ -12,7 +12,7 @@
 - Timeline: dropdown, default 0 Home; Plano de Ação submenus in stage bar (Home=Operação Iniciada); dates bar lists cronograma items
 - Use the shared presentation header for Timeline stages except Modelo de Atuação and Estudo; keep internal scrolling limited to presentations with expansion controls except operating-model subviews, which flow without clipping; preload and retain decoded presentation images from application startup to avoid loading delays.
 - Keep planned Timeline months, month grouping and UTC month-end calendar calculations in a tested helper keyed by stage; derive heat-band intensity from monthly counts and keep both calendar controls independent of version and selected stage so presentation cannot alter dates.
-- Plano de Ação screens render via UberabaModeloFrente with content derived in tested src/lib/uberabaPlanoAcao.ts from existing stage helpers so visuals never alter content; Operação Iniciada stays an expected result.
+- Plano de Ação screens render via UberabaModeloFrente with content derived in tested src/lib/uberabaPlanoAcao.ts from existing stage helpers so visuals never alter content; Operação Iniciada is an expected result
 - Simplified Modelo de Atuação: horizontal menu; fronts share the Guias layout. Comercial/Rede Assistencial live in Estudo.
 - Keep simplified Timeline formalization as a container-aware live presentation with contract scope in a tested data helper; preserve the complete version to avoid changing existing institutional content.
 - Keep hospital content typed and its presentation live, container-aware, with extracted photos, visible services and missing-media placeholders; never flatten it to a screenshot.
