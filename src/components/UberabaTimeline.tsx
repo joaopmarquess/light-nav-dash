@@ -85,7 +85,7 @@ const UberabaTimeline = () => {
         <div className="ml-auto flex shrink-0 items-center gap-3">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon" variant={mostrarDatas ? "default" : "outline"} aria-label={mostrarDatas ? "Ocultar datas planejadas" : "Mostrar datas planejadas"} aria-pressed={mostrarDatas} onClick={() => setMostrarDatas(!mostrarDatas)}>
+                <Button size="icon" className="h-9 w-9" variant={mostrarDatas ? "default" : "outline"} aria-label={mostrarDatas ? "Ocultar datas planejadas" : "Mostrar datas planejadas"} aria-pressed={mostrarDatas} onClick={() => setMostrarDatas(!mostrarDatas)}>
                   <CalendarDays className="h-5 w-5" />
                 </Button>
               </TooltipTrigger>
