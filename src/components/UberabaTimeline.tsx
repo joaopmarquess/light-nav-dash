@@ -56,21 +56,6 @@ const UberabaTimeline = () => {
 
   return (
     <div ref={timelineRef} className="timeline-workspace flex h-full min-h-0 flex-col gap-6">
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold text-foreground">Projeto Bensaúde|Uberaba</h1>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button size="icon" variant={mostrarDatas ? "default" : "outline"} aria-label={mostrarDatas ? "Ocultar datas planejadas" : "Mostrar datas planejadas"} aria-pressed={mostrarDatas} onClick={() => setMostrarDatas(!mostrarDatas)}>
-                <CalendarDays className="h-5 w-5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{mostrarDatas ? "Ocultar datas planejadas" : "Mostrar datas planejadas"}</TooltipContent>
-          </Tooltip>
-          {mostrarDatas && <span className="text-xs font-medium text-muted-foreground">Datas planejadas</span>}
-        </div>
-        <div className="ml-auto shrink-0"><UberabaPresentationPdfButton iconOnly /></div>
-      </div>
       <div className="flex shrink-0 flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-4 py-2" aria-label="Navegação das etapas do projeto">
         <span className="text-sm font-medium text-muted-foreground">Etapa</span>
         <DropdownMenu>
@@ -97,6 +82,18 @@ const UberabaTimeline = () => {
           </DropdownMenuContent>
         </DropdownMenu>
         {atual && <span className="text-xs text-muted-foreground">Etapa {ETAPAS.indexOf(atual) + 1} de {ETAPAS.length}</span>}
+        <div className="ml-auto flex shrink-0 items-center gap-3">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="icon" variant={mostrarDatas ? "default" : "outline"} aria-label={mostrarDatas ? "Ocultar datas planejadas" : "Mostrar datas planejadas"} aria-pressed={mostrarDatas} onClick={() => setMostrarDatas(!mostrarDatas)}>
+                  <CalendarDays className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{mostrarDatas ? "Ocultar datas planejadas" : "Mostrar datas planejadas"}</TooltipContent>
+            </Tooltip>
+            {mostrarDatas && <span className="text-xs font-medium text-muted-foreground">Datas planejadas</span>}
+          <UberabaPresentationPdfButton iconOnly />
+        </div>
       </div>
       {mostrarDatas && <div className="relative shrink-0 overflow-x-auto rounded-lg border border-border bg-card px-8 py-4" aria-label="Datas planejadas por etapa">
         <div className="relative min-w-[840px] md:min-w-0">
