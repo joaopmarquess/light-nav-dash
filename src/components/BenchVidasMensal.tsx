@@ -21,7 +21,7 @@ const FIXA = "366561";
 const MENSAIS = new Map(catalogo.operadoras.map(o => [o.reg, o]));
 const OPERADORAS = catalogoTrimestral.operadoras.map(o => {
   const m = MENSAIS.get(o.reg);
-  return { reg: o.reg, razaoSocial: m?.razaoSocial ?? o.nome, nome: nomeOperadoraAns(CURTOS[o.reg] ?? o.nome), mensal: Boolean(m) };
+  return { reg: o.reg, razaoSocial: m?.razaoSocial ?? o.nome, modalidade: m?.modalidade ?? "", nome: nomeOperadoraAns(CURTOS[o.reg] ?? o.nome), mensal: Boolean(m) };
 }).sort((a, b) => Number(b.mensal) - Number(a.mensal) || a.nome.localeCompare(b.nome, "pt-BR"));
 const POR_REG = new Map(OPERADORAS.map(o => [o.reg, o]));
 const INICIAIS = ["366561", "327417", "350249", "335100"].filter(r => POR_REG.has(r));
@@ -132,7 +132,7 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
             {INDICADORES_MENSAL.map(i => <Button key={i.id} variant="ghost" aria-pressed={indicador === i.id} onClick={() => setIndicador(i.id)} className={`h-7 rounded-full px-3 text-xs ${indicador === i.id ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "text-foreground/70"}`}>{i.rotulo}</Button>)}
           </div>
           <div aria-label="Identificação da operadora" className="ml-auto flex min-w-0 flex-col items-end text-right text-xs">
-            <strong className="break-words">{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} · {atual?.modalidade.toLowerCase()}</span></strong>
+            <strong className="break-words">{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} {atual?.modalidade ? ` · ${atual.modalidade.toLowerCase()}` : ""}</span></strong>
             <span className="text-muted-foreground">ANS mensal · {competenciaMensal(catalogo.inicio)}–{competenciaMensal(catalogo.fim)}</span>
           </div>
         </div>
