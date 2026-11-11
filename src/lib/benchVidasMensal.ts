@@ -53,7 +53,7 @@ export function camposCompativeis(detalhar: CampoMensal, filtros: Filtros): Camp
 /** Remove filtros que não convivem com o cubo do detalhamento escolhido. */
 export function ajustarFiltros(detalhar: CampoMensal, filtros: Filtros): Filtros {
   const cubo = cuboPara(detalhar, {});
-  const base = Object.fromEntries(Object.entries(filtros).filter(([c]) => campoDisponivel(cubo, c as CampoMensal) || (cubo === "A" && (c === "municipio" || c === "plano")))) as Filtros;
+  const base = Object.fromEntries(Object.entries(filtros).filter(([c]) => campoDisponivel(cubo, c as CampoMensal) || (cubo === "A" && (c === "municipio" || c === "plano") && campoDisponivel(c === "municipio" ? "M" : "P", detalhar)))) as Filtros;
   const final = cuboPara(detalhar, base);
   return Object.fromEntries(Object.entries(base).filter(([c]) => campoDisponivel(final, c as CampoMensal))) as Filtros;
 }
