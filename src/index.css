@@ -1002,3 +1002,17 @@ All colors MUST be HSL.
 .modelo-guias-aberta .guias-result > div { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 24px; }
 .modelo-guias-aberta .guias-result ul { margin-top: 0; }
 .modelo-guias-aberta .guias-flow > button, .modelo-guias-aberta .guias-header > button { height: 30px; }
+
+/* Comercial do Modelo de Atuação: grupos Forças de Vendas e Produtos no formato de Guias */
+.modelo-comercial .comercial-grupos { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.modelo-comercial .comercial-grupo { display: flex; flex-direction: column; gap: 6px; }
+.modelo-comercial .comercial-grupo-titulo { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; color: hsl(var(--hospital-navy)); }
+.modelo-comercial .comercial-grupo-titulo::before { content: ""; width: 4px; height: 16px; border-radius: 2px; background: hsl(var(--hospital-gold)); }
+.modelo-comercial .comercial-grupo-titulo::after { content: ""; flex: 1; height: 1px; background: hsl(var(--hospital-frame)); }
+.modelo-comercial .guias-stages { grid-template-rows: none; }
+.modelo-comercial .guias-stage h3 { text-transform: uppercase; }
+.modelo-comercial .comercial-subitens { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; padding-left: 14px; border-left: 2px solid hsl(var(--guias-auditoria) / .45); }
+.modelo-comercial .comercial-subitens li { padding: 2px 10px; border: 1px solid hsl(var(--hospital-frame)); border-radius: 999px; background: hsl(var(--guias-auditoria) / .12); color: hsl(var(--hospital-navy)); font-size: 13px; font-weight: 600; line-height: 1.4; }
+.modelo-comercial .comercial-indicators { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.modelo-comercial .guias-indicator-5 { background: hsl(var(--guias-autorizador) / .15); }
+@media (max-width: 900px) { .modelo-comercial .comercial-indicators { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

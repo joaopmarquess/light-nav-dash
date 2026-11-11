@@ -8,8 +8,8 @@ import UberabaFormalizacao from "@/components/UberabaFormalizacao";
 import UberabaImplantacao from "@/components/UberabaImplantacao";
 import UberabaOperacaoIniciada from "@/components/UberabaOperacaoIniciada";
 import UberabaGuias from "@/components/UberabaGuias";
-import { comercialUberaba, REDE_UBERABA } from "@/lib/uberabaFrentes";
-import { lerIndices } from "@/lib/uberabaTabelasComerciais";
+import { REDE_UBERABA } from "@/lib/uberabaFrentes";
+import UberabaModeloComercial from "@/components/UberabaModeloComercial";
 import outdoorImagem from "@/assets/projeto-uberaba-home-v2.svg.asset.json";
 import { CalendarDays, ChevronDown, FileCheck2, Stethoscope, Tags } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -171,7 +171,7 @@ const UberabaTimeline = () => {
               <div className="modelo-menu" role="group" aria-label="Frentes do Modelo de Atuação">
                 {FRENTES.map((f) => { const Icone = f.icone; return <Button key={f.nome} variant={frente === f.nome ? "default" : "outline"} aria-pressed={frente === f.nome} onClick={() => setFrente(f.nome)}><Icone className="h-4 w-4" />{f.nome}</Button>; })}
               </div>
-              {frente === "Comercial" && <UberabaGuias key="comercial" content={comercialUberaba(lerIndices())} />}
+              {frente === "Comercial" && <UberabaModeloComercial />}
               {frente === "Rede Assistencial" && <UberabaGuias key="rede" content={REDE_UBERABA} />}
               {frente === "Guias" && <UberabaGuias key="guias" />}
             </article>

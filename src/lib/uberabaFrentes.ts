@@ -1,7 +1,6 @@
 import type { EtapaGuia, GuiasContent } from "@/lib/uberabaGuias";
 import { GRUPOS_CREDENCIAMENTO, RESUMO_CREDENCIAMENTO } from "@/lib/uberabaCredenciamento";
-import { INDICES_PADRAO, type Indices } from "@/lib/uberabaTabelasComerciais";
-import comercialImagem from "@/assets/uberaba-comercial-operacao.jpg";
+import comercialImagem from "@/assets/uberaba-comercial-negociacao.jpg";
 import redeImagem from "@/assets/uberaba-rede-assistencial-operacao.jpg";
 
 // Telas Comercial e Rede Assistencial do Modelo de Atuação, no formato da tela Guias.
@@ -12,7 +11,6 @@ const CORES: EtapaGuia["etapa_cor"][] = ["virtual", "autorizador", "auditoria", 
 const etapas = (itens: [string, string, string][]): EtapaGuia[] =>
   itens.map(([id, etapa_titulo, etapa_descricao], i) => ({ id, etapa_numero: i + 1, etapa_titulo, etapa_descricao, etapa_cor: CORES[i], ordem_exibicao: i + 1, status_ativo: true }));
 const fluxo = (itens: string[]) => itens.map((fluxo_item, i) => ({ id: `fluxo-${i + 1}`, fluxo_item, fluxo_ordem: i + 1, status_ativo: true }));
-const pct = (v: number) => `${v.toLocaleString("pt-BR")}%`;
 const n = (v: number) => v.toLocaleString("pt-BR");
 const grupo = (id: (typeof GRUPOS_CREDENCIAMENTO)[number]["id"]) => GRUPOS_CREDENCIAMENTO.find((g) => g.id === id)!;
 const LOREM_FLUXO = [
@@ -24,31 +22,48 @@ const LOREM_FLUXO = [
   "Quis nostrud exercitation ullamco;",
 ];
 
-/** Usa os índices gravados no Estudo › Comercial, para as duas telas mostrarem os mesmos percentuais. */
-export const comercialUberaba = (indices: Indices = INDICES_PADRAO): GuiasContent => ({
-  id: "uberaba-comercial",
+// Comercial: somente o conteúdo fornecido pelo Dênis, organizado no formato visual de Guias.
+export type ItemComercial = { id: string; numero: number; titulo: string; cor: EtapaGuia["etapa_cor"]; subitens?: string[] };
+export type GrupoComercial = { id: string; titulo: string; itens: ItemComercial[] };
+export type ModeloComercialContent = {
+  titulo: string;
+  subtitulo: string;
+  grupos: GrupoComercial[];
+  imagem_url: string;
+  imagem_alt: string;
+  indicadores: string[];
+  destaque_titulo: string;
+  destaque_itens: string[];
+};
+
+export const COMERCIAL_UBERABA: ModeloComercialContent = {
   titulo: "Comercial",
-  subtitulo: "Produtos e tabelas de preço sobre a Referência",
-  rotulo_etapas: "Produtos comerciais",
-  etapas: etapas([
-    ["pca-adm", "PCA ADM.", `Adesão administrada, com tabela a ${pct(indices.pcaAdm)} da Referência.`],
-    ["pce-adm", "PCE ADM.", `Empresarial para médias empresas, com tabela a ${pct(indices.pceAdm)} da Referência.`],
-    ["pce-100", "PCE 100+", `Empresarial para grandes empresas, com tabela a ${pct(indices.pce100)} da Referência.`],
-    ["acomodacao", "ACOMODAÇÃO", "Enfermaria pela tabela do produto; Apartamento = Enfermaria × 1,25."],
-  ]),
-  imagem_operacao_url: comercialImagem,
-  imagem_alt: "Consultora apresenta tabelas de planos em um tablet para clientes em um escritório comercial.",
-  imagem_placeholder: "Imagem da operação comercial",
-  texto_imagem: LOREM_CURTO,
-  indicadores: ["PCA ADM.", "PCE ADM.", "PCE 100+", "LOREM IPSUM"],
-  resultado_titulo: "RESULTADO",
-  resultado_descricao: "Lorem ipsum • Dolor sit • Amet consectetur",
-  resultado_itens: ["Lorem ipsum", "Dolor sit amet", "Consectetur", "Adipiscing elit", "Sed do eiusmod"],
-  premissa: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.",
-  fluxo: fluxo(LOREM_FLUXO),
-  status_ativo: true,
-  observacao: "Os índices sobre a Referência podem ser ajustados no Estudo › Comercial. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-});
+  subtitulo: "Modelo comercial e estrutura de vendas em Uberaba",
+  grupos: [
+    {
+      id: "forcas-vendas",
+      titulo: "Forças de Vendas",
+      itens: [
+        { id: "farmer", numero: 1, titulo: "Farmer em Uberaba", cor: "virtual" },
+        { id: "sdr", numero: 2, titulo: "Equipe própria SDR em Rio Preto", cor: "autorizador" },
+        { id: "agentes", numero: 3, titulo: "Agentes Comerciais Autorizados em Uberaba", cor: "auditoria", subitens: ["Siga Soluções", "Corretores Lancers"] },
+      ],
+    },
+    {
+      id: "produtos",
+      titulo: "Produtos",
+      itens: [
+        { id: "pca-pme", numero: 4, titulo: "PCA e PME Administrado", cor: "atendimento" },
+        { id: "pce-100", numero: 5, titulo: "PCE 100+", cor: "virtual" },
+      ],
+    },
+  ],
+  imagem_url: comercialImagem,
+  imagem_alt: "Executivo comercial cumprimenta cliente empresarial em reunião de negociação, com colegas e propostas sobre a mesa.",
+  indicadores: ["FARMER EM UBERABA", "SDR EM RIO PRETO", "AGENTES AUTORIZADOS", "PCA / PME", "PCE 100+"],
+  destaque_titulo: "MODELO COMERCIAL",
+  destaque_itens: ["Presença local em Uberaba", "Apoio SDR em Rio Preto", "Agentes autorizados", "Portfólio direcionado"],
+};
 
 export const REDE_UBERABA: GuiasContent = {
   id: "uberaba-rede-assistencial",
