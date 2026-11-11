@@ -31,10 +31,10 @@ describe("Project stage navigation", () => {
     expect(screen.queryByText(/Etapa \d+ de \d+/)).toBeNull();
   });
 
-  it("lists the six stages (without Hospital Mário Palmério) in the dropdown and opens the chosen one", () => {
+  it("lists Home, Estudo, Modelo de Atuação and Plano de Ação in the dropdown and opens the chosen one", () => {
     render(<TooltipProvider><UberabaTimeline /></TooltipProvider>);
     abrirMenu();
-    expect(screen.getAllByRole("menuitem")).toHaveLength(7);
+    expect(screen.getAllByRole("menuitem").map((i) => i.textContent)).toEqual(["0Home", "1Estudo", "2Modelo de Atuação", "3Plano de Ação"]);
     expect(screen.queryByRole("menuitem", { name: /Hospital Mário Palmério/ })).toBeNull();
     expect(screen.getAllByRole("menuitem")[0]).toHaveTextContent("0Home");
     fireEvent.click(screen.getByRole("menuitem", { name: /Modelo de Atuação/ }));
@@ -56,5 +56,19 @@ describe("Project stage navigation", () => {
     expect(screen.getByRole("button", { name: "Guias" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("heading", { name: "Guias" })).toBeVisible();
     expect(screen.queryByRole("heading", { name: "Comercial" })).toBeNull();
+  });
+  it("opens Plano de Ação on its Home (the Operação Iniciada presentation) with the moved stages as submenus", () => {
+    render(<TooltipProvider><UberabaTimeline /></TooltipProvider>);
+    abrirMenu();
+    expect(screen.queryByRole("menuitem", { name: /Operação Iniciada|Plano de Marketing|Formalização|Implantação/ })).toBeNull();
+    fireEvent.click(screen.getByRole("menuitem", { name: /Plano de Ação/ }));
+    const sub = screen.getByRole("group", { name: "Submenus do Plano de Ação" });
+    expect(screen.getByLabelText("Navegação das etapas do projeto")).toContainElement(sub);
+    expect([...sub.querySelectorAll("button")].map((b) => b.textContent)).toEqual(["Home", "Plano de Marketing", "Formalização", "Implantação"]);
+    expect(screen.getByRole("button", { name: "Home" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("heading", { name: "Operação Iniciada" })).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Formalização" }));
+    expect(screen.getByRole("article", { name: "Formalização do Bensaúde|Uberaba" })).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "Operação Iniciada" })).toBeNull();
   });
 });
