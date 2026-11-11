@@ -160,9 +160,6 @@ const UberabaTimeline = () => {
             <UberabaEstudoMapas />
           ) : atual.nome === "Modelo de Atuação" ? (
             <article className={`timeline-presentation modelo-presentation ${guiasAberta ? "modelo-guias-aberta" : ""}`} aria-label="Modelo de Atuação do Bensaúde|Uberaba">
-              <div className="modelo-heading">
-                <TimelinePresentationHeader title="Modelo de Atuação" subtitle="Operação comercial, rede assistencial e jornada digital" />
-              </div>
               {!guiasAberta && <div className="modelo-fronts">
                 {[
                   { nome: "Comercial", texto: "PCA Adm., PCE Adm. e PCE 100+", cor: "comercial" },
