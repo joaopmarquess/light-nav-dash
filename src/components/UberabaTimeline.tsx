@@ -121,7 +121,7 @@ const UberabaTimeline = () => {
           {atual.nome === "Operação Iniciada" ? <UberabaOperacaoIniciada /> : atual.nome === "Hospital Mário Palmério" ? <UberabaHospital onBack={voltarTimeline} /> : atual.nome === "Plano de Marketing" ? <UberabaMarketing /> : atual.nome === "Formalização" ? <UberabaFormalizacao /> : atual.nome === "Implantação" ? <UberabaImplantacao /> : atual.nome === "Estudo" ? (
             <UberabaEstudoMapas />
           ) : atual.nome === "Modelo de Atuação" ? (
-            <article className="timeline-presentation modelo-presentation" aria-label="Modelo de Atuação do Bensaúde|Uberaba">
+            <article className={`timeline-presentation modelo-presentation ${guiasAberta ? "modelo-guias-aberta" : ""}`} aria-label="Modelo de Atuação do Bensaúde|Uberaba">
               <div className="modelo-heading">
                 <TimelinePresentationHeader title="Modelo de Atuação" subtitle="Operação comercial, rede assistencial e jornada digital" />
               </div>

@@ -48,8 +48,8 @@ export default function UberabaGuias({ onBack, content = GUIAS_UBERABA }: { onBa
           <h3 id="guias-resultado">{content.resultado_titulo}</h3>
           <div><p className="guias-result-main">{content.resultado_descricao}</p><ul>{["Jornada sem papel", "Autorização online", "Acompanhamento remoto", "Redução de deslocamentos", "Integração entre cliente, prestador e Operadora"].map((item) => <li key={item}>{item}</li>)}</ul></div>
         </section>
-        <p className="guias-premise">A jornada proposta elimina a guia física e reduz a necessidade de atendimento presencial no Bensaúde.</p>
         <div className="guias-flow">
+          <p className="guias-premise">A jornada proposta elimina a guia física e reduz a necessidade de atendimento presencial no Bensaúde.</p>
           <Button variant="outline" size="sm" aria-expanded={fluxoAberto} aria-controls="guias-fluxo" onClick={() => setFluxoAberto(!fluxoAberto)}>
             VER FLUXO COMPLETO<ChevronDown className={`h-4 w-4 transition-transform motion-reduce:transition-none ${fluxoAberto ? "rotate-180" : ""}`} />
           </Button>
