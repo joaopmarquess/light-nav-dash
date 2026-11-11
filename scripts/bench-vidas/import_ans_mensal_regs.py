@@ -121,13 +121,13 @@ def main():
         jobs += [(m, f) for f in sorted(set(re.findall(r'href="(pda-024-icb-[A-Z]{2}-\d{4}_\d{2}\.zip)"', html)))]
     prontos = sum((PAR / f"{m}_{f[12:14]}.json").exists() for m, f in jobs)
     etapa("Download da ANS", 1, len(jobs), prontos)
-    with concurrent.futures.ProcessPoolExecutor(max_workers=10) as pool:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=10, mp_context=__import__("multiprocessing").get_context("forkserver")) as pool:
         for fut in concurrent.futures.as_completed([pool.submit(baixar, j) for j in jobs if not (PAR / f"{j[0]}_{j[1][12:14]}.json").exists()]):
             fut.result(); estado["feitos"] += 1
             if estado["feitos"] % 20 == 0: print(estado["feitos"], "/", len(jobs), flush=True)
     anos = sorted({c[:4] for c in comps})
     etapa("Montagem por ano", 2, len(anos), sum((OUT / f".ano-{y}").exists() for y in anos))
-    with concurrent.futures.ProcessPoolExecutor(max_workers=3) as pool:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=3, mp_context=__import__("multiprocessing").get_context("forkserver")) as pool:
         for fut in concurrent.futures.as_completed([pool.submit(montar, y) for y in anos if not (OUT / f".ano-{y}").exists()]):
             fut.result(); estado["feitos"] += 1
     feitos = json.loads(FEITOS.read_text()) if FEITOS.exists() else {}
