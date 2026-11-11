@@ -10,6 +10,14 @@ export type EtapaGuia = {
 
 export type GuiasContent = {
   id: string;
+  titulo?: string;
+  subtitulo?: string;
+  rotulo_etapas?: string;
+  imagem_alt?: string;
+  imagem_placeholder?: string;
+  indicadores?: string[];
+  resultado_itens?: string[];
+  premissa?: string;
   etapas: EtapaGuia[];
   imagem_operacao_url?: string;
   texto_imagem: string;

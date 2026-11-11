@@ -39,10 +39,12 @@ describe("Project stage navigation", () => {
     const menu = screen.getByRole("group", { name: "Frentes do Modelo de Atuação" });
     expect(menu).toBeVisible();
     expect(screen.getByRole("button", { name: "Comercial" })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("region", { name: "Comercial" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Comercial" })).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Rede Assistencial" }));
+    expect(screen.getByRole("heading", { name: "Rede Assistencial" })).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Guias" }));
     expect(screen.getByRole("button", { name: "Guias" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("heading", { name: "Guias" })).toBeVisible();
-    expect(screen.queryByRole("region", { name: "Comercial" })).toBeNull();
+    expect(screen.queryByRole("heading", { name: "Comercial" })).toBeNull();
   });
 });

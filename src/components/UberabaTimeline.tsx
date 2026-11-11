@@ -8,6 +8,8 @@ import UberabaFormalizacao from "@/components/UberabaFormalizacao";
 import UberabaImplantacao from "@/components/UberabaImplantacao";
 import UberabaOperacaoIniciada from "@/components/UberabaOperacaoIniciada";
 import UberabaGuias from "@/components/UberabaGuias";
+import { comercialUberaba, REDE_UBERABA } from "@/lib/uberabaFrentes";
+import { lerIndices } from "@/lib/uberabaTabelasComerciais";
 import outdoorImagem from "@/assets/projeto-uberaba-home-v2.svg.asset.json";
 import { CalendarDays, ChevronDown, FileCheck2, Stethoscope, Tags } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -36,17 +38,15 @@ const ETAPAS: Etapa[] = [
 const HOME = "Home";
 
 const FRENTES = [
-  { nome: "Comercial", texto: "PCA Adm., PCE Adm. e PCE 100+", cor: "comercial", icone: Tags },
-  { nome: "Rede Assistencial", texto: "Referências médicas, diagnóstico e terapia e profissionais não médicos", cor: "rede", icone: Stethoscope },
-  { nome: "Guias", texto: "Carteirinha virtual, autorização online, auditoria remota e atendimento digital", cor: "guias", icone: FileCheck2 },
+  { nome: "Comercial", icone: Tags },
+  { nome: "Rede Assistencial", icone: Stethoscope },
+  { nome: "Guias", icone: FileCheck2 },
 ] as const;
 
 const UberabaTimeline = () => {
   const [aberta, setAberta] = useState<string | null>(HOME);
   const [mostrarDatas, setMostrarDatas] = useState(false);
   const [frente, setFrente] = useState<(typeof FRENTES)[number]["nome"]>(FRENTES[0].nome);
-  const guiasAberta = frente === "Guias";
-  const setGuiasAberta = (aberto: boolean) => setFrente(aberto ? "Guias" : FRENTES[0].nome);
   const atual = ETAPAS.find((e) => e.nome === aberta);
   const permiteRolagem = ["Estudo", "Plano de Marketing"].includes(aberta ?? "");
   const apresentacaoPropria = ["Hospital Mário Palmério", "Operação Iniciada"].includes(aberta ?? "") || (["Plano de Marketing", "Formalização", "Modelo de Atuação", "Implantação"].includes(aberta ?? ""));
@@ -54,7 +54,7 @@ const UberabaTimeline = () => {
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (panelRef.current) panelRef.current.scrollTop = 0;
-  }, [guiasAberta]);
+  }, [frente]);
   useEffect(() => {
     if (aberta !== "Hospital Mário Palmério") return;
     if (panelRef.current) panelRef.current.scrollTop = 0;
@@ -81,14 +81,14 @@ const UberabaTimeline = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="min-w-[280px]">
             <DropdownMenuLabel>Etapas do projeto</DropdownMenuLabel>
-            <DropdownMenuItem onSelect={() => { setAberta(HOME); setGuiasAberta(false); }} className={aberta === HOME ? "bg-accent text-primary" : undefined} aria-current={aberta === HOME ? "step" : undefined}>
+            <DropdownMenuItem onSelect={() => { setAberta(HOME); setFrente(FRENTES[0].nome); }} className={aberta === HOME ? "bg-accent text-primary" : undefined} aria-current={aberta === HOME ? "step" : undefined}>
               <span className={`mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-primary text-xs font-semibold ${aberta === HOME ? "bg-primary text-primary-foreground" : "bg-background text-primary"}`}>0</span>
               {HOME}
             </DropdownMenuItem>
             {ETAPAS.map((e, i) => {
               const on = aberta === e.nome;
               return (
-                <DropdownMenuItem key={e.nome} onSelect={() => { setAberta(e.nome); setGuiasAberta(false); }} className={on ? "bg-accent text-primary" : undefined} aria-current={on ? "step" : undefined}>
+                <DropdownMenuItem key={e.nome} onSelect={() => { setAberta(e.nome); setFrente(FRENTES[0].nome); }} className={on ? "bg-accent text-primary" : undefined} aria-current={on ? "step" : undefined}>
                   <span className={`mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-primary text-xs font-semibold ${on ? "bg-primary text-primary-foreground" : "bg-background text-primary"}`}>{i + 1}</span>
                   {e.nome}
                 </DropdownMenuItem>
@@ -122,7 +122,7 @@ const UberabaTimeline = () => {
                   <button
                     type="button"
                     disabled={!clicavel}
-                    onClick={() => { setAberta(e.nome); setGuiasAberta(false); }}
+                    onClick={() => { setAberta(e.nome); setFrente(FRENTES[0].nome); }}
                     className={`flex flex-col items-center gap-3 ${clicavel ? "cursor-pointer" : "cursor-default"}`}
                   >
                     <span
@@ -167,12 +167,13 @@ const UberabaTimeline = () => {
           {atual.nome === "Operação Iniciada" ? <UberabaOperacaoIniciada /> : atual.nome === "Hospital Mário Palmério" ? <UberabaHospital onBack={voltarTimeline} /> : atual.nome === "Plano de Marketing" ? <UberabaMarketing /> : atual.nome === "Formalização" ? <UberabaFormalizacao /> : atual.nome === "Implantação" ? <UberabaImplantacao /> : atual.nome === "Estudo" ? (
             <UberabaEstudoMapas />
           ) : atual.nome === "Modelo de Atuação" ? (
-            <article className={`timeline-presentation modelo-presentation ${guiasAberta ? "modelo-guias-aberta" : ""}`} aria-label="Modelo de Atuação do Bensaúde|Uberaba">
+            <article className="timeline-presentation modelo-presentation modelo-guias-aberta" aria-label="Modelo de Atuação do Bensaúde|Uberaba">
               <div className="modelo-menu" role="group" aria-label="Frentes do Modelo de Atuação">
                 {FRENTES.map((f) => { const Icone = f.icone; return <Button key={f.nome} variant={frente === f.nome ? "default" : "outline"} aria-pressed={frente === f.nome} onClick={() => setFrente(f.nome)}><Icone className="h-4 w-4" />{f.nome}</Button>; })}
               </div>
-              {FRENTES.filter((f) => f.nome === frente && f.nome !== "Guias").map((f) => <section key={f.nome} aria-label={f.nome} className={`modelo-front modelo-front-${f.cor}`}><h3>{f.nome}</h3><p>{f.texto}</p></section>)}
-              {guiasAberta && <UberabaGuias />}
+              {frente === "Comercial" && <UberabaGuias key="comercial" content={comercialUberaba(lerIndices())} />}
+              {frente === "Rede Assistencial" && <UberabaGuias key="rede" content={REDE_UBERABA} />}
+              {frente === "Guias" && <UberabaGuias key="guias" />}
             </article>
           ) : (
             <p className="text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{LOREM}</p>
