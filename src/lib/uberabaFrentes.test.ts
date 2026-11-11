@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COMERCIAL_UBERABA, REDE_UBERABA } from "./uberabaFrentes";
+import { COMERCIAL_UBERABA, ESCRITORIO_UBERABA, REDE_UBERABA } from "./uberabaFrentes";
 
 describe("Modelo de Atuação fronts", () => {
   it("organizes Comercial into Forças de Vendas and Produtos with the supplied items", () => {
@@ -27,5 +27,13 @@ describe("Modelo de Atuação fronts", () => {
     expect(gestao.itens[1]).toMatchObject({ rotulo: "Equipe", subitens: ["O Farmer em Uberaba terá esta função acessória na manutenção da rede", "Equipe da Siga Soluções"] });
     expect(gestao.itens[2].rotulo).toBe("Dr. Adeir");
     expect(gestao.itens[2].subitens).toBeUndefined();
+  });
+
+  it("organizes Escritório Local into Equipes, Estrutura and Processos with the supplied items", () => {
+    const [grupo] = ESCRITORIO_UBERABA.grupos;
+    expect(grupo.itens.map((i) => i.titulo)).toEqual(["Equipes", "Estrutura", "Processos"]);
+    expect(grupo.itens[0].subitens).toEqual(["Farmer", "SDR", "Assistente/Secretária"]);
+    expect(grupo.itens[1].subitens).toEqual(["Mesas para a equipe fixa", "Mesas para a equipe em viagem", "Sala de reuniões"]);
+    expect(grupo.itens[2].subitens).toEqual(["Suporte ao credenciado", "Suporte ao beneficiário", "Fomento de Adesões nas empresas PJ 100+", "Atendimento a leads locais"]);
   });
 });
