@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ChevronRight, Download, Plus, X, Users, UserCheck, TrendingUp } from "lucide-react";
 import BenchVidasGrafico from "./BenchVidasGrafico";
-import BenchVidasMensal from "./BenchVidasMensal";
+const BenchVidasMensal = lazy(() => import("./BenchVidasMensal"));
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -156,6 +156,6 @@ export default function BenchVidas() {
   const navegacao = <SubmenuBenchVidas visao={visao} alterar={setVisao} />;
   return <div className="h-full min-h-0">
     <div className={visao === "trimestral" ? "h-full min-h-0" : "hidden"}><BenchVidasTrimestral navegacao={navegacao} /></div>
-    {mensalAberto && <div className={visao === "mensal" ? "h-full min-h-0" : "hidden"}><BenchVidasMensal navegacao={navegacao} /></div>}
+    {mensalAberto && <div className={visao === "mensal" ? "h-full min-h-0" : "hidden"}><Suspense fallback={<p role="status" className="py-8 text-sm text-muted-foreground">Carregando visão mensal…</p>}><BenchVidasMensal navegacao={navegacao} /></Suspense></div>}
   </div>;
 }
