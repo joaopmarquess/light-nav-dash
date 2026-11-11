@@ -32,7 +32,7 @@ export default function UberabaModeloFrente({ content }: { content: ModeloFrente
                         <h3>{item.titulo}</h3>
                         {item.rotulo && <p className="comercial-rotulo">{item.rotulo}</p>}
                         {item.subitens && (
-                          <ul className={`comercial-subitens ${item.rotulo ? "comercial-subitens-coluna" : ""}`} aria-label={`Integram ${item.titulo}`}>
+                          <ul className={`comercial-subitens ${item.rotulo || item.subitens.length > 2 ? "comercial-subitens-coluna" : ""}`} aria-label={`Integram ${item.titulo}`}>
                             {item.subitens.map((sub) => <li key={sub}>{sub}</li>)}
                           </ul>
                         )}
