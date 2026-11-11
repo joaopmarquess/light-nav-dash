@@ -25,7 +25,7 @@ describe("Estudo view selection", () => {
   it("shows no title or subtitle on the Estudo screen", () => {
     abrir();
     expect(screen.queryByRole("heading", { name: "Estudo" })).toBeNull();
-    expect(screen.queryByText("Bensaúde|Uberaba")).toBeNull();
+    expect(document.querySelector(".timeline-presentation-header")).toBeNull();
   });
 
   it("defaults to Home and switches between Home, panel and area", () => {
