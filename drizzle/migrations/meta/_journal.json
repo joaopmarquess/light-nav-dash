@@ -50,6 +50,13 @@
       "when": 1794411767713,
       "tag": "0006_bench_vidas_envio_progresso",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794413208394,
+      "tag": "0007_bench_vidas_pedidos",
+      "breakpoints": true
     }
   ]
 }

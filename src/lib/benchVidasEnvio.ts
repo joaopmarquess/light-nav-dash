@@ -26,3 +26,11 @@ export function avaliarEnvio(r: EnvioRegistro, agora: number) {
   const visivel = estado !== "concluido" || semSinalMs <= VISIVEL_APOS_FIM_MS;
   return { estado, total, feitos, pendentes, percentual, semSinalMs, semAvancoMs, visivel };
 }
+
+/** Competência seguinte no formato AAAAMM (ex.: "202612" → "202701"). */
+export function proximaCompetencia(c: string): string {
+  const ano = Number(c.slice(0, 4)), mes = Number(c.slice(4, 6));
+  return mes === 12 ? `${ano + 1}01` : `${ano}${String(mes + 1).padStart(2, "0")}`;
+}
+/** "202610" → "10/2026". */
+export const mesAno = (c: string) => `${c.slice(4, 6)}/${c.slice(0, 4)}`;

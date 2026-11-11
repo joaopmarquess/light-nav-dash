@@ -166,6 +166,30 @@ export type Database = {
         }
         Relationships: []
       }
+      bench_vidas_pedidos: {
+        Row: {
+          competencia: string
+          criado_em: string
+          id: string
+          situacao: string
+          solicitado_por: string
+        }
+        Insert: {
+          competencia: string
+          criado_em?: string
+          id?: string
+          situacao?: string
+          solicitado_por?: string
+        }
+        Update: {
+          competencia?: string
+          criado_em?: string
+          id?: string
+          situacao?: string
+          solicitado_por?: string
+        }
+        Relationships: []
+      }
       dre_gerencial_2t2026: {
         Row: {
           g1: string | null
