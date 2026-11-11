@@ -61,10 +61,9 @@ for (op, comp, i), v in sorted(fonte.items()): totais.setdefault(op, {}).setdefa
 catalogo = {
     "origem": "https://dadosabertos.ans.gov.br/FTP/PDA/informacoes_consolidadas_de_beneficiarios-024/",
     "inicio": comps[0], "fim": comps[-1], "competencias": comps,
-    "dataCarga": sorted({a.get("dt_carga", "") for a in arquivos} - {""}),
     "operadoras": sorted(operadoras.values(), key=lambda o: o["reg"]),
     "valores": {c: ordem[c] for c in campos}, "municipios": muns, "partes": partes, "totais": totais,
-    "arquivos": sorted(arquivos, key=lambda a: (a["competencia"], a["arquivo"])),
 }
+(CAT.parent / "manifesto.json").write_text(json.dumps({"origem": catalogo["origem"], "arquivos": sorted(arquivos, key=lambda a: (a["competencia"], a["arquivo"]))}, ensure_ascii=False, indent=0), encoding="utf8")
 CAT.write_text(json.dumps(catalogo, ensure_ascii=False, separators=(",", ":")), encoding="utf8")
 print("OK", len(comps), "competencias", len(partes), "partes", len(muns), "municipios", {k: len(v) for k, v in ordem.items()})
