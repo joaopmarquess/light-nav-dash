@@ -19,5 +19,7 @@
 - [x] Variável Ticket (299,99) e coluna Faturamento (vidas do mês × ticket).
 ## Bench Vidas › Mensal e atalhos
 - [x] Mensal usa a mesma lista de operadoras do Trimestral.
-- [ ] Enviar os dados mensais das 1.052 operadoras com dados desde 05/2021 e conferir na tela.
+- [x] Enviar e liberar as 224 operadoras de SP e MG (811 de 1.052 liberadas).
+- [x] Termômetro de envio e botão Atualizar base na tela Mensal.
+- [ ] Enviar as 241 operadoras de outros estados (aguarda pedido do Dênis).
 - [x] Atalhos Bench Vidas e Bench Contábil na Home.
