@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { HOSPITAL, MODELO, MARKETING, FORMALIZACAO, IMPLANTACAO } from "@/components/UberabaTimelineEtapas";
+import { MODELO, MARKETING, FORMALIZACAO, IMPLANTACAO } from "@/components/UberabaTimelineEtapas";
 import { Button } from "@/components/ui/button";
 import UberabaEstudoMapas from "@/components/UberabaEstudoMapas";
-import UberabaHospital from "@/components/UberabaHospital";
 import UberabaMarketing from "@/components/UberabaMarketing";
 import UberabaFormalizacao from "@/components/UberabaFormalizacao";
 import UberabaImplantacao from "@/components/UberabaImplantacao";
@@ -27,7 +26,6 @@ const LOREM =
 
 const ETAPAS: Etapa[] = [
   { nome: "Estudo", conteudo: <UberabaEstudoMapas /> },
-  { nome: "Hospital Mário Palmério", conteudo: HOSPITAL },
   { nome: "Modelo de Atuação", conteudo: MODELO },
   { nome: "Plano de Marketing", conteudo: MARKETING },
   { nome: "Formalização", conteudo: FORMALIZACAO },
@@ -51,21 +49,12 @@ const UberabaTimeline = () => {
   const [frente, setFrente] = useState<(typeof FRENTES)[number]["nome"]>(FRENTES[0].nome);
   const atual = ETAPAS.find((e) => e.nome === aberta);
   const permiteRolagem = ["Estudo", "Plano de Marketing"].includes(aberta ?? "");
-  const apresentacaoPropria = ["Hospital Mário Palmério", "Operação Iniciada"].includes(aberta ?? "") || (["Plano de Marketing", "Formalização", "Modelo de Atuação", "Implantação"].includes(aberta ?? ""));
+  const apresentacaoPropria = ["Operação Iniciada", "Plano de Marketing", "Formalização", "Modelo de Atuação", "Implantação"].includes(aberta ?? "");
   const timelineRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (panelRef.current) panelRef.current.scrollTop = 0;
   }, [frente]);
-  useEffect(() => {
-    if (aberta !== "Hospital Mário Palmério") return;
-    if (panelRef.current) panelRef.current.scrollTop = 0;
-    panelRef.current?.scrollIntoView({ block: "nearest", behavior: "auto" });
-  }, [aberta]);
-  const voltarTimeline = () => {
-    if (panelRef.current) panelRef.current.scrollTop = 0;
-    timelineRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
-  };
 
   return (
     <div ref={timelineRef} className="timeline-workspace flex h-full min-h-0 flex-col gap-6">
@@ -114,8 +103,8 @@ const UberabaTimeline = () => {
       </div>
       {mostrarDatas && <div className="relative shrink-0 overflow-x-auto rounded-lg border border-border bg-card px-8 py-4" aria-label="Datas planejadas por etapa">
         <div className="relative min-w-[840px] md:min-w-0">
-          <div className="absolute left-[7.14%] right-[7.14%] top-5 h-0.5 bg-border" />
-          <ol className="relative grid grid-cols-7 gap-4">
+          <div className="absolute top-5 h-0.5 bg-border" style={{ left: `${50 / ETAPAS.length}%`, right: `${50 / ETAPAS.length}%` }} />
+          <ol className="relative grid gap-4" style={{ gridTemplateColumns: `repeat(${ETAPAS.length}, minmax(0, 1fr))` }}>
             {ETAPAS.map((e, i) => {
               const on = aberta === e.nome;
               const clicavel = !!e.filhos || !!e.texto || !!e.conteudo;
@@ -147,7 +136,7 @@ const UberabaTimeline = () => {
       </div>}
 
       {mostrarDatas && (atual?.filhos || atual?.texto || atual?.conteudo) && (
-        <div className="-my-6 grid grid-cols-7 gap-4 px-8">
+        <div className="-my-6 grid gap-4 px-8" style={{ gridTemplateColumns: `repeat(${ETAPAS.length}, minmax(0, 1fr))` }}>
           <div
             className="flex justify-center"
             style={{ gridColumnStart: ETAPAS.indexOf(atual) + 1 }}
@@ -166,7 +155,7 @@ const UberabaTimeline = () => {
       {(atual?.filhos || atual?.texto || atual?.conteudo) && (
         <div ref={panelRef} data-expansivel={permiteRolagem} className={`timeline-stage-panel flex min-h-0 w-full flex-1 flex-col rounded-lg border border-border bg-card ${permiteRolagem ? "overflow-auto" : "timeline-stage-static"} ${apresentacaoPropria ? "" : "px-4 py-4 sm:px-8"}`}>
           {!apresentacaoPropria && !(atual.nome === "Estudo") && <div className="mb-5"><TimelinePresentationHeader title={atual.nome} /></div>}
-          {atual.nome === "Operação Iniciada" ? <UberabaOperacaoIniciada /> : atual.nome === "Hospital Mário Palmério" ? <UberabaHospital onBack={voltarTimeline} /> : atual.nome === "Plano de Marketing" ? <UberabaMarketing /> : atual.nome === "Formalização" ? <UberabaFormalizacao /> : atual.nome === "Implantação" ? <UberabaImplantacao /> : atual.nome === "Estudo" ? (
+          {atual.nome === "Operação Iniciada" ? <UberabaOperacaoIniciada /> : atual.nome === "Plano de Marketing" ? <UberabaMarketing /> : atual.nome === "Formalização" ? <UberabaFormalizacao /> : atual.nome === "Implantação" ? <UberabaImplantacao /> : atual.nome === "Estudo" ? (
             <UberabaEstudoMapas navTarget={navEstudo} />
           ) : atual.nome === "Modelo de Atuação" ? (
             <article className="timeline-presentation modelo-presentation modelo-guias-aberta" aria-label="Modelo de Atuação do Bensaúde|Uberaba">
@@ -181,7 +170,7 @@ const UberabaTimeline = () => {
           ) : (
             <p className="text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{LOREM}</p>
           )}
-          {!["Hospital Mário Palmério", "Operação Iniciada"].includes(atual.nome) && (
+          {atual.nome !== "Operação Iniciada" && (
             <footer className="mt-auto shrink-0 px-4 pb-4 pt-5 text-right text-base font-bold text-primary sm:px-8">
               Bensaúde|Uberaba
             </footer>

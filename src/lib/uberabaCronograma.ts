@@ -1,6 +1,5 @@
 export const CRONOGRAMA_UBERABA = {
   "Estudo": { mes: "Outubro", ano: 2026 },
-  "Hospital Mário Palmério": { mes: "Novembro", ano: 2026 },
   "Modelo de Atuação": { mes: "Novembro", ano: 2026 },
   "Plano de Marketing": { mes: "Novembro", ano: 2026 },
   "Formalização": { mes: "Dezembro", ano: 2026 },

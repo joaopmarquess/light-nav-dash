@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ArrowDown, ArrowUp, BedDouble, Building2, CreditCard, FileDown, Hospital, Landmark } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, BedDouble, Building2, CreditCard, FileDown, Hospital, Landmark } from "lucide-react";
+import UberabaHospital from "@/components/UberabaHospital";
 import { buildPdfTabela } from "@/lib/pdfTabela";
 import PdfPreview from "@/components/PdfPreview";
 import { totalRowStyles } from "@/lib/pdfTheme";
@@ -16,6 +17,9 @@ import bpFoto from "@/assets/hospital-beneficencia-portuguesa.png.asset.json";
 const FOTO: Record<string, string> = { "2195585": mphuFoto.url, "2206595": hcFoto.url, "9141839": jaFoto.url, "2165058": haFoto.url, "9745041": unimedFoto.url, "2165066": slFoto.url, "2164795": hcriFoto.url, "2164825": bpFoto.url };
 
 type Row = { nome: string; cnpj: string; cnes: string; leitos: number };
+
+/** CNES do Mário Palmério Hospital Universitário: o nome abre a apresentação institucional. */
+export const CNES_MPHU = "2195585";
 
 const HOSPITAIS: Row[] = [
   { nome: "Hospital de Clínicas da UFTM (HC-UFTM)", cnpj: "25.437.484/0002-42", cnes: "2206595", leitos: 304 },
@@ -115,6 +119,7 @@ type SortKey = keyof Row;
 const UberabaHospitais = () => {
   const [sort, setSort] = useState<{ key: SortKey; asc: boolean } | null>(null);
   const [preview, setPreview] = useState(false);
+  const [mphuAberto, setMphuAberto] = useState(false);
 
   const rows = [...HOSPITAIS].sort((a, b) => {
     if (!sort) {
@@ -177,6 +182,22 @@ const UberabaHospitais = () => {
     </th>
   );
 
+  if (mphuAberto) {
+    return (
+      <div className="flex h-full min-h-0 flex-col gap-3 overflow-auto pr-1">
+        <button
+          type="button"
+          onClick={() => setMphuAberto(false)}
+          className="inline-flex h-9 w-fit shrink-0 items-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-accent"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Voltar aos hospitais
+        </button>
+        <UberabaHospital />
+      </div>
+    );
+  }
+
   return (
     <TooltipProvider delayDuration={150}>
     <div className="h-full overflow-auto pr-1">
@@ -226,12 +247,26 @@ const UberabaHospitais = () => {
                 <td className="px-3 py-2 font-medium text-foreground">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="inline-flex cursor-help items-center gap-2">
-                        <TipoIcone tipo={TIPO[r.cnes]} />
-                        <span className="underline decoration-dotted decoration-muted-foreground underline-offset-4">
-                          {r.nome}
+                      {r.cnes === CNES_MPHU ? (
+                        <button
+                          type="button"
+                          onClick={() => setMphuAberto(true)}
+                          aria-label={`Abrir apresentação: ${r.nome}`}
+                          className="inline-flex cursor-pointer items-center gap-2 text-left font-medium"
+                        >
+                          <TipoIcone tipo={TIPO[r.cnes]} />
+                          <span className="text-primary underline decoration-primary underline-offset-4 hover:opacity-80">
+                            {r.nome}
+                          </span>
+                        </button>
+                      ) : (
+                        <span className="inline-flex cursor-help items-center gap-2">
+                          <TipoIcone tipo={TIPO[r.cnes]} />
+                          <span className="underline decoration-dotted decoration-muted-foreground underline-offset-4">
+                            {r.nome}
+                          </span>
                         </span>
-                      </span>
+                      )}
                     </TooltipTrigger>
                     <TooltipContent side="right" className="max-w-sm">
                       {FOTO[r.cnes] && (
