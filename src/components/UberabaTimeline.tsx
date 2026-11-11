@@ -8,6 +8,7 @@ import UberabaFormalizacao from "@/components/UberabaFormalizacao";
 import UberabaImplantacao from "@/components/UberabaImplantacao";
 import UberabaOperacaoIniciada from "@/components/UberabaOperacaoIniciada";
 import UberabaGuias from "@/components/UberabaGuias";
+import outdoorImagem from "@/assets/projeto-uberaba-home-v2.svg.asset.json";
 import { CalendarDays, ChevronDown, FileCheck2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import UberabaCronograma from "@/components/UberabaCronograma";
@@ -32,8 +33,10 @@ const ETAPAS: Etapa[] = [
   { nome: "Operação Iniciada", conteudo: <UberabaOperacaoIniciada /> },
 ];
 
+const HOME = "Home";
+
 const UberabaTimeline = () => {
-  const [aberta, setAberta] = useState<string | null>("Estudo");
+  const [aberta, setAberta] = useState<string | null>(HOME);
   const [mostrarDatas, setMostrarDatas] = useState(false);
   const [guiasAberta, setGuiasAberta] = useState(false);
   const atual = ETAPAS.find((e) => e.nome === aberta);
@@ -60,16 +63,20 @@ const UberabaTimeline = () => {
         <span className="text-sm font-medium text-muted-foreground">Etapa</span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="h-9 min-w-[280px] justify-between gap-3" aria-label={`Etapa do projeto: ${atual ? atual.nome : "nenhuma"}`}>
+            <Button variant="outline" className="h-9 min-w-[280px] justify-between gap-3" aria-label={`Etapa do projeto: ${aberta === HOME ? HOME : atual ? atual.nome : "nenhuma"}`}>
               <span className="flex min-w-0 items-center gap-2">
-                {atual && <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">{ETAPAS.indexOf(atual) + 1}</span>}
-                <span className="truncate">{atual ? atual.nome : "Selecione uma etapa"}</span>
+                {(atual || aberta === HOME) && <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">{atual ? ETAPAS.indexOf(atual) + 1 : 0}</span>}
+                <span className="truncate">{atual ? atual.nome : aberta === HOME ? HOME : "Selecione uma etapa"}</span>
               </span>
               <ChevronDown className="h-4 w-4 shrink-0 opacity-70" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="min-w-[280px]">
             <DropdownMenuLabel>Etapas do projeto</DropdownMenuLabel>
+            <DropdownMenuItem onSelect={() => { setAberta(HOME); setGuiasAberta(false); }} className={aberta === HOME ? "bg-accent text-primary" : undefined} aria-current={aberta === HOME ? "step" : undefined}>
+              <span className={`mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-primary text-xs font-semibold ${aberta === HOME ? "bg-primary text-primary-foreground" : "bg-background text-primary"}`}>0</span>
+              {HOME}
+            </DropdownMenuItem>
             {ETAPAS.map((e, i) => {
               const on = aberta === e.nome;
               return (
@@ -138,6 +145,12 @@ const UberabaTimeline = () => {
             <div className="h-6 w-0.5 bg-primary" />
           </div>
         </div>
+      )}
+
+      {aberta === HOME && (
+        <section aria-label="Home do projeto" className="timeline-stage-panel flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden rounded-lg border border-border bg-card p-4">
+          <img src={outdoorImagem.url} loading="eager" decoding="sync" alt="Outdoor do Bensaúde com Hospital Mário Palmério e SIGA: Estamos chegando, Uberaba" className="h-full max-h-full w-full object-contain" />
+        </section>
       )}
 
       {(atual?.filhos || atual?.texto || atual?.conteudo) && (
