@@ -7,7 +7,8 @@ import UberabaMarketing from "@/components/UberabaMarketing";
 import UberabaFormalizacao from "@/components/UberabaFormalizacao";
 import UberabaImplantacao from "@/components/UberabaImplantacao";
 import UberabaOperacaoIniciada from "@/components/UberabaOperacaoIniciada";
-import { CalendarDays } from "lucide-react";
+import UberabaGuias from "@/components/UberabaGuias";
+import { CalendarDays, FileCheck2 } from "lucide-react";
 import UberabaCronograma from "@/components/UberabaCronograma";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
@@ -33,11 +34,15 @@ const ETAPAS: Etapa[] = [
 const UberabaTimeline = () => {
   const [aberta, setAberta] = useState<string | null>("Estudo");
   const [mostrarDatas, setMostrarDatas] = useState(false);
+  const [guiasAberta, setGuiasAberta] = useState(false);
   const atual = ETAPAS.find((e) => e.nome === aberta);
   const permiteRolagem = ["Estudo", "Plano de Marketing"].includes(aberta ?? "");
   const apresentacaoPropria = ["Hospital Mário Palmério", "Operação Iniciada"].includes(aberta ?? "") || (["Plano de Marketing", "Formalização", "Modelo de Atuação", "Implantação"].includes(aberta ?? ""));
   const timelineRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (panelRef.current) panelRef.current.scrollTop = 0;
+  }, [guiasAberta]);
   useEffect(() => {
     if (aberta !== "Hospital Mário Palmério") return;
     if (panelRef.current) panelRef.current.scrollTop = 0;
@@ -120,13 +125,14 @@ const UberabaTimeline = () => {
               <div className="modelo-heading">
                 <TimelinePresentationHeader title="Modelo de Atuação" subtitle="Operação comercial, rede assistencial e jornada digital" />
               </div>
-              <div className="modelo-fronts">
+              {!guiasAberta && <div className="modelo-fronts">
                 {[
                   { nome: "Comercial", texto: "PCA Adm., PCE Adm. e PCE 100+", cor: "comercial" },
                   { nome: "Rede Assistencial", texto: "Referências médicas, diagnóstico e terapia e profissionais não médicos", cor: "rede" },
                   { nome: "Guias", texto: "Carteirinha virtual, autorização online, auditoria remota e atendimento digital", cor: "guias" },
-                ].map((f, i) => <section key={f.nome} className={`modelo-front modelo-front-${f.cor}`}><span>{i + 1}</span><h3>{f.nome}</h3><p>{f.texto}</p></section>)}
-              </div>
+                ].map((f, i) => <section key={f.nome} className={`modelo-front modelo-front-${f.cor}`}><span>{i + 1}</span><h3>{f.nome}</h3><p>{f.texto}</p>{f.nome === "Guias" && <Button variant="outline" onClick={() => setGuiasAberta(true)}><FileCheck2 className="h-4 w-4" />Guias</Button>}</section>)}
+              </div>}
+              {guiasAberta && <UberabaGuias onBack={() => setGuiasAberta(false)} />}
             </article>
           ) : (
             <p className="text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{LOREM}</p>
