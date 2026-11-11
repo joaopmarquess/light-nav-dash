@@ -151,9 +151,11 @@ function SubmenuBenchVidas({ visao, alterar }: { visao: VisaoBenchVidas; alterar
 
 export default function BenchVidas() {
   const [visao, setVisao] = useState<VisaoBenchVidas>("trimestral");
+  const [mensalAberto, setMensalAberto] = useState(false);
+  useEffect(() => { if (visao === "mensal") setMensalAberto(true); }, [visao]);
   const navegacao = <SubmenuBenchVidas visao={visao} alterar={setVisao} />;
   return <div className="h-full min-h-0">
     <div className={visao === "trimestral" ? "h-full min-h-0" : "hidden"}><BenchVidasTrimestral navegacao={navegacao} /></div>
-    {visao === "mensal" && <BenchVidasMensal navegacao={navegacao} />}
+    {mensalAberto && <div className={visao === "mensal" ? "h-full min-h-0" : "hidden"}><BenchVidasMensal navegacao={navegacao} /></div>}
   </div>;
 }
