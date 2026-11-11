@@ -18,12 +18,13 @@ const ABAS: { id: Aba; label: string; icon: typeof Calculator }[] = [
 // Simulações do Estudo: mesmos sub-botões do Painel, reunindo as telas existentes sem alterá-las.
 const UberabaEstudoSimulacoes = () => {
   const [aba, setAba] = useState<Aba>("simulacao");
+  const [acoes, setAcoes] = useState<HTMLDivElement | null>(null);
   const atual = ABAS.find((a) => a.id === aba)!;
   return (
     <div className="flex flex-col gap-3">
-      <EstudoSubNav itens={ABAS} ativo={aba} onSelect={(id) => setAba(id as Aba)} label="Simulações do Estudo" extra={aba === "comercial" ? <ReferenciaButton /> : undefined} />
+      <EstudoSubNav itens={ABAS} ativo={aba} onSelect={(id) => setAba(id as Aba)} label="Simulações do Estudo" extra={aba === "comercial" ? <ReferenciaButton /> : aba === "simulacao" ? <div ref={setAcoes} /> : undefined} />
       <section aria-label={atual.label} className="min-w-0">
-        {aba === "simulacao" && <UberabaSimulacao />}
+        {aba === "simulacao" && <UberabaSimulacao acoesTarget={acoes} />}
         {aba === "gestaoRede" && <UberabaGestaoRede />}
         {aba === "comercial" && <UberabaTabelasComerciais />}
         {aba === "rede" && <UberabaRedeAssistencial />}
