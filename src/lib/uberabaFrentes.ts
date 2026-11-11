@@ -12,9 +12,11 @@ export type ItemFrente = {
   cor: EtapaGuia["etapa_cor"];
   /** Rótulo do responsável abaixo do título (ex.: "Equipe", "Dr. Adeir"). */
   rotulo?: string;
+  /** Texto(s) explicativo(s) abaixo do título (usado nas telas do Plano de Ação). */
+  descricao?: string | string[];
   subitens?: string[];
 };
-export type GrupoFrente = { id: string; titulo: string; itens: ItemFrente[] };
+export type GrupoFrente = { id: string; titulo: string; itens: ItemFrente[]; /** Quadros lado a lado (2) quando o grupo tem muitos itens. */ colunas?: 1 | 2 };
 export type ModeloFrenteContent = {
   id: string;
   titulo: string;
@@ -23,9 +25,18 @@ export type ModeloFrenteContent = {
   imagem_url: string;
   imagem_alt: string;
   imagem_placeholder: string;
+  /** "contain" mostra a imagem inteira (ex.: outdoor), sem corte. */
+  imagem_ajuste?: "cover" | "contain";
+  /** Permite ampliar a imagem em janela. */
+  imagem_ampliavel?: boolean;
   indicadores: string[];
+  indicadores_titulo?: string;
+  /** Texto de apoio abaixo das faixas da imagem. */
+  mensagem?: { titulo: string; textos: string[] };
   destaque_titulo: string;
   destaque_itens: string[];
+  /** Observação em letra pequena abaixo da faixa escura. */
+  nota?: string;
 };
 
 export const COMERCIAL_UBERABA: ModeloFrenteContent = {
