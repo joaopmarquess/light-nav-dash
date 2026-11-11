@@ -54,7 +54,7 @@ function FragmentoMes({ mes, aberto, expansor, planos, celulas }: { mes: MesVida
   </>;
 }
 
-export default function BenchVidas() {
+function BenchVidasTrimestral({ navegacao }: { navegacao: ReactNode }) {
   const [selecionadas, setSelecionadas] = useState(["366561", "327417", "350249", "335100"]);
   const [operadora, setOperadora] = useState("366561");
   const [ano, setAno] = useState(anos.at(-1) ?? 2026);
@@ -99,7 +99,8 @@ export default function BenchVidas() {
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Bench Vidas"); XLSX.writeFile(wb, `bench_vidas_${operadora}_${ano}.xlsx`);
   };
   return <div className="bench-vidas flex h-full min-h-0 flex-col gap-3">
-    <div className="flex shrink-0 justify-center">
+    <div className="flex shrink-0 flex-wrap items-center justify-center gap-2">
+      {navegacao}
       <div aria-label="Operadoras" className="flex max-h-44 max-w-full flex-wrap items-center justify-center gap-1 overflow-y-auto rounded-lg border border-border bg-card p-1.5 shadow-sm sm:max-h-none sm:rounded-full">
         <span className="px-3 text-sm font-semibold">Operadoras</span>
         {selecionadas.map(reg => { const op = operadoras.find(o => o.reg === reg); return <div key={reg} className="flex items-center gap-0.5">
@@ -136,5 +137,25 @@ export default function BenchVidas() {
       </> : <p role="status" className="py-8 text-sm text-muted-foreground">Nenhum registro para os filtros selecionados.</p>}
     </div>
     <nav aria-label="Anos do Bench Vidas" className="flex shrink-0 justify-center pb-2 pt-1"><div className="flex max-w-full flex-wrap items-center justify-center gap-0.5 rounded-full border border-border bg-card p-1.5 shadow-sm"><span className="px-3 text-sm font-semibold">Ano</span>{anos.map(a => <Button key={a} variant="ghost" aria-pressed={ano === a} onClick={() => setAno(a)} className={`h-8 rounded-full px-3 ${ano === a ? "bg-primary text-primary-foreground" : "text-foreground/70"}`}>{a}</Button>)}</div></nav>
+  </div>;
+}
+export type VisaoBenchVidas = "trimestral" | "mensal";
+export const VISOES_BENCH_VIDAS: { id: VisaoBenchVidas; rotulo: string }[] = [{ id: "trimestral", rotulo: "Trimestral" }, { id: "mensal", rotulo: "Mensal" }];
+
+function SubmenuBenchVidas({ visao, alterar }: { visao: VisaoBenchVidas; alterar: (v: VisaoBenchVidas) => void }) {
+  return <nav aria-label="Visões do Bench Vidas" className="flex shrink-0 items-center gap-0.5 rounded-full border border-border bg-card p-1.5 shadow-sm">
+    {VISOES_BENCH_VIDAS.map(v => <Button key={v.id} variant="ghost" aria-pressed={visao === v.id} onClick={() => alterar(v.id)} className={`h-8 rounded-full px-3 text-sm ${visao === v.id ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "text-foreground/70"}`}>{v.rotulo}</Button>)}
+  </nav>;
+}
+
+export default function BenchVidas() {
+  const [visao, setVisao] = useState<VisaoBenchVidas>("trimestral");
+  const navegacao = <SubmenuBenchVidas visao={visao} alterar={setVisao} />;
+  return <div className="h-full min-h-0">
+    <div className={visao === "trimestral" ? "h-full min-h-0" : "hidden"}><BenchVidasTrimestral navegacao={navegacao} /></div>
+    {visao === "mensal" && <div className="flex h-full min-h-0 flex-col gap-3">
+      <div className="flex shrink-0 justify-center">{navegacao}</div>
+      <p role="status" className="py-8 text-center text-sm text-muted-foreground">Visão mensal em preparação.</p>
+    </div>}
   </div>;
 }
