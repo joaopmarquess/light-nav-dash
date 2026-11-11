@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { INDICES_PADRAO, formatarCentavos, gravarIndices, lerIndices, parseIndice, tabelaIndexada, tabelaReferencia, type FrenteId, type Indices } from "@/lib/uberabaTabelasComerciais";
+import { INDICES_PADRAO, formatarCentavos, gravarIndices, lerIndices, parseIndice, tabelaIndexada, type FrenteId, type Indices } from "@/lib/uberabaTabelasComerciais";
 
 // Preços calculados pela Referência × índice de cada frente; indicadores estáticos informados pelo usuário.
 type Linha = [string, string, string];
