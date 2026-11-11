@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { avaliarEnvio, type EnvioRegistro } from "./benchVidasEnvio";
+import { avaliarEnvio, mesAno, proximaCompetencia, type EnvioRegistro } from "./benchVidasEnvio";
 
 const agora = Date.parse("2026-11-11T15:50:00Z");
 const base: EnvioRegistro = { etapa: "Download da ANS", etapa_ordem: 1, etapas: 3, total: 1820, feitos: 137, falhas: 0, situacao: "em_andamento", mensagem: null, progresso_em: "2026-11-11T15:49:40Z", atualizado_em: "2026-11-11T15:49:50Z" };
@@ -22,5 +22,13 @@ describe("avaliarEnvio", () => {
     const fim = { ...base, situacao: "concluido", feitos: 1820, atualizado_em: min(30) };
     expect(avaliarEnvio(fim, agora)).toMatchObject({ estado: "concluido", pendentes: 0, percentual: 100, visivel: true });
     expect(avaliarEnvio({ ...fim, atualizado_em: min(25 * 60) }, agora).visivel).toBe(false);
+  });
+});
+
+describe("proximaCompetencia", () => {
+  it("avança um mês e vira o ano em dezembro", () => {
+    expect(proximaCompetencia("202609")).toBe("202610");
+    expect(proximaCompetencia("202612")).toBe("202701");
+    expect(mesAno(proximaCompetencia("202609"))).toBe("10/2026");
   });
 });

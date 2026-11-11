@@ -13,6 +13,7 @@ import { nomeOperadoraAns } from "@/lib/benchVidasAns";
 import { agregarMensal, ajustarFiltros, campoDisponivel, anosDoPeriodo, CAMPOS_MENSAL, camposCompativeis, competenciaMensal, cuboPara, INDICADORES_MENSAL, opcoesCampo, periodoPadrao, resumoMensal, rotuloValor, totalPeriodo, valorIndicador, type CampoMensal, type CatalogoMensal, type Filtros, type IndicadorMensal } from "@/lib/benchVidasMensal";
 import { carregarVidasMensal } from "@/lib/benchVidasMensalDados";
 import { BenchVidasEnvio } from "@/components/BenchVidasEnvio";
+import { BenchVidasAtualizar } from "@/components/BenchVidasAtualizar";
 
 const catalogo = catalogoJson as unknown as CatalogoMensal & { inicio: string; fim: string; competencias: string[]; origem: string; operadoras: { reg: string; razaoSocial: string; modalidade: string }[] };
 const COMPETENCIAS = catalogo.competencias.map(Number);
@@ -122,6 +123,7 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
         </div>; })}
         <Popover open={opsAberto} onOpenChange={setOpsAberto}><PopoverTrigger asChild><Button variant="ghost" className="h-8 gap-1 rounded-full"><Plus className="h-4 w-4" />Incluir OPS</Button></PopoverTrigger><PopoverContent className="w-80 max-w-[calc(100vw-2rem)] p-2"><Input autoFocus aria-label="Buscar operadora" placeholder="Buscar por nome ou registro ANS" value={busca} onChange={e => setBusca(e.target.value)} /><div className="mt-2 max-h-60 overflow-auto">{opcoesOps.map(o => <Button key={o.reg} variant="ghost" disabled={!o.mensal} title={o.mensal ? undefined : "Sem dados mensais: a operadora não aparece nos arquivos mensais da ANS (05/2021 em diante)"} className="h-auto w-full flex-col items-start gap-0 whitespace-normal text-left" onClick={() => { setSelecionadas(l => [...l, o.reg]); setOperadora(o.reg); setOpsAberto(false); setBusca(""); }}><span>{o.nome} · {o.reg}</span>{!o.mensal && <span className="text-xs text-muted-foreground">Sem dados mensais</span>}</Button>)}{!opcoesOps.length && <p className="p-2 text-sm text-muted-foreground">Nenhuma operadora disponível.</p>}</div></PopoverContent></Popover>
       </div>
+      <BenchVidasAtualizar ultima={catalogo.fim} />
     </div>
     <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
       <BenchVidasEnvio />
