@@ -4,6 +4,9 @@ import operacaoDigital from "@/assets/uberaba-guias-operacao-digital.jpg";
 import comercialImagem from "@/assets/uberaba-comercial-negociacao.jpg";
 import redeImagem from "@/assets/uberaba-rede-assistencial-operacao.jpg";
 import escritorioImagem from "@/assets/uberaba-escritorio-local.jpg";
+import planoOperacao from "@/assets/uberaba-plano-operacao.jpg";
+import planoFormalizacao from "@/assets/uberaba-plano-formalizacao.jpg";
+import planoImplantacao from "@/assets/uberaba-plano-implantacao.jpg";
 import outdoorImagem from "@/assets/uberaba-estudo-outdoor.jpg.asset.json";
 import estudoImagem from "@/assets/projeto-uberaba-home-v2.svg.asset.json";
 
@@ -12,7 +15,7 @@ const imagens: HTMLImageElement[] = [];
 
 export function anteciparImagensTimeline() {
   if (imagens.length > 0) return;
-  for (const src of [HOSPITAL_PALMERIO.imagem_fachada_url, HOSPITAL_PALMERIO.imagem_assistencial_url, campanha, operacaoDigital, comercialImagem, redeImagem, escritorioImagem, outdoorImagem.url, estudoImagem.url]) {
+  for (const src of [HOSPITAL_PALMERIO.imagem_fachada_url, HOSPITAL_PALMERIO.imagem_assistencial_url, campanha, operacaoDigital, comercialImagem, redeImagem, escritorioImagem, planoOperacao, planoFormalizacao, planoImplantacao, outdoorImagem.url, estudoImagem.url]) {
     if (!src) continue;
     const preload = document.createElement("link");
     preload.rel = "preload";
