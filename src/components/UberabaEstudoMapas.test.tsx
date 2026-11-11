@@ -22,6 +22,12 @@ describe("Estudo view selection", () => {
     expect(Array.from(grupo.querySelectorAll("button")).map((b) => b.textContent)).toEqual(["Home", "Painel", "Área", "Simulações"]);
   });
 
+  it("shows no title or subtitle on the Estudo screen", () => {
+    abrir();
+    expect(screen.queryByRole("heading", { name: "Estudo" })).toBeNull();
+    expect(screen.queryByText("Bensaúde|Uberaba")).toBeNull();
+  });
+
   it("defaults to Home and switches between Home, panel and area", () => {
     abrir();
     expect(screen.getByRole("button", { name: "Home" })).toHaveAttribute("aria-pressed", "true");

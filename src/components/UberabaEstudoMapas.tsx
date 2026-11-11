@@ -6,7 +6,6 @@ import UberabaEstudoSimulacoes from "@/components/UberabaEstudoSimulacoes";
 import { Button } from "@/components/ui/button";
 import { Calculator, Database, House, LayoutDashboard, MapPinned } from "lucide-react";
 import { geographicToday } from "@/hooks/useCarteiraTrialGeo";
-import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
 
 import { UBERABA_ESTUDO } from "@/lib/uberabaEstudo";
 import estudoImagem from "@/assets/projeto-uberaba-home-v2.svg.asset.json";
@@ -29,8 +28,7 @@ const UberabaEstudoMapas = () => {
   );
   return (
     <div className={`flex min-h-[400px] min-w-0 flex-col gap-3 ${encolhe ? "shrink-0" : "flex-1"}`}>
-      <div className="flex shrink-0 flex-wrap items-end gap-4" aria-label="Cabeçalho de Estudo">
-      <TimelinePresentationHeader title="Estudo" />
+      <div className="flex shrink-0 flex-wrap items-center gap-4" aria-label="Cabeçalho de Estudo">
       <div className="flex flex-wrap gap-2" role="group" aria-label="Visões do Estudo">
         {botao("home", House, "Home")}
         {botao("painel", LayoutDashboard, "Painel")}
