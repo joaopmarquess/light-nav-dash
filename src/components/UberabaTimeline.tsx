@@ -9,7 +9,7 @@ import UberabaImplantacao from "@/components/UberabaImplantacao";
 import UberabaOperacaoIniciada from "@/components/UberabaOperacaoIniciada";
 import UberabaGuias from "@/components/UberabaGuias";
 import outdoorImagem from "@/assets/projeto-uberaba-home-v2.svg.asset.json";
-import { CalendarDays, ChevronDown, FileCheck2 } from "lucide-react";
+import { CalendarDays, ChevronDown, FileCheck2, Stethoscope, Tags } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import UberabaCronograma from "@/components/UberabaCronograma";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -35,10 +35,18 @@ const ETAPAS: Etapa[] = [
 
 const HOME = "Home";
 
+const FRENTES = [
+  { nome: "Comercial", texto: "PCA Adm., PCE Adm. e PCE 100+", cor: "comercial", icone: Tags },
+  { nome: "Rede Assistencial", texto: "Referências médicas, diagnóstico e terapia e profissionais não médicos", cor: "rede", icone: Stethoscope },
+  { nome: "Guias", texto: "Carteirinha virtual, autorização online, auditoria remota e atendimento digital", cor: "guias", icone: FileCheck2 },
+] as const;
+
 const UberabaTimeline = () => {
   const [aberta, setAberta] = useState<string | null>(HOME);
   const [mostrarDatas, setMostrarDatas] = useState(false);
-  const [guiasAberta, setGuiasAberta] = useState(false);
+  const [frente, setFrente] = useState<(typeof FRENTES)[number]["nome"]>(FRENTES[0].nome);
+  const guiasAberta = frente === "Guias";
+  const setGuiasAberta = (aberto: boolean) => setFrente(aberto ? "Guias" : FRENTES[0].nome);
   const atual = ETAPAS.find((e) => e.nome === aberta);
   const permiteRolagem = ["Estudo", "Plano de Marketing"].includes(aberta ?? "");
   const apresentacaoPropria = ["Hospital Mário Palmério", "Operação Iniciada"].includes(aberta ?? "") || (["Plano de Marketing", "Formalização", "Modelo de Atuação", "Implantação"].includes(aberta ?? ""));
@@ -160,14 +168,11 @@ const UberabaTimeline = () => {
             <UberabaEstudoMapas />
           ) : atual.nome === "Modelo de Atuação" ? (
             <article className={`timeline-presentation modelo-presentation ${guiasAberta ? "modelo-guias-aberta" : ""}`} aria-label="Modelo de Atuação do Bensaúde|Uberaba">
-              {!guiasAberta && <div className="modelo-fronts">
-                {[
-                  { nome: "Comercial", texto: "PCA Adm., PCE Adm. e PCE 100+", cor: "comercial" },
-                  { nome: "Rede Assistencial", texto: "Referências médicas, diagnóstico e terapia e profissionais não médicos", cor: "rede" },
-                  { nome: "Guias", texto: "Carteirinha virtual, autorização online, auditoria remota e atendimento digital", cor: "guias" },
-                ].map((f, i) => <section key={f.nome} className={`modelo-front modelo-front-${f.cor}`}><span>{i + 1}</span><h3>{f.nome}</h3><p>{f.texto}</p>{f.nome === "Guias" && <Button variant="outline" onClick={() => setGuiasAberta(true)}><FileCheck2 className="h-4 w-4" />Guias</Button>}</section>)}
-              </div>}
-              {guiasAberta && <UberabaGuias onBack={() => setGuiasAberta(false)} />}
+              <div className="modelo-menu" role="group" aria-label="Frentes do Modelo de Atuação">
+                {FRENTES.map((f) => { const Icone = f.icone; return <Button key={f.nome} variant={frente === f.nome ? "default" : "outline"} aria-pressed={frente === f.nome} onClick={() => setFrente(f.nome)}><Icone className="h-4 w-4" />{f.nome}</Button>; })}
+              </div>
+              {FRENTES.filter((f) => f.nome === frente && f.nome !== "Guias").map((f) => <section key={f.nome} aria-label={f.nome} className={`modelo-front modelo-front-${f.cor}`}><h3>{f.nome}</h3><p>{f.texto}</p></section>)}
+              {guiasAberta && <UberabaGuias />}
             </article>
           ) : (
             <p className="text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{LOREM}</p>

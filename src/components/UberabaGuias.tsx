@@ -6,7 +6,7 @@ import operacaoDigital from "@/assets/uberaba-guias-operacao-digital.jpg";
 
 const INDICADORES = ["SEM PAPEL", "AUTORIZAÇÃO ONLINE", "AUDITORIA REMOTA", "ACOMPANHAMENTO DIGITAL"];
 
-export default function UberabaGuias({ onBack, content = GUIAS_UBERABA }: { onBack: () => void; content?: GuiasContent }) {
+export default function UberabaGuias({ onBack, content = GUIAS_UBERABA }: { onBack?: () => void; content?: GuiasContent }) {
   const inicioRef = useRef<HTMLElement>(null);
   const [fluxoAberto, setFluxoAberto] = useState(false);
   const [imagemFalhou, setImagemFalhou] = useState(false);
@@ -25,7 +25,7 @@ export default function UberabaGuias({ onBack, content = GUIAS_UBERABA }: { onBa
             <h3 id="guias-titulo">Guias</h3>
             <p className="guias-subtitle">Jornada digital, sem papel e sem deslocamento ao Bensaúde</p>
           </div>
-          <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft className="h-4 w-4" />Voltar ao Modelo de Atuação</Button>
+          {onBack && <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft className="h-4 w-4" />Voltar ao Modelo de Atuação</Button>}
         </header>
         <div className="guias-body">
           <ol className="guias-stages" aria-label="Jornada operacional">
