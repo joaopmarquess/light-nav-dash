@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { createPortal } from "react-dom";
 import { Calculator, Network, Stethoscope, Tags } from "lucide-react";
 import UberabaSimulacao from "@/components/UberabaSimulacao";
 import UberabaGestaoRede from "@/components/UberabaGestaoRede";
@@ -16,11 +15,12 @@ const ABAS: { id: Aba; label: string; icon: typeof Calculator }[] = [
 ];
 
 // Simulações do Estudo: mesmos sub-botões do Painel, reunindo as telas existentes sem alterá-las.
-const UberabaEstudoSimulacoes = ({ toolbarTarget }: { toolbarTarget?: HTMLElement | null }) => {
+const UberabaEstudoSimulacoes = () => {
   const [aba, setAba] = useState<Aba>("simulacao");
   const atual = ABAS.find((a) => a.id === aba)!;
   return (
     <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-2">
       <div className="flex flex-wrap gap-2" role="group" aria-label="Simulações do Estudo">
         {ABAS.map((a) => {
           const Icon = a.icon;
@@ -38,13 +38,14 @@ const UberabaEstudoSimulacoes = ({ toolbarTarget }: { toolbarTarget?: HTMLElemen
           );
         })}
       </div>
+      {aba === "comercial" && <div className="ml-auto"><ReferenciaButton /></div>}
+      </div>
       <section aria-label={atual.label} className="min-w-0">
         {aba === "simulacao" && <UberabaSimulacao />}
         {aba === "gestaoRede" && <UberabaGestaoRede />}
         {aba === "comercial" && <UberabaTabelasComerciais />}
         {aba === "rede" && <UberabaRedeAssistencial />}
       </section>
-      {aba === "comercial" && toolbarTarget && createPortal(<ReferenciaButton />, toolbarTarget)}
     </div>
   );
 };

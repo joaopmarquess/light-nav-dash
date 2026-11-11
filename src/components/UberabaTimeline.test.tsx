@@ -22,6 +22,15 @@ describe("Project stage navigation", () => {
     expect(screen.getByRole("region", { name: "Home do Estudo" })).toBeVisible();
   });
 
+  it("places the Estudo buttons in the stage bar without the 'Etapa X de 7' counter", () => {
+    render(<TooltipProvider><UberabaTimeline /></TooltipProvider>);
+    abrirMenu();
+    fireEvent.click(screen.getByRole("menuitem", { name: /Estudo/ }));
+    const barra = screen.getByLabelText("Navegação das etapas do projeto");
+    expect(barra.querySelector('[aria-label="Visões do Estudo"]')).not.toBeNull();
+    expect(screen.queryByText(/Etapa \d+ de \d+/)).toBeNull();
+  });
+
   it("lists the seven stages in the dropdown and opens the chosen one", () => {
     render(<TooltipProvider><UberabaTimeline /></TooltipProvider>);
     abrirMenu();
