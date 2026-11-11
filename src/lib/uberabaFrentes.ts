@@ -1,6 +1,6 @@
 import type { EtapaGuia, GuiasContent } from "@/lib/uberabaGuias";
 import { GRUPOS_CREDENCIAMENTO, RESUMO_CREDENCIAMENTO } from "@/lib/uberabaCredenciamento";
-import { INDICES_PADRAO } from "@/lib/uberabaTabelasComerciais";
+import { INDICES_PADRAO, type Indices } from "@/lib/uberabaTabelasComerciais";
 import comercialImagem from "@/assets/uberaba-comercial-operacao.jpg";
 import redeImagem from "@/assets/uberaba-rede-assistencial-operacao.jpg";
 
@@ -24,15 +24,16 @@ const LOREM_FLUXO = [
   "Quis nostrud exercitation ullamco;",
 ];
 
-export const COMERCIAL_UBERABA: GuiasContent = {
+/** Usa os índices gravados no Estudo › Comercial, para as duas telas mostrarem os mesmos percentuais. */
+export const comercialUberaba = (indices: Indices = INDICES_PADRAO): GuiasContent => ({
   id: "uberaba-comercial",
   titulo: "Comercial",
   subtitulo: "Produtos e tabelas de preço sobre a Referência",
   rotulo_etapas: "Produtos comerciais",
   etapas: etapas([
-    ["pca-adm", "PCA ADM.", `Adesão administrada, com tabela a ${pct(INDICES_PADRAO.pcaAdm)} da Referência.`],
-    ["pce-adm", "PCE ADM.", `Empresarial para médias empresas, com tabela a ${pct(INDICES_PADRAO.pceAdm)} da Referência.`],
-    ["pce-100", "PCE 100+", `Empresarial para grandes empresas, com tabela a ${pct(INDICES_PADRAO.pce100)} da Referência.`],
+    ["pca-adm", "PCA ADM.", `Adesão administrada, com tabela a ${pct(indices.pcaAdm)} da Referência.`],
+    ["pce-adm", "PCE ADM.", `Empresarial para médias empresas, com tabela a ${pct(indices.pceAdm)} da Referência.`],
+    ["pce-100", "PCE 100+", `Empresarial para grandes empresas, com tabela a ${pct(indices.pce100)} da Referência.`],
     ["acomodacao", "ACOMODAÇÃO", "Enfermaria pela tabela do produto; Apartamento = Enfermaria × 1,25."],
   ]),
   imagem_operacao_url: comercialImagem,
@@ -47,7 +48,7 @@ export const COMERCIAL_UBERABA: GuiasContent = {
   fluxo: fluxo(LOREM_FLUXO),
   status_ativo: true,
   observacao: "Os índices sobre a Referência podem ser ajustados no Estudo › Comercial. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-};
+});
 
 export const REDE_UBERABA: GuiasContent = {
   id: "uberaba-rede-assistencial",

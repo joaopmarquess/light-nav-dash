@@ -8,6 +8,8 @@ import UberabaFormalizacao from "@/components/UberabaFormalizacao";
 import UberabaImplantacao from "@/components/UberabaImplantacao";
 import UberabaOperacaoIniciada from "@/components/UberabaOperacaoIniciada";
 import UberabaGuias from "@/components/UberabaGuias";
+import { comercialUberaba, REDE_UBERABA } from "@/lib/uberabaFrentes";
+import { lerIndices } from "@/lib/uberabaTabelasComerciais";
 import outdoorImagem from "@/assets/projeto-uberaba-home-v2.svg.asset.json";
 import { CalendarDays, ChevronDown, FileCheck2, Stethoscope, Tags } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -45,7 +47,6 @@ const UberabaTimeline = () => {
   const [aberta, setAberta] = useState<string | null>(HOME);
   const [mostrarDatas, setMostrarDatas] = useState(false);
   const [frente, setFrente] = useState<(typeof FRENTES)[number]["nome"]>(FRENTES[0].nome);
-  const guiasAberta = frente === "Guias";
   const setGuiasAberta = (aberto: boolean) => setFrente(aberto ? "Guias" : FRENTES[0].nome);
   const atual = ETAPAS.find((e) => e.nome === aberta);
   const permiteRolagem = ["Estudo", "Plano de Marketing"].includes(aberta ?? "");
@@ -54,7 +55,7 @@ const UberabaTimeline = () => {
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (panelRef.current) panelRef.current.scrollTop = 0;
-  }, [guiasAberta]);
+  }, [frente]);
   useEffect(() => {
     if (aberta !== "Hospital Mário Palmério") return;
     if (panelRef.current) panelRef.current.scrollTop = 0;
@@ -167,12 +168,13 @@ const UberabaTimeline = () => {
           {atual.nome === "Operação Iniciada" ? <UberabaOperacaoIniciada /> : atual.nome === "Hospital Mário Palmério" ? <UberabaHospital onBack={voltarTimeline} /> : atual.nome === "Plano de Marketing" ? <UberabaMarketing /> : atual.nome === "Formalização" ? <UberabaFormalizacao /> : atual.nome === "Implantação" ? <UberabaImplantacao /> : atual.nome === "Estudo" ? (
             <UberabaEstudoMapas />
           ) : atual.nome === "Modelo de Atuação" ? (
-            <article className={`timeline-presentation modelo-presentation ${guiasAberta ? "modelo-guias-aberta" : ""}`} aria-label="Modelo de Atuação do Bensaúde|Uberaba">
+            <article className="timeline-presentation modelo-presentation modelo-guias-aberta" aria-label="Modelo de Atuação do Bensaúde|Uberaba">
               <div className="modelo-menu" role="group" aria-label="Frentes do Modelo de Atuação">
                 {FRENTES.map((f) => { const Icone = f.icone; return <Button key={f.nome} variant={frente === f.nome ? "default" : "outline"} aria-pressed={frente === f.nome} onClick={() => setFrente(f.nome)}><Icone className="h-4 w-4" />{f.nome}</Button>; })}
               </div>
-              {FRENTES.filter((f) => f.nome === frente && f.nome !== "Guias").map((f) => <section key={f.nome} aria-label={f.nome} className={`modelo-front modelo-front-${f.cor}`}><h3>{f.nome}</h3><p>{f.texto}</p></section>)}
-              {guiasAberta && <UberabaGuias />}
+              {frente === "Comercial" && <UberabaGuias key="comercial" content={comercialUberaba(lerIndices())} />}
+              {frente === "Rede Assistencial" && <UberabaGuias key="rede" content={REDE_UBERABA} />}
+              {frente === "Guias" && <UberabaGuias key="guias" />}
             </article>
           ) : (
             <p className="text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{LOREM}</p>
