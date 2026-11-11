@@ -997,3 +997,6 @@ All colors MUST be HSL.
 .modelo-guias-aberta .guias-premise { font-size: 12px; }
 .modelo-guias-aberta .guias-observation { padding-top: 6px; font-size: 11px; line-height: 1.4; }
 .timeline-stage-static:has(> .modelo-guias-aberta) > footer { padding-top: 2px; padding-bottom: 8px; }
+.modelo-guias-aberta .guias-result > div { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 24px; }
+.modelo-guias-aberta .guias-result ul { margin-top: 0; }
+.modelo-guias-aberta .guias-flow > button, .modelo-guias-aberta .guias-header > button { height: 30px; }
