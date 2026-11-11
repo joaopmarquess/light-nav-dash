@@ -2,16 +2,16 @@
 // Ativos são estoque do mês; adesões e cancelamentos são movimentos informados no mês. Nada é inferido.
 
 export type Cubo = "A" | "M" | "P";
-export type CampoMensal = "uf" | "municipio" | "sexo" | "faixa" | "faixaReaj" | "vigencia" | "contratacao" | "segmentacao" | "abrangencia" | "cobertura" | "vinculo" | "plano";
+export type CampoMensal = "uf" | "municipio" | "sexo" | "faixa" | "faixaReaj" | "vigencia" | "contratacao" | "tipoProduto" | "segmentacao" | "abrangencia" | "cobertura" | "vinculo" | "plano";
 export type IndicadorMensal = "ativos" | "aderidos" | "cancelados" | "saldo";
 export type Filtros = Partial<Record<CampoMensal, number>>;
 export type Medidas = { ativos: number; aderidos: number; cancelados: number };
-export type CatalogoMensal = { valores: Record<Exclude<CampoMensal, "municipio">, string[]>; municipios: [string, string, string][] };
+export type CatalogoMensal = { valores: Record<Exclude<CampoMensal, "municipio" | "tipoProduto">, string[]>; municipios: [string, string, string][] };
 
-export const CAMPOS_MENSAL: { id: CampoMensal; rotulo: string }[] = [
+export const CAMPOS_MENSAL: { id: CampoMensal; rotulo: string; soFiltro?: boolean }[] = [
   { id: "uf", rotulo: "UF" }, { id: "municipio", rotulo: "Município" }, { id: "sexo", rotulo: "Sexo" },
   { id: "faixa", rotulo: "Faixa etária" }, { id: "faixaReaj", rotulo: "Faixa ANS" }, { id: "contratacao", rotulo: "Contratação" },
-  { id: "segmentacao", rotulo: "Segmentação" }, { id: "abrangencia", rotulo: "Abrangência" }, { id: "cobertura", rotulo: "Cobertura" },
+  { id: "tipoProduto", rotulo: "Tipo Produto", soFiltro: true }, { id: "segmentacao", rotulo: "Segmentação" }, { id: "abrangencia", rotulo: "Abrangência" }, { id: "cobertura", rotulo: "Cobertura" },
   { id: "vinculo", rotulo: "Vínculo" }, { id: "vigencia", rotulo: "Lei 9.656" }, { id: "plano", rotulo: "Plano" },
 ];
 export const INDICADORES_MENSAL: { id: IndicadorMensal; rotulo: string }[] = [
@@ -29,6 +29,10 @@ const ROTULOS_FIXOS: Partial<Record<CampoMensal, Record<string, string>>> = {
   vigencia: { A: "Antigo (antes da Lei 9.656/98)", P: "Novo (após a Lei 9.656/98)" },
 };
 
+/** Tipo Produto agrupa a Segmentação da ANS: "Plano Odonto" quando o nome contém "odonto"; senão "Plano de Saúde". */
+export const TIPOS_PRODUTO = ["Plano de Saúde", "Plano Odonto"];
+export const tipoProdutoDaSegmentacao = (segmentacao: string) => /odonto/i.test(segmentacao) ? 1 : 0;
+
 /** Cubo usado para o campo detalhado e os filtros: município e plano têm cubos próprios. */
 export function cuboPara(detalhar: CampoMensal, filtros: Filtros): Cubo {
   if (detalhar === "municipio" || filtros.municipio !== undefined) return "M";
@@ -37,6 +41,7 @@ export function cuboPara(detalhar: CampoMensal, filtros: Filtros): Cubo {
 }
 /** No cubo de município, a UF vem do próprio município. */
 export function campoDisponivel(cubo: Cubo, campo: CampoMensal): boolean {
+  if (campo === "tipoProduto") return campoDisponivel(cubo, "segmentacao");
   return POSICOES[cubo][campo] !== undefined || (cubo === "M" && campo === "uf");
 }
 /** Campos que podem ser usados juntos com o detalhamento atual. */
@@ -60,15 +65,20 @@ export function ajustarFiltros(detalhar: CampoMensal, filtros: Filtros): Filtros
 
 export function rotuloValor(catalogo: CatalogoMensal, campo: CampoMensal, indice: number): string {
   if (campo === "municipio") { const m = catalogo.municipios[indice]; return m ? `${m[1]} · ${m[2]}` : "—"; }
+  if (campo === "tipoProduto") return TIPOS_PRODUTO[indice] ?? "—";
   const valor = catalogo.valores[campo]?.[indice] ?? "—";
   return ROTULOS_FIXOS[campo]?.[valor] ?? valor;
 }
 export function opcoesCampo(catalogo: CatalogoMensal, campo: CampoMensal): { indice: number; rotulo: string }[] {
-  const n = campo === "municipio" ? catalogo.municipios.length : catalogo.valores[campo]?.length ?? 0;
+  const n = campo === "municipio" ? catalogo.municipios.length : campo === "tipoProduto" ? TIPOS_PRODUTO.length : catalogo.valores[campo]?.length ?? 0;
   return Array.from({ length: n }, (_, indice) => ({ indice, rotulo: rotuloValor(catalogo, campo, indice) }));
 }
 
 function valorCampo(cubo: Cubo, campo: CampoMensal, linha: number[], catalogo: CatalogoMensal, ufIndice: Map<string, number>): number | undefined {
+  if (campo === "tipoProduto") {
+    const seg = valorCampo(cubo, "segmentacao", linha, catalogo, ufIndice);
+    return seg === undefined ? undefined : tipoProdutoDaSegmentacao(catalogo.valores.segmentacao[seg] ?? "");
+  }
   const pos = POSICOES[cubo][campo];
   if (pos !== undefined) return linha[pos];
   if (cubo === "M" && campo === "uf") return ufIndice.get(catalogo.municipios[linha[1]]?.[2] ?? "");

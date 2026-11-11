@@ -139,7 +139,7 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
         <div className="flex flex-wrap items-center gap-3">
           <span className="w-16 text-sm font-semibold">Detalhar</span>
           <div role="group" aria-label="Detalhar por" className="flex flex-wrap items-center gap-0.5 rounded-lg border border-border bg-card p-1 sm:rounded-full">
-            {CAMPOS_MENSAL.map(c => <Button key={c.id} variant="ghost" aria-pressed={detalhar === c.id} onClick={() => escolherDetalhar(c.id)} className={`h-7 rounded-full px-3 text-xs ${detalhar === c.id ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "text-foreground/70"}`}>{c.rotulo}</Button>)}
+            {CAMPOS_MENSAL.filter(c => !c.soFiltro).map(c => <Button key={c.id} variant="ghost" aria-pressed={detalhar === c.id} onClick={() => escolherDetalhar(c.id)} className={`h-7 rounded-full px-3 text-xs ${detalhar === c.id ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "text-foreground/70"}`}>{c.rotulo}</Button>)}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
