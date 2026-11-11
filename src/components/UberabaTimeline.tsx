@@ -1,16 +1,13 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { HOSPITAL, MODELO, MARKETING, FORMALIZACAO, IMPLANTACAO } from "@/components/UberabaTimelineEtapas";
 import { Button } from "@/components/ui/button";
-import UberabaTabelasComerciais, { ReferenciaButton } from "@/components/UberabaTabelasComerciais";
-import UberabaRedeAssistencial from "@/components/UberabaRedeAssistencial";
 import UberabaEstudoMapas from "@/components/UberabaEstudoMapas";
 import UberabaHospital from "@/components/UberabaHospital";
 import UberabaMarketing from "@/components/UberabaMarketing";
 import UberabaFormalizacao from "@/components/UberabaFormalizacao";
 import UberabaImplantacao from "@/components/UberabaImplantacao";
-import UberabaGuias from "@/components/UberabaGuias";
 import UberabaOperacaoIniciada from "@/components/UberabaOperacaoIniciada";
-import { CalendarDays, FileCheck2 } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import UberabaCronograma from "@/components/UberabaCronograma";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
@@ -36,15 +33,11 @@ const ETAPAS: Etapa[] = [
 const UberabaTimeline = () => {
   const [aberta, setAberta] = useState<string | null>("Estudo");
   const [mostrarDatas, setMostrarDatas] = useState(false);
-  const [sub, setSub] = useState<"Comercial" | "Rede Assistencial" | "Guias" | null>(null);
   const atual = ETAPAS.find((e) => e.nome === aberta);
   const permiteRolagem = ["Estudo", "Plano de Marketing"].includes(aberta ?? "");
   const apresentacaoPropria = ["Hospital Mário Palmério", "Operação Iniciada"].includes(aberta ?? "") || (["Plano de Marketing", "Formalização", "Modelo de Atuação", "Implantação"].includes(aberta ?? ""));
   const timelineRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (panelRef.current) panelRef.current.scrollTop = 0;
-  }, [sub]);
   useEffect(() => {
     if (aberta !== "Hospital Mário Palmério") return;
     if (panelRef.current) panelRef.current.scrollTop = 0;
@@ -126,23 +119,14 @@ const UberabaTimeline = () => {
             <article className="timeline-presentation modelo-presentation" aria-label="Modelo de Atuação do Bensaúde|Uberaba">
               <div className="modelo-heading">
                 <TimelinePresentationHeader title="Modelo de Atuação" subtitle="Operação comercial, rede assistencial e jornada digital" />
-                <div className="modelo-controls" role="group" aria-label="Frentes do modelo de atuação">
-                  {(["Comercial", "Rede Assistencial", "Guias"] as const).map((b) => (
-                    <Button key={b} variant={sub === b ? "default" : "outline"} onClick={() => setSub(sub === b ? null : b)} aria-pressed={sub === b}>{b === "Guias" && <FileCheck2 className="h-4 w-4" />}{b}</Button>
-                  ))}
-                  {sub === "Comercial" && <ReferenciaButton />}
-                </div>
               </div>
-              {sub === null && <div className="modelo-fronts">
+              <div className="modelo-fronts">
                 {[
                   { nome: "Comercial", texto: "PCA Adm., PCE Adm. e PCE 100+", cor: "comercial" },
                   { nome: "Rede Assistencial", texto: "Referências médicas, diagnóstico e terapia e profissionais não médicos", cor: "rede" },
                   { nome: "Guias", texto: "Carteirinha virtual, autorização online, auditoria remota e atendimento digital", cor: "guias" },
-                ].map((f, i) => <section key={f.nome} className={`modelo-front modelo-front-${f.cor}`}><span>{i + 1}</span><h3>{f.nome}</h3><p>{f.texto}</p><Button variant="outline" onClick={() => setSub(f.nome as "Comercial" | "Rede Assistencial" | "Guias")}>{f.nome}</Button></section>)}
-              </div>}
-              {sub === "Comercial" && <UberabaTabelasComerciais />}
-               {sub === "Rede Assistencial" && <UberabaRedeAssistencial />}
-               {sub === "Guias" && <UberabaGuias onBack={() => { setSub(null); if (panelRef.current) panelRef.current.scrollTop = 0; }} />}
+                ].map((f, i) => <section key={f.nome} className={`modelo-front modelo-front-${f.cor}`}><span>{i + 1}</span><h3>{f.nome}</h3><p>{f.texto}</p></section>)}
+              </div>
             </article>
           ) : (
             <p className="text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{LOREM}</p>
