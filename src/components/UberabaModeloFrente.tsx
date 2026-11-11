@@ -22,7 +22,7 @@ export default function UberabaModeloFrente({ content }: { content: ModeloFrente
         <div className="guias-body">
           <div className="comercial-grupos">
             {content.grupos.map((grupo) => (
-              <section key={grupo.id} className="comercial-grupo" aria-labelledby={`${content.id}-${grupo.id}`}>
+              <section key={grupo.id} className="comercial-grupo" style={{ flexGrow: grupo.itens.length }} aria-labelledby={`${content.id}-${grupo.id}`}>
                 <h4 id={`${content.id}-${grupo.id}`} className="comercial-grupo-titulo">{grupo.titulo}</h4>
                 <ol className="guias-stages">
                   {grupo.itens.map((item) => (
