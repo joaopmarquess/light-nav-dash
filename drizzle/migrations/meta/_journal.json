@@ -43,6 +43,13 @@
       "when": 1794226721688,
       "tag": "0005_simulador_shared_read",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794411767713,
+      "tag": "0006_bench_vidas_envio_progresso",
+      "breakpoints": true
     }
   ]
 }
