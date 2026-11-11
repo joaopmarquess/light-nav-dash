@@ -61,6 +61,8 @@ export function ajustarFiltros(detalhar: CampoMensal, filtros: Filtros): Filtros
 /** Opção agrupada do filtro de Segmentação: todas as segmentações médico-hospitalares (tudo, exceto Odontológico). */
 export const SEGMENTACAO_PLANO_SAUDE = -1;
 const SEGMENTACAO_ODONTO = "Odontológico";
+/** Ao abrir o Mensal, Segmentação mostra tudo menos Odontológico. */
+export const FILTROS_PADRAO_MENSAL: Filtros = { segmentacao: SEGMENTACAO_PLANO_SAUDE };
 /** Índices reais do catálogo que uma opção de filtro representa. */
 export function indicesDaOpcao(catalogo: CatalogoMensal, campo: CampoMensal, indice: number): number[] {
   if (campo === "segmentacao" && indice === SEGMENTACAO_PLANO_SAUDE)
