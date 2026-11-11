@@ -68,7 +68,7 @@ const UberabaTimeline = () => {
   const atual = ETAPAS.find((e) => e.nome === aberta);
   // vista: o que está na tela (no Plano de Ação, o submenu escolhido; "Operação Iniciada" = Home do Plano de Ação).
   const vista = aberta === PLANO ? (subPlano === HOME ? "Operação Iniciada" : subPlano) : aberta;
-  const permiteRolagem = ["Estudo", "Plano de Marketing"].includes(vista ?? "");
+  const permiteRolagem = vista === "Estudo";
   const apresentacaoPropria = ["Operação Iniciada", "Plano de Marketing", "Formalização", "Modelo de Atuação", "Implantação"].includes(vista ?? "");
   const abrir = (etapa: string, sub: SubPlano = HOME) => { setAberta(etapa); setFrente(FRENTES[0].nome); setSubPlano(sub); };
   const agendaAtual = AGENDA.findIndex((a) => a.item === vista);
@@ -197,7 +197,7 @@ const UberabaTimeline = () => {
           ) : (
             <p className="text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{LOREM}</p>
           )}
-          {vista !== "Operação Iniciada" && (
+          {(
             <footer className="mt-auto shrink-0 px-4 pb-4 pt-5 text-right text-base font-bold text-primary sm:px-8">
               Bensaúde|Uberaba
             </footer>

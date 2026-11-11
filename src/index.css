@@ -1009,7 +1009,7 @@ All colors MUST be HSL.
 .modelo-comercial .comercial-grupo-titulo { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; color: hsl(var(--hospital-navy)); }
 .modelo-comercial .comercial-grupo-titulo::before { content: ""; width: 4px; height: 16px; border-radius: 2px; background: hsl(var(--hospital-gold)); }
 .modelo-comercial .comercial-grupo-titulo::after { content: ""; flex: 1; height: 1px; background: hsl(var(--hospital-frame)); }
-.modelo-comercial .guias-stages { flex: 1; grid-template-rows: none; grid-auto-rows: 1fr; }
+.modelo-comercial .guias-stages { flex: 1; grid-template-rows: none; grid-auto-rows: auto; flex: 1; }
 .modelo-comercial .guias-stage h3 { text-transform: uppercase; }
 .modelo-comercial .comercial-subitens { display: flex; flex-wrap: wrap; gap: 2px 22px; margin-top: 3px; padding-left: 12px; border-left: 2px solid hsl(var(--guias-auditoria) / .45); }
 .modelo-comercial .comercial-subitens li { display: flex; align-items: center; gap: 8px; color: hsl(var(--hospital-secondary)); font-size: 13px; font-weight: 600; line-height: 1.4; }
@@ -1028,3 +1028,29 @@ All colors MUST be HSL.
 .uberaba-guias .guias-indicators { gap: 0; padding-top: 6px; border-top: 2px solid hsl(var(--hospital-navy)); }
 .uberaba-guias .guias-indicators li { padding: 2px 6px; border-radius: 0; background: none; color: hsl(var(--hospital-navy)); letter-spacing: .04em; }
 .uberaba-guias .guias-indicators li + li { border-left: 1px solid hsl(var(--hospital-frame)); }
+
+/* Plano de Ação no formato do Modelo de Atuação (extensões opcionais de UberabaModeloFrente) */
+.modelo-comercial .frente-stages-2col { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; grid-auto-rows: auto; flex: 1; }
+.modelo-comercial .frente-stages-2col .guias-stage::after { display: none; }
+.modelo-comercial .guias-stage p.frente-descricao { margin-top: 1px; }
+.modelo-comercial .frente-figure-contain { background: hsl(var(--hospital-surface)); border: 1px solid hsl(var(--hospital-frame)); }
+.modelo-comercial .frente-figure-contain img { object-fit: contain; object-position: center; }
+.modelo-comercial .frente-indicadores-titulo { font-size: 11px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; color: hsl(var(--hospital-secondary)); }
+.modelo-comercial .frente-mensagem { display: flex; flex-direction: column; gap: 3px; padding-top: 4px; }
+.modelo-comercial .frente-mensagem h4 { font-size: 11px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; color: hsl(var(--hospital-secondary)); }
+.modelo-comercial .frente-mensagem p { font-size: 13px; line-height: 1.4; color: hsl(var(--credential-text)); }
+.modelo-comercial .frente-mensagem p:first-of-type { font-weight: 700; color: hsl(var(--hospital-navy)); }
+@media (max-width: 900px) { .modelo-comercial .frente-stages-2col { grid-template-columns: 1fr; } }
+.modelo-comercial .frente-stages-2col .guias-stage { align-items: center; padding-top: 6px; padding-bottom: 6px; }
+.modelo-comercial .frente-stages-2col .guias-stage p.frente-descricao { font-size: 12.5px; line-height: 1.3; }
+.modelo-comercial .frente-stages-2col .guias-stage p.frente-descricao + p.frente-descricao { color: hsl(var(--hospital-navy)); }
+.modelo-comercial .frente-stages-2col .guias-stage:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.modelo-comercial .comercial-indicators[style*="--indicadores: 12"] { grid-template-columns: repeat(6, minmax(0, 1fr)); row-gap: 4px; }
+.modelo-comercial .comercial-indicators[style*="--indicadores: 12"] li:nth-child(7) { border-left: 0; }
+.modelo-comercial .frente-stages-2col { gap: 6px; }
+.modelo-comercial .frente-stages-2col .guias-number { width: 28px; height: 28px; font-size: 14px; }
+.modelo-comercial .frente-stages-2col .guias-stage { padding-top: 4px; padding-bottom: 4px; }
+.modelo-comercial .frente-stages-2col .guias-stage p.frente-descricao { line-height: 1.25; }
+.modelo-guias-aberta .modelo-comercial:has(.frente-stages-2col) .guias-figure { min-height: 230px; }
+.modelo-comercial .frente-stages-2col .guias-stage h3 { line-height: 1.2; }
+.modelo-comercial .frente-stages-2col .guias-stage p.frente-descricao { margin-top: 0; }
