@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import catalogoTrimestral from "@/data/benchVidas/ans/catalogo.json";
 import catalogoJson from "@/data/benchVidas/mensal/catalogo.json";
 import { nomeOperadoraAns } from "@/lib/benchVidasAns";
-import { agregarMensal, indicesDaOpcao, ajustarFiltros, campoDisponivel, anosDoPeriodo, CAMPOS_MENSAL, camposCompativeis, competenciaMensal, cuboPara, INDICADORES_MENSAL, opcoesCampo, periodoPadrao, resumoMensal, rotuloValor, totalPeriodo, valorIndicador, type CampoMensal, type CatalogoMensal, type Filtros, type IndicadorMensal } from "@/lib/benchVidasMensal";
+import { FILTROS_PADRAO_MENSAL, agregarMensal, indicesDaOpcao, ajustarFiltros, campoDisponivel, anosDoPeriodo, CAMPOS_MENSAL, camposCompativeis, competenciaMensal, cuboPara, INDICADORES_MENSAL, opcoesCampo, periodoPadrao, resumoMensal, rotuloValor, totalPeriodo, valorIndicador, type CampoMensal, type CatalogoMensal, type Filtros, type IndicadorMensal } from "@/lib/benchVidasMensal";
 import { carregarVidasMensal } from "@/lib/benchVidasMensalDados";
 
 const catalogo = catalogoJson as unknown as CatalogoMensal & { inicio: string; fim: string; competencias: string[]; origem: string; operadoras: { reg: string; razaoSocial: string; modalidade: string }[] };
@@ -71,7 +71,7 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
   const [de, setDe] = useState(padrao.de); const [ate, setAte] = useState(padrao.ate);
   const [indicador, setIndicador] = useState<IndicadorMensal>("ativos");
   const [detalhar, setDetalhar] = useState<CampoMensal>("contratacao");
-  const [filtros, setFiltros] = useState<Filtros>({});
+  const [filtros, setFiltros] = useState<Filtros>(FILTROS_PADRAO_MENSAL);
   const [graficoAberto, setGraficoAberto] = useState(true); const [gridAberto, setGridAberto] = useState(true);
   const [linhas, setLinhas] = useState<number[][]>([]); const [carregando, setCarregando] = useState(true); const [erro, setErro] = useState(""); const [tentativa, setTentativa] = useState(0);
   const cubo = cuboPara(detalhar, filtros);

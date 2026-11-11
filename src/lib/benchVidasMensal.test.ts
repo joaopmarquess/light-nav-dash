@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SEGMENTACAO_PLANO_SAUDE, agregarMensal, opcoesCampo, ajustarFiltros, camposCompativeis, cuboPara, periodoPadrao, resumoMensal, totalPeriodo, type CatalogoMensal } from "./benchVidasMensal";
+import { FILTROS_PADRAO_MENSAL, SEGMENTACAO_PLANO_SAUDE, agregarMensal, opcoesCampo, ajustarFiltros, camposCompativeis, cuboPara, periodoPadrao, resumoMensal, totalPeriodo, type CatalogoMensal } from "./benchVidasMensal";
 
 const catalogo = {
   valores: { uf: ["MG", "SP"], sexo: ["F", "M"], faixa: [], faixaReaj: [], vigencia: [], contratacao: ["Coletivo Empresarial", "Individual ou Familiar"], segmentacao: [], abrangencia: [], cobertura: ["Médico-hospitalar"], vinculo: ["Titular"], plano: [] },
@@ -68,5 +68,8 @@ describe("Bench Vidas Mensal", () => {
     const odonto = agregarMensal(linhas, "A", cat, { de: 202608, ate: 202608, detalhar: "uf", filtros: { segmentacao: 1 } });
     expect(odonto.total.get(202608)?.ativos).toBe(20);
     expect(opcoesCampo(cat, "segmentacao").slice(0, 2).map(o => o.rotulo)).toEqual(["Plano de saúde", "Odontológico"]);
+  });
+  it("ao abrir, Segmentação vem em Plano de saúde (tudo menos Odontológico)", () => {
+    expect(FILTROS_PADRAO_MENSAL).toEqual({ segmentacao: SEGMENTACAO_PLANO_SAUDE });
   });
 });
