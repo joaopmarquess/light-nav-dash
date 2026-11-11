@@ -9,7 +9,7 @@ export type Medidas = { ativos: number; aderidos: number; cancelados: number };
 export type CatalogoMensal = { valores: Record<Exclude<CampoMensal, "municipio" | "tipoProduto">, string[]>; municipios: [string, string, string][] };
 
 export const CAMPOS_MENSAL: { id: CampoMensal; rotulo: string; soFiltro?: boolean }[] = [
-  { id: "uf", rotulo: "UF" }, { id: "municipio", rotulo: "Município" }, { id: "sexo", rotulo: "Sexo" },
+  { id: "municipio", rotulo: "Município" }, { id: "uf", rotulo: "UF" }, { id: "sexo", rotulo: "Sexo" },
   { id: "faixa", rotulo: "Faixa etária" }, { id: "faixaReaj", rotulo: "Faixa ANS" }, { id: "contratacao", rotulo: "Contratação" },
   { id: "tipoProduto", rotulo: "Tipo Produto", soFiltro: true }, { id: "segmentacao", rotulo: "Segmentação" }, { id: "abrangencia", rotulo: "Abrangência" }, { id: "cobertura", rotulo: "Cobertura" },
   { id: "vinculo", rotulo: "Vínculo" }, { id: "vigencia", rotulo: "Lei 9.656" }, { id: "plano", rotulo: "Plano" },

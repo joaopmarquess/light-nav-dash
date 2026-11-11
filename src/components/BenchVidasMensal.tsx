@@ -71,10 +71,10 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
   }, [busca, selecionadas]);
   const [de, setDe] = useState(padrao.de); const [ate, setAte] = useState(padrao.ate);
   const [indicador, setIndicador] = useState<IndicadorMensal>("ativos");
-  const [detalhar, setDetalhar] = useState<CampoMensal>("contratacao");
+  const [detalhar, setDetalhar] = useState<CampoMensal>("municipio");
   const [filtros, setFiltros] = useState<Filtros>({});
   const [filtrosAbertos, setFiltrosAbertos] = useState(false);
-  const [graficoAberto, setGraficoAberto] = useState(true); const [gridAberto, setGridAberto] = useState(true);
+  const [graficoAberto, setGraficoAberto] = useState(false); const [gridAberto, setGridAberto] = useState(true);
   const [linhas, setLinhas] = useState<number[][]>([]); const [carregando, setCarregando] = useState(true); const [erro, setErro] = useState(""); const [tentativa, setTentativa] = useState(0);
   const cubo = cuboPara(detalhar, filtros);
   const anos = useMemo(() => anosDoPeriodo(de, ate), [de, ate]);
