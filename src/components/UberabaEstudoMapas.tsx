@@ -38,7 +38,7 @@ const UberabaEstudoMapas = ({ navTarget }: { navTarget?: HTMLElement | null } = 
   );
   return (
     <div className={`flex min-h-[400px] min-w-0 flex-col gap-3 ${encolhe ? "shrink-0" : "flex-1"}`}>
-      <div className="flex shrink-0 flex-wrap items-center gap-4 empty:hidden" aria-label="Cabeçalho de Estudo">
+      <div className={navTarget === undefined ? "flex shrink-0 flex-wrap items-center gap-4" : "contents"} aria-label="Cabeçalho de Estudo">
       {navTarget === undefined && nav}
       <div ref={setToolbar} className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-3 empty:hidden" />
       </div>
