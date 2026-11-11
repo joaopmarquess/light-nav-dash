@@ -12,14 +12,13 @@ describe("Cronograma Uberaba", () => {
     expect(folha?.dataFinal).toBe(final);
     expect(folha?.inicioSemana).toBe(inicio);
   });
-  it("groups the seven stages into their four supplied months", () => {
+  it("groups the six stages into their four supplied months", () => {
     expect(mesesPlanejadosUberaba().map(({ data, etapas }) => [data, etapas.length])).toEqual([
-      ["Outubro/2026", 1], ["Novembro/2026", 3], ["Dezembro/2026", 1], ["Janeiro/2027", 2],
+      ["Outubro/2026", 1], ["Novembro/2026", 2], ["Dezembro/2026", 1], ["Janeiro/2027", 2],
     ]);
   });
   it.each([
     ["Estudo", "Outubro/2026"],
-    ["Hospital Mário Palmério", "Novembro/2026"],
     ["Modelo de Atuação", "Novembro/2026"],
     ["Plano de Marketing", "Novembro/2026"],
     ["Formalização", "Dezembro/2026"],
@@ -27,5 +26,8 @@ describe("Cronograma Uberaba", () => {
     ["Operação Iniciada", "Janeiro/2027"],
   ])("uses the supplied planned month for %s", (etapa, data) => {
     expect(dataPlanejadaUberaba(etapa)).toBe(data);
+  });
+  it("no longer plans Hospital Mário Palmério as a stage (it opens from Uberaba Hospitais)", () => {
+    expect(dataPlanejadaUberaba("Hospital Mário Palmério")).toBeNull();
   });
 });

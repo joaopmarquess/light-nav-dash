@@ -335,7 +335,7 @@ All colors MUST be HSL.
 @media (max-width: 640px) { .movimentacao-chart .recharts-label-list { display: none; } }
 .timeline-heat { margin-top: 20px; }
 .study-home-image { background: var(--study-sky-background); }
-.timeline-heat-band { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 16px; }
+.timeline-heat-band { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px; }
 .timeline-heat-month { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 78px; border-radius: 4px; color: hsl(var(--timeline-heat-ink)); }
 .timeline-heat-level-1 { background: hsl(var(--timeline-heat-low)); }
 .timeline-heat-level-2 { background: hsl(var(--timeline-heat-medium)); }
