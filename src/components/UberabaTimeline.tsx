@@ -47,6 +47,7 @@ const FRENTES = [
 const UberabaTimeline = () => {
   const [aberta, setAberta] = useState<string | null>(HOME);
   const [mostrarDatas, setMostrarDatas] = useState(false);
+  const [navEstudo, setNavEstudo] = useState<HTMLDivElement | null>(null);
   const [frente, setFrente] = useState<(typeof FRENTES)[number]["nome"]>(FRENTES[0].nome);
   const atual = ETAPAS.find((e) => e.nome === aberta);
   const permiteRolagem = ["Estudo", "Plano de Marketing"].includes(aberta ?? "");
@@ -97,7 +98,7 @@ const UberabaTimeline = () => {
             })}
           </DropdownMenuContent>
         </DropdownMenu>
-        {atual && <span className="text-xs text-muted-foreground">Etapa {ETAPAS.indexOf(atual) + 1} de {ETAPAS.length}</span>}
+        {aberta === "Estudo" && <div ref={setNavEstudo} className="flex min-w-0 flex-wrap items-center gap-2" />}
         <div className="ml-auto flex shrink-0 items-center gap-3">
             <Tooltip>
               <TooltipTrigger asChild>
@@ -166,7 +167,7 @@ const UberabaTimeline = () => {
         <div ref={panelRef} data-expansivel={permiteRolagem} className={`timeline-stage-panel flex min-h-0 w-full flex-1 flex-col rounded-lg border border-border bg-card ${permiteRolagem ? "overflow-auto" : "timeline-stage-static"} ${apresentacaoPropria ? "" : "px-4 py-4 sm:px-8"}`}>
           {!apresentacaoPropria && !(atual.nome === "Estudo") && <div className="mb-5"><TimelinePresentationHeader title={atual.nome} /></div>}
           {atual.nome === "Operação Iniciada" ? <UberabaOperacaoIniciada /> : atual.nome === "Hospital Mário Palmério" ? <UberabaHospital onBack={voltarTimeline} /> : atual.nome === "Plano de Marketing" ? <UberabaMarketing /> : atual.nome === "Formalização" ? <UberabaFormalizacao /> : atual.nome === "Implantação" ? <UberabaImplantacao /> : atual.nome === "Estudo" ? (
-            <UberabaEstudoMapas />
+            <UberabaEstudoMapas navTarget={navEstudo} />
           ) : atual.nome === "Modelo de Atuação" ? (
             <article className="timeline-presentation modelo-presentation modelo-guias-aberta" aria-label="Modelo de Atuação do Bensaúde|Uberaba">
               <div className="modelo-menu" role="group" aria-label="Frentes do Modelo de Atuação">

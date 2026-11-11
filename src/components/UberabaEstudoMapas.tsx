@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import UberabaMapa from "@/components/UberabaMapa";
 import UberabaShell, { type PainelExtraTab } from "@/components/UberabaShell";
 import UberabaDados from "@/components/UberabaDados";
@@ -18,7 +19,8 @@ const PAINEL_EXTRAS: PainelExtraTab[] = [
   { id: "dados", label: "Dados", icon: Database, title: "Fonte: Antônio Justo e César Martins (Lancers)", content: <UberabaDados /> },
 ];
 
-const UberabaEstudoMapas = () => {
+// navTarget: quando informado (Timeline), os botões do Estudo ficam no mesmo quadro de "Etapa".
+const UberabaEstudoMapas = ({ navTarget }: { navTarget?: HTMLElement | null } = {}) => {
   const [selected, setSelected] = useState<Visao>("home");
   const [date] = useState(geographicToday);
   const [toolbar, setToolbar] = useState<HTMLDivElement | null>(null);
@@ -26,17 +28,21 @@ const UberabaEstudoMapas = () => {
   const botao = (id: Visao, Icone: typeof House, nome: string) => (
     <Button variant={selected === id ? "default" : "outline"} aria-pressed={selected === id} onClick={() => setSelected(id)}><Icone />{nome}</Button>
   );
-  return (
-    <div className={`flex min-h-[400px] min-w-0 flex-col gap-3 ${encolhe ? "shrink-0" : "flex-1"}`}>
-      <div className="flex shrink-0 flex-wrap items-center gap-4" aria-label="Cabeçalho de Estudo">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Visões do Estudo">
+  const nav = (
+    <div className="flex flex-wrap gap-2" role="group" aria-label="Visões do Estudo">
         {botao("home", House, "Home")}
         {botao("painel", LayoutDashboard, "Painel")}
         {botao("uberaba", MapPinned, "Área")}
         {botao("simulacoes", Calculator, "Simulações")}
       </div>
-      <div ref={setToolbar} className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-3" />
+  );
+  return (
+    <div className={`flex min-h-[400px] min-w-0 flex-col gap-3 ${encolhe ? "shrink-0" : "flex-1"}`}>
+      <div className="flex shrink-0 flex-wrap items-center gap-4 empty:hidden" aria-label="Cabeçalho de Estudo">
+      {navTarget === undefined && nav}
+      <div ref={setToolbar} className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-3 empty:hidden" />
       </div>
+      {navTarget && createPortal(nav, navTarget)}
       <section aria-label={ROTULOS[selected]} className={`flex min-h-0 min-w-0 flex-col ${encolhe ? "shrink-0" : "flex-1"}`}>
         {selected === "home" && <article lang="pt-BR" className="space-y-5 text-justify text-xl leading-7 text-foreground/85 hyphens-auto">
           <img src={estudoImagem.url} loading="eager" decoding="sync" alt="Outdoor do Bensaúde com Hospital Mário Palmério e SIGA: Estamos chegando, Uberaba" className="max-h-[60vh] w-full object-contain" />
