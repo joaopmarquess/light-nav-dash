@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { BarChart3, Building2, Hospital } from "lucide-react";
 import InteligenciaUberaba from "@/components/InteligenciaUberaba";
 import InteligenciaUnimed from "@/components/InteligenciaUnimed";
@@ -6,14 +6,19 @@ import UberabaHospitais from "@/components/UberabaHospitais";
 
 type Tab = "ops" | "unimed" | "hospitais";
 
+/** Abas adicionais exibidas só onde o painel é incorporado (ex.: Dados no Estudo); o painel autônomo não muda. */
+export type PainelExtraTab = { id: string; label: string; icon: typeof Building2; title?: string; content: ReactNode };
+
 const TABS: { id: Tab; label: string; icon: typeof Building2 }[] = [
   { id: "ops", label: "Uberaba OPS", icon: Building2 },
   { id: "unimed", label: "Uberaba Unimed", icon: BarChart3 },
   { id: "hospitais", label: "Uberaba Hospitais", icon: Hospital },
 ];
 
-const UberabaShell = ({ embedded = false }: { embedded?: boolean }) => {
-  const [tab, setTab] = useState<Tab>("ops");
+const UberabaShell = ({ embedded = false, extraTabs = [] }: { embedded?: boolean; extraTabs?: PainelExtraTab[] }) => {
+  const [tab, setTab] = useState<Tab | string>("ops");
+  const extra = extraTabs.find((t) => t.id === tab);
+  const tabs: { id: string; label: string; icon: typeof Building2; title?: string }[] = [...TABS, ...extraTabs];
 
   useEffect(() => {
     const h = () => setTab("unimed");
@@ -24,13 +29,15 @@ const UberabaShell = ({ embedded = false }: { embedded?: boolean }) => {
   return (
     <div className="flex h-full flex-col gap-3">
       <div className="flex flex-wrap gap-2">
-        {TABS.map((t) => {
+        {tabs.map((t) => {
           const Icon = t.icon;
           const on = tab === t.id;
           return (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
+              title={t.title}
+              aria-pressed={on}
               className={`inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm transition-colors ${
                 on
                   ? "border-primary bg-primary text-primary-foreground"
@@ -44,7 +51,7 @@ const UberabaShell = ({ embedded = false }: { embedded?: boolean }) => {
         })}
       </div>
       <div className={embedded ? "min-w-0" : "min-h-0 flex-1 overflow-auto pr-1"}>
-        {tab === "ops" ? <InteligenciaUberaba /> : tab === "unimed" ? <InteligenciaUnimed /> : <UberabaHospitais />}
+        {extra ? extra.content : tab === "ops" ? <InteligenciaUberaba /> : tab === "unimed" ? <InteligenciaUnimed /> : <UberabaHospitais />}
       </div>
     </div>
   );
