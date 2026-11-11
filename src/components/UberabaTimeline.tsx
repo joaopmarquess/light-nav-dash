@@ -98,7 +98,7 @@ const UberabaTimeline = () => {
             })}
           </DropdownMenuContent>
         </DropdownMenu>
-        {aberta === "Estudo" && <div ref={setNavEstudo} className="flex min-w-0 flex-wrap items-center gap-2" />}
+        {aberta === "Estudo" && <div ref={setNavEstudo} className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2" />}
         <div className="ml-auto flex shrink-0 items-center gap-3">
             <Tooltip>
               <TooltipTrigger asChild>
