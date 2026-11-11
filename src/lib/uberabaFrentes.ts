@@ -1,6 +1,7 @@
 import type { EtapaGuia } from "@/lib/uberabaGuias";
 import comercialImagem from "@/assets/uberaba-comercial-negociacao.jpg";
 import redeImagem from "@/assets/uberaba-rede-assistencial-operacao.jpg";
+import escritorioImagem from "@/assets/uberaba-escritorio-local.jpg";
 
 // Frentes Comercial e Rede Assistencial do Modelo de Atuação: somente o conteúdo fornecido
 // pelo Dênis, organizado no formato visual da tela Guias (que não muda).
@@ -79,4 +80,26 @@ export const REDE_UBERABA: ModeloFrenteContent = {
   indicadores: ["CAPTAÇÃO", "MANUTENÇÃO E RELACIONAMENTO", "GESTÃO DE SINISTROS"],
   destaque_titulo: "GESTÃO DE REDE",
   destaque_itens: ["Captação", "Manutenção e Relacionamento", "Gestão de Sinistros"],
+};
+
+export const ESCRITORIO_UBERABA: ModeloFrenteContent = {
+  id: "modelo-escritorio",
+  titulo: "Escritório Local",
+  grupos: [
+    {
+      id: "escritorio-local",
+      titulo: "Escritório Local",
+      itens: [
+        { id: "equipes", numero: 1, titulo: "Equipes", cor: "virtual", subitens: ["Farmer", "SDR", "Assistente/Secretária"] },
+        { id: "estrutura", numero: 2, titulo: "Estrutura", cor: "autorizador", subitens: ["Mesas para a equipe fixa", "Mesas para a equipe em viagem", "Sala de reuniões"] },
+        { id: "processos", numero: 3, titulo: "Processos", cor: "auditoria", subitens: ["Suporte ao credenciado", "Suporte ao beneficiário", "Fomento de Adesões nas empresas PJ 100+", "Atendimento a leads locais"] },
+      ],
+    },
+  ],
+  imagem_url: escritorioImagem,
+  imagem_alt: "Escritório local com mesas de trabalho, atendimento na recepção e sala de reuniões envidraçada ao fundo.",
+  imagem_placeholder: "Imagem do escritório local",
+  indicadores: ["EQUIPES", "ESTRUTURA", "PROCESSOS"],
+  destaque_titulo: "ESCRITÓRIO LOCAL",
+  destaque_itens: ["Equipes", "Estrutura", "Processos"],
 };

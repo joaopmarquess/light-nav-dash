@@ -8,10 +8,10 @@ import UberabaFormalizacao from "@/components/UberabaFormalizacao";
 import UberabaImplantacao from "@/components/UberabaImplantacao";
 import UberabaOperacaoIniciada from "@/components/UberabaOperacaoIniciada";
 import UberabaGuias from "@/components/UberabaGuias";
-import { COMERCIAL_UBERABA, REDE_UBERABA } from "@/lib/uberabaFrentes";
+import { COMERCIAL_UBERABA, ESCRITORIO_UBERABA, REDE_UBERABA } from "@/lib/uberabaFrentes";
 import UberabaModeloFrente from "@/components/UberabaModeloFrente";
 import outdoorImagem from "@/assets/projeto-uberaba-home-v2.svg.asset.json";
-import { CalendarDays, ChevronDown, FileCheck2, Stethoscope, Tags } from "lucide-react";
+import { Building2, CalendarDays, ChevronDown, FileCheck2, Stethoscope, Tags } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import UberabaCronograma from "@/components/UberabaCronograma";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -41,6 +41,7 @@ const FRENTES = [
   { nome: "Comercial", icone: Tags },
   { nome: "Rede Assistencial", icone: Stethoscope },
   { nome: "Guias", icone: FileCheck2 },
+  { nome: "Escritório Local", icone: Building2 },
 ] as const;
 
 const UberabaTimeline = () => {
@@ -174,6 +175,7 @@ const UberabaTimeline = () => {
               {frente === "Comercial" && <UberabaModeloFrente key="comercial" content={COMERCIAL_UBERABA} />}
               {frente === "Rede Assistencial" && <UberabaModeloFrente key="rede" content={REDE_UBERABA} />}
               {frente === "Guias" && <UberabaGuias key="guias" />}
+              {frente === "Escritório Local" && <UberabaModeloFrente key="escritorio" content={ESCRITORIO_UBERABA} />}
             </article>
           ) : (
             <p className="text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{LOREM}</p>
