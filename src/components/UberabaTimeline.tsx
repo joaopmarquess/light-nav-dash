@@ -10,7 +10,8 @@ import UberabaGuias from "@/components/UberabaGuias";
 import { COMERCIAL_UBERABA, ESCRITORIO_UBERABA, REDE_UBERABA } from "@/lib/uberabaFrentes";
 import UberabaModeloFrente from "@/components/UberabaModeloFrente";
 import outdoorImagem from "@/assets/projeto-uberaba-home-v2.svg.asset.json";
-import { Building2, CalendarDays, ChevronDown, FileCheck2, Stethoscope, Tags } from "lucide-react";
+import { Building2, CalendarDays, ChevronDown, FileCheck2, FileSignature, House, Megaphone, Rocket, Stethoscope, Tags } from "lucide-react";
+import { CRONOGRAMA_UBERABA } from "@/lib/uberabaCronograma";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import UberabaCronograma from "@/components/UberabaCronograma";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -27,13 +28,30 @@ const LOREM =
 const ETAPAS: Etapa[] = [
   { nome: "Estudo", conteudo: <UberabaEstudoMapas /> },
   { nome: "Modelo de Atuação", conteudo: MODELO },
-  { nome: "Plano de Marketing", conteudo: MARKETING },
-  { nome: "Formalização", conteudo: FORMALIZACAO },
-  { nome: "Implantação", conteudo: IMPLANTACAO },
-  { nome: "Operação Iniciada", conteudo: <UberabaOperacaoIniciada /> },
+  { nome: "Plano de Ação", conteudo: <UberabaOperacaoIniciada /> },
 ];
 
 const HOME = "Home";
+const PLANO = "Plano de Ação";
+
+// Submenus do Plano de Ação: Home mostra a apresentação "Operação Iniciada" (resultado esperado).
+const SUB_PLANO = [
+  { nome: HOME, icone: House },
+  { nome: "Plano de Marketing", icone: Megaphone },
+  { nome: "Formalização", icone: FileSignature },
+  { nome: "Implantação", icone: Rocket },
+] as const;
+type SubPlano = (typeof SUB_PLANO)[number]["nome"];
+void MARKETING; void FORMALIZACAO; void IMPLANTACAO;
+
+// Faixa de datas: os itens planejados do cronograma (datas inalteradas), cada um levando à etapa/submenu correspondente.
+const destinoAgenda = (item: string): { etapa: string; sub?: SubPlano; numero: string } => {
+  if (item === "Operação Iniciada") return { etapa: PLANO, sub: HOME, numero: "3.1" };
+  const sub = SUB_PLANO.findIndex((s) => s.nome === item);
+  if (sub >= 0) return { etapa: PLANO, sub: SUB_PLANO[sub].nome, numero: `3.${sub + 1}` };
+  return { etapa: item, numero: String(ETAPAS.findIndex((e) => e.nome === item) + 1) };
+};
+const AGENDA = Object.keys(CRONOGRAMA_UBERABA).map((item) => ({ item, ...destinoAgenda(item) }));
 
 const FRENTES = [
   { nome: "Comercial", icone: Tags },
@@ -47,9 +65,14 @@ const UberabaTimeline = () => {
   const [mostrarDatas, setMostrarDatas] = useState(false);
   const [navEstudo, setNavEstudo] = useState<HTMLDivElement | null>(null);
   const [frente, setFrente] = useState<(typeof FRENTES)[number]["nome"]>(FRENTES[0].nome);
+  const [subPlano, setSubPlano] = useState<SubPlano>(HOME);
   const atual = ETAPAS.find((e) => e.nome === aberta);
-  const permiteRolagem = ["Estudo", "Plano de Marketing"].includes(aberta ?? "");
-  const apresentacaoPropria = ["Operação Iniciada", "Plano de Marketing", "Formalização", "Modelo de Atuação", "Implantação"].includes(aberta ?? "");
+  // vista: o que está na tela (no Plano de Ação, o submenu escolhido; "Operação Iniciada" = Home do Plano de Ação).
+  const vista = aberta === PLANO ? (subPlano === HOME ? "Operação Iniciada" : subPlano) : aberta;
+  const permiteRolagem = ["Estudo", "Plano de Marketing"].includes(vista ?? "");
+  const apresentacaoPropria = ["Operação Iniciada", "Plano de Marketing", "Formalização", "Modelo de Atuação", "Implantação"].includes(vista ?? "");
+  const abrir = (etapa: string, sub: SubPlano = HOME) => { setAberta(etapa); setFrente(FRENTES[0].nome); setSubPlano(sub); };
+  const agendaAtual = AGENDA.findIndex((a) => a.item === vista);
   const timelineRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -72,14 +95,14 @@ const UberabaTimeline = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="min-w-[280px]">
             <DropdownMenuLabel>Etapas do projeto</DropdownMenuLabel>
-            <DropdownMenuItem onSelect={() => { setAberta(HOME); setFrente(FRENTES[0].nome); }} className={aberta === HOME ? "bg-accent text-primary" : undefined} aria-current={aberta === HOME ? "step" : undefined}>
+            <DropdownMenuItem onSelect={() => abrir(HOME)} className={aberta === HOME ? "bg-accent text-primary" : undefined} aria-current={aberta === HOME ? "step" : undefined}>
               <span className={`mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-primary text-xs font-semibold ${aberta === HOME ? "bg-primary text-primary-foreground" : "bg-background text-primary"}`}>0</span>
               {HOME}
             </DropdownMenuItem>
             {ETAPAS.map((e, i) => {
               const on = aberta === e.nome;
               return (
-                <DropdownMenuItem key={e.nome} onSelect={() => { setAberta(e.nome); setFrente(FRENTES[0].nome); }} className={on ? "bg-accent text-primary" : undefined} aria-current={on ? "step" : undefined}>
+                <DropdownMenuItem key={e.nome} onSelect={() => abrir(e.nome)} className={on ? "bg-accent text-primary" : undefined} aria-current={on ? "step" : undefined}>
                   <span className={`mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-primary text-xs font-semibold ${on ? "bg-primary text-primary-foreground" : "bg-background text-primary"}`}>{i + 1}</span>
                   {e.nome}
                 </DropdownMenuItem>
@@ -88,6 +111,11 @@ const UberabaTimeline = () => {
           </DropdownMenuContent>
         </DropdownMenu>
         {aberta === "Estudo" && <div ref={setNavEstudo} className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2" />}
+        {aberta === PLANO && (
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Submenus do Plano de Ação">
+            {SUB_PLANO.map((s) => { const Icone = s.icone; const on = subPlano === s.nome; return <Button key={s.nome} variant={on ? "default" : "outline"} aria-pressed={on} onClick={() => setSubPlano(s.nome)}><Icone />{s.nome}</Button>; })}
+          </div>
+        )}
         <div className="ml-auto flex shrink-0 items-center gap-3">
             <Tooltip>
               <TooltipTrigger asChild>
@@ -103,17 +131,17 @@ const UberabaTimeline = () => {
       </div>
       {mostrarDatas && <div className="relative shrink-0 overflow-x-auto rounded-lg border border-border bg-card px-8 py-4" aria-label="Datas planejadas por etapa">
         <div className="relative min-w-[840px] md:min-w-0">
-          <div className="absolute top-5 h-0.5 bg-border" style={{ left: `${50 / ETAPAS.length}%`, right: `${50 / ETAPAS.length}%` }} />
-          <ol className="relative grid gap-4" style={{ gridTemplateColumns: `repeat(${ETAPAS.length}, minmax(0, 1fr))` }}>
-            {ETAPAS.map((e, i) => {
-              const on = aberta === e.nome;
-              const clicavel = !!e.filhos || !!e.texto || !!e.conteudo;
+          <div className="absolute top-5 h-0.5 bg-border" style={{ left: `${50 / AGENDA.length}%`, right: `${50 / AGENDA.length}%` }} />
+          <ol className="relative grid gap-4" style={{ gridTemplateColumns: `repeat(${AGENDA.length}, minmax(0, 1fr))` }}>
+            {AGENDA.map((a, i) => {
+              const on = i === agendaAtual;
+              const clicavel = true;
               return (
-                <li key={e.nome} className="flex flex-col items-center gap-3 text-center">
+                <li key={a.item} className="flex flex-col items-center gap-3 text-center">
                   <button
                     type="button"
                     disabled={!clicavel}
-                    onClick={() => { setAberta(e.nome); setFrente(FRENTES[0].nome); }}
+                    onClick={() => abrir(a.etapa, a.sub)}
                     className={`flex flex-col items-center gap-3 ${clicavel ? "cursor-pointer" : "cursor-default"}`}
                   >
                     <span
@@ -121,10 +149,10 @@ const UberabaTimeline = () => {
                         on ? "bg-primary text-primary-foreground" : "bg-background text-primary"
                       }`}
                     >
-                      {i + 1}
+                      {a.numero}
                     </span>
                     <span className={`text-sm font-medium text-foreground ${clicavel ? "underline decoration-dotted underline-offset-4" : ""}`}>
-                      {e.nome}
+                      {a.item}
                     </span>
                   </button>
                 </li>
@@ -135,11 +163,11 @@ const UberabaTimeline = () => {
         </div>
       </div>}
 
-      {mostrarDatas && (atual?.filhos || atual?.texto || atual?.conteudo) && (
-        <div className="-my-6 grid gap-4 px-8" style={{ gridTemplateColumns: `repeat(${ETAPAS.length}, minmax(0, 1fr))` }}>
+      {mostrarDatas && agendaAtual >= 0 && (
+        <div className="-my-6 grid gap-4 px-8" style={{ gridTemplateColumns: `repeat(${AGENDA.length}, minmax(0, 1fr))` }}>
           <div
             className="flex justify-center"
-            style={{ gridColumnStart: ETAPAS.indexOf(atual) + 1 }}
+            style={{ gridColumnStart: agendaAtual + 1 }}
           >
             <div className="h-6 w-0.5 bg-primary" />
           </div>
@@ -155,7 +183,7 @@ const UberabaTimeline = () => {
       {(atual?.filhos || atual?.texto || atual?.conteudo) && (
         <div ref={panelRef} data-expansivel={permiteRolagem} className={`timeline-stage-panel flex min-h-0 w-full flex-1 flex-col rounded-lg border border-border bg-card ${permiteRolagem ? "overflow-auto" : "timeline-stage-static"} ${apresentacaoPropria ? "" : "px-4 py-4 sm:px-8"}`}>
           {!apresentacaoPropria && !(atual.nome === "Estudo") && <div className="mb-5"><TimelinePresentationHeader title={atual.nome} /></div>}
-          {atual.nome === "Operação Iniciada" ? <UberabaOperacaoIniciada /> : atual.nome === "Plano de Marketing" ? <UberabaMarketing /> : atual.nome === "Formalização" ? <UberabaFormalizacao /> : atual.nome === "Implantação" ? <UberabaImplantacao /> : atual.nome === "Estudo" ? (
+          {vista === "Operação Iniciada" ? <UberabaOperacaoIniciada key="plano-home" /> : vista === "Plano de Marketing" ? <UberabaMarketing key="plano-marketing" /> : vista === "Formalização" ? <UberabaFormalizacao key="plano-formalizacao" /> : vista === "Implantação" ? <UberabaImplantacao key="plano-implantacao" /> : atual.nome === "Estudo" ? (
             <UberabaEstudoMapas navTarget={navEstudo} />
           ) : atual.nome === "Modelo de Atuação" ? (
             <article className="timeline-presentation modelo-presentation modelo-guias-aberta" aria-label="Modelo de Atuação do Bensaúde|Uberaba">
@@ -170,7 +198,7 @@ const UberabaTimeline = () => {
           ) : (
             <p className="text-justify text-xl leading-7 text-foreground/85 hyphens-auto" lang="pt-BR">{LOREM}</p>
           )}
-          {atual.nome !== "Operação Iniciada" && (
+          {vista !== "Operação Iniciada" && (
             <footer className="mt-auto shrink-0 px-4 pb-4 pt-5 text-right text-base font-bold text-primary sm:px-8">
               Bensaúde|Uberaba
             </footer>
