@@ -13,7 +13,7 @@
 - Use the shared presentation header for every Timeline stage but Modelo de Atuação; keep internal scrolling limited to presentations with expansion controls except operating-model subviews, which flow without clipping; preload and retain decoded presentation images from application startup to avoid first-visit and stage-switch loading delays.
 - Keep planned Timeline months, month grouping and UTC month-end calendar calculations in a tested helper keyed by stage; derive heat-band intensity from monthly counts and keep both calendar controls independent of version and selected stage so presentation cannot alter dates.
 - Render the final expected-operation section as a live convergence diagram with container-aware vertical fallback; expose its expected-result status from a tested data helper and leave previous Timeline content intact.
-- Simplified Modelo de Atuação: descriptive fronts; only Guias opens a subview. Comercial/Rede Assistencial live in Estudo.
+- Simplified Modelo de Atuação: horizontal fronts menu; Guias shows its screen. Comercial/Rede Assistencial live in Estudo.
 - Keep simplified Timeline formalization as a container-aware live presentation with contract scope in a tested data helper; preserve the complete version to avoid changing existing institutional content.
 - Keep hospital content typed and its presentation live, container-aware, with extracted photos, visible services and missing-media placeholders; never flatten it to a screenshot.
 - Keep main Sinistralidade separate from legacy; query view_eard_mensal via Hostinger. Store external period SQL and isolated SQL tests in supabase/sql and supabase/tests; never install it in Cloud or substitute legacy data.

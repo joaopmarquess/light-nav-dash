@@ -824,9 +824,10 @@ All colors MUST be HSL.
 .timeline-presentation .hospital-slide-role p { font-size: 15px; line-height: 1.45; }
 .timeline-presentation .hospital-slide-footer { font-size: 12px; line-height: 1.5; }
 .timeline-presentation .hospital-slide-signature { font-size: 16px; margin-top: 14px; }
-.modelo-presentation { padding: 24px 44px; gap: 18px; }
+.modelo-presentation { padding: 12px 44px 24px; gap: 18px; }
 .modelo-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 18px; }
 .modelo-controls { display: flex; flex-wrap: wrap; gap: 10px; }
+.modelo-menu { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; border: 1px solid hsl(var(--hospital-frame)); border-radius: 8px; background: hsl(var(--hospital-surface)); }
 .modelo-fronts, .comercial-grid, .modelo-rede-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .modelo-front { display: flex; flex-direction: column; align-items: start; gap: 14px; padding: 24px; border: 1px solid hsl(var(--hospital-frame)); border-top: 6px solid var(--front-color); border-radius: 8px; background: hsl(var(--hospital-surface)); }
 .modelo-front-comercial { --front-color: hsl(var(--hospital-gold)); }
