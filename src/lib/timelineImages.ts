@@ -1,7 +1,7 @@
 import { HOSPITAL_PALMERIO } from "@/lib/uberabaHospital";
 import campanha from "@/assets/uberaba-marketing-outdoor-sem-exclamacao.png";
 import operacaoDigital from "@/assets/uberaba-guias-operacao-digital.jpg";
-import comercialImagem from "@/assets/uberaba-comercial-operacao.jpg";
+import comercialImagem from "@/assets/uberaba-comercial-negociacao.jpg";
 import redeImagem from "@/assets/uberaba-rede-assistencial-operacao.jpg";
 import outdoorImagem from "@/assets/uberaba-estudo-outdoor.jpg.asset.json";
 import estudoImagem from "@/assets/projeto-uberaba-home-v2.svg.asset.json";
