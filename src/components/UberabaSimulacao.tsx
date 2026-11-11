@@ -100,7 +100,7 @@ export default function UberabaSimulacao() {
     setVidaText(p => ({ ...p, [codigo]: String(original.total_vidas) }));
   };
   return <article className="uberaba-simulation" aria-label="Simulador Comercial Bensaúde|Uberaba">
-    <header className="sim-heading justify-end"><div className="flex gap-2"><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Exportar cenário para CSV" onClick={exportar}><Download /></Button></TooltipTrigger><TooltipContent>Exportar CSV</TooltipContent></Tooltip><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Imprimir simulação" onClick={imprimir}><Printer /></Button></TooltipTrigger><TooltipContent>Imprimir</TooltipContent></Tooltip></div></header>
+    <header className="sim-heading" style={{ justifyContent: "flex-end", padding: 0, borderBottom: 0, marginTop: -52 }}><div className="flex gap-2"><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Exportar cenário para CSV" onClick={exportar}><Download /></Button></TooltipTrigger><TooltipContent>Exportar CSV</TooltipContent></Tooltip><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Imprimir simulação" onClick={imprimir}><Printer /></Button></TooltipTrigger><TooltipContent>Imprimir</TooltipContent></Tooltip></div></header>
     {erro && <p role="alert" className="text-destructive">{erro}</p>}
     <section aria-label="Variáveis por modalidade" className="rounded-md border border-border p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
