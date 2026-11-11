@@ -856,6 +856,8 @@ All colors MUST be HSL.
 .modelo-presentation .guias-header > div > p:first-child { display: none; }
 .modelo-presentation .guias-page { padding: 0; }
 .modelo-presentation .uberaba-guias { border-top: 0; }
+.guias-flow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.guias-flow > .guias-flow-list { flex-basis: 100%; }
 @container (min-width: 1700px) {
   .timeline-presentation .hospital-slide-facade { max-height: 270px; }
   .timeline-presentation .hospital-slide-care-photo { min-height: 230px; max-height: 300px; }
@@ -966,3 +968,32 @@ All colors MUST be HSL.
   .implantacao-arrow-v { display: block; margin: 4px 0; }
   .implantacao-page { padding: 20px 18px; }
 }
+
+/* Guias compacto: títulos e subtítulos em uma linha para caber na tela */
+.modelo-presentation.modelo-guias-aberta { padding-top: 12px; padding-bottom: 8px; gap: 8px; }
+.modelo-guias-aberta .modelo-heading .timeline-presentation-header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+.modelo-guias-aberta .modelo-heading .timeline-presentation-header > p { display: none; }
+.modelo-guias-aberta .modelo-heading .timeline-presentation-header h2 { font-size: 28px; line-height: 1.15; }
+.modelo-guias-aberta .modelo-heading .timeline-presentation-header > span { display: inline; margin-top: 0; font-size: 16px; }
+.modelo-guias-aberta .guias-page { gap: 8px; }
+.modelo-guias-aberta .guias-header { align-items: center; }
+.modelo-guias-aberta .guias-header > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; min-width: 0; }
+.modelo-guias-aberta .guias-header h3 { font-size: 20px; line-height: 1.2; }
+.modelo-guias-aberta .guias-subtitle { margin-top: 0; font-size: 15px; }
+.modelo-guias-aberta .guias-body { flex: none; min-height: 0; gap: 20px; }
+.modelo-guias-aberta .guias-stages { grid-template-rows: repeat(4, auto); gap: 6px; }
+.modelo-guias-aberta .guias-stage { padding: 5px 14px; gap: 12px; }
+.modelo-guias-aberta .guias-stage:not(:last-child)::after { left: 30px; height: 6px; }
+.modelo-guias-aberta .guias-number { width: 32px; height: 32px; font-size: 16px; }
+.modelo-guias-aberta .guias-stage h3 { font-size: 14px; }
+.modelo-guias-aberta .guias-stage p { margin-top: 1px; font-size: 13px; line-height: 1.35; }
+.modelo-guias-aberta .guias-media { gap: 6px; }
+.modelo-guias-aberta .guias-figure { min-height: 0; }
+.modelo-guias-aberta .guias-figure figcaption { padding: 5px 12px; font-size: 13px; }
+.modelo-guias-aberta .guias-indicators li { padding: 5px 6px; font-size: 11px; }
+.modelo-guias-aberta .guias-result { padding: 8px 20px; gap: 20px; }
+.modelo-guias-aberta .guias-result-main { font-size: 19px; }
+.modelo-guias-aberta .guias-result ul { margin-top: 2px; font-size: 12px; }
+.modelo-guias-aberta .guias-premise { font-size: 12px; }
+.modelo-guias-aberta .guias-observation { padding-top: 6px; font-size: 11px; line-height: 1.4; }
+.timeline-stage-static:has(> .modelo-guias-aberta) > footer { padding-top: 2px; padding-bottom: 8px; }
