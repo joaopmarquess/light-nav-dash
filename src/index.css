@@ -989,7 +989,8 @@ All colors MUST be HSL.
 .modelo-guias-aberta .guias-stage h3 { font-size: 14px; }
 .modelo-guias-aberta .guias-stage p { margin-top: 1px; font-size: 13px; line-height: 1.35; }
 .modelo-guias-aberta .guias-media { gap: 6px; }
-.modelo-guias-aberta .guias-figure { min-height: 0; }
+.modelo-guias-aberta .guias-figure { min-height: 270px; }
+.modelo-guias-aberta .guias-figure img { object-position: center 30%; }
 .modelo-guias-aberta .guias-figure figcaption { padding: 5px 12px; font-size: 13px; }
 .modelo-guias-aberta .guias-indicators li { padding: 5px 6px; font-size: 11px; }
 .modelo-guias-aberta .guias-result { padding: 8px 20px; gap: 20px; }
