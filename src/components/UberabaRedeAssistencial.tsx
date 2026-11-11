@@ -7,12 +7,8 @@ export default function UberabaRedeAssistencial() {
   const [modo, setModo] = useState<ModoCredenciamento>(MODO_CREDENCIAMENTO_PADRAO);
   const { grupos, resumo } = cenarioCredenciamento(modo);
   return (
-    <section ref={inicio} className="credenciamento modelo-rede space-y-4" aria-labelledby="credenciamento-titulo">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-        <h3 id="credenciamento-titulo" className="text-xl font-bold">Rede Assistencial</h3>
-        <p className="credenciamento-secondary text-base">{modo === "Limite" ? "Limite de referências e valor máximo projetado" : modo === "Rio Preto" ? "Disponibilidade em Rio Preto" : "Disponibilidade identificada e valor máximo projetado"}</p>
-        </div>
+    <section ref={inicio} className="credenciamento modelo-rede space-y-4" aria-label="Rede Assistencial">
+      <header className="flex flex-wrap items-center justify-end gap-3">
         <div className="flex flex-wrap gap-2" role="group" aria-label="Cenário de credenciamento">
           {(["Disponível", "Limite", "Rio Preto"] as const).map((opcao) => <Button key={opcao} size="sm" variant={modo === opcao ? "default" : "outline"} aria-pressed={modo === opcao} onClick={() => setModo(opcao)}>{opcao}</Button>)}
         </div>
