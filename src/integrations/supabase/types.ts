@@ -100,6 +100,72 @@ export type Database = {
         }
         Relationships: []
       }
+      bench_vidas_envio: {
+        Row: {
+          atualizado_em: string
+          etapa: string
+          etapa_ordem: number
+          etapas: number
+          falhas: number
+          feitos: number
+          id: string
+          iniciado_em: string
+          mensagem: string | null
+          progresso_em: string
+          rotulo: string
+          situacao: string
+          total: number
+          unidade: string
+        }
+        Insert: {
+          atualizado_em?: string
+          etapa: string
+          etapa_ordem?: number
+          etapas?: number
+          falhas?: number
+          feitos?: number
+          id: string
+          iniciado_em?: string
+          mensagem?: string | null
+          progresso_em?: string
+          rotulo: string
+          situacao?: string
+          total?: number
+          unidade?: string
+        }
+        Update: {
+          atualizado_em?: string
+          etapa?: string
+          etapa_ordem?: number
+          etapas?: number
+          falhas?: number
+          feitos?: number
+          id?: string
+          iniciado_em?: string
+          mensagem?: string | null
+          progresso_em?: string
+          rotulo?: string
+          situacao?: string
+          total?: number
+          unidade?: string
+        }
+        Relationships: []
+      }
+      bench_vidas_envio_chave: {
+        Row: {
+          hash: string
+          id: string
+        }
+        Insert: {
+          hash: string
+          id: string
+        }
+        Update: {
+          hash?: string
+          id?: string
+        }
+        Relationships: []
+      }
       dre_gerencial_2t2026: {
         Row: {
           g1: string | null
@@ -398,6 +464,22 @@ export type Database = {
       }
       axis_is_admin: { Args: { _user_id: string }; Returns: boolean }
       axis_user_registered: { Args: { _user_id: string }; Returns: boolean }
+      bench_vidas_envio_registrar: {
+        Args: {
+          p_chave: string
+          p_etapa: string
+          p_etapa_ordem: number
+          p_etapas: number
+          p_falhas: number
+          p_feitos: number
+          p_id: string
+          p_mensagem?: string
+          p_rotulo: string
+          p_situacao: string
+          p_total: number
+        }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
