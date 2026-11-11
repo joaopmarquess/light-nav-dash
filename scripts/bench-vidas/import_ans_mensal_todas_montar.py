@@ -45,7 +45,6 @@ ordem = {c: sorted(vs, key=lambda v: (v == NI or v.startswith("Não"), faixa_ord
 idx = {c: {v: i for i, v in enumerate(vs)} for c, vs in ordem.items()}
 
 def ano(y):
-    tot = pd.concat([pd.read_parquet(f) for f in glob.glob(str(PAR / f"{y}??_*_T.parquet"))]).assign(comp=None)
     tot = pd.concat([pd.read_parquet(f).assign(comp=int(Path(f).name[:6])) for f in glob.glob(str(PAR / f"{y}??_*_T.parquet"))])
     tot = tot.groupby(["CD_OPERADORA", "comp"])[Q].sum()
     partes = []
@@ -76,6 +75,6 @@ if __name__ == "__main__":
         "inicio": comps[0], "fim": comps[-1], "competencias": comps,
         "operadoras": sorted(operadoras.values(), key=lambda o: o["reg"]), "valores": ordem, "municipios": muns,
     }, ensure_ascii=False, separators=(",", ":")), encoding="utf8")
-    (DEST / "manifesto.json").write_text(json.dumps({"origem": BASE if (BASE := "https://dadosabertos.ans.gov.br/FTP/PDA/informacoes_consolidadas_de_beneficiarios-024/") else "",
+    (DEST / "manifesto.json").write_text(json.dumps({"origem": "https://dadosabertos.ans.gov.br/FTP/PDA/informacoes_consolidadas_de_beneficiarios-024/",
         "arquivos": [{k: m[k] for k in ("arquivo", "competencia", "sha256", "linhas_fonte", "ativos", "aderidos", "cancelados")} for m in sorted(metas, key=lambda m: (m["competencia"], m["arquivo"]))]}, ensure_ascii=False, indent=0), encoding="utf8")
     print("DONE", len(comps), len(operadoras), len(muns), flush=True)
