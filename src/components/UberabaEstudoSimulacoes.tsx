@@ -9,10 +9,10 @@ import EstudoSubNav from "@/components/EstudoSubNav";
 type Aba = "simulacao" | "gestaoRede" | "comercial" | "rede";
 
 const ABAS: { id: Aba; label: string; icon: typeof Calculator }[] = [
-  { id: "simulacao", label: "Simulação", icon: Calculator },
-  { id: "gestaoRede", label: "Gestão Rede", icon: Network },
-  { id: "comercial", label: "Comercial", icon: Tags },
-  { id: "rede", label: "Rede Assistencial", icon: Stethoscope },
+  { id: "simulacao", label: "Condições Comerciais", icon: Calculator },
+  { id: "comercial", label: "Resultados Comerciais", icon: Tags },
+  { id: "rede", label: "Condições Rede", icon: Stethoscope },
+  { id: "gestaoRede", label: "Resultados Rede", icon: Network },
 ];
 
 // Simulações do Estudo: mesmos sub-botões do Painel, reunindo as telas existentes sem alterá-las.
