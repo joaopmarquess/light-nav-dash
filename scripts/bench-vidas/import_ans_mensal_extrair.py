@@ -51,7 +51,7 @@ def work(job):
     return meta
 
 feitos = 0
-with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+with concurrent.futures.ProcessPoolExecutor(max_workers=14) as pool:
     for meta in pool.map(work, jobs):
         feitos += 1
         if feitos % 28 == 0: print(feitos, "/", len(jobs), meta["competencia"], flush=True)
