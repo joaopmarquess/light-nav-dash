@@ -123,6 +123,8 @@ export const homeShortcuts = [
   { icon: FileText, label: "Proposta APB", destination: "Proposta APB" },
   { icon: Layers, label: "Evolução Produtos", destination: "Evolução Produtos" },
   { icon: LayoutDashboard, label: "Painel", destination: "Carteira · Painel" },
+  { icon: BarChart3, label: "Bench Vidas", destination: "Carteira · Bench Vidas" },
+  { icon: BarChart3, label: BENCH_SHORT_TEXT, destination: "Control · Bench C" },
 ];
 
 export const axisPermissionGroups = [

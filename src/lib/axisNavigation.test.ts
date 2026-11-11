@@ -15,6 +15,8 @@ describe("Home shortcut permissions", () => {
     ["Proposta APB", "Proposta APB"],
     ["Evolução Produtos", "Evolução Produtos"],
     ["Painel", "Carteira · Painel"],
+    ["Bench Vidas", "Carteira · Bench Vidas"],
+    ["Bench Contábil", "Control · Bench C"],
   ])("%s grants only its existing destination", (label, destination) => {
     const item = items.find(i => i.label === label);
     expect(item?.id).toBe(destination);

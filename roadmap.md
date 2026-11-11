@@ -17,3 +17,7 @@
 - [x] Quadro Antecipação × Mensal por mês, semelhante ao anexo.
 - [x] Novos padrões (teto 15.000), vidas distribuídas por mês e abatimento nos 2 últimos meses.
 - [x] Variável Ticket (299,99) e coluna Faturamento (vidas do mês × ticket).
+## Bench Vidas › Mensal e atalhos
+- [x] Mensal usa a mesma lista de operadoras do Trimestral.
+- [ ] Enviar os dados mensais das 1.052 operadoras com dados desde 05/2021 e conferir na tela.
+- [x] Atalhos Bench Vidas e Bench Contábil na Home.

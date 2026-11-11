@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import catalogoTrimestral from "@/data/benchVidas/ans/catalogo.json";
 import catalogoJson from "@/data/benchVidas/mensal/catalogo.json";
 import { nomeOperadoraAns } from "@/lib/benchVidasAns";
 import { agregarMensal, indicesDaOpcao, ajustarFiltros, campoDisponivel, anosDoPeriodo, CAMPOS_MENSAL, camposCompativeis, competenciaMensal, cuboPara, INDICADORES_MENSAL, opcoesCampo, periodoPadrao, resumoMensal, rotuloValor, totalPeriodo, valorIndicador, type CampoMensal, type CatalogoMensal, type Filtros, type IndicadorMensal } from "@/lib/benchVidasMensal";
@@ -16,7 +17,12 @@ const catalogo = catalogoJson as unknown as CatalogoMensal & { inicio: string; f
 const COMPETENCIAS = catalogo.competencias.map(Number);
 const CURTOS: Record<string, string> = { "366561": "Bensaúde", "327417": "Austaclínicas", "350249": "H.B. Saúde", "335100": "Unimed Rio Preto" };
 const FIXA = "366561";
-const OPERADORAS = catalogo.operadoras.map(o => ({ ...o, nome: nomeOperadoraAns(CURTOS[o.reg] ?? o.razaoSocial) })).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+// Mesma base de operadoras do Trimestral; as que não aparecem nos arquivos mensais (05/2021 em diante) ficam sem dados mensais.
+const MENSAIS = new Map(catalogo.operadoras.map(o => [o.reg, o]));
+const OPERADORAS = catalogoTrimestral.operadoras.map(o => {
+  const m = MENSAIS.get(o.reg);
+  return { reg: o.reg, razaoSocial: m?.razaoSocial ?? o.nome, modalidade: m?.modalidade ?? "", nome: nomeOperadoraAns(CURTOS[o.reg] ?? o.nome), mensal: Boolean(m) };
+}).sort((a, b) => Number(b.mensal) - Number(a.mensal) || a.nome.localeCompare(b.nome, "pt-BR"));
 const POR_REG = new Map(OPERADORAS.map(o => [o.reg, o]));
 const INICIAIS = ["366561", "327417", "350249", "335100"].filter(r => POR_REG.has(r));
 const nf = (v: number | null) => v === null ? "—" : v.toLocaleString("pt-BR");
@@ -113,7 +119,7 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
           <Button variant="ghost" aria-pressed={operadora === reg} title={`${o.razaoSocial} · ANS ${reg}`} onClick={() => setOperadora(reg)} className={`h-auto min-h-8 max-w-72 whitespace-normal rounded-full text-sm ${operadora === reg ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "bg-muted"}`}>{o.nome}</Button>
           {reg !== FIXA && <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" title={`Retirar ${o.nome}`} aria-label={`Retirar ${o.nome}`} onClick={() => { setSelecionadas(l => l.filter(r => r !== reg)); if (operadora === reg) setOperadora(FIXA); }}><X className="h-3 w-3" /></Button>}
         </div>; })}
-        <Popover open={opsAberto} onOpenChange={setOpsAberto}><PopoverTrigger asChild><Button variant="ghost" className="h-8 gap-1 rounded-full"><Plus className="h-4 w-4" />Incluir OPS</Button></PopoverTrigger><PopoverContent className="w-80 max-w-[calc(100vw-2rem)] p-2"><Input autoFocus aria-label="Buscar operadora" placeholder="Buscar por nome ou registro ANS" value={busca} onChange={e => setBusca(e.target.value)} /><div className="mt-2 max-h-60 overflow-auto">{opcoesOps.map(o => <Button key={o.reg} variant="ghost" className="h-auto w-full justify-start whitespace-normal text-left" onClick={() => { setSelecionadas(l => [...l, o.reg]); setOperadora(o.reg); setOpsAberto(false); setBusca(""); }}>{o.nome} · {o.reg}</Button>)}{!opcoesOps.length && <p className="p-2 text-sm text-muted-foreground">Nenhuma operadora disponível.</p>}</div></PopoverContent></Popover>
+        <Popover open={opsAberto} onOpenChange={setOpsAberto}><PopoverTrigger asChild><Button variant="ghost" className="h-8 gap-1 rounded-full"><Plus className="h-4 w-4" />Incluir OPS</Button></PopoverTrigger><PopoverContent className="w-80 max-w-[calc(100vw-2rem)] p-2"><Input autoFocus aria-label="Buscar operadora" placeholder="Buscar por nome ou registro ANS" value={busca} onChange={e => setBusca(e.target.value)} /><div className="mt-2 max-h-60 overflow-auto">{opcoesOps.map(o => <Button key={o.reg} variant="ghost" disabled={!o.mensal} title={o.mensal ? undefined : "Sem dados mensais: a operadora não aparece nos arquivos mensais da ANS (05/2021 em diante)"} className="h-auto w-full flex-col items-start gap-0 whitespace-normal text-left" onClick={() => { setSelecionadas(l => [...l, o.reg]); setOperadora(o.reg); setOpsAberto(false); setBusca(""); }}><span>{o.nome} · {o.reg}</span>{!o.mensal && <span className="text-xs text-muted-foreground">Sem dados mensais</span>}</Button>)}{!opcoesOps.length && <p className="p-2 text-sm text-muted-foreground">Nenhuma operadora disponível.</p>}</div></PopoverContent></Popover>
       </div>
     </div>
     <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
@@ -126,7 +132,7 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
             {INDICADORES_MENSAL.map(i => <Button key={i.id} variant="ghost" aria-pressed={indicador === i.id} onClick={() => setIndicador(i.id)} className={`h-7 rounded-full px-3 text-xs ${indicador === i.id ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "text-foreground/70"}`}>{i.rotulo}</Button>)}
           </div>
           <div aria-label="Identificação da operadora" className="ml-auto flex min-w-0 flex-col items-end text-right text-xs">
-            <strong className="break-words">{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} · {atual?.modalidade.toLowerCase()}</span></strong>
+            <strong className="break-words">{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} {atual?.modalidade ? ` · ${atual.modalidade.toLowerCase()}` : ""}</span></strong>
             <span className="text-muted-foreground">ANS mensal · {competenciaMensal(catalogo.inicio)}–{competenciaMensal(catalogo.fim)}</span>
           </div>
         </div>
