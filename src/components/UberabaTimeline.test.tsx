@@ -15,4 +15,15 @@ describe("Project study selection", () => {
     expect(screen.getByRole("button", { name: "Home" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("region", { name: "Home do Estudo" })).toBeVisible();
   });
+
+  it("starts expanded, collapses after choosing a stage and expands again from the icon", () => {
+    render(<TooltipProvider><UberabaTimeline /></TooltipProvider>);
+    expect(screen.getByRole("button", { name: "1 Estudo" })).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "3 Modelo de Atuação" }));
+    expect(screen.queryByRole("button", { name: "1 Estudo" })).toBeNull();
+    expect(screen.getByRole("article", { name: "Modelo de Atuação do Bensaúde|Uberaba" })).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Expandir etapas" }));
+    expect(screen.getByRole("button", { name: "1 Estudo" })).toBeVisible();
+    expect(screen.getByRole("article", { name: "Modelo de Atuação do Bensaúde|Uberaba" })).toBeVisible();
+  });
 });
