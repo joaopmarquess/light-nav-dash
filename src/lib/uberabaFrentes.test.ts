@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { COMERCIAL_UBERABA, REDE_UBERABA } from "./uberabaFrentes";
-import { RESUMO_CREDENCIAMENTO } from "./uberabaCredenciamento";
 
 describe("Modelo de Atuação fronts", () => {
   it("organizes Comercial into Forças de Vendas and Produtos with the supplied items", () => {
@@ -19,8 +18,14 @@ describe("Modelo de Atuação fronts", () => {
     expect(COMERCIAL_UBERABA.destaque_itens.join(" • ")).toBe("Presença local em Uberaba • Apoio SDR em Rio Preto • Agentes autorizados • Portfólio direcionado");
   });
 
-  it("uses the credentialing totals for the network indicators", () => {
-    expect(REDE_UBERABA.indicadores?.[1]).toBe(`${RESUMO_CREDENCIAMENTO.quantidade} REFERÊNCIAS`);
-    expect(REDE_UBERABA.etapas[0].etapa_descricao).toContain("229 referências");
+  it("organizes Rede Assistencial under Gestão de Rede with the supplied teams", () => {
+    const [gestao] = REDE_UBERABA.grupos;
+    expect(REDE_UBERABA.grupos).toHaveLength(1);
+    expect(gestao.titulo).toBe("Gestão de Rede");
+    expect(gestao.itens.map((i) => i.titulo)).toEqual(["Captação", "Manutenção e Relacionamento", "Gestão de Sinistros"]);
+    expect(gestao.itens[0]).toMatchObject({ rotulo: "Equipe", subitens: ["Equipe da Siga Soluções com apoio de Dr. Adeir"] });
+    expect(gestao.itens[1]).toMatchObject({ rotulo: "Equipe", subitens: ["O Farmer em Uberaba terá esta função acessória na manutenção da rede", "Equipe da Siga Soluções"] });
+    expect(gestao.itens[2].rotulo).toBe("Dr. Adeir");
+    expect(gestao.itens[2].subitens).toBeUndefined();
   });
 });
