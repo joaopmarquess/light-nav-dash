@@ -16,7 +16,7 @@ const TABS: { id: Tab; label: string; icon: typeof Building2 }[] = [
   { id: "hospitais", label: "Uberaba Hospitais", icon: Hospital },
 ];
 
-const UberabaShell = ({ embedded = false, extraTabs = [] }: { embedded?: boolean; extraTabs?: PainelExtraTab[] }) => {
+const UberabaShell = ({ embedded = false, extraTabs = [], subNavTarget }: { embedded?: boolean; extraTabs?: PainelExtraTab[]; subNavTarget?: HTMLElement | null }) => {
   const [tab, setTab] = useState<Tab | string>("ops");
   const extra = extraTabs.find((t) => t.id === tab);
   const tabs: { id: string; label: string; icon: typeof Building2; title?: string }[] = [...TABS, ...extraTabs];
@@ -29,7 +29,7 @@ const UberabaShell = ({ embedded = false, extraTabs = [] }: { embedded?: boolean
 
   return (
     <div className="flex h-full flex-col gap-3">
-      {embedded ? <EstudoSubNav itens={tabs} ativo={tab} onSelect={setTab} label="Seções do Painel" /> : (
+      {embedded ? <EstudoSubNav itens={tabs} ativo={tab} onSelect={setTab} label="Seções do Painel" target={subNavTarget} /> : (
       <div className="flex flex-wrap gap-2">
         {tabs.map((t) => {
           const Icon = t.icon;
