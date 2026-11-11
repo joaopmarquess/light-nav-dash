@@ -82,7 +82,7 @@ const UberabaTimeline = () => {
                   <button
                     type="button"
                     disabled={!clicavel}
-                    onClick={() => setAberta(on ? null : e.nome)}
+                    onClick={() => { setAberta(on ? null : e.nome); setGuiasAberta(false); }}
                     className={`flex flex-col items-center gap-3 ${clicavel ? "cursor-pointer" : "cursor-default"}`}
                   >
                     <span
