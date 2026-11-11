@@ -21,5 +21,5 @@
 - [x] Mensal usa a mesma lista de operadoras do Trimestral.
 - [x] Enviar e liberar as 224 operadoras de SP e MG (811 de 1.052 liberadas).
 - [x] Termômetro de envio e botão Atualizar base na tela Mensal.
-- [ ] Enviar as 241 operadoras de outros estados (aguarda pedido do Dênis).
+- [x] Enviar as 241 operadoras de outros estados (1.052 de 1.052 liberadas).
 - [x] Atalhos Bench Vidas e Bench Contábil na Home.
