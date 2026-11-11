@@ -8,7 +8,7 @@ import UberabaFormalizacao from "@/components/UberabaFormalizacao";
 import UberabaImplantacao from "@/components/UberabaImplantacao";
 import UberabaOperacaoIniciada from "@/components/UberabaOperacaoIniciada";
 import UberabaGuias from "@/components/UberabaGuias";
-import { CalendarDays, FileCheck2 } from "lucide-react";
+import { CalendarDays, ChevronDown, ChevronUp, FileCheck2 } from "lucide-react";
 import UberabaCronograma from "@/components/UberabaCronograma";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
@@ -35,6 +35,7 @@ const UberabaTimeline = () => {
   const [aberta, setAberta] = useState<string | null>("Estudo");
   const [mostrarDatas, setMostrarDatas] = useState(false);
   const [guiasAberta, setGuiasAberta] = useState(false);
+  const [etapasExpandidas, setEtapasExpandidas] = useState(true);
   const atual = ETAPAS.find((e) => e.nome === aberta);
   const permiteRolagem = ["Estudo", "Plano de Marketing"].includes(aberta ?? "");
   const apresentacaoPropria = ["Hospital Mário Palmério", "Operação Iniciada"].includes(aberta ?? "") || (["Plano de Marketing", "Formalização", "Modelo de Atuação", "Implantação"].includes(aberta ?? ""));
@@ -60,7 +61,7 @@ const UberabaTimeline = () => {
           <h1 className="text-lg font-semibold text-foreground">Projeto Bensaúde|Uberaba</h1>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size="icon" variant={mostrarDatas ? "default" : "outline"} aria-label={mostrarDatas ? "Ocultar datas planejadas" : "Mostrar datas planejadas"} aria-pressed={mostrarDatas} onClick={() => setMostrarDatas(!mostrarDatas)}>
+              <Button size="icon" variant={mostrarDatas ? "default" : "outline"} aria-label={mostrarDatas ? "Ocultar datas planejadas" : "Mostrar datas planejadas"} aria-pressed={mostrarDatas} onClick={() => { if (!mostrarDatas) setEtapasExpandidas(true); setMostrarDatas(!mostrarDatas); }}>
                 <CalendarDays className="h-5 w-5" />
               </Button>
             </TooltipTrigger>
@@ -70,7 +71,34 @@ const UberabaTimeline = () => {
         </div>
         <div className="ml-auto shrink-0"><UberabaPresentationPdfButton iconOnly /></div>
       </div>
-      <div className="shrink-0 overflow-x-auto rounded-lg border border-border bg-card px-8 py-4">
+      {!etapasExpandidas && (
+        <div className="flex shrink-0 items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-2" aria-label="Etapas do projeto recolhidas">
+          <div className="flex min-w-0 items-center gap-3">
+            {atual && <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">{ETAPAS.indexOf(atual) + 1}</span>}
+            <span className="truncate text-sm font-medium text-foreground">{atual ? atual.nome : "Etapas do projeto"}</span>
+            <span className="hidden text-xs text-muted-foreground sm:inline">· Etapa {atual ? ETAPAS.indexOf(atual) + 1 : "-"} de {ETAPAS.length}</span>
+          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="icon" variant="outline" className="h-8 w-8" aria-label="Expandir etapas" aria-expanded={false} onClick={() => setEtapasExpandidas(true)}>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Expandir etapas</TooltipContent>
+          </Tooltip>
+        </div>
+      )}
+      {etapasExpandidas && <div className="relative shrink-0 overflow-x-auto rounded-lg border border-border bg-card px-8 py-4">
+        {atual && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="icon" variant="ghost" className="absolute right-2 top-2 z-10 h-7 w-7" aria-label="Recolher etapas" aria-expanded={true} onClick={() => setEtapasExpandidas(false)}>
+                <ChevronUp className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Recolher etapas</TooltipContent>
+          </Tooltip>
+        )}
         <div className="relative min-w-[840px] md:min-w-0">
           <div className="absolute left-[7.14%] right-[7.14%] top-5 h-0.5 bg-border" />
           <ol className="relative grid grid-cols-7 gap-4">
@@ -82,7 +110,7 @@ const UberabaTimeline = () => {
                   <button
                     type="button"
                     disabled={!clicavel}
-                    onClick={() => { setAberta(on ? null : e.nome); setGuiasAberta(false); }}
+                    onClick={() => { setAberta(on ? null : e.nome); setGuiasAberta(false); if (!on) setEtapasExpandidas(false); }}
                     className={`flex flex-col items-center gap-3 ${clicavel ? "cursor-pointer" : "cursor-default"}`}
                   >
                     <span
@@ -102,9 +130,9 @@ const UberabaTimeline = () => {
           </ol>
           {mostrarDatas && <UberabaCronograma />}
         </div>
-      </div>
+      </div>}
 
-      {(atual?.filhos || atual?.texto || atual?.conteudo) && (
+      {etapasExpandidas && (atual?.filhos || atual?.texto || atual?.conteudo) && (
         <div className="-my-6 grid grid-cols-7 gap-4 px-8">
           <div
             className="flex justify-center"
