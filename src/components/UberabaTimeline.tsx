@@ -38,16 +38,15 @@ const ETAPAS: Etapa[] = [
 const HOME = "Home";
 
 const FRENTES = [
-  { nome: "Comercial", texto: "PCA Adm., PCE Adm. e PCE 100+", cor: "comercial", icone: Tags },
-  { nome: "Rede Assistencial", texto: "Referências médicas, diagnóstico e terapia e profissionais não médicos", cor: "rede", icone: Stethoscope },
-  { nome: "Guias", texto: "Carteirinha virtual, autorização online, auditoria remota e atendimento digital", cor: "guias", icone: FileCheck2 },
+  { nome: "Comercial", icone: Tags },
+  { nome: "Rede Assistencial", icone: Stethoscope },
+  { nome: "Guias", icone: FileCheck2 },
 ] as const;
 
 const UberabaTimeline = () => {
   const [aberta, setAberta] = useState<string | null>(HOME);
   const [mostrarDatas, setMostrarDatas] = useState(false);
   const [frente, setFrente] = useState<(typeof FRENTES)[number]["nome"]>(FRENTES[0].nome);
-  const setGuiasAberta = (aberto: boolean) => setFrente(aberto ? "Guias" : FRENTES[0].nome);
   const atual = ETAPAS.find((e) => e.nome === aberta);
   const permiteRolagem = ["Estudo", "Plano de Marketing"].includes(aberta ?? "");
   const apresentacaoPropria = ["Hospital Mário Palmério", "Operação Iniciada"].includes(aberta ?? "") || (["Plano de Marketing", "Formalização", "Modelo de Atuação", "Implantação"].includes(aberta ?? ""));
@@ -82,14 +81,14 @@ const UberabaTimeline = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="min-w-[280px]">
             <DropdownMenuLabel>Etapas do projeto</DropdownMenuLabel>
-            <DropdownMenuItem onSelect={() => { setAberta(HOME); setGuiasAberta(false); }} className={aberta === HOME ? "bg-accent text-primary" : undefined} aria-current={aberta === HOME ? "step" : undefined}>
+            <DropdownMenuItem onSelect={() => { setAberta(HOME); setFrente(FRENTES[0].nome); }} className={aberta === HOME ? "bg-accent text-primary" : undefined} aria-current={aberta === HOME ? "step" : undefined}>
               <span className={`mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-primary text-xs font-semibold ${aberta === HOME ? "bg-primary text-primary-foreground" : "bg-background text-primary"}`}>0</span>
               {HOME}
             </DropdownMenuItem>
             {ETAPAS.map((e, i) => {
               const on = aberta === e.nome;
               return (
-                <DropdownMenuItem key={e.nome} onSelect={() => { setAberta(e.nome); setGuiasAberta(false); }} className={on ? "bg-accent text-primary" : undefined} aria-current={on ? "step" : undefined}>
+                <DropdownMenuItem key={e.nome} onSelect={() => { setAberta(e.nome); setFrente(FRENTES[0].nome); }} className={on ? "bg-accent text-primary" : undefined} aria-current={on ? "step" : undefined}>
                   <span className={`mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-primary text-xs font-semibold ${on ? "bg-primary text-primary-foreground" : "bg-background text-primary"}`}>{i + 1}</span>
                   {e.nome}
                 </DropdownMenuItem>
@@ -123,7 +122,7 @@ const UberabaTimeline = () => {
                   <button
                     type="button"
                     disabled={!clicavel}
-                    onClick={() => { setAberta(e.nome); setGuiasAberta(false); }}
+                    onClick={() => { setAberta(e.nome); setFrente(FRENTES[0].nome); }}
                     className={`flex flex-col items-center gap-3 ${clicavel ? "cursor-pointer" : "cursor-default"}`}
                   >
                     <span
