@@ -32,4 +32,17 @@ describe("Project stage navigation", () => {
     expect(screen.getByRole("article", { name: "Modelo de Atuação do Bensaúde|Uberaba" })).toBeVisible();
     expect(screen.queryByRole("region", { name: "Home do projeto" })).toBeNull();
   });
+  it("switches the Modelo de Atuação fronts through the horizontal menu", () => {
+    render(<TooltipProvider><UberabaTimeline /></TooltipProvider>);
+    abrirMenu();
+    fireEvent.click(screen.getByRole("menuitem", { name: /Modelo de Atuação/ }));
+    const menu = screen.getByRole("group", { name: "Frentes do Modelo de Atuação" });
+    expect(menu).toBeVisible();
+    expect(screen.getByRole("button", { name: "Comercial" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("region", { name: "Comercial" })).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Guias" }));
+    expect(screen.getByRole("button", { name: "Guias" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("heading", { name: "Guias" })).toBeVisible();
+    expect(screen.queryByRole("region", { name: "Comercial" })).toBeNull();
+  });
 });
