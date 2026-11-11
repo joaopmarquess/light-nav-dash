@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { ChevronRight, Download, Search, TrendingDown, UserCheck, UserPlus, Users, X } from "lucide-react";
+import { ChevronRight, Download, Plus, Search, TrendingDown, UserCheck, UserPlus, Users, X } from "lucide-react";
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip as Dica, XAxis, YAxis } from "recharts";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,10 @@ import { carregarVidasMensal } from "@/lib/benchVidasMensalDados";
 const catalogo = catalogoJson as unknown as CatalogoMensal & { inicio: string; fim: string; competencias: string[]; origem: string; operadoras: { reg: string; razaoSocial: string; modalidade: string }[] };
 const COMPETENCIAS = catalogo.competencias.map(Number);
 const CURTOS: Record<string, string> = { "366561": "Bensaúde", "327417": "Austaclínicas", "350249": "H.B. Saúde", "335100": "Unimed Rio Preto" };
-const OPERADORAS = catalogo.operadoras.map(o => ({ ...o, nome: nomeOperadoraAns(CURTOS[o.reg] ?? o.razaoSocial) }))
-  .sort((a, b) => (a.reg === "366561" ? -1 : b.reg === "366561" ? 1 : a.nome.localeCompare(b.nome, "pt-BR")));
+const FIXA = "366561";
+const OPERADORAS = catalogo.operadoras.map(o => ({ ...o, nome: nomeOperadoraAns(CURTOS[o.reg] ?? o.razaoSocial) })).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+const POR_REG = new Map(OPERADORAS.map(o => [o.reg, o]));
+const INICIAIS = ["366561", "327417", "350249", "335100"].filter(r => POR_REG.has(r));
 const nf = (v: number | null) => v === null ? "—" : v.toLocaleString("pt-BR");
 const sinal = (v: number | null) => v === null ? "—" : `${v > 0 ? "+" : ""}${v.toLocaleString("pt-BR")}`;
 const rotuloCampo = (c: CampoMensal) => CAMPOS_MENSAL.find(x => x.id === c)?.rotulo ?? c;
@@ -53,7 +55,13 @@ function FiltroBusca({ campo, valor, alterar, disponiveis }: { campo: CampoMensa
 
 export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }) {
   const padrao = periodoPadrao(COMPETENCIAS);
-  const [operadora, setOperadora] = useState("366561");
+  const [operadora, setOperadora] = useState(FIXA);
+  const [selecionadas, setSelecionadas] = useState(INICIAIS);
+  const [opsAberto, setOpsAberto] = useState(false); const [busca, setBusca] = useState("");
+  const opcoesOps = useMemo(() => {
+    const termo = busca.trim().toLocaleLowerCase("pt-BR");
+    return OPERADORAS.filter(o => !selecionadas.includes(o.reg) && (!termo || o.reg.includes(termo) || o.nome.toLocaleLowerCase("pt-BR").includes(termo) || o.razaoSocial.toLocaleLowerCase("pt-BR").includes(termo))).slice(0, 100);
+  }, [busca, selecionadas]);
   const [de, setDe] = useState(padrao.de); const [ate, setAte] = useState(padrao.ate);
   const [indicador, setIndicador] = useState<IndicadorMensal>("ativos");
   const [detalhar, setDetalhar] = useState<CampoMensal>("contratacao");
@@ -72,7 +80,7 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
   const resultado = useMemo(() => agregarMensal(linhas, cubo, catalogo, { de, ate, detalhar, filtros }), [linhas, cubo, de, ate, detalhar, filtros]);
   const resumo = resumoMensal(resultado.total, resultado.competencias);
   const compativeis = useMemo(() => new Set(camposCompativeis(detalhar, filtros)), [detalhar, filtros]);
-  const atual = OPERADORAS.find(o => o.reg === operadora);
+  const atual = POR_REG.get(operadora);
   // Valores existentes na operadora e no período carregado, para listar só o que aparece nos dados.
   const presentes = useMemo(() => {
     const memo = new Map<CampoMensal, Set<number>>();
@@ -99,9 +107,13 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
   return <div className="bench-vidas flex h-full min-h-0 flex-col gap-3">
     <div className="flex shrink-0 flex-wrap items-center justify-center gap-2">
       {navegacao}
-      <div aria-label="Operadoras" className="flex max-w-full flex-wrap items-center justify-center gap-1 rounded-lg border border-border bg-card p-1.5 shadow-sm sm:rounded-full">
+      <div aria-label="Operadoras" className="flex max-h-44 max-w-full flex-wrap items-center justify-center gap-1 overflow-y-auto rounded-lg border border-border bg-card p-1.5 shadow-sm sm:max-h-none sm:rounded-full">
         <span className="px-3 text-sm font-semibold">Operadoras</span>
-        {OPERADORAS.map(o => <Button key={o.reg} variant="ghost" aria-pressed={operadora === o.reg} title={`${o.razaoSocial} · ANS ${o.reg}`} onClick={() => setOperadora(o.reg)} className={`h-8 rounded-full text-sm ${operadora === o.reg ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "bg-muted"}`}>{o.nome}</Button>)}
+        {selecionadas.map(reg => { const o = POR_REG.get(reg); if (!o) return null; return <div key={reg} className="flex items-center gap-0.5">
+          <Button variant="ghost" aria-pressed={operadora === reg} title={`${o.razaoSocial} · ANS ${reg}`} onClick={() => setOperadora(reg)} className={`h-auto min-h-8 max-w-72 whitespace-normal rounded-full text-sm ${operadora === reg ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "bg-muted"}`}>{o.nome}</Button>
+          {reg !== FIXA && <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" title={`Retirar ${o.nome}`} aria-label={`Retirar ${o.nome}`} onClick={() => { setSelecionadas(l => l.filter(r => r !== reg)); if (operadora === reg) setOperadora(FIXA); }}><X className="h-3 w-3" /></Button>}
+        </div>; })}
+        <Popover open={opsAberto} onOpenChange={setOpsAberto}><PopoverTrigger asChild><Button variant="ghost" className="h-8 gap-1 rounded-full"><Plus className="h-4 w-4" />Incluir OPS</Button></PopoverTrigger><PopoverContent className="w-80 max-w-[calc(100vw-2rem)] p-2"><Input autoFocus aria-label="Buscar operadora" placeholder="Buscar por nome ou registro ANS" value={busca} onChange={e => setBusca(e.target.value)} /><div className="mt-2 max-h-60 overflow-auto">{opcoesOps.map(o => <Button key={o.reg} variant="ghost" className="h-auto w-full justify-start whitespace-normal text-left" onClick={() => { setSelecionadas(l => [...l, o.reg]); setOperadora(o.reg); setOpsAberto(false); setBusca(""); }}>{o.nome} · {o.reg}</Button>)}{!opcoesOps.length && <p className="p-2 text-sm text-muted-foreground">Nenhuma operadora disponível.</p>}</div></PopoverContent></Popover>
       </div>
     </div>
     <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
