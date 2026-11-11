@@ -1,0 +1,3821 @@
+{
+"origem": "https://dadosabertos.ans.gov.br/FTP/PDA/informacoes_consolidadas_de_beneficiarios-024/",
+"arquivos": [
+{
+"arquivo": "pda-024-icb-AC-2021_05.zip",
+"competencia": "202105",
+"sha256": "2d60a3db146bbd56177b9cb3008c86e15bca5fc0479e8a392f3a4d42e30a5e9b",
+"linhas_fonte": 17661,
+"linhas_operadoras": 98,
+"ativos_operadoras": 142
+},
+{
+"arquivo": "pda-024-icb-AL-2021_05.zip",
+"competencia": "202105",
+"sha256": "6cfa3fc96ec28b68fec45445752b9f1f5ac01622869b0cd3b294f7ee764c2f0c",
+"linhas_fonte": 122123,
+"linhas_operadoras": 109,
+"ativos_operadoras": 131
+},
+{
+"arquivo": "pda-024-icb-AM-2021_05.zip",
+"competencia": "202105",
+"sha256": "bae1a1d54ed14550fb7e218a250aae14ef80ff8825be3f7feff134a97e20e7e0",
+"linhas_fonte": 62014,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-AP-2021_05.zip",
+"competencia": "202105",
+"sha256": "05f56f20a05a3e762ed14f1cab3bc2b206297b8de9797b6b901b8c6816bf5f15",
+"linhas_fonte": 23320,
+"linhas_operadoras": 12,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-BA-2021_05.zip",
+"competencia": "202105",
+"sha256": "4c18b45c5defddc373a785fa329e5df1f6c68d41c9c3daf2b78956e2a75e3531",
+"linhas_fonte": 568572,
+"linhas_operadoras": 265,
+"ativos_operadoras": 283
+},
+{
+"arquivo": "pda-024-icb-CE-2021_05.zip",
+"competencia": "202105",
+"sha256": "76d4787ad287b71cd78db1d3e28a3c432e1798e745d4f4e492beeec45bc9fa4e",
+"linhas_fonte": 298542,
+"linhas_operadoras": 202,
+"ativos_operadoras": 234
+},
+{
+"arquivo": "pda-024-icb-DF-2021_05.zip",
+"competencia": "202105",
+"sha256": "550f909d37386f09ec70349b78fd969def2fceb4d403f26f8e77886a12a4003e",
+"linhas_fonte": 105830,
+"linhas_operadoras": 281,
+"ativos_operadoras": 887
+},
+{
+"arquivo": "pda-024-icb-ES-2021_05.zip",
+"competencia": "202105",
+"sha256": "65b780312edf448461fca6a8e3a0603700fa79bf3d45b8f484d4275a7f2a7f4e",
+"linhas_fonte": 361068,
+"linhas_operadoras": 753,
+"ativos_operadoras": 3304
+},
+{
+"arquivo": "pda-024-icb-GO-2021_05.zip",
+"competencia": "202105",
+"sha256": "aa8e4212421d53fb3376e85154c0b922cb7f9aed1647e9e4327d611c94b5bb59",
+"linhas_fonte": 440879,
+"linhas_operadoras": 1148,
+"ativos_operadoras": 1577
+},
+{
+"arquivo": "pda-024-icb-MA-2021_05.zip",
+"competencia": "202105",
+"sha256": "c69437e1cf5d3a8d52847da0c9eae0e914b7d5698018e96ebd03da03726305a3",
+"linhas_fonte": 156303,
+"linhas_operadoras": 95,
+"ativos_operadoras": 134
+},
+{
+"arquivo": "pda-024-icb-MG-2021_05.zip",
+"competencia": "202105",
+"sha256": "656f8b0b68cd046e1c7c2b0a383daad7b49467a3ca648535b9c4a673b99a3ee3",
+"linhas_fonte": 1535215,
+"linhas_operadoras": 9579,
+"ativos_operadoras": 30447
+},
+{
+"arquivo": "pda-024-icb-MS-2021_05.zip",
+"competencia": "202105",
+"sha256": "6e316f15a7e93eaae5b4095272010c97b95bf800be5a2c6ae53767f6168ff50a",
+"linhas_fonte": 161396,
+"linhas_operadoras": 4444,
+"ativos_operadoras": 12164
+},
+{
+"arquivo": "pda-024-icb-MT-2021_05.zip",
+"competencia": "202105",
+"sha256": "8b4c282b3c344128996a5be1105eb7d909abe92ca7bb70f13afff67af619d921",
+"linhas_fonte": 214416,
+"linhas_operadoras": 1025,
+"ativos_operadoras": 1630
+},
+{
+"arquivo": "pda-024-icb-PA-2021_05.zip",
+"competencia": "202105",
+"sha256": "f8d75f74321623f7b39e70b759dc3f7e2790c34c3df946417db606ab478c4dfd",
+"linhas_fonte": 206640,
+"linhas_operadoras": 292,
+"ativos_operadoras": 436
+},
+{
+"arquivo": "pda-024-icb-PB-2021_05.zip",
+"competencia": "202105",
+"sha256": "d0cf4628513d77faa145498e48bf2711eb8aafb1a2f3d9307f8c2ed58a60a46b",
+"linhas_fonte": 155972,
+"linhas_operadoras": 279,
+"ativos_operadoras": 426
+},
+{
+"arquivo": "pda-024-icb-PE-2021_05.zip",
+"competencia": "202105",
+"sha256": "5c8553711b188f3a71ed63b9b2eff29aa46a39d7cd26bc9310a445eb5aa4fa4f",
+"linhas_fonte": 427517,
+"linhas_operadoras": 468,
+"ativos_operadoras": 657
+},
+{
+"arquivo": "pda-024-icb-PI-2021_05.zip",
+"competencia": "202105",
+"sha256": "fef774e58b46ee26a7e866d01dcb914c6092b7caee863d50e001c9cfa47e982d",
+"linhas_fonte": 95009,
+"linhas_operadoras": 16,
+"ativos_operadoras": 17
+},
+{
+"arquivo": "pda-024-icb-PR-2021_05.zip",
+"competencia": "202105",
+"sha256": "4600286ee67263cd322651d46d8ef706ae5939faf5337d0285bb302509792b07",
+"linhas_fonte": 892376,
+"linhas_operadoras": 566,
+"ativos_operadoras": 609
+},
+{
+"arquivo": "pda-024-icb-RJ-2021_05.zip",
+"competencia": "202105",
+"sha256": "50b1661821aa2d6a1de15a812c609869ca7d645d8c3b319ca14e506e06f81854",
+"linhas_fonte": 1139527,
+"linhas_operadoras": 1807,
+"ativos_operadoras": 5367
+},
+{
+"arquivo": "pda-024-icb-RN-2021_05.zip",
+"competencia": "202105",
+"sha256": "1f4019a77e353dd44711fbe2d05abc37e10d1f5346fbe4428031a68d980d968e",
+"linhas_fonte": 187247,
+"linhas_operadoras": 101,
+"ativos_operadoras": 109
+},
+{
+"arquivo": "pda-024-icb-RO-2021_05.zip",
+"competencia": "202105",
+"sha256": "dcc9421865fe7f2bf8c43349444b2c0caab54f0f0d5621bc8ef3a6bee3ebd1f6",
+"linhas_fonte": 74253,
+"linhas_operadoras": 379,
+"ativos_operadoras": 581
+},
+{
+"arquivo": "pda-024-icb-RR-2021_05.zip",
+"competencia": "202105",
+"sha256": "634643c54e27b9048fff4dd21ef1fb56469fde020fd15c01e88ccc5cf7138976",
+"linhas_fonte": 10370,
+"linhas_operadoras": 79,
+"ativos_operadoras": 162
+},
+{
+"arquivo": "pda-024-icb-RS-2021_05.zip",
+"competencia": "202105",
+"sha256": "41d1fb6993edbaecd4afd166169e11dac1f6057a06b515e4399f617ecf83e49f",
+"linhas_fonte": 783994,
+"linhas_operadoras": 1076,
+"ativos_operadoras": 1726
+},
+{
+"arquivo": "pda-024-icb-SC-2021_05.zip",
+"competencia": "202105",
+"sha256": "41cd5cc38ae484029c4994de4d46be05798049578f6d0a1036bf9e6d67eca4e0",
+"linhas_fonte": 581125,
+"linhas_operadoras": 846,
+"ativos_operadoras": 1079
+},
+{
+"arquivo": "pda-024-icb-SE-2021_05.zip",
+"competencia": "202105",
+"sha256": "d2c17774ba1abf6aa10555293915447118df4c160010ed16c1f3636f425a1261",
+"linhas_fonte": 102732,
+"linhas_operadoras": 34,
+"ativos_operadoras": 37
+},
+{
+"arquivo": "pda-024-icb-SP-2021_05.zip",
+"competencia": "202105",
+"sha256": "c2746de6396869dfe9c35ae60074ff81ffaa47abf3449c1ed6e4bc8efaa81c89",
+"linhas_fonte": 4212406,
+"linhas_operadoras": 115674,
+"ativos_operadoras": 405082
+},
+{
+"arquivo": "pda-024-icb-TO-2021_05.zip",
+"competencia": "202105",
+"sha256": "0873df528ce3b36f83f64ea15eceaa05a23090698b0d3a0a3ac83f3a9237cd84",
+"linhas_fonte": 66371,
+"linhas_operadoras": 503,
+"ativos_operadoras": 777
+},
+{
+"arquivo": "pda-024-icb-XX-2021_05.zip",
+"competencia": "202105",
+"sha256": "93bd7d955d6260f1e97ff14a7b2e37a7cc616a75b824f59ba44b13d96205023c",
+"linhas_fonte": 12625,
+"linhas_operadoras": 0,
+"ativos_operadoras": 0
+},
+{
+"arquivo": "pda-024-icb-AC-2021_06.zip",
+"competencia": "202106",
+"sha256": "354825ac6b7e592eb85e7ca85e3d1f7ae52976ad1e6deef98110d1ad938ac593",
+"linhas_fonte": 17817,
+"linhas_operadoras": 99,
+"ativos_operadoras": 145
+},
+{
+"arquivo": "pda-024-icb-AL-2021_06.zip",
+"competencia": "202106",
+"sha256": "e050eb24c5f2aeeb048ca6b089293535538b96aa395660c5f406b6a60fae7a2f",
+"linhas_fonte": 123384,
+"linhas_operadoras": 109,
+"ativos_operadoras": 127
+},
+{
+"arquivo": "pda-024-icb-AM-2021_06.zip",
+"competencia": "202106",
+"sha256": "a4480de1d28f57b6107571fe9dd257b04f2bc84445fe732af8b267451fca289a",
+"linhas_fonte": 62061,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-AP-2021_06.zip",
+"competencia": "202106",
+"sha256": "4eca2538ff8f44c82d2adafd7f1d240ec43b71fa95fd56bcfc89fd590bff4235",
+"linhas_fonte": 23388,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-BA-2021_06.zip",
+"competencia": "202106",
+"sha256": "6fc47cb6fef41385abd83ad0546dcf8d19c6875630089f3763d1582c5b1633d4",
+"linhas_fonte": 573211,
+"linhas_operadoras": 270,
+"ativos_operadoras": 292
+},
+{
+"arquivo": "pda-024-icb-CE-2021_06.zip",
+"competencia": "202106",
+"sha256": "f792cd78ca62502b200921f6a10dd3d960cd1acfb0d51656f383b0df14feaed9",
+"linhas_fonte": 299322,
+"linhas_operadoras": 201,
+"ativos_operadoras": 234
+},
+{
+"arquivo": "pda-024-icb-DF-2021_06.zip",
+"competencia": "202106",
+"sha256": "5d0a5b6aead88bfa8b2007a13a15645c3de3151e16d1321158e01664a3c26b0d",
+"linhas_fonte": 106332,
+"linhas_operadoras": 279,
+"ativos_operadoras": 886
+},
+{
+"arquivo": "pda-024-icb-ES-2021_06.zip",
+"competencia": "202106",
+"sha256": "dc2c3231ea72547499e99b8f95d764b865b03e9b8188986a91e04927e5240904",
+"linhas_fonte": 362140,
+"linhas_operadoras": 748,
+"ativos_operadoras": 3373
+},
+{
+"arquivo": "pda-024-icb-GO-2021_06.zip",
+"competencia": "202106",
+"sha256": "39a2e07fcf7c616cd421c971dbf0f5a2ee75f1e108abc1eef6531a1730c4e9ee",
+"linhas_fonte": 441915,
+"linhas_operadoras": 1162,
+"ativos_operadoras": 1597
+},
+{
+"arquivo": "pda-024-icb-MA-2021_06.zip",
+"competencia": "202106",
+"sha256": "e3e50887606ac6fba2bde0cf61db093f4eb9c136e71ee39de4673b374c626de1",
+"linhas_fonte": 157804,
+"linhas_operadoras": 99,
+"ativos_operadoras": 138
+},
+{
+"arquivo": "pda-024-icb-MG-2021_06.zip",
+"competencia": "202106",
+"sha256": "2b5324cb5c7c52e06dec1e45e684584b1316f8f40d6ca4e3091e11e2ee81116e",
+"linhas_fonte": 1541039,
+"linhas_operadoras": 9519,
+"ativos_operadoras": 30515
+},
+{
+"arquivo": "pda-024-icb-MS-2021_06.zip",
+"competencia": "202106",
+"sha256": "e85543036fdd8e4e3878bc188d8c700d74a9b14acf9d487bbece44f4f21df6f1",
+"linhas_fonte": 161934,
+"linhas_operadoras": 4443,
+"ativos_operadoras": 12183
+},
+{
+"arquivo": "pda-024-icb-MT-2021_06.zip",
+"competencia": "202106",
+"sha256": "1e13ebaad0562d2fec3f65f1d889fd108e3bed9e091a2a64b7d61b7fa0e6b582",
+"linhas_fonte": 216065,
+"linhas_operadoras": 1030,
+"ativos_operadoras": 1654
+},
+{
+"arquivo": "pda-024-icb-PA-2021_06.zip",
+"competencia": "202106",
+"sha256": "f40affe80ce37befc19c2cc8bf577870ec4699841ff4f90c30b615e60cd0000c",
+"linhas_fonte": 207465,
+"linhas_operadoras": 288,
+"ativos_operadoras": 422
+},
+{
+"arquivo": "pda-024-icb-PB-2021_06.zip",
+"competencia": "202106",
+"sha256": "4b28324e039909ca9d506f3bd55fbd8fbb9dc29af84db198203ca0d1ed20df3d",
+"linhas_fonte": 157474,
+"linhas_operadoras": 267,
+"ativos_operadoras": 421
+},
+{
+"arquivo": "pda-024-icb-PE-2021_06.zip",
+"competencia": "202106",
+"sha256": "37800db75cb628981cfced40309b4300edaf1c2fb9e24dde00739a917da25c87",
+"linhas_fonte": 431096,
+"linhas_operadoras": 458,
+"ativos_operadoras": 645
+},
+{
+"arquivo": "pda-024-icb-PI-2021_06.zip",
+"competencia": "202106",
+"sha256": "74814103e24c5117b36be0ea952256a9d63cf3e04a01c24171e6f8f46369021f",
+"linhas_fonte": 95955,
+"linhas_operadoras": 17,
+"ativos_operadoras": 17
+},
+{
+"arquivo": "pda-024-icb-PR-2021_06.zip",
+"competencia": "202106",
+"sha256": "14eb0ddf738ec1f34941c826a465c57aa7c643fe9d892bbf3f0895b7227eb234",
+"linhas_fonte": 898381,
+"linhas_operadoras": 545,
+"ativos_operadoras": 608
+},
+{
+"arquivo": "pda-024-icb-RJ-2021_06.zip",
+"competencia": "202106",
+"sha256": "d4e0b60e4333276bb11ab4939e12f70159ca30e8e50660585966b705bb286d49",
+"linhas_fonte": 1141914,
+"linhas_operadoras": 1783,
+"ativos_operadoras": 5339
+},
+{
+"arquivo": "pda-024-icb-RN-2021_06.zip",
+"competencia": "202106",
+"sha256": "a9e0cfac08e0a7380fc1687f67fc455042c994921fcf45a4e2b89a45265ce163",
+"linhas_fonte": 189592,
+"linhas_operadoras": 100,
+"ativos_operadoras": 107
+},
+{
+"arquivo": "pda-024-icb-RO-2021_06.zip",
+"competencia": "202106",
+"sha256": "a504144bbb88e573bb9c7a6d54b8f4d988adec5b753f0452ecefdd1ff8d21218",
+"linhas_fonte": 74512,
+"linhas_operadoras": 377,
+"ativos_operadoras": 568
+},
+{
+"arquivo": "pda-024-icb-RR-2021_06.zip",
+"competencia": "202106",
+"sha256": "a5887638b5efed24c15c37eb4e04e0a3a2ff440c253da89b7345f3e9824b8aa2",
+"linhas_fonte": 10332,
+"linhas_operadoras": 80,
+"ativos_operadoras": 160
+},
+{
+"arquivo": "pda-024-icb-RS-2021_06.zip",
+"competencia": "202106",
+"sha256": "2a04a1d27ccccdfef1400ec6459829e854962b661788808685faa391f8419c3a",
+"linhas_fonte": 794704,
+"linhas_operadoras": 1054,
+"ativos_operadoras": 1712
+},
+{
+"arquivo": "pda-024-icb-SC-2021_06.zip",
+"competencia": "202106",
+"sha256": "e1d3b049e58ba8446f66dbe217eeb39d813eb028e3dfaa81f1dc8f015ed9ace8",
+"linhas_fonte": 589079,
+"linhas_operadoras": 838,
+"ativos_operadoras": 1072
+},
+{
+"arquivo": "pda-024-icb-SE-2021_06.zip",
+"competencia": "202106",
+"sha256": "26a7c33ae009901e7db3f1a0c08419f193a79a73515642a18552ec6361cb509b",
+"linhas_fonte": 104002,
+"linhas_operadoras": 33,
+"ativos_operadoras": 33
+},
+{
+"arquivo": "pda-024-icb-SP-2021_06.zip",
+"competencia": "202106",
+"sha256": "e4fb32d489485881a5acfb5e8f095cd6cb0c69d67eda87253d2c859f74b5af34",
+"linhas_fonte": 4236128,
+"linhas_operadoras": 115301,
+"ativos_operadoras": 407226
+},
+{
+"arquivo": "pda-024-icb-TO-2021_06.zip",
+"competencia": "202106",
+"sha256": "e8e95fe2df6963448a14a861556736460c810962dab9739792561d60ee412479",
+"linhas_fonte": 74116,
+"linhas_operadoras": 494,
+"ativos_operadoras": 772
+},
+{
+"arquivo": "pda-024-icb-XX-2021_06.zip",
+"competencia": "202106",
+"sha256": "a2b4cd957b86cc6e3beb6e4973a0a22e4679fe636ebaca1c7fb8b5897dcf9665",
+"linhas_fonte": 12559,
+"linhas_operadoras": 0,
+"ativos_operadoras": 0
+},
+{
+"arquivo": "pda-024-icb-AC-2021_07.zip",
+"competencia": "202107",
+"sha256": "b07a375293345d5465d4031118ac0981091836d56799241fcc33c91f19469d93",
+"linhas_fonte": 17968,
+"linhas_operadoras": 97,
+"ativos_operadoras": 145
+},
+{
+"arquivo": "pda-024-icb-AL-2021_07.zip",
+"competencia": "202107",
+"sha256": "e95b7f3976d89400657d933258e03067a15a1e92074a8e365e8f8ebd2ea9bb28",
+"linhas_fonte": 124002,
+"linhas_operadoras": 105,
+"ativos_operadoras": 123
+},
+{
+"arquivo": "pda-024-icb-AM-2021_07.zip",
+"competencia": "202107",
+"sha256": "fc7d777dc735c46fca83b21869b6b03a247a5bb6c5d0e5edea62ac1c4b1f3084",
+"linhas_fonte": 62490,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-AP-2021_07.zip",
+"competencia": "202107",
+"sha256": "1f2a0e4508351feddf056095fabf5f5b54d9151954f4d54b02431cddbfa25996",
+"linhas_fonte": 23466,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-BA-2021_07.zip",
+"competencia": "202107",
+"sha256": "7a27ebe485d19c466d98ff64c1c1e2ae9778bad6c0f749280ae2d5b3e0dfb17e",
+"linhas_fonte": 578620,
+"linhas_operadoras": 274,
+"ativos_operadoras": 297
+},
+{
+"arquivo": "pda-024-icb-CE-2021_07.zip",
+"competencia": "202107",
+"sha256": "b0108a5c455d6791e4fd8d396ef1dff6d89dbf90f5b70f13eb08f3b633bb9647",
+"linhas_fonte": 300714,
+"linhas_operadoras": 198,
+"ativos_operadoras": 232
+},
+{
+"arquivo": "pda-024-icb-DF-2021_07.zip",
+"competencia": "202107",
+"sha256": "49f1470be5d6cb002923340a7b4946ab196d951b4fb2633f5a644a589c94d6c2",
+"linhas_fonte": 106974,
+"linhas_operadoras": 281,
+"ativos_operadoras": 877
+},
+{
+"arquivo": "pda-024-icb-ES-2021_07.zip",
+"competencia": "202107",
+"sha256": "8517a66424993d552995eba5ebe1aebbe4dd37e12c8e457932ec55085b17b62f",
+"linhas_fonte": 363656,
+"linhas_operadoras": 720,
+"ativos_operadoras": 3429
+},
+{
+"arquivo": "pda-024-icb-GO-2021_07.zip",
+"competencia": "202107",
+"sha256": "b426dbce5bbed87030b5db75fe6132baccff5152ab315e6d7668d53fc9f7b449",
+"linhas_fonte": 444136,
+"linhas_operadoras": 1161,
+"ativos_operadoras": 1591
+},
+{
+"arquivo": "pda-024-icb-MA-2021_07.zip",
+"competencia": "202107",
+"sha256": "4d66038d0abaf6839add1e2d9f1442ef6e8f4f24a72056a47322fb24ccc8d49b",
+"linhas_fonte": 159093,
+"linhas_operadoras": 103,
+"ativos_operadoras": 142
+},
+{
+"arquivo": "pda-024-icb-MG-2021_07.zip",
+"competencia": "202107",
+"sha256": "e34f0845bf623b6df984fa17302ff0a6fdc4af3921a3922455cfbbd3f1b298c4",
+"linhas_fonte": 1554130,
+"linhas_operadoras": 9504,
+"ativos_operadoras": 30606
+},
+{
+"arquivo": "pda-024-icb-MS-2021_07.zip",
+"competencia": "202107",
+"sha256": "4f2778e63bd0ea69852eb93f9c377d364f7751b499e6d5aa3ebcd57e9c92feb9",
+"linhas_fonte": 162956,
+"linhas_operadoras": 4437,
+"ativos_operadoras": 12234
+},
+{
+"arquivo": "pda-024-icb-MT-2021_07.zip",
+"competencia": "202107",
+"sha256": "9d20dd08b1d2673354d1dfcdf4f927dbfc02b5ee635726519dd8c2f225e2b671",
+"linhas_fonte": 217311,
+"linhas_operadoras": 1026,
+"ativos_operadoras": 1648
+},
+{
+"arquivo": "pda-024-icb-PA-2021_07.zip",
+"competencia": "202107",
+"sha256": "333780113b06bfe6da3012c80beb53a142e65e8eb3a1167c7cf2230618bc6e8b",
+"linhas_fonte": 208985,
+"linhas_operadoras": 279,
+"ativos_operadoras": 429
+},
+{
+"arquivo": "pda-024-icb-PB-2021_07.zip",
+"competencia": "202107",
+"sha256": "bcbc52f844372bbbdf1d811b34242c77e90247948a03d2442d9a707451ea10c7",
+"linhas_fonte": 158744,
+"linhas_operadoras": 266,
+"ativos_operadoras": 412
+},
+{
+"arquivo": "pda-024-icb-PE-2021_07.zip",
+"competencia": "202107",
+"sha256": "fdd71f6288f10fbfd809cff657b8a13174857773feba8c84f3fe515eba28b7e6",
+"linhas_fonte": 434662,
+"linhas_operadoras": 451,
+"ativos_operadoras": 643
+},
+{
+"arquivo": "pda-024-icb-PI-2021_07.zip",
+"competencia": "202107",
+"sha256": "1edc9a2da5394f1db2543f3089c111ea1c94e9e1f867549c805a94ce7dd2bf37",
+"linhas_fonte": 96714,
+"linhas_operadoras": 20,
+"ativos_operadoras": 20
+},
+{
+"arquivo": "pda-024-icb-PR-2021_07.zip",
+"competencia": "202107",
+"sha256": "75839b3fbbf5e6dcd6c74c279aa81eabc3f2cfa1719ff3c7f2ccdcfe4b0a4df2",
+"linhas_fonte": 904592,
+"linhas_operadoras": 545,
+"ativos_operadoras": 612
+},
+{
+"arquivo": "pda-024-icb-RJ-2021_07.zip",
+"competencia": "202107",
+"sha256": "bc07a34f726329259cbf4dd1681f7c5d6a76f3706d60ea0e6250570894bb22b7",
+"linhas_fonte": 1149496,
+"linhas_operadoras": 1762,
+"ativos_operadoras": 5263
+},
+{
+"arquivo": "pda-024-icb-RN-2021_07.zip",
+"competencia": "202107",
+"sha256": "6528e29c30667e9c0abe6581c5e95a32f5f269bb6bcd2acf0f6878b6459ae6a1",
+"linhas_fonte": 191828,
+"linhas_operadoras": 99,
+"ativos_operadoras": 106
+},
+{
+"arquivo": "pda-024-icb-RO-2021_07.zip",
+"competencia": "202107",
+"sha256": "2cea43f8f8e8d3be9567e1016d0bd328c687cc6b73259a62d68207a440399fb5",
+"linhas_fonte": 74817,
+"linhas_operadoras": 371,
+"ativos_operadoras": 564
+},
+{
+"arquivo": "pda-024-icb-RR-2021_07.zip",
+"competencia": "202107",
+"sha256": "3d23716abfb9d68bf87015aa540cf5bd4f906ee11abb75acd8b135b52d68c0b1",
+"linhas_fonte": 10454,
+"linhas_operadoras": 81,
+"ativos_operadoras": 165
+},
+{
+"arquivo": "pda-024-icb-RS-2021_07.zip",
+"competencia": "202107",
+"sha256": "d8032f997f8c3dfa94707a6bf4c87d492c3f300bdd0d0dd28b64bb5104c6383a",
+"linhas_fonte": 794404,
+"linhas_operadoras": 1054,
+"ativos_operadoras": 1691
+},
+{
+"arquivo": "pda-024-icb-SC-2021_07.zip",
+"competencia": "202107",
+"sha256": "1ce06b28cd581e1fb91e79699445bb1240551e3944e105f4e373e1e08bc49775",
+"linhas_fonte": 591071,
+"linhas_operadoras": 840,
+"ativos_operadoras": 1067
+},
+{
+"arquivo": "pda-024-icb-SE-2021_07.zip",
+"competencia": "202107",
+"sha256": "7df8b078057ae81af15436c3495ae7775db1ea97ad658bfca8e468097439b4df",
+"linhas_fonte": 104809,
+"linhas_operadoras": 29,
+"ativos_operadoras": 33
+},
+{
+"arquivo": "pda-024-icb-SP-2021_07.zip",
+"competencia": "202107",
+"sha256": "6165f04f35ea0f31222819e8b831da9fc351d3053fcdbf9072a328346069c219",
+"linhas_fonte": 4259507,
+"linhas_operadoras": 115833,
+"ativos_operadoras": 409617
+},
+{
+"arquivo": "pda-024-icb-TO-2021_07.zip",
+"competencia": "202107",
+"sha256": "6ff9c93aea5498292f6f60410ccbc0bb7fc7e55a3eaeba704779ae8e8146fe5e",
+"linhas_fonte": 74415,
+"linhas_operadoras": 494,
+"ativos_operadoras": 770
+},
+{
+"arquivo": "pda-024-icb-XX-2021_07.zip",
+"competencia": "202107",
+"sha256": "c7152aa643c9f20d5aacc69fe7f24e543c855fd35fd8c7fa00ddece88d3d5763",
+"linhas_fonte": 12396,
+"linhas_operadoras": 0,
+"ativos_operadoras": 0
+},
+{
+"arquivo": "pda-024-icb-AC-2021_08.zip",
+"competencia": "202108",
+"sha256": "ee8528d2c4161de39623889c9dbc0d11e6f63fb7ceadd79cc115a1aa67e8b9c3",
+"linhas_fonte": 18122,
+"linhas_operadoras": 97,
+"ativos_operadoras": 147
+},
+{
+"arquivo": "pda-024-icb-AL-2021_08.zip",
+"competencia": "202108",
+"sha256": "22d9bc9887cb22b10a9fcb70b5f1d4b4e02c3be50194b0e2c0a28f1db92d8930",
+"linhas_fonte": 124531,
+"linhas_operadoras": 103,
+"ativos_operadoras": 124
+},
+{
+"arquivo": "pda-024-icb-AM-2021_08.zip",
+"competencia": "202108",
+"sha256": "d1de076e8338517f120ae5243a82d370878aaaa751e19d119dc92f904ddff3c5",
+"linhas_fonte": 63190,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-AP-2021_08.zip",
+"competencia": "202108",
+"sha256": "c2c74ff58bc392237f8b3179a2666cc612a58318c7a3930c1214b8415e772ee8",
+"linhas_fonte": 23628,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-BA-2021_08.zip",
+"competencia": "202108",
+"sha256": "6c6331f17524022296e6b1ca4ab1fd109bd95ed2b4092653be74acec0e1ddf7d",
+"linhas_fonte": 581016,
+"linhas_operadoras": 273,
+"ativos_operadoras": 293
+},
+{
+"arquivo": "pda-024-icb-CE-2021_08.zip",
+"competencia": "202108",
+"sha256": "8086b4d316d3b8b006532919d91009b7ed0e3f4399eca2dd3a9a8921cfb51b69",
+"linhas_fonte": 304267,
+"linhas_operadoras": 197,
+"ativos_operadoras": 230
+},
+{
+"arquivo": "pda-024-icb-DF-2021_08.zip",
+"competencia": "202108",
+"sha256": "1c3cdd0b3be735db49f194163c32e1ce9a9852be65dac790a071a5bacd80fdb3",
+"linhas_fonte": 107647,
+"linhas_operadoras": 275,
+"ativos_operadoras": 879
+},
+{
+"arquivo": "pda-024-icb-ES-2021_08.zip",
+"competencia": "202108",
+"sha256": "1923bb27a17fab9208550318a8ad5a38fb9a377c1cd16da2774902e756a51063",
+"linhas_fonte": 365013,
+"linhas_operadoras": 715,
+"ativos_operadoras": 3285
+},
+{
+"arquivo": "pda-024-icb-GO-2021_08.zip",
+"competencia": "202108",
+"sha256": "e8075216cca14e8e5df91e884da9f35ff6a9c0509f27803b3be1949723c26512",
+"linhas_fonte": 445756,
+"linhas_operadoras": 1173,
+"ativos_operadoras": 1620
+},
+{
+"arquivo": "pda-024-icb-MA-2021_08.zip",
+"competencia": "202108",
+"sha256": "799596ee9fdd1bffb2d8e6580a7a123cc49c1b27eca09ff1b1aca12a54505034",
+"linhas_fonte": 161725,
+"linhas_operadoras": 104,
+"ativos_operadoras": 144
+},
+{
+"arquivo": "pda-024-icb-MG-2021_08.zip",
+"competencia": "202108",
+"sha256": "85d37ede7c1a4745037a29c228df35fd82ef14d1f3a43db8597977dae6470750",
+"linhas_fonte": 1568331,
+"linhas_operadoras": 9536,
+"ativos_operadoras": 30910
+},
+{
+"arquivo": "pda-024-icb-MS-2021_08.zip",
+"competencia": "202108",
+"sha256": "be9589a94fb7e44c442325cd013ec24a3abaffb3f7509c1f3acae5fd6ed06909",
+"linhas_fonte": 163948,
+"linhas_operadoras": 4480,
+"ativos_operadoras": 12364
+},
+{
+"arquivo": "pda-024-icb-MT-2021_08.zip",
+"competencia": "202108",
+"sha256": "94837df91af31b7692496132e3c72574f19b220555ca5d84cda6e56fd5553109",
+"linhas_fonte": 218637,
+"linhas_operadoras": 1027,
+"ativos_operadoras": 1654
+},
+{
+"arquivo": "pda-024-icb-PA-2021_08.zip",
+"competencia": "202108",
+"sha256": "6645c554f53c010ae729e9f44809be674574ec2103cf1aa30a2b421f4c1346a1",
+"linhas_fonte": 211160,
+"linhas_operadoras": 281,
+"ativos_operadoras": 423
+},
+{
+"arquivo": "pda-024-icb-PB-2021_08.zip",
+"competencia": "202108",
+"sha256": "62af875c8d2c06d33adee13ec3a29ef92c8bba6244a1356260116a94f2437dbe",
+"linhas_fonte": 159676,
+"linhas_operadoras": 262,
+"ativos_operadoras": 409
+},
+{
+"arquivo": "pda-024-icb-PE-2021_08.zip",
+"competencia": "202108",
+"sha256": "6a68a5e1b6e5aca1e940170cc3ddec9e845467d0c9a310e36806e5ae0c8c5f6d",
+"linhas_fonte": 437683,
+"linhas_operadoras": 447,
+"ativos_operadoras": 639
+},
+{
+"arquivo": "pda-024-icb-PI-2021_08.zip",
+"competencia": "202108",
+"sha256": "a9b23f610d55d6f420b7f92a7a192dcff56bc21db9447702bc96404bc207ee82",
+"linhas_fonte": 98069,
+"linhas_operadoras": 32,
+"ativos_operadoras": 36
+},
+{
+"arquivo": "pda-024-icb-PR-2021_08.zip",
+"competencia": "202108",
+"sha256": "5b39461f8e81cf37399d37b893aab2179f531ceb3d21bfda0e14ef88aa61e198",
+"linhas_fonte": 908564,
+"linhas_operadoras": 546,
+"ativos_operadoras": 613
+},
+{
+"arquivo": "pda-024-icb-RJ-2021_08.zip",
+"competencia": "202108",
+"sha256": "efe3c2f4d9afa10f6242216ee0c375fa93bf18fcef36aab6728bea53d908906e",
+"linhas_fonte": 1153804,
+"linhas_operadoras": 1735,
+"ativos_operadoras": 5165
+},
+{
+"arquivo": "pda-024-icb-RN-2021_08.zip",
+"competencia": "202108",
+"sha256": "42e8917e7e61575815917a629a104c3e7b58a669b9711aae75cc465b5a2f38e1",
+"linhas_fonte": 193727,
+"linhas_operadoras": 98,
+"ativos_operadoras": 105
+},
+{
+"arquivo": "pda-024-icb-RO-2021_08.zip",
+"competencia": "202108",
+"sha256": "1ddc8846676053b592c5b7a0ac0243845d4adc2ec4a5c5c426a2ce17a33ba4bc",
+"linhas_fonte": 75082,
+"linhas_operadoras": 371,
+"ativos_operadoras": 557
+},
+{
+"arquivo": "pda-024-icb-RR-2021_08.zip",
+"competencia": "202108",
+"sha256": "e57cd2e4ec0dbc69fee14456d2605fbf5126f81ed3ff1a970660679f4ee1b454",
+"linhas_fonte": 10551,
+"linhas_operadoras": 81,
+"ativos_operadoras": 162
+},
+{
+"arquivo": "pda-024-icb-RS-2021_08.zip",
+"competencia": "202108",
+"sha256": "23991db1b404da6d0cc23365fe8fca7bb952af6ab34a59f705cea72f32ad180f",
+"linhas_fonte": 799750,
+"linhas_operadoras": 1034,
+"ativos_operadoras": 1665
+},
+{
+"arquivo": "pda-024-icb-SC-2021_08.zip",
+"competencia": "202108",
+"sha256": "759cf25839b4cf17b717b892b1f227cb46b82164cea6c1d12a6ddbcd4acf9cb0",
+"linhas_fonte": 597365,
+"linhas_operadoras": 835,
+"ativos_operadoras": 1053
+},
+{
+"arquivo": "pda-024-icb-SE-2021_08.zip",
+"competencia": "202108",
+"sha256": "a1b15b9469f674a61ad76250b8eb84e4e515e46485a6a97da7930c24e4969cb2",
+"linhas_fonte": 105607,
+"linhas_operadoras": 29,
+"ativos_operadoras": 33
+},
+{
+"arquivo": "pda-024-icb-SP-2021_08.zip",
+"competencia": "202108",
+"sha256": "4ad1d74865e263d27da022cc32b464d4956fc51ca3313a576c03a8026a69bbe3",
+"linhas_fonte": 4277975,
+"linhas_operadoras": 116071,
+"ativos_operadoras": 410873
+},
+{
+"arquivo": "pda-024-icb-TO-2021_08.zip",
+"competencia": "202108",
+"sha256": "9685402df9f2386578113f532c65a0a9f9c818961a28c1da8ed28fe1ede87f06",
+"linhas_fonte": 74956,
+"linhas_operadoras": 493,
+"ativos_operadoras": 768
+},
+{
+"arquivo": "pda-024-icb-XX-2021_08.zip",
+"competencia": "202108",
+"sha256": "575be29a776fc9d891e122b5a4a8288bb803210bd312264c67b5260294aa4f34",
+"linhas_fonte": 12343,
+"linhas_operadoras": 0,
+"ativos_operadoras": 0
+},
+{
+"arquivo": "pda-024-icb-AC-2021_09.zip",
+"competencia": "202109",
+"sha256": "a76cfde2a2ac6ad757ac13b62f0cca2c35d080d79ab0f88729bea007ac11ec87",
+"linhas_fonte": 18210,
+"linhas_operadoras": 97,
+"ativos_operadoras": 143
+},
+{
+"arquivo": "pda-024-icb-AL-2021_09.zip",
+"competencia": "202109",
+"sha256": "0aeb15cdcbe6ad8d0240b7404577ce6fd38570c4472a0bc7ce7714d660ba2e8a",
+"linhas_fonte": 125125,
+"linhas_operadoras": 105,
+"ativos_operadoras": 117
+},
+{
+"arquivo": "pda-024-icb-AM-2021_09.zip",
+"competencia": "202109",
+"sha256": "38f43390c3fafa7741627027bca73f646e57ea7073ac9b21d666d6edd2292cda",
+"linhas_fonte": 63586,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-AP-2021_09.zip",
+"competencia": "202109",
+"sha256": "c8931f2a6ec0dc84d9d55b14ed87faada149cd0c8f027b8bb8b43ca43d479eba",
+"linhas_fonte": 23666,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-BA-2021_09.zip",
+"competencia": "202109",
+"sha256": "6bfdb3e7487c53f41949b1094fead76a43796e45221d4691942a243d06019fa0",
+"linhas_fonte": 583377,
+"linhas_operadoras": 269,
+"ativos_operadoras": 292
+},
+{
+"arquivo": "pda-024-icb-CE-2021_09.zip",
+"competencia": "202109",
+"sha256": "cab56af67fa941233896cf3b2fe2cd047bbc44db4441768791d3b6af29907ca5",
+"linhas_fonte": 305017,
+"linhas_operadoras": 190,
+"ativos_operadoras": 230
+},
+{
+"arquivo": "pda-024-icb-DF-2021_09.zip",
+"competencia": "202109",
+"sha256": "3a87c189d5633f96d94a6193578710775ec239ebf39e79e7f2056c2f43bf196a",
+"linhas_fonte": 107965,
+"linhas_operadoras": 273,
+"ativos_operadoras": 882
+},
+{
+"arquivo": "pda-024-icb-ES-2021_09.zip",
+"competencia": "202109",
+"sha256": "816e8baa08c8bc2edb7ef70d6feadc59d1bba883a594f842a69969df688a1cc6",
+"linhas_fonte": 382885,
+"linhas_operadoras": 705,
+"ativos_operadoras": 3246
+},
+{
+"arquivo": "pda-024-icb-GO-2021_09.zip",
+"competencia": "202109",
+"sha256": "ffde90a15e88e9cb93f3f5a98fd4b8fb18a746bc70d1d6f575e0db3f5a1be041",
+"linhas_fonte": 447268,
+"linhas_operadoras": 1186,
+"ativos_operadoras": 1613
+},
+{
+"arquivo": "pda-024-icb-MA-2021_09.zip",
+"competencia": "202109",
+"sha256": "af923a87a23cad9321aa0a60c09363b1d03f9fdd5f618c318361b694c9d3c844",
+"linhas_fonte": 163182,
+"linhas_operadoras": 104,
+"ativos_operadoras": 136
+},
+{
+"arquivo": "pda-024-icb-MG-2021_09.zip",
+"competencia": "202109",
+"sha256": "b0f46c76c2a3b3d6ca2c5654b555ef5cfd8242463e2f73e369d3a3506fec15c3",
+"linhas_fonte": 1575879,
+"linhas_operadoras": 9487,
+"ativos_operadoras": 30799
+},
+{
+"arquivo": "pda-024-icb-MS-2021_09.zip",
+"competencia": "202109",
+"sha256": "464677dff8192b5a824756e9616200ea47439125fb9e38d3dccdeb4de48062eb",
+"linhas_fonte": 164385,
+"linhas_operadoras": 4489,
+"ativos_operadoras": 12435
+},
+{
+"arquivo": "pda-024-icb-MT-2021_09.zip",
+"competencia": "202109",
+"sha256": "46a37092bffd159b598280c9005852034c63379f38a5ce6d731f934c5bdd6ade",
+"linhas_fonte": 218942,
+"linhas_operadoras": 1028,
+"ativos_operadoras": 1664
+},
+{
+"arquivo": "pda-024-icb-PA-2021_09.zip",
+"competencia": "202109",
+"sha256": "c346a2e1259b463b7088db0c6cb9e7cf7dd6c3d85f9686e65d485c372ec40ef7",
+"linhas_fonte": 211966,
+"linhas_operadoras": 277,
+"ativos_operadoras": 417
+},
+{
+"arquivo": "pda-024-icb-PB-2021_09.zip",
+"competencia": "202109",
+"sha256": "d3e338a14e9e44fd22f2007739e4ba6167773c2b03466c959c2fc5f151db5af9",
+"linhas_fonte": 160472,
+"linhas_operadoras": 260,
+"ativos_operadoras": 407
+},
+{
+"arquivo": "pda-024-icb-PE-2021_09.zip",
+"competencia": "202109",
+"sha256": "edb5f800b3760768574305be292efb5357a1afcda593324156fea7acf602ba9f",
+"linhas_fonte": 439145,
+"linhas_operadoras": 446,
+"ativos_operadoras": 635
+},
+{
+"arquivo": "pda-024-icb-PI-2021_09.zip",
+"competencia": "202109",
+"sha256": "c26ebc604cd78ed8b64f50b0e1970e6c4b24dfdd9beae821dc0458c0b9de3d6f",
+"linhas_fonte": 98602,
+"linhas_operadoras": 33,
+"ativos_operadoras": 37
+},
+{
+"arquivo": "pda-024-icb-PR-2021_09.zip",
+"competencia": "202109",
+"sha256": "0b89a1dac9a8baae6a3318139965ad265ede4476388170eeefdc86d70cfd03be",
+"linhas_fonte": 913238,
+"linhas_operadoras": 556,
+"ativos_operadoras": 619
+},
+{
+"arquivo": "pda-024-icb-RJ-2021_09.zip",
+"competencia": "202109",
+"sha256": "f73e6c7a61bd2a010071e25c430ca562ec6ce01a5bb363a3671c8ce14825cd03",
+"linhas_fonte": 1154090,
+"linhas_operadoras": 1700,
+"ativos_operadoras": 5065
+},
+{
+"arquivo": "pda-024-icb-RN-2021_09.zip",
+"competencia": "202109",
+"sha256": "3996e738a41df0566c804c2863b04950fd9ddf73481dd579a84c849b03d10abf",
+"linhas_fonte": 194992,
+"linhas_operadoras": 97,
+"ativos_operadoras": 105
+},
+{
+"arquivo": "pda-024-icb-RO-2021_09.zip",
+"competencia": "202109",
+"sha256": "d1320038c9786e966163f2f99b72d943d71c951dbda7a28678e1a9825ce6e499",
+"linhas_fonte": 75493,
+"linhas_operadoras": 373,
+"ativos_operadoras": 550
+},
+{
+"arquivo": "pda-024-icb-RR-2021_09.zip",
+"competencia": "202109",
+"sha256": "7e268a4489ab979f0e467cc4edf8fe8f00374a1d1e93090c1544e336a17524e3",
+"linhas_fonte": 10620,
+"linhas_operadoras": 80,
+"ativos_operadoras": 159
+},
+{
+"arquivo": "pda-024-icb-RS-2021_09.zip",
+"competencia": "202109",
+"sha256": "c9b73b7cadbcf8a65c45d3bfd0c7d7e6bbe5beb58e89646d66a712188fa92a99",
+"linhas_fonte": 798996,
+"linhas_operadoras": 1026,
+"ativos_operadoras": 1646
+},
+{
+"arquivo": "pda-024-icb-SC-2021_09.zip",
+"competencia": "202109",
+"sha256": "483ad4620c593b2e862ad3c2dfb72a37a27259ca96a075afe7e8db2a2426dd34",
+"linhas_fonte": 601327,
+"linhas_operadoras": 832,
+"ativos_operadoras": 1041
+},
+{
+"arquivo": "pda-024-icb-SE-2021_09.zip",
+"competencia": "202109",
+"sha256": "6b4ea9cbf554b3bc313e036096335bfcf73b85159983eca53a8dd4e85cb8c6cd",
+"linhas_fonte": 106215,
+"linhas_operadoras": 29,
+"ativos_operadoras": 33
+},
+{
+"arquivo": "pda-024-icb-SP-2021_09.zip",
+"competencia": "202109",
+"sha256": "7e8b1cacd65ab6505d5b5d01050a9a9f116d2d61b7de5907ecf42d1f25977d22",
+"linhas_fonte": 4296346,
+"linhas_operadoras": 116064,
+"ativos_operadoras": 411752
+},
+{
+"arquivo": "pda-024-icb-TO-2021_09.zip",
+"competencia": "202109",
+"sha256": "034cf2c05449056a6555b250fe97681eb7214129aa81ab53c15f23ac252b2724",
+"linhas_fonte": 75317,
+"linhas_operadoras": 488,
+"ativos_operadoras": 769
+},
+{
+"arquivo": "pda-024-icb-XX-2021_09.zip",
+"competencia": "202109",
+"sha256": "60a40ad021eb47c3750955cb22e4b2e3cc68c111ee1467e13abefdcd5688c2df",
+"linhas_fonte": 12248,
+"linhas_operadoras": 0,
+"ativos_operadoras": 0
+},
+{
+"arquivo": "pda-024-icb-AC-2021_10.zip",
+"competencia": "202110",
+"sha256": "97b2ac81d94903895266c3667faa3aa036cd1f1261292c3679ddc6f7fe4cf670",
+"linhas_fonte": 18281,
+"linhas_operadoras": 93,
+"ativos_operadoras": 142
+},
+{
+"arquivo": "pda-024-icb-AL-2021_10.zip",
+"competencia": "202110",
+"sha256": "fabfc6dbca727d0405b6873e615b4a12587381dc9fec09bec9cccffabb861755",
+"linhas_fonte": 125690,
+"linhas_operadoras": 100,
+"ativos_operadoras": 117
+},
+{
+"arquivo": "pda-024-icb-AM-2021_10.zip",
+"competencia": "202110",
+"sha256": "caa64c9311c291cbb41ca529fb971c5ba88db254236439b7c3f10c7a4fd4ef9c",
+"linhas_fonte": 63762,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-AP-2021_10.zip",
+"competencia": "202110",
+"sha256": "2adb65fd01895d1995756077677e9f2f0d841b76a7ae66f8605116f354473ada",
+"linhas_fonte": 23757,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-BA-2021_10.zip",
+"competencia": "202110",
+"sha256": "808805c54b39d7451e2b8356d03dcff938f0b6a3bd5d37cbb4d76f3bab4ca006",
+"linhas_fonte": 585193,
+"linhas_operadoras": 270,
+"ativos_operadoras": 287
+},
+{
+"arquivo": "pda-024-icb-CE-2021_10.zip",
+"competencia": "202110",
+"sha256": "41d1732bfb663bbf58ca14962810393623ff0b5578deb28aca21fb5a35ffb36e",
+"linhas_fonte": 306640,
+"linhas_operadoras": 190,
+"ativos_operadoras": 228
+},
+{
+"arquivo": "pda-024-icb-DF-2021_10.zip",
+"competencia": "202110",
+"sha256": "c402763d961b6bcfedd8c8d844788a6d28bb00dc1cdf2b9e34b4c2987a558e01",
+"linhas_fonte": 108310,
+"linhas_operadoras": 272,
+"ativos_operadoras": 876
+},
+{
+"arquivo": "pda-024-icb-ES-2021_10.zip",
+"competencia": "202110",
+"sha256": "822560bcb6b0da8c04fc056cc6b66d1d147b93120e18331119ec9eb8a2ae8c70",
+"linhas_fonte": 376601,
+"linhas_operadoras": 687,
+"ativos_operadoras": 3120
+},
+{
+"arquivo": "pda-024-icb-GO-2021_10.zip",
+"competencia": "202110",
+"sha256": "f9d8a70fac48f62b2a60b5d22b368b808b6accb0331dbf119d0ee3a32da7e54b",
+"linhas_fonte": 454962,
+"linhas_operadoras": 1178,
+"ativos_operadoras": 1588
+},
+{
+"arquivo": "pda-024-icb-MA-2021_10.zip",
+"competencia": "202110",
+"sha256": "5739496eaef72224ff52630fe27c437bb0f5a8cae72e97de78cad8b35c32028a",
+"linhas_fonte": 164450,
+"linhas_operadoras": 109,
+"ativos_operadoras": 141
+},
+{
+"arquivo": "pda-024-icb-MG-2021_10.zip",
+"competencia": "202110",
+"sha256": "427f0cce0829f3444697526308e837b55302ff9c4a0d4dc27f2c558bec1aa9dd",
+"linhas_fonte": 1590790,
+"linhas_operadoras": 9448,
+"ativos_operadoras": 29887
+},
+{
+"arquivo": "pda-024-icb-MS-2021_10.zip",
+"competencia": "202110",
+"sha256": "2df76d349b57f628f4e585b9b9db0e5be8479981e953f1b1cc46665606b2eef6",
+"linhas_fonte": 169570,
+"linhas_operadoras": 4499,
+"ativos_operadoras": 12468
+},
+{
+"arquivo": "pda-024-icb-MT-2021_10.zip",
+"competencia": "202110",
+"sha256": "dde28e743d1cfa07f8fb5846c23c7d616a39b4a9bceb0e13e3fd6620b001ca1d",
+"linhas_fonte": 222628,
+"linhas_operadoras": 1029,
+"ativos_operadoras": 1686
+},
+{
+"arquivo": "pda-024-icb-PA-2021_10.zip",
+"competencia": "202110",
+"sha256": "4c9e8e0b9f396ed16db1f366828b9fd413dbd4d0f1de122ee7d06fb2c847e35e",
+"linhas_fonte": 212402,
+"linhas_operadoras": 275,
+"ativos_operadoras": 419
+},
+{
+"arquivo": "pda-024-icb-PB-2021_10.zip",
+"competencia": "202110",
+"sha256": "5eaa7b3346b17e52b6d2480c2bcaa3e816081ceacf3794f221798123bfb412db",
+"linhas_fonte": 160654,
+"linhas_operadoras": 259,
+"ativos_operadoras": 402
+},
+{
+"arquivo": "pda-024-icb-PE-2021_10.zip",
+"competencia": "202110",
+"sha256": "8f47f02d39873e12786f5724de6492be3f492ecf528a6de16b408fdec81709cc",
+"linhas_fonte": 441729,
+"linhas_operadoras": 442,
+"ativos_operadoras": 628
+},
+{
+"arquivo": "pda-024-icb-PI-2021_10.zip",
+"competencia": "202110",
+"sha256": "4f24e27e36e9fa74f055512c75e5ca04554dc2ec7317f2db0b16c459ecff03e1",
+"linhas_fonte": 98988,
+"linhas_operadoras": 35,
+"ativos_operadoras": 38
+},
+{
+"arquivo": "pda-024-icb-PR-2021_10.zip",
+"competencia": "202110",
+"sha256": "1e20041e7ee49a766b68673ac98d164ca99807b7cd031490fc1fd87f4e7834f2",
+"linhas_fonte": 923009,
+"linhas_operadoras": 565,
+"ativos_operadoras": 628
+},
+{
+"arquivo": "pda-024-icb-RJ-2021_10.zip",
+"competencia": "202110",
+"sha256": "e6f0ad9f97fb5bd80395188a563553453cd2d5ef8aaff1cb0eb92179c20fa829",
+"linhas_fonte": 1158841,
+"linhas_operadoras": 1677,
+"ativos_operadoras": 4965
+},
+{
+"arquivo": "pda-024-icb-RN-2021_10.zip",
+"competencia": "202110",
+"sha256": "2876fb25a87283fe9d91c7afdbab244d95b9625edc0afd5e87bf3e0ce3260233",
+"linhas_fonte": 195809,
+"linhas_operadoras": 97,
+"ativos_operadoras": 101
+},
+{
+"arquivo": "pda-024-icb-RO-2021_10.zip",
+"competencia": "202110",
+"sha256": "b74354f87f88b4fe982e3882617c56a9242e278d6f685710669692f0fe81ed30",
+"linhas_fonte": 81036,
+"linhas_operadoras": 368,
+"ativos_operadoras": 541
+},
+{
+"arquivo": "pda-024-icb-RR-2021_10.zip",
+"competencia": "202110",
+"sha256": "8aecdb08c5cb194691dc56228fa099110173fb5fbf5bebac59142cf9f80348cb",
+"linhas_fonte": 10570,
+"linhas_operadoras": 80,
+"ativos_operadoras": 156
+},
+{
+"arquivo": "pda-024-icb-RS-2021_10.zip",
+"competencia": "202110",
+"sha256": "3d1c93ff2f5c07f5b10ff0387c40f8289d83a10ba5855d82d8c292d7307c6d73",
+"linhas_fonte": 800691,
+"linhas_operadoras": 1022,
+"ativos_operadoras": 1637
+},
+{
+"arquivo": "pda-024-icb-SC-2021_10.zip",
+"competencia": "202110",
+"sha256": "1ca1cf77376bc0b84d8046e61871e32176479cd0496e9273395f0d204212259a",
+"linhas_fonte": 606911,
+"linhas_operadoras": 822,
+"ativos_operadoras": 1035
+},
+{
+"arquivo": "pda-024-icb-SE-2021_10.zip",
+"competencia": "202110",
+"sha256": "b7a7c17b289760b75217dd01de7c9af38d02c8cd7cc9c2abd2f04ea9fb89059a",
+"linhas_fonte": 106465,
+"linhas_operadoras": 29,
+"ativos_operadoras": 30
+},
+{
+"arquivo": "pda-024-icb-SP-2021_10.zip",
+"competencia": "202110",
+"sha256": "f93035446b5b7f737ab78e99eda225ef2458b14e38fda50ebd20042e0e15b3e3",
+"linhas_fonte": 4373211,
+"linhas_operadoras": 116046,
+"ativos_operadoras": 409749
+},
+{
+"arquivo": "pda-024-icb-TO-2021_10.zip",
+"competencia": "202110",
+"sha256": "e8e30f48c3bb734d6583db03be4c04136f98f137a8d23b090d4a4cbccc938880",
+"linhas_fonte": 75841,
+"linhas_operadoras": 493,
+"ativos_operadoras": 762
+},
+{
+"arquivo": "pda-024-icb-XX-2021_10.zip",
+"competencia": "202110",
+"sha256": "e1e280682b3eb25701db0bc409712ee1bf0eab1d6d4ee19071e2ccd221284b46",
+"linhas_fonte": 12209,
+"linhas_operadoras": 0,
+"ativos_operadoras": 0
+},
+{
+"arquivo": "pda-024-icb-AC-2021_11.zip",
+"competencia": "202111",
+"sha256": "429ea17f5264b8b21084dd1aae548598cb8618c5c9e981cba1c8e141484d3ca6",
+"linhas_fonte": 18266,
+"linhas_operadoras": 92,
+"ativos_operadoras": 138
+},
+{
+"arquivo": "pda-024-icb-AL-2021_11.zip",
+"competencia": "202111",
+"sha256": "868d727fcfc4d2791d0dbe3f8edf89dd96fd9a0a4cb5f8923582c3bd1c53dcfe",
+"linhas_fonte": 125796,
+"linhas_operadoras": 98,
+"ativos_operadoras": 117
+},
+{
+"arquivo": "pda-024-icb-AM-2021_11.zip",
+"competencia": "202111",
+"sha256": "84883c39a102d9c648bbbc2c7c892969568021fba777947869eb26531daafe89",
+"linhas_fonte": 63951,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-AP-2021_11.zip",
+"competencia": "202111",
+"sha256": "b3418ea812d0b0c554a4491773868e18735ea15cdb80096905fd4c43905d27d0",
+"linhas_fonte": 23905,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-BA-2021_11.zip",
+"competencia": "202111",
+"sha256": "aafc3bf556d80f776e7133f73a6db0d053aa844740b9d0b565dc7590a1631b2a",
+"linhas_fonte": 588458,
+"linhas_operadoras": 263,
+"ativos_operadoras": 283
+},
+{
+"arquivo": "pda-024-icb-CE-2021_11.zip",
+"competencia": "202111",
+"sha256": "1ce03c7c0b9eca72fe9ab751807c2d93a508df23075a79c6ae2c19f7897e272a",
+"linhas_fonte": 307875,
+"linhas_operadoras": 185,
+"ativos_operadoras": 228
+},
+{
+"arquivo": "pda-024-icb-DF-2021_11.zip",
+"competencia": "202111",
+"sha256": "ad19e883aa9e415a50abc0156f38eaa967880c91400f345dcefada1e7327f9bd",
+"linhas_fonte": 108386,
+"linhas_operadoras": 265,
+"ativos_operadoras": 871
+},
+{
+"arquivo": "pda-024-icb-ES-2021_11.zip",
+"competencia": "202111",
+"sha256": "148a96be5e427f9c8abc9b0a3f77bd1e8c603fb3f258b3dbef5dbcf93c0cf47e",
+"linhas_fonte": 369277,
+"linhas_operadoras": 721,
+"ativos_operadoras": 3383
+},
+{
+"arquivo": "pda-024-icb-GO-2021_11.zip",
+"competencia": "202111",
+"sha256": "e719f329981eac5eef950eae459465627add64e7fa0ffb21c92ac1cec29273cb",
+"linhas_fonte": 457682,
+"linhas_operadoras": 1160,
+"ativos_operadoras": 1581
+},
+{
+"arquivo": "pda-024-icb-MA-2021_11.zip",
+"competencia": "202111",
+"sha256": "34b12534938ee70ab2c5169ed976f0d56dc3a777a826abc49288d33fdb05614e",
+"linhas_fonte": 165812,
+"linhas_operadoras": 113,
+"ativos_operadoras": 141
+},
+{
+"arquivo": "pda-024-icb-MG-2021_11.zip",
+"competencia": "202111",
+"sha256": "556091d4b478164fa984d753d17447b07c149c28f9fa023612eaa5a658f438dc",
+"linhas_fonte": 1599748,
+"linhas_operadoras": 10134,
+"ativos_operadoras": 35972
+},
+{
+"arquivo": "pda-024-icb-MS-2021_11.zip",
+"competencia": "202111",
+"sha256": "18f1f9c891c3c79fc8c7605bfc4679576b0c8df1ec540f8029a1e9686c92b773",
+"linhas_fonte": 179581,
+"linhas_operadoras": 4525,
+"ativos_operadoras": 12387
+},
+{
+"arquivo": "pda-024-icb-MT-2021_11.zip",
+"competencia": "202111",
+"sha256": "8a8deabe9ca530c0b90bb326b673e2bdf54ed1ccefa94ee67cb7ef403130bc54",
+"linhas_fonte": 228640,
+"linhas_operadoras": 1034,
+"ativos_operadoras": 1711
+},
+{
+"arquivo": "pda-024-icb-PA-2021_11.zip",
+"competencia": "202111",
+"sha256": "c7bbcb98dba3a4cd0ffb72e80f6395556aed296c92f46dfdc229b33f5d4d4a7e",
+"linhas_fonte": 213471,
+"linhas_operadoras": 275,
+"ativos_operadoras": 419
+},
+{
+"arquivo": "pda-024-icb-PB-2021_11.zip",
+"competencia": "202111",
+"sha256": "d4d1c0dbf8c7e6da582137596ddab08b7bc3b59b79d68bae0998b313b34c8959",
+"linhas_fonte": 161351,
+"linhas_operadoras": 256,
+"ativos_operadoras": 404
+},
+{
+"arquivo": "pda-024-icb-PE-2021_11.zip",
+"competencia": "202111",
+"sha256": "1f7ce491ca2a2c175bb2f6dcb6f47660eb1ff6c75b03b5f523a942eba54e77ff",
+"linhas_fonte": 444815,
+"linhas_operadoras": 441,
+"ativos_operadoras": 621
+},
+{
+"arquivo": "pda-024-icb-PI-2021_11.zip",
+"competencia": "202111",
+"sha256": "d68c202831abdfe23ad3b3d5a0087a32affbbcc854e47f4f403aaac6f9de640e",
+"linhas_fonte": 99593,
+"linhas_operadoras": 35,
+"ativos_operadoras": 35
+},
+{
+"arquivo": "pda-024-icb-PR-2021_11.zip",
+"competencia": "202111",
+"sha256": "2bffca3d07fd1db8b352675cda8bab10f6c67e00ae5451f14e5fece3916cc615",
+"linhas_fonte": 924201,
+"linhas_operadoras": 560,
+"ativos_operadoras": 623
+},
+{
+"arquivo": "pda-024-icb-RJ-2021_11.zip",
+"competencia": "202111",
+"sha256": "e7f64ea0c687078012408ee4a24d50592f4cfd1b7c9371fabddcade05b70bea4",
+"linhas_fonte": 1154300,
+"linhas_operadoras": 1679,
+"ativos_operadoras": 5079
+},
+{
+"arquivo": "pda-024-icb-RN-2021_11.zip",
+"competencia": "202111",
+"sha256": "23ecdc0ef0dab4a2ee92983047eeaf6f14f3521e5c50024f3c1601922a5cbc09",
+"linhas_fonte": 197414,
+"linhas_operadoras": 97,
+"ativos_operadoras": 101
+},
+{
+"arquivo": "pda-024-icb-RO-2021_11.zip",
+"competencia": "202111",
+"sha256": "4a60eac410f8583d415b6195a3a6b34aac8c70777681b7f44b002af4f5872980",
+"linhas_fonte": 75277,
+"linhas_operadoras": 364,
+"ativos_operadoras": 540
+},
+{
+"arquivo": "pda-024-icb-RR-2021_11.zip",
+"competencia": "202111",
+"sha256": "569d3b7ff7e929ba4e1fb262d8b678ceb284222cbc8e6de8a9bad654925d3a5f",
+"linhas_fonte": 10632,
+"linhas_operadoras": 80,
+"ativos_operadoras": 154
+},
+{
+"arquivo": "pda-024-icb-RS-2021_11.zip",
+"competencia": "202111",
+"sha256": "a68bdf312cc8ce8b882bc42c4a271fec96ef20ba606a0ceceba5bd8d71e19dde",
+"linhas_fonte": 804497,
+"linhas_operadoras": 1024,
+"ativos_operadoras": 1625
+},
+{
+"arquivo": "pda-024-icb-SC-2021_11.zip",
+"competencia": "202111",
+"sha256": "eebf80632e2a6871f5b9f06ad890a8cfaa07bd6980c84b21d1767b6770798e90",
+"linhas_fonte": 610880,
+"linhas_operadoras": 815,
+"ativos_operadoras": 980
+},
+{
+"arquivo": "pda-024-icb-SE-2021_11.zip",
+"competencia": "202111",
+"sha256": "904224b2b139ea9ef9450fc677586e6d12f3fb42cd68987e08e7a481d0f26965",
+"linhas_fonte": 106721,
+"linhas_operadoras": 30,
+"ativos_operadoras": 33
+},
+{
+"arquivo": "pda-024-icb-SP-2021_11.zip",
+"competencia": "202111",
+"sha256": "7f2492d3cab3ef85f57279650349f9e069adde71734c03b8b061d8be8dff348c",
+"linhas_fonte": 4448066,
+"linhas_operadoras": 116586,
+"ativos_operadoras": 412186
+},
+{
+"arquivo": "pda-024-icb-TO-2021_11.zip",
+"competencia": "202111",
+"sha256": "529c11c0f038a0572942e94ba5ac13812fbec67a303bc810035586729eba9333",
+"linhas_fonte": 75933,
+"linhas_operadoras": 498,
+"ativos_operadoras": 755
+},
+{
+"arquivo": "pda-024-icb-XX-2021_11.zip",
+"competencia": "202111",
+"sha256": "3a261e20f6450c4b999ea04e0e5c29a19d2609cde8a266248f75ae18b3d7a330",
+"linhas_fonte": 12203,
+"linhas_operadoras": 0,
+"ativos_operadoras": 0
+},
+{
+"arquivo": "pda-024-icb-AC-2021_12.zip",
+"competencia": "202112",
+"sha256": "15a1ffe900fa489eb8318f32a3be0ff3682837359121fe6ea92c0edaee3deb56",
+"linhas_fonte": 18353,
+"linhas_operadoras": 90,
+"ativos_operadoras": 138
+},
+{
+"arquivo": "pda-024-icb-AL-2021_12.zip",
+"competencia": "202112",
+"sha256": "8ee976526f37a0422eaaf10224e21f89d8c7c9657fcb1a106be5e4d17cc593ed",
+"linhas_fonte": 125911,
+"linhas_operadoras": 98,
+"ativos_operadoras": 117
+},
+{
+"arquivo": "pda-024-icb-AM-2021_12.zip",
+"competencia": "202112",
+"sha256": "f304f71a0883bb140d25e2b0e81156b4c98df5feb3fe7f7b321104ff9cd76c3f",
+"linhas_fonte": 64257,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-AP-2021_12.zip",
+"competencia": "202112",
+"sha256": "dfef05fb3eb779d27479c96c3aefc99be0cadfc0056748da18b640abc742c3d0",
+"linhas_fonte": 23924,
+"linhas_operadoras": 11,
+"ativos_operadoras": 6
+},
+{
+"arquivo": "pda-024-icb-BA-2021_12.zip",
+"competencia": "202112",
+"sha256": "bd1efdf8c7c74972b84ea227d5a5b5354234373c3560c1a610486bcc003aefe1",
+"linhas_fonte": 590546,
+"linhas_operadoras": 262,
+"ativos_operadoras": 264
+},
+{
+"arquivo": "pda-024-icb-CE-2021_12.zip",
+"competencia": "202112",
+"sha256": "60839ff774872f9ca8670e94dc2ec6384374f57df0e40674ea8e352f59c7ea3f",
+"linhas_fonte": 308738,
+"linhas_operadoras": 186,
+"ativos_operadoras": 224
+},
+{
+"arquivo": "pda-024-icb-DF-2021_12.zip",
+"competencia": "202112",
+"sha256": "b3c36ec1189686bcc5983ca40f3b09cc30bb0f4e7579a2fde1202ab6fb9b0b61",
+"linhas_fonte": 108453,
+"linhas_operadoras": 263,
+"ativos_operadoras": 868
+},
+{
+"arquivo": "pda-024-icb-ES-2021_12.zip",
+"competencia": "202112",
+"sha256": "73639634da75676d1ade2afbbf2e4cc50d01e07027a68178c5ebaec6692912ee",
+"linhas_fonte": 369741,
+"linhas_operadoras": 721,
+"ativos_operadoras": 3225
+},
+{
+"arquivo": "pda-024-icb-GO-2021_12.zip",
+"competencia": "202112",
+"sha256": "687087baefd997d6538fa2a886b8a4a54713cc39c9d29d34e3a72801873e0fce",
+"linhas_fonte": 450701,
+"linhas_operadoras": 1147,
+"ativos_operadoras": 1564
+},
+{
+"arquivo": "pda-024-icb-MA-2021_12.zip",
+"competencia": "202112",
+"sha256": "712bade1efd4fb722a507818dff5f9bb847ba489457919f771d7df411a2ff9be",
+"linhas_fonte": 165241,
+"linhas_operadoras": 118,
+"ativos_operadoras": 146
+},
+{
+"arquivo": "pda-024-icb-MG-2021_12.zip",
+"competencia": "202112",
+"sha256": "f062c7da17f087b26eb86729a6a6946785de35b12ce22bfd4e0476c5af546789",
+"linhas_fonte": 1599176,
+"linhas_operadoras": 10116,
+"ativos_operadoras": 35291
+},
+{
+"arquivo": "pda-024-icb-MS-2021_12.zip",
+"competencia": "202112",
+"sha256": "14a805c3c88f1787629abc5630bdcf1822109b81b60e271f0565bf4227a7362f",
+"linhas_fonte": 164876,
+"linhas_operadoras": 4530,
+"ativos_operadoras": 12484
+},
+{
+"arquivo": "pda-024-icb-MT-2021_12.zip",
+"competencia": "202112",
+"sha256": "8a2eac39d3744ce7b7379b387c33dde2479bb4a00a7a3aed08dcd7b08657e467",
+"linhas_fonte": 222567,
+"linhas_operadoras": 1036,
+"ativos_operadoras": 1692
+},
+{
+"arquivo": "pda-024-icb-PA-2021_12.zip",
+"competencia": "202112",
+"sha256": "aaaec9ae8c3df3be70bbdf23d4bf3df9c4d92ab68e98f1d2e13e6d1abc9643a4",
+"linhas_fonte": 214436,
+"linhas_operadoras": 278,
+"ativos_operadoras": 416
+},
+{
+"arquivo": "pda-024-icb-PB-2021_12.zip",
+"competencia": "202112",
+"sha256": "f18e918adbc9fc9d442b52fec1b0b5d2028c862e6008262b44ab8073dc87a30e",
+"linhas_fonte": 161698,
+"linhas_operadoras": 261,
+"ativos_operadoras": 403
+},
+{
+"arquivo": "pda-024-icb-PE-2021_12.zip",
+"competencia": "202112",
+"sha256": "d5e66b74307efd2ff8a564333f478d23bec356a375a69d11fb611140bd349eb0",
+"linhas_fonte": 446511,
+"linhas_operadoras": 441,
+"ativos_operadoras": 609
+},
+{
+"arquivo": "pda-024-icb-PI-2021_12.zip",
+"competencia": "202112",
+"sha256": "1f9b580ae3f8cfb5fcce4df0c1589c2081c9805b25e814572773b6b10c8615ed",
+"linhas_fonte": 99518,
+"linhas_operadoras": 33,
+"ativos_operadoras": 36
+},
+{
+"arquivo": "pda-024-icb-PR-2021_12.zip",
+"competencia": "202112",
+"sha256": "9a72b61ff5b2f38c55c7be081cbdf35582efe603b20875201f6358b97deddd61",
+"linhas_fonte": 927090,
+"linhas_operadoras": 556,
+"ativos_operadoras": 611
+},
+{
+"arquivo": "pda-024-icb-RJ-2021_12.zip",
+"competencia": "202112",
+"sha256": "87a3918521b471feaca27f134abbab0ef67e761f6cdc0601390076c6f05e611e",
+"linhas_fonte": 1158088,
+"linhas_operadoras": 1680,
+"ativos_operadoras": 4956
+},
+{
+"arquivo": "pda-024-icb-RN-2021_12.zip",
+"competencia": "202112",
+"sha256": "349d95f1aebae8e852d24dfe6bf8147239b0af8ace0b1b4c6a8cec8bf92ea95a",
+"linhas_fonte": 199770,
+"linhas_operadoras": 96,
+"ativos_operadoras": 104
+},
+{
+"arquivo": "pda-024-icb-RO-2021_12.zip",
+"competencia": "202112",
+"sha256": "60deaf3765d81067cb5b5dacbbe3c01309db50ae240745990b1cd405a75cc826",
+"linhas_fonte": 75373,
+"linhas_operadoras": 358,
+"ativos_operadoras": 534
+},
+{
+"arquivo": "pda-024-icb-RR-2021_12.zip",
+"competencia": "202112",
+"sha256": "d22a3dbda1d3a93e4cae580db6f374401d2b799429b3bb5311ad413fde57dd0d",
+"linhas_fonte": 10615,
+"linhas_operadoras": 76,
+"ativos_operadoras": 154
+},
+{
+"arquivo": "pda-024-icb-RS-2021_12.zip",
+"competencia": "202112",
+"sha256": "5aed1cc258c7422f311829cdc720699885bc3ce147e4c22b7c86e6287dbd442e",
+"linhas_fonte": 808706,
+"linhas_operadoras": 1017,
+"ativos_operadoras": 1569
+},
+{
+"arquivo": "pda-024-icb-SC-2021_12.zip",
+"competencia": "202112",
+"sha256": "b9bb77656dcc8af62e25248b04eae301445f673a225260cfb6603e73cd075312",
+"linhas_fonte": 615509,
+"linhas_operadoras": 785,
+"ativos_operadoras": 949
+},
+{
+"arquivo": "pda-024-icb-SE-2021_12.zip",
+"competencia": "202112",
+"sha256": "3ea1f460495e69b6d178c4d04ae06f1f4fc4f6d84080b1561fd1c1df6fd89aed",
+"linhas_fonte": 107343,
+"linhas_operadoras": 29,
+"ativos_operadoras": 32
+},
+{
+"arquivo": "pda-024-icb-SP-2021_12.zip",
+"competencia": "202112",
+"sha256": "7af1b5a87aa47355060117e0666dc34d82bfc688abcd88444870ec2720bef5ec",
+"linhas_fonte": 4339391,
+"linhas_operadoras": 116524,
+"ativos_operadoras": 413083
+},
+{
+"arquivo": "pda-024-icb-TO-2021_12.zip",
+"competencia": "202112",
+"sha256": "bca1b6e24c5ab92cdec8e9ba28233f5a6800815adbf7e910b93c4f088ec76cde",
+"linhas_fonte": 75970,
+"linhas_operadoras": 492,
+"ativos_operadoras": 768
+},
+{
+"arquivo": "pda-024-icb-XX-2021_12.zip",
+"competencia": "202112",
+"sha256": "ed8a386e605530d8f8966e570bf3bb64a64ee39b852554b54e83bf8fccbc1389",
+"linhas_fonte": 12157,
+"linhas_operadoras": 0,
+"ativos_operadoras": 0
+},
+{
+"arquivo": "pda-024-icb-AC-2022_01.zip",
+"competencia": "202201",
+"sha256": "0e756f20b675caa1d4ff00a5ded4f558b3fd00e5c72cfcc155ec4fc4f66431ef",
+"linhas_fonte": 18397,
+"linhas_operadoras": 91,
+"ativos_operadoras": 138
+},
+{
+"arquivo": "pda-024-icb-AL-2022_01.zip",
+"competencia": "202201",
+"sha256": "aebcb36c60f2ed4782794baea0e4518ea6e4e5d2704558f439ba96d71b423e03",
+"linhas_fonte": 126269,
+"linhas_operadoras": 97,
+"ativos_operadoras": 116
+},
+{
+"arquivo": "pda-024-icb-AM-2022_01.zip",
+"competencia": "202201",
+"sha256": "f73a77a78c048d98077858f33f10f8d3d612bb2d84feba75bc7c76021a874246",
+"linhas_fonte": 64357,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-AP-2022_01.zip",
+"competencia": "202201",
+"sha256": "f6d5618a283113a4be7a255af8a112124f01b032821f1d74f2088f21063dad35",
+"linhas_fonte": 23886,
+"linhas_operadoras": 6,
+"ativos_operadoras": 6
+},
+{
+"arquivo": "pda-024-icb-BA-2022_01.zip",
+"competencia": "202201",
+"sha256": "747b73b4c2dd47ed4601dcd7f3fbe444b0d6d6487ecdee429309776f69572028",
+"linhas_fonte": 591877,
+"linhas_operadoras": 252,
+"ativos_operadoras": 263
+},
+{
+"arquivo": "pda-024-icb-CE-2022_01.zip",
+"competencia": "202201",
+"sha256": "35cb8dbfd800ff27a846a00fa7cdb7695308a7d6fa8b0fb3b196e4e20643ecce",
+"linhas_fonte": 308344,
+"linhas_operadoras": 180,
+"ativos_operadoras": 224
+},
+{
+"arquivo": "pda-024-icb-DF-2022_01.zip",
+"competencia": "202201",
+"sha256": "679d2b2c8073a2af7031e54e3472b081147d7b41b8d0ffc75ace13bf61f52089",
+"linhas_fonte": 108761,
+"linhas_operadoras": 258,
+"ativos_operadoras": 868
+},
+{
+"arquivo": "pda-024-icb-ES-2022_01.zip",
+"competencia": "202201",
+"sha256": "985d6b6bba28237900fe52a1cae72394dc1e2cd7a3fa4b204fd54d57f2da474f",
+"linhas_fonte": 368373,
+"linhas_operadoras": 718,
+"ativos_operadoras": 3154
+},
+{
+"arquivo": "pda-024-icb-GO-2022_01.zip",
+"competencia": "202201",
+"sha256": "ad557c188ebafba5970a442fe7a8b1f70826a9c4d1be6dafcd8689bc4a664878",
+"linhas_fonte": 451631,
+"linhas_operadoras": 1139,
+"ativos_operadoras": 1562
+},
+{
+"arquivo": "pda-024-icb-MA-2022_01.zip",
+"competencia": "202201",
+"sha256": "5d929ade5e5e5d74fc9a9ad4d18682d8c034b309c0351b5a406e73cb38b3ef9d",
+"linhas_fonte": 166200,
+"linhas_operadoras": 118,
+"ativos_operadoras": 151
+},
+{
+"arquivo": "pda-024-icb-MG-2022_01.zip",
+"competencia": "202201",
+"sha256": "473c76e39c32b648eeaedae4fbedfd900b4fcb0cc2204c9d2acd44a5de70cbe2",
+"linhas_fonte": 1604222,
+"linhas_operadoras": 10004,
+"ativos_operadoras": 35256
+},
+{
+"arquivo": "pda-024-icb-MS-2022_01.zip",
+"competencia": "202201",
+"sha256": "4b4c5b4271ce79b47700bd3e99575995c9d84fa4047c8fbc8e7e94b4bb28e475",
+"linhas_fonte": 165489,
+"linhas_operadoras": 4533,
+"ativos_operadoras": 12423
+},
+{
+"arquivo": "pda-024-icb-MT-2022_01.zip",
+"competencia": "202201",
+"sha256": "2925b996231ecb31da59c2a9665975280c5077a5c0114a87e9344a5ad76dc844",
+"linhas_fonte": 223311,
+"linhas_operadoras": 1055,
+"ativos_operadoras": 1712
+},
+{
+"arquivo": "pda-024-icb-PA-2022_01.zip",
+"competencia": "202201",
+"sha256": "6d65f5d95ad91be72d414d4bdb0ee540b44502f42ed2ba943f7bf067a998b507",
+"linhas_fonte": 214560,
+"linhas_operadoras": 286,
+"ativos_operadoras": 431
+},
+{
+"arquivo": "pda-024-icb-PB-2022_01.zip",
+"competencia": "202201",
+"sha256": "c3b74e9f6896423308e08dcc1e650051386006441f9d4526d81d58e1b7600df6",
+"linhas_fonte": 161785,
+"linhas_operadoras": 256,
+"ativos_operadoras": 396
+},
+{
+"arquivo": "pda-024-icb-PE-2022_01.zip",
+"competencia": "202201",
+"sha256": "74997e7927245f753abf53362963fb0fa26e4168da79ad67b8fca74957f95b8b",
+"linhas_fonte": 446096,
+"linhas_operadoras": 436,
+"ativos_operadoras": 603
+},
+{
+"arquivo": "pda-024-icb-PI-2022_01.zip",
+"competencia": "202201",
+"sha256": "401bdc0a5f39588f375b5e6c88ca451fe6af4f1b446d9ab14751151df3da1412",
+"linhas_fonte": 99803,
+"linhas_operadoras": 33,
+"ativos_operadoras": 36
+},
+{
+"arquivo": "pda-024-icb-PR-2022_01.zip",
+"competencia": "202201",
+"sha256": "c94037cc4e09feee61aa7d35d385d350ab4450d99aba8fbec7b8b04848765af3",
+"linhas_fonte": 929325,
+"linhas_operadoras": 548,
+"ativos_operadoras": 599
+},
+{
+"arquivo": "pda-024-icb-RJ-2022_01.zip",
+"competencia": "202201",
+"sha256": "8b4b512e8ac7799165a76cc84d909308246e08838e677b36b591611be81df404",
+"linhas_fonte": 1158469,
+"linhas_operadoras": 1578,
+"ativos_operadoras": 5014
+},
+{
+"arquivo": "pda-024-icb-RN-2022_01.zip",
+"competencia": "202201",
+"sha256": "7ae4dbd3055668791b81a467b828cd193ca1f195c5df547e5ad703748a0c0fdd",
+"linhas_fonte": 200156,
+"linhas_operadoras": 96,
+"ativos_operadoras": 99
+},
+{
+"arquivo": "pda-024-icb-RO-2022_01.zip",
+"competencia": "202201",
+"sha256": "b39224bc623eafb526d62827ad775aafd857c6eed64f9c8c65cf0219f1ec3295",
+"linhas_fonte": 75630,
+"linhas_operadoras": 355,
+"ativos_operadoras": 532
+},
+{
+"arquivo": "pda-024-icb-RR-2022_01.zip",
+"competencia": "202201",
+"sha256": "ef653dc052f1b7f15bcd2ffb6f7bada864fa8670355584303931a5bf1bd6b9f2",
+"linhas_fonte": 10520,
+"linhas_operadoras": 79,
+"ativos_operadoras": 155
+},
+{
+"arquivo": "pda-024-icb-RS-2022_01.zip",
+"competencia": "202201",
+"sha256": "3b32f15f96e10161f0769f5a60b8da87bf61e31da886e2f233389430f26bb2cb",
+"linhas_fonte": 810573,
+"linhas_operadoras": 1016,
+"ativos_operadoras": 1553
+},
+{
+"arquivo": "pda-024-icb-SC-2022_01.zip",
+"competencia": "202201",
+"sha256": "d65c39c6d7016491136009bcb8ff73881768efd2eef8290e55e9487b7e2b3709",
+"linhas_fonte": 618546,
+"linhas_operadoras": 759,
+"ativos_operadoras": 925
+},
+{
+"arquivo": "pda-024-icb-SE-2022_01.zip",
+"competencia": "202201",
+"sha256": "d3364c5f3bb1953cde8f5ba13bd8f536373166c108801e4a8823c4fbb68ffb2c",
+"linhas_fonte": 107370,
+"linhas_operadoras": 28,
+"ativos_operadoras": 32
+},
+{
+"arquivo": "pda-024-icb-SP-2022_01.zip",
+"competencia": "202201",
+"sha256": "c09f8997459b6178728f38f1a5fa162238a5e73c7dec78343ca065d1e85870ad",
+"linhas_fonte": 4345416,
+"linhas_operadoras": 116620,
+"ativos_operadoras": 413601
+},
+{
+"arquivo": "pda-024-icb-TO-2022_01.zip",
+"competencia": "202201",
+"sha256": "155f28908b8ba7ccb310712d21525277c6dded959ce3367d11b688e651ef39cf",
+"linhas_fonte": 76042,
+"linhas_operadoras": 491,
+"ativos_operadoras": 763
+},
+{
+"arquivo": "pda-024-icb-XX-2022_01.zip",
+"competencia": "202201",
+"sha256": "6624ddeedad7b2e90a463c24d2b8a55992a48dcf4605879ca990f8920116f226",
+"linhas_fonte": 12088,
+"linhas_operadoras": 0,
+"ativos_operadoras": 0
+},
+{
+"arquivo": "pda-024-icb-AC-2022_02.zip",
+"competencia": "202202",
+"sha256": "b455a1053d5bae4a9669c4531265d160b1b57c1fdc93862e2ef409f85ec173f8",
+"linhas_fonte": 18635,
+"linhas_operadoras": 91,
+"ativos_operadoras": 138
+},
+{
+"arquivo": "pda-024-icb-AL-2022_02.zip",
+"competencia": "202202",
+"sha256": "61f2e76790877022be83623963eb9f650b94116033378381130e903ec10244a2",
+"linhas_fonte": 126594,
+"linhas_operadoras": 96,
+"ativos_operadoras": 117
+},
+{
+"arquivo": "pda-024-icb-AM-2022_02.zip",
+"competencia": "202202",
+"sha256": "c511182c1468e142e3fd9063de229b202e01e255092f7e8103df8c68b8dac682",
+"linhas_fonte": 64762,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-AP-2022_02.zip",
+"competencia": "202202",
+"sha256": "3275ecbe53d24fcee7a3f9059a5d498ad01be07c708945b69a37bade5bb135a4",
+"linhas_fonte": 24093,
+"linhas_operadoras": 6,
+"ativos_operadoras": 6
+},
+{
+"arquivo": "pda-024-icb-BA-2022_02.zip",
+"competencia": "202202",
+"sha256": "40d8797c0aa4d034a9983f31f1a7c16db864f9d1286213bfd712dac293a8e233",
+"linhas_fonte": 592880,
+"linhas_operadoras": 251,
+"ativos_operadoras": 267
+},
+{
+"arquivo": "pda-024-icb-CE-2022_02.zip",
+"competencia": "202202",
+"sha256": "9d572119463cd758a5d69958ad8f7f91877e91e067025a9654ee5b57a5214908",
+"linhas_fonte": 309976,
+"linhas_operadoras": 183,
+"ativos_operadoras": 222
+},
+{
+"arquivo": "pda-024-icb-DF-2022_02.zip",
+"competencia": "202202",
+"sha256": "d2aadceb3c180e67dd9bbf73c5f16b8f235b6b7b392ee3410578568cbeefce05",
+"linhas_fonte": 108948,
+"linhas_operadoras": 262,
+"ativos_operadoras": 869
+},
+{
+"arquivo": "pda-024-icb-ES-2022_02.zip",
+"competencia": "202202",
+"sha256": "89bffb5383808a001e0d9ea434c918082ad9cb4317b6696523ee4ef5fe43dd31",
+"linhas_fonte": 369217,
+"linhas_operadoras": 721,
+"ativos_operadoras": 3106
+},
+{
+"arquivo": "pda-024-icb-GO-2022_02.zip",
+"competencia": "202202",
+"sha256": "a812797616502338d5f1c64dd71c9de686ed9360de8b9238d7e8708646279427",
+"linhas_fonte": 454435,
+"linhas_operadoras": 1136,
+"ativos_operadoras": 1552
+},
+{
+"arquivo": "pda-024-icb-MA-2022_02.zip",
+"competencia": "202202",
+"sha256": "d5c19161a8726e34ff0c37563fa2fb2f4a1cac6a1b3c4b774ec6841a920fc905",
+"linhas_fonte": 167168,
+"linhas_operadoras": 121,
+"ativos_operadoras": 160
+},
+{
+"arquivo": "pda-024-icb-MG-2022_02.zip",
+"competencia": "202202",
+"sha256": "db989dd02817f878a4f849f2a35fdf75179b7d0cdd1882f62052270f2165c681",
+"linhas_fonte": 1614623,
+"linhas_operadoras": 10045,
+"ativos_operadoras": 35321
+},
+{
+"arquivo": "pda-024-icb-MS-2022_02.zip",
+"competencia": "202202",
+"sha256": "404e804b5f07f93b1b3668f52ef0ff337172281ef15dbbfcf7aee02f29cd7d38",
+"linhas_fonte": 165913,
+"linhas_operadoras": 4524,
+"ativos_operadoras": 12416
+},
+{
+"arquivo": "pda-024-icb-MT-2022_02.zip",
+"competencia": "202202",
+"sha256": "be9262ee6d3e570b01b3ac8deed76d49a7ee7c83b34b3b9ad48e4f5662a16afc",
+"linhas_fonte": 224046,
+"linhas_operadoras": 1054,
+"ativos_operadoras": 1700
+},
+{
+"arquivo": "pda-024-icb-PA-2022_02.zip",
+"competencia": "202202",
+"sha256": "19ed8b4447c1da4f5d918f74812ed6c5a9faeff0da8fb72204226422f1c2c0fe",
+"linhas_fonte": 215279,
+"linhas_operadoras": 282,
+"ativos_operadoras": 434
+},
+{
+"arquivo": "pda-024-icb-PB-2022_02.zip",
+"competencia": "202202",
+"sha256": "b8b4a47b1113613227d16b4363b5e38344cd150caca0fae718cfa95e1a980a82",
+"linhas_fonte": 162343,
+"linhas_operadoras": 249,
+"ativos_operadoras": 393
+},
+{
+"arquivo": "pda-024-icb-PE-2022_02.zip",
+"competencia": "202202",
+"sha256": "756e8ddf3d8cc8419be991d4760b33d3397fa4dda4ebd0145e1d71ff9fb8f749",
+"linhas_fonte": 447755,
+"linhas_operadoras": 442,
+"ativos_operadoras": 598
+},
+{
+"arquivo": "pda-024-icb-PI-2022_02.zip",
+"competencia": "202202",
+"sha256": "b075e587d14fd761fd786e6e34e645e962c71fe6482d8ce00f1fdc4e0e29b4e5",
+"linhas_fonte": 100146,
+"linhas_operadoras": 33,
+"ativos_operadoras": 36
+},
+{
+"arquivo": "pda-024-icb-PR-2022_02.zip",
+"competencia": "202202",
+"sha256": "d6e711fc5de70d8016b57b1211171747add80721a2d388a15dd922ff26bbecb4",
+"linhas_fonte": 933669,
+"linhas_operadoras": 543,
+"ativos_operadoras": 609
+},
+{
+"arquivo": "pda-024-icb-RJ-2022_02.zip",
+"competencia": "202202",
+"sha256": "1bb07ee944a99e3ee5ac15f528fd38d87d67febf590c42f6e1061a89058d88b8",
+"linhas_fonte": 1159371,
+"linhas_operadoras": 1584,
+"ativos_operadoras": 5026
+},
+{
+"arquivo": "pda-024-icb-RN-2022_02.zip",
+"competencia": "202202",
+"sha256": "9145e2367282ad39d2070a5165cd35a9f63b5b690ef508d8082f038b851b0e5c",
+"linhas_fonte": 200383,
+"linhas_operadoras": 94,
+"ativos_operadoras": 97
+},
+{
+"arquivo": "pda-024-icb-RO-2022_02.zip",
+"competencia": "202202",
+"sha256": "88bd3c4b2266f2e9c756ff9c55400d1cb8ac9ac9b338bfc55034638cf3382537",
+"linhas_fonte": 76233,
+"linhas_operadoras": 354,
+"ativos_operadoras": 523
+},
+{
+"arquivo": "pda-024-icb-RR-2022_02.zip",
+"competencia": "202202",
+"sha256": "be445f0551aaaa51ceeb6baaeb5b7f1eb5894d4f7605f84cc428b800b139bc47",
+"linhas_fonte": 10752,
+"linhas_operadoras": 75,
+"ativos_operadoras": 155
+},
+{
+"arquivo": "pda-024-icb-RS-2022_02.zip",
+"competencia": "202202",
+"sha256": "f12c13d01cf8cb5275ab8dc530641e974f8a5c16131617203349becc45ca9aee",
+"linhas_fonte": 812712,
+"linhas_operadoras": 1012,
+"ativos_operadoras": 1539
+},
+{
+"arquivo": "pda-024-icb-SC-2022_02.zip",
+"competencia": "202202",
+"sha256": "77671fd130d7b71be4b43d998152cb3be9abd5766ed74f3980410ad67abb5a44",
+"linhas_fonte": 622149,
+"linhas_operadoras": 746,
+"ativos_operadoras": 918
+},
+{
+"arquivo": "pda-024-icb-SE-2022_02.zip",
+"competencia": "202202",
+"sha256": "e29a89347438c5947d78abbefd3cfc573ae0486c5c20e66f6bb1c75d3f440e7d",
+"linhas_fonte": 107828,
+"linhas_operadoras": 28,
+"ativos_operadoras": 32
+},
+{
+"arquivo": "pda-024-icb-SP-2022_02.zip",
+"competencia": "202202",
+"sha256": "962c694f608b68fe43ded97d050dd9657c39105c7859842fd7c30fb5e5ff08a3",
+"linhas_fonte": 4356834,
+"linhas_operadoras": 117006,
+"ativos_operadoras": 414823
+},
+{
+"arquivo": "pda-024-icb-TO-2022_02.zip",
+"competencia": "202202",
+"sha256": "9b328d83bfb89356d43f199de755d6f9d4b8796cd57859b22259953c63a442bc",
+"linhas_fonte": 76659,
+"linhas_operadoras": 500,
+"ativos_operadoras": 765
+},
+{
+"arquivo": "pda-024-icb-XX-2022_02.zip",
+"competencia": "202202",
+"sha256": "d2638e8af3332d206fe241c6558f1aa2865bf2e60b46beaaca11ab1c3331f488",
+"linhas_fonte": 11996,
+"linhas_operadoras": 0,
+"ativos_operadoras": 0
+},
+{
+"arquivo": "pda-024-icb-AC-2022_03.zip",
+"competencia": "202203",
+"sha256": "4342cd08751242f70971894c75281350ab2adb0bf434827f7ee5ac00b0510c86",
+"linhas_fonte": 18607,
+"linhas_operadoras": 90,
+"ativos_operadoras": 130
+},
+{
+"arquivo": "pda-024-icb-AL-2022_03.zip",
+"competencia": "202203",
+"sha256": "1ff5f540fb7d82ce393a0ed725d1d82cd3d02fdb7bef343ca0716c2750547c3d",
+"linhas_fonte": 127058,
+"linhas_operadoras": 96,
+"ativos_operadoras": 111
+},
+{
+"arquivo": "pda-024-icb-AM-2022_03.zip",
+"competencia": "202203",
+"sha256": "718fc71735dfe939a213f06e157c96761674cbf1ccab2309c478c2ce78b266cd",
+"linhas_fonte": 65221,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-AP-2022_03.zip",
+"competencia": "202203",
+"sha256": "bd4231a0c0e192c579e156c55fdf8110677cfd790c43bfcba2cb7e34bc424057",
+"linhas_fonte": 24166,
+"linhas_operadoras": 6,
+"ativos_operadoras": 6
+},
+{
+"arquivo": "pda-024-icb-BA-2022_03.zip",
+"competencia": "202203",
+"sha256": "86c9ebe28096cd6841ccc6be0d820dc9e994ef89182a704b9adedd55d32aad9d",
+"linhas_fonte": 596157,
+"linhas_operadoras": 250,
+"ativos_operadoras": 258
+},
+{
+"arquivo": "pda-024-icb-CE-2022_03.zip",
+"competencia": "202203",
+"sha256": "ff4f3c63121627559a8888cc10bedc64af177959755033193cf7385a35338463",
+"linhas_fonte": 311480,
+"linhas_operadoras": 183,
+"ativos_operadoras": 222
+},
+{
+"arquivo": "pda-024-icb-DF-2022_03.zip",
+"competencia": "202203",
+"sha256": "eb624ab165cae391bbb6c0814059c9d4962b7d0d71c9b5c98652af9a0c357a96",
+"linhas_fonte": 109153,
+"linhas_operadoras": 255,
+"ativos_operadoras": 870
+},
+{
+"arquivo": "pda-024-icb-ES-2022_03.zip",
+"competencia": "202203",
+"sha256": "c30a4ab6d3cfced1594b8ac41b1f0f52cc8c1ff464ae89ef9eac8c7dd1183ae1",
+"linhas_fonte": 370030,
+"linhas_operadoras": 715,
+"ativos_operadoras": 2921
+},
+{
+"arquivo": "pda-024-icb-GO-2022_03.zip",
+"competencia": "202203",
+"sha256": "bf9e375b19e9d76260e828d79c1bfcaac2fcc69f8a2098fcb3511b7a477b3a39",
+"linhas_fonte": 457018,
+"linhas_operadoras": 1142,
+"ativos_operadoras": 1562
+},
+{
+"arquivo": "pda-024-icb-MA-2022_03.zip",
+"competencia": "202203",
+"sha256": "5c57c2581f81b36c7d61a33276d16cd477c8eb244b11dbb7635e5adc6d2c8e70",
+"linhas_fonte": 168318,
+"linhas_operadoras": 125,
+"ativos_operadoras": 166
+},
+{
+"arquivo": "pda-024-icb-MG-2022_03.zip",
+"competencia": "202203",
+"sha256": "498dbd2065bb8fa39efd6f554e7cdcfb5a8c977ea218bc284aaf424424b14164",
+"linhas_fonte": 1624774,
+"linhas_operadoras": 10057,
+"ativos_operadoras": 35422
+},
+{
+"arquivo": "pda-024-icb-MS-2022_03.zip",
+"competencia": "202203",
+"sha256": "7e1686b9e22c3a0e6612984cbaf4430a752726b89e3f8de02a1899e191d5c301",
+"linhas_fonte": 166640,
+"linhas_operadoras": 4532,
+"ativos_operadoras": 12523
+},
+{
+"arquivo": "pda-024-icb-MT-2022_03.zip",
+"competencia": "202203",
+"sha256": "a33dcf15f46b4beec65e91c8c77a26b32a3f468290c6e8954f16c40e47ee53f2",
+"linhas_fonte": 225186,
+"linhas_operadoras": 1052,
+"ativos_operadoras": 1712
+},
+{
+"arquivo": "pda-024-icb-PA-2022_03.zip",
+"competencia": "202203",
+"sha256": "e9e6fb4f1fd5851c6300e8127c9e483efcca9836561b617464d444a6de4397a9",
+"linhas_fonte": 216578,
+"linhas_operadoras": 287,
+"ativos_operadoras": 435
+},
+{
+"arquivo": "pda-024-icb-PB-2022_03.zip",
+"competencia": "202203",
+"sha256": "5cf65a4029dea3abb4d3da1c21031712b057ba6d4f40c8284659da45727b66d2",
+"linhas_fonte": 162755,
+"linhas_operadoras": 246,
+"ativos_operadoras": 384
+},
+{
+"arquivo": "pda-024-icb-PE-2022_03.zip",
+"competencia": "202203",
+"sha256": "4b7b4eb2900da31a3cfc803248a9bac0682898f5d5f295014ed5cdd5768048a5",
+"linhas_fonte": 449568,
+"linhas_operadoras": 438,
+"ativos_operadoras": 592
+},
+{
+"arquivo": "pda-024-icb-PI-2022_03.zip",
+"competencia": "202203",
+"sha256": "af116469ed462d7e57171b674670708fc856dfc01f76aec4a45684af6295a12c",
+"linhas_fonte": 100669,
+"linhas_operadoras": 34,
+"ativos_operadoras": 36
+},
+{
+"arquivo": "pda-024-icb-PR-2022_03.zip",
+"competencia": "202203",
+"sha256": "c68d05255d0b8057ea4045c2221018343f7ada3fb6c424319dabd35207d765b1",
+"linhas_fonte": 937508,
+"linhas_operadoras": 543,
+"ativos_operadoras": 613
+},
+{
+"arquivo": "pda-024-icb-RJ-2022_03.zip",
+"competencia": "202203",
+"sha256": "dc2d7fbf226f31544a5f1bbd6c6675a07f4a02505b0e683fe0166b3e237e05a9",
+"linhas_fonte": 1162499,
+"linhas_operadoras": 1576,
+"ativos_operadoras": 5015
+},
+{
+"arquivo": "pda-024-icb-RN-2022_03.zip",
+"competencia": "202203",
+"sha256": "bd24743b9f3ab0e783385b4d37edb4835431d5a7db4396b96bec3824ae1d929e",
+"linhas_fonte": 201266,
+"linhas_operadoras": 92,
+"ativos_operadoras": 95
+},
+{
+"arquivo": "pda-024-icb-RO-2022_03.zip",
+"competencia": "202203",
+"sha256": "e3dfdf1b561cee1487c35181dc6e0e1dcc920d6ef622b18aa73266cce1b5659e",
+"linhas_fonte": 76521,
+"linhas_operadoras": 356,
+"ativos_operadoras": 520
+},
+{
+"arquivo": "pda-024-icb-RR-2022_03.zip",
+"competencia": "202203",
+"sha256": "8a383fcd45dd82aa194661ef1322ade0b8ada258308ae6b2bc189e04a1191a6f",
+"linhas_fonte": 10829,
+"linhas_operadoras": 76,
+"ativos_operadoras": 157
+},
+{
+"arquivo": "pda-024-icb-RS-2022_03.zip",
+"competencia": "202203",
+"sha256": "e6440d9023b8bc11291b77b27481da7574917b27f9983c6fbcd11ffad6c3347e",
+"linhas_fonte": 816087,
+"linhas_operadoras": 987,
+"ativos_operadoras": 1513
+},
+{
+"arquivo": "pda-024-icb-SC-2022_03.zip",
+"competencia": "202203",
+"sha256": "47880e034babac1b6175e8625a1acff4c6f119ebab3ed2f79abaa246bfed7199",
+"linhas_fonte": 625957,
+"linhas_operadoras": 740,
+"ativos_operadoras": 904
+},
+{
+"arquivo": "pda-024-icb-SE-2022_03.zip",
+"competencia": "202203",
+"sha256": "0ae3bfc863d6852ed69f9b2d0b0ef11d8c3f568a9aea8f5cf6592d4790623eb4",
+"linhas_fonte": 108330,
+"linhas_operadoras": 28,
+"ativos_operadoras": 32
+},
+{
+"arquivo": "pda-024-icb-SP-2022_03.zip",
+"competencia": "202203",
+"sha256": "2f712c9240fb4140400a3ac61f3699e3d5c1623965ff545a5757466075fd52e2",
+"linhas_fonte": 4369035,
+"linhas_operadoras": 117345,
+"ativos_operadoras": 416505
+},
+{
+"arquivo": "pda-024-icb-TO-2022_03.zip",
+"competencia": "202203",
+"sha256": "d8c1c36d91e673e44a4ba236cd95d1fdfd217d0cd73de01e4afde7f5bb54fbeb",
+"linhas_fonte": 76842,
+"linhas_operadoras": 492,
+"ativos_operadoras": 770
+},
+{
+"arquivo": "pda-024-icb-XX-2022_03.zip",
+"competencia": "202203",
+"sha256": "921e724b95429c8e022e57c3a0c07a4b6f31d2ba86709ce37932c29977cb8fd4",
+"linhas_fonte": 11926,
+"linhas_operadoras": 0,
+"ativos_operadoras": 0
+},
+{
+"arquivo": "pda-024-icb-AC-2022_04.zip",
+"competencia": "202204",
+"sha256": "533ac1aaac4ad467c3f3315e34c08dba6bf2195d03602bfcc3c8369e92125f95",
+"linhas_fonte": 18878,
+"linhas_operadoras": 88,
+"ativos_operadoras": 126
+},
+{
+"arquivo": "pda-024-icb-AL-2022_04.zip",
+"competencia": "202204",
+"sha256": "079edf2a432d6c90eb60dcdd7c32cbf06aea3d0b0b6c9b22e9b45406b4ec7f97",
+"linhas_fonte": 127693,
+"linhas_operadoras": 93,
+"ativos_operadoras": 109
+},
+{
+"arquivo": "pda-024-icb-AM-2022_04.zip",
+"competencia": "202204",
+"sha256": "96ba678244d44617362e5eadf5bcde8e2e6dd4fe512c06d61f2b368394f74776",
+"linhas_fonte": 65869,
+"linhas_operadoras": 11,
+"ativos_operadoras": 10
+},
+{
+"arquivo": "pda-024-icb-AP-2022_04.zip",
+"competencia": "202204",
+"sha256": "757d21e2c6a563893796a338c2d3a83cf5ba11043c3151ff7c27e9d41e7e0b65",
+"linhas_fonte": 24273,
+"linhas_operadoras": 6,
+"ativos_operadoras": 6
+},
+{
+"arquivo": "pda-024-icb-BA-2022_04.zip",
+"competencia": "202204",
+"sha256": "3a2ea6b7b8d69b50628b1919b12146cfb1e05656cdcdb3f4f7d1321c35bc461a",
+"linhas_fonte": 600131,
+"linhas_operadoras": 242,
+"ativos_operadoras": 250
+},
+{
+"arquivo": "pda-024-icb-CE-2022_04.zip",
+"competencia": "202204",
+"sha256": "c9a48a3d7b79aa4c78d12251e20df6b1354ee0ff08833f208fa4560a4d27ea63",
+"linhas_fonte": 312925,
+"linhas_operadoras": 184,
+"ativos_operadoras": 213
+},
+{
+"arquivo": "pda-024-icb-DF-2022_04.zip",
+"competencia": "202204",
+"sha256": "6e81046f670a9ba2f48bc37891f2e354674265ebe485d7b589c373726a0f97f6",
+"linhas_fonte": 109790,
+"linhas_operadoras": 256,
+"ativos_operadoras": 870
+},
+{
+"arquivo": "pda-024-icb-ES-2022_04.zip",
+"competencia": "202204",
+"sha256": "a859ba98134484dcb4d725cc909cac9fc2440cc717c84e34651da0d93c865542",
+"linhas_fonte": 373342,
+"linhas_operadoras": 707,
+"ativos_operadoras": 2833
+},
+{
+"arquivo": "pda-024-icb-GO-2022_04.zip",
+"competencia": "202204",
+"sha256": "b8d771822ab39de6147dc42843265a07976284014f337b345edee3d24c21630f",
+"linhas_fonte": 459098,
+"linhas_operadoras": 1142,
+"ativos_operadoras": 1557
+},
+{
+"arquivo": "pda-024-icb-MA-2022_04.zip",
+"competencia": "202204",
+"sha256": "df2f4e78db404aa586013bba96590c8f0eea9200de9089dde3a32ecf77b3cdee",
+"linhas_fonte": 169003,
+"linhas_operadoras": 126,
+"ativos_operadoras": 164
+},
+{
+"arquivo": "pda-024-icb-MG-2022_04.zip",
+"competencia": "202204",
+"sha256": "d024bcb62e28ba533e1651a90e6fc3d152f1b1195cbedc02b37efc72a3e9087c",
+"linhas_fonte": 1646100,
+"linhas_operadoras": 10136,
+"ativos_operadoras": 35765
+},
+{
+"arquivo": "pda-024-icb-MS-2022_04.zip",
+"competencia": "202204",
+"sha256": "17b303f15cd4771cba670af6968d48044ff1aef7e9410f1284ca0277dcacf704",
+"linhas_fonte": 167427,
+"linhas_operadoras": 4539,
+"ativos_operadoras": 12568
+},
+{
+"arquivo": "pda-024-icb-MT-2022_04.zip",
+"competencia": "202204",
+"sha256": "a5929389491523cc92aaa2dbbd0e00dc96d09b84dc3f852a7929cd9a778a6228",
+"linhas_fonte": 226489,
+"linhas_operadoras": 1056,
+"ativos_operadoras": 1706
+},
+{
+"arquivo": "pda-024-icb-PA-2022_04.zip",
+"competencia": "202204",
+"sha256": "fabe0b19ed7c8d9cc8433bf3739a7368dafbd9d742886039c479ec2628de14c6",
+"linhas_fonte": 217899,
+"linhas_operadoras": 283,
+"ativos_operadoras": 430
+},
+{
+"arquivo": "pda-024-icb-PB-2022_04.zip",
+"competencia": "202204",
+"sha256": "c6ad1b7b099f4e45992549bfb48a70452b048cd998b61c5dbf57e00db630ccdb",
+"linhas_fonte": 163727,
+"linhas_operadoras": 247,
+"ativos_operadoras": 381
+},
+{
+"arquivo": "pda-024-icb-PE-2022_04.zip",
+"competencia": "202204",
+"sha256": "462f7d71aba406f0b8c35fcd7d8fdc3c30d6ba0d75464f8b286f810b387e310a",
+"linhas_fonte": 451668,
+"linhas_operadoras": 441,
+"ativos_operadoras": 583
+},
+{
+"arquivo": "pda-024-icb-PI-2022_04.zip",
+"competencia": "202204",
+"sha256": "78c47540a85a73c59d0b713208ce91e9288abb2e6774f0c939661596509b50e3",
+"linhas_fonte": 100941,
+"linhas_operadoras": 34,
+"ativos_operadoras": 36
+},
+{
+"arquivo": "pda-024-icb-PR-2022_04.zip",
+"competencia": "202204",
+"sha256": "c7f26296179b7b1673f4609fd9fef2a66a80f96a9797136bbce3c34ad5451a3a",
+"linhas_fonte": 939791,
+"linhas_operadoras": 547,
+"ativos_operadoras": 608
+},
+{
+"arquivo": "pda-024-icb-RJ-2022_04.zip",
+"competencia": "202204",
+"sha256": "86fee6a5db3b823d842faeced30c72d08d482ee1cad6878d673aab84ea028d39",
+"linhas_fonte": 1167495,
+"linhas_operadoras": 1576,
+"ativos_operadoras": 5068
+},
+{
+"arquivo": "pda-024-icb-RN-2022_04.zip",
+"competencia": "202204",
+"sha256": "b19b0d99fbe29d59030bd91ad6373e94d51c6fececd1170b978520f1223031a6",
+"linhas_fonte": 202898,
+"linhas_operadoras": 93,
+"ativos_operadoras": 98
+},
+{
+"arquivo": "pda-024-icb-RO-2022_04.zip",
+"competencia": "202204",
+"sha256": "d1209ad1f59f499263f437d03dc0d2b8e81b67807b04dee1c8e220272024833e",
+"linhas_fonte": 77000,
+"linhas_operadoras": 352,
+"ativos_operadoras": 518
+},
+{
+"arquivo": "pda-024-icb-RR-2022_04.zip",
+"competencia": "202204",
+"sha256": "caecaafed2982b5846848039512c414cdcaf1c486b8c621e4f0020701d009d64",
+"linhas_fonte": 10865,
+"linhas_operadoras": 75,
+"ativos_operadoras": 153
+},
+{
+"arquivo": "pda-024-icb-RS-2022_04.zip",
+"competencia": "202204",
+"sha256": "721a6c7eb5fe81e59d0fdd98e913728ff4fbf2addd92341e52f951cb8f7ad304",
+"linhas_fonte": 818194,
+"linhas_operadoras": 990,
+"ativos_operadoras": 1502
+},
+{
+"arquivo": "pda-024-icb-SC-2022_04.zip",
+"competencia": "202204",
+"sha256": "1ca04a5c84d55f4776188f18f72dbb5bed0960d3725b58efb3915c1d72966e9f",
+"linhas_fonte": 630552,
+"linhas_operadoras": 735,
+"ativos_operadoras": 905
+},
+{
+"arquivo": "pda-024-icb-SE-2022_04.zip",
+"competencia": "202204",
+"sha256": "bf8c2a297b95a2c851e590c43bd893a93ccff05b6d25fc5dd31d72f45bc63034",
+"linhas_fonte": 109137,
+"linhas_operadoras": 28,
+"ativos_operadoras": 32
+},
+{
+"arquivo": "pda-024-icb-SP-2022_04.zip",
+"competencia": "202204",
+"sha256": "7bb8e2e1889f66c592631f913325ee286a2427a63c58e6b73f9e32960979944a",
+"linhas_fonte": 4385587,
+"linhas_operadoras": 117344,
+"ativos_operadoras": 418433
+},
+{
+"arquivo": "pda-024-icb-TO-2022_04.zip",
+"competencia": "202204",
+"sha256": "0cd2ad634b2f135d7e31459868b4f907695edcc1f259854e4d9dbf45ea62bd9d",
+"linhas_fonte": 78068,
+"linhas_operadoras": 505,
+"ativos_operadoras": 778
+},
+{
+"arquivo": "pda-024-icb-XX-2022_04.zip",
+"competencia": "202204",
+"sha256": "7c34727ebe0643591b07f4efc34b6dac9c7c3a5698027e980841c24fe58a37a8",
+"linhas_fonte": 12395,
+"linhas_operadoras": 0,
+"ativos_operadoras": 0
+},
+{
+"arquivo": "pda-024-icb-AC-2022_05.zip",
+"competencia": "202205",
+"sha256": "31827888970f2948cdaaa3cd6097ba14ba1bad909e23a91511e826520c3bf54d",
+"linhas_fonte": 18637,
+"linhas_operadoras": 85,
+"ativos_operadoras": 125
+},
+{
+"arquivo": "pda-024-icb-AL-2022_05.zip",
+"competencia": "202205",
+"sha256": "6cb8f2da5bb2cebcd3af1acf6e60d833520821e53cc2ab807c3483d1bb48038d",
+"linhas_fonte": 127236,
+"linhas_operadoras": 91,
+"ativos_operadoras": 103
+},
+{
+"arquivo": "pda-024-icb-AM-2022_05.zip",
+"competencia": "202205",
+"sha256": "34e3a7eb7af43ba243a2de1ed78be5ddb36f3aa9be98036b266e51452d33c40a",
+"linhas_fonte": 65887,
+"linhas_operadoras": 10,
+"ativos_operadoras": 10
+},
+{
+"arquivo": "pda-024-icb-AP-2022_05.zip",
+"competencia": "202205",
+"sha256": "fbde81e1ec89a9aee710733ca0d03333da4c0a53deb5a0ead2bd423a66bb4f96",
+"linhas_fonte": 24222,
+"linhas_operadoras": 6,
+"ativos_operadoras": 6
+},
+{
+"arquivo": "pda-024-icb-BA-2022_05.zip",
+"competencia": "202205",
+"sha256": "313ef26dbece05e53db693004b01d058fd46e500e7b2bea15586ec4f5c35ae32",
+"linhas_fonte": 601330,
+"linhas_operadoras": 237,
+"ativos_operadoras": 243
+},
+{
+"arquivo": "pda-024-icb-CE-2022_05.zip",
+"competencia": "202205",
+"sha256": "5e33ab59e12e9e15a010afcdb99352c36a874391c1bf5442370582dc547dee22",
+"linhas_fonte": 314063,
+"linhas_operadoras": 179,
+"ativos_operadoras": 213
+},
+{
+"arquivo": "pda-024-icb-DF-2022_05.zip",
+"competencia": "202205",
+"sha256": "32e6ba40c2f92e7808a6f6edf284e30ec5bcbcc078baf93b8ed8d12cca968dd8",
+"linhas_fonte": 108783,
+"linhas_operadoras": 258,
+"ativos_operadoras": 863
+},
+{
+"arquivo": "pda-024-icb-ES-2022_05.zip",
+"competencia": "202205",
+"sha256": "40f2c3d31bb826cf045a710c2d198d6732a37da58da13538a3b6bf733c80a1e3",
+"linhas_fonte": 371101,
+"linhas_operadoras": 703,
+"ativos_operadoras": 2754
+},
+{
+"arquivo": "pda-024-icb-GO-2022_05.zip",
+"competencia": "202205",
+"sha256": "33436f56dfd60a56f8cb3bc1364689ca8db9f7344ef0f9682f01629f19ea3ebd",
+"linhas_fonte": 459372,
+"linhas_operadoras": 1143,
+"ativos_operadoras": 1555
+},
+{
+"arquivo": "pda-024-icb-MA-2022_05.zip",
+"competencia": "202205",
+"sha256": "f718f6a6c7235a607455c3d45751aafb06f54ad724ca2155fd8c3988caebffb8",
+"linhas_fonte": 168928,
+"linhas_operadoras": 124,
+"ativos_operadoras": 167
+},
+{
+"arquivo": "pda-024-icb-MG-2022_05.zip",
+"competencia": "202205",
+"sha256": "2585b117b5feb353a762c25ca1c5a424a0f699ee6978b33e516635e1d7bc6022",
+"linhas_fonte": 1638512,
+"linhas_operadoras": 10198,
+"ativos_operadoras": 35901
+},
+{
+"arquivo": "pda-024-icb-MS-2022_05.zip",
+"competencia": "202205",
+"sha256": "a2dd5309401b23c21a5433e12a21fa572021b7f1cbf59178a7a017ae23be19ac",
+"linhas_fonte": 167689,
+"linhas_operadoras": 4596,
+"ativos_operadoras": 12690
+},
+{
+"arquivo": "pda-024-icb-MT-2022_05.zip",
+"competencia": "202205",
+"sha256": "7eb4640a49e1c6ed5575ed443b2a0b507088fe4067c5318d8a9d187a170bc867",
+"linhas_fonte": 225474,
+"linhas_operadoras": 1071,
+"ativos_operadoras": 1728
+},
+{
+"arquivo": "pda-024-icb-PA-2022_05.zip",
+"competencia": "202205",
+"sha256": "8d6b4d33bc5f746c457ee127416900f5b416d30a531ccd32434ebbae6798803a",
+"linhas_fonte": 218524,
+"linhas_operadoras": 285,
+"ativos_operadoras": 433
+},
+{
+"arquivo": "pda-024-icb-PB-2022_05.zip",
+"competencia": "202205",
+"sha256": "453f74e360b33df4ca865c78c83329dd662e221ec2bfd7c00cb8c90374320a5d",
+"linhas_fonte": 162921,
+"linhas_operadoras": 246,
+"ativos_operadoras": 374
+},
+{
+"arquivo": "pda-024-icb-PE-2022_05.zip",
+"competencia": "202205",
+"sha256": "aeff305858d4be880832a12d1bf31148694aa53d5d854dfbd3ee8703a91fe90f",
+"linhas_fonte": 451903,
+"linhas_operadoras": 433,
+"ativos_operadoras": 578
+},
+{
+"arquivo": "pda-024-icb-PI-2022_05.zip",
+"competencia": "202205",
+"sha256": "0fb67012a84bd88796096bb3d9a1b47dc3824e9fc4a65ea8cfdd62d84c809c01",
+"linhas_fonte": 100756,
+"linhas_operadoras": 34,
+"ativos_operadoras": 36
+},
+{
+"arquivo": "pda-024-icb-PR-2022_05.zip",
+"competencia": "202205",
+"sha256": "5a40d83820f29f3047bff2d6a600aab8383687175debdc403fe06775eaf67065",
+"linhas_fonte": 940968,
+"linhas_operadoras": 548,
+"ativos_operadoras": 611
+},
+{
+"arquivo": "pda-024-icb-RJ-2022_05.zip",
+"competencia": "202205",
+"sha256": "f792f29ceabda46abfd3cb32cd1da0d66e6bf45823ed5c0733699f796cf803e0",
+"linhas_fonte": 1167144,
+"linhas_operadoras": 1580,
+"ativos_operadoras": 5156
+},
+{
+"arquivo": "pda-024-icb-RN-2022_05.zip",
+"competencia": "202205",
+"sha256": "95d1a4836013e6ebf26a0f17d5ea894102b78b889649db18c8c6b1e5846f8b3e",
+"linhas_fonte": 203296,
+"linhas_operadoras": 94,
+"ativos_operadoras": 91
+},
+{
+"arquivo": "pda-024-icb-RO-2022_05.zip",
+"competencia": "202205",
+"sha256": "47d29b6b005420194d909d03fb3f87782dcec64b831919263249ac35138cb248",
+"linhas_fonte": 76833,
+"linhas_operadoras": 355,
+"ativos_operadoras": 518
+},
+{
+"arquivo": "pda-024-icb-RR-2022_05.zip",
+"competencia": "202205",
+"sha256": "b782c5bc85ad85ef40f23023df8bbcdc601a0e6ae7ffd2db7d3ec75fce977ed5",
+"linhas_fonte": 10939,
+"linhas_operadoras": 74,
+"ativos_operadoras": 156
+},
+{
+"arquivo": "pda-024-icb-RS-2022_05.zip",
+"competencia": "202205",
+"sha256": "0b1f59b8b17889663c24e0b6718a3434e124af036e1710de1670a8ec0c7b7e30",
+"linhas_fonte": 818531,
+"linhas_operadoras": 975,
+"ativos_operadoras": 1471
+},
+{
+"arquivo": "pda-024-icb-SC-2022_05.zip",
+"competencia": "202205",
+"sha256": "f11aedd847cc82e655de5d8b2c533ac918eabbb736b5bb71caee11c9d6d72a32",
+"linhas_fonte": 631230,
+"linhas_operadoras": 729,
+"ativos_operadoras": 896
+},
+{
+"arquivo": "pda-024-icb-SE-2022_05.zip",
+"competencia": "202205",
+"sha256": "c3236042e29be631ab528cc5017abcb5e433693bb14d456fff98180589c2d53b",
+"linhas_fonte": 108810,
+"linhas_operadoras": 30,
+"ativos_operadoras": 32
+},
+{
+"arquivo": "pda-024-icb-SP-2022_05.zip",
+"competencia": "202205",
+"sha256": "caf10f324ceab4f8dfe431c15230e33b8297d508048d6c3a1c565970398a5ad6",
+"linhas_fonte": 4386103,
+"linhas_operadoras": 117741,
+"ativos_operadoras": 420446
+},
+{
+"arquivo": "pda-024-icb-TO-2022_05.zip",
+"competencia": "202205",
+"sha256": "26f78d5931379e2cf148408d38a51e328c31a81e982fd8820ce868353c36bf6d",
+"linhas_fonte": 76862,
+"linhas_operadoras": 534,
+"ativos_operadoras": 839
+},
+{
+"arquivo": "pda-024-icb-XX-2022_05.zip",
+"competencia": "202205",
+"sha256": "e9b73518a0bcca654226d030d9e901d2f66384cc5f237c663ca5e33c8407c478",
+"linhas_fonte": 11548,
+"linhas_operadoras": 0,
+"ativos_operadoras": 0
+},
+{
+"arquivo": "pda-024-icb-AC-2022_06.zip",
+"competencia": "202206",
+"sha256": "edf45ccd590b96cbdf8398624f06dc073c1a6fd57895b33b188553b77ef0ffbf",
+"linhas_fonte": 18626,
+"linhas_operadoras": 83,
+"ativos_operadoras": 124
+},
+{
+"arquivo": "pda-024-icb-AL-2022_06.zip",
+"competencia": "202206",
+"sha256": "bb8c9342c28ba85296405c1324849ecf64fbbbee1fc8fe9d49a29881a73880a1",
+"linhas_fonte": 127872,
+"linhas_operadoras": 85,
+"ativos_operadoras": 103
+},
+{
+"arquivo": "pda-024-icb-AM-2022_06.zip",
+"competencia": "202206",
+"sha256": "f6d1de52543f911248601543d4a87c0e887773d72f785d08685bde0b2ec6b5d0",
+"linhas_fonte": 66193,
+"linhas_operadoras": 12,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-AP-2022_06.zip",
+"competencia": "202206",
+"sha256": "ca473d6773c4b263b249e856889c8fbdc77ae71b9584a0951b6f6bd6dceb3945",
+"linhas_fonte": 24273,
+"linhas_operadoras": 6,
+"ativos_operadoras": 6
+},
+{
+"arquivo": "pda-024-icb-BA-2022_06.zip",
+"competencia": "202206",
+"sha256": "0e9098b5b5412f7a2cadf6c4ebf256bdcc35ffa41f274d043ffcf4be59aa2002",
+"linhas_fonte": 603846,
+"linhas_operadoras": 233,
+"ativos_operadoras": 237
+},
+{
+"arquivo": "pda-024-icb-CE-2022_06.zip",
+"competencia": "202206",
+"sha256": "86c36213bb71cceeac8c52f1d3fb5df6f1ab28854550918a7f0f7ed94e34c811",
+"linhas_fonte": 314868,
+"linhas_operadoras": 178,
+"ativos_operadoras": 208
+},
+{
+"arquivo": "pda-024-icb-DF-2022_06.zip",
+"competencia": "202206",
+"sha256": "790cdf2857c3d27b02ba228be296cce4da873a098d3c5de58c58b81863e2ff0f",
+"linhas_fonte": 109394,
+"linhas_operadoras": 254,
+"ativos_operadoras": 862
+},
+{
+"arquivo": "pda-024-icb-ES-2022_06.zip",
+"competencia": "202206",
+"sha256": "7ae6658ecadded634f5d810de6a91240c50d897a32e9cf4a7a01fc2757bd709e",
+"linhas_fonte": 372489,
+"linhas_operadoras": 668,
+"ativos_operadoras": 2712
+},
+{
+"arquivo": "pda-024-icb-GO-2022_06.zip",
+"competencia": "202206",
+"sha256": "6030b9843938e4c69a781140c89f0cb6cd9c36e3f4bd1d3ce5d83408c109490e",
+"linhas_fonte": 461406,
+"linhas_operadoras": 1148,
+"ativos_operadoras": 1559
+},
+{
+"arquivo": "pda-024-icb-MA-2022_06.zip",
+"competencia": "202206",
+"sha256": "4edccb947033cabc02f4529772b118b976ada00575665f1ca91ea96efe8a0834",
+"linhas_fonte": 169730,
+"linhas_operadoras": 125,
+"ativos_operadoras": 169
+},
+{
+"arquivo": "pda-024-icb-MG-2022_06.zip",
+"competencia": "202206",
+"sha256": "18939e54961b0a1c945e1d8e124badfa3a600c4524cf422facad3cfe97069206",
+"linhas_fonte": 1647781,
+"linhas_operadoras": 10158,
+"ativos_operadoras": 35884
+},
+{
+"arquivo": "pda-024-icb-MS-2022_06.zip",
+"competencia": "202206",
+"sha256": "7865d3c191b5fbb2931785dc89acf5bf0410cb23d92416d6f11491fe48d006dd",
+"linhas_fonte": 168435,
+"linhas_operadoras": 4621,
+"ativos_operadoras": 12768
+},
+{
+"arquivo": "pda-024-icb-MT-2022_06.zip",
+"competencia": "202206",
+"sha256": "7c74f4c599c2734825cf7db6bba34ed01ee0668eba5ec32d912191998b352d44",
+"linhas_fonte": 226815,
+"linhas_operadoras": 1066,
+"ativos_operadoras": 1712
+},
+{
+"arquivo": "pda-024-icb-PA-2022_06.zip",
+"competencia": "202206",
+"sha256": "e3c353d7a422d5553acacb79623760f4aeb2d7c478605537fa580b7d66992c5a",
+"linhas_fonte": 219519,
+"linhas_operadoras": 281,
+"ativos_operadoras": 431
+},
+{
+"arquivo": "pda-024-icb-PB-2022_06.zip",
+"competencia": "202206",
+"sha256": "364d92117db19004e9493eb9f292cf5c931f71dc3e116cce2d1112585a0cd78d",
+"linhas_fonte": 163348,
+"linhas_operadoras": 236,
+"ativos_operadoras": 370
+},
+{
+"arquivo": "pda-024-icb-PE-2022_06.zip",
+"competencia": "202206",
+"sha256": "8ede07a8f28439cbc79e4bd1a5343a862e3ddf0c0c5f768eb3f8967debebdedc",
+"linhas_fonte": 453316,
+"linhas_operadoras": 430,
+"ativos_operadoras": 574
+},
+{
+"arquivo": "pda-024-icb-PI-2022_06.zip",
+"competencia": "202206",
+"sha256": "ebe1b9c981bac7922810d1b2e907c8396e92f9321a720b0d8547705c0c0cde00",
+"linhas_fonte": 101233,
+"linhas_operadoras": 34,
+"ativos_operadoras": 36
+},
+{
+"arquivo": "pda-024-icb-PR-2022_06.zip",
+"competencia": "202206",
+"sha256": "53767154a72ac2a626f8673e11af44ed20c31cf53eb51e8c1d5d63ad32753d13",
+"linhas_fonte": 944167,
+"linhas_operadoras": 553,
+"ativos_operadoras": 621
+},
+{
+"arquivo": "pda-024-icb-RJ-2022_06.zip",
+"competencia": "202206",
+"sha256": "562f4af611abe219e6e49c1f81d0342d04ee6d0fcfedf46eb4f402cbd344f23d",
+"linhas_fonte": 1167693,
+"linhas_operadoras": 1580,
+"ativos_operadoras": 5185
+},
+{
+"arquivo": "pda-024-icb-RN-2022_06.zip",
+"competencia": "202206",
+"sha256": "532de946ddea73c7aea7c59f626c5af22f283a405c7a70b90489eed6cfeca56a",
+"linhas_fonte": 204183,
+"linhas_operadoras": 88,
+"ativos_operadoras": 82
+},
+{
+"arquivo": "pda-024-icb-RO-2022_06.zip",
+"competencia": "202206",
+"sha256": "7a82d8a944e162cbffdc0ee572ac4d7ff0d5de53a0328c15438649fd3f00cab6",
+"linhas_fonte": 77176,
+"linhas_operadoras": 348,
+"ativos_operadoras": 506
+},
+{
+"arquivo": "pda-024-icb-RR-2022_06.zip",
+"competencia": "202206",
+"sha256": "4a0df16562a24d562c5dcff58438ff2915e767651a5251a1c2e7b03c5d192494",
+"linhas_fonte": 10974,
+"linhas_operadoras": 74,
+"ativos_operadoras": 155
+},
+{
+"arquivo": "pda-024-icb-RS-2022_06.zip",
+"competencia": "202206",
+"sha256": "46caf6301754c4067916350229c5efc2e5cfcfbabb1e1c7cffb7f2b40e1c98b8",
+"linhas_fonte": 823237,
+"linhas_operadoras": 972,
+"ativos_operadoras": 1466
+},
+{
+"arquivo": "pda-024-icb-SC-2022_06.zip",
+"competencia": "202206",
+"sha256": "94e26a5af32f8504a3ebabaa11653004d7d371c19fad383f773ad08a40bb77a7",
+"linhas_fonte": 634345,
+"linhas_operadoras": 723,
+"ativos_operadoras": 892
+},
+{
+"arquivo": "pda-024-icb-SE-2022_06.zip",
+"competencia": "202206",
+"sha256": "0b209424c3ca768db91541628c8e54376e9a1bf486cbb95933a9f2b9b48fed7d",
+"linhas_fonte": 109363,
+"linhas_operadoras": 29,
+"ativos_operadoras": 32
+},
+{
+"arquivo": "pda-024-icb-SP-2022_06.zip",
+"competencia": "202206",
+"sha256": "adc71317b22fb7ae7af336455aaab74d30a0195d414b5ec13939e7047f057d86",
+"linhas_fonte": 4402408,
+"linhas_operadoras": 117891,
+"ativos_operadoras": 421304
+},
+{
+"arquivo": "pda-024-icb-TO-2022_06.zip",
+"competencia": "202206",
+"sha256": "f6a71a20bfea0755d6a645e03a1c17f1803e1790d810d8e42b66da4a9d3bfed3",
+"linhas_fonte": 77084,
+"linhas_operadoras": 536,
+"ativos_operadoras": 840
+},
+{
+"arquivo": "pda-024-icb-XX-2022_06.zip",
+"competencia": "202206",
+"sha256": "88d7d49b8b59e5cceb432b349b2ffe0fadf9cd7edd1e68994814af248570750b",
+"linhas_fonte": 11043,
+"linhas_operadoras": 0,
+"ativos_operadoras": 0
+},
+{
+"arquivo": "pda-024-icb-AC-2022_07.zip",
+"competencia": "202207",
+"sha256": "b12c08ad3f3bff707f9178a4b51830c2222ca28f3658da32ec3a2285626f2b09",
+"linhas_fonte": 18732,
+"linhas_operadoras": 82,
+"ativos_operadoras": 125
+},
+{
+"arquivo": "pda-024-icb-AL-2022_07.zip",
+"competencia": "202207",
+"sha256": "a9bc45ed60aae6b5e57c0370e62e25c7cf1a111802e1fdca480d3c828126fd1f",
+"linhas_fonte": 128007,
+"linhas_operadoras": 86,
+"ativos_operadoras": 104
+},
+{
+"arquivo": "pda-024-icb-AM-2022_07.zip",
+"competencia": "202207",
+"sha256": "7adeae1c798bba8e1abf579145a2601258eedbd43032d8606dfe640a37afbf26",
+"linhas_fonte": 66673,
+"linhas_operadoras": 11,
+"ativos_operadoras": 11
+},
+{
+"arquivo": "pda-024-icb-AP-2022_07.zip",
+"competencia": "202207",
+"sha256": "123b6fab414628cb46884410a7477f20e727c0b0b94a6f2908603cbc8fd0483c",
+"linhas_fonte": 24431,
+"linhas_operadoras": 6,
+"ativos_operadoras": 6
+},
+{
+"arquivo": "pda-024-icb-BA-2022_07.zip",
+"competencia": "202207",
+"sha256": "148799d1fc427d32d86b7e7d994e8d6075bb2f6ba042ab05c9ec74ba87d72c07",
+"linhas_fonte": 607577,
+"linhas_operadoras": 231,
+"ativos_operadoras": 239
+},
+{
+"arquivo": "pda-024-icb-CE-2022_07.zip",
+"competencia": "202207",
+"sha256": "03d2e9cca420efcff516d4028b086814ef62629f98f472cfae011d2626e89661",
+"linhas_fonte": 317024,
+"linhas_operadoras": 182,
+"ativos_operadoras": 210
+},
+{
+"arquivo": "pda-024-icb-DF-2022_07.zip",
+"competencia": "202207",
+"sha256": "03697e5b9bf279dac563a31575dddf9b01e873a8c9120cf4258eacce86b01182",
+"linhas_fonte": 110722,
+"linhas_operadoras": 256,
+"ativos_operadoras": 860
+},
+{
+"arquivo": "pda-024-icb-ES-2022_07.zip",
+"competencia": "202207",
+"sha256": "c62588ddbb68bf2cfd0bce07b56c7ebd8137d5487150bfcf9238723167bd31f9",
+"linhas_fonte": 373916,
+"linhas_operadoras": 664,
+"ativos_operadoras": 2646
+},
+{
+"arquivo": "pda-024-icb-GO-2022_07.zip",
+"competencia": "202207",
+"sha256": "6783478a513357ac7f52a2d55377360a9ca97c750d2d19baa2a96e761227c725",
+"linhas_fonte": 463716,
+"linhas_operadoras": 1163,
+"ativos_operadoras": 1568
+},
+{
+"arquivo": "pda-024-icb-MA-2022_07.zip",
+"competencia": "202207",
+"sha256": "2ae0c7bbd2a53ba9b7a38c73aaa1afb1bb41317c9cd1eab5bacc891ef007bc40",
+"linhas_fonte": 170873,
+"linhas_operadoras": 130,
+"ativos_operadoras": 165
+},
+{
+"arquivo": "pda-024-icb-MG-2022_07.zip",
+"competencia": "202207",
+"sha256": "fdb0cb270333a77c6eea7f5cb713661d38f620cf98d6c1de1fbeaf6ec0fcb1eb",
+"linhas_fonte": 1654255,
+"linhas_operadoras": 10150,
+"ativos_operadoras": 36011
+},
+{
+"arquivo": "pda-024-icb-MS-2022_07.zip",
+"competencia": "202207",
+"sha256": "5774343e1c0d84d52ceebccc4da0b97d4394f3edc5ffbdf94d8ef8a076e51398",
+"linhas_fonte": 169408,
+"linhas_operadoras": 4655,
+"ativos_operadoras": 13023
+},
+{
+"arquivo": "pda-024-icb-MT-2022_07.zip",
+"competencia": "202207",
+"sha256": "2ef711a2b6e76378b219aaa80bbd9ed4217aee28c57aa0e436e8f297dd602f6b",
+"linhas_fonte": 227840,
+"linhas_operadoras": 1066,
+"ativos_operadoras": 1711
+},
+{
+"arquivo": "pda-024-icb-PA-2022_07.zip",
+"competencia": "202207",
+"sha256": "f748f7c7262f8d2ad9d4e3f9e26a0b311f8b253bff4a21dee594709a1c6a331a",
+"linhas_fonte": 220747,
+"linhas_operadoras": 282,
+"ativos_operadoras": 418
+},
+{
+"arquivo": "pda-024-icb-PB-2022_07.zip",
+"competencia": "202207",
+"sha256": "f88799797256e12e789b6625345372855081d887647689d43d4ac19d5bbeca4c",
+"linhas_fonte": 164213,
+"linhas_operadoras": 234,
+"ativos_operadoras": 364
+},
+{
+"arquivo": "pda-024-icb-PE-2022_07.zip",
+"competencia": "202207",
+"sha256": "0bb2c97620d4f2019131d2a7553b3f79f644880edd1da52af114eb206d759150",
+"linhas_fonte": 456667,
+"linhas_operadoras": 421,
+"ativos_operadoras": 564
+},
+{
+"arquivo": "pda-024-icb-PI-2022_07.zip",
+"competencia": "202207",
+"sha256": "5f4b6a9318b7d2c5ed841ebc2f76358bde23a159f021dc9da7778a42e7543f5d",
+"linhas_fonte": 101456,
+"linhas_operadoras": 34,
+"ativos_operadoras": 35
+},
+{
+"arquivo": "pda-024-icb-PR-2022_07.zip",
+"competencia": "202207",
+"sha256": "3ee8d514423c370bc58fcd4e4f3eb087abbe59de8a51781b7103f6ee82ad4a2b",
+"linhas_fonte": 949962,
+"linhas_operadoras": 557,
+"ativos_operadoras": 624
+},
+{
+"arquivo": "pda-024-icb-RJ-2022_07.zip",
+"competencia": "202207",
+"sha256": "2339ad5e467fd88e3d8164c1c7024c42ed2d2fb6ef301ff1cb258e89ec34dc23",
+"linhas_fonte": 1176953,
+"linhas_operadoras": 1577,
+"ativos_operadoras": 5231
+},
+{
+"arquivo": "pda-024-icb-RN-2022_07.zip",
+"competencia": "202207",
+"sha256": "fffbc3cf0b004eafc56ab491351a3bdf03636373eb37a7525e158cd614b79691",
+"linhas_fonte": 204757,
+"linhas_operadoras": 78,
+"ativos_operadoras": 82
+},
+{
+"arquivo": "pda-024-icb-RO-2022_07.zip",
+"competencia": "202207",
+"sha256": "a6c1e6629c55dca0419f01c2af4ea4d1445b06aea037e8fc3ea00dafbe04cd99",
+"linhas_fonte": 77477,
+"linhas_operadoras": 345,
+"ativos_operadoras": 505
+},
+{
+"arquivo": "pda-024-icb-RR-2022_07.zip",
+"competencia": "202207",
+"sha256": "71ef9808bcd3c25e1ccf55d22319f081086ef70c0f59bbbb6e5401c12f744b97",
+"linhas_fonte": 10999,
+"linhas_operadoras": 74,
+"ativos_operadoras": 135
+},
+{
+"arquivo": "pda-024-icb-RS-2022_07.zip",
+"competencia": "202207",
+"sha256": "520d66f1dcbb4ec89b130b75d1986af94d33c4844d043bd5d3a5c5036489d790",
+"linhas_fonte": 825774,
+"linhas_operadoras": 963,
+"ativos_operadoras": 1456
+},
+{
+"arquivo": "pda-024-icb-SC-2022_07.zip",
+"competencia": "202207",
+"sha256": "84960af72beb8e0d4e4ff3b306f254153079d034eaf15e6943711e6353baeb60",
+"linhas_fonte": 637823,
+"linhas_operadoras": 721,
+"ativos_operadoras": 898
+},
+{
+"arquivo": "pda-024-icb-SE-2022_07.zip",
+"competencia": "202207",
+"sha256": "ad78f49eb0bec9bacff50c808b0495eb41759d14697f8ae05f528b1796e02dae",
+"linhas_fonte": 110801,
+"linhas_operadoras": 29,
+"ativos_operadoras": 32
+},
+{
+"arquivo": "pda-024-icb-TO-2022_07.zip",
+"competencia": "202207",
+"sha256": "476ccd7c736094d8dfe3292e703c5e1811935d1e2c5a41416ed2b95c25b3f899",
+"linhas_fonte": 77555,
+"linhas_operadoras": 533,
+"ativos_operadoras": 826
+},
+{
+"arquivo": "pda-024-icb-XX-2022_07.zip",
+"competencia": "202207",
+"sha256": "12bca8b9d63a249dfb6dd372bda904b756af283ccc81c35b12ddcc98312a8c3d",
+"linhas_fonte": 11006,
+"linhas_operadoras": 0,
+"ativos_operadoras": 0
+},
+{
+"arquivo": "pda-024-icb-AC-2022_08.zip",
+"competencia": "202208",
+"sha256": "e6ffca1017ac72340c3e6de8c296632fbc8b00fa1799de008ed9e9eb7c1e060c",
+"linhas_fonte": 18710,
+"linhas_operadoras": 83,
+"ativos_operadoras": 125
+},
+{
+"arquivo": "pda-024-icb-AL-2022_08.zip",
+"competencia": "202208",
+"sha256": "3943a13cde59ba67be21035a0e2f6c6b17da0e8c56f0fb295472c1967e417331",
+"linhas_fonte": 129379,
+"linhas_operadoras": 87,
+"ativos_operadoras": 105
+},
+{
+"arquivo": "pda-024-icb-AM-2022_08.zip",
+"competencia": "202208",
+"sha256": "bb7809920689cb365471cbd5cd2fe41201795b515202f8d7a03ad90f7f45acb7",
+"linhas_fonte": 67043,
+"linhas_operadoras": 12,
+"ativos_operadoras": 12
+},
+{
+"arquivo": "pda-024-icb-AP-2022_08.zip",
+"competencia": "202208",
+"sha256": "caf713f56646c4a9d8cef41c69f923aab34e1560170f152f7491a41c810f0036",
+"linhas_fonte": 24691,
+"linhas_operadoras": 6,
+"ativos_operadoras": 4
+},
+{
+"arquivo": "pda-024-icb-BA-2022_08.zip",
+"competencia": "202208",
+"sha256": "3704c7e35e4a83a60d1001792ffaa540849dc7201c37708d00e42c03e62d9bb4",
+"linhas_fonte": 611624,
+"linhas_operadoras": 227,
+"ativos_operadoras": 236
+},
+{
+"arquivo": "pda-024-icb-CE-2022_08.zip",
+"competencia": "202208",
+"sha256": "9c665b0947d4885862f22b79553d6fb2985118e60d802543c5c14b38a198525a",
+"linhas_fonte": 318804,
+"linhas_operadoras": 179,
+"ativos_operadoras": 210
+},
+{
+"arquivo": "pda-024-icb-DF-2022_08.zip",
+"competencia": "202208",
+"sha256": "338c4318487c9483befc1b2ec057f2830fc86c1927306c21a07c55077f900651",
+"linhas_fonte": 111186,
+"linhas_operadoras": 260,
+"ativos_operadoras": 862
+},
+{
+"arquivo": "pda-024-icb-ES-2022_08.zip",
+"competencia": "202208",
+"sha256": "ae2accbaca81322c8d7fd54754d348b9e1bb307097e2d0c738a3a40690a996a9",
+"linhas_fonte": 372525,
+"linhas_operadoras": 655,
+"ativos_operadoras": 2565
+},
+{
+"arquivo": "pda-024-icb-GO-2022_08.zip",
+"competencia": "202208",
+"sha256": "48424bab25902540b64362377ae5de5f7bcecab84a4f93e30f213e247bc273e3",
+"linhas_fonte": 466634,
+"linhas_operadoras": 1166,
+"ativos_operadoras": 1569
+},
+{
+"arquivo": "pda-024-icb-MA-2022_08.zip",
+"competencia": "202208",
+"sha256": "813e0bfe9d9e88bc0bcb7f4c2f82f392c5bcd637df71dd7964a37e33b03484a0",
+"linhas_fonte": 172491,
+"linhas_operadoras": 122,
+"ativos_operadoras": 165
+},
+{
+"arquivo": "pda-024-icb-MG-2022_08.zip",
+"competencia": "202208",
+"sha256": "d01b747da97a731814a4730b2e4879c94736bbb43914bfab1fb55e01494e7bb1",
+"linhas_fonte": 1662090,
+"linhas_operadoras": 10173,
+"ativos_operadoras": 36070
+},
+{
+"arquivo": "pda-024-icb-MS-2022_08.zip",
+"competencia": "202208",
+"sha256": "3707bbb419f82b28f8e1915294355232b7d9d9967f1f2abf5339051371e90425",
+"linhas_fonte": 170660,
+"linhas_operadoras": 4717,
+"ativos_operadoras": 13190
+},
+{
+"arquivo": "pda-024-icb-MT-2022_08.zip",
+"competencia": "202208",
+"sha256": "ac6ecb490e1ef039fe63d61810e3463c6f8ff01df4327873b8a0184e93bbe3f4",
+"linhas_fonte": 229587,
+"linhas_operadoras": 1069,
+"ativos_operadoras": 1694
+},
+{
+"arquivo": "pda-024-icb-PA-2022_08.zip",
+"competencia": "202208",
+"sha256": "ecae80635bb100fa26fb07a7d5c1a872c33853860a69077903d8ea8bcbb74982",
+"linhas_fonte": 222220,
+"linhas_operadoras": 274,
+"ativos_operadoras": 414
+},
+{
+"arquivo": "pda-024-icb-PB-2022_08.zip",
+"competencia": "202208",
+"sha256": "af50c91be20e64e9b781395b59f750f10a9be60d83c4ccad8e6a685a4485e2e9",
+"linhas_fonte": 165060,
+"linhas_operadoras": 229,
+"ativos_operadoras": 357
+},
+{
+"arquivo": "pda-024-icb-PE-2022_08.zip",
+"competencia": "202208",
+"sha256": "ad80d0351851a8d989aac7c622c748d6bf335f9a793bf0a1a1e9da028f836217",
+"linhas_fonte": 459190,
+"linhas_operadoras": 412,
+"ativos_operadoras": 544
+},
+{
+"arquivo": "pda-024-icb-PI-2022_08.zip",
+"competencia": "202208",
+"sha256": "b6d9dbe7b3f3653d010fe8f5cccb9760d302067380320a236c7642b13bbcec35",
+"linhas_fonte": 102566,
+"linhas_operadoras": 33,
+"ativos_operadoras": 35
+},
+{
+"arquivo": "pda-024-icb-PR-2022_08.zip",
+"competencia": "202208",
+"sha256": "f779bf610001bf082caf7851ca262f443bc72203311e33c22359d907a1fc5ea8",
+"linhas_fonte": 953567,
+"linhas_operadoras": 562,
+"ativos_operadoras": 625
+},
+{
+"arquivo": "pda-024-icb-RJ-2022_08.zip",
+"competencia": "202208",
+"sha256": "2236e975f0ea0efac48ceba599910676357ce36a5e3b58ced5e7df35af5a37c0",
+"linhas_fonte": 1185889,
+"linhas_operadoras": 1562,
+"ativos_operadoras": 5229
+},
+{
+"arquivo": "pda-024-icb-RN-2022_08.zip",
+"competencia": "202208",
+"sha256": "0ad090607fb4827c6adb06ac7c74a5f95de42e283cd40d8e185d8ca461256437",
+"linhas_fonte": 205613,
+"linhas_operadoras": 78,
+"ativos_operadoras": 75
+},
+{
+"arquivo": "pda-024-icb-RO-2022_08.zip",
+"competencia": "202208",
+"sha256": "ec029e62ea07cc8f774fcd12844c079948fb27153595e2fd13bb87adeac363fd",
+"linhas_fonte": 76190,
+"linhas_operadoras": 347,
+"ativos_operadoras": 507
+},
+{
+"arquivo": "pda-024-icb-RR-2022_08.zip",
+"competencia": "202208",
+"sha256": "361e4990e718dcd1c3092f28aa3b3aa44f2ef63e8368148da3af175531d62758",
+"linhas_fonte": 11234,
+"linhas_operadoras": 71,
+"ativos_operadoras": 122
+},
+{
+"arquivo": "pda-024-icb-RS-2022_08.zip",
+"competencia": "202208",
+"sha256": "dd03698c6713f9a47d1f8a63883302b471e45e3de80ade11f80014676347f09f",
+"linhas_fonte": 829726,
+"linhas_operadoras": 953,
+"ativos_operadoras": 1408
+},
+{
+"arquivo": "pda-024-icb-SC-2022_08.zip",
+"competencia": "202208",
+"sha256": "cf98ee2f1be33a86f3a30262eb176fddcb06d8b782bcc642ad414e5bdcfa8841",
+"linhas_fonte": 641339,
+"linhas_operadoras": 719,
+"ativos_operadoras": 897
+},
+{
+"arquivo": "pda-024-icb-SE-2022_08.zip",
+"competencia": "202208",
+"sha256": "47bb4bf51192b4ef33cd835385e8707efc4d4109ea67efa3c2f5223374f76aaf",
+"linhas_fonte": 111735,
+"linhas_operadoras": 29,
+"ativos_operadoras": 32
+},
+{
+"arquivo": "pda-024-icb-TO-2022_08.zip",
+"competencia": "202208",
+"sha256": "dd9b8fec38044ef26741215fd16ac0bb9ecf3cf93536dd3642d1b496574a07e1",
+"linhas_fonte": 77774,
+"linhas_operadoras": 527,
+"ativos_operadoras": 826
+},
+{
+"arquivo": "pda-024-icb-XX-2022_08.zip",
+"competencia": "202208",
+"sha256": "49c78926550cfc4784293a4becc64ef57c462df5ee200690def88bd6abf7f312",
+"linhas_fonte": 10917,
+"linhas_operadoras": 0,
+"ativos_operadoras": 0
+},
+{
+"arquivo": "pda-024-icb-AC-2022_09.zip",
+"competencia": "202209",
+"sha256": "7a6780bd45deb8e493742dac416e1b574cad94416e567c0ab8649124d4aea32c",
+"linhas_fonte": 18689,
+"linhas_operadoras": 84,
+"ativos_operadoras": 120
+},
+{
+"arquivo": "pda-024-icb-AL-2022_09.zip",
+"competencia": "202209",
+"sha256": "90438868d30157bdfa2cbff42d7fcb6c515f6ce7dfd33f656cd67ee7e9d0ecab",
+"linhas_fonte": 129991,
+"linhas_operadoras": 89,
+"ativos_operadoras": 105
+},
+{
+"arquivo": "pda-024-icb-AM-2022_09.zip",
+"competencia": "202209",
+"sha256": "7ad93c688a060db0de89a08d33610c23d3634d7d4acf4f81c36198e074286627",
+"linhas_fonte": 67437,
+"linhas_operadoras": 15,
+"ativos_operadoras": 15
+},
+{
+"arquivo": "pda-024-icb-AP-2022_09.zip",
+"competencia": "202209",
+"sha256": "40ea1ffbe7a9f6e2849488fff9306537cf71c11b5277b89f3a541dcc8d116c3e",
+"linhas_fonte": 24749,
+"linhas_operadoras": 4,
+"ativos_operadoras": 4
+},
+{
+"arquivo": "pda-024-icb-BA-2022_09.zip",
+"competencia": "202209",
+"sha256": "c117568d18ebe89596ca2c969aeb6b021f297990ada628e9031d51b07000258d",
+"linhas_fonte": 613452,
+"linhas_operadoras": 235,
+"ativos_operadoras": 242
+},
+{
+"arquivo": "pda-024-icb-CE-2022_09.zip",
+"competencia": "202209",
+"sha256": "408dc4e7b54294f1c50a29fe0a82a9fcf3d3ecc00942611125cbdc6e544e03bc",
+"linhas_fonte": 320076,
+"linhas_operadoras": 180,
+"ativos_operadoras": 215
+},
+{
+"arquivo": "pda-024-icb-DF-2022_09.zip",
+"competencia": "202209",
+"sha256": "8a936e6bed8ce80756b0cef37c4513b6e5efc14f50f51f7cfe2d79d7fcedc5ce",
+"linhas_fonte": 111482,
+"linhas_operadoras": 263,
+"ativos_operadoras": 859
+},
+{
+"arquivo": "pda-024-icb-ES-2022_09.zip",
+"competencia": "202209",
+"sha256": "ee222f4bb2d609d5d018873f7ddeae95be5d7e8d4e7ba62c4ded77e36c6b66d8",
+"linhas_fonte": 375300,
+"linhas_operadoras": 644,
+"ativos_operadoras": 2403
+},
+{
+"arquivo": "pda-024-icb-GO-2022_09.zip",
+"competencia": "202209",
+"sha256": "091aaa4445c7d3b54cc7c9071188d8cb4b52380f892726ab4bd8857dca0b62c3",
+"linhas_fonte": 467487,
+"linhas_operadoras": 1148,
+"ativos_operadoras": 1569
+},
+{
+"arquivo": "pda-024-icb-MA-2022_09.zip",
+"competencia": "202209",
+"sha256": "577b06a353064131860441fe78d431f5330c50949b9848e7ff9a70e1970b46ea",
+"linhas_fonte": 172975,
+"linhas_operadoras": 125,
+"ativos_operadoras": 168
+},
+{
+"arquivo": "pda-024-icb-MS-2022_09.zip",
+"competencia": "202209",
+"sha256": "99072e8bd6e7b74426240ed34191b161161b739cea2697be7d0529cf57dace60",
+"linhas_fonte": 171059,
+"linhas_operadoras": 4742,
+"ativos_operadoras": 13183
+},
+{
+"arquivo": "pda-024-icb-MT-2022_09.zip",
+"competencia": "202209",
+"sha256": "3612ac12f0304e347334b11f7288b47f255b0f7bebb376a29e4ea2666e1451aa",
+"linhas_fonte": 230943,
+"linhas_operadoras": 1051,
+"ativos_operadoras": 1687
+},
+{
+"arquivo": "pda-024-icb-PA-2022_09.zip",
+"competencia": "202209",
+"sha256": "583303fd7105bdbe93b62b164f5a6ee49d47577d884c367e930f84ec6ff0acec",
+"linhas_fonte": 223250,
+"linhas_operadoras": 269,
+"ativos_operadoras": 420
+},
+{
+"arquivo": "pda-024-icb-PB-2022_09.zip",
+"competencia": "202209",
+"sha256": "ea256fb0f7eb9f88a4afe54e0dfa88e3ae05b1a62a53ba15c71bdfc9706c1779",
+"linhas_fonte": 165624,
+"linhas_operadoras": 223,
+"ativos_operadoras": 350
+},
+{
+"arquivo": "pda-024-icb-PE-2022_09.zip",
+"competencia": "202209",
+"sha256": "ff3dad59183ebb500ee1a6d876d4fc59d0644b86a552a6edc9bb19e850deba49",
+"linhas_fonte": 461106,
+"linhas_operadoras": 398,
+"ativos_operadoras": 529
+},
+{
+"arquivo": "pda-024-icb-PI-2022_09.zip",
+"competencia": "202209",
+"sha256": "b7cfd541e78bfb43bf389cd2832a72797ea6bf9072c3768f39948a7f0deaff27",
+"linhas_fonte": 102910,
+"linhas_operadoras": 33,
+"ativos_operadoras": 34
+},
+{
+"arquivo": "pda-024-icb-PR-2022_09.zip",
+"competencia": "202209",
+"sha256": "c703c502d2a090a0b31ada3e17f475a1c4a26b3b67be6cc4d0bf5210447e3a79",
+"linhas_fonte": 959319,
+"linhas_operadoras": 569,
+"ativos_operadoras": 634
+},
+{
+"arquivo": "pda-024-icb-RJ-2022_09.zip",
+"competencia": "202209",
+"sha256": "bbc763578ceb6730d68c51b4061ffcaa49912d88891a251cc5cbbc7e72573597",
+"linhas_fonte": 1187871,
+"linhas_operadoras": 1561,
+"ativos_operadoras": 5170
+},
+{
+"arquivo": "pda-024-icb-RN-2022_09.zip",
+"competencia": "202209",
+"sha256": "7396257aa303ad0c9d66f4e63b836c719378570b0dd02191464f9f729c88a6ab",
+"linhas_fonte": 206211,
+"linhas_operadoras": 71,
+"ativos_operadoras": 75
+},
+{
+"arquivo": "pda-024-icb-RO-2022_09.zip",
+"competencia": "202209",
+"sha256": "5ea90a9887dbf4936032ceeae62eb2fb5afe0777b823bc2a3b2ca83c275e3b1d",
+"linhas_fonte": 76224,
+"linhas_operadoras": 345,
+"ativos_operadoras": 515
+},
+{
+"arquivo": "pda-024-icb-RR-2022_09.zip",
+"competencia": "202209",
+"sha256": "f8f52ddc72c0c4bb6974fee2dd70113133042c3cf6a9fa7a69f4f3150f4c1a26",
+"linhas_fonte": 11161,
+"linhas_operadoras": 65,
+"ativos_operadoras": 112
+},
+{
+"arquivo": "pda-024-icb-RS-2022_09.zip",
+"competencia": "202209",
+"sha256": "a74424ad46157dcab0fe5e238dbe072ba16ec7d233d0f114614a369e96ac3327",
+"linhas_fonte": 831430,
+"linhas_operadoras": 925,
+"ativos_operadoras": 1379
+},
+{
+"arquivo": "pda-024-icb-SC-2022_09.zip",
+"competencia": "202209",
+"sha256": "c4fb4bbb0fc0357486e201d39b6ce98fadcaa15a3e718235b79b291a85917725",
+"linhas_fonte": 644472,
+"linhas_operadoras": 718,
+"ativos_operadoras": 908
+},
+{
+"arquivo": "pda-024-icb-SE-2022_09.zip",
+"competencia": "202209",
+"sha256": "0bfd749d461b5089e45f191efa4fbde911efa20e0a0dfe172e531cea7e1acc04",
+"linhas_fonte": 112126,
+"linhas_operadoras": 29,
+"ativos_operadoras": 32
+},
+{
+"arquivo": "pda-024-icb-TO-2022_09.zip",
+"competencia": "202209",
+"sha256": "fb0ad3b31dba5d0d5060dc9a13dac3bade5f2ad5e167a0fe0fbc3ed4ead7989f",
+"linhas_fonte": 78059,
+"linhas_operadoras": 521,
+"ativos_operadoras": 832
+},
+{
+"arquivo": "pda-024-icb-XX-2022_09.zip",
+"competencia": "202209",
+"sha256": "f586caf4aba14d88d3e160ac58197454b4289b3739e5a12aebca5e630a5a5a52",
+"linhas_fonte": 10853,
+"linhas_operadoras": 0,
+"ativos_operadoras": 0
+},
+{
+"arquivo": "pda-024-icb-AC-2022_10.zip",
+"competencia": "202210",
+"sha256": "6ab2d2ffe627a2d9df425361430d86ba1d1c83ee88ff88fff469e4106dc9cf0c",
+"linhas_fonte": 18819,
+"linhas_operadoras": 84,
+"ativos_operadoras": 117
+},
+{
+"arquivo": "pda-024-icb-AL-2022_10.zip",
+"competencia": "202210",
+"sha256": "0b52e4403dfc4bc4c86b42e51e9f08839c67973927561ad8465695774a0d3fc6",
+"linhas_fonte": 130146,
+"linhas_operadoras": 90,
+"ativos_operadoras": 103
+},
+{
+"arquivo": "pda-024-icb-AM-2022_10.zip",
+"competencia": "202210",
+"sha256": "c902b149ad1b2719f5d78811aa698eceef73383e3487bb030d0be9d9841ab9f1",
+"linhas_fonte": 67935,
+"linhas_operadoras": 15,
+"ativos_operadoras": 15
+},
+{
+"arquivo": "pda-024-icb-AP-2022_10.zip",
+"competencia": "202210",
+"sha256": "754669d14eab42d49a6548d281e8565e9100cba640b1d8ae850d10627cd28cfb",
+"linhas_fonte": 24865,
+"linhas_operadoras": 4,
+"ativos_operadoras": 4
+},
+{
+"arquivo": "pda-024-icb-DF-2022_10.zip",
+"competencia": "202210",
+"sha256": "f02ed54d186bf497bcfbd137b075a4eebdfde30333c8821b8c958ca97c39e7ce",
+"linhas_fonte": 110064,
+"linhas_operadoras": 265,
+"ativos_operadoras": 858
+}
+]
+}
