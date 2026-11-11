@@ -73,6 +73,7 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
   const [indicador, setIndicador] = useState<IndicadorMensal>("ativos");
   const [detalhar, setDetalhar] = useState<CampoMensal>("contratacao");
   const [filtros, setFiltros] = useState<Filtros>({});
+  const [filtrosAbertos, setFiltrosAbertos] = useState(false);
   const [graficoAberto, setGraficoAberto] = useState(true); const [gridAberto, setGridAberto] = useState(true);
   const [linhas, setLinhas] = useState<number[][]>([]); const [carregando, setCarregando] = useState(true); const [erro, setErro] = useState(""); const [tentativa, setTentativa] = useState(0);
   const cubo = cuboPara(detalhar, filtros);
@@ -126,8 +127,17 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
     </div>
     <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
       <div className="bench-filters space-y-2.5">
+        {!filtrosAbertos && <div className="flex flex-wrap items-center gap-3">
+          <Button variant="ghost" aria-expanded={false} onClick={() => setFiltrosAbertos(true)} className="h-8 gap-2 px-2 text-sm font-semibold"><ChevronRight className="h-4 w-4" />Período</Button>
+          <span className="text-sm text-muted-foreground">{competenciaMensal(de)}–{competenciaMensal(ate)} · {INDICADORES_MENSAL.find(i => i.id === indicador)?.rotulo} · por {rotuloCampo(detalhar).toLowerCase()}{Object.keys(filtros).length ? ` · ${Object.keys(filtros).length} ${Object.keys(filtros).length === 1 ? "filtro" : "filtros"}` : ""}</span>
+          <div aria-label="Identificação da operadora" className="ml-auto flex min-w-0 flex-col items-end text-right text-xs">
+            <strong className="break-words">{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} {atual?.modalidade ? ` · ${atual.modalidade.toLowerCase()}` : ""}</span></strong>
+            <span className="text-muted-foreground">ANS mensal · {competenciaMensal(catalogo.inicio)}–{competenciaMensal(catalogo.fim)}</span>
+          </div>
+        </div>}
+        {filtrosAbertos && <>
         <div className="flex flex-wrap items-center gap-3">
-          <span className="w-16 text-sm font-semibold">Período</span>
+          <Button variant="ghost" aria-expanded onClick={() => setFiltrosAbertos(false)} className="h-8 w-[5.5rem] justify-start gap-2 px-2 text-sm font-semibold"><ChevronRight className="h-4 w-4 rotate-90" />Período</Button>
           <label className="flex items-center gap-2 text-sm">De<Select value={String(de)} onValueChange={v => { const n = Number(v); setDe(n); if (n > ate) setAte(n); }}><SelectTrigger aria-label="Mês inicial" className="w-28"><SelectValue /></SelectTrigger><SelectContent>{COMPETENCIAS.map(c => <SelectItem key={c} value={String(c)}>{competenciaMensal(c)}</SelectItem>)}</SelectContent></Select></label>
           <label className="flex items-center gap-2 text-sm">Até<Select value={String(ate)} onValueChange={v => { const n = Number(v); setAte(n); if (n < de) setDe(n); }}><SelectTrigger aria-label="Mês final" className="w-28"><SelectValue /></SelectTrigger><SelectContent>{COMPETENCIAS.map(c => <SelectItem key={c} value={String(c)}>{competenciaMensal(c)}</SelectItem>)}</SelectContent></Select></label>
           <div role="group" aria-label="Indicador" className="flex items-center gap-0.5 rounded-full border border-border bg-card p-1">
@@ -139,13 +149,13 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <span className="w-16 text-sm font-semibold">Detalhar</span>
+          <span className="w-[5.5rem] pl-8 text-sm font-semibold">Detalhar</span>
           <div role="group" aria-label="Detalhar por" className="flex flex-wrap items-center gap-0.5 rounded-lg border border-border bg-card p-1 sm:rounded-full">
             {CAMPOS_MENSAL.filter(c => !c.soFiltro).map(c => <Button key={c.id} variant="ghost" aria-pressed={detalhar === c.id} onClick={() => escolherDetalhar(c.id)} className={`h-7 rounded-full px-3 text-xs ${detalhar === c.id ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "text-foreground/70"}`}>{c.rotulo}</Button>)}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <span className="w-16 text-sm font-semibold">Filtros</span>
+          <span className="w-[5.5rem] pl-8 text-sm font-semibold">Filtros</span>
           {CAMPOS_MENSAL.filter(c => c.id !== detalhar).map(c => {
             const ok = compativeis.has(c.id); const valor = filtros[c.id];
             const controle = BUSCA.includes(c.id)
@@ -161,6 +171,7 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
           })}
           {Object.keys(filtros).length > 0 && <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label="Limpar filtros" onClick={() => setFiltros({})}><X className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Limpar filtros</TooltipContent></Tooltip>}
         </div>
+        </>}
       </div>
 
       {carregando ? <p role="status" className="py-8 text-sm text-muted-foreground">Carregando dados mensais…</p>
