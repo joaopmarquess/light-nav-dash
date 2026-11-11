@@ -1,18 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { comercialUberaba, REDE_UBERABA } from "./uberabaFrentes";
+import { COMERCIAL_UBERABA, REDE_UBERABA } from "./uberabaFrentes";
 import { RESUMO_CREDENCIAMENTO } from "./uberabaCredenciamento";
 
 describe("Modelo de Atuação fronts", () => {
-  it("shows the default 90/80/70% indices on PCA Adm., PCE Adm. and PCE 100+", () => {
-    const etapas = comercialUberaba().etapas;
-    expect(etapas.map((e) => e.etapa_titulo).slice(0, 3)).toEqual(["PCA ADM.", "PCE ADM.", "PCE 100+"]);
-    expect(etapas[0].etapa_descricao).toContain("90%");
-    expect(etapas[1].etapa_descricao).toContain("80%");
-    expect(etapas[2].etapa_descricao).toContain("70%");
+  it("organizes Comercial into Forças de Vendas and Produtos with the supplied items", () => {
+    expect(COMERCIAL_UBERABA.subtitulo).toBe("Modelo comercial e estrutura de vendas em Uberaba");
+    const [forcas, produtos] = COMERCIAL_UBERABA.grupos;
+    expect(forcas.titulo).toBe("Forças de Vendas");
+    expect(forcas.itens.map((i) => i.titulo)).toEqual(["Farmer em Uberaba", "Equipe própria SDR em Rio Preto", "Agentes Comerciais Autorizados em Uberaba"]);
+    expect(forcas.itens[2].subitens).toEqual(["Siga Soluções", "Corretores Lancers"]);
+    expect(produtos.titulo).toBe("Produtos");
+    expect(produtos.itens.map((i) => i.titulo)).toEqual(["PCA e PME Administrado", "PCE 100+"]);
   });
 
-  it("follows the indices saved in Estudo › Comercial", () => {
-    expect(comercialUberaba({ pcaAdm: 85, pceAdm: 80, pce100: 75 }).etapas[2].etapa_descricao).toContain("75%");
+  it("uses the five supplied Comercial indicators and the MODELO COMERCIAL band", () => {
+    expect(COMERCIAL_UBERABA.indicadores).toEqual(["FARMER EM UBERABA", "SDR EM RIO PRETO", "AGENTES AUTORIZADOS", "PCA / PME", "PCE 100+"]);
+    expect(COMERCIAL_UBERABA.destaque_titulo).toBe("MODELO COMERCIAL");
+    expect(COMERCIAL_UBERABA.destaque_itens.join(" • ")).toBe("Presença local em Uberaba • Apoio SDR em Rio Preto • Agentes autorizados • Portfólio direcionado");
   });
 
   it("uses the credentialing totals for the network indicators", () => {
