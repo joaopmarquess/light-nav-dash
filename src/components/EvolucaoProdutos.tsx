@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, ChevronRight, Download, LoaderCircle, RotateCw } from "lucide-react";
+import { Check, ChevronRight, Download, LoaderCircle, RotateCw, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { hostinger } from "@/lib/hostingerClient";
@@ -424,6 +424,15 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
     periodoAplicado = novo;
     setPeriodo(novo);
   };
+  // [X] volta De/Até ao padrão: 12 meses até a última competência válida.
+  const padrao = periodoPadrao(ultima);
+  const ehPadrao = deCampo === anoMesCampo(padrao.de) && ateCampo === anoMesCampo(padrao.ate) && chave(periodo) === chave(padrao);
+  const restaurarPadrao = () => {
+    setDeCampo(anoMesCampo(padrao.de));
+    setAteCampo(anoMesCampo(padrao.ate));
+    periodoAplicado = null;
+    setPeriodo(padrao);
+  };
 
   const aceitaPerCapita = INDICADORES_PER_CAPITA.includes(visao as IndicadorFinanceiro);
   const emPerCapita = modo === "Per capita" && aceitaPerCapita;
@@ -515,6 +524,11 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
           <Button type="submit" size="sm" disabled={!!erroPeriodo || !alterado} title={erroPeriodo ?? "Aplicar o período"}
             className="h-8 rounded-full px-3">
             <Check className="mr-1 h-3.5 w-3.5" />Aplicar
+          </Button>
+          <Button type="button" variant="ghost" size="icon" disabled={ehPadrao} onClick={restaurarPadrao}
+            aria-label="Voltar De/Até ao padrão" title={`Voltar ao padrão: ${anoMesCampo(padrao.de)} a ${anoMesCampo(padrao.ate)}`}
+            className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground">
+            <X className="h-4 w-4" />
           </Button>
         </form>
         <div role="group" aria-label="Agrupar o grid por" className="flex items-center gap-1 rounded-full border border-border bg-card p-1.5 shadow-sm">
