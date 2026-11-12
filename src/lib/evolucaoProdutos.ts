@@ -144,7 +144,7 @@ export type LinhaFinanceira = {
 };
 const n0 = (v: Num) => Number(v) || 0;
 /** Valores em R$ só até a última competência válida; meses seguintes (despesas incompletas) ficam "Sem dado". */
-export const financeiroAteUltimaValida = (linhas: LinhaFinanceira[], ultima: AnoMes) =>
+export const financeiroAteUltimaValida = <T extends LinhaFinanceira>(linhas: T[], ultima: AnoMes): T[] =>
   linhas.filter((l) => idxMes({ ano: Number(l.nr_ano), mes: Number(l.nr_mes) }) <= idxMes(ultima));
 const receita = (l: LinhaFinanceira) => n0(l.rec_cpp) + n0(l.rec_outros);
 const coparticipacao = (l: LinhaFinanceira) => n0(l.rec_copart);
@@ -288,4 +288,123 @@ export function montarGrade(
   if (!opcoes.perCapita || !INDICADORES_PER_CAPITA.includes(visao)) return { meses: g, periodo: somaPeriodo(g) };
   if (!vidas) return null;
   return { meses: perCapita(g, vidas), periodo: razaoCelulas(somaPeriodo(g), somaPeriodo(vidas)) };
+}
+
+// ───────────── Visão Cidade (UF) ─────────────
+// Fonte: supabase/sql/evolucao_produtos_cidades.sql. Cidade = município do plano (código IBGE), a mesma da
+// Área Geográfica; somando as cidades, cada mês bate com a grade Tipo × Produto (mesmas regras e totais).
+
+export type LinhaVidasCidade = LinhaProduto & { uf: string | null; cidade: string | null };
+export type LinhaFinanceiraCidade = LinhaFinanceira & { uf: string | null; cidade: string | null };
+/** Filtros da visão por cidade: tipo de plano e tipo de produto (null = todos). */
+export type FiltroCidade = { tipo?: TipoPlano | null; produto?: TipoProduto | null };
+
+export const UF_NAO_INFORMADA = "UF não informada";
+export const CIDADE_NAO_INFORMADA = "Cidade não informada";
+const txt = (v: string | null | undefined) => (v == null || String(v).trim() === "" ? null : String(v).trim().toUpperCase());
+/** Rótulo "CIDADE (UF)"; sem cidade informada fica "Cidade não informada" (nada é inferido). */
+export const rotuloCidade = (cidade: string | null, uf: string | null) =>
+  txt(cidade) ? `${txt(cidade)} (${txt(uf) ?? "—"})` : CIDADE_NAO_INFORMADA;
+
+type LinhaBaseCidade = { ano: number; mes: number; sigla: string | null; produto: string | null; uf: string | null; cidade: string | null; valor: Num };
+type ChaveCidade = { k: string; uf: string | null; cidade: string | null };
+/** Soma aditiva por cidade e mês. Mês sem nenhuma linha = null; cidade ausente em mês com dado = 0. */
+type Aditiva = { chaves: Map<string, ChaveCidade>; mes: (Map<string, number> | null)[]; fora: number[] };
+
+function aditivaCidades(meses: MesEvolucao[], linhas: LinhaBaseCidade[], filtro: FiltroCidade): Aditiva {
+  const pos = new Map(meses.map((m, i) => [`${m.ano}-${m.mes}`, i]));
+  const mes: (Map<string, number> | null)[] = meses.map(() => null);
+  const fora = meses.map(() => 0);
+  const chaves = new Map<string, ChaveCidade>();
+  const siglas = new Set<string>(TIPOS_PLANO);
+  const produtos = new Set<string>(TIPOS_PRODUTO.map((p) => p.id));
+  for (const l of linhas) {
+    const i = pos.get(`${Number(l.ano)}-${Number(l.mes)}`);
+    if (i == null) continue;
+    const m = (mes[i] ??= new Map());
+    const v = Number(l.valor) || 0;
+    const sg = String(l.sigla ?? "").trim().toUpperCase();
+    const pr = String(l.produto ?? "").trim().toUpperCase();
+    if (!siglas.has(sg) || !produtos.has(pr)) { fora[i] += v; continue; }
+    if ((filtro.tipo && sg !== filtro.tipo) || (filtro.produto && pr !== filtro.produto)) continue;
+    const uf = txt(l.uf), cidade = txt(l.cidade);
+    const k = `${uf ?? ""}|${cidade ?? ""}`;
+    m.set(k, (m.get(k) ?? 0) + v);
+    if (v !== 0 && !chaves.has(k)) chaves.set(k, { k, uf, cidade });
+  }
+  return { chaves, mes, fora };
+}
+
+const somaChaves = (ad: Aditiva, ks: string[], i: number) => {
+  const m = ad.mes[i];
+  return m == null ? null : ks.reduce((s, k) => s + (m.get(k) ?? 0), 0);
+};
+
+/** Linha da grade: um valor por mês e a coluna Total do período (null = sem dado ou, em Vidas, sem soma). */
+export type LinhaCidades = { valores: (number | null)[]; periodo: number | null };
+export type GrupoUF = {
+  uf: string | null; rotulo: string;
+  cidades: { uf: string | null; cidade: string | null; rotulo: string; linha: LinhaCidades }[];
+  subtotal: LinhaCidades;
+};
+export type GradeCidades = { meses: MesEvolucao[]; grupos: GrupoUF[]; total: LinhaCidades; fora: number[] };
+
+/**
+ * Grade Cidade (UF) × mês para uma visão. Cidades agrupadas por UF, com Subtotal por UF e Total Geral.
+ * Valores aditivos somam o período; Vidas não somam (coluna Total null). Sinistralidade e Per capita usam
+ * a razão das somas em cada célula, subtotal, total e período. Ordem: vidas no último mês, da maior para a menor
+ * (UF e cidades); UF/cidade não informada por último.
+ */
+export function montarGradeCidades(
+  meses: MesEvolucao[],
+  visao: "Vidas" | IndicadorFinanceiro,
+  dados: { vidas: LinhaVidasCidade[] | null; fin: LinhaFinanceiraCidade[] | null },
+  opcoes: { perCapita?: boolean } & FiltroCidade = {},
+): GradeCidades | null {
+  if (!dados.vidas) return null;
+  const filtro: FiltroCidade = { tipo: opcoes.tipo ?? null, produto: opcoes.produto ?? null };
+  const vidas = aditivaCidades(meses, dados.vidas.map((l) => ({ ...l, valor: l.vidas })), filtro);
+  let num: Aditiva, den: Aditiva | null = null;
+  if (visao === "Vidas") num = vidas;
+  else {
+    if (!dados.fin) return null;
+    const fin = dados.fin;
+    const ad = (f: (l: LinhaFinanceira) => number) => aditivaCidades(meses, fin.map((l) => ({ ...l, ano: l.nr_ano, mes: l.nr_mes, valor: f(l) })), filtro);
+    if (visao === "Sinistralidade") { num = ad(INDICADORES_FINANCEIROS.Despesas); den = ad(totalReceitas); }
+    else {
+      num = ad(INDICADORES_FINANCEIROS[visao]);
+      if (opcoes.perCapita && INDICADORES_PER_CAPITA.includes(visao)) den = vidas;
+    }
+  }
+  const linha = (ks: string[]): LinhaCidades => {
+    const n = meses.map((_, i) => somaChaves(num, ks, i));
+    if (!den) return { valores: n, periodo: visao === "Vidas" ? null : somaMeses(n) };
+    const d = meses.map((_, i) => somaChaves(den as Aditiva, ks, i));
+    return { valores: n.map((v, i) => razao(v, d[i])), periodo: razao(somaMeses(n), somaMeses(d)) };
+  };
+  const todas = new Map([...num.chaves, ...(den?.chaves ?? [])]);
+  const ultimo = meses.length - 1;
+  const peso = (ks: string[]) => (ultimo < 0 ? 0 : somaChaves(vidas, ks, ultimo) ?? 0);
+  const porUf = new Map<string, ChaveCidade[]>();
+  for (const c of todas.values()) {
+    const u = c.uf ?? "";
+    if (!porUf.has(u)) porUf.set(u, []);
+    porUf.get(u)!.push(c);
+  }
+  const ordem = <T>(xs: T[], semInfo: (x: T) => boolean, p: (x: T) => number, nome: (x: T) => string) =>
+    xs.sort((a, b) => Number(semInfo(a)) - Number(semInfo(b)) || p(b) - p(a) || nome(a).localeCompare(nome(b), "pt-BR"));
+  const grupos: GrupoUF[] = ordem(
+    [...porUf.entries()].map(([u, cs]) => ({ uf: u || null, cs })),
+    (g) => g.uf == null, (g) => peso(g.cs.map((c) => c.k)), (g) => g.uf ?? "",
+  ).map(({ uf, cs }) => ({
+    uf,
+    rotulo: uf ?? UF_NAO_INFORMADA,
+    cidades: ordem(cs, (c) => c.cidade == null, (c) => peso([c.k]), (c) => c.cidade ?? "")
+      .map((c) => ({ uf: c.uf, cidade: c.cidade, rotulo: rotuloCidade(c.cidade, c.uf), linha: linha([c.k]) })),
+    subtotal: linha(cs.map((c) => c.k)),
+  }));
+  // Total Geral pela soma de tudo o que entrou no filtro (inclui cidades zeradas no período).
+  const tudo = [...new Set(num.mes.flatMap((m) => (m ? [...m.keys()] : [])).concat(den ? den.mes.flatMap((m) => (m ? [...m.keys()] : [])) : []))];
+  const fora = den || visao === "Vidas" ? meses.map(() => 0) : num.fora;
+  return { meses, grupos, total: linha(tudo), fora };
 }

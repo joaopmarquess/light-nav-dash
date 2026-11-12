@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { hostinger } from "@/lib/hostingerClient";
 import { carregarUltimaCompetenciaValida } from "@/lib/sinistralidadeValida";
 import {
-  anoMesCampo, financeiroAteUltimaValida, INDICADORES_PER_CAPITA, lerAnoMes, mascaraAnoMes, mesesPeriodo, montarGrade, periodoAte, periodoPadrao,
-  TIPOS_PLANO, TIPOS_PRODUTO, validarAte, type AnoMes, type Celulas, type GradeComTotais, type IndicadorFinanceiro,
-  type LinhaFinanceira, type LinhaProduto, type TipoProduto,
+  anoMesCampo, financeiroAteUltimaValida, INDICADORES_PER_CAPITA, lerAnoMes, mascaraAnoMes, mesesPeriodo, montarGrade, montarGradeCidades,
+  periodoAte, periodoPadrao, TIPOS_PLANO, TIPOS_PRODUTO, validarAte, type AnoMes, type Celulas, type GradeCidades, type GradeComTotais,
+  type IndicadorFinanceiro, type LinhaFinanceira, type LinhaFinanceiraCidade, type LinhaProduto, type LinhaVidasCidade, type TipoPlano,
+  type TipoProduto,
 } from "@/lib/evolucaoProdutos";
 
 const fmtInt = (n: number) => Math.round(n).toLocaleString("pt-BR");
@@ -46,6 +47,23 @@ async function carregarFinanceiro(p: Periodo): Promise<LinhaFinanceira[]> {
   return linhas;
 }
 
+// Visão Cidade (UF): uma chamada por período (AAAAMM), cada uma devolve o período inteiro de uma vez.
+const aaaamm = (a: AnoMes) => a.ano * 100 + a.mes;
+const cacheCidades = new Map<string, Promise<unknown[]>>();
+function carregarCidades<T>(fn: string, p: Periodo): Promise<T[]> {
+  const k = `${fn}|${chave(p)}`;
+  let c = cacheCidades.get(k);
+  if (!c) {
+    c = Promise.resolve(hostinger.rpc(fn, { p_de: aaaamm(p.de), p_ate: aaaamm(p.ate) })).then(({ data, error }) => {
+      if (error) throw new Error(error.message);
+      return (Array.isArray(data) ? data : []) as unknown[];
+    });
+    c.catch(() => cacheCidades.delete(k));
+    cacheCidades.set(k, c);
+  }
+  return c as Promise<T[]>;
+}
+
 let periodoAplicado: Periodo | null = null;
 
 const DESC_TIPO: Record<(typeof TIPOS_PLANO)[number], string> = {
@@ -59,6 +77,12 @@ type Visao = (typeof VISOES)[number];
 
 const MODOS = ["Total", "Per capita"] as const;
 type Modo = (typeof MODOS)[number];
+
+const AGRUPAMENTOS = [
+  { id: "produto", rotulo: "Tipo × Produto" },
+  { id: "cidade", rotulo: "Cidade (UF)" },
+] as const;
+type Agrupamento = (typeof AGRUPAMENTOS)[number]["id"];
 
 const TITULOS: Record<Visao, string> = {
   Vidas: "Vidas por tipo de produto",
@@ -202,11 +226,114 @@ function Grade({ linhas, periodo, fmt = fmtInt, produto, onProduto }: GradeProps
   );
 }
 
+type FiltroOpcao<T extends string> = { id: T | null; rotulo: string; titulo?: string };
+function Filtro<T extends string>({ rotulo, opcoes, valor, onChange }: { rotulo: string; opcoes: FiltroOpcao<T>[]; valor: T | null; onChange: (v: T | null) => void }) {
+  return (
+    <div role="group" aria-label={rotulo} className="flex flex-wrap items-center gap-1 text-sm">
+      <span className="mr-1 text-muted-foreground">{rotulo}</span>
+      {opcoes.map((o) => (
+        <Button key={o.id ?? "todos"} variant="ghost" size="sm" aria-pressed={valor === o.id} title={o.titulo} onClick={() => onChange(o.id)}
+          className={`h-7 rounded-full px-3 text-sm ${valor === o.id ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "bg-muted"}`}>
+          {o.rotulo}
+        </Button>
+      ))}
+    </div>
+  );
+}
+
+function GradeCidadesTabela({ grade, fmt = fmtInt }: { grade: GradeCidades; fmt?: Fmt }) {
+  const { meses, grupos, total, fora } = grade;
+  const colunas = meses.length + 3;
+  const somaPeriodo = total.periodo != null || grupos.some((g) => g.subtotal.periodo != null);
+  const thTotal = "rounded-lg px-2 py-1 text-sm font-bold tabular-nums";
+  const comFora = meses.map((m, i) => ({ m, v: fora[i] })).filter((x) => x.v);
+  const nCidades = grupos.reduce((s, g) => s + g.cidades.length, 0);
+  return (
+    <div className="overflow-x-auto">
+      <p className="mb-2 text-xs text-muted-foreground">
+        {nCidades.toLocaleString("pt-BR")} cidades em {grupos.filter((g) => g.uf).length} UFs · município do plano, o mesmo da Área Geográfica · ordem pelas vidas em {meses[meses.length - 1]?.rotulo}
+      </p>
+      <table className="w-full min-w-[1280px] border-separate border-spacing-x-1.5 border-spacing-y-[3px] text-center">
+        <thead>
+          <tr>
+            <th scope="col" className="w-16 px-2 py-1 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">UF</th>
+            <th scope="col" className="w-56 px-2 py-1 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cidade (UF)</th>
+            {meses.map((m) => (
+              <th key={m.dataFim} scope="col" className="rounded-lg bg-primary px-2 py-1 text-sm font-semibold text-primary-foreground">{m.rotulo}</th>
+            ))}
+            <th scope="col" title={somaPeriodo ? "Soma do período" : "Vidas não se somam no período"} className="rounded-lg bg-secondary px-2 py-1 text-sm font-bold text-secondary-foreground ring-1 ring-primary/40">
+              Total
+            </th>
+          </tr>
+        </thead>
+        {grupos.map((g, gi) => (
+          <tbody key={g.uf ?? "sem-uf"}>
+            {gi > 0 && <tr aria-hidden="true"><td colSpan={colunas} className="h-1 p-0" /></tr>}
+            {g.cidades.map((c, i) => (
+              <tr key={`${c.uf}|${c.cidade}`}>
+                {i === 0 && (
+                  <th scope="rowgroup" rowSpan={g.cidades.length + 1} className="rounded-lg bg-secondary px-2 py-1 text-left align-top text-sm font-bold text-secondary-foreground">
+                    {g.rotulo}
+                  </th>
+                )}
+                <th scope="row" className="whitespace-nowrap rounded-lg bg-muted/60 px-2 py-1 text-left text-sm font-medium text-foreground">{c.rotulo}</th>
+                {c.linha.valores.map((v, j) => (
+                  <td key={meses[j].dataFim} className="rounded-lg border border-border bg-accent/30 px-2 py-1 text-sm font-semibold tabular-nums text-foreground">
+                    <Valor v={v} fmt={fmt} />
+                  </td>
+                ))}
+                <td className={`${thTotal} border border-primary/30 bg-accent/60 text-foreground`}>
+                  {somaPeriodo ? <Valor v={c.linha.periodo} fmt={fmt} /> : <SemSoma />}
+                </td>
+              </tr>
+            ))}
+            <tr>
+              <th scope="row" className="rounded-lg bg-secondary px-2 py-1 text-left text-sm font-bold text-secondary-foreground">Subtotal {g.rotulo}</th>
+              {g.subtotal.valores.map((v, j) => (
+                <td key={meses[j].dataFim} className="rounded-lg border border-primary/30 bg-secondary px-2 py-1 text-sm font-bold tabular-nums text-secondary-foreground">
+                  <Valor v={v} fmt={fmt} />
+                </td>
+              ))}
+              <td className={`${thTotal} border border-primary/40 bg-secondary text-secondary-foreground`}>
+                {somaPeriodo ? <Valor v={g.subtotal.periodo} fmt={fmt} /> : <SemSoma />}
+              </td>
+            </tr>
+          </tbody>
+        ))}
+        <tfoot>
+          <tr aria-hidden="true"><td colSpan={colunas} className="h-1 p-0" /></tr>
+          <tr>
+            <th scope="row" colSpan={2} className="rounded-lg bg-primary px-3 py-1.5 text-left text-sm font-bold uppercase tracking-wide text-primary-foreground">Total Geral</th>
+            {total.valores.map((v, j) => (
+              <td key={meses[j].dataFim} className="rounded-lg bg-primary px-2 py-1.5 text-base font-bold tabular-nums text-primary-foreground">
+                <Valor v={v} claro fmt={fmt} />
+              </td>
+            ))}
+            <td className="rounded-lg bg-primary px-2 py-1.5 text-base font-bold tabular-nums text-primary-foreground ring-2 ring-primary/40 ring-offset-1 ring-offset-card">
+              {somaPeriodo ? <Valor v={total.periodo} claro fmt={fmt} /> : <SemSoma claro />}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+      {comFora.length > 0 && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Fora dos totais (sem tipo de plano ou produto informado): {comFora.map((x) => `${x.m.rotulo} ${fmt(x.v)}`).join(" · ")}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
   const [visao, setVisao] = useState<Visao>("Vidas");
   const [modo, setModo] = useState<Modo>("Total");
   const [periodo, setPeriodo] = useState<Periodo>(() => periodoAplicado ?? periodoPadrao(ultima));
   const [produto, setProduto] = useState<TipoProduto | null>(null);
+  const [agrupar, setAgrupar] = useState<Agrupamento>("produto");
+  const [tipoCidade, setTipoCidade] = useState<TipoPlano | null>(null);
+  const [vidasCid, setVidasCid] = useState<{ k: string; linhas: LinhaVidasCidade[] } | null>(null);
+  const [finCid, setFinCid] = useState<{ k: string; linhas: LinhaFinanceiraCidade[] } | null>(null);
+  const [errCid, setErrCid] = useState<string | null>(null);
   const [ateCampo, setAteCampo] = useState(() => anoMesCampo(periodo.ate));
   const meses = useMemo(() => mesesPeriodo(periodo.de, periodo.ate), [periodo]);
   const [vidasBrutas, setVidasBrutas] = useState<{ k: string; linhas: LinhaProduto[] } | null>(null);
@@ -227,6 +354,16 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
     carregarFinanceiro(alvo).then((linhas) => setFinBruto({ k: chave(alvo), linhas }))
       .catch((e) => setErrFin(e instanceof Error ? e.message : String(e)));
   }, [periodo]);
+
+  const porCidade = agrupar === "cidade";
+  const buscarCidades = useCallback(() => {
+    setErrCid(null);
+    const alvo = periodo;
+    const falha = (e: unknown) => setErrCid(e instanceof Error ? e.message : String(e));
+    carregarCidades<LinhaVidasCidade>("carteira_evolucao_produtos_cidade", alvo).then((linhas) => setVidasCid({ k: chave(alvo), linhas })).catch(falha);
+    if (visao !== "Vidas") carregarCidades<LinhaFinanceiraCidade>("evolucao_produtos_financeiro_cidade", alvo).then((linhas) => setFinCid({ k: chave(alvo), linhas })).catch(falha);
+  }, [periodo, visao]);
+  useEffect(() => { if (porCidade) buscarCidades(); }, [porCidade, buscarCidades]);
 
   const vidasLinhas = vidasBrutas?.k === k ? vidasBrutas.linhas : null;
   const fin = useMemo(() => (finBruto?.k === k ? financeiroAteUltimaValida(finBruto.linhas, ultima) : null), [finBruto, k, ultima]);
@@ -253,7 +390,16 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
     [meses, visao, vidasLinhas, fin, emPerCapita, produto],
   );
 
-  const erro = visao === "Vidas" ? errVidas : errFin ?? (emPerCapita ? errVidas : null);
+  const vidasCidLinhas = vidasCid?.k === k ? vidasCid.linhas : null;
+  const finCidLinhas = useMemo(() => (finCid?.k === k ? financeiroAteUltimaValida(finCid.linhas, ultima) : null), [finCid, k, ultima]);
+  const gradeCid = useMemo(
+    () => (porCidade ? montarGradeCidades(meses, visao, { vidas: vidasCidLinhas, fin: finCidLinhas }, { perCapita: emPerCapita, tipo: tipoCidade, produto }) : null),
+    [porCidade, meses, visao, vidasCidLinhas, finCidLinhas, emPerCapita, tipoCidade, produto],
+  );
+
+  const erro = porCidade ? errCid : visao === "Vidas" ? errVidas : errFin ?? (emPerCapita ? errVidas : null);
+  const fmtVisao = visao === "Vidas" ? fmtInt : visao === "Sinistralidade" ? fmtPct : fmtDec;
+  const tituloBase = porCidade ? TITULOS[visao].replace("por tipo de produto", "por cidade (UF)") : TITULOS[visao];
   const rotuloProduto = TIPOS_PRODUTO.find((p) => p.id === produto)?.rotulo;
 
   return (
@@ -279,6 +425,19 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
             <Check className="mr-1 h-3.5 w-3.5" />Aplicar
           </Button>
         </form>
+        <div role="group" aria-label="Agrupar o grid por" className="flex items-center gap-1 rounded-full border border-border bg-card p-1.5 shadow-sm">
+          {AGRUPAMENTOS.map((a) => (
+            <Button
+              key={a.id}
+              variant="ghost"
+              aria-pressed={agrupar === a.id}
+              onClick={() => setAgrupar(a.id)}
+              className={`h-8 rounded-full px-4 text-sm ${agrupar === a.id ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "bg-muted"}`}
+            >
+              {a.rotulo}
+            </Button>
+          ))}
+        </div>
         <div
           role="group"
           aria-label="Total ou per capita"
@@ -316,23 +475,36 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
         <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
           <header className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1">
             <h2 className="text-lg font-semibold text-foreground" title={DICAS[visao]}>
-              {emPerCapita ? TITULOS[visao].replace("(R$)", "· per capita (R$ por vida)") : TITULOS[visao]}
+              {emPerCapita ? tituloBase.replace("(R$)", "· per capita (R$ por vida)") : tituloBase}
             </h2>
-            {rotuloProduto && (
+            {rotuloProduto && !porCidade && (
               <p className="flex items-center gap-2 text-sm text-muted-foreground">
                 Subtotais e totais somando só <span className="font-semibold text-primary">{rotuloProduto}</span>
                 <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setProduto(null)}>Ver todos</Button>
               </p>
             )}
           </header>
+          {porCidade && (
+            <div className="mb-3 flex flex-wrap items-center gap-x-6 gap-y-2">
+              <Filtro<TipoPlano> rotulo="Tipo" valor={tipoCidade} onChange={setTipoCidade}
+                opcoes={[{ id: null, rotulo: "Todos" }, ...TIPOS_PLANO.map((t) => ({ id: t, rotulo: t, titulo: DESC_TIPO[t] }))]} />
+              <Filtro<TipoProduto> rotulo="Produto" valor={produto} onChange={setProduto}
+                opcoes={[{ id: null, rotulo: "Todos" }, ...TIPOS_PRODUTO.map((p) => ({ id: p.id, rotulo: p.rotulo, titulo: p.descricao }))]} />
+            </div>
+          )}
           {erroPeriodo && alterado && <p className="mb-2 text-sm text-destructive">{erroPeriodo}</p>}
           {erro ? (
-            <Aviso erro={erro} onRetry={visao === "Vidas" || !errFin ? buscarVidas : buscarFin} />
+            <Aviso erro={erro} onRetry={porCidade ? buscarCidades : visao === "Vidas" || !errFin ? buscarVidas : buscarFin} />
+          ) : porCidade ? (
+            !gradeCid ? (
+              <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando cidades…</p>
+            ) : (
+              <GradeCidadesTabela grade={gradeCid} fmt={fmtVisao} />
+            )
           ) : !grade ? (
             <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando…</p>
           ) : (
-            <Grade linhas={grade.meses} periodo={grade.periodo} produto={produto} onProduto={setProduto}
-              fmt={visao === "Vidas" ? fmtInt : visao === "Sinistralidade" ? fmtPct : fmtDec} />
+            <Grade linhas={grade.meses} periodo={grade.periodo} produto={produto} onProduto={setProduto} fmt={fmtVisao} />
           )}
         </section>
       </div>
