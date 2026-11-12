@@ -9,12 +9,17 @@ import {
 
 type RGB = [number, number, number];
 
-/** Cor de cada frente, igual à tela de Resultados Comerciais. */
-const COR_FRENTE: Record<FrenteId, RGB> = { pcaAdm: [209, 168, 87], pceAdm: [48, 152, 213], pce100: [216, 142, 116] };
-const CABECALHO: RGB = [221, 238, 248];
-const ZEBRA: RGB = [243, 248, 250];
-const LINHA: RGB = [212, 221, 229];
-const SECUNDARIO: RGB = [84, 98, 112];
+/**
+ * Paleta pensada para impressão em preto e branco: as cores de cada frente seguem a tela, mas escurecidas,
+ * e textos, linhas e contornos usam tinta escura para não sumirem no papel.
+ */
+const COR_FRENTE: Record<FrenteId, RGB> = { pcaAdm: [128, 90, 15], pceAdm: [15, 85, 140], pce100: [150, 65, 35] };
+const TINTA: RGB = [10, 38, 72];
+const CABECALHO: RGB = [205, 222, 236];
+const ZEBRA: RGB = [236, 241, 245];
+const LINHA: RGB = [95, 105, 115];
+const SECUNDARIO: RGB = [35, 42, 50];
+const RODAPE: RGB = [45, 45, 45];
 
 /** Tópico 1 · Tabelas: os três quadros de Resultados Comerciais (Faixa × Enfermaria e Indicadores variáveis). */
 export function quadrosProposta(indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao()) {
@@ -73,7 +78,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     title: "Proposta Comercial",
     plano: "Bensaúde|Uberaba",
     secao: "Minuta provisória · conteúdo em Lorem ipsum",
-    marginL, marginR, top: 38,
+    marginL, marginR, top: 38, tinta: TINTA,
   });
   heading();
   let y = top;
@@ -111,7 +116,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     quadros.forEach((q, k) => {
       const x = xs[k];
       doc.setFillColor(...COR_FRENTE[q.id]);
-      doc.rect(x, inicio, largura, 1.6, "F");
+      doc.rect(x, inicio, largura, 2, "F");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
       const wTit = doc.getTextWidth(q.titulo);
@@ -119,7 +124,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
       const wSeg = doc.getTextWidth(q.segmento);
       const x0 = x + (largura - (wTit + 2 + wSeg)) / 2;
       doc.setFontSize(10);
-      doc.setTextColor(...PDF_COLORS.navy);
+      doc.setTextColor(...TINTA);
       doc.text(q.titulo, x0, inicio + 7.2);
       doc.setFontSize(6.5);
       doc.setTextColor(...COR_FRENTE[q.id]);
@@ -137,7 +142,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
         head: [["FAIXA", "ENFERMARIA"]],
         body: q.linhas,
         styles: { font: "helvetica", fontSize: 8, cellPadding: { top: 1.1, bottom: 1.1, left: 2, right: 2 }, textColor: PDF_COLORS.text, halign: "center" },
-        headStyles: { fillColor: CABECALHO, textColor: PDF_COLORS.navy, fontStyle: "bold", fontSize: 7.5 },
+        headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: 7.5 },
         alternateRowStyles: { fillColor: ZEBRA },
         didDrawCell: (c) => {
           if (c.section === "head") {
@@ -148,15 +153,15 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
               doc.setFont("helvetica", "bold");
               doc.setFontSize(7.5);
               const xFim = c.cell.x + c.cell.width / 2 + doc.getTextWidth(texto) / 2;
-              doc.setFontSize(5);
-              doc.setTextColor(...PDF_COLORS.navy);
+              doc.setFontSize(5.5);
+              doc.setTextColor(...TINTA);
               doc.text(String(n), xFim + 0.4, c.cell.y + c.cell.height / 2 - 0.6);
             }
             return;
           }
           if (c.section !== "body") return;
           doc.setDrawColor(...LINHA);
-          doc.setLineWidth(0.1);
+          doc.setLineWidth(0.2);
           doc.line(c.cell.x, c.cell.y, c.cell.x + c.cell.width, c.cell.y);
         },
       });
@@ -184,7 +189,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
           margin: margem(xs[k] + inset, largura - inset * 2),
           head: [[{ content: bloco.titulo, colSpan: 2 }]],
           body: bloco.linhas,
-          styles: { font: "helvetica", fontSize: 7.2, cellPadding: { top: 1.1, bottom: 1.1, left: 2, right: 2 }, textColor: PDF_COLORS.text, lineColor: LINHA, lineWidth: 0.1 },
+          styles: { font: "helvetica", fontSize: 7.2, cellPadding: { top: 1.1, bottom: 1.1, left: 2, right: 2 }, textColor: PDF_COLORS.text, lineColor: LINHA, lineWidth: 0.2 },
           headStyles: { fillColor: ZEBRA, textColor: SECUNDARIO, fontStyle: "bold", halign: "center" },
           columnStyles: { 0: { halign: "left" }, 1: { halign: "right", cellWidth: 14 } },
         });
@@ -195,8 +200,8 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
 
     // Contorno de cada quadro.
     const altura = yb - inicio;
-    doc.setDrawColor(...LINHA);
-    doc.setLineWidth(0.2);
+    doc.setDrawColor(...TINTA);
+    doc.setLineWidth(0.35);
     xs.forEach((x) => doc.rect(x, inicio, largura, altura, "S"));
     doc.setDrawColor(0);
     y = yb + 11;
@@ -213,7 +218,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
       // Número elevado + termo em destaque.
       doc.setFont("helvetica", "bold");
       doc.setFontSize(6.5);
-      doc.setTextColor(...PDF_COLORS.navy);
+      doc.setTextColor(...TINTA);
       doc.text(String(i + 1), marginL, y - 1.6);
       doc.setFontSize(10);
       doc.text(g.termo, xTermo, y);
@@ -227,7 +232,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   SECOES.forEach((titulo, i) => {
     const ehTabelas = titulo.startsWith("1.");
     garantir(ehTabelas ? 180 : 32); // título não fica sozinho no fim da página
-    drawSectionTitle(doc, titulo, marginL, y, pageW - marginR);
+    drawSectionTitle(doc, titulo, marginL, y, pageW - marginR, TINTA);
     y += 8;
     if (ehTabelas) { desenharTabelas(); return; }
     if (titulo.startsWith("7.")) { desenharGlossario(); return; }
@@ -240,7 +245,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     doc.setPage(p);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.setTextColor(...PDF_COLORS.muted);
+    doc.setTextColor(...RODAPE);
     doc.text(`Página ${p} de ${total}`, pageW - marginR, pageH - 10, { align: "right" });
   }
   return doc;

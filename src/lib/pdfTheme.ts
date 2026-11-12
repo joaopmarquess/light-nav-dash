@@ -30,13 +30,15 @@ export function drawSectionTitle(
   x: number,
   y: number,
   rightX: number,
+  /** Cor única para texto e linha (ex.: tinta escura para impressão em preto e branco). */
+  tinta?: RGB,
 ) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10.5);
-  doc.setTextColor(...PDF_COLORS.navy);
+  doc.setTextColor(...(tinta ?? PDF_COLORS.navy));
   doc.text(text.toUpperCase(), x, y);
-  doc.setDrawColor(...PDF_COLORS.blue);
-  doc.setLineWidth(0.4);
+  doc.setDrawColor(...(tinta ?? PDF_COLORS.blue));
+  doc.setLineWidth(tinta ? 0.5 : 0.4);
   doc.line(x, y + 1.8, rightX, y + 1.8);
   doc.setTextColor(...PDF_COLORS.text);
   doc.setDrawColor(0);
@@ -109,22 +111,23 @@ export const negativeRed = (data: any) => {
 /** Bloco de cabeçalho de seção: título, faixa do plano e rótulo da seção (centralizados). */
 export function drawReportHeading(
   doc: jsPDF,
-  opts: { title: string; plano: string; secao: string; marginL: number; marginR: number; top?: number },
+  opts: { title: string; plano: string; secao: string; marginL: number; marginR: number; top?: number; tinta?: RGB },
 ) {
   const { title, plano, secao, marginL, marginR } = opts;
+  const tinta = opts.tinta ?? PDF_COLORS.navy;
   const off = (opts.top ?? 23) - 23;
   const pageW = doc.internal.pageSize.getWidth();
   const cx = pageW / 2;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11.5);
-  doc.setTextColor(...PDF_COLORS.navy);
+  doc.setTextColor(...tinta);
   doc.text(title, cx, 23 + off, { align: "center", baseline: "middle" });
 
   doc.setFillColor(...PDF_COLORS.groupFill);
   doc.rect(marginL, 25.6 + off, pageW - marginL - marginR, 6, "F");
   doc.setFontSize(8.5);
-  doc.setTextColor(...PDF_COLORS.navy);
+  doc.setTextColor(...tinta);
   doc.text(plano, cx, 28.7 + off, { align: "center", baseline: "middle" });
 
   doc.setFontSize(9.5);

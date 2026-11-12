@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type jsPDF from "jspdf";
 import { FileDown, Loader2, Printer, X } from "lucide-react";
+import { htmlImpressao } from "@/lib/pdfImpressao";
 
 /** Pré-visualização de PDF em tela cheia, com Baixar / Imprimir / Fechar. */
 export default function PdfPreview({
@@ -24,23 +25,7 @@ export default function PdfPreview({
     (async () => {
       const doc = await build();
       docRef.current = doc;
-      const pdfjs = await import("pdfjs-dist");
-      const workerMod: { default: string } = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
-      pdfjs.GlobalWorkerOptions.workerSrc = workerMod.default;
-      const data = doc.output("arraybuffer");
-      const pdf = await pdfjs.getDocument({ data }).promise;
-      const imgs: string[] = [];
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 1.6 });
-        const canvas = document.createElement("canvas");
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const ctx = canvas.getContext("2d")!;
-        await page.render({ canvasContext: ctx, viewport, canvas }).promise;
-        imgs.push(canvas.toDataURL("image/png"));
-        if (cancelled) return;
-      }
+      const imgs = await renderizarPaginas(doc, 1.6, () => cancelled);
       if (!cancelled) {
         setPages(imgs);
         setLoading(false);
@@ -57,27 +42,26 @@ export default function PdfPreview({
 
   const doDownload = () => (onDownload ? onDownload() : docRef.current?.save(fileName));
 
-  const doPrint = () => {
-    if (pages.length === 0) return;
+  const doPrint = async () => {
+    const d = docRef.current;
+    if (pages.length === 0 || !d) return;
+    // A janela abre já no clique (evita bloqueio de pop-up); as páginas são renderizadas em resolução maior
+    // para impressão, para linhas finas e textos pequenos não ficarem claros no preto e branco.
     const w = window.open("", "_blank");
     if (!w) {
       doDownload();
       return;
     }
-    const imgsHtml = pages
-      .map((src) => `<img src="${src}" style="display:block;width:100%;page-break-after:always;" />`)
-      .join("");
-    const d = docRef.current;
-    const landscape = d ? d.internal.pageSize.getWidth() > d.internal.pageSize.getHeight() : false;
-    const orient = landscape ? "landscape" : "portrait";
-    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Relatório</title>
-<style>
-  @page { size: A4 ${orient}; margin: 0; }
-  html, body { margin: 0; padding: 0; background: #fff; }
-  img { max-width: 100%; }
-  @media print { img { page-break-after: always; } }
-</style>
-</head><body>${imgsHtml}<script>window.onload=function(){setTimeout(function(){window.focus();window.print();},250);};</script></body></html>`);
+    w.document.write('<p style="font-family:sans-serif;padding:24px">Preparando impressão…</p>');
+    let imgs = pages;
+    try {
+      imgs = await renderizarPaginas(d, 3);
+    } catch (err) {
+      console.error("[PdfPreview] falha ao preparar impressão em alta resolução:", err);
+    }
+    const landscape = d.internal.pageSize.getWidth() > d.internal.pageSize.getHeight();
+    w.document.open();
+    w.document.write(htmlImpressao(imgs, landscape));
     w.document.close();
   };
 
@@ -129,4 +113,25 @@ export default function PdfPreview({
       </div>
     </div>
   );
+}
+
+/** Renderiza cada página do PDF como imagem PNG na escala pedida. */
+async function renderizarPaginas(doc: jsPDF, escala: number, cancelado: () => boolean = () => false): Promise<string[]> {
+  const pdfjs = await import("pdfjs-dist");
+  const workerMod: { default: string } = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
+  pdfjs.GlobalWorkerOptions.workerSrc = workerMod.default;
+  const pdf = await pdfjs.getDocument({ data: doc.output("arraybuffer") }).promise;
+  const imgs: string[] = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const viewport = page.getViewport({ scale: escala });
+    const canvas = document.createElement("canvas");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext("2d")!;
+    await page.render({ canvasContext: ctx, viewport, canvas }).promise;
+    imgs.push(canvas.toDataURL("image/png"));
+    if (cancelado()) return imgs;
+  }
+  return imgs;
 }
