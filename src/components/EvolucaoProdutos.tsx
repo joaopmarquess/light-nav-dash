@@ -450,13 +450,21 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
         carregarCidades<LinhaVidasCidade>("carteira_evolucao_produtos_cidade", alvo),
         carregarCidades<LinhaFinanceiraCidade>("evolucao_produtos_financeiro_cidade", alvo),
       ]);
-      const linhas = modeloDadosCidades(meses, { vidas: v, fin: financeiroAteUltimaValida(f, ultima) }, { tipo: tipoCidade, produto });
+      const finValido = financeiroAteUltimaValida(f, ultima);
+      const linhas = modeloDadosCidades(meses, { vidas: v, fin: finValido }, { tipo: tipoCidade, produto });
+      // Primeiro mês com receitas/despesas na base (view_eard_mensal); meses anteriores ficam em branco, sem estimativa.
+      const primeiroFin = finValido.reduce<number | null>((m, l) => { const x = Number(l.nr_ano) * 100 + Number(l.nr_mes); return m == null || x < m ? x : m; }, null);
+      const rotuloAAAAMM = (x: number) => `${String(x % 100).padStart(2, "0")}/${Math.floor(x / 100)}`;
       const tipoTxt = tipoCidade ? `${tipoCidade} (${DESC_TIPO[tipoCidade]})` : "Todos";
       const produtoTxt = TIPOS_PRODUTO.find((p) => p.id === produto)?.rotulo ?? "Todos";
       gerarXlsxCidades(linhas, [
         ["Tela", "Evolução Produtos · Cidade (UF)"],
         ["Período", `${anoMesCampo(alvo.de)} a ${anoMesCampo(alvo.ate)}`],
-        ["Valores em R$ até", `${anoMesCampo(ultima)} (último mês com despesas acima de R$ 20 milhões; meses seguintes ficam em branco)`],
+        ["Valores em R$", primeiroFin == null
+          ? "Sem receitas e despesas na base para o período escolhido"
+          : primeiroFin > aaaamm(alvo.de)
+            ? `De ${rotuloAAAAMM(primeiroFin)} a ${anoMesCampo(ultima)}. A base de receitas e despesas (view_eard_mensal) começa em ${rotuloAAAAMM(primeiroFin)}: os meses anteriores ficam com Receita, Coparticipação, Despesas e Saldo em branco, sem estimativa; os meses após ${anoMesCampo(ultima)} (último mês com despesas acima de R$ 20 milhões) também`
+            : `Até ${anoMesCampo(ultima)} (último mês com despesas acima de R$ 20 milhões; meses seguintes ficam em branco)`],
         ["Filtro Tipo", tipoTxt],
         ["Filtro Produto", produtoTxt],
         ["Praça", "S. J. Rio Preto = SAO JOSE DO RIO PRETO (SP); Região = demais cidades"],
