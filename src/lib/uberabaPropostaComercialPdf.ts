@@ -44,7 +44,22 @@ const SECOES = [
   "4. Condições comerciais",
   "5. Rede assistencial",
   "6. Vigência e validade",
+  "7. Glossário e Notas Explicativas",
 ];
+
+/**
+ * Glossário e Notas Explicativas: cada termo marcado recebe, no corpo do documento, um número elevado
+ * (1, 2, 3… na ordem desta lista) e a mesma legenda no último tópico. Termos e notas são indicados pelo usuário.
+ */
+export const GLOSSARIO_PROPOSTA: { termo: string; nota: string }[] = [
+  { termo: "ENFERMARIA", nota: "Apartamento = TRUNCAR(Enfermaria × 1,25; 2)" },
+];
+
+/** Número do marcador do termo no Glossário (começa em 1); null quando o termo não tem nota. */
+export function marcadorGlossario(termo: string): number | null {
+  const i = GLOSSARIO_PROPOSTA.findIndex((g) => g.termo.toUpperCase() === termo.toUpperCase());
+  return i < 0 ? null : i + 1;
+}
 
 export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao()): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
@@ -125,6 +140,20 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
         headStyles: { fillColor: CABECALHO, textColor: PDF_COLORS.navy, fontStyle: "bold", fontSize: 7.5 },
         alternateRowStyles: { fillColor: ZEBRA },
         didDrawCell: (c) => {
+          if (c.section === "head") {
+            const texto = String(c.cell.raw ?? "");
+            const n = marcadorGlossario(texto);
+            if (n !== null) {
+              // Número elevado logo após o termo (texto do cabeçalho é centralizado).
+              doc.setFont("helvetica", "bold");
+              doc.setFontSize(7.5);
+              const xFim = c.cell.x + c.cell.width / 2 + doc.getTextWidth(texto) / 2;
+              doc.setFontSize(5);
+              doc.setTextColor(...PDF_COLORS.navy);
+              doc.text(String(n), xFim + 0.4, c.cell.y + c.cell.height / 2 - 0.6);
+            }
+            return;
+          }
           if (c.section !== "body") return;
           doc.setDrawColor(...LINHA);
           doc.setLineWidth(0.1);
@@ -174,12 +203,34 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     doc.setPage(doc.getNumberOfPages());
   };
 
+  const desenharGlossario = () => {
+    GLOSSARIO_PROPOSTA.forEach((g, i) => {
+      const xTermo = marginL + 4;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      const linhasNota = doc.splitTextToSize(g.nota, usableW - 8) as string[];
+      garantir(6 + linhasNota.length * 4.8);
+      // Número elevado + termo em destaque.
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      doc.setTextColor(...PDF_COLORS.navy);
+      doc.text(String(i + 1), marginL, y - 1.6);
+      doc.setFontSize(10);
+      doc.text(g.termo, xTermo, y);
+      y += 5;
+      fonteTexto();
+      doc.text(linhasNota, xTermo, y, { lineHeightFactor: 1.35 });
+      y += linhasNota.length * 4.8 + 3;
+    });
+  };
+
   SECOES.forEach((titulo, i) => {
     const ehTabelas = titulo.startsWith("1.");
     garantir(ehTabelas ? 180 : 32); // título não fica sozinho no fim da página
     drawSectionTitle(doc, titulo, marginL, y, pageW - marginR);
     y += 8;
     if (ehTabelas) { desenharTabelas(); return; }
+    if (titulo.startsWith("7.")) { desenharGlossario(); return; }
     LOREM.slice(0, i % 2 === 0 ? 3 : 2).forEach(paragrafo);
     y += 2;
   });

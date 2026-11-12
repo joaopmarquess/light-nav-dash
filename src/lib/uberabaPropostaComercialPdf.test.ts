@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { quadrosProposta } from "./uberabaPropostaComercialPdf";
+import { GLOSSARIO_PROPOSTA, marcadorGlossario, quadrosProposta } from "./uberabaPropostaComercialPdf";
 import { indicadoresPadrao } from "./uberabaTabelasComerciais";
 
 describe("Proposta Comercial › 1. Tabelas", () => {
@@ -29,5 +29,15 @@ describe("Proposta Comercial › 1. Tabelas", () => {
     ind.pceAdm.adesao = 50;
     const [, pce] = quadrosProposta(undefined, ind);
     expect(pce.blocos[2].linhas).toEqual([["PERCENTUAL", "50%"]]);
+  });
+});
+
+describe("Proposta Comercial › Glossário e Notas Explicativas", () => {
+  it("ENFERMARIA is note 1 with the Apartamento rule", () => {
+    expect(marcadorGlossario("ENFERMARIA")).toBe(1);
+    expect(GLOSSARIO_PROPOSTA[0]).toEqual({ termo: "ENFERMARIA", nota: "Apartamento = TRUNCAR(Enfermaria × 1,25; 2)" });
+  });
+  it("terms without a note get no marker", () => {
+    expect(marcadorGlossario("FAIXA")).toBeNull();
   });
 });
