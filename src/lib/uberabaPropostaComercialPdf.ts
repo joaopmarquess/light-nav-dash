@@ -3,8 +3,8 @@ import autoTable from "jspdf-autotable";
 import { attachTimbrado } from "@/lib/pdfTimbrado";
 import { PDF_COLORS, drawReportHeading, drawSectionTitle } from "@/lib/pdfTheme";
 import {
-  FRENTES_COMERCIAIS, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, indicadoresPadrao, rotulosPadrao, tabelaIndexada,
-  type FrenteId, type IndicadoresPorFrente, type Indices, type RotulosPorFrente,
+  FATORES_PADRAO, FRENTES_COMERCIAIS, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarFator, formatarPercentual, indicadoresPadrao, rotulosPadrao, tabelaIndexada,
+  type Fatores, type FrenteId, type IndicadoresPorFrente, type Indices, type RotulosPorFrente,
 } from "@/lib/uberabaTabelasComerciais";
 
 type RGB = [number, number, number];
@@ -21,13 +21,17 @@ const LINHA: RGB = [95, 105, 115];
 const SECUNDARIO: RGB = [35, 42, 50];
 const RODAPE: RGB = [45, 45, 45];
 
-/** Tópico 1 · Tabelas: os três quadros de Resultados Comerciais (Faixa × Enfermaria e Indicadores variáveis). */
-export function quadrosProposta(indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao(), rotulos: RotulosPorFrente = rotulosPadrao()) {
+/**
+ * Tópico 1 · Tabelas: os três quadros com a mesma nomenclatura de Resultados Comerciais —
+ * nome da tabela (redigitável na tela), contêiner TABELAS (Faixa × Enfermaria e "APARTAMENTO fator x ENFERMARIA")
+ * e contêiner INDICADORES VARIÁVEIS.
+ */
+export function quadrosProposta(indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao(), rotulos: RotulosPorFrente = rotulosPadrao(), fatores: Fatores = FATORES_PADRAO) {
   return FRENTES_COMERCIAIS.map(({ id }) => ({
     id,
     titulo: rotulos[id].titulo,
-    segmento: rotulos[id].segmento,
-    linhas: tabelaIndexada(indices[id]).map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos)] as [string, string]),
+    fator: formatarFator(fatores[id]),
+    linhas: tabelaIndexada(indices[id], fatores[id]).map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos)] as [string, string]),
     blocos: blocosIndicadores(id, indicadores[id]).map((b) => ({
       titulo: b.titulo.toUpperCase(),
       linhas: b.linhas.map((l) => [l.rotulo.toUpperCase(), formatarPercentual(l.valor)] as [string, string]),
@@ -60,13 +64,26 @@ export const GLOSSARIO_PROPOSTA: { termo: string; nota: string }[] = [
   { termo: "ENFERMARIA", nota: "Apartamento = TRUNCAR(Enfermaria × 1,25; 2)" },
 ];
 
+/**
+ * Notas do Glossário com o fator do Apartamento atual: um só fator quando as três tabelas coincidem;
+ * do contrário, o fator de cada tabela pelo nome exibido.
+ */
+export function glossarioProposta(fatores: Fatores = FATORES_PADRAO, rotulos: RotulosPorFrente = rotulosPadrao()) {
+  const ids = FRENTES_COMERCIAIS.map((f) => f.id);
+  const iguais = ids.every((id) => fatores[id] === fatores[ids[0]]);
+  const nota = iguais
+    ? `Apartamento = TRUNCAR(Enfermaria × ${formatarFator(fatores[ids[0]])}; 2)`
+    : [`Apartamento = TRUNCAR(Enfermaria × fator da tabela; 2), sendo:`, ...ids.map((id) => `${rotulos[id].titulo}: ${formatarFator(fatores[id])}`)].join("\n");
+  return GLOSSARIO_PROPOSTA.map((g) => (g.termo === "ENFERMARIA" ? { ...g, nota } : g));
+}
+
 /** Número do marcador do termo no Glossário (começa em 1); null quando o termo não tem nota. */
 export function marcadorGlossario(termo: string): number | null {
   const i = GLOSSARIO_PROPOSTA.findIndex((g) => g.termo.toUpperCase() === termo.toUpperCase());
   return i < 0 ? null : i + 1;
 }
 
-export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao(), rotulos: RotulosPorFrente = rotulosPadrao()): jsPDF {
+export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao(), rotulos: RotulosPorFrente = rotulosPadrao(), fatores: Fatores = FATORES_PADRAO): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   attachTimbrado(doc, timbradoDataUrl);
   const pageW = doc.internal.pageSize.getWidth();
@@ -104,7 +121,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   const fimTabela = (fallback: number) => ((doc as any).lastAutoTable?.finalY as number | undefined) ?? fallback;
 
   const desenharTabelas = () => {
-    const quadros = quadrosProposta(indices, indicadores, rotulos);
+    const quadros = quadrosProposta(indices, indicadores, rotulos, fatores);
     garantir(170); // os três quadros ficam inteiros na mesma página
     const gap = 5;
     const largura = (usableW - gap * 2) / 3;
@@ -112,34 +129,47 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     const inicio = y;
     const margem = (x: number, w: number) => ({ left: x, right: pageW - x - w, top, bottom });
 
-    // Faixa colorida e título de cada frente.
+    const inset = 2;
+    const wSec = largura - inset * 2;
+    // Título de contêiner (TABELAS / INDICADORES VARIÁVEIS), como na tela.
+    const tituloSecao = (texto: string, x: number, yy: number) => {
+      doc.setFillColor(...ZEBRA);
+      doc.rect(x + inset, yy, wSec, 5, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.8);
+      doc.setTextColor(...SECUNDARIO);
+      doc.text(texto, x + largura / 2, yy + 3.4, { align: "center" });
+    };
+    const contornoSecao = (x: number, y0: number, y1: number) => {
+      doc.setDrawColor(...LINHA);
+      doc.setLineWidth(0.25);
+      doc.rect(x + inset, y0, wSec, y1 - y0, "S");
+    };
+
+    // Faixa colorida e nome de cada tabela (o mesmo da tela).
     quadros.forEach((q, k) => {
       const x = xs[k];
       doc.setFillColor(...COR_FRENTE[q.id]);
       doc.rect(x, inicio, largura, 2, "F");
       doc.setFont("helvetica", "bold");
-      // Nomes editados na tela podem ser longos: reduz a fonte para caber numa linha só, dentro do quadro.
-      let fT = 10, fS = 6.5;
-      const medir = () => { doc.setFontSize(fT); const t = doc.getTextWidth(q.titulo); doc.setFontSize(fS); return [t, doc.getTextWidth(q.segmento)]; };
-      let [wTit, wSeg] = medir();
-      if (wTit + 2 + wSeg > largura - 2) { const k = (largura - 4) / (wTit + wSeg); fT *= k; fS *= k; [wTit, wSeg] = medir(); }
-      const x0 = x + (largura - (wTit + 2 + wSeg)) / 2;
+      let fT = 10;
       doc.setFontSize(fT);
+      const w = doc.getTextWidth(q.titulo);
+      if (w > largura - 4) { fT *= (largura - 4) / w; doc.setFontSize(fT); }
       doc.setTextColor(...TINTA);
-      doc.text(q.titulo, x0, inicio + 7.2);
-      doc.setFontSize(fS);
-      doc.setTextColor(...COR_FRENTE[q.id]);
-      doc.text(q.segmento, x0 + wTit + 2, inicio + 7.2);
+      doc.text(q.titulo, x + largura / 2, inicio + 7.2, { align: "center" });
     });
 
-    // Faixa × Enfermaria.
-    let fim = inicio + 10;
+    // Contêiner TABELAS: Faixa × Enfermaria, linha sólida de fechamento e fator do Apartamento.
+    const ySecT = inicio + 10;
+    xs.forEach((x) => tituloSecao("TABELAS", x, ySecT));
+    let fim = ySecT + 5;
     quadros.forEach((q, k) => {
       autoTable(doc, {
         theme: "plain",
-        startY: inicio + 10,
-        tableWidth: largura,
-        margin: margem(xs[k], largura),
+        startY: ySecT + 5,
+        tableWidth: wSec,
+        margin: margem(xs[k] + inset, wSec),
         head: [["FAIXA", "ENFERMARIA"]],
         body: q.linhas,
         styles: { font: "helvetica", fontSize: 8, cellPadding: { top: 1.1, bottom: 1.1, left: 2, right: 2 }, textColor: PDF_COLORS.text, halign: "center" },
@@ -168,16 +198,33 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
       });
       fim = Math.max(fim, fimTabela(fim));
     });
+    const yFator = fim + 4.6;
+    quadros.forEach((q, k) => {
+      const x = xs[k] + inset;
+      doc.setDrawColor(...TINTA);
+      doc.setLineWidth(0.6);
+      doc.line(x, fim, x + wSec, fim);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.8);
+      doc.setTextColor(...SECUNDARIO);
+      doc.text("APARTAMENTO", x + 2, yFator);
+      let xx = x + 2 + doc.getTextWidth("APARTAMENTO") + 1.6;
+      doc.setFontSize(7.6);
+      doc.setTextColor(...TINTA);
+      doc.text(q.fator, xx, yFator);
+      xx += doc.getTextWidth(q.fator) + 1.6;
+      doc.setFontSize(6.8);
+      doc.setTextColor(...SECUNDARIO);
+      doc.text("x ENFERMARIA", xx, yFator);
+      contornoSecao(xs[k], ySecT, yFator + 2.6);
+    });
 
-    // Indicadores variáveis: cada bloco começa na mesma linha nas três frentes.
-    let yb = fim + 5;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(6.8);
-    doc.setTextColor(...SECUNDARIO);
-    xs.forEach((x) => doc.text("INDICADORES VARIÁVEIS", x + largura / 2, yb, { align: "center" }));
-    yb += 2.5;
+    // Contêiner INDICADORES VARIÁVEIS: cada bloco começa na mesma linha nas três frentes.
+    const ySecI = yFator + 5.4;
+    xs.forEach((x) => tituloSecao("INDICADORES VARIÁVEIS", x, ySecI));
+    let yb = ySecI + 7;
     const nBlocos = Math.max(...quadros.map((q) => q.blocos.length));
-    const inset = 2;
+    const insetB = inset + 1.5;
     for (let b = 0; b < nBlocos; b++) {
       let fimBloco = yb;
       quadros.forEach((q, k) => {
@@ -186,8 +233,8 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
         autoTable(doc, {
           theme: "grid",
           startY: yb,
-          tableWidth: largura - inset * 2,
-          margin: margem(xs[k] + inset, largura - inset * 2),
+          tableWidth: largura - insetB * 2,
+          margin: margem(xs[k] + insetB, largura - insetB * 2),
           head: [[{ content: bloco.titulo, colSpan: 2 }]],
           body: bloco.linhas,
           styles: { font: "helvetica", fontSize: 7.2, cellPadding: { top: 1.1, bottom: 1.1, left: 2, right: 2 }, textColor: PDF_COLORS.text, lineColor: LINHA, lineWidth: 0.2 },
@@ -198,6 +245,8 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
       });
       yb = fimBloco + 3;
     }
+    xs.forEach((x) => contornoSecao(x, ySecI, yb - 1));
+    yb += 1.5;
 
     // Contorno de cada quadro.
     const altura = yb - inicio;
@@ -210,7 +259,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   };
 
   const desenharGlossario = () => {
-    GLOSSARIO_PROPOSTA.forEach((g, i) => {
+    glossarioProposta(fatores, rotulos).forEach((g, i) => {
       const xTermo = marginL + 4;
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);

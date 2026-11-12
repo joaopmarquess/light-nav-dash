@@ -47,8 +47,27 @@ import { rotulosPadrao } from "./uberabaTabelasComerciais";
 describe("quadrosProposta · nomes redigitados", () => {
   it("uses the names typed on screen", () => {
     const r = rotulosPadrao();
-    r.pceAdm = { titulo: "PME ADM", segmento: "PEQUENAS E MÉDIAS" };
+    r.pceAdm = { titulo: "PME ADM", segmento: "MÉDIAS EMPRESAS" };
     const [, pce] = quadrosProposta(undefined, undefined, r);
-    expect([pce.titulo, pce.segmento]).toEqual(["PME ADM", "PEQUENAS E MÉDIAS"]);
+    expect(pce.titulo).toBe("PME ADM");
+    expect(pce).not.toHaveProperty("segmento"); // a tela não mostra mais o segmento
+  });
+});
+
+import { glossarioProposta } from "./uberabaPropostaComercialPdf";
+import { FATORES_PADRAO } from "./uberabaTabelasComerciais";
+
+describe("Proposta · fator do Apartamento", () => {
+  it("each quadro shows its table's factor (1,25 by default)", () => {
+    expect(quadrosProposta().map((q) => q.fator)).toEqual(["1,25", "1,25", "1,25"]);
+    const [, , pce100] = quadrosProposta(undefined, undefined, undefined, { ...FATORES_PADRAO, pce100: 1.3 });
+    expect(pce100.fator).toBe("1,30");
+  });
+  it("Glossário keeps the single-factor rule when all tables agree", () => {
+    expect(glossarioProposta()[0].nota).toBe("Apartamento = TRUNCAR(Enfermaria × 1,25; 2)");
+  });
+  it("Glossário lists each table's factor when they differ", () => {
+    expect(glossarioProposta({ ...FATORES_PADRAO, pcaAdm: 1.3 })[0].nota)
+      .toBe("Apartamento = TRUNCAR(Enfermaria × fator da tabela; 2), sendo:\nPCA Adm.: 1,30\nPCE Adm.: 1,25\nPCE 100+: 1,25");
   });
 });
