@@ -112,3 +112,22 @@ describe("nomes das tabelas (redigitáveis)", () => {
     expect(lido.pcaAdm.titulo).toBe("PCA Adm.");
   });
 });
+
+import { gravarPadraoRotulos, lerPadraoRotulos } from "./uberabaTabelasComerciais";
+
+describe("novo padrão para o nome das tabelas", () => {
+  const novoStorage = () => {
+    const mem = new Map<string, string>();
+    return { getItem: (k: string) => mem.get(k) ?? null, setItem: (k: string, v: string) => void mem.set(k, v) };
+  };
+  it("saved default replaces the original name and is what an empty field restores", () => {
+    const st = novoStorage();
+    const p = lerPadraoRotulos(st);
+    p.pce100.titulo = "PJ 100+";
+    gravarPadraoRotulos(p, st);
+    expect(lerPadraoRotulos(st).pce100.titulo).toBe("PJ 100+");
+    expect(lerRotulos(st).pce100.titulo).toBe("PJ 100+");
+    expect(normalizarRotulo("", lerPadraoRotulos(st).pce100.titulo)).toBe("PJ 100+");
+    expect(lerPadraoRotulos(st).pcaAdm.titulo).toBe("PCA Adm.");
+  });
+});

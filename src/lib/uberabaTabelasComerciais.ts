@@ -161,10 +161,12 @@ export function normalizarRotulo(texto: unknown, padrao: string): string {
   return t || padrao;
 }
 const CHAVE_ROTULOS = "uberaba-tabelas-comerciais-rotulos-v1";
-export function lerRotulos(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): RotulosPorFrente {
-  const out = rotulosPadrao();
+/** Padrão gravado pelo usuário (ícone ao lado do nome); sem gravação, valem os nomes originais. */
+const CHAVE_ROTULOS_PADRAO = "uberaba-tabelas-comerciais-rotulos-padrao-v1";
+const lerRotulosDe = (storage: Pick<Storage, "getItem"> | undefined, chave: string, base: RotulosPorFrente): RotulosPorFrente => {
+  const out: RotulosPorFrente = JSON.parse(JSON.stringify(base));
   try {
-    const salvo = JSON.parse(storage?.getItem(CHAVE_ROTULOS) ?? "null");
+    const salvo = JSON.parse(storage?.getItem(chave) ?? "null");
     if (!salvo || typeof salvo !== "object") return out;
     FRENTE_IDS.forEach((id) => {
       const s = salvo[id];
@@ -173,6 +175,16 @@ export function lerRotulos(storage: Pick<Storage, "getItem"> | undefined = globa
     });
   } catch { /* volta ao padrão */ }
   return out;
+};
+export function lerPadraoRotulos(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): RotulosPorFrente {
+  return lerRotulosDe(storage, CHAVE_ROTULOS_PADRAO, rotulosPadrao());
+}
+export function gravarPadraoRotulos(v: RotulosPorFrente, storage: Pick<Storage, "setItem"> | undefined = globalThis.localStorage) {
+  try { storage?.setItem(CHAVE_ROTULOS_PADRAO, JSON.stringify(v)); } catch { /* armazenamento indisponível */ }
+}
+/** Nomes atuais; o que não estiver gravado segue o padrão gravado (ou o original). */
+export function lerRotulos(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): RotulosPorFrente {
+  return lerRotulosDe(storage, CHAVE_ROTULOS, lerPadraoRotulos(storage));
 }
 export function gravarRotulos(v: RotulosPorFrente, storage: Pick<Storage, "setItem"> | undefined = globalThis.localStorage) {
   try { storage?.setItem(CHAVE_ROTULOS, JSON.stringify(v)); } catch { /* armazenamento indisponível */ }

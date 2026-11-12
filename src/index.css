@@ -867,6 +867,9 @@ All colors MUST be HSL.
 .comercial-rotulo:hover { border-bottom-color: hsl(var(--hospital-frame)); }
 .comercial-rotulo:focus { border-bottom-color: var(--commercial-color); }
 .comercial-rotulo-segmento { color: var(--commercial-color); }
+.comercial-rotulo-padrao { display: inline-flex; padding: 2px; color: hsl(var(--credential-secondary)); opacity: .35; border-radius: 4px; transition: opacity .15s; }
+.comercial-rotulo-padrao:hover:not(:disabled), .comercial-rotulo-padrao:focus-visible { opacity: 1; color: var(--commercial-color); }
+.comercial-rotulo-padrao:disabled { opacity: .12; cursor: default; }
 .comercial-indice { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: hsl(var(--credential-secondary)); }
 .comercial-indice input { font-size: 15px; font-weight: 700; color: hsl(var(--credential-text)); background: hsl(var(--hospital-surface)); border-color: var(--commercial-color); }
 .comercial-table thead { background: hsl(var(--credential-head)); }

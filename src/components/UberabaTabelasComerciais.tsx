@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pin } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, gravarRotulos, lerIndicadores, lerIndices, lerRotulos, normalizarRotulo, rotulosPadrao, ROTULO_MAX, parseIndicador, parseIndice, tabelaIndexada, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices, type Rotulos, type RotulosPorFrente } from "@/lib/uberabaTabelasComerciais";
+import { FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, gravarPadraoRotulos, gravarRotulos, lerIndicadores, lerIndices, lerPadraoRotulos, lerRotulos, normalizarRotulo, ROTULO_MAX, parseIndicador, parseIndice, tabelaIndexada, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices, type Rotulos, type RotulosPorFrente } from "@/lib/uberabaTabelasComerciais";
 
 // Preços calculados pela Referência × índice de cada frente; indicadores variáveis editáveis por frente (cálculos no helper).
 type Linha = [string, string, string];
@@ -124,18 +124,34 @@ const CampoIndicadorInput = ({ f, campo, rotulo, valor, onChange }: { f: Frente;
 
 type LinhaIndicador = { rotulo: string; campo?: CampoIndicador; calculado?: number; formula?: string };
 
-const PADRAO_ROTULOS = rotulosPadrao();
+// Ícone discreto: grava o nome atual como novo padrão da tabela (o que volta quando o campo fica vazio).
+const GravarPadrao = ({ f, ativo, onClick }: { f: Frente; ativo: boolean; onClick: () => void }) => {
+  const dica = ativo ? "Gravar este nome como novo padrão" : "Este nome já é o padrão";
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button type="button" onClick={onClick} disabled={!ativo} aria-label={`${dica} · ${f.titulo}`} className="comercial-rotulo-padrao">
+          <Pin className="h-3.5 w-3.5" aria-hidden />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>{dica}</TooltipContent>
+    </Tooltip>
+  );
+};
 
-const Card = ({ f, indice, onIndice, apartamento, indicadores, onIndicador, rotulos, onRotulo }: {
+const Card = ({ f, indice, onIndice, apartamento, indicadores, onIndicador, rotulos, padroes, onRotulo, onGravarPadrao }: {
   f: Frente; indice: number; onIndice: (v: number) => void; apartamento: ApartamentoToggle;
-  rotulos: Rotulos; onRotulo: (campo: keyof Rotulos, v: string) => void;
+  rotulos: Rotulos; padroes: Rotulos; onRotulo: (campo: keyof Rotulos, v: string) => void; onGravarPadrao: () => void;
   indicadores: Indicadores; onIndicador: (campo: CampoIndicador, v: number) => void;
 }) => {
   const blocos: [string, LinhaIndicador[]][] = blocosIndicadores(f.id, indicadores).map((b) => [b.titulo, b.linhas.map((l) => ({ rotulo: l.rotulo, campo: l.campo, calculado: l.campo ? undefined : l.valor, formula: l.formula }))]);
   return (
     <div className={`comercial-card ${f.cor}`}>
       <div className="flex items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center">
-        <RotuloEditavel valor={rotulos.titulo} padrao={PADRAO_ROTULOS[f.id].titulo} onChange={(v) => onRotulo("titulo", v)} rotulo={`Nome da frente ${f.titulo}`} className="text-xl font-bold" />
+        <span className="inline-flex items-center gap-1">
+          <RotuloEditavel valor={rotulos.titulo} padrao={padroes.titulo} onChange={(v) => onRotulo("titulo", v)} rotulo={`Nome da frente ${f.titulo}`} className="text-xl font-bold" />
+          <GravarPadrao f={f} ativo={rotulos.titulo !== padroes.titulo} onClick={onGravarPadrao} />
+        </span>
         <IndiceCampo f={f} valor={indice} onChange={onIndice} />
       </div>
       <Tabela linhas={linhasDe(indice)} apartamento={apartamento} />
@@ -184,11 +200,17 @@ const UberabaTabelasComerciais = () => {
     gravarRotulos(novo);
     return novo;
   });
+  const [padroes, setPadroes] = useState<RotulosPorFrente>(() => lerPadraoRotulos());
+  const gravarPadrao = (id: FrenteId) => setPadroes((atual) => {
+    const novo = { ...atual, [id]: { ...atual[id], titulo: rotulos[id].titulo } };
+    gravarPadraoRotulos(novo);
+    return novo;
+  });
   const alterar = (id: FrenteId, v: number) => setIndices((atual) => { const novo = { ...atual, [id]: v }; gravarIndices(novo); return novo; });
   return (
     <section className="comercial-presentation" aria-label="Tabelas comerciais">
       <div className="comercial-grid">
-        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} apartamento={apartamento} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} />)}
+        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} apartamento={apartamento} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} padroes={padroes[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} onGravarPadrao={() => gravarPadrao(f.id)} />)}
       </div>
     </section>
   );
