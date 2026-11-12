@@ -3,8 +3,8 @@ import autoTable from "jspdf-autotable";
 import { attachTimbrado } from "@/lib/pdfTimbrado";
 import { PDF_COLORS, drawReportHeading, drawSectionTitle } from "@/lib/pdfTheme";
 import {
-  FRENTES_COMERCIAIS, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, indicadoresPadrao, tabelaIndexada,
-  type FrenteId, type IndicadoresPorFrente, type Indices,
+  FRENTES_COMERCIAIS, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, indicadoresPadrao, rotulosPadrao, tabelaIndexada,
+  type FrenteId, type IndicadoresPorFrente, type Indices, type RotulosPorFrente,
 } from "@/lib/uberabaTabelasComerciais";
 
 type RGB = [number, number, number];
@@ -22,11 +22,11 @@ const SECUNDARIO: RGB = [35, 42, 50];
 const RODAPE: RGB = [45, 45, 45];
 
 /** Tópico 1 · Tabelas: os três quadros de Resultados Comerciais (Faixa × Enfermaria e Indicadores variáveis). */
-export function quadrosProposta(indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao()) {
-  return FRENTES_COMERCIAIS.map(({ id, titulo, segmento }) => ({
+export function quadrosProposta(indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao(), rotulos: RotulosPorFrente = rotulosPadrao()) {
+  return FRENTES_COMERCIAIS.map(({ id }) => ({
     id,
-    titulo,
-    segmento,
+    titulo: rotulos[id].titulo,
+    segmento: rotulos[id].segmento,
     linhas: tabelaIndexada(indices[id]).map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos)] as [string, string]),
     blocos: blocosIndicadores(id, indicadores[id]).map((b) => ({
       titulo: b.titulo.toUpperCase(),
@@ -66,7 +66,7 @@ export function marcadorGlossario(termo: string): number | null {
   return i < 0 ? null : i + 1;
 }
 
-export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao()): jsPDF {
+export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao(), rotulos: RotulosPorFrente = rotulosPadrao()): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   attachTimbrado(doc, timbradoDataUrl);
   const pageW = doc.internal.pageSize.getWidth();
@@ -104,7 +104,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   const fimTabela = (fallback: number) => ((doc as any).lastAutoTable?.finalY as number | undefined) ?? fallback;
 
   const desenharTabelas = () => {
-    const quadros = quadrosProposta(indices, indicadores);
+    const quadros = quadrosProposta(indices, indicadores, rotulos);
     garantir(170); // os três quadros ficam inteiros na mesma página
     const gap = 5;
     const largura = (usableW - gap * 2) / 3;
@@ -118,15 +118,16 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
       doc.setFillColor(...COR_FRENTE[q.id]);
       doc.rect(x, inicio, largura, 2, "F");
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      const wTit = doc.getTextWidth(q.titulo);
-      doc.setFontSize(6.5);
-      const wSeg = doc.getTextWidth(q.segmento);
+      // Nomes editados na tela podem ser longos: reduz a fonte para caber numa linha só, dentro do quadro.
+      let fT = 10, fS = 6.5;
+      const medir = () => { doc.setFontSize(fT); const t = doc.getTextWidth(q.titulo); doc.setFontSize(fS); return [t, doc.getTextWidth(q.segmento)]; };
+      let [wTit, wSeg] = medir();
+      if (wTit + 2 + wSeg > largura - 2) { const k = (largura - 4) / (wTit + wSeg); fT *= k; fS *= k; [wTit, wSeg] = medir(); }
       const x0 = x + (largura - (wTit + 2 + wSeg)) / 2;
-      doc.setFontSize(10);
+      doc.setFontSize(fT);
       doc.setTextColor(...TINTA);
       doc.text(q.titulo, x0, inicio + 7.2);
-      doc.setFontSize(6.5);
+      doc.setFontSize(fS);
       doc.setTextColor(...COR_FRENTE[q.id]);
       doc.text(q.segmento, x0 + wTit + 2, inicio + 7.2);
     });

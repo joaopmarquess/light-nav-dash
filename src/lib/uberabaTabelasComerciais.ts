@@ -148,6 +148,36 @@ export const FRENTES_COMERCIAIS: { id: FrenteId; titulo: string; segmento: strin
   { id: "pce100", titulo: "PCE 100+", segmento: "GRANDES EMPRESAS" },
 ];
 
+// ---------- Rótulos do cabeçalho de cada quadro (editáveis na tela) ----------
+export type Rotulos = { titulo: string; segmento: string; referencia: string };
+export type RotulosPorFrente = Record<FrenteId, Rotulos>;
+export const ROTULO_MAX = 40;
+export const rotulosPadrao = (): RotulosPorFrente =>
+  Object.fromEntries(FRENTES_COMERCIAIS.map((f) => [f.id, { titulo: f.titulo, segmento: f.segmento, referencia: "x Referência" }])) as RotulosPorFrente;
+/** Uma linha só: espaços/quebras colapsados, limite de tamanho; vazio volta ao padrão. */
+export function normalizarRotulo(texto: unknown, padrao: string): string {
+  if (typeof texto !== "string") return padrao;
+  const t = texto.replace(/\s+/g, " ").trim().slice(0, ROTULO_MAX).trim();
+  return t || padrao;
+}
+const CHAVE_ROTULOS = "uberaba-tabelas-comerciais-rotulos-v1";
+export function lerRotulos(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): RotulosPorFrente {
+  const out = rotulosPadrao();
+  try {
+    const salvo = JSON.parse(storage?.getItem(CHAVE_ROTULOS) ?? "null");
+    if (!salvo || typeof salvo !== "object") return out;
+    FRENTE_IDS.forEach((id) => {
+      const s = salvo[id];
+      if (!s || typeof s !== "object") return;
+      (Object.keys(out[id]) as (keyof Rotulos)[]).forEach((c) => { out[id][c] = normalizarRotulo(s[c], out[id][c]); });
+    });
+  } catch { /* volta ao padrão */ }
+  return out;
+}
+export function gravarRotulos(v: RotulosPorFrente, storage: Pick<Storage, "setItem"> | undefined = globalThis.localStorage) {
+  try { storage?.setItem(CHAVE_ROTULOS, JSON.stringify(v)); } catch { /* armazenamento indisponível */ }
+}
+
 export type LinhaIndicadorBloco = { rotulo: string; valor: number; campo?: CampoIndicador; formula?: string };
 export type BlocoIndicadores = { titulo: string; linhas: LinhaIndicadorBloco[] };
 

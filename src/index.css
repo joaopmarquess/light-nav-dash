@@ -859,8 +859,14 @@ All colors MUST be HSL.
 .comercial-adesao { --commercial-color: hsl(var(--hospital-gold)); }
 .comercial-medias { --commercial-color: hsl(var(--hospital-blue)); }
 .comercial-grandes { --commercial-color: hsl(var(--credential-nonmedical)); }
-.comercial-card > div:first-child { flex-wrap: wrap; padding: 16px; }
-.comercial-card > div:first-child > p + p { color: var(--commercial-color); }
+.comercial-card > div:first-child { flex-wrap: nowrap; white-space: nowrap; min-width: 0; padding: 16px; }
+.comercial-card > div:first-child > * { flex-shrink: 0; }
+.comercial-rotulo { field-sizing: content; min-width: 1ch; max-width: 100%; padding: 0 2px; background: transparent; color: inherit; border: 0; border-bottom: 1px dashed transparent; border-radius: 0; outline: none; text-align: center; font: inherit; cursor: text; }
+.comercial-rotulo.text-xl { font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; }
+.comercial-rotulo.text-sm { font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; }
+.comercial-rotulo:hover { border-bottom-color: hsl(var(--hospital-frame)); }
+.comercial-rotulo:focus { border-bottom-color: var(--commercial-color); }
+.comercial-rotulo-segmento { color: var(--commercial-color); }
 .comercial-indice { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: hsl(var(--credential-secondary)); }
 .comercial-indice input { font-size: 15px; font-weight: 700; color: hsl(var(--credential-text)); background: hsl(var(--hospital-surface)); border-color: var(--commercial-color); }
 .comercial-table thead { background: hsl(var(--credential-head)); }

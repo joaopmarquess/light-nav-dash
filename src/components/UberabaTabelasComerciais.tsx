@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, lerIndicadores, lerIndices, parseIndicador, parseIndice, tabelaIndexada, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices } from "@/lib/uberabaTabelasComerciais";
+import { FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, gravarRotulos, lerIndicadores, lerIndices, lerRotulos, normalizarRotulo, rotulosPadrao, ROTULO_MAX, parseIndicador, parseIndice, tabelaIndexada, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices, type Rotulos, type RotulosPorFrente } from "@/lib/uberabaTabelasComerciais";
 
 // Preços calculados pela Referência × índice de cada frente; indicadores variáveis editáveis por frente (cálculos no helper).
 type Linha = [string, string, string];
@@ -62,14 +62,36 @@ const Tabela = ({ linhas, apartamento }: { linhas: Linha[]; apartamento?: Aparta
   );
 };
 
-const IndiceCampo = ({ f, valor, onChange }: { f: Frente; valor: number; onChange: (v: number) => void }) => {
+// Texto do cabeçalho editável em uma linha; vazio volta ao padrão ao sair do campo.
+const RotuloEditavel = ({ valor, padrao, onChange, className, rotulo }: { valor: string; padrao: string; onChange: (v: string) => void; className?: string; rotulo: string }) => {
+  const [texto, setTexto] = useState(valor);
+  useEffect(() => { setTexto(valor); }, [valor]);
+  const confirmar = () => { const v = normalizarRotulo(texto, padrao); setTexto(v); if (v !== valor) onChange(v); };
+  return (
+    <input
+      type="text"
+      aria-label={rotulo}
+      title={`Clique para editar · padrão: ${padrao}`}
+      value={texto}
+      maxLength={ROTULO_MAX}
+      size={Math.max(texto.length, 1)}
+      onChange={(e) => setTexto(e.target.value)}
+      onBlur={confirmar}
+      onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") { setTexto(valor); e.currentTarget.blur(); } }}
+      className={`comercial-rotulo ${className ?? ""}`}
+    />
+  );
+};
+
+const IndiceCampo = ({ f, valor, onChange, referencia, padraoReferencia, onReferencia }: { f: Frente; valor: number; onChange: (v: number) => void; referencia: string; padraoReferencia: string; onReferencia: (v: string) => void }) => {
   const [texto, setTexto] = useState(String(valor).replace(".", ","));
   useEffect(() => { setTexto(String(valor).replace(".", ",")); }, [valor]);
   const id = `indice-${f.id}`;
   return (
-    <label htmlFor={id} className="comercial-indice" title={`Índice sobre a tabela Referência · padrão ${INDICES_PADRAO[f.id]}%`}>
-      <span>x Referência</span>
+    <span className="comercial-indice">
+      <RotuloEditavel valor={referencia} padrao={padraoReferencia} onChange={onReferencia} rotulo={`Texto do índice ${f.titulo}`} />
       <Input
+        title={`Índice sobre a tabela Referência · padrão ${INDICES_PADRAO[f.id]}%`}
         id={id}
         aria-label={`Índice ${f.titulo} x Referência`}
         inputMode="decimal"
@@ -79,7 +101,7 @@ const IndiceCampo = ({ f, valor, onChange }: { f: Frente; valor: number; onChang
         className="h-8 w-16 px-2 text-right tabular-nums"
       />
       <span>%</span>
-    </label>
+    </span>
   );
 };
 
@@ -104,17 +126,20 @@ const CampoIndicadorInput = ({ f, campo, rotulo, valor, onChange }: { f: Frente;
 
 type LinhaIndicador = { rotulo: string; campo?: CampoIndicador; calculado?: number; formula?: string };
 
-const Card = ({ f, indice, onIndice, apartamento, indicadores, onIndicador }: {
+const PADRAO_ROTULOS = rotulosPadrao();
+
+const Card = ({ f, indice, onIndice, apartamento, indicadores, onIndicador, rotulos, onRotulo }: {
   f: Frente; indice: number; onIndice: (v: number) => void; apartamento: ApartamentoToggle;
+  rotulos: Rotulos; onRotulo: (campo: keyof Rotulos, v: string) => void;
   indicadores: Indicadores; onIndicador: (campo: CampoIndicador, v: number) => void;
 }) => {
   const blocos: [string, LinhaIndicador[]][] = blocosIndicadores(f.id, indicadores).map((b) => [b.titulo, b.linhas.map((l) => ({ rotulo: l.rotulo, campo: l.campo, calculado: l.campo ? undefined : l.valor, formula: l.formula }))]);
   return (
     <div className={`comercial-card ${f.cor}`}>
       <div className="flex items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center">
-        <p className="text-xl font-bold">{f.titulo}</p>
-        <p className="text-sm font-semibold tracking-normal">{f.segmento}</p>
-        <IndiceCampo f={f} valor={indice} onChange={onIndice} />
+        <RotuloEditavel valor={rotulos.titulo} padrao={PADRAO_ROTULOS[f.id].titulo} onChange={(v) => onRotulo("titulo", v)} rotulo={`Nome da frente ${f.titulo}`} className="text-xl font-bold" />
+        <RotuloEditavel valor={rotulos.segmento} padrao={PADRAO_ROTULOS[f.id].segmento} onChange={(v) => onRotulo("segmento", v)} rotulo={`Segmento da frente ${f.titulo}`} className="comercial-rotulo-segmento text-sm font-semibold tracking-normal" />
+        <IndiceCampo f={f} valor={indice} onChange={onIndice} referencia={rotulos.referencia} padraoReferencia={PADRAO_ROTULOS[f.id].referencia} onReferencia={(v) => onRotulo("referencia", v)} />
       </div>
       <Tabela linhas={linhasDe(indice)} apartamento={apartamento} />
       <div className="px-3 pb-3 pt-2">
@@ -156,11 +181,17 @@ const UberabaTabelasComerciais = () => {
     gravarIndicadores(novo);
     return novo;
   });
+  const [rotulos, setRotulos] = useState<RotulosPorFrente>(() => lerRotulos());
+  const alterarRotulo = (id: FrenteId, campo: keyof Rotulos, v: string) => setRotulos((atual) => {
+    const novo = { ...atual, [id]: { ...atual[id], [campo]: v } };
+    gravarRotulos(novo);
+    return novo;
+  });
   const alterar = (id: FrenteId, v: number) => setIndices((atual) => { const novo = { ...atual, [id]: v }; gravarIndices(novo); return novo; });
   return (
     <section className="comercial-presentation" aria-label="Tabelas comerciais">
       <div className="comercial-grid">
-        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} apartamento={apartamento} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} />)}
+        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} apartamento={apartamento} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} />)}
       </div>
     </section>
   );
