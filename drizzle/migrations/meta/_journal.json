@@ -64,6 +64,13 @@
       "when": 1794416422783,
       "tag": "0008_bench_vidas_envio_outros_estados",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794491335233,
+      "tag": "0009_bench_vidas_envio_admin_read",
+      "breakpoints": true
     }
   ]
 }
