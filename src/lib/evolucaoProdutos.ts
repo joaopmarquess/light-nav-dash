@@ -340,20 +340,32 @@ const somaChaves = (ad: Aditiva, ks: string[], i: number) => {
   return m == null ? null : ks.reduce((s, k) => s + (m.get(k) ?? 0), 0);
 };
 
+/** Praça = São José do Rio Preto (SP); Região = todas as demais cidades (inclusive cidade não informada). */
+export const PRACA = { uf: "SP", cidade: "SAO JOSE DO RIO PRETO" } as const;
+export const GRUPOS_CIDADE = [
+  { id: "PRACA", rotulo: "Praça" },
+  { id: "REGIAO", rotulo: "Região" },
+] as const;
+export type GrupoCidadeId = (typeof GRUPOS_CIDADE)[number]["id"];
+const semAcento = (v: string | null) => (v == null ? null : v.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+export const grupoDaCidade = (cidade: string | null, uf: string | null): GrupoCidadeId =>
+  semAcento(txt(cidade)) === PRACA.cidade && txt(uf) === PRACA.uf ? "PRACA" : "REGIAO";
+const rotuloGrupo = (id: GrupoCidadeId) => GRUPOS_CIDADE.find((g) => g.id === id)!.rotulo;
+
 /** Linha da grade: um valor por mês e a coluna Total do período (null = sem dado ou, em Vidas, sem soma). */
 export type LinhaCidades = { valores: (number | null)[]; periodo: number | null };
-export type GrupoUF = {
-  uf: string | null; rotulo: string;
+export type GrupoCidades = {
+  id: GrupoCidadeId; rotulo: string;
   cidades: { uf: string | null; cidade: string | null; rotulo: string; linha: LinhaCidades }[];
   subtotal: LinhaCidades;
 };
-export type GradeCidades = { meses: MesEvolucao[]; grupos: GrupoUF[]; total: LinhaCidades; fora: number[] };
+export type GradeCidades = { meses: MesEvolucao[]; grupos: GrupoCidades[]; total: LinhaCidades; fora: number[] };
 
 /**
- * Grade Cidade (UF) × mês para uma visão. Cidades agrupadas por UF, com Subtotal por UF e Total Geral.
- * Valores aditivos somam o período; Vidas não somam (coluna Total null). Sinistralidade e Per capita usam
- * a razão das somas em cada célula, subtotal, total e período. Ordem: vidas no último mês, da maior para a menor
- * (UF e cidades); UF/cidade não informada por último.
+ * Grade Cidade (UF) × mês para uma visão. Cidades em dois grupos — Praça (São José do Rio Preto) e Região
+ * (demais) — com Subtotal por grupo e Total Geral. Valores aditivos somam o período; Vidas não somam (coluna
+ * Total null). Sinistralidade e Per capita usam a razão das somas em cada célula, subtotal, total e período.
+ * Ordem: Praça, Região; cidades pelas vidas no último mês, da maior para a menor; cidade não informada por último.
  */
 export function montarGradeCidades(
   meses: MesEvolucao[],
@@ -385,26 +397,83 @@ export function montarGradeCidades(
   const todas = new Map([...num.chaves, ...(den?.chaves ?? [])]);
   const ultimo = meses.length - 1;
   const peso = (ks: string[]) => (ultimo < 0 ? 0 : somaChaves(vidas, ks, ultimo) ?? 0);
-  const porUf = new Map<string, ChaveCidade[]>();
-  for (const c of todas.values()) {
-    const u = c.uf ?? "";
-    if (!porUf.has(u)) porUf.set(u, []);
-    porUf.get(u)!.push(c);
-  }
-  const ordem = <T>(xs: T[], semInfo: (x: T) => boolean, p: (x: T) => number, nome: (x: T) => string) =>
-    xs.sort((a, b) => Number(semInfo(a)) - Number(semInfo(b)) || p(b) - p(a) || nome(a).localeCompare(nome(b), "pt-BR"));
-  const grupos: GrupoUF[] = ordem(
-    [...porUf.entries()].map(([u, cs]) => ({ uf: u || null, cs })),
-    (g) => g.uf == null, (g) => peso(g.cs.map((c) => c.k)), (g) => g.uf ?? "",
-  ).map(({ uf, cs }) => ({
-    uf,
-    rotulo: uf ?? UF_NAO_INFORMADA,
-    cidades: ordem(cs, (c) => c.cidade == null, (c) => peso([c.k]), (c) => c.cidade ?? "")
-      .map((c) => ({ uf: c.uf, cidade: c.cidade, rotulo: rotuloCidade(c.cidade, c.uf), linha: linha([c.k]) })),
-    subtotal: linha(cs.map((c) => c.k)),
-  }));
+  const ordem = (xs: ChaveCidade[]) =>
+    xs.sort((a, b) => Number(a.cidade == null) - Number(b.cidade == null) || peso([b.k]) - peso([a.k]) || (a.cidade ?? "").localeCompare(b.cidade ?? "", "pt-BR"));
+  const grupos: GrupoCidades[] = GRUPOS_CIDADE.map((g) => ({ g, cs: [...todas.values()].filter((c) => grupoDaCidade(c.cidade, c.uf) === g.id) }))
+    .filter(({ cs }) => cs.length > 0)
+    .map(({ g, cs }) => ({
+      id: g.id,
+      rotulo: g.rotulo,
+      cidades: ordem(cs).map((c) => ({ uf: c.uf, cidade: c.cidade, rotulo: rotuloCidade(c.cidade, c.uf), linha: linha([c.k]) })),
+      subtotal: linha(cs.map((c) => c.k)),
+    }));
   // Total Geral pela soma de tudo o que entrou no filtro (inclui cidades zeradas no período).
   const tudo = [...new Set(num.mes.flatMap((m) => (m ? [...m.keys()] : [])).concat(den ? den.mes.flatMap((m) => (m ? [...m.keys()] : [])) : []))];
   const fora = den || visao === "Vidas" ? meses.map(() => 0) : num.fora;
   return { meses, grupos, total: linha(tudo), fora };
+}
+
+// ───────────── Modelo de dados (XLSX) ─────────────
+
+/** Linha do modelo de dados: cidade × mês × tipo × produto, com as medidas aditivas (null = sem dado). */
+export type LinhaModeloCidade = {
+  competencia: string; ano: number; mes: number; grupo: string; uf: string | null; cidade: string | null; cidadeUf: string;
+  tipo: TipoPlano; produto: string;
+  vidas: number | null; receita: number | null; coparticipacao: number | null; totalReceitas: number | null; despesas: number | null; saldo: number | null;
+};
+
+/**
+ * Tabela plana (modelo de dados) com os filtros escolhidos, nas mesmas regras do grid: só PIF/PCA/PCE e
+ * produtos conhecidos; mês sem linha na fonte fica null; combinação ausente em mês com dado vale 0.
+ * Total Receitas = Receita + Coparticipação; Saldo = Total Receitas − Despesas.
+ */
+export function modeloDadosCidades(
+  meses: MesEvolucao[],
+  dados: { vidas: LinhaVidasCidade[]; fin: LinhaFinanceiraCidade[] | null },
+  filtro: FiltroCidade = {},
+): LinhaModeloCidade[] {
+  const pos = new Map(meses.map((m, i) => [`${m.ano}-${m.mes}`, i]));
+  const siglas = new Set<string>(TIPOS_PLANO);
+  const produtos = new Set<string>(TIPOS_PRODUTO.map((p) => p.id));
+  type Acc = { i: number; uf: string | null; cidade: string | null; tipo: TipoPlano; produto: TipoProduto; vidas: number; rec: number; cop: number; desp: number };
+  const acc = new Map<string, Acc>();
+  const comVidas = new Set<number>(), comFin = new Set<number>();
+  const somar = (ano: number, mes: number, sigla: string | null, produto: string | null, uf: string | null, cidade: string | null, origem: Set<number>, f: (a: Acc) => void) => {
+    const i = pos.get(`${Number(ano)}-${Number(mes)}`);
+    if (i == null) return;
+    origem.add(i);
+    const sg = String(sigla ?? "").trim().toUpperCase(), pr = String(produto ?? "").trim().toUpperCase();
+    if (!siglas.has(sg) || !produtos.has(pr)) return;
+    if ((filtro.tipo && sg !== filtro.tipo) || (filtro.produto && pr !== filtro.produto)) return;
+    const u = txt(uf), c = txt(cidade);
+    const k = `${i}|${u ?? ""}|${c ?? ""}|${sg}|${pr}`;
+    let a = acc.get(k);
+    if (!a) acc.set(k, (a = { i, uf: u, cidade: c, tipo: sg as TipoPlano, produto: pr as TipoProduto, vidas: 0, rec: 0, cop: 0, desp: 0 }));
+    f(a);
+  };
+  for (const l of dados.vidas) somar(l.ano, l.mes, l.sigla, l.produto, l.uf, l.cidade, comVidas, (a) => { a.vidas += Number(l.vidas) || 0; });
+  for (const l of dados.fin ?? []) somar(l.nr_ano, l.nr_mes, l.sigla, l.produto, l.uf, l.cidade, comFin, (a) => {
+    a.rec += receita(l); a.cop += coparticipacao(l); a.desp += n0(l.desp_total);
+  });
+  const ordemGrupo = (id: GrupoCidadeId) => GRUPOS_CIDADE.findIndex((g) => g.id === id);
+  const ordemProduto = (id: TipoProduto) => TIPOS_PRODUTO.findIndex((p) => p.id === id);
+  return [...acc.values()]
+    .sort((a, b) => a.i - b.i
+      || ordemGrupo(grupoDaCidade(a.cidade, a.uf)) - ordemGrupo(grupoDaCidade(b.cidade, b.uf))
+      || Number(a.cidade == null) - Number(b.cidade == null)
+      || (a.uf ?? "").localeCompare(b.uf ?? "", "pt-BR") || (a.cidade ?? "").localeCompare(b.cidade ?? "", "pt-BR")
+      || TIPOS_PLANO.indexOf(a.tipo) - TIPOS_PLANO.indexOf(b.tipo) || ordemProduto(a.produto) - ordemProduto(b.produto))
+    .map((a) => {
+      const m = meses[a.i];
+      const fin = comFin.has(a.i);
+      const totalRec = fin ? a.rec + a.cop : null;
+      return {
+        competencia: anoMesCampo(m), ano: m.ano, mes: m.mes,
+        grupo: rotuloGrupo(grupoDaCidade(a.cidade, a.uf)), uf: a.uf, cidade: a.cidade, cidadeUf: rotuloCidade(a.cidade, a.uf),
+        tipo: a.tipo, produto: TIPOS_PRODUTO[ordemProduto(a.produto)].rotulo,
+        vidas: comVidas.has(a.i) ? a.vidas : null,
+        receita: fin ? a.rec : null, coparticipacao: fin ? a.cop : null, totalReceitas: totalRec,
+        despesas: fin ? a.desp : null, saldo: totalRec == null ? null : totalRec - a.desp,
+      };
+    });
 }

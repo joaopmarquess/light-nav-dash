@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, LoaderCircle, RotateCw } from "lucide-react";
+import { Check, ChevronRight, Download, LoaderCircle, RotateCw } from "lucide-react";
+import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { hostinger } from "@/lib/hostingerClient";
 import { carregarUltimaCompetenciaValida } from "@/lib/sinistralidadeValida";
 import {
-  anoMesCampo, financeiroAteUltimaValida, INDICADORES_PER_CAPITA, lerAnoMes, mascaraAnoMes, mesesPeriodo, montarGrade, montarGradeCidades,
+  anoMesCampo, financeiroAteUltimaValida, INDICADORES_PER_CAPITA, lerAnoMes, mascaraAnoMes, mesesPeriodo, modeloDadosCidades, montarGrade, montarGradeCidades,
   periodoAte, periodoPadrao, TIPOS_PLANO, TIPOS_PRODUTO, validarAte, type AnoMes, type Celulas, type GradeCidades, type GradeComTotais,
-  type IndicadorFinanceiro, type LinhaFinanceira, type LinhaFinanceiraCidade, type LinhaProduto, type LinhaVidasCidade, type TipoPlano,
+  type GrupoCidadeId, type IndicadorFinanceiro, type LinhaFinanceira, type LinhaFinanceiraCidade, type LinhaModeloCidade, type LinhaProduto, type LinhaVidasCidade, type TipoPlano,
   type TipoProduto,
 } from "@/lib/evolucaoProdutos";
 
@@ -243,7 +244,10 @@ function Filtro<T extends string>({ rotulo, opcoes, valor, onChange }: { rotulo:
 
 function GradeCidadesTabela({ grade, fmt = fmtInt }: { grade: GradeCidades; fmt?: Fmt }) {
   const { meses, grupos, total, fora } = grade;
-  const colunas = meses.length + 3;
+  // Praça e Região abrem recolhidas: só o subtotal de cada grupo aparece até o clique.
+  const [abertos, setAbertos] = useState<Set<GrupoCidadeId>>(() => new Set());
+  const alternar = (id: GrupoCidadeId) => setAbertos((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  const colunas = meses.length + 2;
   const somaPeriodo = total.periodo != null || grupos.some((g) => g.subtotal.periodo != null);
   const thTotal = "rounded-lg px-2 py-1 text-sm font-bold tabular-nums";
   const comFora = meses.map((m, i) => ({ m, v: fora[i] })).filter((x) => x.v);
@@ -251,13 +255,12 @@ function GradeCidadesTabela({ grade, fmt = fmtInt }: { grade: GradeCidades; fmt?
   return (
     <div className="overflow-x-auto">
       <p className="mb-2 text-xs text-muted-foreground">
-        {nCidades.toLocaleString("pt-BR")} cidades em {grupos.filter((g) => g.uf).length} UFs · município do plano, o mesmo da Área Geográfica · ordem pelas vidas em {meses[meses.length - 1]?.rotulo}
+        {nCidades.toLocaleString("pt-BR")} cidades · Praça: São José do Rio Preto (SP) · Região: demais cidades · município do plano, o mesmo da Área Geográfica · ordem pelas vidas em {meses[meses.length - 1]?.rotulo}
       </p>
       <table className="w-full min-w-[1280px] border-separate border-spacing-x-1.5 border-spacing-y-[3px] text-center">
         <thead>
           <tr>
-            <th scope="col" className="w-16 px-2 py-1 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">UF</th>
-            <th scope="col" className="w-56 px-2 py-1 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cidade (UF)</th>
+            <th scope="col" className="w-64 px-2 py-1 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cidade (UF)</th>
             {meses.map((m) => (
               <th key={m.dataFim} scope="col" className="rounded-lg bg-primary px-2 py-1 text-sm font-semibold text-primary-foreground">{m.rotulo}</th>
             ))}
@@ -266,44 +269,50 @@ function GradeCidadesTabela({ grade, fmt = fmtInt }: { grade: GradeCidades; fmt?
             </th>
           </tr>
         </thead>
-        {grupos.map((g, gi) => (
-          <tbody key={g.uf ?? "sem-uf"}>
-            {gi > 0 && <tr aria-hidden="true"><td colSpan={colunas} className="h-1 p-0" /></tr>}
-            {g.cidades.map((c, i) => (
-              <tr key={`${c.uf}|${c.cidade}`}>
-                {i === 0 && (
-                  <th scope="rowgroup" rowSpan={g.cidades.length + 1} className="rounded-lg bg-secondary px-2 py-1 text-left align-top text-sm font-bold text-secondary-foreground">
+        {grupos.map((g, gi) => {
+          const aberto = abertos.has(g.id);
+          return (
+            <tbody key={g.id}>
+              {gi > 0 && <tr aria-hidden="true"><td colSpan={colunas} className="h-1 p-0" /></tr>}
+              <tr>
+                <th scope="row" className="whitespace-nowrap rounded-lg bg-secondary p-0 text-left text-sm font-bold text-secondary-foreground">
+                  <button type="button" aria-expanded={aberto} onClick={() => alternar(g.id)}
+                    title={aberto ? `Recolher ${g.rotulo}` : `Abrir as ${g.cidades.length.toLocaleString("pt-BR")} cidades de ${g.rotulo}`}
+                    className="flex w-full items-center gap-1.5 rounded-lg px-2 py-1 text-left hover:bg-accent">
+                    <ChevronRight className={`h-4 w-4 shrink-0 transition-transform ${aberto ? "rotate-90" : ""}`} />
                     {g.rotulo}
-                  </th>
-                )}
-                <th scope="row" className="whitespace-nowrap rounded-lg bg-muted/60 px-2 py-1 text-left text-sm font-medium text-foreground">{c.rotulo}</th>
-                {c.linha.valores.map((v, j) => (
-                  <td key={meses[j].dataFim} className="rounded-lg border border-border bg-accent/30 px-2 py-1 text-sm font-semibold tabular-nums text-foreground">
+                    <span className="text-xs font-normal text-muted-foreground">· {g.cidades.length.toLocaleString("pt-BR")} {g.cidades.length === 1 ? "cidade" : "cidades"}</span>
+                  </button>
+                </th>
+                {g.subtotal.valores.map((v, j) => (
+                  <td key={meses[j].dataFim} className="rounded-lg border border-primary/30 bg-secondary px-2 py-1 text-sm font-bold tabular-nums text-secondary-foreground">
                     <Valor v={v} fmt={fmt} />
                   </td>
                 ))}
-                <td className={`${thTotal} border border-primary/30 bg-accent/60 text-foreground`}>
-                  {somaPeriodo ? <Valor v={c.linha.periodo} fmt={fmt} /> : <SemSoma />}
+                <td className={`${thTotal} border border-primary/40 bg-secondary text-secondary-foreground`}>
+                  {somaPeriodo ? <Valor v={g.subtotal.periodo} fmt={fmt} /> : <SemSoma />}
                 </td>
               </tr>
-            ))}
-            <tr>
-              <th scope="row" className="rounded-lg bg-secondary px-2 py-1 text-left text-sm font-bold text-secondary-foreground">Subtotal {g.rotulo}</th>
-              {g.subtotal.valores.map((v, j) => (
-                <td key={meses[j].dataFim} className="rounded-lg border border-primary/30 bg-secondary px-2 py-1 text-sm font-bold tabular-nums text-secondary-foreground">
-                  <Valor v={v} fmt={fmt} />
-                </td>
+              {aberto && g.cidades.map((c) => (
+                <tr key={`${c.uf}|${c.cidade}`}>
+                  <th scope="row" className="whitespace-nowrap rounded-lg bg-muted/60 py-1 pl-8 pr-2 text-left text-sm font-medium text-foreground">{c.rotulo}</th>
+                  {c.linha.valores.map((v, j) => (
+                    <td key={meses[j].dataFim} className="rounded-lg border border-border bg-accent/30 px-2 py-1 text-sm font-semibold tabular-nums text-foreground">
+                      <Valor v={v} fmt={fmt} />
+                    </td>
+                  ))}
+                  <td className={`${thTotal} border border-primary/30 bg-accent/60 text-foreground`}>
+                    {somaPeriodo ? <Valor v={c.linha.periodo} fmt={fmt} /> : <SemSoma />}
+                  </td>
+                </tr>
               ))}
-              <td className={`${thTotal} border border-primary/40 bg-secondary text-secondary-foreground`}>
-                {somaPeriodo ? <Valor v={g.subtotal.periodo} fmt={fmt} /> : <SemSoma />}
-              </td>
-            </tr>
-          </tbody>
-        ))}
+            </tbody>
+          );
+        })}
         <tfoot>
           <tr aria-hidden="true"><td colSpan={colunas} className="h-1 p-0" /></tr>
           <tr>
-            <th scope="row" colSpan={2} className="rounded-lg bg-primary px-3 py-1.5 text-left text-sm font-bold uppercase tracking-wide text-primary-foreground">Total Geral</th>
+            <th scope="row" className="rounded-lg bg-primary px-3 py-1.5 text-left text-sm font-bold uppercase tracking-wide text-primary-foreground">Total Geral</th>
             {total.valores.map((v, j) => (
               <td key={meses[j].dataFim} className="rounded-lg bg-primary px-2 py-1.5 text-base font-bold tabular-nums text-primary-foreground">
                 <Valor v={v} claro fmt={fmt} />
@@ -322,6 +331,38 @@ function GradeCidadesTabela({ grade, fmt = fmtInt }: { grade: GradeCidades; fmt?
       )}
     </div>
   );
+}
+
+// Modelo de dados em XLSX: uma linha por cidade × mês × tipo × produto, com os filtros escolhidos.
+const COLUNAS_MODELO = [
+  ["Competência", 11], ["Ano", 6], ["Mês", 5], ["Grupo", 8], ["UF", 5], ["Cidade", 30], ["Cidade (UF)", 34], ["Tipo", 6], ["Produto", 22],
+  ["Vidas", 9], ["Receita (R$)", 15], ["Coparticipação (R$)", 18], ["Total Receitas (R$)", 18], ["Despesas (R$)", 15], ["Saldo (R$)", 15],
+] as const;
+function gerarXlsxCidades(linhas: LinhaModeloCidade[], parametros: [string, string][], arquivo: string) {
+  const col = (i: number) => XLSX.utils.encode_col(i);
+  const ws: XLSX.WorkSheet = {};
+  COLUNAS_MODELO.forEach(([nome], c) => { ws[`${col(c)}1`] = { t: "s", v: nome }; });
+  const num = (v: number | null, z: string, f?: string): XLSX.CellObject | undefined => (v == null ? undefined : { t: "n", v, z, ...(f ? { f } : {}) });
+  linhas.forEach((l, i) => {
+    const r = i + 2;
+    const cel: (XLSX.CellObject | undefined)[] = [
+      { t: "s", v: l.competencia }, { t: "n", v: l.ano }, { t: "n", v: l.mes }, { t: "s", v: l.grupo },
+      { t: "s", v: l.uf ?? "" }, { t: "s", v: l.cidade ?? "" }, { t: "s", v: l.cidadeUf }, { t: "s", v: l.tipo }, { t: "s", v: l.produto },
+      num(l.vidas, "#,##0"), num(l.receita, "#,##0.00"), num(l.coparticipacao, "#,##0.00"),
+      num(l.totalReceitas, "#,##0.00", `K${r}+L${r}`), num(l.despesas, "#,##0.00"), num(l.saldo, "#,##0.00", `M${r}-N${r}`),
+    ];
+    cel.forEach((c, j) => { if (c) ws[`${col(j)}${r}`] = c; });
+  });
+  const ref = `A1:${col(COLUNAS_MODELO.length - 1)}${linhas.length + 1}`;
+  ws["!ref"] = ref;
+  ws["!autofilter"] = { ref };
+  ws["!cols"] = COLUNAS_MODELO.map(([, w]) => ({ wch: w }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Dados");
+  const par = XLSX.utils.aoa_to_sheet([["Parâmetro", "Valor"], ...parametros]);
+  par["!cols"] = [{ wch: 26 }, { wch: 90 }];
+  XLSX.utils.book_append_sheet(wb, par, "Parâmetros");
+  XLSX.writeFile(wb, arquivo);
 }
 
 function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
@@ -396,6 +437,46 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
     () => (porCidade ? montarGradeCidades(meses, visao, { vidas: vidasCidLinhas, fin: finCidLinhas }, { perCapita: emPerCapita, tipo: tipoCidade, produto }) : null),
     [porCidade, meses, visao, vidasCidLinhas, finCidLinhas, emPerCapita, tipoCidade, produto],
   );
+
+  const [gerandoXlsx, setGerandoXlsx] = useState(false);
+  const [erroXlsx, setErroXlsx] = useState<string | null>(null);
+  const baixarXlsx = async () => {
+    setGerandoXlsx(true);
+    setErroXlsx(null);
+    try {
+      const alvo = periodo;
+      const [v, f] = await Promise.all([
+        carregarCidades<LinhaVidasCidade>("carteira_evolucao_produtos_cidade", alvo),
+        carregarCidades<LinhaFinanceiraCidade>("evolucao_produtos_financeiro_cidade", alvo),
+      ]);
+      const linhas = modeloDadosCidades(meses, { vidas: v, fin: financeiroAteUltimaValida(f, ultima) }, { tipo: tipoCidade, produto });
+      const tipoTxt = tipoCidade ? `${tipoCidade} (${DESC_TIPO[tipoCidade]})` : "Todos";
+      const produtoTxt = TIPOS_PRODUTO.find((p) => p.id === produto)?.rotulo ?? "Todos";
+      gerarXlsxCidades(linhas, [
+        ["Tela", "Evolução Produtos · Cidade (UF)"],
+        ["Período", `${anoMesCampo(alvo.de)} a ${anoMesCampo(alvo.ate)}`],
+        ["Valores em R$ até", `${anoMesCampo(ultima)} (último mês com despesas acima de R$ 20 milhões; meses seguintes ficam em branco)`],
+        ["Filtro Tipo", tipoTxt],
+        ["Filtro Produto", produtoTxt],
+        ["Grupo", "Praça = São José do Rio Preto (SP); Região = demais cidades"],
+        ["Cidade", "Município do plano (código IBGE), o mesmo da Área Geográfica"],
+        ["Vidas", "Ativos no último dia do mês; não se somam entre meses"],
+        ["Receita", "vl_rec_cpp + vl_rec_outros · view_eard_mensal"],
+        ["Coparticipação", "vl_rec_copart · view_eard_mensal"],
+        ["Total Receitas", "Receita + Coparticipação"],
+        ["Despesas", "Consulta + urgência + internação + terapia + exame + outros · view_eard_mensal"],
+        ["Saldo", "Total Receitas − Despesas"],
+        ["Sinistralidade / Per capita", "Calcular pela razão das somas: Despesas ÷ Total Receitas; valor ÷ Vidas do mesmo mês"],
+        ["Fora do modelo", "Valores sem tipo de plano ou produto informado, como no grid"],
+        ["Linhas", linhas.length.toLocaleString("pt-BR")],
+        ["Gerado em", new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })],
+      ], `evolucao_produtos_cidades_${aaaamm(alvo.de)}_${aaaamm(alvo.ate)}.xlsx`);
+    } catch (e) {
+      setErroXlsx(e instanceof Error ? e.message : String(e));
+    } finally {
+      setGerandoXlsx(false);
+    }
+  };
 
   const erro = porCidade ? errCid : visao === "Vidas" ? errVidas : errFin ?? (emPerCapita ? errVidas : null);
   const fmtVisao = visao === "Vidas" ? fmtInt : visao === "Sinistralidade" ? fmtPct : fmtDec;
@@ -477,6 +558,13 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
             <h2 className="text-lg font-semibold text-foreground" title={DICAS[visao]}>
               {emPerCapita ? tituloBase.replace("(R$)", "· per capita (R$ por vida)") : tituloBase}
             </h2>
+            {porCidade && (
+              <Button variant="outline" size="sm" className="ml-auto h-8" onClick={baixarXlsx} disabled={gerandoXlsx}
+                title="Baixa uma tabela (modelo de dados) com uma linha por cidade, mês, tipo e produto, com o período e os filtros escolhidos">
+                {gerandoXlsx ? <LoaderCircle className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Download className="mr-1.5 h-3.5 w-3.5" />}
+                {gerandoXlsx ? "Gerando XLSX…" : "Gerar XLSX"}
+              </Button>
+            )}
             {rotuloProduto && !porCidade && (
               <p className="flex items-center gap-2 text-sm text-muted-foreground">
                 Subtotais e totais somando só <span className="font-semibold text-primary">{rotuloProduto}</span>
@@ -492,6 +580,7 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
                 opcoes={[{ id: null, rotulo: "Todos" }, ...TIPOS_PRODUTO.map((p) => ({ id: p.id, rotulo: p.rotulo, titulo: p.descricao }))]} />
             </div>
           )}
+          {porCidade && erroXlsx && <p className="mb-2 text-sm text-destructive">Não foi possível gerar o XLSX: {erroXlsx}</p>}
           {erroPeriodo && alterado && <p className="mb-2 text-sm text-destructive">{erroPeriodo}</p>}
           {erro ? (
             <Aviso erro={erro} onRetry={porCidade ? buscarCidades : visao === "Vidas" || !errFin ? buscarVidas : buscarFin} />
