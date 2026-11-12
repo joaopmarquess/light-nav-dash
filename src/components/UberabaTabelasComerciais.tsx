@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, lerIndicadores, lerIndices, parseIndicador, parseIndice, tabelaIndexada, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices } from "@/lib/uberabaTabelasComerciais";
 
@@ -39,7 +40,15 @@ const Tabela = ({ linhas, apartamento }: { linhas: Linha[]; apartamento?: Aparta
         <tr>
           <th className={th}>FAIXA</th>
           <th className={th}>ENFERMARIA{apartamento && !apartamento.visivel && <BotaoApartamento t={apartamento} />}</th>
-          {mostrarApto && <th className={th}>APARTAMENTO{apartamento && <BotaoApartamento t={apartamento} />}</th>}
+          {mostrarApto && (
+            <th className={th}>
+              <Tooltip>
+                <TooltipTrigger asChild><span className="cursor-help">APARTAMENTO</span></TooltipTrigger>
+                <TooltipContent>Apartamento = TRUNCAR(Enfermaria × 1,25; 2)</TooltipContent>
+              </Tooltip>
+              {apartamento && <BotaoApartamento t={apartamento} />}
+            </th>
+          )}
         </tr>
       </thead>
       <tbody>
@@ -176,7 +185,6 @@ export const ReferenciaButton = () => {
           <p className="text-sm">Tabela-base para cálculo das frentes comerciais</p>
         </DialogHeader>
         <Tabela linhas={REFERENCIA} />
-        <p className="text-center text-sm font-medium">Apartamento = TRUNCAR(Enfermaria × 1,25; 2)</p>
       </DialogContent>
     </Dialog>
   );
