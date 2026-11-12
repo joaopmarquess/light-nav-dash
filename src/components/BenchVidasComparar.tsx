@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { ChevronRight, Download, FileText, Loader2 } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip as Dica, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip as Dica, XAxis, YAxis } from "recharts";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { base100, compararMensal, competenciaMensal, INDICADORES_MENSAL, totalPeriodo, valorIndicador, type CatalogoMensal, type Cubo, type Filtros, type IndicadorMensal } from "@/lib/benchVidasMensal";
+import { anosDoPeriodo, base100, compararMensal, competenciaMensal, INDICADORES_MENSAL, totalPeriodo, valorIndicador, type CatalogoMensal, type Cubo, type Filtros, type IndicadorMensal } from "@/lib/benchVidasMensal";
 import { carregarVidasMensal } from "@/lib/benchVidasMensalDados";
 import { gerarPdfComparacao } from "@/lib/benchVidasCompararPdf";
 import { toast } from "sonner";
@@ -27,15 +27,49 @@ function Bloco({ titulo, aberto, alternar, children, acao }: { titulo: string; a
   </section>;
 }
 
-export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, ate, anos, indicador }: { ops: OpsComparar[]; catalogo: CatalogoMensal; cubo: Cubo; filtros: Filtros; de: number; ate: number; anos: number[]; indicador: IndicadorMensal }) {
+type LinhaComparada = ReturnType<typeof compararMensal>["ops"][number] & { op: OpsComparar & { i: number } };
+
+function EscalaToggle({ escala, setEscala, rotulo }: { escala: "vidas" | "base100"; setEscala: (e: "vidas" | "base100") => void; rotulo: string }) {
+  return <div role="group" aria-label={rotulo} className="flex items-center gap-0.5 rounded-full border border-border bg-card p-1">
+    {([["vidas", "Vidas"], ["base100", "Base 100"]] as const).map(([id, r]) => <Button key={id} variant="ghost" aria-pressed={escala === id} onClick={() => setEscala(id)} className={`h-7 rounded-full px-3 text-xs ${escala === id ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "text-foreground/70"}`}>{r}</Button>)}
+  </div>;
+}
+
+/** Linhas de ativos por operadora; opcionalmente sombreia o período em tela. */
+function GraficoEvolucao({ linhas, comps, escala, rotulo, destaque }: { linhas: LinhaComparada[]; comps: number[]; escala: "vidas" | "base100"; rotulo: string; destaque?: { de: number; ate: number } }) {
+  const dados = useMemo(() => {
+    const indices = new Map(linhas.map(l => [l.reg, base100(l.total, comps)]));
+    return comps.map(c => Object.fromEntries([["mes", competenciaMensal(c)], ...linhas.map(l => [l.reg, escala === "base100" ? indices.get(l.reg)!.get(c) ?? null : l.total.get(c)?.ativos ?? null])]));
+  }, [linhas, comps, escala]);
+  const area = destaque && comps.filter(c => c >= destaque.de && c <= destaque.ate);
+  return <div className="h-72 w-full" role="img" aria-label={rotulo}>
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={dados} margin={{ top: destaque ? 22 : 8, right: 16, bottom: 0, left: 8 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+        <XAxis dataKey="mes" tick={{ fontSize: 11 }} minTickGap={16} stroke="hsl(var(--muted-foreground))" />
+        <YAxis tick={{ fontSize: 11 }} width={64} domain={["auto", "auto"]} stroke="hsl(var(--muted-foreground))" tickFormatter={v => Number(v).toLocaleString("pt-BR", { maximumFractionDigits: escala === "base100" ? 1 : 0 })} />
+        {area && area.length > 0 && <ReferenceArea x1={competenciaMensal(area[0])} x2={competenciaMensal(area.at(-1)!)} fill="hsl(var(--primary))" fillOpacity={0.07} stroke="none" label={{ value: "período em tela", position: "top", fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />}
+        {escala === "base100" && <ReferenceLine y={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 3" />}
+        <Dica contentStyle={dicaEstilo} formatter={(v: number) => v === null ? "—" : v.toLocaleString("pt-BR", { maximumFractionDigits: escala === "base100" ? 1 : 0 })} />
+        <Legend wrapperStyle={{ fontSize: 12 }} iconType="plainline" />
+        {linhas.map(l => <Line key={l.reg} name={l.op.nome} dataKey={l.reg} stroke={cor(l.op.i)} strokeWidth={l.op.i === 0 ? 2.5 : 1.5} dot={comps.length > 24 ? false : { r: 2 }} connectNulls={false} isAnimationActive={false} />)}
+      </LineChart>
+    </ResponsiveContainer>
+  </div>;
+}
+
+export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, ate, indicador, periodoTotal }: { ops: OpsComparar[]; catalogo: CatalogoMensal; cubo: Cubo; filtros: Filtros; de: number; ate: number; indicador: IndicadorMensal; periodoTotal: { de: number; ate: number } }) {
   const comDados = useMemo(() => ops.filter(o => o.mensal), [ops]);
   const semDados = ops.filter(o => !o.mensal);
   const [series, setSeries] = useState<{ reg: string; linhas: number[][] }[]>([]);
   const [carregando, setCarregando] = useState(true); const [erro, setErro] = useState(""); const [tentativa, setTentativa] = useState(0);
   const [graficosAbertos, setGraficosAbertos] = useState(true); const [gridAberto, setGridAberto] = useState(true);
   const [escala, setEscala] = useState<"vidas" | "base100">("vidas");
+  const [escalaTotal, setEscalaTotal] = useState<"vidas" | "base100">("vidas"); const [totalAberto, setTotalAberto] = useState(true);
+  // Carrega todo o histórico mensal da ANS uma vez; o período em tela e o período total saem da mesma base.
+  const anos = useMemo(() => anosDoPeriodo(periodoTotal.de, periodoTotal.ate), [periodoTotal.de, periodoTotal.ate]);
   const chave = comDados.map(o => o.reg).join(",");
-  const refQuadros = useRef<HTMLDivElement>(null); const refGraficos = useRef<HTMLDivElement>(null); const refGrid = useRef<HTMLDivElement>(null);
+  const refQuadros = useRef<HTMLDivElement>(null); const refGraficos = useRef<HTMLDivElement>(null); const refGrid = useRef<HTMLDivElement>(null); const refTotal = useRef<HTMLDivElement>(null);
   const [gerandoPdf, setGerandoPdf] = useState(false);
 
   useEffect(() => {
@@ -49,18 +83,15 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
   }, [chave, anos, cubo, tentativa]);
 
   const resultado = useMemo(() => compararMensal(series, cubo, catalogo, { de, ate, filtros }), [series, cubo, catalogo, de, ate, filtros]);
-  const linhas = useMemo(() => {
-    const porReg = new Map(comDados.map((o, i) => [o.reg, { ...o, i }]));
-    return resultado.ops.filter(o => porReg.has(o.reg)).map(o => ({ ...o, op: porReg.get(o.reg)! }));
-  }, [resultado, comDados]);
+  const resultadoTotal = useMemo(() => compararMensal(series, cubo, catalogo, { de: periodoTotal.de, ate: periodoTotal.ate, filtros }), [series, cubo, catalogo, periodoTotal.de, periodoTotal.ate, filtros]);
+  const porReg = useMemo(() => new Map(comDados.map((o, i) => [o.reg, { ...o, i }])), [comDados]);
+  const linhas: LinhaComparada[] = useMemo(() => resultado.ops.filter(o => porReg.has(o.reg)).map(o => ({ ...o, op: porReg.get(o.reg)! })), [resultado, porReg]);
+  const linhasTotal: LinhaComparada[] = useMemo(() => resultadoTotal.ops.filter(o => porReg.has(o.reg)).map(o => ({ ...o, op: porReg.get(o.reg)! })), [resultadoTotal, porReg]);
+  const compsTotal = resultadoTotal.competencias;
   const rotuloIndicador = INDICADORES_MENSAL.find(i => i.id === indicador)?.rotulo ?? "";
   const comps = resultado.competencias;
   const ultimo = comps.at(-1);
 
-  const dadosLinha = useMemo(() => {
-    const indices = new Map(linhas.map(l => [l.reg, base100(l.total, comps)]));
-    return comps.map(c => Object.fromEntries([["mes", competenciaMensal(c)], ...linhas.map(l => [l.reg, escala === "base100" ? indices.get(l.reg)!.get(c) ?? null : l.total.get(c)?.ativos ?? null])]));
-  }, [linhas, comps, escala]);
   const dadosMov = linhas.filter(l => l.resumo).map(l => ({ nome: l.op.nome, Adesões: l.resumo!.aderidos, Cancelamentos: l.resumo!.cancelados, Saldo: l.resumo!.aderidos - l.resumo!.cancelados }));
   const dadosCresc = linhas.filter(l => l.resumo).map(l => ({ nome: l.op.nome, i: l.op.i, Crescimento: l.resumo!.percentual === null ? null : Number(l.resumo!.percentual.toFixed(2)) }));
 
@@ -77,11 +108,11 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
 
   const gerarPdf = async () => {
     setGerandoPdf(true);
-    const reabrir = { graficos: graficosAbertos, grid: gridAberto };
-    setGraficosAbertos(true); setGridAberto(true);
+    const reabrir = { graficos: graficosAbertos, grid: gridAberto, total: totalAberto };
+    setGraficosAbertos(true); setGridAberto(true); setTotalAberto(true);
     try {
       await new Promise(r => setTimeout(r, 400));
-      const secoes = [refQuadros.current, refGraficos.current, refGrid.current].filter((e): e is HTMLDivElement => Boolean(e));
+      const secoes = [refQuadros.current, refGraficos.current, refGrid.current, refTotal.current].filter((e): e is HTMLDivElement => Boolean(e));
       const nFiltros = Object.keys(filtros).length;
       await gerarPdfComparacao(secoes, {
         titulo: "Bench Vidas Mensal · Comparação de operadoras",
@@ -93,7 +124,7 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
     } catch {
       toast.error("Não foi possível gerar o PDF da comparação.");
     } finally {
-      setGraficosAbertos(reabrir.graficos); setGridAberto(reabrir.grid); setGerandoPdf(false);
+      setGraficosAbertos(reabrir.graficos); setGridAberto(reabrir.grid); setTotalAberto(reabrir.total); setGerandoPdf(false);
     }
   };
 
@@ -127,23 +158,9 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
     <Bloco titulo="Gráficos" aberto={graficosAbertos} alternar={() => setGraficosAbertos(s => !s)}>
       <div className="mb-2 flex flex-wrap items-center gap-3">
         <span className="text-sm font-semibold">Evolução de ativos</span>
-        <div role="group" aria-label="Escala da evolução" className="flex items-center gap-0.5 rounded-full border border-border bg-card p-1">
-          {([["vidas", "Vidas"], ["base100", "Base 100"]] as const).map(([id, rotulo]) => <Button key={id} variant="ghost" aria-pressed={escala === id} onClick={() => setEscala(id)} className={`h-7 rounded-full px-3 text-xs ${escala === id ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "text-foreground/70"}`}>{rotulo}</Button>)}
-        </div>
+        <EscalaToggle escala={escala} setEscala={setEscala} rotulo="Escala da evolução" />
       </div>
-      <div className="h-72 w-full" role="img" aria-label={`Evolução de ativos das operadoras comparadas, ${competenciaMensal(de)}–${competenciaMensal(ate)}`}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={dadosLinha} margin={{ top: 8, right: 16, bottom: 0, left: 8 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="mes" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-            <YAxis tick={{ fontSize: 11 }} width={64} domain={["auto", "auto"]} stroke="hsl(var(--muted-foreground))" tickFormatter={v => Number(v).toLocaleString("pt-BR", { maximumFractionDigits: escala === "base100" ? 1 : 0 })} />
-            {escala === "base100" && <ReferenceLine y={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 3" />}
-            <Dica contentStyle={dicaEstilo} formatter={(v: number) => v === null ? "—" : v.toLocaleString("pt-BR", { maximumFractionDigits: escala === "base100" ? 1 : 0 })} />
-            <Legend wrapperStyle={{ fontSize: 12 }} iconType="plainline" />
-            {linhas.map(l => <Line key={l.reg} name={l.op.nome} dataKey={l.reg} stroke={cor(l.op.i)} strokeWidth={l.op.i === 0 ? 2.5 : 1.5} dot={{ r: 2 }} connectNulls={false} isAnimationActive={false} />)}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+      <GraficoEvolucao linhas={linhas} comps={comps} escala={escala} rotulo={`Evolução de ativos das operadoras comparadas, ${competenciaMensal(de)}–${competenciaMensal(ate)}`} />
       <p className="mt-1 text-xs text-muted-foreground">{escala === "base100" ? "Base 100: ativos de cada mês divididos pelos ativos do primeiro mês da operadora no período, para comparar ritmos de crescimento em portes diferentes." : "Ativos informados pela ANS no mês, por operadora."}</p>
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
         <div>
@@ -205,6 +222,17 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
         </table>
       </div>
       <p className="mt-2 text-xs text-muted-foreground">Mesmo período e filtros para todas as operadoras; os totais não somam operadoras entre si. Ativos: quantidade no mês, sem somar meses. Adesões e cancelamentos: movimentos informados pela ANS, somados no total. Quantidades de vínculos, não de pessoas únicas.</p>
+    </Bloco>
+    </div>
+
+    <div ref={refTotal}>
+    <Bloco titulo={`Evolução de ativos · período total da ANS (${compsTotal.length ? `${competenciaMensal(compsTotal[0])}–${competenciaMensal(compsTotal.at(-1)!)}` : "—"})`} aberto={totalAberto} alternar={() => setTotalAberto(s => !s)}>
+      <div className="mb-2 flex flex-wrap items-center gap-3">
+        <span className="text-sm font-semibold">Evolução de ativos · {compsTotal.length} meses</span>
+        <EscalaToggle escala={escalaTotal} setEscala={setEscalaTotal} rotulo="Escala da evolução no período total" />
+      </div>
+      <GraficoEvolucao linhas={linhasTotal} comps={compsTotal} escala={escalaTotal} destaque={{ de, ate }} rotulo="Evolução de ativos das operadoras comparadas em todo o período mensal da ANS" />
+      <p className="mt-1 text-xs text-muted-foreground">Todo o período mensal publicado pela ANS, com os mesmos filtros da tela; a faixa sombreada marca o período em tela ({competenciaMensal(de)}–{competenciaMensal(ate)}).{escalaTotal === "base100" ? " Base 100: ativos de cada mês divididos pelos ativos do primeiro mês informado da operadora no período total." : ""} Meses sem informação da ANS ficam em branco, sem estimativa.</p>
     </Bloco>
     </div>
   </div>;

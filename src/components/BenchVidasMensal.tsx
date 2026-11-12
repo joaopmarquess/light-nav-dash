@@ -179,7 +179,7 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
         </>}
       </div>
 
-      {comparar ? <BenchVidasComparar ops={opsComparar} catalogo={catalogo} cubo={cubo} filtros={filtros} de={de} ate={ate} anos={anos} indicador={indicador} />
+      {comparar ? <BenchVidasComparar ops={opsComparar} catalogo={catalogo} cubo={cubo} filtros={filtros} de={de} ate={ate} indicador={indicador} periodoTotal={{ de: COMPETENCIAS[0], ate: COMPETENCIAS.at(-1)! }} />
         : carregando ? <p role="status" className="py-8 text-sm text-muted-foreground">Carregando dados mensais…</p>
         : erro ? <div role="alert" className="py-8 text-sm text-destructive">{erro}<Button variant="outline" className="ml-3" onClick={() => setTentativa(t => t + 1)}>Tentar novamente</Button></div>
         : !resumo ? <p role="status" className="py-8 text-sm text-muted-foreground">Nenhum registro para os filtros selecionados.</p>
