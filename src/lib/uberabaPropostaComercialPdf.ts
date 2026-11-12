@@ -2,8 +2,23 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { attachTimbrado } from "@/lib/pdfTimbrado";
 import { PDF_COLORS, baseTableStyles, drawReportHeading, drawSectionTitle } from "@/lib/pdfTheme";
+import { INDICES_PADRAO, formatarCentavos, tabelaIndexada, type FrenteId, type Indices } from "@/lib/uberabaTabelasComerciais";
 
-// Proposta Comercial Bensaúde|Uberaba — por ora, conteúdo provisório em Lorem ipsum.
+/** Tabelas e Produtos da proposta: as três tabelas de Resultados Comerciais, lado a lado (Faixa etária × Enfermaria). */
+export const PRODUTOS_PROPOSTA: { id: FrenteId; titulo: string }[] = [
+  { id: "pcaAdm", titulo: "1 - PCA" },
+  { id: "pceAdm", titulo: "2 - PME ADM" },
+  { id: "pce100", titulo: "3 - PJ 100+" },
+];
+
+export function tabelasProposta(indices: Indices = INDICES_PADRAO) {
+  return PRODUTOS_PROPOSTA.map(({ id, titulo }) => ({
+    titulo,
+    linhas: tabelaIndexada(indices[id]).map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos)] as [string, string]),
+  }));
+}
+
+// Proposta Comercial Bensaúde|Uberaba — textos ainda provisórios em Lorem ipsum; tabelas vindas de Resultados Comerciais.
 const LOREM = [
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus posuere velit aliquet. Cras mattis consectetur purus sit amet fermentum. Donec ullamcorper nulla non metus auctor fringilla.",
   "Sed posuere consectetur est at lobortis. Maecenas faucibus mollis interdum. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Nullam quis risus eget urna mollis ornare vel eu leo. Aenean lacinia bibendum nulla sed consectetur.",
@@ -19,7 +34,7 @@ const SECOES = [
   "6. Vigência e validade",
 ];
 
-export function buildPropostaComercialPdf(timbradoDataUrl?: string | null): jsPDF {
+export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indices: Indices = INDICES_PADRAO): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   attachTimbrado(doc, timbradoDataUrl);
   const pageW = doc.internal.pageSize.getWidth();
@@ -54,22 +69,41 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null): jsPD
   };
 
   SECOES.forEach((titulo, i) => {
-    garantir(16);
+    garantir(titulo.startsWith("4.") ? 100 : 16); // título não fica sozinho sem as tabelas
     drawSectionTitle(doc, titulo, marginL, y, pageW - marginR);
     y += 8;
     if (titulo.startsWith("4.")) {
-      paragrafo(LOREM[0]);
-      autoTable(doc, {
-        ...baseTableStyles(9),
-        startY: y,
-        margin: { left: marginL, right: marginR, top, bottom },
-        head: [["Lorem", "Ipsum", "Dolor", "Sit amet"]],
-        body: Array.from({ length: 4 }, (_, k) => [`Lorem ${k + 1}`, "Ipsum dolor", "0,00", "0,00"]),
-        columnStyles: { 2: { halign: "right" }, 3: { halign: "right" } },
-        didDrawPage: (d) => { if (d.pageNumber > 1) heading(); },
+      // Tópico: Tabelas e Produtos — três tabelas lado a lado.
+      garantir(86);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(...PDF_COLORS.navy);
+      doc.text("Tabelas e Produtos", marginL, y);
+      y += 6;
+      const gap = 5;
+      const largura = (usableW - gap * 2) / 3;
+      let fim = y;
+      tabelasProposta(indices).forEach((t, k) => {
+        const x = marginL + k * (largura + gap);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9.5);
+        doc.setTextColor(...PDF_COLORS.text);
+        doc.text(t.titulo, x + largura / 2, y, { align: "center" });
+        autoTable(doc, {
+          ...baseTableStyles(8.5),
+          startY: y + 2.5,
+          tableWidth: largura,
+          margin: { left: x, right: pageW - x - largura, top, bottom },
+          head: [["FAIXA ETÁRIA", "ENFERMARIA"]],
+          body: t.linhas,
+          headStyles: { ...baseTableStyles(8.5).headStyles, halign: "center" },
+          columnStyles: { 0: { halign: "center" }, 1: { halign: "right" } },
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        fim = Math.max(fim, (doc as any).lastAutoTable?.finalY ?? y);
       });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      y = ((doc as any).lastAutoTable?.finalY ?? y) + 6;
+      y = fim + 7;
+      doc.setPage(doc.getNumberOfPages());
     }
     LOREM.slice(0, i % 2 === 0 ? 3 : 2).forEach(paragrafo);
     y += 2;

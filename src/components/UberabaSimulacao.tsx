@@ -1,15 +1,12 @@
 import { Fragment, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Calculator, ChevronRight, FileSignature, RotateCcw, Info } from 'lucide-react';
+import { Calculator, ChevronRight, RotateCcw, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import UberabaSimulacaoFaixas from '@/components/UberabaSimulacaoFaixas';
-import PdfPreview from '@/components/PdfPreview';
-import { loadTimbrado } from '@/lib/pdfTimbrado';
-import { buildPropostaComercialPdf } from '@/lib/uberabaPropostaComercialPdf';
 import { calcularSimulacao, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, type ConfigSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
 const nomes = ['PCA', 'PME', 'PCE 50 a 99', 'PCE 100+'];
@@ -78,7 +75,6 @@ export default function UberabaSimulacao({ acoesTarget }: { acoesTarget?: HTMLEl
   const [configuracoes, setConfiguracoes] = useState<ConfigSimulacao[]>(() => fonte.padroes.map(c => ({ ...c, sinistralidade_percentual: sinistralidadePadrao })));
   const [vidaText, setVidaText] = useState<Record<string, string>>({});
   const [sinText, setSinText] = useState<Record<string, string>>({});
-  const [proposta, setProposta] = useState(false);
   const resultados = useMemo(() => configuracoes.map(calcularSimulacao), [configuracoes]);
   const totalVidas = resultados.reduce((total, r) => total + r.anual.vidas, 0);
   const alterar = (codigo: string, patch: Partial<ConfigSimulacao>) => setConfiguracoes(prev => prev.map(c => c.produto_codigo === codigo ? { ...c, ...patch } : c));
@@ -88,10 +84,9 @@ export default function UberabaSimulacao({ acoesTarget }: { acoesTarget?: HTMLEl
     setSinText(p => ({ ...p, [codigo]: String(sinistralidadePadrao) }));
     setVidaText(p => ({ ...p, [codigo]: String(original.total_vidas) }));
   };
-  const acoes = <div className="flex gap-2"><Dialog><DialogTrigger asChild><Button variant="outline"><Calculator className="mr-2 h-4 w-4" />Resumo por faixa etária</Button></DialogTrigger><UberabaSimulacaoFaixas resultados={resultados} /></Dialog><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Gerar Proposta Comercial" onClick={() => setProposta(true)}><FileSignature /></Button></TooltipTrigger><TooltipContent>Gerar Proposta Comercial</TooltipContent></Tooltip></div>;
+  const acoes = <div className="flex gap-2"><Dialog><DialogTrigger asChild><Button variant="outline"><Calculator className="mr-2 h-4 w-4" />Resumo por faixa etária</Button></DialogTrigger><UberabaSimulacaoFaixas resultados={resultados} /></Dialog></div>;
   return <article className="uberaba-simulation" aria-label="Simulador Comercial Bensaúde|Uberaba">
     {acoesTarget ? createPortal(acoes, acoesTarget) : acoesTarget === undefined && <header className="sim-heading justify-end">{acoes}</header>}
-    {proposta && createPortal(<PdfPreview build={async () => buildPropostaComercialPdf(await loadTimbrado())} fileName="Proposta_Comercial_Bensaude_Uberaba.pdf" onClose={() => setProposta(false)} />, document.body)}
     <section aria-label="Variáveis por modalidade" className="rounded-md border border-border p-4">
       <div className="overflow-x-auto"><table className="w-full text-sm">
         <thead><tr className="text-left text-muted-foreground"><th className="px-2 py-1 text-center">Modalidade</th><th className="px-2 py-1 text-center">Tabela de preço</th><th className="px-2 py-1 text-center">Condição comercial</th><th className="px-2 py-1 text-center">Agenciamento</th><th className="px-2 py-1 text-center">Taxa de Adesão</th><th className="px-2 py-1 text-center">Participação Bensaúde</th><th className="px-2 py-1 text-center">Participação Lancers</th><th className="px-2 py-1 text-center">Participação SIGA</th><th className="px-2 py-1 text-center">Total de vidas</th><th className="px-2 py-1 text-center">Sinistralidade (%)</th><th className="px-2 py-1 text-center">Mensalidade média</th><th /></tr></thead>
