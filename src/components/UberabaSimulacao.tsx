@@ -1,6 +1,6 @@
-import { Fragment, useMemo, useRef, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Calculator, ChevronRight, Download, FileSignature, Printer, RotateCcw, Info } from 'lucide-react';
+import { Calculator, ChevronRight, FileSignature, RotateCcw, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -10,7 +10,7 @@ import UberabaSimulacaoFaixas from '@/components/UberabaSimulacaoFaixas';
 import PdfPreview from '@/components/PdfPreview';
 import { loadTimbrado } from '@/lib/pdfTimbrado';
 import { buildPropostaComercialPdf } from '@/lib/uberabaPropostaComercialPdf';
-import { calcularSimulacao, csvSimulacao, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, type ConfigSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
+import { calcularSimulacao, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, type ConfigSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
 const nomes = ['PCA', 'PME', 'PCE 50 a 99', 'PCE 100+'];
 type Resumo = ReturnType<typeof resumoSimulacao>;
@@ -73,43 +73,25 @@ function PremissasImportadas() {
   </ul></details>;
 }
 
-// acoesTarget: quando informado (Estudo › Simulações), exportar/imprimir ficam na linha dos sub-botões.
+// acoesTarget: quando informado (Estudo › Simulações), as ações ficam na linha dos sub-botões.
 export default function UberabaSimulacao({ acoesTarget }: { acoesTarget?: HTMLElement | null } = {}) {
   const [configuracoes, setConfiguracoes] = useState<ConfigSimulacao[]>(() => fonte.padroes.map(c => ({ ...c, sinistralidade_percentual: sinistralidadePadrao })));
-  const [erro, setErro] = useState('');
   const [vidaText, setVidaText] = useState<Record<string, string>>({});
   const [sinText, setSinText] = useState<Record<string, string>>({});
-  const impressao = useRef<HTMLDivElement>(null);
   const [proposta, setProposta] = useState(false);
   const resultados = useMemo(() => configuracoes.map(calcularSimulacao), [configuracoes]);
   const totalVidas = resultados.reduce((total, r) => total + r.anual.vidas, 0);
   const alterar = (codigo: string, patch: Partial<ConfigSimulacao>) => setConfiguracoes(prev => prev.map(c => c.produto_codigo === codigo ? { ...c, ...patch } : c));
-  const exportar = () => {
-    const url = URL.createObjectURL(new Blob([csvSimulacao(resultados)], { type: 'text/csv;charset=utf-8;' }));
-    const link = document.createElement('a'); link.href = url; link.download = 'Simulacao_Bensaude_Uberaba.csv'; link.click(); URL.revokeObjectURL(url);
-  };
-  const imprimir = () => {
-    const content = impressao.current; if (!content) return;
-    const popup = window.open('', '_blank', 'width=1200,height=850');
-    if (!popup) { setErro('Permita abrir a janela de impressão.'); return; }
-    const estilos = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]')).map(el => el.outerHTML).join('');
-    popup.document.write(`<!doctype html><html lang="pt-BR"><head><title>Simulação — Bensaúde|Uberaba</title>${estilos}<style>@page{size:A4 landscape;margin:10mm}body{padding:15px}section{break-inside:avoid}button svg{display:none}*{print-color-adjust:exact;-webkit-print-color-adjust:exact}</style></head><body><main class="uberaba-simulation"><h2>Simulador Comercial Bensaúde|Uberaba</h2>${content.innerHTML}</main></body></html>`);
-    popup.document.close();
-    popup.document.querySelectorAll('[data-modalidade]').forEach(el => el.removeAttribute('hidden'));
-    popup.document.querySelectorAll('details').forEach(el => (el as HTMLDetailsElement).open = true);
-    popup.setTimeout(() => { popup.focus(); popup.print(); }, 500);
-  };
   const restaurar = (codigo: string) => {
     const original = fonte.padroes.find(c => c.produto_codigo === codigo); if (!original) return;
     alterar(codigo, { ...original, sinistralidade_percentual: sinistralidadePadrao });
     setSinText(p => ({ ...p, [codigo]: String(sinistralidadePadrao) }));
     setVidaText(p => ({ ...p, [codigo]: String(original.total_vidas) }));
   };
-  const acoes = <div className="flex gap-2"><Dialog><DialogTrigger asChild><Button variant="outline"><Calculator className="mr-2 h-4 w-4" />Resumo por faixa etária</Button></DialogTrigger><UberabaSimulacaoFaixas resultados={resultados} /></Dialog><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Exportar cenário para CSV" onClick={exportar}><Download /></Button></TooltipTrigger><TooltipContent>Exportar CSV</TooltipContent></Tooltip><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Imprimir simulação" onClick={imprimir}><Printer /></Button></TooltipTrigger><TooltipContent>Imprimir</TooltipContent></Tooltip><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Gerar Proposta Comercial" onClick={() => setProposta(true)}><FileSignature /></Button></TooltipTrigger><TooltipContent>Gerar Proposta Comercial</TooltipContent></Tooltip></div>;
+  const acoes = <div className="flex gap-2"><Dialog><DialogTrigger asChild><Button variant="outline"><Calculator className="mr-2 h-4 w-4" />Resumo por faixa etária</Button></DialogTrigger><UberabaSimulacaoFaixas resultados={resultados} /></Dialog><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Gerar Proposta Comercial" onClick={() => setProposta(true)}><FileSignature /></Button></TooltipTrigger><TooltipContent>Gerar Proposta Comercial</TooltipContent></Tooltip></div>;
   return <article className="uberaba-simulation" aria-label="Simulador Comercial Bensaúde|Uberaba">
     {acoesTarget ? createPortal(acoes, acoesTarget) : acoesTarget === undefined && <header className="sim-heading justify-end">{acoes}</header>}
     {proposta && createPortal(<PdfPreview build={async () => buildPropostaComercialPdf(await loadTimbrado())} fileName="Proposta_Comercial_Bensaude_Uberaba.pdf" onClose={() => setProposta(false)} />, document.body)}
-    {erro && <p role="alert" className="text-destructive">{erro}</p>}
     <section aria-label="Variáveis por modalidade" className="rounded-md border border-border p-4">
       <div className="overflow-x-auto"><table className="w-full text-sm">
         <thead><tr className="text-left text-muted-foreground"><th className="px-2 py-1 text-center">Modalidade</th><th className="px-2 py-1 text-center">Tabela de preço</th><th className="px-2 py-1 text-center">Condição comercial</th><th className="px-2 py-1 text-center">Agenciamento</th><th className="px-2 py-1 text-center">Taxa de Adesão</th><th className="px-2 py-1 text-center">Participação Bensaúde</th><th className="px-2 py-1 text-center">Participação Lancers</th><th className="px-2 py-1 text-center">Participação SIGA</th><th className="px-2 py-1 text-center">Total de vidas</th><th className="px-2 py-1 text-center">Sinistralidade (%)</th><th className="px-2 py-1 text-center">Mensalidade média</th><th /></tr></thead>
@@ -134,7 +116,7 @@ export default function UberabaSimulacao({ acoesTarget }: { acoesTarget?: HTMLEl
         </tr></tfoot>
       </table></div>
     </section>
-    <div ref={impressao} className="space-y-4">
+    <div className="space-y-4">
       <h3 className="flex items-center gap-2">Resultado por Ente <span className="text-sm font-normal text-muted-foreground">· clique no indicador para ver por modalidade</span></h3>
       <Entes resultados={resultados} />
       <PremissasImportadas />
