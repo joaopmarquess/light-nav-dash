@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import PdfPreview from "@/components/PdfPreview";
 import { loadTimbrado } from "@/lib/pdfTimbrado";
-import { lerIndices } from "@/lib/uberabaTabelasComerciais";
+import { lerIndicadores, lerIndices } from "@/lib/uberabaTabelasComerciais";
 import { buildPropostaComercialPdf } from "@/lib/uberabaPropostaComercialPdf";
 
-/** Ícone "Gerar Proposta Comercial" (Resultados Comerciais): usa os índices atuais das tabelas. */
+/** Ícone "Gerar Proposta Comercial" (Resultados Comerciais): usa os índices e indicadores atuais das tabelas. */
 export default function UberabaPropostaComercialButton() {
   const [aberto, setAberto] = useState(false);
   return (
@@ -23,7 +23,7 @@ export default function UberabaPropostaComercialButton() {
       </Tooltip>
       {aberto && createPortal(
         <PdfPreview
-          build={async () => buildPropostaComercialPdf(await loadTimbrado(), lerIndices())}
+          build={async () => buildPropostaComercialPdf(await loadTimbrado(), lerIndices(), lerIndicadores())}
           fileName="Proposta_Comercial_Bensaude_Uberaba.pdf"
           onClose={() => setAberto(false)}
         />,

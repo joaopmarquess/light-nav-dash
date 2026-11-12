@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO, MODELO_INDICADORES, derivarIndicadores, derivarVitalicio, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, lerIndicadores, lerIndices, parseIndicador, parseIndice, tabelaIndexada, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices } from "@/lib/uberabaTabelasComerciais";
+import { FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, lerIndicadores, lerIndices, parseIndicador, parseIndice, tabelaIndexada, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices } from "@/lib/uberabaTabelasComerciais";
 
 // Preços calculados pela Referência × índice de cada frente; indicadores variáveis editáveis por frente (cálculos no helper).
 type Linha = [string, string, string];
@@ -11,17 +11,8 @@ type Frente = { id: FrenteId; titulo: string; segmento: string; cor: string };
 
 const linhasDe = (indice: number): Linha[] => tabelaIndexada(indice).map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos), formatarCentavos(l.apartamentoCentavos)]);
 
-export const FRENTES: Frente[] = [
-  {
-    id: "pcaAdm", titulo: "PCA Adm.", segmento: "ADESÃO", cor: "comercial-adesao",
-  },
-  {
-    id: "pceAdm", titulo: "PCE Adm.", segmento: "MÉDIAS EMPRESAS", cor: "comercial-medias",
-  },
-  {
-    id: "pce100", titulo: "PCE 100+", segmento: "GRANDES EMPRESAS", cor: "comercial-grandes",
-  },
-];
+const CORES: Record<FrenteId, string> = { pcaAdm: "comercial-adesao", pceAdm: "comercial-medias", pce100: "comercial-grandes" };
+export const FRENTES: Frente[] = FRENTES_COMERCIAIS.map((f) => ({ ...f, cor: CORES[f.id] }));
 
 const REFERENCIA = linhasDe(100);
 
@@ -108,31 +99,7 @@ const Card = ({ f, indice, onIndice, apartamento, indicadores, onIndicador }: {
   f: Frente; indice: number; onIndice: (v: number) => void; apartamento: ApartamentoToggle;
   indicadores: Indicadores; onIndicador: (campo: CampoIndicador, v: number) => void;
 }) => {
-  const agenciamento: [string, LinhaIndicador[]] = ["Agenciamento", [{ rotulo: "Contratual", campo: "contratual" }, { rotulo: "Promocional", campo: "promocional" }]];
-  let blocos: [string, LinhaIndicador[]][];
-  if (MODELO_INDICADORES[f.id] === "vitalicio") {
-    const v = derivarVitalicio(indicadores);
-    blocos = [
-      ["Participação", [
-        { rotulo: "Vitalício", campo: "spread" },
-        { rotulo: "Operadora", calculado: v.operadora, formula: "100% − Vitalício" },
-        { rotulo: "Agenciadora", calculado: v.agenciadora, formula: "= Vitalício" },
-      ]],
-      agenciamento,
-    ];
-  } else {
-    const d = derivarIndicadores(indicadores);
-    blocos = [
-      ["Participação", [
-        { rotulo: "Spread", campo: "spread" },
-        { rotulo: "Operadora", calculado: d.operadora, formula: "100% − Spread" },
-        { rotulo: "Administradora", calculado: d.administradora, formula: "Spread − Agenciadora" },
-        { rotulo: "Agenciadora", campo: "coAdministradora" },
-      ]],
-      agenciamento,
-      ["Taxa de adesão", [{ rotulo: "Percentual", campo: "adesao" }]],
-    ];
-  }
+  const blocos: [string, LinhaIndicador[]][] = blocosIndicadores(f.id, indicadores).map((b) => [b.titulo, b.linhas.map((l) => ({ rotulo: l.rotulo, campo: l.campo, calculado: l.campo ? undefined : l.valor, formula: l.formula }))]);
   return (
     <div className={`comercial-card ${f.cor}`}>
       <div className="flex items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center">

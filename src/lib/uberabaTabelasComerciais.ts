@@ -139,3 +139,44 @@ export function lerIndicadores(storage: Pick<Storage, "getItem"> | undefined = g
 export function gravarIndicadores(v: IndicadoresPorFrente, storage: Pick<Storage, "setItem"> | undefined = globalThis.localStorage) {
   try { storage?.setItem(CHAVE_INDICADORES, JSON.stringify(v)); } catch { /* armazenamento indisponível */ }
 }
+
+// ---------- Quadros das frentes (tela e Proposta Comercial) ----------
+/** Nome e segmento de cada frente, na ordem da tela. */
+export const FRENTES_COMERCIAIS: { id: FrenteId; titulo: string; segmento: string }[] = [
+  { id: "pcaAdm", titulo: "PCA Adm.", segmento: "ADESÃO" },
+  { id: "pceAdm", titulo: "PCE Adm.", segmento: "MÉDIAS EMPRESAS" },
+  { id: "pce100", titulo: "PCE 100+", segmento: "GRANDES EMPRESAS" },
+];
+
+export type LinhaIndicadorBloco = { rotulo: string; valor: number; campo?: CampoIndicador; formula?: string };
+export type BlocoIndicadores = { titulo: string; linhas: LinhaIndicadorBloco[] };
+
+/** Blocos de Indicadores variáveis de uma frente (Participação, Agenciamento e, quando houver, Taxa de adesão). */
+export function blocosIndicadores(id: FrenteId, i: Indicadores): BlocoIndicadores[] {
+  const agenciamento: BlocoIndicadores = { titulo: "Agenciamento", linhas: [
+    { rotulo: "Contratual", campo: "contratual", valor: i.contratual },
+    { rotulo: "Promocional", campo: "promocional", valor: i.promocional },
+  ] };
+  if (MODELO_INDICADORES[id] === "vitalicio") {
+    const v = derivarVitalicio(i);
+    return [
+      { titulo: "Participação", linhas: [
+        { rotulo: "Vitalício", campo: "spread", valor: i.spread },
+        { rotulo: "Operadora", valor: v.operadora, formula: "100% − Vitalício" },
+        { rotulo: "Agenciadora", valor: v.agenciadora, formula: "= Vitalício" },
+      ] },
+      agenciamento,
+    ];
+  }
+  const d = derivarIndicadores(i);
+  return [
+    { titulo: "Participação", linhas: [
+      { rotulo: "Spread", campo: "spread", valor: i.spread },
+      { rotulo: "Operadora", valor: d.operadora, formula: "100% − Spread" },
+      { rotulo: "Administradora", valor: d.administradora, formula: "Spread − Agenciadora" },
+      { rotulo: "Agenciadora", campo: "coAdministradora", valor: i.coAdministradora },
+    ] },
+    agenciamento,
+    { titulo: "Taxa de adesão", linhas: [{ rotulo: "Percentual", campo: "adesao", valor: i.adesao }] },
+  ];
+}

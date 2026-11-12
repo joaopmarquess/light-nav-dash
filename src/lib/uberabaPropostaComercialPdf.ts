@@ -1,24 +1,36 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { attachTimbrado } from "@/lib/pdfTimbrado";
-import { PDF_COLORS, baseTableStyles, drawReportHeading, drawSectionTitle } from "@/lib/pdfTheme";
-import { INDICES_PADRAO, formatarCentavos, tabelaIndexada, type FrenteId, type Indices } from "@/lib/uberabaTabelasComerciais";
+import { PDF_COLORS, drawReportHeading, drawSectionTitle } from "@/lib/pdfTheme";
+import {
+  FRENTES_COMERCIAIS, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, indicadoresPadrao, tabelaIndexada,
+  type FrenteId, type IndicadoresPorFrente, type Indices,
+} from "@/lib/uberabaTabelasComerciais";
 
-/** Tabelas e Produtos da proposta: as três tabelas de Resultados Comerciais, lado a lado (Faixa etária × Enfermaria). */
-export const PRODUTOS_PROPOSTA: { id: FrenteId; titulo: string }[] = [
-  { id: "pcaAdm", titulo: "1 - PCA" },
-  { id: "pceAdm", titulo: "2 - PME ADM" },
-  { id: "pce100", titulo: "3 - PJ 100+" },
-];
+type RGB = [number, number, number];
 
-export function tabelasProposta(indices: Indices = INDICES_PADRAO) {
-  return PRODUTOS_PROPOSTA.map(({ id, titulo }) => ({
+/** Cor de cada frente, igual à tela de Resultados Comerciais. */
+const COR_FRENTE: Record<FrenteId, RGB> = { pcaAdm: [209, 168, 87], pceAdm: [48, 152, 213], pce100: [216, 142, 116] };
+const CABECALHO: RGB = [221, 238, 248];
+const ZEBRA: RGB = [243, 248, 250];
+const LINHA: RGB = [212, 221, 229];
+const SECUNDARIO: RGB = [84, 98, 112];
+
+/** Tópico 1 · Tabelas: os três quadros de Resultados Comerciais (Faixa × Enfermaria e Indicadores variáveis). */
+export function quadrosProposta(indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao()) {
+  return FRENTES_COMERCIAIS.map(({ id, titulo, segmento }) => ({
+    id,
     titulo,
+    segmento,
     linhas: tabelaIndexada(indices[id]).map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos)] as [string, string]),
+    blocos: blocosIndicadores(id, indicadores[id]).map((b) => ({
+      titulo: b.titulo.toUpperCase(),
+      linhas: b.linhas.map((l) => [l.rotulo.toUpperCase(), formatarPercentual(l.valor)] as [string, string]),
+    })),
   }));
 }
 
-// Proposta Comercial Bensaúde|Uberaba — textos ainda provisórios em Lorem ipsum; tabelas vindas de Resultados Comerciais.
+// Proposta Comercial Bensaúde|Uberaba — tópico 1 com os quadros de Resultados Comerciais; demais textos ainda em Lorem ipsum.
 const LOREM = [
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus posuere velit aliquet. Cras mattis consectetur purus sit amet fermentum. Donec ullamcorper nulla non metus auctor fringilla.",
   "Sed posuere consectetur est at lobortis. Maecenas faucibus mollis interdum. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Nullam quis risus eget urna mollis ornare vel eu leo. Aenean lacinia bibendum nulla sed consectetur.",
@@ -26,7 +38,7 @@ const LOREM = [
 ];
 
 const SECOES = [
-  "1. Apresentação",
+  "1. Tabelas",
   "2. Objeto da proposta",
   "3. Produtos e modalidades",
   "4. Condições comerciais",
@@ -34,7 +46,7 @@ const SECOES = [
   "6. Vigência e validade",
 ];
 
-export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indices: Indices = INDICES_PADRAO): jsPDF {
+export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao()): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   attachTimbrado(doc, timbradoDataUrl);
   const pageW = doc.internal.pageSize.getWidth();
@@ -68,43 +80,106 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     y += h + 3;
   };
 
-  SECOES.forEach((titulo, i) => {
-    garantir(titulo.startsWith("4.") ? 100 : 16); // título não fica sozinho sem as tabelas
-    drawSectionTitle(doc, titulo, marginL, y, pageW - marginR);
-    y += 8;
-    if (titulo.startsWith("4.")) {
-      // Tópico: Tabelas e Produtos — três tabelas lado a lado.
-      garantir(86);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fimTabela = (fallback: number) => ((doc as any).lastAutoTable?.finalY as number | undefined) ?? fallback;
+
+  const desenharTabelas = () => {
+    const quadros = quadrosProposta(indices, indicadores);
+    garantir(170); // os três quadros ficam inteiros na mesma página
+    const gap = 5;
+    const largura = (usableW - gap * 2) / 3;
+    const xs = quadros.map((_, k) => marginL + k * (largura + gap));
+    const inicio = y;
+    const margem = (x: number, w: number) => ({ left: x, right: pageW - x - w, top, bottom });
+
+    // Faixa colorida e título de cada frente.
+    quadros.forEach((q, k) => {
+      const x = xs[k];
+      doc.setFillColor(...COR_FRENTE[q.id]);
+      doc.rect(x, inicio, largura, 1.6, "F");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
+      const wTit = doc.getTextWidth(q.titulo);
+      doc.setFontSize(6.5);
+      const wSeg = doc.getTextWidth(q.segmento);
+      const x0 = x + (largura - (wTit + 2 + wSeg)) / 2;
+      doc.setFontSize(10);
       doc.setTextColor(...PDF_COLORS.navy);
-      doc.text("Tabelas e Produtos", marginL, y);
-      y += 6;
-      const gap = 5;
-      const largura = (usableW - gap * 2) / 3;
-      let fim = y;
-      tabelasProposta(indices).forEach((t, k) => {
-        const x = marginL + k * (largura + gap);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(9.5);
-        doc.setTextColor(...PDF_COLORS.text);
-        doc.text(t.titulo, x + largura / 2, y, { align: "center" });
-        autoTable(doc, {
-          ...baseTableStyles(8.5),
-          startY: y + 2.5,
-          tableWidth: largura,
-          margin: { left: x, right: pageW - x - largura, top, bottom },
-          head: [["FAIXA ETÁRIA", "ENFERMARIA"]],
-          body: t.linhas,
-          headStyles: { ...baseTableStyles(8.5).headStyles, halign: "center" },
-          columnStyles: { 0: { halign: "center" }, 1: { halign: "right" } },
-        });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        fim = Math.max(fim, (doc as any).lastAutoTable?.finalY ?? y);
+      doc.text(q.titulo, x0, inicio + 7.2);
+      doc.setFontSize(6.5);
+      doc.setTextColor(...COR_FRENTE[q.id]);
+      doc.text(q.segmento, x0 + wTit + 2, inicio + 7.2);
+    });
+
+    // Faixa × Enfermaria.
+    let fim = inicio + 10;
+    quadros.forEach((q, k) => {
+      autoTable(doc, {
+        theme: "plain",
+        startY: inicio + 10,
+        tableWidth: largura,
+        margin: margem(xs[k], largura),
+        head: [["FAIXA", "ENFERMARIA"]],
+        body: q.linhas,
+        styles: { font: "helvetica", fontSize: 8, cellPadding: { top: 1.1, bottom: 1.1, left: 2, right: 2 }, textColor: PDF_COLORS.text, halign: "center" },
+        headStyles: { fillColor: CABECALHO, textColor: PDF_COLORS.navy, fontStyle: "bold", fontSize: 7.5 },
+        alternateRowStyles: { fillColor: ZEBRA },
+        didDrawCell: (c) => {
+          if (c.section !== "body") return;
+          doc.setDrawColor(...LINHA);
+          doc.setLineWidth(0.1);
+          doc.line(c.cell.x, c.cell.y, c.cell.x + c.cell.width, c.cell.y);
+        },
       });
-      y = fim + 7;
-      doc.setPage(doc.getNumberOfPages());
+      fim = Math.max(fim, fimTabela(fim));
+    });
+
+    // Indicadores variáveis: cada bloco começa na mesma linha nas três frentes.
+    let yb = fim + 5;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6.8);
+    doc.setTextColor(...SECUNDARIO);
+    xs.forEach((x) => doc.text("INDICADORES VARIÁVEIS", x + largura / 2, yb, { align: "center" }));
+    yb += 2.5;
+    const nBlocos = Math.max(...quadros.map((q) => q.blocos.length));
+    const inset = 2;
+    for (let b = 0; b < nBlocos; b++) {
+      let fimBloco = yb;
+      quadros.forEach((q, k) => {
+        const bloco = q.blocos[b];
+        if (!bloco) return;
+        autoTable(doc, {
+          theme: "grid",
+          startY: yb,
+          tableWidth: largura - inset * 2,
+          margin: margem(xs[k] + inset, largura - inset * 2),
+          head: [[{ content: bloco.titulo, colSpan: 2 }]],
+          body: bloco.linhas,
+          styles: { font: "helvetica", fontSize: 7.2, cellPadding: { top: 1.1, bottom: 1.1, left: 2, right: 2 }, textColor: PDF_COLORS.text, lineColor: LINHA, lineWidth: 0.1 },
+          headStyles: { fillColor: ZEBRA, textColor: SECUNDARIO, fontStyle: "bold", halign: "center" },
+          columnStyles: { 0: { halign: "left" }, 1: { halign: "right", cellWidth: 14 } },
+        });
+        fimBloco = Math.max(fimBloco, fimTabela(fimBloco));
+      });
+      yb = fimBloco + 3;
     }
+
+    // Contorno de cada quadro.
+    const altura = yb - inicio;
+    doc.setDrawColor(...LINHA);
+    doc.setLineWidth(0.2);
+    xs.forEach((x) => doc.rect(x, inicio, largura, altura, "S"));
+    doc.setDrawColor(0);
+    y = yb + 11;
+    doc.setPage(doc.getNumberOfPages());
+  };
+
+  SECOES.forEach((titulo, i) => {
+    const ehTabelas = titulo.startsWith("1.");
+    garantir(ehTabelas ? 180 : 32); // título não fica sozinho no fim da página
+    drawSectionTitle(doc, titulo, marginL, y, pageW - marginR);
+    y += 8;
+    if (ehTabelas) { desenharTabelas(); return; }
     LOREM.slice(0, i % 2 === 0 ? 3 : 2).forEach(paragrafo);
     y += 2;
   });
