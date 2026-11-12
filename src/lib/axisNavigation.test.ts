@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { axisPermissionGroups } from "./axisNavigation";
+import { axisPermissionGroups, homeShortcutGroups, homeShortcuts } from "./axisNavigation";
 import { canAccess, type AxisAccess } from "./axisAccess";
 
 describe("Home shortcut permissions", () => {
@@ -51,5 +51,20 @@ describe("Sinistralidade submenus", () => {
     expect(canAccess(access, "Sinistralidade · Evolução Produtos")).toBe(true);
     expect(canAccess(access, "Evolução Produtos")).toBe(false);
     expect(canAccess(access, "Sinistralidade · Períodos")).toBe(false);
+  });
+});
+
+describe("Home shortcut groups", () => {
+  it("groups shortcuts under their main menu in sidebar order, Laboratory last", () => {
+    expect(homeShortcutGroups().map(g => [g.menu, g.items.map(i => i.label)])).toEqual([
+      ["Control", ["Controladoria", "Demonstrações", "Bench Contábil"]],
+      ["Carteira", ["Movimentação", "Área Geográfica", "Painel", "Bench Vidas"]],
+      ["Sinistralidade", ["Período", "Evolução Produtos"]],
+      ["Laboratory", ["Proj. Uberaba", "Laboratory", "Proposta APB"]],
+    ]);
+  });
+  it("omits a menu with no permitted shortcut", () => {
+    const only = homeShortcuts.filter(s => s.menu === "Carteira");
+    expect(homeShortcutGroups(only).map(g => g.menu)).toEqual(["Carteira"]);
   });
 });

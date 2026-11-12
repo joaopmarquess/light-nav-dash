@@ -112,20 +112,30 @@ export const menuItems: MenuItem[] = [
 
 export const LAB_IDS = new Set<string>(["Laboratory", ...labItems.flatMap((g) => g.children ? g.children.map((c) => c.id ?? c.label) : [g.label])]);
 
+// menu: menu equivalente na barra lateral principal (ou Laboratory), usado como subtítulo na Home.
 export const homeShortcuts = [
-  { icon: ArrowRightLeft, label: "Movimentação", destination: "Carteira · Movimentação" },
-  { icon: MapIcon, label: "Área Geográfica", destination: "Carteira · Área Geográfica" },
-  { icon: Percent, label: "Período", destination: "Sinistralidade · Períodos" },
-  { icon: FileText, label: "Controladoria", destination: "Control · DRE Gerencial PE" },
-  { icon: FileText, label: "Demonstrações", destination: "Control · DRE Gerencial PE" },
-  { icon: CalendarRange, label: "Proj. Uberaba", destination: "Uberaba Timeline" },
-  { icon: FlaskConical, label: "Laboratory", destination: "Laboratory" },
-  { icon: FileText, label: "Proposta APB", destination: "Proposta APB" },
-  { icon: Layers, label: "Evolução Produtos", destination: "Evolução Produtos" },
-  { icon: LayoutDashboard, label: "Painel", destination: "Carteira · Painel" },
-  { icon: BarChart3, label: "Bench Vidas", destination: "Carteira · Bench Vidas" },
-  { icon: BarChart3, label: BENCH_SHORT_TEXT, destination: "Control · Bench C" },
+  { icon: ArrowRightLeft, label: "Movimentação", destination: "Carteira · Movimentação", menu: "Carteira" },
+  { icon: MapIcon, label: "Área Geográfica", destination: "Carteira · Área Geográfica", menu: "Carteira" },
+  { icon: Percent, label: "Período", destination: "Sinistralidade · Períodos", menu: "Sinistralidade" },
+  { icon: FileText, label: "Controladoria", destination: "Control · DRE Gerencial PE", menu: "Control" },
+  { icon: FileText, label: "Demonstrações", destination: "Control · DRE Gerencial PE", menu: "Control" },
+  { icon: CalendarRange, label: "Proj. Uberaba", destination: "Uberaba Timeline", menu: "Laboratory" },
+  { icon: FlaskConical, label: "Laboratory", destination: "Laboratory", menu: "Laboratory" },
+  { icon: FileText, label: "Proposta APB", destination: "Proposta APB", menu: "Laboratory" },
+  { icon: Layers, label: "Evolução Produtos", destination: "Evolução Produtos", menu: "Sinistralidade" },
+  { icon: LayoutDashboard, label: "Painel", destination: "Carteira · Painel", menu: "Carteira" },
+  { icon: BarChart3, label: "Bench Vidas", destination: "Carteira · Bench Vidas", menu: "Carteira" },
+  { icon: BarChart3, label: BENCH_SHORT_TEXT, destination: "Control · Bench C", menu: "Control" },
 ];
+export type HomeShortcut = (typeof homeShortcuts)[number];
+
+/** Agrupa os atalhos da Home pelo menu equivalente, na ordem da barra lateral (Laboratory por último). */
+export function homeShortcutGroups(shortcuts: HomeShortcut[] = homeShortcuts) {
+  const ordem = [...menuItems.filter(m => m.label !== "Home").map(m => m.label), "Laboratory"];
+  return ordem
+    .map(menu => ({ menu, items: shortcuts.filter(s => s.menu === menu) }))
+    .filter(g => g.items.length > 0);
+}
 
 export const axisPermissionGroups = [
   ...menuItems.map(g => ({
