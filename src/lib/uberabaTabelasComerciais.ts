@@ -69,7 +69,7 @@ export const INDICADORES_PADRAO: Indicadores = { spread: 23, coAdministradora: 4
 /** Limites aceitos por campo (%). */
 export const LIMITES_INDICADOR: Record<CampoIndicador, number> = { spread: 100, coAdministradora: 100, contratual: 500, promocional: 500, adesao: 100 };
 
-/** Operadora = 100% − Spread; Administradora = Spread − Co-administradora. */
+/** Operadora = 100% − Spread; Administradora = Spread − Agenciadora. */
 export function derivarIndicadores(i: Indicadores) {
   const r = (n: number) => Math.round(n * 100) / 100;
   return { operadora: r(100 - i.spread), administradora: r(i.spread - i.coAdministradora) };

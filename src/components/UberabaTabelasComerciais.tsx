@@ -114,7 +114,7 @@ const Card = ({ f, indice, onIndice, apartamento, indicadores, onIndicador }: {
       { rotulo: "Spread", campo: "spread" },
       { rotulo: "Operadora", calculado: d.operadora },
       { rotulo: "Administradora", calculado: d.administradora },
-      { rotulo: "Co-administradora", campo: "coAdministradora" },
+      { rotulo: "Agenciadora", campo: "coAdministradora" },
     ]],
     ["Agenciamento", [{ rotulo: "Contratual", campo: "contratual" }, { rotulo: "Promocional", campo: "promocional" }]],
     ["Taxa de adesão", [{ rotulo: "Percentual", campo: "adesao" }]],
@@ -142,7 +142,7 @@ const Card = ({ f, indice, onIndice, apartamento, indicadores, onIndicador }: {
                     <td className={`w-28 px-2 py-1 text-right tabular-nums ${l.calculado !== undefined && l.calculado < 0 ? "text-destructive" : ""}`}>
                       {l.campo
                         ? <CampoIndicadorInput f={f} campo={l.campo} rotulo={l.rotulo} valor={indicadores[l.campo]} onChange={(v) => onIndicador(l.campo!, v)} />
-                        : <span title={l.rotulo === "Operadora" ? "100% − Spread" : "Spread − Co-administradora"}>{formatarPercentual(l.calculado ?? 0)}</span>}
+                        : <span title={l.rotulo === "Operadora" ? "100% − Spread" : "Spread − Agenciadora"}>{formatarPercentual(l.calculado ?? 0)}</span>}
                     </td>
                   </tr>
                 ))}

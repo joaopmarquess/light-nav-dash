@@ -53,7 +53,7 @@ describe("indicadores variáveis Uberaba", () => {
     expect(t.pce100).toEqual(INDICADORES_PADRAO);
   });
 
-  it("Operadora = 100 − Spread e Administradora = Spread − Co-administradora", () => {
+  it("Operadora = 100 − Spread e Administradora = Spread − Agenciadora", () => {
     expect(derivarIndicadores(INDICADORES_PADRAO)).toEqual({ operadora: 77, administradora: 19 });
     expect(derivarIndicadores({ ...INDICADORES_PADRAO, spread: 5, coAdministradora: 5 })).toEqual({ operadora: 95, administradora: 0 });
   });
