@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { ArrowRightLeft, ChevronRight, Download, Plus, Search, TrendingDown, UserCheck, UserPlus, Users, X } from "lucide-react";
+import { ArrowRightLeft, ChevronRight, Download, GitCompareArrows, Plus, Search, TrendingDown, UserCheck, UserPlus, Users, X } from "lucide-react";
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip as Dica, XAxis, YAxis } from "recharts";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { nomeOperadoraAns } from "@/lib/benchVidasAns";
 import { agregarMensal, ajustarFiltros, campoDisponivel, anosDoPeriodo, CAMPOS_MENSAL, camposCompativeis, competenciaMensal, cuboPara, INDICADORES_MENSAL, opcoesCampo, periodoPadrao, resumoMensal, rotuloValor, totalPeriodo, valorIndicador, type CampoMensal, type CatalogoMensal, type Filtros, type IndicadorMensal } from "@/lib/benchVidasMensal";
 import { carregarVidasMensal } from "@/lib/benchVidasMensalDados";
 import { BenchVidasAtualizar } from "@/components/BenchVidasAtualizar";
+import BenchVidasComparar from "@/components/BenchVidasComparar";
 
 const catalogo = catalogoJson as unknown as CatalogoMensal & { inicio: string; fim: string; competencias: string[]; origem: string; operadoras: { reg: string; razaoSocial: string; modalidade: string }[] };
 const COMPETENCIAS = catalogo.competencias.map(Number);
@@ -74,6 +75,9 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
   const [detalhar, setDetalhar] = useState<CampoMensal>("municipio");
   const [filtros, setFiltros] = useState<Filtros>({});
   const [filtrosAbertos, setFiltrosAbertos] = useState(false);
+  const [comparar, setComparar] = useState(false);
+  const opsComparar = useMemo(() => selecionadas.map(r => POR_REG.get(r)).filter((o): o is NonNullable<typeof o> => Boolean(o)), [selecionadas]);
+  const podeComparar = opsComparar.filter(o => o.mensal).length >= 2;
   const [graficoAberto, setGraficoAberto] = useState(false); const [gridAberto, setGridAberto] = useState(true);
   const [linhas, setLinhas] = useState<number[][]>([]); const [carregando, setCarregando] = useState(true); const [erro, setErro] = useState(""); const [tentativa, setTentativa] = useState(0);
   const cubo = cuboPara(detalhar, filtros);
@@ -122,6 +126,7 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
           {reg !== FIXA && <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" title={`Retirar ${o.nome}`} aria-label={`Retirar ${o.nome}`} onClick={() => { setSelecionadas(l => l.filter(r => r !== reg)); if (operadora === reg) setOperadora(FIXA); }}><X className="h-3 w-3" /></Button>}
         </div>; })}
         <Popover open={opsAberto} onOpenChange={setOpsAberto}><PopoverTrigger asChild><Button variant="ghost" className="h-8 gap-1 rounded-full"><Plus className="h-4 w-4" />Incluir OPS</Button></PopoverTrigger><PopoverContent className="w-80 max-w-[calc(100vw-2rem)] p-2"><Input autoFocus aria-label="Buscar operadora" placeholder="Buscar por nome ou registro ANS" value={busca} onChange={e => setBusca(e.target.value)} /><div className="mt-2 max-h-60 overflow-auto">{opcoesOps.map(o => <Button key={o.reg} variant="ghost" disabled={!o.mensal} title={o.mensal ? undefined : "Sem dados mensais: a operadora não aparece nos arquivos mensais da ANS (05/2021 em diante)"} className="h-auto w-full flex-col items-start gap-0 whitespace-normal text-left" onClick={() => { setSelecionadas(l => [...l, o.reg]); setOperadora(o.reg); setOpsAberto(false); setBusca(""); }}><span>{o.nome} · {o.reg}</span>{!o.mensal && <span className="text-xs text-muted-foreground">Sem dados mensais</span>}</Button>)}{!opcoesOps.length && <p className="p-2 text-sm text-muted-foreground">Nenhuma operadora disponível.</p>}</div></PopoverContent></Popover>
+        <Tooltip><TooltipTrigger asChild><span><Button variant="ghost" aria-pressed={comparar} disabled={!podeComparar && !comparar} onClick={() => setComparar(c => !c)} className={`h-8 gap-1 rounded-full ${comparar ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : ""}`}><GitCompareArrows className="h-4 w-4" />Comparar</Button></span></TooltipTrigger><TooltipContent>{comparar ? "Voltar à operadora selecionada" : podeComparar ? "Comparar as operadoras selecionadas no período" : "Inclua pelo menos duas operadoras com dados mensais"}</TooltipContent></Tooltip>
       </div>
       <BenchVidasAtualizar ultima={catalogo.fim} />
     </div>
@@ -129,9 +134,9 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
       <div className="bench-filters space-y-2.5">
         {!filtrosAbertos && <div className="flex flex-wrap items-center gap-3">
           <Button variant="ghost" aria-expanded={false} onClick={() => setFiltrosAbertos(true)} className="h-8 gap-2 px-2 text-sm font-semibold"><ChevronRight className="h-4 w-4" />Período</Button>
-          <span className="text-sm text-muted-foreground">{competenciaMensal(de)}–{competenciaMensal(ate)} · {INDICADORES_MENSAL.find(i => i.id === indicador)?.rotulo} · por {rotuloCampo(detalhar).toLowerCase()}{Object.keys(filtros).length ? ` · ${Object.keys(filtros).length} ${Object.keys(filtros).length === 1 ? "filtro" : "filtros"}` : ""}</span>
+          <span className="text-sm text-muted-foreground">{competenciaMensal(de)}–{competenciaMensal(ate)} · {INDICADORES_MENSAL.find(i => i.id === indicador)?.rotulo} {comparar ? "" : ` · por ${rotuloCampo(detalhar).toLowerCase()}`}{Object.keys(filtros).length ? ` · ${Object.keys(filtros).length} ${Object.keys(filtros).length === 1 ? "filtro" : "filtros"}` : ""}</span>
           <div aria-label="Identificação da operadora" className="ml-auto flex min-w-0 flex-col items-end text-right text-xs">
-            <strong className="break-words">{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} {atual?.modalidade ? ` · ${atual.modalidade.toLowerCase()}` : ""}</span></strong>
+            {comparar ? <strong>Comparando {opsComparar.filter(o => o.mensal).length} operadoras</strong> : <strong className="break-words">{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} {atual?.modalidade ? ` · ${atual.modalidade.toLowerCase()}` : ""}</span></strong>}
             <span className="text-muted-foreground">ANS mensal · {competenciaMensal(catalogo.inicio)}–{competenciaMensal(catalogo.fim)}</span>
           </div>
         </div>}
@@ -144,7 +149,7 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
             {INDICADORES_MENSAL.map(i => <Button key={i.id} variant="ghost" aria-pressed={indicador === i.id} onClick={() => setIndicador(i.id)} className={`h-7 rounded-full px-3 text-xs ${indicador === i.id ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "text-foreground/70"}`}>{i.rotulo}</Button>)}
           </div>
           <div aria-label="Identificação da operadora" className="ml-auto flex min-w-0 flex-col items-end text-right text-xs">
-            <strong className="break-words">{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} {atual?.modalidade ? ` · ${atual.modalidade.toLowerCase()}` : ""}</span></strong>
+            {comparar ? <strong>Comparando {opsComparar.filter(o => o.mensal).length} operadoras</strong> : <strong className="break-words">{atual?.nome} <span className="font-normal text-muted-foreground">· ANS {operadora} {atual?.modalidade ? ` · ${atual.modalidade.toLowerCase()}` : ""}</span></strong>}
             <span className="text-muted-foreground">ANS mensal · {competenciaMensal(catalogo.inicio)}–{competenciaMensal(catalogo.fim)}</span>
           </div>
         </div>
@@ -174,7 +179,8 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
         </>}
       </div>
 
-      {carregando ? <p role="status" className="py-8 text-sm text-muted-foreground">Carregando dados mensais…</p>
+      {comparar ? <BenchVidasComparar ops={opsComparar} catalogo={catalogo} cubo={cubo} filtros={filtros} de={de} ate={ate} anos={anos} indicador={indicador} />
+        : carregando ? <p role="status" className="py-8 text-sm text-muted-foreground">Carregando dados mensais…</p>
         : erro ? <div role="alert" className="py-8 text-sm text-destructive">{erro}<Button variant="outline" className="ml-3" onClick={() => setTentativa(t => t + 1)}>Tentar novamente</Button></div>
         : !resumo ? <p role="status" className="py-8 text-sm text-muted-foreground">Nenhum registro para os filtros selecionados.</p>
         : <>

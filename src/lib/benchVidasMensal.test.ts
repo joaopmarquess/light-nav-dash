@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { agregarMensal, opcoesCampo, ajustarFiltros, camposCompativeis, cuboPara, periodoPadrao, resumoMensal, totalPeriodo, type CatalogoMensal } from "./benchVidasMensal";
+import { agregarMensal, base100, compararMensal, opcoesCampo, ajustarFiltros, camposCompativeis, cuboPara, periodoPadrao, resumoMensal, totalPeriodo, type CatalogoMensal } from "./benchVidasMensal";
 
 const catalogo = {
   valores: { uf: ["MG", "SP"], sexo: ["F", "M"], faixa: [], faixaReaj: [], vigencia: [], contratacao: ["Coletivo Empresarial", "Individual ou Familiar"], segmentacao: [], abrangencia: [], cobertura: ["Médico-hospitalar"], vinculo: ["Titular"], plano: [] },
@@ -63,5 +63,24 @@ describe("Bench Vidas Mensal", () => {
     expect(ativos(0)).toBe(50);
     expect(ativos(1)).toBe(50);
     expect(opcoesCampo(cat, "tipoProduto").map(o => o.rotulo)).toEqual(["Plano de Saúde", "Plano Odonto"]);
+  });
+});
+
+describe("Bench Vidas Mensal · Comparar", () => {
+  const B = [[202607, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 4, 0], [202608, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 12, 2]];
+  it("compara as operadoras no mesmo período, sem misturar os números de cada uma", () => {
+    const r = compararMensal([{ reg: "1", linhas: A }, { reg: "2", linhas: B }], "A", catalogo, { de: 202607, ate: 202608, filtros: {} });
+    expect(r.competencias).toEqual([202607, 202608]);
+    expect(r.ops[0].resumo).toMatchObject({ ativosInicio: 150, ativosFim: 156, aderidos: 23, cancelados: 11 });
+    expect(r.ops[1].resumo).toMatchObject({ ativosInicio: 40, ativosFim: 50, aderidos: 16, cancelados: 2, percentual: 25 });
+  });
+  it("aplica os mesmos filtros a todas as operadoras", () => {
+    const r = compararMensal([{ reg: "1", linhas: A }, { reg: "2", linhas: B }], "A", catalogo, { de: 202607, ate: 202608, filtros: { uf: 1 } });
+    expect(r.ops[0].resumo?.ativosFim).toBe(51);
+    expect(r.ops[1].resumo).toBeNull();
+  });
+  it("base 100 parte dos ativos do primeiro mês de cada operadora", () => {
+    const r = compararMensal([{ reg: "2", linhas: B }], "A", catalogo, { de: 202607, ate: 202608, filtros: {} });
+    expect([...base100(r.ops[0].total, r.competencias).values()]).toEqual([100, 125]);
   });
 });

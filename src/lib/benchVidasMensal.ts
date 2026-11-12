@@ -141,3 +141,20 @@ export function anosDoPeriodo(de: number, ate: number): number[] {
 export function periodoPadrao(competencias: number[]): { de: number; ate: number } {
   const ate = competencias.at(-1)!; return { de: competencias[Math.max(0, competencias.length - 12)], ate };
 }
+
+export type OperadoraComparada = { reg: string; total: Map<number, Medidas>; competencias: number[]; resumo: ReturnType<typeof resumoMensal> };
+/** Comparação entre operadoras: mesmo cubo, período e filtros para todas; cada uma mantém os próprios meses informados. */
+export function compararMensal(series: { reg: string; linhas: number[][] }[], cubo: Cubo, catalogo: CatalogoMensal, opcoes: { de: number; ate: number; filtros: Filtros }) {
+  const detalhar = CAMPOS_MENSAL.find(c => campoDisponivel(cubo, c.id) && !c.soFiltro)!.id;
+  const ops: OperadoraComparada[] = series.map(s => {
+    const r = agregarMensal(s.linhas, cubo, catalogo, { ...opcoes, detalhar });
+    return { reg: s.reg, total: r.total, competencias: r.competencias, resumo: resumoMensal(r.total, r.competencias) };
+  });
+  const competencias = [...new Set(ops.flatMap(o => o.competencias))].sort((a, b) => a - b);
+  return { competencias, ops };
+}
+/** Ativos em base 100: cada mês dividido pelos ativos do primeiro mês informado da operadora no período. */
+export function base100(total: Map<number, Medidas>, competencias: number[]): Map<number, number | null> {
+  const base = competencias.map(c => total.get(c)?.ativos).find(v => v !== undefined && v > 0);
+  return new Map(competencias.map(c => { const v = total.get(c)?.ativos; return [c, v === undefined || !base ? null : v / base * 100]; }));
+}
