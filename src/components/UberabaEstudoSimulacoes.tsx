@@ -6,6 +6,7 @@ import UberabaTabelasComerciais, { ReferenciaButton } from "@/components/Uberaba
 import UberabaRedeAssistencial from "@/components/UberabaRedeAssistencial";
 import EstudoSubNav from "@/components/EstudoSubNav";
 import UberabaPropostaComercialButton from "@/components/UberabaPropostaComercialButton";
+import UberabaPropostaTextosButton from "@/components/UberabaPropostaTextosButton";
 
 type Aba = "simulacao" | "gestaoRede" | "comercial" | "rede";
 
@@ -23,7 +24,7 @@ const UberabaEstudoSimulacoes = ({ subNavTarget }: { subNavTarget?: HTMLElement 
   const atual = ABAS.find((a) => a.id === aba)!;
   return (
     <div className="flex flex-col gap-3">
-      <EstudoSubNav itens={ABAS} ativo={aba} onSelect={(id) => setAba(id as Aba)} label="Simulações do Estudo" target={subNavTarget} extra={aba === "comercial" ? <div className="flex items-center gap-2"><ReferenciaButton /><UberabaPropostaComercialButton /></div> : aba === "simulacao" ? <div ref={setAcoes} /> : undefined} />
+      <EstudoSubNav itens={ABAS} ativo={aba} onSelect={(id) => setAba(id as Aba)} label="Simulações do Estudo" target={subNavTarget} extra={aba === "comercial" ? <div className="flex items-center gap-2"><ReferenciaButton /><UberabaPropostaTextosButton /><UberabaPropostaComercialButton /></div> : aba === "simulacao" ? <div ref={setAcoes} /> : undefined} />
       <section aria-label={atual.label} className="min-w-0">
         {aba === "simulacao" && <UberabaSimulacao acoesTarget={acoes} />}
         {aba === "gestaoRede" && <UberabaGestaoRede />}

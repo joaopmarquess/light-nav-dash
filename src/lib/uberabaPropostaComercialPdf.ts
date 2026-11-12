@@ -6,6 +6,7 @@ import {
   FATORES_PADRAO, FRENTES_COMERCIAIS, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarFator, formatarPercentual, indicadoresPadrao, rotulosPadrao, tabelaIndexada,
   type Fatores, type FrenteId, type IndicadoresPorFrente, type Indices, type RotulosPorFrente,
 } from "@/lib/uberabaTabelasComerciais";
+import { SECOES_TEXTO, paragrafosDe, type TextosSecoes } from "@/lib/uberabaPropostaTextos";
 
 type RGB = [number, number, number];
 
@@ -39,22 +40,20 @@ export function quadrosProposta(indices: Indices = INDICES_PADRAO, indicadores: 
   }));
 }
 
-// Proposta Comercial Bensaúde|Uberaba — tópico 1 com os quadros de Resultados Comerciais; demais textos ainda em Lorem ipsum.
+// Proposta Comercial Bensaúde|Uberaba — tópico 1 com os quadros de Resultados Comerciais; tópicos 2 a 6 com os textos revisados
+// (rascunho da IA aprovado pelo usuário) ou, sem aprovação, em Lorem ipsum.
 const LOREM = [
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus posuere velit aliquet. Cras mattis consectetur purus sit amet fermentum. Donec ullamcorper nulla non metus auctor fringilla.",
   "Sed posuere consectetur est at lobortis. Maecenas faucibus mollis interdum. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Nullam quis risus eget urna mollis ornare vel eu leo. Aenean lacinia bibendum nulla sed consectetur.",
   "Curabitur blandit tempus porttitor. Etiam porta sem malesuada magna mollis euismod. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna, vel scelerisque nisl consectetur et.",
 ];
 
-const SECOES = [
-  "1. Tabelas",
-  "2. Objeto da proposta",
-  "3. Produtos e modalidades",
-  "4. Condições comerciais",
-  "5. Rede assistencial",
-  "6. Vigência e validade",
-  "7. Glossário e Notas Explicativas",
-];
+const SECOES = ["1. Tabelas", ...SECOES_TEXTO.map((s) => s.titulo), "7. Glossário e Notas Explicativas"];
+
+/** Parágrafos de cada tópico 2 a 6: o texto revisado quando houver; do contrário, o texto provisório. */
+export function paragrafosProposta(textos: TextosSecoes | null = null): string[][] {
+  return SECOES_TEXTO.map((s, k) => (textos ? paragrafosDe(textos[s.id]) : LOREM.slice(0, (k + 1) % 2 === 0 ? 3 : 2)));
+}
 
 /**
  * Glossário e Notas Explicativas: cada termo marcado recebe, no corpo do documento, um número elevado
@@ -83,7 +82,7 @@ export function marcadorGlossario(termo: string): number | null {
   return i < 0 ? null : i + 1;
 }
 
-export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao(), rotulos: RotulosPorFrente = rotulosPadrao(), fatores: Fatores = FATORES_PADRAO): jsPDF {
+export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao(), rotulos: RotulosPorFrente = rotulosPadrao(), fatores: Fatores = FATORES_PADRAO, textos: TextosSecoes | null = null): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   attachTimbrado(doc, timbradoDataUrl);
   const pageW = doc.internal.pageSize.getWidth();
@@ -94,7 +93,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   const heading = () => drawReportHeading(doc, {
     title: "Proposta Comercial",
     plano: "Bensaúde|Uberaba",
-    secao: "Minuta provisória · conteúdo em Lorem ipsum",
+    secao: textos ? "Minuta para revisão" : "Minuta provisória · conteúdo em Lorem ipsum",
     marginL, marginR, top: 38, tinta: TINTA,
   });
   heading();
@@ -279,6 +278,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     });
   };
 
+  const corpo = paragrafosProposta(textos);
   SECOES.forEach((titulo, i) => {
     const ehTabelas = titulo.startsWith("1.");
     garantir(ehTabelas ? 180 : 32); // título não fica sozinho no fim da página
@@ -286,7 +286,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     y += 8;
     if (ehTabelas) { desenharTabelas(); return; }
     if (titulo.startsWith("7.")) { desenharGlossario(); return; }
-    LOREM.slice(0, i % 2 === 0 ? 3 : 2).forEach(paragrafo);
+    corpo[i - 1].forEach(paragrafo);
     y += 2;
   });
 
