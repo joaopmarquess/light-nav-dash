@@ -197,7 +197,7 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
           </div>
         )}
       </section>
-      <div className={`comercial-secao comercial-secao-indicadores ${variaveis.visivel ? "" : "recolhido"}`}>
+      <div className="comercial-secao comercial-secao-indicadores">
         <p className="comercial-secao-titulo">Indicadores variáveis<BotaoSecao t={variaveis} nome="Indicadores variáveis" /></p>
         {variaveis.visivel && <div className="comercial-indicadores">
           {blocos.map(([titulo, linhas]) => (
@@ -258,7 +258,7 @@ const UberabaTabelasComerciais = () => {
   const alterar = (id: FrenteId, v: number) => setIndices((atual) => { const novo = { ...atual, [id]: v }; gravarIndices(novo); return novo; });
   return (
     <section className="comercial-presentation" aria-label="Tabelas comerciais">
-      <div className="comercial-grid">
+      <div className={`comercial-grid ${variaveisVisivel ? "" : "indicadores-recolhidos"}`}>
         {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} fator={fatores[f.id]} onFator={(v) => alterarFator(f.id, v)} apartamento={apartamento} precos={precos} variaveis={variaveis} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} padroes={padroes[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} onGravarPadrao={() => gravarPadrao(f.id)} />)}
       </div>
     </section>
