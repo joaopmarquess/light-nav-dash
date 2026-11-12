@@ -244,7 +244,7 @@ function Filtro<T extends string>({ rotulo, opcoes, valor, onChange }: { rotulo:
 
 function GradeCidadesTabela({ grade, fmt = fmtInt }: { grade: GradeCidades; fmt?: Fmt }) {
   const { meses, grupos, total, fora } = grade;
-  // Praça e Região abrem recolhidas: só o subtotal de cada grupo aparece até o clique.
+  // As praças (S. J. Rio Preto e Região) abrem recolhidas: só o subtotal de cada grupo aparece até o clique.
   const [abertos, setAbertos] = useState<Set<GrupoCidadeId>>(() => new Set());
   const alternar = (id: GrupoCidadeId) => setAbertos((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const colunas = meses.length + 2;
@@ -255,12 +255,12 @@ function GradeCidadesTabela({ grade, fmt = fmtInt }: { grade: GradeCidades; fmt?
   return (
     <div className="overflow-x-auto">
       <p className="mb-2 text-xs text-muted-foreground">
-        {nCidades.toLocaleString("pt-BR")} cidades · Praça: São José do Rio Preto (SP) · Região: demais cidades · município do plano, o mesmo da Área Geográfica · ordem pelas vidas em {meses[meses.length - 1]?.rotulo}
+        {nCidades.toLocaleString("pt-BR")} cidades · Praça: S. J. Rio Preto (SAO JOSE DO RIO PRETO (SP)) e Região (demais cidades) · município do plano, o mesmo da Área Geográfica · ordem pelas vidas em {meses[meses.length - 1]?.rotulo}
       </p>
       <table className="w-full min-w-[1280px] border-separate border-spacing-x-1.5 border-spacing-y-[3px] text-center">
         <thead>
           <tr>
-            <th scope="col" className="w-64 px-2 py-1 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cidade (UF)</th>
+            <th scope="col" className="w-64 px-2 py-1 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Praça / Cidade (UF)</th>
             {meses.map((m) => (
               <th key={m.dataFim} scope="col" className="rounded-lg bg-primary px-2 py-1 text-sm font-semibold text-primary-foreground">{m.rotulo}</th>
             ))}
@@ -335,7 +335,7 @@ function GradeCidadesTabela({ grade, fmt = fmtInt }: { grade: GradeCidades; fmt?
 
 // Modelo de dados em XLSX: uma linha por cidade × mês × tipo × produto, com os filtros escolhidos.
 const COLUNAS_MODELO = [
-  ["Competência", 11], ["Ano", 6], ["Mês", 5], ["Grupo", 8], ["UF", 5], ["Cidade", 30], ["Cidade (UF)", 34], ["Tipo", 6], ["Produto", 22],
+  ["Competência", 11], ["Ano", 6], ["Mês", 5], ["Praça", 15], ["UF", 5], ["Cidade", 30], ["Cidade (UF)", 34], ["Tipo", 6], ["Produto", 22],
   ["Vidas", 9], ["Receita (R$)", 15], ["Coparticipação (R$)", 18], ["Total Receitas (R$)", 18], ["Despesas (R$)", 15], ["Saldo (R$)", 15],
 ] as const;
 function gerarXlsxCidades(linhas: LinhaModeloCidade[], parametros: [string, string][], arquivo: string) {
@@ -459,7 +459,7 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
         ["Valores em R$ até", `${anoMesCampo(ultima)} (último mês com despesas acima de R$ 20 milhões; meses seguintes ficam em branco)`],
         ["Filtro Tipo", tipoTxt],
         ["Filtro Produto", produtoTxt],
-        ["Grupo", "Praça = São José do Rio Preto (SP); Região = demais cidades"],
+        ["Praça", "S. J. Rio Preto = SAO JOSE DO RIO PRETO (SP); Região = demais cidades"],
         ["Cidade", "Município do plano (código IBGE), o mesmo da Área Geográfica"],
         ["Vidas", "Ativos no último dia do mês; não se somam entre meses"],
         ["Receita", "vl_rec_cpp + vl_rec_outros · view_eard_mensal"],

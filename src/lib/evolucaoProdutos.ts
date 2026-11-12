@@ -353,10 +353,10 @@ const somaChaves = (ad: Aditiva, ks: string[], i: number) => {
   return m == null ? null : ks.reduce((s, k) => s + (m.get(k) ?? 0), 0);
 };
 
-/** Praça = São José do Rio Preto (SP); Região = todas as demais cidades (inclusive cidade não informada). */
+/** Agrupamento "Praça": S. J. Rio Preto = SAO JOSE DO RIO PRETO (SP); Região = todas as demais cidades (inclusive cidade não informada). */
 export const PRACA = { uf: "SP", cidade: "SAO JOSE DO RIO PRETO" } as const;
 export const GRUPOS_CIDADE = [
-  { id: "PRACA", rotulo: "Praça" },
+  { id: "PRACA", rotulo: "S. J. Rio Preto" },
   { id: "REGIAO", rotulo: "Região" },
 ] as const;
 export type GrupoCidadeId = (typeof GRUPOS_CIDADE)[number]["id"];
@@ -375,10 +375,10 @@ export type GrupoCidades = {
 export type GradeCidades = { meses: MesEvolucao[]; grupos: GrupoCidades[]; total: LinhaCidades; fora: number[] };
 
 /**
- * Grade Cidade (UF) × mês para uma visão. Cidades em dois grupos — Praça (São José do Rio Preto) e Região
+ * Grade Cidade (UF) × mês para uma visão. Cidades em duas praças — S. J. Rio Preto e Região
  * (demais) — com Subtotal por grupo e Total Geral. Valores aditivos somam o período; Vidas não somam (coluna
  * Total null). Sinistralidade e Per capita usam a razão das somas em cada célula, subtotal, total e período.
- * Ordem: Praça, Região; cidades pelas vidas no último mês, da maior para a menor; cidade não informada por último.
+ * Ordem: S. J. Rio Preto, Região; cidades pelas vidas no último mês, da maior para a menor; cidade não informada por último.
  */
 export function montarGradeCidades(
   meses: MesEvolucao[],

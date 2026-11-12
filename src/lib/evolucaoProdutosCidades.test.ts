@@ -34,15 +34,15 @@ describe("Evolução Produtos — visão Cidade (UF)", () => {
     expect(c.total.valores).toEqual(t.meses.map((m) => m.total));
     expect(c.total.valores).toEqual([490, 507]);
   });
-  it("Praça é só São José do Rio Preto (SP); as demais cidades, inclusive não informada, são Região", () => {
+  it("a praça S. J. Rio Preto é só SAO JOSE DO RIO PRETO (SP); as demais cidades, inclusive não informada, são Região", () => {
     expect(grupoDaCidade("São José do Rio Preto", "sp")).toBe("PRACA");
     expect(grupoDaCidade("SAO JOSE DO RIO PRETO", "MG")).toBe("REGIAO");
     expect(grupoDaCidade("RIBEIRAO PRETO", "SP")).toBe("REGIAO");
     expect(grupoDaCidade(null, null)).toBe("REGIAO");
   });
-  it("agrupa em Praça e Região com subtotal, cidades pelas vidas do último mês e não informada por último", () => {
+  it("agrupa nas praças S. J. Rio Preto e Região com subtotal, cidades pelas vidas do último mês e não informada por último", () => {
     const c = montarGradeCidades(meses, "Vidas", { vidas, fin: null })!;
-    expect(c.grupos.map((g) => g.rotulo)).toEqual(["Praça", "Região"]);
+    expect(c.grupos.map((g) => g.rotulo)).toEqual(["S. J. Rio Preto", "Região"]);
     expect(c.grupos[0].cidades.map((x) => x.rotulo)).toEqual(["SAO JOSE DO RIO PRETO (SP)"]);
     expect(c.grupos[0].subtotal.valores).toEqual([40, 45]);
     expect(c.grupos[1].cidades.map((x) => x.rotulo)).toEqual(["VOTUPORANGA (SP)", "UBERABA (MG)", "JALES (SP)", CIDADE_NAO_INFORMADA]);
@@ -91,7 +91,7 @@ describe("Evolução Produtos — visão Cidade (UF)", () => {
     });
     const ub = linhas.find((l) => l.mes === 9 && l.cidade === "UBERABA" && l.produto === "Convencional")!;
     expect(ub).toMatchObject({ competencia: "09/2026", grupo: "Região", tipo: "PIF", vidas: 120, receita: 1200, totalReceitas: 1200, despesas: 1200, saldo: 0 });
-    expect(linhas[0]).toMatchObject({ competencia: "08/2026", grupo: "Praça", cidadeUf: "SAO JOSE DO RIO PRETO (SP)", vidas: 40, receita: 0 });
+    expect(linhas[0]).toMatchObject({ competencia: "08/2026", grupo: "S. J. Rio Preto", cidadeUf: "SAO JOSE DO RIO PRETO (SP)", vidas: 40, receita: 0 });
     // Receita sem tipo/produto (50 em 09/2026) fica fora, como no grid.
     expect(linhas.filter((l) => l.mes === 9).reduce((s, l) => s + (l.receita ?? 0), 0)).toBe(4300);
   });
