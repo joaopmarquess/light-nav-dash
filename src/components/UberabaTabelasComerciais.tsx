@@ -88,8 +88,7 @@ const IndiceCampo = ({ f, valor, onChange }: { f: Frente; valor: number; onChang
   useEffect(() => { setTexto(String(valor).replace(".", ",")); }, [valor]);
   const id = `indice-${f.id}`;
   return (
-    <label htmlFor={id} className="comercial-indice" title={`Índice sobre a tabela Referência · padrão ${INDICES_PADRAO[f.id]}%`}>
-      <span>x Referência</span>
+    <label htmlFor={id} className="comercial-indice" title={`x Referência · índice sobre a tabela Referência · padrão ${INDICES_PADRAO[f.id]}%`}>
       <Input
         id={id}
         aria-label={`Índice ${f.titulo} x Referência`}
@@ -137,7 +136,6 @@ const Card = ({ f, indice, onIndice, apartamento, indicadores, onIndicador, rotu
     <div className={`comercial-card ${f.cor}`}>
       <div className="flex items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center">
         <RotuloEditavel valor={rotulos.titulo} padrao={PADRAO_ROTULOS[f.id].titulo} onChange={(v) => onRotulo("titulo", v)} rotulo={`Nome da frente ${f.titulo}`} className="text-xl font-bold" />
-        <RotuloEditavel valor={rotulos.segmento} padrao={PADRAO_ROTULOS[f.id].segmento} onChange={(v) => onRotulo("segmento", v)} rotulo={`Segmento da frente ${f.titulo}`} className="comercial-rotulo-segmento text-sm font-semibold tracking-normal" />
         <IndiceCampo f={f} valor={indice} onChange={onIndice} />
       </div>
       <Tabela linhas={linhasDe(indice)} apartamento={apartamento} />
