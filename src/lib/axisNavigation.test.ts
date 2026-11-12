@@ -10,7 +10,7 @@ describe("Home shortcut permissions", () => {
     ["Período", "Sinistralidade · Períodos"],
     ["Controladoria", "Control · DRE Gerencial PE"],
     ["Demonstrações", "Control · DRE Gerencial PE"],
-    ["Projeto Bensaúde|Uberaba", "Uberaba Timeline"],
+    ["Proj. Uberaba", "Uberaba Timeline"],
     ["Laboratory", "Laboratory"],
     ["Proposta APB", "Proposta APB"],
     ["Evolução Produtos", "Evolução Produtos"],

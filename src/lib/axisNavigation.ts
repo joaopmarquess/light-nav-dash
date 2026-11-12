@@ -118,7 +118,7 @@ export const homeShortcuts = [
   { icon: Percent, label: "Período", destination: "Sinistralidade · Períodos" },
   { icon: FileText, label: "Controladoria", destination: "Control · DRE Gerencial PE" },
   { icon: FileText, label: "Demonstrações", destination: "Control · DRE Gerencial PE" },
-  { icon: CalendarRange, label: "Projeto Bensaúde|Uberaba", destination: "Uberaba Timeline" },
+  { icon: CalendarRange, label: "Proj. Uberaba", destination: "Uberaba Timeline" },
   { icon: FlaskConical, label: "Laboratory", destination: "Laboratory" },
   { icon: FileText, label: "Proposta APB", destination: "Proposta APB" },
   { icon: Layers, label: "Evolução Produtos", destination: "Evolução Produtos" },
