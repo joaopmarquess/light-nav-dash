@@ -87,3 +87,28 @@ describe("indicadores variáveis Uberaba", () => {
     expect(parseIndicador("coAdministradora", "4,5")).toBe(4.5);
   });
 });
+
+import { gravarRotulos, lerRotulos, normalizarRotulo, rotulosPadrao } from "./uberabaTabelasComerciais";
+
+describe("nomes das tabelas (redigitáveis)", () => {
+  it("defaults are the current table names and segments", () => {
+    const r = rotulosPadrao();
+    expect(r.pcaAdm).toEqual({ titulo: "PCA Adm.", segmento: "ADESÃO" });
+    expect(r.pceAdm).toEqual({ titulo: "PCE Adm.", segmento: "MÉDIAS EMPRESAS" });
+    expect(r.pce100).toEqual({ titulo: "PCE 100+", segmento: "GRANDES EMPRESAS" });
+  });
+  it("keeps one line and falls back to the default when empty", () => {
+    expect(normalizarRotulo("  PCA\n  Novo  ", "PCA Adm.")).toBe("PCA Novo");
+    expect(normalizarRotulo("   ", "PCA Adm.")).toBe("PCA Adm.");
+  });
+  it("stores names per table", () => {
+    const mem = new Map<string, string>();
+    const st = { getItem: (k: string) => mem.get(k) ?? null, setItem: (k: string, v: string) => void mem.set(k, v) };
+    const r = rotulosPadrao();
+    r.pce100.titulo = "PJ 100+";
+    gravarRotulos(r, st);
+    const lido = lerRotulos(st);
+    expect(lido.pce100).toEqual({ titulo: "PJ 100+", segmento: "GRANDES EMPRESAS" });
+    expect(lido.pcaAdm.titulo).toBe("PCA Adm.");
+  });
+});

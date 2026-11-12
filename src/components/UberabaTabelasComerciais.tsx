@@ -83,15 +83,14 @@ const RotuloEditavel = ({ valor, padrao, onChange, className, rotulo }: { valor:
   );
 };
 
-const IndiceCampo = ({ f, valor, onChange, referencia, padraoReferencia, onReferencia }: { f: Frente; valor: number; onChange: (v: number) => void; referencia: string; padraoReferencia: string; onReferencia: (v: string) => void }) => {
+const IndiceCampo = ({ f, valor, onChange }: { f: Frente; valor: number; onChange: (v: number) => void }) => {
   const [texto, setTexto] = useState(String(valor).replace(".", ","));
   useEffect(() => { setTexto(String(valor).replace(".", ",")); }, [valor]);
   const id = `indice-${f.id}`;
   return (
-    <span className="comercial-indice">
-      <RotuloEditavel valor={referencia} padrao={padraoReferencia} onChange={onReferencia} rotulo={`Texto do índice ${f.titulo}`} />
+    <label htmlFor={id} className="comercial-indice" title={`Índice sobre a tabela Referência · padrão ${INDICES_PADRAO[f.id]}%`}>
+      <span>x Referência</span>
       <Input
-        title={`Índice sobre a tabela Referência · padrão ${INDICES_PADRAO[f.id]}%`}
         id={id}
         aria-label={`Índice ${f.titulo} x Referência`}
         inputMode="decimal"
@@ -101,7 +100,7 @@ const IndiceCampo = ({ f, valor, onChange, referencia, padraoReferencia, onRefer
         className="h-8 w-16 px-2 text-right tabular-nums"
       />
       <span>%</span>
-    </span>
+    </label>
   );
 };
 
@@ -139,7 +138,7 @@ const Card = ({ f, indice, onIndice, apartamento, indicadores, onIndicador, rotu
       <div className="flex items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center">
         <RotuloEditavel valor={rotulos.titulo} padrao={PADRAO_ROTULOS[f.id].titulo} onChange={(v) => onRotulo("titulo", v)} rotulo={`Nome da frente ${f.titulo}`} className="text-xl font-bold" />
         <RotuloEditavel valor={rotulos.segmento} padrao={PADRAO_ROTULOS[f.id].segmento} onChange={(v) => onRotulo("segmento", v)} rotulo={`Segmento da frente ${f.titulo}`} className="comercial-rotulo-segmento text-sm font-semibold tracking-normal" />
-        <IndiceCampo f={f} valor={indice} onChange={onIndice} referencia={rotulos.referencia} padraoReferencia={PADRAO_ROTULOS[f.id].referencia} onReferencia={(v) => onRotulo("referencia", v)} />
+        <IndiceCampo f={f} valor={indice} onChange={onIndice} />
       </div>
       <Tabela linhas={linhasDe(indice)} apartamento={apartamento} />
       <div className="px-3 pb-3 pt-2">

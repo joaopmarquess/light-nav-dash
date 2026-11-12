@@ -41,3 +41,14 @@ describe("Proposta Comercial › Glossário e Notas Explicativas", () => {
     expect(marcadorGlossario("FAIXA")).toBeNull();
   });
 });
+
+import { rotulosPadrao } from "./uberabaTabelasComerciais";
+
+describe("quadrosProposta · nomes redigitados", () => {
+  it("uses the names typed on screen", () => {
+    const r = rotulosPadrao();
+    r.pceAdm = { titulo: "PME ADM", segmento: "PEQUENAS E MÉDIAS" };
+    const [, pce] = quadrosProposta(undefined, undefined, r);
+    expect([pce.titulo, pce.segmento]).toEqual(["PME ADM", "PEQUENAS E MÉDIAS"]);
+  });
+});

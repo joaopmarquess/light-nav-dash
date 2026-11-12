@@ -148,12 +148,12 @@ export const FRENTES_COMERCIAIS: { id: FrenteId; titulo: string; segmento: strin
   { id: "pce100", titulo: "PCE 100+", segmento: "GRANDES EMPRESAS" },
 ];
 
-// ---------- Rótulos do cabeçalho de cada quadro (editáveis na tela) ----------
-export type Rotulos = { titulo: string; segmento: string; referencia: string };
+// ---------- Nome e segmento de cada quadro (redigitáveis na tela) ----------
+export type Rotulos = { titulo: string; segmento: string };
 export type RotulosPorFrente = Record<FrenteId, Rotulos>;
 export const ROTULO_MAX = 40;
 export const rotulosPadrao = (): RotulosPorFrente =>
-  Object.fromEntries(FRENTES_COMERCIAIS.map((f) => [f.id, { titulo: f.titulo, segmento: f.segmento, referencia: "x Referência" }])) as RotulosPorFrente;
+  Object.fromEntries(FRENTES_COMERCIAIS.map((f) => [f.id, { titulo: f.titulo, segmento: f.segmento }])) as RotulosPorFrente;
 /** Uma linha só: espaços/quebras colapsados, limite de tamanho; vazio volta ao padrão. */
 export function normalizarRotulo(texto: unknown, padrao: string): string {
   if (typeof texto !== "string") return padrao;
