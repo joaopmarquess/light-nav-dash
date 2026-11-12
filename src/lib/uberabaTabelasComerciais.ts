@@ -57,3 +57,58 @@ export function lerIndices(storage: Pick<Storage, "getItem"> | undefined = globa
 export function gravarIndices(indices: Indices, storage: Pick<Storage, "setItem"> | undefined = globalThis.localStorage) {
   try { storage?.setItem(CHAVE, JSON.stringify(indices)); } catch { /* armazenamento indisponível */ }
 }
+
+// ---------- Indicadores variáveis (por frente, editáveis) ----------
+/** Campos editáveis (células amarelas da planilha), em %. */
+export type Indicadores = { spread: number; coAdministradora: number; contratual: number; promocional: number; adesao: number };
+export type CampoIndicador = keyof Indicadores;
+
+/** Padrão informado pelo usuário, repetido nas três frentes. */
+export const INDICADORES_PADRAO: Indicadores = { spread: 23, coAdministradora: 4, contratual: 90, promocional: 150, adesao: 99 };
+
+/** Limites aceitos por campo (%). */
+export const LIMITES_INDICADOR: Record<CampoIndicador, number> = { spread: 100, coAdministradora: 100, contratual: 500, promocional: 500, adesao: 100 };
+
+/** Operadora = 100% − Spread; Administradora = Spread − Co-administradora. */
+export function derivarIndicadores(i: Indicadores) {
+  const r = (n: number) => Math.round(n * 100) / 100;
+  return { operadora: r(100 - i.spread), administradora: r(i.spread - i.coAdministradora) };
+}
+
+/** Aceita "23", "4,5" ou "4.5"; devolve null fora de 0 – limite do campo. */
+export function parseIndicador(campo: CampoIndicador, texto: string): number | null {
+  const t = texto.trim().replace("%", "").replace(",", ".");
+  if (!t) return null;
+  const n = Number(t);
+  if (!Number.isFinite(n) || n < 0 || n > LIMITES_INDICADOR[campo]) return null;
+  return Math.round(n * 100) / 100;
+}
+
+export const formatarPercentual = (n: number) => `${n.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%`;
+
+export type IndicadoresPorFrente = Record<FrenteId, Indicadores>;
+const CHAVE_INDICADORES = "uberaba-tabelas-comerciais-indicadores-v1";
+const FRENTE_IDS: FrenteId[] = ["pcaAdm", "pceAdm", "pce100"];
+export const indicadoresPadrao = (): IndicadoresPorFrente =>
+  Object.fromEntries(FRENTE_IDS.map((id) => [id, { ...INDICADORES_PADRAO }])) as IndicadoresPorFrente;
+
+export function lerIndicadores(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): IndicadoresPorFrente {
+  const out = indicadoresPadrao();
+  try {
+    const salvo = JSON.parse(storage?.getItem(CHAVE_INDICADORES) ?? "null");
+    if (!salvo || typeof salvo !== "object") return out;
+    FRENTE_IDS.forEach((id) => {
+      const s = salvo[id];
+      if (!s || typeof s !== "object") return;
+      (Object.keys(INDICADORES_PADRAO) as CampoIndicador[]).forEach((c) => {
+        const v = s[c];
+        if (typeof v === "number" && v >= 0 && v <= LIMITES_INDICADOR[c]) out[id][c] = v;
+      });
+    });
+  } catch { /* volta ao padrão */ }
+  return out;
+}
+
+export function gravarIndicadores(v: IndicadoresPorFrente, storage: Pick<Storage, "setItem"> | undefined = globalThis.localStorage) {
+  try { storage?.setItem(CHAVE_INDICADORES, JSON.stringify(v)); } catch { /* armazenamento indisponível */ }
+}

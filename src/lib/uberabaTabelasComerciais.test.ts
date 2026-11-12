@@ -41,3 +41,32 @@ describe("tabelas comerciais Uberaba", () => {
     expect(lerIndices({ getItem: () => JSON.stringify({ pce100: 75 }) })).toEqual({ pcaAdm: 90, pceAdm: 80, pce100: 75 });
   });
 });
+
+import { INDICADORES_PADRAO, derivarIndicadores, lerIndicadores, parseIndicador } from "./uberabaTabelasComerciais";
+
+describe("indicadores variáveis Uberaba", () => {
+  it("padrão da planilha repetido nas três frentes", () => {
+    expect(INDICADORES_PADRAO).toEqual({ spread: 23, coAdministradora: 4, contratual: 90, promocional: 150, adesao: 99 });
+    const t = lerIndicadores({ getItem: () => null });
+    expect(t.pcaAdm).toEqual(INDICADORES_PADRAO);
+    expect(t.pceAdm).toEqual(INDICADORES_PADRAO);
+    expect(t.pce100).toEqual(INDICADORES_PADRAO);
+  });
+
+  it("Operadora = 100 − Spread e Administradora = Spread − Co-administradora", () => {
+    expect(derivarIndicadores(INDICADORES_PADRAO)).toEqual({ operadora: 77, administradora: 19 });
+    expect(derivarIndicadores({ ...INDICADORES_PADRAO, spread: 5, coAdministradora: 5 })).toEqual({ operadora: 95, administradora: 0 });
+  });
+
+  it("guarda cada frente separadamente", () => {
+    const t = lerIndicadores({ getItem: () => JSON.stringify({ pceAdm: { spread: 4 } }) });
+    expect(t.pceAdm.spread).toBe(4);
+    expect(t.pcaAdm.spread).toBe(23);
+  });
+
+  it("rejeita valores fora do limite", () => {
+    expect(parseIndicador("spread", "101")).toBeNull();
+    expect(parseIndicador("promocional", "150")).toBe(150);
+    expect(parseIndicador("coAdministradora", "4,5")).toBe(4.5);
+  });
+});

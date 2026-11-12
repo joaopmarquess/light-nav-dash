@@ -3,44 +3,23 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { INDICES_PADRAO, formatarCentavos, gravarIndices, lerIndices, parseIndice, tabelaIndexada, type FrenteId, type Indices } from "@/lib/uberabaTabelasComerciais";
+import { INDICADORES_PADRAO, INDICES_PADRAO, derivarIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, lerIndicadores, lerIndices, parseIndicador, parseIndice, tabelaIndexada, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices } from "@/lib/uberabaTabelasComerciais";
 
-// Preços calculados pela Referência × índice de cada frente; indicadores estáticos informados pelo usuário.
+// Preços calculados pela Referência × índice de cada frente; indicadores variáveis editáveis por frente (cálculos no helper).
 type Linha = [string, string, string];
-type Frente = { id: FrenteId; titulo: string; segmento: string; cor: string; indicadores: [string, string][] };
+type Frente = { id: FrenteId; titulo: string; segmento: string; cor: string };
 
 const linhasDe = (indice: number): Linha[] => tabelaIndexada(indice).map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos), formatarCentavos(l.apartamentoCentavos)]);
 
 export const FRENTES: Frente[] = [
   {
     id: "pcaAdm", titulo: "PCA Adm.", segmento: "ADESÃO", cor: "comercial-adesao",
-    indicadores: [
-      ["Participação", "Lancers 20% | SIGA 3% | Bensaúde 77%"],
-      ["Agenciamento", "Base 90% | Promoção 2027: 150%"],
-      ["Taxa de adesão", "99%"],
-      ["Meta 2027", "Mais de 2.000 vidas | Mais de 167 vidas por mês"],
-      ["Ticket estimado", "Aproximadamente R$ 299,17"],
-    ],
   },
   {
     id: "pceAdm", titulo: "PCE Adm.", segmento: "MÉDIAS EMPRESAS", cor: "comercial-medias",
-    indicadores: [
-      ["Participação", "SIGA 4% | Bensaúde 96%"],
-      ["Agenciamento", "Base 90% | Promoção 2027: 100%"],
-      ["Taxa de adesão", "0%"],
-      ["Meta 2027", "Mais de 3.000 vidas | Mais de 250 vidas por mês"],
-      ["Ticket estimado", "Aproximadamente R$ 265,39"],
-    ],
   },
   {
     id: "pce100", titulo: "PCE 100+", segmento: "GRANDES EMPRESAS", cor: "comercial-grandes",
-    indicadores: [
-      ["Participação", "SIGA 5% | Bensaúde 95%"],
-      ["Agenciamento", "Base 90% em 5 parcelas | Promoção: 100% em 3 parcelas"],
-      ["Taxa de adesão", "0%"],
-      ["Meta 2027", "Mais de 5.000 vidas | Mais de 417 vidas por mês"],
-      ["Ticket estimado", "Aproximadamente R$ 248,40"],
-    ],
   },
 ];
 
@@ -104,40 +83,94 @@ const IndiceCampo = ({ f, valor, onChange }: { f: Frente; valor: number; onChang
   );
 };
 
-const Card = ({ f, indice, onIndice, apartamento }: { f: Frente; indice: number; onIndice: (v: number) => void; apartamento: ApartamentoToggle }) => (
-  <div className={`comercial-card ${f.cor}`}>
-    <div className="flex items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center">
-      <p className="text-xl font-bold">{f.titulo}</p>
-      <p className="text-sm font-semibold tracking-normal">{f.segmento}</p>
-      <IndiceCampo f={f} valor={indice} onChange={onIndice} />
-    </div>
-    <Tabela linhas={linhasDe(indice)} apartamento={apartamento} />
-    <div className="px-3 pb-2 pt-2">
-      <p className="mb-2 text-center text-sm font-semibold uppercase tracking-normal">Indicadores variáveis</p>
-      <table className="w-full border-collapse text-base leading-5">
-        <tbody>
-          {f.indicadores.map(([k, v]) => (
-            <tr key={k}>
-              <th className="whitespace-nowrap px-3 py-1.5 text-right font-semibold">{k}</th>
-              <td className="px-3 py-1.5 text-left">{v}</td>
-            </tr>
+const CampoIndicadorInput = ({ f, campo, rotulo, valor, onChange }: { f: Frente; campo: CampoIndicador; rotulo: string; valor: number; onChange: (v: number) => void }) => {
+  const fmt = (v: number) => String(v).replace(".", ",");
+  const [texto, setTexto] = useState(fmt(valor));
+  useEffect(() => { setTexto(fmt(valor)); }, [valor]);
+  return (
+    <span className="comercial-indicador-campo" title={`Padrão ${formatarPercentual(INDICADORES_PADRAO[campo])}`}>
+      <Input
+        aria-label={`${rotulo} ${f.titulo}`}
+        inputMode="decimal"
+        value={texto}
+        onChange={(e) => { setTexto(e.target.value); const v = parseIndicador(campo, e.target.value); if (v !== null) onChange(v); }}
+        onBlur={() => setTexto(fmt(valor))}
+        className="h-7 w-16 px-2 text-right tabular-nums"
+      />
+      <span>%</span>
+    </span>
+  );
+};
+
+type LinhaIndicador = { rotulo: string; campo?: CampoIndicador; calculado?: number };
+
+const Card = ({ f, indice, onIndice, apartamento, indicadores, onIndicador }: {
+  f: Frente; indice: number; onIndice: (v: number) => void; apartamento: ApartamentoToggle;
+  indicadores: Indicadores; onIndicador: (campo: CampoIndicador, v: number) => void;
+}) => {
+  const d = derivarIndicadores(indicadores);
+  const blocos: [string, LinhaIndicador[]][] = [
+    ["Participação", [
+      { rotulo: "Spread", campo: "spread" },
+      { rotulo: "Operadora", calculado: d.operadora },
+      { rotulo: "Administradora", calculado: d.administradora },
+      { rotulo: "Co-administradora", campo: "coAdministradora" },
+    ]],
+    ["Agenciamento", [{ rotulo: "Contratual", campo: "contratual" }, { rotulo: "Promocional", campo: "promocional" }]],
+    ["Taxa de adesão", [{ rotulo: "Percentual", campo: "adesao" }]],
+  ];
+  return (
+    <div className={`comercial-card ${f.cor}`}>
+      <div className="flex items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center">
+        <p className="text-xl font-bold">{f.titulo}</p>
+        <p className="text-sm font-semibold tracking-normal">{f.segmento}</p>
+        <IndiceCampo f={f} valor={indice} onChange={onIndice} />
+      </div>
+      <Tabela linhas={linhasDe(indice)} apartamento={apartamento} />
+      <div className="px-3 pb-3 pt-2">
+        <p className="mb-2 text-center text-sm font-semibold uppercase tracking-normal">Indicadores variáveis</p>
+        <div className="comercial-indicadores">
+          {blocos.map(([titulo, linhas]) => (
+            <table key={titulo} className="w-full border-collapse text-base leading-5">
+              <thead>
+                <tr><th colSpan={2} className="px-3 py-1 text-center font-semibold uppercase">{titulo}</th></tr>
+              </thead>
+              <tbody>
+                {linhas.map((l) => (
+                  <tr key={l.rotulo}>
+                    <td className="px-3 py-1 text-left uppercase">{l.rotulo}</td>
+                    <td className={`w-28 px-2 py-1 text-right tabular-nums ${l.calculado !== undefined && l.calculado < 0 ? "text-destructive" : ""}`}>
+                      {l.campo
+                        ? <CampoIndicadorInput f={f} campo={l.campo} rotulo={l.rotulo} valor={indicadores[l.campo]} onChange={(v) => onIndicador(l.campo!, v)} />
+                        : <span title={l.rotulo === "Operadora" ? "100% − Spread" : "Spread − Co-administradora"}>{formatarPercentual(l.calculado ?? 0)}</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           ))}
-        </tbody>
-      </table>
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const UberabaTabelasComerciais = () => {
   const [indices, setIndices] = useState<Indices>(() => lerIndices());
   // Coluna Apartamento recolhida por padrão; o mesmo controle vale para as três frentes.
   const [aptoVisivel, setAptoVisivel] = useState(false);
   const apartamento: ApartamentoToggle = { visivel: aptoVisivel, alternar: () => setAptoVisivel((v) => !v) };
+  const [indicadores, setIndicadores] = useState<IndicadoresPorFrente>(() => lerIndicadores());
+  const alterarIndicador = (id: FrenteId, campo: CampoIndicador, v: number) => setIndicadores((atual) => {
+    const novo = { ...atual, [id]: { ...atual[id], [campo]: v } };
+    gravarIndicadores(novo);
+    return novo;
+  });
   const alterar = (id: FrenteId, v: number) => setIndices((atual) => { const novo = { ...atual, [id]: v }; gravarIndices(novo); return novo; });
   return (
     <section className="comercial-presentation" aria-label="Tabelas comerciais">
       <div className="comercial-grid">
-        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} apartamento={apartamento} />)}
+        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} apartamento={apartamento} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} />)}
       </div>
     </section>
   );
