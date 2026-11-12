@@ -131,3 +131,29 @@ describe("novo padrão para o nome das tabelas", () => {
     expect(lerPadraoRotulos(st).pcaAdm.titulo).toBe("PCA Adm.");
   });
 });
+
+import { apartamentoDe, lerFatores, gravarFatores, parseFator, FATORES_PADRAO } from "./uberabaTabelasComerciais";
+
+describe("fator Apartamento x Enfermaria", () => {
+  it("defaults to 1,25 on all three tables", () => {
+    expect(FATORES_PADRAO).toEqual({ pcaAdm: 1.25, pceAdm: 1.25, pce100: 1.25 });
+    expect(tabelaIndexada(90)[0].apartamentoCentavos).toBe(19687); // TRUNC(157,50 × 1,25; 2) = 196,87
+  });
+  it("Apartamento = TRUNC(Enfermaria × fator; 2)", () => {
+    expect(apartamentoDe(15750, 1.3)).toBe(20475);   // 157,50 × 1,3 = 204,75
+    expect(apartamentoDe(18380, 1.33)).toBe(24445);  // 183,80 × 1,33 = 244,454 → 244,45
+    expect(tabelaIndexada(90, 1.4)[0]).toEqual({ faixa: "00 a 18", enfermariaCentavos: 15750, apartamentoCentavos: 22050 });
+  });
+  it("accepts comma or dot, rejects out of range", () => {
+    expect(parseFator("1,3")).toBe(1.3);
+    expect(parseFator("1.25")).toBe(1.25);
+    expect(parseFator("0,9")).toBeNull();
+    expect(parseFator("abc")).toBeNull();
+  });
+  it("stores one factor per table", () => {
+    const mem = new Map<string, string>();
+    const st = { getItem: (k: string) => mem.get(k) ?? null, setItem: (k: string, v: string) => void mem.set(k, v) };
+    gravarFatores({ ...FATORES_PADRAO, pce100: 1.3 }, st);
+    expect(lerFatores(st)).toEqual({ pcaAdm: 1.25, pceAdm: 1.25, pce100: 1.3 });
+  });
+});

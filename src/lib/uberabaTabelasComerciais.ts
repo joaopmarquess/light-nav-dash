@@ -12,15 +12,50 @@ export const INDICES_PADRAO: Indices = { pcaAdm: 90, pceAdm: 80, pce100: 70 };
 
 export type LinhaTabela = { faixa: string; enfermariaCentavos: number; apartamentoCentavos: number };
 
-/** Apartamento = TRUNCAR(Enfermaria × 1,25; 2). */
-export const apartamentoDe = (enfermariaCentavos: number) => Math.floor((enfermariaCentavos * 125) / 100);
+/** Fator padrão do Apartamento sobre a Enfermaria (editável por tabela na tela). */
+export const FATOR_APARTAMENTO_PADRAO = 1.25;
+export type Fatores = Record<FrenteId, number>;
+export const FATORES_PADRAO: Fatores = { pcaAdm: FATOR_APARTAMENTO_PADRAO, pceAdm: FATOR_APARTAMENTO_PADRAO, pce100: FATOR_APARTAMENTO_PADRAO };
+export const FATOR_MIN = 1;
+export const FATOR_MAX = 3;
 
-/** Enfermaria = ARRED(Referência × índice; 2); Apartamento = TRUNCAR(Enfermaria × 1,25; 2). */
-export function tabelaIndexada(indicePercentual: number): LinhaTabela[] {
+/** Apartamento = TRUNCAR(Enfermaria × fator; 2), em centavos inteiros (sem erro de arredondamento). */
+export const apartamentoDe = (enfermariaCentavos: number, fator: number = FATOR_APARTAMENTO_PADRAO) =>
+  Math.floor((enfermariaCentavos * Math.round(fator * 10000)) / 10000);
+
+/** Enfermaria = ARRED(Referência × índice; 2); Apartamento = TRUNCAR(Enfermaria × fator; 2). */
+export function tabelaIndexada(indicePercentual: number, fator: number = FATOR_APARTAMENTO_PADRAO): LinhaTabela[] {
   return FAIXAS.map((faixa, i) => {
     const enf = Math.round((REFERENCIA_ENFERMARIA_CENTAVOS[i] * Math.round(indicePercentual * 100)) / 10000);
-    return { faixa, enfermariaCentavos: enf, apartamentoCentavos: apartamentoDe(enf) };
+    return { faixa, enfermariaCentavos: enf, apartamentoCentavos: apartamentoDe(enf, fator) };
   });
+}
+
+/** Aceita "1,25" ou "1.25" (até 4 casas); devolve null fora de 1–3. */
+export function parseFator(texto: string): number | null {
+  const t = texto.trim().replace(",", ".");
+  if (!/^\d+(\.\d{1,4})?$/.test(t)) return null;
+  const n = Number(t);
+  if (!Number.isFinite(n) || n < FATOR_MIN || n > FATOR_MAX) return null;
+  return n;
+}
+export const formatarFator = (f: number) => f.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+
+const CHAVE_FATORES = "uberaba-tabelas-comerciais-fator-apartamento-v1";
+export function lerFatores(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): Fatores {
+  const out = { ...FATORES_PADRAO };
+  try {
+    const salvo = JSON.parse(storage?.getItem(CHAVE_FATORES) ?? "null");
+    if (!salvo || typeof salvo !== "object") return out;
+    (Object.keys(out) as FrenteId[]).forEach((k) => {
+      const v = salvo[k];
+      if (typeof v === "number" && v >= FATOR_MIN && v <= FATOR_MAX) out[k] = v;
+    });
+  } catch { /* volta ao padrão */ }
+  return out;
+}
+export function gravarFatores(v: Fatores, storage: Pick<Storage, "setItem"> | undefined = globalThis.localStorage) {
+  try { storage?.setItem(CHAVE_FATORES, JSON.stringify(v)); } catch { /* armazenamento indisponível */ }
 }
 
 export const tabelaReferencia = () => tabelaIndexada(100);

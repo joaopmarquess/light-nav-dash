@@ -875,6 +875,10 @@ All colors MUST be HSL.
 .comercial-table thead { background: hsl(var(--credential-head)); }
 .comercial-table tbody tr { border-top: 1px solid hsl(var(--hospital-frame)); background: hsl(var(--hospital-surface)); }
 .comercial-table tbody tr:nth-child(even) { background: hsl(var(--credential-alt)); }
+/* Grade de preços fechada por uma linha sólida; abaixo, o fator do Apartamento. */
+.comercial-precos > .comercial-table { border-bottom: 2px solid hsl(var(--credential-secondary)); }
+.comercial-fator { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 12px 2px; font-size: 14px; font-weight: 600; color: hsl(var(--credential-secondary)); }
+.comercial-fator input { font-size: 15px; font-weight: 700; color: hsl(var(--credential-text)); background: hsl(var(--hospital-surface)); border-color: var(--commercial-color); }
 .comercial-card > div:last-child > p { color: hsl(var(--credential-secondary)); }
 .comercial-card > div:last-child table th, .comercial-card > div:last-child table td { border: 1px solid hsl(var(--hospital-frame)); }
 .comercial-card > div:last-child table th { color: hsl(var(--credential-secondary)); background: hsl(var(--credential-alt)); white-space: normal; }

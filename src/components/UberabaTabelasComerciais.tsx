@@ -4,13 +4,13 @@ import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { ChevronLeft, ChevronRight, Pin } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, gravarPadraoRotulos, gravarRotulos, lerIndicadores, lerIndices, lerPadraoRotulos, lerRotulos, normalizarRotulo, ROTULO_MAX, parseIndicador, parseIndice, tabelaIndexada, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices, type Rotulos, type RotulosPorFrente } from "@/lib/uberabaTabelasComerciais";
+import { FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, formatarFator, gravarFatores, lerFatores, parseFator, type Fatores, FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, gravarPadraoRotulos, gravarRotulos, lerIndicadores, lerIndices, lerPadraoRotulos, lerRotulos, normalizarRotulo, ROTULO_MAX, parseIndicador, parseIndice, tabelaIndexada, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices, type Rotulos, type RotulosPorFrente } from "@/lib/uberabaTabelasComerciais";
 
 // Preços calculados pela Referência × índice de cada frente; indicadores variáveis editáveis por frente (cálculos no helper).
 type Linha = [string, string, string];
 type Frente = { id: FrenteId; titulo: string; segmento: string; cor: string };
 
-const linhasDe = (indice: number): Linha[] => tabelaIndexada(indice).map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos), formatarCentavos(l.apartamentoCentavos)]);
+const linhasDe = (indice: number, fator: number = FATOR_APARTAMENTO_PADRAO): Linha[] => tabelaIndexada(indice, fator).map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos), formatarCentavos(l.apartamentoCentavos)]);
 
 const CORES: Record<FrenteId, string> = { pcaAdm: "comercial-adesao", pceAdm: "comercial-medias", pce100: "comercial-grandes" };
 export const FRENTES: Frente[] = FRENTES_COMERCIAIS.map((f) => ({ ...f, cor: CORES[f.id] }));
@@ -31,7 +31,7 @@ const BotaoApartamento = ({ t }: { t: ApartamentoToggle }) => {
   );
 };
 
-const Tabela = ({ linhas, apartamento }: { linhas: Linha[]; apartamento?: ApartamentoToggle }) => {
+const Tabela = ({ linhas, apartamento, fator = FATOR_APARTAMENTO_PADRAO }: { linhas: Linha[]; apartamento?: ApartamentoToggle; fator?: number }) => {
   const mostrarApto = apartamento ? apartamento.visivel : true;
   const th = "px-2 py-1.5 text-base font-semibold";
   return (
@@ -44,7 +44,7 @@ const Tabela = ({ linhas, apartamento }: { linhas: Linha[]; apartamento?: Aparta
             <th className={th}>
               <Tooltip>
                 <TooltipTrigger asChild><span className="cursor-help">APARTAMENTO</span></TooltipTrigger>
-                <TooltipContent>Apartamento = TRUNCAR(Enfermaria × 1,25; 2)</TooltipContent>
+                <TooltipContent>Apartamento = TRUNCAR(Enfermaria × {formatarFator(fator)}; 2)</TooltipContent>
               </Tooltip>
               {apartamento && <BotaoApartamento t={apartamento} />}
             </th>
@@ -103,6 +103,28 @@ const IndiceCampo = ({ f, valor, onChange }: { f: Frente; valor: number; onChang
   );
 };
 
+// "APARTAMENTO [1,25] x ENFERMARIA": fator editável que calcula a coluna Apartamento desta tabela.
+const FatorApartamento = ({ f, valor, onChange }: { f: Frente; valor: number; onChange: (v: number) => void }) => {
+  const [texto, setTexto] = useState(formatarFator(valor));
+  useEffect(() => { setTexto(formatarFator(valor)); }, [valor]);
+  const id = `fator-apto-${f.id}`;
+  return (
+    <label htmlFor={id} className="comercial-fator" title={`Apartamento = TRUNCAR(Enfermaria × fator; 2) · padrão ${formatarFator(FATORES_PADRAO[f.id])}`}>
+      <span>APARTAMENTO</span>
+      <Input
+        id={id}
+        aria-label={`Fator Apartamento x Enfermaria ${f.titulo}`}
+        inputMode="decimal"
+        value={texto}
+        onChange={(e) => { setTexto(e.target.value); const v = parseFator(e.target.value); if (v !== null) onChange(v); }}
+        onBlur={() => setTexto(formatarFator(valor))}
+        className="h-7 w-16 px-2 text-right tabular-nums"
+      />
+      <span>x ENFERMARIA</span>
+    </label>
+  );
+};
+
 const CampoIndicadorInput = ({ f, campo, rotulo, valor, onChange }: { f: Frente; campo: CampoIndicador; rotulo: string; valor: number; onChange: (v: number) => void }) => {
   const fmt = (v: number) => String(v).replace(".", ",");
   const [texto, setTexto] = useState(fmt(valor));
@@ -139,8 +161,8 @@ const GravarPadrao = ({ f, ativo, onClick }: { f: Frente; ativo: boolean; onClic
   );
 };
 
-const Card = ({ f, indice, onIndice, apartamento, indicadores, onIndicador, rotulos, padroes, onRotulo, onGravarPadrao }: {
-  f: Frente; indice: number; onIndice: (v: number) => void; apartamento: ApartamentoToggle;
+const Card = ({ f, indice, onIndice, fator, onFator, apartamento, indicadores, onIndicador, rotulos, padroes, onRotulo, onGravarPadrao }: {
+  f: Frente; indice: number; onIndice: (v: number) => void; fator: number; onFator: (v: number) => void; apartamento: ApartamentoToggle;
   rotulos: Rotulos; padroes: Rotulos; onRotulo: (campo: keyof Rotulos, v: string) => void; onGravarPadrao: () => void;
   indicadores: Indicadores; onIndicador: (campo: CampoIndicador, v: number) => void;
 }) => {
@@ -154,7 +176,10 @@ const Card = ({ f, indice, onIndice, apartamento, indicadores, onIndicador, rotu
         </span>
         <IndiceCampo f={f} valor={indice} onChange={onIndice} />
       </div>
-      <Tabela linhas={linhasDe(indice)} apartamento={apartamento} />
+      <div className="comercial-precos">
+        <Tabela linhas={linhasDe(indice, fator)} apartamento={apartamento} fator={fator} />
+        <FatorApartamento f={f} valor={fator} onChange={onFator} />
+      </div>
       <div className="px-3 pb-3 pt-2">
         <p className="mb-2 text-center text-sm font-semibold uppercase tracking-normal">Indicadores variáveis</p>
         <div className="comercial-indicadores">
@@ -206,11 +231,13 @@ const UberabaTabelasComerciais = () => {
     gravarPadraoRotulos(novo);
     return novo;
   });
+  const [fatores, setFatores] = useState<Fatores>(() => lerFatores());
+  const alterarFator = (id: FrenteId, v: number) => setFatores((atual) => { const novo = { ...atual, [id]: v }; gravarFatores(novo); return novo; });
   const alterar = (id: FrenteId, v: number) => setIndices((atual) => { const novo = { ...atual, [id]: v }; gravarIndices(novo); return novo; });
   return (
     <section className="comercial-presentation" aria-label="Tabelas comerciais">
       <div className="comercial-grid">
-        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} apartamento={apartamento} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} padroes={padroes[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} onGravarPadrao={() => gravarPadrao(f.id)} />)}
+        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} fator={fatores[f.id]} onFator={(v) => alterarFator(f.id, v)} apartamento={apartamento} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} padroes={padroes[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} onGravarPadrao={() => gravarPadrao(f.id)} />)}
       </div>
     </section>
   );
