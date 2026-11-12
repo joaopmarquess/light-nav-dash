@@ -25,7 +25,8 @@ const UberabaEstudoMapas = ({ navTarget }: { navTarget?: HTMLElement | null } = 
   const [date] = useState(geographicToday);
   const [toolbar, setToolbar] = useState<HTMLDivElement | null>(null);
   const [subNav, setSubNav] = useState<HTMLDivElement | null>(null);
-  const encolhe = selected === "simulacoes";
+  // Home e Simulações mantêm a altura do conteúdo, para a assinatura do painel ficar no fim da página e não sobre o texto.
+  const encolhe = selected === "simulacoes" || selected === "home";
   const botao = (id: Visao, Icone: typeof House, nome: string) => (
     <Button variant={selected === id ? "default" : "outline"} aria-pressed={selected === id} onClick={() => setSelected(id)}><Icone />{nome}</Button>
   );
