@@ -3,10 +3,10 @@ import autoTable from "jspdf-autotable";
 import { attachTimbrado } from "@/lib/pdfTimbrado";
 import { PDF_COLORS, drawReportHeading, drawSectionTitle } from "@/lib/pdfTheme";
 import {
-  FATORES_PADRAO, FRENTES_COMERCIAIS, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarFator, formatarPercentual, indicadoresPadrao, rotulosPadrao, tabelaIndexada,
+  FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, FRENTES_COMERCIAIS, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarFator, formatarPercentual, indicadoresPadrao, rotulosPadrao, tabelaIndexada, tabelaReferencia,
   type Fatores, type FrenteId, type IndicadoresPorFrente, type Indices, type RotulosPorFrente,
 } from "@/lib/uberabaTabelasComerciais";
-import { SECOES_TEXTO, paragrafosDe, type TextosSecoes } from "@/lib/uberabaPropostaTextos";
+import { SECOES_TEXTO, TITULO_GLOSSARIO, paragrafosDe, type SecaoTextoId, type TextosSecoes } from "@/lib/uberabaPropostaTextos";
 
 type RGB = [number, number, number];
 
@@ -22,8 +22,14 @@ const LINHA: RGB = [95, 105, 115];
 const SECUNDARIO: RGB = [35, 42, 50];
 const RODAPE: RGB = [45, 45, 45];
 
+/** Tópico 2 · Tabela Referência: Faixa × Enfermaria × Apartamento a 100%, com o fator padrão. */
+export function linhasReferencia(): [string, string, string][] {
+  return tabelaReferencia().map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos), formatarCentavos(l.apartamentoCentavos)]);
+}
+export const FATOR_REFERENCIA = formatarFator(FATOR_APARTAMENTO_PADRAO);
+
 /**
- * Tópico 1 · Tabelas: os três quadros com a mesma nomenclatura de Resultados Comerciais —
+ * Tópicos 3 · Tabelas e 4 · Proposta de Remuneração: os três quadros com a mesma nomenclatura de Resultados Comerciais —
  * nome da tabela (redigitável na tela), contêiner TABELAS (Faixa × Enfermaria e "APARTAMENTO fator x ENFERMARIA")
  * e contêiner INDICADORES VARIÁVEIS.
  */
@@ -40,19 +46,23 @@ export function quadrosProposta(indices: Indices = INDICES_PADRAO, indicadores: 
   }));
 }
 
-// Proposta Comercial Bensaúde|Uberaba — tópico 1 com os quadros de Resultados Comerciais; tópicos 2 a 6 com os textos revisados
-// (rascunho da IA aprovado pelo usuário) ou, sem aprovação, em Lorem ipsum.
+// Proposta Comercial Bensaúde|Uberaba — cada tópico abre com o texto revisado (rascunho da IA aprovado pelo usuário) ou,
+// sem aprovação, com Lorem ipsum; os tópicos 2, 3 e 4 seguem com a tabela Referência, os quadros de preços e os Indicadores variáveis.
 const LOREM = [
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus posuere velit aliquet. Cras mattis consectetur purus sit amet fermentum. Donec ullamcorper nulla non metus auctor fringilla.",
   "Sed posuere consectetur est at lobortis. Maecenas faucibus mollis interdum. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Nullam quis risus eget urna mollis ornare vel eu leo. Aenean lacinia bibendum nulla sed consectetur.",
   "Curabitur blandit tempus porttitor. Etiam porta sem malesuada magna mollis euismod. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna, vel scelerisque nisl consectetur et.",
 ];
 
-const SECOES = ["1. Tabelas", ...SECOES_TEXTO.map((s) => s.titulo), "7. Glossário e Notas Explicativas"];
+/** Ordem dos tópicos do PDF: os cinco tópicos com texto e, por último, o Glossário. */
+export const TOPICOS_PROPOSTA = [...SECOES_TEXTO.map((s) => s.titulo), TITULO_GLOSSARIO];
 
-/** Parágrafos de cada tópico 2 a 6: o texto revisado quando houver; do contrário, o texto provisório. */
+/** Quantos parágrafos provisórios cada tópico recebe enquanto não há texto revisado. */
+const LOREM_POR_SECAO: Record<SecaoTextoId, number> = { introducao: 2, referencia: 1, tabelas: 1, remuneracao: 1, descricao: 3 };
+
+/** Parágrafos de cada tópico 1 a 5: o texto revisado quando houver; do contrário, o texto provisório. */
 export function paragrafosProposta(textos: TextosSecoes | null = null): string[][] {
-  return SECOES_TEXTO.map((s, k) => (textos ? paragrafosDe(textos[s.id]) : LOREM.slice(0, (k + 1) % 2 === 0 ? 3 : 2)));
+  return SECOES_TEXTO.map((s) => (textos ? paragrafosDe(textos[s.id]) : LOREM.slice(0, LOREM_POR_SECAO[s.id])));
 }
 
 /**
@@ -82,6 +92,19 @@ export function marcadorGlossario(termo: string): number | null {
   return i < 0 ? null : i + 1;
 }
 
+/**
+ * A fonte padrão do PDF (Helvetica, WinAnsi) não tem alguns sinais que a tela e a IA usam — o "−" das fórmulas
+ * sai espaçado e corrompe o parágrafo. Troca por equivalentes que a fonte tem.
+ */
+export function textoPdf(texto: string): string {
+  return texto
+    .replace(/[\u2212\u2010\u2011]/g, "-")
+    .replace(/\u2264/g, "<=")
+    .replace(/\u2265/g, ">=")
+    .replace(/[\u200B\uFEFF]/g, "")
+    .replace(/[\u202F\u2007]/g, " ");
+}
+
 export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao(), rotulos: RotulosPorFrente = rotulosPadrao(), fatores: Fatores = FATORES_PADRAO, textos: TextosSecoes | null = null): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   attachTimbrado(doc, timbradoDataUrl);
@@ -106,9 +129,13 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     doc.setFontSize(10);
     doc.setTextColor(...PDF_COLORS.text);
   };
+  const alturaParagrafos = (lista: string[]) => {
+    fonteTexto();
+    return lista.reduce((h, t) => h + (doc.splitTextToSize(textoPdf(t), usableW - 2) as string[]).length * 4.8 + 3, 0);
+  };
   const paragrafo = (texto: string) => {
     fonteTexto();
-    const linhas = doc.splitTextToSize(texto, usableW - 2) as string[];
+    const linhas = doc.splitTextToSize(textoPdf(texto), usableW - 2) as string[];
     const h = linhas.length * 4.8;
     garantir(h);
     fonteTexto(); // o cabeçalho de uma nova página altera a fonte
@@ -119,33 +146,42 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fimTabela = (fallback: number) => ((doc as any).lastAutoTable?.finalY as number | undefined) ?? fallback;
 
-  const desenharTabelas = () => {
-    const quadros = quadrosProposta(indices, indicadores, rotulos, fatores);
-    garantir(170); // os três quadros ficam inteiros na mesma página
-    const gap = 5;
-    const largura = (usableW - gap * 2) / 3;
-    const xs = quadros.map((_, k) => marginL + k * (largura + gap));
-    const inicio = y;
-    const margem = (x: number, w: number) => ({ left: x, right: pageW - x - w, top, bottom });
+  const quadros = quadrosProposta(indices, indicadores, rotulos, fatores);
+  const gap = 5;
+  const largura = (usableW - gap * 2) / 3;
+  const xs = quadros.map((_, k) => marginL + k * (largura + gap));
+  const margem = (x: number, w: number) => ({ left: x, right: pageW - x - w, top, bottom });
+  const inset = 2;
+  const wSec = largura - inset * 2;
 
-    const inset = 2;
-    const wSec = largura - inset * 2;
-    // Título de contêiner (TABELAS / INDICADORES VARIÁVEIS), como na tela.
-    const tituloSecao = (texto: string, x: number, yy: number) => {
-      doc.setFillColor(...ZEBRA);
-      doc.rect(x + inset, yy, wSec, 5, "F");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(6.8);
-      doc.setTextColor(...SECUNDARIO);
-      doc.text(texto, x + largura / 2, yy + 3.4, { align: "center" });
-    };
-    const contornoSecao = (x: number, y0: number, y1: number) => {
-      doc.setDrawColor(...LINHA);
-      doc.setLineWidth(0.25);
-      doc.rect(x + inset, y0, wSec, y1 - y0, "S");
-    };
+  // Número elevado do Glossário logo após um termo de cabeçalho centralizado.
+  const marcadorCabecalho = (texto: string, cx: number, cy: number, fonte: number) => {
+    const n = marcadorGlossario(texto);
+    if (n === null) return;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(fonte);
+    const xFim = cx + doc.getTextWidth(texto) / 2;
+    doc.setFontSize(5.5);
+    doc.setTextColor(...TINTA);
+    doc.text(String(n), xFim + 0.4, cy - 0.6);
+  };
 
-    // Faixa colorida e nome de cada tabela (o mesmo da tela).
+  // Título de contêiner (TABELAS / INDICADORES VARIÁVEIS), como na tela.
+  const tituloSecao = (texto: string, x: number, yy: number) => {
+    doc.setFillColor(...ZEBRA);
+    doc.rect(x + inset, yy, wSec, 5, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6.8);
+    doc.setTextColor(...SECUNDARIO);
+    doc.text(texto, x + largura / 2, yy + 3.4, { align: "center" });
+  };
+  const contornoSecao = (x: number, y0: number, y1: number) => {
+    doc.setDrawColor(...LINHA);
+    doc.setLineWidth(0.25);
+    doc.rect(x + inset, y0, wSec, y1 - y0, "S");
+  };
+  // Faixa colorida e nome de cada tabela (o mesmo da tela); devolve onde começa o contêiner.
+  const cabecalhoQuadros = (inicio: number) => {
     quadros.forEach((q, k) => {
       const x = xs[k];
       doc.setFillColor(...COR_FRENTE[q.id]);
@@ -158,11 +194,55 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
       doc.setTextColor(...TINTA);
       doc.text(q.titulo, x + largura / 2, inicio + 7.2, { align: "center" });
     });
+    return inicio + 10;
+  };
+  const contornoQuadros = (inicio: number, fimQ: number) => {
+    doc.setDrawColor(...TINTA);
+    doc.setLineWidth(0.35);
+    xs.forEach((x) => doc.rect(x, inicio, largura, fimQ - inicio, "S"));
+    doc.setDrawColor(0);
+  };
 
-    // Contêiner TABELAS: Faixa × Enfermaria, linha sólida de fechamento e fator do Apartamento.
-    const ySecT = inicio + 10;
+  // Tópico 2: tabela Referência (100%), com Enfermaria e Apartamento pelo fator padrão.
+  const desenharReferencia = () => {
+    const w = Math.min(120, usableW);
+    const x = marginL + (usableW - w) / 2;
+    autoTable(doc, {
+      theme: "plain",
+      startY: y,
+      tableWidth: w,
+      margin: margem(x, w),
+      head: [["FAIXA", "ENFERMARIA", "APARTAMENTO"]],
+      body: linhasReferencia(),
+      styles: { font: "helvetica", fontSize: 8.5, cellPadding: { top: 1.2, bottom: 1.2, left: 2, right: 2 }, textColor: PDF_COLORS.text, halign: "center" },
+      headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: 8 },
+      alternateRowStyles: { fillColor: ZEBRA },
+      didDrawCell: (c) => {
+        if (c.section === "head") { marcadorCabecalho(String(c.cell.raw ?? ""), c.cell.x + c.cell.width / 2, c.cell.y + c.cell.height / 2, 8); return; }
+        doc.setDrawColor(...LINHA);
+        doc.setLineWidth(0.2);
+        doc.line(c.cell.x, c.cell.y, c.cell.x + c.cell.width, c.cell.y);
+      },
+    });
+    const fimT = fimTabela(y);
+    doc.setDrawColor(...TINTA);
+    doc.setLineWidth(0.6);
+    doc.line(x, fimT, x + w, fimT);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.2);
+    doc.setTextColor(...SECUNDARIO);
+    const rotulo = `APARTAMENTO ${FATOR_REFERENCIA} x ENFERMARIA`;
+    doc.text(rotulo, x + 2, fimT + 4.6);
+    doc.setDrawColor(0);
+    y = fimT + 13;
+  };
+
+  // Tópico 3: contêiner TABELAS de cada quadro — Faixa × Enfermaria, linha sólida de fechamento e fator do Apartamento.
+  const desenharPrecos = () => {
+    const inicio = y;
+    const ySecT = cabecalhoQuadros(inicio);
     xs.forEach((x) => tituloSecao("TABELAS", x, ySecT));
-    let fim = ySecT + 5;
+    let fimP = ySecT + 5;
     quadros.forEach((q, k) => {
       autoTable(doc, {
         theme: "plain",
@@ -175,34 +255,21 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
         headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: 7.5 },
         alternateRowStyles: { fillColor: ZEBRA },
         didDrawCell: (c) => {
-          if (c.section === "head") {
-            const texto = String(c.cell.raw ?? "");
-            const n = marcadorGlossario(texto);
-            if (n !== null) {
-              // Número elevado logo após o termo (texto do cabeçalho é centralizado).
-              doc.setFont("helvetica", "bold");
-              doc.setFontSize(7.5);
-              const xFim = c.cell.x + c.cell.width / 2 + doc.getTextWidth(texto) / 2;
-              doc.setFontSize(5.5);
-              doc.setTextColor(...TINTA);
-              doc.text(String(n), xFim + 0.4, c.cell.y + c.cell.height / 2 - 0.6);
-            }
-            return;
-          }
+          if (c.section === "head") { marcadorCabecalho(String(c.cell.raw ?? ""), c.cell.x + c.cell.width / 2, c.cell.y + c.cell.height / 2, 7.5); return; }
           if (c.section !== "body") return;
           doc.setDrawColor(...LINHA);
           doc.setLineWidth(0.2);
           doc.line(c.cell.x, c.cell.y, c.cell.x + c.cell.width, c.cell.y);
         },
       });
-      fim = Math.max(fim, fimTabela(fim));
+      fimP = Math.max(fimP, fimTabela(fimP));
     });
-    const yFator = fim + 4.6;
+    const yFator = fimP + 4.6;
     quadros.forEach((q, k) => {
       const x = xs[k] + inset;
       doc.setDrawColor(...TINTA);
       doc.setLineWidth(0.6);
-      doc.line(x, fim, x + wSec, fim);
+      doc.line(x, fimP, x + wSec, fimP);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(6.8);
       doc.setTextColor(...SECUNDARIO);
@@ -217,9 +284,16 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
       doc.text("x ENFERMARIA", xx, yFator);
       contornoSecao(xs[k], ySecT, yFator + 2.6);
     });
+    const fimQ = yFator + 4.6;
+    contornoQuadros(inicio, fimQ);
+    y = fimQ + 11;
+    doc.setPage(doc.getNumberOfPages());
+  };
 
-    // Contêiner INDICADORES VARIÁVEIS: cada bloco começa na mesma linha nas três frentes.
-    const ySecI = yFator + 5.4;
+  // Tópico 4: contêiner INDICADORES VARIÁVEIS de cada quadro; cada bloco começa na mesma linha nas três frentes.
+  const desenharRemuneracao = () => {
+    const inicio = y;
+    const ySecI = cabecalhoQuadros(inicio);
     xs.forEach((x) => tituloSecao("INDICADORES VARIÁVEIS", x, ySecI));
     let yb = ySecI + 7;
     const nBlocos = Math.max(...quadros.map((q) => q.blocos.length));
@@ -245,15 +319,9 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
       yb = fimBloco + 3;
     }
     xs.forEach((x) => contornoSecao(x, ySecI, yb - 1));
-    yb += 1.5;
-
-    // Contorno de cada quadro.
-    const altura = yb - inicio;
-    doc.setDrawColor(...TINTA);
-    doc.setLineWidth(0.35);
-    xs.forEach((x) => doc.rect(x, inicio, largura, altura, "S"));
-    doc.setDrawColor(0);
-    y = yb + 11;
+    const fimQ = yb + 1.5;
+    contornoQuadros(inicio, fimQ);
+    y = fimQ + 11;
     doc.setPage(doc.getNumberOfPages());
   };
 
@@ -279,16 +347,24 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   };
 
   const corpo = paragrafosProposta(textos);
-  SECOES.forEach((titulo, i) => {
-    const ehTabelas = titulo.startsWith("1.");
-    garantir(ehTabelas ? 180 : 32); // título não fica sozinho no fim da página
-    drawSectionTitle(doc, titulo, marginL, y, pageW - marginR, TINTA);
+  const blocoDados: Partial<Record<SecaoTextoId, () => void>> = { referencia: desenharReferencia, tabelas: desenharPrecos, remuneracao: desenharRemuneracao };
+  // Altura de cada bloco de dados: o tópico (título, texto e bloco) fica inteiro na mesma página quando cabe.
+  const ALTURA_BLOCO: Partial<Record<SecaoTextoId, number>> = { referencia: 72, tabelas: 92, remuneracao: 82 };
+  SECOES_TEXTO.forEach((s, i) => {
+    const bloco = ALTURA_BLOCO[s.id];
+    const inteiro = 10 + alturaParagrafos(corpo[i]) + (bloco ?? 0);
+    garantir(inteiro <= pageH - bottom - top ? inteiro : Math.max(32, bloco ?? 0)); // título nunca fica sozinho no fim da página
+    drawSectionTitle(doc, s.titulo, marginL, y, pageW - marginR, TINTA);
     y += 8;
-    if (ehTabelas) { desenharTabelas(); return; }
-    if (titulo.startsWith("7.")) { desenharGlossario(); return; }
-    corpo[i - 1].forEach(paragrafo);
+    corpo[i].forEach(paragrafo);
+    const dados = blocoDados[s.id];
     y += 2;
+    if (dados) { garantir(ALTURA_BLOCO[s.id] ?? 0); dados(); }
   });
+  garantir(32);
+  drawSectionTitle(doc, TITULO_GLOSSARIO, marginL, y, pageW - marginR, TINTA);
+  y += 8;
+  desenharGlossario();
 
   const total = doc.getNumberOfPages();
   for (let p = 1; p <= total; p++) {

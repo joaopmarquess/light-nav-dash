@@ -71,3 +71,24 @@ describe("Proposta · fator do Apartamento", () => {
       .toBe("Apartamento = TRUNCAR(Enfermaria × fator da tabela; 2), sendo:\nPCA Adm.: 1,30\nPCE Adm.: 1,25\nPCE 100+: 1,25");
   });
 });
+
+import { TOPICOS_PROPOSTA, linhasReferencia } from "./uberabaPropostaComercialPdf";
+
+describe("Proposta · tópicos", () => {
+  it("Glossário continua como último tópico", () => {
+    expect(TOPICOS_PROPOSTA).toEqual(["1. Introdução", "2. Tabela Referência", "3. Tabelas", "4. Proposta de Remuneração", "5. Descrição da Proposta", "6. Glossário e Notas Explicativas"]);
+  });
+  it("Tabela Referência traz Enfermaria e Apartamento a 100%", () => {
+    expect(linhasReferencia()[0]).toEqual(["00 a 18", "175,00", "218,75"]);
+    expect(linhasReferencia()).toHaveLength(10);
+  });
+});
+
+import { textoPdf } from "./uberabaPropostaComercialPdf";
+
+describe("Proposta · texto no PDF", () => {
+  it("troca o sinal de menos das fórmulas por hífen, que a fonte do PDF tem", () => {
+    expect(textoPdf("Operadora = 100% − Spread")).toBe("Operadora = 100% - Spread");
+    expect(textoPdf("Apartamento = TRUNCAR(Enfermaria × 1,25; 2)")).toBe("Apartamento = TRUNCAR(Enfermaria × 1,25; 2)");
+  });
+});

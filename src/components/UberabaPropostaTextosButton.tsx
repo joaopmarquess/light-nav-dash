@@ -23,7 +23,7 @@ async function mensagemErro(error: unknown): Promise<string> {
 }
 
 /**
- * Textos da Proposta Comercial (tópicos 2 a 6): gera um rascunho com a IA a partir das tabelas de Resultados Comerciais,
+ * Textos da Proposta Comercial (tópicos 1 a 5): gera um rascunho com a IA a partir das tabelas de Resultados Comerciais,
  * permite a revisão e só inclui no PDF depois de "Incluir no PDF".
  */
 export default function UberabaPropostaTextosButton() {
@@ -118,7 +118,7 @@ export default function UberabaPropostaTextosButton() {
           <DialogHeader>
             <DialogTitle>Textos da Proposta Comercial</DialogTitle>
             <DialogDescription>
-              Rascunho dos tópicos 2 a 6 feito pela IA somente com os dados das tabelas de Resultados Comerciais. Revise e clique em “Incluir no PDF”.
+              Rascunho dos tópicos 1 a 5 feito pela IA somente com os dados das tabelas de Resultados Comerciais. Revise e clique em “Incluir no PDF”.
             </DialogDescription>
           </DialogHeader>
 

@@ -1,4 +1,4 @@
-// Rascunho dos textos da Proposta Comercial Bensaúde|Uberaba (tópicos 2 a 6) a partir das tabelas de Resultados Comerciais.
+// Rascunho dos textos da Proposta Comercial Bensaúde|Uberaba (tópicos 1 a 5) a partir das tabelas de Resultados Comerciais.
 // Lovable AI Gateway (Responses, saída estruturada). O texto volta para revisão do usuário; nada vai ao PDF sem aprovação.
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { z } from "npm:zod@3";
@@ -9,18 +9,20 @@ import { createLovableAiGatewayRunIdFetch, getLovableAiGatewayRunId } from "../_
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1";
 const MODELO = "openai/gpt-6-astra";
-const SECOES = ["objeto", "produtos", "condicoes", "rede", "vigencia"] as const;
+const SECOES = ["introducao", "referencia", "tabelas", "remuneracao", "descricao"] as const;
 
 const cors = { ...corsHeaders, "Access-Control-Expose-Headers": "X-Lovable-AIG-Run-ID" };
 const json = (body: unknown, status = 200, extra: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json", ...extra } });
 
 const texto = (max: number) => z.string().max(max);
+const faixa = z.object({ faixa: texto(20), enfermaria: texto(20), apartamento: texto(20) });
 const entrada = z.object({
   dados: z.object({
+    referencia: z.object({ fatorApartamento: texto(20), regraApartamento: texto(80), faixas: z.array(faixa).max(20) }),
     tabelas: z.array(z.object({
       nome: texto(60), segmento: texto(60), indiceSobreReferencia: texto(20), fatorApartamento: texto(20), regraApartamento: texto(80),
-      faixas: z.array(z.object({ faixa: texto(20), enfermaria: texto(20), apartamento: texto(20) })).max(20),
+      faixas: z.array(faixa).max(20),
       indicadores: z.array(z.object({ bloco: texto(40), item: texto(40), valor: texto(20), formula: texto(60).nullable() })).max(20),
     })).min(1).max(5),
   }),
@@ -41,15 +43,18 @@ REGRAS INVIOLÁVEIS
 1. Use somente os fatos que estão nos DADOS enviados. Não invente nem suponha preços, percentuais, descontos, prazos, carências, coparticipação, reajustes, datas, vigência, validade, abrangência, rede credenciada, hospitais, documentos, formas de pagamento ou qualquer outra condição comercial.
 2. Todo número que você escrever deve aparecer nos DADOS exatamente com a mesma grafia (por exemplo "1,25", "23%", "157,50"). Não calcule médias, totais, diferenças ou novos valores.
 3. Quando a seção precisar de uma informação que não está nos DADOS, escreva um marcador entre colchetes no formato [A definir: o que falta]. Nunca preencha a lacuna com suposições.
-4. Não repita as tabelas faixa a faixa: elas já estão no tópico 1 · Tabelas da proposta. Refira-se a elas pelo nome.
+4. Não repita as tabelas faixa a faixa: o sistema as insere nos tópicos 2 · Tabela Referência e 3 · Tabelas. Refira-se a elas pelo nome.
 5. Sem markdown, títulos, numeração ou listas com marcadores. Cada seção tem de 1 a 3 parágrafos curtos, separados por uma linha em branco.
 
+ESTRUTURA DA PROPOSTA (o texto de cada seção abre o tópico; tabelas e quadros são inseridos logo abaixo pelo sistema)
+1. Introdução · 2. Tabela Referência · 3. Tabelas · 4. Proposta de Remuneração · 5. Descrição da Proposta · 6. Glossário e Notas Explicativas.
+
 SEÇÕES
-- objeto: o que a proposta apresenta — as tabelas pelo nome e segmento, calculadas sobre a tabela de Referência pelo índice de cada uma.
-- produtos: cada tabela/modalidade pelo nome e segmento, com as acomodações Enfermaria e Apartamento e a regra do Apartamento (fator de cada tabela).
-- condicoes: por tabela, o índice sobre a Referência e os indicadores variáveis (Participação, Agenciamento, Taxa de adesão quando houver), com os percentuais dos DADOS.
-- rede: os DADOS não trazem rede assistencial; escreva uma frase de que a rede será detalhada e um marcador [A definir: ...].
-- vigencia: os DADOS não trazem vigência nem validade; escreva uma frase e marcadores [A definir: ...].`;
+- introducao: apresenta a Proposta Comercial do Bensaúde para o projeto Bensaúde|Uberaba, as tabelas que ela traz (pelo nome) e como o documento está organizado nos tópicos acima.
+- referencia: explica que a tabela Referência (logo abaixo) é a base de 100% por faixa etária, com Enfermaria e Apartamento, e que o Apartamento segue a regra da Referência (DADOS.referencia.regraApartamento). Não repita valores das faixas.
+- tabelas: explica que cada tabela (nome e segmento) é a Referência multiplicada pelo seu índice e que o Apartamento usa o fator de cada tabela; os quadros vêm logo abaixo. Não repita valores das faixas.
+- remuneracao: por tabela, a Participação, o Agenciamento e a Taxa de adesão (quando houver), com os percentuais e as fórmulas dos DADOS (por exemplo "Operadora = 100% − Spread"); os quadros vêm logo abaixo.
+- descricao: descreve a proposta — tabelas/modalidades pelo nome e segmento, acomodações Enfermaria e Apartamento — e registra com marcadores [A definir: ...] o que os DADOS não trazem, no mínimo rede assistencial, vigência e validade da proposta.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });

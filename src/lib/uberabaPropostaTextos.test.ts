@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FATORES_PADRAO, INDICES_PADRAO, indicadoresPadrao, rotulosPadrao } from "@/lib/uberabaTabelasComerciais";
 import {
-  CHAVE_TEXTOS, aprovarTextos, assinaturaDados, dadosRascunho, estadoVazio, gravarTextos, lerTextos, normalizarTextos,
+  CHAVE_TEXTOS, CHAVE_TEXTOS_V1, SECOES_TEXTO, aprovarTextos, assinaturaDados, dadosRascunho, estadoVazio, gravarTextos, lerTextos, normalizarTextos,
   numerosForaDasTabelas, paragrafosDe, pendencias, textosParaPdf, textosVazios,
 } from "@/lib/uberabaPropostaTextos";
 import { paragrafosProposta } from "@/lib/uberabaPropostaComercialPdf";
@@ -38,27 +38,46 @@ describe("conferência de números do rascunho", () => {
 
 describe("revisão antes do PDF", () => {
   it("sem aprovação o PDF continua com o texto provisório", () => {
-    const e = { ...estadoVazio(), rascunho: { ...textosVazios(), objeto: "Rascunho." } };
+    const e = { ...estadoVazio(), rascunho: { ...textosVazios(), introducao: "Rascunho." } };
     expect(textosParaPdf(e)).toBeNull();
     expect(paragrafosProposta(null)[0][0]).toMatch(/^Lorem ipsum/);
   });
-  it("depois de incluir, o PDF usa exatamente o texto revisado, em parágrafos", () => {
-    const revisado = { ...textosVazios(), objeto: "Primeiro parágrafo.\n\nSegundo\nparágrafo." };
+  it("depois de incluir, o PDF usa exatamente o texto revisado, um parágrafo por linha", () => {
+    const revisado = { ...textosVazios(), introducao: "Primeiro parágrafo.\n\nSegundo\nparágrafo." };
     const e = aprovarTextos({ ...estadoVazio(), assinaturaRascunho: "abc" }, revisado, new Date("2026-11-12T16:00:00Z"));
     expect(e.assinaturaAprovado).toBe("abc");
-    expect(paragrafosProposta(textosParaPdf(e))[0]).toEqual(["Primeiro parágrafo.", "Segundo parágrafo."]);
+    expect(paragrafosProposta(textosParaPdf(e))[0]).toEqual(["Primeiro parágrafo.", "Segundo", "parágrafo."]);
     expect(paragrafosProposta(textosParaPdf(e))[4]).toEqual([]);
   });
   it("guarda e lê o estado neste navegador", () => {
     const s = memoria();
-    const e = aprovarTextos(estadoVazio(), { ...textosVazios(), rede: "  Rede [A definir: hospitais]  " });
+    const e = aprovarTextos(estadoVazio(), { ...textosVazios(), descricao: "  Rede [A definir: hospitais]  " });
     gravarTextos(e, s);
-    expect(lerTextos(s).aprovado?.rede).toBe("Rede [A definir: hospitais]");
+    expect(lerTextos(s).aprovado?.descricao).toBe("Rede [A definir: hospitais]");
     s.setItem(CHAVE_TEXTOS, "{quebrado");
     expect(lerTextos(s)).toEqual(estadoVazio());
   });
   it("normaliza linhas em branco extras", () => {
-    expect(normalizarTextos({ objeto: "A\n\n\n\nB" }).objeto).toBe("A\n\nB");
+    expect(normalizarTextos({ introducao: "A\n\n\n\nB" }).introducao).toBe("A\n\nB");
     expect(paragrafosDe("A\n\nB")).toEqual(["A", "B"]);
+  });
+});
+
+describe("tópicos da Proposta", () => {
+  it("segue a ordem Introdução, Tabela Referência, Tabelas, Proposta de Remuneração e Descrição da Proposta", () => {
+    expect(SECOES_TEXTO.map((s) => s.titulo)).toEqual(["1. Introdução", "2. Tabela Referência", "3. Tabelas", "4. Proposta de Remuneração", "5. Descrição da Proposta"]);
+  });
+  it("a IA recebe a tabela Referência a 100% com o fator padrão", () => {
+    const r = padrao().referencia;
+    expect(r.fatorApartamento).toBe("1,25");
+    expect(r.faixas[0]).toEqual({ faixa: "00 a 18", enfermaria: "175,00", apartamento: "218,75" });
+  });
+  it("rascunho da versão anterior vira rascunho dos novos tópicos, sem ir direto ao PDF", () => {
+    const s = memoria();
+    s.setItem(CHAVE_TEXTOS_V1, JSON.stringify({ rascunho: { objeto: "Obj.", produtos: "Prod.", condicoes: "Cond.", rede: "Rede.", vigencia: "Vig." }, aprovado: { objeto: "Obj." } }));
+    const e = lerTextos(s);
+    expect(e.rascunho?.remuneracao).toBe("Cond.");
+    expect(e.rascunho?.descricao).toBe("Obj.\n\nProd.\n\nRede.\n\nVig.");
+    expect(e.aprovado).toBeNull();
   });
 });
