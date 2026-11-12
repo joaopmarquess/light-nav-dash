@@ -1,12 +1,15 @@
 import { Fragment, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Calculator, ChevronRight, Download, Printer, RotateCcw, Info } from 'lucide-react';
+import { Calculator, ChevronRight, Download, FileSignature, Printer, RotateCcw, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import UberabaSimulacaoFaixas from '@/components/UberabaSimulacaoFaixas';
+import PdfPreview from '@/components/PdfPreview';
+import { loadTimbrado } from '@/lib/pdfTimbrado';
+import { buildPropostaComercialPdf } from '@/lib/uberabaPropostaComercialPdf';
 import { calcularSimulacao, csvSimulacao, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, type ConfigSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
 const nomes = ['PCA', 'PME', 'PCE 50 a 99', 'PCE 100+'];
@@ -77,6 +80,7 @@ export default function UberabaSimulacao({ acoesTarget }: { acoesTarget?: HTMLEl
   const [vidaText, setVidaText] = useState<Record<string, string>>({});
   const [sinText, setSinText] = useState<Record<string, string>>({});
   const impressao = useRef<HTMLDivElement>(null);
+  const [proposta, setProposta] = useState(false);
   const resultados = useMemo(() => configuracoes.map(calcularSimulacao), [configuracoes]);
   const totalVidas = resultados.reduce((total, r) => total + r.anual.vidas, 0);
   const alterar = (codigo: string, patch: Partial<ConfigSimulacao>) => setConfiguracoes(prev => prev.map(c => c.produto_codigo === codigo ? { ...c, ...patch } : c));
@@ -101,9 +105,10 @@ export default function UberabaSimulacao({ acoesTarget }: { acoesTarget?: HTMLEl
     setSinText(p => ({ ...p, [codigo]: String(sinistralidadePadrao) }));
     setVidaText(p => ({ ...p, [codigo]: String(original.total_vidas) }));
   };
-  const acoes = <div className="flex gap-2"><Dialog><DialogTrigger asChild><Button variant="outline"><Calculator className="mr-2 h-4 w-4" />Resumo por faixa etária</Button></DialogTrigger><UberabaSimulacaoFaixas resultados={resultados} /></Dialog><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Exportar cenário para CSV" onClick={exportar}><Download /></Button></TooltipTrigger><TooltipContent>Exportar CSV</TooltipContent></Tooltip><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Imprimir simulação" onClick={imprimir}><Printer /></Button></TooltipTrigger><TooltipContent>Imprimir</TooltipContent></Tooltip></div>;
+  const acoes = <div className="flex gap-2"><Dialog><DialogTrigger asChild><Button variant="outline"><Calculator className="mr-2 h-4 w-4" />Resumo por faixa etária</Button></DialogTrigger><UberabaSimulacaoFaixas resultados={resultados} /></Dialog><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Exportar cenário para CSV" onClick={exportar}><Download /></Button></TooltipTrigger><TooltipContent>Exportar CSV</TooltipContent></Tooltip><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Imprimir simulação" onClick={imprimir}><Printer /></Button></TooltipTrigger><TooltipContent>Imprimir</TooltipContent></Tooltip><Tooltip><TooltipTrigger asChild><Button variant="outline" size="icon" aria-label="Gerar Proposta Comercial" onClick={() => setProposta(true)}><FileSignature /></Button></TooltipTrigger><TooltipContent>Gerar Proposta Comercial</TooltipContent></Tooltip></div>;
   return <article className="uberaba-simulation" aria-label="Simulador Comercial Bensaúde|Uberaba">
     {acoesTarget ? createPortal(acoes, acoesTarget) : acoesTarget === undefined && <header className="sim-heading justify-end">{acoes}</header>}
+    {proposta && createPortal(<PdfPreview build={async () => buildPropostaComercialPdf(await loadTimbrado())} fileName="Proposta_Comercial_Bensaude_Uberaba.pdf" onClose={() => setProposta(false)} />, document.body)}
     {erro && <p role="alert" className="text-destructive">{erro}</p>}
     <section aria-label="Variáveis por modalidade" className="rounded-md border border-border p-4">
       <div className="overflow-x-auto"><table className="w-full text-sm">
