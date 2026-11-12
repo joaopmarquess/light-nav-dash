@@ -63,16 +63,37 @@ export function gravarIndices(indices: Indices, storage: Pick<Storage, "setItem"
 export type Indicadores = { spread: number; coAdministradora: number; contratual: number; promocional: number; adesao: number };
 export type CampoIndicador = keyof Indicadores;
 
-/** Padrão informado pelo usuário, repetido nas três frentes. */
+/** Padrão informado pelo usuário para PCA Adm. e PCE Adm. */
 export const INDICADORES_PADRAO: Indicadores = { spread: 23, coAdministradora: 4, contratual: 90, promocional: 150, adesao: 99 };
+
+/**
+ * Modelo de participação por frente:
+ * - "administradora": Spread editável; Operadora = 100 − Spread; Administradora = Spread − Agenciadora; com Taxa de adesão.
+ * - "vitalicio" (PCE 100+): Vitalício editável (guardado em `spread`); Operadora = 100 − Vitalício; Agenciadora = Vitalício; sem Taxa de adesão.
+ */
+export type ModeloIndicadores = "administradora" | "vitalicio";
+export const MODELO_INDICADORES: Record<FrenteId, ModeloIndicadores> = { pcaAdm: "administradora", pceAdm: "administradora", pce100: "vitalicio" };
+
+/** Padrões por frente; PCE 100+ segue a planilha própria (Vitalício 5%, Contratual 90%, Promocional 100%). */
+export const INDICADORES_PADRAO_POR_FRENTE: Record<FrenteId, Indicadores> = {
+  pcaAdm: { ...INDICADORES_PADRAO },
+  pceAdm: { ...INDICADORES_PADRAO },
+  pce100: { spread: 5, coAdministradora: 0, contratual: 90, promocional: 100, adesao: 0 },
+};
 
 /** Limites aceitos por campo (%). */
 export const LIMITES_INDICADOR: Record<CampoIndicador, number> = { spread: 100, coAdministradora: 100, contratual: 500, promocional: 500, adesao: 100 };
 
+const r2 = (n: number) => Math.round(n * 100) / 100;
+
 /** Operadora = 100% − Spread; Administradora = Spread − Agenciadora. */
 export function derivarIndicadores(i: Indicadores) {
-  const r = (n: number) => Math.round(n * 100) / 100;
-  return { operadora: r(100 - i.spread), administradora: r(i.spread - i.coAdministradora) };
+  return { operadora: r2(100 - i.spread), administradora: r2(i.spread - i.coAdministradora) };
+}
+
+/** PCE 100+: Operadora = 100% − Vitalício; Agenciadora = Vitalício. */
+export function derivarVitalicio(i: Indicadores) {
+  return { operadora: r2(100 - i.spread), agenciadora: r2(i.spread) };
 }
 
 /** Aceita "23", "4,5" ou "4.5"; devolve null fora de 0 – limite do campo. */
@@ -87,15 +108,21 @@ export function parseIndicador(campo: CampoIndicador, texto: string): number | n
 export const formatarPercentual = (n: number) => `${n.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%`;
 
 export type IndicadoresPorFrente = Record<FrenteId, Indicadores>;
-const CHAVE_INDICADORES = "uberaba-tabelas-comerciais-indicadores-v1";
+const CHAVE_INDICADORES = "uberaba-tabelas-comerciais-indicadores-v2";
+/** v1 tinha o modelo antigo também em PCE 100+; dela só se aproveitam PCA Adm. e PCE Adm. */
+const CHAVE_INDICADORES_V1 = "uberaba-tabelas-comerciais-indicadores-v1";
 const FRENTE_IDS: FrenteId[] = ["pcaAdm", "pceAdm", "pce100"];
 export const indicadoresPadrao = (): IndicadoresPorFrente =>
-  Object.fromEntries(FRENTE_IDS.map((id) => [id, { ...INDICADORES_PADRAO }])) as IndicadoresPorFrente;
+  Object.fromEntries(FRENTE_IDS.map((id) => [id, { ...INDICADORES_PADRAO_POR_FRENTE[id] }])) as IndicadoresPorFrente;
 
 export function lerIndicadores(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): IndicadoresPorFrente {
   const out = indicadoresPadrao();
   try {
-    const salvo = JSON.parse(storage?.getItem(CHAVE_INDICADORES) ?? "null");
+    let salvo = JSON.parse(storage?.getItem(CHAVE_INDICADORES) ?? "null");
+    if (!salvo || typeof salvo !== "object") {
+      const v1 = JSON.parse(storage?.getItem(CHAVE_INDICADORES_V1) ?? "null");
+      salvo = v1 && typeof v1 === "object" ? { pcaAdm: v1.pcaAdm, pceAdm: v1.pceAdm } : null;
+    }
     if (!salvo || typeof salvo !== "object") return out;
     FRENTE_IDS.forEach((id) => {
       const s = salvo[id];

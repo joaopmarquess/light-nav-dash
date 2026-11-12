@@ -42,15 +42,32 @@ describe("tabelas comerciais Uberaba", () => {
   });
 });
 
-import { INDICADORES_PADRAO, derivarIndicadores, lerIndicadores, parseIndicador } from "./uberabaTabelasComerciais";
+import { INDICADORES_PADRAO, MODELO_INDICADORES, derivarIndicadores, derivarVitalicio, lerIndicadores, parseIndicador } from "./uberabaTabelasComerciais";
 
 describe("indicadores variáveis Uberaba", () => {
-  it("padrão da planilha repetido nas três frentes", () => {
+  it("padrão da planilha em PCA Adm. e PCE Adm.", () => {
     expect(INDICADORES_PADRAO).toEqual({ spread: 23, coAdministradora: 4, contratual: 90, promocional: 150, adesao: 99 });
     const t = lerIndicadores({ getItem: () => null });
     expect(t.pcaAdm).toEqual(INDICADORES_PADRAO);
     expect(t.pceAdm).toEqual(INDICADORES_PADRAO);
-    expect(t.pce100).toEqual(INDICADORES_PADRAO);
+  });
+
+  it("PCE 100+ usa Vitalício 5%, Contratual 90% e Promocional 100%", () => {
+    expect(MODELO_INDICADORES.pce100).toBe("vitalicio");
+    const t = lerIndicadores({ getItem: () => null }).pce100;
+    expect([t.spread, t.contratual, t.promocional]).toEqual([5, 90, 100]);
+  });
+
+  it("PCE 100+: Operadora = 100 − Vitalício e Agenciadora = Vitalício", () => {
+    expect(derivarVitalicio({ ...INDICADORES_PADRAO, spread: 5 })).toEqual({ operadora: 95, agenciadora: 5 });
+    expect(derivarVitalicio({ ...INDICADORES_PADRAO, spread: 8 })).toEqual({ operadora: 92, agenciadora: 8 });
+  });
+
+  it("valores antigos de PCE 100+ não substituem o novo padrão", () => {
+    const antigo = JSON.stringify({ pcaAdm: { spread: 30 }, pce100: { spread: 23, promocional: 150 } });
+    const t = lerIndicadores({ getItem: (k: string) => (k.endsWith("-v1") ? antigo : null) });
+    expect(t.pcaAdm.spread).toBe(30);
+    expect([t.pce100.spread, t.pce100.promocional]).toEqual([5, 100]);
   });
 
   it("Operadora = 100 − Spread e Administradora = Spread − Agenciadora", () => {

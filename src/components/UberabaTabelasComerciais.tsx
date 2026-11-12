@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { INDICADORES_PADRAO, INDICES_PADRAO, derivarIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, lerIndicadores, lerIndices, parseIndicador, parseIndice, tabelaIndexada, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices } from "@/lib/uberabaTabelasComerciais";
+import { INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO, MODELO_INDICADORES, derivarIndicadores, derivarVitalicio, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, lerIndicadores, lerIndices, parseIndicador, parseIndice, tabelaIndexada, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices } from "@/lib/uberabaTabelasComerciais";
 
 // Preços calculados pela Referência × índice de cada frente; indicadores variáveis editáveis por frente (cálculos no helper).
 type Linha = [string, string, string];
@@ -88,7 +88,7 @@ const CampoIndicadorInput = ({ f, campo, rotulo, valor, onChange }: { f: Frente;
   const [texto, setTexto] = useState(fmt(valor));
   useEffect(() => { setTexto(fmt(valor)); }, [valor]);
   return (
-    <span className="comercial-indicador-campo" title={`Padrão ${formatarPercentual(INDICADORES_PADRAO[campo])}`}>
+    <span className="comercial-indicador-campo" title={`Padrão ${formatarPercentual(INDICADORES_PADRAO_POR_FRENTE[f.id][campo])}`}>
       <Input
         aria-label={`${rotulo} ${f.titulo}`}
         inputMode="decimal"
@@ -102,23 +102,37 @@ const CampoIndicadorInput = ({ f, campo, rotulo, valor, onChange }: { f: Frente;
   );
 };
 
-type LinhaIndicador = { rotulo: string; campo?: CampoIndicador; calculado?: number };
+type LinhaIndicador = { rotulo: string; campo?: CampoIndicador; calculado?: number; formula?: string };
 
 const Card = ({ f, indice, onIndice, apartamento, indicadores, onIndicador }: {
   f: Frente; indice: number; onIndice: (v: number) => void; apartamento: ApartamentoToggle;
   indicadores: Indicadores; onIndicador: (campo: CampoIndicador, v: number) => void;
 }) => {
-  const d = derivarIndicadores(indicadores);
-  const blocos: [string, LinhaIndicador[]][] = [
-    ["Participação", [
-      { rotulo: "Spread", campo: "spread" },
-      { rotulo: "Operadora", calculado: d.operadora },
-      { rotulo: "Administradora", calculado: d.administradora },
-      { rotulo: "Agenciadora", campo: "coAdministradora" },
-    ]],
-    ["Agenciamento", [{ rotulo: "Contratual", campo: "contratual" }, { rotulo: "Promocional", campo: "promocional" }]],
-    ["Taxa de adesão", [{ rotulo: "Percentual", campo: "adesao" }]],
-  ];
+  const agenciamento: [string, LinhaIndicador[]] = ["Agenciamento", [{ rotulo: "Contratual", campo: "contratual" }, { rotulo: "Promocional", campo: "promocional" }]];
+  let blocos: [string, LinhaIndicador[]][];
+  if (MODELO_INDICADORES[f.id] === "vitalicio") {
+    const v = derivarVitalicio(indicadores);
+    blocos = [
+      ["Participação", [
+        { rotulo: "Vitalício", campo: "spread" },
+        { rotulo: "Operadora", calculado: v.operadora, formula: "100% − Vitalício" },
+        { rotulo: "Agenciadora", calculado: v.agenciadora, formula: "= Vitalício" },
+      ]],
+      agenciamento,
+    ];
+  } else {
+    const d = derivarIndicadores(indicadores);
+    blocos = [
+      ["Participação", [
+        { rotulo: "Spread", campo: "spread" },
+        { rotulo: "Operadora", calculado: d.operadora, formula: "100% − Spread" },
+        { rotulo: "Administradora", calculado: d.administradora, formula: "Spread − Agenciadora" },
+        { rotulo: "Agenciadora", campo: "coAdministradora" },
+      ]],
+      agenciamento,
+      ["Taxa de adesão", [{ rotulo: "Percentual", campo: "adesao" }]],
+    ];
+  }
   return (
     <div className={`comercial-card ${f.cor}`}>
       <div className="flex items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center">
@@ -142,7 +156,7 @@ const Card = ({ f, indice, onIndice, apartamento, indicadores, onIndicador }: {
                     <td className={`w-28 px-2 py-1 text-right tabular-nums ${l.calculado !== undefined && l.calculado < 0 ? "text-destructive" : ""}`}>
                       {l.campo
                         ? <CampoIndicadorInput f={f} campo={l.campo} rotulo={l.rotulo} valor={indicadores[l.campo]} onChange={(v) => onIndicador(l.campo!, v)} />
-                        : <span title={l.rotulo === "Operadora" ? "100% − Spread" : "Spread − Agenciadora"}>{formatarPercentual(l.calculado ?? 0)}</span>}
+                        : <span title={l.formula}>{formatarPercentual(l.calculado ?? 0)}</span>}
                     </td>
                   </tr>
                 ))}
