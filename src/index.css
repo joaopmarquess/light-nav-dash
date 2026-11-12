@@ -196,6 +196,9 @@ All colors MUST be HSL.
     --credential-border: 200 28% 87%;
     --credential-head: 201 67% 92%;
     --credential-alt: 197 41% 97%;
+    --indicador-participacao: 36 85% 87%;
+    --indicador-agenciamento: 140 45% 86%;
+    --indicador-adesao: 345 70% 91%;
     --credential-medical: 202 66% 51%;
     --credential-diagnostic: 40 57% 58%;
     --credential-nonmedical: 16 56% 65%;
@@ -301,6 +304,9 @@ All colors MUST be HSL.
     --credential-border: 217 25% 28%;
     --credential-head: 205 35% 22%;
     --credential-alt: 217 28% 15%;
+    --indicador-participacao: 36 40% 24%;
+    --indicador-agenciamento: 140 25% 24%;
+    --indicador-adesao: 345 30% 26%;
     --credential-summary: 206 40% 23%;
     --sidebar-background: 240 5.9% 10%;
     --timeline-heat-low: 194 35% 24%;
@@ -891,6 +897,10 @@ All colors MUST be HSL.
 .comercial-card > div:last-child table th, .comercial-card > div:last-child table td { border: 1px solid hsl(var(--hospital-frame)); }
 .comercial-card > div:last-child table th { color: hsl(var(--credential-secondary)); background: hsl(var(--credential-alt)); white-space: normal; }
 .comercial-indicadores { display: flex; flex-direction: column; gap: 10px; }
+/* Topo de cada bloco de Indicadores variáveis com cor própria (somente na tela). */
+.comercial-card > div:last-child table[data-bloco="Participação"] th { background: hsl(var(--indicador-participacao)); color: hsl(var(--credential-text)); }
+.comercial-card > div:last-child table[data-bloco="Agenciamento"] th { background: hsl(var(--indicador-agenciamento)); color: hsl(var(--credential-text)); }
+.comercial-card > div:last-child table[data-bloco="Taxa de adesão"] th { background: hsl(var(--indicador-adesao)); color: hsl(var(--credential-text)); }
 /* Alinha os blocos (Participação, Agenciamento, Taxa de adesão) na mesma linha nas três frentes,
    mesmo quando uma frente tem menos linhas em Participação. */
 @supports (grid-template-rows: subgrid) {

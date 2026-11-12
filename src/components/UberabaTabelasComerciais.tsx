@@ -201,7 +201,7 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
         <p className="comercial-secao-titulo">Indicadores variáveis<BotaoSecao t={variaveis} nome="Indicadores variáveis" /></p>
         {variaveis.visivel && <div className="comercial-indicadores">
           {blocos.map(([titulo, linhas]) => (
-            <table key={titulo} className="w-full border-collapse text-base leading-5">
+            <table key={titulo} data-bloco={titulo} className="w-full border-collapse text-base leading-5">
               <thead>
                 <tr><th colSpan={2} className="px-3 py-1 text-center font-semibold uppercase">{titulo}</th></tr>
               </thead>
