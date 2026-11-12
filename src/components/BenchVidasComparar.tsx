@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
-import { ChevronRight, Download } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { ChevronRight, Download, FileText, Loader2 } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip as Dica, XAxis, YAxis } from "recharts";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { base100, compararMensal, competenciaMensal, INDICADORES_MENSAL, totalPeriodo, valorIndicador, type CatalogoMensal, type Cubo, type Filtros, type IndicadorMensal } from "@/lib/benchVidasMensal";
 import { carregarVidasMensal } from "@/lib/benchVidasMensalDados";
+import { gerarPdfComparacao } from "@/lib/benchVidasCompararPdf";
+import { toast } from "sonner";
 
 export type OpsComparar = { reg: string; nome: string; razaoSocial: string; mensal: boolean };
 const CORES = ["--chart-vidas", "--chart-1", "--chart-4", "--chart-fin", "--chart-op", "--chart-desp", "--chart-copart", "--chart-adm"];
@@ -18,8 +20,8 @@ const dicaEstilo = { background: "hsl(var(--card))", borderColor: "hsl(var(--bor
 function Bloco({ titulo, aberto, alternar, children, acao }: { titulo: string; aberto: boolean; alternar: () => void; children: ReactNode; acao?: ReactNode }) {
   return <section className="bench-panel shrink-0">
     <div className="bench-panel-heading flex items-center justify-between">
-      <Button variant="ghost" onClick={alternar} aria-expanded={aberto} className="h-10 flex-1 justify-start gap-2 text-sm font-semibold"><ChevronRight className={`h-4 w-4 transition-transform motion-reduce:transition-none ${aberto ? "rotate-90" : ""}`} />{titulo}</Button>
-      {aberto && acao}
+      <Button variant="ghost" onClick={alternar} aria-expanded={aberto} className="h-10 flex-1 justify-start gap-2 text-sm font-semibold"><ChevronRight data-pdf-ocultar className={`h-4 w-4 transition-transform motion-reduce:transition-none ${aberto ? "rotate-90" : ""}`} />{titulo}</Button>
+      {aberto && acao && <span data-pdf-ocultar>{acao}</span>}
     </div>
     {aberto && <div className="bench-panel-body">{children}</div>}
   </section>;
@@ -33,6 +35,8 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
   const [graficosAbertos, setGraficosAbertos] = useState(true); const [gridAberto, setGridAberto] = useState(true);
   const [escala, setEscala] = useState<"vidas" | "base100">("vidas");
   const chave = comDados.map(o => o.reg).join(",");
+  const refQuadros = useRef<HTMLDivElement>(null); const refGraficos = useRef<HTMLDivElement>(null); const refGrid = useRef<HTMLDivElement>(null);
+  const [gerandoPdf, setGerandoPdf] = useState(false);
 
   useEffect(() => {
     let ativo = true; setCarregando(true); setErro("");
@@ -71,11 +75,37 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
     XLSX.writeFile(wb, `bench_vidas_comparar_${de}_${ate}.xlsx`);
   };
 
+  const gerarPdf = async () => {
+    setGerandoPdf(true);
+    const reabrir = { graficos: graficosAbertos, grid: gridAberto };
+    setGraficosAbertos(true); setGridAberto(true);
+    try {
+      await new Promise(r => setTimeout(r, 400));
+      const secoes = [refQuadros.current, refGraficos.current, refGrid.current].filter((e): e is HTMLDivElement => Boolean(e));
+      const nFiltros = Object.keys(filtros).length;
+      await gerarPdfComparacao(secoes, {
+        titulo: "Bench Vidas Mensal · Comparação de operadoras",
+        linhas: [
+          `Período ${competenciaMensal(de)} a ${competenciaMensal(ate)} · Indicador do grid: ${rotuloIndicador}${nFiltros ? ` · ${nFiltros} ${nFiltros === 1 ? "filtro aplicado" : "filtros aplicados"}` : " · sem filtros"}`,
+          `Operadoras: ${linhas.map(l => `${l.op.nome} (ANS ${l.reg})`).join(", ")}`,
+        ],
+      }, `bench_vidas_comparar_${de}_${ate}.pdf`);
+    } catch {
+      toast.error("Não foi possível gerar o PDF da comparação.");
+    } finally {
+      setGraficosAbertos(reabrir.graficos); setGridAberto(reabrir.grid); setGerandoPdf(false);
+    }
+  };
+
   if (comDados.length < 2) return <p role="status" className="py-8 text-sm text-muted-foreground">Inclua pelo menos duas operadoras com dados mensais para comparar.</p>;
   if (carregando) return <p role="status" className="py-8 text-sm text-muted-foreground">Carregando comparação de {comDados.length} operadoras…</p>;
   if (erro) return <div role="alert" className="py-8 text-sm text-destructive">{erro}<Button variant="outline" className="ml-3" onClick={() => setTentativa(t => t + 1)}>Tentar novamente</Button></div>;
 
   return <div className="space-y-3">
+    <div className="flex justify-end">
+      <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="sm" onClick={gerarPdf} disabled={gerandoPdf} aria-label="Gerar PDF" className="h-8 gap-1.5">{gerandoPdf ? <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" /> : <FileText className="h-4 w-4" />}{gerandoPdf ? "Gerando…" : "Gerar PDF"}</Button></TooltipTrigger><TooltipContent>Gerar PDF da comparação (quadros, gráficos e grid)</TooltipContent></Tooltip>
+    </div>
+    <div ref={refQuadros} className="space-y-3">
     <div aria-label="Operadoras comparadas" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {linhas.map(l => { const r = l.resumo; return <div key={l.reg} className="bench-kpi" style={{ "--bench-tone": `var(${CORES[l.op.i % CORES.length]})` } as CSSProperties} aria-label={`Resumo ${l.op.nome}`}>
         <p className="bench-kpi-title" title={`${l.op.razaoSocial} · ANS ${l.reg}`}><span className="truncate">{l.op.nome}</span><span className="shrink-0 font-normal text-muted-foreground">ANS {l.reg}</span></p>
@@ -91,7 +121,9 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
       </div>; })}
     </div>
     {semDados.length > 0 && <p className="text-xs text-muted-foreground">Fora da comparação, sem dados mensais da ANS: {semDados.map(o => o.nome).join(", ")}.</p>}
+    </div>
 
+    <div ref={refGraficos}>
     <Bloco titulo="Gráficos" aberto={graficosAbertos} alternar={() => setGraficosAbertos(s => !s)}>
       <div className="mb-2 flex flex-wrap items-center gap-3">
         <span className="text-sm font-semibold">Evolução de ativos</span>
@@ -150,7 +182,9 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
       </div>
       <p className="mt-1 text-xs text-muted-foreground">Crescimento: ativos no fim ÷ ativos no início do período − 1. Movimentos: soma das adesões e cancelamentos informados mês a mês.</p>
     </Bloco>
+    </div>
 
+    <div ref={refGrid}>
     <Bloco titulo={`Grid · ${rotuloIndicador} por operadora`} aberto={gridAberto} alternar={() => setGridAberto(s => !s)} acao={<Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" onClick={baixar} aria-label="Baixar comparação em xlsx"><Download className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Baixar comparação (xlsx)</TooltipContent></Tooltip>}>
       <div className="max-h-[28rem] overflow-auto">
         <table className="w-full border-collapse text-xs tabular-nums">
@@ -172,5 +206,6 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
       </div>
       <p className="mt-2 text-xs text-muted-foreground">Mesmo período e filtros para todas as operadoras; os totais não somam operadoras entre si. Ativos: quantidade no mês, sem somar meses. Adesões e cancelamentos: movimentos informados pela ANS, somados no total. Quantidades de vínculos, não de pessoas únicas.</p>
     </Bloco>
+    </div>
   </div>;
 }

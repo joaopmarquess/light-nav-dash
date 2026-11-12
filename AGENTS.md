@@ -36,4 +36,4 @@
 - Share the frozen-slide PDF exporter between the project header and presentation; write exactly one full-bleed 16:9 page per decoded snapshot and abort on missing images, avoiding browser print settings and partial exports.
 - Carteira › Painel loads Hostinger data per selected cd_matricula only; its status/expense and alternative-code composition rules live in tested src/lib/painelBeneficiario.ts.
 - Share axisNavigation and exact invite-origin validation (including editor preview); enforce roles/server grants. Hostinger anonymous reads need external protection.
-- Bench Vidas Mensal › Comparar reuses the screen's period, filters and cube for every selected OPS through tested compararMensal/base100 in src/lib/benchVidasMensal.ts, never summing operators, so comparison matches each OPS's single view.
+- Bench Vidas Mensal › Comparar reuses the screen's period, filters and cube for every selected OPS through tested compararMensal/base100 in src/lib/benchVidasMensal.ts, never summing operators, so comparison matches each OPS's single view. Its PDF captures the rendered sections via src/lib/benchVidasCompararPdf.ts, so print never recomputes numbers.
