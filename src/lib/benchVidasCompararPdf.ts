@@ -13,7 +13,8 @@ function prepararClone(el: HTMLElement) {
 }
 
 async function capturar(el: HTMLElement) {
-  const fundo = getComputedStyle(document.body).backgroundColor || "#ffffff";
+  // Fundo branco: o PDF é pensado para impressão, inclusive em preto e branco.
+  const fundo = "#ffffff";
   const canvas = await html2canvas(el, {
     scale: 2, backgroundColor: fundo, logging: false, imageTimeout: 1000,
     onclone: (_doc, clone) => prepararClone(clone),
@@ -49,7 +50,7 @@ export async function gerarPdfComparacao(secoes: HTMLElement[], cabecalho: { tit
 
   const total = doc.getNumberOfPages();
   for (let p = 1; p <= total; p++) {
-    doc.setPage(p); doc.setFontSize(8); doc.setTextColor(120);
+    doc.setPage(p); doc.setFontSize(8); doc.setTextColor(40);
     doc.text(`Bench Vidas · Fonte: ANS · gerado em ${gerado}`, M, H - M + 2);
     doc.text(`Página ${p} de ${total}`, W - M, H - M + 2, { align: "right" });
   }

@@ -12,9 +12,14 @@ import { toast } from "sonner";
 export type OpsComparar = { reg: string; nome: string; razaoSocial: string; mensal: boolean };
 const CORES = ["--chart-vidas", "--chart-1", "--chart-4", "--chart-fin", "--chart-op", "--chart-desp", "--chart-copart", "--chart-adm"];
 const cor = (i: number) => `hsl(var(${CORES[i % CORES.length]}))`;
+// Impressão em preto e branco: cada operadora também tem um traço próprio, além da cor escura.
+const TRACOS = ["", "10 4", "3 3", "14 4 3 4", "6 2", "2 6", "18 6", "8 3 2 3 2 3"];
+const traco = (i: number) => TRACOS[i % TRACOS.length] || undefined;
 const nf = (v: number | null | undefined) => v === null || v === undefined ? "—" : v.toLocaleString("pt-BR");
 const sinal = (v: number | null | undefined) => v === null || v === undefined ? "—" : `${v > 0 ? "+" : ""}${v.toLocaleString("pt-BR")}`;
 const pct = (v: number | null | undefined) => v === null || v === undefined ? "—" : `${v > 0 ? "+" : ""}${v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+const legendaEscura = (v: string) => <span style={{ color: "hsl(var(--foreground))" }}>{v}</span>;
+const contornoBarra = { stroke: "hsl(var(--foreground))", strokeWidth: 1 };
 const dicaEstilo = { background: "hsl(var(--card))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", fontSize: 12 };
 
 function Bloco({ titulo, aberto, alternar, children, acao }: { titulo: string; aberto: boolean; alternar: () => void; children: ReactNode; acao?: ReactNode }) {
@@ -36,7 +41,7 @@ function EscalaToggle({ escala, setEscala, rotulo }: { escala: "vidas" | "base10
 }
 
 /** Linhas de ativos por operadora; opcionalmente sombreia o período em tela. */
-function GraficoEvolucao({ linhas, comps, escala, rotulo, destaque }: { linhas: LinhaComparada[]; comps: number[]; escala: "vidas" | "base100"; rotulo: string; destaque?: { de: number; ate: number } }) {
+function GraficoEvolucao({ linhas, comps, escala, rotulo, destaque, impressao }: { linhas: LinhaComparada[]; comps: number[]; escala: "vidas" | "base100"; rotulo: string; destaque?: { de: number; ate: number }; impressao?: boolean }) {
   const dados = useMemo(() => {
     const indices = new Map(linhas.map(l => [l.reg, base100(l.total, comps)]));
     return comps.map(c => Object.fromEntries([["mes", competenciaMensal(c)], ...linhas.map(l => [l.reg, escala === "base100" ? indices.get(l.reg)!.get(c) ?? null : l.total.get(c)?.ativos ?? null])]));
@@ -45,14 +50,14 @@ function GraficoEvolucao({ linhas, comps, escala, rotulo, destaque }: { linhas: 
   return <div className="h-72 w-full" role="img" aria-label={rotulo}>
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={dados} margin={{ top: destaque ? 22 : 8, right: 16, bottom: 0, left: 8 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+        <CartesianGrid strokeDasharray="3 3" stroke={impressao ? "hsl(var(--print-grade))" : "hsl(var(--border))"} />
         <XAxis dataKey="mes" tick={{ fontSize: 11 }} minTickGap={16} stroke="hsl(var(--muted-foreground))" />
         <YAxis tick={{ fontSize: 11 }} width={64} domain={["auto", "auto"]} stroke="hsl(var(--muted-foreground))" tickFormatter={v => Number(v).toLocaleString("pt-BR", { maximumFractionDigits: escala === "base100" ? 1 : 0 })} />
-        {area && area.length > 0 && <ReferenceArea x1={competenciaMensal(area[0])} x2={competenciaMensal(area.at(-1)!)} fill="hsl(var(--primary))" fillOpacity={0.07} stroke="none" label={{ value: "período em tela", position: "top", fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />}
+        {area && area.length > 0 && <ReferenceArea x1={competenciaMensal(area[0])} x2={competenciaMensal(area.at(-1)!)} fill={impressao ? "hsl(var(--foreground))" : "hsl(var(--primary))"} fillOpacity={impressao ? 0.1 : 0.07} stroke={impressao ? "hsl(var(--foreground))" : "none"} strokeDasharray={impressao ? "4 3" : undefined} label={{ value: "período em tela", position: "top", fontSize: impressao ? 12 : 11, fill: "hsl(var(--muted-foreground))" }} />}
         {escala === "base100" && <ReferenceLine y={100} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 3" />}
         <Dica contentStyle={dicaEstilo} formatter={(v: number) => v === null ? "—" : v.toLocaleString("pt-BR", { maximumFractionDigits: escala === "base100" ? 1 : 0 })} />
-        <Legend wrapperStyle={{ fontSize: 12 }} iconType="plainline" />
-        {linhas.map(l => <Line key={l.reg} name={l.op.nome} dataKey={l.reg} stroke={cor(l.op.i)} strokeWidth={l.op.i === 0 ? 2.5 : 1.5} dot={comps.length > 24 ? false : { r: 2 }} connectNulls={false} isAnimationActive={false} />)}
+        <Legend wrapperStyle={{ fontSize: impressao ? 13 : 12 }} formatter={impressao ? legendaEscura : undefined} iconType="plainline" iconSize={impressao ? 30 : 14} />
+        {linhas.map(l => <Line key={l.reg} name={l.op.nome} dataKey={l.reg} stroke={cor(l.op.i)} strokeDasharray={impressao ? traco(l.op.i) : undefined} strokeWidth={impressao ? (l.op.i === 0 ? 3 : 2.25) : l.op.i === 0 ? 2.5 : 1.5} dot={comps.length > 24 ? false : { r: 2 }} connectNulls={false} isAnimationActive={false} />)}
       </LineChart>
     </ResponsiveContainer>
   </div>;
@@ -71,6 +76,8 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
   const chave = comDados.map(o => o.reg).join(",");
   const refQuadros = useRef<HTMLDivElement>(null); const refGraficos = useRef<HTMLDivElement>(null); const refGrid = useRef<HTMLDivElement>(null); const refTotal = useRef<HTMLDivElement>(null);
   const [gerandoPdf, setGerandoPdf] = useState(false);
+  // Durante a geração do PDF, a comparação usa a paleta escura de impressão (legível em preto e branco).
+  const [impressao, setImpressao] = useState(false);
 
   useEffect(() => {
     let ativo = true; setCarregando(true); setErro("");
@@ -109,7 +116,7 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
   const gerarPdf = async () => {
     setGerandoPdf(true);
     const reabrir = { graficos: graficosAbertos, grid: gridAberto, total: totalAberto };
-    setGraficosAbertos(true); setGridAberto(true); setTotalAberto(true);
+    setGraficosAbertos(true); setGridAberto(true); setTotalAberto(true); setImpressao(true);
     try {
       await new Promise(r => setTimeout(r, 400));
       const secoes = [refQuadros.current, refGraficos.current, refGrid.current, refTotal.current].filter((e): e is HTMLDivElement => Boolean(e));
@@ -124,7 +131,7 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
     } catch {
       toast.error("Não foi possível gerar o PDF da comparação.");
     } finally {
-      setGraficosAbertos(reabrir.graficos); setGridAberto(reabrir.grid); setTotalAberto(reabrir.total); setGerandoPdf(false);
+      setGraficosAbertos(reabrir.graficos); setGridAberto(reabrir.grid); setTotalAberto(reabrir.total); setImpressao(false); setGerandoPdf(false);
     }
   };
 
@@ -132,7 +139,7 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
   if (carregando) return <p role="status" className="py-8 text-sm text-muted-foreground">Carregando comparação de {comDados.length} operadoras…</p>;
   if (erro) return <div role="alert" className="py-8 text-sm text-destructive">{erro}<Button variant="outline" className="ml-3" onClick={() => setTentativa(t => t + 1)}>Tentar novamente</Button></div>;
 
-  return <div className="space-y-3">
+  return <div className={`space-y-3 ${impressao ? "bench-impressao" : ""}`}>
     <div className="flex justify-end">
       <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="sm" onClick={gerarPdf} disabled={gerandoPdf} aria-label="Gerar PDF" className="h-8 gap-1.5">{gerandoPdf ? <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" /> : <FileText className="h-4 w-4" />}{gerandoPdf ? "Gerando…" : "Gerar PDF"}</Button></TooltipTrigger><TooltipContent>Gerar PDF da comparação (quadros, gráficos e grid)</TooltipContent></Tooltip>
     </div>
@@ -160,7 +167,7 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
         <span className="text-sm font-semibold">Evolução de ativos</span>
         <EscalaToggle escala={escala} setEscala={setEscala} rotulo="Escala da evolução" />
       </div>
-      <GraficoEvolucao linhas={linhas} comps={comps} escala={escala} rotulo={`Evolução de ativos das operadoras comparadas, ${competenciaMensal(de)}–${competenciaMensal(ate)}`} />
+      <GraficoEvolucao impressao={impressao} linhas={linhas} comps={comps} escala={escala} rotulo={`Evolução de ativos das operadoras comparadas, ${competenciaMensal(de)}–${competenciaMensal(ate)}`} />
       <p className="mt-1 text-xs text-muted-foreground">{escala === "base100" ? "Base 100: ativos de cada mês divididos pelos ativos do primeiro mês da operadora no período, para comparar ritmos de crescimento em portes diferentes." : "Ativos informados pela ANS no mês, por operadora."}</p>
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
         <div>
@@ -168,15 +175,15 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
           <div className="h-64 w-full" role="img" aria-label="Adesões, cancelamentos e saldo por operadora">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dadosMov} margin={{ top: 8, right: 8, bottom: 0, left: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <CartesianGrid strokeDasharray="3 3" stroke={impressao ? "hsl(var(--print-grade))" : "hsl(var(--border))"} />
                 <XAxis dataKey="nome" tick={{ fontSize: 11 }} interval={0} stroke="hsl(var(--muted-foreground))" />
                 <YAxis tick={{ fontSize: 11 }} width={64} stroke="hsl(var(--muted-foreground))" tickFormatter={v => Number(v).toLocaleString("pt-BR")} />
                 <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" />
                 <Dica contentStyle={dicaEstilo} formatter={(v: number) => v.toLocaleString("pt-BR")} />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="Adesões" fill="hsl(var(--chart-fin))" radius={[3, 3, 0, 0]} />
-                <Bar dataKey="Cancelamentos" fill="hsl(var(--chart-4))" radius={[3, 3, 0, 0]} />
-                <Bar dataKey="Saldo" fill="hsl(var(--chart-1))" radius={[3, 3, 0, 0]} />
+                <Legend wrapperStyle={{ fontSize: impressao ? 13 : 12 }} formatter={impressao ? legendaEscura : undefined} />
+                <Bar dataKey="Adesões" fill={impressao ? "hsl(var(--print-adesao))" : "hsl(var(--chart-fin))"} {...(impressao ? contornoBarra : {})} radius={[3, 3, 0, 0]} />
+                <Bar dataKey="Cancelamentos" fill={impressao ? "hsl(var(--print-cancel))" : "hsl(var(--chart-4))"} {...(impressao ? contornoBarra : {})} radius={[3, 3, 0, 0]} />
+                <Bar dataKey="Saldo" fill={impressao ? "hsl(var(--print-saldo))" : "hsl(var(--chart-1))"} {...(impressao ? contornoBarra : {})} radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -186,12 +193,12 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
           <div className="h-64 w-full" role="img" aria-label="Crescimento percentual de ativos por operadora">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dadosCresc} margin={{ top: 8, right: 8, bottom: 0, left: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <CartesianGrid strokeDasharray="3 3" stroke={impressao ? "hsl(var(--print-grade))" : "hsl(var(--border))"} />
                 <XAxis dataKey="nome" tick={{ fontSize: 11 }} interval={0} stroke="hsl(var(--muted-foreground))" />
                 <YAxis tick={{ fontSize: 11 }} width={56} stroke="hsl(var(--muted-foreground))" tickFormatter={v => `${Number(v).toLocaleString("pt-BR")}%`} />
                 <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" />
                 <Dica contentStyle={dicaEstilo} formatter={(v: number) => pct(v)} />
-                <Bar dataKey="Crescimento" radius={[3, 3, 0, 0]}>{dadosCresc.map(d => <Cell key={d.nome} fill={cor(d.i)} />)}</Bar>
+                <Bar dataKey="Crescimento" {...(impressao ? contornoBarra : {})} radius={[3, 3, 0, 0]}>{dadosCresc.map(d => <Cell key={d.nome} fill={cor(d.i)} />)}</Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -231,7 +238,7 @@ export default function BenchVidasComparar({ ops, catalogo, cubo, filtros, de, a
         <span className="text-sm font-semibold">Evolução de ativos · {compsTotal.length} meses</span>
         <EscalaToggle escala={escalaTotal} setEscala={setEscalaTotal} rotulo="Escala da evolução no período total" />
       </div>
-      <GraficoEvolucao linhas={linhasTotal} comps={compsTotal} escala={escalaTotal} destaque={{ de, ate }} rotulo="Evolução de ativos das operadoras comparadas em todo o período mensal da ANS" />
+      <GraficoEvolucao impressao={impressao} linhas={linhasTotal} comps={compsTotal} escala={escalaTotal} destaque={{ de, ate }} rotulo="Evolução de ativos das operadoras comparadas em todo o período mensal da ANS" />
       <p className="mt-1 text-xs text-muted-foreground">Todo o período mensal publicado pela ANS, com os mesmos filtros da tela; a faixa sombreada marca o período em tela ({competenciaMensal(de)}–{competenciaMensal(ate)}).{escalaTotal === "base100" ? " Base 100: ativos de cada mês divididos pelos ativos do primeiro mês informado da operadora no período total." : ""} Meses sem informação da ANS ficam em branco, sem estimativa.</p>
     </Bloco>
     </div>

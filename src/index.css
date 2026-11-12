@@ -25,6 +25,18 @@
 .bench-vidas .bench-kpi-date { font-size: 10px; color: hsl(var(--muted-foreground)); margin-top: 3px; }
 .bench-vidas .bench-filters { background: hsl(var(--secondary) / .4); border-block: 1px solid hsl(var(--border)); padding: 12px; }
 .bench-vidas .bench-panel table thead { background: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); }
+/* Paleta de impressão da comparação (PDF): textos, linhas e cores escuras para leitura em preto e branco. */
+.bench-vidas .bench-impressao {
+  --foreground: 0 0% 0%; --muted-foreground: 0 0% 15%; --secondary-foreground: 0 0% 0%; --secondary: 0 0% 90%; --border: 0 0% 45%;
+  --chart-vidas: 0 0% 0%; --chart-1: 215 90% 28%; --chart-4: 22 95% 36%; --chart-fin: 280 55% 32%;
+  --chart-op: 350 75% 32%; --chart-desp: 0 0% 38%; --chart-copart: 195 90% 26%; --chart-adm: 40 90% 30%;
+  --print-adesao: 215 85% 20%; --print-cancel: 22 85% 55%; --print-saldo: 0 0% 88%; --print-grade: 0 0% 72%;
+}
+.bench-vidas .bench-impressao .bench-kpi { border-color: hsl(var(--bench-tone)); border-top-width: 4px; }
+.bench-vidas .bench-impressao .bench-kpi-title { font-size: 12px; line-height: 1.5; }
+.bench-vidas .bench-impressao .bench-kpi-title .truncate { overflow: visible; text-overflow: clip; }
+.bench-vidas .bench-impressao .bench-kpi-date { font-size: 11px; }
+.bench-vidas .bench-impressao .bench-panel table td { border-color: hsl(var(--border)); }
 @media (max-width: 639px) {
   .bench-vidas .bench-kpis { grid-template-columns: 1fr; gap: 10px; }
   .bench-vidas .bench-kpi { min-height: 86px; padding: 10px 14px; }
