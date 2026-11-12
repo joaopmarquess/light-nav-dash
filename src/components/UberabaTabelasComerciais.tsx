@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { INDICES_PADRAO, formatarCentavos, gravarIndices, lerIndices, parseIndice, tabelaIndexada, type FrenteId, type Indices } from "@/lib/uberabaTabelasComerciais";
 
@@ -45,22 +46,42 @@ export const FRENTES: Frente[] = [
 
 const REFERENCIA = linhasDe(100);
 
-const Tabela = ({ linhas }: { linhas: Linha[] }) => (
-  <table className="comercial-table w-full border-collapse text-center text-lg leading-6">
-    <thead className="sticky top-0">
-      <tr>
-        {["FAIXA", "ENFERMARIA", "APARTAMENTO"].map((h) => <th key={h} className="px-2 py-1.5 text-base font-semibold">{h}</th>)}
-      </tr>
-    </thead>
-    <tbody>
-      {linhas.map((l, i) => (
-        <tr key={l[0]} >
-          {l.map((v, j) => <td key={j} className="px-2 py-1.5 tabular-nums">{v}</td>)}
+// Sem `apartamento`, a coluna Apartamento fica sempre visível (ex.: tabela Referência).
+type ApartamentoToggle = { visivel: boolean; alternar: () => void };
+
+const BotaoApartamento = ({ t }: { t: ApartamentoToggle }) => {
+  const rotulo = t.visivel ? "Recolher coluna Apartamento" : "Expandir coluna Apartamento";
+  const Icone = t.visivel ? ChevronLeft : ChevronRight;
+  return (
+    <button type="button" onClick={t.alternar} aria-label={rotulo} title={rotulo} aria-expanded={t.visivel}
+      className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-sm align-middle opacity-70 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+      <Icone className="h-4 w-4" />
+    </button>
+  );
+};
+
+const Tabela = ({ linhas, apartamento }: { linhas: Linha[]; apartamento?: ApartamentoToggle }) => {
+  const mostrarApto = apartamento ? apartamento.visivel : true;
+  const th = "px-2 py-1.5 text-base font-semibold";
+  return (
+    <table className="comercial-table w-full border-collapse text-center text-lg leading-6">
+      <thead className="sticky top-0">
+        <tr>
+          <th className={th}>FAIXA</th>
+          <th className={th}>ENFERMARIA{apartamento && !apartamento.visivel && <BotaoApartamento t={apartamento} />}</th>
+          {mostrarApto && <th className={th}>APARTAMENTO{apartamento && <BotaoApartamento t={apartamento} />}</th>}
         </tr>
-      ))}
-    </tbody>
-  </table>
-);
+      </thead>
+      <tbody>
+        {linhas.map((l) => (
+          <tr key={l[0]}>
+            {(mostrarApto ? l : l.slice(0, 2)).map((v, j) => <td key={j} className="px-2 py-1.5 tabular-nums">{v}</td>)}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
 
 const IndiceCampo = ({ f, valor, onChange }: { f: Frente; valor: number; onChange: (v: number) => void }) => {
   const [texto, setTexto] = useState(String(valor).replace(".", ","));
@@ -83,14 +104,14 @@ const IndiceCampo = ({ f, valor, onChange }: { f: Frente; valor: number; onChang
   );
 };
 
-const Card = ({ f, indice, onIndice }: { f: Frente; indice: number; onIndice: (v: number) => void }) => (
+const Card = ({ f, indice, onIndice, apartamento }: { f: Frente; indice: number; onIndice: (v: number) => void; apartamento: ApartamentoToggle }) => (
   <div className={`comercial-card ${f.cor}`}>
     <div className="flex items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center">
       <p className="text-xl font-bold">{f.titulo}</p>
       <p className="text-sm font-semibold tracking-normal">{f.segmento}</p>
       <IndiceCampo f={f} valor={indice} onChange={onIndice} />
     </div>
-    <Tabela linhas={linhasDe(indice)} />
+    <Tabela linhas={linhasDe(indice)} apartamento={apartamento} />
     <div className="px-3 pb-2 pt-2">
       <p className="mb-2 text-center text-sm font-semibold uppercase tracking-normal">Indicadores variáveis</p>
       <table className="w-full border-collapse text-base leading-5">
@@ -109,11 +130,14 @@ const Card = ({ f, indice, onIndice }: { f: Frente; indice: number; onIndice: (v
 
 const UberabaTabelasComerciais = () => {
   const [indices, setIndices] = useState<Indices>(() => lerIndices());
+  // Coluna Apartamento recolhida por padrão; o mesmo controle vale para as três frentes.
+  const [aptoVisivel, setAptoVisivel] = useState(false);
+  const apartamento: ApartamentoToggle = { visivel: aptoVisivel, alternar: () => setAptoVisivel((v) => !v) };
   const alterar = (id: FrenteId, v: number) => setIndices((atual) => { const novo = { ...atual, [id]: v }; gravarIndices(novo); return novo; });
   return (
     <section className="comercial-presentation" aria-label="Tabelas comerciais">
       <div className="comercial-grid">
-        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} />)}
+        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} apartamento={apartamento} />)}
       </div>
     </section>
   );
