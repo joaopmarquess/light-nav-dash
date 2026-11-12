@@ -81,7 +81,6 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null): jsPD
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(...PDF_COLORS.muted);
-    doc.text("Proposta Comercial Bensaúde|Uberaba · minuta provisória, sem valor contratual", marginL, pageH - 10);
     doc.text(`Página ${p} de ${total}`, pageW - marginR, pageH - 10, { align: "right" });
   }
   return doc;
