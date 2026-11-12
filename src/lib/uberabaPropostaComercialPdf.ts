@@ -24,13 +24,14 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null): jsPD
   attachTimbrado(doc, timbradoDataUrl);
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
-  const marginL = 18, marginR = 18, top = 54, bottom = 20;
+  // O traço azul do timbrado termina em ~31 mm; o título começa uma linha de texto (≈5 mm) abaixo dele, em todas as páginas.
+  const marginL = 18, marginR = 18, top = 59, bottom = 20;
   const usableW = pageW - marginL - marginR;
   const heading = () => drawReportHeading(doc, {
     title: "Proposta Comercial",
     plano: "Bensaúde|Uberaba",
     secao: "Minuta provisória · conteúdo em Lorem ipsum",
-    marginL, marginR, top: 33,
+    marginL, marginR, top: 38,
   });
   heading();
   let y = top;
