@@ -31,7 +31,20 @@ export function mascaraAnoMes(v: string): string {
   return d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d;
 }
 
-/** Meses que a tela sempre mostra: o mês final escolhido e os 11 anteriores. */
+/**
+ * Mensagem de erro do período De–Até digitado, ou null quando é válido: De a partir de 01/2019,
+ * Até no máximo o mês atual e De não posterior a Até.
+ */
+export function validarPeriodo(de: AnoMes | null, ate: AnoMes | null, hoje: Date): string | null {
+  if (!de) return "Informe o mês inicial (De) no formato mm/aaaa.";
+  if (!ate) return "Informe o mês final (Até) no formato mm/aaaa.";
+  if (idxMes(de) < idxMes(INICIO_EVOLUCAO_PRODUTOS)) return `A base começa em ${anoMesCampo(INICIO_EVOLUCAO_PRODUTOS)}; o mês inicial deve ser ${anoMesCampo(INICIO_EVOLUCAO_PRODUTOS)} ou posterior.`;
+  if (idxMes(ate) > hoje.getUTCFullYear() * 12 + hoje.getUTCMonth()) return "O mês final não pode ser posterior ao mês atual.";
+  if (idxMes(de) > idxMes(ate)) return "O mês inicial (De) não pode ser posterior ao mês final (Até).";
+  return null;
+}
+
+/** Tamanho do período padrão: o mês final e os 11 anteriores. */
 export const MESES_PERIODO = 12;
 
 /** Período de 12 meses que termina no mês final escolhido (ex.: 09/2026 → 10/2025 a 09/2026). */

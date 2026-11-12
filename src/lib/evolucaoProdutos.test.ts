@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { financeiroPorMes, perCapita, lerAnoMes, mascaraAnoMes, mesesPeriodo, periodoPadrao, financeiroAteUltimaValida, produtosPorMes, validarAte, periodoAte, montarGrade, somaPeriodo, subtotalTipo, totalGeral, vidasPorMes } from "./evolucaoProdutos";
+import { financeiroPorMes, perCapita, lerAnoMes, mascaraAnoMes, mesesPeriodo, periodoPadrao, financeiroAteUltimaValida, produtosPorMes, validarAte, validarPeriodo, periodoAte, montarGrade, somaPeriodo, subtotalTipo, totalGeral, vidasPorMes } from "./evolucaoProdutos";
 
 describe("Evolução Produtos — período", () => {
   const meses = mesesPeriodo({ ano: 2025, mes: 10 }, { ano: 2026, mes: 9 });
@@ -131,7 +131,17 @@ describe("Evolução Produtos — período", () => {
     expect(validarAte(lerAnoMes("11/2019"), hoje)).not.toBeNull();
     expect(validarAte(null, hoje)).not.toBeNull();
   });
-  it("o período é sempre de 12 meses até o mês final (09/2026 → 10/2025 a 09/2026)", () => {
+  it("De e Até editáveis: De a partir de 01/2019, Até até o mês atual e De não posterior a Até", () => {
+    const hoje = new Date(Date.UTC(2026, 10, 12));
+    expect(validarPeriodo(lerAnoMes("01/2019"), lerAnoMes("09/2026"), hoje)).toBeNull();
+    expect(validarPeriodo(lerAnoMes("03/2026"), lerAnoMes("03/2026"), hoje)).toBeNull();
+    expect(validarPeriodo(lerAnoMes("12/2018"), lerAnoMes("09/2026"), hoje)).not.toBeNull();
+    expect(validarPeriodo(lerAnoMes("10/2025"), lerAnoMes("12/2026"), hoje)).not.toBeNull();
+    expect(validarPeriodo(lerAnoMes("10/2026"), lerAnoMes("09/2026"), hoje)).not.toBeNull();
+    expect(validarPeriodo(lerAnoMes("1/2026"), lerAnoMes("09/2026"), hoje)).not.toBeNull();
+    expect(mesesPeriodo({ ano: 2025, mes: 4 }, { ano: 2026, mes: 9 })).toHaveLength(18);
+  });
+  it("o período padrão é de 12 meses até o mês final (09/2026 → 10/2025 a 09/2026)", () => {
     expect(periodoAte({ ano: 2026, mes: 9 })).toEqual({ de: { ano: 2025, mes: 10 }, ate: { ano: 2026, mes: 9 } });
     expect(periodoAte({ ano: 2026, mes: 12 })).toEqual({ de: { ano: 2026, mes: 1 }, ate: { ano: 2026, mes: 12 } });
   });

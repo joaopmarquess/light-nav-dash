@@ -6,7 +6,7 @@ import { hostinger } from "@/lib/hostingerClient";
 import { carregarUltimaCompetenciaValida } from "@/lib/sinistralidadeValida";
 import {
   anoMesCampo, financeiroAteUltimaValida, INDICADORES_PER_CAPITA, lerAnoMes, mascaraAnoMes, mesesPeriodo, modeloDadosCidades, montarGrade, montarGradeCidades,
-  periodoAte, periodoPadrao, TIPOS_PLANO, TIPOS_PRODUTO, validarAte, type AnoMes, type Celulas, type GradeCidades, type GradeComTotais,
+  periodoPadrao, TIPOS_PLANO, TIPOS_PRODUTO, validarPeriodo, type AnoMes, type Celulas, type GradeCidades, type GradeComTotais,
   type GrupoCidadeId, type IndicadorFinanceiro, type LinhaFinanceira, type LinhaFinanceiraCidade, type LinhaModeloCidade, type LinhaProduto, type LinhaVidasCidade, type TipoPlano,
   type TipoProduto,
 } from "@/lib/evolucaoProdutos";
@@ -375,6 +375,7 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
   const [vidasCid, setVidasCid] = useState<{ k: string; linhas: LinhaVidasCidade[] } | null>(null);
   const [finCid, setFinCid] = useState<{ k: string; linhas: LinhaFinanceiraCidade[] } | null>(null);
   const [errCid, setErrCid] = useState<string | null>(null);
+  const [deCampo, setDeCampo] = useState(() => anoMesCampo(periodo.de));
   const [ateCampo, setAteCampo] = useState(() => anoMesCampo(periodo.ate));
   const meses = useMemo(() => mesesPeriodo(periodo.de, periodo.ate), [periodo]);
   const [vidasBrutas, setVidasBrutas] = useState<{ k: string; linhas: LinhaProduto[] } | null>(null);
@@ -413,13 +414,13 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
   // Financeiro só é buscado ao abrir uma visão financeira (uma vez por período para todas).
   useEffect(() => { if (visao !== "Vidas") buscarFin(); }, [visao === "Vidas", buscarFin]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const deSel = lerAnoMes(deCampo);
   const ateSel = lerAnoMes(ateCampo);
-  const erroPeriodo = validarAte(ateSel, new Date());
-  const deMostrado = ateSel && !erroPeriodo ? anoMesCampo(periodoAte(ateSel).de) : "—";
-  const alterado = ateCampo !== anoMesCampo(periodo.ate);
+  const erroPeriodo = validarPeriodo(deSel, ateSel, new Date());
+  const alterado = deCampo !== anoMesCampo(periodo.de) || ateCampo !== anoMesCampo(periodo.ate);
   const aplicar = () => {
-    if (erroPeriodo || !ateSel) return;
-    const novo = periodoAte(ateSel);
+    if (erroPeriodo || !deSel || !ateSel) return;
+    const novo = { de: deSel, ate: ateSel };
     periodoAplicado = novo;
     setPeriodo(novo);
   };
@@ -491,10 +492,12 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
           onSubmit={(e) => { e.preventDefault(); aplicar(); }}
           className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 shadow-sm"
         >
-          <span className="flex items-center gap-1.5 text-sm text-muted-foreground" title={`Sempre 12 meses até o mês final · valores em R$ até ${anoMesCampo(ultima)}, último mês com despesas acima de R$ 20 milhões`}>
+          <label className="flex items-center gap-1.5 text-sm text-muted-foreground" title={`Mês inicial a partir de 01/2019 · valores em R$ até ${anoMesCampo(ultima)}, último mês com despesas acima de R$ 20 milhões`}>
             De
-            <span className="w-[4.5rem] text-center text-sm tabular-nums text-foreground">{deMostrado}</span>
-          </span>
+            <input inputMode="numeric" placeholder="mm/aaaa" maxLength={7} aria-label={"De (mm/aaaa)"} value={deCampo}
+              onChange={(e) => setDeCampo(mascaraAnoMes(e.target.value))}
+              className="h-8 w-[5.5rem] rounded-md border border-input bg-background px-2 text-center text-sm tabular-nums text-foreground" />
+          </label>
           <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
             Até
             <input inputMode="numeric" placeholder="mm/aaaa" maxLength={7} aria-label={"Até (mm/aaaa)"} value={ateCampo}
