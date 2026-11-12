@@ -43,14 +43,14 @@ const BotaoSecao = ({ t, nome }: { t: ApartamentoToggle; nome: string }) => {
   );
 };
 
-const Tabela = ({ linhas, apartamento, fator = FATOR_APARTAMENTO_PADRAO, precos }: { linhas: Linha[]; apartamento?: ApartamentoToggle; fator?: number; precos?: ApartamentoToggle }) => {
+const Tabela = ({ linhas, apartamento, fator = FATOR_APARTAMENTO_PADRAO }: { linhas: Linha[]; apartamento?: ApartamentoToggle; fator?: number }) => {
   const mostrarApto = apartamento ? apartamento.visivel : true;
   const th = "px-2 py-1.5 text-base font-semibold";
   return (
     <table className="comercial-table w-full border-collapse text-center text-lg leading-6">
       <thead className="sticky top-0">
         <tr>
-          <th className={th}>{precos && <span className="mr-1"><BotaoSecao t={precos} nome="tabela de preços" /></span>}FAIXA</th>
+          <th className={th}>FAIXA</th>
           <th className={th}>ENFERMARIA{apartamento && !apartamento.visivel && <BotaoApartamento t={apartamento} />}</th>
           {mostrarApto && (
             <th className={th}>
@@ -64,7 +64,7 @@ const Tabela = ({ linhas, apartamento, fator = FATOR_APARTAMENTO_PADRAO, precos 
         </tr>
       </thead>
       <tbody>
-        {(!precos || precos.visivel) && linhas.map((l) => (
+        {linhas.map((l) => (
           <tr key={l[0]}>
             {(mostrarApto ? l : l.slice(0, 2)).map((v, j) => <td key={j} className="px-2 py-1.5 tabular-nums">{v}</td>)}
           </tr>
@@ -188,12 +188,17 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
         </span>
         <IndiceCampo f={f} valor={indice} onChange={onIndice} />
       </div>
-      <div className="comercial-precos">
-        <Tabela linhas={linhasDe(indice, fator)} apartamento={apartamento} fator={fator} precos={precos} />
-        <FatorApartamento f={f} valor={fator} onChange={onFator} />
-      </div>
-      <div className="px-3 pb-3 pt-2">
-        <p className="mb-2 flex items-center justify-center gap-1 text-center text-sm font-semibold uppercase tracking-normal">Indicadores variáveis<BotaoSecao t={variaveis} nome="Indicadores variáveis" /></p>
+      <section className="comercial-secao" aria-label={`Tabelas ${f.titulo}`}>
+        <p className="comercial-secao-titulo">Tabelas<BotaoSecao t={precos} nome="Tabelas" /></p>
+        {precos.visivel && (
+          <div className="comercial-precos">
+            <Tabela linhas={linhasDe(indice, fator)} apartamento={apartamento} fator={fator} />
+            <FatorApartamento f={f} valor={fator} onChange={onFator} />
+          </div>
+        )}
+      </section>
+      <div className={`comercial-secao comercial-secao-indicadores ${variaveis.visivel ? "" : "recolhido"}`}>
+        <p className="comercial-secao-titulo">Indicadores variáveis<BotaoSecao t={variaveis} nome="Indicadores variáveis" /></p>
         {variaveis.visivel && <div className="comercial-indicadores">
           {blocos.map(([titulo, linhas]) => (
             <table key={titulo} className="w-full border-collapse text-base leading-5">
@@ -225,10 +230,10 @@ const UberabaTabelasComerciais = () => {
   // Coluna Apartamento recolhida por padrão; o mesmo controle vale para as três frentes.
   const [aptoVisivel, setAptoVisivel] = useState(false);
   const apartamento: ApartamentoToggle = { visivel: aptoVisivel, alternar: () => setAptoVisivel((v) => !v) };
-  // Grade de preços e Indicadores variáveis abrem expandidos; cada ícone vale para as três tabelas.
-  const [precosVisivel, setPrecosVisivel] = useState(true);
+  // Tabelas e Indicadores variáveis abrem recolhidos; cada ícone vale para as três frentes.
+  const [precosVisivel, setPrecosVisivel] = useState(false);
   const precos: ApartamentoToggle = { visivel: precosVisivel, alternar: () => setPrecosVisivel((v) => !v) };
-  const [variaveisVisivel, setVariaveisVisivel] = useState(true);
+  const [variaveisVisivel, setVariaveisVisivel] = useState(false);
   const variaveis: ApartamentoToggle = { visivel: variaveisVisivel, alternar: () => setVariaveisVisivel((v) => !v) };
   const [indicadores, setIndicadores] = useState<IndicadoresPorFrente>(() => lerIndicadores());
   const alterarIndicador = (id: FrenteId, campo: CampoIndicador, v: number) => setIndicadores((atual) => {

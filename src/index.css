@@ -875,9 +875,15 @@ All colors MUST be HSL.
 .comercial-table thead { background: hsl(var(--credential-head)); }
 .comercial-table tbody tr { border-top: 1px solid hsl(var(--hospital-frame)); background: hsl(var(--hospital-surface)); }
 .comercial-table tbody tr:nth-child(even) { background: hsl(var(--credential-alt)); }
+/* Contêineres próprios de Tabelas e Indicadores variáveis em cada frente. */
+.comercial-secao { margin: 0 12px 12px; border: 1px solid hsl(var(--hospital-frame)); border-radius: 6px; overflow: hidden; background: hsl(var(--hospital-surface)); }
+.comercial-secao-titulo { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 12px; font-size: 14px; font-weight: 600; text-transform: uppercase; color: hsl(var(--credential-secondary)); background: hsl(var(--credential-alt)); }
+.comercial-secao-indicadores .comercial-indicadores { padding: 10px; border-top: 1px solid hsl(var(--hospital-frame)); }
+.comercial-precos { border-top: 1px solid hsl(var(--hospital-frame)); }
+.comercial-card > .comercial-secao-indicadores.recolhido { display: block; align-self: start; }
 /* Grade de preços fechada por uma linha sólida; abaixo, o fator do Apartamento. */
 .comercial-precos > .comercial-table { border-bottom: 2px solid hsl(var(--credential-secondary)); }
-.comercial-fator { display: flex; align-items: center; justify-content: flex-start; gap: 8px; padding: 10px 12px 2px; font-size: 14px; font-weight: 600; color: hsl(var(--credential-secondary)); }
+.comercial-fator { display: flex; align-items: center; justify-content: flex-start; gap: 8px; padding: 10px 12px; font-size: 14px; font-weight: 600; color: hsl(var(--credential-secondary)); }
 .comercial-fator input { font-size: 15px; font-weight: 700; color: hsl(var(--credential-text)); background: hsl(var(--hospital-surface)); border-color: var(--commercial-color); }
 .comercial-card > div:last-child > p { color: hsl(var(--credential-secondary)); }
 .comercial-card > div:last-child table th, .comercial-card > div:last-child table td { border: 1px solid hsl(var(--hospital-frame)); }
