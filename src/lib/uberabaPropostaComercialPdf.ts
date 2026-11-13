@@ -137,18 +137,22 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     doc.setFontSize(F.texto);
     doc.setTextColor(...PDF_COLORS.text);
   };
-  const alturaParagrafos = (lista: string[]) => {
-    fonteTexto();
-    return lista.reduce((h, t) => h + (doc.splitTextToSize(textoPdf(t), usableW - 2) as string[]).length * alturaLinha(F.texto) + 3, 0);
-  };
+  const LINHA_TEXTO = alturaLinha(F.texto);
+  /** Parágrafo corrido: o que não cabe continua no topo da página seguinte (nunca uma linha sozinha no fim da página). */
   const paragrafo = (texto: string) => {
     fonteTexto();
-    const linhas = doc.splitTextToSize(textoPdf(texto), usableW - 2) as string[];
-    const h = linhas.length * alturaLinha(F.texto);
-    garantir(h);
-    fonteTexto();
-    doc.text(linhas, marginL, y, { align: "justify", maxWidth: usableW - 2, lineHeightFactor: 1.35 });
-    y += h + 3;
+    let linhas = doc.splitTextToSize(textoPdf(texto), usableW - 2) as string[];
+    while (linhas.length) {
+      const cabem = Math.floor((pageH - bottom - y) / LINHA_TEXTO) + 1;
+      if (cabem < Math.min(2, linhas.length)) { novaPagina(); continue; }
+      const parte = linhas.slice(0, cabem);
+      linhas = linhas.slice(cabem);
+      fonteTexto();
+      // Uma linha vazia no fim mantém justificada a última linha de um trecho que continua na página seguinte.
+      doc.text(linhas.length ? [...parte, ""] : parte, marginL, y, { align: "justify", maxWidth: usableW - 2, lineHeightFactor: 1.35 });
+      if (linhas.length) novaPagina();
+      else y += parte.length * LINHA_TEXTO + 3;
+    }
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -239,7 +243,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
         doc.line(c.cell.x, c.cell.y, c.cell.x + c.cell.width, c.cell.y);
       },
     });
-    const fimT = fimTabela(y);
+    const fimT = fimTabela(y); // a tabela pode continuar na página seguinte; o fechamento fica na última
     doc.setDrawColor(...TINTA);
     doc.setLineWidth(0.6);
     doc.line(x, fimT, x + w, fimT);
@@ -375,12 +379,12 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
 
   const corpo = paragrafosProposta(textos);
   const blocoDados: Partial<Record<SecaoTextoId, () => void>> = { referencia: desenharReferencia, tabelas: desenharPrecos, remuneracao: desenharRemuneracao };
-  // Altura de cada bloco de dados: o tópico (título, texto e bloco) fica inteiro na mesma página quando cabe.
-  const ALTURA_BLOCO: Partial<Record<SecaoTextoId, number>> = { referencia: 100, tabelas: 112, remuneracao: 110 };
+  // Os tópicos seguem corridos, sem pular página. Só os três quadros lado a lado (tópicos 3 e 4) não se dividem:
+  // quando não cabem no resto da página, passam inteiros para a seguinte.
+  const ALTURA_BLOCO: Partial<Record<SecaoTextoId, number>> = { referencia: 30, tabelas: 112, remuneracao: 96 };
+  const INICIO_TOPICO = 10 + LINHA_TEXTO * 2; // título com pelo menos duas linhas de texto abaixo
   SECOES_TEXTO.forEach((s, i) => {
-    const bloco = ALTURA_BLOCO[s.id];
-    const inteiro = 12 + alturaParagrafos(corpo[i]) + (bloco ?? 0);
-    garantir(inteiro <= pageH - bottom - top ? inteiro : Math.max(36, bloco ?? 0)); // título nunca fica sozinho no fim da página
+    garantir(INICIO_TOPICO);
     drawSectionTitle(doc, s.titulo, marginL, y, pageW - marginR, TINTA, F.topico);
     y += 10;
     corpo[i].forEach(paragrafo);
@@ -388,7 +392,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     y += 2;
     if (dados) { garantir(ALTURA_BLOCO[s.id] ?? 0); dados(); }
   });
-  garantir(36);
+  garantir(INICIO_TOPICO);
   drawSectionTitle(doc, TITULO_GLOSSARIO, marginL, y, pageW - marginR, TINTA, F.topico);
   y += 10;
   desenharGlossario();
