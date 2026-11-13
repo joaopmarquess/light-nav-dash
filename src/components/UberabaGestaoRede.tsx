@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import BlocoRecolhido from "@/components/BlocoRecolhido";
 import {
   CAMPOS_GESTAO_REDE, GESTAO_REDE_PADRAO, MESES_ADIANTAMENTO, MESES_GESTAO_REDE,
   calcularGestaoRede, formatarCampo, gravarGestaoRede, lerGestaoRede, parseNumeroBR, totaisGestaoRede,
@@ -72,8 +73,9 @@ export default function UberabaGestaoRede() {
   const sep = "border-l border-border";
 
   return (
-    <div className="flex min-h-0 flex-col gap-4 pb-6 lg:flex-row lg:items-start">
-      <aside aria-label="Variáveis" className="w-full shrink-0 space-y-4 rounded-lg border border-border bg-card p-4 shadow-sm lg:w-64">
+    <div className="flex min-h-0 flex-col gap-4">
+      <BlocoRecolhido titulo="Variáveis">
+      <div className="grid gap-4 bg-card p-4 sm:grid-cols-3 xl:grid-cols-6">
         {GRUPOS.map((g) => (
           <fieldset key={g.titulo} className="space-y-2">
             <legend className="mb-1 text-sm font-semibold text-foreground">{g.titulo}</legend>
@@ -98,15 +100,17 @@ export default function UberabaGestaoRede() {
             })}
           </fieldset>
         ))}
-        {algumInvalido && <p className="text-xs text-destructive">Corrija os campos em vermelho (número igual ou maior que zero).</p>}
-        <div className="flex flex-col gap-2 pt-1">
-          <Button onClick={gravar} disabled={algumInvalido || !alterado}><Save />Gravar</Button>
-          <Button variant="outline" onClick={restaurar}><RotateCcw />Restaurar</Button>
+        <div className="flex flex-col gap-2">
+          <Button size="sm" onClick={gravar} disabled={algumInvalido || !alterado}><Save />Gravar</Button>
+          <Button size="sm" variant="outline" onClick={restaurar}><RotateCcw />Restaurar</Button>
           {alterado && <span className="text-center text-xs text-muted-foreground">Alterações não gravadas</span>}
         </div>
-      </aside>
+      </div>
+      {algumInvalido && <p className="px-4 pb-3 text-xs text-destructive">Corrija os campos em vermelho (número igual ou maior que zero).</p>}
+      </BlocoRecolhido>
 
-      <section aria-label="Antecipação e Mensal" className="min-w-0 flex-1 overflow-x-auto rounded-lg border border-border bg-card shadow-sm">
+      <BlocoRecolhido titulo="Antecipação × Mensal" recolhivel={false}>
+      <div className="min-w-0 overflow-x-auto bg-card">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
@@ -160,7 +164,8 @@ export default function UberabaGestaoRede() {
         <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
           Vidas: o total entra em partes iguais ao longo dos {MESES_GESTAO_REDE} meses. Mensal: vidas acumuladas × valor por vida, limitado ao teto. Faturamento: vidas do mês × ticket. Antecipação: meses 1 a {MESES_ADIANTAMENTO} pagam o adiantamento; os {MESES_ADIANTAMENTO} últimos meses abatem o que foi adiantado a mais, em partes iguais.
         </p>
-      </section>
+      </div>
+      </BlocoRecolhido>
     </div>
   );
 }

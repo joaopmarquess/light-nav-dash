@@ -51,7 +51,7 @@ describe("Estudo view selection", () => {
     abrir();
     fireEvent.click(screen.getByRole("button", { name: "Simulações" }));
     const grupo = screen.getByRole("group", { name: "Simulações do Estudo" });
-    expect(Array.from(grupo.querySelectorAll("button")).map((b) => b.textContent)).toEqual(["Resultados Comerciais", "Condições Rede", "Resultados Rede"]);
+    expect(Array.from(grupo.querySelectorAll("button")).map((b) => b.textContent)).toEqual(["Resultados Comerciais", "Resultados Rede"]);
     expect(screen.getByRole("button", { name: "Resultados Comerciais" })).toHaveAttribute("aria-pressed", "true");
   });
 
@@ -68,6 +68,11 @@ describe("Estudo view selection", () => {
   it("opens the Gestão Rede view with its variables", () => {
     abrir();
     abrirSimulacoes("Resultados Rede");
+    expect(screen.getByRole("region", { name: "Antecipação × Mensal" })).toBeVisible();
+    const botao = screen.getByRole("button", { name: "Expandir Variáveis" });
+    expect(botao).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByLabelText("Valor Vida Paulo")).not.toBeVisible();
+    fireEvent.click(botao);
     expect(screen.getByLabelText("Valor Vida Paulo")).toBeVisible();
     expect(screen.getByLabelText("Número Vidas total")).toBeVisible();
   });
@@ -81,10 +86,14 @@ describe("Estudo view selection", () => {
     expect(screen.getByRole("button", { name: "Referência" })).toBeVisible();
   });
 
-  it("opens the Rede Assistencial view inside Simulações", () => {
+  it("shows Condições Rede as a collapsed container inside Resultados Rede", () => {
     abrir();
-    abrirSimulacoes("Condições Rede");
-    expect(screen.getByRole("button", { name: "Condições Rede" })).toHaveAttribute("aria-pressed", "true");
+    abrirSimulacoes("Resultados Rede");
+    expect(screen.queryByRole("button", { name: "Condições Rede" })).toBeNull();
+    const botao = screen.getByRole("button", { name: "Expandir Condições Rede" });
+    expect(botao).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("group", { name: "Cenário de credenciamento", hidden: true })).not.toBeVisible();
+    fireEvent.click(botao);
     expect(screen.getByRole("group", { name: "Cenário de credenciamento" })).toBeVisible();
   });
 });
