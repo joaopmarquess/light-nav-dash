@@ -32,14 +32,17 @@ export function drawSectionTitle(
   rightX: number,
   /** Cor única para texto e linha (ex.: tinta escura para impressão em preto e branco). */
   tinta?: RGB,
+  /** Tamanho da fonte do título (padrão 10,5); a linha abaixo acompanha o tamanho. */
+  fonte = 10.5,
 ) {
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10.5);
+  doc.setFontSize(fonte);
   doc.setTextColor(...(tinta ?? PDF_COLORS.navy));
   doc.text(text.toUpperCase(), x, y);
   doc.setDrawColor(...(tinta ?? PDF_COLORS.blue));
   doc.setLineWidth(tinta ? 0.5 : 0.4);
-  doc.line(x, y + 1.8, rightX, y + 1.8);
+  const dy = 1.8 * (fonte / 10.5);
+  doc.line(x, y + dy, rightX, y + dy);
   doc.setTextColor(...PDF_COLORS.text);
   doc.setDrawColor(0);
   doc.setLineWidth(0.2);
@@ -111,7 +114,11 @@ export const negativeRed = (data: any) => {
 /** Bloco de cabeçalho de seção: título, faixa do plano e rótulo da seção (centralizados). */
 export function drawReportHeading(
   doc: jsPDF,
-  opts: { title: string; plano: string; secao: string; marginL: number; marginR: number; top?: number; tinta?: RGB },
+  opts: {
+    title: string; plano: string; secao: string; marginL: number; marginR: number; top?: number; tinta?: RGB;
+    /** Tamanhos das fontes (padrão 11,5 / 8,5 / 9,5); a faixa do plano cresce junto. */
+    fontes?: { titulo?: number; plano?: number; secao?: number };
+  },
 ) {
   const { title, plano, secao, marginL, marginR } = opts;
   const tinta = opts.tinta ?? PDF_COLORS.navy;
@@ -120,19 +127,23 @@ export function drawReportHeading(
   const cx = pageW / 2;
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11.5);
+  const fT = opts.fontes?.titulo ?? 11.5;
+  const fP = opts.fontes?.plano ?? 8.5;
+  const fS = opts.fontes?.secao ?? 9.5;
+  const extra = Math.max(0, (fP - 8.5) * 0.45);
+  doc.setFontSize(fT);
   doc.setTextColor(...tinta);
-  doc.text(title, cx, 23 + off, { align: "center", baseline: "middle" });
+  doc.text(title, cx, 23 + off - extra, { align: "center", baseline: "middle" });
 
   doc.setFillColor(...PDF_COLORS.groupFill);
-  doc.rect(marginL, 25.6 + off, pageW - marginL - marginR, 6, "F");
-  doc.setFontSize(8.5);
+  doc.rect(marginL, 25.6 + off - extra, pageW - marginL - marginR, 6 + extra * 2, "F");
+  doc.setFontSize(fP);
   doc.setTextColor(...tinta);
   doc.text(plano, cx, 28.7 + off, { align: "center", baseline: "middle" });
 
-  doc.setFontSize(9.5);
+  doc.setFontSize(fS);
   doc.setTextColor(...PDF_COLORS.text);
-  doc.text(secao, cx, 35.5 + off, { align: "center", baseline: "middle" });
+  doc.text(secao, cx, 35.5 + off + extra, { align: "center", baseline: "middle" });
 
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...PDF_COLORS.text);

@@ -92,3 +92,16 @@ describe("Proposta · texto no PDF", () => {
     expect(textoPdf("Apartamento = TRUNCAR(Enfermaria × 1,25; 2)")).toBe("Apartamento = TRUNCAR(Enfermaria × 1,25; 2)");
   });
 });
+
+describe("tamanhos de fonte da Proposta", () => {
+  it("texto geral em 13 pt", async () => {
+    const { FONTES_PROPOSTA } = await import("./uberabaPropostaComercialPdf");
+    expect(FONTES_PROPOSTA.texto).toBe(13);
+  });
+  it("demais elementos até 2 pt acima ou abaixo do texto geral (exceto marcador de nota)", async () => {
+    const { FONTES_PROPOSTA } = await import("./uberabaPropostaComercialPdf");
+    const { marcador, ...resto } = FONTES_PROPOSTA;
+    expect(marcador).toBeLessThan(FONTES_PROPOSTA.texto);
+    for (const v of Object.values(resto)) expect(Math.abs(v - 13)).toBeLessThanOrEqual(2);
+  });
+});
