@@ -42,9 +42,9 @@ export const TEXTOS_PADRAO: TextosSecoes = {
   administradora:
     "A seguir, apresentamos as tabelas de preços e as condições comerciais de remuneração dos produtos com boletagem pela Administradora (PCA, PME ADM. e PCE ADM.), distribuídos por meio das Plataformas Associadas.",
   empresarial:
-    "A seguir, apresentamos a tabela de preços e as condições comerciais de remuneração do Plano Empresarial (PJ+), para empresas com 100 ou mais vidas, com boletagem pela operadora e distribuição por meio de Corretoras.",
+    "A seguir, apresentamos a tabela de preços e as condições comerciais de remuneração do Plano Empresarial (PJ+), para empresas com 100 ou mais vidas, com boletagem pela operadora e distribuição por meio de Agenciadoras e Corretoras Autorizadas.",
   conclusao:
-    "Com esta proposta, o Bensaúde reafirma o compromisso de levar a Uberaba produtos de saúde com preço justo e qualidade assistencial. Contamos com a parceria da Lancers Administradora e de suas Plataformas Associadas, das Corretoras e da Siga Soluções para construir, juntos, uma operação sólida e duradoura, e permanecemos à disposição para os próximos passos.",
+    "Com esta proposta, o Bensaúde reafirma o compromisso de levar a Uberaba produtos de saúde com preço justo e qualidade assistencial. Contamos com a parceria da Lancers Administradora e de suas Plataformas Associadas, das Agenciadoras e Corretoras Autorizadas e da Siga Soluções para construir, juntos, uma operação sólida e duradoura, e permanecemos à disposição para os próximos passos.",
 };
 /** Introdução e Tabela Referencial antes de resumidas para os tópicos 1 e 2 caberem na página 1 (13/11/2026): passam para a versão atual. */
 export const INTRODUCAO_LONGA = "É com satisfação que apresentamos a presente proposta comercial para a comercialização de nossos produtos em Uberaba (Minas Gerais). O escopo desta oferta contempla as tabelas de preços estruturadas para quatro formatos distintos de produtos, cujas nomenclaturas, contratação, vidas, boletagem, distribuidores e fator sobre a Tabela Referencial estão no quadro abaixo. Para garantir uma operação eficiente e alinhada ao mercado regional, os produtos com boletagem pela Lancers Administradora serão comercializados por meio de suas Plataformas Associadas, contando com a valiosa parceria da Siga Soluções. Detalhes operacionais como os percentuais de spread (valores atribuídos à Administradora), comissionamento (agenciamento), vitaliciedade (valores atribuídos à Agenciadora, no Plano Empresarial) e demais diretrizes de remuneração encontram-se especificados nas seções \"Produtos com Administradora\" e \"Plano Empresarial\" ao longo deste documento.";
@@ -57,10 +57,15 @@ export const INTRODUCAO_SEM_ATRIBUICAO = "É com satisfação que apresentamos a
 /** Introdução anterior, com a lista dos produtos no texto: em textos guardados no navegador, passa para a versão atual. */
 export const INTRODUCAO_ANTERIOR =
   "É com satisfação que apresentamos a presente proposta comercial para a comercialização de nossos produtos em Uberaba (Minas Gerais). O escopo desta oferta contempla as tabelas de preços estruturadas para quatro formatos distintos de produtos, sendo eles: a) o Plano Coletivo por Adesão (PCA), b) o Plano Coletivo Empresarial de 03 a 29 vidas (PME ADM.), c) o Plano Coletivo Empresarial de 30 a 99 vidas (PCE ADM.) e d) o Plano Coletivo Empresarial com 100 ou mais vidas (PJ+). Para garantir uma operação eficiente e alinhada ao mercado regional, os modelos de distribuição foram definidos de forma estratégica: os planos PCA, PME ADM. e PCE ADM. terão boletagem pela Lancers Administradora e serão comercializados por meio de suas Plataformas Associadas, contando com a valiosa parceria da Siga Soluções; já o Plano Empresarial (PJ+) terá boletagem pela operadora e distribuição por meio de Corretoras. Detalhes operacionais como os percentuais de spread, comissionamento, vitaliciedade e demais diretrizes de remuneração encontram-se especificados nas seções \"Produtos com Administradora\" e \"Plano Empresarial\" ao longo deste documento.";
+/** Textos padrão dos tópicos 4 e 5 antes do PJ+ passar a ser distribuído por Agenciadoras e Corretoras Autorizadas (13/11/2026). */
+export const EMPRESARIAL_SO_CORRETORAS = "A seguir, apresentamos a tabela de preços e as condições comerciais de remuneração do Plano Empresarial (PJ+), para empresas com 100 ou mais vidas, com boletagem pela operadora e distribuição por meio de Corretoras.";
+export const CONCLUSAO_SO_CORRETORAS = "Com esta proposta, o Bensaúde reafirma o compromisso de levar a Uberaba produtos de saúde com preço justo e qualidade assistencial. Contamos com a parceria da Lancers Administradora e de suas Plataformas Associadas, das Corretoras e da Siga Soluções para construir, juntos, uma operação sólida e duradoura, e permanecemos à disposição para os próximos passos.";
 const atualizarReferencia = (t: TextosSecoes): TextosSecoes => ({
   ...t,
   ...([REFERENCIA_ANTERIOR, REFERENCIA_LONGA].includes(t.referencia.trim()) ? { referencia: TEXTOS_PADRAO.referencia } : {}),
   ...([INTRODUCAO_ANTERIOR, INTRODUCAO_SEM_ATRIBUICAO, INTRODUCAO_LONGA].includes(t.introducao.trim()) ? { introducao: TEXTOS_PADRAO.introducao } : {}),
+  ...(t.empresarial.trim() === EMPRESARIAL_SO_CORRETORAS ? { empresarial: TEXTOS_PADRAO.empresarial } : {}),
+  ...(t.conclusao.trim() === CONCLUSAO_SO_CORRETORAS ? { conclusao: TEXTOS_PADRAO.conclusao } : {}),
 });
 
 export const textosPadrao = (): TextosSecoes => ({ ...TEXTOS_PADRAO });

@@ -145,3 +145,19 @@ describe("Introdução e Tabela Referencial resumidas", () => {
     expect(lerTextos(storage).aprovado?.referencia).toBe(PADRAO_INTRO.referencia);
   });
 });
+
+import { CONCLUSAO_SO_CORRETORAS, EMPRESARIAL_SO_CORRETORAS } from "./uberabaPropostaTextos";
+
+describe("PJ+ distribuído por Agenciadoras e Corretoras Autorizadas", () => {
+  it("textos padrão dos tópicos 4 e 5 citam Agenciadoras e Corretoras Autorizadas", () => {
+    expect(PADRAO_INTRO.empresarial).toContain("distribuição por meio de Agenciadoras e Corretoras Autorizadas");
+    expect(PADRAO_INTRO.conclusao).toContain("das Agenciadoras e Corretoras Autorizadas");
+  });
+  it("textos guardados com a versão antiga (só Corretoras) passam para a atual", async () => {
+    const { lerTextos, CHAVE_TEXTOS } = await import("./uberabaPropostaTextos");
+    const aprovado = { ...PADRAO_INTRO, empresarial: EMPRESARIAL_SO_CORRETORAS, conclusao: CONCLUSAO_SO_CORRETORAS };
+    const storage = { getItem: (k: string) => (k === CHAVE_TEXTOS ? JSON.stringify({ aprovado }) : null) };
+    expect(lerTextos(storage).aprovado?.empresarial).toBe(PADRAO_INTRO.empresarial);
+    expect(lerTextos(storage).aprovado?.conclusao).toBe(PADRAO_INTRO.conclusao);
+  });
+});
