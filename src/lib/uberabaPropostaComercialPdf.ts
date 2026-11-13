@@ -33,11 +33,13 @@ export const FONTES_PROPOSTA = {
   secaoQuadro: 11,
   tabelaReferencia: 12,
   cabecalhoReferencia: 11,
-  tabela: 11,
+  tabela: 14,
   cabecalhoTabela: 11,
   indicador: 11,
   rotulo: 11,
   fator: 12,
+  rotuloPrecos: 12,
+  fatorPrecos: 13,
   rodape: 11,
 } as const;
 const F = FONTES_PROPOSTA;
@@ -162,7 +164,6 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   const ALTURA_TITULO_SECAO = 7;
   const LARGURA_VALOR = 15;
   const ALTURA_NOME_QUADRO = 12;
-  const ALTURA_LINHA_FATOR = alturaLinha(F.rotulo) * 0.9;
 
   // Título de contêiner (TABELAS / INDICADORES VARIÁVEIS), como na tela.
   const tituloSecao = (texto: string, x: number, yy: number) => {
@@ -244,6 +245,11 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     const ySecT = cabecalhoQuadros(inicio);
     xs.forEach((x) => tituloSecao("TABELAS", x, ySecT));
     let fimP = ySecT + ALTURA_TITULO_SECAO;
+    // As linhas crescem até o tópico preencher o resto da folha; o tópico seguinte começa na folha seguinte.
+    const linhaFator = alturaLinha(F.rotuloPrecos) * 0.9;
+    const fixo = ALTURA_NOME_QUADRO + ALTURA_TITULO_SECAO + 6 + linhaFator + 5;
+    const nLinhas = Math.max(1, ...quadros.map((q) => q.linhas.length)) + 1;
+    const alturaLinhaPreco = Math.min(16, Math.max(7, (pageH - bottom - inicio - fixo) / nLinhas));
     quadros.forEach((q, k) => {
       autoTable(doc, {
         theme: "plain",
@@ -252,7 +258,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
         margin: margem(xs[k] + inset, wSec),
         head: [["FAIXA", "ENFERMARIA"]],
         body: q.linhas,
-        styles: { font: "helvetica", fontSize: F.tabela, cellPadding: { top: 1.3, bottom: 1.3, left: 1.5, right: 1.5 }, textColor: PDF_COLORS.text, halign: "center" },
+        styles: { font: "helvetica", fontSize: F.tabela, cellPadding: { top: 1, bottom: 1, left: 1.5, right: 1.5 }, minCellHeight: alturaLinhaPreco, valign: "middle", textColor: PDF_COLORS.text, halign: "center" },
         headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: F.cabecalhoTabela },
         alternateRowStyles: { fillColor: ZEBRA },
         didDrawCell: (c) => {
@@ -274,24 +280,24 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
       doc.setFont("helvetica", "bold");
       // "APARTAMENTO fator" e, abaixo, "x ENFERMARIA", centralizados no quadro (o tamanho padrão não cabe numa linha só).
       const cx = x + wSec / 2;
-      doc.setFontSize(F.rotulo);
+      doc.setFontSize(F.rotuloPrecos);
       const wA = doc.getTextWidth("APARTAMENTO") + 1.6;
-      doc.setFontSize(F.fator);
+      doc.setFontSize(F.fatorPrecos);
       const wF = doc.getTextWidth(q.fator);
       let xx = cx - (wA + wF) / 2;
-      doc.setFontSize(F.rotulo);
+      doc.setFontSize(F.rotuloPrecos);
       doc.setTextColor(...SECUNDARIO);
       doc.text("APARTAMENTO", xx, yFator);
       xx += wA;
-      doc.setFontSize(F.fator);
+      doc.setFontSize(F.fatorPrecos);
       doc.setTextColor(...TINTA);
       doc.text(q.fator, xx, yFator);
-      doc.setFontSize(F.rotulo);
+      doc.setFontSize(F.rotuloPrecos);
       doc.setTextColor(...SECUNDARIO);
-      doc.text("x ENFERMARIA", cx, yFator + ALTURA_LINHA_FATOR, { align: "center" });
-      contornoSecao(xs[k], ySecT, yFator + ALTURA_LINHA_FATOR + 3);
+      doc.text("x ENFERMARIA", cx, yFator + linhaFator, { align: "center" });
+      contornoSecao(xs[k], ySecT, yFator + linhaFator + 3);
     });
-    const fimQ = yFator + ALTURA_LINHA_FATOR + 5;
+    const fimQ = yFator + linhaFator + 5;
     contornoQuadros(inicio, fimQ);
     y = fimQ + 11;
     doc.setPage(doc.getNumberOfPages());
