@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { receitaVidaMes, despesaMediaPadrao, copartPadrao, replicarParametro, coparticipacaoVidaMes, calcularSimulacao, calcularSimulacaoComercial, comercialDaFrente, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, relatorioMemoriaCalculo, parametrosMemoriaCalculo, simularPorBase, replicarSinistralidade, resultadoTotalEnte, ENTES_RESULTADO } from './uberabaSimulacao';
+import { netVidaMes, receitaVidaMes, despesaMediaPadrao, copartPadrao, replicarParametro, coparticipacaoVidaMes, calcularSimulacao, calcularSimulacaoComercial, comercialDaFrente, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, relatorioMemoriaCalculo, parametrosMemoriaCalculo, simularPorBase, replicarSinistralidade, resultadoTotalEnte, ENTES_RESULTADO } from './uberabaSimulacao';
 import padroesHistoricos from '@/data/uberabaSimulacao/configuracao_padrao.json';
 import { INDICES_PADRAO, indicadoresPadrao, tabelaIndexada } from './uberabaTabelasComerciais';
 const padrao=padroesHistoricos[0];
@@ -392,6 +392,11 @@ describe('Desp. Assist. média e % Copart (pedido de 13/11/2026)', () => {
   });
   it('Receitas por vida/mês = mensalidade média + copart. (56,09 com os padrões)', () => {
     rs.forEach(r => expect(receitaVidaMes(r)).toBeCloseTo(r.media + 56.09, 9));
+  });
+  it('Net média = mensalidade média × participação OPERADORA (77% no PCA com 23% de ADMINISTRADORA)', () => {
+    rs.forEach(r => expect(netVidaMes(r)).toBeCloseTo(r.media * r.condicao.participacao_bensaude, 9));
+    expect(rs[0].condicao.participacao_bensaude).toBeCloseTo(0.77, 9);
+    expect(netVidaMes(rs[0])).toBeCloseTo(rs[0].media * 0.77, 9);
   });
   it('memória de cálculo da coparticipação mostra a conta mês a mês, despesa média e %', () => {
     const m = memoriaCalculo('bensaude.coparticipacao', rs, nomesR);
