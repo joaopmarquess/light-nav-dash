@@ -76,9 +76,9 @@ import { TOPICOS_PROPOSTA, linhasReferencia } from "./uberabaPropostaComercialPd
 
 describe("Proposta · tópicos", () => {
   it("Glossário continua como último tópico", () => {
-    expect(TOPICOS_PROPOSTA).toEqual(["1. Introdução", "2. Tabela Referência", "3. Tabelas", "4. Proposta de Remuneração", "5. Descrição da Proposta", "6. Glossário e Notas Explicativas"]);
+    expect(TOPICOS_PROPOSTA).toEqual(["1. Introdução", "2. Tabela Referencial", "3. Tabelas", "4. Proposta de Remuneração", "5. Descrição da Proposta", "6. Glossário e Notas Explicativas"]);
   });
-  it("Tabela Referência traz Enfermaria e Apartamento a 100%", () => {
+  it("Tabela Referencial traz Enfermaria e Apartamento a 100%", () => {
     expect(linhasReferencia()[0]).toEqual(["00 a 18", "175,00", "218,75"]);
     expect(linhasReferencia()).toHaveLength(10);
   });

@@ -43,15 +43,15 @@ REGRAS INVIOLÁVEIS
 1. Use somente os fatos que estão nos DADOS enviados. Não invente nem suponha preços, percentuais, descontos, prazos, carências, coparticipação, reajustes, datas, vigência, validade, abrangência, rede credenciada, hospitais, documentos, formas de pagamento ou qualquer outra condição comercial.
 2. Todo número que você escrever deve aparecer nos DADOS exatamente com a mesma grafia (por exemplo "1,25", "23%", "157,50"). Não calcule médias, totais, diferenças ou novos valores.
 3. Quando a seção precisar de uma informação que não está nos DADOS, escreva um marcador entre colchetes no formato [A definir: o que falta]. Nunca preencha a lacuna com suposições.
-4. Não repita as tabelas faixa a faixa: o sistema as insere nos tópicos 2 · Tabela Referência e 3 · Tabelas. Refira-se a elas pelo nome.
+4. Não repita as tabelas faixa a faixa: o sistema as insere nos tópicos 2 · Tabela Referencial e 3 · Tabelas. Refira-se a elas pelo nome.
 5. Sem markdown, títulos, numeração ou listas com marcadores. Cada seção tem de 1 a 3 parágrafos curtos, separados por uma linha em branco.
 
 ESTRUTURA DA PROPOSTA (o texto de cada seção abre o tópico; tabelas e quadros são inseridos logo abaixo pelo sistema)
-1. Introdução · 2. Tabela Referência · 3. Tabelas · 4. Proposta de Remuneração · 5. Descrição da Proposta · 6. Glossário e Notas Explicativas.
+1. Introdução · 2. Tabela Referencial · 3. Tabelas · 4. Proposta de Remuneração · 5. Descrição da Proposta · 6. Glossário e Notas Explicativas.
 
 SEÇÕES
 - introducao: apresenta a Proposta Comercial do Bensaúde para o projeto Bensaúde|Uberaba, as tabelas que ela traz (pelo nome) e como o documento está organizado nos tópicos acima.
-- referencia: explica que a tabela Referência (logo abaixo) é a base de 100% por faixa etária, com Enfermaria e Apartamento, e que o Apartamento segue a regra da Referência (DADOS.referencia.regraApartamento). Não repita valores das faixas.
+- referencia: explica que a Tabela Referencial (logo abaixo) é a base de 100% por faixa etária, com Enfermaria e Apartamento, e que o Apartamento segue a regra da Tabela Referencial (DADOS.referencia.regraApartamento). Não repita valores das faixas.
 - tabelas: explica que cada tabela (nome e segmento) é a Referência multiplicada pelo seu índice e que o Apartamento usa o fator de cada tabela; os quadros vêm logo abaixo. Não repita valores das faixas.
 - remuneracao: por tabela, a Participação, o Agenciamento e a Taxa de adesão (quando houver), com os percentuais e as fórmulas dos DADOS (por exemplo "Operadora = 100% − Spread"); os quadros vêm logo abaixo.
 - descricao: descreve a proposta — tabelas/modalidades pelo nome e segmento, acomodações Enfermaria e Apartamento — e registra com marcadores [A definir: ...] o que os DADOS não trazem, no mínimo rede assistencial, vigência e validade da proposta.`;

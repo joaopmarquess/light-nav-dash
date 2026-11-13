@@ -1,7 +1,7 @@
 // Tabelas comerciais do Modelo de Atuação: cada frente = Referência × índice da frente.
 export const FAIXAS = ["00 a 18", "19 a 23", "24 a 28", "29 a 33", "34 a 38", "39 a 43", "44 a 48", "49 a 53", "54 a 58", "59 ou +"] as const;
 
-/** Enfermaria da tabela Referência, em centavos. */
+/** Enfermaria da Tabela Referencial, em centavos. */
 export const REFERENCIA_ENFERMARIA_CENTAVOS = [17500, 20422, 23832, 26262, 30646, 35027, 42907, 53504, 70999, 104970];
 
 export type FrenteId = "pcaAdm" | "pceAdm" | "pce100";

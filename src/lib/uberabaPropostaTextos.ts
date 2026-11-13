@@ -6,13 +6,13 @@ import {
 } from "@/lib/uberabaTabelasComerciais";
 
 /**
- * Tópicos da Proposta com texto: Introdução; Tabela Referência (texto + tabela Referência);
+ * Tópicos da Proposta com texto: Introdução; Tabela Referencial (texto + Tabela Referencial);
  * Tabelas (texto + quadros de preços); Proposta de Remuneração (texto + Indicadores variáveis);
  * Descrição da Proposta (produtos, segmentos, acomodações e o que ainda falta definir). O Glossário vem por último.
  */
 export const SECOES_TEXTO = [
   { id: "introducao", titulo: "1. Introdução" },
-  { id: "referencia", titulo: "2. Tabela Referência" },
+  { id: "referencia", titulo: "2. Tabela Referencial" },
   { id: "tabelas", titulo: "3. Tabelas" },
   { id: "remuneracao", titulo: "4. Proposta de Remuneração" },
   { id: "descricao", titulo: "5. Descrição da Proposta" },

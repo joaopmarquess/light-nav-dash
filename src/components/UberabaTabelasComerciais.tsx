@@ -17,7 +17,7 @@ export const FRENTES: Frente[] = FRENTES_COMERCIAIS.map((f) => ({ ...f, cor: COR
 
 const REFERENCIA = linhasDe(100);
 
-// Sem `apartamento`, a coluna Apartamento fica sempre visível (ex.: tabela Referência).
+// Sem `apartamento`, a coluna Apartamento fica sempre visível (ex.: Tabela Referencial).
 type ApartamentoToggle = { visivel: boolean; alternar: () => void };
 
 const BotaoApartamento = ({ t }: { t: ApartamentoToggle }) => {
@@ -100,7 +100,7 @@ const IndiceCampo = ({ f, valor, onChange }: { f: Frente; valor: number; onChang
   useEffect(() => { setTexto(String(valor).replace(".", ",")); }, [valor]);
   const id = `indice-${f.id}`;
   return (
-    <label htmlFor={id} className="comercial-indice" title={`x Referência · índice sobre a tabela Referência · padrão ${INDICES_PADRAO[f.id]}%`}>
+    <label htmlFor={id} className="comercial-indice" title={`x Referência · índice sobre a Tabela Referencial · padrão ${INDICES_PADRAO[f.id]}%`}>
       <Input
         id={id}
         aria-label={`Índice ${f.titulo} x Referência`}

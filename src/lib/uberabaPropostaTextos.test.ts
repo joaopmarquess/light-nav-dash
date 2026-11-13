@@ -65,10 +65,10 @@ describe("revisão antes do PDF", () => {
 });
 
 describe("tópicos da Proposta", () => {
-  it("segue a ordem Introdução, Tabela Referência, Tabelas, Proposta de Remuneração e Descrição da Proposta", () => {
-    expect(SECOES_TEXTO.map((s) => s.titulo)).toEqual(["1. Introdução", "2. Tabela Referência", "3. Tabelas", "4. Proposta de Remuneração", "5. Descrição da Proposta"]);
+  it("segue a ordem Introdução, Tabela Referencial, Tabelas, Proposta de Remuneração e Descrição da Proposta", () => {
+    expect(SECOES_TEXTO.map((s) => s.titulo)).toEqual(["1. Introdução", "2. Tabela Referencial", "3. Tabelas", "4. Proposta de Remuneração", "5. Descrição da Proposta"]);
   });
-  it("a IA recebe a tabela Referência a 100% com o fator padrão", () => {
+  it("a IA recebe a Tabela Referencial a 100% com o fator padrão", () => {
     const r = padrao().referencia;
     expect(r.fatorApartamento).toBe("1,25");
     expect(r.faixas[0]).toEqual({ faixa: "00 a 18", enfermaria: "175,00", apartamento: "218,75" });

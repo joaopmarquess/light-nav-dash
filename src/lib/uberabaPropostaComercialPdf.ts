@@ -22,7 +22,7 @@ const LINHA: RGB = [95, 105, 115];
 const SECUNDARIO: RGB = [35, 42, 50];
 const RODAPE: RGB = [45, 45, 45];
 
-/** Tópico 2 · Tabela Referência: Faixa × Enfermaria × Apartamento a 100%, com o fator padrão. */
+/** Tópico 2 · Tabela Referencial: Faixa × Enfermaria × Apartamento a 100%, com o fator padrão. */
 export function linhasReferencia(): [string, string, string][] {
   return tabelaReferencia().map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos), formatarCentavos(l.apartamentoCentavos)]);
 }
@@ -47,7 +47,7 @@ export function quadrosProposta(indices: Indices = INDICES_PADRAO, indicadores: 
 }
 
 // Proposta Comercial Bensaúde|Uberaba — cada tópico abre com o texto revisado (rascunho da IA aprovado pelo usuário) ou,
-// sem aprovação, com Lorem ipsum; os tópicos 2, 3 e 4 seguem com a tabela Referência, os quadros de preços e os Indicadores variáveis.
+// sem aprovação, com Lorem ipsum; os tópicos 2, 3 e 4 seguem com a Tabela Referencial, os quadros de preços e os Indicadores variáveis.
 const LOREM = [
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus posuere velit aliquet. Cras mattis consectetur purus sit amet fermentum. Donec ullamcorper nulla non metus auctor fringilla.",
   "Sed posuere consectetur est at lobortis. Maecenas faucibus mollis interdum. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Nullam quis risus eget urna mollis ornare vel eu leo. Aenean lacinia bibendum nulla sed consectetur.",
@@ -203,7 +203,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     doc.setDrawColor(0);
   };
 
-  // Tópico 2: tabela Referência (100%), com Enfermaria e Apartamento pelo fator padrão.
+  // Tópico 2: Tabela Referencial (100%), com Enfermaria e Apartamento pelo fator padrão.
   const desenharReferencia = () => {
     const w = Math.min(120, usableW);
     const x = marginL + (usableW - w) / 2;
