@@ -176,6 +176,11 @@ export type ResultadoSimulacao = ReturnType<typeof calcularSimulacao>;
 export function receitaVidaMes(r: ResultadoSimulacao) {
   return r.media + coparticipacaoVidaMes(r.config);
 }
+/** % Sinistral. calc. nos Parâmetros (pedido de 13/11/2026): Desp. Assist. média ÷ Receitas por vida/mês (só referência). */
+export function sinistralidadeCalculada(r: ResultadoSimulacao) {
+  const receitas = receitaVidaMes(r);
+  return receitas > 0 ? (r.config.despesa_media ?? 0) / receitas : 0;
+}
 export function consolidarFaixasSimulacao(resultados: ResultadoSimulacao[]) {
   const totalEntradas = resultados.reduce((s, r) => s + r.config.total_vidas, 0);
   const linhas = faixas.map((f, i) => {
