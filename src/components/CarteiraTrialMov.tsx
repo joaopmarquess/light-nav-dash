@@ -222,6 +222,12 @@ export default function CarteiraTrialMov() {
   const buscar = () => { if (podeCalcularMovimentacao(f)) { resetDetalhes(); cacheVidas.current.clear(); cacheDetalhes.current.clear(); setPaginaMeses(0); setMesSelecionado(null); setAp({ ...f }); } };
   const limpar = () => { resetDetalhes(); setMesSelecionado(null); cacheVidas.current.clear(); cacheDetalhes.current.clear(); setTotais(null); setMensal([]); setTotaisMensais({}); setF(EMPTY()); setAp(null); setErr(null); setLoading(false); setVidas({ ant: null, fin: null }); };
   const selecionarMes = (mes: F | null) => { resetDetalhes(); setErr(null); setMesSelecionado(mes); };
+  // A lista de um card abre abaixo do gráfico: traz a lista para a área visível ao abrir.
+  const listaRef = useRef<HTMLDivElement>(null);
+  const listaVisivel = Boolean(sel && !loading && !detalhesLoading && detalhesProntos);
+  useEffect(() => {
+    if (listaVisivel) listaRef.current?.scrollIntoView?.({ behavior: "smooth", block: "nearest" });
+  }, [listaVisivel, sel]);
   const v = (n: number) => (detalhesLoading || !detalhesProntos ? "…" : num(n));
 
   const card = (label: string, value: number | null, Icon: typeof Users, negative = false, tipo: Tipo | null = null, neutral = false) => (
@@ -277,7 +283,7 @@ export default function CarteiraTrialMov() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="h-full min-h-0 space-y-4 overflow-y-auto pr-1">
       {loading && <div role="status" aria-live="polite" className="flex items-center gap-2 text-sm text-muted-foreground">
         <LoaderCircle aria-hidden="true" className="h-5 w-5 text-primary motion-safe:animate-spin" />{etapa}
       </div>}
@@ -315,7 +321,7 @@ export default function CarteiraTrialMov() {
       {mensalLoading && <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-5 w-5 motion-safe:animate-spin" />Consultando vidas no fechamento de cada mês…</div>}
       {mensalErro && <div role="alert" className="text-destructive">Erro no gráfico: {mensalErro}</div>}
       {cortado && <div className="text-xs text-muted-foreground">Limite de busca atingido, reduza o período.</div>}
-      <div className={`grid h-[900px] w-full min-w-0 sm:h-[680px] motion-safe:transition-[grid-template-rows] motion-safe:duration-500 motion-safe:ease-in-out ${depuracaoAberta ? "grid-rows-[520px_minmax(0,1fr)] xl:grid-rows-[360px_minmax(0,1fr)]" : "grid-rows-[0px_minmax(0,1fr)]"}`}>
+      <div className={`grid h-[900px] w-full min-w-0 sm:h-[max(600px,calc(100vh-28rem))] motion-safe:transition-[grid-template-rows] motion-safe:duration-500 motion-safe:ease-in-out ${depuracaoAberta ? "grid-rows-[520px_minmax(0,1fr)] xl:grid-rows-[360px_minmax(0,1fr)]" : "grid-rows-[0px_minmax(0,1fr)]"}`}>
       <div className={`min-h-0 overflow-hidden motion-safe:transition-opacity motion-safe:duration-500 ${depuracaoAberta ? "visible opacity-100" : "invisible opacity-0"}`} aria-hidden={!depuracaoAberta}>
       <section id="depuracao-transferencias" className="h-full space-y-5 overflow-auto border-t pb-4 pt-5">
         <h2 className="text-lg font-semibold">Saldo das Transferências: <span className="tabular-nums">{num(resumo.transferenciasLiquidas)}</span></h2>
@@ -333,7 +339,7 @@ export default function CarteiraTrialMov() {
       {sel && !depuracaoAberta && detalhesLoading && <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-5 w-5 motion-safe:animate-spin" />{detalhesEtapa}</div>}
       {sel && !depuracaoAberta && detalhesErro && <div role="alert" className="text-destructive">Erro: {detalhesErro}</div>}
       {sel && !loading && !detalhesLoading && detalhesProntos && (
-        <div className="rounded-xl border bg-card overflow-auto max-h-[60vh]">
+        <div ref={listaRef} className="scroll-mt-4 rounded-xl border bg-card overflow-auto max-h-[60vh]">
           <div className="px-4 py-2 text-sm font-medium border-b">{sel.tipo}{sel.sub ? ` · ${sel.sub === "Pura" ? "Direta" : sel.sub}` : ""} · {num(lista.length)} registro(s){isT ? " · ligação por CPF" : ""}</div>
           <table className="w-full text-xs">
             <thead className="bg-muted/40 sticky top-0">
