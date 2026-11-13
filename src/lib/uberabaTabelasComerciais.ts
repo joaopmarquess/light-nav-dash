@@ -131,8 +131,8 @@ export const ADESAO_PADRAO_ADMINISTRADAS = 50;
 
 /**
  * Modelo de participação por frente:
- * - "administradora": Spread editável; Operadora = 100 − Spread; com Taxa de adesão (sem Administradora nem Agenciadora desde 13/11/2026).
- * - "vitalicio" (PJ+, boletagem pela Operadora): Vitalício editável (guardado em `spread`); Operadora = 100 − Vitalício; Agenciadora = Vitalício; sem Taxa de adesão.
+ * - "administradora": Administradora editável (guardada em `spread`); Operadora = 100 − Administradora; com Taxa de adesão.
+ * - "vitalicio" (PJ+, boletagem pela Operadora): Agenciadora editável (guardada em `spread`); Operadora = 100 − Agenciadora; sem Taxa de adesão.
  */
 export type ModeloIndicadores = "administradora" | "vitalicio";
 export const MODELO_INDICADORES: Record<FrenteId, ModeloIndicadores> = { pcaAdm: "administradora", pmeAdm: "administradora", pceAdm: "administradora", pce100: "vitalicio" };
@@ -150,14 +150,14 @@ export const LIMITES_INDICADOR: Record<CampoIndicador, number> = { spread: 100, 
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
-/** Operadora = 100% − Spread. */
+/** Operadora = 100% − Administradora (guardada em `spread`). */
 export function derivarIndicadores(i: Indicadores) {
   return { operadora: r2(100 - i.spread) };
 }
 
-/** PJ+: Operadora = 100% − Vitalício; Agenciadora = Vitalício. */
+/** PJ+: Operadora = 100% − Agenciadora. */
 export function derivarVitalicio(i: Indicadores) {
-  return { operadora: r2(100 - i.spread), agenciadora: r2(i.spread) };
+  return { operadora: r2(100 - i.spread) };
 }
 
 /** Aceita "23", "4,5" ou "4.5"; devolve null fora de 0 – limite do campo. */
@@ -277,9 +277,8 @@ export function blocosIndicadores(id: FrenteId, i: Indicadores): BlocoIndicadore
     const v = derivarVitalicio(i);
     return [
       { titulo: "Participação", linhas: [
-        { rotulo: "Vitalício", campo: "spread", valor: i.spread },
-        { rotulo: "Operadora", valor: v.operadora, formula: "100% − Vitalício" },
-        { rotulo: "Agenciadora", valor: v.agenciadora, formula: "= Vitalício" },
+        { rotulo: "Agenciadora", campo: "spread", valor: i.spread },
+        { rotulo: "Operadora", valor: v.operadora, formula: "100% − Agenciadora" },
       ] },
       agenciamento,
     ];
@@ -287,8 +286,8 @@ export function blocosIndicadores(id: FrenteId, i: Indicadores): BlocoIndicadore
   const d = derivarIndicadores(i);
   return [
     { titulo: "Participação", linhas: [
-      { rotulo: "Spread", campo: "spread", valor: i.spread },
-      { rotulo: "Operadora", valor: d.operadora, formula: "100% − Spread" },
+      { rotulo: "Administradora", campo: "spread", valor: i.spread },
+      { rotulo: "Operadora", valor: d.operadora, formula: "100% − Administradora" },
     ] },
     agenciamento,
     { titulo: "Taxa de adesão", linhas: [{ rotulo: "Percentual", campo: "adesao", valor: i.adesao }] },

@@ -64,9 +64,11 @@ describe("indicadores variáveis Uberaba", () => {
     expect([t.spread, t.contratual, t.promocional]).toEqual([5, 90, 100]);
   });
 
-  it("PCE 100+: Operadora = 100 − Vitalício e Agenciadora = Vitalício", () => {
-    expect(derivarVitalicio({ ...INDICADORES_PADRAO, spread: 5 })).toEqual({ operadora: 95, agenciadora: 5 });
-    expect(derivarVitalicio({ ...INDICADORES_PADRAO, spread: 8 })).toEqual({ operadora: 92, agenciadora: 8 });
+  it("PJ+: Agenciadora 5% editável e Operadora = 100 − Agenciadora", () => {
+    expect(derivarVitalicio({ ...INDICADORES_PADRAO, spread: 5 })).toEqual({ operadora: 95 });
+    expect(derivarVitalicio({ ...INDICADORES_PADRAO, spread: 8 })).toEqual({ operadora: 92 });
+    const [participacao] = blocosIndicadores("pce100", lerIndicadores({ getItem: () => null }).pce100);
+    expect(participacao.linhas.map((l) => [l.rotulo, l.valor, l.campo ?? null])).toEqual([["Agenciadora", 5, "spread"], ["Operadora", 95, null]]);
   });
 
   it("valores antigos de PCE 100+ não substituem o novo padrão", () => {
@@ -76,10 +78,10 @@ describe("indicadores variáveis Uberaba", () => {
     expect([t.pce100.spread, t.pce100.promocional]).toEqual([5, 100]);
   });
 
-  it("Operadora = 100 − Spread, sem Administradora nem Agenciadora", () => {
+  it("Administradora (antes Spread) 23% e Operadora = 100 − Administradora", () => {
     expect(derivarIndicadores(INDICADORES_PADRAO)).toEqual({ operadora: 77 });
     expect(derivarIndicadores({ ...INDICADORES_PADRAO, spread: 30 })).toEqual({ operadora: 70 });
-    expect(blocosIndicadores("pmeAdm", INDICADORES_PADRAO)[0].linhas.map((l) => l.rotulo)).toEqual(["Spread", "Operadora"]);
+    expect(blocosIndicadores("pmeAdm", INDICADORES_PADRAO)[0].linhas.map((l) => l.rotulo)).toEqual(["Administradora", "Operadora"]);
   });
 
   it("Taxa de adesão das Administradas volta a 50% mesmo com valor antigo gravado", () => {
