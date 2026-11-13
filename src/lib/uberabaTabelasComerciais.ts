@@ -68,6 +68,22 @@ export function tabelaCheia(indicePercentual: number, participacaoPercentual: nu
   return tabelaIndexada(indiceCheio(indicePercentual, participacaoPercentual), fator);
 }
 
+/**
+ * Chave VENDA/NET da tela das tabelas (pedido do Dênis, 13/11/2026).
+ * VENDA = Referência × índice (tabelaIndexada). NET = VENDA × (100% − participação), onde a participação é a
+ * ADMINISTRADORA (spread) nos produtos com Administradora e a AGENCIADORA (vitalício) no PJ+, ambas em `spread`.
+ * Enfermaria NET = ARRED(Enfermaria VENDA × (100% − participação); 2); Apartamento NET = TRUNCAR(Enfermaria NET × fator; 2).
+ */
+export type BaseTabela = "venda" | "net";
+export const BASES_TABELA: { id: BaseTabela; rotulo: string }[] = [{ id: "venda", rotulo: "Venda" }, { id: "net", rotulo: "Net" }];
+export function tabelaNet(indicePercentual: number, participacaoPercentual: number, fator: number = FATOR_APARTAMENTO_PADRAO): LinhaTabela[] {
+  const liquido = Math.round((100 - participacaoPercentual) * 100);
+  return tabelaIndexada(indicePercentual, fator).map((l) => {
+    const enf = Math.round((l.enfermariaCentavos * liquido) / 10000);
+    return { faixa: l.faixa, enfermariaCentavos: enf, apartamentoCentavos: apartamentoDe(enf, fator) };
+  });
+}
+
 /** Aceita "1,25" ou "1.25" (até 4 casas); devolve null fora de 1–3. */
 export function parseFator(texto: string): number | null {
   const t = texto.trim().replace(",", ".");
