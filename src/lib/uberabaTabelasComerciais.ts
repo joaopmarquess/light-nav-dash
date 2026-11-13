@@ -178,9 +178,9 @@ export function gravarIndicadores(v: IndicadoresPorFrente, storage: Pick<Storage
 // ---------- Quadros das frentes (tela e Proposta Comercial) ----------
 /** Nome e segmento de cada frente, na ordem da tela. */
 export const FRENTES_COMERCIAIS: { id: FrenteId; titulo: string; segmento: string }[] = [
-  { id: "pcaAdm", titulo: "PCA Adm.", segmento: "ADESÃO" },
-  { id: "pceAdm", titulo: "PCE Adm.", segmento: "MÉDIAS EMPRESAS" },
-  { id: "pce100", titulo: "PCE 100+", segmento: "GRANDES EMPRESAS" },
+  { id: "pcaAdm", titulo: "Plano Coletivo por Adesão", segmento: "ADESÃO" },
+  { id: "pceAdm", titulo: "PME Administrada (02 a 99 vidas)", segmento: "MÉDIAS EMPRESAS" },
+  { id: "pce100", titulo: "Plano Empresarial 100+", segmento: "GRANDES EMPRESAS" },
 ];
 
 // ---------- Nome e segmento de cada quadro (redigitáveis na tela) ----------
@@ -195,9 +195,9 @@ export function normalizarRotulo(texto: unknown, padrao: string): string {
   const t = texto.replace(/\s+/g, " ").trim().slice(0, ROTULO_MAX).trim();
   return t || padrao;
 }
-const CHAVE_ROTULOS = "uberaba-tabelas-comerciais-rotulos-v1";
+const CHAVE_ROTULOS = "uberaba-tabelas-comerciais-rotulos-v2";
 /** Padrão gravado pelo usuário (ícone ao lado do nome); sem gravação, valem os nomes originais. */
-const CHAVE_ROTULOS_PADRAO = "uberaba-tabelas-comerciais-rotulos-padrao-v1";
+const CHAVE_ROTULOS_PADRAO = "uberaba-tabelas-comerciais-rotulos-padrao-v2";
 const lerRotulosDe = (storage: Pick<Storage, "getItem"> | undefined, chave: string, base: RotulosPorFrente): RotulosPorFrente => {
   const out: RotulosPorFrente = JSON.parse(JSON.stringify(base));
   try {

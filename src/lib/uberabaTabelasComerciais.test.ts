@@ -93,9 +93,18 @@ import { gravarRotulos, lerRotulos, normalizarRotulo, rotulosPadrao } from "./ub
 describe("nomes das tabelas (redigitáveis)", () => {
   it("defaults are the current table names and segments", () => {
     const r = rotulosPadrao();
-    expect(r.pcaAdm).toEqual({ titulo: "PCA Adm.", segmento: "ADESÃO" });
-    expect(r.pceAdm).toEqual({ titulo: "PCE Adm.", segmento: "MÉDIAS EMPRESAS" });
-    expect(r.pce100).toEqual({ titulo: "PCE 100+", segmento: "GRANDES EMPRESAS" });
+    expect(r.pcaAdm).toEqual({ titulo: "Plano Coletivo por Adesão", segmento: "ADESÃO" });
+    expect(r.pceAdm).toEqual({ titulo: "PME Administrada (02 a 99 vidas)", segmento: "MÉDIAS EMPRESAS" });
+    expect(r.pce100).toEqual({ titulo: "Plano Empresarial 100+", segmento: "GRANDES EMPRESAS" });
+  });
+  it("names saved before the rename do not hide the new labels", () => {
+    const mem = new Map<string, string>([
+      ["uberaba-tabelas-comerciais-rotulos-v1", JSON.stringify({ pcaAdm: { titulo: "PCA Adm.", segmento: "ADESÃO" } })],
+      ["uberaba-tabelas-comerciais-rotulos-padrao-v1", JSON.stringify({ pce100: { titulo: "PJ 100+", segmento: "GRANDES EMPRESAS" } })],
+    ]);
+    const st = { getItem: (k: string) => mem.get(k) ?? null };
+    expect(lerRotulos(st).pcaAdm.titulo).toBe("Plano Coletivo por Adesão");
+    expect(lerRotulos(st).pce100.titulo).toBe("Plano Empresarial 100+");
   });
   it("keeps one line and falls back to the default when empty", () => {
     expect(normalizarRotulo("  PCA\n  Novo  ", "PCA Adm.")).toBe("PCA Novo");
@@ -109,7 +118,7 @@ describe("nomes das tabelas (redigitáveis)", () => {
     gravarRotulos(r, st);
     const lido = lerRotulos(st);
     expect(lido.pce100).toEqual({ titulo: "PJ 100+", segmento: "GRANDES EMPRESAS" });
-    expect(lido.pcaAdm.titulo).toBe("PCA Adm.");
+    expect(lido.pcaAdm.titulo).toBe("Plano Coletivo por Adesão");
   });
 });
 
@@ -128,7 +137,7 @@ describe("novo padrão para o nome das tabelas", () => {
     expect(lerPadraoRotulos(st).pce100.titulo).toBe("PJ 100+");
     expect(lerRotulos(st).pce100.titulo).toBe("PJ 100+");
     expect(normalizarRotulo("", lerPadraoRotulos(st).pce100.titulo)).toBe("PJ 100+");
-    expect(lerPadraoRotulos(st).pcaAdm.titulo).toBe("PCA Adm.");
+    expect(lerPadraoRotulos(st).pcaAdm.titulo).toBe("Plano Coletivo por Adesão");
   });
 });
 

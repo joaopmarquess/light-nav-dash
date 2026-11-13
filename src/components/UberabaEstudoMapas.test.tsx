@@ -51,8 +51,18 @@ describe("Estudo view selection", () => {
     abrir();
     fireEvent.click(screen.getByRole("button", { name: "Simulações" }));
     const grupo = screen.getByRole("group", { name: "Simulações do Estudo" });
-    expect(Array.from(grupo.querySelectorAll("button")).map((b) => b.textContent)).toEqual(["Condições Comerciais", "Resultados Comerciais", "Condições Rede", "Resultados Rede"]);
-    expect(screen.getByRole("button", { name: "Condições Comerciais" })).toHaveAttribute("aria-pressed", "true");
+    expect(Array.from(grupo.querySelectorAll("button")).map((b) => b.textContent)).toEqual(["Resultados Comerciais", "Condições Rede", "Resultados Rede"]);
+    expect(screen.getByRole("button", { name: "Resultados Comerciais" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("shows Condições Comerciais as a collapsed container inside Resultados Comerciais", () => {
+    abrir();
+    fireEvent.click(screen.getByRole("button", { name: "Simulações" }));
+    const botao = screen.getByRole("button", { name: "Expandir Condições Comerciais" });
+    expect(botao).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("region", { name: "Variáveis por modalidade", hidden: true })).not.toBeVisible();
+    fireEvent.click(botao);
+    expect(screen.getByRole("region", { name: "Variáveis por modalidade" })).toBeVisible();
   });
 
   it("opens the Gestão Rede view with its variables", () => {
@@ -65,9 +75,9 @@ describe("Estudo view selection", () => {
   it("opens the Comercial tables with their indices", () => {
     abrir();
     abrirSimulacoes("Resultados Comerciais");
-    expect(screen.getByLabelText("Índice PCA Adm. x Referência")).toHaveValue("90");
-    expect(screen.getByLabelText("Índice PCE Adm. x Referência")).toHaveValue("80");
-    expect(screen.getByLabelText("Índice PCE 100+ x Referência")).toHaveValue("70");
+    expect(screen.getByLabelText("Índice Plano Coletivo por Adesão x Referência")).toHaveValue("90");
+    expect(screen.getByLabelText("Índice PME Administrada (02 a 99 vidas) x Referência")).toHaveValue("80");
+    expect(screen.getByLabelText("Índice Plano Empresarial 100+ x Referência")).toHaveValue("70");
     expect(screen.getByRole("button", { name: "Referência" })).toBeVisible();
   });
 

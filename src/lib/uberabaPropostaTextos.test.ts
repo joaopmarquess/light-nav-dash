@@ -12,7 +12,7 @@ const memoria = () => { const m = new Map<string, string>(); return { getItem: (
 describe("dados enviados à IA", () => {
   it("leva as três tabelas com nome, índice, fator e preços formatados como no PDF", () => {
     const d = padrao();
-    expect(d.tabelas.map((t) => t.nome)).toEqual(["PCA Adm.", "PCE Adm.", "PCE 100+"]);
+    expect(d.tabelas.map((t) => t.nome)).toEqual(["Plano Coletivo por Adesão", "PME Administrada (02 a 99 vidas)", "Plano Empresarial 100+"]);
     expect(d.tabelas[0].indiceSobreReferencia).toBe("90%");
     expect(d.tabelas[0].fatorApartamento).toBe("1,25");
     expect(d.tabelas[0].faixas[0]).toEqual({ faixa: "00 a 18", enfermaria: "157,50", apartamento: "196,87" });
@@ -26,6 +26,7 @@ describe("dados enviados à IA", () => {
 
 describe("conferência de números do rascunho", () => {
   it("aceita números que estão nas tabelas", () => {
+    expect(numerosForaDasTabelas("A PME Administrada (02 a 99 vidas) usa a Referência.", padrao())).toEqual([]);
     expect(numerosForaDasTabelas("PCA Adm. com índice de 90%, fator 1,25, Spread de 23% e faixa 00 a 18 por 157,50.", padrao())).toEqual([]);
   });
   it("aponta números inventados", () => {

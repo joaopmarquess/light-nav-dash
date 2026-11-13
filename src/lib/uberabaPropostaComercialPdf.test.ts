@@ -4,7 +4,7 @@ import { indicadoresPadrao } from "./uberabaTabelasComerciais";
 
 describe("Proposta Comercial › 1. Tabelas", () => {
   it("lists the three Resultados Comerciais fronts in screen order", () => {
-    expect(quadrosProposta().map((q) => q.titulo)).toEqual(["PCA Adm.", "PCE Adm.", "PCE 100+"]);
+    expect(quadrosProposta().map((q) => q.titulo)).toEqual(["Plano Coletivo por Adesão", "PME Administrada (02 a 99 vidas)", "Plano Empresarial 100+"]);
   });
   it("uses Faixa × Enfermaria at each table's index (90/80/70% by default)", () => {
     const [pca, pce, pce100] = quadrosProposta();
@@ -68,7 +68,7 @@ describe("Proposta · fator do Apartamento", () => {
   });
   it("Glossário lists each table's factor when they differ", () => {
     expect(glossarioProposta({ ...FATORES_PADRAO, pcaAdm: 1.3 })[0].nota)
-      .toBe("Apartamento = TRUNCAR(Enfermaria × fator da tabela; 2), sendo:\nPCA Adm.: 1,30\nPCE Adm.: 1,25\nPCE 100+: 1,25");
+      .toBe("Apartamento = TRUNCAR(Enfermaria × fator da tabela; 2), sendo:\nPlano Coletivo por Adesão: 1,30\nPME Administrada (02 a 99 vidas): 1,25\nPlano Empresarial 100+: 1,25");
   });
 });
 
