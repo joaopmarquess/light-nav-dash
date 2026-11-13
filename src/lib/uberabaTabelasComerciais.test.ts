@@ -204,18 +204,3 @@ describe("parâmetros das tabelas (13/11/2026)", () => {
     expect(GRUPOS_FRENTES.map((g) => g.frentes)).toEqual([["pcaAdm", "pmeAdm", "pceAdm"], ["pce100"]]);
   });
 });
-
-import { tabelaNet } from "./uberabaTabelasComerciais";
-
-describe("chave VENDA/NET das tabelas", () => {
-  it("NET = Venda × (100% − Administradora): ADESÃO 95% com 23% → 166,25 × 77% = 128,01", () => {
-    expect(formatarCentavos(tabelaIndexada(95)[0].enfermariaCentavos)).toBe("166,25");
-    expect(formatarCentavos(tabelaNet(95, 23)[0].enfermariaCentavos)).toBe("128,01");
-  });
-  it("NET do Empresarial = Venda × (100% − Agenciadora): 131,25 × 95% = 124,69", () => {
-    expect(formatarCentavos(tabelaNet(75, 5)[0].enfermariaCentavos)).toBe("124,69");
-  });
-  it("Apartamento NET = TRUNCAR(Enfermaria NET × fator; 2)", () => {
-    expect(formatarCentavos(tabelaNet(75, 5)[0].apartamentoCentavos)).toBe("155,86");
-  });
-});

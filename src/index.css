@@ -870,7 +870,6 @@ All colors MUST be HSL.
 .comercial-pme { --commercial-color: hsl(var(--commercial-pme)); }
 .comercial-medias { --commercial-color: hsl(var(--hospital-blue)); }
 .comercial-parametros { margin: -8px 12px 10px; text-align: center; font-size: 13px; line-height: 1.35; color: hsl(var(--credential-secondary)); }
-.comercial-base-net { margin: 0 0 6px; text-align: center; font-size: 13px; font-style: italic; color: hsl(var(--credential-secondary)); }
 .comercial-parametros p:first-letter { text-transform: uppercase; }
 .comercial-parametros strong { color: var(--commercial-color); font-weight: 700; }
 .comercial-grandes { --commercial-color: hsl(var(--credential-nonmedical)); }

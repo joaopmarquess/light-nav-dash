@@ -18,7 +18,7 @@ describe("dados enviados à IA", () => {
     expect(d.tabelas[3]).toMatchObject({ sigla: "PJ+", vidas: "100 OU MAIS", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS" });
     expect(d.tabelas[0].indiceSobreReferencia).toBe("95%");
     expect(d.tabelas[0].fatorApartamento).toBe("1,25");
-    expect(d.tabelas[0].faixas[0]).toEqual({ faixa: "00 a 18", enfermaria: "166,25", apartamento: "207,81" });
+    expect(d.tabelas[0].faixas[0]).toEqual({ faixa: "00 a 18", enfermaria: "206,50", apartamento: "258,12" });
   });
   it("a assinatura muda quando o fator de uma tabela muda", () => {
     const outro = dadosRascunho(INDICES_PADRAO, indicadoresPadrao(), rotulosPadrao(), { ...FATORES_PADRAO, pcaAdm: 1.3 });
@@ -30,7 +30,7 @@ describe("dados enviados à IA", () => {
 describe("conferência de números do rascunho", () => {
   it("aceita números que estão nas tabelas", () => {
     expect(numerosForaDasTabelas("A PME ADM. (03 a 29 vidas), a PCE ADM. (30 a 99 vidas) e o PJ+ (100 ou mais vidas) usam a Referência.", padrao())).toEqual([]);
-    expect(numerosForaDasTabelas("PCA Adm. com índice de 95%, fator 1,25, Spread de 23% e faixa 00 a 18 por 166,25.", padrao())).toEqual([]);
+    expect(numerosForaDasTabelas("PCA Adm. com índice de 90%, fator 1,25, Spread de 23% e faixa 00 a 18 por 197,75.", padrao())).toEqual([]);
   });
   it("aponta números inventados", () => {
     expect(numerosForaDasTabelas("Carência de 45 dias e reajuste de 12,5%.", padrao())).toEqual(["45", "12,5"]);
@@ -174,7 +174,7 @@ describe("textos aprovados com números antigos", () => {
   it("aponta preço antigo e ignora faixas e vidas", () => {
     const aprovado = aprovarTextos(estadoVazio(), { ...TEXTOS_PADRAO, empresarial: "Faixa 00 a 18 por 122,50, para 100 ou mais vidas." });
     expect(topicosComNumerosAntigos(aprovado, padrao())).toEqual([SECOES_TEXTO[3].titulo]);
-    const atual = aprovarTextos(estadoVazio(), { ...TEXTOS_PADRAO, empresarial: "Faixa 00 a 18 por 131,25, para 100 ou mais vidas." });
+    const atual = aprovarTextos(estadoVazio(), { ...TEXTOS_PADRAO, empresarial: "Faixa 00 a 18 por 140,00, para 100 ou mais vidas." });
     expect(topicosComNumerosAntigos(atual, padrao())).toEqual([]);
   });
   it("não avisa sem texto aprovado", () => {
