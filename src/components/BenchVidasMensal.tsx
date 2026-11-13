@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ArrowRightLeft, ChevronRight, Download, GitCompareArrows, Plus, Search, TrendingDown, UserCheck, UserPlus, Users, X } from "lucide-react";
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip as Dica, XAxis, YAxis } from "recharts";
 import * as XLSX from "xlsx";
@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import catalogoTrimestral from "@/data/benchVidas/ans/catalogo.json";
 import catalogoJson from "@/data/benchVidas/mensal/catalogo.json";
 import { nomeOperadoraAns } from "@/lib/benchVidasAns";
-import { agregarMensal, ajustarFiltros, campoDisponivel, anosDoPeriodo, CAMPOS_MENSAL, camposCompativeis, competenciaMensal, cuboPara, INDICADORES_MENSAL, opcoesCampo, periodoPadrao, resumoMensal, rotuloValor, totalPeriodo, valorIndicador, type CampoMensal, type CatalogoMensal, type Filtros, type IndicadorMensal } from "@/lib/benchVidasMensal";
+import { agregarMensal, ajustarFiltros, campoDisponivel, anosDoPeriodo, CAMPOS_MENSAL, camposCompativeis, competenciaMensal, cuboPara, DETALHAR_PADRAO, formatarSublinha, INDICADORES_MENSAL, SUBLINHAS_MENSAL, opcoesCampo, periodoPadrao, resumoMensal, rotuloValor, totalPeriodo, valorIndicador, type CampoMensal, type CatalogoMensal, type Filtros, type IndicadorMensal } from "@/lib/benchVidasMensal";
 import { carregarVidasMensal } from "@/lib/benchVidasMensalDados";
 import { BenchVidasAtualizar } from "@/components/BenchVidasAtualizar";
 import BenchVidasComparar from "@/components/BenchVidasComparar";
@@ -72,7 +72,8 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
   }, [busca, selecionadas]);
   const [de, setDe] = useState(padrao.de); const [ate, setAte] = useState(padrao.ate);
   const [indicador, setIndicador] = useState<IndicadorMensal>("ativos");
-  const [detalhar, setDetalhar] = useState<CampoMensal>("municipio");
+  const [detalhar, setDetalhar] = useState<CampoMensal>(DETALHAR_PADRAO);
+  const [abertas, setAbertas] = useState<Set<number>>(new Set());
   const [filtros, setFiltros] = useState<Filtros>({});
   const [filtrosAbertos, setFiltrosAbertos] = useState(false);
   const [comparar, setComparar] = useState(false);
@@ -89,6 +90,8 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
     return () => { ativo = false; };
   }, [operadora, anos, cubo, tentativa]);
 
+  useEffect(() => { setAbertas(new Set()); }, [operadora, detalhar, filtros]);
+  const alternarLinha = (indice: number) => setAbertas(a => { const n = new Set(a); n.has(indice) ? n.delete(indice) : n.add(indice); return n; });
   const resultado = useMemo(() => agregarMensal(linhas, cubo, catalogo, { de, ate, detalhar, filtros }), [linhas, cubo, de, ate, detalhar, filtros]);
   const resumo = resumoMensal(resultado.total, resultado.competencias);
   const compativeis = useMemo(() => new Set(camposCompativeis(detalhar, filtros)), [detalhar, filtros]);
@@ -218,11 +221,21 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
                   <th className="whitespace-nowrap border-l border-border px-2 py-1.5 text-right font-semibold">{indicador === "ativos" ? `Ativos ${ultimo ? competenciaMensal(ultimo) : ""}` : "Total"}</th>
                 </tr></thead>
                 <tbody>
-                  {resultado.linhas.map(l => <tr key={l.indice} className="cursor-pointer border-b border-border/60 hover:bg-accent/60" title={l.indice >= 0 ? `Filtrar ${rotuloCampo(detalhar).toLowerCase()} = ${l.rotulo}` : undefined} onClick={() => aplicarLinha(l.indice)}>
-                    <td className="sticky left-0 max-w-64 truncate bg-card px-2 py-1">{l.rotulo}</td>
+                  {resultado.linhas.map(l => { const aberta = abertas.has(l.indice); return <Fragment key={l.indice}>
+                  <tr className="cursor-pointer border-b border-border/60 hover:bg-accent/60" title={l.indice >= 0 ? `Filtrar ${rotuloCampo(detalhar).toLowerCase()} = ${l.rotulo}` : undefined} onClick={() => aplicarLinha(l.indice)}>
+                    <td className="sticky left-0 max-w-64 bg-card px-1 py-1"><div className="flex min-w-0 items-center gap-0.5">
+                      <Button variant="ghost" size="icon" aria-expanded={aberta} aria-label={`${aberta ? "Recolher" : "Expandir"} ${l.rotulo}`} title={aberta ? "Recolher" : "Ver adesões, cancelamentos e ativos"} onClick={e => { e.stopPropagation(); alternarLinha(l.indice); }} className="h-5 w-5 shrink-0"><ChevronRight className={`h-3.5 w-3.5 transition-transform motion-reduce:transition-none ${aberta ? "rotate-90" : ""}`} /></Button>
+                      <span className="truncate">{l.rotulo}</span>
+                    </div></td>
                     {resultado.competencias.map(c => { const m = l.meses.get(c); const v = m ? valorIndicador(m, indicador) : null; return <td key={c} className="px-2 py-1 text-right">{indicador === "saldo" ? sinal(v) : nf(v)}</td>; })}
                     <td className="border-l border-border px-2 py-1 text-right font-semibold">{indicador === "saldo" ? sinal(totalPeriodo(l.meses, resultado.competencias, indicador)) : nf(totalPeriodo(l.meses, resultado.competencias, indicador))}</td>
+                  </tr>
+                  {aberta && SUBLINHAS_MENSAL.map(sub => <tr key={sub.id} className="border-b border-border/40 bg-muted/30 text-muted-foreground">
+                    <td className="sticky left-0 bg-muted px-2 py-0.5 pl-8">{sub.rotulo}</td>
+                    {resultado.competencias.map(c => { const m = l.meses.get(c); return <td key={c} className="px-2 py-0.5 text-right">{formatarSublinha(m ? m[sub.id] : null, sub.id)}</td>; })}
+                    <td className="border-l border-border px-2 py-0.5 text-right font-medium">{formatarSublinha(totalPeriodo(l.meses, resultado.competencias, sub.id), sub.id)}</td>
                   </tr>)}
+                  </Fragment>; })}
                 </tbody>
                 <tfoot className="sticky bottom-0"><tr className="bg-secondary font-semibold">
                   <td className="sticky left-0 bg-secondary px-2 py-1.5">Total</td>
@@ -231,7 +244,7 @@ export default function BenchVidasMensal({ navegacao }: { navegacao: ReactNode }
                 </tr></tfoot>
               </table>
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">Clique numa linha para usá-la como filtro. Ativos: quantidade no mês, sem somar meses. Adesões e cancelamentos: movimentos informados pela ANS em cada mês, somados no total. Quantidades de vínculos, não de pessoas únicas.</p>
+            <p className="mt-2 text-xs text-muted-foreground">Clique numa linha para usá-la como filtro; a seta ao lado do nome mostra adesões (+), cancelamentos (-) e ativos. Ativos: quantidade no mês, sem somar meses. Adesões e cancelamentos: movimentos informados pela ANS em cada mês, somados no total. Quantidades de vínculos, não de pessoas únicas.</p>
           </Bloco>
         </>}
     </div>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { agregarMensal, base100, compararMensal, opcoesCampo, ajustarFiltros, camposCompativeis, cuboPara, periodoPadrao, resumoMensal, totalPeriodo, type CatalogoMensal } from "./benchVidasMensal";
+import { agregarMensal, base100, CAMPOS_MENSAL, compararMensal, DETALHAR_PADRAO, formatarSublinha, SUBLINHAS_MENSAL, opcoesCampo, ajustarFiltros, camposCompativeis, cuboPara, periodoPadrao, resumoMensal, totalPeriodo, type CatalogoMensal } from "./benchVidasMensal";
 
 const catalogo = {
   valores: { uf: ["MG", "SP"], sexo: ["F", "M"], faixa: [], faixaReaj: [], vigencia: [], contratacao: ["Coletivo Empresarial", "Individual ou Familiar"], segmentacao: [], abrangencia: [], cobertura: ["Médico-hospitalar"], vinculo: ["Titular"], plano: [] },
@@ -82,5 +82,28 @@ describe("Bench Vidas Mensal · Comparar", () => {
   it("base 100 parte dos ativos do primeiro mês de cada operadora", () => {
     const r = compararMensal([{ reg: "2", linhas: B }], "A", catalogo, { de: 202607, ate: 202608, filtros: {} });
     expect([...base100(r.ops[0].total, r.competencias).values()]).toEqual([100, 125]);
+  });
+});
+
+describe("Bench Vidas Mensal · Contratação e segundo nível do grid", () => {
+  it("Contratação vem antes de Município e é o detalhamento padrão", () => {
+    const ids = CAMPOS_MENSAL.map(c => c.id);
+    expect(ids.indexOf("contratacao")).toBeLessThan(ids.indexOf("municipio"));
+    expect(ids[0]).toBe("contratacao");
+    expect(DETALHAR_PADRAO).toBe("contratacao");
+  });
+  it("o segundo nível mostra Adesões, Cancelamentos e Ativos, nesta ordem", () => {
+    expect(SUBLINHAS_MENSAL.map(s => s.rotulo)).toEqual(["Adesões", "Cancelamentos", "Ativos"]);
+  });
+  it("adesões levam +, cancelamentos levam - e ativos ficam sem sinal", () => {
+    expect(formatarSublinha(2000, "aderidos")).toBe("+2.000");
+    expect(formatarSublinha(1000, "cancelados")).toBe("-1.000");
+    expect(formatarSublinha(41774, "ativos")).toBe("41.774");
+    expect(formatarSublinha(0, "cancelados")).toBe("0");
+  });
+  it("sublinhas por contratação: movimentos somam o período e ativos são o último mês", () => {
+    const r = agregarMensal(A, "A", catalogo, { de: 202607, ate: 202608, detalhar: "contratacao", filtros: {} });
+    const individual = r.linhas.find(l => l.rotulo === "Individual ou Familiar")!;
+    expect(SUBLINHAS_MENSAL.map(s => totalPeriodo(individual.meses, r.competencias, s.id))).toEqual([5, 3, 51]);
   });
 });

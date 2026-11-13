@@ -9,11 +9,13 @@ export type Medidas = { ativos: number; aderidos: number; cancelados: number };
 export type CatalogoMensal = { valores: Record<Exclude<CampoMensal, "municipio" | "tipoProduto">, string[]>; municipios: [string, string, string][] };
 
 export const CAMPOS_MENSAL: { id: CampoMensal; rotulo: string; soFiltro?: boolean }[] = [
-  { id: "municipio", rotulo: "Município" }, { id: "uf", rotulo: "UF" }, { id: "sexo", rotulo: "Sexo" },
-  { id: "faixa", rotulo: "Faixa etária" }, { id: "faixaReaj", rotulo: "Faixa ANS" }, { id: "contratacao", rotulo: "Contratação" },
+  { id: "contratacao", rotulo: "Contratação" }, { id: "municipio", rotulo: "Município" }, { id: "uf", rotulo: "UF" }, { id: "sexo", rotulo: "Sexo" },
+  { id: "faixa", rotulo: "Faixa etária" }, { id: "faixaReaj", rotulo: "Faixa ANS" },
   { id: "tipoProduto", rotulo: "Tipo Produto", soFiltro: true }, { id: "segmentacao", rotulo: "Segmentação" }, { id: "abrangencia", rotulo: "Abrangência" }, { id: "cobertura", rotulo: "Cobertura" },
   { id: "vinculo", rotulo: "Vínculo" }, { id: "vigencia", rotulo: "Lei 9.656" }, { id: "plano", rotulo: "Plano" },
 ];
+/** Detalhamento com que a tela abre: Contratação (primeiro da lista). */
+export const DETALHAR_PADRAO: CampoMensal = "contratacao";
 export const INDICADORES_MENSAL: { id: IndicadorMensal; rotulo: string }[] = [
   { id: "ativos", rotulo: "Ativos" }, { id: "aderidos", rotulo: "Adesões" }, { id: "cancelados", rotulo: "Cancelamentos" }, { id: "saldo", rotulo: "Adesões − Cancel." },
 ];
@@ -157,4 +159,16 @@ export function compararMensal(series: { reg: string; linhas: number[][] }[], cu
 export function base100(total: Map<number, Medidas>, competencias: number[]): Map<number, number | null> {
   const base = competencias.map(c => total.get(c)?.ativos).find(v => v !== undefined && v > 0);
   return new Map(competencias.map(c => { const v = total.get(c)?.ativos; return [c, v === undefined || !base ? null : v / base * 100]; }));
+}
+
+/** Segundo nível do grid (recolhido por padrão): movimentos do mês e, por último, os ativos. */
+export const SUBLINHAS_MENSAL: { id: Exclude<IndicadorMensal, "saldo">; rotulo: string }[] = [
+  { id: "aderidos", rotulo: "Adesões" }, { id: "cancelados", rotulo: "Cancelamentos" }, { id: "ativos", rotulo: "Ativos" },
+];
+/** Adesões com "+", cancelamentos com "-", ativos sem sinal; zero e ausência ficam sem sinal. */
+export function formatarSublinha(valor: number | null, id: Exclude<IndicadorMensal, "saldo">): string {
+  if (valor === null) return "—";
+  const texto = valor.toLocaleString("pt-BR");
+  if (!valor || id === "ativos") return texto;
+  return id === "aderidos" ? `+${texto}` : `-${texto}`;
 }
