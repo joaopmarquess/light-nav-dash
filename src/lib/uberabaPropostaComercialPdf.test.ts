@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GLOSSARIO_PROPOSTA, marcadorGlossario, quadrosProposta } from "./uberabaPropostaComercialPdf";
+import { GLOSSARIO_PROPOSTA, quadrosProposta } from "./uberabaPropostaComercialPdf";
 import { indicadoresPadrao } from "./uberabaTabelasComerciais";
 
 describe("Proposta Comercial › 1. Tabelas", () => {
@@ -33,12 +33,8 @@ describe("Proposta Comercial › 1. Tabelas", () => {
 });
 
 describe("Proposta Comercial › Glossário e Notas Explicativas", () => {
-  it("ENFERMARIA is note 1 with the Apartamento rule", () => {
-    expect(marcadorGlossario("ENFERMARIA")).toBe(1);
+  it("ENFERMARIA keeps the Apartamento rule", () => {
     expect(GLOSSARIO_PROPOSTA[0]).toEqual({ termo: "ENFERMARIA", nota: "Apartamento = TRUNCAR(Enfermaria × 1,25; 2)" });
-  });
-  it("terms without a note get no marker", () => {
-    expect(marcadorGlossario("FAIXA")).toBeNull();
   });
 });
 
@@ -98,10 +94,8 @@ describe("tamanhos de fonte da Proposta", () => {
     const { FONTES_PROPOSTA } = await import("./uberabaPropostaComercialPdf");
     expect(FONTES_PROPOSTA.texto).toBe(13);
   });
-  it("demais elementos até 2 pt acima ou abaixo do texto geral (exceto marcador de nota)", async () => {
+  it("demais elementos até 2 pt acima ou abaixo do texto geral", async () => {
     const { FONTES_PROPOSTA } = await import("./uberabaPropostaComercialPdf");
-    const { marcador, ...resto } = FONTES_PROPOSTA;
-    expect(marcador).toBeLessThan(FONTES_PROPOSTA.texto);
-    for (const v of Object.values(resto)) expect(Math.abs(v - 13)).toBeLessThanOrEqual(2);
+    for (const v of Object.values(FONTES_PROPOSTA)) expect(Math.abs(v - 13)).toBeLessThanOrEqual(2);
   });
 });

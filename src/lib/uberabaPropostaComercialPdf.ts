@@ -38,7 +38,6 @@ export const FONTES_PROPOSTA = {
   indicador: 11,
   rotulo: 11,
   fator: 12,
-  marcador: 8,
   rodape: 11,
 } as const;
 const F = FONTES_PROPOSTA;
@@ -81,8 +80,8 @@ export function paragrafosProposta(textos: TextosSecoes | null = null): string[]
 }
 
 /**
- * Glossário e Notas Explicativas: cada termo marcado recebe, no corpo do documento, um número elevado
- * (1, 2, 3… na ordem desta lista) e a mesma legenda no último tópico. Termos e notas são indicados pelo usuário.
+ * Glossário e Notas Explicativas: termos e notas do último tópico, sem número elevado no corpo do documento
+ * (retirado a pedido do Dênis em 13/11/2026). Termos e notas são indicados pelo usuário.
  */
 export const GLOSSARIO_PROPOSTA: { termo: string; nota: string }[] = [
   { termo: "ENFERMARIA", nota: "Apartamento = TRUNCAR(Enfermaria × 1,25; 2)" },
@@ -101,11 +100,6 @@ export function glossarioProposta(fatores: Fatores = FATORES_PADRAO, rotulos: Ro
   return GLOSSARIO_PROPOSTA.map((g) => (g.termo === "ENFERMARIA" ? { ...g, nota } : g));
 }
 
-/** Número do marcador do termo no Glossário (começa em 1); null quando o termo não tem nota. */
-export function marcadorGlossario(termo: string): number | null {
-  const i = GLOSSARIO_PROPOSTA.findIndex((g) => g.termo.toUpperCase() === termo.toUpperCase());
-  return i < 0 ? null : i + 1;
-}
 
 /**
  * A fonte padrão do PDF (Helvetica, WinAnsi) não tem alguns sinais que a tela e a IA usam — o "−" das fórmulas
@@ -170,18 +164,6 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   const ALTURA_NOME_QUADRO = 12;
   const ALTURA_LINHA_FATOR = alturaLinha(F.rotulo) * 0.9;
 
-  // Número elevado do Glossário logo após um termo de cabeçalho centralizado.
-  const marcadorCabecalho = (texto: string, cx: number, cy: number, fonte: number) => {
-    const n = marcadorGlossario(texto);
-    if (n === null) return;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(fonte);
-    const xFim = cx + doc.getTextWidth(texto) / 2;
-    doc.setFontSize(F.marcador);
-    doc.setTextColor(...TINTA);
-    doc.text(String(n), xFim + 0.4, cy - 1);
-  };
-
   // Título de contêiner (TABELAS / INDICADORES VARIÁVEIS), como na tela.
   const tituloSecao = (texto: string, x: number, yy: number) => {
     doc.setFillColor(...ZEBRA);
@@ -237,7 +219,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
       headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: F.cabecalhoReferencia },
       alternateRowStyles: { fillColor: ZEBRA },
       didDrawCell: (c) => {
-        if (c.section === "head") { marcadorCabecalho(String(c.cell.raw ?? ""), c.cell.x + c.cell.width / 2, c.cell.y + c.cell.height / 2, F.cabecalhoReferencia); return; }
+        if (c.section === "head") return;
         doc.setDrawColor(...LINHA);
         doc.setLineWidth(0.2);
         doc.line(c.cell.x, c.cell.y, c.cell.x + c.cell.width, c.cell.y);
@@ -274,7 +256,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
         headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: F.cabecalhoTabela },
         alternateRowStyles: { fillColor: ZEBRA },
         didDrawCell: (c) => {
-          if (c.section === "head") { marcadorCabecalho(String(c.cell.raw ?? ""), c.cell.x + c.cell.width / 2, c.cell.y + c.cell.height / 2, F.cabecalhoTabela); return; }
+          if (c.section === "head") return;
           if (c.section !== "body") return;
           doc.setDrawColor(...LINHA);
           doc.setLineWidth(0.2);
@@ -357,18 +339,16 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   };
 
   const desenharGlossario = () => {
-    glossarioProposta(fatores, rotulos).forEach((g, i) => {
-      const xTermo = marginL + 4;
+    glossarioProposta(fatores, rotulos).forEach((g) => {
+      const xTermo = marginL;
       doc.setFont("helvetica", "normal");
       doc.setFontSize(F.texto);
-      const linhasNota = doc.splitTextToSize(g.nota, usableW - 8) as string[];
+      const linhasNota = doc.splitTextToSize(g.nota, usableW) as string[];
       garantir(7 + linhasNota.length * alturaLinha(F.texto));
-      // Número elevado + termo em destaque.
+      // Termo em destaque, sem número de nota.
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(F.marcador);
-      doc.setTextColor(...TINTA);
-      doc.text(String(i + 1), marginL, y - 2);
       doc.setFontSize(F.texto);
+      doc.setTextColor(...TINTA);
       doc.text(g.termo, xTermo, y);
       y += 6.5;
       fonteTexto();

@@ -29,18 +29,25 @@ export const SECOES_IA = ["tabelas", "remuneracao", "conclusao"] as const satisf
 
 /**
  * Texto padrão da Proposta (o que vai ao PDF enquanto não houver texto revisado). Introdução e Tabela Referencial
- * foram fornecidas pelo Dênis em 13/11/2026 e são reproduzidas sem alteração.
+ * foram fornecidas pelo Dênis em 13/11/2026 e são reproduzidas sem alteração; a Tabela Referencial foi resumida
+ * a pedido dele (13/11/2026) para a tabela caber na mesma página do texto.
  */
 export const TEXTOS_PADRAO: TextosSecoes = {
   introducao:
     "É com satisfação que apresentamos a presente proposta comercial para a comercialização de nossos produtos em Uberaba (Minas Gerais). O escopo desta oferta contempla as tabelas de preços estruturadas para três formatos distintos de produtos, sendo eles: a) o Plano Coletivo por Adesão, b) o segmento de Pequenas e Médias Empresas Administradas (de 02 a 99 vidas) e c) o Plano Coletivo Empresarial (acima de 100 vidas). Para garantir uma operação eficiente e alinhada ao mercado regional, os modelos de distribuição foram definidos de forma estratégica: a comercialização dos planos Coletivo por Adesão e PME Administradas ocorrerá por meio da Lancers Administradora e de suas Corretoras e Plataformas Associadas, contando com a valiosa parceria da Siga Soluções; já a distribuição do Plano Coletivo Empresarial será realizada em regime de corretagem direta para a Siga Soluções. Detalhes operacionais como os percentuais de spread, comissionamento, vitaliciedade e demais diretrizes de remuneração encontram-se especificados na seção \"Condições Comerciais\" ao longo deste documento.",
   referencia:
-    "Esta tabela funciona como uma matriz de referencial de preços para Uberaba, já desenhada com o padrão de formatação atuarial do Bensaúde. O modelo foi estrategicamente calibrado para a realidade competitiva do mercado local, unindo a atratividade de praça ao padrão de excelência em qualidade assistencial — servindo como a base oficial a partir da qual foram derivadas as tabelas dos três produtos que compõem esta proposta.",
+    "Matriz referencial de preços para Uberaba, no padrão atuarial do Bensaúde, calibrada para a realidade competitiva do mercado local com excelência em qualidade assistencial. É a base da qual derivam as tabelas dos três produtos desta proposta.",
   tabelas: "A seguir, apresentamos as tabelas de preços dos Produtos desta proposta.",
   remuneracao: "A seguir, apresentamos os percentuais e as condições comerciais para a distribuição dos Produtos.",
   conclusao:
     "Com esta proposta, o Bensaúde reafirma o compromisso de levar a Uberaba produtos de saúde com preço justo e qualidade assistencial. Contamos com a parceria da Lancers Administradora, de suas Corretoras e Plataformas Associadas e da Siga Soluções para construir, juntos, uma operação sólida e duradoura, e permanecemos à disposição para os próximos passos.",
 };
+/** Versão anterior (longa) do texto da Tabela Referencial: em textos guardados no navegador, passa para a versão atual. */
+export const REFERENCIA_ANTERIOR =
+  "Esta tabela funciona como uma matriz de referencial de preços para Uberaba, já desenhada com o padrão de formatação atuarial do Bensaúde. O modelo foi estrategicamente calibrado para a realidade competitiva do mercado local, unindo a atratividade de praça ao padrão de excelência em qualidade assistencial — servindo como a base oficial a partir da qual foram derivadas as tabelas dos três produtos que compõem esta proposta.";
+const atualizarReferencia = (t: TextosSecoes): TextosSecoes =>
+  t.referencia.trim() === REFERENCIA_ANTERIOR ? { ...t, referencia: TEXTOS_PADRAO.referencia } : t;
+
 export const textosPadrao = (): TextosSecoes => ({ ...TEXTOS_PADRAO });
 
 /** Dados enviados à IA: somente o que está nas tabelas da tela, já formatado como aparece no PDF. */
@@ -141,10 +148,10 @@ export function lerTextos(storage: Pick<Storage, "getItem"> | undefined = global
     const o = JSON.parse(storage?.getItem(CHAVE_TEXTOS) ?? "null");
     if (!o || typeof o !== "object") return estadoVazio();
     return {
-      rascunho: o.rascunho ? normalizarTextos(o.rascunho) : null,
+      rascunho: o.rascunho ? atualizarReferencia(normalizarTextos(o.rascunho)) : null,
       assinaturaRascunho: str(o.assinaturaRascunho),
       geradoEm: str(o.geradoEm),
-      aprovado: o.aprovado ? normalizarTextos(o.aprovado) : null,
+      aprovado: o.aprovado ? atualizarReferencia(normalizarTextos(o.aprovado)) : null,
       assinaturaAprovado: str(o.assinaturaAprovado),
       aprovadoEm: str(o.aprovadoEm),
     };

@@ -44,7 +44,7 @@ describe("revisão antes do PDF", () => {
     const p = paragrafosProposta(null);
     expect(p[0][0]).toMatch(/^É com satisfação que apresentamos a presente proposta comercial para a comercialização de nossos produtos em Uberaba \(Minas Gerais\)\./);
     expect(p[0][0]).toMatch(/seção "Condições Comerciais" ao longo deste documento\.$/);
-    expect(p[1][0]).toMatch(/^Esta tabela funciona como uma matriz de referencial de preços para Uberaba, já desenhada com o padrão de formatação atuarial do Bensaúde\./);
+    expect(p[1][0]).toMatch(/^Matriz referencial de preços para Uberaba, no padrão atuarial do Bensaúde,/);
     expect(p.every((t) => t.length > 0)).toBe(true);
     expect(p.flat().join(" ")).not.toMatch(/Lorem/);
   });
