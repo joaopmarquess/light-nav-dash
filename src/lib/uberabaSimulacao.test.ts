@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { netVidaMes, receitaVidaMes, despesaMediaPadrao, copartPadrao, replicarParametro, coparticipacaoVidaMes, calcularSimulacao, calcularSimulacaoComercial, comercialDaFrente, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, relatorioMemoriaCalculo, parametrosMemoriaCalculo, simularPorBase, replicarSinistralidade, resultadoTotalEnte, ENTES_RESULTADO } from './uberabaSimulacao';
+import { PADRAO_PARAMETRO, equipePropriaPadrao, agencProprioPadrao, netVidaMes, receitaVidaMes, despesaMediaPadrao, copartPadrao, replicarParametro, coparticipacaoVidaMes, calcularSimulacao, calcularSimulacaoComercial, comercialDaFrente, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, relatorioMemoriaCalculo, parametrosMemoriaCalculo, simularPorBase, replicarSinistralidade, resultadoTotalEnte, ENTES_RESULTADO } from './uberabaSimulacao';
 import padroesHistoricos from '@/data/uberabaSimulacao/configuracao_padrao.json';
 import { INDICES_PADRAO, indicadoresPadrao, tabelaIndexada } from './uberabaTabelasComerciais';
 const padrao=padroesHistoricos[0];
@@ -278,7 +278,7 @@ describe('Memória de cálculo do Resultado por Ente', () => {
   });
   it('Agenciamento = Vendas × percentual Contratual (90%)', () => {
     const vendas = rs[0].novasReceitas.reduce((s, v) => s + v, 0);
-    expect(memoriaCalculo('siga.agenciamento', [rs[0]], ['PCA']).passos[0]).toBe(`PCA: Vendas ${fmt(vendas)} × Agenciamento 90,00% = ${fmt(rs[0].anual.agenciamento)}`);
+    expect(memoriaCalculo('siga.agenciamento', [rs[0]], ['PCA']).passos[0]).toBe(`PCA: Vendas ${fmt(vendas)} × (100% − Equipe Própria 0,00%) × Agenciamento 90,00% = ${fmt(rs[0].anual.agenciamento)}`);
   });
   it('ADMINISTRADORA usa 23% e AGENCIADORA do PJ+ usa 5%', () => {
     expect(memoriaCalculo('lancers.faturamento', [rs[0]], ['PCA']).passos[0]).toContain('ADMINISTRADORA 23,00%');
@@ -294,7 +294,7 @@ describe('Relatório da Memória de Cálculo (Resultado por Ente)', () => {
   const rsR = contratual.resultados;
   const rel = relatorioMemoriaCalculo(cenarios, nomesR);
   it('traz os quatro entes na ordem da tela, com os nomes OPERADORA, ADMINISTRADORA e AGENCIADORA', () => {
-    expect(rel.map(e => e.titulo)).toEqual(['Beneficiário', 'OPERADORA', 'ADMINISTRADORA', 'AGENCIADORA']);
+    expect(rel.map(e => e.titulo)).toEqual(['BENEFICIÁRIO', 'OPERADORA', 'ADMINISTRADORA', 'AGENCIADORA']);
   });
   it('dois cenários: Contratual e Promocional, com o mesmo faturamento e agenciamentos diferentes', () => {
     expect(cenarios.map(c => c.rotulo)).toEqual(['Contratual', 'Promocional']);
@@ -307,9 +307,9 @@ describe('Relatório da Memória de Cálculo (Resultado por Ente)', () => {
   it('só Agenciamento e os resultados que o contêm aparecem em dobro', () => {
     const rotulos = (i: number) => rel[i].indicadores.map(x => x.base ? `${x.label} · ${x.base}` : x.label);
     expect(rotulos(0)).toEqual(['Taxa de Adesão', 'Faturamento', 'Coparticipação', 'Total']);
-    expect(rotulos(1)).toEqual(['Faturamento', '+ Coparticipação', '− Despesa Assistencial', '= Resultado Operacional', '− Agenciamento · Contratual', '− Agenciamento · Promocional', '= Resultado Líquido · Contratual', '= Resultado Líquido · Promocional']);
+    expect(rotulos(1)).toEqual(['Faturamento', '+ Coparticipação', '− Despesa Assistencial', '= Resultado Operacional', '− Agenciamento Externo · Contratual', '− Agenciamento Externo · Promocional', '− Agenciamento Próprio', '− Total Agenciamento · Contratual', '− Total Agenciamento · Promocional', '= Resultado Líquido · Contratual', '= Resultado Líquido · Promocional']);
     expect(rotulos(2)).toEqual(['Faturamento']);
-    expect(rotulos(3)).toEqual(['Taxa de Adesão', 'Faturamento', 'Agenciamento · Contratual', 'Agenciamento · Promocional', 'Resultado · Contratual', 'Resultado · Promocional']);
+    expect(rotulos(3)).toEqual(['Taxa de Adesão', 'Faturamento', 'Agenciamento Externo · Contratual', 'Agenciamento Externo · Promocional', 'Resultado · Contratual', 'Resultado · Promocional']);
     expect(rel.map(e => e.mensais.map(m => m.base))).toEqual([[undefined], ['Contratual', 'Promocional'], [undefined], ['Contratual', 'Promocional']]);
     const liqP = rel[1].indicadores.find(x => x.label === '= Resultado Líquido' && x.base === 'Promocional')!;
     expect(liqP.valorExibido).toBeCloseTo(resumoSimulacao(promocional.resultados).bensaude.liquido, 6);
@@ -321,7 +321,7 @@ describe('Relatório da Memória de Cálculo (Resultado por Ente)', () => {
     expect(fat.itens.reduce((s, i) => s + i.valor, 0)).toBeCloseTo(r.bensaude.faturamento, 6);
     expect(fat.valorExibido).toBeCloseTo(r.bensaude.faturamento, 6);
     expect(rel[1].indicadores[2].valorExibido).toBeCloseTo(-r.bensaude.despesa, 6);
-    expect(rel[1].indicadores[6].itens).toEqual([{ modalidade: 'Consolidado', calculo: expect.any(String), valor: r.bensaude.liquido }]);
+    expect(rel[1].indicadores.find(x => x.label === '= Resultado Líquido' && x.base === 'Contratual')!.itens).toEqual([{ modalidade: 'Consolidado', calculo: expect.any(String), valor: r.bensaude.liquido }]);
   });
   it('o total do ano da evolução mensal fecha com o anual e Vidas acumuladas termina em 10.000', () => {
     const r = resumoSimulacao(rsR);
@@ -445,5 +445,43 @@ describe('Chave PERCENTUAL / MÉDIA ASSIST. da Despesa Assistencial (pedido de 1
   it('a chave vale para os dois cenários de agenciamento', () => {
     const cs = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao(), 'media');
     expect(cs.every(c => c.resultados.every(r => r.config.base_despesa === 'media'))).toBe(true);
+  });
+});
+
+describe('Equipe Própria e Agenciamento Externo/Próprio (pedido de 13/11/2026)', () => {
+  const nomesE = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
+  const configs = fonte.padroes.map(c => ({ ...c, ...PADRAO_PARAMETRO }));
+  const [contratual, promocional] = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao());
+  const vendas = (r: (typeof contratual.resultados)[number]) => r.novasReceitas.reduce((s, v) => s + v, 0);
+  it('padrões: % Equipe Própria 35% e % Agenc. Próprio 30%', () => {
+    expect(equipePropriaPadrao).toBe(35);
+    expect(agencProprioPadrao).toBe(30);
+  });
+  it('Agenciamento Externo = (100% − 35%) × vendas × agenciamento (90% contratual, 150% promocional no PCA)', () => {
+    const c = contratual.resultados[0], p = promocional.resultados[0];
+    expect(c.anual.agenciamento_externo).toBeCloseTo(vendas(c) * 0.65 * 0.9, 6);
+    expect(p.anual.agenciamento_externo).toBeCloseTo(vendas(p) * 0.65 * 1.5, 6);
+  });
+  it('Agenciamento Próprio = 35% × vendas × 30%, igual nos dois cenários', () => {
+    contratual.resultados.forEach((c, i) => {
+      expect(c.anual.agenciamento_proprio).toBeCloseTo(vendas(c) * 0.35 * 0.3, 6);
+      expect(promocional.resultados[i].anual.agenciamento_proprio).toBeCloseTo(c.anual.agenciamento_proprio, 6);
+    });
+  });
+  it('Total Agenciamento = Externo + Próprio, custo da OPERADORA; AGENCIADORA recebe só o Externo', () => {
+    const r = resumoSimulacao(contratual.resultados);
+    expect(r.bensaude.agenciamento).toBeCloseTo(r.bensaude.agenciamentoExterno + r.bensaude.agenciamentoProprio, 6);
+    expect(r.bensaude.liquido).toBeCloseTo(r.bensaude.operacional - r.bensaude.agenciamento, 6);
+    expect(r.siga.agenciamento).toBeCloseTo(r.bensaude.agenciamentoExterno, 6);
+    expect(r.siga.resultado).toBeCloseTo(r.siga.adesao + r.siga.faturamento + r.bensaude.agenciamentoExterno, 6);
+  });
+  it('Replicar copia % Equipe Própria e % Agenc. Próprio do PCA', () => {
+    const cs = configs.map((c, i) => ({ ...c, equipe_propria_percentual: [40, 1, 2, 3][i], agenc_proprio_percentual: [25, 1, 2, 3][i] }));
+    expect(replicarParametro(cs, 'PCA', 'equipe_propria_percentual').map(c => c.equipe_propria_percentual)).toEqual([40, 40, 40, 40]);
+    expect(replicarParametro(cs, 'PCA', 'agenc_proprio_percentual').map(c => c.agenc_proprio_percentual)).toEqual([25, 25, 25, 25]);
+  });
+  it('memória de cálculo mostra as contas do Externo e do Próprio', () => {
+    expect(memoriaCalculo('bensaude.agenciamentoExterno', contratual.resultados, nomesE).itens[0].calculo).toContain('(100% − Equipe Própria 35,00%) × Agenciamento 90,00%');
+    expect(memoriaCalculo('bensaude.agenciamentoProprio', contratual.resultados, nomesE).itens[0].calculo).toContain('Equipe Própria 35,00% × Agenc. Próprio 30,00%');
   });
 });

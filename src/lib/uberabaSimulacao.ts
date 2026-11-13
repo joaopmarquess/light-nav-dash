@@ -29,16 +29,21 @@ export const sinistralidadePadrao = 70;
 // e % Copart sobre essa despesa média (receita paga pelo beneficiário, 100% para a OPERADORA).
 export const despesaMediaPadrao = 190.45;
 export const copartPadrao = 20;
+// Equipe própria (pedido de 13/11/2026): % das vendas feitas pela equipe própria (35%) e % de agenciamento pago a ela (30%).
+// Agenciamento Externo = (100% − % Equipe Própria) × vendas × Agenciamento (Contratual/Promocional), receita da AGENCIADORA;
+// Agenciamento Próprio = % Equipe Própria × vendas × % Agenc. Próprio, igual nos dois cenários; a OPERADORA paga a soma.
+export const equipePropriaPadrao = 35;
+export const agencProprioPadrao = 30;
 /**
  * Chave do Resultado por Ente (pedido de 13/11/2026): como calcular a Despesa Assistencial.
  * PERCENTUAL = faturamento × Sinistralidade (%); MÉDIA ASSIST. = vidas projetadas acumuladas em cada mês × Desp. Assist. média.
  */
 export type BaseDespesa = 'percentual' | 'media';
 export const BASES_DESPESA: { id: BaseDespesa; rotulo: string }[] = [{ id: 'percentual', rotulo: 'Percentual' }, { id: 'media', rotulo: 'Média Assist.' }];
-export type ConfigSimulacao = { produto_codigo: string; tabela_preco: string; condicao_comercial: string; total_vidas: number; sinistralidade_percentual?: number; despesa_media?: number; copart_percentual?: number; base_despesa?: BaseDespesa };
+export type ConfigSimulacao = { produto_codigo: string; tabela_preco: string; condicao_comercial: string; total_vidas: number; sinistralidade_percentual?: number; despesa_media?: number; copart_percentual?: number; equipe_propria_percentual?: number; agenc_proprio_percentual?: number; base_despesa?: BaseDespesa };
 /** Campos dos Parâmetros com ícone Replicar e o padrão usado quando o PCA está vazio. */
-export type ParametroReplicavel = 'sinistralidade_percentual' | 'despesa_media' | 'copart_percentual';
-export const PADRAO_PARAMETRO: Record<ParametroReplicavel, number> = { sinistralidade_percentual: sinistralidadePadrao, despesa_media: despesaMediaPadrao, copart_percentual: copartPadrao };
+export type ParametroReplicavel = 'sinistralidade_percentual' | 'despesa_media' | 'copart_percentual' | 'equipe_propria_percentual' | 'agenc_proprio_percentual';
+export const PADRAO_PARAMETRO: Record<ParametroReplicavel, number> = { sinistralidade_percentual: sinistralidadePadrao, despesa_media: despesaMediaPadrao, copart_percentual: copartPadrao, equipe_propria_percentual: equipePropriaPadrao, agenc_proprio_percentual: agencProprioPadrao };
 export function validarDespesaMedia(value: number) {
   return Number.isFinite(value) && value >= 0;
 }
@@ -48,6 +53,10 @@ export function validarCopart(value: number) {
 /** Coparticipação por vida/mês = Desp. Assist. média × % Copart. Sem os campos (cenários históricos dos CSVs), não há coparticipação. */
 export function coparticipacaoVidaMes(config: ConfigSimulacao) {
   return (config.despesa_media ?? 0) * (config.copart_percentual ?? 0) / 100;
+}
+/** Percentuais de 0 a 100 (% Equipe Própria e % Agenc. Próprio). */
+export function validarPercentual(value: number) {
+  return Number.isFinite(value) && value >= 0 && value <= 100;
 }
 export function validarSinistralidade(value: number) {
   return Number.isFinite(value) && value >= 0;
@@ -67,13 +76,15 @@ export const indicadoresSimulacao = [
   { key: 'bensaude', label: 'Faturamento Bensaúde', integer: false },
   { key: 'lancers', label: 'Faturamento Lancers', integer: false },
   { key: 'siga', label: 'Faturamento SIGA', integer: false },
-  { key: 'agenciamento', label: 'Agenciamento · custo Bensaúde / receita SIGA', integer: false },
+  { key: 'agenciamento_externo', label: 'Agenciamento Externo · custo OPERADORA / receita AGENCIADORA', integer: false },
+  { key: 'agenciamento_proprio', label: 'Agenciamento Próprio · custo OPERADORA', integer: false },
+  { key: 'agenciamento', label: 'Total Agenciamento · custo OPERADORA', integer: false },
   { key: 'adesao', label: 'Taxa de adesão · beneficiário → SIGA', integer: false },
   { key: 'coparticipacao', label: 'Coparticipação · beneficiário → OPERADORA', integer: false },
   { key: 'despesa_assistencial', label: 'Despesa Assistencial · Bensaúde', integer: false },
   { key: 'resultado_bensaude', label: 'Resultado Bensaúde', integer: false },
 ] as const;
-export type FinanceiroSimulacao = { vidas: number; acumuladas: number; faturamento: number; despesa_assistencial: number; lancers: number; siga: number; bensaude: number; agenciamento: number; adesao: number; coparticipacao: number; resultado_bensaude: number };
+export type FinanceiroSimulacao = { vidas: number; acumuladas: number; faturamento: number; despesa_assistencial: number; lancers: number; siga: number; bensaude: number; agenciamento: number; agenciamento_externo: number; agenciamento_proprio: number; adesao: number; coparticipacao: number; resultado_bensaude: number };
 export const numeroSimulacao = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 export const percentualSimulacao = (v: number) => `${numeroSimulacao(v * 100)}%`;
 export const inteiroSimulacao = (v: number) => v.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
@@ -155,6 +166,9 @@ function simular(config: ConfigSimulacao, { condicao, mensalidades }: ComercialS
   if (config.despesa_media !== undefined && !validarDespesaMedia(config.despesa_media)) throw new Error('Informe uma despesa assistencial média válida, maior ou igual a zero.');
   if (config.copart_percentual !== undefined && !validarCopart(config.copart_percentual)) throw new Error('Informe um percentual de coparticipação entre 0 e 100.');
   const copartVida = coparticipacaoVidaMes(config);
+  // Sem os campos (cenários históricos dos CSVs), todo o agenciamento é externo.
+  const equipe = (config.equipe_propria_percentual ?? 0) / 100;
+  const agencProprio = (config.agenc_proprio_percentual ?? 0) / 100;
   const porMedia = config.base_despesa === 'media';
   const despesaMedia = config.despesa_media ?? despesaMediaPadrao;
   const produto = produtos.find(p => p.produto_codigo === config.produto_codigo);
@@ -169,8 +183,10 @@ function simular(config: ConfigSimulacao, { condicao, mensalidades }: ComercialS
     // Coparticipação do mês: vidas projetadas acumuladas × Desp. Assist. média × % Copart, 100% para a OPERADORA.
     const coparticipacao = acumuladas * copartVida;
     const despesa_assistencial = porMedia ? acumuladas * despesaMedia : faturamento * sinistralidade / 100;
+    const agenciamento_externo = (1 - equipe) * parcelas.reduce((s,p,j) => s + p * (novasReceitas[i-j] ?? 0), 0);
+    const agenciamento_proprio = equipe * agencProprio * novasReceitas[i];
     return { vidas, acumuladas, faturamento, coparticipacao, resultado_bensaude: faturamento * condicao.participacao_bensaude + coparticipacao - despesa_assistencial, despesa_assistencial, lancers: faturamento * condicao.participacao_lancers, siga: faturamento * condicao.participacao_siga, bensaude: faturamento * condicao.participacao_bensaude,
-      agenciamento: parcelas.reduce((s,p,j) => s + p * (novasReceitas[i-j] ?? 0), 0), adesao: novasReceitas[i] * condicao.taxa_adesao };
+      agenciamento: agenciamento_externo + agenciamento_proprio, agenciamento_externo, agenciamento_proprio, adesao: novasReceitas[i] * condicao.taxa_adesao };
   });
   const anual = totalizarSimulacao(mensal);
   const faixaAnual = faixas.map((_, i) => faixasMes.reduce((s,m) => s + m[i], 0));
@@ -202,7 +218,7 @@ export function consolidarFaixasSimulacao(resultados: ResultadoSimulacao[]) {
 }
 export function totalizarSimulacao(rows: FinanceiroSimulacao[]): FinanceiroSimulacao {
   const sum = (key: keyof FinanceiroSimulacao) => rows.reduce((s,r) => s+r[key],0);
-  return { vidas: sum('vidas'), acumuladas: rows.at(-1)?.acumuladas ?? 0, faturamento: sum('faturamento'), despesa_assistencial: sum('despesa_assistencial'), lancers: sum('lancers'), siga: sum('siga'), bensaude: sum('bensaude'), agenciamento: sum('agenciamento'), adesao: sum('adesao'), coparticipacao: sum('coparticipacao'), resultado_bensaude: sum('resultado_bensaude') };
+  return { vidas: sum('vidas'), acumuladas: rows.at(-1)?.acumuladas ?? 0, faturamento: sum('faturamento'), despesa_assistencial: sum('despesa_assistencial'), lancers: sum('lancers'), siga: sum('siga'), bensaude: sum('bensaude'), agenciamento: sum('agenciamento'), agenciamento_externo: sum('agenciamento_externo'), agenciamento_proprio: sum('agenciamento_proprio'), adesao: sum('adesao'), coparticipacao: sum('coparticipacao'), resultado_bensaude: sum('resultado_bensaude') };
 }
 export function consolidarSimulacao(resultados: ResultadoSimulacao[]) {
   const mensal = meses.map((_,i) => {
@@ -230,15 +246,15 @@ export function resumoSimulacao(resultados: ResultadoSimulacao[]) {
   const { anual: a } = consolidarSimulacao(resultados);
   return {
     beneficiario: { adesao: a.adesao, faturamento: a.faturamento, coparticipacao: a.coparticipacao, total: a.adesao + a.faturamento + a.coparticipacao },
-    bensaude: { faturamento: a.bensaude, coparticipacao: a.coparticipacao, despesa: a.despesa_assistencial, operacional: a.bensaude + a.coparticipacao - a.despesa_assistencial, agenciamento: a.agenciamento, liquido: a.bensaude + a.coparticipacao - a.despesa_assistencial - a.agenciamento },
+    bensaude: { faturamento: a.bensaude, coparticipacao: a.coparticipacao, despesa: a.despesa_assistencial, operacional: a.bensaude + a.coparticipacao - a.despesa_assistencial, agenciamentoExterno: a.agenciamento_externo, agenciamentoProprio: a.agenciamento_proprio, agenciamento: a.agenciamento, liquido: a.bensaude + a.coparticipacao - a.despesa_assistencial - a.agenciamento },
     lancers: { faturamento: a.lancers },
-    siga: { adesao: a.adesao, faturamento: a.siga, agenciamento: a.agenciamento, resultado: a.adesao + a.siga + a.agenciamento },
+    siga: { adesao: a.adesao, faturamento: a.siga, agenciamento: a.agenciamento_externo, resultado: a.adesao + a.siga + a.agenciamento_externo },
   };
 }
 /** Indicadores do quadro Resultado por Ente (Simulação de resultados). */
 export type IndicadorEnte =
   | 'beneficiario.adesao' | 'beneficiario.faturamento' | 'beneficiario.coparticipacao' | 'beneficiario.total'
-  | 'bensaude.faturamento' | 'bensaude.coparticipacao' | 'bensaude.despesa' | 'bensaude.operacional' | 'bensaude.agenciamento' | 'bensaude.liquido'
+  | 'bensaude.faturamento' | 'bensaude.coparticipacao' | 'bensaude.despesa' | 'bensaude.operacional' | 'bensaude.agenciamentoExterno' | 'bensaude.agenciamentoProprio' | 'bensaude.agenciamento' | 'bensaude.liquido'
   | 'lancers.faturamento'
   | 'siga.adesao' | 'siga.faturamento' | 'siga.agenciamento' | 'siga.resultado';
 /** Linha da memória de cálculo: modalidade (ou "Consolidado"), conta sem o resultado e o resultado. */
@@ -261,11 +277,14 @@ export function memoriaCalculo(indicador: IndicadorEnte, resultados: ResultadoSi
   };
   const consolidado = (calculo: string, total: number) => ({ passos: [`${calculo} = ${n(total)}`], itens: [{ modalidade: 'Consolidado', calculo, valor: total }], valor: total });
   const adesao = () => porModalidade(x => `Vendas ${n(vendas(x))} × Taxa de adesão ${p(x.condicao.taxa_adesao)}`, x => x.anual.adesao, r.beneficiario.adesao);
-  const agenciamento = () => porModalidade(x => {
+  const equipeDe = (x: ResultadoSimulacao) => (x.config.equipe_propria_percentual ?? 0) / 100;
+  const agencProprioDe = (x: ResultadoSimulacao) => (x.config.agenc_proprio_percentual ?? 0) / 100;
+  const agenciamentoExterno = (total: number) => porModalidade(x => {
     const c = x.condicao;
     const soParcela1 = [c.agenciamento_parcela_2, c.agenciamento_parcela_3, c.agenciamento_parcela_4, c.agenciamento_parcela_5].every(v => !v);
-    return soParcela1 ? `Vendas ${n(vendas(x))} × Agenciamento ${p(c.agenciamento_parcela_1)}` : 'Parcelas de agenciamento sobre as vendas';
-  }, x => x.anual.agenciamento, r.bensaude.agenciamento);
+    return soParcela1 ? `Vendas ${n(vendas(x))} × (100% − Equipe Própria ${p(equipeDe(x))}) × Agenciamento ${p(c.agenciamento_parcela_1)}` : `Parcelas de agenciamento sobre as vendas × (100% − Equipe Própria ${p(equipeDe(x))})`;
+  }, x => x.anual.agenciamento_externo, total);
+  const agenciamentoProprio = () => porModalidade(x => `Vendas ${n(vendas(x))} × Equipe Própria ${p(equipeDe(x))} × Agenc. Próprio ${p(agencProprioDe(x))}`, x => x.anual.agenciamento_proprio, r.bensaude.agenciamentoProprio);
   const participacao = (rotulo: string, pct: (x: ResultadoSimulacao) => number, valor: (x: ResultadoSimulacao) => number, total: number) =>
     porModalidade(x => `Faturamento ${n(x.anual.faturamento)} × ${rotulo} ${p(pct(x))}`, valor, total);
   // Média Assist./Copart: cada mês tem sua conta (vidas acumuladas do mês × valor); o ano soma os valores mensais, nunca as vidas.
@@ -293,16 +312,20 @@ export function memoriaCalculo(indicador: IndicadorEnte, resultados: ResultadoSi
       return { formula: 'Despesa Assistencial (Percentual) = Faturamento × Sinistralidade (%) da modalidade.', ...participacao('Sinistralidade', x => (x.config.sinistralidade_percentual ?? sinistralidadePadrao) / 100, x => x.anual.despesa_assistencial, r.bensaude.despesa) };
     case 'bensaude.operacional':
       return { formula: 'Resultado Operacional = Faturamento OPERADORA + Coparticipação − Despesa Assistencial.', ...consolidado(`${n(r.bensaude.faturamento)} + ${n(r.bensaude.coparticipacao)} − ${n(r.bensaude.despesa)}`, r.bensaude.operacional) };
-    case 'bensaude.agenciamento': case 'siga.agenciamento':
-      return { formula: `Agenciamento = Vendas × percentual de Agenciamento do produto (${indicador === 'siga.agenciamento' ? 'receita da AGENCIADORA' : 'custo da OPERADORA'}), pago no mês da venda. ` + vendasDef, ...agenciamento() };
+    case 'bensaude.agenciamentoExterno': case 'siga.agenciamento':
+      return { formula: `Agenciamento Externo = Vendas × (100% − % Equipe Própria) × percentual de Agenciamento do produto (${indicador === 'siga.agenciamento' ? 'receita da AGENCIADORA' : 'custo da OPERADORA'}), pago no mês da venda. ` + vendasDef, ...agenciamentoExterno(r.bensaude.agenciamentoExterno) };
+    case 'bensaude.agenciamentoProprio':
+      return { formula: 'Agenciamento Próprio = Vendas × % Equipe Própria × % Agenc. Próprio (custo da OPERADORA com a equipe própria; não vai para a AGENCIADORA), pago no mês da venda. ' + vendasDef, ...agenciamentoProprio() };
+    case 'bensaude.agenciamento':
+      return { formula: 'Total Agenciamento = Agenciamento Externo + Agenciamento Próprio (custo da OPERADORA).', ...consolidado(`${n(r.bensaude.agenciamentoExterno)} + ${n(r.bensaude.agenciamentoProprio)}`, r.bensaude.agenciamento) };
     case 'bensaude.liquido':
-      return { formula: 'Resultado Líquido = Resultado Operacional − Agenciamento.', ...consolidado(`${n(r.bensaude.operacional)} − ${n(r.bensaude.agenciamento)}`, r.bensaude.liquido) };
+      return { formula: 'Resultado Líquido = Resultado Operacional − Total Agenciamento.', ...consolidado(`${n(r.bensaude.operacional)} − ${n(r.bensaude.agenciamento)}`, r.bensaude.liquido) };
     case 'lancers.faturamento':
       return { formula: 'Faturamento ADMINISTRADORA = Faturamento × Participação ADMINISTRADORA.', ...participacao('ADMINISTRADORA', x => x.condicao.participacao_lancers, x => x.anual.lancers, r.lancers.faturamento) };
     case 'siga.faturamento':
       return { formula: 'Faturamento AGENCIADORA = Faturamento × Participação AGENCIADORA.', ...participacao('AGENCIADORA', x => x.condicao.participacao_siga, x => x.anual.siga, r.siga.faturamento) };
     case 'siga.resultado':
-      return { formula: 'Resultado = Taxa de Adesão + Faturamento AGENCIADORA + Agenciamento.', ...consolidado(`${n(r.siga.adesao)} + ${n(r.siga.faturamento)} + ${n(r.siga.agenciamento)}`, r.siga.resultado) };
+      return { formula: 'Resultado = Taxa de Adesão + Faturamento AGENCIADORA + Agenciamento Externo.', ...consolidado(`${n(r.siga.adesao)} + ${n(r.siga.faturamento)} + ${n(r.siga.agenciamento)}`, r.siga.resultado) };
   }
 }
 
@@ -315,7 +338,7 @@ export type LinhaEnte = { chave: IndicadorEnte; label: string; valor: (r: Resumo
 export type ColunaMensalEnte = { label: string; valor: (m: Mensal) => number; inteiro?: boolean; agenciamento?: boolean };
 /** Quadros do Resultado por Ente, compartilhados pela tela e pelo relatório em PDF (nomes dos entes pedidos em 13/11/2026). */
 export const ENTES_RESULTADO: { titulo: string; linhas: LinhaEnte[]; mensal: ColunaMensalEnte[] }[] = [
-  { titulo: 'Beneficiário', linhas: [
+  { titulo: 'BENEFICIÁRIO', linhas: [
     { chave: 'beneficiario.adesao', label: 'Taxa de Adesão', valor: r => r.beneficiario.adesao },
     { chave: 'beneficiario.faturamento', label: 'Faturamento', valor: r => r.beneficiario.faturamento },
     { chave: 'beneficiario.coparticipacao', label: 'Coparticipação', valor: r => r.beneficiario.coparticipacao },
@@ -333,14 +356,17 @@ export const ENTES_RESULTADO: { titulo: string; linhas: LinhaEnte[]; mensal: Col
     { chave: 'bensaude.coparticipacao', label: '+ Coparticipação', valor: r => r.bensaude.coparticipacao },
     { chave: 'bensaude.despesa', label: '− Despesa Assistencial', valor: r => -r.bensaude.despesa },
     { chave: 'bensaude.operacional', label: '= Resultado Operacional', valor: r => r.bensaude.operacional, destaque: true },
-    { chave: 'bensaude.agenciamento', label: '− Agenciamento', valor: r => -r.bensaude.agenciamento, agenciamento: true },
+    { chave: 'bensaude.agenciamentoExterno', label: '− Agenciamento Externo', valor: r => -r.bensaude.agenciamentoExterno, agenciamento: true },
+    { chave: 'bensaude.agenciamentoProprio', label: '− Agenciamento Próprio', valor: r => -r.bensaude.agenciamentoProprio },
+    { chave: 'bensaude.agenciamento', label: '− Total Agenciamento', valor: r => -r.bensaude.agenciamento, agenciamento: true },
     { chave: 'bensaude.liquido', label: '= Resultado Líquido', valor: r => r.bensaude.liquido, destaque: true, agenciamento: true },
   ], mensal: [
     { label: 'Faturamento', valor: m => m.bensaude },
     { label: 'Coparticipação', valor: m => m.coparticipacao },
     { label: 'Despesa Assist.', valor: m => -m.despesa_assistencial },
     { label: 'Res. Operacional', valor: m => m.bensaude + m.coparticipacao - m.despesa_assistencial },
-    { label: 'Agenciamento', valor: m => -m.agenciamento, agenciamento: true },
+    { label: 'Agenc. Externo', valor: m => -m.agenciamento_externo, agenciamento: true },
+    { label: 'Agenc. Próprio', valor: m => -m.agenciamento_proprio },
     { label: 'Res. Líquido', valor: m => m.bensaude + m.coparticipacao - m.despesa_assistencial - m.agenciamento, agenciamento: true },
   ] },
   { titulo: 'ADMINISTRADORA', linhas: [{ chave: 'lancers.faturamento', label: 'Faturamento', valor: r => r.lancers.faturamento, destaque: true }], mensal: [
@@ -350,13 +376,13 @@ export const ENTES_RESULTADO: { titulo: string; linhas: LinhaEnte[]; mensal: Col
   { titulo: 'AGENCIADORA', linhas: [
     { chave: 'siga.adesao', label: 'Taxa de Adesão', valor: r => r.siga.adesao },
     { chave: 'siga.faturamento', label: 'Faturamento', valor: r => r.siga.faturamento },
-    { chave: 'siga.agenciamento', label: 'Agenciamento', valor: r => r.siga.agenciamento, agenciamento: true },
+    { chave: 'siga.agenciamento', label: 'Agenciamento Externo', valor: r => r.siga.agenciamento, agenciamento: true },
     { chave: 'siga.resultado', label: 'Resultado', valor: r => r.siga.resultado, destaque: true, agenciamento: true },
   ], mensal: [
     { label: 'Taxa de Adesão', valor: m => m.adesao },
     { label: 'Faturamento', valor: m => m.siga },
-    { label: 'Agenciamento', valor: m => m.agenciamento, agenciamento: true },
-    { label: 'Resultado', valor: m => m.adesao + m.siga + m.agenciamento, agenciamento: true },
+    { label: 'Agenc. Externo', valor: m => m.agenciamento_externo, agenciamento: true },
+    { label: 'Resultado', valor: m => m.adesao + m.siga + m.agenciamento_externo, agenciamento: true },
   ] },
 ];
 
@@ -398,6 +424,8 @@ export function parametrosMemoriaCalculo(cenarios: CenarioAgenciamento[], nomes:
     mensalidadeMedia: r.media,
     vendas: r.novasReceitas.reduce((s, v) => s + v, 0),
     agenciamentos: cenarios.map(c => c.resultados[i].condicao.agenciamento_parcela_1),
+    equipePropria: (r.config.equipe_propria_percentual ?? 0) / 100,
+    agencProprio: (r.config.agenc_proprio_percentual ?? 0) / 100,
     adesao: r.condicao.taxa_adesao,
     bensaude: r.condicao.participacao_bensaude,
     lancers: r.condicao.participacao_lancers,

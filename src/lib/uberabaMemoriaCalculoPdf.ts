@@ -123,9 +123,15 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
   const direita = (de: number, ate: number) => Object.fromEntries(Array.from({ length: ate - de + 1 }, (_, k) => [de + k, { halign: "right" as const }]));
   // Mesma ordem da tela: percentuais, depois vidas e variáveis, depois os valores por vida/mês.
   tabela(
-    ["Modalidade", ...cenarios.map(c => `Agenciamento ${c.rotulo.toLowerCase()}`), "Taxa de adesão", "OPERADORA", "ADMINISTRADORA", "AGENCIADORA"],
-    parametros.map(x => [x.modalidade, ...x.agenciamentos.map(p), p(x.adesao), p(x.bensaude), p(x.lancers), p(x.siga)]),
-    { colunas: { 0: { fontStyle: "bold", halign: "left", cellWidth: 22 }, ...direita(1, cenarios.length + 4), [cenarios.length + 3]: { halign: "right", cellWidth: 36 } }, fonte: 9 },
+    ["Modalidade", ...cenarios.map(c => `Agenciamento ${c.rotulo.toLowerCase()}`), "% Equipe própria", "% Agenc. próprio"],
+    parametros.map(x => [x.modalidade, ...x.agenciamentos.map(p), p(x.equipePropria), p(x.agencProprio)]),
+    { colunas: { 0: { fontStyle: "bold", halign: "left", cellWidth: 30 }, ...direita(1, cenarios.length + 2) }, fonte: 9 },
+  );
+  garantir(alturaTabela(parametros.length + 2));
+  tabela(
+    ["Modalidade", "Taxa de adesão", "OPERADORA", "ADMINISTRADORA", "AGENCIADORA"],
+    parametros.map(x => [x.modalidade, p(x.adesao), p(x.bensaude), p(x.lancers), p(x.siga)]),
+    { colunas: { 0: { fontStyle: "bold", halign: "left", cellWidth: 30 }, ...direita(1, 4) }, fonte: 9 },
   );
   garantir(alturaTabela(parametros.length + 2));
   tabela(
@@ -149,7 +155,10 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
       fonte: 9,
     },
   );
-  paragrafo("Vendas = 1ª mensalidade (Enfermaria por faixa etária) de cada vida vendida no ano. Mensalidade média = Vendas ÷ Vidas. OPERADORA, ADMINISTRADORA e AGENCIADORA = participação de cada uma no faturamento. Desp. assist. média = valor por vida/mês, base da coparticipação (% Copart sobre ela) e, na chave Média Assist., da despesa assistencial. Net média = Mensalidade média × Participação OPERADORA; Copart. = Desp. assist. média × % Copart; Receitas = Net média + Copart. (valores em R$ por vida/mês).", F.tabela, SECUNDARIO, "italic");
+  // Nota inteira na mesma página.
+  const notaParametros = "Vendas = 1ª mensalidade (Enfermaria por faixa etária) de cada vida vendida no ano. Mensalidade média = Vendas ÷ Vidas. OPERADORA, ADMINISTRADORA e AGENCIADORA = participação de cada uma no faturamento. Desp. assist. média = valor por vida/mês, base da coparticipação (% Copart sobre ela) e, na chave Média Assist., da despesa assistencial. Net média = Mensalidade média × Participação OPERADORA; Copart. = Desp. assist. média × % Copart; Receitas = Net média + Copart. (valores em R$ por vida/mês).";
+  garantir(linhasDe(notaParametros, F.tabela) * alturaLinha(F.tabela) + 2);
+  paragrafo(notaParametros, F.tabela, SECUNDARIO, "italic");
 
   // 2 a 5. Um tópico por ente.
   type Indicador = ReturnType<typeof relatorioMemoriaCalculo>[number]["indicadores"][number];
@@ -203,7 +212,9 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
         mensal.linhas.map(l => [l.mes, ...l.valores.map((v, i) => fmt(v, mensal.inteiros[i]))]),
         {
           foot: ["Total do ano", ...mensal.total.map((v, i) => fmt(v, mensal.inteiros[i]))],
-          colunas: Object.fromEntries(Array.from({ length: cols }, (_, i) => [i, i === 0 ? { halign: "left", fontStyle: "bold" } : { halign: "right" }])),
+          colunas: Object.fromEntries(Array.from({ length: cols }, (_, i) => [i, i === 0 ? { halign: "left", fontStyle: "bold", cellWidth: 19 } : { halign: "right" }])),
+          // Quadros com muitas colunas (OPERADORA com Agenc. Externo e Próprio) em fonte menor, para os valores não quebrarem.
+          fonte: cols > 7 ? 7.5 : undefined,
         },
       );
       if (mensal.colunas.includes("Vidas acumuladas")) paragrafo("Total de Vidas acumuladas = vidas projetadas acumuladas no fim de dezembro.", F.tabela, SECUNDARIO, "italic");
@@ -213,7 +224,8 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
   // 6. Premissas.
   secao("6. Premissas");
   [
-    `Agenciamento: percentual ${bases} dos Indicadores variáveis × uma mensalidade de cada venda, pago no mês da venda. Os indicadores que dependem dele aparecem uma vez para cada percentual.`,
+    `Agenciamento Externo: (100% − % Equipe Própria) × percentual ${bases} dos Indicadores variáveis × uma mensalidade de cada venda, pago no mês da venda; custo da OPERADORA e receita da AGENCIADORA. Os indicadores que dependem dele aparecem uma vez para cada percentual.`,
+    "Agenciamento Próprio: % Equipe Própria × % Agenc. Próprio × uma mensalidade de cada venda, igual nos dois cenários; custo da OPERADORA com a equipe própria, sem passar pela AGENCIADORA. Total Agenciamento = Externo + Próprio.",
     "Faturamento cumulativo de janeiro a dezembro, sem cancelamentos ou reajustes. Acomodação: Enfermaria.",
     "Distribuição etária: %CART fornecido em 26/10/2026, aplicado às quatro modalidades.",
     "Taxa de adesão paga pelo beneficiário diretamente à AGENCIADORA.",
