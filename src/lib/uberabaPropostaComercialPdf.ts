@@ -354,7 +354,8 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   // Contêiner TABELAS de cada quadro — Faixa × Enfermaria (cada coluna com moldura própria) e, abaixo dos quadros, uma linha simples com o fator do Apartamento.
   // `reserva` (mm): as linhas se ajustam para os quadros ocuparem o resto da folha deixando esse espaço livre abaixo
   // (Produtos com Administradora: tabelas e remuneração na mesma página, pedido do Dênis em 13/11/2026).
-  const desenharPrecos = (lista: Quadro[], g: Geometria, reserva: number | null) => {
+  /** Retorna onde termina o contorno dos quadros (antes da nota do fator). */
+  const desenharPrecos = (lista: Quadro[], g: Geometria, reserva: number | null): number => {
     const inicio = y;
     const ySecT = cabecalhoQuadros(g, lista, inicio);
     g.xs.forEach((x) => tituloSecao(g, "TABELAS", x, ySecT));
@@ -418,10 +419,13 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     doc.text(linhasNota, g.xs[0], yNota, { lineHeightFactor: 1.35 });
     y = yNota + linhasNota.length * LINHA_NOTA + ESPACO_APOS_NOTA;
     doc.setPage(doc.getNumberOfPages());
+    return fimP;
   };
 
   // Contêiner INDICADORES VARIÁVEIS de cada quadro; cada bloco começa na mesma linha em todos os quadros da seção.
-  const desenharRemuneracao = (lista: Quadro[], g: Geometria) => {
+  // `fimAlvo` (mm): quando informado e abaixo do fim natural, o quadro se estende até ele
+  // (Plano Empresarial: termina nivelado com a tabela de preços ao lado, pedido do Dênis em 13/11/2026).
+  const desenharRemuneracao = (lista: Quadro[], g: Geometria, fimAlvo?: number) => {
     const inicio = y;
     const ySecI = cabecalhoQuadros(g, lista, inicio, ESPACO_NOME_REMUNERACAO);
     g.xs.forEach((x) => tituloSecao(g, "INDICADORES VARIÁVEIS", x, ySecI));
@@ -454,8 +458,8 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
       });
       yb = fimBloco + 3;
     }
-    g.xs.forEach((x) => contornoSecao(g, x, ySecI, yb - 1));
-    const fimQ = yb + 1.5;
+    const fimQ = Math.max(yb + 1.5, fimAlvo ?? 0);
+    g.xs.forEach((x) => contornoSecao(g, x, ySecI, fimQ - 2.5));
     contornoQuadros(g, inicio, fimQ);
     y = fimQ + 11;
     doc.setPage(doc.getNumberOfPages());
@@ -511,10 +515,10 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     const lista = doGrupo("empresarial");
     garantir(ALTURA_EMPRESARIAL);
     const inicio = y;
-    desenharPrecos(lista, GEO_EMP_TABELAS, null);
+    const fimQuadroPrecos = desenharPrecos(lista, GEO_EMP_TABELAS, null);
     const fimPrecos = y;
     y = inicio;
-    desenharRemuneracao(lista, GEO_EMP_REMUNERACAO);
+    desenharRemuneracao(lista, GEO_EMP_REMUNERACAO, fimQuadroPrecos);
     y = Math.max(fimPrecos, y);
   };
   const blocoDados: Partial<Record<SecaoTextoId, () => void>> = { introducao: desenharParametros, referencia: desenharReferencia, administradora: desenharAdministradora, empresarial: desenharEmpresarial };
