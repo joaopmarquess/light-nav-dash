@@ -128,3 +128,14 @@ describe("Proposta · quadro de parâmetros da Introdução", () => {
     expect(linhasParametros({ pcaAdm: 88, pmeAdm: 85, pceAdm: 80, pce100: 70 })[0][6]).toBe("0,88");
   });
 });
+
+import { topicosGlossario } from "./uberabaPropostaComercialPdf";
+
+describe("Glossário · tópicos e subtópicos numerados", () => {
+  it("numera termos e subtermos a partir do número do tópico do Glossário", () => {
+    const t = topicosGlossario();
+    expect(t.slice(0, 3).map((x) => `${x.numero} ${x.termo}`)).toEqual(["6.1 DISTRIBUIDORES", "6.2 ENTES", "6.2.1 ADMINISTRADORA"]);
+    expect(t.find((x) => x.termo === "SPREAD")?.numero).toBe("6.6.3");
+    expect(t.at(-1)).toMatchObject({ numero: "6.10", termo: "TAXA DE ADESÃO" });
+  });
+});

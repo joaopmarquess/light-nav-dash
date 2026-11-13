@@ -44,6 +44,8 @@ export const FONTES_PROPOSTA = {
   fator: 12,
   /** Linha única, em itálico e sem moldura, abaixo das tabelas de cada seção: "APARTAMENTO fator x ENFERMARIA". */
   notaPrecos: 11,
+  /** Glossário e Notas Explicativas: termos e notas em fonte menor e itálico (pedido do Dênis em 13/11/2026). */
+  glossario: 11,
   rodape: 11,
 } as const;
 const F = FONTES_PROPOSTA;
@@ -130,6 +132,19 @@ export const GLOSSARIO_PROPOSTA: TermoGlossario[] = [
 
 /** Termos do Glossário na ordem do PDF. */
 export const glossarioProposta = (): TermoGlossario[] => GLOSSARIO_PROPOSTA;
+
+/**
+ * Glossário em tópicos e subtópicos numerados (6.1, 6.2, 6.2.1…), todos na mesma margem: a hierarquia vem da
+ * numeração, nunca de recuo. O prefixo segue o número do título do Glossário.
+ */
+export function topicosGlossario(termos: TermoGlossario[] = GLOSSARIO_PROPOSTA, titulo: string = TITULO_GLOSSARIO): { numero: string; termo: string; nota: string }[] {
+  const prefixo = titulo.match(/^\s*(\d+)/)?.[1] ?? "";
+  const base = prefixo ? `${prefixo}.` : "";
+  return termos.flatMap((g, i) => [
+    { numero: `${base}${i + 1}`, termo: g.termo, nota: g.nota },
+    ...(g.itens ?? []).map((it, j) => ({ numero: `${base}${i + 1}.${j + 1}`, termo: it.termo, nota: it.nota })),
+  ]);
+}
 
 
 /**
@@ -472,26 +487,22 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   };
 
   const desenharGlossario = () => {
-    const RECUO = 6;
-    const termo = (t: string, nota: string, x: number) => {
-      const largura = usableW - (x - marginL);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(F.texto);
-      const linhasNota = doc.splitTextToSize(textoPdf(nota), largura) as string[];
-      garantir(7 + Math.min(2, linhasNota.length) * alturaLinha(F.texto));
-      // Termo em destaque, sem número de nota.
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(F.texto);
+    const FG = F.glossario;
+    const LINHA_G = alturaLinha(FG);
+    topicosGlossario().forEach(({ numero, termo, nota }) => {
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(FG);
+      const linhasNota = doc.splitTextToSize(textoPdf(nota), usableW) as string[];
+      garantir(6 + Math.min(2, linhasNota.length) * LINHA_G);
+      // Tópico numerado na margem do texto, em destaque; a hierarquia vem só da numeração.
+      doc.setFont("helvetica", "bolditalic");
       doc.setTextColor(...TINTA);
-      doc.text(textoPdf(t), x, y);
-      y += 6.5;
-      fonteTexto();
-      linhasNota.forEach((l) => { garantir(alturaLinha(F.texto)); doc.text(l, x, y); y += alturaLinha(F.texto); });
-      y += 3;
-    };
-    glossarioProposta().forEach((g) => {
-      termo(g.termo, g.nota, marginL);
-      g.itens?.forEach((i) => termo(i.termo, i.nota, marginL + RECUO));
+      doc.text(textoPdf(`${numero} ${termo}`), marginL, y);
+      y += 5.5;
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(...PDF_COLORS.text);
+      linhasNota.forEach((l) => { garantir(LINHA_G); doc.text(l, marginL, y); y += LINHA_G; });
+      y += 2.5;
     });
   };
 
