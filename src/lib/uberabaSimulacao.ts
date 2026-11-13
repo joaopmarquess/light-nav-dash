@@ -182,12 +182,13 @@ function simular(config: ConfigSimulacao, { condicao, mensalidades }: ComercialS
 }
 export type ResultadoSimulacao = ReturnType<typeof calcularSimulacao>;
 /** Receitas por vida/mês nos Parâmetros (pedido de 13/11/2026): mensalidade média + coparticipação por vida/mês. */
-export function receitaVidaMes(r: ResultadoSimulacao) {
-  return r.media + coparticipacaoVidaMes(r.config);
-}
 /** Net média (R$ vida/mês) = Mensalidade média × Participação OPERADORA. */
 export function netVidaMes(r: ResultadoSimulacao) {
   return r.media * r.condicao.participacao_bensaude;
+}
+/** Receitas (R$ vida/mês) da coluna dos Parâmetros = Net média + Copart. */
+export function receitaVidaMes(r: ResultadoSimulacao) {
+  return netVidaMes(r) + coparticipacaoVidaMes(r.config);
 }
 export function consolidarFaixasSimulacao(resultados: ResultadoSimulacao[]) {
   const totalEntradas = resultados.reduce((s, r) => s + r.config.total_vidas, 0);

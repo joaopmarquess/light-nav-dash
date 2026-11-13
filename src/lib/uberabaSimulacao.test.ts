@@ -390,8 +390,8 @@ describe('Desp. Assist. média e % Copart (pedido de 13/11/2026)', () => {
     expect(replicarParametro(cs, 'PCA', 'despesa_media').map(c => c.despesa_media)).toEqual([300, 300, 300, 300]);
     expect(replicarParametro(cs, 'PCA', 'copart_percentual').map(c => c.copart_percentual)).toEqual([15, 15, 15, 15]);
   });
-  it('Receitas por vida/mês = mensalidade média + copart. (56,09 com os padrões)', () => {
-    rs.forEach(r => expect(receitaVidaMes(r)).toBeCloseTo(r.media + 56.09, 9));
+  it('Receitas por vida/mês = Net média + copart. (56,09 com os padrões)', () => {
+    rs.forEach(r => expect(receitaVidaMes(r)).toBeCloseTo(r.media * r.condicao.participacao_bensaude + 56.09, 9));
   });
   it('Net média = mensalidade média × participação OPERADORA (77% no PCA com 23% de ADMINISTRADORA)', () => {
     rs.forEach(r => expect(netVidaMes(r)).toBeCloseTo(r.media * r.condicao.participacao_bensaude, 9));
