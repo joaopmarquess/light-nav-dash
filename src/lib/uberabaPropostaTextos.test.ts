@@ -45,10 +45,10 @@ describe("revisão antes do PDF", () => {
     const e = { ...estadoVazio(), rascunho: { ...textosVazios(), introducao: "Rascunho." } };
     expect(textosParaPdf(e)).toBeNull();
     const p = paragrafosProposta(null);
-    expect(p[0][0]).toMatch(/^É com satisfação que apresentamos a presente proposta comercial para a comercialização de nossos produtos em Uberaba \(Minas Gerais\)\./);
-    expect(p[0][0]).toMatch(/quatro formatos distintos de produtos/);
-    expect(p[0][0]).toMatch(/seções "Produtos com Administradora" e "Plano Empresarial" ao longo deste documento\.$/);
-    expect(p[1][0]).toMatch(/^Matriz referencial de preços para Uberaba, no padrão atuarial do Bensaúde,/);
+    // Versões resumidas a pedido do Dênis para os tópicos 1 e 2 caberem na página 1.
+    expect(p[0][0]).toMatch(/^É com satisfação que apresentamos esta proposta comercial de quatro produtos em Uberaba \(MG\),/);
+    expect(p[0][0]).toMatch(/estão nas seções 3 e 4\.$/);
+    expect(p[1][0]).toMatch(/^Matriz referencial de preços para Uberaba, no padrão atuarial do Bensaúde e calibrada para o mercado local,/);
     expect(p.every((t) => t.length > 0)).toBe(true);
     expect(p.flat().join(" ")).not.toMatch(/Lorem/);
   });
@@ -131,5 +131,17 @@ describe("Introdução · spread atribuído à Administradora", () => {
     const aprovado = { ...PADRAO_INTRO, introducao: INTRODUCAO_SEM_ATRIBUICAO };
     const storage = { getItem: (k: string) => (k === CHAVE_TEXTOS ? JSON.stringify({ aprovado }) : null) };
     expect(lerTextos(storage).aprovado?.introducao).toBe(PADRAO_INTRO.introducao);
+  });
+});
+
+import { INTRODUCAO_LONGA, REFERENCIA_LONGA } from "./uberabaPropostaTextos";
+
+describe("Introdução e Tabela Referencial resumidas", () => {
+  it("textos guardados nas versões longas passam para as resumidas", async () => {
+    const { lerTextos, CHAVE_TEXTOS } = await import("./uberabaPropostaTextos");
+    const aprovado = { ...PADRAO_INTRO, introducao: INTRODUCAO_LONGA, referencia: REFERENCIA_LONGA };
+    const storage = { getItem: (k: string) => (k === CHAVE_TEXTOS ? JSON.stringify({ aprovado }) : null) };
+    expect(lerTextos(storage).aprovado?.introducao).toBe(PADRAO_INTRO.introducao);
+    expect(lerTextos(storage).aprovado?.referencia).toBe(PADRAO_INTRO.referencia);
   });
 });

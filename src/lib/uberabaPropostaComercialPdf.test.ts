@@ -139,3 +139,17 @@ describe("Glossário · tópicos e subtópicos numerados", () => {
     expect(t.at(-1)).toMatchObject({ numero: "6.10", termo: "TAXA DE ADESÃO" });
   });
 });
+
+import { buildPropostaComercialPdf } from "./uberabaPropostaComercialPdf";
+
+describe("Proposta · página 1", () => {
+  it("Introdução e Tabela Referencial (com a última faixa) cabem na primeira página", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const paginas = (buildPropostaComercialPdf(null) as any).internal.pages as string[][];
+    const p1 = paginas[1].join("\n");
+    expect(p1).toContain("1. INTRODU");
+    expect(p1).toContain("2. TABELA REFERENCIAL");
+    expect(p1).toContain("59 ou +");
+    expect(paginas[2].join("\n")).toContain("3. PRODUTOS COM ADMINISTRADORA");
+  });
+});

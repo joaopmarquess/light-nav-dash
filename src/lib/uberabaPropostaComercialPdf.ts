@@ -195,6 +195,12 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     }
   };
 
+  /** Altura exata ocupada pelos parágrafos (mesma quebra de linhas e espaçamento de `paragrafo`). */
+  const alturaParagrafos = (lista: string[]) => {
+    fonteTexto();
+    return lista.reduce((h, t) => h + (doc.splitTextToSize(textoPdf(t), usableW - 2) as string[]).length * LINHA_TEXTO + 3, 0);
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fimTabela = (fallback: number) => ((doc as any).lastAutoTable?.finalY as number | undefined) ?? fallback;
 
@@ -335,7 +341,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     doc.setLineWidth(0.6);
     doc.line(marginL, fimT, marginL + LARGURA_TEXTO, fimT);
     doc.setDrawColor(0);
-    y = fimT + 9;
+    y = fimT + 7;
   };
 
   // Tópico 2: Tabela Referencial (100%), com Enfermaria e Apartamento pelo fator padrão.
@@ -511,7 +517,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   // quando não cabem no resto da página, passam inteiros para a seguinte.
   const ALTURA_EMPRESARIAL = 125;
   /** Tabela Referencial inteira (cabeçalho, dez faixas e a linha do fator): fica na mesma página do seu título e texto. */
-  const ALTURA_REFERENCIA = 82;
+  const ALTURA_REFERENCIA = 84;
   // 3 · Produtos com Administradora: tabelas e remuneração na mesma página; as tabelas diminuem para caber.
   // A altura da remuneração é medida desenhando-a numa página provisória, descartada em seguida.
   const listaAdm = doGrupo("administradora");
@@ -549,7 +555,9 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   SECOES_TEXTO.forEach((s, i) => {
     // Produtos com Administradora e Plano Empresarial: título, texto e quadros ficam juntos na mesma página.
     const juntos = s.id === "empresarial" ? ALTURA_EMPRESARIAL : s.id === "administradora" ? ALTURA_PRECOS_ADM_MIN + alturaRemuneracaoAdm : s.id === "referencia" ? ALTURA_REFERENCIA : null;
-    garantir(juntos === null ? INICIO_TOPICO : 10 + corpo[i].length * LINHA_TEXTO * 3 + juntos);
+    // A Tabela Referencial mede o próprio texto, para caber na página 1 logo após a Introdução.
+    const alturaTexto = s.id === "referencia" ? alturaParagrafos(corpo[i]) + 2 : corpo[i].length * LINHA_TEXTO * 3;
+    garantir(juntos === null ? INICIO_TOPICO : 10 + alturaTexto + juntos);
     drawSectionTitle(doc, s.titulo, marginL, y, pageW - marginR, TINTA, F.topico);
     y += 10;
     corpo[i].forEach(paragrafo);
