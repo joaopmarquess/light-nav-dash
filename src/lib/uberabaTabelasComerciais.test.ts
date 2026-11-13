@@ -195,7 +195,7 @@ describe("parâmetros das tabelas (13/11/2026)", () => {
   it("lives, billing and distributors as supplied", () => {
     expect(PARAMETROS_UBERABA.map((p) => p.vidas)).toEqual(["-", "03 A 29", "30 A 99", "100 OU MAIS"]);
     expect(PARAMETROS_UBERABA.map((p) => p.boletagem)).toEqual(["ADMINISTRADORA", "ADMINISTRADORA", "ADMINISTRADORA", "OPERADORA"]);
-    expect(parametrosDe("pce100").distribuidores).toBe("CORRETORAS");
+    expect(parametrosDe("pce100").distribuidores).toBe("AGENCIADORAS E CORRETORAS AUTORIZADAS");
     expect(parametrosDe("pmeAdm").distribuidores).toBe("PLATAFORMAS ASSOCIADAS");
     expect(vidasTexto(parametrosDe("pcaAdm"))).toBeNull();
     expect(vidasTexto(parametrosDe("pmeAdm"))).toBe("03 a 29 vidas");

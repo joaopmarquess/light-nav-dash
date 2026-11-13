@@ -15,7 +15,7 @@ describe("dados enviados à IA", () => {
     expect(d.tabelas.map((t) => t.nome)).toEqual(["ADESÃO", "PME ADMINISTRADAS", "PJ ADMINISTRADAS", "EMPRESARIAL"]);
     expect(d.tabelas.map((t) => t.indiceSobreReferencia)).toEqual(["90%", "85%", "80%", "70%"]);
     expect(d.tabelas.map((t) => t.secao)).toEqual(["Produtos com Administradora", "Produtos com Administradora", "Produtos com Administradora", "Plano Empresarial"]);
-    expect(d.tabelas[3]).toMatchObject({ sigla: "PJ+", vidas: "100 OU MAIS", boletagem: "OPERADORA", distribuidores: "CORRETORAS" });
+    expect(d.tabelas[3]).toMatchObject({ sigla: "PJ+", vidas: "100 OU MAIS", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS" });
     expect(d.tabelas[0].indiceSobreReferencia).toBe("90%");
     expect(d.tabelas[0].fatorApartamento).toBe("1,25");
     expect(d.tabelas[0].faixas[0]).toEqual({ faixa: "00 a 18", enfermaria: "157,50", apartamento: "196,87" });

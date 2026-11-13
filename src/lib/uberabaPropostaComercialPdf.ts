@@ -303,19 +303,35 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     };
     // Fator e valores curtos ficam numa linha só.
     const INTEIRAS = new Set([6]);
+    // Largura que deixa o texto em no máximo duas linhas (melhor ponto de quebra entre palavras): assim um
+    // distribuidor longo não toma a largura das outras colunas e as linhas do quadro não crescem.
+    const larguraDuasLinhas = (t: string, negrito: boolean) => {
+      const w = t.split(/\s+/);
+      if (w.length < 2) return larguraTexto(t, negrito);
+      return Math.min(...w.slice(1).map((_, k) => Math.max(larguraTexto(w.slice(0, k + 1).join(" "), negrito), larguraTexto(w.slice(k + 1).join(" "), negrito))));
+    };
+    // A letra diminui (até 9) até todas as células caberem em duas linhas na largura do texto.
     let fonte: number = F.parametros;
     let minimas: number[] = [];
-    for (; fonte > 9; fonte -= 0.5) {
+    let desejadas: number[] = [];
+    for (;; fonte -= 0.5) {
       doc.setFontSize(fonte);
       minimas = COLUNAS_PARAMETROS.map((h, c) => Math.max(larguraPalavra(h, true), ...linhas.map((l) => (INTEIRAS.has(c) || l[c].length <= 7 ? larguraTexto : larguraPalavra)(l[c], c === 0))) + PAD * 2 + 0.6);
-      if (minimas.reduce((a, b) => a + b, 0) <= LARGURA_TEXTO) break;
+      desejadas = COLUNAS_PARAMETROS.map((_, c) => Math.max(...linhas.map((l) => (INTEIRAS.has(c) ? larguraTexto : larguraDuasLinhas)(l[c], c === 0))) + PAD * 2 + 0.6);
+      if (fonte <= 9 || minimas.reduce((t, m, c) => t + Math.max(m, desejadas[c]), 0) <= LARGURA_TEXTO) break;
     }
     doc.setFontSize(fonte);
-    const desejadas = COLUNAS_PARAMETROS.map((_, c) => Math.max(...linhas.map((l) => larguraTexto(l[c], c === 0))) + PAD * 2);
     const sobra = LARGURA_TEXTO - minimas.reduce((a, b) => a + b, 0);
     const extras = desejadas.map((d, c) => Math.max(0, d - minimas[c]));
-    const totalExtras = extras.reduce((a, b) => a + b, 0) || 1;
-    const larguras = minimas.map((m, c) => m + Math.min(extras[c], sobra * extras[c] / totalExtras));
+    // A sobra atende primeiro as colunas que precisam de menos para ficar em duas linhas (mais linhas inteiras do quadro
+    // ficam baixas); o restante vai para as demais, na ordem do que pedem.
+    const larguras = [...minimas];
+    let resto = Math.max(0, sobra);
+    extras.map((e, c) => ({ e, c })).filter((x) => x.e > 0).sort((a, b) => a.e - b.e).forEach(({ e, c }) => {
+      const d = Math.min(e, resto);
+      larguras[c] += d;
+      resto -= d;
+    });
     const folga = LARGURA_TEXTO - larguras.reduce((a, b) => a + b, 0);
     const colunasLarguras = Object.fromEntries(larguras.map((w, c) => [c, { cellWidth: w + folga / larguras.length }]));
     autoTable(doc, {
