@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState, type ReactElement } from 'react';
 import { Calculator, ChevronRight, RotateCcw, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,36 +7,47 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import UberabaSimulacaoFaixas from '@/components/UberabaSimulacaoFaixas';
 import BlocoRecolhido from '@/components/BlocoRecolhido';
 import { EVENTO_TABELAS_COMERCIAIS, lerIndicadores, lerIndices } from '@/lib/uberabaTabelasComerciais';
-import { BASES_AGENCIAMENTO, calcularSimulacaoComercial, comercialDaFrente, type BaseAgenciamento, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, type ConfigSimulacao, type CondicaoSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
+import { BASES_AGENCIAMENTO, calcularSimulacaoComercial, comercialDaFrente, type BaseAgenciamento, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, type IndicadorEnte, type ConfigSimulacao, type CondicaoSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
 // Siglas dos parâmetros do Proj. Uberaba (13/11/2026); preços e percentuais vêm das tabelas de Resultados Comerciais.
 const nomes = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
 type Resumo = ReturnType<typeof resumoSimulacao>;
-type Linha = { label: string; valor: (r: Resumo) => number; destaque?: boolean };
+type Linha = { chave: IndicadorEnte; label: string; valor: (r: Resumo) => number; destaque?: boolean };
 const entes: { titulo: string; linhas: Linha[] }[] = [
   { titulo: 'Beneficiário', linhas: [
-    { label: 'Taxa de Adesão', valor: r => r.beneficiario.adesao },
-    { label: 'Faturamento', valor: r => r.beneficiario.faturamento },
-    { label: 'Total', valor: r => r.beneficiario.total, destaque: true },
+    { chave: 'beneficiario.adesao', label: 'Taxa de Adesão', valor: r => r.beneficiario.adesao },
+    { chave: 'beneficiario.faturamento', label: 'Faturamento', valor: r => r.beneficiario.faturamento },
+    { chave: 'beneficiario.total', label: 'Total', valor: r => r.beneficiario.total, destaque: true },
   ] },
   { titulo: 'Bensaúde', linhas: [
-    { label: 'Faturamento', valor: r => r.bensaude.faturamento },
-    { label: '− Despesa Assistencial', valor: r => -r.bensaude.despesa },
-    { label: '= Resultado Operacional', valor: r => r.bensaude.operacional, destaque: true },
-    { label: '− Agenciamento', valor: r => -r.bensaude.agenciamento },
-    { label: '= Resultado Líquido', valor: r => r.bensaude.liquido, destaque: true },
+    { chave: 'bensaude.faturamento', label: 'Faturamento', valor: r => r.bensaude.faturamento },
+    { chave: 'bensaude.despesa', label: '− Despesa Assistencial', valor: r => -r.bensaude.despesa },
+    { chave: 'bensaude.operacional', label: '= Resultado Operacional', valor: r => r.bensaude.operacional, destaque: true },
+    { chave: 'bensaude.agenciamento', label: '− Agenciamento', valor: r => -r.bensaude.agenciamento },
+    { chave: 'bensaude.liquido', label: '= Resultado Líquido', valor: r => r.bensaude.liquido, destaque: true },
   ] },
-  { titulo: 'Lancers', linhas: [{ label: 'Faturamento', valor: r => r.lancers.faturamento, destaque: true }] },
+  { titulo: 'Lancers', linhas: [{ chave: 'lancers.faturamento', label: 'Faturamento', valor: r => r.lancers.faturamento, destaque: true }] },
   { titulo: 'SIGA', linhas: [
-    { label: 'Taxa de Adesão', valor: r => r.siga.adesao },
-    { label: 'Faturamento', valor: r => r.siga.faturamento },
-    { label: 'Agenciamento', valor: r => r.siga.agenciamento },
-    { label: 'Resultado', valor: r => r.siga.resultado, destaque: true },
+    { chave: 'siga.adesao', label: 'Taxa de Adesão', valor: r => r.siga.adesao },
+    { chave: 'siga.faturamento', label: 'Faturamento', valor: r => r.siga.faturamento },
+    { chave: 'siga.agenciamento', label: 'Agenciamento', valor: r => r.siga.agenciamento },
+    { chave: 'siga.resultado', label: 'Resultado', valor: r => r.siga.resultado, destaque: true },
   ] },
 ];
 
 function Valor({ v }: { v: number }) {
   return <td className={`px-3 py-2 text-right tabular-nums ${v < 0 ? 'text-destructive' : ''}`}>{num(v)}</td>;
+}
+
+// Memória de cálculo do indicador, com os valores do cenário atual (total ou uma modalidade).
+function Memoria({ chave, resultados, nomesModalidades, children }: { chave: IndicadorEnte; resultados: ResultadoSimulacao[]; nomesModalidades: string[]; children: ReactElement }) {
+  const m = memoriaCalculo(chave, resultados, nomesModalidades);
+  return <Tooltip><TooltipTrigger asChild>{children}</TooltipTrigger>
+    <TooltipContent side="right" align="start" className="max-w-md space-y-1 text-xs leading-snug">
+      <p className="font-semibold">Memória de cálculo</p>
+      <p>{m.formula}</p>
+      <ul className="space-y-0.5 tabular-nums">{m.passos.map((t, i) => <li key={i}>{t}</li>)}</ul>
+    </TooltipContent></Tooltip>;
 }
 
 function Entes({ resultados }: { resultados: ResultadoSimulacao[] }) {
@@ -50,10 +61,10 @@ function Entes({ resultados }: { resultados: ResultadoSimulacao[] }) {
         <thead><tr className="text-muted-foreground"><th className="px-3 py-1 text-left font-medium">Indicador</th><th className="px-3 py-1 text-right font-medium">Anual</th></tr></thead>
         <tbody>{ente.linhas.map(l => { const k = `${ente.titulo}-${l.label}`; const aberto = !!abertos[k]; return <Fragment key={k}>
           <tr className={`border-t border-border ${l.destaque ? 'font-semibold' : ''}`}>
-            <th scope="row" className="px-1 py-2 text-left font-[inherit]"><button type="button" className="flex items-center gap-1 text-left" aria-expanded={aberto} onClick={() => setAbertos(p => ({ ...p, [k]: !aberto }))}><ChevronRight className={`h-4 w-4 transition-transform ${aberto ? 'rotate-90' : ''}`} />{l.label}</button></th>
+            <th scope="row" className="px-1 py-2 text-left font-[inherit]"><Memoria chave={l.chave} resultados={resultados} nomesModalidades={nomes}><button type="button" className="flex items-center gap-1 text-left" aria-expanded={aberto} onClick={() => setAbertos(p => ({ ...p, [k]: !aberto }))}><ChevronRight className={`h-4 w-4 transition-transform ${aberto ? 'rotate-90' : ''}`} />{l.label}</button></Memoria></th>
             <Valor v={l.valor(total)} />
           </tr>
-          {porModalidade.map((m, i) => <tr key={i} data-modalidade hidden={!aberto} className="text-muted-foreground"><td className="py-1 pl-9 pr-3">{nomes[i]}</td><Valor v={l.valor(m)} /></tr>)}
+          {porModalidade.map((m, i) => <tr key={i} data-modalidade hidden={!aberto} className="text-muted-foreground"><td className="py-1 pl-9 pr-3"><Memoria chave={l.chave} resultados={[resultados[i]]} nomesModalidades={[nomes[i]]}><span tabIndex={0} className="cursor-help">{nomes[i]}</span></Memoria></td><Valor v={l.valor(m)} /></tr>)}
         </Fragment>; })}</tbody>
       </table>
     </section>)}</div>;
@@ -134,7 +145,7 @@ export default function UberabaSimulacao() {
       </table></div>
     </section></BlocoRecolhido>
     <BlocoRecolhido titulo="Resultado por Ente" className="mt-4"><div className="space-y-3 p-4">
-      <p className="text-sm text-muted-foreground">Clique no indicador para ver por modalidade.</p>
+      <p className="text-sm text-muted-foreground">Clique no indicador para ver por modalidade; passe o mouse para ver a memória de cálculo.</p>
       <Entes resultados={resultados} />
     </div></BlocoRecolhido>
     <PremissasImportadas condicoes={resultados.map(r => r.condicao)} base={rotuloBase} />

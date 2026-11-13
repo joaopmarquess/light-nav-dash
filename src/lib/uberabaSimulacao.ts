@@ -172,3 +172,58 @@ export function resumoSimulacao(resultados: ResultadoSimulacao[]) {
     siga: { adesao: a.adesao, faturamento: a.siga, agenciamento: a.agenciamento, resultado: a.adesao + a.siga + a.agenciamento },
   };
 }
+/** Indicadores do quadro Resultado por Ente (Simulação de resultados). */
+export type IndicadorEnte =
+  | 'beneficiario.adesao' | 'beneficiario.faturamento' | 'beneficiario.total'
+  | 'bensaude.faturamento' | 'bensaude.despesa' | 'bensaude.operacional' | 'bensaude.agenciamento' | 'bensaude.liquido'
+  | 'lancers.faturamento'
+  | 'siga.adesao' | 'siga.faturamento' | 'siga.agenciamento' | 'siga.resultado';
+export type MemoriaCalculo = { formula: string; passos: string[] };
+
+/**
+ * Memória de cálculo de um indicador do Resultado por Ente, com os valores do cenário atual.
+ * `nomes` acompanha `resultados` (uma sigla por modalidade); com mais de uma modalidade, lista cada uma e a soma.
+ */
+export function memoriaCalculo(indicador: IndicadorEnte, resultados: ResultadoSimulacao[], nomes: string[]): MemoriaCalculo {
+  const n = numeroSimulacao, p = percentualSimulacao;
+  const r = resumoSimulacao(resultados);
+  const vendas = (x: ResultadoSimulacao) => x.novasReceitas.reduce((s, v) => s + v, 0);
+  const porModalidade = (linha: (x: ResultadoSimulacao) => string, total: number) => {
+    const passos = resultados.map((x, i) => `${nomes[i] ?? x.config.produto_codigo}: ${linha(x)}`);
+    return resultados.length > 1 ? [...passos, `Soma: ${n(total)}`] : passos;
+  };
+  const adesao = () => porModalidade(x => `Vendas ${n(vendas(x))} × Taxa de adesão ${p(x.condicao.taxa_adesao)} = ${n(x.anual.adesao)}`, r.beneficiario.adesao);
+  const agenciamento = () => porModalidade(x => {
+    const c = x.condicao;
+    const soParcela1 = [c.agenciamento_parcela_2, c.agenciamento_parcela_3, c.agenciamento_parcela_4, c.agenciamento_parcela_5].every(v => !v);
+    return soParcela1 ? `Vendas ${n(vendas(x))} × Agenciamento ${p(c.agenciamento_parcela_1)} = ${n(x.anual.agenciamento)}` : `Parcelas de agenciamento sobre as vendas = ${n(x.anual.agenciamento)}`;
+  }, r.bensaude.agenciamento);
+  const participacao = (rotulo: string, pct: (x: ResultadoSimulacao) => number, valor: (x: ResultadoSimulacao) => number, total: number) =>
+    porModalidade(x => `Faturamento ${n(x.anual.faturamento)} × ${rotulo} ${p(pct(x))} = ${n(valor(x))}`, total);
+  const vendasDef = 'Vendas = 1ª mensalidade (Enfermaria por faixa etária) de cada vida vendida no ano.';
+  switch (indicador) {
+    case 'beneficiario.adesao': case 'siga.adesao':
+      return { formula: 'Taxa de Adesão = Vendas × Taxa de adesão do produto (paga pelo beneficiário à SIGA). ' + vendasDef, passos: adesao() };
+    case 'beneficiario.faturamento':
+      return { formula: 'Faturamento = soma, de janeiro a dezembro, das mensalidades de todas as vidas vendidas até cada mês (carteira acumulada, sem cancelamentos ou reajustes).',
+        passos: porModalidade(x => `${inteiroSimulacao(x.config.total_vidas)} vidas × mensalidade média ${n(x.media)}, acumuladas mês a mês = ${n(x.anual.faturamento)}`, r.beneficiario.faturamento) };
+    case 'beneficiario.total':
+      return { formula: 'Total = Taxa de Adesão + Faturamento.', passos: [`${n(r.beneficiario.adesao)} + ${n(r.beneficiario.faturamento)} = ${n(r.beneficiario.total)}`] };
+    case 'bensaude.faturamento':
+      return { formula: 'Faturamento Bensaúde = Faturamento × Participação Bensaúde (Operadora).', passos: participacao('Operadora', x => x.condicao.participacao_bensaude, x => x.anual.bensaude, r.bensaude.faturamento) };
+    case 'bensaude.despesa':
+      return { formula: 'Despesa Assistencial = Faturamento × Sinistralidade (%) da modalidade.', passos: participacao('Sinistralidade', x => (x.config.sinistralidade_percentual ?? sinistralidadePadrao) / 100, x => x.anual.despesa_assistencial, r.bensaude.despesa) };
+    case 'bensaude.operacional':
+      return { formula: 'Resultado Operacional = Faturamento Bensaúde − Despesa Assistencial.', passos: [`${n(r.bensaude.faturamento)} − ${n(r.bensaude.despesa)} = ${n(r.bensaude.operacional)}`] };
+    case 'bensaude.agenciamento': case 'siga.agenciamento':
+      return { formula: `Agenciamento = Vendas × percentual de Agenciamento do produto (${indicador === 'siga.agenciamento' ? 'receita da SIGA' : 'custo do Bensaúde'}), pago no mês da venda. ` + vendasDef, passos: agenciamento() };
+    case 'bensaude.liquido':
+      return { formula: 'Resultado Líquido = Resultado Operacional − Agenciamento.', passos: [`${n(r.bensaude.operacional)} − ${n(r.bensaude.agenciamento)} = ${n(r.bensaude.liquido)}`] };
+    case 'lancers.faturamento':
+      return { formula: 'Faturamento Lancers = Faturamento × Participação Lancers (Administradora).', passos: participacao('Administradora', x => x.condicao.participacao_lancers, x => x.anual.lancers, r.lancers.faturamento) };
+    case 'siga.faturamento':
+      return { formula: 'Faturamento SIGA = Faturamento × Participação SIGA (Agenciadora).', passos: participacao('Agenciadora', x => x.condicao.participacao_siga, x => x.anual.siga, r.siga.faturamento) };
+    case 'siga.resultado':
+      return { formula: 'Resultado = Taxa de Adesão + Faturamento SIGA + Agenciamento.', passos: [`${n(r.siga.adesao)} + ${n(r.siga.faturamento)} + ${n(r.siga.agenciamento)} = ${n(r.siga.resultado)}`] };
+  }
+}

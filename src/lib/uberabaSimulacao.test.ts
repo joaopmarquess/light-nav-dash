@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calcularSimulacao, calcularSimulacaoComercial, comercialDaFrente, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao } from './uberabaSimulacao';
+import { calcularSimulacao, calcularSimulacaoComercial, comercialDaFrente, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao, memoriaCalculo } from './uberabaSimulacao';
 import padroesHistoricos from '@/data/uberabaSimulacao/configuracao_padrao.json';
 import { INDICES_PADRAO, indicadoresPadrao, tabelaIndexada } from './uberabaTabelasComerciais';
 const padrao=padroesHistoricos[0];
@@ -254,5 +254,34 @@ describe('Simulação de resultados com as tabelas de Resultados Comerciais', ()
   it('soma 10.000 vidas no padrão', () => {
     const rs = fonte.padroes.map(c => simular(c.produto_codigo));
     expect(consolidarSimulacao(rs).anual.vidas).toBe(10000);
+  });
+});
+
+describe('Memória de cálculo do Resultado por Ente', () => {
+  const rs = fonte.padroes.map(c => calcularSimulacaoComercial(c, comercialDaFrente(c.produto_codigo, INDICES_PADRAO, indicadoresPadrao())));
+  const nomes = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
+  const fmt = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  it('Faturamento Bensaúde lista Faturamento × Operadora de cada produto e a soma', () => {
+    const m = memoriaCalculo('bensaude.faturamento', rs, nomes);
+    expect(m.passos).toHaveLength(5);
+    expect(m.passos[0]).toBe(`PCA: Faturamento ${fmt(rs[0].anual.faturamento)} × Operadora 77,00% = ${fmt(rs[0].anual.bensaude)}`);
+    expect(m.passos[3]).toContain('Operadora 95,00%');
+    expect(m.passos[4]).toBe(`Soma: ${fmt(resumoSimulacao(rs).bensaude.faturamento)}`);
+  });
+  it('Despesa usa a Sinistralidade de 70% e uma modalidade não mostra soma', () => {
+    const m = memoriaCalculo('bensaude.despesa', [rs[3]], ['PJ+']);
+    expect(m.passos).toEqual([`PJ+: Faturamento ${fmt(rs[3].anual.faturamento)} × Sinistralidade 70,00% = ${fmt(rs[3].anual.despesa_assistencial)}`]);
+  });
+  it('Resultado Líquido = Operacional − Agenciamento com os valores do cenário', () => {
+    const r = resumoSimulacao(rs);
+    expect(memoriaCalculo('bensaude.liquido', rs, nomes).passos).toEqual([`${fmt(r.bensaude.operacional)} − ${fmt(r.bensaude.agenciamento)} = ${fmt(r.bensaude.liquido)}`]);
+  });
+  it('Agenciamento = Vendas × percentual Contratual (90%)', () => {
+    const vendas = rs[0].novasReceitas.reduce((s, v) => s + v, 0);
+    expect(memoriaCalculo('siga.agenciamento', [rs[0]], ['PCA']).passos[0]).toBe(`PCA: Vendas ${fmt(vendas)} × Agenciamento 90,00% = ${fmt(rs[0].anual.agenciamento)}`);
+  });
+  it('Lancers usa Administradora 23% e SIGA do PJ+ usa Agenciadora 5%', () => {
+    expect(memoriaCalculo('lancers.faturamento', [rs[0]], ['PCA']).passos[0]).toContain('Administradora 23,00%');
+    expect(memoriaCalculo('siga.faturamento', [rs[3]], ['PJ+']).passos[0]).toContain('Agenciadora 5,00%');
   });
 });
