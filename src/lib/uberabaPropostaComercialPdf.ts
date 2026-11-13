@@ -120,7 +120,7 @@ export const GLOSSARIO_PROPOSTA: TermoGlossario[] = [
   { termo: "PARTICIPAÇÃO", provisorio: true, nota: "Divisão percentual da mensalidade entre a Operadora e o parceiro de cada produto.", itens: [
     { termo: "TABELA CHEIA", provisorio: true, nota: "Preço de venda da tabela, pago pelo beneficiário ou pela empresa contratante." },
     { termo: "TABELA NET", provisorio: true, nota: "Parcela da tabela cheia que cabe à Operadora: tabela cheia × participação da Operadora." },
-    { termo: "SPREAD", provisorio: true, nota: "Diferença entre a tabela cheia e a tabela net, que fica com a Administradora nos produtos com Administradora e com a Agenciadora no Plano Empresarial." },
+    { termo: "SPREAD", provisorio: true, nota: "Diferença entre a tabela cheia e a tabela net: valores atribuídos à Administradora nos produtos com Administradora (no Plano Empresarial, a parcela da Agenciadora corresponde à vitaliciedade)." },
   ] },
   { termo: "AGENCIAMENTO", provisorio: true, nota: "Remuneração pela venda de cada novo contrato, paga pela Operadora e expressa como percentual da primeira mensalidade da venda." },
   { termo: "CONTRATUAL", provisorio: true, nota: "Percentual de agenciamento previsto em contrato, aplicado nas condições normais de venda." },

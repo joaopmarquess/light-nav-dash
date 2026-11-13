@@ -117,3 +117,19 @@ describe("Introdução · lista dos produtos no quadro", () => {
     expect(lerTextos(storage).aprovado?.introducao).toBe(PADRAO_INTRO.introducao);
   });
 });
+
+import { INTRODUCAO_SEM_ATRIBUICAO } from "./uberabaPropostaTextos";
+
+describe("Introdução · spread atribuído à Administradora", () => {
+  it("mantém spread, comissionamento e vitaliciedade, explicando a quem cada um atribui valores", () => {
+    expect(PADRAO_INTRO.introducao).toContain("spread (valores atribuídos à Administradora)");
+    expect(PADRAO_INTRO.introducao).toContain("comissionamento (agenciamento)");
+    expect(PADRAO_INTRO.introducao).toContain("vitaliciedade (valores atribuídos à Agenciadora, no Plano Empresarial)");
+  });
+  it("texto guardado sem a explicação passa para a versão atual", async () => {
+    const { lerTextos, CHAVE_TEXTOS } = await import("./uberabaPropostaTextos");
+    const aprovado = { ...PADRAO_INTRO, introducao: INTRODUCAO_SEM_ATRIBUICAO };
+    const storage = { getItem: (k: string) => (k === CHAVE_TEXTOS ? JSON.stringify({ aprovado }) : null) };
+    expect(lerTextos(storage).aprovado?.introducao).toBe(PADRAO_INTRO.introducao);
+  });
+});
