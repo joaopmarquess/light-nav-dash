@@ -10,17 +10,22 @@ describe("Proposta Comercial › 1. Tabelas", () => {
   it("splits the Proposal into Administradora products and the Empresarial", () => {
     expect(quadrosProposta().map((q) => q.grupo)).toEqual(["administradora", "administradora", "administradora", "empresarial"]);
   });
-  it("uses Faixa × Enfermaria at each table's index (90/85/80/70% by default)", () => {
+  it("shows the full (sale) price: Referência × (index + Administradora/Agenciadora share)", () => {
     const [pca, pme, pce, pce100] = quadrosProposta();
-    expect(pca.linhas[0]).toEqual(["00 a 18", "157,50"]);
-    expect(pme.linhas[0]).toEqual(["00 a 18", "148,75"]);
-    expect(pce.linhas[0]).toEqual(["00 a 18", "140,00"]);
-    expect(pce100.linhas[0]).toEqual(["00 a 18", "122,50"]);
+    expect(pce100.linhas[0]).toEqual(["00 a 18", "131,25"]);
+    expect(pca.linhas[0]).toEqual(["00 a 18", "197,75"]);
+    expect(pme.linhas[0]).toEqual(["00 a 18", "189,00"]);
+    expect(pce.linhas[0]).toEqual(["00 a 18", "180,25"]);
     expect(pca.linhas).toHaveLength(10);
   });
   it("follows the indices edited in Resultados Comerciais", () => {
     const [pca] = quadrosProposta({ pcaAdm: 100, pmeAdm: 85, pceAdm: 80, pce100: 70 });
-    expect(pca.linhas[9]).toEqual(["59 ou +", "1.049,70"]);
+    expect(pca.linhas[9]).toEqual(["59 ou +", "1.291,13"]);
+  });
+  it("follows the participation edited in Resultados Comerciais", () => {
+    const ind = indicadoresPadrao();
+    ind.pce100.spread = 10;
+    expect(quadrosProposta(undefined, ind)[3].linhas[0]).toEqual(["00 a 18", "140,00"]);
   });
   it("brings the Indicadores variáveis as on screen", () => {
     const [pca, , , pce100] = quadrosProposta();

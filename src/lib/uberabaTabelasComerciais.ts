@@ -57,6 +57,17 @@ export function tabelaIndexada(indicePercentual: number, fator: number = FATOR_A
   });
 }
 
+/**
+ * Preço cheio (venda) usado nas tabelas da Proposta Comercial: Referência × (índice da tabela + participação de quem
+ * vende), onde a participação é a ADMINISTRADORA nos produtos com Administradora e a AGENCIADORA no PJ+ (ambas
+ * guardadas em `spread`). Ex.: PJ+ 70% + 5% → 175,00 × 75% = 131,25. A tela e a simulação seguem com o índice puro.
+ */
+export const indiceCheio = (indicePercentual: number, participacaoPercentual: number) =>
+  Math.round((indicePercentual + participacaoPercentual) * 100) / 100;
+export function tabelaCheia(indicePercentual: number, participacaoPercentual: number, fator: number = FATOR_APARTAMENTO_PADRAO): LinhaTabela[] {
+  return tabelaIndexada(indiceCheio(indicePercentual, participacaoPercentual), fator);
+}
+
 /** Aceita "1,25" ou "1.25" (até 4 casas); devolve null fora de 1–3. */
 export function parseFator(texto: string): number | null {
   const t = texto.trim().replace(",", ".");

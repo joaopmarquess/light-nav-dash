@@ -3,7 +3,7 @@ import autoTable from "jspdf-autotable";
 import { attachTimbrado } from "@/lib/pdfTimbrado";
 import { PDF_COLORS, drawSectionTitle } from "@/lib/pdfTheme";
 import {
-  FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, FRENTES_COMERCIAIS, INDICES_PADRAO, PARAMETROS_UBERABA, blocosIndicadores, parametrosDe, vidasTexto, formatarCentavos, formatarFator, formatarPercentual, indicadoresPadrao, rotulosPadrao, tabelaIndexada, tabelaReferencia,
+  FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, FRENTES_COMERCIAIS, INDICES_PADRAO, PARAMETROS_UBERABA, blocosIndicadores, parametrosDe, vidasTexto, formatarCentavos, formatarFator, formatarPercentual, indicadoresPadrao, rotulosPadrao, tabelaCheia, tabelaReferencia,
   type Fatores, type FrenteId, type IndicadoresPorFrente, type Indices, type RotulosPorFrente,
 } from "@/lib/uberabaTabelasComerciais";
 import { SECOES_TEXTO, TITULO_GLOSSARIO, TEXTOS_PADRAO, paragrafosDe, type SecaoTextoId, type TextosSecoes } from "@/lib/uberabaPropostaTextos";
@@ -79,7 +79,8 @@ export function quadrosProposta(indices: Indices = INDICES_PADRAO, indicadores: 
     titulo: rotulos[id].titulo,
     subtitulo: [parametrosDe(id).sigla, vidasTexto(parametrosDe(id))?.toUpperCase()].filter(Boolean).join(" · "),
     fator: formatarFator(fatores[id]),
-    linhas: tabelaIndexada(indices[id], fatores[id]).map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos)] as [string, string]),
+    /** Preço cheio (venda): Referência × (índice + participação da Administradora/Agenciadora). */
+    linhas: tabelaCheia(indices[id], indicadores[id].spread, fatores[id]).map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos)] as [string, string]),
     blocos: blocosIndicadores(id, indicadores[id]).map((b) => ({
       titulo: b.titulo.toUpperCase(),
       linhas: b.linhas.map((l) => [l.rotulo.toUpperCase(), formatarPercentual(l.valor)] as [string, string]),

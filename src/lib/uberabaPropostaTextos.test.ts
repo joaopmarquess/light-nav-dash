@@ -18,7 +18,7 @@ describe("dados enviados à IA", () => {
     expect(d.tabelas[3]).toMatchObject({ sigla: "PJ+", vidas: "100 OU MAIS", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS" });
     expect(d.tabelas[0].indiceSobreReferencia).toBe("90%");
     expect(d.tabelas[0].fatorApartamento).toBe("1,25");
-    expect(d.tabelas[0].faixas[0]).toEqual({ faixa: "00 a 18", enfermaria: "157,50", apartamento: "196,87" });
+    expect(d.tabelas[0].faixas[0]).toEqual({ faixa: "00 a 18", enfermaria: "197,75", apartamento: "247,18" });
   });
   it("a assinatura muda quando o fator de uma tabela muda", () => {
     const outro = dadosRascunho(INDICES_PADRAO, indicadoresPadrao(), rotulosPadrao(), { ...FATORES_PADRAO, pcaAdm: 1.3 });
@@ -30,7 +30,7 @@ describe("dados enviados à IA", () => {
 describe("conferência de números do rascunho", () => {
   it("aceita números que estão nas tabelas", () => {
     expect(numerosForaDasTabelas("A PME ADM. (03 a 29 vidas), a PCE ADM. (30 a 99 vidas) e o PJ+ (100 ou mais vidas) usam a Referência.", padrao())).toEqual([]);
-    expect(numerosForaDasTabelas("PCA Adm. com índice de 90%, fator 1,25, Spread de 23% e faixa 00 a 18 por 157,50.", padrao())).toEqual([]);
+    expect(numerosForaDasTabelas("PCA Adm. com índice de 90%, fator 1,25, Spread de 23% e faixa 00 a 18 por 197,75.", padrao())).toEqual([]);
   });
   it("aponta números inventados", () => {
     expect(numerosForaDasTabelas("Carência de 45 dias e reajuste de 12,5%.", padrao())).toEqual(["45", "12,5"]);
