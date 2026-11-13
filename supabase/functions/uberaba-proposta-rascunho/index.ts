@@ -49,7 +49,7 @@ REGRAS INVIOLÁVEIS
 5. Sem markdown, títulos, numeração ou listas com marcadores. Seja breve, como indicado em cada seção.
 
 ESTRUTURA DA PROPOSTA (o texto de cada seção abre o tópico; tabelas e quadros são inseridos logo abaixo pelo sistema)
-1. Introdução · 2. Tabela Referencial · 3. Tabelas · 4. Proposta de Remuneração · 5. Conclusão · 6. Glossário e Notas Explicativas.
+1. Introdução · 2. Tabela Referencial · 3. Tabelas · 4. Remuneração · 5. Conclusão · 6. Glossário e Notas Explicativas.
 Os tópicos 1 e 2 já estão escritos (CONTEXTO) e não fazem parte da sua resposta. Você pode usar os fatos do CONTEXTO (por exemplo, os parceiros de distribuição), sem copiar trechos.
 
 SEÇÕES (somente estas três)

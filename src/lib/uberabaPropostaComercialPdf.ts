@@ -53,7 +53,7 @@ export function linhasReferencia(): [string, string, string][] {
 export const FATOR_REFERENCIA = formatarFator(FATOR_APARTAMENTO_PADRAO);
 
 /**
- * Tópicos 3 · Tabelas e 4 · Proposta de Remuneração: os três quadros com a mesma nomenclatura de Resultados Comerciais —
+ * Tópicos 3 · Tabelas e 4 · Remuneração: os três quadros com a mesma nomenclatura de Resultados Comerciais —
  * nome da tabela (redigitável na tela), contêiner TABELAS (Faixa × Enfermaria e "APARTAMENTO fator x ENFERMARIA")
  * e contêiner INDICADORES VARIÁVEIS.
  */
@@ -155,53 +155,62 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   const fimTabela = (fallback: number) => ((doc as any).lastAutoTable?.finalY as number | undefined) ?? fallback;
 
   const quadros = quadrosProposta(indices, indicadores, rotulos, fatores);
-  const gap = 5;
-  const largura = (usableW - gap * 2) / 3;
-  const xs = quadros.map((_, k) => marginL + k * (largura + gap));
   const margem = (x: number, w: number) => ({ left: x, right: pageW - x - w, top, bottom });
-  const inset = 2;
-  const wSec = largura - inset * 2;
   const ALTURA_TITULO_SECAO = 7;
   const LARGURA_VALOR = 15;
   const ALTURA_NOME_QUADRO = 12;
+  /** Geometria dos três quadros lado a lado: posição, largura e recuo do contêiner interno. */
+  type Geometria = { xs: number[]; largura: number; inset: number; wSec: number };
+  const geometria = (avanco: number, gap: number, inset: number): Geometria => {
+    const total = usableW + avanco * 2;
+    const largura = (total - gap * 2) / 3;
+    return { xs: quadros.map((_, k) => marginL - avanco + k * (largura + gap)), largura, inset, wSec: largura - inset * 2 };
+  };
+  // Tópico 4: quadros na largura do texto. Tópico 3: tabelas mais largas (pedido do Dênis em 13/11/2026) —
+  // avançam um pouco sobre as margens laterais, com menos espaço entre os quadros e a tabela ocupando o quadro todo.
+  const GEO_REMUNERACAO = geometria(0, 5, 2);
+  const GEO_TABELAS = geometria(6, 3, 0);
+  /** Espaço entre o nome da tabela e o contêiner, no tópico 4 (pedido do Dênis em 13/11/2026). */
+  const ESPACO_NOME_REMUNERACAO = 4;
 
   // Título de contêiner (TABELAS / INDICADORES VARIÁVEIS), como na tela.
-  const tituloSecao = (texto: string, x: number, yy: number) => {
+  const tituloSecao = (g: Geometria, texto: string, x: number, yy: number) => {
     doc.setFillColor(...ZEBRA);
-    doc.rect(x + inset, yy, wSec, ALTURA_TITULO_SECAO, "F");
+    doc.rect(x + g.inset, yy, g.wSec, ALTURA_TITULO_SECAO, "F");
     doc.setFont("helvetica", "bold");
     let f: number = F.secaoQuadro;
     doc.setFontSize(f);
     const w = doc.getTextWidth(texto);
-    if (w > wSec - 5) { f *= (wSec - 5) / w; doc.setFontSize(f); }
+    if (w > g.wSec - 5) { f *= (g.wSec - 5) / w; doc.setFontSize(f); }
     doc.setTextColor(...SECUNDARIO);
-    doc.text(texto, x + largura / 2, yy + ALTURA_TITULO_SECAO / 2, { align: "center", baseline: "middle" });
+    doc.text(texto, x + g.largura / 2, yy + ALTURA_TITULO_SECAO / 2, { align: "center", baseline: "middle" });
   };
-  const contornoSecao = (x: number, y0: number, y1: number) => {
+  const contornoSecao = (g: Geometria, x: number, y0: number, y1: number) => {
+    if (g.inset <= 0) return; // contêiner do tamanho do quadro: o contorno do quadro já o fecha
     doc.setDrawColor(...LINHA);
     doc.setLineWidth(0.25);
-    doc.rect(x + inset, y0, wSec, y1 - y0, "S");
+    doc.rect(x + g.inset, y0, g.wSec, y1 - y0, "S");
   };
   // Faixa colorida e nome de cada tabela (o mesmo da tela); devolve onde começa o contêiner.
-  const cabecalhoQuadros = (inicio: number) => {
+  const cabecalhoQuadros = (g: Geometria, inicio: number, espaco = 0) => {
     quadros.forEach((q, k) => {
-      const x = xs[k];
+      const x = g.xs[k];
       doc.setFillColor(...COR_FRENTE[q.id]);
-      doc.rect(x, inicio, largura, 2, "F");
+      doc.rect(x, inicio, g.largura, 2, "F");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(F.quadro);
       doc.setTextColor(...TINTA);
       // Nomes longos quebram em até duas linhas no tamanho padrão.
-      const linhas = (doc.splitTextToSize(q.titulo, largura - 4) as string[]).slice(0, 2);
+      const linhas = (doc.splitTextToSize(q.titulo, g.largura - 4) as string[]).slice(0, 2);
       const y0 = inicio + 2 + (ALTURA_NOME_QUADRO - 2 - (linhas.length - 1) * alturaLinha(F.quadro) / 1.35 * 1.15) / 2;
-      doc.text(linhas, x + largura / 2, y0, { align: "center", baseline: "middle", lineHeightFactor: 1.15 });
+      doc.text(linhas, x + g.largura / 2, y0, { align: "center", baseline: "middle", lineHeightFactor: 1.15 });
     });
-    return inicio + ALTURA_NOME_QUADRO;
+    return inicio + ALTURA_NOME_QUADRO + espaco;
   };
-  const contornoQuadros = (inicio: number, fimQ: number) => {
+  const contornoQuadros = (g: Geometria, inicio: number, fimQ: number) => {
     doc.setDrawColor(...TINTA);
     doc.setLineWidth(0.35);
-    xs.forEach((x) => doc.rect(x, inicio, largura, fimQ - inicio, "S"));
+    g.xs.forEach((x) => doc.rect(x, inicio, g.largura, fimQ - inicio, "S"));
     doc.setDrawColor(0);
   };
 
@@ -241,9 +250,10 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
 
   // Tópico 3: contêiner TABELAS de cada quadro — Faixa × Enfermaria, linha sólida de fechamento e fator do Apartamento.
   const desenharPrecos = () => {
+    const g = GEO_TABELAS;
     const inicio = y;
-    const ySecT = cabecalhoQuadros(inicio);
-    xs.forEach((x) => tituloSecao("TABELAS", x, ySecT));
+    const ySecT = cabecalhoQuadros(g, inicio);
+    g.xs.forEach((x) => tituloSecao(g, "TABELAS", x, ySecT));
     let fimP = ySecT + ALTURA_TITULO_SECAO;
     // As linhas crescem até o tópico preencher o resto da folha; o tópico seguinte começa na folha seguinte.
     const linhaFator = alturaLinha(F.rotuloPrecos) * 0.9;
@@ -254,8 +264,8 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
       autoTable(doc, {
         theme: "plain",
         startY: ySecT + ALTURA_TITULO_SECAO,
-        tableWidth: wSec,
-        margin: margem(xs[k] + inset, wSec),
+        tableWidth: g.wSec,
+        margin: margem(g.xs[k] + g.inset, g.wSec),
         head: [["FAIXA", "ENFERMARIA"]],
         body: q.linhas,
         styles: { font: "helvetica", fontSize: F.tabela, cellPadding: { top: 1, bottom: 1, left: 1.5, right: 1.5 }, minCellHeight: alturaLinhaPreco, valign: "middle", textColor: PDF_COLORS.text, halign: "center" },
@@ -273,13 +283,13 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     });
     const yFator = fimP + 6;
     quadros.forEach((q, k) => {
-      const x = xs[k] + inset;
+      const x = g.xs[k] + g.inset;
       doc.setDrawColor(...TINTA);
       doc.setLineWidth(0.6);
-      doc.line(x, fimP, x + wSec, fimP);
+      doc.line(x, fimP, x + g.wSec, fimP);
       doc.setFont("helvetica", "bold");
       // "APARTAMENTO fator" e, abaixo, "x ENFERMARIA", centralizados no quadro (o tamanho padrão não cabe numa linha só).
-      const cx = x + wSec / 2;
+      const cx = x + g.wSec / 2;
       doc.setFontSize(F.rotuloPrecos);
       const wA = doc.getTextWidth("APARTAMENTO") + 1.6;
       doc.setFontSize(F.fatorPrecos);
@@ -295,28 +305,29 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
       doc.setFontSize(F.rotuloPrecos);
       doc.setTextColor(...SECUNDARIO);
       doc.text("x ENFERMARIA", cx, yFator + linhaFator, { align: "center" });
-      contornoSecao(xs[k], ySecT, yFator + linhaFator + 3);
+      contornoSecao(g, g.xs[k], ySecT, yFator + linhaFator + 3);
     });
     const fimQ = yFator + linhaFator + 5;
-    contornoQuadros(inicio, fimQ);
+    contornoQuadros(g, inicio, fimQ);
     y = fimQ + 11;
     doc.setPage(doc.getNumberOfPages());
   };
 
   // Tópico 4: contêiner INDICADORES VARIÁVEIS de cada quadro; cada bloco começa na mesma linha nas três frentes.
   const desenharRemuneracao = () => {
+    const g = GEO_REMUNERACAO;
     const inicio = y;
-    const ySecI = cabecalhoQuadros(inicio);
-    xs.forEach((x) => tituloSecao("INDICADORES VARIÁVEIS", x, ySecI));
+    const ySecI = cabecalhoQuadros(g, inicio, ESPACO_NOME_REMUNERACAO);
+    g.xs.forEach((x) => tituloSecao(g, "INDICADORES VARIÁVEIS", x, ySecI));
     let yb = ySecI + ALTURA_TITULO_SECAO + 2;
     // Fonte dos indicadores: a padrão, reduzida só o necessário para nenhum rótulo quebrar no meio da palavra.
-    const larguraRotulo = largura - (inset + 1.5) * 2 - LARGURA_VALOR - 3.4;
+    const larguraRotulo = g.largura - (g.inset + 1.5) * 2 - LARGURA_VALOR - 3.4;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(F.indicador);
     const maisLongo = Math.max(...quadros.flatMap((q) => q.blocos.flatMap((b) => b.linhas.map((l) => doc.getTextWidth(l[0])))));
     const fInd = maisLongo > larguraRotulo ? Math.max(8, F.indicador * larguraRotulo / maisLongo) : F.indicador;
     const nBlocos = Math.max(...quadros.map((q) => q.blocos.length));
-    const insetB = inset + 1.5;
+    const insetB = g.inset + 1.5;
     for (let b = 0; b < nBlocos; b++) {
       let fimBloco = yb;
       quadros.forEach((q, k) => {
@@ -325,8 +336,8 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
         autoTable(doc, {
           theme: "grid",
           startY: yb,
-          tableWidth: largura - insetB * 2,
-          margin: margem(xs[k] + insetB, largura - insetB * 2),
+          tableWidth: g.largura - insetB * 2,
+          margin: margem(g.xs[k] + insetB, g.largura - insetB * 2),
           head: [[{ content: bloco.titulo, colSpan: 2 }]],
           body: bloco.linhas,
           styles: { font: "helvetica", fontSize: fInd, cellPadding: { top: 1.2, bottom: 1.2, left: 1.5, right: 1.5 }, textColor: PDF_COLORS.text, lineColor: LINHA, lineWidth: 0.2 },
@@ -337,9 +348,9 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
       });
       yb = fimBloco + 3;
     }
-    xs.forEach((x) => contornoSecao(x, ySecI, yb - 1));
+    g.xs.forEach((x) => contornoSecao(g, x, ySecI, yb - 1));
     const fimQ = yb + 1.5;
-    contornoQuadros(inicio, fimQ);
+    contornoQuadros(g, inicio, fimQ);
     y = fimQ + 11;
     doc.setPage(doc.getNumberOfPages());
   };
@@ -367,7 +378,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   const blocoDados: Partial<Record<SecaoTextoId, () => void>> = { referencia: desenharReferencia, tabelas: desenharPrecos, remuneracao: desenharRemuneracao };
   // Os tópicos seguem corridos, sem pular página. Só os três quadros lado a lado (tópicos 3 e 4) não se dividem:
   // quando não cabem no resto da página, passam inteiros para a seguinte.
-  const ALTURA_BLOCO: Partial<Record<SecaoTextoId, number>> = { referencia: 30, tabelas: 112, remuneracao: 96 };
+  const ALTURA_BLOCO: Partial<Record<SecaoTextoId, number>> = { referencia: 30, tabelas: 112, remuneracao: 100 };
   const INICIO_TOPICO = 10 + LINHA_TEXTO * 2; // título com pelo menos duas linhas de texto abaixo
   SECOES_TEXTO.forEach((s, i) => {
     garantir(INICIO_TOPICO);

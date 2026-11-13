@@ -78,8 +78,8 @@ describe("revisão antes do PDF", () => {
 });
 
 describe("tópicos da Proposta", () => {
-  it("segue a ordem Introdução, Tabela Referencial, Tabelas, Proposta de Remuneração e Conclusão", () => {
-    expect(SECOES_TEXTO.map((s) => s.titulo)).toEqual(["1. Introdução", "2. Tabela Referencial", "3. Tabelas", "4. Proposta de Remuneração", "5. Conclusão"]);
+  it("segue a ordem Introdução, Tabela Referencial, Tabelas, Remuneração e Conclusão", () => {
+    expect(SECOES_TEXTO.map((s) => s.titulo)).toEqual(["1. Introdução", "2. Tabela Referencial", "3. Tabelas", "4. Remuneração", "5. Conclusão"]);
   });
   it("a IA recebe a Tabela Referencial a 100% com o fator padrão", () => {
     const r = padrao().referencia;

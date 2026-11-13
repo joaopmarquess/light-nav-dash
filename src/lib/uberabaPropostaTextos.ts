@@ -7,14 +7,14 @@ import {
 
 /**
  * Tópicos da Proposta com texto: Introdução; Tabela Referencial (texto + Tabela Referencial);
- * Tabelas (texto + quadros de preços); Proposta de Remuneração (texto + Indicadores variáveis);
+ * Tabelas (texto + quadros de preços); Remuneração (texto + Indicadores variáveis);
  * Conclusão (encerramento curto). O Glossário vem por último.
  */
 export const SECOES_TEXTO = [
   { id: "introducao", titulo: "1. Introdução" },
   { id: "referencia", titulo: "2. Tabela Referencial" },
   { id: "tabelas", titulo: "3. Tabelas" },
-  { id: "remuneracao", titulo: "4. Proposta de Remuneração" },
+  { id: "remuneracao", titulo: "4. Remuneração" },
   { id: "conclusao", titulo: "5. Conclusão" },
 ] as const;
 export const TITULO_GLOSSARIO = "6. Glossário e Notas Explicativas";
