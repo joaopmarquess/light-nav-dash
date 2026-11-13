@@ -27,7 +27,7 @@ export const fontesSimulacao = { produtos, precos, condicoes, meses, faixas, pad
 export const sinistralidadePadrao = 70;
 // Parâmetros pedidos em 13/11/2026: Desp. Assist. média por vida/mês (só referência e base da coparticipação)
 // e % Copart sobre essa despesa média (receita paga pelo beneficiário, 100% para a OPERADORA).
-export const despesaMediaPadrao = 280.45;
+export const despesaMediaPadrao = 190.45;
 export const copartPadrao = 20;
 /**
  * Chave do Resultado por Ente (pedido de 13/11/2026): como calcular a Despesa Assistencial.

@@ -364,15 +364,15 @@ describe('Desp. Assist. média e % Copart (pedido de 13/11/2026)', () => {
   const configs = fonte.padroes.map(c => ({ ...c, sinistralidade_percentual: 70, despesa_media: despesaMediaPadrao, copart_percentual: copartPadrao }));
   const [contratual] = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao());
   const rs = contratual.resultados;
-  it('padrões: Desp. Assist. média R$ 280,45 e % Copart 20%', () => {
-    expect(despesaMediaPadrao).toBe(280.45);
+  it('padrões: Desp. Assist. média R$ 190,45 e % Copart 20%', () => {
+    expect(despesaMediaPadrao).toBe(190.45);
     expect(copartPadrao).toBe(20);
   });
-  it('coparticipação por vida/mês = 20% de 280,45 = 56,09', () => {
-    expect(coparticipacaoVidaMes(configs[0])).toBeCloseTo(56.09, 9);
+  it('coparticipação por vida/mês = 20% de 190,45 = 38,09', () => {
+    expect(coparticipacaoVidaMes(configs[0])).toBeCloseTo(38.09, 9);
   });
-  it('coparticipação do mês = vidas projetadas acumuladas × 56,09', () => {
-    rs.forEach(r => r.mensal.forEach(m => expect(m.coparticipacao).toBeCloseTo(m.acumuladas * 56.09, 6)));
+  it('coparticipação do mês = vidas projetadas acumuladas × 38.09', () => {
+    rs.forEach(r => r.mensal.forEach(m => expect(m.coparticipacao).toBeCloseTo(m.acumuladas * 38.09, 6)));
   });
   it('soma ao Total pago pelo beneficiário e entra 100% para a OPERADORA', () => {
     const r = resumoSimulacao(rs);
@@ -390,8 +390,8 @@ describe('Desp. Assist. média e % Copart (pedido de 13/11/2026)', () => {
     expect(replicarParametro(cs, 'PCA', 'despesa_media').map(c => c.despesa_media)).toEqual([300, 300, 300, 300]);
     expect(replicarParametro(cs, 'PCA', 'copart_percentual').map(c => c.copart_percentual)).toEqual([15, 15, 15, 15]);
   });
-  it('Receitas por vida/mês = Net média + copart. (56,09 com os padrões)', () => {
-    rs.forEach(r => expect(receitaVidaMes(r)).toBeCloseTo(r.media * r.condicao.participacao_bensaude + 56.09, 9));
+  it('Receitas por vida/mês = Net média + copart. (38,09 com os padrões)', () => {
+    rs.forEach(r => expect(receitaVidaMes(r)).toBeCloseTo(r.media * r.condicao.participacao_bensaude + 38.09, 9));
   });
   it('Net média = mensalidade média × participação OPERADORA (77% no PCA com 23% de ADMINISTRADORA)', () => {
     rs.forEach(r => expect(netVidaMes(r)).toBeCloseTo(r.media * r.condicao.participacao_bensaude, 9));
@@ -400,7 +400,7 @@ describe('Desp. Assist. média e % Copart (pedido de 13/11/2026)', () => {
   });
   it('memória de cálculo da coparticipação mostra a conta mês a mês, despesa média e %', () => {
     const m = memoriaCalculo('bensaude.coparticipacao', rs, nomesR);
-    expect(m.itens[0].calculo).toContain('Desp. Assist. média 280,45 × % Copart 20,00%');
+    expect(m.itens[0].calculo).toContain('Desp. Assist. média 190,45 × % Copart 20,00%');
     expect(m.valor).toBeCloseTo(resumoSimulacao(rs).bensaude.coparticipacao, 6);
   });
 });
