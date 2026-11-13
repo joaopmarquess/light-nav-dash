@@ -23,3 +23,6 @@
 - [x] Termômetro de envio e botão Atualizar base na tela Mensal.
 - [x] Enviar as 241 operadoras de outros estados (1.052 de 1.052 liberadas).
 - [x] Atalhos Bench Vidas e Bench Contábil na Home.
+## Proj. Uberaba › Parâmetros das tabelas (13/11/2026)
+- [x] Quatro tabelas (PCA 0,90 · PME ADM. 0,85 · PCE ADM. 0,80 · PJ+ 0,70) com contratação, vidas, boletagem e distribuidores nas telas, cálculos e textos.
+- [x] Proposta: tabelas e remuneração em duas seções — produtos com Administradora e Empresarial.

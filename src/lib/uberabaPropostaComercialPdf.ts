@@ -3,7 +3,7 @@ import autoTable from "jspdf-autotable";
 import { attachTimbrado } from "@/lib/pdfTimbrado";
 import { PDF_COLORS, drawSectionTitle } from "@/lib/pdfTheme";
 import {
-  FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, FRENTES_COMERCIAIS, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarFator, formatarPercentual, indicadoresPadrao, rotulosPadrao, tabelaIndexada, tabelaReferencia,
+  FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, FRENTES_COMERCIAIS, INDICES_PADRAO, PARAMETROS_UBERABA, blocosIndicadores, parametrosDe, vidasTexto, formatarCentavos, formatarFator, formatarPercentual, indicadoresPadrao, rotulosPadrao, tabelaIndexada, tabelaReferencia,
   type Fatores, type FrenteId, type IndicadoresPorFrente, type Indices, type RotulosPorFrente,
 } from "@/lib/uberabaTabelasComerciais";
 import { SECOES_TEXTO, TITULO_GLOSSARIO, TEXTOS_PADRAO, paragrafosDe, type SecaoTextoId, type TextosSecoes } from "@/lib/uberabaPropostaTextos";
@@ -14,7 +14,7 @@ type RGB = [number, number, number];
  * Paleta pensada para impressão em preto e branco: as cores de cada frente seguem a tela, mas escurecidas,
  * e textos, linhas e contornos usam tinta escura para não sumirem no papel.
  */
-const COR_FRENTE: Record<FrenteId, RGB> = { pcaAdm: [128, 90, 15], pceAdm: [15, 85, 140], pce100: [150, 65, 35] };
+const COR_FRENTE: Record<FrenteId, RGB> = { pcaAdm: [128, 90, 15], pmeAdm: [90, 55, 125], pceAdm: [15, 85, 140], pce100: [150, 65, 35] };
 const TINTA: RGB = [10, 38, 72];
 const CABECALHO: RGB = [205, 222, 236];
 const ZEBRA: RGB = [236, 241, 245];
@@ -30,6 +30,8 @@ export const FONTES_PROPOSTA = {
   texto: 13,
   topico: 14,
   quadro: 13,
+  /** Sigla e vidas abaixo do nome de cada quadro. */
+  subtituloQuadro: 11,
   secaoQuadro: 11,
   tabelaReferencia: 12,
   cabecalhoReferencia: 11,
@@ -38,7 +40,7 @@ export const FONTES_PROPOSTA = {
   indicador: 11,
   rotulo: 11,
   fator: 12,
-  /** Linha única, em itálico e sem moldura, abaixo das três tabelas do tópico 3: "APARTAMENTO fator x ENFERMARIA". */
+  /** Linha única, em itálico e sem moldura, abaixo das tabelas de cada seção: "APARTAMENTO fator x ENFERMARIA". */
   notaPrecos: 11,
   rodape: 11,
 } as const;
@@ -53,14 +55,16 @@ export function linhasReferencia(): [string, string, string][] {
 export const FATOR_REFERENCIA = formatarFator(FATOR_APARTAMENTO_PADRAO);
 
 /**
- * Tópicos 3 · Tabelas e 4 · Remuneração: os três quadros com a mesma nomenclatura de Resultados Comerciais —
- * nome da tabela (redigitável na tela), contêiner TABELAS (Faixa × Enfermaria e "APARTAMENTO fator x ENFERMARIA")
- * e contêiner INDICADORES VARIÁVEIS.
+ * Tópicos 3 · Produtos com Administradora e 4 · Plano Empresarial: os quatro quadros com a mesma nomenclatura de
+ * Resultados Comerciais — nome da tabela (redigitável na tela), sigla e vidas, contêiner TABELAS (Faixa × Enfermaria e
+ * "APARTAMENTO fator x ENFERMARIA") e contêiner INDICADORES VARIÁVEIS; `grupo` indica a seção de cada quadro.
  */
 export function quadrosProposta(indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao(), rotulos: RotulosPorFrente = rotulosPadrao(), fatores: Fatores = FATORES_PADRAO) {
   return FRENTES_COMERCIAIS.map(({ id }) => ({
     id,
+    grupo: parametrosDe(id).grupo,
     titulo: rotulos[id].titulo,
+    subtitulo: [parametrosDe(id).sigla, vidasTexto(parametrosDe(id))?.toUpperCase()].filter(Boolean).join(" · "),
     fator: formatarFator(fatores[id]),
     linhas: tabelaIndexada(indices[id], fatores[id]).map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos)] as [string, string]),
     blocos: blocosIndicadores(id, indicadores[id]).map((b) => ({
@@ -90,16 +94,24 @@ export const GLOSSARIO_PROPOSTA: { termo: string; nota: string }[] = [
 ];
 
 /**
- * Notas do Glossário com o fator do Apartamento atual: um só fator quando as três tabelas coincidem;
- * do contrário, o fator de cada tabela pelo nome exibido.
+ * Notas do Glossário com o fator do Apartamento atual: um só fator quando as tabelas coincidem;
+ * do contrário, o fator de cada tabela pelo nome exibido. Depois, uma nota por sigla com os parâmetros da tabela.
  */
-export function glossarioProposta(fatores: Fatores = FATORES_PADRAO, rotulos: RotulosPorFrente = rotulosPadrao()) {
+export function glossarioProposta(fatores: Fatores = FATORES_PADRAO, rotulos: RotulosPorFrente = rotulosPadrao(), indices: Indices = INDICES_PADRAO) {
   const ids = FRENTES_COMERCIAIS.map((f) => f.id);
   const iguais = ids.every((id) => fatores[id] === fatores[ids[0]]);
   const nota = iguais
     ? `Apartamento = TRUNCAR(Enfermaria × ${formatarFator(fatores[ids[0]])}; 2)`
     : [`Apartamento = TRUNCAR(Enfermaria × fator da tabela; 2), sendo:`, ...ids.map((id) => `${rotulos[id].titulo}: ${formatarFator(fatores[id])}`)].join("\n");
-  return GLOSSARIO_PROPOSTA.map((g) => (g.termo === "ENFERMARIA" ? { ...g, nota } : g));
+  const cap = (t: string) => t.toLowerCase().replace(/(^|\s)(\p{L})/gu, (m) => m.toUpperCase()).replace(/\b(Por|De|Ou|A)\b/g, (m) => m.toLowerCase());
+  const siglas = PARAMETROS_UBERABA.map((p) => {
+    const vidas = vidasTexto(p);
+    return {
+      termo: p.sigla,
+      nota: `${cap(p.contratacao)}${vidas ? `, de ${vidas}` : ""}. Boletagem: ${cap(p.boletagem)}. Distribuidores: ${cap(p.distribuidores)}. Tabela ${rotulos[p.id].titulo}, a ${formatarPercentual(indices[p.id])} da Tabela Referencial.`,
+    };
+  });
+  return [...GLOSSARIO_PROPOSTA.map((g) => (g.termo === "ENFERMARIA" ? { ...g, nota } : g)), ...siglas];
 }
 
 
@@ -155,22 +167,37 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   const fimTabela = (fallback: number) => ((doc as any).lastAutoTable?.finalY as number | undefined) ?? fallback;
 
   const quadros = quadrosProposta(indices, indicadores, rotulos, fatores);
+  type Quadro = (typeof quadros)[number];
+  const doGrupo = (id: string) => quadros.filter((q) => q.grupo === id);
   const margem = (x: number, w: number) => ({ left: x, right: pageW - x - w, top, bottom });
   const ALTURA_TITULO_SECAO = 7;
   const LARGURA_VALOR = 15;
-  const ALTURA_NOME_QUADRO = 12;
-  /** Geometria dos três quadros lado a lado: posição, largura e recuo do contêiner interno. */
+  /** Faixa colorida (2) + nome (13 pt, até duas linhas) + sigla e vidas (11 pt). */
+  const LINHA_NOME = alturaLinha(F.quadro) / 1.35 * 1.15;
+  const alturaNome = (g: Geometria, lista: Quadro[]) => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(F.quadro);
+    const n = Math.max(1, ...lista.map((q) => Math.min(2, (doc.splitTextToSize(q.titulo, g.largura - 4) as string[]).length)));
+    return 2 + 3 + n * LINHA_NOME + 7;
+  };
+  /** Geometria dos quadros lado a lado: posição, largura e recuo do contêiner interno. */
   type Geometria = { xs: number[]; largura: number; inset: number; wSec: number };
   // Os quadros ocupam exatamente a largura dos parágrafos justificados (pedido do Dênis em 13/11/2026):
   // começam na margem esquerda e terminam onde terminam as linhas do texto.
   const LARGURA_TEXTO = usableW - 2;
-  const geometria = (gap: number, inset: number): Geometria => {
-    const largura = (LARGURA_TEXTO - gap * 2) / 3;
-    return { xs: quadros.map((_, k) => marginL + k * (largura + gap)), largura, inset, wSec: largura - inset * 2 };
+  const geometria = (n: number, gap: number, inset: number, inicioX = marginL, larguraTotal = LARGURA_TEXTO): Geometria => {
+    const largura = (larguraTotal - gap * (n - 1)) / n;
+    return { xs: Array.from({ length: n }, (_, k) => inicioX + k * (largura + gap)), largura, inset, wSec: largura - inset * 2 };
   };
-  // Tópico 3: menos espaço entre os quadros e a tabela ocupando o quadro todo, para ficarem o mais largas possível.
-  const GEO_REMUNERACAO = geometria(5, 2);
-  const GEO_TABELAS = geometria(3, 0);
+  // Produtos com Administradora: três quadros lado a lado; tabela ocupando o quadro todo, para ficarem o mais largas possível.
+  const nAdm = Math.max(1, doGrupo("administradora").length);
+  const GEO_REMUNERACAO = geometria(nAdm, 5, 2);
+  const GEO_TABELAS = geometria(nAdm, 3, 0);
+  // Plano Empresarial: um produto; a tabela de preços e os Indicadores variáveis ficam lado a lado.
+  const GAP_EMPRESARIAL = 6;
+  const L_EMP = (LARGURA_TEXTO - GAP_EMPRESARIAL) / 2;
+  const GEO_EMP_TABELAS = geometria(1, 0, 0, marginL, L_EMP);
+  const GEO_EMP_REMUNERACAO = geometria(1, 0, 2, marginL + L_EMP + GAP_EMPRESARIAL, L_EMP);
   /** Espaço entre o nome da tabela e o contêiner, no tópico 4 (pedido do Dênis em 13/11/2026). */
   const ESPACO_NOME_REMUNERACAO = 4;
 
@@ -193,20 +220,25 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     doc.rect(x + g.inset, y0, g.wSec, y1 - y0, "S");
   };
   // Faixa colorida e nome de cada tabela (o mesmo da tela); devolve onde começa o contêiner.
-  const cabecalhoQuadros = (g: Geometria, inicio: number, espaco = 0) => {
-    quadros.forEach((q, k) => {
+  const cabecalhoQuadros = (g: Geometria, lista: Quadro[], inicio: number, espaco = 0) => {
+    const altura = alturaNome(g, lista);
+    lista.forEach((q, k) => {
       const x = g.xs[k];
       doc.setFillColor(...COR_FRENTE[q.id]);
       doc.rect(x, inicio, g.largura, 2, "F");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(F.quadro);
       doc.setTextColor(...TINTA);
-      // Nomes longos quebram em até duas linhas no tamanho padrão.
+      // Nomes longos quebram em até duas linhas no tamanho padrão; abaixo, sigla e vidas.
       const linhas = (doc.splitTextToSize(q.titulo, g.largura - 4) as string[]).slice(0, 2);
-      const y0 = inicio + 2 + (ALTURA_NOME_QUADRO - 2 - (linhas.length - 1) * alturaLinha(F.quadro) / 1.35 * 1.15) / 2;
-      doc.text(linhas, x + g.largura / 2, y0, { align: "center", baseline: "middle", lineHeightFactor: 1.15 });
+      const yNome = inicio + 2 + 3 + LINHA_NOME / 2;
+      doc.text(linhas, x + g.largura / 2, yNome, { align: "center", baseline: "middle", lineHeightFactor: 1.15 });
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(F.subtituloQuadro);
+      doc.setTextColor(...SECUNDARIO);
+      doc.text(textoPdf(q.subtitulo), x + g.largura / 2, yNome + linhas.length * LINHA_NOME + 0.6, { align: "center", baseline: "middle" });
     });
-    return inicio + ALTURA_NOME_QUADRO + espaco;
+    return inicio + altura + espaco;
   };
   const contornoQuadros = (g: Geometria, inicio: number, fimQ: number) => {
     doc.setDrawColor(...TINTA);
@@ -226,7 +258,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
       margin: margem(x, w),
       head: [["FAIXA", "ENFERMARIA", "APARTAMENTO"]],
       body: linhasReferencia(),
-      styles: { font: "helvetica", fontSize: F.tabelaReferencia, cellPadding: { top: 1.4, bottom: 1.4, left: 2, right: 2 }, textColor: PDF_COLORS.text, halign: "center" },
+      styles: { font: "helvetica", fontSize: F.tabelaReferencia, cellPadding: { top: 1.05, bottom: 1.05, left: 2, right: 2 }, textColor: PDF_COLORS.text, halign: "center" },
       headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: F.cabecalhoReferencia },
       alternateRowStyles: { fillColor: ZEBRA },
       didDrawCell: (c) => {
@@ -249,28 +281,29 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     y = fimT + 15;
   };
 
-  // Tópico 3: contêiner TABELAS de cada quadro — Faixa × Enfermaria (cada coluna com moldura própria) e, abaixo dos quadros, uma linha simples com o fator do Apartamento.
-  const desenharPrecos = () => {
-    const g = GEO_TABELAS;
+  // Contêiner TABELAS de cada quadro — Faixa × Enfermaria (cada coluna com moldura própria) e, abaixo dos quadros, uma linha simples com o fator do Apartamento.
+  // `preencher`: as linhas crescem até a seção ocupar o resto da folha (Produtos com Administradora).
+  const desenharPrecos = (lista: Quadro[], g: Geometria, preencher: boolean) => {
     const inicio = y;
-    const ySecT = cabecalhoQuadros(g, inicio);
+    const ySecT = cabecalhoQuadros(g, lista, inicio);
     g.xs.forEach((x) => tituloSecao(g, "TABELAS", x, ySecT));
     let fimP = ySecT + ALTURA_TITULO_SECAO;
     // As linhas crescem até o tópico preencher o resto da folha; o tópico seguinte começa na folha seguinte.
     // Fator do Apartamento: uma só linha, sem moldura, alinhada à esquerda e abaixo dos três quadros (pedido do Dênis em 13/11/2026).
-    const fatoresIguais = quadros.every((q) => q.fator === quadros[0].fator);
+    const fatoresIguais = lista.every((q) => q.fator === lista[0].fator);
     const nota = fatoresIguais
-      ? `APARTAMENTO ${quadros[0].fator} x ENFERMARIA`
-      : `APARTAMENTO: ${quadros.map((q) => `${q.titulo} ${q.fator} x ENFERMARIA`).join("; ")}`;
+      ? `APARTAMENTO ${lista[0].fator} x ENFERMARIA`
+      : `APARTAMENTO: ${lista.map((q) => `${q.titulo} ${q.fator} x ENFERMARIA`).join("; ")}`;
     doc.setFont("helvetica", "italic");
     doc.setFontSize(F.notaPrecos);
-    const linhasNota = doc.splitTextToSize(textoPdf(nota), LARGURA_TEXTO) as string[];
+    const larguraNota = g.xs.length === 1 ? g.largura : LARGURA_TEXTO;
+    const linhasNota = doc.splitTextToSize(textoPdf(nota), larguraNota) as string[];
     const LINHA_NOTA = alturaLinha(F.notaPrecos);
     const ESPACO_NOTA = 6;
-    const fixo = ALTURA_NOME_QUADRO + ALTURA_TITULO_SECAO + ESPACO_NOTA + linhasNota.length * LINHA_NOTA + 2;
-    const nLinhas = Math.max(1, ...quadros.map((q) => q.linhas.length)) + 1;
-    const alturaLinhaPreco = Math.min(16, Math.max(7, (pageH - bottom - inicio - fixo) / nLinhas));
-    quadros.forEach((q, k) => {
+    const fixo = ySecT - inicio + ALTURA_TITULO_SECAO + ESPACO_NOTA + linhasNota.length * LINHA_NOTA + 2;
+    const nLinhas = Math.max(1, ...lista.map((q) => q.linhas.length)) + 1;
+    const alturaLinhaPreco = preencher ? Math.min(16, Math.max(7, (pageH - bottom - inicio - fixo) / nLinhas)) : 7.5;
+    lista.forEach((q, k) => {
       // Moldura de cada coluna (FAIXA e ENFERMARIA), do cabeçalho à última faixa, separando-as visualmente.
       const colunas = [0, 1].map(() => ({ x: 0, w: 0, y0: Infinity, y1: -Infinity }));
       autoTable(doc, {
@@ -308,29 +341,28 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     doc.setFont("helvetica", "italic");
     doc.setFontSize(F.notaPrecos);
     doc.setTextColor(...SECUNDARIO);
-    doc.text(linhasNota, marginL, yNota, { lineHeightFactor: 1.35 });
+    doc.text(linhasNota, g.xs[0], yNota, { lineHeightFactor: 1.35 });
     y = yNota + linhasNota.length * LINHA_NOTA + 8;
     doc.setPage(doc.getNumberOfPages());
   };
 
-  // Tópico 4: contêiner INDICADORES VARIÁVEIS de cada quadro; cada bloco começa na mesma linha nas três frentes.
-  const desenharRemuneracao = () => {
-    const g = GEO_REMUNERACAO;
+  // Contêiner INDICADORES VARIÁVEIS de cada quadro; cada bloco começa na mesma linha em todos os quadros da seção.
+  const desenharRemuneracao = (lista: Quadro[], g: Geometria) => {
     const inicio = y;
-    const ySecI = cabecalhoQuadros(g, inicio, ESPACO_NOME_REMUNERACAO);
+    const ySecI = cabecalhoQuadros(g, lista, inicio, ESPACO_NOME_REMUNERACAO);
     g.xs.forEach((x) => tituloSecao(g, "INDICADORES VARIÁVEIS", x, ySecI));
     let yb = ySecI + ALTURA_TITULO_SECAO + 2;
     // Fonte dos indicadores: a padrão, reduzida só o necessário para nenhum rótulo quebrar no meio da palavra.
     const larguraRotulo = g.largura - (g.inset + 1.5) * 2 - LARGURA_VALOR - 3.4;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(F.indicador);
-    const maisLongo = Math.max(...quadros.flatMap((q) => q.blocos.flatMap((b) => b.linhas.map((l) => doc.getTextWidth(l[0])))));
+    const maisLongo = Math.max(...lista.flatMap((q) => q.blocos.flatMap((b) => b.linhas.map((l) => doc.getTextWidth(l[0])))));
     const fInd = maisLongo > larguraRotulo ? Math.max(8, F.indicador * larguraRotulo / maisLongo) : F.indicador;
-    const nBlocos = Math.max(...quadros.map((q) => q.blocos.length));
+    const nBlocos = Math.max(...lista.map((q) => q.blocos.length));
     const insetB = g.inset + 1.5;
     for (let b = 0; b < nBlocos; b++) {
       let fimBloco = yb;
-      quadros.forEach((q, k) => {
+      lista.forEach((q, k) => {
         const bloco = q.blocos[b];
         if (!bloco) return;
         autoTable(doc, {
@@ -356,7 +388,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   };
 
   const desenharGlossario = () => {
-    glossarioProposta(fatores, rotulos).forEach((g) => {
+    glossarioProposta(fatores, rotulos, indices).forEach((g) => {
       const xTermo = marginL;
       doc.setFont("helvetica", "normal");
       doc.setFontSize(F.texto);
@@ -375,13 +407,32 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   };
 
   const corpo = paragrafosProposta(textos);
-  const blocoDados: Partial<Record<SecaoTextoId, () => void>> = { referencia: desenharReferencia, tabelas: desenharPrecos, remuneracao: desenharRemuneracao };
-  // Os tópicos seguem corridos, sem pular página. Só os três quadros lado a lado (tópicos 3 e 4) não se dividem:
+  // Os tópicos seguem corridos, sem pular página. Só os quadros lado a lado não se dividem:
   // quando não cabem no resto da página, passam inteiros para a seguinte.
-  const ALTURA_BLOCO: Partial<Record<SecaoTextoId, number>> = { referencia: 30, tabelas: 112, remuneracao: 100 };
+  const ALTURA_PRECOS = 112, ALTURA_REMUNERACAO = 100, ALTURA_EMPRESARIAL = 125;
+  // 3 · Produtos com Administradora: tabelas preenchendo a folha e, em seguida, a remuneração.
+  const desenharAdministradora = () => {
+    const lista = doGrupo("administradora");
+    garantir(ALTURA_PRECOS); desenharPrecos(lista, GEO_TABELAS, true);
+    garantir(ALTURA_REMUNERACAO); desenharRemuneracao(lista, GEO_REMUNERACAO);
+  };
+  // 4 · Plano Empresarial: tabela de preços e Indicadores variáveis lado a lado.
+  const desenharEmpresarial = () => {
+    const lista = doGrupo("empresarial");
+    garantir(ALTURA_EMPRESARIAL);
+    const inicio = y;
+    desenharPrecos(lista, GEO_EMP_TABELAS, false);
+    const fimPrecos = y;
+    y = inicio;
+    desenharRemuneracao(lista, GEO_EMP_REMUNERACAO);
+    y = Math.max(fimPrecos, y);
+  };
+  const blocoDados: Partial<Record<SecaoTextoId, () => void>> = { referencia: desenharReferencia, administradora: desenharAdministradora, empresarial: desenharEmpresarial };
+  const ALTURA_BLOCO: Partial<Record<SecaoTextoId, number>> = { referencia: 30 };
   const INICIO_TOPICO = 10 + LINHA_TEXTO * 2; // título com pelo menos duas linhas de texto abaixo
   SECOES_TEXTO.forEach((s, i) => {
-    garantir(INICIO_TOPICO);
+    // O Plano Empresarial (título, texto e quadros) fica junto na mesma página.
+    garantir(s.id === "empresarial" ? 10 + corpo[i].length * LINHA_TEXTO * 3 + ALTURA_EMPRESARIAL : INICIO_TOPICO);
     drawSectionTitle(doc, s.titulo, marginL, y, pageW - marginR, TINTA, F.topico);
     y += 10;
     corpo[i].forEach(paragrafo);
@@ -389,7 +440,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     y += 2;
     if (dados) { garantir(ALTURA_BLOCO[s.id] ?? 0); dados(); }
   });
-  garantir(INICIO_TOPICO);
+  garantir(INICIO_TOPICO + 14); // título do Glossário junto com o primeiro termo e sua nota
   drawSectionTitle(doc, TITULO_GLOSSARIO, marginL, y, pageW - marginR, TINTA, F.topico);
   y += 10;
   desenharGlossario();

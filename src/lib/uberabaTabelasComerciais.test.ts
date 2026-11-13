@@ -4,8 +4,12 @@ import { INDICES_PADRAO, formatarCentavos, lerIndices, parseIndice, tabelaIndexa
 const enf = (pct: number) => tabelaIndexada(pct).map((l) => formatarCentavos(l.enfermariaCentavos));
 
 describe("tabelas comerciais Uberaba", () => {
-  it("usa índices padrão 90%, 80% e 70%", () => {
-    expect(INDICES_PADRAO).toEqual({ pcaAdm: 90, pceAdm: 80, pce100: 70 });
+  it("usa os fatores de referência 0,90 / 0,85 / 0,80 / 0,70 como índices padrão", () => {
+    expect(INDICES_PADRAO).toEqual({ pcaAdm: 90, pmeAdm: 85, pceAdm: 80, pce100: 70 });
+  });
+
+  it("PME ADM. a 85% indexa a Referência", () => {
+    expect(enf(85)[0]).toBe("148,75");
   });
 
   it("Referência mantém Enfermaria e Apartamento = TRUNCAR(Enf × 1,25; 2)", () => {
@@ -38,7 +42,7 @@ describe("tabelas comerciais Uberaba", () => {
 
   it("volta aos padrões quando não há índices gravados", () => {
     expect(lerIndices({ getItem: () => null })).toEqual(INDICES_PADRAO);
-    expect(lerIndices({ getItem: () => JSON.stringify({ pce100: 75 }) })).toEqual({ pcaAdm: 90, pceAdm: 80, pce100: 75 });
+    expect(lerIndices({ getItem: () => JSON.stringify({ pce100: 75 }) })).toEqual({ pcaAdm: 90, pmeAdm: 85, pceAdm: 80, pce100: 75 });
   });
 });
 
@@ -49,7 +53,9 @@ describe("indicadores variáveis Uberaba", () => {
     expect(INDICADORES_PADRAO).toEqual({ spread: 23, coAdministradora: 4, contratual: 90, promocional: 150, adesao: 99 });
     const t = lerIndicadores({ getItem: () => null });
     expect(t.pcaAdm).toEqual(INDICADORES_PADRAO);
+    expect(t.pmeAdm).toEqual(INDICADORES_PADRAO);
     expect(t.pceAdm).toEqual(INDICADORES_PADRAO);
+    expect(MODELO_INDICADORES.pmeAdm).toBe("administradora");
   });
 
   it("PCE 100+ usa Vitalício 5%, Contratual 90% e Promocional 100%", () => {
@@ -93,18 +99,20 @@ import { gravarRotulos, lerRotulos, normalizarRotulo, rotulosPadrao } from "./ub
 describe("nomes das tabelas (redigitáveis)", () => {
   it("defaults are the current table names and segments", () => {
     const r = rotulosPadrao();
-    expect(r.pcaAdm).toEqual({ titulo: "Plano Coletivo por Adesão", segmento: "ADESÃO" });
-    expect(r.pceAdm).toEqual({ titulo: "PME Administrada (02 a 99 vidas)", segmento: "MÉDIAS EMPRESAS" });
-    expect(r.pce100).toEqual({ titulo: "Plano Empresarial 100+", segmento: "GRANDES EMPRESAS" });
+    expect(r.pcaAdm).toEqual({ titulo: "ADESÃO", segmento: "PLANO COLETIVO POR ADESÃO" });
+    expect(r.pmeAdm).toEqual({ titulo: "PME ADMINISTRADAS", segmento: "PLANO COLETIVO EMPRESARIAL" });
+    expect(r.pceAdm).toEqual({ titulo: "PJ ADMINISTRADAS", segmento: "PLANO COLETIVO EMPRESARIAL" });
+    expect(r.pce100).toEqual({ titulo: "EMPRESARIAL", segmento: "PLANO COLETIVO EMPRESARIAL" });
   });
   it("names saved before the rename do not hide the new labels", () => {
     const mem = new Map<string, string>([
       ["uberaba-tabelas-comerciais-rotulos-v1", JSON.stringify({ pcaAdm: { titulo: "PCA Adm.", segmento: "ADESÃO" } })],
       ["uberaba-tabelas-comerciais-rotulos-padrao-v1", JSON.stringify({ pce100: { titulo: "PJ 100+", segmento: "GRANDES EMPRESAS" } })],
+      ["uberaba-tabelas-comerciais-rotulos-v2", JSON.stringify({ pcaAdm: { titulo: "Plano Coletivo por Adesão", segmento: "ADESÃO" } })],
     ]);
     const st = { getItem: (k: string) => mem.get(k) ?? null };
-    expect(lerRotulos(st).pcaAdm.titulo).toBe("Plano Coletivo por Adesão");
-    expect(lerRotulos(st).pce100.titulo).toBe("Plano Empresarial 100+");
+    expect(lerRotulos(st).pcaAdm.titulo).toBe("ADESÃO");
+    expect(lerRotulos(st).pce100.titulo).toBe("EMPRESARIAL");
   });
   it("keeps one line and falls back to the default when empty", () => {
     expect(normalizarRotulo("  PCA\n  Novo  ", "PCA Adm.")).toBe("PCA Novo");
@@ -117,8 +125,8 @@ describe("nomes das tabelas (redigitáveis)", () => {
     r.pce100.titulo = "PJ 100+";
     gravarRotulos(r, st);
     const lido = lerRotulos(st);
-    expect(lido.pce100).toEqual({ titulo: "PJ 100+", segmento: "GRANDES EMPRESAS" });
-    expect(lido.pcaAdm.titulo).toBe("Plano Coletivo por Adesão");
+    expect(lido.pce100).toEqual({ titulo: "PJ 100+", segmento: "PLANO COLETIVO EMPRESARIAL" });
+    expect(lido.pcaAdm.titulo).toBe("ADESÃO");
   });
 });
 
@@ -137,15 +145,15 @@ describe("novo padrão para o nome das tabelas", () => {
     expect(lerPadraoRotulos(st).pce100.titulo).toBe("PJ 100+");
     expect(lerRotulos(st).pce100.titulo).toBe("PJ 100+");
     expect(normalizarRotulo("", lerPadraoRotulos(st).pce100.titulo)).toBe("PJ 100+");
-    expect(lerPadraoRotulos(st).pcaAdm.titulo).toBe("Plano Coletivo por Adesão");
+    expect(lerPadraoRotulos(st).pcaAdm.titulo).toBe("ADESÃO");
   });
 });
 
 import { apartamentoDe, lerFatores, gravarFatores, parseFator, FATORES_PADRAO } from "./uberabaTabelasComerciais";
 
 describe("fator Apartamento x Enfermaria", () => {
-  it("defaults to 1,25 on all three tables", () => {
-    expect(FATORES_PADRAO).toEqual({ pcaAdm: 1.25, pceAdm: 1.25, pce100: 1.25 });
+  it("defaults to 1,25 on all four tables", () => {
+    expect(FATORES_PADRAO).toEqual({ pcaAdm: 1.25, pmeAdm: 1.25, pceAdm: 1.25, pce100: 1.25 });
     expect(tabelaIndexada(90)[0].apartamentoCentavos).toBe(19687); // TRUNC(157,50 × 1,25; 2) = 196,87
   });
   it("Apartamento = TRUNC(Enfermaria × fator; 2)", () => {
@@ -163,6 +171,26 @@ describe("fator Apartamento x Enfermaria", () => {
     const mem = new Map<string, string>();
     const st = { getItem: (k: string) => mem.get(k) ?? null, setItem: (k: string, v: string) => void mem.set(k, v) };
     gravarFatores({ ...FATORES_PADRAO, pce100: 1.3 }, st);
-    expect(lerFatores(st)).toEqual({ pcaAdm: 1.25, pceAdm: 1.25, pce100: 1.3 });
+    expect(lerFatores(st)).toEqual({ pcaAdm: 1.25, pmeAdm: 1.25, pceAdm: 1.25, pce100: 1.3 });
+  });
+});
+
+import { GRUPOS_FRENTES, PARAMETROS_UBERABA, parametrosDe, vidasTexto } from "./uberabaTabelasComerciais";
+
+describe("parâmetros das tabelas (13/11/2026)", () => {
+  it("four tables in the order PCA, PME ADM., PCE ADM., PJ+", () => {
+    expect(PARAMETROS_UBERABA.map((p) => p.sigla)).toEqual(["PCA", "PME ADM.", "PCE ADM.", "PJ+"]);
+    expect(PARAMETROS_UBERABA.map((p) => p.fatorReferencia)).toEqual([0.9, 0.85, 0.8, 0.7]);
+  });
+  it("lives, billing and distributors as supplied", () => {
+    expect(PARAMETROS_UBERABA.map((p) => p.vidas)).toEqual(["-", "03 A 29", "30 A 99", "100 OU MAIS"]);
+    expect(PARAMETROS_UBERABA.map((p) => p.boletagem)).toEqual(["ADMINISTRADORA", "ADMINISTRADORA", "ADMINISTRADORA", "OPERADORA"]);
+    expect(parametrosDe("pce100").distribuidores).toBe("CORRETORAS");
+    expect(parametrosDe("pmeAdm").distribuidores).toBe("PLATAFORMAS ASSOCIADAS");
+    expect(vidasTexto(parametrosDe("pcaAdm"))).toBeNull();
+    expect(vidasTexto(parametrosDe("pmeAdm"))).toBe("03 a 29 vidas");
+  });
+  it("Proposal sections: Administradora products and the Empresarial", () => {
+    expect(GRUPOS_FRENTES.map((g) => g.frentes)).toEqual([["pcaAdm", "pmeAdm", "pceAdm"], ["pce100"]]);
   });
 });

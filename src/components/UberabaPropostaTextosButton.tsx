@@ -69,7 +69,7 @@ export default function UberabaPropostaTextosButton() {
       if (ac.signal.aborted) return;
       if (error || data?.error) throw new Error(data?.error ?? (await mensagemErro(error)));
       const ia = normalizarTextos(data?.textos);
-      if (!ia.tabelas && !ia.remuneracao && !ia.conclusao) throw new Error("A IA não devolveu texto. Tente gerar novamente.");
+      if (SECOES_IA.every((id) => !ia[id])) throw new Error("A IA não devolveu texto. Tente gerar novamente.");
       const textos = mesclarRascunhoIa(edicao, data?.textos);
       setEdicao(textos);
       salvar({ ...lerTextos(), rascunho: textos, assinaturaRascunho: assinatura, geradoEm: new Date().toISOString() });

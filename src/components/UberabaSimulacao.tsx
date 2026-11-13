@@ -9,7 +9,8 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import UberabaSimulacaoFaixas from '@/components/UberabaSimulacaoFaixas';
 import { calcularSimulacao, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, type ConfigSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
-const nomes = ['PCA', 'PME', 'PCE 50 a 99', 'PCE 100+'];
+// Siglas dos parâmetros do Proj. Uberaba (13/11/2026); preços e faixas seguem os CSVs fornecidos, sem alteração.
+const nomes = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
 type Resumo = ReturnType<typeof resumoSimulacao>;
 type Linha = { label: string; valor: (r: Resumo) => number; destaque?: boolean };
 const entes: { titulo: string; linhas: Linha[] }[] = [

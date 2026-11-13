@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Pin } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, formatarFator, gravarFatores, lerFatores, parseFator, type Fatores, FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, gravarPadraoRotulos, gravarRotulos, lerIndicadores, lerIndices, lerPadraoRotulos, lerRotulos, normalizarRotulo, ROTULO_MAX, parseIndicador, parseIndice, tabelaIndexada, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices, type Rotulos, type RotulosPorFrente } from "@/lib/uberabaTabelasComerciais";
+import { FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, formatarFator, gravarFatores, lerFatores, parseFator, type Fatores, FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, parametrosDe, vidasTexto, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, gravarPadraoRotulos, gravarRotulos, lerIndicadores, lerIndices, lerPadraoRotulos, lerRotulos, normalizarRotulo, ROTULO_MAX, parseIndicador, parseIndice, tabelaIndexada, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices, type Rotulos, type RotulosPorFrente } from "@/lib/uberabaTabelasComerciais";
 
 // Preços calculados pela Referência × índice de cada frente; indicadores variáveis editáveis por frente (cálculos no helper).
 type Linha = [string, string, string];
@@ -12,7 +12,7 @@ type Frente = { id: FrenteId; titulo: string; segmento: string; cor: string };
 
 const linhasDe = (indice: number, fator: number = FATOR_APARTAMENTO_PADRAO): Linha[] => tabelaIndexada(indice, fator).map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos), formatarCentavos(l.apartamentoCentavos)]);
 
-const CORES: Record<FrenteId, string> = { pcaAdm: "comercial-adesao", pceAdm: "comercial-medias", pce100: "comercial-grandes" };
+const CORES: Record<FrenteId, string> = { pcaAdm: "comercial-adesao", pmeAdm: "comercial-pme", pceAdm: "comercial-medias", pce100: "comercial-grandes" };
 export const FRENTES: Frente[] = FRENTES_COMERCIAIS.map((f) => ({ ...f, cor: CORES[f.id] }));
 
 const REFERENCIA = linhasDe(100);
@@ -31,7 +31,19 @@ const BotaoApartamento = ({ t }: { t: ApartamentoToggle }) => {
   );
 };
 
-// Recolher/expandir uma seção (grade de preços ou Indicadores variáveis) nas três tabelas ao mesmo tempo.
+// Sigla, contratação, vidas, boletagem e distribuidores da tabela (parâmetros do Proj. Uberaba).
+const ParametrosLinha = ({ id }: { id: FrenteId }) => {
+  const p = parametrosDe(id);
+  const vidas = vidasTexto(p);
+  return (
+    <div className="comercial-parametros">
+      <p><strong>{p.sigla}</strong> · {p.contratacao.toLowerCase()}{vidas && <> · {vidas}</>}</p>
+      <p>Boletagem: {p.boletagem.toLowerCase()} · Distribuidores: {p.distribuidores.toLowerCase()}</p>
+    </div>
+  );
+};
+
+// Recolher/expandir uma seção (grade de preços ou Indicadores variáveis) nas quatro tabelas ao mesmo tempo.
 const BotaoSecao = ({ t, nome }: { t: ApartamentoToggle; nome: string }) => {
   const rotulo = `${t.visivel ? "Recolher" : "Expandir"} ${nome}`;
   const Icone = t.visivel ? ChevronUp : ChevronDown;
@@ -188,6 +200,7 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
         </span>
         <IndiceCampo f={f} valor={indice} onChange={onIndice} />
       </div>
+      <ParametrosLinha id={f.id} />
       <section className="comercial-secao" aria-label={`Tabelas ${f.titulo}`}>
         <p className="comercial-secao-titulo">Tabelas<BotaoSecao t={precos} nome="Tabelas" /></p>
         {precos.visivel && (
@@ -227,10 +240,10 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
 
 const UberabaTabelasComerciais = () => {
   const [indices, setIndices] = useState<Indices>(() => lerIndices());
-  // Coluna Apartamento recolhida por padrão; o mesmo controle vale para as três frentes.
+  // Coluna Apartamento recolhida por padrão; o mesmo controle vale para as quatro frentes.
   const [aptoVisivel, setAptoVisivel] = useState(false);
   const apartamento: ApartamentoToggle = { visivel: aptoVisivel, alternar: () => setAptoVisivel((v) => !v) };
-  // Tabelas e Indicadores variáveis abrem recolhidos; cada ícone vale para as três frentes.
+  // Tabelas e Indicadores variáveis abrem recolhidos; cada ícone vale para as quatro frentes.
   const [precosVisivel, setPrecosVisivel] = useState(false);
   const precos: ApartamentoToggle = { visivel: precosVisivel, alternar: () => setPrecosVisivel((v) => !v) };
   const [variaveisVisivel, setVariaveisVisivel] = useState(false);

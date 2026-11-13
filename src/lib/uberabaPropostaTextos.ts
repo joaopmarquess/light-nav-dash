@@ -1,20 +1,20 @@
 // Textos da Proposta Comercial (tópicos 1 a 5): texto padrão do Dênis (tópicos 1 e 2 fornecidos por ele), revisável na tela;
 // a IA só redige os tópicos 3 a 5 a partir das tabelas de Resultados Comerciais. Tudo fica guardado neste navegador.
 import {
-  FATOR_APARTAMENTO_PADRAO, FRENTES_COMERCIAIS, blocosIndicadores, formatarCentavos, formatarFator, formatarPercentual, tabelaIndexada, tabelaReferencia,
+  FATOR_APARTAMENTO_PADRAO, FRENTES_COMERCIAIS, GRUPOS_FRENTES, blocosIndicadores, parametrosDe, formatarCentavos, formatarFator, formatarPercentual, tabelaIndexada, tabelaReferencia,
   type Fatores, type IndicadoresPorFrente, type Indices, type RotulosPorFrente,
 } from "@/lib/uberabaTabelasComerciais";
 
 /**
  * Tópicos da Proposta com texto: Introdução; Tabela Referencial (texto + Tabela Referencial);
- * Tabelas (texto + quadros de preços); Remuneração (texto + Indicadores variáveis);
- * Conclusão (encerramento curto). O Glossário vem por último.
+ * Produtos com Administradora e Plano Empresarial (cada um com texto, quadros de preços e Indicadores variáveis
+ * das suas tabelas — pedido do Dênis em 13/11/2026); Conclusão (encerramento curto). O Glossário vem por último.
  */
 export const SECOES_TEXTO = [
   { id: "introducao", titulo: "1. Introdução" },
   { id: "referencia", titulo: "2. Tabela Referencial" },
-  { id: "tabelas", titulo: "3. Tabelas" },
-  { id: "remuneracao", titulo: "4. Remuneração" },
+  { id: "administradora", titulo: `3. ${GRUPOS_FRENTES[0].titulo}` },
+  { id: "empresarial", titulo: `4. ${GRUPOS_FRENTES[1].titulo}` },
   { id: "conclusao", titulo: "5. Conclusão" },
 ] as const;
 export const TITULO_GLOSSARIO = "6. Glossário e Notas Explicativas";
@@ -25,22 +25,25 @@ export const TEXTO_MAX = 4000;
 /** Tópicos com texto fixo do Dênis: a IA nunca os reescreve. */
 export const SECOES_FIXAS = ["introducao", "referencia"] as const satisfies readonly SecaoTextoId[];
 /** Tópicos que a IA pode redigir. */
-export const SECOES_IA = ["tabelas", "remuneracao", "conclusao"] as const satisfies readonly SecaoTextoId[];
+export const SECOES_IA = ["administradora", "empresarial", "conclusao"] as const satisfies readonly SecaoTextoId[];
 
 /**
  * Texto padrão da Proposta (o que vai ao PDF enquanto não houver texto revisado). Introdução e Tabela Referencial
- * foram fornecidas pelo Dênis em 13/11/2026 e são reproduzidas sem alteração; a Tabela Referencial foi resumida
- * a pedido dele (13/11/2026) para a tabela caber na mesma página do texto.
+ * foram fornecidas pelo Dênis em 13/11/2026; a Tabela Referencial foi resumida a pedido dele para caber na mesma
+ * página da tabela, e ambas foram ajustadas aos quatro produtos dos parâmetros que ele forneceu em 13/11/2026
+ * (só produtos, vidas, boletagem, distribuidores e nomes das seções).
  */
 export const TEXTOS_PADRAO: TextosSecoes = {
   introducao:
-    "É com satisfação que apresentamos a presente proposta comercial para a comercialização de nossos produtos em Uberaba (Minas Gerais). O escopo desta oferta contempla as tabelas de preços estruturadas para três formatos distintos de produtos, sendo eles: a) o Plano Coletivo por Adesão, b) o segmento de Pequenas e Médias Empresas Administradas (de 02 a 99 vidas) e c) o Plano Coletivo Empresarial (acima de 100 vidas). Para garantir uma operação eficiente e alinhada ao mercado regional, os modelos de distribuição foram definidos de forma estratégica: a comercialização dos planos Coletivo por Adesão e PME Administradas ocorrerá por meio da Lancers Administradora e de suas Corretoras e Plataformas Associadas, contando com a valiosa parceria da Siga Soluções; já a distribuição do Plano Coletivo Empresarial será realizada em regime de corretagem direta para a Siga Soluções. Detalhes operacionais como os percentuais de spread, comissionamento, vitaliciedade e demais diretrizes de remuneração encontram-se especificados na seção \"Condições Comerciais\" ao longo deste documento.",
+    "É com satisfação que apresentamos a presente proposta comercial para a comercialização de nossos produtos em Uberaba (Minas Gerais). O escopo desta oferta contempla as tabelas de preços estruturadas para quatro formatos distintos de produtos, sendo eles: a) o Plano Coletivo por Adesão (PCA), b) o Plano Coletivo Empresarial de 03 a 29 vidas (PME ADM.), c) o Plano Coletivo Empresarial de 30 a 99 vidas (PCE ADM.) e d) o Plano Coletivo Empresarial com 100 ou mais vidas (PJ+). Para garantir uma operação eficiente e alinhada ao mercado regional, os modelos de distribuição foram definidos de forma estratégica: os planos PCA, PME ADM. e PCE ADM. terão boletagem pela Lancers Administradora e serão comercializados por meio de suas Plataformas Associadas, contando com a valiosa parceria da Siga Soluções; já o Plano Empresarial (PJ+) terá boletagem pela operadora e distribuição por meio de Corretoras. Detalhes operacionais como os percentuais de spread, comissionamento, vitaliciedade e demais diretrizes de remuneração encontram-se especificados nas seções \"Produtos com Administradora\" e \"Plano Empresarial\" ao longo deste documento.",
   referencia:
-    "Matriz referencial de preços para Uberaba, no padrão atuarial do Bensaúde, calibrada para a realidade competitiva do mercado local com excelência em qualidade assistencial. É a base da qual derivam as tabelas dos três produtos desta proposta.",
-  tabelas: "A seguir, apresentamos as tabelas de preços dos Produtos desta proposta.",
-  remuneracao: "A seguir, apresentamos os percentuais e as condições comerciais para a distribuição dos Produtos.",
+    "Matriz referencial de preços para Uberaba, no padrão atuarial do Bensaúde, calibrada para a realidade competitiva do mercado local com excelência em qualidade assistencial. É a base da qual derivam as tabelas dos quatro produtos desta proposta.",
+  administradora:
+    "A seguir, apresentamos as tabelas de preços e as condições comerciais de remuneração dos produtos com boletagem pela Administradora (PCA, PME ADM. e PCE ADM.), distribuídos por meio das Plataformas Associadas.",
+  empresarial:
+    "A seguir, apresentamos a tabela de preços e as condições comerciais de remuneração do Plano Empresarial (PJ+), para empresas com 100 ou mais vidas, com boletagem pela operadora e distribuição por meio de Corretoras.",
   conclusao:
-    "Com esta proposta, o Bensaúde reafirma o compromisso de levar a Uberaba produtos de saúde com preço justo e qualidade assistencial. Contamos com a parceria da Lancers Administradora, de suas Corretoras e Plataformas Associadas e da Siga Soluções para construir, juntos, uma operação sólida e duradoura, e permanecemos à disposição para os próximos passos.",
+    "Com esta proposta, o Bensaúde reafirma o compromisso de levar a Uberaba produtos de saúde com preço justo e qualidade assistencial. Contamos com a parceria da Lancers Administradora e de suas Plataformas Associadas, das Corretoras e da Siga Soluções para construir, juntos, uma operação sólida e duradoura, e permanecemos à disposição para os próximos passos.",
 };
 /** Versão anterior (longa) do texto da Tabela Referencial: em textos guardados no navegador, passa para a versão atual. */
 export const REFERENCIA_ANTERIOR =
@@ -57,6 +60,11 @@ export type DadosRascunho = {
   tabelas: {
     nome: string;
     segmento: string;
+    sigla: string;
+    secao: string;
+    vidas: string;
+    boletagem: string;
+    distribuidores: string;
     indiceSobreReferencia: string;
     fatorApartamento: string;
     regraApartamento: string;
@@ -72,9 +80,16 @@ export function dadosRascunho(indices: Indices, indicadores: IndicadoresPorFrent
       regraApartamento: `Apartamento = TRUNCAR(Enfermaria × ${formatarFator(FATOR_APARTAMENTO_PADRAO)}; 2)`,
       faixas: tabelaReferencia().map((l) => ({ faixa: l.faixa, enfermaria: formatarCentavos(l.enfermariaCentavos), apartamento: formatarCentavos(l.apartamentoCentavos) })),
     },
-    tabelas: FRENTES_COMERCIAIS.map(({ id }) => ({
+    tabelas: FRENTES_COMERCIAIS.map(({ id }) => {
+      const p = parametrosDe(id);
+      return {
       nome: rotulos[id].titulo,
       segmento: rotulos[id].segmento,
+      sigla: p.sigla,
+      secao: GRUPOS_FRENTES.find((g) => g.id === p.grupo)!.titulo,
+      vidas: p.vidas,
+      boletagem: p.boletagem,
+      distribuidores: p.distribuidores,
       indiceSobreReferencia: formatarPercentual(indices[id]),
       fatorApartamento: formatarFator(fatores[id]),
       regraApartamento: `Apartamento = TRUNCAR(Enfermaria × ${formatarFator(fatores[id])}; 2)`,
@@ -83,7 +98,8 @@ export function dadosRascunho(indices: Indices, indicadores: IndicadoresPorFrent
       })),
       indicadores: blocosIndicadores(id, indicadores[id]).flatMap((b) =>
         b.linhas.map((l) => ({ bloco: b.titulo, item: l.rotulo, valor: formatarPercentual(l.valor), formula: l.formula ?? null }))),
-    })),
+      };
+    }),
   };
 }
 
@@ -139,8 +155,8 @@ export type EstadoTextos = {
 };
 export const estadoVazio = (): EstadoTextos => ({ rascunho: null, assinaturaRascunho: null, geradoEm: null, aprovado: null, assinaturaAprovado: null, aprovadoEm: null });
 
-/** v3: tópico 5 passou a ser Conclusão e os tópicos 1 e 2 têm texto padrão; rascunhos das versões anteriores são ignorados. */
-export const CHAVE_TEXTOS = "uberaba-proposta-textos-v3";
+/** v4: quatro produtos e tópicos 3/4 por seção (Administradora e Empresarial); rascunhos das versões anteriores são ignorados. */
+export const CHAVE_TEXTOS = "uberaba-proposta-textos-v4";
 const str = (v: unknown) => (typeof v === "string" ? v : null);
 
 export function lerTextos(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): EstadoTextos {

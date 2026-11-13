@@ -9,11 +9,11 @@ describe("Modelo de Atuação fronts", () => {
     expect(forcas.itens.map((i) => i.titulo)).toEqual(["Farmer em Uberaba", "Equipe própria SDR em Rio Preto", "Agentes Comerciais Autorizados em Uberaba"]);
     expect(forcas.itens[2].subitens).toEqual(["Siga Soluções", "Corretores Lancers"]);
     expect(produtos.titulo).toBe("Produtos");
-    expect(produtos.itens.map((i) => i.titulo)).toEqual(["PCA e PME Administrado", "PCE 100+"]);
+    expect(produtos.itens.map((i) => i.titulo)).toEqual(["PCA, PME ADM. e PCE ADM.", "PJ+ (100 ou mais vidas)"]);
   });
 
   it("uses the five supplied Comercial indicators and the MODELO COMERCIAL band", () => {
-    expect(COMERCIAL_UBERABA.indicadores).toEqual(["FARMER EM UBERABA", "SDR EM RIO PRETO", "AGENTES AUTORIZADOS", "PCA / PME", "PCE 100+"]);
+    expect(COMERCIAL_UBERABA.indicadores).toEqual(["FARMER EM UBERABA", "SDR EM RIO PRETO", "AGENTES AUTORIZADOS", "PCA / PME ADM. / PCE ADM.", "PJ+"]);
     expect(COMERCIAL_UBERABA.destaque_titulo).toBe("MODELO COMERCIAL");
     expect(COMERCIAL_UBERABA.destaque_itens.join(" • ")).toBe("Presença local em Uberaba • Apoio SDR em Rio Preto • Agentes autorizados • Portfólio direcionado");
   });
@@ -34,6 +34,6 @@ describe("Modelo de Atuação fronts", () => {
     expect(grupo.itens.map((i) => i.titulo)).toEqual(["Equipes", "Estrutura", "Processos"]);
     expect(grupo.itens[0].subitens).toEqual(["Farmer", "SDR", "Assistente/Secretária"]);
     expect(grupo.itens[1].subitens).toEqual(["Mesas para a equipe fixa", "Mesas para a equipe em viagem", "Sala de reuniões"]);
-    expect(grupo.itens[2].subitens).toEqual(["Suporte ao credenciado", "Suporte ao beneficiário", "Fomento de Adesões nas empresas PJ 100+", "Atendimento a leads locais"]);
+    expect(grupo.itens[2].subitens).toEqual(["Suporte ao credenciado", "Suporte ao beneficiário", "Fomento de Adesões nas empresas PJ+", "Atendimento a leads locais"]);
   });
 });

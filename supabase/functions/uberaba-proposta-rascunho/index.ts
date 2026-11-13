@@ -10,7 +10,7 @@ import { createLovableAiGatewayRunIdFetch, getLovableAiGatewayRunId } from "../_
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1";
 const MODELO = "openai/gpt-6-astra";
-const SECOES = ["tabelas", "remuneracao", "conclusao"] as const;
+const SECOES = ["administradora", "empresarial", "conclusao"] as const;
 
 const cors = { ...corsHeaders, "Access-Control-Expose-Headers": "X-Lovable-AIG-Run-ID" };
 const json = (body: unknown, status = 200, extra: Record<string, string> = {}) =>
@@ -22,7 +22,8 @@ const entrada = z.object({
   dados: z.object({
     referencia: z.object({ fatorApartamento: texto(20), regraApartamento: texto(80), faixas: z.array(faixa).max(20) }),
     tabelas: z.array(z.object({
-      nome: texto(60), segmento: texto(60), indiceSobreReferencia: texto(20), fatorApartamento: texto(20), regraApartamento: texto(80),
+      nome: texto(60), segmento: texto(60), sigla: texto(20).optional(), secao: texto(60).optional(), vidas: texto(30).optional(),
+      boletagem: texto(40).optional(), distribuidores: texto(60).optional(), indiceSobreReferencia: texto(20), fatorApartamento: texto(20), regraApartamento: texto(80),
       faixas: z.array(faixa).max(20),
       indicadores: z.array(z.object({ bloco: texto(40), item: texto(40), valor: texto(20), formula: texto(60).nullable() })).max(20),
     })).min(1).max(5),
@@ -45,16 +46,17 @@ REGRAS INVIOLÁVEIS
 1. Use somente os fatos que estão nos DADOS e no CONTEXTO enviados. Não invente nem suponha preços, percentuais, descontos, prazos, carências, coparticipação, reajustes, datas, vigência, validade, abrangência, rede credenciada, hospitais, documentos, formas de pagamento ou qualquer outra condição comercial.
 2. Todo número que você escrever deve aparecer nos DADOS exatamente com a mesma grafia (por exemplo "1,25", "23%", "157,50"). Não calcule médias, totais, diferenças ou novos valores.
 3. Quando a seção precisar de uma informação que não está nos DADOS, escreva um marcador entre colchetes no formato [A definir: o que falta]. Nunca preencha a lacuna com suposições.
-4. Não repita as tabelas faixa a faixa: o sistema as insere nos tópicos 2 · Tabela Referencial e 3 · Tabelas. Refira-se a elas pelo nome.
+4. Não repita as tabelas faixa a faixa: o sistema as insere nos tópicos 2 · Tabela Referencial, 3 · Produtos com Administradora e 4 · Plano Empresarial. Refira-se a elas pela sigla ou pelo nome.
 5. Sem markdown, títulos, numeração ou listas com marcadores. Seja breve, como indicado em cada seção.
 
 ESTRUTURA DA PROPOSTA (o texto de cada seção abre o tópico; tabelas e quadros são inseridos logo abaixo pelo sistema)
-1. Introdução · 2. Tabela Referencial · 3. Tabelas · 4. Remuneração · 5. Conclusão · 6. Glossário e Notas Explicativas.
+1. Introdução · 2. Tabela Referencial · 3. Produtos com Administradora (tabelas de preços e remuneração de PCA, PME ADM. e PCE ADM.) · 4. Plano Empresarial (tabela de preços e remuneração do PJ+) · 5. Conclusão · 6. Glossário e Notas Explicativas.
+Cada tabela nos DADOS traz a seção a que pertence (secao), a sigla, as vidas, a boletagem e os distribuidores.
 Os tópicos 1 e 2 já estão escritos (CONTEXTO) e não fazem parte da sua resposta. Você pode usar os fatos do CONTEXTO (por exemplo, os parceiros de distribuição), sem copiar trechos.
 
 SEÇÕES (somente estas três)
-- tabelas: uma única frase simples informando que, abaixo, estão as tabelas de preços dos Produtos. Sem números.
-- remuneracao: uma única frase simples informando que, abaixo, estão os percentuais e as condições comerciais para a distribuição dos Produtos. Sem números.
+- administradora: uma única frase simples informando que, abaixo, estão as tabelas de preços e as condições comerciais de remuneração dos produtos da seção "Produtos com Administradora", citando as siglas, a boletagem e os distribuidores dos DADOS. Sem preços nem percentuais.
+- empresarial: uma única frase simples informando que, abaixo, estão a tabela de preços e as condições comerciais de remuneração do produto da seção "Plano Empresarial", citando a sigla, as vidas, a boletagem e os distribuidores dos DADOS. Sem preços nem percentuais.
 - conclusao: um parágrafo curto (2 ou 3 frases) que encerre a proposta com cordialidade, sem novos compromissos, prazos ou condições.`;
 
 Deno.serve(async (req) => {

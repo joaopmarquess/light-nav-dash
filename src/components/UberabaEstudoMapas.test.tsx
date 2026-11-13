@@ -87,9 +87,10 @@ describe("Estudo view selection", () => {
   it("opens the Comercial tables with their indices", () => {
     abrir();
     abrirSimulacoes("Resultados Comerciais");
-    expect(screen.getByLabelText("Índice Plano Coletivo por Adesão x Referência")).toHaveValue("90");
-    expect(screen.getByLabelText("Índice PME Administrada (02 a 99 vidas) x Referência")).toHaveValue("80");
-    expect(screen.getByLabelText("Índice Plano Empresarial 100+ x Referência")).toHaveValue("70");
+    expect(screen.getByLabelText("Índice ADESÃO x Referência")).toHaveValue("90");
+    expect(screen.getByLabelText("Índice PME ADMINISTRADAS x Referência")).toHaveValue("85");
+    expect(screen.getByLabelText("Índice PJ ADMINISTRADAS x Referência")).toHaveValue("80");
+    expect(screen.getByLabelText("Índice EMPRESARIAL x Referência")).toHaveValue("70");
     expect(screen.getByRole("button", { name: "Referência" })).toBeVisible();
   });
 

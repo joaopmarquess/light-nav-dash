@@ -57,15 +57,15 @@ export const COMERCIAL_UBERABA: ModeloFrenteContent = {
       id: "produtos",
       titulo: "Produtos",
       itens: [
-        { id: "pca-pme", numero: 4, titulo: "PCA e PME Administrado", cor: "atendimento" },
-        { id: "pce-100", numero: 5, titulo: "PCE 100+", cor: "virtual" },
+        { id: "pca-pme", numero: 4, titulo: "PCA, PME ADM. e PCE ADM.", cor: "atendimento", subitens: ["Boletagem pela Administradora", "Distribuição pelas Plataformas Associadas"] },
+        { id: "pce-100", numero: 5, titulo: "PJ+ (100 ou mais vidas)", cor: "virtual", subitens: ["Boletagem pela Operadora", "Distribuição por Corretoras"] },
       ],
     },
   ],
   imagem_url: comercialImagem,
   imagem_placeholder: "Imagem da atividade comercial",
   imagem_alt: "Executivo comercial cumprimenta cliente empresarial em reunião de negociação, com colegas e propostas sobre a mesa.",
-  indicadores: ["FARMER EM UBERABA", "SDR EM RIO PRETO", "AGENTES AUTORIZADOS", "PCA / PME", "PCE 100+"],
+  indicadores: ["FARMER EM UBERABA", "SDR EM RIO PRETO", "AGENTES AUTORIZADOS", "PCA / PME ADM. / PCE ADM.", "PJ+"],
   destaque_titulo: "MODELO COMERCIAL",
   destaque_itens: ["Presença local em Uberaba", "Apoio SDR em Rio Preto", "Agentes autorizados", "Portfólio direcionado"],
 };
@@ -103,7 +103,7 @@ export const ESCRITORIO_UBERABA: ModeloFrenteContent = {
       itens: [
         { id: "equipes", numero: 1, titulo: "Equipes", cor: "virtual", subitens: ["Farmer", "SDR", "Assistente/Secretária"] },
         { id: "estrutura", numero: 2, titulo: "Estrutura", cor: "autorizador", subitens: ["Mesas para a equipe fixa", "Mesas para a equipe em viagem", "Sala de reuniões"] },
-        { id: "processos", numero: 3, titulo: "Processos", cor: "auditoria", subitens: ["Suporte ao credenciado", "Suporte ao beneficiário", "Fomento de Adesões nas empresas PJ 100+", "Atendimento a leads locais"] },
+        { id: "processos", numero: 3, titulo: "Processos", cor: "auditoria", subitens: ["Suporte ao credenciado", "Suporte ao beneficiário", "Fomento de Adesões nas empresas PJ+", "Atendimento a leads locais"] },
       ],
     },
   ],

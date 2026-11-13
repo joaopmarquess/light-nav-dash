@@ -4,18 +4,44 @@ export const FAIXAS = ["00 a 18", "19 a 23", "24 a 28", "29 a 33", "34 a 38", "3
 /** Enfermaria da Tabela Referencial, em centavos. */
 export const REFERENCIA_ENFERMARIA_CENTAVOS = [17500, 20422, 23832, 26262, 30646, 35027, 42907, 53504, 70999, 104970];
 
-export type FrenteId = "pcaAdm" | "pceAdm" | "pce100";
+export type FrenteId = "pcaAdm" | "pmeAdm" | "pceAdm" | "pce100";
 export type Indices = Record<FrenteId, number>;
+export type GrupoFrenteId = "administradora" | "empresarial";
 
-/** Índices padrão (% da Referência). */
-export const INDICES_PADRAO: Indices = { pcaAdm: 90, pceAdm: 80, pce100: 70 };
+/**
+ * Parâmetros das tabelas do Proj. Uberaba, fornecidos pelo Dênis em 13/11/2026 (sigla, contratação, vidas, boletagem,
+ * distribuidores, descrição da tabela e fator sobre a Referência). O grupo separa a Proposta em duas seções:
+ * produtos com boletagem pela Administradora e o Empresarial (boletagem pela Operadora).
+ */
+export type ParametrosFrente = {
+  id: FrenteId; sigla: string; contratacao: string; vidas: string; boletagem: string; distribuidores: string;
+  descricao: string; fatorReferencia: number; grupo: GrupoFrenteId;
+};
+export const PARAMETROS_UBERABA: ParametrosFrente[] = [
+  { id: "pcaAdm", sigla: "PCA", contratacao: "PLANO COLETIVO POR ADESÃO", vidas: "-", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "ADESÃO", fatorReferencia: 0.9, grupo: "administradora" },
+  { id: "pmeAdm", sigla: "PME ADM.", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "03 A 29", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "PME ADMINISTRADAS", fatorReferencia: 0.85, grupo: "administradora" },
+  { id: "pceAdm", sigla: "PCE ADM.", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "30 A 99", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "PJ ADMINISTRADAS", fatorReferencia: 0.8, grupo: "administradora" },
+  { id: "pce100", sigla: "PJ+", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "100 OU MAIS", boletagem: "OPERADORA", distribuidores: "CORRETORAS", descricao: "EMPRESARIAL", fatorReferencia: 0.7, grupo: "empresarial" },
+];
+export const parametrosDe = (id: FrenteId) => PARAMETROS_UBERABA.find((p) => p.id === id)!;
+/** Faixa de vidas para leitura: "03 a 29 vidas", "100 ou mais vidas"; sem limite ("-") devolve null. */
+export const vidasTexto = (p: ParametrosFrente) => (p.vidas.trim() === "-" ? null : `${p.vidas.toLowerCase()} vidas`);
+
+/** Seções da Proposta: produtos com boletagem pela Administradora e o Empresarial. */
+export const GRUPOS_FRENTES: { id: GrupoFrenteId; titulo: string; frentes: FrenteId[] }[] = [
+  { id: "administradora", titulo: "Produtos com Administradora", frentes: PARAMETROS_UBERABA.filter((p) => p.grupo === "administradora").map((p) => p.id) },
+  { id: "empresarial", titulo: "Plano Empresarial", frentes: PARAMETROS_UBERABA.filter((p) => p.grupo === "empresarial").map((p) => p.id) },
+];
+
+/** Índices padrão (% da Referência) = fator de referência × 100. */
+export const INDICES_PADRAO: Indices = Object.fromEntries(PARAMETROS_UBERABA.map((p) => [p.id, Math.round(p.fatorReferencia * 10000) / 100])) as Indices;
 
 export type LinhaTabela = { faixa: string; enfermariaCentavos: number; apartamentoCentavos: number };
 
 /** Fator padrão do Apartamento sobre a Enfermaria (editável por tabela na tela). */
 export const FATOR_APARTAMENTO_PADRAO = 1.25;
 export type Fatores = Record<FrenteId, number>;
-export const FATORES_PADRAO: Fatores = { pcaAdm: FATOR_APARTAMENTO_PADRAO, pceAdm: FATOR_APARTAMENTO_PADRAO, pce100: FATOR_APARTAMENTO_PADRAO };
+export const FATORES_PADRAO: Fatores = { pcaAdm: FATOR_APARTAMENTO_PADRAO, pmeAdm: FATOR_APARTAMENTO_PADRAO, pceAdm: FATOR_APARTAMENTO_PADRAO, pce100: FATOR_APARTAMENTO_PADRAO };
 export const FATOR_MIN = 1;
 export const FATOR_MAX = 3;
 
@@ -98,20 +124,21 @@ export function gravarIndices(indices: Indices, storage: Pick<Storage, "setItem"
 export type Indicadores = { spread: number; coAdministradora: number; contratual: number; promocional: number; adesao: number };
 export type CampoIndicador = keyof Indicadores;
 
-/** Padrão informado pelo usuário para PCA Adm. e PCE Adm. */
+/** Padrão informado pelo usuário para os produtos com Administradora (PCA, PME ADM. e PCE ADM.). */
 export const INDICADORES_PADRAO: Indicadores = { spread: 23, coAdministradora: 4, contratual: 90, promocional: 150, adesao: 99 };
 
 /**
  * Modelo de participação por frente:
  * - "administradora": Spread editável; Operadora = 100 − Spread; Administradora = Spread − Agenciadora; com Taxa de adesão.
- * - "vitalicio" (PCE 100+): Vitalício editável (guardado em `spread`); Operadora = 100 − Vitalício; Agenciadora = Vitalício; sem Taxa de adesão.
+ * - "vitalicio" (PJ+, boletagem pela Operadora): Vitalício editável (guardado em `spread`); Operadora = 100 − Vitalício; Agenciadora = Vitalício; sem Taxa de adesão.
  */
 export type ModeloIndicadores = "administradora" | "vitalicio";
-export const MODELO_INDICADORES: Record<FrenteId, ModeloIndicadores> = { pcaAdm: "administradora", pceAdm: "administradora", pce100: "vitalicio" };
+export const MODELO_INDICADORES: Record<FrenteId, ModeloIndicadores> = { pcaAdm: "administradora", pmeAdm: "administradora", pceAdm: "administradora", pce100: "vitalicio" };
 
-/** Padrões por frente; PCE 100+ segue a planilha própria (Vitalício 5%, Contratual 90%, Promocional 100%). */
+/** Padrões por frente; PJ+ segue a planilha própria (Vitalício 5%, Contratual 90%, Promocional 100%). */
 export const INDICADORES_PADRAO_POR_FRENTE: Record<FrenteId, Indicadores> = {
   pcaAdm: { ...INDICADORES_PADRAO },
+  pmeAdm: { ...INDICADORES_PADRAO },
   pceAdm: { ...INDICADORES_PADRAO },
   pce100: { spread: 5, coAdministradora: 0, contratual: 90, promocional: 100, adesao: 0 },
 };
@@ -126,7 +153,7 @@ export function derivarIndicadores(i: Indicadores) {
   return { operadora: r2(100 - i.spread), administradora: r2(i.spread - i.coAdministradora) };
 }
 
-/** PCE 100+: Operadora = 100% − Vitalício; Agenciadora = Vitalício. */
+/** PJ+: Operadora = 100% − Vitalício; Agenciadora = Vitalício. */
 export function derivarVitalicio(i: Indicadores) {
   return { operadora: r2(100 - i.spread), agenciadora: r2(i.spread) };
 }
@@ -146,7 +173,7 @@ export type IndicadoresPorFrente = Record<FrenteId, Indicadores>;
 const CHAVE_INDICADORES = "uberaba-tabelas-comerciais-indicadores-v2";
 /** v1 tinha o modelo antigo também em PCE 100+; dela só se aproveitam PCA Adm. e PCE Adm. */
 const CHAVE_INDICADORES_V1 = "uberaba-tabelas-comerciais-indicadores-v1";
-const FRENTE_IDS: FrenteId[] = ["pcaAdm", "pceAdm", "pce100"];
+const FRENTE_IDS: FrenteId[] = PARAMETROS_UBERABA.map((p) => p.id);
 export const indicadoresPadrao = (): IndicadoresPorFrente =>
   Object.fromEntries(FRENTE_IDS.map((id) => [id, { ...INDICADORES_PADRAO_POR_FRENTE[id] }])) as IndicadoresPorFrente;
 
@@ -177,11 +204,9 @@ export function gravarIndicadores(v: IndicadoresPorFrente, storage: Pick<Storage
 
 // ---------- Quadros das frentes (tela e Proposta Comercial) ----------
 /** Nome e segmento de cada frente, na ordem da tela. */
-export const FRENTES_COMERCIAIS: { id: FrenteId; titulo: string; segmento: string }[] = [
-  { id: "pcaAdm", titulo: "Plano Coletivo por Adesão", segmento: "ADESÃO" },
-  { id: "pceAdm", titulo: "PME Administrada (02 a 99 vidas)", segmento: "MÉDIAS EMPRESAS" },
-  { id: "pce100", titulo: "Plano Empresarial 100+", segmento: "GRANDES EMPRESAS" },
-];
+/** Nome = Descrição da Tabela; segmento = Contratação (parâmetros de 13/11/2026). */
+export const FRENTES_COMERCIAIS: { id: FrenteId; titulo: string; segmento: string }[] =
+  PARAMETROS_UBERABA.map((p) => ({ id: p.id, titulo: p.descricao, segmento: p.contratacao }));
 
 // ---------- Nome e segmento de cada quadro (redigitáveis na tela) ----------
 export type Rotulos = { titulo: string; segmento: string };
@@ -195,9 +220,10 @@ export function normalizarRotulo(texto: unknown, padrao: string): string {
   const t = texto.replace(/\s+/g, " ").trim().slice(0, ROTULO_MAX).trim();
   return t || padrao;
 }
-const CHAVE_ROTULOS = "uberaba-tabelas-comerciais-rotulos-v2";
+/** v3: nomes passaram a ser a Descrição da Tabela (13/11/2026); nomes gravados antes deixam de valer. */
+const CHAVE_ROTULOS = "uberaba-tabelas-comerciais-rotulos-v3";
 /** Padrão gravado pelo usuário (ícone ao lado do nome); sem gravação, valem os nomes originais. */
-const CHAVE_ROTULOS_PADRAO = "uberaba-tabelas-comerciais-rotulos-padrao-v2";
+const CHAVE_ROTULOS_PADRAO = "uberaba-tabelas-comerciais-rotulos-padrao-v3";
 const lerRotulosDe = (storage: Pick<Storage, "getItem"> | undefined, chave: string, base: RotulosPorFrente): RotulosPorFrente => {
   const out: RotulosPorFrente = JSON.parse(JSON.stringify(base));
   try {
