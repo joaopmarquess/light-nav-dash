@@ -1,4 +1,4 @@
-import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree, ArrowRightLeft, Map as MapIcon, CalendarRange, Layers } from "lucide-react";
+import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree, ArrowRightLeft, Map as MapIcon, CalendarRange, Layers, Tags } from "lucide-react";
 import { BENCH_SHORT_TEXT, DRE_MENU_NAME, SLIDES_SHORT_TEXT } from "@/control/dreLabels";
 export type MenuItem = {
   icon: React.ComponentType<{ className?: string }>;
@@ -110,7 +110,10 @@ export const menuItems: MenuItem[] = [
   { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }, { icon: Layers, label: "Evolução Produtos", id: "Sinistralidade · Evolução Produtos" }] },
 ];
 
-export const LAB_IDS = new Set<string>(["Laboratory", ...labItems.flatMap((g) => g.children ? g.children.map((c) => c.id ?? c.label) : [g.label])]);
+/** Proj. Uberaba aberto direto em Estudo › Simulações › Resultados Comerciais (permissão própria do atalho, mesmo layout do Laboratory). */
+export const UBERABA_RESULTADOS_COMERCIAIS = "Proj. Uberaba · Resultados Comerciais";
+
+export const LAB_IDS = new Set<string>(["Laboratory", UBERABA_RESULTADOS_COMERCIAIS, ...labItems.flatMap((g) => g.children ? g.children.map((c) => c.id ?? c.label) : [g.label])]);
 
 // menu: menu equivalente na barra lateral principal (ou Laboratory), usado como subtítulo na Home.
 export const homeShortcuts = [
@@ -120,6 +123,7 @@ export const homeShortcuts = [
   { icon: FileText, label: "Controladoria", destination: "Control · DRE Gerencial PE", menu: "Control" },
   { icon: FileText, label: "Demonstrações", destination: "Control · DRE Gerencial PE", menu: "Control" },
   { icon: CalendarRange, label: "Proj. Uberaba", destination: "Uberaba Timeline", menu: "Laboratory" },
+  { icon: Tags, label: "Res. Comerciais", destination: UBERABA_RESULTADOS_COMERCIAIS, menu: "Laboratory" },
   { icon: FlaskConical, label: "Laboratory", destination: "Laboratory", menu: "Laboratory" },
   { icon: FileText, label: "Proposta APB", destination: "Proposta APB", menu: "Laboratory" },
   { icon: Layers, label: "Evolução Produtos", destination: "Evolução Produtos", menu: "Sinistralidade" },

@@ -145,7 +145,7 @@ import { Button } from "@/components/ui/button";
 
 import AxisSettings from "@/components/AxisSettings";
 import { useAxisAccess } from "@/hooks/useAxisAccess";
-import { menuItems, labItems, LAB_IDS } from "@/lib/axisNavigation";
+import { menuItems, labItems, LAB_IDS, UBERABA_RESULTADOS_COMERCIAIS } from "@/lib/axisNavigation";
 const onControlSimulatorViewState = (_enabled: boolean[]) => {};
 
 const Index = () => {
@@ -406,7 +406,7 @@ const Index = () => {
       <div className="flex-1 flex flex-col min-h-0 min-w-0">
         <header className="h-20 border-b border-border bg-card flex items-center justify-between px-8">
           <div>
-            <h1 className="text-xl font-semibold text-foreground">{controlTitle ?? (active === "Uberaba Timeline" ? "Proj. Uberaba" : active)}</h1>
+            <h1 className="text-xl font-semibold text-foreground">{controlTitle ?? (active === "Uberaba Timeline" || active === UBERABA_RESULTADOS_COMERCIAIS ? "Proj. Uberaba" : active)}</h1>
             {controlTitle ? controlSubtitle && <p className="text-xs text-muted-foreground">{controlSubtitle}</p> : <p className="text-xs text-muted-foreground">AXIS | Executive Intelligence Platform</p>}
           </div>
           <div className="flex items-center gap-3">
@@ -508,6 +508,8 @@ const Index = () => {
             <UberabaShell />
           ) : active === "Uberaba Timeline" ? (
             <UberabaTimeline />
+          ) : active === UBERABA_RESULTADOS_COMERCIAIS ? (
+            <UberabaTimeline key="resultados-comerciais" estudoSimulacoes />
           ) : active === "Uberaba Mapa" ? (
             <UberabaMapa />
           ) : active === "Gráficos" ? (

@@ -12,7 +12,7 @@ import { UBERABA_ESTUDO } from "@/lib/uberabaEstudo";
 import estudoImagem from "@/assets/projeto-uberaba-home-v2.svg.asset.json";
 
 const ROTULOS = { home: "Home do Estudo", painel: "Painel", uberaba: "Área", simulacoes: "Simulações" } as const;
-type Visao = keyof typeof ROTULOS;
+export type Visao = keyof typeof ROTULOS;
 
 // Dados entra como aba do Painel somente no Estudo; o Painel autônomo continua igual.
 const PAINEL_EXTRAS: PainelExtraTab[] = [
@@ -20,8 +20,9 @@ const PAINEL_EXTRAS: PainelExtraTab[] = [
 ];
 
 // navTarget: quando informado (Timeline), os botões do Estudo ficam no mesmo quadro de "Etapa".
-const UberabaEstudoMapas = ({ navTarget }: { navTarget?: HTMLElement | null } = {}) => {
-  const [selected, setSelected] = useState<Visao>("home");
+// visaoInicial: visão aberta ao entrar (atalho da Home abre direto em Simulações).
+const UberabaEstudoMapas = ({ navTarget, visaoInicial = "home" }: { navTarget?: HTMLElement | null; visaoInicial?: Visao } = {}) => {
+  const [selected, setSelected] = useState<Visao>(visaoInicial);
   const [date] = useState(geographicToday);
   const [toolbar, setToolbar] = useState<HTMLDivElement | null>(null);
   const [subNav, setSubNav] = useState<HTMLDivElement | null>(null);

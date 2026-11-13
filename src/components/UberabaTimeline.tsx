@@ -59,8 +59,9 @@ const FRENTES = [
   { nome: "Escritório Local", icone: Building2 },
 ] as const;
 
-const UberabaTimeline = () => {
-  const [aberta, setAberta] = useState<string | null>(HOME);
+// estudoSimulacoes: abre na etapa Estudo › Simulações (Resultados Comerciais é a primeira aba), pelo atalho da Home.
+const UberabaTimeline = ({ estudoSimulacoes = false }: { estudoSimulacoes?: boolean } = {}) => {
+  const [aberta, setAberta] = useState<string | null>(estudoSimulacoes ? "Estudo" : HOME);
   const [mostrarDatas, setMostrarDatas] = useState(false);
   const [navEstudo, setNavEstudo] = useState<HTMLDivElement | null>(null);
   const [frente, setFrente] = useState<(typeof FRENTES)[number]["nome"]>(FRENTES[0].nome);
@@ -183,7 +184,7 @@ const UberabaTimeline = () => {
         <div ref={panelRef} data-expansivel={permiteRolagem} className={`timeline-stage-panel flex min-h-0 w-full flex-1 flex-col rounded-lg border border-border bg-card ${permiteRolagem ? "overflow-auto" : "timeline-stage-static"} ${apresentacaoPropria ? "" : "px-4 py-4 sm:px-8"}`}>
           {!apresentacaoPropria && !(atual.nome === "Estudo") && <div className="mb-5"><TimelinePresentationHeader title={atual.nome} /></div>}
           {vista === "Operação Iniciada" ? <UberabaOperacaoIniciada key="plano-home" /> : vista === "Plano de Marketing" ? <UberabaMarketing key="plano-marketing" /> : vista === "Formalização" ? <UberabaFormalizacao key="plano-formalizacao" /> : vista === "Implantação" ? <UberabaImplantacao key="plano-implantacao" /> : atual.nome === "Estudo" ? (
-            <UberabaEstudoMapas navTarget={navEstudo} />
+            <UberabaEstudoMapas navTarget={navEstudo} visaoInicial={estudoSimulacoes ? "simulacoes" : "home"} />
           ) : atual.nome === "Modelo de Atuação" ? (
             <article className="timeline-presentation modelo-presentation modelo-guias-aberta" aria-label="Modelo de Atuação do Bensaúde|Uberaba">
               <div className="modelo-menu" role="group" aria-label="Frentes do Modelo de Atuação">
