@@ -38,8 +38,8 @@ export const FONTES_PROPOSTA = {
   indicador: 11,
   rotulo: 11,
   fator: 12,
-  rotuloPrecos: 12,
-  fatorPrecos: 13,
+  /** Linha única, em itálico e sem moldura, abaixo das três tabelas do tópico 3: "APARTAMENTO fator x ENFERMARIA". */
+  notaPrecos: 11,
   rodape: 11,
 } as const;
 const F = FONTES_PROPOSTA;
@@ -249,7 +249,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     y = fimT + 15;
   };
 
-  // Tópico 3: contêiner TABELAS de cada quadro — Faixa × Enfermaria, linha sólida de fechamento e fator do Apartamento.
+  // Tópico 3: contêiner TABELAS de cada quadro — Faixa × Enfermaria (cada coluna com moldura própria) e, abaixo dos quadros, uma linha simples com o fator do Apartamento.
   const desenharPrecos = () => {
     const g = GEO_TABELAS;
     const inicio = y;
@@ -257,13 +257,22 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     g.xs.forEach((x) => tituloSecao(g, "TABELAS", x, ySecT));
     let fimP = ySecT + ALTURA_TITULO_SECAO;
     // As linhas crescem até o tópico preencher o resto da folha; o tópico seguinte começa na folha seguinte.
-    const linhaFator = alturaLinha(F.rotuloPrecos) * 0.9;
-    const fixo = ALTURA_NOME_QUADRO + ALTURA_TITULO_SECAO + 6 + linhaFator + 5;
+    // Fator do Apartamento: uma só linha, sem moldura, alinhada à esquerda e abaixo dos três quadros (pedido do Dênis em 13/11/2026).
+    const fatoresIguais = quadros.every((q) => q.fator === quadros[0].fator);
+    const nota = fatoresIguais
+      ? `APARTAMENTO ${quadros[0].fator} x ENFERMARIA`
+      : `APARTAMENTO: ${quadros.map((q) => `${q.titulo} ${q.fator} x ENFERMARIA`).join("; ")}`;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(F.notaPrecos);
+    const linhasNota = doc.splitTextToSize(textoPdf(nota), LARGURA_TEXTO) as string[];
+    const LINHA_NOTA = alturaLinha(F.notaPrecos);
+    const ESPACO_NOTA = 6;
+    const fixo = ALTURA_NOME_QUADRO + ALTURA_TITULO_SECAO + ESPACO_NOTA + linhasNota.length * LINHA_NOTA + 2;
     const nLinhas = Math.max(1, ...quadros.map((q) => q.linhas.length)) + 1;
     const alturaLinhaPreco = Math.min(16, Math.max(7, (pageH - bottom - inicio - fixo) / nLinhas));
     quadros.forEach((q, k) => {
-      // Moldura da coluna FAIXA (do cabeçalho à última faixa), separando-a visualmente da coluna ENFERMARIA.
-      const faixa = { x: 0, w: 0, y0: Infinity, y1: -Infinity };
+      // Moldura de cada coluna (FAIXA e ENFERMARIA), do cabeçalho à última faixa, separando-as visualmente.
+      const colunas = [0, 1].map(() => ({ x: 0, w: 0, y0: Infinity, y1: -Infinity }));
       autoTable(doc, {
         theme: "plain",
         startY: ySecT + ALTURA_TITULO_SECAO,
@@ -275,11 +284,12 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
         headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: F.cabecalhoTabela },
         alternateRowStyles: { fillColor: ZEBRA },
         didDrawCell: (c) => {
-          if (c.column.index === 0) {
-            faixa.x = c.cell.x;
-            faixa.w = c.cell.width;
-            faixa.y0 = Math.min(faixa.y0, c.cell.y);
-            faixa.y1 = Math.max(faixa.y1, c.cell.y + c.cell.height);
+          const col = colunas[c.column.index];
+          if (col) {
+            col.x = c.cell.x;
+            col.w = c.cell.width;
+            col.y0 = Math.min(col.y0, c.cell.y);
+            col.y1 = Math.max(col.y1, c.cell.y + c.cell.height);
           }
           if (c.section !== "body") return;
           doc.setDrawColor(...LINHA);
@@ -287,43 +297,19 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
           doc.line(c.cell.x, c.cell.y, c.cell.x + c.cell.width, c.cell.y);
         },
       });
-      if (faixa.w > 0) {
-        doc.setDrawColor(...TINTA);
-        doc.setLineWidth(0.35);
-        doc.rect(faixa.x, faixa.y0, faixa.w, faixa.y1 - faixa.y0, "S");
-        doc.setDrawColor(0);
-      }
+      doc.setDrawColor(...TINTA);
+      doc.setLineWidth(0.35);
+      colunas.forEach((col) => { if (col.w > 0) doc.rect(col.x, col.y0, col.w, col.y1 - col.y0, "S"); });
+      doc.setDrawColor(0);
       fimP = Math.max(fimP, fimTabela(fimP));
     });
-    const yFator = fimP + 6;
-    quadros.forEach((q, k) => {
-      const x = g.xs[k] + g.inset;
-      doc.setDrawColor(...TINTA);
-      doc.setLineWidth(0.6);
-      doc.line(x, fimP, x + g.wSec, fimP);
-      doc.setFont("helvetica", "bold");
-      // "APARTAMENTO fator" e, abaixo, "x ENFERMARIA", centralizados no quadro (o tamanho padrão não cabe numa linha só).
-      const cx = x + g.wSec / 2;
-      doc.setFontSize(F.rotuloPrecos);
-      const wA = doc.getTextWidth("APARTAMENTO") + 1.6;
-      doc.setFontSize(F.fatorPrecos);
-      const wF = doc.getTextWidth(q.fator);
-      let xx = cx - (wA + wF) / 2;
-      doc.setFontSize(F.rotuloPrecos);
-      doc.setTextColor(...SECUNDARIO);
-      doc.text("APARTAMENTO", xx, yFator);
-      xx += wA;
-      doc.setFontSize(F.fatorPrecos);
-      doc.setTextColor(...TINTA);
-      doc.text(q.fator, xx, yFator);
-      doc.setFontSize(F.rotuloPrecos);
-      doc.setTextColor(...SECUNDARIO);
-      doc.text("x ENFERMARIA", cx, yFator + linhaFator, { align: "center" });
-      contornoSecao(g, g.xs[k], ySecT, yFator + linhaFator + 3);
-    });
-    const fimQ = yFator + linhaFator + 5;
-    contornoQuadros(g, inicio, fimQ);
-    y = fimQ + 11;
+    contornoQuadros(g, inicio, fimP);
+    const yNota = fimP + ESPACO_NOTA;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(F.notaPrecos);
+    doc.setTextColor(...SECUNDARIO);
+    doc.text(linhasNota, marginL, yNota, { lineHeightFactor: 1.35 });
+    y = yNota + linhasNota.length * LINHA_NOTA + 8;
     doc.setPage(doc.getNumberOfPages());
   };
 
