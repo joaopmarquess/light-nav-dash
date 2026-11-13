@@ -136,6 +136,7 @@ describe("Glossário · tópicos e subtópicos numerados", () => {
   it("numera termos e subtermos a partir do número do tópico do Glossário", () => {
     const t = topicosGlossario();
     expect(t.slice(0, 3).map((x) => `${x.numero} ${x.termo}`)).toEqual(["6.1 DISTRIBUIDORES", "6.1.1 PLATAFORMAS ASSOCIADAS", "6.1.2 CORRETORAS"]);
+    expect(GLOSSARIO_PROPOSTA.find((g) => g.termo === "PROMOCIONAL")?.nota).toMatch(/período determinado.*campanhas.*metas/);
     expect(t.find((x) => x.termo === "ADMINISTRADORA")?.numero).toBe("6.2.1");
     expect(GLOSSARIO_PROPOSTA[0].nota).toContain("Plano Empresarial (PJ+) pode ser distribuído por Agenciadoras e Corretoras Autorizadas");
     expect(t.find((x) => x.termo === "SPREAD")?.numero).toBe("6.4.3");

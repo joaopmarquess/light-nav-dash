@@ -101,7 +101,6 @@ export function paragrafosProposta(textos: TextosSecoes | null = null): string[]
 /** Termo do Glossário; `itens` detalha subtermos (ex.: cada ente). `provisorio` marca texto ainda não confirmado pelo Dênis. */
 export type TermoGlossario = { termo: string; nota: string; provisorio?: boolean; itens?: { termo: string; nota: string; provisorio?: boolean }[] };
 
-const LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
 
 /**
  * Glossário e Notas Explicativas (refeito a pedido do Dênis em 13/11/2026): só os termos que ele listou, na ordem em
@@ -127,7 +126,7 @@ export const GLOSSARIO_PROPOSTA: TermoGlossario[] = [
   ] },
   { termo: "AGENCIAMENTO", provisorio: true, nota: "Remuneração pela venda de cada novo contrato, paga pela Operadora e expressa como percentual da primeira mensalidade da venda." },
   { termo: "CONTRATUAL", provisorio: true, nota: "Percentual de agenciamento previsto em contrato, aplicado nas condições normais de venda." },
-  { termo: "PROMOCIONAL", provisorio: true, nota: LOREM },
+  { termo: "PROMOCIONAL", provisorio: true, nota: "Percentual de agenciamento superior ao contratual, aplicado por período determinado durante campanhas comerciais com metas de vendas previamente definidas. Encerrado o período da campanha, volta a valer o percentual contratual." },
   { termo: "TAXA DE ADESÃO", provisorio: true, nota: "Valor pago pelo beneficiário ao ingressar no plano, expresso como percentual da primeira mensalidade e destinado à Agenciadora. Aplica-se aos produtos com Administradora; o Plano Empresarial não tem taxa de adesão." },
 ];
 
