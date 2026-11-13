@@ -6,10 +6,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import PdfPreview from "@/components/PdfPreview";
 import { loadTimbrado } from "@/lib/pdfTimbrado";
 import { buildMemoriaCalculoPdf } from "@/lib/uberabaMemoriaCalculoPdf";
-import type { ResultadoSimulacao } from "@/lib/uberabaSimulacao";
+import type { CenarioAgenciamento } from "@/lib/uberabaSimulacao";
 
-/** Ícone "Gerar Relatório da Memória de Cálculo" (Resultado por Ente): usa o cenário que está na tela. */
-export default function UberabaMemoriaCalculoButton({ resultados, nomes, baseAgenciamento }: { resultados: ResultadoSimulacao[]; nomes: string[]; baseAgenciamento: string }) {
+/** Ícone "Gerar Relatório da Memória de Cálculo" (Resultado por Ente): usa os cenários Contratual e Promocional da tela. */
+export default function UberabaMemoriaCalculoButton({ cenarios, nomes }: { cenarios: CenarioAgenciamento[]; nomes: string[] }) {
   const [aberto, setAberto] = useState(false);
   return (
     <>
@@ -23,7 +23,7 @@ export default function UberabaMemoriaCalculoButton({ resultados, nomes, baseAge
       </Tooltip>
       {aberto && createPortal(
         <PdfPreview
-          build={async () => buildMemoriaCalculoPdf(await loadTimbrado(), resultados, nomes, baseAgenciamento)}
+          build={async () => buildMemoriaCalculoPdf(await loadTimbrado(), cenarios, nomes)}
           fileName="Memoria_de_Calculo_Resultado_por_Ente_Bensaude_Uberaba.pdf"
           onClose={() => setAberto(false)}
         />,

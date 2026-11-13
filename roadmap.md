@@ -29,3 +29,6 @@
 
 ## Proj. Uberaba › Relatório da Memória de Cálculo (13/11/2026)
 - [x] Ícone em Resultado por Ente que gera o PDF com a memória de cálculo detalhada por ente (parâmetros, fórmula e contas por modalidade, evolução mensal, premissas)
+- [x] Resultado por Ente em dois blocos recolhidos (Contratual e Promocional); PDF duplica só o Agenciamento e os resultados que o contêm
+- [x] Nomes OPERADORA, ADMINISTRADORA e AGENCIADORA no lugar de Bensaúde, Lancers e SIGA na Simulação de resultados
+- [x] Ícone Replicar ao lado da Sinistralidade do PCA

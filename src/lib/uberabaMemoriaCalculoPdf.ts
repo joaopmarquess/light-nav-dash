@@ -4,7 +4,7 @@ import { attachTimbrado } from "@/lib/pdfTimbrado";
 import { drawSectionTitle } from "@/lib/pdfTheme";
 import { textoPdf } from "@/lib/uberabaPropostaComercialPdf";
 import {
-  inteiroSimulacao, numeroSimulacao, parametrosMemoriaCalculo, percentualSimulacao, relatorioMemoriaCalculo, type ResultadoSimulacao,
+  inteiroSimulacao, numeroSimulacao, parametrosMemoriaCalculo, percentualSimulacao, relatorioMemoriaCalculo, type CenarioAgenciamento,
 } from "@/lib/uberabaSimulacao";
 
 type RGB = [number, number, number];
@@ -24,16 +24,16 @@ const n = numeroSimulacao;
 const p = percentualSimulacao;
 
 /** Título do relatório e seções, na ordem em que aparecem no PDF. */
-export function topicosMemoriaCalculo(resultados: ResultadoSimulacao[], nomes: string[]) {
-  return ["1. Parâmetros da simulação", ...relatorioMemoriaCalculo(resultados, nomes).map((e, i) => `${i + 2}. ${e.titulo}`), "6. Premissas"];
+export function topicosMemoriaCalculo(cenarios: CenarioAgenciamento[], nomes: string[]) {
+  return ["1. Parâmetros da simulação", ...relatorioMemoriaCalculo(cenarios, nomes).map((e, i) => `${i + 2}. ${e.titulo}`), "6. Premissas"];
 }
 
 /**
  * Relatório com a memória de cálculo detalhada do Resultado por Ente (Simulação de resultados),
- * gerado com o cenário que está na tela: parâmetros, cada indicador com fórmula e contas por modalidade,
- * e a evolução mensal consolidada de cada ente.
+ * gerado com os cenários que estão na tela (Contratual e Promocional): parâmetros, cada indicador com fórmula e contas
+ * por modalidade, e a evolução mensal consolidada de cada ente. Só o que depende do Agenciamento aparece em dobro.
  */
-export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, resultados: ResultadoSimulacao[], nomes: string[], baseAgenciamento: string, geradoEm = new Date()): jsPDF {
+export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios: CenarioAgenciamento[], nomes: string[], geradoEm = new Date()): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   attachTimbrado(doc, timbradoDataUrl);
   const pageW = doc.internal.pageSize.getWidth();
@@ -105,30 +105,40 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, resultado
   doc.setFont("helvetica", "normal");
   doc.setFontSize(F.texto);
   doc.setTextColor(...SECUNDARIO);
-  doc.text(textoPdf(`Bensaúde|Uberaba · Simulação de resultados · Agenciamento ${baseAgenciamento.toLowerCase()} · gerado em ${data}`), pageW / 2, y + 3, { align: "center" });
-  y += 8;
+  const bases = cenarios.map(c => c.rotulo.toLowerCase()).join(" e ");
+  // Duas linhas, para o subtítulo não passar das margens.
+  doc.text(textoPdf("Bensaúde|Uberaba · Simulação de resultados"), pageW / 2, y + 3, { align: "center" });
+  doc.text(textoPdf(`Agenciamento ${bases} · gerado em ${data}`), pageW / 2, y + 3 + alturaLinha(F.texto), { align: "center" });
+  y += 8 + alturaLinha(F.texto);
 
   // 1. Parâmetros.
-  const parametros = parametrosMemoriaCalculo(resultados, nomes);
+  const parametros = parametrosMemoriaCalculo(cenarios, nomes);
   secao("1. Parâmetros da simulação");
   paragrafo("Valores de cada modalidade usados nas contas abaixo, conforme as tabelas de Resultados Comerciais e as variáveis digitadas na Simulação de resultados.");
   const soma = (f: (x: (typeof parametros)[number]) => number) => parametros.reduce((s, x) => s + f(x), 0);
   const vidasTotal = soma(x => x.vidas);
+  const direita = (de: number, ate: number) => Object.fromEntries(Array.from({ length: ate - de + 1 }, (_, k) => [de + k, { halign: "right" as const }]));
   tabela(
-    ["Modalidade", "Vidas", "Mensal. média", "Vendas", "Agenc.", "Adesão", "Bensaúde", "Lancers", "SIGA", "Sinistr."],
-    parametros.map(x => [x.modalidade, inteiroSimulacao(x.vidas), n(x.mensalidadeMedia), n(x.vendas), p(x.agenciamento), p(x.adesao), p(x.bensaude), p(x.lancers), p(x.siga), p(x.sinistralidade)]),
+    ["Modalidade", "Vidas", "Mensalidade média", "Vendas", "Sinistralidade"],
+    parametros.map(x => [x.modalidade, inteiroSimulacao(x.vidas), n(x.mensalidadeMedia), n(x.vendas), p(x.sinistralidade)]),
     {
-      foot: ["Total", inteiroSimulacao(vidasTotal), n(vidasTotal ? soma(x => x.vendas) / vidasTotal : 0), n(soma(x => x.vendas)), "", "", "", "", "", ""],
-      colunas: { 0: { fontStyle: "bold", halign: "left" }, ...Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => [i, { halign: "right" }])) },
-      fonte: 8.5,
+      foot: ["Total", inteiroSimulacao(vidasTotal), n(vidasTotal ? soma(x => x.vendas) / vidasTotal : 0), n(soma(x => x.vendas)), ""],
+      colunas: { 0: { fontStyle: "bold", halign: "left" }, ...direita(1, 4) },
     },
   );
-  paragrafo("Vendas = 1ª mensalidade (Enfermaria por faixa etária) de cada vida vendida no ano. Mensalidade média = Vendas ÷ Vidas. Bensaúde = Operadora; Lancers = Administradora; SIGA = Agenciadora.", F.tabela, SECUNDARIO, "italic");
+  // Percentuais em quadro próprio, para caber os nomes OPERADORA, ADMINISTRADORA e AGENCIADORA.
+  garantir(alturaTabela(parametros.length + 2));
+  tabela(
+    ["Modalidade", ...cenarios.map(c => `Agenciamento ${c.rotulo.toLowerCase()}`), "Taxa de adesão", "OPERADORA", "ADMINISTRADORA", "AGENCIADORA"],
+    parametros.map(x => [x.modalidade, ...x.agenciamentos.map(p), p(x.adesao), p(x.bensaude), p(x.lancers), p(x.siga)]),
+    { colunas: { 0: { fontStyle: "bold", halign: "left", cellWidth: 22 }, ...direita(1, cenarios.length + 4), [cenarios.length + 3]: { halign: "right", cellWidth: 36 } }, fonte: 9 },
+  );
+  paragrafo("Vendas = 1ª mensalidade (Enfermaria por faixa etária) de cada vida vendida no ano. Mensalidade média = Vendas ÷ Vidas. OPERADORA, ADMINISTRADORA e AGENCIADORA = participação de cada uma no faturamento.", F.tabela, SECUNDARIO, "italic");
 
   // 2 a 5. Um tópico por ente.
   type Indicador = ReturnType<typeof relatorioMemoriaCalculo>[number]["indicadores"][number];
   const alturaIndicador = (ind: Indicador) => alturaLinha(F.indicador) + 1 + linhasDe(ind.formula, F.texto) * alturaLinha(F.texto) + 1.5 + alturaTabela(ind.itens.length + 1 + (ind.itens.length > 1 ? 1 : 0));
-  relatorioMemoriaCalculo(resultados, nomes).forEach((ente, idx) => {
+  relatorioMemoriaCalculo(cenarios, nomes).forEach((ente, idx) => {
     // O título do ente nunca fica sozinho no fim da página: vai junto com o primeiro indicador.
     garantir(13 + alturaIndicador(ente.indicadores[0]));
     secao(`${idx + 2}. ${ente.titulo}`);
@@ -140,7 +150,8 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, resultado
       doc.setTextColor(...TINTA);
       const lh = alturaLinha(F.indicador);
       // Só o nome do indicador; o valor aparece uma única vez, na linha "Indicador" do quadro (pedido de 13/11/2026).
-      doc.text(textoPdf(ind.label), marginL, y + lh * 0.75);
+      // Indicadores com Agenciamento aparecem em dobro, identificados pelo cenário (Contratual ou Promocional).
+      doc.text(textoPdf(ind.base ? `${ind.label} · ${ind.base}` : ind.label), marginL, y + lh * 0.75);
       y += lh + 1;
       paragrafo(ind.formula, F.texto, SECUNDARIO);
       const varias = ind.itens.length > 1;
@@ -154,33 +165,36 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, resultado
       );
       y += 1;
     }
-    // Evolução mensal consolidada do ente, com o título, sempre inteira na mesma página.
-    garantir(alturaLinha(F.indicador) + 1.5 + alturaTabela(ente.mensal.linhas.length + 2));
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(F.indicador);
-    doc.setTextColor(...TINTA);
-    doc.text(textoPdf(`Evolução mensal · ${ente.titulo} (quatro modalidades somadas)`), marginL, y + alturaLinha(F.indicador) * 0.75);
-    y += alturaLinha(F.indicador) + 1.5;
+    // Evolução mensal consolidada do ente (uma por cenário quando tem Agenciamento), com o título, sempre inteira na mesma página.
     const fmt = (v: number, inteiro: boolean) => (inteiro ? inteiroSimulacao(v) : n(v));
-    const cols = ente.mensal.colunas.length;
-    tabela(
-      ente.mensal.colunas,
-      ente.mensal.linhas.map(l => [l.mes, ...l.valores.map((v, i) => fmt(v, ente.mensal.inteiros[i]))]),
-      {
-        foot: ["Total do ano", ...ente.mensal.total.map((v, i) => fmt(v, ente.mensal.inteiros[i]))],
-        colunas: Object.fromEntries(Array.from({ length: cols }, (_, i) => [i, i === 0 ? { halign: "left", fontStyle: "bold" } : { halign: "right" }])),
-      },
-    );
-    if (ente.mensal.colunas.includes("Vidas acumuladas")) paragrafo("Total de Vidas acumuladas = carteira no fim de dezembro.", F.tabela, SECUNDARIO, "italic");
+    for (const mensal of ente.mensais) {
+      garantir(alturaLinha(F.indicador) + 1.5 + alturaTabela(mensal.linhas.length + 2));
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(F.indicador);
+      doc.setTextColor(...TINTA);
+      const titulo = `Evolução mensal · ${ente.titulo}${mensal.base ? ` · ${mensal.base}` : ""} (quatro modalidades somadas)`;
+      doc.text(textoPdf(titulo), marginL, y + alturaLinha(F.indicador) * 0.75);
+      y += alturaLinha(F.indicador) + 1.5;
+      const cols = mensal.colunas.length;
+      tabela(
+        mensal.colunas,
+        mensal.linhas.map(l => [l.mes, ...l.valores.map((v, i) => fmt(v, mensal.inteiros[i]))]),
+        {
+          foot: ["Total do ano", ...mensal.total.map((v, i) => fmt(v, mensal.inteiros[i]))],
+          colunas: Object.fromEntries(Array.from({ length: cols }, (_, i) => [i, i === 0 ? { halign: "left", fontStyle: "bold" } : { halign: "right" }])),
+        },
+      );
+      if (mensal.colunas.includes("Vidas acumuladas")) paragrafo("Total de Vidas acumuladas = carteira no fim de dezembro.", F.tabela, SECUNDARIO, "italic");
+    }
   });
 
   // 6. Premissas.
   secao("6. Premissas");
   [
-    `Agenciamento: percentual ${baseAgenciamento.toLowerCase()} dos Indicadores variáveis × uma mensalidade de cada venda, pago no mês da venda.`,
+    `Agenciamento: percentual ${bases} dos Indicadores variáveis × uma mensalidade de cada venda, pago no mês da venda. Os indicadores que dependem dele aparecem uma vez para cada percentual.`,
     "Faturamento cumulativo de janeiro a dezembro, sem cancelamentos ou reajustes. Acomodação: Enfermaria.",
     "Distribuição etária: %CART fornecido em 26/10/2026, aplicado às quatro modalidades.",
-    "Taxa de adesão paga pelo beneficiário diretamente à SIGA.",
+    "Taxa de adesão paga pelo beneficiário diretamente à AGENCIADORA.",
     "Simulação de proposta comercial, não aprovação ou resultado realizado.",
   ].forEach(t => paragrafo(`- ${t}`));
 

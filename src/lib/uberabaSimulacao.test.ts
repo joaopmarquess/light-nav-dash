@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calcularSimulacao, calcularSimulacaoComercial, comercialDaFrente, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, relatorioMemoriaCalculo, parametrosMemoriaCalculo } from './uberabaSimulacao';
+import { calcularSimulacao, calcularSimulacaoComercial, comercialDaFrente, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, relatorioMemoriaCalculo, parametrosMemoriaCalculo, simularPorBase, replicarSinistralidade } from './uberabaSimulacao';
 import padroesHistoricos from '@/data/uberabaSimulacao/configuracao_padrao.json';
 import { INDICES_PADRAO, indicadoresPadrao, tabelaIndexada } from './uberabaTabelasComerciais';
 const padrao=padroesHistoricos[0];
@@ -261,11 +261,11 @@ describe('Memória de cálculo do Resultado por Ente', () => {
   const rs = fonte.padroes.map(c => calcularSimulacaoComercial(c, comercialDaFrente(c.produto_codigo, INDICES_PADRAO, indicadoresPadrao())));
   const nomes = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
   const fmt = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  it('Faturamento Bensaúde lista Faturamento × Operadora de cada produto e a soma', () => {
+  it('Faturamento OPERADORA lista Faturamento × OPERADORA de cada produto e a soma', () => {
     const m = memoriaCalculo('bensaude.faturamento', rs, nomes);
     expect(m.passos).toHaveLength(5);
-    expect(m.passos[0]).toBe(`PCA: Faturamento ${fmt(rs[0].anual.faturamento)} × Operadora 77,00% = ${fmt(rs[0].anual.bensaude)}`);
-    expect(m.passos[3]).toContain('Operadora 95,00%');
+    expect(m.passos[0]).toBe(`PCA: Faturamento ${fmt(rs[0].anual.faturamento)} × OPERADORA 77,00% = ${fmt(rs[0].anual.bensaude)}`);
+    expect(m.passos[3]).toContain('OPERADORA 95,00%');
     expect(m.passos[4]).toBe(`Soma: ${fmt(resumoSimulacao(rs).bensaude.faturamento)}`);
   });
   it('Despesa usa a Sinistralidade de 70% e uma modalidade não mostra soma', () => {
@@ -280,18 +280,39 @@ describe('Memória de cálculo do Resultado por Ente', () => {
     const vendas = rs[0].novasReceitas.reduce((s, v) => s + v, 0);
     expect(memoriaCalculo('siga.agenciamento', [rs[0]], ['PCA']).passos[0]).toBe(`PCA: Vendas ${fmt(vendas)} × Agenciamento 90,00% = ${fmt(rs[0].anual.agenciamento)}`);
   });
-  it('Lancers usa Administradora 23% e SIGA do PJ+ usa Agenciadora 5%', () => {
-    expect(memoriaCalculo('lancers.faturamento', [rs[0]], ['PCA']).passos[0]).toContain('Administradora 23,00%');
-    expect(memoriaCalculo('siga.faturamento', [rs[3]], ['PJ+']).passos[0]).toContain('Agenciadora 5,00%');
+  it('ADMINISTRADORA usa 23% e AGENCIADORA do PJ+ usa 5%', () => {
+    expect(memoriaCalculo('lancers.faturamento', [rs[0]], ['PCA']).passos[0]).toContain('ADMINISTRADORA 23,00%');
+    expect(memoriaCalculo('siga.faturamento', [rs[3]], ['PJ+']).passos[0]).toContain('AGENCIADORA 5,00%');
   });
 });
 
 describe('Relatório da Memória de Cálculo (Resultado por Ente)', () => {
   const nomesR = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
-  const rsR = fonte.padroes.map(c => calcularSimulacaoComercial({ ...c, sinistralidade_percentual: sinistralidadePadrao }, comercialDaFrente(c.produto_codigo, INDICES_PADRAO, indicadoresPadrao())));
-  const rel = relatorioMemoriaCalculo(rsR, nomesR);
-  it('traz os quatro entes na ordem da tela', () => {
-    expect(rel.map(e => e.titulo)).toEqual(['Beneficiário', 'Bensaúde', 'Lancers', 'SIGA']);
+  const configs = fonte.padroes.map(c => ({ ...c, sinistralidade_percentual: sinistralidadePadrao }));
+  const cenarios = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao());
+  const [contratual, promocional] = cenarios;
+  const rsR = contratual.resultados;
+  const rel = relatorioMemoriaCalculo(cenarios, nomesR);
+  it('traz os quatro entes na ordem da tela, com os nomes OPERADORA, ADMINISTRADORA e AGENCIADORA', () => {
+    expect(rel.map(e => e.titulo)).toEqual(['Beneficiário', 'OPERADORA', 'ADMINISTRADORA', 'AGENCIADORA']);
+  });
+  it('dois cenários: Contratual e Promocional, com o mesmo faturamento e agenciamentos diferentes', () => {
+    expect(cenarios.map(c => c.rotulo)).toEqual(['Contratual', 'Promocional']);
+    const c = resumoSimulacao(contratual.resultados), p = resumoSimulacao(promocional.resultados);
+    expect(p.bensaude.faturamento).toBeCloseTo(c.bensaude.faturamento, 6);
+    expect(promocional.resultados[0].condicao.agenciamento_parcela_1).toBe(1.5);
+    expect(contratual.resultados[0].condicao.agenciamento_parcela_1).toBe(0.9);
+    expect(p.bensaude.agenciamento).toBeGreaterThan(c.bensaude.agenciamento);
+  });
+  it('só Agenciamento e os resultados que o contêm aparecem em dobro', () => {
+    const rotulos = (i: number) => rel[i].indicadores.map(x => x.base ? `${x.label} · ${x.base}` : x.label);
+    expect(rotulos(0)).toEqual(['Taxa de Adesão', 'Faturamento', 'Total']);
+    expect(rotulos(1)).toEqual(['Faturamento', '− Despesa Assistencial', '= Resultado Operacional', '− Agenciamento · Contratual', '− Agenciamento · Promocional', '= Resultado Líquido · Contratual', '= Resultado Líquido · Promocional']);
+    expect(rotulos(2)).toEqual(['Faturamento']);
+    expect(rotulos(3)).toEqual(['Taxa de Adesão', 'Faturamento', 'Agenciamento · Contratual', 'Agenciamento · Promocional', 'Resultado · Contratual', 'Resultado · Promocional']);
+    expect(rel.map(e => e.mensais.map(m => m.base))).toEqual([[undefined], ['Contratual', 'Promocional'], [undefined], ['Contratual', 'Promocional']]);
+    const liqP = rel[1].indicadores.find(x => x.label === '= Resultado Líquido' && x.base === 'Promocional')!;
+    expect(liqP.valorExibido).toBeCloseTo(resumoSimulacao(promocional.resultados).bensaude.liquido, 6);
   });
   it('cada indicador soma as contas por modalidade no mesmo valor da tela', () => {
     const r = resumoSimulacao(rsR);
@@ -300,22 +321,34 @@ describe('Relatório da Memória de Cálculo (Resultado por Ente)', () => {
     expect(fat.itens.reduce((s, i) => s + i.valor, 0)).toBeCloseTo(r.bensaude.faturamento, 6);
     expect(fat.valorExibido).toBeCloseTo(r.bensaude.faturamento, 6);
     expect(rel[1].indicadores[1].valorExibido).toBeCloseTo(-r.bensaude.despesa, 6);
-    expect(rel[1].indicadores[4].itens).toEqual([{ modalidade: 'Consolidado', calculo: expect.any(String), valor: r.bensaude.liquido }]);
+    expect(rel[1].indicadores[5].itens).toEqual([{ modalidade: 'Consolidado', calculo: expect.any(String), valor: r.bensaude.liquido }]);
   });
   it('o total do ano da evolução mensal fecha com o anual e Vidas acumuladas termina em 10.000', () => {
     const r = resumoSimulacao(rsR);
-    const b = rel[0].mensal;
+    const b = rel[0].mensais[0];
     expect(b.linhas).toHaveLength(12);
     expect(b.total[b.colunas.indexOf('Vidas acumuladas') - 1]).toBe(10000);
     expect(b.total[b.colunas.indexOf('Total') - 1]).toBeCloseTo(r.beneficiario.total, 6);
-    const s = rel[3].mensal;
-    expect(s.total[s.colunas.indexOf('Resultado') - 1]).toBeCloseTo(r.siga.resultado, 6);
+    const s = rel[3].mensais[1];
+    expect(s.total[s.colunas.indexOf('Resultado') - 1]).toBeCloseTo(resumoSimulacao(promocional.resultados).siga.resultado, 6);
   });
-  it('parâmetros usam as vidas e percentuais do cenário', () => {
-    const p = parametrosMemoriaCalculo(rsR, nomesR);
+  it('parâmetros usam as vidas e percentuais do cenário, com os dois agenciamentos', () => {
+    const p = parametrosMemoriaCalculo(cenarios, nomesR);
     expect(p.map(x => x.vidas)).toEqual([2000, 1000, 2000, 5000]);
+    expect(p.map(x => x.agenciamentos)).toEqual([[0.9, 1.5], [0.9, 1.5], [0.9, 1.5], [0.9, 1]]);
     expect(p[0].lancers).toBeCloseTo(0.23, 9);
     expect(p[3].siga).toBeCloseTo(0.05, 9);
     expect(p.every(x => x.sinistralidade === 0.7)).toBe(true);
+  });
+});
+
+describe('Replicar Sinistralidade do PCA', () => {
+  it('copia o percentual do PCA para as demais modalidades', () => {
+    const configs = fonte.padroes.map((c, i) => ({ ...c, sinistralidade_percentual: [62.5, 70, 80, 90][i] }));
+    expect(replicarSinistralidade(configs, 'PCA').map(c => c.sinistralidade_percentual)).toEqual([62.5, 62.5, 62.5, 62.5]);
+  });
+  it('sem percentual digitado no PCA usa o padrão de 70%', () => {
+    const configs = fonte.padroes.map((c, i) => ({ ...c, sinistralidade_percentual: i === 0 ? undefined : 55 }));
+    expect(replicarSinistralidade(configs, 'PCA').every(c => c.sinistralidade_percentual === 70)).toBe(true);
   });
 });

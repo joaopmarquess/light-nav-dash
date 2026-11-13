@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState, type ReactElement } from 'react';
-import { Calculator, ChevronRight, RotateCcw, Info } from 'lucide-react';
+import { Calculator, ChevronRight, Copy, RotateCcw, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -8,11 +8,13 @@ import UberabaSimulacaoFaixas from '@/components/UberabaSimulacaoFaixas';
 import BlocoRecolhido from '@/components/BlocoRecolhido';
 import UberabaMemoriaCalculoButton from '@/components/UberabaMemoriaCalculoButton';
 import { EVENTO_TABELAS_COMERCIAIS, lerIndicadores, lerIndices } from '@/lib/uberabaTabelasComerciais';
-import { BASES_AGENCIAMENTO, calcularSimulacaoComercial, comercialDaFrente, type BaseAgenciamento, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, ENTES_RESULTADO, type IndicadorEnte, type ConfigSimulacao, type CondicaoSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
+import { simularPorBase, replicarSinistralidade, type CenarioAgenciamento, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, ENTES_RESULTADO, type IndicadorEnte, type ConfigSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
 // Siglas dos parâmetros do Proj. Uberaba (13/11/2026); preços e percentuais vêm das tabelas de Resultados Comerciais.
 const nomes = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
 const entes = ENTES_RESULTADO;
+// Sinistralidade digitada mostrada com vírgula decimal (pt-BR).
+const sinTexto = (v?: number) => String(v ?? sinistralidadePadrao).replace('.', ',');
 
 function Valor({ v }: { v: number }) {
   return <td className={`px-3 py-2 text-right tabular-nums ${v < 0 ? 'text-destructive' : ''}`}>{num(v)}</td>;
@@ -49,17 +51,18 @@ function Entes({ resultados }: { resultados: ResultadoSimulacao[] }) {
     </section>)}</div>;
 }
 
-function PremissasImportadas({ condicoes, base }: { condicoes: CondicaoSimulacao[]; base: string }) {
+function PremissasImportadas({ cenarios }: { cenarios: CenarioAgenciamento[] }) {
+  const [contratual, promocional] = cenarios.map(c => c.resultados.map(r => r.condicao));
   return <details className="sim-assumptions"><summary>Premissas e fontes (Resultados Comerciais e %CART fornecido em 26/10/2026)</summary><ul>
     <li>Distribuição etária: %CART da imagem de Entradas Lancers, referência de 11.318 entradas, aplicada às quatro modalidades; faixas arredondadas por mês, com residual na faixa 59 ou mais.</li>
     {fonte.faixas.map(f => <li key={f.faixa_numero}>{f.faixa_etaria}: {pct(f.percentual_normalizado)}</li>)}
     <li>Mensalidade: Enfermaria da tabela de cada produto no quadro Tabelas acima (Tabela Referencial × índice).</li>
-    <li>Agenciamento: percentual {base} (chave acima da tabela) × uma mensalidade de cada venda, pago no mês da venda, somente de janeiro a dezembro.</li>
-    <li>Participações: Bensaúde = Operadora; Lancers = Administradora; SIGA = Agenciadora, conforme os Indicadores variáveis de cada produto.</li>
+    <li>Agenciamento: percentual Contratual e Promocional (um bloco de resultados para cada) × uma mensalidade de cada venda, pago no mês da venda, somente de janeiro a dezembro.</li>
+    <li>Participações: OPERADORA, ADMINISTRADORA e AGENCIADORA, conforme os Indicadores variáveis de cada produto.</li>
     <li>Despesa Assistencial = faturamento × Sinistralidade informada por modalidade.</li>
-    <li>Taxa de adesão paga pelo beneficiário diretamente à SIGA.</li>
+    <li>Taxa de adesão paga pelo beneficiário diretamente à AGENCIADORA.</li>
     <li>Faturamento cumulativo, sem cancelamentos ou reajustes. Acomodação: Enfermaria. Simulação de proposta, não resultado realizado.</li>
-    {condicoes.map((c, i) => <li key={c.produto_codigo}>{nomes[i]}: Bensaúde {pct(c.participacao_bensaude)}, Lancers {pct(c.participacao_lancers)}, SIGA {pct(c.participacao_siga)}, agenciamento {pct(c.agenciamento_parcela_1)}, adesão {pct(c.taxa_adesao)}</li>)}
+    {contratual.map((c, i) => <li key={c.produto_codigo}>{nomes[i]}: OPERADORA {pct(c.participacao_bensaude)}, ADMINISTRADORA {pct(c.participacao_lancers)}, AGENCIADORA {pct(c.participacao_siga)}, agenciamento contratual {pct(c.agenciamento_parcela_1)} / promocional {pct(promocional[i].agenciamento_parcela_1)}, adesão {pct(c.taxa_adesao)}</li>)}
   </ul></details>;
 }
 
@@ -79,9 +82,10 @@ export default function UberabaSimulacao() {
   const [vidaText, setVidaText] = useState<Record<string, string>>({});
   const [sinText, setSinText] = useState<Record<string, string>>({});
   const { indices, indicadores } = useResultadosComerciais();
-  const [baseAgenciamento, setBaseAgenciamento] = useState<BaseAgenciamento>('contratual');
-  const rotuloBase = BASES_AGENCIAMENTO.find(b => b.id === baseAgenciamento)!.rotulo;
-  const resultados = useMemo(() => configuracoes.map(c => calcularSimulacaoComercial(c, comercialDaFrente(c.produto_codigo, indices, indicadores, baseAgenciamento))), [configuracoes, indices, indicadores, baseAgenciamento]);
+  // Resultado por Ente em dois cenários (pedido de 13/11/2026): Agenciamento Contratual e Promocional.
+  const cenarios = useMemo(() => simularPorBase(configuracoes, indices, indicadores), [configuracoes, indices, indicadores]);
+  const [contratual, promocional] = cenarios;
+  const resultados = contratual.resultados;
   const totalVidas = resultados.reduce((total, r) => total + r.anual.vidas, 0);
   const alterar = (codigo: string, patch: Partial<ConfigSimulacao>) => setConfiguracoes(prev => prev.map(c => c.produto_codigo === codigo ? { ...c, ...patch } : c));
   const restaurar = (codigo: string) => {
@@ -90,34 +94,36 @@ export default function UberabaSimulacao() {
     setSinText(p => ({ ...p, [codigo]: String(sinistralidadePadrao) }));
     setVidaText(p => ({ ...p, [codigo]: String(original.total_vidas) }));
   };
+  // Ícone Replicar ao lado da Sinistralidade do PCA: copia o percentual dele para as demais modalidades.
+  const replicar = () => {
+    const novas = replicarSinistralidade(configuracoes, 'PCA');
+    setConfiguracoes(novas);
+    setSinText(Object.fromEntries(novas.map(c => [c.produto_codigo, sinTexto(c.sinistralidade_percentual)])));
+  };
   // Resumo por faixa etária: ícone ao lado do título "Total de vidas".
   const resumoFaixas = <Dialog><Tooltip><TooltipTrigger asChild><DialogTrigger asChild><Button variant="ghost" size="icon" aria-label="Resumo por faixa etária" className="h-6 w-6 align-middle"><Calculator className="h-4 w-4" /></Button></DialogTrigger></TooltipTrigger><TooltipContent>Resumo por faixa etária</TooltipContent></Tooltip><UberabaSimulacaoFaixas resultados={resultados} /></Dialog>;
   return <article className="uberaba-simulation" aria-label="Simulador Comercial Bensaúde|Uberaba">
     <BlocoRecolhido titulo="Parâmetros"><section aria-label="Variáveis por modalidade" className="p-4">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-xs text-muted-foreground">Preços (Enfermaria), Agenciamento ({rotuloBase}), Taxa de adesão e Participações vêm das tabelas de Resultados Comerciais acima.</p>
-        <div className="flex items-center gap-2 text-sm"><span className="text-muted-foreground">Agenciamento</span>
-          <div role="group" aria-label="Percentual de agenciamento" className="inline-flex overflow-hidden rounded-md border border-border">
-            {BASES_AGENCIAMENTO.map(b => <button key={b.id} type="button" aria-pressed={baseAgenciamento === b.id} onClick={() => setBaseAgenciamento(b.id)} className={`px-3 py-1 text-xs font-semibold uppercase ${baseAgenciamento === b.id ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}>{b.rotulo}</button>)}
-          </div>
-        </div>
-      </div>
+      <p className="mb-3 text-xs text-muted-foreground">Preços (Enfermaria), Agenciamento (Contratual e Promocional), Taxa de adesão e Participações vêm das tabelas de Resultados Comerciais acima.</p>
       <div className="overflow-x-auto"><table className="w-full text-sm">
-        <thead><tr className="text-left text-muted-foreground"><th className="px-2 py-1 text-center">Modalidade</th><th className="px-2 py-1 text-center">Agenciamento <span className="font-normal">({rotuloBase.toLowerCase()})</span></th><th className="px-2 py-1 text-center">Taxa de Adesão</th><th className="px-2 py-1 text-center">Participação Bensaúde</th><th className="px-2 py-1 text-center">Participação Lancers</th><th className="px-2 py-1 text-center">Participação SIGA</th><th className="whitespace-nowrap px-2 py-1 text-center">Total de vidas {resumoFaixas}</th><th className="px-2 py-1 text-center">Sinistralidade (%)</th><th className="px-2 py-1 text-center">Mensalidade média</th><th /></tr></thead>
-        <tbody>{resultados.map((r, i) => { const c = r.config, cod = c.produto_codigo; const vt = vidaText[cod] ?? String(c.total_vidas); const st = sinText[cod] ?? String(c.sinistralidade_percentual ?? sinistralidadePadrao); return <tr key={cod} className="border-t border-border align-top">
+        <thead><tr className="text-left text-muted-foreground"><th className="px-2 py-1 text-center">Modalidade</th><th className="px-2 py-1 text-center">Agenciamento <span className="font-normal">(contratual)</span></th><th className="px-2 py-1 text-center">Agenciamento <span className="font-normal">(promocional)</span></th><th className="px-2 py-1 text-center">Taxa de Adesão</th><th className="px-2 py-1 text-center">Participação OPERADORA</th><th className="px-2 py-1 text-center">Participação ADMINISTRADORA</th><th className="px-2 py-1 text-center">Participação AGENCIADORA</th><th className="whitespace-nowrap px-2 py-1 text-center">Total de vidas {resumoFaixas}</th><th className="px-2 py-1 text-center">Sinistralidade (%)</th><th className="px-2 py-1 text-center">Mensalidade média</th><th /></tr></thead>
+        <tbody>{resultados.map((r, i) => { const c = r.config, cod = c.produto_codigo; const vt = vidaText[cod] ?? String(c.total_vidas); const st = sinText[cod] ?? sinTexto(c.sinistralidade_percentual); return <tr key={cod} className="border-t border-border align-top">
           <th scope="row" className="px-2 py-2 text-left">{nomes[i]}{!r.participacoesValidas && <span className="block text-xs text-destructive">Participações ≠ 100%</span>}</th>
-          <td aria-label={`Agenciamento ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.agenciamento_parcela_1)}</td>
+          <td aria-label={`Agenciamento contratual ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.agenciamento_parcela_1)}</td>
+          <td aria-label={`Agenciamento promocional ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(promocional.resultados[i].condicao.agenciamento_parcela_1)}</td>
           <td aria-label={`Taxa de Adesão ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.taxa_adesao)}</td>
-          <td aria-label={`Participação Bensaúde ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.participacao_bensaude)}</td>
-          <td aria-label={`Participação Lancers ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.participacao_lancers)}</td>
-          <td aria-label={`Participação SIGA ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.participacao_siga)}</td>
+          <td aria-label={`Participação OPERADORA ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.participacao_bensaude)}</td>
+          <td aria-label={`Participação ADMINISTRADORA ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.participacao_lancers)}</td>
+          <td aria-label={`Participação AGENCIADORA ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.participacao_siga)}</td>
           <td className="px-2 py-2"><Input aria-label={`Total de vidas ${nomes[i]}`} className="sim-editable mx-auto w-28 text-center" type="number" min={1} max={100000} step={1} value={vt} aria-invalid={!validarVidas(Number(vt))} onChange={e => { const v = e.target.value; setVidaText(p => ({ ...p, [cod]: v })); if (validarVidas(Number(v))) alterar(cod, { total_vidas: Number(v) }); }} onBlur={() => setVidaText(p => ({ ...p, [cod]: String(c.total_vidas) }))} /></td>
-          <td className="px-2 py-2"><Input aria-label={`Sinistralidade ${nomes[i]}`} className="sim-editable mx-auto w-24 text-center" type="text" inputMode="decimal" value={st} aria-invalid={st.trim() === '' || !validarSinistralidade(Number(st.replace(',', '.')))} onChange={e => { const v = e.target.value; setSinText(p => ({ ...p, [cod]: v })); const n = Number(v.replace(',', '.')); if (v.trim() !== '' && validarSinistralidade(n)) alterar(cod, { sinistralidade_percentual: n }); }} onBlur={() => setSinText(p => ({ ...p, [cod]: String(c.sinistralidade_percentual ?? sinistralidadePadrao) }))} /></td>
+          <td className="px-2 py-2"><div className="flex items-center justify-center gap-1"><Input aria-label={`Sinistralidade ${nomes[i]}`} className="sim-editable w-24 text-center" type="text" inputMode="decimal" value={st} aria-invalid={st.trim() === '' || !validarSinistralidade(Number(st.replace(',', '.')))} onChange={e => { const v = e.target.value; setSinText(p => ({ ...p, [cod]: v })); const n = Number(v.replace(',', '.')); if (v.trim() !== '' && validarSinistralidade(n)) alterar(cod, { sinistralidade_percentual: n }); }} onBlur={() => setSinText(p => ({ ...p, [cod]: sinTexto(c.sinistralidade_percentual) }))} />
+            {i === 0 ? <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" aria-label="Replicar Sinistralidade do PCA nos demais" onClick={replicar}><Copy className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Replicar</TooltipContent></Tooltip> : <span aria-hidden className="h-7 w-7 shrink-0" />}
+          </div></td>
           <td className="px-2 py-2 text-center tabular-nums">{num(r.media)}</td>
           <td className="px-2 py-2"><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label={`Restaurar ${nomes[i]}`} onClick={() => restaurar(cod)}><RotateCcw /></Button></TooltipTrigger><TooltipContent>Restaurar padrão</TooltipContent></Tooltip></td>
         </tr>; })}</tbody>
         <tfoot><tr className="border-t border-border bg-secondary font-semibold text-primary">
-          <th scope="row" colSpan={6} className="px-2 py-3 text-left">Total</th>
+          <th scope="row" colSpan={7} className="px-2 py-3 text-left">Total</th>
           <td className="px-2 py-3"><output aria-label="Total de vidas consolidado" className="block w-full text-center tabular-nums">{int(totalVidas)}</output></td>
           <td colSpan={3} />
         </tr></tfoot>
@@ -126,11 +132,11 @@ export default function UberabaSimulacao() {
     <BlocoRecolhido titulo="Resultado por Ente" className="mt-4"><div className="space-y-3 p-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">Clique no indicador para ver por modalidade; passe o mouse para ver a memória de cálculo.</p>
-        <UberabaMemoriaCalculoButton resultados={resultados} nomes={nomes} baseAgenciamento={rotuloBase} />
+        <UberabaMemoriaCalculoButton cenarios={cenarios} nomes={nomes} />
       </div>
-      <Entes resultados={resultados} />
+      {cenarios.map(c => <BlocoRecolhido key={c.base} titulo={c.rotulo}><div className="p-4"><Entes resultados={c.resultados} /></div></BlocoRecolhido>)}
     </div></BlocoRecolhido>
-    <PremissasImportadas condicoes={resultados.map(r => r.condicao)} base={rotuloBase} />
+    <PremissasImportadas cenarios={cenarios} />
     <p className="flex items-center gap-1 text-xs text-muted-foreground"><Info className="h-3 w-3" />Simulação de proposta comercial, não aprovação ou resultado realizado.</p>
   </article>;
 }

@@ -102,6 +102,25 @@ export function calcularSimulacaoComercial(config: ConfigSimulacao, comercial: C
   return simular({ ...config, tabela_preco: ORIGEM_RESULTADOS_COMERCIAIS, condicao_comercial: ORIGEM_RESULTADOS_COMERCIAIS }, comercial);
 }
 
+/** Cenário do Resultado por Ente calculado com um dos percentuais de Agenciamento (Contratual ou Promocional). */
+export type CenarioAgenciamento = { base: BaseAgenciamento; rotulo: string; resultados: ResultadoSimulacao[] };
+/**
+ * Pedido de 13/11/2026: o Resultado por Ente mostra dois blocos, um com o Agenciamento Contratual e outro com o Promocional,
+ * com as mesmas vidas, sinistralidades, preços e participações.
+ */
+export function simularPorBase(configuracoes: ConfigSimulacao[], indices: Indices, indicadores: IndicadoresPorFrente): CenarioAgenciamento[] {
+  return BASES_AGENCIAMENTO.map(b => ({ base: b.id, rotulo: b.rotulo,
+    resultados: configuracoes.map(c => calcularSimulacaoComercial(c, comercialDaFrente(c.produto_codigo, indices, indicadores, b.id))) }));
+}
+
+/** Ícone "Replicar" (Sinistralidade): copia o percentual da modalidade de origem (PCA) para todas as demais. */
+export function replicarSinistralidade(configuracoes: ConfigSimulacao[], origem: string): ConfigSimulacao[] {
+  const fonteConfig = configuracoes.find(c => c.produto_codigo === origem);
+  if (!fonteConfig) return configuracoes;
+  const valor = fonteConfig.sinistralidade_percentual ?? sinistralidadePadrao;
+  return configuracoes.map(c => ({ ...c, sinistralidade_percentual: valor }));
+}
+
 function simular(config: ConfigSimulacao, { condicao, mensalidades }: ComercialSimulacao) {
   if (!validarVidas(config.total_vidas)) throw new Error('Total de vidas deve ser inteiro entre 1 e 100000.');
   const sinistralidade = config.sinistralidade_percentual ?? sinistralidadePadrao;
@@ -208,38 +227,39 @@ export function memoriaCalculo(indicador: IndicadorEnte, resultados: ResultadoSi
   const vendasDef = 'Vendas = 1ª mensalidade (Enfermaria por faixa etária) de cada vida vendida no ano.';
   switch (indicador) {
     case 'beneficiario.adesao': case 'siga.adesao':
-      return { formula: 'Taxa de Adesão = Vendas × Taxa de adesão do produto (paga pelo beneficiário à SIGA). ' + vendasDef, ...adesao() };
+      return { formula: 'Taxa de Adesão = Vendas × Taxa de adesão do produto (paga pelo beneficiário à AGENCIADORA). ' + vendasDef, ...adesao() };
     case 'beneficiario.faturamento':
       return { formula: 'Faturamento = soma, de janeiro a dezembro, das mensalidades de todas as vidas vendidas até cada mês (carteira acumulada, sem cancelamentos ou reajustes).',
         ...porModalidade(x => `${inteiroSimulacao(x.config.total_vidas)} vidas × mensalidade média ${n(x.media)}, acumuladas mês a mês`, x => x.anual.faturamento, r.beneficiario.faturamento) };
     case 'beneficiario.total':
       return { formula: 'Total = Taxa de Adesão + Faturamento.', ...consolidado(`${n(r.beneficiario.adesao)} + ${n(r.beneficiario.faturamento)}`, r.beneficiario.total) };
     case 'bensaude.faturamento':
-      return { formula: 'Faturamento Bensaúde = Faturamento × Participação Bensaúde (Operadora).', ...participacao('Operadora', x => x.condicao.participacao_bensaude, x => x.anual.bensaude, r.bensaude.faturamento) };
+      return { formula: 'Faturamento OPERADORA = Faturamento × Participação OPERADORA.', ...participacao('OPERADORA', x => x.condicao.participacao_bensaude, x => x.anual.bensaude, r.bensaude.faturamento) };
     case 'bensaude.despesa':
       return { formula: 'Despesa Assistencial = Faturamento × Sinistralidade (%) da modalidade.', ...participacao('Sinistralidade', x => (x.config.sinistralidade_percentual ?? sinistralidadePadrao) / 100, x => x.anual.despesa_assistencial, r.bensaude.despesa) };
     case 'bensaude.operacional':
-      return { formula: 'Resultado Operacional = Faturamento Bensaúde − Despesa Assistencial.', ...consolidado(`${n(r.bensaude.faturamento)} − ${n(r.bensaude.despesa)}`, r.bensaude.operacional) };
+      return { formula: 'Resultado Operacional = Faturamento OPERADORA − Despesa Assistencial.', ...consolidado(`${n(r.bensaude.faturamento)} − ${n(r.bensaude.despesa)}`, r.bensaude.operacional) };
     case 'bensaude.agenciamento': case 'siga.agenciamento':
-      return { formula: `Agenciamento = Vendas × percentual de Agenciamento do produto (${indicador === 'siga.agenciamento' ? 'receita da SIGA' : 'custo do Bensaúde'}), pago no mês da venda. ` + vendasDef, ...agenciamento() };
+      return { formula: `Agenciamento = Vendas × percentual de Agenciamento do produto (${indicador === 'siga.agenciamento' ? 'receita da AGENCIADORA' : 'custo da OPERADORA'}), pago no mês da venda. ` + vendasDef, ...agenciamento() };
     case 'bensaude.liquido':
       return { formula: 'Resultado Líquido = Resultado Operacional − Agenciamento.', ...consolidado(`${n(r.bensaude.operacional)} − ${n(r.bensaude.agenciamento)}`, r.bensaude.liquido) };
     case 'lancers.faturamento':
-      return { formula: 'Faturamento Lancers = Faturamento × Participação Lancers (Administradora).', ...participacao('Administradora', x => x.condicao.participacao_lancers, x => x.anual.lancers, r.lancers.faturamento) };
+      return { formula: 'Faturamento ADMINISTRADORA = Faturamento × Participação ADMINISTRADORA.', ...participacao('ADMINISTRADORA', x => x.condicao.participacao_lancers, x => x.anual.lancers, r.lancers.faturamento) };
     case 'siga.faturamento':
-      return { formula: 'Faturamento SIGA = Faturamento × Participação SIGA (Agenciadora).', ...participacao('Agenciadora', x => x.condicao.participacao_siga, x => x.anual.siga, r.siga.faturamento) };
+      return { formula: 'Faturamento AGENCIADORA = Faturamento × Participação AGENCIADORA.', ...participacao('AGENCIADORA', x => x.condicao.participacao_siga, x => x.anual.siga, r.siga.faturamento) };
     case 'siga.resultado':
-      return { formula: 'Resultado = Taxa de Adesão + Faturamento SIGA + Agenciamento.', ...consolidado(`${n(r.siga.adesao)} + ${n(r.siga.faturamento)} + ${n(r.siga.agenciamento)}`, r.siga.resultado) };
+      return { formula: 'Resultado = Taxa de Adesão + Faturamento AGENCIADORA + Agenciamento.', ...consolidado(`${n(r.siga.adesao)} + ${n(r.siga.faturamento)} + ${n(r.siga.agenciamento)}`, r.siga.resultado) };
   }
 }
 
 type Resumo = ReturnType<typeof resumoSimulacao>;
 type Mensal = FinanceiroSimulacao;
 /** Indicador do quadro Resultado por Ente: chave da memória, rótulo da tela e valor exibido (despesas com sinal negativo). */
-export type LinhaEnte = { chave: IndicadorEnte; label: string; valor: (r: Resumo) => number; destaque?: boolean };
+/** `agenciamento`: o valor depende do percentual de Agenciamento (aparece em dobro no relatório, Contratual e Promocional). */
+export type LinhaEnte = { chave: IndicadorEnte; label: string; valor: (r: Resumo) => number; destaque?: boolean; agenciamento?: boolean };
 /** Coluna da evolução mensal do ente no relatório da memória de cálculo. */
-export type ColunaMensalEnte = { label: string; valor: (m: Mensal) => number; inteiro?: boolean };
-/** Quadros do Resultado por Ente, compartilhados pela tela e pelo relatório em PDF. */
+export type ColunaMensalEnte = { label: string; valor: (m: Mensal) => number; inteiro?: boolean; agenciamento?: boolean };
+/** Quadros do Resultado por Ente, compartilhados pela tela e pelo relatório em PDF (nomes dos entes pedidos em 13/11/2026). */
 export const ENTES_RESULTADO: { titulo: string; linhas: LinhaEnte[]; mensal: ColunaMensalEnte[] }[] = [
   { titulo: 'Beneficiário', linhas: [
     { chave: 'beneficiario.adesao', label: 'Taxa de Adesão', valor: r => r.beneficiario.adesao },
@@ -252,61 +272,69 @@ export const ENTES_RESULTADO: { titulo: string; linhas: LinhaEnte[]; mensal: Col
     { label: 'Faturamento', valor: m => m.faturamento },
     { label: 'Total', valor: m => m.adesao + m.faturamento },
   ] },
-  { titulo: 'Bensaúde', linhas: [
+  { titulo: 'OPERADORA', linhas: [
     { chave: 'bensaude.faturamento', label: 'Faturamento', valor: r => r.bensaude.faturamento },
     { chave: 'bensaude.despesa', label: '− Despesa Assistencial', valor: r => -r.bensaude.despesa },
     { chave: 'bensaude.operacional', label: '= Resultado Operacional', valor: r => r.bensaude.operacional, destaque: true },
-    { chave: 'bensaude.agenciamento', label: '− Agenciamento', valor: r => -r.bensaude.agenciamento },
-    { chave: 'bensaude.liquido', label: '= Resultado Líquido', valor: r => r.bensaude.liquido, destaque: true },
+    { chave: 'bensaude.agenciamento', label: '− Agenciamento', valor: r => -r.bensaude.agenciamento, agenciamento: true },
+    { chave: 'bensaude.liquido', label: '= Resultado Líquido', valor: r => r.bensaude.liquido, destaque: true, agenciamento: true },
   ], mensal: [
     { label: 'Faturamento', valor: m => m.bensaude },
     { label: 'Despesa Assist.', valor: m => -m.despesa_assistencial },
     { label: 'Res. Operacional', valor: m => m.bensaude - m.despesa_assistencial },
-    { label: 'Agenciamento', valor: m => -m.agenciamento },
-    { label: 'Res. Líquido', valor: m => m.bensaude - m.despesa_assistencial - m.agenciamento },
+    { label: 'Agenciamento', valor: m => -m.agenciamento, agenciamento: true },
+    { label: 'Res. Líquido', valor: m => m.bensaude - m.despesa_assistencial - m.agenciamento, agenciamento: true },
   ] },
-  { titulo: 'Lancers', linhas: [{ chave: 'lancers.faturamento', label: 'Faturamento', valor: r => r.lancers.faturamento, destaque: true }], mensal: [
+  { titulo: 'ADMINISTRADORA', linhas: [{ chave: 'lancers.faturamento', label: 'Faturamento', valor: r => r.lancers.faturamento, destaque: true }], mensal: [
     { label: 'Faturamento total', valor: m => m.faturamento },
-    { label: 'Faturamento Lancers', valor: m => m.lancers },
+    { label: 'Faturamento ADMINISTRADORA', valor: m => m.lancers },
   ] },
-  { titulo: 'SIGA', linhas: [
+  { titulo: 'AGENCIADORA', linhas: [
     { chave: 'siga.adesao', label: 'Taxa de Adesão', valor: r => r.siga.adesao },
     { chave: 'siga.faturamento', label: 'Faturamento', valor: r => r.siga.faturamento },
-    { chave: 'siga.agenciamento', label: 'Agenciamento', valor: r => r.siga.agenciamento },
-    { chave: 'siga.resultado', label: 'Resultado', valor: r => r.siga.resultado, destaque: true },
+    { chave: 'siga.agenciamento', label: 'Agenciamento', valor: r => r.siga.agenciamento, agenciamento: true },
+    { chave: 'siga.resultado', label: 'Resultado', valor: r => r.siga.resultado, destaque: true, agenciamento: true },
   ], mensal: [
     { label: 'Taxa de Adesão', valor: m => m.adesao },
     { label: 'Faturamento', valor: m => m.siga },
-    { label: 'Agenciamento', valor: m => m.agenciamento },
-    { label: 'Resultado', valor: m => m.adesao + m.siga + m.agenciamento },
+    { label: 'Agenciamento', valor: m => m.agenciamento, agenciamento: true },
+    { label: 'Resultado', valor: m => m.adesao + m.siga + m.agenciamento, agenciamento: true },
   ] },
 ];
 
-/** Conteúdo do relatório da memória de cálculo: por ente, cada indicador com fórmula e contas, e a evolução mensal consolidada. */
-export function relatorioMemoriaCalculo(resultados: ResultadoSimulacao[], nomes: string[]) {
-  const total = resumoSimulacao(resultados);
-  const { mensal } = consolidarSimulacao(resultados);
+/**
+ * Conteúdo do relatório da memória de cálculo: por ente, cada indicador com fórmula e contas, e a evolução mensal consolidada.
+ * Pedido de 13/11/2026: só os indicadores (e evoluções mensais) que dependem do Agenciamento aparecem em dobro,
+ * um por cenário (Contratual e Promocional), com `base` = rótulo do cenário; os demais aparecem uma vez (valores iguais nos dois).
+ */
+export function relatorioMemoriaCalculo(cenarios: CenarioAgenciamento[], nomes: string[]) {
+  const por = (c: CenarioAgenciamento) => ({ c, total: resumoSimulacao(c.resultados), mensal: consolidarSimulacao(c.resultados).mensal });
+  const todos = cenarios.map(por);
   return ENTES_RESULTADO.map(ente => ({
     titulo: ente.titulo,
-    indicadores: ente.linhas.map(l => ({ label: l.label, destaque: !!l.destaque, valorExibido: l.valor(total), ...memoriaCalculo(l.chave, resultados, nomes) })),
-    mensal: {
-      colunas: ['Mês', ...ente.mensal.map(c => c.label)],
-      linhas: mensal.map((m, i) => ({ mes: meses[i].mes, valores: ente.mensal.map(c => c.valor(m)) })),
+    indicadores: ente.linhas.flatMap(l => (l.agenciamento ? todos : todos.slice(0, 1)).map(({ c, total }) => ({
+      label: l.label, base: l.agenciamento ? c.rotulo : undefined, destaque: !!l.destaque, valorExibido: l.valor(total), ...memoriaCalculo(l.chave, c.resultados, nomes),
+    }))),
+    mensais: (ente.mensal.some(col => col.agenciamento) ? todos : todos.slice(0, 1)).map(({ c, mensal }) => ({
+      base: ente.mensal.some(col => col.agenciamento) ? c.rotulo : undefined,
+      colunas: ['Mês', ...ente.mensal.map(col => col.label)],
+      linhas: mensal.map((m, i) => ({ mes: meses[i].mes, valores: ente.mensal.map(col => col.valor(m)) })),
       // Vidas acumuladas: o total é a carteira do fim do ano, não a soma dos meses.
-      total: ente.mensal.map(c => c.label === 'Vidas acumuladas' ? mensal.at(-1)?.acumuladas ?? 0 : mensal.reduce((s, m) => s + c.valor(m), 0)),
-      inteiros: ente.mensal.map(c => !!c.inteiro),
-    },
+      total: ente.mensal.map(col => col.label === 'Vidas acumuladas' ? mensal.at(-1)?.acumuladas ?? 0 : mensal.reduce((s, m) => s + col.valor(m), 0)),
+      inteiros: ente.mensal.map(col => !!col.inteiro),
+    })),
   }));
 }
 
-/** Quadro de parâmetros do relatório: uma linha por modalidade com os valores usados no cálculo. */
-export function parametrosMemoriaCalculo(resultados: ResultadoSimulacao[], nomes: string[]) {
-  return resultados.map((r, i) => ({
+/** Quadro de parâmetros do relatório: uma linha por modalidade, com o Agenciamento de cada cenário (na ordem de `cenarios`). */
+export function parametrosMemoriaCalculo(cenarios: CenarioAgenciamento[], nomes: string[]) {
+  const base = cenarios[0]?.resultados ?? [];
+  return base.map((r, i) => ({
     modalidade: nomes[i] ?? r.config.produto_codigo,
     vidas: r.config.total_vidas,
     mensalidadeMedia: r.media,
     vendas: r.novasReceitas.reduce((s, v) => s + v, 0),
-    agenciamento: r.condicao.agenciamento_parcela_1,
+    agenciamentos: cenarios.map(c => c.resultados[i].condicao.agenciamento_parcela_1),
     adesao: r.condicao.taxa_adesao,
     bensaude: r.condicao.participacao_bensaude,
     lancers: r.condicao.participacao_lancers,
