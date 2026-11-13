@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { RotateCcw, Save } from "lucide-react";
+import { ChevronDown, ChevronUp, RotateCcw, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,6 +48,10 @@ function CelulaAntecipacao({ valor, tipo }: { valor: number; tipo: TipoMes }) {
 export default function UberabaGestaoRede() {
   const [gravado, setGravado] = useState<VariaveisGestaoRede>(() => lerGestaoRede(localStorage));
   const [edit, setEdit] = useState(() => textos(gravado));
+  // Variáveis ficam dentro do bloco Antecipação × Mensal e abrem recolhidas.
+  const [varAbertas, setVarAbertas] = useState(false);
+  const IconeVar = varAbertas ? ChevronUp : ChevronDown;
+  const rotuloVar = `${varAbertas ? "Recolher" : "Expandir"} Variáveis`;
 
   const numeros = useMemo(() => Object.fromEntries(CAMPOS_GESTAO_REDE.map((c) => [c.chave, parseNumeroBR(edit[c.chave])])) as VariaveisGestaoRede, [edit]);
   const invalido = (c: CampoGestaoRede) => !Number.isFinite(numeros[c.chave]) || numeros[c.chave] < 0;
@@ -73,9 +77,17 @@ export default function UberabaGestaoRede() {
   const sep = "border-l border-border";
 
   return (
-    <div className="flex min-h-0 flex-col gap-4">
-      <BlocoRecolhido titulo="Variáveis">
-      <div className="grid gap-4 bg-card p-4 sm:grid-cols-3 xl:grid-cols-6">
+    <BlocoRecolhido titulo="Antecipação × Mensal" recolhivel={false}>
+      <section aria-label="Variáveis" className="border-b border-border bg-card">
+      <h4 className="flex items-center justify-center gap-1 border-b border-border/60 bg-muted/40 px-3 py-1 text-xs font-semibold uppercase text-foreground">
+        Variáveis
+        <button type="button" onClick={() => setVarAbertas((v) => !v)} aria-label={rotuloVar} title={rotuloVar} aria-expanded={varAbertas}
+          className="inline-flex h-5 w-5 items-center justify-center rounded-sm opacity-70 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <IconeVar className="h-4 w-4" />
+        </button>
+      </h4>
+      <div hidden={!varAbertas}>
+      <div className="grid gap-4 p-4 sm:grid-cols-3 xl:grid-cols-6">
         {GRUPOS.map((g) => (
           <fieldset key={g.titulo} className="space-y-2">
             <legend className="mb-1 text-sm font-semibold text-foreground">{g.titulo}</legend>
@@ -107,9 +119,10 @@ export default function UberabaGestaoRede() {
         </div>
       </div>
       {algumInvalido && <p className="px-4 pb-3 text-xs text-destructive">Corrija os campos em vermelho (número igual ou maior que zero).</p>}
-      </BlocoRecolhido>
+      </div>
+      {!varAbertas && algumInvalido && <p className="px-4 py-1 text-center text-xs text-destructive">Há variáveis com erro; abra Variáveis para corrigir.</p>}
+      </section>
 
-      <BlocoRecolhido titulo="Antecipação × Mensal" recolhivel={false}>
       <div className="min-w-0 overflow-x-auto bg-card">
         <table className="w-full text-sm">
           <thead>
@@ -165,7 +178,6 @@ export default function UberabaGestaoRede() {
           Vidas: o total entra em partes iguais ao longo dos {MESES_GESTAO_REDE} meses. Mensal: vidas acumuladas × valor por vida, limitado ao teto. Faturamento: vidas do mês × ticket. Antecipação: meses 1 a {MESES_ADIANTAMENTO} pagam o adiantamento; os {MESES_ADIANTAMENTO} últimos meses abatem o que foi adiantado a mais, em partes iguais.
         </p>
       </div>
-      </BlocoRecolhido>
-    </div>
+    </BlocoRecolhido>
   );
 }

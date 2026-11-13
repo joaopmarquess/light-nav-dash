@@ -68,7 +68,9 @@ describe("Estudo view selection", () => {
   it("opens the Gestão Rede view with its variables", () => {
     abrir();
     abrirSimulacoes("Resultados Rede");
-    expect(screen.getByRole("region", { name: "Antecipação × Mensal" })).toBeVisible();
+    const bloco = screen.getByRole("region", { name: "Antecipação × Mensal" });
+    expect(bloco).toBeVisible();
+    expect(bloco).toContainElement(screen.getByRole("region", { name: "Variáveis" }));
     const botao = screen.getByRole("button", { name: "Expandir Variáveis" });
     expect(botao).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByLabelText("Valor Vida Paulo")).not.toBeVisible();
