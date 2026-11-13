@@ -31,11 +31,12 @@ export const SECOES_IA = ["administradora", "empresarial", "conclusao"] as const
  * Texto padrão da Proposta (o que vai ao PDF enquanto não houver texto revisado). Introdução e Tabela Referencial
  * foram fornecidas pelo Dênis em 13/11/2026; a Tabela Referencial foi resumida a pedido dele para caber na mesma
  * página da tabela, e ambas foram ajustadas aos quatro produtos dos parâmetros que ele forneceu em 13/11/2026
- * (só produtos, vidas, boletagem, distribuidores e nomes das seções).
+ * (só produtos, vidas, boletagem, distribuidores e nomes das seções). Ainda em 13/11/2026, a lista dos produtos saiu
+ * da Introdução e foi para o quadro de parâmetros logo abaixo dela (pedido do Dênis).
  */
 export const TEXTOS_PADRAO: TextosSecoes = {
   introducao:
-    "É com satisfação que apresentamos a presente proposta comercial para a comercialização de nossos produtos em Uberaba (Minas Gerais). O escopo desta oferta contempla as tabelas de preços estruturadas para quatro formatos distintos de produtos, sendo eles: a) o Plano Coletivo por Adesão (PCA), b) o Plano Coletivo Empresarial de 03 a 29 vidas (PME ADM.), c) o Plano Coletivo Empresarial de 30 a 99 vidas (PCE ADM.) e d) o Plano Coletivo Empresarial com 100 ou mais vidas (PJ+). Para garantir uma operação eficiente e alinhada ao mercado regional, os modelos de distribuição foram definidos de forma estratégica: os planos PCA, PME ADM. e PCE ADM. terão boletagem pela Lancers Administradora e serão comercializados por meio de suas Plataformas Associadas, contando com a valiosa parceria da Siga Soluções; já o Plano Empresarial (PJ+) terá boletagem pela operadora e distribuição por meio de Corretoras. Detalhes operacionais como os percentuais de spread, comissionamento, vitaliciedade e demais diretrizes de remuneração encontram-se especificados nas seções \"Produtos com Administradora\" e \"Plano Empresarial\" ao longo deste documento.",
+    "É com satisfação que apresentamos a presente proposta comercial para a comercialização de nossos produtos em Uberaba (Minas Gerais). O escopo desta oferta contempla as tabelas de preços estruturadas para quatro formatos distintos de produtos, cujas nomenclaturas, contratação, vidas, boletagem, distribuidores e fator sobre a Tabela Referencial estão no quadro abaixo. Para garantir uma operação eficiente e alinhada ao mercado regional, os produtos com boletagem pela Lancers Administradora serão comercializados por meio de suas Plataformas Associadas, contando com a valiosa parceria da Siga Soluções. Detalhes operacionais como os percentuais de spread, comissionamento, vitaliciedade e demais diretrizes de remuneração encontram-se especificados nas seções \"Produtos com Administradora\" e \"Plano Empresarial\" ao longo deste documento.",
   referencia:
     "Matriz referencial de preços para Uberaba, no padrão atuarial do Bensaúde, calibrada para a realidade competitiva do mercado local com excelência em qualidade assistencial. É a base da qual derivam as tabelas dos quatro produtos desta proposta.",
   administradora:
@@ -48,8 +49,14 @@ export const TEXTOS_PADRAO: TextosSecoes = {
 /** Versão anterior (longa) do texto da Tabela Referencial: em textos guardados no navegador, passa para a versão atual. */
 export const REFERENCIA_ANTERIOR =
   "Esta tabela funciona como uma matriz de referencial de preços para Uberaba, já desenhada com o padrão de formatação atuarial do Bensaúde. O modelo foi estrategicamente calibrado para a realidade competitiva do mercado local, unindo a atratividade de praça ao padrão de excelência em qualidade assistencial — servindo como a base oficial a partir da qual foram derivadas as tabelas dos três produtos que compõem esta proposta.";
-const atualizarReferencia = (t: TextosSecoes): TextosSecoes =>
-  t.referencia.trim() === REFERENCIA_ANTERIOR ? { ...t, referencia: TEXTOS_PADRAO.referencia } : t;
+/** Introdução anterior, com a lista dos produtos no texto: em textos guardados no navegador, passa para a versão atual. */
+export const INTRODUCAO_ANTERIOR =
+  "É com satisfação que apresentamos a presente proposta comercial para a comercialização de nossos produtos em Uberaba (Minas Gerais). O escopo desta oferta contempla as tabelas de preços estruturadas para quatro formatos distintos de produtos, sendo eles: a) o Plano Coletivo por Adesão (PCA), b) o Plano Coletivo Empresarial de 03 a 29 vidas (PME ADM.), c) o Plano Coletivo Empresarial de 30 a 99 vidas (PCE ADM.) e d) o Plano Coletivo Empresarial com 100 ou mais vidas (PJ+). Para garantir uma operação eficiente e alinhada ao mercado regional, os modelos de distribuição foram definidos de forma estratégica: os planos PCA, PME ADM. e PCE ADM. terão boletagem pela Lancers Administradora e serão comercializados por meio de suas Plataformas Associadas, contando com a valiosa parceria da Siga Soluções; já o Plano Empresarial (PJ+) terá boletagem pela operadora e distribuição por meio de Corretoras. Detalhes operacionais como os percentuais de spread, comissionamento, vitaliciedade e demais diretrizes de remuneração encontram-se especificados nas seções \"Produtos com Administradora\" e \"Plano Empresarial\" ao longo deste documento.";
+const atualizarReferencia = (t: TextosSecoes): TextosSecoes => ({
+  ...t,
+  ...(t.referencia.trim() === REFERENCIA_ANTERIOR ? { referencia: TEXTOS_PADRAO.referencia } : {}),
+  ...(t.introducao.trim() === INTRODUCAO_ANTERIOR ? { introducao: TEXTOS_PADRAO.introducao } : {}),
+});
 
 export const textosPadrao = (): TextosSecoes => ({ ...TEXTOS_PADRAO });
 

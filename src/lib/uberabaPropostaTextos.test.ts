@@ -102,3 +102,18 @@ describe("tópicos da Proposta", () => {
     expect(CHAVE_TEXTOS).toBe("uberaba-proposta-textos-v4");
   });
 });
+
+import { INTRODUCAO_ANTERIOR, TEXTOS_PADRAO as PADRAO_INTRO } from "./uberabaPropostaTextos";
+
+describe("Introdução · lista dos produtos no quadro", () => {
+  it("o texto padrão não lista mais os produtos e remete ao quadro", () => {
+    expect(PADRAO_INTRO.introducao).not.toContain("sendo eles");
+    expect(PADRAO_INTRO.introducao).toContain("quadro abaixo");
+  });
+  it("texto guardado com a Introdução anterior passa para a atual", async () => {
+    const { lerTextos, CHAVE_TEXTOS } = await import("./uberabaPropostaTextos");
+    const aprovado = { ...PADRAO_INTRO, introducao: INTRODUCAO_ANTERIOR };
+    const storage = { getItem: (k: string) => (k === CHAVE_TEXTOS ? JSON.stringify({ aprovado }) : null) };
+    expect(lerTextos(storage).aprovado?.introducao).toBe(PADRAO_INTRO.introducao);
+  });
+});

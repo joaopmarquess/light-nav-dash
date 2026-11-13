@@ -111,3 +111,22 @@ describe("tamanhos de fonte da Proposta", () => {
     for (const v of Object.values(FONTES_PROPOSTA)) expect(Math.abs(v - 13)).toBeLessThanOrEqual(2);
   });
 });
+
+import { COLUNAS_PARAMETROS, linhasParametros } from "./uberabaPropostaComercialPdf";
+
+describe("Proposta · quadro de parâmetros da Introdução", () => {
+  it("traz as colunas da tabela fornecida pelo Dênis", () => {
+    expect([...COLUNAS_PARAMETROS]).toEqual(["SIGLA", "CONTRATAÇÃO", "VIDAS", "BOLETAGEM", "DISTRIBUIDORES", "DESCRIÇÃO DA TABELA", "FATOR REF."]);
+  });
+  it("lista os quatro produtos com os parâmetros fornecidos", () => {
+    expect(linhasParametros()).toEqual([
+      ["PCA", "PLANO COLETIVO POR ADESÃO", "-", "ADMINISTRADORA", "PLATAFORMAS ASSOCIADAS", "ADESÃO", "0,90"],
+      ["PME ADM.", "PLANO COLETIVO EMPRESARIAL", "03 A 29", "ADMINISTRADORA", "PLATAFORMAS ASSOCIADAS", "PME ADMINISTRADAS", "0,85"],
+      ["PCE ADM.", "PLANO COLETIVO EMPRESARIAL", "30 A 99", "ADMINISTRADORA", "PLATAFORMAS ASSOCIADAS", "PJ ADMINISTRADAS", "0,80"],
+      ["PJ+", "PLANO COLETIVO EMPRESARIAL", "100 OU MAIS", "OPERADORA", "CORRETORAS", "EMPRESARIAL", "0,70"],
+    ]);
+  });
+  it("acompanha o índice editado em Resultados Comerciais", () => {
+    expect(linhasParametros({ pcaAdm: 88, pmeAdm: 85, pceAdm: 80, pce100: 70 })[0][6]).toBe("0,88");
+  });
+});

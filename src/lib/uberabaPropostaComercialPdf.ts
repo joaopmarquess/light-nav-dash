@@ -34,6 +34,8 @@ export const FONTES_PROPOSTA = {
   subtituloQuadro: 11,
   secaoQuadro: 11,
   tabelaReferencia: 12,
+  /** Quadro de parâmetros dos produtos, na Introdução. */
+  parametros: 11,
   cabecalhoReferencia: 11,
   tabela: 14,
   cabecalhoTabela: 11,
@@ -47,6 +49,15 @@ export const FONTES_PROPOSTA = {
 const F = FONTES_PROPOSTA;
 /** Altura (mm) de uma linha de texto com espaçamento 1,35. */
 const alturaLinha = (pt: number) => pt * 0.3528 * 1.35;
+
+/**
+ * Tópico 1 · quadro de parâmetros dos produtos (pedido do Dênis em 13/11/2026), com as colunas da tabela que ele
+ * forneceu. A descrição e o fator seguem o nome e o índice atuais de Resultados Comerciais (padrão = parâmetros).
+ */
+export const COLUNAS_PARAMETROS = ["SIGLA", "CONTRATAÇÃO", "VIDAS", "BOLETAGEM", "DISTRIBUIDORES", "DESCRIÇÃO DA TABELA", "FATOR REF."] as const;
+export function linhasParametros(indices: Indices = INDICES_PADRAO, rotulos: RotulosPorFrente = rotulosPadrao()): string[][] {
+  return PARAMETROS_UBERABA.map((p) => [p.sigla, p.contratacao, p.vidas, p.boletagem, p.distribuidores, rotulos[p.id].titulo, formatarFator(indices[p.id] / 100)]);
+}
 
 /** Tópico 2 · Tabela Referencial: Faixa × Enfermaria × Apartamento a 100%, com o fator padrão. */
 export function linhasReferencia(): [string, string, string][] {
@@ -249,6 +260,63 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     doc.setDrawColor(0);
   };
 
+  // Tópico 1: quadro de parâmetros dos produtos, na largura do texto; as colunas de texto quebram linha quando preciso.
+  const desenharParametros = () => {
+    // Largura de cada coluna: a da sua palavra mais longa (nenhuma palavra se parte); a letra só diminui se as sete
+    // colunas não couberem na largura do texto. O que sobra é repartido entre as colunas de texto mais longo.
+    const linhas = linhasParametros(indices, rotulos);
+    const PAD = 1.2;
+    const larguraPalavra = (t: string, negrito: boolean) => {
+      doc.setFont("helvetica", negrito ? "bold" : "normal");
+      return Math.max(...t.split(/\s+/).map((w) => doc.getTextWidth(w)));
+    };
+    const larguraTexto = (t: string, negrito: boolean) => {
+      doc.setFont("helvetica", negrito ? "bold" : "normal");
+      return doc.getTextWidth(t);
+    };
+    // Fator e valores curtos ficam numa linha só.
+    const INTEIRAS = new Set([6]);
+    let fonte: number = F.parametros;
+    let minimas: number[] = [];
+    for (; fonte > 9; fonte -= 0.5) {
+      doc.setFontSize(fonte);
+      minimas = COLUNAS_PARAMETROS.map((h, c) => Math.max(larguraPalavra(h, true), ...linhas.map((l) => (INTEIRAS.has(c) || l[c].length <= 7 ? larguraTexto : larguraPalavra)(l[c], c === 0))) + PAD * 2 + 0.6);
+      if (minimas.reduce((a, b) => a + b, 0) <= LARGURA_TEXTO) break;
+    }
+    doc.setFontSize(fonte);
+    const desejadas = COLUNAS_PARAMETROS.map((_, c) => Math.max(...linhas.map((l) => larguraTexto(l[c], c === 0))) + PAD * 2);
+    const sobra = LARGURA_TEXTO - minimas.reduce((a, b) => a + b, 0);
+    const extras = desejadas.map((d, c) => Math.max(0, d - minimas[c]));
+    const totalExtras = extras.reduce((a, b) => a + b, 0) || 1;
+    const larguras = minimas.map((m, c) => m + Math.min(extras[c], sobra * extras[c] / totalExtras));
+    const folga = LARGURA_TEXTO - larguras.reduce((a, b) => a + b, 0);
+    const colunasLarguras = Object.fromEntries(larguras.map((w, c) => [c, { cellWidth: w + folga / larguras.length }]));
+    autoTable(doc, {
+      theme: "plain",
+      startY: y,
+      tableWidth: LARGURA_TEXTO,
+      margin: margem(marginL, LARGURA_TEXTO),
+      head: [[...COLUNAS_PARAMETROS]],
+      body: linhas,
+      styles: { font: "helvetica", fontSize: fonte, cellPadding: { top: 1.2, bottom: 1.2, left: PAD, right: PAD }, textColor: PDF_COLORS.text, halign: "center", valign: "middle", overflow: "linebreak" },
+      headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold" },
+      columnStyles: { ...colunasLarguras, 0: { ...colunasLarguras[0], fontStyle: "bold" } },
+      alternateRowStyles: { fillColor: ZEBRA },
+      didDrawCell: (c) => {
+        if (c.section === "head") return;
+        doc.setDrawColor(...LINHA);
+        doc.setLineWidth(0.2);
+        doc.line(c.cell.x, c.cell.y, c.cell.x + c.cell.width, c.cell.y);
+      },
+    });
+    const fimT = fimTabela(y);
+    doc.setDrawColor(...TINTA);
+    doc.setLineWidth(0.6);
+    doc.line(marginL, fimT, marginL + LARGURA_TEXTO, fimT);
+    doc.setDrawColor(0);
+    y = fimT + 9;
+  };
+
   // Tópico 2: Tabela Referencial (100%), com Enfermaria e Apartamento pelo fator padrão.
   const desenharReferencia = () => {
     const w = Math.min(120, usableW);
@@ -416,6 +484,8 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   // Os tópicos seguem corridos, sem pular página. Só os quadros lado a lado não se dividem:
   // quando não cabem no resto da página, passam inteiros para a seguinte.
   const ALTURA_EMPRESARIAL = 125;
+  /** Tabela Referencial inteira (cabeçalho, dez faixas e a linha do fator): fica na mesma página do seu título e texto. */
+  const ALTURA_REFERENCIA = 82;
   // 3 · Produtos com Administradora: tabelas e remuneração na mesma página; as tabelas diminuem para caber.
   // A altura da remuneração é medida desenhando-a numa página provisória, descartada em seguida.
   const listaAdm = doGrupo("administradora");
@@ -447,12 +517,12 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     desenharRemuneracao(lista, GEO_EMP_REMUNERACAO);
     y = Math.max(fimPrecos, y);
   };
-  const blocoDados: Partial<Record<SecaoTextoId, () => void>> = { referencia: desenharReferencia, administradora: desenharAdministradora, empresarial: desenharEmpresarial };
-  const ALTURA_BLOCO: Partial<Record<SecaoTextoId, number>> = { referencia: 30 };
+  const blocoDados: Partial<Record<SecaoTextoId, () => void>> = { introducao: desenharParametros, referencia: desenharReferencia, administradora: desenharAdministradora, empresarial: desenharEmpresarial };
+  const ALTURA_BLOCO: Partial<Record<SecaoTextoId, number>> = { introducao: 30, referencia: 30 };
   const INICIO_TOPICO = 10 + LINHA_TEXTO * 2; // título com pelo menos duas linhas de texto abaixo
   SECOES_TEXTO.forEach((s, i) => {
     // Produtos com Administradora e Plano Empresarial: título, texto e quadros ficam juntos na mesma página.
-    const juntos = s.id === "empresarial" ? ALTURA_EMPRESARIAL : s.id === "administradora" ? ALTURA_PRECOS_ADM_MIN + alturaRemuneracaoAdm : null;
+    const juntos = s.id === "empresarial" ? ALTURA_EMPRESARIAL : s.id === "administradora" ? ALTURA_PRECOS_ADM_MIN + alturaRemuneracaoAdm : s.id === "referencia" ? ALTURA_REFERENCIA : null;
     garantir(juntos === null ? INICIO_TOPICO : 10 + corpo[i].length * LINHA_TEXTO * 3 + juntos);
     drawSectionTitle(doc, s.titulo, marginL, y, pageW - marginR, TINTA, F.topico);
     y += 10;
