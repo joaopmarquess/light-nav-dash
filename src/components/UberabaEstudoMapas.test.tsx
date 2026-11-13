@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import UberabaEstudoMapas from "./UberabaEstudoMapas";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -70,7 +70,12 @@ describe("Estudo view selection", () => {
     abrirSimulacoes("Resultados Rede");
     const bloco = screen.getByRole("region", { name: "Antecipação × Mensal" });
     expect(bloco).toBeVisible();
-    expect(bloco).toContainElement(screen.getByRole("region", { name: "Variáveis" }));
+    expect(bloco).toContainElement(screen.getByRole("region", { name: "Variáveis", hidden: true }));
+    const todo = screen.getByRole("button", { name: "Expandir Antecipação × Mensal" });
+    expect(todo).toHaveAttribute("aria-expanded", "false");
+    expect(within(bloco).getByRole("table", { hidden: true })).not.toBeVisible();
+    fireEvent.click(todo);
+    expect(within(bloco).getByRole("table")).toBeVisible();
     const botao = screen.getByRole("button", { name: "Expandir Variáveis" });
     expect(botao).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByLabelText("Valor Vida Paulo")).not.toBeVisible();

@@ -48,7 +48,7 @@ function CelulaAntecipacao({ valor, tipo }: { valor: number; tipo: TipoMes }) {
 export default function UberabaGestaoRede() {
   const [gravado, setGravado] = useState<VariaveisGestaoRede>(() => lerGestaoRede(localStorage));
   const [edit, setEdit] = useState(() => textos(gravado));
-  // Variáveis ficam dentro do bloco Antecipação × Mensal e abrem recolhidas.
+  // Variáveis ficam dentro do bloco Antecipação × Mensal; o bloco e as Variáveis abrem recolhidos.
   const [varAbertas, setVarAbertas] = useState(false);
   const IconeVar = varAbertas ? ChevronUp : ChevronDown;
   const rotuloVar = `${varAbertas ? "Recolher" : "Expandir"} Variáveis`;
@@ -77,7 +77,7 @@ export default function UberabaGestaoRede() {
   const sep = "border-l border-border";
 
   return (
-    <BlocoRecolhido titulo="Antecipação × Mensal" recolhivel={false}>
+    <BlocoRecolhido titulo="Antecipação × Mensal">
       <section aria-label="Variáveis" className="border-b border-border bg-card">
       <h4 className="flex items-center justify-center gap-1 border-b border-border/60 bg-muted/40 px-3 py-1 text-xs font-semibold uppercase text-foreground">
         Variáveis
