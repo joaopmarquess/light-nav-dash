@@ -26,3 +26,6 @@
 ## Proj. Uberaba › Parâmetros das tabelas (13/11/2026)
 - [x] Quatro tabelas (PCA 0,90 · PME ADM. 0,85 · PCE ADM. 0,80 · PJ+ 0,70) com contratação, vidas, boletagem e distribuidores nas telas, cálculos e textos.
 - [x] Proposta: tabelas e remuneração em duas seções — produtos com Administradora e Empresarial.
+
+## Proj. Uberaba › Relatório da Memória de Cálculo (13/11/2026)
+- [x] Ícone em Resultado por Ente que gera o PDF com a memória de cálculo detalhada por ente (parâmetros, fórmula e contas por modalidade, evolução mensal, premissas)

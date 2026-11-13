@@ -6,34 +6,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import UberabaSimulacaoFaixas from '@/components/UberabaSimulacaoFaixas';
 import BlocoRecolhido from '@/components/BlocoRecolhido';
+import UberabaMemoriaCalculoButton from '@/components/UberabaMemoriaCalculoButton';
 import { EVENTO_TABELAS_COMERCIAIS, lerIndicadores, lerIndices } from '@/lib/uberabaTabelasComerciais';
-import { BASES_AGENCIAMENTO, calcularSimulacaoComercial, comercialDaFrente, type BaseAgenciamento, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, type IndicadorEnte, type ConfigSimulacao, type CondicaoSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
+import { BASES_AGENCIAMENTO, calcularSimulacaoComercial, comercialDaFrente, type BaseAgenciamento, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, ENTES_RESULTADO, type IndicadorEnte, type ConfigSimulacao, type CondicaoSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
 // Siglas dos parâmetros do Proj. Uberaba (13/11/2026); preços e percentuais vêm das tabelas de Resultados Comerciais.
 const nomes = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
-type Resumo = ReturnType<typeof resumoSimulacao>;
-type Linha = { chave: IndicadorEnte; label: string; valor: (r: Resumo) => number; destaque?: boolean };
-const entes: { titulo: string; linhas: Linha[] }[] = [
-  { titulo: 'Beneficiário', linhas: [
-    { chave: 'beneficiario.adesao', label: 'Taxa de Adesão', valor: r => r.beneficiario.adesao },
-    { chave: 'beneficiario.faturamento', label: 'Faturamento', valor: r => r.beneficiario.faturamento },
-    { chave: 'beneficiario.total', label: 'Total', valor: r => r.beneficiario.total, destaque: true },
-  ] },
-  { titulo: 'Bensaúde', linhas: [
-    { chave: 'bensaude.faturamento', label: 'Faturamento', valor: r => r.bensaude.faturamento },
-    { chave: 'bensaude.despesa', label: '− Despesa Assistencial', valor: r => -r.bensaude.despesa },
-    { chave: 'bensaude.operacional', label: '= Resultado Operacional', valor: r => r.bensaude.operacional, destaque: true },
-    { chave: 'bensaude.agenciamento', label: '− Agenciamento', valor: r => -r.bensaude.agenciamento },
-    { chave: 'bensaude.liquido', label: '= Resultado Líquido', valor: r => r.bensaude.liquido, destaque: true },
-  ] },
-  { titulo: 'Lancers', linhas: [{ chave: 'lancers.faturamento', label: 'Faturamento', valor: r => r.lancers.faturamento, destaque: true }] },
-  { titulo: 'SIGA', linhas: [
-    { chave: 'siga.adesao', label: 'Taxa de Adesão', valor: r => r.siga.adesao },
-    { chave: 'siga.faturamento', label: 'Faturamento', valor: r => r.siga.faturamento },
-    { chave: 'siga.agenciamento', label: 'Agenciamento', valor: r => r.siga.agenciamento },
-    { chave: 'siga.resultado', label: 'Resultado', valor: r => r.siga.resultado, destaque: true },
-  ] },
-];
+const entes = ENTES_RESULTADO;
 
 function Valor({ v }: { v: number }) {
   return <td className={`px-3 py-2 text-right tabular-nums ${v < 0 ? 'text-destructive' : ''}`}>{num(v)}</td>;
@@ -145,7 +124,10 @@ export default function UberabaSimulacao() {
       </table></div>
     </section></BlocoRecolhido>
     <BlocoRecolhido titulo="Resultado por Ente" className="mt-4"><div className="space-y-3 p-4">
-      <p className="text-sm text-muted-foreground">Clique no indicador para ver por modalidade; passe o mouse para ver a memória de cálculo.</p>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">Clique no indicador para ver por modalidade; passe o mouse para ver a memória de cálculo.</p>
+        <UberabaMemoriaCalculoButton resultados={resultados} nomes={nomes} baseAgenciamento={rotuloBase} />
+      </div>
       <Entes resultados={resultados} />
     </div></BlocoRecolhido>
     <PremissasImportadas condicoes={resultados.map(r => r.condicao)} base={rotuloBase} />

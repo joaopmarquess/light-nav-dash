@@ -178,52 +178,139 @@ export type IndicadorEnte =
   | 'bensaude.faturamento' | 'bensaude.despesa' | 'bensaude.operacional' | 'bensaude.agenciamento' | 'bensaude.liquido'
   | 'lancers.faturamento'
   | 'siga.adesao' | 'siga.faturamento' | 'siga.agenciamento' | 'siga.resultado';
-export type MemoriaCalculo = { formula: string; passos: string[] };
+/** Linha da memória de cálculo: modalidade (ou "Consolidado"), conta sem o resultado e o resultado. */
+export type ItemMemoria = { modalidade: string; calculo: string; valor: number };
+export type MemoriaCalculo = { formula: string; passos: string[]; itens: ItemMemoria[]; valor: number };
 
 /**
  * Memória de cálculo de um indicador do Resultado por Ente, com os valores do cenário atual.
  * `nomes` acompanha `resultados` (uma sigla por modalidade); com mais de uma modalidade, lista cada uma e a soma.
+ * `passos` é o texto da dica na tela; `itens` traz as mesmas contas separadas para o relatório em PDF.
  */
 export function memoriaCalculo(indicador: IndicadorEnte, resultados: ResultadoSimulacao[], nomes: string[]): MemoriaCalculo {
   const n = numeroSimulacao, p = percentualSimulacao;
   const r = resumoSimulacao(resultados);
   const vendas = (x: ResultadoSimulacao) => x.novasReceitas.reduce((s, v) => s + v, 0);
-  const porModalidade = (linha: (x: ResultadoSimulacao) => string, total: number) => {
-    const passos = resultados.map((x, i) => `${nomes[i] ?? x.config.produto_codigo}: ${linha(x)}`);
-    return resultados.length > 1 ? [...passos, `Soma: ${n(total)}`] : passos;
+  const porModalidade = (calculo: (x: ResultadoSimulacao) => string, valor: (x: ResultadoSimulacao) => number, total: number) => {
+    const itens = resultados.map((x, i) => ({ modalidade: nomes[i] ?? x.config.produto_codigo, calculo: calculo(x), valor: valor(x) }));
+    const passos = itens.map(it => `${it.modalidade}: ${it.calculo} = ${n(it.valor)}`);
+    return { passos: resultados.length > 1 ? [...passos, `Soma: ${n(total)}`] : passos, itens, valor: total };
   };
-  const adesao = () => porModalidade(x => `Vendas ${n(vendas(x))} × Taxa de adesão ${p(x.condicao.taxa_adesao)} = ${n(x.anual.adesao)}`, r.beneficiario.adesao);
+  const consolidado = (calculo: string, total: number) => ({ passos: [`${calculo} = ${n(total)}`], itens: [{ modalidade: 'Consolidado', calculo, valor: total }], valor: total });
+  const adesao = () => porModalidade(x => `Vendas ${n(vendas(x))} × Taxa de adesão ${p(x.condicao.taxa_adesao)}`, x => x.anual.adesao, r.beneficiario.adesao);
   const agenciamento = () => porModalidade(x => {
     const c = x.condicao;
     const soParcela1 = [c.agenciamento_parcela_2, c.agenciamento_parcela_3, c.agenciamento_parcela_4, c.agenciamento_parcela_5].every(v => !v);
-    return soParcela1 ? `Vendas ${n(vendas(x))} × Agenciamento ${p(c.agenciamento_parcela_1)} = ${n(x.anual.agenciamento)}` : `Parcelas de agenciamento sobre as vendas = ${n(x.anual.agenciamento)}`;
-  }, r.bensaude.agenciamento);
+    return soParcela1 ? `Vendas ${n(vendas(x))} × Agenciamento ${p(c.agenciamento_parcela_1)}` : 'Parcelas de agenciamento sobre as vendas';
+  }, x => x.anual.agenciamento, r.bensaude.agenciamento);
   const participacao = (rotulo: string, pct: (x: ResultadoSimulacao) => number, valor: (x: ResultadoSimulacao) => number, total: number) =>
-    porModalidade(x => `Faturamento ${n(x.anual.faturamento)} × ${rotulo} ${p(pct(x))} = ${n(valor(x))}`, total);
+    porModalidade(x => `Faturamento ${n(x.anual.faturamento)} × ${rotulo} ${p(pct(x))}`, valor, total);
   const vendasDef = 'Vendas = 1ª mensalidade (Enfermaria por faixa etária) de cada vida vendida no ano.';
   switch (indicador) {
     case 'beneficiario.adesao': case 'siga.adesao':
-      return { formula: 'Taxa de Adesão = Vendas × Taxa de adesão do produto (paga pelo beneficiário à SIGA). ' + vendasDef, passos: adesao() };
+      return { formula: 'Taxa de Adesão = Vendas × Taxa de adesão do produto (paga pelo beneficiário à SIGA). ' + vendasDef, ...adesao() };
     case 'beneficiario.faturamento':
       return { formula: 'Faturamento = soma, de janeiro a dezembro, das mensalidades de todas as vidas vendidas até cada mês (carteira acumulada, sem cancelamentos ou reajustes).',
-        passos: porModalidade(x => `${inteiroSimulacao(x.config.total_vidas)} vidas × mensalidade média ${n(x.media)}, acumuladas mês a mês = ${n(x.anual.faturamento)}`, r.beneficiario.faturamento) };
+        ...porModalidade(x => `${inteiroSimulacao(x.config.total_vidas)} vidas × mensalidade média ${n(x.media)}, acumuladas mês a mês`, x => x.anual.faturamento, r.beneficiario.faturamento) };
     case 'beneficiario.total':
-      return { formula: 'Total = Taxa de Adesão + Faturamento.', passos: [`${n(r.beneficiario.adesao)} + ${n(r.beneficiario.faturamento)} = ${n(r.beneficiario.total)}`] };
+      return { formula: 'Total = Taxa de Adesão + Faturamento.', ...consolidado(`${n(r.beneficiario.adesao)} + ${n(r.beneficiario.faturamento)}`, r.beneficiario.total) };
     case 'bensaude.faturamento':
-      return { formula: 'Faturamento Bensaúde = Faturamento × Participação Bensaúde (Operadora).', passos: participacao('Operadora', x => x.condicao.participacao_bensaude, x => x.anual.bensaude, r.bensaude.faturamento) };
+      return { formula: 'Faturamento Bensaúde = Faturamento × Participação Bensaúde (Operadora).', ...participacao('Operadora', x => x.condicao.participacao_bensaude, x => x.anual.bensaude, r.bensaude.faturamento) };
     case 'bensaude.despesa':
-      return { formula: 'Despesa Assistencial = Faturamento × Sinistralidade (%) da modalidade.', passos: participacao('Sinistralidade', x => (x.config.sinistralidade_percentual ?? sinistralidadePadrao) / 100, x => x.anual.despesa_assistencial, r.bensaude.despesa) };
+      return { formula: 'Despesa Assistencial = Faturamento × Sinistralidade (%) da modalidade.', ...participacao('Sinistralidade', x => (x.config.sinistralidade_percentual ?? sinistralidadePadrao) / 100, x => x.anual.despesa_assistencial, r.bensaude.despesa) };
     case 'bensaude.operacional':
-      return { formula: 'Resultado Operacional = Faturamento Bensaúde − Despesa Assistencial.', passos: [`${n(r.bensaude.faturamento)} − ${n(r.bensaude.despesa)} = ${n(r.bensaude.operacional)}`] };
+      return { formula: 'Resultado Operacional = Faturamento Bensaúde − Despesa Assistencial.', ...consolidado(`${n(r.bensaude.faturamento)} − ${n(r.bensaude.despesa)}`, r.bensaude.operacional) };
     case 'bensaude.agenciamento': case 'siga.agenciamento':
-      return { formula: `Agenciamento = Vendas × percentual de Agenciamento do produto (${indicador === 'siga.agenciamento' ? 'receita da SIGA' : 'custo do Bensaúde'}), pago no mês da venda. ` + vendasDef, passos: agenciamento() };
+      return { formula: `Agenciamento = Vendas × percentual de Agenciamento do produto (${indicador === 'siga.agenciamento' ? 'receita da SIGA' : 'custo do Bensaúde'}), pago no mês da venda. ` + vendasDef, ...agenciamento() };
     case 'bensaude.liquido':
-      return { formula: 'Resultado Líquido = Resultado Operacional − Agenciamento.', passos: [`${n(r.bensaude.operacional)} − ${n(r.bensaude.agenciamento)} = ${n(r.bensaude.liquido)}`] };
+      return { formula: 'Resultado Líquido = Resultado Operacional − Agenciamento.', ...consolidado(`${n(r.bensaude.operacional)} − ${n(r.bensaude.agenciamento)}`, r.bensaude.liquido) };
     case 'lancers.faturamento':
-      return { formula: 'Faturamento Lancers = Faturamento × Participação Lancers (Administradora).', passos: participacao('Administradora', x => x.condicao.participacao_lancers, x => x.anual.lancers, r.lancers.faturamento) };
+      return { formula: 'Faturamento Lancers = Faturamento × Participação Lancers (Administradora).', ...participacao('Administradora', x => x.condicao.participacao_lancers, x => x.anual.lancers, r.lancers.faturamento) };
     case 'siga.faturamento':
-      return { formula: 'Faturamento SIGA = Faturamento × Participação SIGA (Agenciadora).', passos: participacao('Agenciadora', x => x.condicao.participacao_siga, x => x.anual.siga, r.siga.faturamento) };
+      return { formula: 'Faturamento SIGA = Faturamento × Participação SIGA (Agenciadora).', ...participacao('Agenciadora', x => x.condicao.participacao_siga, x => x.anual.siga, r.siga.faturamento) };
     case 'siga.resultado':
-      return { formula: 'Resultado = Taxa de Adesão + Faturamento SIGA + Agenciamento.', passos: [`${n(r.siga.adesao)} + ${n(r.siga.faturamento)} + ${n(r.siga.agenciamento)} = ${n(r.siga.resultado)}`] };
+      return { formula: 'Resultado = Taxa de Adesão + Faturamento SIGA + Agenciamento.', ...consolidado(`${n(r.siga.adesao)} + ${n(r.siga.faturamento)} + ${n(r.siga.agenciamento)}`, r.siga.resultado) };
   }
+}
+
+type Resumo = ReturnType<typeof resumoSimulacao>;
+type Mensal = FinanceiroSimulacao;
+/** Indicador do quadro Resultado por Ente: chave da memória, rótulo da tela e valor exibido (despesas com sinal negativo). */
+export type LinhaEnte = { chave: IndicadorEnte; label: string; valor: (r: Resumo) => number; destaque?: boolean };
+/** Coluna da evolução mensal do ente no relatório da memória de cálculo. */
+export type ColunaMensalEnte = { label: string; valor: (m: Mensal) => number; inteiro?: boolean };
+/** Quadros do Resultado por Ente, compartilhados pela tela e pelo relatório em PDF. */
+export const ENTES_RESULTADO: { titulo: string; linhas: LinhaEnte[]; mensal: ColunaMensalEnte[] }[] = [
+  { titulo: 'Beneficiário', linhas: [
+    { chave: 'beneficiario.adesao', label: 'Taxa de Adesão', valor: r => r.beneficiario.adesao },
+    { chave: 'beneficiario.faturamento', label: 'Faturamento', valor: r => r.beneficiario.faturamento },
+    { chave: 'beneficiario.total', label: 'Total', valor: r => r.beneficiario.total, destaque: true },
+  ], mensal: [
+    { label: 'Vidas vendidas', valor: m => m.vidas, inteiro: true },
+    { label: 'Vidas acumuladas', valor: m => m.acumuladas, inteiro: true },
+    { label: 'Taxa de Adesão', valor: m => m.adesao },
+    { label: 'Faturamento', valor: m => m.faturamento },
+    { label: 'Total', valor: m => m.adesao + m.faturamento },
+  ] },
+  { titulo: 'Bensaúde', linhas: [
+    { chave: 'bensaude.faturamento', label: 'Faturamento', valor: r => r.bensaude.faturamento },
+    { chave: 'bensaude.despesa', label: '− Despesa Assistencial', valor: r => -r.bensaude.despesa },
+    { chave: 'bensaude.operacional', label: '= Resultado Operacional', valor: r => r.bensaude.operacional, destaque: true },
+    { chave: 'bensaude.agenciamento', label: '− Agenciamento', valor: r => -r.bensaude.agenciamento },
+    { chave: 'bensaude.liquido', label: '= Resultado Líquido', valor: r => r.bensaude.liquido, destaque: true },
+  ], mensal: [
+    { label: 'Faturamento', valor: m => m.bensaude },
+    { label: 'Despesa Assist.', valor: m => -m.despesa_assistencial },
+    { label: 'Res. Operacional', valor: m => m.bensaude - m.despesa_assistencial },
+    { label: 'Agenciamento', valor: m => -m.agenciamento },
+    { label: 'Res. Líquido', valor: m => m.bensaude - m.despesa_assistencial - m.agenciamento },
+  ] },
+  { titulo: 'Lancers', linhas: [{ chave: 'lancers.faturamento', label: 'Faturamento', valor: r => r.lancers.faturamento, destaque: true }], mensal: [
+    { label: 'Faturamento total', valor: m => m.faturamento },
+    { label: 'Faturamento Lancers', valor: m => m.lancers },
+  ] },
+  { titulo: 'SIGA', linhas: [
+    { chave: 'siga.adesao', label: 'Taxa de Adesão', valor: r => r.siga.adesao },
+    { chave: 'siga.faturamento', label: 'Faturamento', valor: r => r.siga.faturamento },
+    { chave: 'siga.agenciamento', label: 'Agenciamento', valor: r => r.siga.agenciamento },
+    { chave: 'siga.resultado', label: 'Resultado', valor: r => r.siga.resultado, destaque: true },
+  ], mensal: [
+    { label: 'Taxa de Adesão', valor: m => m.adesao },
+    { label: 'Faturamento', valor: m => m.siga },
+    { label: 'Agenciamento', valor: m => m.agenciamento },
+    { label: 'Resultado', valor: m => m.adesao + m.siga + m.agenciamento },
+  ] },
+];
+
+/** Conteúdo do relatório da memória de cálculo: por ente, cada indicador com fórmula e contas, e a evolução mensal consolidada. */
+export function relatorioMemoriaCalculo(resultados: ResultadoSimulacao[], nomes: string[]) {
+  const total = resumoSimulacao(resultados);
+  const { mensal } = consolidarSimulacao(resultados);
+  return ENTES_RESULTADO.map(ente => ({
+    titulo: ente.titulo,
+    indicadores: ente.linhas.map(l => ({ label: l.label, destaque: !!l.destaque, valorExibido: l.valor(total), ...memoriaCalculo(l.chave, resultados, nomes) })),
+    mensal: {
+      colunas: ['Mês', ...ente.mensal.map(c => c.label)],
+      linhas: mensal.map((m, i) => ({ mes: meses[i].mes, valores: ente.mensal.map(c => c.valor(m)) })),
+      // Vidas acumuladas: o total é a carteira do fim do ano, não a soma dos meses.
+      total: ente.mensal.map(c => c.label === 'Vidas acumuladas' ? mensal.at(-1)?.acumuladas ?? 0 : mensal.reduce((s, m) => s + c.valor(m), 0)),
+      inteiros: ente.mensal.map(c => !!c.inteiro),
+    },
+  }));
+}
+
+/** Quadro de parâmetros do relatório: uma linha por modalidade com os valores usados no cálculo. */
+export function parametrosMemoriaCalculo(resultados: ResultadoSimulacao[], nomes: string[]) {
+  return resultados.map((r, i) => ({
+    modalidade: nomes[i] ?? r.config.produto_codigo,
+    vidas: r.config.total_vidas,
+    mensalidadeMedia: r.media,
+    vendas: r.novasReceitas.reduce((s, v) => s + v, 0),
+    agenciamento: r.condicao.agenciamento_parcela_1,
+    adesao: r.condicao.taxa_adesao,
+    bensaude: r.condicao.participacao_bensaude,
+    lancers: r.condicao.participacao_lancers,
+    siga: r.condicao.participacao_siga,
+    sinistralidade: (r.config.sinistralidade_percentual ?? sinistralidadePadrao) / 100,
+  }));
 }

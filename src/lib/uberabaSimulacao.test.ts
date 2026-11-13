@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calcularSimulacao, calcularSimulacaoComercial, comercialDaFrente, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao, memoriaCalculo } from './uberabaSimulacao';
+import { calcularSimulacao, calcularSimulacaoComercial, comercialDaFrente, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, relatorioMemoriaCalculo, parametrosMemoriaCalculo } from './uberabaSimulacao';
 import padroesHistoricos from '@/data/uberabaSimulacao/configuracao_padrao.json';
 import { INDICES_PADRAO, indicadoresPadrao, tabelaIndexada } from './uberabaTabelasComerciais';
 const padrao=padroesHistoricos[0];
@@ -283,5 +283,39 @@ describe('Memória de cálculo do Resultado por Ente', () => {
   it('Lancers usa Administradora 23% e SIGA do PJ+ usa Agenciadora 5%', () => {
     expect(memoriaCalculo('lancers.faturamento', [rs[0]], ['PCA']).passos[0]).toContain('Administradora 23,00%');
     expect(memoriaCalculo('siga.faturamento', [rs[3]], ['PJ+']).passos[0]).toContain('Agenciadora 5,00%');
+  });
+});
+
+describe('Relatório da Memória de Cálculo (Resultado por Ente)', () => {
+  const nomesR = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
+  const rsR = fonte.padroes.map(c => calcularSimulacaoComercial({ ...c, sinistralidade_percentual: sinistralidadePadrao }, comercialDaFrente(c.produto_codigo, INDICES_PADRAO, indicadoresPadrao())));
+  const rel = relatorioMemoriaCalculo(rsR, nomesR);
+  it('traz os quatro entes na ordem da tela', () => {
+    expect(rel.map(e => e.titulo)).toEqual(['Beneficiário', 'Bensaúde', 'Lancers', 'SIGA']);
+  });
+  it('cada indicador soma as contas por modalidade no mesmo valor da tela', () => {
+    const r = resumoSimulacao(rsR);
+    const fat = rel[1].indicadores[0];
+    expect(fat.itens.map(i => i.modalidade)).toEqual(nomesR);
+    expect(fat.itens.reduce((s, i) => s + i.valor, 0)).toBeCloseTo(r.bensaude.faturamento, 6);
+    expect(fat.valorExibido).toBeCloseTo(r.bensaude.faturamento, 6);
+    expect(rel[1].indicadores[1].valorExibido).toBeCloseTo(-r.bensaude.despesa, 6);
+    expect(rel[1].indicadores[4].itens).toEqual([{ modalidade: 'Consolidado', calculo: expect.any(String), valor: r.bensaude.liquido }]);
+  });
+  it('o total do ano da evolução mensal fecha com o anual e Vidas acumuladas termina em 10.000', () => {
+    const r = resumoSimulacao(rsR);
+    const b = rel[0].mensal;
+    expect(b.linhas).toHaveLength(12);
+    expect(b.total[b.colunas.indexOf('Vidas acumuladas') - 1]).toBe(10000);
+    expect(b.total[b.colunas.indexOf('Total') - 1]).toBeCloseTo(r.beneficiario.total, 6);
+    const s = rel[3].mensal;
+    expect(s.total[s.colunas.indexOf('Resultado') - 1]).toBeCloseTo(r.siga.resultado, 6);
+  });
+  it('parâmetros usam as vidas e percentuais do cenário', () => {
+    const p = parametrosMemoriaCalculo(rsR, nomesR);
+    expect(p.map(x => x.vidas)).toEqual([2000, 1000, 2000, 5000]);
+    expect(p[0].lancers).toBeCloseTo(0.23, 9);
+    expect(p[3].siga).toBeCloseTo(0.05, 9);
+    expect(p.every(x => x.sinistralidade === 0.7)).toBe(true);
   });
 });
