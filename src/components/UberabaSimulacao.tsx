@@ -78,7 +78,7 @@ function PremissasImportadas({ cenarios }: { cenarios: CenarioAgenciamento[] }) 
     <li>Distribuição etária: %CART da imagem de Entradas Lancers, referência de 11.318 entradas, aplicada às quatro modalidades; faixas arredondadas por mês, com residual na faixa 59 ou mais.</li>
     {fonte.faixas.map(f => <li key={f.faixa_numero}>{f.faixa_etaria}: {pct(f.percentual_normalizado)}</li>)}
     <li>Mensalidade: Enfermaria da tabela de cada produto no quadro Tabelas acima (Tabela Referencial × índice).</li>
-    <li>Agenciamento Externo = (100% − % Equipe Própria) × percentual Contratual ou Promocional (um bloco de resultados para cada) × uma mensalidade de cada venda, pago no mês da venda, somente de janeiro a dezembro; é custo da OPERADORA e receita da AGENCIADORA.</li>
+    <li>Agenciamento Externo = (100% − % Equipe Própria) × percentual Contratual ou Promocional (um bloco de resultados para cada) × uma mensalidade de cada venda, pago no mês da venda, somente de janeiro a dezembro; é custo da OPERADORA e receita da ADMINISTRADORA no PCA e no PME ADM. (03 a 29 vidas) e da AGENCIADORA nas demais modalidades.</li>
     <li>Agenciamento Próprio = % Equipe Própria × % Agenc. Próprio × uma mensalidade de cada venda, igual nos dois blocos; custo da OPERADORA com a equipe própria, sem passar pela AGENCIADORA. Total Agenciamento = Externo + Próprio.</li>
     <li>Participações: OPERADORA, ADMINISTRADORA e AGENCIADORA, conforme os Indicadores variáveis de cada produto.</li>
     <li>{premissaDespesa(baseDespesaDos(cenarios))}</li>

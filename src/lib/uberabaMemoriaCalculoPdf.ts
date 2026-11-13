@@ -224,7 +224,7 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
   // 6. Premissas.
   secao("6. Premissas");
   [
-    `Agenciamento Externo: (100% − % Equipe Própria) × percentual ${bases} dos Indicadores variáveis × uma mensalidade de cada venda, pago no mês da venda; custo da OPERADORA e receita da AGENCIADORA. Os indicadores que dependem dele aparecem uma vez para cada percentual.`,
+    `Agenciamento Externo: (100% − % Equipe Própria) × percentual ${bases} dos Indicadores variáveis × uma mensalidade de cada venda, pago no mês da venda; custo da OPERADORA e receita da ADMINISTRADORA no PCA e no PME ADM. (03 a 29 vidas) e da AGENCIADORA nas demais modalidades. Os indicadores que dependem dele aparecem uma vez para cada percentual.`,
     "Agenciamento Próprio: % Equipe Própria × % Agenc. Próprio × uma mensalidade de cada venda, igual nos dois cenários; custo da OPERADORA com a equipe própria, sem passar pela AGENCIADORA. Total Agenciamento = Externo + Próprio.",
     "Faturamento cumulativo de janeiro a dezembro, sem cancelamentos ou reajustes. Acomodação: Enfermaria.",
     "Distribuição etária: %CART fornecido em 26/10/2026, aplicado às quatro modalidades.",

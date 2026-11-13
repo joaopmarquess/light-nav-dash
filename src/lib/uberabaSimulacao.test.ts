@@ -278,7 +278,7 @@ describe('Memória de cálculo do Resultado por Ente', () => {
   });
   it('Agenciamento = Vendas × percentual Contratual (90%)', () => {
     const vendas = rs[0].novasReceitas.reduce((s, v) => s + v, 0);
-    expect(memoriaCalculo('siga.agenciamento', [rs[0]], ['PCA']).passos[0]).toBe(`PCA: Vendas ${fmt(vendas)} × (100% − Equipe Própria 0,00%) × Agenciamento 90,00% = ${fmt(rs[0].anual.agenciamento)}`);
+    expect(memoriaCalculo('lancers.agenciamento', [rs[0]], ['PCA']).passos[0]).toBe(`PCA: Vendas ${fmt(vendas)} × (100% − Equipe Própria 0,00%) × Agenciamento 90,00% = ${fmt(rs[0].anual.agenciamento)}`);
   });
   it('ADMINISTRADORA usa 23% e AGENCIADORA do PJ+ usa 5%', () => {
     expect(memoriaCalculo('lancers.faturamento', [rs[0]], ['PCA']).passos[0]).toContain('ADMINISTRADORA 23,00%');
@@ -308,9 +308,9 @@ describe('Relatório da Memória de Cálculo (Resultado por Ente)', () => {
     const rotulos = (i: number) => rel[i].indicadores.map(x => x.base ? `${x.label} · ${x.base}` : x.label);
     expect(rotulos(0)).toEqual(['Taxa de Adesão', 'Faturamento', 'Coparticipação', 'Total']);
     expect(rotulos(1)).toEqual(['Faturamento', '+ Coparticipação', '− Despesa Assistencial', '= Resultado Operacional', '− Agenciamento Externo · Contratual', '− Agenciamento Externo · Promocional', '− Agenciamento Próprio', '− Total Agenciamento · Contratual', '− Total Agenciamento · Promocional', '= Resultado Líquido · Contratual', '= Resultado Líquido · Promocional']);
-    expect(rotulos(2)).toEqual(['Faturamento']);
+    expect(rotulos(2)).toEqual(['Faturamento', 'Agenciamento Externo · Contratual', 'Agenciamento Externo · Promocional', 'Resultado · Contratual', 'Resultado · Promocional']);
     expect(rotulos(3)).toEqual(['Taxa de Adesão', 'Faturamento', 'Agenciamento Externo · Contratual', 'Agenciamento Externo · Promocional', 'Resultado · Contratual', 'Resultado · Promocional']);
-    expect(rel.map(e => e.mensais.map(m => m.base))).toEqual([[undefined], ['Contratual', 'Promocional'], [undefined], ['Contratual', 'Promocional']]);
+    expect(rel.map(e => e.mensais.map(m => m.base))).toEqual([[undefined], ['Contratual', 'Promocional'], ['Contratual', 'Promocional'], ['Contratual', 'Promocional']]);
     const liqP = rel[1].indicadores.find(x => x.label === '= Resultado Líquido' && x.base === 'Promocional')!;
     expect(liqP.valorExibido).toBeCloseTo(resumoSimulacao(promocional.resultados).bensaude.liquido, 6);
   });
@@ -367,7 +367,7 @@ describe('Replicar Sinistralidade do PCA', () => {
 
 describe('Resultado total no título do quadro recolhido', () => {
   it('cada ente mostra o seu resultado final', () => {
-    expect(ENTES_RESULTADO.map(e => resultadoTotalEnte(e).chave)).toEqual(['beneficiario.total', 'bensaude.liquido', 'lancers.faturamento', 'siga.resultado']);
+    expect(ENTES_RESULTADO.map(e => resultadoTotalEnte(e).chave)).toEqual(['beneficiario.total', 'bensaude.liquido', 'lancers.resultado', 'siga.resultado']);
   });
 });
 
@@ -468,12 +468,31 @@ describe('Equipe Própria e Agenciamento Externo/Próprio (pedido de 13/11/2026)
       expect(promocional.resultados[i].anual.agenciamento_proprio).toBeCloseTo(c.anual.agenciamento_proprio, 6);
     });
   });
-  it('Total Agenciamento = Externo + Próprio, custo da OPERADORA; AGENCIADORA recebe só o Externo', () => {
+  it('Total Agenciamento = Externo + Próprio, custo da OPERADORA; o Externo é dividido entre ADMINISTRADORA e AGENCIADORA', () => {
     const r = resumoSimulacao(contratual.resultados);
     expect(r.bensaude.agenciamento).toBeCloseTo(r.bensaude.agenciamentoExterno + r.bensaude.agenciamentoProprio, 6);
     expect(r.bensaude.liquido).toBeCloseTo(r.bensaude.operacional - r.bensaude.agenciamento, 6);
-    expect(r.siga.agenciamento).toBeCloseTo(r.bensaude.agenciamentoExterno, 6);
-    expect(r.siga.resultado).toBeCloseTo(r.siga.adesao + r.siga.faturamento + r.bensaude.agenciamentoExterno, 6);
+    expect(r.lancers.agenciamento + r.siga.agenciamento).toBeCloseTo(r.bensaude.agenciamentoExterno, 6);
+    expect(r.siga.resultado).toBeCloseTo(r.siga.adesao + r.siga.faturamento + r.siga.agenciamento, 6);
+    expect(r.lancers.resultado).toBeCloseTo(r.lancers.faturamento + r.lancers.agenciamento, 6);
+  });
+  it('Agenciamento Externo do PCA e do PME ADM. vai para a ADMINISTRADORA; do PCE ADM. e do PJ+, para a AGENCIADORA', () => {
+    for (const cenario of [contratual, promocional]) {
+      const [pca, pme, pce, pj] = cenario.resultados;
+      for (const x of [pca, pme]) { expect(x.anual.agenciamento_lancers).toBeCloseTo(x.anual.agenciamento_externo, 6); expect(x.anual.agenciamento_siga).toBe(0); }
+      for (const x of [pce, pj]) { expect(x.anual.agenciamento_siga).toBeCloseTo(x.anual.agenciamento_externo, 6); expect(x.anual.agenciamento_lancers).toBe(0); }
+      const r = resumoSimulacao(cenario.resultados);
+      expect(r.lancers.agenciamento).toBeCloseTo(pca.anual.agenciamento_externo + pme.anual.agenciamento_externo, 6);
+      expect(r.siga.agenciamento).toBeCloseTo(pce.anual.agenciamento_externo + pj.anual.agenciamento_externo, 6);
+    }
+  });
+  it('memória de cálculo da ADMINISTRADORA e da AGENCIADORA somam só as modalidades creditadas a cada uma', () => {
+    const adm = memoriaCalculo('lancers.agenciamento', contratual.resultados, nomesE);
+    expect(adm.itens.map(i => i.valor > 0)).toEqual([true, true, false, false]);
+    expect(adm.itens[2].calculo).toBe('Agenciamento creditado à AGENCIADORA');
+    const ag = memoriaCalculo('siga.agenciamento', contratual.resultados, nomesE);
+    expect(ag.itens.map(i => i.valor > 0)).toEqual([false, false, true, true]);
+    expect(memoriaCalculo('lancers.resultado', contratual.resultados, nomesE).valor).toBeCloseTo(resumoSimulacao(contratual.resultados).lancers.resultado, 6);
   });
   it('Replicar copia % Equipe Própria e % Agenc. Próprio do PCA', () => {
     const cs = configs.map((c, i) => ({ ...c, equipe_propria_percentual: [40, 1, 2, 3][i], agenc_proprio_percentual: [25, 1, 2, 3][i] }));
