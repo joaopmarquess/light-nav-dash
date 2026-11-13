@@ -4,8 +4,8 @@ import { INDICES_PADRAO, formatarCentavos, lerIndices, parseIndice, tabelaIndexa
 const enf = (pct: number) => tabelaIndexada(pct).map((l) => formatarCentavos(l.enfermariaCentavos));
 
 describe("tabelas comerciais Uberaba", () => {
-  it("usa os fatores de referência 0,90 / 0,85 / 0,80 / 0,70 como índices padrão", () => {
-    expect(INDICES_PADRAO).toEqual({ pcaAdm: 90, pmeAdm: 85, pceAdm: 80, pce100: 70 });
+  it("usa os fatores de referência 0,95 / 0,90 / 0,85 / 0,75 como índices padrão", () => {
+    expect(INDICES_PADRAO).toEqual({ pcaAdm: 95, pmeAdm: 90, pceAdm: 85, pce100: 75 });
   });
 
   it("PME ADM. a 85% indexa a Referência", () => {
@@ -42,7 +42,7 @@ describe("tabelas comerciais Uberaba", () => {
 
   it("volta aos padrões quando não há índices gravados", () => {
     expect(lerIndices({ getItem: () => null })).toEqual(INDICES_PADRAO);
-    expect(lerIndices({ getItem: () => JSON.stringify({ pce100: 75 }) })).toEqual({ pcaAdm: 90, pmeAdm: 85, pceAdm: 80, pce100: 75 });
+    expect(lerIndices({ getItem: () => JSON.stringify({ pce100: 70 }) })).toEqual({ pcaAdm: 95, pmeAdm: 90, pceAdm: 85, pce100: 70 });
   });
 });
 
@@ -190,7 +190,7 @@ import { GRUPOS_FRENTES, PARAMETROS_UBERABA, parametrosDe, vidasTexto } from "./
 describe("parâmetros das tabelas (13/11/2026)", () => {
   it("four tables in the order PCA, PME ADM., PCE ADM., PJ+", () => {
     expect(PARAMETROS_UBERABA.map((p) => p.sigla)).toEqual(["PCA", "PME ADM.", "PCE ADM.", "PJ+"]);
-    expect(PARAMETROS_UBERABA.map((p) => p.fatorReferencia)).toEqual([0.9, 0.85, 0.8, 0.7]);
+    expect(PARAMETROS_UBERABA.map((p) => p.fatorReferencia)).toEqual([0.95, 0.9, 0.85, 0.75]);
   });
   it("lives, billing and distributors as supplied", () => {
     expect(PARAMETROS_UBERABA.map((p) => p.vidas)).toEqual(["-", "03 A 29", "30 A 99", "100 OU MAIS"]);

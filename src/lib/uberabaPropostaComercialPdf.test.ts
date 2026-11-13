@@ -12,10 +12,10 @@ describe("Proposta Comercial › 1. Tabelas", () => {
   });
   it("shows the full (sale) price: Referência × (index + Administradora/Agenciadora share)", () => {
     const [pca, pme, pce, pce100] = quadrosProposta();
-    expect(pce100.linhas[0]).toEqual(["00 a 18", "131,25"]);
-    expect(pca.linhas[0]).toEqual(["00 a 18", "197,75"]);
-    expect(pme.linhas[0]).toEqual(["00 a 18", "189,00"]);
-    expect(pce.linhas[0]).toEqual(["00 a 18", "180,25"]);
+    expect(pce100.linhas[0]).toEqual(["00 a 18", "140,00"]);
+    expect(pca.linhas[0]).toEqual(["00 a 18", "206,50"]);
+    expect(pme.linhas[0]).toEqual(["00 a 18", "197,75"]);
+    expect(pce.linhas[0]).toEqual(["00 a 18", "189,00"]);
     expect(pca.linhas).toHaveLength(10);
   });
   it("follows the indices edited in Resultados Comerciais", () => {
@@ -25,7 +25,7 @@ describe("Proposta Comercial › 1. Tabelas", () => {
   it("follows the participation edited in Resultados Comerciais", () => {
     const ind = indicadoresPadrao();
     ind.pce100.spread = 10;
-    expect(quadrosProposta(undefined, ind)[3].linhas[0]).toEqual(["00 a 18", "140,00"]);
+    expect(quadrosProposta(undefined, ind)[3].linhas[0]).toEqual(["00 a 18", "148,75"]);
   });
   it("brings the Indicadores variáveis as on screen", () => {
     const [pca, , , pce100] = quadrosProposta();
@@ -124,10 +124,10 @@ describe("Proposta · quadro de parâmetros da Introdução", () => {
   });
   it("lista os quatro produtos com os parâmetros fornecidos", () => {
     expect(linhasParametros()).toEqual([
-      ["PCA", "PLANO COLETIVO POR ADESÃO", "-", "ADMINISTRADORA", "PLATAFORMAS ASSOCIADAS", "ADESÃO", "0,90"],
-      ["PME ADM.", "PLANO COLETIVO EMPRESARIAL", "03 A 29", "ADMINISTRADORA", "PLATAFORMAS ASSOCIADAS", "PME ADMINISTRADAS", "0,85"],
-      ["PCE ADM.", "PLANO COLETIVO EMPRESARIAL", "30 A 99", "ADMINISTRADORA", "PLATAFORMAS ASSOCIADAS", "PJ ADMINISTRADAS", "0,80"],
-      ["PJ+", "PLANO COLETIVO EMPRESARIAL", "100 OU MAIS", "OPERADORA", "AGENCIADORAS E CORRETORAS AUTORIZADAS", "EMPRESARIAL", "0,70"],
+      ["PCA", "PLANO COLETIVO POR ADESÃO", "-", "ADMINISTRADORA", "PLATAFORMAS ASSOCIADAS", "ADESÃO", "0,95"],
+      ["PME ADM.", "PLANO COLETIVO EMPRESARIAL", "03 A 29", "ADMINISTRADORA", "PLATAFORMAS ASSOCIADAS", "PME ADMINISTRADAS", "0,90"],
+      ["PCE ADM.", "PLANO COLETIVO EMPRESARIAL", "30 A 99", "ADMINISTRADORA", "PLATAFORMAS ASSOCIADAS", "PJ ADMINISTRADAS", "0,85"],
+      ["PJ+", "PLANO COLETIVO EMPRESARIAL", "100 OU MAIS", "OPERADORA", "AGENCIADORAS E CORRETORAS AUTORIZADAS", "EMPRESARIAL", "0,75"],
     ]);
   });
   it("acompanha o índice editado em Resultados Comerciais", () => {

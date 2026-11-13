@@ -18,10 +18,10 @@ export type ParametrosFrente = {
   descricao: string; fatorReferencia: number; grupo: GrupoFrenteId;
 };
 export const PARAMETROS_UBERABA: ParametrosFrente[] = [
-  { id: "pcaAdm", sigla: "PCA", contratacao: "PLANO COLETIVO POR ADESÃO", vidas: "-", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "ADESÃO", fatorReferencia: 0.9, grupo: "administradora" },
-  { id: "pmeAdm", sigla: "PME ADM.", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "03 A 29", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "PME ADMINISTRADAS", fatorReferencia: 0.85, grupo: "administradora" },
-  { id: "pceAdm", sigla: "PCE ADM.", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "30 A 99", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "PJ ADMINISTRADAS", fatorReferencia: 0.8, grupo: "administradora" },
-  { id: "pce100", sigla: "PJ+", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "100 OU MAIS", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS", descricao: "EMPRESARIAL", fatorReferencia: 0.7, grupo: "empresarial" },
+  { id: "pcaAdm", sigla: "PCA", contratacao: "PLANO COLETIVO POR ADESÃO", vidas: "-", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "ADESÃO", fatorReferencia: 0.95, grupo: "administradora" },
+  { id: "pmeAdm", sigla: "PME ADM.", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "03 A 29", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "PME ADMINISTRADAS", fatorReferencia: 0.9, grupo: "administradora" },
+  { id: "pceAdm", sigla: "PCE ADM.", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "30 A 99", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "PJ ADMINISTRADAS", fatorReferencia: 0.85, grupo: "administradora" },
+  { id: "pce100", sigla: "PJ+", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "100 OU MAIS", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS", descricao: "EMPRESARIAL", fatorReferencia: 0.75, grupo: "empresarial" },
 ];
 export const parametrosDe = (id: FrenteId) => PARAMETROS_UBERABA.find((p) => p.id === id)!;
 /** Faixa de vidas para leitura: "03 a 29 vidas", "100 ou mais vidas"; sem limite ("-") devolve null. */
@@ -109,7 +109,8 @@ export function parseIndice(texto: string): number | null {
   return Math.round(n * 100) / 100;
 }
 
-const CHAVE = "uberaba-tabelas-comerciais-indices-v1";
+/** v2: fatores padrão 0,95 / 0,90 / 0,85 / 0,75 (pedido do Dênis, 13/11/2026); índices gravados antes deixam de valer. */
+const CHAVE = "uberaba-tabelas-comerciais-indices-v2";
 
 /** Avisado após gravar índices ou indicadores, para a Simulação de resultados da mesma tela se atualizar. */
 export const EVENTO_TABELAS_COMERCIAIS = "uberaba-tabelas-comerciais-alteradas";
