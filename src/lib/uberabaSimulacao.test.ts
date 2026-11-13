@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { despesaMediaPadrao, copartPadrao, replicarParametro, coparticipacaoVidaMes, calcularSimulacao, calcularSimulacaoComercial, comercialDaFrente, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, relatorioMemoriaCalculo, parametrosMemoriaCalculo, simularPorBase, replicarSinistralidade, resultadoTotalEnte, ENTES_RESULTADO } from './uberabaSimulacao';
+import { receitaVidaMes, despesaMediaPadrao, copartPadrao, replicarParametro, coparticipacaoVidaMes, calcularSimulacao, calcularSimulacaoComercial, comercialDaFrente, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, relatorioMemoriaCalculo, parametrosMemoriaCalculo, simularPorBase, replicarSinistralidade, resultadoTotalEnte, ENTES_RESULTADO } from './uberabaSimulacao';
 import padroesHistoricos from '@/data/uberabaSimulacao/configuracao_padrao.json';
 import { INDICES_PADRAO, indicadoresPadrao, tabelaIndexada } from './uberabaTabelasComerciais';
 const padrao=padroesHistoricos[0];
@@ -389,6 +389,9 @@ describe('Desp. Assist. média e % Copart (pedido de 13/11/2026)', () => {
     const cs = configs.map((c, i) => ({ ...c, despesa_media: [300, 1, 2, 3][i], copart_percentual: [15, 1, 2, 3][i] }));
     expect(replicarParametro(cs, 'PCA', 'despesa_media').map(c => c.despesa_media)).toEqual([300, 300, 300, 300]);
     expect(replicarParametro(cs, 'PCA', 'copart_percentual').map(c => c.copart_percentual)).toEqual([15, 15, 15, 15]);
+  });
+  it('Receitas por vida/mês = mensalidade média + copart. (56,09 com os padrões)', () => {
+    rs.forEach(r => expect(receitaVidaMes(r)).toBeCloseTo(r.media + 56.09, 9));
   });
   it('memória de cálculo da coparticipação mostra vidas-mês, despesa média e %', () => {
     const m = memoriaCalculo('bensaude.coparticipacao', rs, nomesR);
