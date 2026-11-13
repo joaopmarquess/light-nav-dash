@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { attachTimbrado } from "@/lib/pdfTimbrado";
-import { PDF_COLORS, drawReportHeading, drawSectionTitle } from "@/lib/pdfTheme";
+import { PDF_COLORS, drawSectionTitle } from "@/lib/pdfTheme";
 import {
   FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, FRENTES_COMERCIAIS, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarFator, formatarPercentual, indicadoresPadrao, rotulosPadrao, tabelaIndexada, tabelaReferencia,
   type Fatores, type FrenteId, type IndicadoresPorFrente, type Indices, type RotulosPorFrente,
@@ -23,14 +23,11 @@ const SECUNDARIO: RGB = [35, 42, 50];
 const RODAPE: RGB = [45, 45, 45];
 
 /**
- * Tamanhos de fonte (pt): texto geral 13; títulos e subtítulos 1 ou 2 pontos acima; tabelas, rótulos
+ * Tamanhos de fonte (pt): texto geral 13; títulos dos tópicos e das tabelas 1 ou 2 pontos acima; tabelas, rótulos
  * e notas 1 ou 2 abaixo, conforme a função de cada elemento.
  */
 export const FONTES_PROPOSTA = {
   texto: 13,
-  titulo: 15,
-  plano: 12,
-  subtitulo: 12,
   topico: 14,
   quadro: 13,
   secaoQuadro: 11,
@@ -128,19 +125,11 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   attachTimbrado(doc, timbradoDataUrl);
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
-  // O traço azul do timbrado termina em ~31 mm; o título começa uma linha de texto (≈5 mm) abaixo dele, em todas as páginas.
-  const marginL = 18, marginR = 18, top = 64, bottom = 22;
+  // Sem cabeçalho de título: o traço azul do timbrado termina em ~31 mm e o primeiro tópico começa logo abaixo, em todas as páginas.
+  const marginL = 18, marginR = 18, top = 42, bottom = 25;
   const usableW = pageW - marginL - marginR;
-  const heading = () => drawReportHeading(doc, {
-    title: "Proposta Comercial",
-    plano: "Bensaúde|Uberaba",
-    secao: "Minuta para revisão",
-    marginL, marginR, top: 38, tinta: TINTA,
-    fontes: { titulo: F.titulo, plano: F.plano, secao: F.subtitulo },
-  });
-  heading();
   let y = top;
-  const novaPagina = () => { doc.addPage(); heading(); y = top; };
+  const novaPagina = () => { doc.addPage(); y = top; };
   const garantir = (h: number) => { if (y + h > pageH - bottom) novaPagina(); };
 
   const fonteTexto = () => {
@@ -157,7 +146,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     const linhas = doc.splitTextToSize(textoPdf(texto), usableW - 2) as string[];
     const h = linhas.length * alturaLinha(F.texto);
     garantir(h);
-    fonteTexto(); // o cabeçalho de uma nova página altera a fonte
+    fonteTexto();
     doc.text(linhas, marginL, y, { align: "justify", maxWidth: usableW - 2, lineHeightFactor: 1.35 });
     y += h + 3;
   };
@@ -410,7 +399,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     doc.setFont("helvetica", "normal");
     doc.setFontSize(F.rodape);
     doc.setTextColor(...RODAPE);
-    doc.text(`Página ${p} de ${total}`, pageW - marginR, pageH - 10, { align: "right" });
+    doc.text(`Página ${p} de ${total}`, pageW - marginR, pageH - 16.5, { align: "right" }); // acima do traço do rodapé do timbrado (~284 mm)
   }
   return doc;
 }
