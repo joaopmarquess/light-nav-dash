@@ -119,11 +119,12 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
   const vidasTotal = soma(x => x.vidas);
   const direita = (de: number, ate: number) => Object.fromEntries(Array.from({ length: ate - de + 1 }, (_, k) => [de + k, { halign: "right" as const }]));
   tabela(
-    ["Modalidade", "Vidas", "Mensalidade média", "Vendas", "Sinistralidade"],
-    parametros.map(x => [x.modalidade, inteiroSimulacao(x.vidas), n(x.mensalidadeMedia), n(x.vendas), p(x.sinistralidade)]),
+    ["Modalidade", "Vidas", "Mensalidade média", "Vendas", "Sinistralidade", "Desp. assist. média", "% Copart"],
+    parametros.map(x => [x.modalidade, inteiroSimulacao(x.vidas), n(x.mensalidadeMedia), n(x.vendas), p(x.sinistralidade), n(x.despesaMedia), p(x.copart)]),
     {
-      foot: ["Total", inteiroSimulacao(vidasTotal), n(vidasTotal ? soma(x => x.vendas) / vidasTotal : 0), n(soma(x => x.vendas)), ""],
-      colunas: { 0: { fontStyle: "bold", halign: "left" }, ...direita(1, 4) },
+      foot: ["Total", inteiroSimulacao(vidasTotal), n(vidasTotal ? soma(x => x.vendas) / vidasTotal : 0), n(soma(x => x.vendas)), "", "", ""],
+      colunas: { 0: { fontStyle: "bold", halign: "left" }, ...direita(1, 6) },
+      fonte: 9,
     },
   );
   // Percentuais em quadro próprio, para caber os nomes OPERADORA, ADMINISTRADORA e AGENCIADORA.
@@ -133,7 +134,7 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
     parametros.map(x => [x.modalidade, ...x.agenciamentos.map(p), p(x.adesao), p(x.bensaude), p(x.lancers), p(x.siga)]),
     { colunas: { 0: { fontStyle: "bold", halign: "left", cellWidth: 22 }, ...direita(1, cenarios.length + 4), [cenarios.length + 3]: { halign: "right", cellWidth: 36 } }, fonte: 9 },
   );
-  paragrafo("Vendas = 1ª mensalidade (Enfermaria por faixa etária) de cada vida vendida no ano. Mensalidade média = Vendas ÷ Vidas. OPERADORA, ADMINISTRADORA e AGENCIADORA = participação de cada uma no faturamento.", F.tabela, SECUNDARIO, "italic");
+  paragrafo("Vendas = 1ª mensalidade (Enfermaria por faixa etária) de cada vida vendida no ano. Mensalidade média = Vendas ÷ Vidas. OPERADORA, ADMINISTRADORA e AGENCIADORA = participação de cada uma no faturamento. Desp. assist. média = referência por vida/mês e base da coparticipação (% Copart sobre ela).", F.tabela, SECUNDARIO, "italic");
 
   // 2 a 5. Um tópico por ente.
   type Indicador = ReturnType<typeof relatorioMemoriaCalculo>[number]["indicadores"][number];
@@ -195,6 +196,7 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
     "Faturamento cumulativo de janeiro a dezembro, sem cancelamentos ou reajustes. Acomodação: Enfermaria.",
     "Distribuição etária: %CART fornecido em 26/10/2026, aplicado às quatro modalidades.",
     "Taxa de adesão paga pelo beneficiário diretamente à AGENCIADORA.",
+    "Coparticipação = vidas na carteira em cada mês × Desp. assist. média × % Copart; paga pelo beneficiário e 100% da OPERADORA. A despesa assistencial continua = faturamento × Sinistralidade.",
     "Simulação de proposta comercial, não aprovação ou resultado realizado.",
   ].forEach(t => paragrafo(`- ${t}`));
 

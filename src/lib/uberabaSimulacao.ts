@@ -25,7 +25,24 @@ const faixas = faixasImportadas.map(f => ({ ...f, percentual_normalizado: percen
 
 export const fontesSimulacao = { produtos, precos, condicoes, meses, faixas, padroes };
 export const sinistralidadePadrao = 70;
-export type ConfigSimulacao = { produto_codigo: string; tabela_preco: string; condicao_comercial: string; total_vidas: number; sinistralidade_percentual?: number };
+// Parâmetros pedidos em 13/11/2026: Desp. Assist. média por vida/mês (só referência e base da coparticipação)
+// e % Copart sobre essa despesa média (receita paga pelo beneficiário, 100% para a OPERADORA).
+export const despesaMediaPadrao = 280.45;
+export const copartPadrao = 20;
+export type ConfigSimulacao = { produto_codigo: string; tabela_preco: string; condicao_comercial: string; total_vidas: number; sinistralidade_percentual?: number; despesa_media?: number; copart_percentual?: number };
+/** Campos dos Parâmetros com ícone Replicar e o padrão usado quando o PCA está vazio. */
+export type ParametroReplicavel = 'sinistralidade_percentual' | 'despesa_media' | 'copart_percentual';
+export const PADRAO_PARAMETRO: Record<ParametroReplicavel, number> = { sinistralidade_percentual: sinistralidadePadrao, despesa_media: despesaMediaPadrao, copart_percentual: copartPadrao };
+export function validarDespesaMedia(value: number) {
+  return Number.isFinite(value) && value >= 0;
+}
+export function validarCopart(value: number) {
+  return Number.isFinite(value) && value >= 0 && value <= 100;
+}
+/** Coparticipação por vida/mês = Desp. Assist. média × % Copart. Sem os campos (cenários históricos dos CSVs), não há coparticipação. */
+export function coparticipacaoVidaMes(config: ConfigSimulacao) {
+  return (config.despesa_media ?? 0) * (config.copart_percentual ?? 0) / 100;
+}
 export function validarSinistralidade(value: number) {
   return Number.isFinite(value) && value >= 0;
 }
@@ -46,10 +63,11 @@ export const indicadoresSimulacao = [
   { key: 'siga', label: 'Faturamento SIGA', integer: false },
   { key: 'agenciamento', label: 'Agenciamento · custo Bensaúde / receita SIGA', integer: false },
   { key: 'adesao', label: 'Taxa de adesão · beneficiário → SIGA', integer: false },
+  { key: 'coparticipacao', label: 'Coparticipação · beneficiário → OPERADORA', integer: false },
   { key: 'despesa_assistencial', label: 'Despesa Assistencial · Bensaúde', integer: false },
   { key: 'resultado_bensaude', label: 'Resultado Bensaúde', integer: false },
 ] as const;
-export type FinanceiroSimulacao = { vidas: number; acumuladas: number; faturamento: number; despesa_assistencial: number; lancers: number; siga: number; bensaude: number; agenciamento: number; adesao: number; resultado_bensaude: number };
+export type FinanceiroSimulacao = { vidas: number; acumuladas: number; faturamento: number; despesa_assistencial: number; lancers: number; siga: number; bensaude: number; agenciamento: number; adesao: number; coparticipacao: number; resultado_bensaude: number };
 export const numeroSimulacao = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 export const percentualSimulacao = (v: number) => `${numeroSimulacao(v * 100)}%`;
 export const inteiroSimulacao = (v: number) => v.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
@@ -113,18 +131,24 @@ export function simularPorBase(configuracoes: ConfigSimulacao[], indices: Indice
     resultados: configuracoes.map(c => calcularSimulacaoComercial(c, comercialDaFrente(c.produto_codigo, indices, indicadores, b.id))) }));
 }
 
-/** Ícone "Replicar" (Sinistralidade): copia o percentual da modalidade de origem (PCA) para todas as demais. */
-export function replicarSinistralidade(configuracoes: ConfigSimulacao[], origem: string): ConfigSimulacao[] {
+/** Ícone "Replicar": copia o valor do campo na modalidade de origem (PCA) para todas as demais. */
+export function replicarParametro(configuracoes: ConfigSimulacao[], origem: string, campo: ParametroReplicavel): ConfigSimulacao[] {
   const fonteConfig = configuracoes.find(c => c.produto_codigo === origem);
   if (!fonteConfig) return configuracoes;
-  const valor = fonteConfig.sinistralidade_percentual ?? sinistralidadePadrao;
-  return configuracoes.map(c => ({ ...c, sinistralidade_percentual: valor }));
+  const valor = fonteConfig[campo] ?? PADRAO_PARAMETRO[campo];
+  return configuracoes.map(c => ({ ...c, [campo]: valor }));
+}
+export function replicarSinistralidade(configuracoes: ConfigSimulacao[], origem: string): ConfigSimulacao[] {
+  return replicarParametro(configuracoes, origem, 'sinistralidade_percentual');
 }
 
 function simular(config: ConfigSimulacao, { condicao, mensalidades }: ComercialSimulacao) {
   if (!validarVidas(config.total_vidas)) throw new Error('Total de vidas deve ser inteiro entre 1 e 100000.');
   const sinistralidade = config.sinistralidade_percentual ?? sinistralidadePadrao;
   if (!validarSinistralidade(sinistralidade)) throw new Error('Informe uma sinistralidade percentual válida, maior ou igual a zero.');
+  if (config.despesa_media !== undefined && !validarDespesaMedia(config.despesa_media)) throw new Error('Informe uma despesa assistencial média válida, maior ou igual a zero.');
+  if (config.copart_percentual !== undefined && !validarCopart(config.copart_percentual)) throw new Error('Informe um percentual de coparticipação entre 0 e 100.');
+  const copartVida = coparticipacaoVidaMes(config);
   const produto = produtos.find(p => p.produto_codigo === config.produto_codigo);
   if (!produto || mensalidades.length !== 10) throw new Error('Configuração não encontrada nos CSVs.');
   const vidasMes = distribuirResidual(config.total_vidas, [...meses].sort((a,b)=>a.mes_numero-b.mes_numero).map(m=>m.percentual_anual));
@@ -134,7 +158,9 @@ function simular(config: ConfigSimulacao, { condicao, mensalidades }: ComercialS
   let faturamento = 0, acumuladas = 0;
   const mensal: FinanceiroSimulacao[] = vidasMes.map((vidas,i) => {
     faturamento += novasReceitas[i]; acumuladas += vidas;
-    return { vidas, acumuladas, faturamento, resultado_bensaude: faturamento * condicao.participacao_bensaude - faturamento * sinistralidade / 100, despesa_assistencial: faturamento * sinistralidade / 100, lancers: faturamento * condicao.participacao_lancers, siga: faturamento * condicao.participacao_siga, bensaude: faturamento * condicao.participacao_bensaude,
+    // Coparticipação do mês: vidas na carteira × Desp. Assist. média × % Copart, 100% para a OPERADORA.
+    const coparticipacao = acumuladas * copartVida;
+    return { vidas, acumuladas, faturamento, coparticipacao, resultado_bensaude: faturamento * condicao.participacao_bensaude + coparticipacao - faturamento * sinistralidade / 100, despesa_assistencial: faturamento * sinistralidade / 100, lancers: faturamento * condicao.participacao_lancers, siga: faturamento * condicao.participacao_siga, bensaude: faturamento * condicao.participacao_bensaude,
       agenciamento: parcelas.reduce((s,p,j) => s + p * (novasReceitas[i-j] ?? 0), 0), adesao: novasReceitas[i] * condicao.taxa_adesao };
   });
   const anual = totalizarSimulacao(mensal);
@@ -158,7 +184,7 @@ export function consolidarFaixasSimulacao(resultados: ResultadoSimulacao[]) {
 }
 export function totalizarSimulacao(rows: FinanceiroSimulacao[]): FinanceiroSimulacao {
   const sum = (key: keyof FinanceiroSimulacao) => rows.reduce((s,r) => s+r[key],0);
-  return { vidas: sum('vidas'), acumuladas: rows.at(-1)?.acumuladas ?? 0, faturamento: sum('faturamento'), despesa_assistencial: sum('despesa_assistencial'), lancers: sum('lancers'), siga: sum('siga'), bensaude: sum('bensaude'), agenciamento: sum('agenciamento'), adesao: sum('adesao'), resultado_bensaude: sum('resultado_bensaude') };
+  return { vidas: sum('vidas'), acumuladas: rows.at(-1)?.acumuladas ?? 0, faturamento: sum('faturamento'), despesa_assistencial: sum('despesa_assistencial'), lancers: sum('lancers'), siga: sum('siga'), bensaude: sum('bensaude'), agenciamento: sum('agenciamento'), adesao: sum('adesao'), coparticipacao: sum('coparticipacao'), resultado_bensaude: sum('resultado_bensaude') };
 }
 export function consolidarSimulacao(resultados: ResultadoSimulacao[]) {
   const mensal = meses.map((_,i) => {
@@ -185,16 +211,16 @@ export function csvSimulacao(resultados: ResultadoSimulacao[]) {
 export function resumoSimulacao(resultados: ResultadoSimulacao[]) {
   const { anual: a } = consolidarSimulacao(resultados);
   return {
-    beneficiario: { adesao: a.adesao, faturamento: a.faturamento, total: a.adesao + a.faturamento },
-    bensaude: { faturamento: a.bensaude, despesa: a.despesa_assistencial, operacional: a.bensaude - a.despesa_assistencial, agenciamento: a.agenciamento, liquido: a.bensaude - a.despesa_assistencial - a.agenciamento },
+    beneficiario: { adesao: a.adesao, faturamento: a.faturamento, coparticipacao: a.coparticipacao, total: a.adesao + a.faturamento + a.coparticipacao },
+    bensaude: { faturamento: a.bensaude, coparticipacao: a.coparticipacao, despesa: a.despesa_assistencial, operacional: a.bensaude + a.coparticipacao - a.despesa_assistencial, agenciamento: a.agenciamento, liquido: a.bensaude + a.coparticipacao - a.despesa_assistencial - a.agenciamento },
     lancers: { faturamento: a.lancers },
     siga: { adesao: a.adesao, faturamento: a.siga, agenciamento: a.agenciamento, resultado: a.adesao + a.siga + a.agenciamento },
   };
 }
 /** Indicadores do quadro Resultado por Ente (Simulação de resultados). */
 export type IndicadorEnte =
-  | 'beneficiario.adesao' | 'beneficiario.faturamento' | 'beneficiario.total'
-  | 'bensaude.faturamento' | 'bensaude.despesa' | 'bensaude.operacional' | 'bensaude.agenciamento' | 'bensaude.liquido'
+  | 'beneficiario.adesao' | 'beneficiario.faturamento' | 'beneficiario.coparticipacao' | 'beneficiario.total'
+  | 'bensaude.faturamento' | 'bensaude.coparticipacao' | 'bensaude.despesa' | 'bensaude.operacional' | 'bensaude.agenciamento' | 'bensaude.liquido'
   | 'lancers.faturamento'
   | 'siga.adesao' | 'siga.faturamento' | 'siga.agenciamento' | 'siga.resultado';
 /** Linha da memória de cálculo: modalidade (ou "Consolidado"), conta sem o resultado e o resultado. */
@@ -224,6 +250,8 @@ export function memoriaCalculo(indicador: IndicadorEnte, resultados: ResultadoSi
   }, x => x.anual.agenciamento, r.bensaude.agenciamento);
   const participacao = (rotulo: string, pct: (x: ResultadoSimulacao) => number, valor: (x: ResultadoSimulacao) => number, total: number) =>
     porModalidade(x => `Faturamento ${n(x.anual.faturamento)} × ${rotulo} ${p(pct(x))}`, valor, total);
+  const vidasMes = (x: ResultadoSimulacao) => x.mensal.reduce((s, m) => s + m.acumuladas, 0);
+  const coparticipacao = () => porModalidade(x => `${inteiroSimulacao(vidasMes(x))} vidas-mês × Desp. Assist. média ${n(x.config.despesa_media ?? 0)} × % Copart ${p((x.config.copart_percentual ?? 0) / 100)}`, x => x.anual.coparticipacao, r.beneficiario.coparticipacao);
   const vendasDef = 'Vendas = 1ª mensalidade (Enfermaria por faixa etária) de cada vida vendida no ano.';
   switch (indicador) {
     case 'beneficiario.adesao': case 'siga.adesao':
@@ -231,14 +259,16 @@ export function memoriaCalculo(indicador: IndicadorEnte, resultados: ResultadoSi
     case 'beneficiario.faturamento':
       return { formula: 'Faturamento = soma, de janeiro a dezembro, das mensalidades de todas as vidas vendidas até cada mês (carteira acumulada, sem cancelamentos ou reajustes).',
         ...porModalidade(x => `${inteiroSimulacao(x.config.total_vidas)} vidas × mensalidade média ${n(x.media)}, acumuladas mês a mês`, x => x.anual.faturamento, r.beneficiario.faturamento) };
+    case 'beneficiario.coparticipacao': case 'bensaude.coparticipacao':
+      return { formula: 'Coparticipação = vidas na carteira em cada mês × Desp. Assist. média × % Copart (paga pelo beneficiário; entra 100% para a OPERADORA).', ...coparticipacao() };
     case 'beneficiario.total':
-      return { formula: 'Total = Taxa de Adesão + Faturamento.', ...consolidado(`${n(r.beneficiario.adesao)} + ${n(r.beneficiario.faturamento)}`, r.beneficiario.total) };
+      return { formula: 'Total = Taxa de Adesão + Faturamento + Coparticipação.', ...consolidado(`${n(r.beneficiario.adesao)} + ${n(r.beneficiario.faturamento)} + ${n(r.beneficiario.coparticipacao)}`, r.beneficiario.total) };
     case 'bensaude.faturamento':
       return { formula: 'Faturamento OPERADORA = Faturamento × Participação OPERADORA.', ...participacao('OPERADORA', x => x.condicao.participacao_bensaude, x => x.anual.bensaude, r.bensaude.faturamento) };
     case 'bensaude.despesa':
       return { formula: 'Despesa Assistencial = Faturamento × Sinistralidade (%) da modalidade.', ...participacao('Sinistralidade', x => (x.config.sinistralidade_percentual ?? sinistralidadePadrao) / 100, x => x.anual.despesa_assistencial, r.bensaude.despesa) };
     case 'bensaude.operacional':
-      return { formula: 'Resultado Operacional = Faturamento OPERADORA − Despesa Assistencial.', ...consolidado(`${n(r.bensaude.faturamento)} − ${n(r.bensaude.despesa)}`, r.bensaude.operacional) };
+      return { formula: 'Resultado Operacional = Faturamento OPERADORA + Coparticipação − Despesa Assistencial.', ...consolidado(`${n(r.bensaude.faturamento)} + ${n(r.bensaude.coparticipacao)} − ${n(r.bensaude.despesa)}`, r.bensaude.operacional) };
     case 'bensaude.agenciamento': case 'siga.agenciamento':
       return { formula: `Agenciamento = Vendas × percentual de Agenciamento do produto (${indicador === 'siga.agenciamento' ? 'receita da AGENCIADORA' : 'custo da OPERADORA'}), pago no mês da venda. ` + vendasDef, ...agenciamento() };
     case 'bensaude.liquido':
@@ -264,26 +294,30 @@ export const ENTES_RESULTADO: { titulo: string; linhas: LinhaEnte[]; mensal: Col
   { titulo: 'Beneficiário', linhas: [
     { chave: 'beneficiario.adesao', label: 'Taxa de Adesão', valor: r => r.beneficiario.adesao },
     { chave: 'beneficiario.faturamento', label: 'Faturamento', valor: r => r.beneficiario.faturamento },
+    { chave: 'beneficiario.coparticipacao', label: 'Coparticipação', valor: r => r.beneficiario.coparticipacao },
     { chave: 'beneficiario.total', label: 'Total', valor: r => r.beneficiario.total, destaque: true },
   ], mensal: [
     { label: 'Vidas vendidas', valor: m => m.vidas, inteiro: true },
     { label: 'Vidas acumuladas', valor: m => m.acumuladas, inteiro: true },
     { label: 'Taxa de Adesão', valor: m => m.adesao },
     { label: 'Faturamento', valor: m => m.faturamento },
-    { label: 'Total', valor: m => m.adesao + m.faturamento },
+    { label: 'Coparticipação', valor: m => m.coparticipacao },
+    { label: 'Total', valor: m => m.adesao + m.faturamento + m.coparticipacao },
   ] },
   { titulo: 'OPERADORA', linhas: [
     { chave: 'bensaude.faturamento', label: 'Faturamento', valor: r => r.bensaude.faturamento },
+    { chave: 'bensaude.coparticipacao', label: '+ Coparticipação', valor: r => r.bensaude.coparticipacao },
     { chave: 'bensaude.despesa', label: '− Despesa Assistencial', valor: r => -r.bensaude.despesa },
     { chave: 'bensaude.operacional', label: '= Resultado Operacional', valor: r => r.bensaude.operacional, destaque: true },
     { chave: 'bensaude.agenciamento', label: '− Agenciamento', valor: r => -r.bensaude.agenciamento, agenciamento: true },
     { chave: 'bensaude.liquido', label: '= Resultado Líquido', valor: r => r.bensaude.liquido, destaque: true, agenciamento: true },
   ], mensal: [
     { label: 'Faturamento', valor: m => m.bensaude },
+    { label: 'Coparticipação', valor: m => m.coparticipacao },
     { label: 'Despesa Assist.', valor: m => -m.despesa_assistencial },
-    { label: 'Res. Operacional', valor: m => m.bensaude - m.despesa_assistencial },
+    { label: 'Res. Operacional', valor: m => m.bensaude + m.coparticipacao - m.despesa_assistencial },
     { label: 'Agenciamento', valor: m => -m.agenciamento, agenciamento: true },
-    { label: 'Res. Líquido', valor: m => m.bensaude - m.despesa_assistencial - m.agenciamento, agenciamento: true },
+    { label: 'Res. Líquido', valor: m => m.bensaude + m.coparticipacao - m.despesa_assistencial - m.agenciamento, agenciamento: true },
   ] },
   { titulo: 'ADMINISTRADORA', linhas: [{ chave: 'lancers.faturamento', label: 'Faturamento', valor: r => r.lancers.faturamento, destaque: true }], mensal: [
     { label: 'Faturamento total', valor: m => m.faturamento },
@@ -345,5 +379,7 @@ export function parametrosMemoriaCalculo(cenarios: CenarioAgenciamento[], nomes:
     lancers: r.condicao.participacao_lancers,
     siga: r.condicao.participacao_siga,
     sinistralidade: (r.config.sinistralidade_percentual ?? sinistralidadePadrao) / 100,
+    despesaMedia: r.config.despesa_media ?? 0,
+    copart: (r.config.copart_percentual ?? 0) / 100,
   }));
 }

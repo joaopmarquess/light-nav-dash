@@ -8,13 +8,19 @@ import UberabaSimulacaoFaixas from '@/components/UberabaSimulacaoFaixas';
 import BlocoRecolhido from '@/components/BlocoRecolhido';
 import UberabaMemoriaCalculoButton from '@/components/UberabaMemoriaCalculoButton';
 import { EVENTO_TABELAS_COMERCIAIS, lerIndicadores, lerIndices } from '@/lib/uberabaTabelasComerciais';
-import { simularPorBase, replicarSinistralidade, type CenarioAgenciamento, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, ENTES_RESULTADO, resultadoTotalEnte, type IndicadorEnte, type ConfigSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
+import { simularPorBase, replicarParametro, PADRAO_PARAMETRO, validarDespesaMedia, validarCopart, coparticipacaoVidaMes, type ParametroReplicavel, type CenarioAgenciamento, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, resumoSimulacao, memoriaCalculo, ENTES_RESULTADO, resultadoTotalEnte, type IndicadorEnte, type ConfigSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
 // Siglas dos parâmetros do Proj. Uberaba (13/11/2026); preços e percentuais vêm das tabelas de Resultados Comerciais.
 const nomes = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
 const entes = ENTES_RESULTADO;
-// Sinistralidade digitada mostrada com vírgula decimal (pt-BR).
-const sinTexto = (v?: number) => String(v ?? sinistralidadePadrao).replace('.', ',');
+// Valores digitados mostrados com vírgula decimal (pt-BR).
+const campoTexto = (campo: ParametroReplicavel, v?: number) => String(v ?? PADRAO_PARAMETRO[campo]).replace('.', ',');
+// Campos dos Parâmetros com ícone Replicar na linha do PCA (Sinistralidade, Desp. Assist. média e % Copart).
+const CAMPOS: { campo: ParametroReplicavel; rotulo: string; valido: (v: number) => boolean }[] = [
+  { campo: 'sinistralidade_percentual', rotulo: 'Sinistralidade', valido: validarSinistralidade },
+  { campo: 'despesa_media', rotulo: 'Desp. Assist. média', valido: validarDespesaMedia },
+  { campo: 'copart_percentual', rotulo: '% Copart', valido: validarCopart },
+];
 
 function Valor({ v }: { v: number }) {
   return <td className={`px-3 py-2 text-right tabular-nums ${v < 0 ? 'text-destructive' : ''}`}>{num(v)}</td>;
@@ -69,7 +75,8 @@ function PremissasImportadas({ cenarios }: { cenarios: CenarioAgenciamento[] }) 
     <li>Mensalidade: Enfermaria da tabela de cada produto no quadro Tabelas acima (Tabela Referencial × índice).</li>
     <li>Agenciamento: percentual Contratual e Promocional (um bloco de resultados para cada) × uma mensalidade de cada venda, pago no mês da venda, somente de janeiro a dezembro.</li>
     <li>Participações: OPERADORA, ADMINISTRADORA e AGENCIADORA, conforme os Indicadores variáveis de cada produto.</li>
-    <li>Despesa Assistencial = faturamento × Sinistralidade informada por modalidade.</li>
+    <li>Despesa Assistencial = faturamento × Sinistralidade informada por modalidade. A Desp. Assist. média é só referência e base da coparticipação.</li>
+    <li>Coparticipação = vidas na carteira em cada mês × Desp. Assist. média × % Copart; paga pelo beneficiário, soma ao Total dele e entra 100% para a OPERADORA.</li>
     <li>Taxa de adesão paga pelo beneficiário diretamente à AGENCIADORA.</li>
     <li>Faturamento cumulativo, sem cancelamentos ou reajustes. Acomodação: Enfermaria. Simulação de proposta, não resultado realizado.</li>
     {contratual.map((c, i) => <li key={c.produto_codigo}>{nomes[i]}: OPERADORA {pct(c.participacao_bensaude)}, ADMINISTRADORA {pct(c.participacao_lancers)}, AGENCIADORA {pct(c.participacao_siga)}, agenciamento contratual {pct(c.agenciamento_parcela_1)} / promocional {pct(promocional[i].agenciamento_parcela_1)}, adesão {pct(c.taxa_adesao)}</li>)}
@@ -88,9 +95,10 @@ function useResultadosComerciais() {
 }
 
 export default function UberabaSimulacao() {
-  const [configuracoes, setConfiguracoes] = useState<ConfigSimulacao[]>(() => fonte.padroes.map(c => ({ ...c, sinistralidade_percentual: sinistralidadePadrao })));
+  const [configuracoes, setConfiguracoes] = useState<ConfigSimulacao[]>(() => fonte.padroes.map(c => ({ ...c, ...PADRAO_PARAMETRO })));
   const [vidaText, setVidaText] = useState<Record<string, string>>({});
-  const [sinText, setSinText] = useState<Record<string, string>>({});
+  // Texto digitado por campo e modalidade (chave `campo:modalidade`).
+  const [textos, setTextos] = useState<Record<string, string>>({});
   const { indices, indicadores } = useResultadosComerciais();
   // Resultado por Ente em dois cenários (pedido de 13/11/2026): Agenciamento Contratual e Promocional.
   const cenarios = useMemo(() => simularPorBase(configuracoes, indices, indicadores), [configuracoes, indices, indicadores]);
@@ -100,15 +108,15 @@ export default function UberabaSimulacao() {
   const alterar = (codigo: string, patch: Partial<ConfigSimulacao>) => setConfiguracoes(prev => prev.map(c => c.produto_codigo === codigo ? { ...c, ...patch } : c));
   const restaurar = (codigo: string) => {
     const original = fonte.padroes.find(c => c.produto_codigo === codigo); if (!original) return;
-    alterar(codigo, { ...original, sinistralidade_percentual: sinistralidadePadrao });
-    setSinText(p => ({ ...p, [codigo]: String(sinistralidadePadrao) }));
+    alterar(codigo, { ...original, ...PADRAO_PARAMETRO });
+    setTextos(p => ({ ...p, ...Object.fromEntries(CAMPOS.map(({ campo }) => [`${campo}:${codigo}`, campoTexto(campo)])) }));
     setVidaText(p => ({ ...p, [codigo]: String(original.total_vidas) }));
   };
-  // Ícone Replicar ao lado da Sinistralidade do PCA: copia o percentual dele para as demais modalidades.
-  const replicar = () => {
-    const novas = replicarSinistralidade(configuracoes, 'PCA');
+  // Ícone Replicar na linha do PCA: copia o valor dele para as demais modalidades.
+  const replicar = (campo: ParametroReplicavel) => {
+    const novas = replicarParametro(configuracoes, 'PCA', campo);
     setConfiguracoes(novas);
-    setSinText(Object.fromEntries(novas.map(c => [c.produto_codigo, sinTexto(c.sinistralidade_percentual)])));
+    setTextos(p => ({ ...p, ...Object.fromEntries(novas.map(c => [`${campo}:${c.produto_codigo}`, campoTexto(campo, c[campo])])) }));
   };
   // Resumo por faixa etária: ícone ao lado do título "Total de vidas".
   const resumoFaixas = <Dialog><Tooltip><TooltipTrigger asChild><DialogTrigger asChild><Button variant="ghost" size="icon" aria-label="Resumo por faixa etária" className="h-6 w-6 align-middle"><Calculator className="h-4 w-4" /></Button></DialogTrigger></TooltipTrigger><TooltipContent>Resumo por faixa etária</TooltipContent></Tooltip><UberabaSimulacaoFaixas resultados={resultados} /></Dialog>;
@@ -116,8 +124,8 @@ export default function UberabaSimulacao() {
     <BlocoRecolhido titulo="Parâmetros"><section aria-label="Variáveis por modalidade" className="p-4">
       <p className="mb-3 text-xs text-muted-foreground">Preços (Enfermaria), Agenciamento (Contratual e Promocional), Taxa de adesão e Participações vêm das tabelas de Resultados Comerciais acima.</p>
       <div className="overflow-x-auto"><table className="w-full text-sm">
-        <thead><tr className="text-left text-muted-foreground"><th className="px-2 py-1 text-center">Modalidade</th><th className="px-2 py-1 text-center">Agenciamento <span className="font-normal">(contratual)</span></th><th className="px-2 py-1 text-center">Agenciamento <span className="font-normal">(promocional)</span></th><th className="px-2 py-1 text-center">Taxa de Adesão</th><th className="px-2 py-1 text-center">Participação OPERADORA</th><th className="px-2 py-1 text-center">Participação ADMINISTRADORA</th><th className="px-2 py-1 text-center">Participação AGENCIADORA</th><th className="whitespace-nowrap px-2 py-1 text-center">Total de vidas {resumoFaixas}</th><th className="px-2 py-1 text-center">Sinistralidade (%)</th><th className="px-2 py-1 text-center">Mensalidade média</th><th /></tr></thead>
-        <tbody>{resultados.map((r, i) => { const c = r.config, cod = c.produto_codigo; const vt = vidaText[cod] ?? String(c.total_vidas); const st = sinText[cod] ?? sinTexto(c.sinistralidade_percentual); return <tr key={cod} className="border-t border-border align-top">
+        <thead><tr className="text-left text-muted-foreground"><th className="px-2 py-1 text-center">Modalidade</th><th className="px-2 py-1 text-center">Agenciamento <span className="font-normal">(contratual)</span></th><th className="px-2 py-1 text-center">Agenciamento <span className="font-normal">(promocional)</span></th><th className="px-2 py-1 text-center">Taxa de Adesão</th><th className="px-2 py-1 text-center">Participação OPERADORA</th><th className="px-2 py-1 text-center">Participação ADMINISTRADORA</th><th className="px-2 py-1 text-center">Participação AGENCIADORA</th><th className="whitespace-nowrap px-2 py-1 text-center">Total de vidas {resumoFaixas}</th><th className="px-2 py-1 text-center">Sinistralidade (%)</th><th className="px-2 py-1 text-center">Desp. Assist. média <span className="font-normal">(R$ vida/mês)</span></th><th className="px-2 py-1 text-center">% Copart <span className="font-normal">(sobre a Desp. Assist. média)</span></th><th className="px-2 py-1 text-center">Mensalidade média</th><th /></tr></thead>
+        <tbody>{resultados.map((r, i) => { const c = r.config, cod = c.produto_codigo; const vt = vidaText[cod] ?? String(c.total_vidas); return <tr key={cod} className="border-t border-border align-top">
           <th scope="row" className="px-2 py-2 text-left">{nomes[i]}{!r.participacoesValidas && <span className="block text-xs text-destructive">Participações ≠ 100%</span>}</th>
           <td aria-label={`Agenciamento contratual ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.agenciamento_parcela_1)}</td>
           <td aria-label={`Agenciamento promocional ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(promocional.resultados[i].condicao.agenciamento_parcela_1)}</td>
@@ -126,16 +134,16 @@ export default function UberabaSimulacao() {
           <td aria-label={`Participação ADMINISTRADORA ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.participacao_lancers)}</td>
           <td aria-label={`Participação AGENCIADORA ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.participacao_siga)}</td>
           <td className="px-2 py-2"><Input aria-label={`Total de vidas ${nomes[i]}`} className="sim-editable mx-auto w-28 text-center" type="number" min={1} max={100000} step={1} value={vt} aria-invalid={!validarVidas(Number(vt))} onChange={e => { const v = e.target.value; setVidaText(p => ({ ...p, [cod]: v })); if (validarVidas(Number(v))) alterar(cod, { total_vidas: Number(v) }); }} onBlur={() => setVidaText(p => ({ ...p, [cod]: String(c.total_vidas) }))} /></td>
-          <td className="px-2 py-2"><div className="flex items-center justify-center gap-1"><Input aria-label={`Sinistralidade ${nomes[i]}`} className="sim-editable w-24 text-center" type="text" inputMode="decimal" value={st} aria-invalid={st.trim() === '' || !validarSinistralidade(Number(st.replace(',', '.')))} onChange={e => { const v = e.target.value; setSinText(p => ({ ...p, [cod]: v })); const n = Number(v.replace(',', '.')); if (v.trim() !== '' && validarSinistralidade(n)) alterar(cod, { sinistralidade_percentual: n }); }} onBlur={() => setSinText(p => ({ ...p, [cod]: sinTexto(c.sinistralidade_percentual) }))} />
-            {i === 0 ? <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" aria-label="Replicar Sinistralidade do PCA nos demais" onClick={replicar}><Copy className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Replicar</TooltipContent></Tooltip> : <span aria-hidden className="h-7 w-7 shrink-0" />}
-          </div></td>
+          {CAMPOS.map(({ campo, rotulo, valido }) => { const k = `${campo}:${cod}`; const t = textos[k] ?? campoTexto(campo, c[campo]); return <td key={campo} className="px-2 py-2"><div className="flex items-center justify-center gap-1"><Input aria-label={`${rotulo} ${nomes[i]}`} className="sim-editable w-24 text-center" type="text" inputMode="decimal" value={t} aria-invalid={t.trim() === '' || !valido(Number(t.replace(',', '.')))} onChange={e => { const v = e.target.value; setTextos(p => ({ ...p, [k]: v })); const n = Number(v.replace(',', '.')); if (v.trim() !== '' && valido(n)) alterar(cod, { [campo]: n } as Partial<ConfigSimulacao>); }} onBlur={() => setTextos(p => ({ ...p, [k]: campoTexto(campo, c[campo]) }))} />
+            {i === 0 ? <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" aria-label={`Replicar ${rotulo} do PCA nos demais`} onClick={() => replicar(campo)}><Copy className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Replicar</TooltipContent></Tooltip> : <span aria-hidden className="h-7 w-7 shrink-0" />}
+            </div>{campo === 'copart_percentual' && <span className="mt-1 block text-center text-xs text-muted-foreground tabular-nums">{num(coparticipacaoVidaMes(c))} por vida/mês</span>}</td>; })}
           <td className="px-2 py-2 text-center tabular-nums">{num(r.media)}</td>
           <td className="px-2 py-2"><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label={`Restaurar ${nomes[i]}`} onClick={() => restaurar(cod)}><RotateCcw /></Button></TooltipTrigger><TooltipContent>Restaurar padrão</TooltipContent></Tooltip></td>
         </tr>; })}</tbody>
         <tfoot><tr className="border-t border-border bg-secondary font-semibold text-primary">
           <th scope="row" colSpan={7} className="px-2 py-3 text-left">Total</th>
           <td className="px-2 py-3"><output aria-label="Total de vidas consolidado" className="block w-full text-center tabular-nums">{int(totalVidas)}</output></td>
-          <td colSpan={3} />
+          <td colSpan={5} />
         </tr></tfoot>
       </table></div>
     </section></BlocoRecolhido>

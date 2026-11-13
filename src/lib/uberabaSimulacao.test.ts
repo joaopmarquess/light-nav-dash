@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calcularSimulacao, calcularSimulacaoComercial, comercialDaFrente, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, relatorioMemoriaCalculo, parametrosMemoriaCalculo, simularPorBase, replicarSinistralidade, resultadoTotalEnte, ENTES_RESULTADO } from './uberabaSimulacao';
+import { despesaMediaPadrao, copartPadrao, replicarParametro, coparticipacaoVidaMes, calcularSimulacao, calcularSimulacaoComercial, comercialDaFrente, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, relatorioMemoriaCalculo, parametrosMemoriaCalculo, simularPorBase, replicarSinistralidade, resultadoTotalEnte, ENTES_RESULTADO } from './uberabaSimulacao';
 import padroesHistoricos from '@/data/uberabaSimulacao/configuracao_padrao.json';
 import { INDICES_PADRAO, indicadoresPadrao, tabelaIndexada } from './uberabaTabelasComerciais';
 const padrao=padroesHistoricos[0];
@@ -306,8 +306,8 @@ describe('Relatório da Memória de Cálculo (Resultado por Ente)', () => {
   });
   it('só Agenciamento e os resultados que o contêm aparecem em dobro', () => {
     const rotulos = (i: number) => rel[i].indicadores.map(x => x.base ? `${x.label} · ${x.base}` : x.label);
-    expect(rotulos(0)).toEqual(['Taxa de Adesão', 'Faturamento', 'Total']);
-    expect(rotulos(1)).toEqual(['Faturamento', '− Despesa Assistencial', '= Resultado Operacional', '− Agenciamento · Contratual', '− Agenciamento · Promocional', '= Resultado Líquido · Contratual', '= Resultado Líquido · Promocional']);
+    expect(rotulos(0)).toEqual(['Taxa de Adesão', 'Faturamento', 'Coparticipação', 'Total']);
+    expect(rotulos(1)).toEqual(['Faturamento', '+ Coparticipação', '− Despesa Assistencial', '= Resultado Operacional', '− Agenciamento · Contratual', '− Agenciamento · Promocional', '= Resultado Líquido · Contratual', '= Resultado Líquido · Promocional']);
     expect(rotulos(2)).toEqual(['Faturamento']);
     expect(rotulos(3)).toEqual(['Taxa de Adesão', 'Faturamento', 'Agenciamento · Contratual', 'Agenciamento · Promocional', 'Resultado · Contratual', 'Resultado · Promocional']);
     expect(rel.map(e => e.mensais.map(m => m.base))).toEqual([[undefined], ['Contratual', 'Promocional'], [undefined], ['Contratual', 'Promocional']]);
@@ -320,8 +320,8 @@ describe('Relatório da Memória de Cálculo (Resultado por Ente)', () => {
     expect(fat.itens.map(i => i.modalidade)).toEqual(nomesR);
     expect(fat.itens.reduce((s, i) => s + i.valor, 0)).toBeCloseTo(r.bensaude.faturamento, 6);
     expect(fat.valorExibido).toBeCloseTo(r.bensaude.faturamento, 6);
-    expect(rel[1].indicadores[1].valorExibido).toBeCloseTo(-r.bensaude.despesa, 6);
-    expect(rel[1].indicadores[5].itens).toEqual([{ modalidade: 'Consolidado', calculo: expect.any(String), valor: r.bensaude.liquido }]);
+    expect(rel[1].indicadores[2].valorExibido).toBeCloseTo(-r.bensaude.despesa, 6);
+    expect(rel[1].indicadores[6].itens).toEqual([{ modalidade: 'Consolidado', calculo: expect.any(String), valor: r.bensaude.liquido }]);
   });
   it('o total do ano da evolução mensal fecha com o anual e Vidas acumuladas termina em 10.000', () => {
     const r = resumoSimulacao(rsR);
@@ -356,5 +356,43 @@ describe('Replicar Sinistralidade do PCA', () => {
 describe('Resultado total no título do quadro recolhido', () => {
   it('cada ente mostra o seu resultado final', () => {
     expect(ENTES_RESULTADO.map(e => resultadoTotalEnte(e).chave)).toEqual(['beneficiario.total', 'bensaude.liquido', 'lancers.faturamento', 'siga.resultado']);
+  });
+});
+
+describe('Desp. Assist. média e % Copart (pedido de 13/11/2026)', () => {
+  const nomesR = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
+  const configs = fonte.padroes.map(c => ({ ...c, sinistralidade_percentual: 70, despesa_media: despesaMediaPadrao, copart_percentual: copartPadrao }));
+  const [contratual] = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao());
+  const rs = contratual.resultados;
+  it('padrões: Desp. Assist. média R$ 280,45 e % Copart 20%', () => {
+    expect(despesaMediaPadrao).toBe(280.45);
+    expect(copartPadrao).toBe(20);
+  });
+  it('coparticipação por vida/mês = 20% de 280,45 = 56,09', () => {
+    expect(coparticipacaoVidaMes(configs[0])).toBeCloseTo(56.09, 9);
+  });
+  it('coparticipação do mês = vidas na carteira × 56,09', () => {
+    rs.forEach(r => r.mensal.forEach(m => expect(m.coparticipacao).toBeCloseTo(m.acumuladas * 56.09, 6)));
+  });
+  it('soma ao Total pago pelo beneficiário e entra 100% para a OPERADORA', () => {
+    const r = resumoSimulacao(rs);
+    expect(r.beneficiario.total).toBeCloseTo(r.beneficiario.adesao + r.beneficiario.faturamento + r.beneficiario.coparticipacao, 6);
+    expect(r.bensaude.operacional).toBeCloseTo(r.bensaude.faturamento + r.bensaude.coparticipacao - r.bensaude.despesa, 6);
+    expect(r.bensaude.coparticipacao).toBeCloseTo(r.beneficiario.coparticipacao, 9);
+    expect(r.lancers.faturamento).toBeCloseTo(resumoSimulacao(simularPorBase(configs.map(c => ({ ...c, copart_percentual: 0 })), INDICES_PADRAO, indicadoresPadrao())[0].resultados).lancers.faturamento, 6);
+  });
+  it('a Desp. Assist. média não muda a despesa assistencial, que segue faturamento × sinistralidade', () => {
+    const outra = simularPorBase(configs.map(c => ({ ...c, despesa_media: 500 })), INDICES_PADRAO, indicadoresPadrao())[0].resultados;
+    expect(resumoSimulacao(outra).bensaude.despesa).toBeCloseTo(resumoSimulacao(rs).bensaude.despesa, 6);
+  });
+  it('Replicar copia Desp. Assist. média e % Copart do PCA', () => {
+    const cs = configs.map((c, i) => ({ ...c, despesa_media: [300, 1, 2, 3][i], copart_percentual: [15, 1, 2, 3][i] }));
+    expect(replicarParametro(cs, 'PCA', 'despesa_media').map(c => c.despesa_media)).toEqual([300, 300, 300, 300]);
+    expect(replicarParametro(cs, 'PCA', 'copart_percentual').map(c => c.copart_percentual)).toEqual([15, 15, 15, 15]);
+  });
+  it('memória de cálculo da coparticipação mostra vidas-mês, despesa média e %', () => {
+    const m = memoriaCalculo('bensaude.coparticipacao', rs, nomesR);
+    expect(m.itens[0].calculo).toContain('Desp. Assist. média 280,45 × % Copart 20,00%');
+    expect(m.valor).toBeCloseTo(resumoSimulacao(rs).bensaude.coparticipacao, 6);
   });
 });
