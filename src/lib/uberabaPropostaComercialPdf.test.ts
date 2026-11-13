@@ -41,12 +41,13 @@ describe("Proposta Comercial › 1. Tabelas", () => {
 describe("Proposta Comercial › Glossário e Notas Explicativas", () => {
   it("lista só os termos pedidos pelo Dênis, na ordem em que aparecem na Proposta", () => {
     expect(GLOSSARIO_PROPOSTA.map((g) => g.termo)).toEqual([
-      "DISTRIBUIDORES", "ENTES", "PLATAFORMAS ASSOCIADAS", "ADMINISTRADAS", "CORRETORAS",
+      "DISTRIBUIDORES", "ENTES", "ADMINISTRADAS",
       "PARTICIPAÇÃO", "AGENCIAMENTO", "CONTRATUAL", "PROMOCIONAL", "TAXA DE ADESÃO",
     ]);
   });
   it("descreve cada ente e os termos da Participação", () => {
     const sub = (t: string) => GLOSSARIO_PROPOSTA.find((g) => g.termo === t)?.itens?.map((i) => i.termo);
+    expect(sub("DISTRIBUIDORES")).toEqual(["PLATAFORMAS ASSOCIADAS", "CORRETORAS"]);
     expect(sub("ENTES")).toEqual(["ADMINISTRADORA", "AGENCIADORA", "OPERADORA", "BENEFICIÁRIO"]);
     expect(sub("PARTICIPAÇÃO")).toEqual(["TABELA CHEIA", "TABELA NET", "SPREAD"]);
   });
@@ -134,9 +135,11 @@ import { topicosGlossario } from "./uberabaPropostaComercialPdf";
 describe("Glossário · tópicos e subtópicos numerados", () => {
   it("numera termos e subtermos a partir do número do tópico do Glossário", () => {
     const t = topicosGlossario();
-    expect(t.slice(0, 3).map((x) => `${x.numero} ${x.termo}`)).toEqual(["6.1 DISTRIBUIDORES", "6.2 ENTES", "6.2.1 ADMINISTRADORA"]);
-    expect(t.find((x) => x.termo === "SPREAD")?.numero).toBe("6.6.3");
-    expect(t.at(-1)).toMatchObject({ numero: "6.10", termo: "TAXA DE ADESÃO" });
+    expect(t.slice(0, 3).map((x) => `${x.numero} ${x.termo}`)).toEqual(["6.1 DISTRIBUIDORES", "6.1.1 PLATAFORMAS ASSOCIADAS", "6.1.2 CORRETORAS"]);
+    expect(t.find((x) => x.termo === "ADMINISTRADORA")?.numero).toBe("6.2.1");
+    expect(GLOSSARIO_PROPOSTA[0].nota).toContain("Plano Empresarial (PJ+) pode ser distribuído por Agenciadoras e Corretoras Autorizadas");
+    expect(t.find((x) => x.termo === "SPREAD")?.numero).toBe("6.4.3");
+    expect(t.at(-1)).toMatchObject({ numero: "6.8", termo: "TAXA DE ADESÃO" });
   });
 });
 
