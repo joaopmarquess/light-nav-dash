@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import UberabaSimulacaoFaixas from '@/components/UberabaSimulacaoFaixas';
 import { EVENTO_TABELAS_COMERCIAIS, lerIndicadores, lerIndices } from '@/lib/uberabaTabelasComerciais';
-import { calcularSimulacaoComercial, comercialDaFrente, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, type ConfigSimulacao, type CondicaoSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
+import { BASES_AGENCIAMENTO, calcularSimulacaoComercial, comercialDaFrente, type BaseAgenciamento, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, type ConfigSimulacao, type CondicaoSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
 // Siglas dos parâmetros do Proj. Uberaba (13/11/2026); preços e percentuais vêm das tabelas de Resultados Comerciais.
 const nomes = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
@@ -59,12 +59,12 @@ function Entes({ resultados }: { resultados: ResultadoSimulacao[] }) {
     </section>)}</div>;
 }
 
-function PremissasImportadas({ condicoes }: { condicoes: CondicaoSimulacao[] }) {
+function PremissasImportadas({ condicoes, base }: { condicoes: CondicaoSimulacao[]; base: string }) {
   return <details className="sim-assumptions"><summary>Premissas e fontes (Resultados Comerciais e %CART fornecido em 26/10/2026)</summary><ul>
     <li>Distribuição etária: %CART da imagem de Entradas Lancers, referência de 11.318 entradas, aplicada às quatro modalidades; faixas arredondadas por mês, com residual na faixa 59 ou mais.</li>
     {fonte.faixas.map(f => <li key={f.faixa_numero}>{f.faixa_etaria}: {pct(f.percentual_normalizado)}</li>)}
     <li>Mensalidade: Enfermaria da tabela de cada produto no quadro Tabelas acima (Tabela Referencial × índice).</li>
-    <li>Agenciamento: percentual Contratual × uma mensalidade de cada venda, pago no mês da venda, somente de janeiro a dezembro.</li>
+    <li>Agenciamento: percentual {base} (chave acima da tabela) × uma mensalidade de cada venda, pago no mês da venda, somente de janeiro a dezembro.</li>
     <li>Participações: Bensaúde = Operadora; Lancers = Administradora; SIGA = Agenciadora, conforme os Indicadores variáveis de cada produto.</li>
     <li>Despesa Assistencial = faturamento × Sinistralidade informada por modalidade.</li>
     <li>Taxa de adesão paga pelo beneficiário diretamente à SIGA.</li>
@@ -90,7 +90,9 @@ export default function UberabaSimulacao({ acoesTarget }: { acoesTarget?: HTMLEl
   const [vidaText, setVidaText] = useState<Record<string, string>>({});
   const [sinText, setSinText] = useState<Record<string, string>>({});
   const { indices, indicadores } = useResultadosComerciais();
-  const resultados = useMemo(() => configuracoes.map(c => calcularSimulacaoComercial(c, comercialDaFrente(c.produto_codigo, indices, indicadores))), [configuracoes, indices, indicadores]);
+  const [baseAgenciamento, setBaseAgenciamento] = useState<BaseAgenciamento>('contratual');
+  const rotuloBase = BASES_AGENCIAMENTO.find(b => b.id === baseAgenciamento)!.rotulo;
+  const resultados = useMemo(() => configuracoes.map(c => calcularSimulacaoComercial(c, comercialDaFrente(c.produto_codigo, indices, indicadores, baseAgenciamento))), [configuracoes, indices, indicadores, baseAgenciamento]);
   const totalVidas = resultados.reduce((total, r) => total + r.anual.vidas, 0);
   const alterar = (codigo: string, patch: Partial<ConfigSimulacao>) => setConfiguracoes(prev => prev.map(c => c.produto_codigo === codigo ? { ...c, ...patch } : c));
   const restaurar = (codigo: string) => {
@@ -103,9 +105,16 @@ export default function UberabaSimulacao({ acoesTarget }: { acoesTarget?: HTMLEl
   return <article className="uberaba-simulation" aria-label="Simulador Comercial Bensaúde|Uberaba">
     {acoesTarget ? createPortal(acoes, acoesTarget) : acoesTarget === undefined && <header className="sim-heading justify-end">{acoes}</header>}
     <section aria-label="Variáveis por modalidade" className="rounded-md border border-border p-4">
-      <p className="mb-2 text-xs text-muted-foreground">Preços (Enfermaria), Agenciamento (Contratual), Taxa de adesão e Participações vêm das tabelas de Resultados Comerciais acima.</p>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">Preços (Enfermaria), Agenciamento ({rotuloBase}), Taxa de adesão e Participações vêm das tabelas de Resultados Comerciais acima.</p>
+        <div className="flex items-center gap-2 text-sm"><span className="text-muted-foreground">Agenciamento</span>
+          <div role="group" aria-label="Percentual de agenciamento" className="inline-flex overflow-hidden rounded-md border border-border">
+            {BASES_AGENCIAMENTO.map(b => <button key={b.id} type="button" aria-pressed={baseAgenciamento === b.id} onClick={() => setBaseAgenciamento(b.id)} className={`px-3 py-1 text-xs font-semibold uppercase ${baseAgenciamento === b.id ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}>{b.rotulo}</button>)}
+          </div>
+        </div>
+      </div>
       <div className="overflow-x-auto"><table className="w-full text-sm">
-        <thead><tr className="text-left text-muted-foreground"><th className="px-2 py-1 text-center">Modalidade</th><th className="px-2 py-1 text-center">Agenciamento</th><th className="px-2 py-1 text-center">Taxa de Adesão</th><th className="px-2 py-1 text-center">Participação Bensaúde</th><th className="px-2 py-1 text-center">Participação Lancers</th><th className="px-2 py-1 text-center">Participação SIGA</th><th className="px-2 py-1 text-center">Total de vidas</th><th className="px-2 py-1 text-center">Sinistralidade (%)</th><th className="px-2 py-1 text-center">Mensalidade média</th><th /></tr></thead>
+        <thead><tr className="text-left text-muted-foreground"><th className="px-2 py-1 text-center">Modalidade</th><th className="px-2 py-1 text-center">Agenciamento <span className="font-normal">({rotuloBase.toLowerCase()})</span></th><th className="px-2 py-1 text-center">Taxa de Adesão</th><th className="px-2 py-1 text-center">Participação Bensaúde</th><th className="px-2 py-1 text-center">Participação Lancers</th><th className="px-2 py-1 text-center">Participação SIGA</th><th className="px-2 py-1 text-center">Total de vidas</th><th className="px-2 py-1 text-center">Sinistralidade (%)</th><th className="px-2 py-1 text-center">Mensalidade média</th><th /></tr></thead>
         <tbody>{resultados.map((r, i) => { const c = r.config, cod = c.produto_codigo; const vt = vidaText[cod] ?? String(c.total_vidas); const st = sinText[cod] ?? String(c.sinistralidade_percentual ?? sinistralidadePadrao); return <tr key={cod} className="border-t border-border align-top">
           <th scope="row" className="px-2 py-2 text-left">{nomes[i]}{!r.participacoesValidas && <span className="block text-xs text-destructive">Participações ≠ 100%</span>}</th>
           <td aria-label={`Agenciamento ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.agenciamento_parcela_1)}</td>
@@ -128,7 +137,7 @@ export default function UberabaSimulacao({ acoesTarget }: { acoesTarget?: HTMLEl
     <div className="space-y-4">
       <h3 className="flex items-center gap-2">Resultado por Ente <span className="text-sm font-normal text-muted-foreground">· clique no indicador para ver por modalidade</span></h3>
       <Entes resultados={resultados} />
-      <PremissasImportadas condicoes={resultados.map(r => r.condicao)} />
+      <PremissasImportadas condicoes={resultados.map(r => r.condicao)} base={rotuloBase} />
     </div>
     <p className="flex items-center gap-1 text-xs text-muted-foreground"><Info className="h-3 w-3" />Simulação de proposta comercial, não aprovação ou resultado realizado.</p>
   </article>;

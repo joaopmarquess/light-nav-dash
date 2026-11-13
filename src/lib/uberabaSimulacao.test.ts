@@ -241,6 +241,16 @@ describe('Simulação de resultados com as tabelas de Resultados Comerciais', ()
     const pj = simular('PCE_100_MAIS', INDICES_PADRAO, ind);
     expect([pj.condicao.participacao_bensaude, pj.condicao.participacao_siga]).toEqual([0.92, 0.08]);
   });
+  it.each([
+    ['PCA', 0.9, 1.5], ['PME_ADMINISTRADO', 0.9, 1.5], ['PCE_50_99', 0.9, 1.5], ['PCE_100_MAIS', 0.9, 1],
+  ] as const)('%s usa Contratual por padrão e Promocional pela chave', (codigo, contratual, promocional) => {
+    expect(comercialDaFrente(codigo, INDICES_PADRAO, indicadoresPadrao()).condicao.agenciamento_parcela_1).toBe(contratual);
+    expect(comercialDaFrente(codigo, INDICES_PADRAO, indicadoresPadrao(), 'contratual').condicao.agenciamento_parcela_1).toBe(contratual);
+    const config = fonte.padroes.find(c => c.produto_codigo === codigo)!;
+    const r = calcularSimulacaoComercial(config, comercialDaFrente(codigo, INDICES_PADRAO, indicadoresPadrao(), 'promocional'));
+    expect(r.condicao.agenciamento_parcela_1).toBe(promocional);
+    r.mensal.forEach((m, i) => expect(m.agenciamento).toBeCloseTo(r.novasReceitas[i] * promocional, 8));
+  });
   it('soma 10.000 vidas no padrão', () => {
     const rs = fonte.padroes.map(c => simular(c.produto_codigo));
     expect(consolidarSimulacao(rs).anual.vidas).toBe(10000);

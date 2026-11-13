@@ -71,10 +71,14 @@ export const ORIGEM_RESULTADOS_COMERCIAIS = 'Resultados Comerciais';
 
 /**
  * Pedido de 13/11/2026: sem seleção de tabela ou condição; tudo vem da tabela correspondente em Resultados Comerciais.
- * Mensalidade = Enfermaria da tabela (Referência × índice). Agenciamento = Contratual, numa parcela.
+ * Mensalidade = Enfermaria da tabela (Referência × índice). Agenciamento = Contratual ou Promocional (chave), numa parcela.
  * Taxa de adesão = Taxa de adesão (PJ+ não tem). Bensaúde = Operadora; Lancers = Administradora; SIGA = Agenciadora.
  */
-export function comercialDaFrente(produtoCodigo: string, indices: Indices, indicadores: IndicadoresPorFrente): ComercialSimulacao {
+/** Chave da Simulação de resultados: qual percentual de Agenciamento dos Indicadores variáveis entra no cálculo. */
+export type BaseAgenciamento = 'contratual' | 'promocional';
+export const BASES_AGENCIAMENTO: { id: BaseAgenciamento; rotulo: string }[] = [{ id: 'contratual', rotulo: 'Contratual' }, { id: 'promocional', rotulo: 'Promocional' }];
+
+export function comercialDaFrente(produtoCodigo: string, indices: Indices, indicadores: IndicadoresPorFrente, agenciamento: BaseAgenciamento = 'contratual'): ComercialSimulacao {
   const id = FRENTE_DO_PRODUTO[produtoCodigo];
   if (!id) throw new Error('Modalidade sem tabela em Resultados Comerciais.');
   const i = indicadores[id];
@@ -87,7 +91,7 @@ export function comercialDaFrente(produtoCodigo: string, indices: Indices, indic
       participacao_bensaude: operadora / 100,
       participacao_lancers: vitalicio ? 0 : i.spread / 100,
       participacao_siga: vitalicio ? i.spread / 100 : 0,
-      agenciamento_parcela_1: i.contratual / 100, agenciamento_parcela_2: 0, agenciamento_parcela_3: 0, agenciamento_parcela_4: 0, agenciamento_parcela_5: 0,
+      agenciamento_parcela_1: i[agenciamento] / 100, agenciamento_parcela_2: 0, agenciamento_parcela_3: 0, agenciamento_parcela_4: 0, agenciamento_parcela_5: 0,
       taxa_adesao: vitalicio ? 0 : i.adesao / 100,
     },
   };
