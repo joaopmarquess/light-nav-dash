@@ -198,7 +198,7 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
     "Distribuição etária: %CART fornecido em 26/10/2026, aplicado às quatro modalidades.",
     "Taxa de adesão paga pelo beneficiário diretamente à AGENCIADORA.",
     premissaDespesa(baseDespesaDos(cenarios)),
-    "Coparticipação = vidas projetadas acumuladas em cada mês × Desp. assist. média × % Copart; paga pelo beneficiário e 100% da OPERADORA.",
+    "Coparticipação = vidas projetadas acumuladas em cada mês × Desp. assist. média × % Copart; o ano soma os valores mensais, não as vidas; paga pelo beneficiário e 100% da OPERADORA.",
     "Simulação de proposta comercial, não aprovação ou resultado realizado.",
   ].forEach(t => paragrafo(`- ${t}`));
 

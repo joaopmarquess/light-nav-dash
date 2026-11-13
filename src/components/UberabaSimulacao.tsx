@@ -76,7 +76,7 @@ function PremissasImportadas({ cenarios }: { cenarios: CenarioAgenciamento[] }) 
     <li>Agenciamento: percentual Contratual e Promocional (um bloco de resultados para cada) × uma mensalidade de cada venda, pago no mês da venda, somente de janeiro a dezembro.</li>
     <li>Participações: OPERADORA, ADMINISTRADORA e AGENCIADORA, conforme os Indicadores variáveis de cada produto.</li>
     <li>{premissaDespesa(baseDespesaDos(cenarios))}</li>
-    <li>Coparticipação = vidas projetadas acumuladas em cada mês × Desp. Assist. média × % Copart; paga pelo beneficiário, soma ao Total dele e entra 100% para a OPERADORA.</li>
+    <li>Coparticipação = vidas projetadas acumuladas em cada mês × Desp. Assist. média × % Copart; o ano soma os valores mensais, não as vidas; paga pelo beneficiário, soma ao Total dele e entra 100% para a OPERADORA.</li>
     <li>Taxa de adesão paga pelo beneficiário diretamente à AGENCIADORA.</li>
     <li>Faturamento cumulativo, sem cancelamentos ou reajustes. Acomodação: Enfermaria. Simulação de proposta, não resultado realizado.</li>
     {contratual.map((c, i) => <li key={c.produto_codigo}>{nomes[i]}: OPERADORA {pct(c.participacao_bensaude)}, ADMINISTRADORA {pct(c.participacao_lancers)}, AGENCIADORA {pct(c.participacao_siga)}, agenciamento contratual {pct(c.agenciamento_parcela_1)} / promocional {pct(promocional[i].agenciamento_parcela_1)}, adesão {pct(c.taxa_adesao)}</li>)}

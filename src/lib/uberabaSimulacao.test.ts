@@ -393,7 +393,7 @@ describe('Desp. Assist. média e % Copart (pedido de 13/11/2026)', () => {
   it('Receitas por vida/mês = mensalidade média + copart. (56,09 com os padrões)', () => {
     rs.forEach(r => expect(receitaVidaMes(r)).toBeCloseTo(r.media + 56.09, 9));
   });
-  it('memória de cálculo da coparticipação mostra vidas-mês, despesa média e %', () => {
+  it('memória de cálculo da coparticipação mostra a conta mês a mês, despesa média e %', () => {
     const m = memoriaCalculo('bensaude.coparticipacao', rs, nomesR);
     expect(m.itens[0].calculo).toContain('Desp. Assist. média 280,45 × % Copart 20,00%');
     expect(m.valor).toBeCloseTo(resumoSimulacao(rs).bensaude.coparticipacao, 6);
@@ -415,6 +415,15 @@ describe('Chave PERCENTUAL / MÉDIA ASSIST. da Despesa Assistencial (pedido de 1
     const m = memoriaCalculo('bensaude.despesa', c.resultados, nomesR);
     expect(m.formula).toContain('Média Assist.');
     expect(m.itens[0].calculo).toContain('Desp. Assist. média 280,45');
+  });
+  it('Média Assist.: memória mostra a despesa mês a mês e nunca soma as vidas acumuladas', () => {
+    const [c] = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao(), 'media');
+    const m = memoriaCalculo('bensaude.despesa', c.resultados, nomesR);
+    const pca = m.itens[0].calculo;
+    expect(pca).toContain('Jan 100 = 28.045,00');
+    expect(pca).toContain('Dez 2.000 = 560.900,00');
+    expect(pca).not.toContain('vidas-mês');
+    expect(m.itens.every(it => !/11\.184|55\.920/.test(it.calculo))).toBe(true);
   });
   it('a chave vale para os dois cenários de agenciamento', () => {
     const cs = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao(), 'media');
