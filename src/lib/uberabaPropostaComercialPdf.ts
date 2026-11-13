@@ -96,34 +96,40 @@ export function paragrafosProposta(textos: TextosSecoes | null = null): string[]
   return SECOES_TEXTO.map((s) => paragrafosDe(t[s.id]));
 }
 
-/**
- * Glossário e Notas Explicativas: termos e notas do último tópico, sem número elevado no corpo do documento
- * (retirado a pedido do Dênis em 13/11/2026). Termos e notas são indicados pelo usuário.
- */
-export const GLOSSARIO_PROPOSTA: { termo: string; nota: string }[] = [
-  { termo: "ENFERMARIA", nota: "Apartamento = TRUNCAR(Enfermaria × 1,25; 2)" },
-];
+/** Termo do Glossário; `itens` detalha subtermos (ex.: cada ente). `provisorio` marca texto ainda não confirmado pelo Dênis. */
+export type TermoGlossario = { termo: string; nota: string; provisorio?: boolean; itens?: { termo: string; nota: string; provisorio?: boolean }[] };
+
+const LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
 
 /**
- * Notas do Glossário com o fator do Apartamento atual: um só fator quando as tabelas coincidem;
- * do contrário, o fator de cada tabela pelo nome exibido. Depois, uma nota por sigla com os parâmetros da tabela.
+ * Glossário e Notas Explicativas (refeito a pedido do Dênis em 13/11/2026): só os termos que ele listou, na ordem em
+ * que aparecem desde o início da Proposta (Introdução → quadro de parâmetros → Indicadores variáveis). Textos com
+ * `provisorio` são minuta para ele confirmar ou reescrever; "Lorem ipsum" onde o significado não foi informado.
  */
-export function glossarioProposta(fatores: Fatores = FATORES_PADRAO, rotulos: RotulosPorFrente = rotulosPadrao(), indices: Indices = INDICES_PADRAO) {
-  const ids = FRENTES_COMERCIAIS.map((f) => f.id);
-  const iguais = ids.every((id) => fatores[id] === fatores[ids[0]]);
-  const nota = iguais
-    ? `Apartamento = TRUNCAR(Enfermaria × ${formatarFator(fatores[ids[0]])}; 2)`
-    : [`Apartamento = TRUNCAR(Enfermaria × fator da tabela; 2), sendo:`, ...ids.map((id) => `${rotulos[id].titulo}: ${formatarFator(fatores[id])}`)].join("\n");
-  const cap = (t: string) => t.toLowerCase().replace(/(^|\s)(\p{L})/gu, (m) => m.toUpperCase()).replace(/\b(Por|De|Ou|A)\b/g, (m) => m.toLowerCase());
-  const siglas = PARAMETROS_UBERABA.map((p) => {
-    const vidas = vidasTexto(p);
-    return {
-      termo: p.sigla,
-      nota: `${cap(p.contratacao)}${vidas ? `, de ${vidas}` : ""}. Boletagem: ${cap(p.boletagem)}. Distribuidores: ${cap(p.distribuidores)}. Tabela ${rotulos[p.id].titulo}, a ${formatarPercentual(indices[p.id])} da Tabela Referencial.`,
-    };
-  });
-  return [...GLOSSARIO_PROPOSTA.map((g) => (g.termo === "ENFERMARIA" ? { ...g, nota } : g)), ...siglas];
-}
+export const GLOSSARIO_PROPOSTA: TermoGlossario[] = [
+  { termo: "DISTRIBUIDORES", provisorio: true, nota: "Canais responsáveis pela comercialização dos produtos junto aos clientes. Nesta proposta, os produtos com boletagem pela Administradora (PCA, PME ADM. e PCE ADM.) são distribuídos pelas Plataformas Associadas, e o Plano Empresarial (PJ+), pelas Corretoras." },
+  { termo: "ENTES", provisorio: true, nota: "Partes que participam da operação dos produtos desta proposta e entre as quais se distribuem as receitas e os custos de cada contrato.", itens: [
+    { termo: "ADMINISTRADORA", provisorio: true, nota: "Lancers Administradora de Benefícios, responsável pela boletagem (emissão e cobrança das mensalidades) e pela administração dos contratos do PCA, do PME ADM. e do PCE ADM., remunerada pela sua participação na mensalidade." },
+    { termo: "AGENCIADORA", provisorio: true, nota: "Siga Soluções, responsável pela venda e captação de novos contratos, sem atuação na gestão ou na operação do plano, remunerada conforme as condições comerciais de cada produto." },
+    { termo: "OPERADORA", provisorio: true, nota: "O Bensaúde, operadora de planos de saúde responsável pelos produtos, pela rede assistencial e pela cobertura dos beneficiários." },
+    { termo: "BENEFICIÁRIO", provisorio: true, nota: "Pessoa física vinculada ao plano, como titular ou dependente, que paga a mensalidade e, quando houver, a taxa de adesão." },
+  ] },
+  { termo: "PLATAFORMAS ASSOCIADAS", provisorio: true, nota: "Canais de venda parceiros da Administradora, por meio dos quais são comercializados o PCA, o PME ADM. e o PCE ADM." },
+  { termo: "ADMINISTRADAS", provisorio: true, nota: "Tabelas dos planos coletivos empresariais com boletagem e administração pela Administradora: PME ADMINISTRADAS (PME ADM., de 03 a 29 vidas) e PJ ADMINISTRADAS (PCE ADM., de 30 a 99 vidas)." },
+  { termo: "CORRETORAS", provisorio: true, nota: "Empresas de corretagem que comercializam o Plano Empresarial (PJ+), destinado a empresas com 100 ou mais vidas, com boletagem pela Operadora." },
+  { termo: "PARTICIPAÇÃO", provisorio: true, nota: "Divisão percentual da mensalidade entre a Operadora e o parceiro de cada produto.", itens: [
+    { termo: "TABELA CHEIA", provisorio: true, nota: "Preço de venda da tabela, pago pelo beneficiário ou pela empresa contratante." },
+    { termo: "TABELA NET", provisorio: true, nota: "Parcela da tabela cheia que cabe à Operadora: tabela cheia × participação da Operadora." },
+    { termo: "SPREAD", provisorio: true, nota: "Diferença entre a tabela cheia e a tabela net, que fica com a Administradora nos produtos com Administradora e com a Agenciadora no Plano Empresarial." },
+  ] },
+  { termo: "AGENCIAMENTO", provisorio: true, nota: "Remuneração pela venda de cada novo contrato, paga pela Operadora e expressa como percentual da primeira mensalidade da venda." },
+  { termo: "CONTRATUAL", provisorio: true, nota: "Percentual de agenciamento previsto em contrato, aplicado nas condições normais de venda." },
+  { termo: "PROMOCIONAL", provisorio: true, nota: LOREM },
+  { termo: "TAXA DE ADESÃO", provisorio: true, nota: "Valor pago pelo beneficiário ao ingressar no plano, expresso como percentual da primeira mensalidade e destinado à Agenciadora. Aplica-se aos produtos com Administradora; o Plano Empresarial não tem taxa de adesão." },
+];
+
+/** Termos do Glossário na ordem do PDF. */
+export const glossarioProposta = (): TermoGlossario[] => GLOSSARIO_PROPOSTA;
 
 
 /**
@@ -466,21 +472,26 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   };
 
   const desenharGlossario = () => {
-    glossarioProposta(fatores, rotulos, indices).forEach((g) => {
-      const xTermo = marginL;
+    const RECUO = 6;
+    const termo = (t: string, nota: string, x: number) => {
+      const largura = usableW - (x - marginL);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(F.texto);
-      const linhasNota = doc.splitTextToSize(g.nota, usableW) as string[];
-      garantir(7 + linhasNota.length * alturaLinha(F.texto));
+      const linhasNota = doc.splitTextToSize(textoPdf(nota), largura) as string[];
+      garantir(7 + Math.min(2, linhasNota.length) * alturaLinha(F.texto));
       // Termo em destaque, sem número de nota.
       doc.setFont("helvetica", "bold");
       doc.setFontSize(F.texto);
       doc.setTextColor(...TINTA);
-      doc.text(g.termo, xTermo, y);
+      doc.text(textoPdf(t), x, y);
       y += 6.5;
       fonteTexto();
-      doc.text(linhasNota, xTermo, y, { lineHeightFactor: 1.35 });
-      y += linhasNota.length * alturaLinha(F.texto) + 3;
+      linhasNota.forEach((l) => { garantir(alturaLinha(F.texto)); doc.text(l, x, y); y += alturaLinha(F.texto); });
+      y += 3;
+    };
+    glossarioProposta().forEach((g) => {
+      termo(g.termo, g.nota, marginL);
+      g.itens?.forEach((i) => termo(i.termo, i.nota, marginL + RECUO));
     });
   };
 

@@ -39,8 +39,20 @@ describe("Proposta Comercial › 1. Tabelas", () => {
 });
 
 describe("Proposta Comercial › Glossário e Notas Explicativas", () => {
-  it("ENFERMARIA keeps the Apartamento rule", () => {
-    expect(GLOSSARIO_PROPOSTA[0]).toEqual({ termo: "ENFERMARIA", nota: "Apartamento = TRUNCAR(Enfermaria × 1,25; 2)" });
+  it("lista só os termos pedidos pelo Dênis, na ordem em que aparecem na Proposta", () => {
+    expect(GLOSSARIO_PROPOSTA.map((g) => g.termo)).toEqual([
+      "DISTRIBUIDORES", "ENTES", "PLATAFORMAS ASSOCIADAS", "ADMINISTRADAS", "CORRETORAS",
+      "PARTICIPAÇÃO", "AGENCIAMENTO", "CONTRATUAL", "PROMOCIONAL", "TAXA DE ADESÃO",
+    ]);
+  });
+  it("descreve cada ente e os termos da Participação", () => {
+    const sub = (t: string) => GLOSSARIO_PROPOSTA.find((g) => g.termo === t)?.itens?.map((i) => i.termo);
+    expect(sub("ENTES")).toEqual(["ADMINISTRADORA", "AGENCIADORA", "OPERADORA", "BENEFICIÁRIO"]);
+    expect(sub("PARTICIPAÇÃO")).toEqual(["TABELA CHEIA", "TABELA NET", "SPREAD"]);
+  });
+  it("não traz mais a nota de Enfermaria nem as siglas", () => {
+    const termos = GLOSSARIO_PROPOSTA.map((g) => g.termo);
+    for (const t of ["ENFERMARIA", "PCA", "PME ADM.", "PCE ADM.", "PJ+"]) expect(termos).not.toContain(t);
   });
 });
 
@@ -56,7 +68,6 @@ describe("quadrosProposta · nomes redigitados", () => {
   });
 });
 
-import { glossarioProposta } from "./uberabaPropostaComercialPdf";
 import { FATORES_PADRAO } from "./uberabaTabelasComerciais";
 
 describe("Proposta · fator do Apartamento", () => {
@@ -64,20 +75,6 @@ describe("Proposta · fator do Apartamento", () => {
     expect(quadrosProposta().map((q) => q.fator)).toEqual(["1,25", "1,25", "1,25", "1,25"]);
     const [, , , pce100] = quadrosProposta(undefined, undefined, undefined, { ...FATORES_PADRAO, pce100: 1.3 });
     expect(pce100.fator).toBe("1,30");
-  });
-  it("Glossário keeps the single-factor rule when all tables agree", () => {
-    expect(glossarioProposta()[0].nota).toBe("Apartamento = TRUNCAR(Enfermaria × 1,25; 2)");
-  });
-  it("Glossário lists each table's factor when they differ", () => {
-    expect(glossarioProposta({ ...FATORES_PADRAO, pcaAdm: 1.3 })[0].nota)
-      .toBe("Apartamento = TRUNCAR(Enfermaria × fator da tabela; 2), sendo:\nADESÃO: 1,30\nPME ADMINISTRADAS: 1,25\nPJ ADMINISTRADAS: 1,25\nEMPRESARIAL: 1,25");
-  });
-  it("Glossário explains each sigla with the supplied parameters and the current index", () => {
-    const g = glossarioProposta();
-    expect(g.map((t) => t.termo)).toEqual(["ENFERMARIA", "PCA", "PME ADM.", "PCE ADM.", "PJ+"]);
-    expect(g[2].nota).toBe("Plano Coletivo Empresarial, de 03 a 29 vidas. Boletagem: Administradora. Distribuidores: Plataformas Associadas. Tabela PME ADMINISTRADAS, a 85% da Tabela Referencial.");
-    expect(g[1].nota).toBe("Plano Coletivo por Adesão. Boletagem: Administradora. Distribuidores: Plataformas Associadas. Tabela ADESÃO, a 90% da Tabela Referencial.");
-    expect(g[4].nota).toBe("Plano Coletivo Empresarial, de 100 ou mais vidas. Boletagem: Operadora. Distribuidores: Corretoras. Tabela EMPRESARIAL, a 70% da Tabela Referencial.");
   });
 });
 
