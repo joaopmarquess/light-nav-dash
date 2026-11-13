@@ -4,7 +4,7 @@ import { attachTimbrado } from "@/lib/pdfTimbrado";
 import { drawSectionTitle } from "@/lib/pdfTheme";
 import { textoPdf } from "@/lib/uberabaPropostaComercialPdf";
 import {
-  inteiroSimulacao, numeroSimulacao, parametrosMemoriaCalculo, percentualSimulacao, relatorioMemoriaCalculo, type CenarioAgenciamento,
+  baseDespesaDos, premissaDespesa, BASES_DESPESA, inteiroSimulacao, numeroSimulacao, parametrosMemoriaCalculo, percentualSimulacao, relatorioMemoriaCalculo, type CenarioAgenciamento,
 } from "@/lib/uberabaSimulacao";
 
 type RGB = [number, number, number];
@@ -108,7 +108,8 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
   const bases = cenarios.map(c => c.rotulo.toLowerCase()).join(" e ");
   // Duas linhas, para o subtítulo não passar das margens.
   doc.text(textoPdf("Bensaúde|Uberaba · Simulação de resultados"), pageW / 2, y + 3, { align: "center" });
-  doc.text(textoPdf(`Agenciamento ${bases} · gerado em ${data}`), pageW / 2, y + 3 + alturaLinha(F.texto), { align: "center" });
+  const rotuloDespesa = BASES_DESPESA.find(b => b.id === baseDespesaDos(cenarios))!.rotulo.toLowerCase();
+  doc.text(textoPdf(`Agenciamento ${bases} · despesas por ${rotuloDespesa} · gerado em ${data}`), pageW / 2, y + 3 + alturaLinha(F.texto), { align: "center" });
   y += 8 + alturaLinha(F.texto);
 
   // 1. Parâmetros.
@@ -134,7 +135,7 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
     parametros.map(x => [x.modalidade, ...x.agenciamentos.map(p), p(x.adesao), p(x.bensaude), p(x.lancers), p(x.siga)]),
     { colunas: { 0: { fontStyle: "bold", halign: "left", cellWidth: 22 }, ...direita(1, cenarios.length + 4), [cenarios.length + 3]: { halign: "right", cellWidth: 36 } }, fonte: 9 },
   );
-  paragrafo("Vendas = 1ª mensalidade (Enfermaria por faixa etária) de cada vida vendida no ano. Mensalidade média = Vendas ÷ Vidas. OPERADORA, ADMINISTRADORA e AGENCIADORA = participação de cada uma no faturamento. Desp. assist. média = referência por vida/mês e base da coparticipação (% Copart sobre ela).", F.tabela, SECUNDARIO, "italic");
+  paragrafo("Vendas = 1ª mensalidade (Enfermaria por faixa etária) de cada vida vendida no ano. Mensalidade média = Vendas ÷ Vidas. OPERADORA, ADMINISTRADORA e AGENCIADORA = participação de cada uma no faturamento. Desp. assist. média = valor por vida/mês, base da coparticipação (% Copart sobre ela) e, na chave Média Assist., da despesa assistencial.", F.tabela, SECUNDARIO, "italic");
 
   // 2 a 5. Um tópico por ente.
   type Indicador = ReturnType<typeof relatorioMemoriaCalculo>[number]["indicadores"][number];
@@ -196,7 +197,8 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
     "Faturamento cumulativo de janeiro a dezembro, sem cancelamentos ou reajustes. Acomodação: Enfermaria.",
     "Distribuição etária: %CART fornecido em 26/10/2026, aplicado às quatro modalidades.",
     "Taxa de adesão paga pelo beneficiário diretamente à AGENCIADORA.",
-    "Coparticipação = vidas na carteira em cada mês × Desp. assist. média × % Copart; paga pelo beneficiário e 100% da OPERADORA. A despesa assistencial continua = faturamento × Sinistralidade.",
+    premissaDespesa(baseDespesaDos(cenarios)),
+    "Coparticipação = vidas na carteira em cada mês × Desp. assist. média × % Copart; paga pelo beneficiário e 100% da OPERADORA.",
     "Simulação de proposta comercial, não aprovação ou resultado realizado.",
   ].forEach(t => paragrafo(`- ${t}`));
 

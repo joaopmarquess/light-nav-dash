@@ -399,3 +399,25 @@ describe('Desp. Assist. média e % Copart (pedido de 13/11/2026)', () => {
     expect(m.valor).toBeCloseTo(resumoSimulacao(rs).bensaude.coparticipacao, 6);
   });
 });
+
+describe('Chave PERCENTUAL / MÉDIA ASSIST. da Despesa Assistencial (pedido de 13/11/2026)', () => {
+  const nomesR = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
+  const configs = fonte.padroes.map(c => ({ ...c, sinistralidade_percentual: 70, despesa_media: 280.45, copart_percentual: 20 }));
+  it('Percentual (padrão): despesa = faturamento × sinistralidade', () => {
+    const [c] = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao());
+    c.resultados.forEach(r => r.mensal.forEach(m => expect(m.despesa_assistencial).toBeCloseTo(m.faturamento * 0.7, 6)));
+  });
+  it('Média Assist.: despesa = vidas na carteira × Desp. Assist. média, sem a sinistralidade', () => {
+    const [c] = simularPorBase(configs.map(x => ({ ...x, sinistralidade_percentual: 10 })), INDICES_PADRAO, indicadoresPadrao(), 'media');
+    c.resultados.forEach(r => r.mensal.forEach(m => expect(m.despesa_assistencial).toBeCloseTo(m.acumuladas * 280.45, 6)));
+    const r = resumoSimulacao(c.resultados);
+    expect(r.bensaude.operacional).toBeCloseTo(r.bensaude.faturamento + r.bensaude.coparticipacao - r.bensaude.despesa, 6);
+    const m = memoriaCalculo('bensaude.despesa', c.resultados, nomesR);
+    expect(m.formula).toContain('Média Assist.');
+    expect(m.itens[0].calculo).toContain('Desp. Assist. média 280,45');
+  });
+  it('a chave vale para os dois cenários de agenciamento', () => {
+    const cs = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao(), 'media');
+    expect(cs.every(c => c.resultados.every(r => r.config.base_despesa === 'media'))).toBe(true);
+  });
+});

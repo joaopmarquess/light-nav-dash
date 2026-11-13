@@ -29,7 +29,13 @@ export const sinistralidadePadrao = 70;
 // e % Copart sobre essa despesa média (receita paga pelo beneficiário, 100% para a OPERADORA).
 export const despesaMediaPadrao = 280.45;
 export const copartPadrao = 20;
-export type ConfigSimulacao = { produto_codigo: string; tabela_preco: string; condicao_comercial: string; total_vidas: number; sinistralidade_percentual?: number; despesa_media?: number; copart_percentual?: number };
+/**
+ * Chave do Resultado por Ente (pedido de 13/11/2026): como calcular a Despesa Assistencial.
+ * PERCENTUAL = faturamento × Sinistralidade (%); MÉDIA ASSIST. = vidas na carteira em cada mês × Desp. Assist. média.
+ */
+export type BaseDespesa = 'percentual' | 'media';
+export const BASES_DESPESA: { id: BaseDespesa; rotulo: string }[] = [{ id: 'percentual', rotulo: 'Percentual' }, { id: 'media', rotulo: 'Média Assist.' }];
+export type ConfigSimulacao = { produto_codigo: string; tabela_preco: string; condicao_comercial: string; total_vidas: number; sinistralidade_percentual?: number; despesa_media?: number; copart_percentual?: number; base_despesa?: BaseDespesa };
 /** Campos dos Parâmetros com ícone Replicar e o padrão usado quando o PCA está vazio. */
 export type ParametroReplicavel = 'sinistralidade_percentual' | 'despesa_media' | 'copart_percentual';
 export const PADRAO_PARAMETRO: Record<ParametroReplicavel, number> = { sinistralidade_percentual: sinistralidadePadrao, despesa_media: despesaMediaPadrao, copart_percentual: copartPadrao };
@@ -126,9 +132,9 @@ export type CenarioAgenciamento = { base: BaseAgenciamento; rotulo: string; resu
  * Pedido de 13/11/2026: o Resultado por Ente mostra dois blocos, um com o Agenciamento Contratual e outro com o Promocional,
  * com as mesmas vidas, sinistralidades, preços e participações.
  */
-export function simularPorBase(configuracoes: ConfigSimulacao[], indices: Indices, indicadores: IndicadoresPorFrente): CenarioAgenciamento[] {
+export function simularPorBase(configuracoes: ConfigSimulacao[], indices: Indices, indicadores: IndicadoresPorFrente, baseDespesa: BaseDespesa = 'percentual'): CenarioAgenciamento[] {
   return BASES_AGENCIAMENTO.map(b => ({ base: b.id, rotulo: b.rotulo,
-    resultados: configuracoes.map(c => calcularSimulacaoComercial(c, comercialDaFrente(c.produto_codigo, indices, indicadores, b.id))) }));
+    resultados: configuracoes.map(c => calcularSimulacaoComercial({ ...c, base_despesa: baseDespesa }, comercialDaFrente(c.produto_codigo, indices, indicadores, b.id))) }));
 }
 
 /** Ícone "Replicar": copia o valor do campo na modalidade de origem (PCA) para todas as demais. */
@@ -149,6 +155,8 @@ function simular(config: ConfigSimulacao, { condicao, mensalidades }: ComercialS
   if (config.despesa_media !== undefined && !validarDespesaMedia(config.despesa_media)) throw new Error('Informe uma despesa assistencial média válida, maior ou igual a zero.');
   if (config.copart_percentual !== undefined && !validarCopart(config.copart_percentual)) throw new Error('Informe um percentual de coparticipação entre 0 e 100.');
   const copartVida = coparticipacaoVidaMes(config);
+  const porMedia = config.base_despesa === 'media';
+  const despesaMedia = config.despesa_media ?? despesaMediaPadrao;
   const produto = produtos.find(p => p.produto_codigo === config.produto_codigo);
   if (!produto || mensalidades.length !== 10) throw new Error('Configuração não encontrada nos CSVs.');
   const vidasMes = distribuirResidual(config.total_vidas, [...meses].sort((a,b)=>a.mes_numero-b.mes_numero).map(m=>m.percentual_anual));
@@ -160,7 +168,8 @@ function simular(config: ConfigSimulacao, { condicao, mensalidades }: ComercialS
     faturamento += novasReceitas[i]; acumuladas += vidas;
     // Coparticipação do mês: vidas na carteira × Desp. Assist. média × % Copart, 100% para a OPERADORA.
     const coparticipacao = acumuladas * copartVida;
-    return { vidas, acumuladas, faturamento, coparticipacao, resultado_bensaude: faturamento * condicao.participacao_bensaude + coparticipacao - faturamento * sinistralidade / 100, despesa_assistencial: faturamento * sinistralidade / 100, lancers: faturamento * condicao.participacao_lancers, siga: faturamento * condicao.participacao_siga, bensaude: faturamento * condicao.participacao_bensaude,
+    const despesa_assistencial = porMedia ? acumuladas * despesaMedia : faturamento * sinistralidade / 100;
+    return { vidas, acumuladas, faturamento, coparticipacao, resultado_bensaude: faturamento * condicao.participacao_bensaude + coparticipacao - despesa_assistencial, despesa_assistencial, lancers: faturamento * condicao.participacao_lancers, siga: faturamento * condicao.participacao_siga, bensaude: faturamento * condicao.participacao_bensaude,
       agenciamento: parcelas.reduce((s,p,j) => s + p * (novasReceitas[i-j] ?? 0), 0), adesao: novasReceitas[i] * condicao.taxa_adesao };
   });
   const anual = totalizarSimulacao(mensal);
@@ -270,7 +279,10 @@ export function memoriaCalculo(indicador: IndicadorEnte, resultados: ResultadoSi
     case 'bensaude.faturamento':
       return { formula: 'Faturamento OPERADORA = Faturamento × Participação OPERADORA.', ...participacao('OPERADORA', x => x.condicao.participacao_bensaude, x => x.anual.bensaude, r.bensaude.faturamento) };
     case 'bensaude.despesa':
-      return { formula: 'Despesa Assistencial = Faturamento × Sinistralidade (%) da modalidade.', ...participacao('Sinistralidade', x => (x.config.sinistralidade_percentual ?? sinistralidadePadrao) / 100, x => x.anual.despesa_assistencial, r.bensaude.despesa) };
+      if (resultados[0]?.config.base_despesa === 'media')
+        return { formula: 'Despesa Assistencial (Média Assist.) = vidas na carteira em cada mês × Desp. Assist. média da modalidade.',
+          ...porModalidade(x => `${inteiroSimulacao(vidasMes(x))} vidas-mês × Desp. Assist. média ${n(x.config.despesa_media ?? despesaMediaPadrao)}`, x => x.anual.despesa_assistencial, r.bensaude.despesa) };
+      return { formula: 'Despesa Assistencial (Percentual) = Faturamento × Sinistralidade (%) da modalidade.', ...participacao('Sinistralidade', x => (x.config.sinistralidade_percentual ?? sinistralidadePadrao) / 100, x => x.anual.despesa_assistencial, r.bensaude.despesa) };
     case 'bensaude.operacional':
       return { formula: 'Resultado Operacional = Faturamento OPERADORA + Coparticipação − Despesa Assistencial.', ...consolidado(`${n(r.bensaude.faturamento)} + ${n(r.bensaude.coparticipacao)} − ${n(r.bensaude.despesa)}`, r.bensaude.operacional) };
     case 'bensaude.agenciamento': case 'siga.agenciamento':
@@ -386,4 +398,15 @@ export function parametrosMemoriaCalculo(cenarios: CenarioAgenciamento[], nomes:
     despesaMedia: r.config.despesa_media ?? 0,
     copart: (r.config.copart_percentual ?? 0) / 100,
   }));
+}
+
+/** Base da Despesa Assistencial usada nos cenários (a mesma para todas as modalidades). */
+export function baseDespesaDos(cenarios: CenarioAgenciamento[]): BaseDespesa {
+  return cenarios[0]?.resultados[0]?.config.base_despesa === 'media' ? 'media' : 'percentual';
+}
+/** Texto da premissa da Despesa Assistencial, conforme a chave PERCENTUAL / MÉDIA ASSIST. */
+export function premissaDespesa(base: BaseDespesa) {
+  return base === 'media'
+    ? 'Despesa Assistencial (Média Assist.) = vidas na carteira em cada mês × Desp. Assist. média da modalidade; a Sinistralidade (%) não entra.'
+    : 'Despesa Assistencial (Percentual) = faturamento × Sinistralidade (%) da modalidade; a Desp. Assist. média só entra na coparticipação.';
 }

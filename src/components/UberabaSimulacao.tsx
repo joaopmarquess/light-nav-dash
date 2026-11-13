@@ -8,7 +8,7 @@ import UberabaSimulacaoFaixas from '@/components/UberabaSimulacaoFaixas';
 import BlocoRecolhido from '@/components/BlocoRecolhido';
 import UberabaMemoriaCalculoButton from '@/components/UberabaMemoriaCalculoButton';
 import { EVENTO_TABELAS_COMERCIAIS, lerIndicadores, lerIndices } from '@/lib/uberabaTabelasComerciais';
-import { simularPorBase, replicarParametro, PADRAO_PARAMETRO, validarDespesaMedia, validarCopart, coparticipacaoVidaMes, receitaVidaMes, type ParametroReplicavel, type CenarioAgenciamento, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, resumoSimulacao, memoriaCalculo, ENTES_RESULTADO, resultadoTotalEnte, type IndicadorEnte, type ConfigSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
+import { simularPorBase, BASES_DESPESA, premissaDespesa, baseDespesaDos, type BaseDespesa, replicarParametro, PADRAO_PARAMETRO, validarDespesaMedia, validarCopart, coparticipacaoVidaMes, receitaVidaMes, type ParametroReplicavel, type CenarioAgenciamento, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, resumoSimulacao, memoriaCalculo, ENTES_RESULTADO, resultadoTotalEnte, type IndicadorEnte, type ConfigSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
 // Siglas dos parâmetros do Proj. Uberaba (13/11/2026); preços e percentuais vêm das tabelas de Resultados Comerciais.
 const nomes = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
@@ -75,7 +75,7 @@ function PremissasImportadas({ cenarios }: { cenarios: CenarioAgenciamento[] }) 
     <li>Mensalidade: Enfermaria da tabela de cada produto no quadro Tabelas acima (Tabela Referencial × índice).</li>
     <li>Agenciamento: percentual Contratual e Promocional (um bloco de resultados para cada) × uma mensalidade de cada venda, pago no mês da venda, somente de janeiro a dezembro.</li>
     <li>Participações: OPERADORA, ADMINISTRADORA e AGENCIADORA, conforme os Indicadores variáveis de cada produto.</li>
-    <li>Despesa Assistencial = faturamento × Sinistralidade informada por modalidade. A Desp. Assist. média é só referência e base da coparticipação.</li>
+    <li>{premissaDespesa(baseDespesaDos(cenarios))}</li>
     <li>Coparticipação = vidas na carteira em cada mês × Desp. Assist. média × % Copart; paga pelo beneficiário, soma ao Total dele e entra 100% para a OPERADORA.</li>
     <li>Taxa de adesão paga pelo beneficiário diretamente à AGENCIADORA.</li>
     <li>Faturamento cumulativo, sem cancelamentos ou reajustes. Acomodação: Enfermaria. Simulação de proposta, não resultado realizado.</li>
@@ -101,7 +101,9 @@ export default function UberabaSimulacao() {
   const [textos, setTextos] = useState<Record<string, string>>({});
   const { indices, indicadores } = useResultadosComerciais();
   // Resultado por Ente em dois cenários (pedido de 13/11/2026): Agenciamento Contratual e Promocional.
-  const cenarios = useMemo(() => simularPorBase(configuracoes, indices, indicadores), [configuracoes, indices, indicadores]);
+  // Chave PERCENTUAL / MÉDIA ASSIST. (pedido de 13/11/2026): como calcular a Despesa Assistencial nos dois cenários.
+  const [baseDespesa, setBaseDespesa] = useState<BaseDespesa>('percentual');
+  const cenarios = useMemo(() => simularPorBase(configuracoes, indices, indicadores, baseDespesa), [configuracoes, indices, indicadores, baseDespesa]);
   const [contratual, promocional] = cenarios;
   const resultados = contratual.resultados;
   const totalVidas = resultados.reduce((total, r) => total + r.anual.vidas, 0);
@@ -153,6 +155,12 @@ export default function UberabaSimulacao() {
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">Clique no indicador para ver por modalidade; passe o mouse para ver a memória de cálculo.</p>
         <UberabaMemoriaCalculoButton cenarios={cenarios} nomes={nomes} />
+      </div>
+      <div className="flex flex-wrap items-center gap-2 text-sm"><span className="font-medium text-foreground">Calcular despesas assistenciais por</span>
+        <div role="group" aria-label="Calcular despesas assistenciais por" className="inline-flex overflow-hidden rounded-md border border-border">
+          {BASES_DESPESA.map(b => <button key={b.id} type="button" aria-pressed={baseDespesa === b.id} onClick={() => setBaseDespesa(b.id)} className={`px-3 py-1 text-xs font-semibold uppercase ${baseDespesa === b.id ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}>{b.rotulo}</button>)}
+        </div>
+        <span className="text-xs text-muted-foreground">{baseDespesa === 'media' ? 'Vidas na carteira × Desp. Assist. média' : 'Faturamento × Sinistralidade (%)'}</span>
       </div>
       {cenarios.map(c => <BlocoRecolhido key={c.base} titulo={c.rotulo}><div className="p-4"><Entes resultados={c.resultados} /></div></BlocoRecolhido>)}
     </div></BlocoRecolhido>
