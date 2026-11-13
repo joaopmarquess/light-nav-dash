@@ -24,8 +24,8 @@ const UberabaEstudoSimulacoes = ({ subNavTarget }: { subNavTarget?: HTMLElement 
     <div className="flex flex-col gap-3">
       <EstudoSubNav itens={ABAS} ativo={aba} onSelect={(id) => setAba(id as Aba)} label="Simulações do Estudo" target={subNavTarget} extra={aba === "comercial" ? <div className="flex items-center gap-2"><ReferenciaButton /><UberabaPropostaTextosButton /><UberabaPropostaComercialButton /></div> : undefined} />
       <section aria-label={atual.label} className="min-w-0">
-        {/* Condições Comerciais e Condições Rede vivem em contêineres recolhidos abaixo dos seus Resultados. */}
-        {aba === "comercial" && <><UberabaTabelasComerciais /><BlocoRecolhido titulo="Condições Comerciais" className="mt-4"><div className="p-3"><UberabaSimulacao /></div></BlocoRecolhido></>}
+        {/* Simulação de resultados e Condições Rede vivem em contêineres recolhidos abaixo dos seus Resultados. */}
+        {aba === "comercial" && <><UberabaTabelasComerciais /><BlocoRecolhido titulo="Simulação de resultados" className="mt-4"><div className="p-3"><UberabaSimulacao /></div></BlocoRecolhido></>}
         {aba === "gestaoRede" && <><UberabaGestaoRede /><BlocoRecolhido titulo="Condições Rede" className="mt-4"><div className="p-3"><UberabaRedeAssistencial /></div></BlocoRecolhido></>}
       </section>
     </div>

@@ -1,15 +1,15 @@
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Calculator, ChevronRight, RotateCcw, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import UberabaSimulacaoFaixas from '@/components/UberabaSimulacaoFaixas';
-import { calcularSimulacao, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, type ConfigSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
+import { EVENTO_TABELAS_COMERCIAIS, lerIndicadores, lerIndices } from '@/lib/uberabaTabelasComerciais';
+import { calcularSimulacaoComercial, comercialDaFrente, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, type ConfigSimulacao, type CondicaoSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
-// Siglas dos parâmetros do Proj. Uberaba (13/11/2026); preços e faixas seguem os CSVs fornecidos, sem alteração.
+// Siglas dos parâmetros do Proj. Uberaba (13/11/2026); preços e percentuais vêm das tabelas de Resultados Comerciais.
 const nomes = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
 type Resumo = ReturnType<typeof resumoSimulacao>;
 type Linha = { label: string; valor: (r: Resumo) => number; destaque?: boolean };
@@ -59,16 +59,29 @@ function Entes({ resultados }: { resultados: ResultadoSimulacao[] }) {
     </section>)}</div>;
 }
 
-function PremissasImportadas() {
-  return <details className="sim-assumptions"><summary>Premissas e fontes (CSVs e %CART fornecidos em 26/10/2026)</summary><ul>
+function PremissasImportadas({ condicoes }: { condicoes: CondicaoSimulacao[] }) {
+  return <details className="sim-assumptions"><summary>Premissas e fontes (Resultados Comerciais e %CART fornecido em 26/10/2026)</summary><ul>
     <li>Distribuição etária: %CART da imagem de Entradas Lancers, referência de 11.318 entradas, aplicada às quatro modalidades; faixas arredondadas por mês, com residual na faixa 59 ou mais.</li>
     {fonte.faixas.map(f => <li key={f.faixa_numero}>{f.faixa_etaria}: {pct(f.percentual_normalizado)}</li>)}
-    <li>Agenciamento: percentual × uma mensalidade de cada venda, em até cinco parcelas, pagas somente de janeiro a dezembro.</li>
+    <li>Mensalidade: Enfermaria da tabela de cada produto no quadro Tabelas acima (Tabela Referencial × índice).</li>
+    <li>Agenciamento: percentual Contratual × uma mensalidade de cada venda, pago no mês da venda, somente de janeiro a dezembro.</li>
+    <li>Participações: Bensaúde = Operadora; Lancers = Administradora; SIGA = Agenciadora, conforme os Indicadores variáveis de cada produto.</li>
     <li>Despesa Assistencial = faturamento × Sinistralidade informada por modalidade.</li>
     <li>Taxa de adesão paga pelo beneficiário diretamente à SIGA.</li>
     <li>Faturamento cumulativo, sem cancelamentos ou reajustes. Acomodação: Enfermaria. Simulação de proposta, não resultado realizado.</li>
-    {fonte.condicoes.map(c => <li key={c.produto_codigo + c.condicao}>{c.produto_codigo} · {c.condicao}: Lancers {pct(c.participacao_lancers)}, SIGA {pct(c.participacao_siga)}, Bensaúde {pct(c.participacao_bensaude)}, agenciamento {[c.agenciamento_parcela_1, c.agenciamento_parcela_2, c.agenciamento_parcela_3, c.agenciamento_parcela_4, c.agenciamento_parcela_5].filter(Boolean).map(pct).join(' + ')}, adesão {pct(c.taxa_adesao)}</li>)}
+    {condicoes.map((c, i) => <li key={c.produto_codigo}>{nomes[i]}: Bensaúde {pct(c.participacao_bensaude)}, Lancers {pct(c.participacao_lancers)}, SIGA {pct(c.participacao_siga)}, agenciamento {pct(c.agenciamento_parcela_1)}, adesão {pct(c.taxa_adesao)}</li>)}
   </ul></details>;
+}
+
+// Índices e Indicadores variáveis atuais das tabelas de Resultados Comerciais (atualizados a cada gravação).
+function useResultadosComerciais() {
+  const [v, setV] = useState(() => ({ indices: lerIndices(), indicadores: lerIndicadores() }));
+  useEffect(() => {
+    const atualizar = () => setV({ indices: lerIndices(), indicadores: lerIndicadores() });
+    window.addEventListener(EVENTO_TABELAS_COMERCIAIS, atualizar);
+    return () => window.removeEventListener(EVENTO_TABELAS_COMERCIAIS, atualizar);
+  }, []);
+  return v;
 }
 
 // acoesTarget: quando informado (Estudo › Simulações), as ações ficam na linha dos sub-botões.
@@ -76,7 +89,8 @@ export default function UberabaSimulacao({ acoesTarget }: { acoesTarget?: HTMLEl
   const [configuracoes, setConfiguracoes] = useState<ConfigSimulacao[]>(() => fonte.padroes.map(c => ({ ...c, sinistralidade_percentual: sinistralidadePadrao })));
   const [vidaText, setVidaText] = useState<Record<string, string>>({});
   const [sinText, setSinText] = useState<Record<string, string>>({});
-  const resultados = useMemo(() => configuracoes.map(calcularSimulacao), [configuracoes]);
+  const { indices, indicadores } = useResultadosComerciais();
+  const resultados = useMemo(() => configuracoes.map(c => calcularSimulacaoComercial(c, comercialDaFrente(c.produto_codigo, indices, indicadores))), [configuracoes, indices, indicadores]);
   const totalVidas = resultados.reduce((total, r) => total + r.anual.vidas, 0);
   const alterar = (codigo: string, patch: Partial<ConfigSimulacao>) => setConfiguracoes(prev => prev.map(c => c.produto_codigo === codigo ? { ...c, ...patch } : c));
   const restaurar = (codigo: string) => {
@@ -89,13 +103,12 @@ export default function UberabaSimulacao({ acoesTarget }: { acoesTarget?: HTMLEl
   return <article className="uberaba-simulation" aria-label="Simulador Comercial Bensaúde|Uberaba">
     {acoesTarget ? createPortal(acoes, acoesTarget) : acoesTarget === undefined && <header className="sim-heading justify-end">{acoes}</header>}
     <section aria-label="Variáveis por modalidade" className="rounded-md border border-border p-4">
+      <p className="mb-2 text-xs text-muted-foreground">Preços (Enfermaria), Agenciamento (Contratual), Taxa de adesão e Participações vêm das tabelas de Resultados Comerciais acima.</p>
       <div className="overflow-x-auto"><table className="w-full text-sm">
-        <thead><tr className="text-left text-muted-foreground"><th className="px-2 py-1 text-center">Modalidade</th><th className="px-2 py-1 text-center">Tabela de preço</th><th className="px-2 py-1 text-center">Condição comercial</th><th className="px-2 py-1 text-center">Agenciamento</th><th className="px-2 py-1 text-center">Taxa de Adesão</th><th className="px-2 py-1 text-center">Participação Bensaúde</th><th className="px-2 py-1 text-center">Participação Lancers</th><th className="px-2 py-1 text-center">Participação SIGA</th><th className="px-2 py-1 text-center">Total de vidas</th><th className="px-2 py-1 text-center">Sinistralidade (%)</th><th className="px-2 py-1 text-center">Mensalidade média</th><th /></tr></thead>
-        <tbody>{resultados.map((r, i) => { const c = r.config, cod = c.produto_codigo; const parcelas = [r.condicao.agenciamento_parcela_1, r.condicao.agenciamento_parcela_2, r.condicao.agenciamento_parcela_3, r.condicao.agenciamento_parcela_4, r.condicao.agenciamento_parcela_5]; const vt = vidaText[cod] ?? String(c.total_vidas); const st = sinText[cod] ?? String(c.sinistralidade_percentual ?? sinistralidadePadrao); return <tr key={cod} className="border-t border-border align-top">
+        <thead><tr className="text-left text-muted-foreground"><th className="px-2 py-1 text-center">Modalidade</th><th className="px-2 py-1 text-center">Agenciamento</th><th className="px-2 py-1 text-center">Taxa de Adesão</th><th className="px-2 py-1 text-center">Participação Bensaúde</th><th className="px-2 py-1 text-center">Participação Lancers</th><th className="px-2 py-1 text-center">Participação SIGA</th><th className="px-2 py-1 text-center">Total de vidas</th><th className="px-2 py-1 text-center">Sinistralidade (%)</th><th className="px-2 py-1 text-center">Mensalidade média</th><th /></tr></thead>
+        <tbody>{resultados.map((r, i) => { const c = r.config, cod = c.produto_codigo; const vt = vidaText[cod] ?? String(c.total_vidas); const st = sinText[cod] ?? String(c.sinistralidade_percentual ?? sinistralidadePadrao); return <tr key={cod} className="border-t border-border align-top">
           <th scope="row" className="px-2 py-2 text-left">{nomes[i]}{!r.participacoesValidas && <span className="block text-xs text-destructive">Participações ≠ 100%</span>}</th>
-          <td className="px-2 py-2"><Select value={c.tabela_preco} onValueChange={v => alterar(cod, { tabela_preco: v })}><SelectTrigger aria-label={`Tabela de preço ${nomes[i]}`} className="sim-editable min-w-28"><SelectValue /></SelectTrigger><SelectContent>{['Bensaúde', 'SIGA'].map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></td>
-          <td className="px-2 py-2"><Select value={c.condicao_comercial} onValueChange={v => alterar(cod, { condicao_comercial: v })}><SelectTrigger aria-label={`Condição comercial ${nomes[i]}`} className="sim-editable min-w-40"><SelectValue /></SelectTrigger><SelectContent>{fonte.condicoes.filter(x => x.produto_codigo === cod).map(x => <SelectItem key={x.condicao} value={x.condicao}>{x.condicao}</SelectItem>)}</SelectContent></Select></td>
-          <td aria-label={`Agenciamento ${nomes[i]}`} className="px-2 py-2 text-center tabular-nums"><span className="block whitespace-nowrap font-medium">{pct(parcelas.reduce((total, parcela) => total + parcela, 0))}</span><span className="mt-1 block text-xs text-muted-foreground">{parcelas.filter(Boolean).map(pct).join(' + ') || pct(0)}</span></td>
+          <td aria-label={`Agenciamento ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.agenciamento_parcela_1)}</td>
           <td aria-label={`Taxa de Adesão ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.taxa_adesao)}</td>
           <td aria-label={`Participação Bensaúde ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.participacao_bensaude)}</td>
           <td aria-label={`Participação Lancers ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.participacao_lancers)}</td>
@@ -106,7 +119,7 @@ export default function UberabaSimulacao({ acoesTarget }: { acoesTarget?: HTMLEl
           <td className="px-2 py-2"><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label={`Restaurar ${nomes[i]}`} onClick={() => restaurar(cod)}><RotateCcw /></Button></TooltipTrigger><TooltipContent>Restaurar padrão</TooltipContent></Tooltip></td>
         </tr>; })}</tbody>
         <tfoot><tr className="border-t border-border bg-secondary font-semibold text-primary">
-          <th scope="row" colSpan={8} className="px-2 py-3 text-left">Total</th>
+          <th scope="row" colSpan={6} className="px-2 py-3 text-left">Total</th>
           <td className="px-2 py-3"><output aria-label="Total de vidas consolidado" className="block w-full text-center tabular-nums">{int(totalVidas)}</output></td>
           <td colSpan={3} />
         </tr></tfoot>
@@ -115,7 +128,7 @@ export default function UberabaSimulacao({ acoesTarget }: { acoesTarget?: HTMLEl
     <div className="space-y-4">
       <h3 className="flex items-center gap-2">Resultado por Ente <span className="text-sm font-normal text-muted-foreground">· clique no indicador para ver por modalidade</span></h3>
       <Entes resultados={resultados} />
-      <PremissasImportadas />
+      <PremissasImportadas condicoes={resultados.map(r => r.condicao)} />
     </div>
     <p className="flex items-center gap-1 text-xs text-muted-foreground"><Info className="h-3 w-3" />Simulação de proposta comercial, não aprovação ou resultado realizado.</p>
   </article>;

@@ -1,25 +1,26 @@
 import { describe, expect, it } from 'vitest';
-import { calcularSimulacao, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao } from './uberabaSimulacao';
+import { calcularSimulacao, calcularSimulacaoComercial, comercialDaFrente, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao } from './uberabaSimulacao';
 import padroesHistoricos from '@/data/uberabaSimulacao/configuracao_padrao.json';
+import { INDICES_PADRAO, indicadoresPadrao, tabelaIndexada } from './uberabaTabelasComerciais';
 const padrao=padroesHistoricos[0];
 describe('Resumo consolidado por faixa etária', () => {
   it('soma entradas e mensalidades por faixa das quatro modalidades, sem faturamento acumulado', () => {
     const resultados=fonte.padroes.map(calcularSimulacao);
     const resumo=consolidarFaixasSimulacao(resultados);
-    expect(resumo.total.entradas).toBe(8000);
+    expect(resumo.total.entradas).toBe(10000);
     resumo.linhas.forEach((l,i)=>{
       expect(l.entradas).toBe(resultados.reduce((s,r)=>s+r.faixaAnual[i],0));
       expect(l.tmm).toBeCloseTo(resultados.reduce((s,r)=>s+r.faixaAnual[i]*r.mensalidades[i],0),7);
-      expect(l.percentual).toBe(l.entradas/8000);
+      expect(l.percentual).toBe(l.entradas/10000);
       expect(l.ticket).toBeCloseTo(l.tmm/l.entradas,8);
     });
     expect(resumo.total.tmm).toBeCloseTo(resultados.reduce((s,r)=>s+r.novasReceitas.reduce((a,v)=>a+v,0),0),7);
-    expect(resumo.total.ticket).toBeCloseTo(resumo.total.tmm/8000,8);
+    expect(resumo.total.ticket).toBeCloseTo(resumo.total.tmm/10000,8);
     expect(resumo.total.percentual).toBe(1);
   });
   it('recalcula após alterar as vidas e retorna zero sem entradas', () => {
     const resultados=fonte.padroes.map((c,i)=>calcularSimulacao({...c,total_vidas:i===0?1500:c.total_vidas}));
-    expect(consolidarFaixasSimulacao(resultados).total.entradas).toBe(8500);
+    expect(consolidarFaixasSimulacao(resultados).total.entradas).toBe(9500);
     expect(consolidarFaixasSimulacao([]).total).toEqual({entradas:0,percentual:0,tmm:0,ticket:0});
   });
 });
@@ -158,12 +159,12 @@ describe('Simulação comercial fornecida',()=>{
 });
 
 describe('Bensaúde Regra e cenário solicitado', () => {
-  it('inicia as quatro modalidades com as vidas solicitadas', () => {
+  it('inicia com 10.000 vidas: 5.000 no PJ+ e 2.000 no PCA', () => {
     expect(fonte.padroes.map(c => [c.produto_codigo, c.total_vidas])).toEqual([
-      ['PCA', 1000], ['PME_ADMINISTRADO', 1000], ['PCE_50_99', 2000], ['PCE_100_MAIS', 4000],
+      ['PCA', 2000], ['PME_ADMINISTRADO', 1000], ['PCE_50_99', 2000], ['PCE_100_MAIS', 5000],
     ]);
     expect(fonte.padroes.every(c => c.condicao_comercial === 'Bensaúde Regra')).toBe(true);
-    expect(consolidarSimulacao(fonte.padroes.map(calcularSimulacao)).anual.vidas).toBe(8000);
+    expect(consolidarSimulacao(fonte.padroes.map(calcularSimulacao)).anual.vidas).toBe(10000);
   });
   it.each(['PCA', 'PME_ADMINISTRADO', 'PCE_50_99', 'PCE_100_MAIS'])('%s calcula 90%% de uma mensalidade por venda', codigo => {
     const config = fonte.padroes.find(c => c.produto_codigo === codigo);
@@ -203,5 +204,45 @@ describe('Distribuição etária %CART da imagem', () => {
       expect(faixas.slice(0,9)).toEqual([.285,.061,.1058,.1137,.0976,.1,.0857,.0634,.0388].map(p=>Math.round(r.vidasMes[i]*p)));
       expect(faixas.reduce((s,v)=>s+v,0)).toBe(r.vidasMes[i]);
     });
+  });
+});
+
+describe('Simulação de resultados com as tabelas de Resultados Comerciais', () => {
+  const simular = (codigo: string, indices = INDICES_PADRAO, indicadores = indicadoresPadrao()) => {
+    const config = fonte.padroes.find(c => c.produto_codigo === codigo);
+    if (!config) throw new Error('Configuração ausente');
+    return calcularSimulacaoComercial(config, comercialDaFrente(codigo, indices, indicadores));
+  };
+  it.each([
+    ['PCA', 'pcaAdm'], ['PME_ADMINISTRADO', 'pmeAdm'], ['PCE_50_99', 'pceAdm'], ['PCE_100_MAIS', 'pce100'],
+  ] as const)('%s usa a Enfermaria da tabela correspondente', (codigo, frente) => {
+    expect(simular(codigo).mensalidades).toEqual(tabelaIndexada(INDICES_PADRAO[frente]).map(l => l.enfermariaCentavos / 100));
+    expect(simular(codigo, { ...INDICES_PADRAO, [frente]: 100 }).mensalidades[0]).toBe(175);
+  });
+  it.each([
+    // Bensaúde = Operadora, Lancers = Administradora, SIGA = Agenciadora, agenciamento = Contratual, adesão = Taxa de adesão.
+    ['PCA', 0.77, 0.23, 0, 0.9, 0.99],
+    ['PME_ADMINISTRADO', 0.77, 0.23, 0, 0.9, 0.5],
+    ['PCE_50_99', 0.77, 0.23, 0, 0.9, 0.5],
+    ['PCE_100_MAIS', 0.95, 0, 0.05, 0.9, 0],
+  ] as const)('%s usa os Indicadores variáveis padrão', (codigo, bensaude, lancers, siga, agenciamento, adesao) => {
+    const r = simular(codigo);
+    expect([r.condicao.participacao_bensaude, r.condicao.participacao_lancers, r.condicao.participacao_siga, r.condicao.agenciamento_parcela_1, r.condicao.taxa_adesao]).toEqual([bensaude, lancers, siga, agenciamento, adesao]);
+    expect([r.condicao.agenciamento_parcela_2, r.condicao.agenciamento_parcela_3, r.condicao.agenciamento_parcela_4, r.condicao.agenciamento_parcela_5]).toEqual([0, 0, 0, 0]);
+    expect(r.participacoesValidas).toBe(true);
+  });
+  it('acompanha a alteração dos Indicadores variáveis', () => {
+    const ind = indicadoresPadrao();
+    ind.pcaAdm = { ...ind.pcaAdm, spread: 30, contratual: 120, adesao: 40 };
+    ind.pce100 = { ...ind.pce100, spread: 8 };
+    const pca = simular('PCA', INDICES_PADRAO, ind);
+    expect([pca.condicao.participacao_bensaude, pca.condicao.participacao_lancers, pca.condicao.agenciamento_parcela_1, pca.condicao.taxa_adesao]).toEqual([0.7, 0.3, 1.2, 0.4]);
+    pca.mensal.forEach((m, i) => expect(m.agenciamento).toBeCloseTo(pca.novasReceitas[i] * 1.2, 8));
+    const pj = simular('PCE_100_MAIS', INDICES_PADRAO, ind);
+    expect([pj.condicao.participacao_bensaude, pj.condicao.participacao_siga]).toEqual([0.92, 0.08]);
+  });
+  it('soma 10.000 vidas no padrão', () => {
+    const rs = fonte.padroes.map(c => simular(c.produto_codigo));
+    expect(consolidarSimulacao(rs).anual.vidas).toBe(10000);
   });
 });

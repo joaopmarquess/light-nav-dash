@@ -100,6 +100,13 @@ export function parseIndice(texto: string): number | null {
 
 const CHAVE = "uberaba-tabelas-comerciais-indices-v1";
 
+/** Avisado após gravar índices ou indicadores, para a Simulação de resultados da mesma tela se atualizar. */
+export const EVENTO_TABELAS_COMERCIAIS = "uberaba-tabelas-comerciais-alteradas";
+const avisarAlteracao = () => {
+  // Fora do ciclo de renderização: as gravações acontecem dentro de atualizações de estado.
+  queueMicrotask(() => { try { globalThis.dispatchEvent?.(new Event(EVENTO_TABELAS_COMERCIAIS)); } catch { /* sem janela */ } });
+};
+
 export function lerIndices(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): Indices {
   try {
     const salvo = JSON.parse(storage?.getItem(CHAVE) ?? "null");
@@ -117,6 +124,7 @@ export function lerIndices(storage: Pick<Storage, "getItem"> | undefined = globa
 
 export function gravarIndices(indices: Indices, storage: Pick<Storage, "setItem"> | undefined = globalThis.localStorage) {
   try { storage?.setItem(CHAVE, JSON.stringify(indices)); } catch { /* armazenamento indisponível */ }
+  avisarAlteracao();
 }
 
 // ---------- Indicadores variáveis (por frente, editáveis) ----------
@@ -213,6 +221,7 @@ export function lerIndicadores(storage: Pick<Storage, "getItem"> | undefined = g
 
 export function gravarIndicadores(v: IndicadoresPorFrente, storage: Pick<Storage, "setItem"> | undefined = globalThis.localStorage) {
   try { storage?.setItem(CHAVE_INDICADORES, JSON.stringify(v)); } catch { /* armazenamento indisponível */ }
+  avisarAlteracao();
 }
 
 // ---------- Quadros das frentes (tela e Proposta Comercial) ----------

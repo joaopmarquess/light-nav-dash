@@ -55,10 +55,10 @@ describe("Estudo view selection", () => {
     expect(screen.getByRole("button", { name: "Resultados Comerciais" })).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("shows Condições Comerciais as a collapsed container inside Resultados Comerciais", () => {
+  it("shows Simulação de resultados as a collapsed container inside Resultados Comerciais", () => {
     abrir();
     fireEvent.click(screen.getByRole("button", { name: "Simulações" }));
-    const botao = screen.getByRole("button", { name: "Expandir Condições Comerciais" });
+    const botao = screen.getByRole("button", { name: "Expandir Simulação de resultados" });
     expect(botao).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("region", { name: "Variáveis por modalidade", hidden: true })).not.toBeVisible();
     fireEvent.click(botao);

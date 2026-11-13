@@ -4,6 +4,7 @@ import condicoesImportadas from '@/data/uberabaSimulacao/condicoes_comerciais.js
 import meses from '@/data/uberabaSimulacao/distribuicao_mensal.json';
 import faixasImportadas from '@/data/uberabaSimulacao/distribuicao_faixa_etaria.json';
 import padroesImportados from '@/data/uberabaSimulacao/configuracao_padrao.json';
+import { MODELO_INDICADORES, derivarIndicadores, derivarVitalicio, tabelaIndexada, type FrenteId, type Indices, type IndicadoresPorFrente } from '@/lib/uberabaTabelasComerciais';
 
 // Condição solicitada pelo usuário, separada dos arquivos históricos fornecidos.
 // Ajuste solicitado: "Bensaúde" no PME com agenciamento de 150% (75% + 75%).
@@ -15,7 +16,8 @@ const condicoes = [...condicoesBase, ...condicoesImportadas
   .map(c => ({ ...c, condicao: 'Bensaúde Regra', agenciamento_parcela_1: 0.9,
     agenciamento_parcela_2: 0, agenciamento_parcela_3: 0,
     agenciamento_parcela_4: 0, agenciamento_parcela_5: 0 }))];
-const vidasIniciais: Record<string, number> = { PCA: 1000, PME_ADMINISTRADO: 1000, PCE_50_99: 2000, PCE_100_MAIS: 4000 };
+// Vidas iniciais pedidas em 13/11/2026: 10.000 no total, 5.000 no PJ+ e 2.000 no PCA (PME e PCE ADM. mantidos).
+const vidasIniciais: Record<string, number> = { PCA: 2000, PME_ADMINISTRADO: 1000, PCE_50_99: 2000, PCE_100_MAIS: 5000 };
 const padroes = padroesImportados.map(c => ({ ...c, condicao_comercial: 'Bensaúde Regra', total_vidas: vidasIniciais[c.produto_codigo] ?? c.total_vidas }));
 // %CART da imagem fornecida em 26/10/2026, aplicado às quatro modalidades.
 const percentuaisCart = [0.2850, 0.0610, 0.1058, 0.1137, 0.0976, 0.1000, 0.0857, 0.0634, 0.0388, 0.0490];
@@ -51,15 +53,57 @@ export type FinanceiroSimulacao = { vidas: number; acumuladas: number; faturamen
 export const numeroSimulacao = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 export const percentualSimulacao = (v: number) => `${numeroSimulacao(v * 100)}%`;
 export const inteiroSimulacao = (v: number) => v.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+export type CondicaoSimulacao = (typeof condicoes)[number];
+/** Preços (Enfermaria, em reais, por faixa) e condição usados numa modalidade. */
+export type ComercialSimulacao = { mensalidades: number[]; condicao: CondicaoSimulacao };
+
+/** Cenário dos CSVs fornecidos (tabela de preço e condição comercial selecionadas). */
 export function calcularSimulacao(config: ConfigSimulacao) {
+  const condicao = condicoes.find(c => c.produto_codigo === config.produto_codigo && c.condicao === config.condicao_comercial);
+  const tabela = precos.filter(p => p.produto_codigo === config.produto_codigo).sort((a,b) => a.faixa_numero-b.faixa_numero);
+  if (!condicao || tabela.length !== 10 || !['SIGA', 'Bensaúde'].includes(config.tabela_preco)) throw new Error('Configuração não encontrada nos CSVs.');
+  return simular(config, { condicao, mensalidades: tabela.map(p => config.tabela_preco === 'SIGA' ? p.preco_siga : p.preco_bensaude) });
+}
+
+/** Modalidade da simulação → tabela de Resultados Comerciais (PCA, PME ADM., PCE ADM., PJ+). */
+export const FRENTE_DO_PRODUTO: Record<string, FrenteId> = { PCA: 'pcaAdm', PME_ADMINISTRADO: 'pmeAdm', PCE_50_99: 'pceAdm', PCE_100_MAIS: 'pce100' };
+export const ORIGEM_RESULTADOS_COMERCIAIS = 'Resultados Comerciais';
+
+/**
+ * Pedido de 13/11/2026: sem seleção de tabela ou condição; tudo vem da tabela correspondente em Resultados Comerciais.
+ * Mensalidade = Enfermaria da tabela (Referência × índice). Agenciamento = Contratual, numa parcela.
+ * Taxa de adesão = Taxa de adesão (PJ+ não tem). Bensaúde = Operadora; Lancers = Administradora; SIGA = Agenciadora.
+ */
+export function comercialDaFrente(produtoCodigo: string, indices: Indices, indicadores: IndicadoresPorFrente): ComercialSimulacao {
+  const id = FRENTE_DO_PRODUTO[produtoCodigo];
+  if (!id) throw new Error('Modalidade sem tabela em Resultados Comerciais.');
+  const i = indicadores[id];
+  const vitalicio = MODELO_INDICADORES[id] === 'vitalicio';
+  const operadora = (vitalicio ? derivarVitalicio(i) : derivarIndicadores(i)).operadora;
+  return {
+    mensalidades: tabelaIndexada(indices[id]).map(l => l.enfermariaCentavos / 100),
+    condicao: {
+      produto_codigo: produtoCodigo, condicao: ORIGEM_RESULTADOS_COMERCIAIS,
+      participacao_bensaude: operadora / 100,
+      participacao_lancers: vitalicio ? 0 : i.spread / 100,
+      participacao_siga: vitalicio ? i.spread / 100 : 0,
+      agenciamento_parcela_1: i.contratual / 100, agenciamento_parcela_2: 0, agenciamento_parcela_3: 0, agenciamento_parcela_4: 0, agenciamento_parcela_5: 0,
+      taxa_adesao: vitalicio ? 0 : i.adesao / 100,
+    },
+  };
+}
+
+/** Cenário com preços e percentuais de Resultados Comerciais. */
+export function calcularSimulacaoComercial(config: ConfigSimulacao, comercial: ComercialSimulacao) {
+  return simular({ ...config, tabela_preco: ORIGEM_RESULTADOS_COMERCIAIS, condicao_comercial: ORIGEM_RESULTADOS_COMERCIAIS }, comercial);
+}
+
+function simular(config: ConfigSimulacao, { condicao, mensalidades }: ComercialSimulacao) {
   if (!validarVidas(config.total_vidas)) throw new Error('Total de vidas deve ser inteiro entre 1 e 100000.');
   const sinistralidade = config.sinistralidade_percentual ?? sinistralidadePadrao;
   if (!validarSinistralidade(sinistralidade)) throw new Error('Informe uma sinistralidade percentual válida, maior ou igual a zero.');
   const produto = produtos.find(p => p.produto_codigo === config.produto_codigo);
-  const condicao = condicoes.find(c => c.produto_codigo === config.produto_codigo && c.condicao === config.condicao_comercial);
-  const tabela = precos.filter(p => p.produto_codigo === config.produto_codigo).sort((a,b) => a.faixa_numero-b.faixa_numero);
-  if (!produto || !condicao || tabela.length !== 10 || !['SIGA', 'Bensaúde'].includes(config.tabela_preco)) throw new Error('Configuração não encontrada nos CSVs.');
-  const mensalidades = tabela.map(p => config.tabela_preco === 'SIGA' ? p.preco_siga : p.preco_bensaude);
+  if (!produto || mensalidades.length !== 10) throw new Error('Configuração não encontrada nos CSVs.');
   const vidasMes = distribuirResidual(config.total_vidas, [...meses].sort((a,b)=>a.mes_numero-b.mes_numero).map(m=>m.percentual_anual));
   const faixasMes = vidasMes.map(v => distribuirResidual(v, [...faixas].sort((a,b)=>a.faixa_numero-b.faixa_numero).map(f=>f.percentual_normalizado)));
   const novasReceitas = faixasMes.map(values => values.reduce((s,v,i) => s + v * mensalidades[i], 0));
