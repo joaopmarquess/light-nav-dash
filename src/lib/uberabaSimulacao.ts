@@ -24,7 +24,7 @@ const percentuaisCart = [0.2850, 0.0610, 0.1058, 0.1137, 0.0976, 0.1000, 0.0857,
 const faixas = faixasImportadas.map(f => ({ ...f, percentual_normalizado: percentuaisCart[f.faixa_numero - 1] }));
 
 export const fontesSimulacao = { produtos, precos, condicoes, meses, faixas, padroes };
-export const sinistralidadePadrao = 65;
+export const sinistralidadePadrao = 70;
 export type ConfigSimulacao = { produto_codigo: string; tabela_preco: string; condicao_comercial: string; total_vidas: number; sinistralidade_percentual?: number };
 export function validarSinistralidade(value: number) {
   return Number.isFinite(value) && value >= 0;

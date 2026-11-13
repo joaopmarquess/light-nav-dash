@@ -71,13 +71,13 @@ describe('Simulação comercial fornecida',()=>{
     expect(rs[0].anual.resultado_bensaude).toBeCloseTo(620927.0158,3);
     expect(consolidarSimulacao(rs).anual.resultado_bensaude).toBeCloseTo(5281309.0539,2);
   });
-  it('usa Sinistralidade padrão de 65% em todas as modalidades',()=>{
-    expect(sinistralidadePadrao).toBe(65);
+  it('usa Sinistralidade padrão de 70% em todas as modalidades',()=>{
+    expect(sinistralidadePadrao).toBe(70);
     fonte.padroes.forEach(c=>{
       const r=calcularSimulacao(c);
-      expect(r.anual.despesa_assistencial).toBeCloseTo(r.anual.faturamento * 0.65,7);
+      expect(r.anual.despesa_assistencial).toBeCloseTo(r.anual.faturamento * 0.7,7);
     });
-    expect(calcularSimulacao(padrao).anual.despesa_assistencial).toBeCloseTo(5765750.861,3);
+    expect(calcularSimulacao(padrao).anual.despesa_assistencial).toBeCloseTo(8870385.94*0.7,2);
   });
   it('calcula Despesa Assistencial como Faturamento × Sinistralidade por modalidade',()=>{
     const percentuais = [80,90,100,110];
