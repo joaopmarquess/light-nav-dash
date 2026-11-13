@@ -139,8 +139,8 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, resultado
       doc.setFontSize(F.indicador);
       doc.setTextColor(...TINTA);
       const lh = alturaLinha(F.indicador);
+      // Só o nome do indicador; o valor aparece uma única vez, na linha "Indicador" do quadro (pedido de 13/11/2026).
       doc.text(textoPdf(ind.label), marginL, y + lh * 0.75);
-      doc.text(n(ind.valorExibido), right, y + lh * 0.75, { align: "right" });
       y += lh + 1;
       paragrafo(ind.formula, F.texto, SECUNDARIO);
       const varias = ind.itens.length > 1;
@@ -148,7 +148,7 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, resultado
         ["Modalidade", "Cálculo", "Valor"],
         ind.itens.map(it => [it.modalidade, textoPdf(it.calculo), n(it.valor)]),
         {
-          foot: varias ? ["Soma", "", n(ind.valor)] : undefined,
+          foot: varias ? ["Indicador", "", n(ind.valor)] : undefined,
           colunas: { 0: { cellWidth: 26, fontStyle: "bold" }, 1: { halign: "left" }, 2: { cellWidth: 32, halign: "right" } },
         },
       );
