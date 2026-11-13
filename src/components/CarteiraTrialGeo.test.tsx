@@ -1,6 +1,9 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import CarteiraTrialGeo from "./CarteiraTrialGeo";
+
+const renderGeo = () => render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><CarteiraTrialGeo /></QueryClientProvider>);
 
 vi.mock("@/lib/hostingerClient", () => ({
   hostinger: { rpc: vi.fn().mockResolvedValue({ data: [{ uf: "SP", cidade: "São José do Rio Preto", ativos: 1000 }], error: null }) },
@@ -15,7 +18,7 @@ vi.mock("@/components/StateHeatMap", () => ({
 
 describe("inline MAA toggle", () => {
   it("keeps the selected date and beneficiary total when opening and closing the magnifier", async () => {
-    render(<CarteiraTrialGeo />);
+    renderGeo();
     fireEvent.click(await screen.findByRole("button", { name: "Mostrar MAA" }));
     const date = screen.getByLabelText("Ativos em") as HTMLInputElement;
     const selectedDate = date.value;
@@ -31,7 +34,7 @@ describe("inline MAA toggle", () => {
   });
 
   it("starts hidden, shows MAA in place, then restores the original view without changing totals", async () => {
-    render(<CarteiraTrialGeo />);
+    renderGeo();
     const toggle = await screen.findByRole("button", { name: "Mostrar MAA" });
     expect(toggle.getAttribute("aria-pressed")).toBe("false");
     expect(screen.getByTestId("map").getAttribute("data-core")).toBe("false");

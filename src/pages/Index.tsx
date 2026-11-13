@@ -481,7 +481,7 @@ const Index = () => {
           </div>
         </header>
 
-        <main className={`flex-1 min-h-0 overflow-hidden flex ${LAB_IDS.has(active) ? "flex-row gap-4" : "flex-col"} ${LAB_IDS.has(active) ? "py-8 pl-2 pr-8" : active === "Área Geográfica" || active === "Dashboard" ? "" : active === "Carteira · Bench Vidas" ? "p-3 sm:p-8" : "p-8"}`}>
+        <main className={`flex-1 min-h-0 overflow-hidden flex ${LAB_IDS.has(active) ? "flex-row gap-4" : "flex-col"} ${LAB_IDS.has(active) ? "py-8 pl-2 pr-8" : active === "Área Geográfica" || active === "Dashboard" ? "" : active === "Carteira · Bench Vidas" ? "p-3 sm:p-8" : active === "Carteira · Área Geográfica" ? "p-3 sm:p-4" : "p-8"}`}>
           {LAB_IDS.has(active) && (
             <LaboratoryNav items={visibleLabs} active={active} canHome={can("Laboratory")} onSelect={setActive} onMenuOpenChange={setLabMenuAberto} />
           )}

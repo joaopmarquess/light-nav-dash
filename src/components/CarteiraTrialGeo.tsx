@@ -55,79 +55,79 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
     );
   }
 
-  const dateControls = <div className={toolbarTarget ? "flex flex-wrap items-center gap-4" : "flex flex-wrap items-center justify-between gap-4 bg-card rounded-xl border border-border shadow-sm px-6 py-4"}>
+  const dateControls = <div className={toolbarTarget ? "flex flex-wrap items-center gap-4" : "flex flex-wrap items-center gap-4"}>
         <div className="flex items-center gap-2 text-sm">
           <span className="text-muted-foreground">Ativos em:</span>
           <input type="date" aria-label="Ativos em" value={data} onChange={(e) => e.target.value && setData(e.target.value)}
-            className="h-9 px-3 rounded-md border border-border bg-background text-foreground" />
+            className={`${toolbarTarget ? "h-9" : "h-8"} px-2 rounded-md border border-border bg-background text-foreground`} />
         </div>
         {!loading && !error && (
-          <div className={`${toolbarTarget ? "text-xl" : "text-3xl"} font-bold text-foreground tabular-nums`}>{total.toLocaleString("pt-BR")} vidas</div>
+          <div className="text-xl font-bold text-foreground tabular-nums">{total.toLocaleString("pt-BR")} vidas</div>
         )}
       </div>;
+  const botaoMapa = toolbarTarget ? "h-12 w-12 [&_svg]:size-6" : "h-9 w-9 [&_svg]:size-5";
   const mapControls = <div className="flex shrink-0 items-center gap-2">
-    <Button type="button" variant="outline" size="icon" title="Mapa Área Atuação (MAA)" aria-label="Mapa Área Atuação (MAA)" onClick={() => setSel("CENTRO")} className="h-12 w-12 [&_svg]:size-6"><Search /></Button>
+    <Button type="button" variant="outline" size="icon" title="Mapa Área Atuação (MAA)" aria-label="Mapa Área Atuação (MAA)" onClick={() => setSel("CENTRO")} className={botaoMapa}><Search /></Button>
     <TooltipProvider delayDuration={150}><Tooltip><TooltipTrigger asChild>
-      <Button type="button" variant={showMAA ? "secondary" : "outline"} size="icon" aria-label={showMAA ? "Ocultar MAA" : "Mostrar MAA"} aria-pressed={showMAA} onClick={() => setShowMAA((visible) => !visible)} className="h-12 w-12 [&_svg]:size-6">{showMAA ? <Eye /> : <EyeOff />}</Button>
+      <Button type="button" variant={showMAA ? "secondary" : "outline"} size="icon" aria-label={showMAA ? "Ocultar MAA" : "Mostrar MAA"} aria-pressed={showMAA} onClick={() => setShowMAA((visible) => !visible)} className={botaoMapa}>{showMAA ? <Eye /> : <EyeOff />}</Button>
     </TooltipTrigger><TooltipContent>{showMAA ? "Ocultar MAA" : "Mostrar MAA"}</TooltipContent></Tooltip></TooltipProvider>
-    <Button type="button" variant="outline" size="icon" title="Área de atuação recortada" aria-label="Área de atuação recortada" onClick={() => { setShowHospitals(false); setHospitalListType(null); setCropOpen(true); }} className="h-12 w-12 [&_svg]:size-6"><Scissors /></Button>
+    <Button type="button" variant="outline" size="icon" title="Área de atuação recortada" aria-label="Área de atuação recortada" onClick={() => { setShowHospitals(false); setHospitalListType(null); setCropOpen(true); }} className={botaoMapa}><Scissors /></Button>
   </div>;
+  const voltarMaa = <div className="flex shrink-0 items-center gap-3">
+    <Button type="button" variant="outline" onClick={() => setSel(null)} className={`${toolbarTarget ? "h-12 [&_svg]:size-6" : "h-9 [&_svg]:size-5"} shrink-0 gap-2 px-3`}><ArrowLeft />Voltar</Button>
+    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Mapa Área Atuação (MAA)</h3>
+  </div>;
+  const maxUF = Math.max(1, ...porUF.map((x) => x.total));
+  // Lista compacta de vidas por estado: coluna estreita para o mapa ocupar o restante da tela.
+  const listaEstados = <nav aria-label="Vidas por estado" className="flex shrink-0 flex-col justify-start gap-1 border-b border-border p-3 md:w-56 md:border-b-0 md:border-r">
+    <h3 className="mb-1 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Vidas por estado</h3>
+    {porUF.map((r) => {
+      const share = total > 0 ? (r.total / total) * 100 : 0;
+      const outros = r.uf === "Outros";
+      return (
+        <button key={r.uf} type="button" onClick={() => setSel(outros ? "BRASIL" : (r.uf as "SP" | "MG" | "MS" | "GO"))}
+          className="w-full rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent/40">
+          <div className="mb-1 flex items-baseline justify-between gap-2 text-sm">
+            <span className="inline-flex items-center gap-1.5 text-foreground">
+              {!outros && UF_FLAGS[r.uf] && <img src={UF_FLAGS[r.uf]} alt={`Bandeira ${r.uf}`} className="h-3 w-[18px] object-cover rounded-[2px] border border-border" />}
+              {r.uf}
+            </span>
+            <span className="whitespace-nowrap"><span className="font-semibold text-foreground tabular-nums">{r.total.toLocaleString("pt-BR")}</span>{" "}
+              <span className="text-[11px] text-muted-foreground tabular-nums">({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)</span></span>
+          </div>
+          <div className="flex h-1.5 overflow-hidden rounded-full bg-accent"><div className="h-full bg-primary" style={{ width: `${(r.total / maxUF) * 100}%` }} /></div>
+        </button>
+      );
+    })}
+  </nav>;
+
+  const corpo = loading ? (
+    <div className="h-full flex items-center justify-center text-muted-foreground text-sm"><Loader2 className="h-4 w-4 mr-2 animate-spin" />Carregando…</div>
+  ) : error ? (
+    <div className="p-4 text-destructive text-sm">Erro: {error}</div>
+  ) : sel === "CENTRO" ? (
+    <div className="h-full min-h-0 w-full p-2">
+      <StateHeatMap trialScale core ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} />
+    </div>
+  ) : (
+    <div className="flex h-full min-h-0 flex-col md:flex-row">
+      {!mapOnly && listaEstados}
+      <div className="min-h-0 min-w-0 flex-1 p-2">
+        <StateHeatMap trialScale outlineOnly={showMAA} showOverview={false} ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />
+      </div>
+    </div>
+  );
 
   return (
-    <section className="h-full flex flex-col min-h-0 gap-4">
-      {toolbarTarget ? createPortal(<>{dateControls}{sel !== "CENTRO" && mapControls}</>, toolbarTarget) : dateControls}
-      <div className="flex-1 min-h-0">
-        {loading ? (
-          <div className="h-full flex items-center justify-center text-muted-foreground text-sm"><Loader2 className="h-4 w-4 mr-2 animate-spin" />Carregando…</div>
-        ) : error ? (
-          <div className="text-destructive text-sm">Erro: {error}</div>
-        ) : sel === "CENTRO" ? (
-          <div className="h-full bg-card rounded-xl border border-border shadow-sm p-2 flex flex-col min-h-0">
-            <div className="flex items-center gap-3 px-2 pt-2">
-              <Button type="button" variant="outline" onClick={() => setSel(null)} className="h-12 shrink-0 gap-2 px-3 [&_svg]:size-6">
-                <ArrowLeft />Voltar
-              </Button>
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Mapa Área Atuação (MAA)</h3>
-            </div>
-            <div className="flex-1 min-h-0 w-full pt-2">
-              <StateHeatMap trialScale core ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} />
-            </div>
-          </div>
-        ) : (
-          <div className={`h-full grid grid-cols-1 ${mapOnly ? "" : "md:grid-cols-[2fr_3fr]"} gap-4 items-stretch`}>
-            {!mapOnly && <div className="bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col justify-center gap-4">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Vidas por estado</h3>
-              {porUF.map((r) => {
-                const max = Math.max(1, ...porUF.map((x) => x.total));
-                const share = total > 0 ? (r.total / total) * 100 : 0;
-                const outros = r.uf === "Outros";
-                return (
-                  <button key={r.uf} type="button" onClick={() => setSel(outros ? "BRASIL" : (r.uf as "SP" | "MG" | "MS" | "GO"))}
-                    className="w-full text-left rounded-md p-3 hover:bg-accent/40 transition-colors">
-                    <div className="flex justify-between text-base mb-2">
-                      <span className="text-foreground inline-flex items-center gap-2">
-                        {!outros && UF_FLAGS[r.uf] && <img src={UF_FLAGS[r.uf]} alt={`Bandeira ${r.uf}`} className="h-4 w-6 object-cover rounded-[2px] border border-border" />}
-                        {r.uf}
-                      </span>
-                      <span><span className="font-semibold text-foreground tabular-nums">{r.total.toLocaleString("pt-BR")}</span>{" "}
-                        <span className="text-xs text-muted-foreground tabular-nums">({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)</span></span>
-                    </div>
-                    <div className="flex h-2.5 rounded-full bg-accent overflow-hidden"><div className="h-full bg-primary" style={{ width: `${(r.total / max) * 100}%` }} /></div>
-                  </button>
-                );
-              })}
-            </div>}
-            <div className="bg-card rounded-xl border border-border shadow-sm p-2 flex flex-col min-h-0">
-              {!toolbarTarget && <div className="flex items-center gap-3 px-2 pt-2">
-                {mapControls}
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Mapa por cidade</h3>
-              </div>}
-              <div className="flex-1 min-h-0 h-full w-full">
-                <StateHeatMap trialScale outlineOnly={showMAA} showOverview={false} ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />
-              </div>
-            </div>
-          </div>
-        )}
+    <section className="h-full flex flex-col min-h-0">
+      {toolbarTarget && createPortal(<>{dateControls}{sel !== "CENTRO" && mapControls}</>, toolbarTarget)}
+      <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+        {!toolbarTarget && <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-border px-4 py-2">
+          {sel === "CENTRO" ? voltarMaa : !loading && !error ? mapControls : <span />}
+          {dateControls}
+        </div>}
+        {toolbarTarget && sel === "CENTRO" && <div className="shrink-0 border-b border-border px-4 py-2">{voltarMaa}</div>}
+        <div className="min-h-0 flex-1">{corpo}</div>
       </div>
       <Dialog open={cropOpen} onOpenChange={(open) => {
         if (!open && hospitalListType) {
