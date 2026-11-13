@@ -371,7 +371,7 @@ describe('Desp. Assist. média e % Copart (pedido de 13/11/2026)', () => {
   it('coparticipação por vida/mês = 20% de 280,45 = 56,09', () => {
     expect(coparticipacaoVidaMes(configs[0])).toBeCloseTo(56.09, 9);
   });
-  it('coparticipação do mês = vidas na carteira × 56,09', () => {
+  it('coparticipação do mês = vidas projetadas acumuladas × 56,09', () => {
     rs.forEach(r => r.mensal.forEach(m => expect(m.coparticipacao).toBeCloseTo(m.acumuladas * 56.09, 6)));
   });
   it('soma ao Total pago pelo beneficiário e entra 100% para a OPERADORA', () => {
@@ -407,7 +407,7 @@ describe('Chave PERCENTUAL / MÉDIA ASSIST. da Despesa Assistencial (pedido de 1
     const [c] = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao());
     c.resultados.forEach(r => r.mensal.forEach(m => expect(m.despesa_assistencial).toBeCloseTo(m.faturamento * 0.7, 6)));
   });
-  it('Média Assist.: despesa = vidas na carteira × Desp. Assist. média, sem a sinistralidade', () => {
+  it('Média Assist.: despesa = vidas projetadas acumuladas × Desp. Assist. média, sem a sinistralidade', () => {
     const [c] = simularPorBase(configs.map(x => ({ ...x, sinistralidade_percentual: 10 })), INDICES_PADRAO, indicadoresPadrao(), 'media');
     c.resultados.forEach(r => r.mensal.forEach(m => expect(m.despesa_assistencial).toBeCloseTo(m.acumuladas * 280.45, 6)));
     const r = resumoSimulacao(c.resultados);

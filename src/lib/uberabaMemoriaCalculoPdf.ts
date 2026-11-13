@@ -186,7 +186,7 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
           colunas: Object.fromEntries(Array.from({ length: cols }, (_, i) => [i, i === 0 ? { halign: "left", fontStyle: "bold" } : { halign: "right" }])),
         },
       );
-      if (mensal.colunas.includes("Vidas acumuladas")) paragrafo("Total de Vidas acumuladas = carteira no fim de dezembro.", F.tabela, SECUNDARIO, "italic");
+      if (mensal.colunas.includes("Vidas acumuladas")) paragrafo("Total de Vidas acumuladas = vidas projetadas acumuladas no fim de dezembro.", F.tabela, SECUNDARIO, "italic");
     }
   });
 
@@ -198,7 +198,7 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
     "Distribuição etária: %CART fornecido em 26/10/2026, aplicado às quatro modalidades.",
     "Taxa de adesão paga pelo beneficiário diretamente à AGENCIADORA.",
     premissaDespesa(baseDespesaDos(cenarios)),
-    "Coparticipação = vidas na carteira em cada mês × Desp. assist. média × % Copart; paga pelo beneficiário e 100% da OPERADORA.",
+    "Coparticipação = vidas projetadas acumuladas em cada mês × Desp. assist. média × % Copart; paga pelo beneficiário e 100% da OPERADORA.",
     "Simulação de proposta comercial, não aprovação ou resultado realizado.",
   ].forEach(t => paragrafo(`- ${t}`));
 
