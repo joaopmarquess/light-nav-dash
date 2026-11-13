@@ -121,15 +121,17 @@ export function gravarIndices(indices: Indices, storage: Pick<Storage, "setItem"
 
 // ---------- Indicadores variáveis (por frente, editáveis) ----------
 /** Campos editáveis (células amarelas da planilha), em %. */
-export type Indicadores = { spread: number; coAdministradora: number; contratual: number; promocional: number; adesao: number };
+export type Indicadores = { spread: number; contratual: number; promocional: number; adesao: number };
 export type CampoIndicador = keyof Indicadores;
 
 /** Padrão informado pelo usuário para os produtos com Administradora (PCA, PME ADM. e PCE ADM.). */
-export const INDICADORES_PADRAO: Indicadores = { spread: 23, coAdministradora: 4, contratual: 90, promocional: 150, adesao: 99 };
+export const INDICADORES_PADRAO: Indicadores = { spread: 23, contratual: 90, promocional: 150, adesao: 99 };
+/** Taxa de adesão padrão das Administradas (PME ADMINISTRADAS e PJ ADMINISTRADAS), pedido de 13/11/2026. */
+export const ADESAO_PADRAO_ADMINISTRADAS = 50;
 
 /**
  * Modelo de participação por frente:
- * - "administradora": Spread editável; Operadora = 100 − Spread; Administradora = Spread − Agenciadora; com Taxa de adesão.
+ * - "administradora": Spread editável; Operadora = 100 − Spread; com Taxa de adesão (sem Administradora nem Agenciadora desde 13/11/2026).
  * - "vitalicio" (PJ+, boletagem pela Operadora): Vitalício editável (guardado em `spread`); Operadora = 100 − Vitalício; Agenciadora = Vitalício; sem Taxa de adesão.
  */
 export type ModeloIndicadores = "administradora" | "vitalicio";
@@ -138,19 +140,19 @@ export const MODELO_INDICADORES: Record<FrenteId, ModeloIndicadores> = { pcaAdm:
 /** Padrões por frente; PJ+ segue a planilha própria (Vitalício 5%, Contratual 90%, Promocional 100%). */
 export const INDICADORES_PADRAO_POR_FRENTE: Record<FrenteId, Indicadores> = {
   pcaAdm: { ...INDICADORES_PADRAO },
-  pmeAdm: { ...INDICADORES_PADRAO },
-  pceAdm: { ...INDICADORES_PADRAO },
-  pce100: { spread: 5, coAdministradora: 0, contratual: 90, promocional: 100, adesao: 0 },
+  pmeAdm: { ...INDICADORES_PADRAO, adesao: ADESAO_PADRAO_ADMINISTRADAS },
+  pceAdm: { ...INDICADORES_PADRAO, adesao: ADESAO_PADRAO_ADMINISTRADAS },
+  pce100: { spread: 5, contratual: 90, promocional: 100, adesao: 0 },
 };
 
 /** Limites aceitos por campo (%). */
-export const LIMITES_INDICADOR: Record<CampoIndicador, number> = { spread: 100, coAdministradora: 100, contratual: 500, promocional: 500, adesao: 100 };
+export const LIMITES_INDICADOR: Record<CampoIndicador, number> = { spread: 100, contratual: 500, promocional: 500, adesao: 100 };
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
-/** Operadora = 100% − Spread; Administradora = Spread − Agenciadora. */
+/** Operadora = 100% − Spread. */
 export function derivarIndicadores(i: Indicadores) {
-  return { operadora: r2(100 - i.spread), administradora: r2(i.spread - i.coAdministradora) };
+  return { operadora: r2(100 - i.spread) };
 }
 
 /** PJ+: Operadora = 100% − Vitalício; Agenciadora = Vitalício. */
@@ -170,7 +172,9 @@ export function parseIndicador(campo: CampoIndicador, texto: string): number | n
 export const formatarPercentual = (n: number) => `${n.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%`;
 
 export type IndicadoresPorFrente = Record<FrenteId, Indicadores>;
-const CHAVE_INDICADORES = "uberaba-tabelas-comerciais-indicadores-v2";
+/** v3: Taxa de adesão padrão 50% nas Administradas (13/11/2026); da v2 aproveita-se tudo, menos essa taxa. */
+const CHAVE_INDICADORES = "uberaba-tabelas-comerciais-indicadores-v3";
+const CHAVE_INDICADORES_V2 = "uberaba-tabelas-comerciais-indicadores-v2";
 /** v1 tinha o modelo antigo também em PCE 100+; dela só se aproveitam PCA Adm. e PCE Adm. */
 const CHAVE_INDICADORES_V1 = "uberaba-tabelas-comerciais-indicadores-v1";
 const FRENTE_IDS: FrenteId[] = PARAMETROS_UBERABA.map((p) => p.id);
@@ -181,6 +185,15 @@ export function lerIndicadores(storage: Pick<Storage, "getItem"> | undefined = g
   const out = indicadoresPadrao();
   try {
     let salvo = JSON.parse(storage?.getItem(CHAVE_INDICADORES) ?? "null");
+    if (!salvo || typeof salvo !== "object") {
+      const v2 = JSON.parse(storage?.getItem(CHAVE_INDICADORES_V2) ?? "null");
+      if (v2 && typeof v2 === "object") {
+        salvo = { ...v2 };
+        (["pmeAdm", "pceAdm"] as const).forEach((id) => {
+          if (v2[id] && typeof v2[id] === "object") { const { adesao: _antiga, ...resto } = v2[id]; salvo[id] = resto; }
+        });
+      }
+    }
     if (!salvo || typeof salvo !== "object") {
       const v1 = JSON.parse(storage?.getItem(CHAVE_INDICADORES_V1) ?? "null");
       salvo = v1 && typeof v1 === "object" ? { pcaAdm: v1.pcaAdm, pceAdm: v1.pceAdm } : null;
@@ -276,8 +289,6 @@ export function blocosIndicadores(id: FrenteId, i: Indicadores): BlocoIndicadore
     { titulo: "Participação", linhas: [
       { rotulo: "Spread", campo: "spread", valor: i.spread },
       { rotulo: "Operadora", valor: d.operadora, formula: "100% − Spread" },
-      { rotulo: "Administradora", valor: d.administradora, formula: "Spread − Agenciadora" },
-      { rotulo: "Agenciadora", campo: "coAdministradora", valor: i.coAdministradora },
     ] },
     agenciamento,
     { titulo: "Taxa de adesão", linhas: [{ rotulo: "Percentual", campo: "adesao", valor: i.adesao }] },

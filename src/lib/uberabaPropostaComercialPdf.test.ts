@@ -25,7 +25,8 @@ describe("Proposta Comercial › 1. Tabelas", () => {
   it("brings the Indicadores variáveis as on screen", () => {
     const [pca, , , pce100] = quadrosProposta();
     expect(pca.blocos.map((b) => b.titulo)).toEqual(["PARTICIPAÇÃO", "AGENCIAMENTO", "TAXA DE ADESÃO"]);
-    expect(pca.blocos[0].linhas).toEqual([["SPREAD", "23%"], ["OPERADORA", "77%"], ["ADMINISTRADORA", "19%"], ["AGENCIADORA", "4%"]]);
+    expect(pca.blocos[0].linhas).toEqual([["SPREAD", "23%"], ["OPERADORA", "77%"]]);
+    expect(pca.blocos[2].linhas).toEqual([["PERCENTUAL", "99%"]]);
     expect(pce100.blocos.map((b) => b.titulo)).toEqual(["PARTICIPAÇÃO", "AGENCIAMENTO"]);
     expect(pce100.blocos[0].linhas).toEqual([["VITALÍCIO", "5%"], ["OPERADORA", "95%"], ["AGENCIADORA", "5%"]]);
   });

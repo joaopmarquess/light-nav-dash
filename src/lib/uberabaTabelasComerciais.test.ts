@@ -46,15 +46,15 @@ describe("tabelas comerciais Uberaba", () => {
   });
 });
 
-import { INDICADORES_PADRAO, MODELO_INDICADORES, derivarIndicadores, derivarVitalicio, lerIndicadores, parseIndicador } from "./uberabaTabelasComerciais";
+import { INDICADORES_PADRAO, MODELO_INDICADORES, blocosIndicadores, derivarIndicadores, derivarVitalicio, lerIndicadores, parseIndicador } from "./uberabaTabelasComerciais";
 
 describe("indicadores variáveis Uberaba", () => {
   it("padrão da planilha em PCA Adm. e PCE Adm.", () => {
-    expect(INDICADORES_PADRAO).toEqual({ spread: 23, coAdministradora: 4, contratual: 90, promocional: 150, adesao: 99 });
+    expect(INDICADORES_PADRAO).toEqual({ spread: 23, contratual: 90, promocional: 150, adesao: 99 });
     const t = lerIndicadores({ getItem: () => null });
     expect(t.pcaAdm).toEqual(INDICADORES_PADRAO);
-    expect(t.pmeAdm).toEqual(INDICADORES_PADRAO);
-    expect(t.pceAdm).toEqual(INDICADORES_PADRAO);
+    expect(t.pmeAdm).toEqual({ ...INDICADORES_PADRAO, adesao: 50 });
+    expect(t.pceAdm).toEqual({ ...INDICADORES_PADRAO, adesao: 50 });
     expect(MODELO_INDICADORES.pmeAdm).toBe("administradora");
   });
 
@@ -76,9 +76,17 @@ describe("indicadores variáveis Uberaba", () => {
     expect([t.pce100.spread, t.pce100.promocional]).toEqual([5, 100]);
   });
 
-  it("Operadora = 100 − Spread e Administradora = Spread − Agenciadora", () => {
-    expect(derivarIndicadores(INDICADORES_PADRAO)).toEqual({ operadora: 77, administradora: 19 });
-    expect(derivarIndicadores({ ...INDICADORES_PADRAO, spread: 5, coAdministradora: 5 })).toEqual({ operadora: 95, administradora: 0 });
+  it("Operadora = 100 − Spread, sem Administradora nem Agenciadora", () => {
+    expect(derivarIndicadores(INDICADORES_PADRAO)).toEqual({ operadora: 77 });
+    expect(derivarIndicadores({ ...INDICADORES_PADRAO, spread: 30 })).toEqual({ operadora: 70 });
+    expect(blocosIndicadores("pmeAdm", INDICADORES_PADRAO)[0].linhas.map((l) => l.rotulo)).toEqual(["Spread", "Operadora"]);
+  });
+
+  it("Taxa de adesão das Administradas volta a 50% mesmo com valor antigo gravado", () => {
+    const antigo = JSON.stringify({ pcaAdm: { adesao: 99, spread: 25 }, pmeAdm: { adesao: 99, spread: 20 }, pceAdm: { adesao: 99 } });
+    const t = lerIndicadores({ getItem: (k: string) => (k.endsWith("-v2") ? antigo : null) });
+    expect([t.pcaAdm.adesao, t.pmeAdm.adesao, t.pceAdm.adesao]).toEqual([99, 50, 50]);
+    expect([t.pcaAdm.spread, t.pmeAdm.spread]).toEqual([25, 20]);
   });
 
   it("guarda cada frente separadamente", () => {
@@ -90,7 +98,7 @@ describe("indicadores variáveis Uberaba", () => {
   it("rejeita valores fora do limite", () => {
     expect(parseIndicador("spread", "101")).toBeNull();
     expect(parseIndicador("promocional", "150")).toBe(150);
-    expect(parseIndicador("coAdministradora", "4,5")).toBe(4.5);
+    expect(parseIndicador("adesao", "4,5")).toBe(4.5);
   });
 });
 
