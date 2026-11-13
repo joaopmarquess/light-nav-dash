@@ -1,9 +1,28 @@
 import { describe, expect, it } from "vitest";
-import { INDICES_PADRAO, formatarCentavos, lerIndices, parseIndice, tabelaIndexada, tabelaReferencia } from "./uberabaTabelasComerciais";
+import { INDICES_PADRAO, formatarCentavos, indicadoresPadrao, lerIndices, operadoraDe, parseIndice, tabelaIndexada, tabelaNet, tabelaReferencia, tabelaVenda } from "./uberabaTabelasComerciais";
 
 const enf = (pct: number) => tabelaIndexada(pct).map((l) => formatarCentavos(l.enfermariaCentavos));
 
 describe("tabelas comerciais Uberaba", () => {
+  it("Preço de Venda = Referência × fator, sem participação (Empresarial 175,00 × 0,75 = 131,25)", () => {
+    expect(formatarCentavos(tabelaVenda(75)[0].enfermariaCentavos)).toBe("131,25");
+    expect(formatarCentavos(tabelaVenda(95)[0].enfermariaCentavos)).toBe("166,25");
+  });
+
+  it("Preço Net = Venda × participação da OPERADORA (100% − Agenciadora no Empresarial)", () => {
+    const ind = indicadoresPadrao();
+    expect(operadoraDe("pce100", ind.pce100)).toBe(95);
+    const net = tabelaNet(75, operadoraDe("pce100", ind.pce100));
+    expect(formatarCentavos(net[0].enfermariaCentavos)).toBe("124,69");
+    expect(formatarCentavos(net[0].apartamentoCentavos)).toBe("155,86");
+  });
+
+  it("Preço Net do PCA = Venda × (100% − Administradora 23%)", () => {
+    const ind = indicadoresPadrao();
+    expect(operadoraDe("pcaAdm", ind.pcaAdm)).toBe(77);
+    expect(formatarCentavos(tabelaNet(95, 77)[0].enfermariaCentavos)).toBe("128,01");
+  });
+
   it("usa os fatores de referência 0,95 / 0,90 / 0,85 / 0,75 como índices padrão", () => {
     expect(INDICES_PADRAO).toEqual({ pcaAdm: 95, pmeAdm: 90, pceAdm: 85, pce100: 75 });
   });

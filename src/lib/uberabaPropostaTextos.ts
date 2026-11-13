@@ -1,7 +1,7 @@
 // Textos da Proposta Comercial (tópicos 1 a 5): texto padrão do Dênis (tópicos 1 e 2 fornecidos por ele), revisável na tela;
 // a IA só redige os tópicos 3 a 5 a partir das tabelas de Resultados Comerciais. Tudo fica guardado neste navegador.
 import {
-  FATOR_APARTAMENTO_PADRAO, FRENTES_COMERCIAIS, GRUPOS_FRENTES, blocosIndicadores, parametrosDe, formatarCentavos, formatarFator, formatarPercentual, indiceCheio, tabelaCheia, tabelaReferencia,
+  FATOR_APARTAMENTO_PADRAO, FRENTES_COMERCIAIS, GRUPOS_FRENTES, blocosIndicadores, parametrosDe, formatarCentavos, formatarFator, formatarPercentual, tabelaVenda, tabelaReferencia,
   type Fatores, type IndicadoresPorFrente, type Indices, type RotulosPorFrente,
 } from "@/lib/uberabaTabelasComerciais";
 
@@ -83,6 +83,8 @@ export type DadosRascunho = {
     boletagem: string;
     distribuidores: string;
     indiceSobreReferencia: string;
+    /** Regra do Preço de Venda (Referência × fator), o único preço da Proposta. */
+    precoVenda: string;
     fatorApartamento: string;
     regraApartamento: string;
     faixas: FaixaRascunho[];
@@ -110,8 +112,8 @@ export function dadosRascunho(indices: Indices, indicadores: IndicadoresPorFrent
       indiceSobreReferencia: formatarPercentual(indices[id]),
       fatorApartamento: formatarFator(fatores[id]),
       regraApartamento: `Apartamento = TRUNCAR(Enfermaria × ${formatarFator(fatores[id])}; 2)`,
-      precoCheio: `Enfermaria = Referência × (${formatarPercentual(indices[id])} + ${formatarPercentual(indicadores[id].spread)} de participação) = ${formatarPercentual(indiceCheio(indices[id], indicadores[id].spread))}`,
-      faixas: tabelaCheia(indices[id], indicadores[id].spread, fatores[id]).map((l) => ({
+      precoVenda: `Preço de Venda: Enfermaria = Referência × ${formatarFator(indices[id] / 100)}`,
+      faixas: tabelaVenda(indices[id], fatores[id]).map((l) => ({
         faixa: l.faixa, enfermaria: formatarCentavos(l.enfermariaCentavos), apartamento: formatarCentavos(l.apartamentoCentavos),
       })),
       indicadores: blocosIndicadores(id, indicadores[id]).flatMap((b) =>

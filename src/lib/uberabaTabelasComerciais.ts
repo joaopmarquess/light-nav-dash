@@ -58,14 +58,20 @@ export function tabelaIndexada(indicePercentual: number, fator: number = FATOR_A
 }
 
 /**
- * Preço cheio (venda) usado nas tabelas da Proposta Comercial: Referência × (índice da tabela + participação de quem
- * vende), onde a participação é a ADMINISTRADORA nos produtos com Administradora e a AGENCIADORA no PJ+ (ambas
- * guardadas em `spread`). Ex.: PJ+ 70% + 5% → 175,00 × 75% = 131,25. A tela e a simulação seguem com o índice puro.
+ * Preço de Venda (pedido do Dênis, 13/11/2026): sempre Referência × fator da tabela, sem nenhuma outra multiplicação;
+ * é o preço da tela, da Simulação e da Proposta Comercial. Ex.: Empresarial 175,00 × 0,75 = 131,25.
  */
-export const indiceCheio = (indicePercentual: number, participacaoPercentual: number) =>
-  Math.round((indicePercentual + participacaoPercentual) * 100) / 100;
-export function tabelaCheia(indicePercentual: number, participacaoPercentual: number, fator: number = FATOR_APARTAMENTO_PADRAO): LinhaTabela[] {
-  return tabelaIndexada(indiceCheio(indicePercentual, participacaoPercentual), fator);
+export const tabelaVenda = (indicePercentual: number, fator: number = FATOR_APARTAMENTO_PADRAO): LinhaTabela[] =>
+  tabelaIndexada(indicePercentual, fator);
+
+/**
+ * Preço Net (o que fica para a OPERADORA): Preço de Venda × participação da OPERADORA, coluna a coluna
+ * (ARRED(Enfermaria venda × %; 2) e ARRED(Apartamento venda × %; 2)). Ex.: Empresarial 131,25 × 95% = 124,69.
+ */
+export function tabelaNet(indicePercentual: number, operadoraPercentual: number, fator: number = FATOR_APARTAMENTO_PADRAO): LinhaTabela[] {
+  const pct = Math.round(operadoraPercentual * 100);
+  const net = (c: number) => Math.round((c * pct) / 10000);
+  return tabelaVenda(indicePercentual, fator).map((l) => ({ faixa: l.faixa, enfermariaCentavos: net(l.enfermariaCentavos), apartamentoCentavos: net(l.apartamentoCentavos) }));
 }
 
 /** Aceita "1,25" ou "1.25" (até 4 casas); devolve null fora de 1–3. */
@@ -179,6 +185,10 @@ export function derivarIndicadores(i: Indicadores) {
 export function derivarVitalicio(i: Indicadores) {
   return { operadora: r2(100 - i.spread) };
 }
+
+/** Participação da OPERADORA da tabela (100% − Administradora, ou 100% − Agenciadora no PJ+), base do Preço Net. */
+export const operadoraDe = (id: FrenteId, i: Indicadores) =>
+  (MODELO_INDICADORES[id] === "vitalicio" ? derivarVitalicio(i) : derivarIndicadores(i)).operadora;
 
 /** Aceita "23", "4,5" ou "4.5"; devolve null fora de 0 – limite do campo. */
 export function parseIndicador(campo: CampoIndicador, texto: string): number | null {

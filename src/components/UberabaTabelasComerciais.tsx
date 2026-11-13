@@ -4,13 +4,28 @@ import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Pin } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, formatarFator, gravarFatores, lerFatores, parseFator, type Fatores, FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, parametrosDe, vidasTexto, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, gravarPadraoRotulos, gravarRotulos, lerIndicadores, lerIndices, lerPadraoRotulos, lerRotulos, normalizarRotulo, ROTULO_MAX, parseIndicador, parseIndice, tabelaIndexada, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices, type Rotulos, type RotulosPorFrente } from "@/lib/uberabaTabelasComerciais";
+import { FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, formatarFator, gravarFatores, lerFatores, parseFator, type Fatores, FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, parametrosDe, vidasTexto, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, gravarPadraoRotulos, gravarRotulos, lerIndicadores, lerIndices, lerPadraoRotulos, lerRotulos, normalizarRotulo, ROTULO_MAX, parseIndicador, parseIndice, tabelaIndexada, tabelaNet, tabelaVenda, operadoraDe, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices, type Rotulos, type RotulosPorFrente } from "@/lib/uberabaTabelasComerciais";
 
 // Preços calculados pela Referência × índice de cada frente; indicadores variáveis editáveis por frente (cálculos no helper).
 type Linha = [string, string, string];
 type Frente = { id: FrenteId; titulo: string; segmento: string; cor: string };
 
 const linhasDe = (indice: number, fator: number = FATOR_APARTAMENTO_PADRAO): Linha[] => tabelaIndexada(indice, fator).map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos), formatarCentavos(l.apartamentoCentavos)]);
+
+type ModoPreco = "venda" | "net";
+const linhasDeTabela = (t: ReturnType<typeof tabelaVenda>): Linha[] => t.map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos), formatarCentavos(l.apartamentoCentavos)]);
+
+// Chave VENDA/NET das Tabelas: Venda = Referência × fator; Net = Venda × participação da OPERADORA.
+const ChavePreco = ({ modo, onModo, operadora }: { modo: ModoPreco; onModo: (m: ModoPreco) => void; operadora: number }) => (
+  <span className="comercial-chave" role="group" aria-label="Preço exibido nas tabelas">
+    {(["venda", "net"] as const).map((m) => (
+      <button key={m} type="button" aria-pressed={modo === m} onClick={() => onModo(m)}
+        title={m === "venda" ? "Preço de Venda = Referência × fator da tabela" : `Preço Net = Preço de Venda × OPERADORA ${formatarPercentual(operadora)}`}>
+        {m === "venda" ? "Venda" : "Net"}
+      </button>
+    ))}
+  </span>
+);
 
 const CORES: Record<FrenteId, string> = { pcaAdm: "comercial-adesao", pmeAdm: "comercial-pme", pceAdm: "comercial-medias", pce100: "comercial-grandes" };
 export const FRENTES: Frente[] = FRENTES_COMERCIAIS.map((f) => ({ ...f, cor: CORES[f.id] }));
@@ -185,11 +200,14 @@ const GravarPadrao = ({ f, ativo, onClick }: { f: Frente; ativo: boolean; onClic
   );
 };
 
-const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variaveis, indicadores, onIndicador, rotulos, padroes, onRotulo, onGravarPadrao }: {
+const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variaveis, indicadores, onIndicador, rotulos, padroes, onRotulo, onGravarPadrao, modo, onModo }: {
+  modo: ModoPreco; onModo: (m: ModoPreco) => void;
   f: Frente; indice: number; onIndice: (v: number) => void; fator: number; onFator: (v: number) => void; apartamento: ApartamentoToggle; precos: ApartamentoToggle; variaveis: ApartamentoToggle;
   rotulos: Rotulos; padroes: Rotulos; onRotulo: (campo: keyof Rotulos, v: string) => void; onGravarPadrao: () => void;
   indicadores: Indicadores; onIndicador: (campo: CampoIndicador, v: number) => void;
 }) => {
+  const operadora = operadoraDe(f.id, indicadores);
+  const linhas = linhasDeTabela(modo === "net" ? tabelaNet(indice, operadora, fator) : tabelaVenda(indice, fator));
   const blocos: [string, LinhaIndicador[]][] = blocosIndicadores(f.id, indicadores).map((b) => [b.titulo, b.linhas.map((l) => ({ rotulo: l.rotulo, campo: l.campo, calculado: l.campo ? undefined : l.valor, formula: l.formula }))]);
   return (
     <div className={`comercial-card ${f.cor}`}>
@@ -202,10 +220,10 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
       </div>
       <ParametrosLinha id={f.id} />
       <section className="comercial-secao" aria-label={`Tabelas ${f.titulo}`}>
-        <p className="comercial-secao-titulo">Tabelas<BotaoSecao t={precos} nome="Tabelas" /></p>
+        <p className="comercial-secao-titulo">Tabelas{precos.visivel && <ChavePreco modo={modo} onModo={onModo} operadora={operadora} />}<BotaoSecao t={precos} nome="Tabelas" /></p>
         {precos.visivel && (
-          <div className="comercial-precos">
-            <Tabela linhas={linhasDe(indice, fator)} apartamento={apartamento} fator={fator} />
+          <div className="comercial-precos" data-modo={modo}>
+            <Tabela linhas={linhas} apartamento={apartamento} fator={fator} />
             <FatorApartamento f={f} valor={fator} onChange={onFator} />
           </div>
         )}
@@ -248,6 +266,8 @@ const UberabaTabelasComerciais = () => {
   const precos: ApartamentoToggle = { visivel: precosVisivel, alternar: () => setPrecosVisivel((v) => !v) };
   const [variaveisVisivel, setVariaveisVisivel] = useState(false);
   const variaveis: ApartamentoToggle = { visivel: variaveisVisivel, alternar: () => setVariaveisVisivel((v) => !v) };
+  // Preço de Venda por padrão; a chave vale para as quatro tabelas e só muda a exibição.
+  const [modo, setModo] = useState<ModoPreco>("venda");
   const [indicadores, setIndicadores] = useState<IndicadoresPorFrente>(() => lerIndicadores());
   const alterarIndicador = (id: FrenteId, campo: CampoIndicador, v: number) => setIndicadores((atual) => {
     const novo = { ...atual, [id]: { ...atual[id], [campo]: v } };
@@ -272,7 +292,7 @@ const UberabaTabelasComerciais = () => {
   return (
     <section className="comercial-presentation" aria-label="Tabelas comerciais">
       <div className={`comercial-grid ${variaveisVisivel ? "" : "indicadores-recolhidos"}`}>
-        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} fator={fatores[f.id]} onFator={(v) => alterarFator(f.id, v)} apartamento={apartamento} precos={precos} variaveis={variaveis} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} padroes={padroes[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} onGravarPadrao={() => gravarPadrao(f.id)} />)}
+        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} fator={fatores[f.id]} onFator={(v) => alterarFator(f.id, v)} apartamento={apartamento} precos={precos} variaveis={variaveis} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} padroes={padroes[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} onGravarPadrao={() => gravarPadrao(f.id)} modo={modo} onModo={setModo} />)}
       </div>
     </section>
   );
