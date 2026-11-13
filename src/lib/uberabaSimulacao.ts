@@ -405,6 +405,10 @@ export function parametrosMemoriaCalculo(cenarios: CenarioAgenciamento[], nomes:
     sinistralidade: (r.config.sinistralidade_percentual ?? sinistralidadePadrao) / 100,
     despesaMedia: r.config.despesa_media ?? 0,
     copart: (r.config.copart_percentual ?? 0) / 100,
+    // Mesmas colunas e fórmulas da tela: Net média = mensalidade × OPERADORA; Copart. = Desp. média × % Copart; Receitas = Net + Copart.
+    netMedia: netVidaMes(r),
+    copartVida: coparticipacaoVidaMes(r.config),
+    receitas: receitaVidaMes(r),
   }));
 }
 

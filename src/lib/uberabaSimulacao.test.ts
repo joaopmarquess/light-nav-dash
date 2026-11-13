@@ -340,6 +340,18 @@ describe('Relatório da Memória de Cálculo (Resultado por Ente)', () => {
     expect(p[3].siga).toBeCloseTo(0.05, 9);
     expect(p.every(x => x.sinistralidade === 0.7)).toBe(true);
   });
+  it('parâmetros do PDF trazem Net média, Copart. e Receitas com as fórmulas da tela', () => {
+    const cfg = fonte.padroes.map(c => ({ ...c, sinistralidade_percentual: 70, despesa_media: despesaMediaPadrao, copart_percentual: copartPadrao }));
+    const cs = simularPorBase(cfg, INDICES_PADRAO, indicadoresPadrao());
+    const p = parametrosMemoriaCalculo(cs, nomesR);
+    expect(p.every(x => x.despesaMedia === 190.45)).toBe(true);
+    p.forEach((x, i) => {
+      expect(x.netMedia).toBeCloseTo(x.mensalidadeMedia * x.bensaude, 9);
+      expect(x.copartVida).toBeCloseTo(38.09, 9);
+      expect(x.receitas).toBeCloseTo(x.netMedia + x.copartVida, 9);
+      expect(x.receitas).toBeCloseTo(receitaVidaMes(cs[0].resultados[i]), 9);
+    });
+  });
 });
 
 describe('Replicar Sinistralidade do PCA', () => {

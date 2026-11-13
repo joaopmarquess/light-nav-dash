@@ -83,6 +83,8 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
       body,
       foot: foot ? [foot] : undefined,
       showFoot: "lastPage",
+      // Linha da tabela nunca se divide entre páginas (contas mês a mês ocupam várias linhas).
+      rowPageBreak: "avoid",
       theme: "grid",
       styles: { font: "helvetica", fontSize: opts.fonte ?? F.tabela, cellPadding: 1.4, textColor: TEXTO, lineColor: LINHA, lineWidth: 0.2, valign: "middle" },
       headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", lineColor: LINHA, lineWidth: 0.3, halign: "center" },
@@ -119,27 +121,45 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
   const soma = (f: (x: (typeof parametros)[number]) => number) => parametros.reduce((s, x) => s + f(x), 0);
   const vidasTotal = soma(x => x.vidas);
   const direita = (de: number, ate: number) => Object.fromEntries(Array.from({ length: ate - de + 1 }, (_, k) => [de + k, { halign: "right" as const }]));
-  tabela(
-    ["Modalidade", "Vidas", "Mensalidade média", "Vendas", "Sinistralidade", "Desp. assist. média", "% Copart"],
-    parametros.map(x => [x.modalidade, inteiroSimulacao(x.vidas), n(x.mensalidadeMedia), n(x.vendas), p(x.sinistralidade), n(x.despesaMedia), p(x.copart)]),
-    {
-      foot: ["Total", inteiroSimulacao(vidasTotal), n(vidasTotal ? soma(x => x.vendas) / vidasTotal : 0), n(soma(x => x.vendas)), "", "", ""],
-      colunas: { 0: { fontStyle: "bold", halign: "left" }, ...direita(1, 6) },
-      fonte: 9,
-    },
-  );
-  // Percentuais em quadro próprio, para caber os nomes OPERADORA, ADMINISTRADORA e AGENCIADORA.
-  garantir(alturaTabela(parametros.length + 2));
+  // Mesma ordem da tela: percentuais, depois vidas e variáveis, depois os valores por vida/mês.
   tabela(
     ["Modalidade", ...cenarios.map(c => `Agenciamento ${c.rotulo.toLowerCase()}`), "Taxa de adesão", "OPERADORA", "ADMINISTRADORA", "AGENCIADORA"],
     parametros.map(x => [x.modalidade, ...x.agenciamentos.map(p), p(x.adesao), p(x.bensaude), p(x.lancers), p(x.siga)]),
     { colunas: { 0: { fontStyle: "bold", halign: "left", cellWidth: 22 }, ...direita(1, cenarios.length + 4), [cenarios.length + 3]: { halign: "right", cellWidth: 36 } }, fonte: 9 },
   );
-  paragrafo("Vendas = 1ª mensalidade (Enfermaria por faixa etária) de cada vida vendida no ano. Mensalidade média = Vendas ÷ Vidas. OPERADORA, ADMINISTRADORA e AGENCIADORA = participação de cada uma no faturamento. Desp. assist. média = valor por vida/mês, base da coparticipação (% Copart sobre ela) e, na chave Média Assist., da despesa assistencial.", F.tabela, SECUNDARIO, "italic");
+  garantir(alturaTabela(parametros.length + 2));
+  tabela(
+    ["Modalidade", "Vidas", "Vendas", "Sinistralidade", "Desp. assist. média", "% Copart"],
+    parametros.map(x => [x.modalidade, inteiroSimulacao(x.vidas), n(x.vendas), p(x.sinistralidade), n(x.despesaMedia), p(x.copart)]),
+    {
+      foot: ["Total", inteiroSimulacao(vidasTotal), n(soma(x => x.vendas)), "", "", ""],
+      colunas: { 0: { fontStyle: "bold", halign: "left" }, ...direita(1, 5) },
+      fonte: 9,
+    },
+  );
+  // Valores por vida/mês: totais ponderados pelas vidas de cada modalidade.
+  const ponderada = (f: (x: (typeof parametros)[number]) => number) => n(vidasTotal ? soma(x => f(x) * x.vidas) / vidasTotal : 0);
+  garantir(alturaTabela(parametros.length + 3));
+  tabela(
+    ["Modalidade", "Mensalidade média", "Net média (mensalidade × OPERADORA)", "Copart. (% Copart × Desp. assist. média)", "Receitas (Net média + Copart.)"],
+    parametros.map(x => [x.modalidade, n(x.mensalidadeMedia), n(x.netMedia), n(x.copartVida), { content: n(x.receitas), styles: { fontStyle: "bold" } }]),
+    {
+      foot: ["Total (média ponderada pelas vidas)", n(vidasTotal ? soma(x => x.vendas) / vidasTotal : 0), ponderada(x => x.netMedia), ponderada(x => x.copartVida), ponderada(x => x.receitas)],
+      colunas: { 0: { fontStyle: "bold", halign: "left" }, ...direita(1, 4) },
+      fonte: 9,
+    },
+  );
+  paragrafo("Vendas = 1ª mensalidade (Enfermaria por faixa etária) de cada vida vendida no ano. Mensalidade média = Vendas ÷ Vidas. OPERADORA, ADMINISTRADORA e AGENCIADORA = participação de cada uma no faturamento. Desp. assist. média = valor por vida/mês, base da coparticipação (% Copart sobre ela) e, na chave Média Assist., da despesa assistencial. Net média = Mensalidade média × Participação OPERADORA; Copart. = Desp. assist. média × % Copart; Receitas = Net média + Copart. (valores em R$ por vida/mês).", F.tabela, SECUNDARIO, "italic");
 
   // 2 a 5. Um tópico por ente.
   type Indicador = ReturnType<typeof relatorioMemoriaCalculo>[number]["indicadores"][number];
-  const alturaIndicador = (ind: Indicador) => alturaLinha(F.indicador) + 1 + linhasDe(ind.formula, F.texto) * alturaLinha(F.texto) + 1.5 + alturaTabela(ind.itens.length + 1 + (ind.itens.length > 1 ? 1 : 0));
+  // Linhas extras das contas longas (mês a mês) na coluna Cálculo, cerca de 60% da largura útil.
+  const linhasExtras = (ind: Indicador) => ind.itens.reduce((t, it) => {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(F.tabela);
+    return t + Math.max(0, (doc.splitTextToSize(textoPdf(it.calculo), usableW * 0.6 - 3) as string[]).length - 1);
+  }, 0);
+  const alturaIndicador = (ind: Indicador) => alturaLinha(F.indicador) + 1 + linhasDe(ind.formula, F.texto) * alturaLinha(F.texto) + 1.5 + alturaTabela(ind.itens.length + 1 + (ind.itens.length > 1 ? 1 : 0)) + linhasExtras(ind) * F.tabela * 0.3528 * 1.15;
   relatorioMemoriaCalculo(cenarios, nomes).forEach((ente, idx) => {
     // O título do ente nunca fica sozinho no fim da página: vai junto com o primeiro indicador.
     garantir(13 + alturaIndicador(ente.indicadores[0]));
