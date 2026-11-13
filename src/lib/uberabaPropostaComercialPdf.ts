@@ -172,6 +172,8 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   const margem = (x: number, w: number) => ({ left: x, right: pageW - x - w, top, bottom });
   const ALTURA_TITULO_SECAO = 7;
   const LARGURA_VALOR = 15;
+  /** Altura mínima (mm) de cada linha das tabelas de preços quando precisam diminuir para caber. */
+  const LINHA_PRECO_MIN = 4.5;
   /** Faixa colorida (2) + nome (13 pt, até duas linhas) + sigla e vidas (11 pt). */
   const LINHA_NOME = alturaLinha(F.quadro) / 1.35 * 1.15;
   const alturaNome = (g: Geometria, lista: Quadro[]) => {
@@ -282,13 +284,13 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   };
 
   // Contêiner TABELAS de cada quadro — Faixa × Enfermaria (cada coluna com moldura própria) e, abaixo dos quadros, uma linha simples com o fator do Apartamento.
-  // `preencher`: as linhas crescem até a seção ocupar o resto da folha (Produtos com Administradora).
-  const desenharPrecos = (lista: Quadro[], g: Geometria, preencher: boolean) => {
+  // `reserva` (mm): as linhas se ajustam para os quadros ocuparem o resto da folha deixando esse espaço livre abaixo
+  // (Produtos com Administradora: tabelas e remuneração na mesma página, pedido do Dênis em 13/11/2026).
+  const desenharPrecos = (lista: Quadro[], g: Geometria, reserva: number | null) => {
     const inicio = y;
     const ySecT = cabecalhoQuadros(g, lista, inicio);
     g.xs.forEach((x) => tituloSecao(g, "TABELAS", x, ySecT));
     let fimP = ySecT + ALTURA_TITULO_SECAO;
-    // As linhas crescem até o tópico preencher o resto da folha; o tópico seguinte começa na folha seguinte.
     // Fator do Apartamento: uma só linha, sem moldura, alinhada à esquerda e abaixo dos três quadros (pedido do Dênis em 13/11/2026).
     const fatoresIguais = lista.every((q) => q.fator === lista[0].fator);
     const nota = fatoresIguais
@@ -299,10 +301,14 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     const larguraNota = g.xs.length === 1 ? g.largura : LARGURA_TEXTO;
     const linhasNota = doc.splitTextToSize(textoPdf(nota), larguraNota) as string[];
     const LINHA_NOTA = alturaLinha(F.notaPrecos);
-    const ESPACO_NOTA = 6;
-    const fixo = ySecT - inicio + ALTURA_TITULO_SECAO + ESPACO_NOTA + linhasNota.length * LINHA_NOTA + 2;
+    const ESPACO_NOTA = 6, ESPACO_APOS_NOTA = 8;
+    const fixo = ySecT - inicio + ALTURA_TITULO_SECAO + ESPACO_NOTA + linhasNota.length * LINHA_NOTA + ESPACO_APOS_NOTA;
     const nLinhas = Math.max(1, ...lista.map((q) => q.linhas.length)) + 1;
-    const alturaLinhaPreco = preencher ? Math.min(16, Math.max(7, (pageH - bottom - inicio - fixo) / nLinhas)) : 7.5;
+    const alturaLinhaPreco = reserva === null ? 7.5 : Math.min(16, Math.max(LINHA_PRECO_MIN, (pageH - bottom - reserva - inicio - fixo) / nLinhas));
+    // Linhas baixas: menos respiro e letra reduzida só o necessário para caber na linha.
+    const respiro = alturaLinhaPreco < 7 ? 0.5 : 1;
+    const fonteLinha = Math.min(F.tabela, Math.floor(((alturaLinhaPreco - respiro * 2) / (0.3528 * 1.15)) * 2) / 2);
+    const fonteCabecalho = Math.min(F.cabecalhoTabela, fonteLinha);
     lista.forEach((q, k) => {
       // Moldura de cada coluna (FAIXA e ENFERMARIA), do cabeçalho à última faixa, separando-as visualmente.
       const colunas = [0, 1].map(() => ({ x: 0, w: 0, y0: Infinity, y1: -Infinity }));
@@ -313,8 +319,8 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
         margin: margem(g.xs[k] + g.inset, g.wSec),
         head: [["FAIXA", "ENFERMARIA"]],
         body: q.linhas,
-        styles: { font: "helvetica", fontSize: F.tabela, cellPadding: { top: 1, bottom: 1, left: 1.5, right: 1.5 }, minCellHeight: alturaLinhaPreco, valign: "middle", textColor: PDF_COLORS.text, halign: "center" },
-        headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: F.cabecalhoTabela },
+        styles: { font: "helvetica", fontSize: fonteLinha, cellPadding: { top: respiro, bottom: respiro, left: 1.5, right: 1.5 }, minCellHeight: alturaLinhaPreco, valign: "middle", textColor: PDF_COLORS.text, halign: "center" },
+        headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: fonteCabecalho },
         alternateRowStyles: { fillColor: ZEBRA },
         didDrawCell: (c) => {
           const col = colunas[c.column.index];
@@ -342,7 +348,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     doc.setFontSize(F.notaPrecos);
     doc.setTextColor(...SECUNDARIO);
     doc.text(linhasNota, g.xs[0], yNota, { lineHeightFactor: 1.35 });
-    y = yNota + linhasNota.length * LINHA_NOTA + 8;
+    y = yNota + linhasNota.length * LINHA_NOTA + ESPACO_APOS_NOTA;
     doc.setPage(doc.getNumberOfPages());
   };
 
@@ -409,19 +415,33 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   const corpo = paragrafosProposta(textos);
   // Os tópicos seguem corridos, sem pular página. Só os quadros lado a lado não se dividem:
   // quando não cabem no resto da página, passam inteiros para a seguinte.
-  const ALTURA_PRECOS = 112, ALTURA_REMUNERACAO = 100, ALTURA_EMPRESARIAL = 125;
-  // 3 · Produtos com Administradora: tabelas preenchendo a folha e, em seguida, a remuneração.
+  const ALTURA_EMPRESARIAL = 125;
+  // 3 · Produtos com Administradora: tabelas e remuneração na mesma página; as tabelas diminuem para caber.
+  // A altura da remuneração é medida desenhando-a numa página provisória, descartada em seguida.
+  const listaAdm = doGrupo("administradora");
+  const alturaRemuneracaoAdm = (() => {
+    doc.addPage(); y = top;
+    desenharRemuneracao(listaAdm, GEO_REMUNERACAO);
+    const h = y - top - 11; // sem o espaço que segue o quadro
+    doc.deletePage(doc.getNumberOfPages());
+    doc.setPage(doc.getNumberOfPages());
+    y = top;
+    return h;
+  })();
+  const nLinhasAdm = Math.max(1, ...listaAdm.map((q) => q.linhas.length)) + 1;
+  /** Altura mínima das tabelas da Administradora: nomes, TABELAS, linhas na altura mínima e a nota do fator. */
+  const ALTURA_PRECOS_ADM_MIN = alturaNome(GEO_TABELAS, listaAdm) + ALTURA_TITULO_SECAO + nLinhasAdm * LINHA_PRECO_MIN + 20;
   const desenharAdministradora = () => {
-    const lista = doGrupo("administradora");
-    garantir(ALTURA_PRECOS); desenharPrecos(lista, GEO_TABELAS, true);
-    garantir(ALTURA_REMUNERACAO); desenharRemuneracao(lista, GEO_REMUNERACAO);
+    garantir(ALTURA_PRECOS_ADM_MIN + alturaRemuneracaoAdm);
+    desenharPrecos(listaAdm, GEO_TABELAS, alturaRemuneracaoAdm);
+    desenharRemuneracao(listaAdm, GEO_REMUNERACAO);
   };
   // 4 · Plano Empresarial: tabela de preços e Indicadores variáveis lado a lado.
   const desenharEmpresarial = () => {
     const lista = doGrupo("empresarial");
     garantir(ALTURA_EMPRESARIAL);
     const inicio = y;
-    desenharPrecos(lista, GEO_EMP_TABELAS, false);
+    desenharPrecos(lista, GEO_EMP_TABELAS, null);
     const fimPrecos = y;
     y = inicio;
     desenharRemuneracao(lista, GEO_EMP_REMUNERACAO);
@@ -431,8 +451,9 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   const ALTURA_BLOCO: Partial<Record<SecaoTextoId, number>> = { referencia: 30 };
   const INICIO_TOPICO = 10 + LINHA_TEXTO * 2; // título com pelo menos duas linhas de texto abaixo
   SECOES_TEXTO.forEach((s, i) => {
-    // O Plano Empresarial (título, texto e quadros) fica junto na mesma página.
-    garantir(s.id === "empresarial" ? 10 + corpo[i].length * LINHA_TEXTO * 3 + ALTURA_EMPRESARIAL : INICIO_TOPICO);
+    // Produtos com Administradora e Plano Empresarial: título, texto e quadros ficam juntos na mesma página.
+    const juntos = s.id === "empresarial" ? ALTURA_EMPRESARIAL : s.id === "administradora" ? ALTURA_PRECOS_ADM_MIN + alturaRemuneracaoAdm : null;
+    garantir(juntos === null ? INICIO_TOPICO : 10 + corpo[i].length * LINHA_TEXTO * 3 + juntos);
     drawSectionTitle(doc, s.titulo, marginL, y, pageW - marginR, TINTA, F.topico);
     y += 10;
     corpo[i].forEach(paragrafo);
