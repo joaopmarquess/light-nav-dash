@@ -6,7 +6,7 @@ import {
   FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, FRENTES_COMERCIAIS, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarFator, formatarPercentual, indicadoresPadrao, rotulosPadrao, tabelaIndexada, tabelaReferencia,
   type Fatores, type FrenteId, type IndicadoresPorFrente, type Indices, type RotulosPorFrente,
 } from "@/lib/uberabaTabelasComerciais";
-import { SECOES_TEXTO, TITULO_GLOSSARIO, paragrafosDe, type SecaoTextoId, type TextosSecoes } from "@/lib/uberabaPropostaTextos";
+import { SECOES_TEXTO, TITULO_GLOSSARIO, TEXTOS_PADRAO, paragrafosDe, type SecaoTextoId, type TextosSecoes } from "@/lib/uberabaPropostaTextos";
 
 type RGB = [number, number, number];
 
@@ -46,23 +46,15 @@ export function quadrosProposta(indices: Indices = INDICES_PADRAO, indicadores: 
   }));
 }
 
-// Proposta Comercial Bensaúde|Uberaba — cada tópico abre com o texto revisado (rascunho da IA aprovado pelo usuário) ou,
-// sem aprovação, com Lorem ipsum; os tópicos 2, 3 e 4 seguem com a Tabela Referencial, os quadros de preços e os Indicadores variáveis.
-const LOREM = [
-  "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus posuere velit aliquet. Cras mattis consectetur purus sit amet fermentum. Donec ullamcorper nulla non metus auctor fringilla.",
-  "Sed posuere consectetur est at lobortis. Maecenas faucibus mollis interdum. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Nullam quis risus eget urna mollis ornare vel eu leo. Aenean lacinia bibendum nulla sed consectetur.",
-  "Curabitur blandit tempus porttitor. Etiam porta sem malesuada magna mollis euismod. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna, vel scelerisque nisl consectetur et.",
-];
-
+// Proposta Comercial Bensaúde|Uberaba — cada tópico abre com o texto revisado (aprovado pelo usuário) ou, sem aprovação,
+// com o texto padrão; os tópicos 2, 3 e 4 seguem com a Tabela Referencial, os quadros de preços e os Indicadores variáveis.
 /** Ordem dos tópicos do PDF: os cinco tópicos com texto e, por último, o Glossário. */
 export const TOPICOS_PROPOSTA = [...SECOES_TEXTO.map((s) => s.titulo), TITULO_GLOSSARIO];
 
-/** Quantos parágrafos provisórios cada tópico recebe enquanto não há texto revisado. */
-const LOREM_POR_SECAO: Record<SecaoTextoId, number> = { introducao: 2, referencia: 1, tabelas: 1, remuneracao: 1, descricao: 3 };
-
-/** Parágrafos de cada tópico 1 a 5: o texto revisado quando houver; do contrário, o texto provisório. */
+/** Parágrafos de cada tópico 1 a 5: o texto revisado quando houver; do contrário, o texto padrão. */
 export function paragrafosProposta(textos: TextosSecoes | null = null): string[][] {
-  return SECOES_TEXTO.map((s) => (textos ? paragrafosDe(textos[s.id]) : LOREM.slice(0, LOREM_POR_SECAO[s.id])));
+  const t = textos ?? TEXTOS_PADRAO;
+  return SECOES_TEXTO.map((s) => paragrafosDe(t[s.id]));
 }
 
 /**
@@ -116,7 +108,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   const heading = () => drawReportHeading(doc, {
     title: "Proposta Comercial",
     plano: "Bensaúde|Uberaba",
-    secao: textos ? "Minuta para revisão" : "Minuta provisória · conteúdo em Lorem ipsum",
+    secao: "Minuta para revisão",
     marginL, marginR, top: 38, tinta: TINTA,
   });
   heading();

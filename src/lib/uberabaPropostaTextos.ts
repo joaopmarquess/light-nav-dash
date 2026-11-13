@@ -1,5 +1,5 @@
-// Textos da Proposta Comercial (tópicos 1 a 5): rascunho gerado pela IA a partir das tabelas de Resultados Comerciais,
-// revisado pelo usuário e só então incluído no PDF. Tudo fica guardado neste navegador.
+// Textos da Proposta Comercial (tópicos 1 a 5): texto padrão do Dênis (tópicos 1 e 2 fornecidos por ele), revisável na tela;
+// a IA só redige os tópicos 3 a 5 a partir das tabelas de Resultados Comerciais. Tudo fica guardado neste navegador.
 import {
   FATOR_APARTAMENTO_PADRAO, FRENTES_COMERCIAIS, blocosIndicadores, formatarCentavos, formatarFator, formatarPercentual, tabelaIndexada, tabelaReferencia,
   type Fatores, type IndicadoresPorFrente, type Indices, type RotulosPorFrente,
@@ -8,19 +8,40 @@ import {
 /**
  * Tópicos da Proposta com texto: Introdução; Tabela Referencial (texto + Tabela Referencial);
  * Tabelas (texto + quadros de preços); Proposta de Remuneração (texto + Indicadores variáveis);
- * Descrição da Proposta (produtos, segmentos, acomodações e o que ainda falta definir). O Glossário vem por último.
+ * Conclusão (encerramento curto). O Glossário vem por último.
  */
 export const SECOES_TEXTO = [
   { id: "introducao", titulo: "1. Introdução" },
   { id: "referencia", titulo: "2. Tabela Referencial" },
   { id: "tabelas", titulo: "3. Tabelas" },
   { id: "remuneracao", titulo: "4. Proposta de Remuneração" },
-  { id: "descricao", titulo: "5. Descrição da Proposta" },
+  { id: "conclusao", titulo: "5. Conclusão" },
 ] as const;
 export const TITULO_GLOSSARIO = "6. Glossário e Notas Explicativas";
 export type SecaoTextoId = (typeof SECOES_TEXTO)[number]["id"];
 export type TextosSecoes = Record<SecaoTextoId, string>;
 export const TEXTO_MAX = 4000;
+
+/** Tópicos com texto fixo do Dênis: a IA nunca os reescreve. */
+export const SECOES_FIXAS = ["introducao", "referencia"] as const satisfies readonly SecaoTextoId[];
+/** Tópicos que a IA pode redigir. */
+export const SECOES_IA = ["tabelas", "remuneracao", "conclusao"] as const satisfies readonly SecaoTextoId[];
+
+/**
+ * Texto padrão da Proposta (o que vai ao PDF enquanto não houver texto revisado). Introdução e Tabela Referencial
+ * foram fornecidas pelo Dênis em 13/11/2026 e são reproduzidas sem alteração.
+ */
+export const TEXTOS_PADRAO: TextosSecoes = {
+  introducao:
+    "É com satisfação que apresentamos a presente proposta comercial para a comercialização de nossos produtos em Uberaba (Minas Gerais). O escopo desta oferta contempla as tabelas de preços estruturadas para três formatos distintos de produtos, sendo eles: a) o Plano Coletivo por Adesão, b) o segmento de Pequenas e Médias Empresas Administradas (de 02 a 99 vidas) e c) o Plano Coletivo Empresarial (acima de 100 vidas). Para garantir uma operação eficiente e alinhada ao mercado regional, os modelos de distribuição foram definidos de forma estratégica: a comercialização dos planos Coletivo por Adesão e PME Administradas ocorrerá por meio da Lancers Administradora e de suas Corretoras e Plataformas Associadas, contando com a valiosa parceria da Siga Soluções; já a distribuição do Plano Coletivo Empresarial será realizada em regime de corretagem direta para a Siga Soluções. Detalhes operacionais como os percentuais de spread, comissionamento, vitaliciedade e demais diretrizes de remuneração encontram-se especificados na seção \"Condições Comerciais\" ao longo deste documento.",
+  referencia:
+    "Esta tabela funciona como uma matriz de referencial de preços para Uberaba, já desenhada com o padrão de formatação atuarial do Bensaúde. O modelo foi estrategicamente calibrado para a realidade competitiva do mercado local, unindo a atratividade de praça ao padrão de excelência em qualidade assistencial — servindo como a base oficial a partir da qual foram derivadas as tabelas dos três produtos que compõem esta proposta.",
+  tabelas: "A seguir, apresentamos as tabelas de preços dos Produtos desta proposta.",
+  remuneracao: "A seguir, apresentamos os percentuais e as condições comerciais para a distribuição dos Produtos.",
+  conclusao:
+    "Com esta proposta, o Bensaúde reafirma o compromisso de levar a Uberaba produtos de saúde com preço justo e qualidade assistencial. Contamos com a parceria da Lancers Administradora, de suas Corretoras e Plataformas Associadas e da Siga Soluções para construir, juntos, uma operação sólida e duradoura, e permanecemos à disposição para os próximos passos.",
+};
+export const textosPadrao = (): TextosSecoes => ({ ...TEXTOS_PADRAO });
 
 /** Dados enviados à IA: somente o que está nas tabelas da tela, já formatado como aparece no PDF. */
 export type FaixaRascunho = { faixa: string; enfermaria: string; apartamento: string };
@@ -111,35 +132,14 @@ export type EstadoTextos = {
 };
 export const estadoVazio = (): EstadoTextos => ({ rascunho: null, assinaturaRascunho: null, geradoEm: null, aprovado: null, assinaturaAprovado: null, aprovadoEm: null });
 
-export const CHAVE_TEXTOS = "uberaba-proposta-textos-v2";
-/** Versão anterior (tópicos Objeto, Produtos, Condições, Rede e Vigência). */
-export const CHAVE_TEXTOS_V1 = "uberaba-proposta-textos-v1";
+/** v3: tópico 5 passou a ser Conclusão e os tópicos 1 e 2 têm texto padrão; rascunhos das versões anteriores são ignorados. */
+export const CHAVE_TEXTOS = "uberaba-proposta-textos-v3";
 const str = (v: unknown) => (typeof v === "string" ? v : null);
-
-/**
- * Leva o texto da versão anterior para os novos tópicos, só como rascunho (precisa de nova revisão):
- * Condições → Proposta de Remuneração; Objeto, Produtos, Rede e Vigência → Descrição da Proposta.
- */
-export function migrarTextosV1(o: unknown): EstadoTextos | null {
-  if (!o || typeof o !== "object") return null;
-  const v = o as Record<string, unknown>;
-  const fonte = (v.rascunho ?? v.aprovado) as Record<string, unknown> | null | undefined;
-  if (!fonte || typeof fonte !== "object") return null;
-  const t = (k: string) => (typeof fonte[k] === "string" ? (fonte[k] as string).trim() : "");
-  return {
-    ...estadoVazio(),
-    rascunho: normalizarTextos({
-      remuneracao: t("condicoes"),
-      descricao: ["objeto", "produtos", "rede", "vigencia"].map(t).filter(Boolean).join("\n\n"),
-    }),
-    geradoEm: str(v.geradoEm),
-  };
-}
 
 export function lerTextos(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): EstadoTextos {
   try {
     const o = JSON.parse(storage?.getItem(CHAVE_TEXTOS) ?? "null");
-    if (!o || typeof o !== "object") return migrarTextosV1(JSON.parse(storage?.getItem(CHAVE_TEXTOS_V1) ?? "null")) ?? estadoVazio();
+    if (!o || typeof o !== "object") return estadoVazio();
     return {
       rascunho: o.rascunho ? normalizarTextos(o.rascunho) : null,
       assinaturaRascunho: str(o.assinaturaRascunho),
@@ -161,5 +161,11 @@ export function gravarTextos(v: EstadoTextos, storage: Pick<Storage, "setItem"> 
 export const aprovarTextos = (e: EstadoTextos, textos: TextosSecoes, quando: Date = new Date()): EstadoTextos =>
   ({ ...e, rascunho: normalizarTextos(textos), aprovado: normalizarTextos(textos), assinaturaAprovado: e.assinaturaRascunho, aprovadoEm: quando.toISOString() });
 
-/** Texto que o PDF usa: somente o aprovado; sem aprovação, o PDF continua com o texto provisório. */
+/** Texto que o PDF usa: somente o aprovado; sem aprovação (null), o PDF usa o texto padrão. */
 export const textosParaPdf = (e: EstadoTextos): TextosSecoes | null => e.aprovado;
+
+/** Junta o retorno da IA ao texto em revisão: só os tópicos 3 a 5 mudam; os tópicos fixos ficam como estão. */
+export function mesclarRascunhoIa(atual: TextosSecoes, ia: unknown): TextosSecoes {
+  const novo = normalizarTextos(ia);
+  return normalizarTextos({ ...atual, ...Object.fromEntries(SECOES_IA.map((id) => [id, novo[id]])) });
+}

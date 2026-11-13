@@ -1,4 +1,5 @@
-// Rascunho dos textos da Proposta Comercial Bensaúde|Uberaba (tópicos 1 a 5) a partir das tabelas de Resultados Comerciais.
+// Rascunho dos tópicos 3 a 5 da Proposta Comercial Bensaúde|Uberaba a partir das tabelas de Resultados Comerciais.
+// Os tópicos 1 e 2 são texto fixo do usuário: chegam só como contexto e nunca são reescritos.
 // Lovable AI Gateway (Responses, saída estruturada). O texto volta para revisão do usuário; nada vai ao PDF sem aprovação.
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { z } from "npm:zod@3";
@@ -9,7 +10,7 @@ import { createLovableAiGatewayRunIdFetch, getLovableAiGatewayRunId } from "../_
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1";
 const MODELO = "openai/gpt-6-astra";
-const SECOES = ["introducao", "referencia", "tabelas", "remuneracao", "descricao"] as const;
+const SECOES = ["tabelas", "remuneracao", "conclusao"] as const;
 
 const cors = { ...corsHeaders, "Access-Control-Expose-Headers": "X-Lovable-AIG-Run-ID" };
 const json = (body: unknown, status = 200, extra: Record<string, string> = {}) =>
@@ -26,6 +27,7 @@ const entrada = z.object({
       indicadores: z.array(z.object({ bloco: texto(40), item: texto(40), valor: texto(20), formula: texto(60).nullable() })).max(20),
     })).min(1).max(5),
   }),
+  contexto: z.object({ introducao: texto(4000), referencia: texto(4000) }).partial().optional(),
 });
 
 const schema = jsonSchema<Record<(typeof SECOES)[number], string>>({
@@ -40,21 +42,20 @@ Use sempre o artigo masculino: "o Bensaúde", "do Bensaúde", "pelo Bensaúde". 
 Tom institucional, claro e objetivo, sem adjetivos promocionais.
 
 REGRAS INVIOLÁVEIS
-1. Use somente os fatos que estão nos DADOS enviados. Não invente nem suponha preços, percentuais, descontos, prazos, carências, coparticipação, reajustes, datas, vigência, validade, abrangência, rede credenciada, hospitais, documentos, formas de pagamento ou qualquer outra condição comercial.
+1. Use somente os fatos que estão nos DADOS e no CONTEXTO enviados. Não invente nem suponha preços, percentuais, descontos, prazos, carências, coparticipação, reajustes, datas, vigência, validade, abrangência, rede credenciada, hospitais, documentos, formas de pagamento ou qualquer outra condição comercial.
 2. Todo número que você escrever deve aparecer nos DADOS exatamente com a mesma grafia (por exemplo "1,25", "23%", "157,50"). Não calcule médias, totais, diferenças ou novos valores.
 3. Quando a seção precisar de uma informação que não está nos DADOS, escreva um marcador entre colchetes no formato [A definir: o que falta]. Nunca preencha a lacuna com suposições.
 4. Não repita as tabelas faixa a faixa: o sistema as insere nos tópicos 2 · Tabela Referencial e 3 · Tabelas. Refira-se a elas pelo nome.
-5. Sem markdown, títulos, numeração ou listas com marcadores. Cada seção tem de 1 a 3 parágrafos curtos, separados por uma linha em branco.
+5. Sem markdown, títulos, numeração ou listas com marcadores. Seja breve, como indicado em cada seção.
 
 ESTRUTURA DA PROPOSTA (o texto de cada seção abre o tópico; tabelas e quadros são inseridos logo abaixo pelo sistema)
-1. Introdução · 2. Tabela Referencial · 3. Tabelas · 4. Proposta de Remuneração · 5. Descrição da Proposta · 6. Glossário e Notas Explicativas.
+1. Introdução · 2. Tabela Referencial · 3. Tabelas · 4. Proposta de Remuneração · 5. Conclusão · 6. Glossário e Notas Explicativas.
+Os tópicos 1 e 2 já estão escritos (CONTEXTO) e não fazem parte da sua resposta. Você pode usar os fatos do CONTEXTO (por exemplo, os parceiros de distribuição), sem copiar trechos.
 
-SEÇÕES
-- introducao: apresenta a Proposta Comercial do Bensaúde para o projeto Bensaúde|Uberaba, as tabelas que ela traz (pelo nome) e como o documento está organizado nos tópicos acima.
-- referencia: explica que a Tabela Referencial (logo abaixo) é a base de 100% por faixa etária, com Enfermaria e Apartamento, e que o Apartamento segue a regra da Tabela Referencial (DADOS.referencia.regraApartamento). Não repita valores das faixas.
-- tabelas: explica que cada tabela (nome e segmento) é a Referência multiplicada pelo seu índice e que o Apartamento usa o fator de cada tabela; os quadros vêm logo abaixo. Não repita valores das faixas.
-- remuneracao: por tabela, a Participação, o Agenciamento e a Taxa de adesão (quando houver), com os percentuais e as fórmulas dos DADOS (por exemplo "Operadora = 100% − Spread"); os quadros vêm logo abaixo.
-- descricao: descreve a proposta — tabelas/modalidades pelo nome e segmento, acomodações Enfermaria e Apartamento — e registra com marcadores [A definir: ...] o que os DADOS não trazem, no mínimo rede assistencial, vigência e validade da proposta.`;
+SEÇÕES (somente estas três)
+- tabelas: uma única frase simples informando que, abaixo, estão as tabelas de preços dos Produtos. Sem números.
+- remuneracao: uma única frase simples informando que, abaixo, estão os percentuais e as condições comerciais para a distribuição dos Produtos. Sem números.
+- conclusao: um parágrafo curto (2 ou 3 frases) que encerre a proposta com cordialidade, sem novos compromissos, prazos ou condições.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
@@ -81,7 +82,10 @@ Deno.serve(async (req) => {
     const result = streamText({
       model: provider.responses(MODELO),
       instructions: INSTRUCOES,
-      messages: [{ role: "user", content: `DADOS (tabelas de Resultados Comerciais, já formatadas como no PDF):\n${JSON.stringify(input.data.dados, null, 2)}` }],
+      messages: [{
+        role: "user",
+        content: `CONTEXTO (tópicos 1 e 2, já escritos):\n${JSON.stringify(input.data.contexto ?? {}, null, 2)}\n\nDADOS (tabelas de Resultados Comerciais, já formatadas como no PDF):\n${JSON.stringify(input.data.dados, null, 2)}`,
+      }],
       output: Output.object({ schema }),
       abortSignal: req.signal,
       maxRetries: 1,

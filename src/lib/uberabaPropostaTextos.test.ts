@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FATORES_PADRAO, INDICES_PADRAO, indicadoresPadrao, rotulosPadrao } from "@/lib/uberabaTabelasComerciais";
 import {
-  CHAVE_TEXTOS, CHAVE_TEXTOS_V1, SECOES_TEXTO, aprovarTextos, assinaturaDados, dadosRascunho, estadoVazio, gravarTextos, lerTextos, normalizarTextos,
+  CHAVE_TEXTOS, SECOES_TEXTO, TEXTOS_PADRAO, aprovarTextos, mesclarRascunhoIa, assinaturaDados, dadosRascunho, estadoVazio, gravarTextos, lerTextos, normalizarTextos,
   numerosForaDasTabelas, paragrafosDe, pendencias, textosParaPdf, textosVazios,
 } from "@/lib/uberabaPropostaTextos";
 import { paragrafosProposta } from "@/lib/uberabaPropostaComercialPdf";
@@ -38,10 +38,23 @@ describe("conferência de números do rascunho", () => {
 });
 
 describe("revisão antes do PDF", () => {
-  it("sem aprovação o PDF continua com o texto provisório", () => {
+  it("sem aprovação o PDF usa o texto padrão, com a Introdução e a Tabela Referencial do Dênis", () => {
     const e = { ...estadoVazio(), rascunho: { ...textosVazios(), introducao: "Rascunho." } };
     expect(textosParaPdf(e)).toBeNull();
-    expect(paragrafosProposta(null)[0][0]).toMatch(/^Lorem ipsum/);
+    const p = paragrafosProposta(null);
+    expect(p[0][0]).toMatch(/^É com satisfação que apresentamos a presente proposta comercial para a comercialização de nossos produtos em Uberaba \(Minas Gerais\)\./);
+    expect(p[0][0]).toMatch(/seção "Condições Comerciais" ao longo deste documento\.$/);
+    expect(p[1][0]).toMatch(/^Esta tabela funciona como uma matriz de referencial de preços para Uberaba, já desenhada com o padrão de formatação atuarial do Bensaúde\./);
+    expect(p.every((t) => t.length > 0)).toBe(true);
+    expect(p.flat().join(" ")).not.toMatch(/Lorem/);
+  });
+  it("tópicos 3 e 4 são uma linha simples", () => {
+    expect(TEXTOS_PADRAO.tabelas.split("\n")).toHaveLength(1);
+    expect(TEXTOS_PADRAO.remuneracao.split("\n")).toHaveLength(1);
+  });
+  it("a IA só troca os tópicos 3 a 5; Introdução e Tabela Referencial ficam como estão", () => {
+    const m = mesclarRascunhoIa(TEXTOS_PADRAO, { introducao: "Outra.", referencia: "Outra.", tabelas: "T.", remuneracao: "R.", conclusao: "C." });
+    expect(m).toEqual({ ...TEXTOS_PADRAO, tabelas: "T.", remuneracao: "R.", conclusao: "C." });
   });
   it("depois de incluir, o PDF usa exatamente o texto revisado, um parágrafo por linha", () => {
     const revisado = { ...textosVazios(), introducao: "Primeiro parágrafo.\n\nSegundo\nparágrafo." };
@@ -52,9 +65,9 @@ describe("revisão antes do PDF", () => {
   });
   it("guarda e lê o estado neste navegador", () => {
     const s = memoria();
-    const e = aprovarTextos(estadoVazio(), { ...textosVazios(), descricao: "  Rede [A definir: hospitais]  " });
+    const e = aprovarTextos(estadoVazio(), { ...textosVazios(), conclusao: "  Fim [A definir: hospitais]  " });
     gravarTextos(e, s);
-    expect(lerTextos(s).aprovado?.descricao).toBe("Rede [A definir: hospitais]");
+    expect(lerTextos(s).aprovado?.conclusao).toBe("Fim [A definir: hospitais]");
     s.setItem(CHAVE_TEXTOS, "{quebrado");
     expect(lerTextos(s)).toEqual(estadoVazio());
   });
@@ -65,20 +78,18 @@ describe("revisão antes do PDF", () => {
 });
 
 describe("tópicos da Proposta", () => {
-  it("segue a ordem Introdução, Tabela Referencial, Tabelas, Proposta de Remuneração e Descrição da Proposta", () => {
-    expect(SECOES_TEXTO.map((s) => s.titulo)).toEqual(["1. Introdução", "2. Tabela Referencial", "3. Tabelas", "4. Proposta de Remuneração", "5. Descrição da Proposta"]);
+  it("segue a ordem Introdução, Tabela Referencial, Tabelas, Proposta de Remuneração e Conclusão", () => {
+    expect(SECOES_TEXTO.map((s) => s.titulo)).toEqual(["1. Introdução", "2. Tabela Referencial", "3. Tabelas", "4. Proposta de Remuneração", "5. Conclusão"]);
   });
   it("a IA recebe a Tabela Referencial a 100% com o fator padrão", () => {
     const r = padrao().referencia;
     expect(r.fatorApartamento).toBe("1,25");
     expect(r.faixas[0]).toEqual({ faixa: "00 a 18", enfermaria: "175,00", apartamento: "218,75" });
   });
-  it("rascunho da versão anterior vira rascunho dos novos tópicos, sem ir direto ao PDF", () => {
+  it("rascunhos da versão anterior (com Descrição da Proposta) não voltam", () => {
     const s = memoria();
-    s.setItem(CHAVE_TEXTOS_V1, JSON.stringify({ rascunho: { objeto: "Obj.", produtos: "Prod.", condicoes: "Cond.", rede: "Rede.", vigencia: "Vig." }, aprovado: { objeto: "Obj." } }));
-    const e = lerTextos(s);
-    expect(e.rascunho?.remuneracao).toBe("Cond.");
-    expect(e.rascunho?.descricao).toBe("Obj.\n\nProd.\n\nRede.\n\nVig.");
-    expect(e.aprovado).toBeNull();
+    s.setItem("uberaba-proposta-textos-v2", JSON.stringify({ aprovado: { descricao: "Antigo." } }));
+    expect(lerTextos(s)).toEqual(estadoVazio());
+    expect(CHAVE_TEXTOS).toBe("uberaba-proposta-textos-v3");
   });
 });
