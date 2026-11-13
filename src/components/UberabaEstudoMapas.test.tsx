@@ -62,7 +62,12 @@ describe("Estudo view selection", () => {
     expect(botao).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("region", { name: "Variáveis por modalidade", hidden: true })).not.toBeVisible();
     fireEvent.click(botao);
+    // Parâmetros e Resultado por Ente: blocos recolhidos dentro da Simulação de resultados.
+    expect(screen.getByRole("region", { name: "Variáveis por modalidade", hidden: true })).not.toBeVisible();
+    expect(screen.getByRole("button", { name: "Expandir Resultado por Ente" })).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(screen.getByRole("button", { name: "Expandir Parâmetros" }));
     expect(screen.getByRole("region", { name: "Variáveis por modalidade" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Resumo por faixa etária" })).toBeVisible();
   });
 
   it("opens the Gestão Rede view with its variables", () => {

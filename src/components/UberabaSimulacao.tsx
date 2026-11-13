@@ -1,11 +1,11 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { Calculator, ChevronRight, RotateCcw, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import UberabaSimulacaoFaixas from '@/components/UberabaSimulacaoFaixas';
+import BlocoRecolhido from '@/components/BlocoRecolhido';
 import { EVENTO_TABELAS_COMERCIAIS, lerIndicadores, lerIndices } from '@/lib/uberabaTabelasComerciais';
 import { BASES_AGENCIAMENTO, calcularSimulacaoComercial, comercialDaFrente, type BaseAgenciamento, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, type ConfigSimulacao, type CondicaoSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
@@ -84,8 +84,7 @@ function useResultadosComerciais() {
   return v;
 }
 
-// acoesTarget: quando informado (Estudo › Simulações), as ações ficam na linha dos sub-botões.
-export default function UberabaSimulacao({ acoesTarget }: { acoesTarget?: HTMLElement | null } = {}) {
+export default function UberabaSimulacao() {
   const [configuracoes, setConfiguracoes] = useState<ConfigSimulacao[]>(() => fonte.padroes.map(c => ({ ...c, sinistralidade_percentual: sinistralidadePadrao })));
   const [vidaText, setVidaText] = useState<Record<string, string>>({});
   const [sinText, setSinText] = useState<Record<string, string>>({});
@@ -101,10 +100,10 @@ export default function UberabaSimulacao({ acoesTarget }: { acoesTarget?: HTMLEl
     setSinText(p => ({ ...p, [codigo]: String(sinistralidadePadrao) }));
     setVidaText(p => ({ ...p, [codigo]: String(original.total_vidas) }));
   };
-  const acoes = <div className="flex gap-2"><Dialog><DialogTrigger asChild><Button variant="outline"><Calculator className="mr-2 h-4 w-4" />Resumo por faixa etária</Button></DialogTrigger><UberabaSimulacaoFaixas resultados={resultados} /></Dialog></div>;
+  // Resumo por faixa etária: ícone ao lado do título "Total de vidas".
+  const resumoFaixas = <Dialog><Tooltip><TooltipTrigger asChild><DialogTrigger asChild><Button variant="ghost" size="icon" aria-label="Resumo por faixa etária" className="h-6 w-6 align-middle"><Calculator className="h-4 w-4" /></Button></DialogTrigger></TooltipTrigger><TooltipContent>Resumo por faixa etária</TooltipContent></Tooltip><UberabaSimulacaoFaixas resultados={resultados} /></Dialog>;
   return <article className="uberaba-simulation" aria-label="Simulador Comercial Bensaúde|Uberaba">
-    {acoesTarget ? createPortal(acoes, acoesTarget) : acoesTarget === undefined && <header className="sim-heading justify-end">{acoes}</header>}
-    <section aria-label="Variáveis por modalidade" className="rounded-md border border-border p-4">
+    <BlocoRecolhido titulo="Parâmetros"><section aria-label="Variáveis por modalidade" className="p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs text-muted-foreground">Preços (Enfermaria), Agenciamento ({rotuloBase}), Taxa de adesão e Participações vêm das tabelas de Resultados Comerciais acima.</p>
         <div className="flex items-center gap-2 text-sm"><span className="text-muted-foreground">Agenciamento</span>
@@ -114,7 +113,7 @@ export default function UberabaSimulacao({ acoesTarget }: { acoesTarget?: HTMLEl
         </div>
       </div>
       <div className="overflow-x-auto"><table className="w-full text-sm">
-        <thead><tr className="text-left text-muted-foreground"><th className="px-2 py-1 text-center">Modalidade</th><th className="px-2 py-1 text-center">Agenciamento <span className="font-normal">({rotuloBase.toLowerCase()})</span></th><th className="px-2 py-1 text-center">Taxa de Adesão</th><th className="px-2 py-1 text-center">Participação Bensaúde</th><th className="px-2 py-1 text-center">Participação Lancers</th><th className="px-2 py-1 text-center">Participação SIGA</th><th className="px-2 py-1 text-center">Total de vidas</th><th className="px-2 py-1 text-center">Sinistralidade (%)</th><th className="px-2 py-1 text-center">Mensalidade média</th><th /></tr></thead>
+        <thead><tr className="text-left text-muted-foreground"><th className="px-2 py-1 text-center">Modalidade</th><th className="px-2 py-1 text-center">Agenciamento <span className="font-normal">({rotuloBase.toLowerCase()})</span></th><th className="px-2 py-1 text-center">Taxa de Adesão</th><th className="px-2 py-1 text-center">Participação Bensaúde</th><th className="px-2 py-1 text-center">Participação Lancers</th><th className="px-2 py-1 text-center">Participação SIGA</th><th className="whitespace-nowrap px-2 py-1 text-center">Total de vidas {resumoFaixas}</th><th className="px-2 py-1 text-center">Sinistralidade (%)</th><th className="px-2 py-1 text-center">Mensalidade média</th><th /></tr></thead>
         <tbody>{resultados.map((r, i) => { const c = r.config, cod = c.produto_codigo; const vt = vidaText[cod] ?? String(c.total_vidas); const st = sinText[cod] ?? String(c.sinistralidade_percentual ?? sinistralidadePadrao); return <tr key={cod} className="border-t border-border align-top">
           <th scope="row" className="px-2 py-2 text-left">{nomes[i]}{!r.participacoesValidas && <span className="block text-xs text-destructive">Participações ≠ 100%</span>}</th>
           <td aria-label={`Agenciamento ${nomes[i]}`} className="whitespace-nowrap px-2 py-2 text-center tabular-nums">{pct(r.condicao.agenciamento_parcela_1)}</td>
@@ -133,12 +132,12 @@ export default function UberabaSimulacao({ acoesTarget }: { acoesTarget?: HTMLEl
           <td colSpan={3} />
         </tr></tfoot>
       </table></div>
-    </section>
-    <div className="space-y-4">
-      <h3 className="flex items-center gap-2">Resultado por Ente <span className="text-sm font-normal text-muted-foreground">· clique no indicador para ver por modalidade</span></h3>
+    </section></BlocoRecolhido>
+    <BlocoRecolhido titulo="Resultado por Ente" className="mt-4"><div className="space-y-3 p-4">
+      <p className="text-sm text-muted-foreground">Clique no indicador para ver por modalidade.</p>
       <Entes resultados={resultados} />
-      <PremissasImportadas condicoes={resultados.map(r => r.condicao)} base={rotuloBase} />
-    </div>
+    </div></BlocoRecolhido>
+    <PremissasImportadas condicoes={resultados.map(r => r.condicao)} base={rotuloBase} />
     <p className="flex items-center gap-1 text-xs text-muted-foreground"><Info className="h-3 w-3" />Simulação de proposta comercial, não aprovação ou resultado realizado.</p>
   </article>;
 }
