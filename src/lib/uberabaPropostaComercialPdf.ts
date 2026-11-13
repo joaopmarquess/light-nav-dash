@@ -161,15 +161,16 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   const ALTURA_NOME_QUADRO = 12;
   /** Geometria dos três quadros lado a lado: posição, largura e recuo do contêiner interno. */
   type Geometria = { xs: number[]; largura: number; inset: number; wSec: number };
-  const geometria = (avanco: number, gap: number, inset: number): Geometria => {
-    const total = usableW + avanco * 2;
-    const largura = (total - gap * 2) / 3;
-    return { xs: quadros.map((_, k) => marginL - avanco + k * (largura + gap)), largura, inset, wSec: largura - inset * 2 };
+  // Os quadros ocupam exatamente a largura dos parágrafos justificados (pedido do Dênis em 13/11/2026):
+  // começam na margem esquerda e terminam onde terminam as linhas do texto.
+  const LARGURA_TEXTO = usableW - 2;
+  const geometria = (gap: number, inset: number): Geometria => {
+    const largura = (LARGURA_TEXTO - gap * 2) / 3;
+    return { xs: quadros.map((_, k) => marginL + k * (largura + gap)), largura, inset, wSec: largura - inset * 2 };
   };
-  // Tópico 4: quadros na largura do texto. Tópico 3: tabelas mais largas (pedido do Dênis em 13/11/2026) —
-  // avançam um pouco sobre as margens laterais, com menos espaço entre os quadros e a tabela ocupando o quadro todo.
-  const GEO_REMUNERACAO = geometria(0, 5, 2);
-  const GEO_TABELAS = geometria(6, 3, 0);
+  // Tópico 3: menos espaço entre os quadros e a tabela ocupando o quadro todo, para ficarem o mais largas possível.
+  const GEO_REMUNERACAO = geometria(5, 2);
+  const GEO_TABELAS = geometria(3, 0);
   /** Espaço entre o nome da tabela e o contêiner, no tópico 4 (pedido do Dênis em 13/11/2026). */
   const ESPACO_NOME_REMUNERACAO = 4;
 
@@ -261,6 +262,8 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     const nLinhas = Math.max(1, ...quadros.map((q) => q.linhas.length)) + 1;
     const alturaLinhaPreco = Math.min(16, Math.max(7, (pageH - bottom - inicio - fixo) / nLinhas));
     quadros.forEach((q, k) => {
+      // Moldura da coluna FAIXA (do cabeçalho à última faixa), separando-a visualmente da coluna ENFERMARIA.
+      const faixa = { x: 0, w: 0, y0: Infinity, y1: -Infinity };
       autoTable(doc, {
         theme: "plain",
         startY: ySecT + ALTURA_TITULO_SECAO,
@@ -272,13 +275,24 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
         headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: F.cabecalhoTabela },
         alternateRowStyles: { fillColor: ZEBRA },
         didDrawCell: (c) => {
-          if (c.section === "head") return;
+          if (c.column.index === 0) {
+            faixa.x = c.cell.x;
+            faixa.w = c.cell.width;
+            faixa.y0 = Math.min(faixa.y0, c.cell.y);
+            faixa.y1 = Math.max(faixa.y1, c.cell.y + c.cell.height);
+          }
           if (c.section !== "body") return;
           doc.setDrawColor(...LINHA);
           doc.setLineWidth(0.2);
           doc.line(c.cell.x, c.cell.y, c.cell.x + c.cell.width, c.cell.y);
         },
       });
+      if (faixa.w > 0) {
+        doc.setDrawColor(...TINTA);
+        doc.setLineWidth(0.35);
+        doc.rect(faixa.x, faixa.y0, faixa.w, faixa.y1 - faixa.y0, "S");
+        doc.setDrawColor(0);
+      }
       fimP = Math.max(fimP, fimTabela(fimP));
     });
     const yFator = fimP + 6;
