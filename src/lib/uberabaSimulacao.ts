@@ -302,6 +302,11 @@ export const ENTES_RESULTADO: { titulo: string; linhas: LinhaEnte[]; mensal: Col
   ] },
 ];
 
+/** Resultado total do ente (última linha do quadro), mostrado no título quando o quadro está recolhido. */
+export function resultadoTotalEnte(ente: (typeof ENTES_RESULTADO)[number]): LinhaEnte {
+  return ente.linhas[ente.linhas.length - 1];
+}
+
 /**
  * Conteúdo do relatório da memória de cálculo: por ente, cada indicador com fórmula e contas, e a evolução mensal consolidada.
  * Pedido de 13/11/2026: só os indicadores (e evoluções mensais) que dependem do Agenciamento aparecem em dobro,

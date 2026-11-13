@@ -32,3 +32,4 @@
 - [x] Resultado por Ente em dois blocos recolhidos (Contratual e Promocional); PDF duplica só o Agenciamento e os resultados que o contêm
 - [x] Nomes OPERADORA, ADMINISTRADORA e AGENCIADORA no lugar de Bensaúde, Lancers e SIGA na Simulação de resultados
 - [x] Ícone Replicar ao lado da Sinistralidade do PCA
+- [x] Quadros dos entes recolhidos, mostrando ente e resultado total

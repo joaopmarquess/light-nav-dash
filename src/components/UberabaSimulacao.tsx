@@ -8,7 +8,7 @@ import UberabaSimulacaoFaixas from '@/components/UberabaSimulacaoFaixas';
 import BlocoRecolhido from '@/components/BlocoRecolhido';
 import UberabaMemoriaCalculoButton from '@/components/UberabaMemoriaCalculoButton';
 import { EVENTO_TABELAS_COMERCIAIS, lerIndicadores, lerIndices } from '@/lib/uberabaTabelasComerciais';
-import { simularPorBase, replicarSinistralidade, type CenarioAgenciamento, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, ENTES_RESULTADO, type IndicadorEnte, type ConfigSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
+import { simularPorBase, replicarSinistralidade, type CenarioAgenciamento, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, ENTES_RESULTADO, resultadoTotalEnte, type IndicadorEnte, type ConfigSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
 // Siglas dos parâmetros do Proj. Uberaba (13/11/2026); preços e percentuais vêm das tabelas de Resultados Comerciais.
 const nomes = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
@@ -35,10 +35,20 @@ function Entes({ resultados }: { resultados: ResultadoSimulacao[] }) {
   const [abertos, setAbertos] = useState<Record<string, boolean>>({});
   const total = resumoSimulacao(resultados);
   const porModalidade = resultados.map(r => resumoSimulacao([r]));
-  return <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">{entes.map(ente =>
+  // Quadros recolhidos por padrão: o título mostra o ente e o seu resultado total (pedido de 13/11/2026).
+  const [quadrosAbertos, setQuadrosAbertos] = useState<Record<string, boolean>>({});
+  return <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">{entes.map(ente => { const aberto = !!quadrosAbertos[ente.titulo]; const res = resultadoTotalEnte(ente); const v = res.valor(total); return (
     <section key={ente.titulo} aria-label={ente.titulo} className="rounded-md border border-border bg-secondary p-4">
-      <h4 className="mb-3 border-b border-border pb-2 text-lg font-semibold text-primary">{ente.titulo}</h4>
-      <table className="w-full text-sm">
+      <h4 className={`flex items-center justify-between gap-3 text-lg font-semibold text-primary ${aberto ? 'mb-3 border-b border-border pb-2' : ''}`}>
+        <button type="button" className="flex items-center gap-1 text-left" aria-expanded={aberto} aria-label={`${aberto ? 'Recolher' : 'Expandir'} ${ente.titulo}`} onClick={() => setQuadrosAbertos(p => ({ ...p, [ente.titulo]: !aberto }))}>
+          <ChevronRight className={`h-5 w-5 transition-transform ${aberto ? 'rotate-90' : ''}`} />{ente.titulo}
+        </button>
+        {!aberto && <Memoria chave={res.chave} resultados={resultados} nomesModalidades={nomes}><span tabIndex={0} aria-label={`Resultado total ${ente.titulo}`} className="flex cursor-help items-baseline gap-2 text-base">
+          <span className="text-sm font-normal text-muted-foreground">{res.label.replace(/^[=−-]\s*/, '')}</span>
+          <span className={`tabular-nums ${v < 0 ? 'text-destructive' : ''}`}>{num(v)}</span>
+        </span></Memoria>}
+      </h4>
+      <table hidden={!aberto} className="w-full text-sm">
         <thead><tr className="text-muted-foreground"><th className="px-3 py-1 text-left font-medium">Indicador</th><th className="px-3 py-1 text-right font-medium">Anual</th></tr></thead>
         <tbody>{ente.linhas.map(l => { const k = `${ente.titulo}-${l.label}`; const aberto = !!abertos[k]; return <Fragment key={k}>
           <tr className={`border-t border-border ${l.destaque ? 'font-semibold' : ''}`}>
@@ -48,7 +58,7 @@ function Entes({ resultados }: { resultados: ResultadoSimulacao[] }) {
           {porModalidade.map((m, i) => <tr key={i} data-modalidade hidden={!aberto} className="text-muted-foreground"><td className="py-1 pl-9 pr-3"><Memoria chave={l.chave} resultados={[resultados[i]]} nomesModalidades={[nomes[i]]}><span tabIndex={0} className="cursor-help">{nomes[i]}</span></Memoria></td><Valor v={l.valor(m)} /></tr>)}
         </Fragment>; })}</tbody>
       </table>
-    </section>)}</div>;
+    </section>); })}</div>;
 }
 
 function PremissasImportadas({ cenarios }: { cenarios: CenarioAgenciamento[] }) {

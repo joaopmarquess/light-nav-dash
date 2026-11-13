@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calcularSimulacao, calcularSimulacaoComercial, comercialDaFrente, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, relatorioMemoriaCalculo, parametrosMemoriaCalculo, simularPorBase, replicarSinistralidade } from './uberabaSimulacao';
+import { calcularSimulacao, calcularSimulacaoComercial, comercialDaFrente, consolidarSimulacao, consolidarFaixasSimulacao, csvSimulacao, distribuirResidual, fontesSimulacao as fonte, validarVidas, sinistralidadePadrao, resumoSimulacao, memoriaCalculo, relatorioMemoriaCalculo, parametrosMemoriaCalculo, simularPorBase, replicarSinistralidade, resultadoTotalEnte, ENTES_RESULTADO } from './uberabaSimulacao';
 import padroesHistoricos from '@/data/uberabaSimulacao/configuracao_padrao.json';
 import { INDICES_PADRAO, indicadoresPadrao, tabelaIndexada } from './uberabaTabelasComerciais';
 const padrao=padroesHistoricos[0];
@@ -350,5 +350,11 @@ describe('Replicar Sinistralidade do PCA', () => {
   it('sem percentual digitado no PCA usa o padrão de 70%', () => {
     const configs = fonte.padroes.map((c, i) => ({ ...c, sinistralidade_percentual: i === 0 ? undefined : 55 }));
     expect(replicarSinistralidade(configs, 'PCA').every(c => c.sinistralidade_percentual === 70)).toBe(true);
+  });
+});
+
+describe('Resultado total no título do quadro recolhido', () => {
+  it('cada ente mostra o seu resultado final', () => {
+    expect(ENTES_RESULTADO.map(e => resultadoTotalEnte(e).chave)).toEqual(['beneficiario.total', 'bensaude.liquido', 'lancers.faturamento', 'siga.resultado']);
   });
 });
