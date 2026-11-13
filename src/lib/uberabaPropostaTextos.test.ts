@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { FATORES_PADRAO, INDICES_PADRAO, indicadoresPadrao, rotulosPadrao } from "@/lib/uberabaTabelasComerciais";
 import {
   CHAVE_TEXTOS, SECOES_TEXTO, TEXTOS_PADRAO, aprovarTextos, mesclarRascunhoIa, assinaturaDados, dadosRascunho, estadoVazio, gravarTextos, lerTextos, normalizarTextos,
-  numerosForaDasTabelas, paragrafosDe, pendencias, textosParaPdf, textosVazios,
+  numerosForaDasTabelas, topicosComNumerosAntigos, paragrafosDe, pendencias, textosParaPdf, textosVazios,
 } from "@/lib/uberabaPropostaTextos";
 import { paragrafosProposta } from "@/lib/uberabaPropostaComercialPdf";
 
@@ -159,5 +159,25 @@ describe("PJ+ distribuído por Agenciadoras e Corretoras Autorizadas", () => {
     const storage = { getItem: (k: string) => (k === CHAVE_TEXTOS ? JSON.stringify({ aprovado }) : null) };
     expect(lerTextos(storage).aprovado?.empresarial).toBe(PADRAO_INTRO.empresarial);
     expect(lerTextos(storage).aprovado?.conclusao).toBe(PADRAO_INTRO.conclusao);
+  });
+});
+
+describe("textos aprovados com números antigos", () => {
+  it("aponta o tópico aprovado que cita um percentual alterado depois", () => {
+    const aprovado = aprovarTextos(estadoVazio(), { ...TEXTOS_PADRAO, administradora: "Participação da Administradora de 23%." });
+    expect(topicosComNumerosAntigos(aprovado, padrao())).toEqual([]);
+    const ind = indicadoresPadrao();
+    (["pcaAdm", "pmeAdm", "pceAdm"] as const).forEach((id) => { ind[id].spread = 30; });
+    const atual = dadosRascunho(INDICES_PADRAO, ind, rotulosPadrao(), FATORES_PADRAO);
+    expect(topicosComNumerosAntigos(aprovado, atual)).toEqual([SECOES_TEXTO[2].titulo]);
+  });
+  it("aponta preço antigo e ignora faixas e vidas", () => {
+    const aprovado = aprovarTextos(estadoVazio(), { ...TEXTOS_PADRAO, empresarial: "Faixa 00 a 18 por 122,50, para 100 ou mais vidas." });
+    expect(topicosComNumerosAntigos(aprovado, padrao())).toEqual([SECOES_TEXTO[3].titulo]);
+    const atual = aprovarTextos(estadoVazio(), { ...TEXTOS_PADRAO, empresarial: "Faixa 00 a 18 por 131,25, para 100 ou mais vidas." });
+    expect(topicosComNumerosAntigos(atual, padrao())).toEqual([]);
+  });
+  it("não avisa sem texto aprovado", () => {
+    expect(topicosComNumerosAntigos(estadoVazio(), padrao())).toEqual([]);
   });
 });

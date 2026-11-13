@@ -202,6 +202,22 @@ export function gravarTextos(v: EstadoTextos, storage: Pick<Storage, "setItem"> 
 export const aprovarTextos = (e: EstadoTextos, textos: TextosSecoes, quando: Date = new Date()): EstadoTextos =>
   ({ ...e, rascunho: normalizarTextos(textos), aprovado: normalizarTextos(textos), assinaturaAprovado: e.assinaturaRascunho, aprovadoEm: quando.toISOString() });
 
+/**
+ * Tópicos aprovados que citam percentuais ou valores em R$ ausentes das tabelas atuais (ex.: percentual alterado depois da aprovação):
+ * o PDF os imprime como aprovados, então a tela avisa para revisar em vez de trocar o texto do usuário sozinha.
+ */
+const PERCENTUAL = /\d+(?:,\d+)?\s?%/g;
+const VALOR = /\d{1,3}(?:\.\d{3})*,\d{2}\b/g;
+export function topicosComNumerosAntigos(e: EstadoTextos, dados: DadosRascunho): string[] {
+  if (!e.aprovado) return [];
+  const base = textosDe(dados).join(" ");
+  const sem = (t: string) => t.replace(/\s/g, "");
+  const percentuais = new Set((base.match(PERCENTUAL) ?? []).map(sem));
+  const valores = new Set(base.match(VALOR) ?? []);
+  const antigo = (t: string) => (t.match(PERCENTUAL) ?? []).some((p) => !percentuais.has(sem(p))) || (t.match(VALOR) ?? []).some((v) => !valores.has(v));
+  return SECOES_TEXTO.filter((sec) => antigo(e.aprovado![sec.id])).map((sec) => sec.titulo);
+}
+
 /** Texto que o PDF usa: somente o aprovado; sem aprovação (null), o PDF usa o texto padrão. */
 export const textosParaPdf = (e: EstadoTextos): TextosSecoes | null => e.aprovado;
 
