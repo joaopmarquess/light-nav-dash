@@ -1,7 +1,7 @@
 import { aplicarMarcaAxis } from "@/lib/pdfMarcaAxis";
 import jsPDF from "jspdf";
 import autoTable, { type Styles } from "jspdf-autotable";
-import { attachTimbrado } from "@/lib/pdfTimbrado";
+import { attachTimbrado, TIMBRADO_RAZAO_SOCIAL } from "@/lib/pdfTimbrado";
 import { drawSectionTitle } from "@/lib/pdfTheme";
 import { textoPdf } from "@/lib/uberabaPropostaComercialPdf";
 import {
@@ -36,7 +36,7 @@ export function topicosMemoriaCalculo(cenarios: CenarioAgenciamento[], nomes: st
  */
 export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios: CenarioAgenciamento[], nomes: string[], geradoEm = new Date(), marcaAxis: string | null = null): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  attachTimbrado(doc, timbradoDataUrl);
+  attachTimbrado(doc, timbradoDataUrl, { semRazaoSocial: true });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
   const marginL = 18, marginR = 18, top = 42, bottom = 25;
@@ -244,6 +244,7 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
     doc.setTextColor(...SECUNDARIO);
     doc.text(`Página ${i} de ${total}`, right, pageH - 16, { align: "right" });
   }
-  aplicarMarcaAxis(doc, marcaAxis, (_p, _w, h) => ({ x: marginL, y: h - 16 }));
+  // A marca do AXIS ocupa o lugar da razão social do timbrado.
+  aplicarMarcaAxis(doc, marcaAxis, (_p, w, h) => ({ x: w / 2, y: TIMBRADO_RAZAO_SOCIAL.linha * (h / 297), align: "center" }), 7.5);
   return doc;
 }

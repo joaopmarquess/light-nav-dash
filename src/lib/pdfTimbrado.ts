@@ -24,7 +24,10 @@ export async function loadTimbrado(): Promise<string | null> {
  * sempre antes do conteúdo (interceptando doc.addPage).
  * Retorna um controle para ligar/desligar o timbrado nas próximas páginas.
  */
-export function attachTimbrado(doc: jsPDF, dataUrl?: string | null) {
+/** Faixa do rodapé do timbrado com a razão social do Bensaúde (mm, A4 retrato), entre o traço (~284 mm) e a borda. */
+export const TIMBRADO_RAZAO_SOCIAL = { topo: 285.2, base: 291.5, linha: 289 };
+
+export function attachTimbrado(doc: jsPDF, dataUrl?: string | null, opts: { semRazaoSocial?: boolean } = {}) {
   if (!dataUrl) return { setEnabled: (_: boolean) => {} };
   let enabled = true;
   const w = doc.internal.pageSize.getWidth();
@@ -33,6 +36,11 @@ export function attachTimbrado(doc: jsPDF, dataUrl?: string | null) {
     if (!enabled) return;
     try {
       doc.addImage(dataUrl, "PNG", 0, 0, w, h);
+      // PDFs internos: a razão social sai do rodapé para dar lugar à marca do AXIS.
+      if (opts.semRazaoSocial) {
+        doc.setFillColor(255, 255, 255);
+        doc.rect(0, TIMBRADO_RAZAO_SOCIAL.topo * (h / 297), w, (TIMBRADO_RAZAO_SOCIAL.base - TIMBRADO_RAZAO_SOCIAL.topo) * (h / 297), "F");
+      }
     } catch {
       /* ignore */
     }

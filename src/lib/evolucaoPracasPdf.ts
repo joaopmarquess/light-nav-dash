@@ -1,7 +1,7 @@
 import { aplicarMarcaAxis } from "@/lib/pdfMarcaAxis";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { attachTimbrado } from "@/lib/pdfTimbrado";
+import { attachTimbrado, TIMBRADO_RAZAO_SOCIAL } from "@/lib/pdfTimbrado";
 import type { LinhaPracaMes } from "@/lib/evolucaoProdutos";
 
 type RGB = [number, number, number];
@@ -60,7 +60,7 @@ const pct = (v: number) => `${v >= 0 ? "+" : ""}${(v * 100).toLocaleString("pt-B
 /** PDF A4 do grid mês × praça: título, cartões de resumo, gráfico mensal e a grade inteira (cabeçalho repetido nas páginas). */
 export function buildGridPracasPdf(timbrado: string | null, o: GridPracasPdf): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  attachTimbrado(doc, timbrado);
+  attachTimbrado(doc, timbrado, { semRazaoSocial: true });
   const pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
   const mL = 18, mR = 18, top = 42, bottom = 25, w = pageW - mL - mR, right = pageW - mR;
   const celula = (v: number | null) => (v == null ? "Sem dado" : o.fmt(v));
@@ -150,15 +150,21 @@ export function buildGridPracasPdf(timbrado: string | null, o: GridPracasPdf): j
     },
   });
 
+  // Nota das praças em itálico, logo abaixo do fim da grade.
+  const gerado = (o.geradoEm ?? new Date()).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+  const fimGrade = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y;
+  doc.setPage(doc.getNumberOfPages());
+  doc.setFont("helvetica", "italic"); doc.setFontSize(8.5); doc.setTextColor(...SECUNDARIO);
+  doc.text(`S. J. Rio Preto = SAO JOSE DO RIO PRETO (SP); Região = demais cidades · Gerado em ${gerado}`, mL, fimGrade + 4.5);
+
   // Rodapé
   const total = doc.getNumberOfPages();
-  const gerado = (o.geradoEm ?? new Date()).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
   for (let i = 1; i <= total; i++) {
     doc.setPage(i);
     doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(...SECUNDARIO);
-    doc.text(`S. J. Rio Preto = SAO JOSE DO RIO PRETO (SP); Região = demais cidades · Gerado em ${gerado}`, mL, pageH - 20);
     doc.text(`Página ${i} de ${total}`, right, pageH - 16, { align: "right" });
   }
-  aplicarMarcaAxis(doc, o.marcaAxis ?? null, (_p, _w, h) => ({ x: mL, y: h - 16 }));
+  // A marca do AXIS ocupa o lugar da razão social do timbrado.
+  aplicarMarcaAxis(doc, o.marcaAxis ?? null, (_p, w, h) => ({ x: w / 2, y: TIMBRADO_RAZAO_SOCIAL.linha * (h / 297), align: "center" }), 7.5);
   return doc;
 }

@@ -1,8 +1,10 @@
 import type jsPDF from "jspdf";
 import logoAsset from "@/assets/axis-report-logo.png.asset.json";
 
-/** Expressão da marca do AXIS nos PDFs internos. */
+/** Expressão da marca do AXIS nos PDFs internos; com a logo, a palavra "AXIS" não se repete no texto. */
 export const MARCA_AXIS_TEXTO = "AXIS | Executive Intelligence Platform";
+export const MARCA_AXIS_TEXTO_COM_LOGO = "| Executive Intelligence Platform";
+const textoMarca = (logo: string | null) => (logo ? MARCA_AXIS_TEXTO_COM_LOGO : MARCA_AXIS_TEXTO);
 export const MARCA_AXIS_AUTOR = "by Dênis Santana";
 
 const LOGO_PROPORCAO = 1410 / 480; // largura ÷ altura do arquivo da logo
@@ -46,14 +48,14 @@ export function larguraMarcaAxis(doc: jsPDF, logo: string | null, tamanho = 6.5)
   const logoW = logo ? alturaLogo * LOGO_PROPORCAO + 1.4 : 0;
   doc.setFontSize(tamanho);
   doc.setFont("helvetica", "normal");
-  const t1 = doc.getTextWidth(`${MARCA_AXIS_TEXTO} `) + tamanho * 0.08;
+  const t1 = doc.getTextWidth(`${textoMarca(logo)} `) + tamanho * 0.08;
   doc.setFont("helvetica", "italic");
   const t2 = doc.getTextWidth(MARCA_AXIS_AUTOR);
   return { total: logoW + t1 + t2, logoW, t1, alturaLogo };
 }
 
 /**
- * Desenha a marca do AXIS (logo + "AXIS | Executive Intelligence Platform by Dênis Santana")
+ * Desenha a marca do AXIS (logo + "| Executive Intelligence Platform by Dênis Santana"; sem logo, o texto começa com "AXIS")
  * no rodapé de todas as páginas. Chamar depois de o documento estar completo.
  */
 export function aplicarMarcaAxis(doc: jsPDF, logo: string | null, pos: (pagina: number, largura: number, altura: number) => PosicaoMarca, tamanho = 6.5) {
@@ -73,7 +75,7 @@ export function aplicarMarcaAxis(doc: jsPDF, logo: string | null, pos: (pagina: 
     doc.setTextColor(...COR);
     doc.setFontSize(tamanho);
     doc.setFont("helvetica", "normal");
-    doc.text(`${MARCA_AXIS_TEXTO} `, x0 + m.logoW, y);
+    doc.text(`${textoMarca(logo)} `, x0 + m.logoW, y);
     doc.setFont("helvetica", "italic");
     doc.text(MARCA_AXIS_AUTOR, x0 + m.logoW + m.t1, y);
   }
