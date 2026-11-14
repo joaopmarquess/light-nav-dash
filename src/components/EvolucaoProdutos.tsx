@@ -1,3 +1,4 @@
+import { loadMarcaAxis } from "@/lib/pdfMarcaAxis";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Check, ChevronRight, Copy, Download, FileText, LoaderCircle, RotateCw, Table2, X } from "lucide-react";
 import { createPortal } from "react-dom";
@@ -407,7 +408,7 @@ function GridPracasDialog({ aberto, onAberto, grade, visao, fmt, titulo, periodo
     </Dialog>
     {pdf && createPortal(
       <PdfPreview
-        build={async () => buildGridPracasPdf(await loadTimbrado(), { titulo, periodo, filtros, linhas, fmt, razao })}
+        build={async () => buildGridPracasPdf(await loadTimbrado(), { titulo, periodo, filtros, linhas, fmt, razao, marcaAxis: await loadMarcaAxis() })}
         fileName={arquivo}
         onClose={() => { setPdf(false); onAberto(true); }}
       />,

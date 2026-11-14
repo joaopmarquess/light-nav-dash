@@ -1,3 +1,4 @@
+import { aplicarMarcaAxis, loadMarcaAxis } from "@/lib/pdfMarcaAxis";
 import jsPDF from "jspdf";
 import autoTable, { type RowInput, type Styles } from "jspdf-autotable";
 import { baseTableStyles, drawReportHeading, PDF_COLORS } from "@/lib/pdfTheme";
@@ -101,6 +102,7 @@ export async function buildPdfTabela(opts: PdfTabelaOpts): Promise<jsPDF> {
     }
     doc.text(`${i} de ${pages}`, pageW - marginR, footY, { align: "right" });
   }
+  aplicarMarcaAxis(doc, await loadMarcaAxis(), (_p, w, h) => ({ x: w / 2, y: h - 4.5, align: "center" }));
 
   return doc;
 }

@@ -1,3 +1,4 @@
+import { loadMarcaAxis } from "@/lib/pdfMarcaAxis";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { FileText } from "lucide-react";
@@ -23,7 +24,7 @@ export default function UberabaMemoriaCalculoButton({ cenarios, nomes }: { cenar
       </Tooltip>
       {aberto && createPortal(
         <PdfPreview
-          build={async () => buildMemoriaCalculoPdf(await loadTimbrado(), cenarios, nomes)}
+          build={async () => buildMemoriaCalculoPdf(await loadTimbrado(), cenarios, nomes, new Date(), await loadMarcaAxis())}
           fileName="Memoria_de_Calculo_Resultado_por_Ente_Bensaude_Uberaba.pdf"
           onClose={() => setAberto(false)}
         />,

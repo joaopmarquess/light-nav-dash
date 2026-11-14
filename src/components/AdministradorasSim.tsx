@@ -1,3 +1,4 @@
+import { aplicarMarcaAxis, loadMarcaAxis } from "@/lib/pdfMarcaAxis";
 import { useMemo, useState } from "react";
 import { ChevronDown, FileText } from "lucide-react";
 import jsPDF from "jspdf";
@@ -427,6 +428,7 @@ async function buildRelatorio(itens: { titulo: string; p: Params | null; c: Calc
     doc.setFont("helvetica", "normal").setFontSize(9).setTextColor(0, 0, 0);
     doc.text(`${i}/${n}`, W - 12, H - 8, { align: "right" });
   }
+  aplicarMarcaAxis(doc, await loadMarcaAxis(), () => ({ x: 12, y: H - 8 }));
   return doc;
 }
 

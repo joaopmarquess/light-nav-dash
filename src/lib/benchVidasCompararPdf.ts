@@ -1,3 +1,4 @@
+import { aplicarMarcaAxis, loadMarcaAxis } from "@/lib/pdfMarcaAxis";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
@@ -54,5 +55,6 @@ export async function gerarPdfComparacao(secoes: HTMLElement[], cabecalho: { tit
     doc.text(`Bench Vidas · Fonte: ANS · gerado em ${gerado}`, M, H - M + 2);
     doc.text(`Página ${p} de ${total}`, W - M, H - M + 2, { align: "right" });
   }
+  aplicarMarcaAxis(doc, await loadMarcaAxis(), (_p, w, h) => ({ x: w / 2, y: h - M + 2, align: "center" }));
   doc.save(arquivo);
 }

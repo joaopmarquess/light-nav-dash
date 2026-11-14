@@ -1,3 +1,4 @@
+import { aplicarMarcaAxis, loadMarcaAxis } from "@/lib/pdfMarcaAxis";
 import { DRE_FULL_NAME, REPORT_FULL_NAME } from "@/control/dreLabels";
 import { jsPDF } from "jspdf";
 import "core-js/actual/map/get-or-insert-computed";
@@ -154,6 +155,7 @@ export async function comporPdfRelatorio(report: ControladoriaReport): Promise<R
     if (i > 2) { text(8, false, colors.muted); doc.text(`AXIS / CONTROL · ${REPORT_FULL_NAME}`, margin, 15); doc.text(`${dataBR(report.period.de)} a ${dataBR(report.period.ate)}`, 191, 15, { align: "right" }); }
     text(8, false, colors.muted); doc.text(`p. ${i} de ${totalPages}`, 191, 287, { align: "right" });
   }
+  aplicarMarcaAxis(doc, await loadMarcaAxis(), () => ({ x: margin, y: 287 }));
   return { doc, contents };
 }
 

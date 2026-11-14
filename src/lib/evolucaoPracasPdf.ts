@@ -1,3 +1,4 @@
+import { aplicarMarcaAxis } from "@/lib/pdfMarcaAxis";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { attachTimbrado } from "@/lib/pdfTimbrado";
@@ -39,6 +40,8 @@ export type GridPracasPdf = {
   titulo: string; periodo: string; filtros: string; linhas: LinhaPracaMes[]; fmt: (n: number) => string;
   /** Visões em razão (Sinistralidade, per capita): sem gráfico de barras empilhadas e sem variação percentual. */
   razao: boolean; geradoEm?: Date;
+  /** Logo do AXIS (dataURL) para a marca do rodapé; sem ela, a marca sai só com o texto. */
+  marcaAxis?: string | null;
 };
 
 /** Fonte e espaçamento vertical das linhas para `linhas` linhas caberem em `altura` mm (mínimos 8,5 pt e 0,7 mm; padrão 10 pt e 1,6 mm). */
@@ -153,8 +156,9 @@ export function buildGridPracasPdf(timbrado: string | null, o: GridPracasPdf): j
   for (let i = 1; i <= total; i++) {
     doc.setPage(i);
     doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(...SECUNDARIO);
-    doc.text(`S. J. Rio Preto = SAO JOSE DO RIO PRETO (SP); Região = demais cidades · Gerado em ${gerado}`, mL, pageH - 16);
+    doc.text(`S. J. Rio Preto = SAO JOSE DO RIO PRETO (SP); Região = demais cidades · Gerado em ${gerado}`, mL, pageH - 20);
     doc.text(`Página ${i} de ${total}`, right, pageH - 16, { align: "right" });
   }
+  aplicarMarcaAxis(doc, o.marcaAxis ?? null, (_p, _w, h) => ({ x: mL, y: h - 16 }));
   return doc;
 }

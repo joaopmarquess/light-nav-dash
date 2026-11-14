@@ -1,3 +1,4 @@
+import { aplicarMarcaAxis, loadMarcaAxis } from "@/lib/pdfMarcaAxis";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { baseTableStyles, PDF_COLORS } from "@/control/relatorio/pdfTheme";
@@ -19,7 +20,7 @@ export function stageRows(model: BudgetModel, stage: number): [string, number[]]
     default: return [["Faturamento",c.fat],["Coparticipação",c.cop],["Entradas Operacionais",c.ent],["Rede",neg(c.rede)],["Benê",neg(c.bene)],["Despesas Assistenciais",neg(c.desp)],...c.op.map((v,i)=>[["Comercialização","Impostos Diretos","Provisões","Secundárias"][i],neg(v)] as [string,number[]]),["Demais Operacionais",neg(c.demais)],...c.admParts.map((v,i)=>[["Pessoal","Informática","Marketing","Demais"][i],neg(v)] as [string,number[]]),["Despesas Administrativas",neg(c.adm)],["Operacionais Totais",c.totalOp],["EBITDA",c.ebitda],["Financeiro",c.fin],["Resultado antes dos Impostos",c.rai],["Impostos Federais",neg(c.imp)],["Resultado Líquido",c.liq]];
   }
 }
-export function createSimulatorPdf(sim: SimulationRecord, responsible: string, shots?: ViewShots) {
+export function createSimulatorPdf(sim: SimulationRecord, responsible: string, shots?: ViewShots, marcaAxis: string | null = null) {
   if (!pdfEligible(sim)) throw new Error("Conclua e grave as três visões antes de gerar o PDF final.");
   const doc = new jsPDF({ orientation: "landscape", format: "a4" });
   const generated = new Date(), footerLabels: string[] = ["Capa"], viewPages: number[] = [];
@@ -64,6 +65,7 @@ export function createSimulatorPdf(sim: SimulationRecord, responsible: string, s
   const end=doc.getNumberOfPages(); doc.setPage(summaryPage);
   table([["Visão","Página inicial","Conteúdo"]],VISOES.map((v,i)=>[v,viewPages[i],ETAPAS.join(" · ")]).concat([["Comparativo final",end,"Indicadores das três visões"]]));
   for (let p=1;p<=doc.getNumberOfPages();p++) { doc.setPage(p); doc.setFontSize(8); doc.setTextColor(...PDF_COLORS.muted); const lb=footerLabels[p-1] ?? "Simulador"; doc.text(`${(VISOES as readonly string[]).includes(lb)?`Visão ${lb}`:lb} | ${p} de ${doc.getNumberOfPages()}`,14,201); }
+  aplicarMarcaAxis(doc, marcaAxis, (_p, w) => ({ x: w - 14, y: 201, align: "right" }));
   return doc;
 }
-export async function downloadSimulatorPdf(sim: SimulationRecord,responsible: string) { const { captureViewScreens } = await import("./capture"); const shots = await captureViewScreens(sim); const safe=sim.name.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9_-]+/g,"_").slice(0,80); const date=new Date().toISOString().replace(/[:.]/g,"-"); createSimulatorPdf(sim,responsible,shots).save(`CONTROL_Simulador_${safe}_${date}.pdf`); }
+export async function downloadSimulatorPdf(sim: SimulationRecord,responsible: string) { const { captureViewScreens } = await import("./capture"); const shots = await captureViewScreens(sim); const safe=sim.name.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9_-]+/g,"_").slice(0,80); const date=new Date().toISOString().replace(/[:.]/g,"-"); createSimulatorPdf(sim,responsible,shots,await loadMarcaAxis()).save(`CONTROL_Simulador_${safe}_${date}.pdf`); }
