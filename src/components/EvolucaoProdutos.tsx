@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, ChevronRight, Copy, Download, LoaderCircle, RotateCw, Table2, X } from "lucide-react";
+import { Check, ChevronRight, Copy, Download, FileText, LoaderCircle, RotateCw, Table2, X } from "lucide-react";
+import { createPortal } from "react-dom";
+import PdfPreview from "@/components/PdfPreview";
+import { loadTimbrado } from "@/lib/pdfTimbrado";
+import { buildGridPracasPdf } from "@/lib/evolucaoPracasPdf";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -335,10 +339,15 @@ function GradeCidadesTabela({ grade, fmt = fmtInt }: { grade: GradeCidades; fmt?
 }
 
 // Grid mês × praça (S. J. Rio Preto, Região, Total Geral) no período e filtros aplicados, pronto para copiar ao Excel.
-function GridPracasDialog({ aberto, onAberto, grade, visao, fmt, titulo, periodo, filtros }: {
+function GridPracasDialog({ aberto, onAberto, grade, visao, fmt, titulo, periodo, filtros, razao }: {
   aberto: boolean; onAberto: (v: boolean) => void; grade: GradeCidades | null; visao: Visao; fmt: Fmt; titulo: string; periodo: string; filtros: string;
+  /** Sinistralidade ou per capita: o PDF não empilha as praças nem mostra variação percentual. */
+  razao: boolean;
 }) {
   const linhas = useMemo(() => (grade ? gradePracasPorMes(grade, visao) : []), [grade, visao]);
+  // A pré-visualização do PDF abre no lugar da janela e, ao fechar, a janela volta.
+  const [pdf, setPdf] = useState(false);
+  const arquivo = `${titulo.replace(/[^\p{L}\p{N}]+/gu, "_")}_${periodo.replace(/\//g, "-").replace(/\s+a\s+/, "_a_")}.pdf`;
   const [copiado, setCopiado] = useState(false);
   const celula = (v: number | null) => (v == null ? "Sem dado" : fmt(v));
   const copiar = async () => {
@@ -350,6 +359,7 @@ function GridPracasDialog({ aberto, onAberto, grade, visao, fmt, titulo, periodo
   };
   const td = "border border-border px-3 py-1 text-right tabular-nums";
   return (
+    <>
     <Dialog open={aberto} onOpenChange={onAberto}>
       <DialogContent className="max-h-[90vh] max-w-xl overflow-hidden">
         <DialogHeader>
@@ -383,6 +393,9 @@ function GridPracasDialog({ aberto, onAberto, grade, visao, fmt, titulo, periodo
               </table>
             </div>
             <div className="flex items-center justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={() => { onAberto(false); setPdf(true); }} title="Monta um PDF com a grade inteira, resumo e gráfico mensal">
+                <FileText className="mr-1.5 h-3.5 w-3.5" />Gerar PDF
+              </Button>
               <Button variant="outline" size="sm" onClick={copiar} title="Copia o grid para colar no Excel">
                 {copiado ? <Check className="mr-1.5 h-3.5 w-3.5" /> : <Copy className="mr-1.5 h-3.5 w-3.5" />}
                 {copiado ? "Copiado" : "Copiar"}
@@ -392,6 +405,15 @@ function GridPracasDialog({ aberto, onAberto, grade, visao, fmt, titulo, periodo
         )}
       </DialogContent>
     </Dialog>
+    {pdf && createPortal(
+      <PdfPreview
+        build={async () => buildGridPracasPdf(await loadTimbrado(), { titulo, periodo, filtros, linhas, fmt, razao })}
+        fileName={arquivo}
+        onClose={() => { setPdf(false); onAberto(true); }}
+      />,
+      document.body,
+    )}
+    </>
   );
 }
 
@@ -695,7 +717,7 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
         <GridPracasDialog aberto={gridPracas} onAberto={setGridPracas} grade={gradeCid} visao={visao} fmt={fmtVisao}
           titulo={emPerCapita ? `${visao} per capita por mês e praça` : `${visao} por mês e praça`}
           periodo={`${anoMesCampo(periodo.de)} a ${anoMesCampo(periodo.ate)}`}
-          filtros={`Tipo: ${tipoCidade ?? "Todos"} · Produto: ${rotuloProduto ?? "Todos"}`} />
+          filtros={`Tipo: ${tipoCidade ?? "Todos"} · Produto: ${rotuloProduto ?? "Todos"}`} razao={visao === "Sinistralidade" || emPerCapita} />
       )}
     </div>
   );
