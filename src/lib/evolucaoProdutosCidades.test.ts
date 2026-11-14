@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { grupoDaCidade, mesesPeriodo, modeloDadosCidades, montarGrade, montarGradeCidades, rotuloCidade, CIDADE_NAO_INFORMADA, type LinhaFinanceiraCidade, type LinhaVidasCidade } from "./evolucaoProdutos";
+import { gradePracasPorMes, grupoDaCidade, mesesPeriodo, modeloDadosCidades, montarGrade, montarGradeCidades, rotuloCidade, CIDADE_NAO_INFORMADA, type LinhaFinanceiraCidade, type LinhaVidasCidade } from "./evolucaoProdutos";
 
 const meses = mesesPeriodo({ ano: 2026, mes: 8 }, { ano: 2026, mes: 9 });
 const vidas: LinhaVidasCidade[] = [
@@ -98,5 +98,27 @@ describe("Evolução Produtos — visão Cidade (UF)", () => {
   it("modelo de dados XLSX respeita os filtros e deixa o financeiro em branco sem dado", () => {
     const linhas = modeloDadosCidades(meses, { vidas, fin: null }, { tipo: "PCA" });
     expect(linhas.map((l) => [l.competencia, l.cidade, l.vidas, l.receita])).toEqual([["08/2026", "VOTUPORANGA", 300, null], ["09/2026", "VOTUPORANGA", 310, null]]);
+  });
+});
+
+describe("Evolução Produtos — grid mês × praça", () => {
+  it("uma linha por mês (mm/aaaa) com S. J. Rio Preto, Região e Total Geral iguais aos subtotais", () => {
+    const g = gradePracasPorMes(montarGradeCidades(meses, "Vidas", { vidas, fin: null })!, "Vidas");
+    expect(g).toEqual([
+      { rotulo: "08/2026", praca: 40, regiao: 450, total: 490 },
+      { rotulo: "09/2026", praca: 45, regiao: 462, total: 507 },
+    ]);
+  });
+  it("praça sem cidades no filtro vale 0; mês sem dado fica sem dado", () => {
+    const m = mesesPeriodo({ ano: 2026, mes: 9 }, { ano: 2026, mes: 10 });
+    const g = gradePracasPorMes(montarGradeCidades(m, "Vidas", { vidas, fin: null }, { tipo: "PIF" })!, "Vidas");
+    expect(g).toEqual([
+      { rotulo: "09/2026", praca: 0, regiao: 150, total: 150 },
+      { rotulo: "10/2026", praca: null, regiao: null, total: null },
+    ]);
+  });
+  it("visões em R$ ganham a linha Total do período", () => {
+    const g = gradePracasPorMes(montarGradeCidades(meses, "Receita", { vidas, fin: financeiro })!, "Receita");
+    expect(g.at(-1)).toEqual({ rotulo: "Total", praca: 0, regiao: 8300, total: 8300 });
   });
 });

@@ -490,3 +490,24 @@ export function modeloDadosCidades(
       };
     });
 }
+
+// ───────────── Grid por mês × Praça ─────────────
+
+/** Linha do grid mês (mm/aaaa) × praça: S. J. Rio Preto, Região e Total Geral (null = sem dado). */
+export type LinhaPracaMes = { rotulo: string; praca: number | null; regiao: number | null; total: number | null };
+
+/**
+ * Transpõe a grade Cidade (UF) para uma linha por mês com as duas praças e o Total Geral, nos mesmos valores
+ * dos subtotais da grade. Praça sem cidade no filtro vale 0 nos meses com dado. Fora Vidas, acrescenta a
+ * linha "Total" do período (a mesma coluna Total da grade).
+ */
+export function gradePracasPorMes(grade: GradeCidades, visao: "Vidas" | IndicadorFinanceiro): LinhaPracaMes[] {
+  const sub = (id: GrupoCidadeId) => grade.grupos.find((g) => g.id === id)?.subtotal ?? null;
+  const p = sub("PRACA"), r = sub("REGIAO");
+  const val = (l: LinhaCidades | null, i: number) => (l ? l.valores[i] : grade.total.valores[i] == null ? null : 0);
+  const linhas: LinhaPracaMes[] = grade.meses.map((m, i) => ({ rotulo: `${String(m.mes).padStart(2, "0")}/${m.ano}`, praca: val(p, i), regiao: val(r, i), total: grade.total.valores[i] }));
+  if (visao !== "Vidas" && grade.total.periodo != null) {
+    linhas.push({ rotulo: "Total", praca: p ? p.periodo : 0, regiao: r ? r.periodo : 0, total: grade.total.periodo });
+  }
+  return linhas;
+}

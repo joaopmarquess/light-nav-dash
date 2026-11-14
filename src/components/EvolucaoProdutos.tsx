@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, ChevronRight, Download, LoaderCircle, RotateCw, X } from "lucide-react";
+import { Check, ChevronRight, Copy, Download, LoaderCircle, RotateCw, Table2, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { hostinger } from "@/lib/hostingerClient";
 import { carregarUltimaCompetenciaValida } from "@/lib/sinistralidadeValida";
 import {
-  anoMesCampo, financeiroAteUltimaValida, INDICADORES_PER_CAPITA, lerAnoMes, mascaraAnoMes, mesesPeriodo, modeloDadosCidades, montarGrade, montarGradeCidades,
+  anoMesCampo, financeiroAteUltimaValida, gradePracasPorMes, INDICADORES_PER_CAPITA, lerAnoMes, mascaraAnoMes, mesesPeriodo, modeloDadosCidades, montarGrade, montarGradeCidades,
   periodoPadrao, TIPOS_PLANO, TIPOS_PRODUTO, validarPeriodo, type AnoMes, type Celulas, type GradeCidades, type GradeComTotais,
   type GrupoCidadeId, type IndicadorFinanceiro, type LinhaFinanceira, type LinhaFinanceiraCidade, type LinhaModeloCidade, type LinhaProduto, type LinhaVidasCidade, type TipoPlano,
   type TipoProduto,
@@ -333,6 +334,67 @@ function GradeCidadesTabela({ grade, fmt = fmtInt }: { grade: GradeCidades; fmt?
   );
 }
 
+// Grid mês × praça (S. J. Rio Preto, Região, Total Geral) no período e filtros aplicados, pronto para copiar ao Excel.
+function GridPracasDialog({ aberto, onAberto, grade, visao, fmt, titulo, periodo, filtros }: {
+  aberto: boolean; onAberto: (v: boolean) => void; grade: GradeCidades | null; visao: Visao; fmt: Fmt; titulo: string; periodo: string; filtros: string;
+}) {
+  const linhas = useMemo(() => (grade ? gradePracasPorMes(grade, visao) : []), [grade, visao]);
+  const [copiado, setCopiado] = useState(false);
+  const celula = (v: number | null) => (v == null ? "Sem dado" : fmt(v));
+  const copiar = async () => {
+    const tsv = [["mês", "S. J. Rio Preto", "Região", "Total Geral"], ...linhas.map((l) => [l.rotulo, celula(l.praca), celula(l.regiao), celula(l.total)])]
+      .map((r) => r.join("\t")).join("\n");
+    await navigator.clipboard.writeText(tsv);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
+  };
+  const td = "border border-border px-3 py-1 text-right tabular-nums";
+  return (
+    <Dialog open={aberto} onOpenChange={onAberto}>
+      <DialogContent className="max-h-[90vh] max-w-xl overflow-hidden">
+        <DialogHeader>
+          <DialogTitle>{titulo}</DialogTitle>
+          <DialogDescription>Período {periodo} · {filtros}</DialogDescription>
+        </DialogHeader>
+        {!grade ? (
+          <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando cidades…</p>
+        ) : (
+          <>
+            <div className="max-h-[60vh] overflow-y-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead className="sticky top-0">
+                  <tr className="bg-primary text-primary-foreground">
+                    <th scope="col" className="border border-border px-3 py-1 text-left font-semibold">mês</th>
+                    <th scope="col" className="border border-border px-3 py-1 text-right font-semibold">S. J. Rio Preto</th>
+                    <th scope="col" className="border border-border px-3 py-1 text-right font-semibold">Região</th>
+                    <th scope="col" className="border border-border px-3 py-1 text-right font-semibold">Total Geral</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {linhas.map((l) => (
+                    <tr key={l.rotulo} className={l.rotulo === "Total" ? "bg-secondary font-bold text-secondary-foreground" : "bg-card text-foreground"}>
+                      <th scope="row" className="border border-border px-3 py-1 text-left font-medium tabular-nums">{l.rotulo}</th>
+                      <td className={td}>{celula(l.praca)}</td>
+                      <td className={td}>{celula(l.regiao)}</td>
+                      <td className={`${td} font-semibold`}>{celula(l.total)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={copiar} title="Copia o grid para colar no Excel">
+                {copiado ? <Check className="mr-1.5 h-3.5 w-3.5" /> : <Copy className="mr-1.5 h-3.5 w-3.5" />}
+                {copiado ? "Copiado" : "Copiar"}
+              </Button>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // Modelo de dados em XLSX: uma linha por cidade × mês × tipo × produto, com os filtros escolhidos.
 const COLUNAS_MODELO = [
   ["Competência", 11], ["Ano", 6], ["Mês", 5], ["Praça", 15], ["UF", 5], ["Cidade", 30], ["Cidade (UF)", 34], ["Tipo", 6], ["Produto", 22],
@@ -448,6 +510,7 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
     [porCidade, meses, visao, vidasCidLinhas, finCidLinhas, emPerCapita, tipoCidade, produto],
   );
 
+  const [gridPracas, setGridPracas] = useState(false);
   const [gerandoXlsx, setGerandoXlsx] = useState(false);
   const [erroXlsx, setErroXlsx] = useState<string | null>(null);
   const baixarXlsx = async () => {
@@ -590,6 +653,12 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
                 {gerandoXlsx ? "Gerando XLSX…" : "Gerar XLSX"}
               </Button>
             )}
+            {porCidade && (
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setGridPracas(true)}
+                aria-label="Montar grid por mês" title="Monta um grid com uma linha por mês: S. J. Rio Preto, Região e Total Geral, no período e filtros escolhidos">
+                <Table2 className="h-4 w-4" />
+              </Button>
+            )}
             {rotuloProduto && !porCidade && (
               <p className="flex items-center gap-2 text-sm text-muted-foreground">
                 Subtotais e totais somando só <span className="font-semibold text-primary">{rotuloProduto}</span>
@@ -622,6 +691,12 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
           )}
         </section>
       </div>
+      {porCidade && (
+        <GridPracasDialog aberto={gridPracas} onAberto={setGridPracas} grade={gradeCid} visao={visao} fmt={fmtVisao}
+          titulo={emPerCapita ? `${visao} per capita por mês e praça` : `${visao} por mês e praça`}
+          periodo={`${anoMesCampo(periodo.de)} a ${anoMesCampo(periodo.ate)}`}
+          filtros={`Tipo: ${tipoCidade ?? "Todos"} · Produto: ${rotuloProduto ?? "Todos"}`} />
+      )}
     </div>
   );
 }
