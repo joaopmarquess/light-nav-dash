@@ -110,12 +110,12 @@ export type TermoGlossario = { termo: string; nota: string; provisorio?: boolean
  */
 export const GLOSSARIO_PROPOSTA: TermoGlossario[] = [
   { termo: "DISTRIBUIDORES", provisorio: true, nota: "Canais responsáveis pela comercialização dos produtos junto aos clientes. Nesta proposta, os produtos com boletagem pela Administradora (PCA, PME ADM. e PCE ADM.) são distribuídos pelas Plataformas Associadas, e o Plano Empresarial (PJ+) pode ser distribuído por Agenciadoras e Corretoras Autorizadas.", itens: [
-    { termo: "PLATAFORMAS ASSOCIADAS", provisorio: true, nota: "Canais de venda parceiros da Administradora, por meio dos quais são comercializados o PCA, o PME ADM. e o PCE ADM., com boletagem pela Administradora." },
+    { termo: "PLATAFORMAS ASSOCIADAS", provisorio: true, nota: "Canais de venda parceiros da Administradora, por meio dos quais são comercializados o PCA, o PME ADM. e o PCE ADM., com boletagem pela Administradora. A Siga Soluções também pode atuar como Plataforma Associada (ver Agenciadora)." },
     { termo: "CORRETORAS", provisorio: true, nota: "Corretoras Autorizadas: empresas de corretagem habilitadas a comercializar o Plano Empresarial (PJ+), destinado a empresas com 100 ou mais vidas, com boletagem pela Operadora." },
   ] },
   { termo: "ENTES", provisorio: true, nota: "Partes que participam da operação dos produtos desta proposta e entre as quais se distribuem as receitas e os custos de cada contrato.", itens: [
-    { termo: "ADMINISTRADORA", provisorio: true, nota: "Lancers Administradora de Benefícios, responsável pela boletagem (emissão e cobrança das mensalidades) e pela administração dos contratos do PCA, do PME ADM. e do PCE ADM., remunerada pela sua participação na mensalidade." },
-    { termo: "AGENCIADORA", provisorio: true, nota: "Siga Soluções, responsável pela venda e captação de novos contratos, sem atuação na gestão ou na operação do plano, remunerada conforme as condições comerciais de cada produto." },
+    { termo: "ADMINISTRADORA", provisorio: true, nota: "A Administradora é a Lancers Administradora de Benefícios, responsável pela boletagem (emissão e cobrança das mensalidades) e pela administração dos contratos do PCA, do PME ADM. e do PCE ADM., remunerada pela sua participação na mensalidade." },
+    { termo: "AGENCIADORA", provisorio: true, nota: "A Agenciadora é a Siga Soluções, responsável pela venda e captação de novos contratos, sem atuação na gestão ou na operação do plano, remunerada conforme as condições comerciais de cada produto. Nos produtos diferentes do Plano Empresarial (PCA, PME ADM. e PCE ADM.), a Siga também pode atuar como Plataforma Associada; nesse caso, os percentuais da Plataforma dependem de negociação entre a Siga e a Lancers." },
     { termo: "OPERADORA", provisorio: true, nota: "O Bensaúde, operadora de planos de saúde responsável pelos produtos, pela rede assistencial e pela cobertura dos beneficiários." },
     { termo: "BENEFICIÁRIO", provisorio: true, nota: "Pessoa física vinculada ao plano, como titular ou dependente, que paga a mensalidade e, quando houver, a taxa de adesão." },
   ] },

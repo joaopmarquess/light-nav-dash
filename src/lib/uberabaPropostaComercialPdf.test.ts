@@ -56,6 +56,13 @@ describe("Proposta Comercial › Glossário e Notas Explicativas", () => {
     expect(sub("ENTES")).toEqual(["ADMINISTRADORA", "AGENCIADORA", "OPERADORA", "BENEFICIÁRIO"]);
     expect(sub("PARTICIPAÇÃO")).toEqual(["TABELA CHEIA", "TABELA NET", "SPREAD"]);
   });
+  it("identifica a Lancers como Administradora e a Siga como Agenciadora, que pode ser Plataforma Associada fora do Empresarial", () => {
+    const ente = (t: string) => GLOSSARIO_PROPOSTA.find((g) => g.termo === "ENTES")?.itens?.find((i) => i.termo === t)?.nota ?? "";
+    expect(ente("ADMINISTRADORA")).toMatch(/^A Administradora é a Lancers/);
+    expect(ente("AGENCIADORA")).toMatch(/^A Agenciadora é a Siga/);
+    expect(ente("AGENCIADORA")).toContain("diferentes do Plano Empresarial");
+    expect(ente("AGENCIADORA")).toContain("negociação entre a Siga e a Lancers");
+  });
   it("não traz mais a nota de Enfermaria nem as siglas", () => {
     const termos = GLOSSARIO_PROPOSTA.map((g) => g.termo);
     for (const t of ["ENFERMARIA", "PCA", "PME ADM.", "PCE ADM.", "PJ+"]) expect(termos).not.toContain(t);
