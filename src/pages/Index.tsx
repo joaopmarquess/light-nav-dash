@@ -407,7 +407,7 @@ const Index = () => {
         <header className="h-20 border-b border-border bg-card flex items-center justify-between px-8">
           <div>
             <h1 className="text-xl font-semibold text-foreground">{controlTitle ?? (active === "Uberaba Timeline" || active === UBERABA_RESULTADOS_COMERCIAIS ? "Proj. Uberaba" : active)}</h1>
-            {controlTitle ? controlSubtitle && <p className="text-xs text-muted-foreground">{controlSubtitle}</p> : <p className="text-xs text-muted-foreground">AXIS | Executive Intelligence Platform <span className="italic">by Denis Santana</span></p>}
+            {controlTitle ? controlSubtitle && <p className="text-xs text-muted-foreground">{controlSubtitle}</p> : <p className="text-xs text-muted-foreground">AXIS | Executive Intelligence Platform <span className="italic">by Dênis Santana</span></p>}
           </div>
           <div className="flex items-center gap-3">
             {(active === "Área Geográfica" || active === "Dashboard" || active === "Ativos por Cidade") && (
