@@ -33,3 +33,7 @@
 - [x] Nomes OPERADORA, ADMINISTRADORA e AGENCIADORA no lugar de Bensaúde, Lancers e SIGA na Simulação de resultados
 - [x] Ícone Replicar ao lado da Sinistralidade do PCA
 - [x] Quadros dos entes recolhidos, mostrando ente e resultado total
+
+## AXIS › Publicação e aviso de versão (16/11/2026)
+- [x] Publicar o AXIS.
+- [ ] Enviar e-mail com o número da nova versão aos 3 usuários ativos — aguardando o Dênis escolher a caixa de envio (Gmail ou Outlook).
