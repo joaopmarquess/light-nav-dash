@@ -3,7 +3,7 @@
 // Usa o mesmo layout do Relatório de Controladoria (comporPdfRelatorio) e as linhas DRE já carregadas na tela.
 import { hostinger } from "@/lib/hostingerClient";
 import type { DreHRow } from "@/control/dreHostinger";
-import { resumoPainelDre } from "@/control/drePainel";
+import { grupoPainelDre, resumoPainelDre } from "@/control/drePainel";
 import { DRE_FULL_NAME } from "@/control/dreLabels";
 import { mesesDoTrimestre, periodoDre, rotuloTrimestre } from "@/control/dreTrimestres";
 import { dinheiro, numero, percentual } from "./controladoriaRegras";
@@ -40,6 +40,9 @@ export async function carregarVidasTrimestres(ano: number, tris: number[]): Prom
 }
 
 const assinado = (v: number) => (v > 0 ? `+${numero(v)}` : numero(v));
+
+/** Recuo das linhas expandidas no quadro do PDF. */
+export const SUBITEM = "      ";
 
 const totalVidas = (v: VidasTipo) => v.PIF + v.PCA + v.PCE;
 
@@ -86,7 +89,10 @@ export function montarRelatorioTrimestral(o: { ano: number; tris: number[]; rows
   const dre = base("dre", `2. ${DRE_FULL_NAME}`, "CONTROL", "loadDreHostinger / demonstracoes_contabeis_oracle_mv + plano_contas_icontabil");
   const acumMeses = tris.flatMap(mesesDoTrimestre);
   const colunas = [...tris.map((t) => mesesDoTrimestre(t)), acumMeses];
-  const resumos = colunas.map((ms) => resumoPainelDre(rows.filter((r) => r.ano === ano && ms.includes(r.mes))));
+  const doPeriodo = colunas.map((ms) => rows.filter((r) => r.ano === ano && ms.includes(r.mes)));
+  const resumos = doPeriodo.map(resumoPainelDre);
+  // Entradas Operacionais expandidas: Faturamento e Coparticipação (mesma classificação do Painel).
+  const copart = doPeriodo.map((rs) => rs.reduce((t, r) => t + (grupoPainelDre(r) === "ent" && /COPART/i.test(r.g4) ? r.valor : 0), 0));
   const acum = resumos[resumos.length - 1];
   const pfat = (r: ReturnType<typeof resumoPainelDre>, x: number) => percentual(r.pctFat(x));
   dre.introduction = `Resultado por trimestre fechado conforme Control › Demonstrações › DRE (visão Trimestral), a partir do balancete MV e do plano de contas 9D.`;
@@ -94,8 +100,10 @@ export function montarRelatorioTrimestral(o: { ano: number; tris: number[]; rows
   dre.table = {
     headers: ["Item (R$)", ...rotulos, periodoDre(acumMeses, ano)],
     rows: [
-      ["Faturamento", ...resumos.map((r) => valorDre(r.fat))],
-      ...acum.linhas.map(([l], i) => [l.replace(/−/g, "-"), ...resumos.map((r) => valorDre(r.linhas[i][1]))]),
+      ...acum.linhas.flatMap(([l], i) => [
+        [l.replace(/−/g, "-"), ...resumos.map((r) => valorDre(r.linhas[i][1]))],
+        ...(i === 0 ? [[`${SUBITEM}Faturamento`, ...resumos.map((r) => valorDre(r.fat))], [`${SUBITEM}Coparticipação`, ...copart.map(valorDre)]] : []),
+      ]),
       ["Margem líquida (% fat.)", ...resumos.map((r) => pfat(r, r.liq))],
     ],
     numeric: true,
