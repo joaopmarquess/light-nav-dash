@@ -5,6 +5,8 @@ import { createPortal } from "react-dom";
 import PdfPreview from "@/components/PdfPreview";
 import { loadTimbrado } from "@/lib/pdfTimbrado";
 import { buildGridPracasPdf } from "@/lib/evolucaoPracasPdf";
+import { carregarAnsPlanoSaude, podeIncluirAns } from "@/lib/evolucaoPracasAns";
+import { Checkbox } from "@/components/ui/checkbox";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -340,15 +342,32 @@ function GradeCidadesTabela({ grade, fmt = fmtInt }: { grade: GradeCidades; fmt?
 }
 
 // Grid mês × praça (S. J. Rio Preto, Região, Total Geral) no período e filtros aplicados, pronto para copiar ao Excel.
-function GridPracasDialog({ aberto, onAberto, grade, visao, fmt, titulo, periodo, filtros, razao }: {
+function GridPracasDialog({ aberto, onAberto, grade, visao, fmt, titulo, periodo, filtros, razao, ansPermitido }: {
   aberto: boolean; onAberto: (v: boolean) => void; grade: GradeCidades | null; visao: Visao; fmt: Fmt; titulo: string; periodo: string; filtros: string;
   /** Sinistralidade ou per capita: o PDF não empilha as praças nem mostra variação percentual. */
   razao: boolean;
+  /** "Incluir ANS" só com Vidas e Tipo/Produto em Todos (tested podeIncluirAns). */
+  ansPermitido: boolean;
 }) {
   const linhas = useMemo(() => (grade ? gradePracasPorMes(grade, visao) : []), [grade, visao]);
   // A pré-visualização do PDF abre no lugar da janela e, ao fechar, a janela volta.
   const [pdf, setPdf] = useState(false);
-  const arquivo = `${titulo.replace(/[^\p{L}\p{N}]+/gu, "_")}_${periodo.replace(/\//g, "-").replace(/\s+a\s+/, "_a_")}.pdf`;
+  const [incluirAns, setIncluirAns] = useState(false);
+  const [ans, setAns] = useState<Map<string, number> | null>(null);
+  const [carregandoAns, setCarregandoAns] = useState(false);
+  const [erroAns, setErroAns] = useState<string | null>(null);
+  const comAns = incluirAns && ansPermitido;
+  const arquivo = `${titulo.replace(/[^\p{L}\p{N}]+/gu, "_")}${comAns ? "_x_ANS" : ""}_${periodo.replace(/\//g, "-").replace(/\s+a\s+/, "_a_")}.pdf`;
+  const gerarPdf = async () => {
+    setErroAns(null);
+    if (comAns) {
+      setCarregandoAns(true);
+      try { setAns(await carregarAnsPlanoSaude(linhas)); }
+      catch (e) { setErroAns(e instanceof Error ? e.message : "Não foi possível carregar a base mensal da ANS."); return; }
+      finally { setCarregandoAns(false); }
+    } else setAns(null);
+    onAberto(false); setPdf(true);
+  };
   const [copiado, setCopiado] = useState(false);
   const celula = (v: number | null) => (v == null ? "Sem dado" : fmt(v));
   const copiar = async () => {
@@ -393,9 +412,15 @@ function GridPracasDialog({ aberto, onAberto, grade, visao, fmt, titulo, periodo
                 </tbody>
               </table>
             </div>
+            {erroAns && <p className="text-sm text-destructive">{erroAns}</p>}
             <div className="flex items-center justify-end gap-2">
-              <Button variant="outline" size="sm" onClick={() => { onAberto(false); setPdf(true); }} title="Monta um PDF com a grade inteira, resumo e gráfico mensal">
-                <FileText className="mr-1.5 h-3.5 w-3.5" />Gerar PDF
+              <label className={`mr-auto flex items-center gap-2 text-sm ${ansPermitido ? "cursor-pointer" : "cursor-not-allowed text-muted-foreground"}`}
+                title={ansPermitido ? "Acrescenta ao PDF a coluna da ANS (Bench Vidas Mensal, Bensaúde, Plano de Saúde) e a diferença para o Total Geral" : "Disponível só em Vidas, com Tipo e Produto em Todos: a ANS tem apenas o total de Plano de Saúde do Bensaúde"}>
+                <Checkbox checked={comAns} disabled={!ansPermitido} onCheckedChange={(v) => setIncluirAns(v === true)} aria-label="Incluir ANS no PDF" />
+                Incluir ANS
+              </label>
+              <Button variant="outline" size="sm" onClick={gerarPdf} disabled={carregandoAns} title="Monta um PDF com a grade inteira, resumo e gráfico mensal">
+                {carregandoAns ? <LoaderCircle className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <FileText className="mr-1.5 h-3.5 w-3.5" />}Gerar PDF
               </Button>
               <Button variant="outline" size="sm" onClick={copiar} title="Copia o grid para colar no Excel">
                 {copiado ? <Check className="mr-1.5 h-3.5 w-3.5" /> : <Copy className="mr-1.5 h-3.5 w-3.5" />}
@@ -408,7 +433,7 @@ function GridPracasDialog({ aberto, onAberto, grade, visao, fmt, titulo, periodo
     </Dialog>
     {pdf && createPortal(
       <PdfPreview
-        build={async () => buildGridPracasPdf(await loadTimbrado(), { titulo, periodo, filtros, linhas, fmt, razao, marcaAxis: await loadMarcaAxis() })}
+        build={async () => buildGridPracasPdf(await loadTimbrado(), { titulo, periodo, filtros, linhas, fmt, razao, marcaAxis: await loadMarcaAxis(), ans: comAns ? ans : null })}
         fileName={arquivo}
         onClose={() => { setPdf(false); onAberto(true); }}
       />,
@@ -718,7 +743,8 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
         <GridPracasDialog aberto={gridPracas} onAberto={setGridPracas} grade={gradeCid} visao={visao} fmt={fmtVisao}
           titulo={emPerCapita ? `${visao} per capita por mês e praça` : `${visao} por mês e praça`}
           periodo={`${anoMesCampo(periodo.de)} a ${anoMesCampo(periodo.ate)}`}
-          filtros={`Tipo: ${tipoCidade ?? "Todos"} · Produto: ${rotuloProduto ?? "Todos"}`} razao={visao === "Sinistralidade" || emPerCapita} />
+          filtros={`Tipo: ${tipoCidade ?? "Todos"} · Produto: ${rotuloProduto ?? "Todos"}`} razao={visao === "Sinistralidade" || emPerCapita}
+          ansPermitido={podeIncluirAns({ visao: emPerCapita ? "per capita" : visao, tipo: tipoCidade, produto: rotuloProduto ?? null })} />
       )}
     </div>
   );
