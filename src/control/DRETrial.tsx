@@ -6,10 +6,10 @@ import { DRE_FULL_NAME } from "@/control/dreLabels";
 import { initialDreExpansion } from "@/control/dreExpansion";
 import { dreMargin, formatDreMargin } from "@/control/dreMargin";
 import { Button } from "@/components/ui/button";
+import { colunasDre, periodoDre, type DreVisao } from "@/control/dreTrimestres";
 
 // DRE (Trial): reconstruído do zero, só com o balancete MV + plano 9D (ver src/lib/dreHostinger.ts).
 const ANO = 2026;
-const NOMES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 export type DreColumn = { label: string; meses: number[]; kind: "mes" | "ano" };
 type Col = DreColumn;
 // Período: jan até o último mês em que as contas 41 superam R$ 20 milhões; última coluna = acumulado
@@ -98,11 +98,12 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
   const [rows, setRows] = useState<DreHRow[] | null>(() => dados ?? (meses ? cacheRows.get(`${ano}:${meses.join(",")}`) ?? null : null));
   const [erro, setErro] = useState<string | null>(null);
   const [open, setOpen] = useState<Record<string, boolean>>({});
-  const periodo = meses?.length ? `${NOMES[(meses[0] ?? 1) - 1]}–${NOMES[(meses[meses.length - 1] ?? 12) - 1]}/${ano}` : String(ano);
-  const cols = useMemo<Col[]>(() => colunas ?? (meses ? [
-    ...meses.map((m): Col => ({ label: `${NOMES[m - 1]}/${ano}`, meses: [m], kind: "mes" })),
-    { label: periodo, meses, kind: "ano" },
-  ] : []), [meses, ano, periodo, colunas]);
+  // Chave Mensal/Trimestral só na DRE principal (Histórico e Bench C definem as próprias colunas)
+  const comVisao = !colunas && !historico && !painel;
+  const [visao, setVisao] = useState<DreVisao>("Mensal");
+  const visaoAtiva: DreVisao = comVisao ? visao : "Mensal";
+  const periodo = periodoDre(meses ?? [], ano);
+  const cols = useMemo<Col[]>(() => colunas ?? (meses ? colunasDre(meses, ano, visaoAtiva) : []), [meses, ano, colunas, visaoAtiva]);
 
   useEffect(() => {
     if (mesesProp || dados) return;
@@ -237,11 +238,24 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
   return (
     <div className={`flex flex-col ${historico || alturaCompleta ? "h-full" : "h-[calc(100vh-9rem)]"} min-h-0`}>
     <section className="bg-card rounded-xl border border-border shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
+      {comVisao && (
+        <div className="shrink-0 flex items-center justify-end border-b border-border px-3 py-1.5">
+          <div role="group" aria-label="Visão" className="inline-flex gap-0.5 rounded-full border border-border bg-card p-1 shadow-sm">
+            {(["Mensal", "Trimestral"] as const).map((v) => (
+              <Button key={v} variant="ghost" aria-pressed={visao === v} onClick={() => setVisao(v)}
+                title={v === "Trimestral" ? "Somente trimestres fechados: 1T jan–mar, 2T abr–jun, 3T jul–set, 4T out–dez" : undefined}
+                className={`h-7 rounded-full px-3 text-[13px] ${visao === v ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "text-foreground/70"}`}>{v}</Button>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="flex-1 min-h-0 overflow-auto">
         {!rows ? (
           <div className="p-6 text-sm text-muted-foreground">Carregando…</div>
         ) : erro ? (
           <div className="p-6 text-sm text-destructive">Erro ao carregar: {erro}</div>
+        ) : !cols.length && visaoAtiva === "Trimestral" ? (
+          <div className="p-6 text-sm text-muted-foreground">Ainda não há trimestre fechado em {ano}.</div>
         ) : (
           <table className="w-full h-full text-sm">
             <thead className="sticky top-0 z-10 bg-primary text-primary-foreground shadow-md">
