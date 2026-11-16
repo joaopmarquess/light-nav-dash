@@ -1,12 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileBarChart2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import PdfPreview from "@/components/PdfPreview";
+import { comporPdfRelatorio } from "@/control/relatorio/controladoriaPdf";
+import type { ControladoriaReport } from "@/control/relatorio/controladoriaDados";
+import { carregarVidasTrimestres, montarRelatorioTrimestral } from "@/control/relatorio/controladoriaTrimestral";
 import { loadDreHostinger, loadMesesDemonstracoes, type DreHRow } from "@/control/dreHostinger";
 import { grupoPainelDre } from "@/control/drePainel";
-import { DRE_FULL_NAME } from "@/control/dreLabels";
+import { DRE_FULL_NAME, REPORT_FULL_NAME } from "@/control/dreLabels";
 import { initialDreExpansion } from "@/control/dreExpansion";
 import { dreMargin, formatDreMargin } from "@/control/dreMargin";
 import { Button } from "@/components/ui/button";
-import { colunasDre, periodoDre, type DreVisao } from "@/control/dreTrimestres";
+import { colunasDre, periodoDre, trimestresFechados, type DreVisao } from "@/control/dreTrimestres";
 
 // DRE (Trial): reconstruído do zero, só com o balancete MV + plano 9D (ver src/lib/dreHostinger.ts).
 const ANO = 2026;
@@ -129,6 +134,21 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
     loadDreHostinger(ano, meses).then((r) => { cacheRows.set(k, r); if (!cancelado) setRows(r); }).catch((e) => { if (!cancelado) { setErro(e?.message || String(e)); setRows([]); } });
     return () => { cancelado = true; };
   }, [dados, ano, meses]);
+
+  // Trimestral: "Gerar Relatório de Controladoria" com os mesmos dados DRE da tela e vidas no fim de cada trimestre.
+  const [relatorio, setRelatorio] = useState<ControladoriaReport | null>(null);
+  const [gerandoRel, setGerandoRel] = useState(false);
+  const gerarRelatorio = async () => {
+    if (!rows || !meses) return;
+    const tris = trimestresFechados(meses);
+    setGerandoRel(true);
+    try {
+      const vidas = await carregarVidasTrimestres(ano, tris);
+      setRelatorio(montarRelatorioTrimestral({ ano, tris, rows, vidas }));
+    } catch (e) {
+      toast.error(`Não foi possível gerar o ${REPORT_FULL_NAME}: ${e instanceof Error ? e.message : String(e)}`);
+    } finally { setGerandoRel(false); }
+  };
 
   const tree = useMemo(() => buildTree(rows || [], cols), [rows, cols]);
   useEffect(() => {
@@ -279,11 +299,16 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
         )}
       </div>
     </section>
-    {!semBarra && <Barra ativa="DRE" onAba={onAba} historico={historico} direita={comVisao ? (["Mensal", "Trimestral"] as const).map((v) => (
+    {!semBarra && <Barra ativa="DRE" onAba={onAba} historico={historico} direita={comVisao ? <>{(["Mensal", "Trimestral"] as const).map((v) => (
       <Button key={v} variant="ghost" aria-pressed={visao === v} onClick={() => setVisao(v)}
         title={v === "Trimestral" ? "Somente trimestres fechados: 1T jan–mar, 2T abr–jun, 3T jul–set, 4T out–dez" : undefined}
         className={`rounded-full px-3 py-1 text-[13px] h-auto font-medium ${visao === v ? "bg-primary text-primary-foreground shadow-md shadow-primary/30 hover:bg-primary hover:text-primary-foreground" : "text-foreground/70 hover:text-primary hover:bg-card"}`}>{v}</Button>
-    )) : undefined} />}
+    ))}{visaoAtiva === "Trimestral" && <Button variant="ghost" size="icon" title={`Gerar ${REPORT_FULL_NAME}`} aria-label={`Gerar ${REPORT_FULL_NAME}`}
+        disabled={gerandoRel || !rows || !!erro || !cols.length} onClick={() => void gerarRelatorio()}
+        className="ml-1 h-7 w-7 rounded-full text-foreground/70 hover:text-primary hover:bg-card">
+        {gerandoRel ? <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" /> : <FileBarChart2 className="h-4 w-4" />}</Button>}</> : undefined} />}
+    {relatorio && <PdfPreview build={async () => (await comporPdfRelatorio(relatorio)).doc}
+      fileName={`Relatorio_Controladoria_Trimestral_${relatorio.period.de}_${relatorio.period.ate}.pdf`} onClose={() => setRelatorio(null)} />}
     </div>
   );
 };

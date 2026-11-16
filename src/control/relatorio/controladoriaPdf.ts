@@ -43,10 +43,10 @@ export async function comporPdfRelatorio(report: ControladoriaReport): Promise<R
   doc.setFillColor(...colors.navy); doc.rect(0, 65, 210, 119, "F");
   doc.setFillColor(...colors.blue); doc.rect(0, 65, 5, 119, "F");
   text(24, true, colors.headText); doc.text(doc.splitTextToSize(REPORT_FULL_NAME, width), margin, 100);
-  text(12, false, colors.headText); doc.text(["Visão econômica, assistencial", "e administrativa"], margin, 137);
+  text(12, false, colors.headText); doc.text(report.capa?.subtitulo ?? ["Visão econômica, assistencial", "e administrativa"], margin, 137);
   text(11, true, colors.headText); doc.text(`${dataBR(report.period.de)} a ${dataBR(report.period.ate)}`, margin, 164);
   text(12, true, colors.navy); doc.text("AXIS / CONTROL", margin, 212);
-  text(10, false, colors.muted); doc.text(doc.splitTextToSize(`Carteira · Assistencial · ${DRE_FULL_NAME} · Orçamento`, width), margin, 219);
+  text(10, false, colors.muted); doc.text(doc.splitTextToSize(report.capa?.topicos ?? `Carteira · Assistencial · ${DRE_FULL_NAME} · Orçamento`, width), margin, 219);
   doc.setDrawColor(...colors.lightBlue); doc.setLineWidth(1); doc.line(margin, 237, 191, 237);
   text(9, false, colors.muted); doc.text(`Gerado em ${new Date(report.generatedAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`, margin, 252);
   page(); // Sumário is always page two, filled after actual pagination.
@@ -83,9 +83,11 @@ export async function comporPdfRelatorio(report: ControladoriaReport): Promise<R
           head: [block.table.headers], body: block.table.rows,
           rowPageBreak: "avoid", showHead: "everyPage", pageBreak: "auto",
           styles: { ...baseTableStyles().styles, fontSize: block.table.headers.length > 5 ? 7 : 8, cellPadding: 2.2, overflow: "linebreak" },
-          columnStyles: { [block.table.headers.length - 1]: { halign: "right" } },
+          columnStyles: block.table.numeric ? Object.fromEntries(block.table.headers.slice(1).map((_, i) => [i + 1, { halign: "right" as const }])) : { [block.table.headers.length - 1]: { halign: "right" } },
           didParseCell: data => {
+            if (block.table?.numeric && data.section === "head" && data.column.index > 0) data.cell.styles.halign = "right";
             if (data.section !== "body") return;
+            if (block.table?.numeric && /^(\(=\)|Total)/.test(String(data.row.raw && (data.row.raw as string[])[0]))) data.cell.styles.fontStyle = "bold";
             const value = String(data.cell.raw);
             if (value.includes("desfavorável")) data.cell.styles.textColor = colors.negative;
             else if (value.includes("favorável")) data.cell.styles.textColor = colors.favorable;

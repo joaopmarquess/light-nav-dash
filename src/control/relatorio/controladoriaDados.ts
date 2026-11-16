@@ -12,7 +12,7 @@ import { resumoPainelDre } from "@/control/drePainel";
 import { aplicarRealizadoMv, gruposOrcamentoDre, impostosFederais, resultadoLiquido, valoresOrcamento } from "@/control/orcamentoDre";
 
 export const UNAVAILABLE = "Informação não disponível na fonte atual.";
-export type ReportTable = { headers: string[]; rows: string[][] };
+export type ReportTable = { headers: string[]; rows: string[][]; /** Colunas após a primeira alinhadas à direita e totais (=)/Total em negrito. */ numeric?: boolean };
 export type ReportSeries = { label: string; values: number[] };
 export type ReportBlock = {
   id: string; title: string; introduction: string; sourceModule: "AXIS" | "CONTROL";
@@ -22,7 +22,7 @@ export type ReportBlock = {
   chart?: { title: string; labels: string[]; series: ReportSeries[] };
   paragraphs: string[]; considerations: string[]; children?: ReportBlock[];
 };
-export type ControladoriaReport = { period: ReportPeriod; generatedAt: string; blocks: ReportBlock[]; conclusions: string[] };
+export type ControladoriaReport = { period: ReportPeriod; generatedAt: string; blocks: ReportBlock[]; conclusions: string[]; /** Textos da capa; ausente = capa padrão do relatório completo. */ capa?: { subtitulo: string[]; topicos: string } };
 const strip = (s: string) => s.replace(/^\d+\|/, "");
 const sum = (rows: DreHRow[]) => rows.reduce((t, r) => t + r.valor, 0);
 const group = (rows: DreHRow[], level: "g1" | "g2" | "g3") => {
