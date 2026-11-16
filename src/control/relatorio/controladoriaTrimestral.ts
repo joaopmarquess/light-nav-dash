@@ -21,20 +21,30 @@ export const valorDre = (v: number) => {
   return Math.abs(v) < 0.005 ? "0,00" : v < 0 ? `(${s})` : s;
 };
 
-export async function carregarVidasTrimestres(ano: number, tris: number[]): Promise<VidasTipo[]> {
-  return Promise.all(tris.map(async (t) => {
-    const { data, error } = await hostinger.rpc("carteira_trial_siglas", { p_data: fimTrimestre(ano, t), p_q: null, p_empresa: null, p_cidade: null });
-    if (error) throw new Error(error.message);
-    const linhas = (Array.isArray(data) ? data : []) as { sigla: string; vidas: number }[];
-    const g = (s: string) => Number(linhas.find((r) => r.sigla === s)?.vidas ?? 0);
-    return { PIF: g("PIF"), PCA: g("PCA"), PCE: g("PCE") };
-  }));
+/** Trimestre imediatamente anterior (o anterior ao 1T é o 4T do ano anterior): ponto de partida das vidas. */
+export const trimestreAnterior = (ano: number, t: number) => (t > 1 ? { ano, t: t - 1 } : { ano: ano - 1, t: 4 });
+
+async function vidasEm(data: string): Promise<VidasTipo> {
+  const { data: linhasRpc, error } = await hostinger.rpc("carteira_trial_siglas", { p_data: data, p_q: null, p_empresa: null, p_cidade: null });
+  if (error) throw new Error(error.message);
+  const linhas = (Array.isArray(linhasRpc) ? linhasRpc : []) as { sigla: string; vidas: number }[];
+  const g = (s: string) => Number(linhas.find((r) => r.sigla === s)?.vidas ?? 0);
+  return { PIF: g("PIF"), PCA: g("PCA"), PCE: g("PCE") };
 }
+
+/** Vidas no fim do trimestre anterior ao período (início) e no fim de cada trimestre fechado. */
+export async function carregarVidasTrimestres(ano: number, tris: number[]): Promise<{ inicio: VidasTipo; vidas: VidasTipo[] }> {
+  const ant = trimestreAnterior(ano, tris[0]);
+  const [inicio, ...vidas] = await Promise.all([fimTrimestre(ant.ano, ant.t), ...tris.map((t) => fimTrimestre(ano, t))].map(vidasEm));
+  return { inicio, vidas };
+}
+
+const assinado = (v: number) => (v > 0 ? `+${numero(v)}` : numero(v));
 
 const totalVidas = (v: VidasTipo) => v.PIF + v.PCA + v.PCE;
 
-export function montarRelatorioTrimestral(o: { ano: number; tris: number[]; rows: DreHRow[]; vidas: VidasTipo[]; generatedAt?: string }): ControladoriaReport {
-  const { ano, tris, rows, vidas } = o;
+export function montarRelatorioTrimestral(o: { ano: number; tris: number[]; rows: DreHRow[]; vidasInicio: VidasTipo; vidas: VidasTipo[]; generatedAt?: string }): ControladoriaReport {
+  const { ano, tris, rows, vidas, vidasInicio } = o;
   if (!tris.length) throw new Error(`Ainda não há trimestre fechado em ${ano}.`);
   if (vidas.length !== tris.length) throw new Error("Vidas não correspondem aos trimestres.");
   const generatedAt = o.generatedAt ?? new Date().toISOString();
@@ -45,17 +55,31 @@ export function montarRelatorioTrimestral(o: { ano: number; tris: number[]; rows
 
   // 1. Vidas ativas no último dia de cada trimestre, por tipo de produto.
   const vidasBlock = base("vidas", "1. Vidas", "AXIS", "carteira_trial_siglas (vidas ativas no último dia do trimestre)");
-  const totais = vidas.map(totalVidas);
+  const ant = trimestreAnterior(ano, tris[0]);
+  const inicioRot = rotuloTrimestre(ant.t, ant.ano);
+  const serie = [vidasInicio, ...vidas];
+  const totais = serie.map(totalVidas);
   const fim = vidas[vidas.length - 1], tFim = totais[totais.length - 1], tIni = totais[0];
-  vidasBlock.introduction = "Número de vidas ativas por tipo de produto no último dia de cada trimestre fechado, conforme a regra de \"Ativos em\" da Carteira.";
-  vidasBlock.cards = tris.length > 1
-    ? [{ label: `Vidas ativas · ${primeiro}`, value: numero(tIni) }, { label: `Vidas ativas · ${ultimo}`, value: numero(tFim) }, { label: `Variação ${primeiro} a ${ultimo}`, value: numero(tFim - tIni) }]
-    : [{ label: `Vidas ativas · ${ultimo}`, value: numero(tFim) }];
-  vidasBlock.table = { headers: ["Tipo de produto", ...rotulos], rows: [...TIPOS_VIDAS.map((k) => [k, ...vidas.map((v) => numero(v[k]))]), ["Total", ...totais.map(numero)]], numeric: true };
-  vidasBlock.paragraphs = tris.length > 1
-    ? [`A carteira passou de ${numero(tIni)} vidas ativas no ${primeiro} para ${numero(tFim)} no ${ultimo}, variação de ${numero(tFim - tIni)} vidas (${percentual(tIni ? (tFim - tIni) / tIni : null)}).`,
-       `Por tipo de produto, entre ${primeiro} e ${ultimo}: ${TIPOS_VIDAS.map((k) => `${k} de ${numero(vidas[0][k])} para ${numero(fim[k])}`).join("; ")}.`]
-    : [`No ${ultimo}, a carteira tinha ${numero(tFim)} vidas ativas: ${TIPOS_VIDAS.map((k) => `${k} ${numero(fim[k])}`).join("; ")}.`];
+  const variacao = (k: keyof VidasTipo) => fim[k] - vidasInicio[k];
+  vidasBlock.introduction = `Número de vidas ativas por tipo de produto no último dia de cada trimestre fechado, conforme a regra de "Ativos em" da Carteira. O ${inicioRot} é o ponto de partida: a variação de cada trimestre e a do período são medidas a partir dele.`;
+  vidasBlock.cards = [
+    { label: `Início · ${inicioRot}`, value: numero(tIni) },
+    { label: `Vidas ativas · ${ultimo}`, value: numero(tFim) },
+    { label: `Variação ${inicioRot} a ${ultimo}`, value: `${assinado(tFim - tIni)} (${percentual(tIni ? (tFim - tIni) / tIni : null)})` },
+  ];
+  vidasBlock.table = {
+    headers: ["Tipo de produto", `${inicioRot} (início)`, ...rotulos, "Variação"],
+    rows: [
+      ...TIPOS_VIDAS.map((k) => [k, ...serie.map((v) => numero(v[k])), assinado(variacao(k))]),
+      ["Total", ...totais.map(numero), assinado(tFim - tIni)],
+      ["Variação no trimestre", "—", ...totais.slice(1).map((t, i) => assinado(t - totais[i])), assinado(tFim - tIni)],
+    ],
+    numeric: true,
+  };
+  vidasBlock.paragraphs = [
+    `A carteira passou de ${numero(tIni)} vidas ativas no ${inicioRot} para ${numero(tFim)} no ${ultimo}, variação de ${assinado(tFim - tIni)} vidas (${percentual(tIni ? (tFim - tIni) / tIni : null)}).`,
+    `Por trimestre: ${rotulos.map((r, i) => `${r} ${assinado(totais[i + 1] - totais[i])}`).join("; ")}. Por tipo de produto, entre ${inicioRot} e ${ultimo}: ${TIPOS_VIDAS.map((k) => `${k} ${assinado(variacao(k))}`).join("; ")}.`,
+  ];
   vidasBlock.considerations = ["PIF = Individual/Familiar; PCA = Coletivo por Adesão; PCE = Coletivo Empresarial. Suspensos permanecem nas vidas ativas."];
 
   // 2. DRE por trimestre: mesmas linhas do Painel, colunas como a visão Trimestral da tela.

@@ -143,8 +143,8 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
     const tris = trimestresFechados(meses);
     setGerandoRel(true);
     try {
-      const vidas = await carregarVidasTrimestres(ano, tris);
-      setRelatorio(montarRelatorioTrimestral({ ano, tris, rows, vidas }));
+      const { inicio, vidas } = await carregarVidasTrimestres(ano, tris);
+      setRelatorio(montarRelatorioTrimestral({ ano, tris, rows, vidasInicio: inicio, vidas }));
     } catch (e) {
       toast.error(`Não foi possível gerar o ${REPORT_FULL_NAME}: ${e instanceof Error ? e.message : String(e)}`);
     } finally { setGerandoRel(false); }
