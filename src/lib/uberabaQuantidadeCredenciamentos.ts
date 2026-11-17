@@ -148,3 +148,30 @@ export function carregarAutorizados(): AutorizadosCredenciamento {
 export function salvarAutorizados(valores: AutorizadosCredenciamento) {
   try { localStorage.setItem(CHAVE_AUTORIZADOS_CREDENCIAMENTO, JSON.stringify(valores)); } catch { /* navegador sem armazenamento */ }
 }
+
+/** Quantidade digitada em cada linha expandida (item exibido), gravada neste navegador; chave `grupo:nome exibido`. Não altera Disponível nem Autorizado do tipo. */
+export type QuantidadesItens = Record<string, number>;
+export const CHAVE_QUANTIDADES_ITENS = "uberaba.quantidadeCredenciamentos.itens.v1";
+export const chaveItem = (grupo: GrupoCredenciamento, nome: string) => `${grupo}:${nome}`;
+/** Soma das quantidades digitadas nos itens do tipo e quantos itens foram preenchidos. */
+export function somaItens(grupo: GrupoCredenciamento, valores: QuantidadesItens) {
+  const preenchidos = itensExibidos(grupo).map((i) => valores[chaveItem(grupo, i.nome)]).filter((v): v is number => v !== undefined);
+  return { soma: preenchidos.reduce((s, v) => s + v, 0), preenchidos: preenchidos.length };
+}
+/** Atualiza um item a partir do texto: vazio apaga; texto inválido não altera (null). */
+export function alterarItem(valores: QuantidadesItens, chave: string, texto: string): QuantidadesItens | null {
+  const v = lerAutorizado(texto);
+  if (v === null) return null;
+  const proximo = { ...valores };
+  if (v === undefined) delete proximo[chave]; else proximo[chave] = v;
+  return proximo;
+}
+export function carregarQuantidadesItens(): QuantidadesItens {
+  try {
+    const bruto = JSON.parse(localStorage.getItem(CHAVE_QUANTIDADES_ITENS) ?? "{}");
+    return Object.fromEntries(Object.entries(bruto ?? {}).filter(([, v]) => Number.isInteger(v) && (v as number) >= 0)) as QuantidadesItens;
+  } catch { return {}; }
+}
+export function salvarQuantidadesItens(valores: QuantidadesItens) {
+  try { localStorage.setItem(CHAVE_QUANTIDADES_ITENS, JSON.stringify(valores)); } catch { /* navegador sem armazenamento */ }
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ITENS_CREDENCIAMENTO, itensExibidos, lerAutorizado, notasAgrupamento, linhasQuantidadeCredenciamentos } from "./uberabaQuantidadeCredenciamentos";
+import { ITENS_CREDENCIAMENTO, alterarItem, chaveItem, itensExibidos, somaItens, lerAutorizado, notasAgrupamento, linhasQuantidadeCredenciamentos } from "./uberabaQuantidadeCredenciamentos";
 
 describe("Quantidade de Credenciamentos", () => {
   it("tem os três tipos de credenciado com a quantidade disponível", () => {
@@ -56,5 +56,15 @@ describe("Quantidade de Credenciamentos", () => {
     expect(itens.map((i) => i.nome)).not.toContain("Clínico Geral");
     expect(itens.find((i) => i.nome === "Clínico Geral**")?.inclui).toEqual(["Clínico Geral", "Clínica Médica"]);
     expect(notasAgrupamento()).toContain("** Inclui também Clínica Médica.");
+  });
+  it("quantidade digitada nos itens soma por tipo sem mudar o Autorizado do tipo", () => {
+    let v = alterarItem({}, chaveItem("medicos", "Cardiologia*"), "3")!;
+    v = alterarItem(v, chaveItem("medicos", "Clínico Geral**"), "10")!;
+    v = alterarItem(v, chaveItem("diagnostico", "Serviços de Imagem"), "2")!;
+    expect(somaItens("medicos", v)).toEqual({ soma: 13, preenchidos: 2 });
+    expect(somaItens("diagnostico", v)).toEqual({ soma: 2, preenchidos: 1 });
+    expect(alterarItem(v, chaveItem("medicos", "Cardiologia*"), "2,5")).toBeNull();
+    expect(somaItens("medicos", alterarItem(v, chaveItem("medicos", "Cardiologia*"), "")!)).toEqual({ soma: 10, preenchidos: 1 });
+    expect(linhasQuantidadeCredenciamentos().total.autorizado).toBe(139);
   });
 });

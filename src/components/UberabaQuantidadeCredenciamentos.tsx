@@ -1,7 +1,7 @@
 import { Fragment, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { carregarAutorizados, itensExibidos, notasAgrupamento, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
+import { alterarItem, carregarAutorizados, carregarQuantidadesItens, chaveItem, itensExibidos, notasAgrupamento, salvarQuantidadesItens, somaItens, type QuantidadesItens, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
 
 const numero = (v: number) => v.toLocaleString("pt-BR");
 
@@ -10,6 +10,13 @@ export default function UberabaQuantidadeCredenciamentos() {
   const [autorizados, setAutorizados] = useState<AutorizadosCredenciamento>(carregarAutorizados);
   const { linhas, total } = linhasQuantidadeCredenciamentos(autorizados);
   const [abertos, setAbertos] = useState<Record<string, boolean>>({});
+  const [itensQtd, setItensQtd] = useState<QuantidadesItens>(carregarQuantidadesItens);
+  const alterarQtdItem = (chave: string, texto: string) => {
+    const proximo = alterarItem(itensQtd, chave, texto);
+    if (!proximo) return;
+    setItensQtd(proximo);
+    salvarQuantidadesItens(proximo);
+  };
   const alterar = (id: keyof AutorizadosCredenciamento, texto: string) => {
     const valor = lerAutorizado(texto);
     if (valor === null) return;
@@ -50,14 +57,25 @@ export default function UberabaQuantidadeCredenciamentos() {
                   className="ml-auto h-8 w-24 text-right tabular-nums placeholder:text-foreground" />
               </td>
             </tr>
-            {aberto && itens.map((item) => (
+            {aberto && itens.map((item) => { const k = chaveItem(l.id, item.nome); return (
               <tr key={item.nome} className="border-b border-border/60 bg-muted/40 text-xs">
-                <td className="py-1 pl-8 pr-3" colSpan={3}>
+                <td className="py-1 pl-8 pr-3" colSpan={2}>
                   <span className="font-medium" title={item.inclui?.join(" + ")}>{item.nome}</span>
                   {item.guia && <span className="ml-2 text-muted-foreground">Guia Médico: {item.guia.join(" · ")}</span>}
                 </td>
+                <td className="px-3 py-0.5 text-right">
+                  <Input inputMode="numeric" aria-label={`Quantidade — ${item.nome}`} value={itensQtd[k] ?? ""} placeholder="—"
+                    onChange={(e) => alterarQtdItem(k, e.target.value)}
+                    className="ml-auto h-7 w-24 text-right text-xs tabular-nums" />
+                </td>
               </tr>
-            ))}
+            ); })}
+            {aberto && (() => { const s = somaItens(l.id, itensQtd); return (
+              <tr className="border-b border-border bg-muted/40 text-xs font-semibold">
+                <td className="py-1 pl-8 pr-3" colSpan={2}>Soma dos itens <span className="font-normal text-muted-foreground">({s.preenchidos} de {itens.length} preenchidos)</span></td>
+                <td className="px-3 py-1 text-right tabular-nums">{numero(s.soma)}</td>
+              </tr>
+            ); })()}
             </Fragment>
             );
           })}
@@ -70,7 +88,7 @@ export default function UberabaQuantidadeCredenciamentos() {
           </tr>
         </tfoot>
       </table>
-      <p className="px-3 pt-2 text-xs text-muted-foreground">Autorizado começa pelo Limite de cada tipo; apague o campo para restaurá-lo. Especialidades médicas conforme o Guia Médico do Bensaúde (consultado em 17/11/2026). {notasAgrupamento().join(" ")}</p>
+      <p className="px-3 pt-2 text-xs text-muted-foreground">Autorizado começa pelo Limite de cada tipo; apague o campo para restaurá-lo. As quantidades digitadas nas linhas abertas ficam salvas neste navegador e somam só na linha "Soma dos itens". Especialidades médicas conforme o Guia Médico do Bensaúde (consultado em 17/11/2026). {notasAgrupamento().join(" ")}</p>
     </div>
   );
 }
