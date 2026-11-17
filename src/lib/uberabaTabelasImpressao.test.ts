@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { quadrosImpressao } from "./uberabaTabelasImpressao";
+import { buildTabelasImpressaoPdf, paginasImpressao, quadrosImpressao } from "./uberabaTabelasImpressao";
 import { FATORES_PADRAO, INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO, lerRotulos, operadoraDe, tabelaNet, tabelaVenda, formatarCentavos } from "./uberabaTabelasComerciais";
 
 const dados = { indices: INDICES_PADRAO, fatores: FATORES_PADRAO, indicadores: INDICADORES_PADRAO_POR_FRENTE, rotulos: lerRotulos(undefined) };
@@ -22,5 +22,10 @@ describe("impressão das Tabelas", () => {
     expect(qs.map((q) => q.sigla)).toEqual(["PCA", "PME ADM.", "PCE ADM.", "PJ+"]);
     const venda = tabelaVenda(dados.indices.pcaAdm, dados.fatores.pcaAdm);
     expect(qs[0].linhas[9][2]).toBe(formatarCentavos(venda[9].apartamentoCentavos));
+  });
+  it("imprime sempre duas páginas: Venda e depois Net", () => {
+    const paginas = paginasImpressao(dados);
+    expect(paginas.map((p) => p.modo)).toEqual(["venda", "net"]);
+    expect(buildTabelasImpressaoPdf(null, null, paginas).getNumberOfPages()).toBe(2);
   });
 });

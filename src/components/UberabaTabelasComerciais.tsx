@@ -5,7 +5,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Pin, Printer } from 
 import PdfPreview from "@/components/PdfPreview";
 import { loadTimbrado } from "@/lib/pdfTimbrado";
 import { loadMarcaAxis } from "@/lib/pdfMarcaAxis";
-import { buildTabelasImpressaoPdf, quadrosImpressao } from "@/lib/uberabaTabelasImpressao";
+import { buildTabelasImpressaoPdf, paginasImpressao } from "@/lib/uberabaTabelasImpressao";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, formatarFator, gravarFatores, lerFatores, parseFator, type Fatores, FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, parametrosDe, vidasTexto, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, gravarPadraoRotulos, gravarRotulos, lerIndicadores, lerIndices, lerPadraoRotulos, lerRotulos, normalizarRotulo, ROTULO_MAX, parseIndicador, parseIndice, tabelaIndexada, tabelaNet, tabelaVenda, operadoraDe, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices, type Rotulos, type RotulosPorFrente } from "@/lib/uberabaTabelasComerciais";
@@ -31,9 +31,9 @@ const ChavePreco = ({ modo, onModo, operadora }: { modo: ModoPreco; onModo: (m: 
   </span>
 );
 
-// Imprime as quatro tabelas no modo exibido (Venda ou Net), com os mesmos cálculos da tela.
-const BotaoImprimir = ({ modo, onClick }: { modo: ModoPreco; onClick: () => void }) => {
-  const rotulo = `Imprimir tabelas ${modo === "net" ? "Net" : "Venda"}`;
+// Imprime as quatro tabelas em duas páginas (Venda e Net), com os mesmos cálculos da tela.
+const BotaoImprimir = ({ onClick }: { onClick: () => void }) => {
+  const rotulo = "Imprimir tabelas Venda e Net";
   return (
     <button type="button" onClick={onClick} aria-label={rotulo} title={rotulo}
       className="mr-1 inline-flex h-5 w-5 items-center justify-center rounded-sm align-middle opacity-70 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -235,7 +235,7 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
       </div>
       <ParametrosLinha id={f.id} />
       <section className="comercial-secao" aria-label={`Tabelas ${f.titulo}`}>
-        <p className="comercial-secao-titulo">Tabelas{precos.visivel && <><ChavePreco modo={modo} onModo={onModo} operadora={operadora} /><BotaoImprimir modo={modo} onClick={onImprimir} /></>}<BotaoSecao t={precos} nome="Tabelas" /></p>
+        <p className="comercial-secao-titulo">Tabelas{precos.visivel && <><ChavePreco modo={modo} onModo={onModo} operadora={operadora} /><BotaoImprimir onClick={onImprimir} /></>}<BotaoSecao t={precos} nome="Tabelas" /></p>
         {precos.visivel && (
           <div className="comercial-precos" data-modo={modo}>
             <Tabela linhas={linhas} apartamento={apartamento} fator={fator} />
@@ -283,7 +283,7 @@ const UberabaTabelasComerciais = () => {
   const variaveis: ApartamentoToggle = { visivel: variaveisVisivel, alternar: () => setVariaveisVisivel((v) => !v) };
   // Preço de Venda por padrão; a chave vale para as quatro tabelas e só muda a exibição.
   const [modo, setModo] = useState<ModoPreco>("venda");
-  const [imprimindo, setImprimindo] = useState<ModoPreco | null>(null);
+  const [imprimindo, setImprimindo] = useState(false);
   const [indicadores, setIndicadores] = useState<IndicadoresPorFrente>(() => lerIndicadores());
   const alterarIndicador = (id: FrenteId, campo: CampoIndicador, v: number) => setIndicadores((atual) => {
     const novo = { ...atual, [id]: { ...atual[id], [campo]: v } };
@@ -308,13 +308,13 @@ const UberabaTabelasComerciais = () => {
   return (
     <section className="comercial-presentation" aria-label="Tabelas comerciais">
       <div className={`comercial-grid ${variaveisVisivel ? "" : "indicadores-recolhidos"}`}>
-        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} fator={fatores[f.id]} onFator={(v) => alterarFator(f.id, v)} apartamento={apartamento} precos={precos} variaveis={variaveis} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} padroes={padroes[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} onGravarPadrao={() => gravarPadrao(f.id)} modo={modo} onModo={setModo} onImprimir={() => setImprimindo(modo)} />)}
+        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} fator={fatores[f.id]} onFator={(v) => alterarFator(f.id, v)} apartamento={apartamento} precos={precos} variaveis={variaveis} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} padroes={padroes[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} onGravarPadrao={() => gravarPadrao(f.id)} modo={modo} onModo={setModo} onImprimir={() => setImprimindo(true)} />)}
       </div>
       {imprimindo && (
         <PdfPreview
-          build={async () => buildTabelasImpressaoPdf(await loadTimbrado(), await loadMarcaAxis(), imprimindo, quadrosImpressao(imprimindo, { indices, fatores, indicadores, rotulos }))}
-          fileName={`Uberaba_Tabelas_${imprimindo === "net" ? "Net" : "Venda"}.pdf`}
-          onClose={() => setImprimindo(null)}
+          build={async () => buildTabelasImpressaoPdf(await loadTimbrado(), await loadMarcaAxis(), paginasImpressao({ indices, fatores, indicadores, rotulos }))}
+          fileName="Uberaba_Tabelas_Venda_e_Net.pdf"
+          onClose={() => setImprimindo(false)}
         />
       )}
     </section>
