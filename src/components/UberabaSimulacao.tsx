@@ -8,6 +8,7 @@ import UberabaSimulacaoFaixas from '@/components/UberabaSimulacaoFaixas';
 import BlocoRecolhido from '@/components/BlocoRecolhido';
 import UberabaMemoriaCalculoButton from '@/components/UberabaMemoriaCalculoButton';
 import UberabaResultadoImprimirButton from '@/components/UberabaResultadoImprimirButton';
+import UberabaDespesasImprimirButton from '@/components/UberabaDespesasImprimirButton';
 import { EVENTO_TABELAS_COMERCIAIS, lerIndicadores, lerIndices } from '@/lib/uberabaTabelasComerciais';
 import { simularPorBase, BASES_DESPESA, premissaDespesa, baseDespesaDos, type BaseDespesa, replicarParametro, PADRAO_PARAMETRO, validarDespesaMedia, validarCopart, validarPercentual, coparticipacaoVidaMes, receitaVidaMes, netVidaMes, type ParametroReplicavel, type CenarioAgenciamento, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, resumoSimulacao, memoriaCalculo, ENTES_RESULTADO, resultadoTotalEnte, type IndicadorEnte, type ConfigSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
@@ -166,7 +167,7 @@ export default function UberabaSimulacao() {
     <BlocoRecolhido titulo="Resultado por Ente" className="mt-4"><div className="space-y-3 p-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">Clique no indicador para ver por modalidade; passe o mouse para ver a memória de cálculo.</p>
-        <div className="flex shrink-0 items-center gap-2"><UberabaResultadoImprimirButton cenarios={cenarios} nomes={nomes} indices={indices} indicadores={indicadores} /><UberabaMemoriaCalculoButton cenarios={cenarios} nomes={nomes} /></div>
+        <div className="flex shrink-0 items-center gap-2"><UberabaResultadoImprimirButton cenarios={cenarios} nomes={nomes} indices={indices} indicadores={indicadores} /><UberabaMemoriaCalculoButton cenarios={cenarios} nomes={nomes} /><UberabaDespesasImprimirButton configuracoes={configuracoes} nomes={nomes} indices={indices} indicadores={indicadores} /></div>
       </div>
       <div className="flex flex-wrap items-center gap-2 text-sm"><span className="font-medium text-foreground">Calcular despesas assistenciais por</span>
         <div role="group" aria-label="Calcular despesas assistenciais por" className="inline-flex overflow-hidden rounded-md border border-border">
