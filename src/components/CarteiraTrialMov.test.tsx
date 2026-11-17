@@ -4,10 +4,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const api = vi.hoisted(() => ({ rpc: vi.fn(), pages: vi.fn() }));
 vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} });
 vi.mock("@/lib/hostingerClient", () => ({ hostinger: { rpc: api.rpc } }));
+const acesso = vi.hoisted(() => ({ menus: new Set<string>() }));
+vi.mock("@/hooks/useAxisAccess", () => ({ useAxisAccess: () => ({ can: (m: string) => acesso.menus.has(m) }) }));
+vi.mock("@/components/EvolucaoProdutos", () => ({ default: ({ somenteCidades }: { somenteCidades?: boolean }) => <div data-testid="evolucao" data-cidades={String(Boolean(somenteCidades))} /> }));
 import CarteiraTrialMov from "./CarteiraTrialMov";
 
 beforeEach(() => {
-  api.rpc.mockReset(); api.pages.mockReset();
+  api.rpc.mockReset(); api.pages.mockReset(); acesso.menus.clear();
   api.pages.mockResolvedValue({ data: [{ tipo: "T+", data: "2026-10-01", cpf: "123", mat: "2", mat_anterior: "1", saida: "2026-09-30", entrada: "2026-10-01", tipo_reentrada: "Pura" }], error: null });
   api.rpc.mockImplementation((name: string) => {
     if (name === "carteira_movimentacao_totais") return Promise.resolve({ data: [{ vendas: 11771, cancelamentos: 8049, reativacoes: 1179, entradas_transferencia: 2043, saidas_transferencia: 2019 }], error: null });
@@ -66,5 +69,20 @@ describe("consultas da Movimentação sob demanda", () => {
     expect(api.rpc.mock.calls.filter(([name]) => name === "carteira_trial_geo")).toHaveLength(3);
     expect(api.rpc.mock.calls.filter(([name]) => name === "carteira_movimentacao_totais")).toHaveLength(1);
     expect(api.pages).not.toHaveBeenCalled();
+  });
+});
+
+describe("ícone Cidades", () => {
+  it("fica oculto sem acesso a Evolução Produtos", () => {
+    render(<CarteiraTrialMov />);
+    expect(screen.queryByRole("button", { name: "Cidades" })).toBeNull();
+  });
+
+  it("abre a visão Cidade (UF) da Evolução Produtos sem consultar a Movimentação", async () => {
+    acesso.menus.add("Sinistralidade · Evolução Produtos");
+    render(<CarteiraTrialMov />);
+    fireEvent.click(screen.getByRole("button", { name: "Cidades" }));
+    expect((await screen.findByTestId("evolucao")).getAttribute("data-cidades")).toBe("true");
+    expect(api.rpc).not.toHaveBeenCalled();
   });
 });

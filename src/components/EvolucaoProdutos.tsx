@@ -475,12 +475,12 @@ function gerarXlsxCidades(linhas: LinhaModeloCidade[], parametros: [string, stri
   XLSX.writeFile(wb, arquivo);
 }
 
-function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
+function TelaEvolucaoProdutos({ ultima, somenteCidades = false }: { ultima: AnoMes; somenteCidades?: boolean }) {
   const [visao, setVisao] = useState<Visao>("Vidas");
   const [modo, setModo] = useState<Modo>("Total");
   const [periodo, setPeriodo] = useState<Periodo>(() => periodoAplicado ?? periodoPadrao(ultima));
   const [produto, setProduto] = useState<TipoProduto | null>(null);
-  const [agrupar, setAgrupar] = useState<Agrupamento>("produto");
+  const [agrupar, setAgrupar] = useState<Agrupamento>(somenteCidades ? "cidade" : "produto");
   const [tipoCidade, setTipoCidade] = useState<TipoPlano | null>(null);
   const [vidasCid, setVidasCid] = useState<{ k: string; linhas: LinhaVidasCidade[] } | null>(null);
   const [finCid, setFinCid] = useState<{ k: string; linhas: LinhaFinanceiraCidade[] } | null>(null);
@@ -642,7 +642,7 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
             <X className="h-4 w-4" />
           </Button>
         </form>
-        <div role="group" aria-label="Agrupar o grid por" className="flex items-center gap-1 rounded-full border border-border bg-card p-1.5 shadow-sm">
+        {!somenteCidades && <div role="group" aria-label="Agrupar o grid por" className="flex items-center gap-1 rounded-full border border-border bg-card p-1.5 shadow-sm">
           {AGRUPAMENTOS.map((a) => (
             <Button
               key={a.id}
@@ -654,7 +654,7 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
               {a.rotulo}
             </Button>
           ))}
-        </div>
+        </div>}
         <div
           role="group"
           aria-label="Total ou per capita"
@@ -751,7 +751,8 @@ function TelaEvolucaoProdutos({ ultima }: { ultima: AnoMes }) {
 }
 
 /** Abre no último mês com despesas acima de R$ 20 milhões (competência válida da sinistralidade). */
-const EvolucaoProdutos = () => {
+/** somenteCidades: abre direto na visão Cidade (UF), sem a troca de agrupamento (atalho da Movimentação). */
+const EvolucaoProdutos = ({ somenteCidades = false }: { somenteCidades?: boolean } = {}) => {
   const [ultima, setUltima] = useState<AnoMes | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const buscar = useCallback(() => {
@@ -761,7 +762,7 @@ const EvolucaoProdutos = () => {
       .catch((e) => setErro(e instanceof Error ? e.message : String(e)));
   }, []);
   useEffect(() => { buscar(); }, [buscar]);
-  if (ultima) return <TelaEvolucaoProdutos ultima={ultima} />;
+  if (ultima) return <TelaEvolucaoProdutos ultima={ultima} somenteCidades={somenteCidades} />;
   return (
     <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
       {erro ? <Aviso erro={erro} onRetry={buscar} /> : (

@@ -5,10 +5,13 @@ import { podeCalcularMovimentacao, resumoMovimentacao } from "@/lib/movimentacao
 import { normalizarVendedor } from "@/lib/vendedorTransferencia";
 import { datasVidasIndicadores, mesesMovimentacao, janelaMesesMovimentacao, somarTotaisMovimentacao, fluxoMensalMovimentacao, fechamentosMensaisMovimentacao, combinarFluxosEVidas, type VidasMensais, type FluxoMensal, type TotaisMovimentacao } from "@/lib/movimentacaoCarga";
 import MovimentacaoCrescimentoMensal from "@/components/MovimentacaoCrescimentoMensal";
+import EvolucaoProdutos from "@/components/EvolucaoProdutos";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useAxisAccess } from "@/hooks/useAxisAccess";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, X, UserPlus, UserMinus, Scale, RotateCcw, ArrowRightLeft, LogIn, LogOut, Users, Eye, EyeOff, LoaderCircle, ChevronLeft, ChevronRight, TrendingUp } from "lucide-react";
+import { Search, X, UserPlus, UserMinus, Scale, RotateCcw, ArrowRightLeft, LogIn, LogOut, Users, Eye, EyeOff, LoaderCircle, ChevronLeft, ChevronRight, TrendingUp, Building2 } from "lucide-react";
 
 type Row = Record<string, any>;
 type Tipo = "Entrada" | "Reativação" | "Saída" | "T+" | "T-";
@@ -58,6 +61,10 @@ export default function CarteiraTrialMov() {
   const [cortado, setCortado] = useState(false);
   const [vidas, setVidas] = useState<{ ant: number | null; fin: number | null }>({ ant: null, fin: null });
   const [sel, setSel] = useState<Sel>(null);
+  const [cidadesAberto, setCidadesAberto] = useState(false);
+  // Atalho para Evolução Produtos › Cidade (UF): só para quem tem acesso a esse menu.
+  const { can } = useAxisAccess();
+  const podeCidades = can("Sinistralidade · Evolução Produtos") || can("Evolução Produtos");
   const [depuracaoAberta, setDepuracaoAberta] = useState(false);
   const [totais, setTotais] = useState<TotaisMovimentacao | null>(null);
   const [mensal, setMensal] = useState<FluxoMensal[]>([]);
@@ -292,6 +299,9 @@ export default function CarteiraTrialMov() {
         <label className="text-xs text-muted-foreground">Até<Input type="date" value={f.ate} onChange={(e) => setF({ ...f, ate: e.target.value })} className="w-40" /></label>
         <Button onClick={buscar} disabled={loading || !podeCalcularMovimentacao(f)}><Search className="h-4 w-4 mr-1" />Calcular</Button>
         <Button variant="outline" onClick={limpar} disabled={loading}><X className="h-4 w-4 mr-1" />Limpar</Button>
+        {podeCidades && <TooltipProvider delayDuration={150}><Tooltip><TooltipTrigger asChild>
+          <Button variant="outline" size="icon" aria-label="Cidades" onClick={() => setCidadesAberto(true)}><Building2 className="h-4 w-4" /></Button>
+        </TooltipTrigger><TooltipContent>Cidades (UF) · Evolução Produtos</TooltipContent></Tooltip></TooltipProvider>}
         {ap && janelaMeses && !loading && !mensalLoading && totais && <div className="flex min-w-0 basis-full justify-center sm:basis-72 sm:flex-1" role="group" aria-label="Período dos indicadores">
           <nav aria-label="Navegação dos meses" className="flex max-w-full flex-wrap items-center justify-center gap-0.5 rounded-full border border-border bg-card p-1.5 shadow-sm">
           <Button variant="ghost" className={`h-8 shrink-0 rounded-full px-3 text-sm shadow-none ${!mesSelecionado ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "text-foreground/70"}`} aria-pressed={!mesSelecionado} onClick={() => selecionarMes(null)}>Período completo</Button>
@@ -369,6 +379,12 @@ export default function CarteiraTrialMov() {
           </table>
         </div>
       )}
+      {podeCidades && <Dialog open={cidadesAberto} onOpenChange={setCidadesAberto}>
+        <DialogContent aria-describedby={undefined} className="flex h-[92vh] w-[95vw] max-w-none flex-col gap-3 p-4">
+          <DialogTitle className="pr-8 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Cidades (UF) · Evolução Produtos</DialogTitle>
+          <div className="min-h-0 flex-1">{cidadesAberto && <EvolucaoProdutos somenteCidades />}</div>
+        </DialogContent>
+      </Dialog>}
     </div>
   );
 }
