@@ -30,8 +30,8 @@
 - Keep localized northern state-border attenuation in a display-only helper matching shared municipal arcs; never alter original polygons, projection fitting, MAA membership or totals.
 - Derive the MAA locator rectangle from the main projection's inverse viewport corners, so the overview always represents the displayed region.
 - Apply explicit MAA municipality inclusions in the geometry helper before boundary generation; keep disconnected exterior rings and omit enclosed holes so all included municipalities receive an external outline.
-- Reuse the MAA geometry for both the outline-only inline toggle and focused magnifier; only focused mode changes projection, colors and labels, so the eye toggle preserves the original map.
-- Render the MAA magnifier within the geographic screen's shared date/total layout rather than a fullscreen overlay, so opening and returning preserve the selected date and inline map state.- Render the simplified Implantação stage from a tested typed data helper where undefined dates/owners display "Em definição"; keep Operação Iniciada as expected result.
+- Área Geográfica exposes MAA only through the outline-only eye toggle (no magnifier screen); reuse the shared MAA geometry so toggling preserves the original map.
+- Render the simplified Implantação stage from a tested typed data helper where undefined dates/owners display "Em definição"; keep Operação Iniciada as expected result.
 - Keep the Uberaba presentation route as static 16:9 screenshot snapshots listed in src/assets/apresentacao/slides.json; it must never import live screens, so the original project stays untouched.
 - Share the frozen-slide PDF exporter between the project header and presentation; write exactly one full-bleed 16:9 page per decoded snapshot and abort on missing images, avoiding browser print settings and partial exports.
 - Carteira › Painel loads Hostinger data per selected cd_matricula only; its status/expense and alternative-code composition rules live in tested src/lib/painelBeneficiario.ts.

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, Eye, EyeOff, Hospital, Loader2, Map as MapIcon, Scissors, Search, Slash, X } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Hospital, Loader2, Map as MapIcon, Scissors, Slash, X } from "lucide-react";
 import { geographicToday, useCarteiraTrialGeo } from "@/hooks/useCarteiraTrialGeo";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 import { StateHeatMap } from "@/components/StateHeatMap";
@@ -17,7 +17,7 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
   const setData = onDateChange ?? setLocalDate;
   const { data: rows, isLoading: loading, error: queryError } = useCarteiraTrialGeo(data);
   const error = queryError?.message;
-  const [sel, setSel] = useState<"SP" | "MG" | "MS" | "GO" | "BRASIL" | "CENTRO" | null>(null);
+  const [sel, setSel] = useState<"SP" | "MG" | "MS" | "GO" | "BRASIL" | null>(null);
   const [showMAA, setShowMAA] = useState(false);
   const [cropOpen, setCropOpen] = useState(false);
   const [showHospitals, setShowHospitals] = useState(false);
@@ -39,7 +39,7 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
 
   const cidadesHospitalOrdenadas = useMemo(() => hospitalListType ? listarHospitaisPorTipo(cityTotalsByUF, hospitalListType) : [], [cityTotalsByUF, hospitalListType]);
 
-  if (sel && sel !== "CENTRO") {
+  if (sel) {
     return (
       <div className={embedded ? "h-full min-h-[400px] bg-background flex flex-col" : "fixed inset-0 z-50 bg-background flex flex-col"}>
         <div className="flex items-center justify-between px-4 py-2 border-b border-border">
@@ -67,15 +67,10 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
       </div>;
   const botaoMapa = toolbarTarget ? "h-12 w-12 [&_svg]:size-6" : "h-9 w-9 [&_svg]:size-5";
   const mapControls = <div className="flex shrink-0 items-center gap-2">
-    <Button type="button" variant="outline" size="icon" title="Mapa Área Atuação (MAA)" aria-label="Mapa Área Atuação (MAA)" onClick={() => setSel("CENTRO")} className={botaoMapa}><Search /></Button>
     <TooltipProvider delayDuration={150}><Tooltip><TooltipTrigger asChild>
       <Button type="button" variant={showMAA ? "secondary" : "outline"} size="icon" aria-label={showMAA ? "Ocultar MAA" : "Mostrar MAA"} aria-pressed={showMAA} onClick={() => setShowMAA((visible) => !visible)} className={botaoMapa}>{showMAA ? <Eye /> : <EyeOff />}</Button>
     </TooltipTrigger><TooltipContent>{showMAA ? "Ocultar MAA" : "Mostrar MAA"}</TooltipContent></Tooltip></TooltipProvider>
     <Button type="button" variant="outline" size="icon" title="Área de atuação recortada" aria-label="Área de atuação recortada" onClick={() => { setShowHospitals(false); setHospitalListType(null); setCropOpen(true); }} className={botaoMapa}><Scissors /></Button>
-  </div>;
-  const voltarMaa = <div className="flex shrink-0 items-center gap-3">
-    <Button type="button" variant="outline" onClick={() => setSel(null)} className={`${toolbarTarget ? "h-12 [&_svg]:size-6" : "h-9 [&_svg]:size-5"} shrink-0 gap-2 px-3`}><ArrowLeft />Voltar</Button>
-    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Mapa Área Atuação (MAA)</h3>
   </div>;
   const maxUF = Math.max(1, ...porUF.map((x) => x.total));
   // Lista compacta de vidas por estado: coluna estreita para o mapa ocupar o restante da tela.
@@ -105,10 +100,6 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
     <div className="h-full flex items-center justify-center text-muted-foreground text-sm"><Loader2 className="h-4 w-4 mr-2 animate-spin" />Carregando…</div>
   ) : error ? (
     <div className="p-4 text-destructive text-sm">Erro: {error}</div>
-  ) : sel === "CENTRO" ? (
-    <div className="h-full min-h-0 w-full p-2">
-      <StateHeatMap trialScale core ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} />
-    </div>
   ) : (
     <div className="flex h-full min-h-0 flex-col md:flex-row">
       {!mapOnly && listaEstados}
@@ -120,13 +111,12 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
 
   return (
     <section className="h-full flex flex-col min-h-0">
-      {toolbarTarget && createPortal(<>{dateControls}{sel !== "CENTRO" && mapControls}</>, toolbarTarget)}
+      {toolbarTarget && createPortal(<>{dateControls}{mapControls}</>, toolbarTarget)}
       <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         {!toolbarTarget && <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-border px-4 py-2">
-          {sel === "CENTRO" ? voltarMaa : !loading && !error ? mapControls : <span />}
+          {!loading && !error ? mapControls : <span />}
           {dateControls}
         </div>}
-        {toolbarTarget && sel === "CENTRO" && <div className="shrink-0 border-b border-border px-4 py-2">{voltarMaa}</div>}
         <div className="min-h-0 flex-1">{corpo}</div>
       </div>
       <Dialog open={cropOpen} onOpenChange={(open) => {
