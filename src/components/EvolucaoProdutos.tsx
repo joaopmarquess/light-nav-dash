@@ -255,8 +255,9 @@ function GradeCidadesTabela({ grade, fmt = fmtInt }: { grade: GradeCidades; fmt?
   // As praças (S. J. Rio Preto e Região) abrem recolhidas: só o subtotal de cada grupo aparece até o clique.
   const [abertos, setAbertos] = useState<Set<GrupoCidadeId>>(() => new Set());
   const alternar = (id: GrupoCidadeId) => setAbertos((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
-  const colunas = meses.length + 2;
   const somaPeriodo = total.periodo != null || grupos.some((g) => g.subtotal.periodo != null);
+  // Vidas não se somam no período: sem soma, a coluna Total não aparece.
+  const colunas = meses.length + (somaPeriodo ? 2 : 1);
   const thTotal = "rounded-lg px-2 py-1 text-sm font-bold tabular-nums";
   const comFora = meses.map((m, i) => ({ m, v: fora[i] })).filter((x) => x.v);
   const nCidades = grupos.reduce((s, g) => s + g.cidades.length, 0);
@@ -272,9 +273,11 @@ function GradeCidadesTabela({ grade, fmt = fmtInt }: { grade: GradeCidades; fmt?
             {meses.map((m) => (
               <th key={m.dataFim} scope="col" className="rounded-lg bg-primary px-2 py-1 text-sm font-semibold text-primary-foreground">{m.rotulo}</th>
             ))}
-            <th scope="col" title={somaPeriodo ? "Soma do período" : "Vidas não se somam no período"} className="rounded-lg bg-secondary px-2 py-1 text-sm font-bold text-secondary-foreground ring-1 ring-primary/40">
-              Total
-            </th>
+            {somaPeriodo && (
+              <th scope="col" title="Soma do período" className="rounded-lg bg-secondary px-2 py-1 text-sm font-bold text-secondary-foreground ring-1 ring-primary/40">
+                Total
+              </th>
+            )}
           </tr>
         </thead>
         {grupos.map((g, gi) => {
@@ -297,9 +300,11 @@ function GradeCidadesTabela({ grade, fmt = fmtInt }: { grade: GradeCidades; fmt?
                     <Valor v={v} fmt={fmt} />
                   </td>
                 ))}
-                <td className={`${thTotal} border border-primary/40 bg-secondary text-secondary-foreground`}>
-                  {somaPeriodo ? <Valor v={g.subtotal.periodo} fmt={fmt} /> : <SemSoma />}
-                </td>
+                {somaPeriodo && (
+                  <td className={`${thTotal} border border-primary/40 bg-secondary text-secondary-foreground`}>
+                    <Valor v={g.subtotal.periodo} fmt={fmt} />
+                  </td>
+                )}
               </tr>
               {aberto && g.cidades.map((c) => (
                 <tr key={`${c.uf}|${c.cidade}`}>
@@ -309,9 +314,11 @@ function GradeCidadesTabela({ grade, fmt = fmtInt }: { grade: GradeCidades; fmt?
                       <Valor v={v} fmt={fmt} />
                     </td>
                   ))}
-                  <td className={`${thTotal} border border-primary/30 bg-accent/60 text-foreground`}>
-                    {somaPeriodo ? <Valor v={c.linha.periodo} fmt={fmt} /> : <SemSoma />}
-                  </td>
+                  {somaPeriodo && (
+                    <td className={`${thTotal} border border-primary/30 bg-accent/60 text-foreground`}>
+                      <Valor v={c.linha.periodo} fmt={fmt} />
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -326,9 +333,11 @@ function GradeCidadesTabela({ grade, fmt = fmtInt }: { grade: GradeCidades; fmt?
                 <Valor v={v} claro fmt={fmt} />
               </td>
             ))}
-            <td className="rounded-lg bg-primary px-2 py-1.5 text-base font-bold tabular-nums text-primary-foreground ring-2 ring-primary/40 ring-offset-1 ring-offset-card">
-              {somaPeriodo ? <Valor v={total.periodo} claro fmt={fmt} /> : <SemSoma claro />}
-            </td>
+            {somaPeriodo && (
+              <td className="rounded-lg bg-primary px-2 py-1.5 text-base font-bold tabular-nums text-primary-foreground ring-2 ring-primary/40 ring-offset-1 ring-offset-card">
+                <Valor v={total.periodo} claro fmt={fmt} />
+              </td>
+            )}
           </tr>
         </tfoot>
       </table>
@@ -342,12 +351,14 @@ function GradeCidadesTabela({ grade, fmt = fmtInt }: { grade: GradeCidades; fmt?
 }
 
 // Grid mês × praça (S. J. Rio Preto, Região, Total Geral) no período e filtros aplicados, pronto para copiar ao Excel.
-function GridPracasDialog({ aberto, onAberto, grade, visao, fmt, titulo, periodo, filtros, razao, ansPermitido }: {
+function GridPracasDialog({ aberto, onAberto, grade, visao, fmt, titulo, periodo, filtros, razao, ansPermitido, ansLivre = false }: {
   aberto: boolean; onAberto: (v: boolean) => void; grade: GradeCidades | null; visao: Visao; fmt: Fmt; titulo: string; periodo: string; filtros: string;
   /** Sinistralidade ou per capita: o PDF não empilha as praças nem mostra variação percentual. */
   razao: boolean;
   /** "Incluir ANS" só com Vidas e Tipo/Produto em Todos (tested podeIncluirAns). */
   ansPermitido: boolean;
+  /** Aberto pela Movimentação: "Incluir ANS" liberado com qualquer filtro (a ANS segue sendo o total do Bensaúde). */
+  ansLivre?: boolean;
 }) {
   const linhas = useMemo(() => (grade ? gradePracasPorMes(grade, visao) : []), [grade, visao]);
   // A pré-visualização do PDF abre no lugar da janela e, ao fechar, a janela volta.
@@ -415,7 +426,7 @@ function GridPracasDialog({ aberto, onAberto, grade, visao, fmt, titulo, periodo
             {erroAns && <p className="text-sm text-destructive">{erroAns}</p>}
             <div className="flex items-center justify-end gap-2">
               <label className={`mr-auto flex items-center gap-2 text-sm ${ansPermitido ? "cursor-pointer" : "cursor-not-allowed text-muted-foreground"}`}
-                title={ansPermitido ? "Acrescenta ao PDF a coluna da ANS (Bench Vidas Mensal, Bensaúde, Plano de Saúde) e a diferença para o Total Geral" : "Disponível só em Vidas, com Tipo e Produto em Todos: a ANS tem apenas o total de Plano de Saúde do Bensaúde"}>
+                title={ansPermitido ? ansLivre ? "Acrescenta ao PDF a coluna da ANS (Bench Vidas Mensal, Bensaúde, Plano de Saúde: total da operadora, sem os filtros Tipo e Produto) e a diferença para o Total Geral" : "Acrescenta ao PDF a coluna da ANS (Bench Vidas Mensal, Bensaúde, Plano de Saúde) e a diferença para o Total Geral" : "Disponível só em Vidas, com Tipo e Produto em Todos: a ANS tem apenas o total de Plano de Saúde do Bensaúde"}>
                 <Checkbox checked={comAns} disabled={!ansPermitido} onCheckedChange={(v) => setIncluirAns(v === true)} aria-label="Incluir ANS no PDF" />
                 Incluir ANS
               </label>
@@ -746,7 +757,8 @@ function TelaEvolucaoProdutos({ ultima, somenteCidades = false, periodoFixo }: {
           titulo={emPerCapita ? `${visao} per capita por mês e praça` : `${visao} por mês e praça`}
           periodo={`${anoMesCampo(periodo.de)} a ${anoMesCampo(periodo.ate)}`}
           filtros={`Tipo: ${tipoCidade ?? "Todos"} · Produto: ${rotuloProduto ?? "Todos"}`} razao={visao === "Sinistralidade" || emPerCapita}
-          ansPermitido={podeIncluirAns({ visao: emPerCapita ? "per capita" : visao, tipo: tipoCidade, produto: rotuloProduto ?? null })} />
+          ansLivre={somenteCidades}
+          ansPermitido={somenteCidades || podeIncluirAns({ visao: emPerCapita ? "per capita" : visao, tipo: tipoCidade, produto: rotuloProduto ?? null })} />
       )}
     </div>
   );
