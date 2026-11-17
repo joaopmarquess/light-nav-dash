@@ -6,12 +6,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import PdfPreview from "@/components/PdfPreview";
 import { loadTimbrado } from "@/lib/pdfTimbrado";
 import { loadMarcaAxis } from "@/lib/pdfMarcaAxis";
-import { buildResultadoImpressaoPdf, paginasResultado } from "@/lib/uberabaResultadoImpressao";
-import type { CenarioAgenciamento } from "@/lib/uberabaSimulacao";
+import { buildResultadoImpressaoPdf, cenariosPorBaseDespesa, paginasResultado } from "@/lib/uberabaResultadoImpressao";
+import type { ConfigSimulacao } from "@/lib/uberabaSimulacao";
 import type { IndicadoresPorFrente, Indices } from "@/lib/uberabaTabelasComerciais";
 
-/** Ícone "Imprimir": uma folha com o resultado Contratual e outra com o Promocional, cada uma com os seus parâmetros. */
-export default function UberabaResultadoImprimirButton({ cenarios, nomes, indices, indicadores }: { cenarios: CenarioAgenciamento[]; nomes: string[]; indices: Indices; indicadores: IndicadoresPorFrente }) {
+/** Ícone "Imprimir": uma folha Contratual e outra Promocional, cada uma com os seus parâmetros e as despesas por Percentual e por Média Assist. */
+export default function UberabaResultadoImprimirButton({ configuracoes, nomes, indices, indicadores }: { configuracoes: ConfigSimulacao[]; nomes: string[]; indices: Indices; indicadores: IndicadoresPorFrente }) {
   const [aberto, setAberto] = useState(false);
   const rotulo = "Imprimir resultados Contratual e Promocional";
   return (
@@ -26,7 +26,7 @@ export default function UberabaResultadoImprimirButton({ cenarios, nomes, indice
       </Tooltip>
       {aberto && createPortal(
         <PdfPreview
-          build={async () => buildResultadoImpressaoPdf(await loadTimbrado(), await loadMarcaAxis(), cenarios, paginasResultado(cenarios, nomes, indices, indicadores))}
+          build={async () => buildResultadoImpressaoPdf(await loadTimbrado(), await loadMarcaAxis(), paginasResultado(cenariosPorBaseDespesa(configuracoes, indices, indicadores), nomes, indices, indicadores))}
           fileName="Resultado_por_Ente_Contratual_e_Promocional_Bensaude_Uberaba.pdf"
           onClose={() => setAberto(false)}
         />,

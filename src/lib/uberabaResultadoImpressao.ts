@@ -1,7 +1,8 @@
 /**
  * Impressão do Resultado por Ente (Simulação de resultados, Proj. Uberaba): uma folha por cenário (Contratual e Promocional),
  * cada uma com os parâmetros das tabelas (% sobre a Referência e % Spread), os parâmetros da simulação e os quadros dos entes.
- * Tudo vem dos mesmos cenários e quadros da tela (ENTES_RESULTADO), para a folha nunca divergir do que está exibido.
+ * Pedido de 17/11/2026: os quadros dos entes sempre mostram duas colunas, despesas por Percentual e por Média Assist.,
+ * qualquer que seja a chave na tela. Tudo vem de simularPorBase e dos quadros da tela (ENTES_RESULTADO), sem fórmulas próprias.
  */
 import jsPDF from "jspdf";
 import autoTable, { type Styles } from "jspdf-autotable";
@@ -10,8 +11,8 @@ import { attachTimbrado, TIMBRADO_RAZAO_SOCIAL } from "@/lib/pdfTimbrado";
 import { textoPdf } from "@/lib/uberabaPropostaComercialPdf";
 import { MODELO_INDICADORES, type IndicadoresPorFrente, type Indices } from "@/lib/uberabaTabelasComerciais";
 import {
-  BASES_DESPESA, baseDespesaDos, ENTES_RESULTADO, FRENTE_DO_PRODUTO, inteiroSimulacao, numeroSimulacao, parametrosMemoriaCalculo, percentualSimulacao, premissaDespesa, resumoSimulacao,
-  type CenarioAgenciamento,
+  BASES_DESPESA, ENTES_RESULTADO, FRENTE_DO_PRODUTO, inteiroSimulacao, numeroSimulacao, parametrosMemoriaCalculo, percentualSimulacao, premissaDespesa, resumoSimulacao,
+  simularPorBase, type BaseDespesa, type CenarioAgenciamento, type ConfigSimulacao,
 } from "@/lib/uberabaSimulacao";
 
 export type LinhaTabelaResultado = { modalidade: string; sobreReferencia: number; spread: number; spreadPara: "ADMINISTRADORA" | "AGENCIADORA"; agenciamento: number; adesao: number; operadora: number };
@@ -19,14 +20,22 @@ export type PaginaResultado = {
   rotulo: string;
   tabelas: LinhaTabelaResultado[];
   parametros: ReturnType<typeof parametrosMemoriaCalculo>;
-  entes: { titulo: string; linhas: { label: string; valor: number; destaque: boolean }[] }[];
+  /** Bases da despesa, na ordem das colunas dos quadros (Percentual, Média Assist.). */
+  bases: { id: BaseDespesa; rotulo: string }[];
+  /** `valores` na ordem de `bases`. */
+  entes: { titulo: string; linhas: { label: string; valores: number[]; destaque: boolean }[] }[];
 };
 
+/** Cenários Contratual e Promocional calculados em cada base da despesa, com os mesmos parâmetros da tela. */
+export function cenariosPorBaseDespesa(configuracoes: ConfigSimulacao[], indices: Indices, indicadores: IndicadoresPorFrente): Record<BaseDespesa, CenarioAgenciamento[]> {
+  return Object.fromEntries(BASES_DESPESA.map((b) => [b.id, simularPorBase(configuracoes, indices, indicadores, b.id)])) as Record<BaseDespesa, CenarioAgenciamento[]>;
+}
+
 /** Uma página por cenário, na ordem da tela (Contratual, Promocional). Percentuais das tabelas em fração (0,95 = 95%). */
-export function paginasResultado(cenarios: CenarioAgenciamento[], nomes: string[], indices: Indices, indicadores: IndicadoresPorFrente): PaginaResultado[] {
-  return cenarios.map((c) => {
+export function paginasResultado(porBase: Record<BaseDespesa, CenarioAgenciamento[]>, nomes: string[], indices: Indices, indicadores: IndicadoresPorFrente): PaginaResultado[] {
+  return porBase.percentual.map((c, ci) => {
     const parametros = parametrosMemoriaCalculo([c], nomes);
-    const total = resumoSimulacao(c.resultados);
+    const totais = BASES_DESPESA.map((b) => resumoSimulacao(porBase[b.id][ci].resultados));
     return {
       rotulo: c.rotulo,
       tabelas: c.resultados.map((r, i) => {
@@ -42,7 +51,8 @@ export function paginasResultado(cenarios: CenarioAgenciamento[], nomes: string[
         };
       }),
       parametros,
-      entes: ENTES_RESULTADO.map((e) => ({ titulo: e.titulo, linhas: e.linhas.map((l) => ({ label: l.label, valor: l.valor(total), destaque: !!l.destaque })) })),
+      bases: BASES_DESPESA,
+      entes: ENTES_RESULTADO.map((e) => ({ titulo: e.titulo, linhas: e.linhas.map((l) => ({ label: l.label, valores: totais.map((t) => l.valor(t)), destaque: !!l.destaque })) })),
     };
   });
 }
@@ -59,12 +69,11 @@ const n = numeroSimulacao;
 const p = percentualSimulacao;
 
 /** A4 retrato, uma folha por cenário, com timbrado e marca do AXIS (documento interno), cores escuras para preto e branco. */
-export function buildResultadoImpressaoPdf(timbrado: string | null, marca: string | null, cenarios: CenarioAgenciamento[], paginas: PaginaResultado[], geradoEm = new Date()): jsPDF {
+export function buildResultadoImpressaoPdf(timbrado: string | null, marca: string | null, paginas: PaginaResultado[], geradoEm = new Date()): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   attachTimbrado(doc, timbrado, { semRazaoSocial: true });
   const pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
   const mL = 16, mR = 16, right = pageW - mR, w = pageW - mL - mR;
-  const despesa = BASES_DESPESA.find((b) => b.id === baseDespesaDos(cenarios))!.rotulo.toLowerCase();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fim = () => (doc as any).lastAutoTable.finalY as number;
   const estilos = (fonte: number) => ({
@@ -81,6 +90,7 @@ export function buildResultadoImpressaoPdf(timbrado: string | null, marca: strin
     return y + 4;
   };
   const col0: Partial<Styles> = { halign: "left", fontStyle: "bold" };
+  const fundo = (d: boolean): RGB | false => (d ? DESTAQUE : false);
 
   paginas.forEach((pg, pi) => {
     if (pi > 0) doc.addPage();
@@ -88,7 +98,7 @@ export function buildResultadoImpressaoPdf(timbrado: string | null, marca: strin
     doc.setFont("helvetica", "bold"); doc.setFontSize(15); doc.setTextColor(...TINTA);
     doc.text(textoPdf(`RESULTADO POR ENTE · ${pg.rotulo.toUpperCase()}`), pageW / 2, y, { align: "center" });
     doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(...SECUNDARIO);
-    doc.text(textoPdf(`Bensaúde|Uberaba · Simulação de resultados · agenciamento ${pg.rotulo.toLowerCase()} · despesas por ${despesa}`), pageW / 2, y + 5, { align: "center" });
+    doc.text(textoPdf(`Bensaúde|Uberaba · Simulação de resultados · agenciamento ${pg.rotulo.toLowerCase()} · despesas por percentual e por média assist.`), pageW / 2, y + 5, { align: "center" });
     y += 11;
 
     y = subtitulo("Parâmetros das tabelas", y);
@@ -127,19 +137,21 @@ export function buildResultadoImpressaoPdf(timbrado: string | null, marca: strin
       if (col === 0 && i > 0) linhaY = proxima + 4;
       const x = mL + col * (cw + gap);
       autoTable(doc, {
-        ...estilos(8.8), startY: linhaY, margin: { left: x, right: pageW - x - cw }, tableWidth: cw,
-        head: [[{ content: e.titulo, colSpan: 2, styles: { halign: "center" as const, fontSize: 9.5 } }]],
+        startY: linhaY, margin: { left: x, right: pageW - x - cw }, tableWidth: cw,
+        ...estilos(7.8),
+        head: [[{ content: e.titulo, colSpan: 1 + pg.bases.length, styles: { halign: "center" as const, fontSize: 9.5 } }],
+          [{ content: "Indicador", styles: { halign: "left" as const, fontSize: 7.4 } }, ...pg.bases.map((b) => ({ content: textoPdf(`Despesa ${b.rotulo}`), styles: { fontSize: 7.4 } }))]],
         body: e.linhas.map((l) => [
-          { content: textoPdf(l.label), styles: { halign: "left" as const, fontStyle: l.destaque ? ("bold" as const) : ("normal" as const), fillColor: l.destaque ? DESTAQUE : false } },
-          { content: n(l.valor), styles: { fontStyle: l.destaque ? ("bold" as const) : ("normal" as const), fillColor: l.destaque ? DESTAQUE : false, textColor: l.valor < 0 ? NEGATIVO : TEXTO } },
+          { content: textoPdf(l.label), styles: { halign: "left" as const, fontStyle: l.destaque ? ("bold" as const) : ("normal" as const), fillColor: fundo(l.destaque) } },
+          ...l.valores.map((v) => ({ content: n(v), styles: { fontStyle: l.destaque ? ("bold" as const) : ("normal" as const), fillColor: fundo(l.destaque), textColor: v < 0 ? NEGATIVO : TEXTO } })),
         ]),
-        columnStyles: { 1: { cellWidth: 32 } },
+        columnStyles: { 1: { cellWidth: 24 }, 2: { cellWidth: 24 } },
       });
       proxima = Math.max(proxima, fim());
     });
     y = proxima + 5;
     doc.setFont("helvetica", "italic"); doc.setFontSize(7.5); doc.setTextColor(...SECUNDARIO);
-    const notas = [premissaDespesa(baseDespesaDos(cenarios)), "Faturamento cumulativo de janeiro a dezembro, sem cancelamentos ou reajustes; acomodação Enfermaria. Simulação de proposta comercial, não aprovação ou resultado realizado."];
+    const notas = [...pg.bases.map((b) => premissaDespesa(b.id)), "Faturamento cumulativo de janeiro a dezembro, sem cancelamentos ou reajustes; acomodação Enfermaria. Simulação de proposta comercial, não aprovação ou resultado realizado."];
     for (const t of notas) for (const l of doc.splitTextToSize(textoPdf(t), w) as string[]) { doc.text(l, mL, y); y += 3.2; }
   });
 
