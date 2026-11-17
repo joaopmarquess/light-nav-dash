@@ -1,7 +1,7 @@
 import { Fragment, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { NOTA_PEDIATRICA, carregarAutorizados, itensExibidos, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
+import { carregarAutorizados, itensExibidos, notasAgrupamento, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
 
 const numero = (v: number) => v.toLocaleString("pt-BR");
 
@@ -70,7 +70,7 @@ export default function UberabaQuantidadeCredenciamentos() {
           </tr>
         </tfoot>
       </table>
-      <p className="px-3 pt-2 text-xs text-muted-foreground">Autorizado começa pelo Limite de cada tipo; apague o campo para restaurá-lo. Especialidades médicas conforme o Guia Médico do Bensaúde (consultado em 17/11/2026). {NOTA_PEDIATRICA}</p>
+      <p className="px-3 pt-2 text-xs text-muted-foreground">Autorizado começa pelo Limite de cada tipo; apague o campo para restaurá-lo. Especialidades médicas conforme o Guia Médico do Bensaúde (consultado em 17/11/2026). {notasAgrupamento().join(" ")}</p>
     </div>
   );
 }

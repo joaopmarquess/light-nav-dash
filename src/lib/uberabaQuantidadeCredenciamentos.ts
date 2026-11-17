@@ -93,8 +93,26 @@ export function agruparPediatricas(itens: ItemCredenciamento[]): ItemExibidoCred
     return nomes.has(ped) ? { ...i, nome: `${i.nome}*`, inclui: [i.nome, ped] } : i;
   });
 }
+/** Agrupamentos informados pelo Dênis (17/11/2026): Clínica Médica fica dentro de Clínico Geral, marcado com "**". */
+export const AGRUPAMENTOS_ESPECIALIDADES: { alvo: string; inclui: string[]; nota: string }[] = [
+  { alvo: "Clínico Geral", inclui: ["Clínica Médica"], nota: "** Inclui também Clínica Médica." },
+];
+function agruparFixos(itens: ItemExibidoCredenciamento[]): ItemExibidoCredenciamento[] {
+  const nomes = new Set(itens.map((i) => i.nome));
+  const ativos = AGRUPAMENTOS_ESPECIALIDADES.filter((g) => nomes.has(g.alvo) && g.inclui.some((n) => nomes.has(n)));
+  const removidos = new Set(ativos.flatMap((g) => g.inclui));
+  return itens.filter((i) => !removidos.has(i.nome)).map((i) => {
+    const g = ativos.find((x) => x.alvo === i.nome);
+    return g ? { ...i, nome: `${i.nome}**`, inclui: [i.nome, ...g.inclui.filter((n) => nomes.has(n))] } : i;
+  });
+}
 export function itensExibidos(grupo: GrupoCredenciamento): ItemExibidoCredenciamento[] {
-  return agruparPediatricas(ITENS_CREDENCIAMENTO[grupo]);
+  return agruparFixos(agruparPediatricas(ITENS_CREDENCIAMENTO[grupo]));
+}
+/** Notas de rodapé dos agrupamentos que aparecem na lista. */
+export function notasAgrupamento(): string[] {
+  const nomes = new Set((Object.keys(ITENS_CREDENCIAMENTO) as GrupoCredenciamento[]).flatMap((g) => itensExibidos(g).map((i) => i.nome)));
+  return [NOTA_PEDIATRICA, ...AGRUPAMENTOS_ESPECIALIDADES.filter((g) => nomes.has(`${g.alvo}**`)).map((g) => g.nota)];
 }
 
 /** Autorizado começa pelo Limite de cada tipo; valor digitado (inteiro ≥ 0) prevalece. */

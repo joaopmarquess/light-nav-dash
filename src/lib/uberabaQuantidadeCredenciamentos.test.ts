@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ITENS_CREDENCIAMENTO, itensExibidos, lerAutorizado, linhasQuantidadeCredenciamentos } from "./uberabaQuantidadeCredenciamentos";
+import { ITENS_CREDENCIAMENTO, itensExibidos, lerAutorizado, notasAgrupamento, linhasQuantidadeCredenciamentos } from "./uberabaQuantidadeCredenciamentos";
 
 describe("Quantidade de Credenciamentos", () => {
   it("tem os três tipos de credenciado com a quantidade disponível", () => {
@@ -38,16 +38,23 @@ describe("Quantidade de Credenciamentos", () => {
     expect(ITENS_CREDENCIAMENTO.diagnostico.map((i) => i.nome)).toEqual(["Laboratório de Análises Clínicas", "Laboratório de Análises Patológicas", "Serviços de Imagem", "Serviços de Endoscopia/Colonoscopia"]);
     expect(ITENS_CREDENCIAMENTO["nao-medicos"].map((i) => i.nome)).toEqual(["Psicologia", "Fonoaudiologia", "Fisioterapia", "Acupuntura"]);
   });
-  it("tela agrupa as pediátricas no nome genérico com asterisco: 55 → 47 especialidades", () => {
+  it("tela agrupa as pediátricas no nome genérico com asterisco: 55 → 46 especialidades (com Clínica Médica em Clínico Geral)", () => {
     const nomes = itensExibidos("medicos").map((i) => i.nome);
-    expect(nomes).toHaveLength(47);
+    expect(nomes).toHaveLength(46);
     expect(nomes).toContain("Alergia e Imunologia*");
     expect(nomes).not.toContain("Alergia e Imunologia");
     expect(nomes).not.toContain("Alergia e Imunologia Pediátrica");
-    expect(nomes.filter((n) => n.endsWith("*"))).toEqual(["Alergia e Imunologia*", "Cardiologia*", "Endocrinologia*", "Gastroenterologia*", "Nefrologia*", "Neurologia*", "Nutrologia*", "Pneumologia*"]);
+    expect(nomes.filter((n) => /[^*]\*$/.test(n))).toEqual(["Alergia e Imunologia*", "Cardiologia*", "Endocrinologia*", "Gastroenterologia*", "Nefrologia*", "Neurologia*", "Nutrologia*", "Pneumologia*"]);
     expect(itensExibidos("medicos").find((i) => i.nome === "Cardiologia*")?.inclui).toEqual(["Cardiologia", "Cardiologia Pediátrica"]);
   });
   it("Cirurgia Pediátrica fica separada (não há Cirurgia genérica)", () => {
     expect(itensExibidos("medicos").map((i) => i.nome)).toContain("Cirurgia Pediátrica");
+  });
+  it("Clínica Médica fica agrupada em Clínico Geral**", () => {
+    const itens = itensExibidos("medicos");
+    expect(itens.map((i) => i.nome)).not.toContain("Clínica Médica");
+    expect(itens.map((i) => i.nome)).not.toContain("Clínico Geral");
+    expect(itens.find((i) => i.nome === "Clínico Geral**")?.inclui).toEqual(["Clínico Geral", "Clínica Médica"]);
+    expect(notasAgrupamento()).toContain("** Inclui também Clínica Médica.");
   });
 });
