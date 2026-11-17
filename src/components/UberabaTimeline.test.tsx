@@ -3,12 +3,12 @@ import { describe, it, expect } from "vitest";
 import UberabaTimeline from "./UberabaTimeline";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-const abrirMenu = () => fireEvent.keyDown(screen.getByRole("button", { name: /^Etapa do projeto:/ }), { key: "Enter" });
+const etapa = (nome: string) => screen.getByRole("button", { name: new RegExp(`^Etapa \\d: ${nome}$`) });
 
 describe("Project stage navigation", () => {
   it("opens the project Home (stage 0) with only the outdoor image by default", () => {
     render(<TooltipProvider><UberabaTimeline /></TooltipProvider>);
-    expect(screen.getByRole("button", { name: "Etapa do projeto: Home" })).toBeVisible();
+    expect(etapa("Home")).toHaveAttribute("aria-current", "step");
     const home = screen.getByRole("region", { name: "Home do projeto" });
     expect(home.querySelectorAll("img")).toHaveLength(1);
     expect(home.textContent).toBe("");
@@ -16,36 +16,32 @@ describe("Project stage navigation", () => {
 
   it("opens Estudo Home when choosing Estudo", () => {
     render(<TooltipProvider><UberabaTimeline /></TooltipProvider>);
-    abrirMenu();
-    fireEvent.click(screen.getByRole("menuitem", { name: /Estudo/ }));
+    fireEvent.click(etapa("Estudo"));
     expect(screen.getByRole("button", { name: "Home" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("region", { name: "Home do Estudo" })).toBeVisible();
   });
 
   it("places the Estudo buttons in the stage bar without the 'Etapa X de 7' counter", () => {
     render(<TooltipProvider><UberabaTimeline /></TooltipProvider>);
-    abrirMenu();
-    fireEvent.click(screen.getByRole("menuitem", { name: /Estudo/ }));
+    fireEvent.click(etapa("Estudo"));
     const barra = screen.getByLabelText("Navegação das etapas do projeto");
     expect(barra.querySelector('[aria-label="Visões do Estudo"]')).not.toBeNull();
     expect(screen.queryByText(/Etapa \d+ de \d+/)).toBeNull();
   });
 
-  it("lists Home, Estudo, Modelo de Atuação and Plano de Ação in the dropdown and opens the chosen one", () => {
+  it("lists Home, Estudo, Modelo de Atuação and Plano de Ação in a horizontal stage menu and opens the chosen one", () => {
     render(<TooltipProvider><UberabaTimeline /></TooltipProvider>);
-    abrirMenu();
-    expect(screen.getAllByRole("menuitem").map((i) => i.textContent)).toEqual(["0Home", "1Estudo", "2Modelo de Atuação", "3Plano de Ação"]);
-    expect(screen.queryByRole("menuitem", { name: /Hospital Mário Palmério/ })).toBeNull();
-    expect(screen.getAllByRole("menuitem")[0]).toHaveTextContent("0Home");
-    fireEvent.click(screen.getByRole("menuitem", { name: /Modelo de Atuação/ }));
-    expect(screen.getByRole("button", { name: "Etapa do projeto: Modelo de Atuação" })).toBeVisible();
+    const nav = screen.getByRole("navigation", { name: "Etapas do projeto" });
+    expect([...nav.querySelectorAll("button")].map((b) => b.textContent)).toEqual(["0Home", "1Estudo", "2Modelo de Atuação", "3Plano de Ação"]);
+    expect(screen.queryByRole("button", { name: /Hospital Mário Palmério/ })).toBeNull();
+    fireEvent.click(etapa("Modelo de Atuação"));
+    expect(etapa("Modelo de Atuação")).toHaveAttribute("aria-current", "step");
     expect(screen.getByRole("article", { name: "Modelo de Atuação do Bensaúde|Uberaba" })).toBeVisible();
     expect(screen.queryByRole("region", { name: "Home do projeto" })).toBeNull();
   });
   it("switches the Modelo de Atuação fronts through the horizontal menu", () => {
     render(<TooltipProvider><UberabaTimeline /></TooltipProvider>);
-    abrirMenu();
-    fireEvent.click(screen.getByRole("menuitem", { name: /Modelo de Atuação/ }));
+    fireEvent.click(etapa("Modelo de Atuação"));
     const menu = screen.getByRole("group", { name: "Frentes do Modelo de Atuação" });
     expect(menu).toBeVisible();
     expect(screen.getByRole("button", { name: "Comercial" })).toHaveAttribute("aria-pressed", "true");
@@ -59,9 +55,8 @@ describe("Project stage navigation", () => {
   });
   it("opens Plano de Ação on its Home (the Operação Iniciada presentation) with the moved stages as submenus", () => {
     render(<TooltipProvider><UberabaTimeline /></TooltipProvider>);
-    abrirMenu();
-    expect(screen.queryByRole("menuitem", { name: /Operação Iniciada|Plano de Marketing|Formalização|Implantação/ })).toBeNull();
-    fireEvent.click(screen.getByRole("menuitem", { name: /Plano de Ação/ }));
+    expect(screen.queryByRole("button", { name: /^Etapa \\d: (Operação Iniciada|Plano de Marketing|Formalização|Implantação)$/ })).toBeNull();
+    fireEvent.click(etapa("Plano de Ação"));
     const sub = screen.getByRole("group", { name: "Submenus do Plano de Ação" });
     expect(screen.getByLabelText("Navegação das etapas do projeto")).toContainElement(sub);
     expect([...sub.querySelectorAll("button")].map((b) => b.textContent)).toEqual(["Home", "Plano de Marketing", "Formalização", "Implantação"]);

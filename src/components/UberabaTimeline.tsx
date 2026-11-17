@@ -10,9 +10,8 @@ import UberabaGuias from "@/components/UberabaGuias";
 import { COMERCIAL_UBERABA, ESCRITORIO_UBERABA, REDE_UBERABA } from "@/lib/uberabaFrentes";
 import UberabaModeloFrente from "@/components/UberabaModeloFrente";
 import outdoorImagem from "@/assets/projeto-uberaba-home-v2.svg.asset.json";
-import { Building2, CalendarDays, ChevronDown, FileCheck2, FileSignature, House, Megaphone, Rocket, Stethoscope, Tags } from "lucide-react";
+import { Building2, CalendarDays, FileCheck2, FileSignature, House, Megaphone, Rocket, Stethoscope, Tags } from "lucide-react";
 import { CRONOGRAMA_UBERABA } from "@/lib/uberabaCronograma";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import UberabaCronograma from "@/components/UberabaCronograma";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
@@ -82,34 +81,29 @@ const UberabaTimeline = ({ estudoSimulacoes = false }: { estudoSimulacoes?: bool
   return (
     <div ref={timelineRef} className="timeline-workspace flex h-full min-h-0 flex-col gap-6">
       <div className="flex shrink-0 flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-4 py-2" aria-label="Navegação das etapas do projeto">
-        <span className="text-sm font-medium text-muted-foreground">Etapa</span>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="h-9 min-w-[280px] justify-between gap-3" aria-label={`Etapa do projeto: ${aberta === HOME ? HOME : atual ? atual.nome : "nenhuma"}`}>
-              <span className="flex min-w-0 items-center gap-2">
-                {(atual || aberta === HOME) && <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">{atual ? ETAPAS.indexOf(atual) + 1 : 0}</span>}
-                <span className="truncate">{atual ? atual.nome : aberta === HOME ? HOME : "Selecione uma etapa"}</span>
-              </span>
-              <ChevronDown className="h-4 w-4 shrink-0 opacity-70" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="min-w-[280px]">
-            <DropdownMenuLabel>Etapas do projeto</DropdownMenuLabel>
-            <DropdownMenuItem onSelect={() => abrir(HOME)} className={aberta === HOME ? "bg-accent text-primary" : undefined} aria-current={aberta === HOME ? "step" : undefined}>
-              <span className={`mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-primary text-xs font-semibold ${aberta === HOME ? "bg-primary text-primary-foreground" : "bg-background text-primary"}`}>0</span>
-              {HOME}
-            </DropdownMenuItem>
-            {ETAPAS.map((e, i) => {
-              const on = aberta === e.nome;
+        <nav aria-label="Etapas do projeto" className="flex shrink-0 items-center">
+          <ol className="flex items-center">
+            {[HOME, ...ETAPAS.map((e) => e.nome)].map((nome, i) => {
+              const on = aberta === nome;
               return (
-                <DropdownMenuItem key={e.nome} onSelect={() => abrir(e.nome)} className={on ? "bg-accent text-primary" : undefined} aria-current={on ? "step" : undefined}>
-                  <span className={`mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-primary text-xs font-semibold ${on ? "bg-primary text-primary-foreground" : "bg-background text-primary"}`}>{i + 1}</span>
-                  {e.nome}
-                </DropdownMenuItem>
+                <li key={nome} className="flex items-center">
+                  {i > 0 && <span aria-hidden className="mx-1 h-0.5 w-6 bg-border" />}
+                  <button
+                    type="button"
+                    onClick={() => abrir(nome)}
+                    aria-label={`Etapa ${i}: ${nome}`}
+                    aria-current={on ? "step" : undefined}
+                    className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${on ? "text-primary" : "text-foreground/80"}`}
+                  >
+                    <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-primary text-xs font-semibold ${on ? "bg-primary text-primary-foreground" : "bg-background text-primary"}`}>{i}</span>
+                    <span className={`whitespace-nowrap ${on ? "underline decoration-2 underline-offset-[6px]" : ""}`}>{nome}</span>
+                  </button>
+                </li>
               );
             })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </ol>
+        </nav>
+        {(aberta === "Estudo" || aberta === PLANO) && <span aria-hidden className="h-6 w-px bg-border" />}
         {aberta === "Estudo" && <div ref={setNavEstudo} className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2" />}
         {aberta === PLANO && (
           <div className="flex flex-wrap gap-2" role="group" aria-label="Submenus do Plano de Ação">
