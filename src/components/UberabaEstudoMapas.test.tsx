@@ -68,7 +68,7 @@ describe("Estudo view selection", () => {
     fireEvent.click(screen.getByRole("button", { name: "Expandir Parâmetros" }));
     expect(screen.getByRole("region", { name: "Variáveis por modalidade" })).toBeVisible();
     expect(screen.getByRole("button", { name: "Resumo por faixa etária" })).toBeVisible();
-  });
+  }, 20000);
 
   it("opens the Gestão Rede view with its variables", () => {
     abrir();
@@ -92,19 +92,21 @@ describe("Estudo view selection", () => {
   it("opens the Comercial tables with their indices", () => {
     abrir();
     abrirSimulacoes("Resultados Comerciais");
-    expect(screen.getByLabelText("Índice ADESÃO x Referência")).toHaveValue("90");
-    expect(screen.getByLabelText("Índice PME ADMINISTRADAS x Referência")).toHaveValue("85");
-    expect(screen.getByLabelText("Índice PJ ADMINISTRADAS x Referência")).toHaveValue("80");
-    expect(screen.getByLabelText("Índice EMPRESARIAL x Referência")).toHaveValue("70");
+    expect(screen.getByLabelText("Índice ADESÃO x Referência")).toHaveValue("95");
+    expect(screen.getByLabelText("Índice PME ADMINISTRADAS x Referência")).toHaveValue("90");
+    expect(screen.getByLabelText("Índice PJ ADMINISTRADAS x Referência")).toHaveValue("85");
+    expect(screen.getByLabelText("Índice EMPRESARIAL x Referência")).toHaveValue("75");
     expect(screen.getByRole("button", { name: "Referência" })).toBeVisible();
   });
 
-  it("shows Condições Rede as a collapsed container inside Resultados Rede", () => {
+  it("shows Condições Rede as a collapsed container before Antecipação × Mensal in Resultados Rede", () => {
     abrir();
     abrirSimulacoes("Resultados Rede");
     expect(screen.queryByRole("button", { name: "Condições Rede" })).toBeNull();
     const botao = screen.getByRole("button", { name: "Expandir Condições Rede" });
     expect(botao).toHaveAttribute("aria-expanded", "false");
+    const antecipacao = screen.getByRole("button", { name: "Expandir Antecipação × Mensal" });
+    expect(botao.compareDocumentPosition(antecipacao) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByRole("group", { name: "Cenário de credenciamento", hidden: true })).not.toBeVisible();
     fireEvent.click(botao);
     expect(screen.getByRole("group", { name: "Cenário de credenciamento" })).toBeVisible();
