@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { lerAutorizado, linhasQuantidadeCredenciamentos } from "./uberabaQuantidadeCredenciamentos";
+import { ITENS_CREDENCIAMENTO, lerAutorizado, linhasQuantidadeCredenciamentos } from "./uberabaQuantidadeCredenciamentos";
 
 describe("Quantidade de Credenciamentos", () => {
   it("tem os três tipos de credenciado com a quantidade disponível", () => {
@@ -26,5 +26,16 @@ describe("Quantidade de Credenciamentos", () => {
     expect(lerAutorizado("40")).toBe(40);
     expect(lerAutorizado("-3")).toBeNull();
     expect(lerAutorizado("2,5")).toBeNull();
+  });
+  it("abre 55 especialidades médicas do Guia Médico, sem repetição", () => {
+    const nomes = ITENS_CREDENCIAMENTO.medicos.map((i) => i.nome);
+    expect(nomes).toHaveLength(55);
+    expect(new Set(nomes).size).toBe(55);
+    expect(nomes).toContain("Cardiologia");
+    expect(nomes).not.toContain("Psicologia");
+  });
+  it("diagnóstico e terapia trazem os quatro itens informados", () => {
+    expect(ITENS_CREDENCIAMENTO.diagnostico.map((i) => i.nome)).toEqual(["Laboratório de Análises Clínicas", "Laboratório de Análises Patológicas", "Serviços de Imagem", "Serviços de Endoscopia/Colonoscopia"]);
+    expect(ITENS_CREDENCIAMENTO["nao-medicos"].map((i) => i.nome)).toEqual(["Psicologia", "Fonoaudiologia", "Fisioterapia", "Acupuntura"]);
   });
 });

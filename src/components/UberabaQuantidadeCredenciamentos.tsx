@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { carregarAutorizados, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
+import { ITENS_CREDENCIAMENTO, carregarAutorizados, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
 
 const numero = (v: number) => v.toLocaleString("pt-BR");
 
@@ -8,6 +9,7 @@ const numero = (v: number) => v.toLocaleString("pt-BR");
 export default function UberabaQuantidadeCredenciamentos() {
   const [autorizados, setAutorizados] = useState<AutorizadosCredenciamento>(carregarAutorizados);
   const { linhas, total } = linhasQuantidadeCredenciamentos(autorizados);
+  const [abertos, setAbertos] = useState<Record<string, boolean>>({});
   const alterar = (id: keyof AutorizadosCredenciamento, texto: string) => {
     const valor = lerAutorizado(texto);
     if (valor === null) return;
@@ -27,9 +29,19 @@ export default function UberabaQuantidadeCredenciamentos() {
           </tr>
         </thead>
         <tbody>
-          {linhas.map((l) => (
-            <tr key={l.id} className="border-b border-border">
-              <td className="px-3 py-1.5">{l.tipo}</td>
+          {linhas.map((l) => {
+            const itens = ITENS_CREDENCIAMENTO[l.id];
+            const aberto = !!abertos[l.id];
+            const Icone = aberto ? ChevronDown : ChevronRight;
+            return (
+            <Fragment key={l.id}>
+            <tr className="border-b border-border">
+              <td className="px-3 py-1.5">
+                <button type="button" onClick={() => setAbertos((a) => ({ ...a, [l.id]: !a[l.id] }))} aria-expanded={aberto}
+                  aria-label={`${aberto ? "Recolher" : "Abrir"} ${l.tipo}`} className="inline-flex items-center gap-1 text-left hover:underline">
+                  <Icone className="h-4 w-4 shrink-0" />{l.tipo}<span className="ml-1 text-xs text-muted-foreground">({itens.length})</span>
+                </button>
+              </td>
               <td className="px-3 py-1.5 text-right tabular-nums">{numero(l.disponivel)}</td>
               <td className="px-3 py-1.5 text-right">
                 <Input inputMode="numeric" aria-label={`Autorizado — ${l.tipo}`} title={`Limite: ${numero(l.limite)} (apague para restaurar)`}
@@ -38,7 +50,17 @@ export default function UberabaQuantidadeCredenciamentos() {
                   className="ml-auto h-8 w-24 text-right tabular-nums placeholder:text-foreground" />
               </td>
             </tr>
-          ))}
+            {aberto && itens.map((item) => (
+              <tr key={item.nome} className="border-b border-border/60 bg-muted/40 text-xs">
+                <td className="py-1 pl-8 pr-3" colSpan={3}>
+                  <span className="font-medium">{item.nome}</span>
+                  {item.guia && <span className="ml-2 text-muted-foreground">Guia Médico: {item.guia.join(" · ")}</span>}
+                </td>
+              </tr>
+            ))}
+            </Fragment>
+            );
+          })}
         </tbody>
         <tfoot>
           <tr className="font-semibold">
@@ -48,7 +70,7 @@ export default function UberabaQuantidadeCredenciamentos() {
           </tr>
         </tfoot>
       </table>
-      <p className="px-3 pt-2 text-xs text-muted-foreground">Autorizado começa pelo Limite de cada tipo; apague o campo para restaurá-lo.</p>
+      <p className="px-3 pt-2 text-xs text-muted-foreground">Autorizado começa pelo Limite de cada tipo; apague o campo para restaurá-lo. Especialidades médicas conforme o Guia Médico do Bensaúde (consultado em 17/11/2026).</p>
     </div>
   );
 }
