@@ -1,7 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Pin } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Pin, Printer } from "lucide-react";
+import PdfPreview from "@/components/PdfPreview";
+import { loadTimbrado } from "@/lib/pdfTimbrado";
+import { loadMarcaAxis } from "@/lib/pdfMarcaAxis";
+import { buildTabelasImpressaoPdf, quadrosImpressao } from "@/lib/uberabaTabelasImpressao";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, formatarFator, gravarFatores, lerFatores, parseFator, type Fatores, FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, parametrosDe, vidasTexto, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, gravarPadraoRotulos, gravarRotulos, lerIndicadores, lerIndices, lerPadraoRotulos, lerRotulos, normalizarRotulo, ROTULO_MAX, parseIndicador, parseIndice, tabelaIndexada, tabelaNet, tabelaVenda, operadoraDe, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices, type Rotulos, type RotulosPorFrente } from "@/lib/uberabaTabelasComerciais";
@@ -26,6 +30,17 @@ const ChavePreco = ({ modo, onModo, operadora }: { modo: ModoPreco; onModo: (m: 
     ))}
   </span>
 );
+
+// Imprime as quatro tabelas no modo exibido (Venda ou Net), com os mesmos cálculos da tela.
+const BotaoImprimir = ({ modo, onClick }: { modo: ModoPreco; onClick: () => void }) => {
+  const rotulo = `Imprimir tabelas ${modo === "net" ? "Net" : "Venda"}`;
+  return (
+    <button type="button" onClick={onClick} aria-label={rotulo} title={rotulo}
+      className="mr-1 inline-flex h-5 w-5 items-center justify-center rounded-sm align-middle opacity-70 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+      <Printer className="h-4 w-4" />
+    </button>
+  );
+};
 
 const CORES: Record<FrenteId, string> = { pcaAdm: "comercial-adesao", pmeAdm: "comercial-pme", pceAdm: "comercial-medias", pce100: "comercial-grandes" };
 export const FRENTES: Frente[] = FRENTES_COMERCIAIS.map((f) => ({ ...f, cor: CORES[f.id] }));
@@ -200,8 +215,8 @@ const GravarPadrao = ({ f, ativo, onClick }: { f: Frente; ativo: boolean; onClic
   );
 };
 
-const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variaveis, indicadores, onIndicador, rotulos, padroes, onRotulo, onGravarPadrao, modo, onModo }: {
-  modo: ModoPreco; onModo: (m: ModoPreco) => void;
+const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variaveis, indicadores, onIndicador, rotulos, padroes, onRotulo, onGravarPadrao, modo, onModo, onImprimir }: {
+  modo: ModoPreco; onModo: (m: ModoPreco) => void; onImprimir: () => void;
   f: Frente; indice: number; onIndice: (v: number) => void; fator: number; onFator: (v: number) => void; apartamento: ApartamentoToggle; precos: ApartamentoToggle; variaveis: ApartamentoToggle;
   rotulos: Rotulos; padroes: Rotulos; onRotulo: (campo: keyof Rotulos, v: string) => void; onGravarPadrao: () => void;
   indicadores: Indicadores; onIndicador: (campo: CampoIndicador, v: number) => void;
@@ -220,7 +235,7 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
       </div>
       <ParametrosLinha id={f.id} />
       <section className="comercial-secao" aria-label={`Tabelas ${f.titulo}`}>
-        <p className="comercial-secao-titulo">Tabelas{precos.visivel && <ChavePreco modo={modo} onModo={onModo} operadora={operadora} />}<BotaoSecao t={precos} nome="Tabelas" /></p>
+        <p className="comercial-secao-titulo">Tabelas{precos.visivel && <><ChavePreco modo={modo} onModo={onModo} operadora={operadora} /><BotaoImprimir modo={modo} onClick={onImprimir} /></>}<BotaoSecao t={precos} nome="Tabelas" /></p>
         {precos.visivel && (
           <div className="comercial-precos" data-modo={modo}>
             <Tabela linhas={linhas} apartamento={apartamento} fator={fator} />
@@ -268,6 +283,7 @@ const UberabaTabelasComerciais = () => {
   const variaveis: ApartamentoToggle = { visivel: variaveisVisivel, alternar: () => setVariaveisVisivel((v) => !v) };
   // Preço de Venda por padrão; a chave vale para as quatro tabelas e só muda a exibição.
   const [modo, setModo] = useState<ModoPreco>("venda");
+  const [imprimindo, setImprimindo] = useState<ModoPreco | null>(null);
   const [indicadores, setIndicadores] = useState<IndicadoresPorFrente>(() => lerIndicadores());
   const alterarIndicador = (id: FrenteId, campo: CampoIndicador, v: number) => setIndicadores((atual) => {
     const novo = { ...atual, [id]: { ...atual[id], [campo]: v } };
@@ -292,8 +308,15 @@ const UberabaTabelasComerciais = () => {
   return (
     <section className="comercial-presentation" aria-label="Tabelas comerciais">
       <div className={`comercial-grid ${variaveisVisivel ? "" : "indicadores-recolhidos"}`}>
-        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} fator={fatores[f.id]} onFator={(v) => alterarFator(f.id, v)} apartamento={apartamento} precos={precos} variaveis={variaveis} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} padroes={padroes[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} onGravarPadrao={() => gravarPadrao(f.id)} modo={modo} onModo={setModo} />)}
+        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} fator={fatores[f.id]} onFator={(v) => alterarFator(f.id, v)} apartamento={apartamento} precos={precos} variaveis={variaveis} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} padroes={padroes[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} onGravarPadrao={() => gravarPadrao(f.id)} modo={modo} onModo={setModo} onImprimir={() => setImprimindo(modo)} />)}
       </div>
+      {imprimindo && (
+        <PdfPreview
+          build={async () => buildTabelasImpressaoPdf(await loadTimbrado(), await loadMarcaAxis(), imprimindo, quadrosImpressao(imprimindo, { indices, fatores, indicadores, rotulos }))}
+          fileName={`Uberaba_Tabelas_${imprimindo === "net" ? "Net" : "Venda"}.pdf`}
+          onClose={() => setImprimindo(null)}
+        />
+      )}
     </section>
   );
 };
