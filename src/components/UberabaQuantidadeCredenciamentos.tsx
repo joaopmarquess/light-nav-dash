@@ -1,7 +1,7 @@
 import { Fragment, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { ITENS_CREDENCIAMENTO, carregarAutorizados, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
+import { NOTA_PEDIATRICA, carregarAutorizados, itensExibidos, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
 
 const numero = (v: number) => v.toLocaleString("pt-BR");
 
@@ -30,7 +30,7 @@ export default function UberabaQuantidadeCredenciamentos() {
         </thead>
         <tbody>
           {linhas.map((l) => {
-            const itens = ITENS_CREDENCIAMENTO[l.id];
+            const itens = itensExibidos(l.id);
             const aberto = !!abertos[l.id];
             const Icone = aberto ? ChevronDown : ChevronRight;
             return (
@@ -53,7 +53,7 @@ export default function UberabaQuantidadeCredenciamentos() {
             {aberto && itens.map((item) => (
               <tr key={item.nome} className="border-b border-border/60 bg-muted/40 text-xs">
                 <td className="py-1 pl-8 pr-3" colSpan={3}>
-                  <span className="font-medium">{item.nome}</span>
+                  <span className="font-medium" title={item.inclui?.join(" + ")}>{item.nome}</span>
                   {item.guia && <span className="ml-2 text-muted-foreground">Guia Médico: {item.guia.join(" · ")}</span>}
                 </td>
               </tr>
@@ -70,7 +70,7 @@ export default function UberabaQuantidadeCredenciamentos() {
           </tr>
         </tfoot>
       </table>
-      <p className="px-3 pt-2 text-xs text-muted-foreground">Autorizado começa pelo Limite de cada tipo; apague o campo para restaurá-lo. Especialidades médicas conforme o Guia Médico do Bensaúde (consultado em 17/11/2026).</p>
+      <p className="px-3 pt-2 text-xs text-muted-foreground">Autorizado começa pelo Limite de cada tipo; apague o campo para restaurá-lo. Especialidades médicas conforme o Guia Médico do Bensaúde (consultado em 17/11/2026). {NOTA_PEDIATRICA}</p>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ITENS_CREDENCIAMENTO, lerAutorizado, linhasQuantidadeCredenciamentos } from "./uberabaQuantidadeCredenciamentos";
+import { ITENS_CREDENCIAMENTO, itensExibidos, lerAutorizado, linhasQuantidadeCredenciamentos } from "./uberabaQuantidadeCredenciamentos";
 
 describe("Quantidade de Credenciamentos", () => {
   it("tem os três tipos de credenciado com a quantidade disponível", () => {
@@ -37,5 +37,17 @@ describe("Quantidade de Credenciamentos", () => {
   it("diagnóstico e terapia trazem os quatro itens informados", () => {
     expect(ITENS_CREDENCIAMENTO.diagnostico.map((i) => i.nome)).toEqual(["Laboratório de Análises Clínicas", "Laboratório de Análises Patológicas", "Serviços de Imagem", "Serviços de Endoscopia/Colonoscopia"]);
     expect(ITENS_CREDENCIAMENTO["nao-medicos"].map((i) => i.nome)).toEqual(["Psicologia", "Fonoaudiologia", "Fisioterapia", "Acupuntura"]);
+  });
+  it("tela agrupa as pediátricas no nome genérico com asterisco: 55 → 47 especialidades", () => {
+    const nomes = itensExibidos("medicos").map((i) => i.nome);
+    expect(nomes).toHaveLength(47);
+    expect(nomes).toContain("Alergia e Imunologia*");
+    expect(nomes).not.toContain("Alergia e Imunologia");
+    expect(nomes).not.toContain("Alergia e Imunologia Pediátrica");
+    expect(nomes.filter((n) => n.endsWith("*"))).toEqual(["Alergia e Imunologia*", "Cardiologia*", "Endocrinologia*", "Gastroenterologia*", "Nefrologia*", "Neurologia*", "Nutrologia*", "Pneumologia*"]);
+    expect(itensExibidos("medicos").find((i) => i.nome === "Cardiologia*")?.inclui).toEqual(["Cardiologia", "Cardiologia Pediátrica"]);
+  });
+  it("Cirurgia Pediátrica fica separada (não há Cirurgia genérica)", () => {
+    expect(itensExibidos("medicos").map((i) => i.nome)).toContain("Cirurgia Pediátrica");
   });
 });

@@ -81,6 +81,22 @@ export const ITENS_CREDENCIAMENTO: Record<GrupoCredenciamento, ItemCredenciament
   ],
 };
 
+/** Item exibido na tela: "X*" reúne "X" e "X Pediátrica" (pedido de 17/11/2026); `inclui` lista os nomes originais reunidos. */
+export type ItemExibidoCredenciamento = ItemCredenciamento & { inclui?: string[] };
+export const NOTA_PEDIATRICA = "* Inclui também a especialidade pediátrica correspondente.";
+/** Agrupa cada "X Pediátrica" sob o nome genérico "X*" quando "X" existe na lista; sem genérica (ex.: Cirurgia Pediátrica), fica separada. */
+export function agruparPediatricas(itens: ItemCredenciamento[]): ItemExibidoCredenciamento[] {
+  const nomes = new Set(itens.map((i) => i.nome));
+  const pediatricaDe = (nome: string) => { const m = /^(.*) Pediátrica$/.exec(nome); return m && nomes.has(m[1]) ? m[1] : null; };
+  return itens.filter((i) => !pediatricaDe(i.nome)).map((i) => {
+    const ped = `${i.nome} Pediátrica`;
+    return nomes.has(ped) ? { ...i, nome: `${i.nome}*`, inclui: [i.nome, ped] } : i;
+  });
+}
+export function itensExibidos(grupo: GrupoCredenciamento): ItemExibidoCredenciamento[] {
+  return agruparPediatricas(ITENS_CREDENCIAMENTO[grupo]);
+}
+
 /** Autorizado começa pelo Limite de cada tipo; valor digitado (inteiro ≥ 0) prevalece. */
 export function linhasQuantidadeCredenciamentos(autorizados: AutorizadosCredenciamento = {}) {
   const disponiveis = cenarioCredenciamento("Disponível").grupos;
