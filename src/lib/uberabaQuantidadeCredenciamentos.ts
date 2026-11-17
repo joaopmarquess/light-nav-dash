@@ -153,12 +153,22 @@ export function salvarAutorizados(valores: AutorizadosCredenciamento) {
 export type QuantidadesItens = Record<string, number>;
 export const CHAVE_QUANTIDADES_ITENS = "uberaba.quantidadeCredenciamentos.itens.v1";
 export const chaveItem = (grupo: GrupoCredenciamento, nome: string) => `${grupo}:${nome}`;
-/** Soma das quantidades digitadas nos itens do tipo e quantos itens foram preenchidos. */
-export function somaItens(grupo: GrupoCredenciamento, valores: QuantidadesItens) {
-  const preenchidos = itensExibidos(grupo).map((i) => valores[chaveItem(grupo, i.nome)]).filter((v): v is number => v !== undefined);
-  return { soma: preenchidos.reduce((s, v) => s + v, 0), preenchidos: preenchidos.length };
+/** Quantidade padrão de cada item (pedido de 17/11/2026): 2 por especialidade médica e 1 para os demais itens. */
+export const QUANTIDADE_PADRAO_ITEM: Record<GrupoCredenciamento, number> = { medicos: 2, diagnostico: 1, "nao-medicos": 1 };
+/** Quantidade do item: a digitada prevalece; sem digitação, o padrão do tipo. */
+export function quantidadeItem(grupo: GrupoCredenciamento, nome: string, valores: QuantidadesItens) {
+  return valores[chaveItem(grupo, nome)] ?? QUANTIDADE_PADRAO_ITEM[grupo];
 }
-/** Atualiza um item a partir do texto: vazio apaga; texto inválido não altera (null). */
+/** Soma das quantidades dos itens do tipo (digitadas ou padrão), quantos itens há e quantos foram alterados. */
+export function somaItens(grupo: GrupoCredenciamento, valores: QuantidadesItens) {
+  const itens = itensExibidos(grupo);
+  return {
+    soma: itens.reduce((s, i) => s + quantidadeItem(grupo, i.nome, valores), 0),
+    itens: itens.length,
+    alterados: itens.filter((i) => valores[chaveItem(grupo, i.nome)] !== undefined).length,
+  };
+}
+/** Atualiza um item a partir do texto: vazio restaura o padrão; texto inválido não altera (null). */
 export function alterarItem(valores: QuantidadesItens, chave: string, texto: string): QuantidadesItens | null {
   const v = lerAutorizado(texto);
   if (v === null) return null;

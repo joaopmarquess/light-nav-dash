@@ -1,7 +1,7 @@
 import { Fragment, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { alterarItem, carregarAutorizados, carregarQuantidadesItens, chaveItem, itensExibidos, notasAgrupamento, salvarQuantidadesItens, somaItens, type QuantidadesItens, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
+import { QUANTIDADE_PADRAO_ITEM, alterarItem, carregarAutorizados, carregarQuantidadesItens, chaveItem, itensExibidos, notasAgrupamento, salvarQuantidadesItens, somaItens, type QuantidadesItens, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
 
 const numero = (v: number) => v.toLocaleString("pt-BR");
 
@@ -64,15 +64,16 @@ export default function UberabaQuantidadeCredenciamentos() {
                   {item.guia && <span className="ml-2 text-muted-foreground">Guia Médico: {item.guia.join(" · ")}</span>}
                 </td>
                 <td className="px-3 py-0.5 text-right">
-                  <Input inputMode="numeric" aria-label={`Quantidade — ${item.nome}`} value={itensQtd[k] ?? ""} placeholder="—"
+                  <Input inputMode="numeric" aria-label={`Quantidade — ${item.nome}`} value={itensQtd[k] ?? ""} placeholder={String(QUANTIDADE_PADRAO_ITEM[l.id])}
+                    title={`Padrão: ${QUANTIDADE_PADRAO_ITEM[l.id]} (apague para restaurar)`}
                     onChange={(e) => alterarQtdItem(k, e.target.value)}
-                    className="ml-auto h-7 w-24 text-right text-xs tabular-nums" />
+                    className="ml-auto h-7 w-24 text-right text-xs tabular-nums placeholder:text-foreground" />
                 </td>
               </tr>
             ); })}
             {aberto && (() => { const s = somaItens(l.id, itensQtd); return (
               <tr className="border-b border-border bg-muted/40 text-xs font-semibold">
-                <td className="py-1 pl-8 pr-3" colSpan={2}>Soma dos itens <span className="font-normal text-muted-foreground">({s.preenchidos} de {itens.length} preenchidos)</span></td>
+                <td className="py-1 pl-8 pr-3" colSpan={2}>Soma dos itens <span className="font-normal text-muted-foreground">({s.itens} itens{s.alterados ? `, ${s.alterados} alterado${s.alterados > 1 ? "s" : ""}` : ""})</span></td>
                 <td className="px-3 py-1 text-right tabular-nums">{numero(s.soma)}</td>
               </tr>
             ); })()}
@@ -88,7 +89,7 @@ export default function UberabaQuantidadeCredenciamentos() {
           </tr>
         </tfoot>
       </table>
-      <p className="px-3 pt-2 text-xs text-muted-foreground">Autorizado começa pelo Limite de cada tipo; apague o campo para restaurá-lo. As quantidades digitadas nas linhas abertas ficam salvas neste navegador e somam só na linha "Soma dos itens". Especialidades médicas conforme o Guia Médico do Bensaúde (consultado em 17/11/2026). {notasAgrupamento().join(" ")}</p>
+      <p className="px-3 pt-2 text-xs text-muted-foreground">Autorizado começa pelo Limite de cada tipo; apague o campo para restaurá-lo. Nas linhas abertas, a quantidade começa em 2 por especialidade médica e 1 nos demais itens; o valor digitado fica salvo neste navegador (apague para restaurar) e soma só na linha "Soma dos itens". Especialidades médicas conforme o Guia Médico do Bensaúde (consultado em 17/11/2026). {notasAgrupamento().join(" ")}</p>
     </div>
   );
 }

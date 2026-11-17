@@ -57,14 +57,19 @@ describe("Quantidade de Credenciamentos", () => {
     expect(itens.find((i) => i.nome === "Clínico Geral**")?.inclui).toEqual(["Clínico Geral", "Clínica Médica"]);
     expect(notasAgrupamento()).toContain("** Inclui também Clínica Médica.");
   });
-  it("quantidade digitada nos itens soma por tipo sem mudar o Autorizado do tipo", () => {
+  it("quantidade padrão dos itens: 2 por especialidade médica e 1 nos demais (92, 4 e 4)", () => {
+    expect(somaItens("medicos", {})).toEqual({ soma: 92, itens: 46, alterados: 0 });
+    expect(somaItens("diagnostico", {})).toEqual({ soma: 4, itens: 4, alterados: 0 });
+    expect(somaItens("nao-medicos", {})).toEqual({ soma: 4, itens: 4, alterados: 0 });
+  });
+  it("quantidade digitada substitui o padrão do item sem mudar o Autorizado do tipo", () => {
     let v = alterarItem({}, chaveItem("medicos", "Cardiologia*"), "3")!;
     v = alterarItem(v, chaveItem("medicos", "Clínico Geral**"), "10")!;
-    v = alterarItem(v, chaveItem("diagnostico", "Serviços de Imagem"), "2")!;
-    expect(somaItens("medicos", v)).toEqual({ soma: 13, preenchidos: 2 });
-    expect(somaItens("diagnostico", v)).toEqual({ soma: 2, preenchidos: 1 });
+    v = alterarItem(v, chaveItem("diagnostico", "Serviços de Imagem"), "0")!;
+    expect(somaItens("medicos", v)).toEqual({ soma: 92 - 4 + 13, itens: 46, alterados: 2 });
+    expect(somaItens("diagnostico", v)).toEqual({ soma: 3, itens: 4, alterados: 1 });
     expect(alterarItem(v, chaveItem("medicos", "Cardiologia*"), "2,5")).toBeNull();
-    expect(somaItens("medicos", alterarItem(v, chaveItem("medicos", "Cardiologia*"), "")!)).toEqual({ soma: 10, preenchidos: 1 });
+    expect(somaItens("medicos", alterarItem(v, chaveItem("medicos", "Cardiologia*"), "")!).soma).toBe(92 - 2 + 10);
     expect(linhasQuantidadeCredenciamentos().total.autorizado).toBe(139);
   });
 });
