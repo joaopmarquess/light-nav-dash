@@ -475,10 +475,12 @@ function gerarXlsxCidades(linhas: LinhaModeloCidade[], parametros: [string, stri
   XLSX.writeFile(wb, arquivo);
 }
 
-function TelaEvolucaoProdutos({ ultima, somenteCidades = false }: { ultima: AnoMes; somenteCidades?: boolean }) {
+function TelaEvolucaoProdutos({ ultima, somenteCidades = false, periodoFixo }: { ultima: AnoMes; somenteCidades?: boolean; periodoFixo?: Periodo }) {
   const [visao, setVisao] = useState<Visao>("Vidas");
   const [modo, setModo] = useState<Modo>("Total");
-  const [periodo, setPeriodo] = useState<Periodo>(() => periodoAplicado ?? periodoPadrao(ultima));
+  const [periodoLivre, setPeriodo] = useState<Periodo>(() => periodoAplicado ?? periodoPadrao(ultima));
+  // Período fixo (atalho da Movimentação): segue o De/Até daquela tela, sem edição aqui.
+  const periodo = periodoFixo ?? periodoLivre;
   const [produto, setProduto] = useState<TipoProduto | null>(null);
   const [agrupar, setAgrupar] = useState<Agrupamento>(somenteCidades ? "cidade" : "produto");
   const [tipoCidade, setTipoCidade] = useState<TipoPlano | null>(null);
@@ -614,7 +616,7 @@ function TelaEvolucaoProdutos({ ultima, somenteCidades = false }: { ultima: AnoM
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
-      <nav aria-label="Indicadores" className="flex shrink-0 flex-wrap items-center justify-center gap-3">
+      {!somenteCidades && <nav aria-label="Indicadores" className="flex shrink-0 flex-wrap items-center justify-center gap-3">
         <form
           aria-label="Período"
           onSubmit={(e) => { e.preventDefault(); aplicar(); }}
@@ -687,7 +689,7 @@ function TelaEvolucaoProdutos({ ultima, somenteCidades = false }: { ultima: AnoM
             </Button>
           ))}
         </div>
-      </nav>
+      </nav>}
       <div className="min-h-0 flex-1 overflow-y-auto">
         <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
           <header className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -751,8 +753,8 @@ function TelaEvolucaoProdutos({ ultima, somenteCidades = false }: { ultima: AnoM
 }
 
 /** Abre no último mês com despesas acima de R$ 20 milhões (competência válida da sinistralidade). */
-/** somenteCidades: abre direto na visão Cidade (UF), sem a troca de agrupamento (atalho da Movimentação). */
-const EvolucaoProdutos = ({ somenteCidades = false }: { somenteCidades?: boolean } = {}) => {
+/** somenteCidades: abre direto na visão Cidade (UF) em Vidas, sem a barra superior (atalho da Movimentação); periodoFixo vem da tela que abriu. */
+const EvolucaoProdutos = ({ somenteCidades = false, periodoFixo }: { somenteCidades?: boolean; periodoFixo?: Periodo } = {}) => {
   const [ultima, setUltima] = useState<AnoMes | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const buscar = useCallback(() => {
@@ -762,7 +764,7 @@ const EvolucaoProdutos = ({ somenteCidades = false }: { somenteCidades?: boolean
       .catch((e) => setErro(e instanceof Error ? e.message : String(e)));
   }, []);
   useEffect(() => { buscar(); }, [buscar]);
-  if (ultima) return <TelaEvolucaoProdutos ultima={ultima} somenteCidades={somenteCidades} />;
+  if (ultima) return <TelaEvolucaoProdutos ultima={ultima} somenteCidades={somenteCidades} periodoFixo={periodoFixo} />;
   return (
     <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
       {erro ? <Aviso erro={erro} onRetry={buscar} /> : (

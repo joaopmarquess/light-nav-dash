@@ -6,7 +6,7 @@ vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect()
 vi.mock("@/lib/hostingerClient", () => ({ hostinger: { rpc: api.rpc } }));
 const acesso = vi.hoisted(() => ({ menus: new Set<string>() }));
 vi.mock("@/hooks/useAxisAccess", () => ({ useAxisAccess: () => ({ can: (m: string) => acesso.menus.has(m) }) }));
-vi.mock("@/components/EvolucaoProdutos", () => ({ default: ({ somenteCidades }: { somenteCidades?: boolean }) => <div data-testid="evolucao" data-cidades={String(Boolean(somenteCidades))} /> }));
+vi.mock("@/components/EvolucaoProdutos", () => ({ default: ({ somenteCidades, periodoFixo }: { somenteCidades?: boolean; periodoFixo?: { de: { ano: number; mes: number }; ate: { ano: number; mes: number } } }) => <div data-testid="evolucao" data-cidades={String(Boolean(somenteCidades))} data-periodo={periodoFixo ? `${periodoFixo.de.mes}/${periodoFixo.de.ano}-${periodoFixo.ate.mes}/${periodoFixo.ate.ano}` : ""} /> }));
 import CarteiraTrialMov from "./CarteiraTrialMov";
 
 beforeEach(() => {
@@ -81,8 +81,13 @@ describe("ícone Cidades", () => {
   it("abre a visão Cidade (UF) da Evolução Produtos sem consultar a Movimentação", async () => {
     acesso.menus.add("Sinistralidade · Evolução Produtos");
     render(<CarteiraTrialMov />);
+    const dates = document.querySelectorAll("input[type=date]");
+    fireEvent.change(dates[0], { target: { value: "2026-03-01" } });
+    fireEvent.change(dates[1], { target: { value: "2026-08-31" } });
     fireEvent.click(screen.getByRole("button", { name: "Cidades" }));
-    expect((await screen.findByTestId("evolucao")).getAttribute("data-cidades")).toBe("true");
+    const evolucao = await screen.findByTestId("evolucao");
+    expect(evolucao.getAttribute("data-cidades")).toBe("true");
+    expect(evolucao.getAttribute("data-periodo")).toBe("3/2026-8/2026");
     expect(api.rpc).not.toHaveBeenCalled();
   });
 });

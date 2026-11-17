@@ -65,6 +65,9 @@ export default function CarteiraTrialMov() {
   // Atalho para Evolução Produtos › Cidade (UF): só para quem tem acesso a esse menu.
   const { can } = useAxisAccess();
   const podeCidades = can("Sinistralidade · Evolução Produtos") || can("Evolução Produtos");
+  // Período da visão Cidades: o De/Até digitado nesta tela, convertido em meses.
+  const periodoCidades = useMemo(() => podeCalcularMovimentacao(f) ? { de: { ano: Number(f.de.slice(0, 4)), mes: Number(f.de.slice(5, 7)) }, ate: { ano: Number(f.ate.slice(0, 4)), mes: Number(f.ate.slice(5, 7)) } } : null, [f.de, f.ate]); // eslint-disable-line react-hooks/exhaustive-deps
+  const mesAno = (a: { ano: number; mes: number }) => `${String(a.mes).padStart(2, "0")}/${a.ano}`;
   const [depuracaoAberta, setDepuracaoAberta] = useState(false);
   const [totais, setTotais] = useState<TotaisMovimentacao | null>(null);
   const [mensal, setMensal] = useState<FluxoMensal[]>([]);
@@ -300,13 +303,12 @@ export default function CarteiraTrialMov() {
         <Button onClick={buscar} disabled={loading || !podeCalcularMovimentacao(f)}><Search className="h-4 w-4 mr-1" />Calcular</Button>
         <Button variant="outline" onClick={limpar} disabled={loading}><X className="h-4 w-4 mr-1" />Limpar</Button>
         {podeCidades && <TooltipProvider delayDuration={150}><Tooltip><TooltipTrigger asChild>
-          <Button variant="outline" size="icon" aria-label="Cidades" onClick={() => setCidadesAberto(true)}><Building2 className="h-4 w-4" /></Button>
+          <Button variant="outline" size="icon" aria-label="Cidades" disabled={!periodoCidades} onClick={() => setCidadesAberto(true)}><Building2 className="h-4 w-4" /></Button>
         </TooltipTrigger><TooltipContent>Cidades (UF) · Evolução Produtos</TooltipContent></Tooltip></TooltipProvider>}
-        {ap && janelaMeses && !loading && !mensalLoading && totais && <div className="flex min-w-0 basis-full justify-center sm:basis-72 sm:flex-1" role="group" aria-label="Período dos indicadores">
-          <nav aria-label="Navegação dos meses" className="flex max-w-full flex-wrap items-center justify-center gap-0.5 rounded-md border border-border bg-card p-1.5 shadow-sm">
-          <Button variant="ghost" className={`h-8 shrink-0 rounded-md px-3 text-sm shadow-none ${!mesSelecionado ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "text-foreground/70"}`} aria-pressed={!mesSelecionado} onClick={() => selecionarMes(null)}>Período completo</Button>
+        {ap && janelaMeses && !loading && !mensalLoading && totais && <div className="flex min-w-0 basis-full justify-start sm:basis-72 sm:flex-1" role="group" aria-label="Período dos indicadores">
+          <nav aria-label="Navegação dos meses" className="flex max-w-full flex-wrap items-center justify-start gap-0.5 rounded-md border border-border bg-card p-1.5 shadow-sm">
           <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-md text-muted-foreground" aria-label="Meses anteriores" title="Meses anteriores" disabled={!janelaMeses.anteriores} onClick={() => setPaginaMeses(janelaMeses.pagina + 1)}><ChevronLeft className="h-5 w-5" /></Button>
-          {janelaMeses.meses.map(mes => <Button key={mes.de} variant="ghost" className={`h-8 shrink-0 rounded-md px-2 text-sm tabular-nums shadow-none ${mesSelecionado?.de === mes.de ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "text-foreground/70"}`} aria-pressed={mesSelecionado?.de === mes.de} title={`${fmtD(mes.de)} a ${fmtD(mes.ate)}`} onClick={() => selecionarMes(mes)}>
+          {janelaMeses.meses.map(mes => <Button key={mes.de} variant="ghost" className={`h-8 shrink-0 rounded-md px-2 text-sm tabular-nums shadow-none ${mesSelecionado?.de === mes.de ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "text-foreground/70"}`} aria-pressed={mesSelecionado?.de === mes.de} title={mesSelecionado?.de === mes.de ? "Clique de novo para voltar ao período completo" : `${fmtD(mes.de)} a ${fmtD(mes.ate)}`} onClick={() => selecionarMes(mesSelecionado?.de === mes.de ? null : mes)}>
             {`${mes.de.slice(5, 7)}/${mes.de.slice(0, 4)}`}
           </Button>)}
           <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-md text-muted-foreground" aria-label="Meses posteriores" title="Meses posteriores" disabled={!janelaMeses.posteriores} onClick={() => setPaginaMeses(janelaMeses.pagina - 1)}><ChevronRight className="h-5 w-5" /></Button>
@@ -381,8 +383,8 @@ export default function CarteiraTrialMov() {
       )}
       {podeCidades && <Dialog open={cidadesAberto} onOpenChange={setCidadesAberto}>
         <DialogContent aria-describedby={undefined} className="flex h-[92vh] w-[95vw] max-w-none flex-col gap-3 p-4">
-          <DialogTitle className="pr-8 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Cidades (UF) · Evolução Produtos</DialogTitle>
-          <div className="min-h-0 flex-1">{cidadesAberto && <EvolucaoProdutos somenteCidades />}</div>
+          <DialogTitle className="pr-8 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Cidades (UF) · Vidas{periodoCidades && <span className="ml-2 normal-case tracking-normal">· {mesAno(periodoCidades.de)} a {mesAno(periodoCidades.ate)} (período da Movimentação)</span>}</DialogTitle>
+          <div className="min-h-0 flex-1">{cidadesAberto && periodoCidades && <EvolucaoProdutos somenteCidades periodoFixo={periodoCidades} />}</div>
         </DialogContent>
       </Dialog>}
     </div>
