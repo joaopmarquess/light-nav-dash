@@ -31,6 +31,7 @@ export const CONDICOES_GERAIS_REDE: readonly { item: string; valor: string }[] =
   { item: "Contratada", valor: TEXTO_CONTRATADA_REDE },
   { item: "Período de atuação", valor: "Os serviços objeto desta proposta serão prestados durante o ano de 2027." },
   { item: "Vigência financeira", valor: "As condições financeiras desta proposta, incluindo os valores de credenciamento e a remuneração pela gestão da rede, aplicam-se exclusivamente ao ano de 2027 e não se estendem a períodos posteriores." },
+  { item: "Investimento do Bensaúde", valor: "O valor por credenciamento que exceder R$ 200,00, as parcelas mensais fixas da gestão e a remuneração estimada por vidas vendidas acumuladas foram considerados investimento do Bensaúde nesta operação. Assim, o sucesso do projeto e o consequente retorno desse investimento dependem da qualidade dos serviços prestados e do empenho no cumprimento das metas." },
   { item: "Transição da gestão", valor: "A partir de 2028, a gestão da rede assistencial e o acompanhamento da sinistralidade passarão a ser conduzidos diretamente pelo Bensaúde." },
 ];
 
