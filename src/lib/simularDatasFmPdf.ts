@@ -1,9 +1,9 @@
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import autoTable, { type RowInput } from "jspdf-autotable";
 import { attachTimbrado, TIMBRADO_RAZAO_SOCIAL } from "@/lib/pdfTimbrado";
 import { aplicarMarcaAxis } from "@/lib/pdfMarcaAxis";
 import {
-  avaliarImpactosFm, formatarCompetencia, formatarNumeroFm, formatarPrazo, ordenarSimulacoesFm, periodoFm, prazoFolhaFm, simularDatasFm,
+  PARTES_BLOCOS_FM, avaliarImpactosFm, blocosPeriodoFm, hospitalBeneFm, formatarCompetencia, formatarNumeroFm, formatarPrazo, ordenarSimulacoesFm, periodoFm, prazoFolhaFm, simularDatasFm,
   type NivelImpactoFm, type SimulacaoFm,
 } from "@/lib/simularDatasFm";
 
@@ -13,7 +13,12 @@ export type PaginaCenarioFm = {
   titulo: string; cenario: string; competencia: string; arquivo: string; periodo: string; prazoFolha: string; alteradaEm: string;
   datas: { variavel: string; referencia: string; data: string; prazo: string }[];
   impactos: { variavel: string; dias: string; situacao: string; nivel: NivelImpactoFm; descricao: string }[];
+  /** Cenários "Em blocos" (pedido de 18/11/2026): o mesmo quadro da tela, com um texto que o situa no relatório; ausente nos demais. */
+  blocos?: { contexto: string; partes: { titulo: string; linhas: { bloco: string; periodo: string; dias: string; arquivo: string }[] }[] };
 };
+/** Rótulo dos cenários simulados em blocos (Lista de Simulações e relatório). */
+export const EM_BLOCOS_FM = "Em blocos";
+
 
 // Fonte padrão do PDF (WinAnsi) não tem o "−": vira hífen.
 const pdfTexto = (t: string) => t.replace(/−/g, "-");
@@ -42,8 +47,21 @@ export function paginasCenariosFm(lista: SimulacaoFm[]): PaginaCenarioFm[] {
         prazo: pdfTexto(`${formatarPrazo(l.diasBase)} ${Math.abs(l.diasBase) === 1 ? "dia" : "dias"} desde o ${l.base}`),
       })),
       impactos: avaliarImpactosFm(s.entrada).map((i) => ({ variavel: i.rotulo, dias: pdfTexto(formatarPrazo(i.dias)), situacao: i.status, nivel: i.nivel, descricao: pdfTexto(i.descricao) })),
+      ...(s.entrada.blocos ? { blocos: blocosDaPagina(s) } : {}),
     };
   });
+}
+
+function blocosDaPagina(s: SimulacaoFm): NonNullable<PaginaCenarioFm["blocos"]> {
+  const blocos = blocosPeriodoFm(s.entrada), hospital = hospitalBeneFm(s.entrada);
+  const linha = (bloco: string, b: { de: string; ate: string; dias: number; arquivo: string }) => ({ bloco, periodo: `${b.de} a ${b.ate}`, dias: `${formatarPrazo(b.dias)} dias`, arquivo: b.arquivo });
+  return {
+    contexto: `Período simulado em blocos. Parte 1: os ${PARTES_BLOCOS_FM.outros} enviam o arquivo em ${blocos.length} blocos de cerca de 07 dias, com Arquivo no dia seguinte ao fim de cada bloco. Parte 2: o ${PARTES_BLOCOS_FM.hospital} envia o Período geral, com Arquivo na data limite do cenário (${hospital.arquivo}). Datas e Impactos seguem o Arquivo do cenário.`,
+    partes: [
+      { titulo: `Parte 1 — ${PARTES_BLOCOS_FM.outros}`, linhas: blocos.map((b) => linha(`Bloco ${b.bloco}`, b)) },
+      { titulo: `Parte 2 — ${PARTES_BLOCOS_FM.hospital}`, linhas: [linha("Período geral", hospital)] },
+    ],
+  };
 }
 
 type RGB = [number, number, number];
@@ -65,7 +83,7 @@ export function buildCenariosFmPdf(timbrado: string | null, lista: SimulacaoFm[]
     doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(...TINTA);
     doc.text("Simulação de Datas FM", mL, y + 5);
     doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(...SECUNDARIO);
-    doc.text(`Laboratory · Lista de Simulações · ${p.titulo} de ${paginas.length}`, mL, y + 11);
+    doc.text(`Laboratory · Lista de Simulações · ${p.titulo} de ${paginas.length}${p.blocos ? ` · ${EM_BLOCOS_FM}` : ""}`, mL, y + 11);
     doc.setDrawColor(...TINTA); doc.setLineWidth(0.6); doc.line(mL, y + 14, right, y + 14);
     y += 21;
 
@@ -74,26 +92,42 @@ export function buildCenariosFmPdf(timbrado: string | null, lista: SimulacaoFm[]
     const nome = doc.splitTextToSize(`${p.titulo}: ${p.cenario}`, w) as string[];
     doc.text(nome, mL, y + 4); y += nome.length * 5.6 + 3;
     const campos: [string, string][] = [["Competência", p.competencia], ["Arquivo", p.arquivo], ["Período", p.periodo], ["Prazo", p.prazoFolha]];
-    const ch = 17, gap = 3, cw = (w - gap * 3) / 4;
+    // Cenários em blocos: quadros mais compactos para tudo caber na página do cenário.
+    const compacto = !!p.blocos;
+    const ch = compacto ? 15 : 17, gap = 3, cw = (w - gap * 3) / 4;
     campos.forEach(([r, v], i) => {
       const x = mL + i * (cw + gap);
       doc.setFillColor(...CARTAO); doc.setDrawColor(...LINHA); doc.setLineWidth(0.3); doc.roundedRect(x, y, cw, ch, 2, 2, "FD");
       doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.setTextColor(...SECUNDARIO); doc.text(r.toUpperCase(), x + 3, y + 5.5);
       doc.setTextColor(...TINTA); let f = 11; doc.setFontSize(f); while (f > 7 && doc.getTextWidth(v) > cw - 6) doc.setFontSize((f -= 0.5));
-      doc.text(v, x + 3, y + 12.5);
+      doc.text(v, x + 3, y + ch - 4.5);
     });
-    y += ch + 8;
+    y += ch + (compacto ? 6 : 8);
 
-    const tabela = (titulo: string, head: string[], body: string[][], extra: Parameters<typeof autoTable>[1]) => {
+    const tabela = (titulo: string, head: string[], body: RowInput[], extra: Parameters<typeof autoTable>[1]) => {
       doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(...TINTA); doc.text(titulo, mL, y);
       autoTable(doc, {
         startY: y + 2.5, margin: { left: mL, right: mR, top, bottom: 25 }, head: [head], body, theme: "grid",
-        styles: { font: "helvetica", fontSize: 10, cellPadding: { top: 2, bottom: 2, left: 3, right: 3 }, textColor: TEXTO, lineColor: LINHA, lineWidth: 0.15, valign: "middle" },
+        styles: { font: "helvetica", fontSize: compacto ? 9 : 10, cellPadding: { top: compacto ? 1.3 : 2, bottom: compacto ? 1.3 : 2, left: 3, right: 3 }, textColor: TEXTO, lineColor: LINHA, lineWidth: 0.15, valign: "middle" },
         headStyles: { fillColor: TINTA, textColor: [255, 255, 255], fontStyle: "bold", lineColor: TINTA },
         alternateRowStyles: { fillColor: ZEBRA }, tableLineColor: TINTA, tableLineWidth: 0.4, ...extra,
       });
-      y = ((doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y) + 9;
+      y = ((doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y) + (compacto ? 6.5 : 9);
     };
+    if (p.blocos) {
+      // Simulação em blocos (pedido de 18/11/2026): texto de contexto + o mesmo quadro da tela, antes das Datas (mesma ordem da tela).
+      doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(...TEXTO);
+      const ctx = doc.splitTextToSize(pdfTexto(p.blocos.contexto), w) as string[];
+      doc.text(ctx, mL, y, { lineHeightFactor: 1.3 }); y += ctx.length * 9.5 * 0.3528 * 1.3 + 4;
+      const corpo: RowInput[] = p.blocos.partes.flatMap((pt) => [
+        [{ content: pt.titulo.toUpperCase(), colSpan: 4, styles: { fontStyle: "bold", fillColor: CARTAO, textColor: TINTA, fontSize: 8.5 } }],
+        ...pt.linhas.map((l) => [l.bloco, l.periodo, l.dias, l.arquivo]),
+      ]);
+      tabela("Simulação em blocos", ["BLOCO", "PERÍODO", "DIAS", "ARQUIVO"], corpo, {
+        alternateRowStyles: {},
+        columnStyles: { 0: { fontStyle: "bold", cellWidth: 38 }, 2: { halign: "right", cellWidth: 25 }, 3: { halign: "right", fontStyle: "bold", cellWidth: 32 } },
+      });
+    }
     tabela("Datas", ["VARIÁVEL", "REFERÊNCIA", "DATA", "PRAZO"], p.datas.map((d) => [d.variavel, d.referencia, d.data, d.prazo]), {
       columnStyles: { 0: { fontStyle: "bold", cellWidth: 32 }, 1: { cellWidth: 48 }, 2: { halign: "right", cellWidth: 30 } },
     });
@@ -102,7 +136,8 @@ export function buildCenariosFmPdf(timbrado: string | null, lista: SimulacaoFm[]
       didDrawCell: (d) => {
         if (d.section !== "body" || d.column.index !== 2) return;
         doc.setFillColor(...MARCADOR[p.impactos[d.row.index].nivel]); doc.setDrawColor(...LINHA); doc.setLineWidth(0.2);
-        doc.rect(d.cell.x + 2.2, d.cell.y + d.cell.height / 2 - 1.4, 2.8, 2.8, "FD");
+        const q = compacto ? 2.4 : 2.8;
+        doc.rect(d.cell.x + 2.2, d.cell.y + d.cell.height / 2 - q / 2, q, q, "FD");
       },
     });
 

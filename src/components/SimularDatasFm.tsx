@@ -3,7 +3,7 @@ import { Copy, Plus, Printer, Save, Trash2, X } from "lucide-react";
 import PdfPreview from "@/components/PdfPreview";
 import { loadTimbrado } from "@/lib/pdfTimbrado";
 import { loadMarcaAxis } from "@/lib/pdfMarcaAxis";
-import { buildCenariosFmPdf } from "@/lib/simularDatasFmPdf";
+import { EM_BLOCOS_FM, buildCenariosFmPdf } from "@/lib/simularDatasFmPdf";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -79,7 +79,11 @@ export default function SimularDatasFm() {
               return (
                 <tr key={s.id} className="cursor-pointer border-b border-border last:border-b-0 hover:bg-muted/50" onClick={() => setRascunho(s)} title="Abrir simulação">
                   <td className="px-3 py-1.5 text-right font-semibold tabular-nums">{formatarNumeroFm(s.numero)}</td>
-                  <td className={`px-3 py-1.5 ${s.descricao ? "font-medium" : "italic text-muted-foreground"}`}>{s.descricao || "Sem nome"}</td>
+                  <td className="px-3 py-1.5">
+                    <span className={s.descricao ? "font-medium" : "italic text-muted-foreground"}>{s.descricao || "Sem nome"}</span>
+                    {/* Cenários simulados em blocos citados na Lista (pedido de 18/11/2026). */}
+                    {s.entrada.blocos && <span className="ml-2 text-xs font-semibold text-primary">· {EM_BLOCOS_FM}</span>}
+                  </td>
                   <td className="px-3 py-1.5 text-center tabular-nums">{formatarCompetencia(s.entrada.mes, s.entrada.ano)}</td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{data("arquivo")}</td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{data("fechamento")}</td>

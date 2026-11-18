@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCenariosFmPdf, paginasCenariosFm } from "./simularDatasFmPdf";
+import { EM_BLOCOS_FM, buildCenariosFmPdf, paginasCenariosFm } from "./simularDatasFmPdf";
 import { avaliarImpactosFm, novaSimulacaoFm, simularDatasFm } from "./simularDatasFm";
 
 const AGORA = "2026-11-18T16:00:00.000Z";
@@ -21,5 +21,17 @@ describe("Imprimir Cenários (Simular Datas FM)", () => {
     expect(padrao.datas.map((d) => d.data)).toEqual(simularDatasFm(lista[1].entrada).filter((l) => l.id !== "arquivo").map((l) => l.data));
     expect(padrao.impactos.map((i) => i.situacao)).toEqual(avaliarImpactosFm(lista[1].entrada).map((i) => i.status));
     expect(curta.prazoFolha).toBe("05 dias para Fechar a Folha");
+  });
+  it("prints the blocks box only for scenarios simulated in blocks, still one page each", () => {
+    const comBlocos = [...lista, novaSimulacaoFm("d", AGORA, 4, { mes: 12, ano: 2026, dias: {}, blocos: true }, "Blocos")];
+    const p = paginasCenariosFm(comBlocos);
+    expect(p.slice(0, 3).every((x) => x.blocos === undefined)).toBe(true);
+    const b = p[3].blocos!;
+    expect(b.partes.map((x) => x.titulo)).toEqual(["Parte 1 — Outros Credenciados", "Parte 2 — Hospital Benê"]);
+    expect(b.partes[0].linhas.map((l) => l.arquivo)).toEqual(["28/11/2026", "06/12/2026", "13/12/2026", "20/12/2026"]);
+    expect(b.partes[1].linhas).toEqual([{ bloco: "Período geral", periodo: "20/11/2026 a 19/12/2026", dias: "30 dias", arquivo: "20/12/2026" }]);
+    expect(b.contexto).toContain("data limite do cenário (20/12/2026)");
+    expect(EM_BLOCOS_FM).toBe("Em blocos");
+    expect(buildCenariosFmPdf(null, comBlocos).getNumberOfPages()).toBe(4);
   });
 });
