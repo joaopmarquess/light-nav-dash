@@ -93,4 +93,9 @@ describe("Simular Datas FM", () => {
     expect(niveis(20, 12, { diops: 24 })).toMatchObject({ diops: "Abaixo do ideal" });
     expect(niveis(5, 1)).toMatchObject({ peona: "Sem impacto" });
   });
+  it("PRAZO: Fechamento desde o Arquivo; Dare, DIOPS e Pagamento desde o Fechamento", () => {
+    expect(simularDatasFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20 }, arquivoMes: 12 }).map((l) => [l.rotulo, l.diasBase, l.base])).toEqual([
+      ["Arquivo", 0, "Arquivo"], ["Fechamento", 21, "Arquivo"], ["Dare", 5, "Fechamento"], ["DIOPS", 20, "Fechamento"], ["Pagamento", 20, "Fechamento"],
+    ]);
+  });
 });
