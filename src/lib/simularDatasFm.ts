@@ -16,7 +16,7 @@ export const LINHAS_DATAS_FM: LinhaDataFmDef[] = [
 ];
 export const COMPETENCIA_PADRAO = { mes: 12, ano: 2026 };
 
-/** "Dias" (pedido de 18/11/2026): variável numérica própria, padrão 1, exibida logo após Arquivo; ainda sem efeito nas datas. */
+/** "Dias" (pedido de 18/11/2026): variável numérica própria, padrão 1, exibida logo antes de Arquivo; ainda sem efeito nas datas. */
 export const DIAS_PADRAO = 1;
 export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>>; qtdDias?: number };
 
