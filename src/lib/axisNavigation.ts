@@ -13,7 +13,6 @@ const controlItem: MenuItem = {
     children: [
       { icon: FileText, label: DRE_MENU_NAME, id: "Control · DRE Gerencial PE" },
       { icon: BarChart3, label: BENCH_SHORT_TEXT, id: "Control · Bench C" },
-      { icon: FileText, label: "Relatório", id: "Control · Relatório" },
       { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente" },
       { icon: TrendingUp, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
       { icon: FlaskConical, label: "Simulador", id: "Control · Simulador" },

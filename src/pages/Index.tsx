@@ -90,7 +90,6 @@ import CtrlHistoricoDRE from "@/control/HistoricoDRE";
 import CtrlContas from "@/control/ContasHub";
 import CtrlOrcamento from "@/control/OrcamentoTrial";
 import CtrlDashboards from "@/control/Dashboards";
-import CtrlRelatorio from "@/control/RelatorioControladoria";
 import RelatorioControladoriaVisao from "@/control/RelatorioControladoriaVisao";
 import CtrlSimulador from "@/control/Simulador";
 import CtrlBench from "@/control/BenchC";
@@ -173,7 +172,7 @@ const Index = () => {
   const [ctrlOrcDre, setCtrlOrcDre] = useState(false);
   const [ctrlCfgOpen, setCtrlCfgOpen] = useState(false);
   const [ctrlDreAba, setCtrlDreAba] = useState<"Painel" | "DRE" | "Histórico">("Painel");
-  const controlTitle = active === "Control · Bench C" ? BENCH_LONG_TEXT : active === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : active === "Control · Relatório" ? REPORT_FULL_NAME : active === "Control · Dashboards" ? SLIDES_LONG_TEXT : active === "Control · Orçamento Vigente" ? "Orçamento 2026" : active === "Control · Orçamento 2027" ? "Orçamento 2027" : active === "Control · Simulador" ? "Simulador" : active === "Control · Contas" ? "Contas" : active === "Relatório · Controladoria" ? REPORT_FULL_NAME : null;
+  const controlTitle = active === "Control · Bench C" ? BENCH_LONG_TEXT : active === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : active === "Control · Dashboards" ? SLIDES_LONG_TEXT : active === "Control · Orçamento Vigente" ? "Orçamento 2026" : active === "Control · Orçamento 2027" ? "Orçamento 2027" : active === "Control · Simulador" ? "Simulador" : active === "Control · Contas" ? "Contas" : active === "Relatório · Controladoria" ? REPORT_FULL_NAME : null;
   const controlSubtitle = active === "Control · Dashboards" ? SLIDES_MEDIUM_TEXT : null;
   useEffect(() => {
     if (active === "Control · Orçamento 2027") return;
@@ -292,7 +291,7 @@ const Index = () => {
                       return (
                         <button
                           key={child.label}
-                          title={child.id === "Control · Bench C" ? BENCH_LONG_TEXT : child.id === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : child.id === "Control · Relatório" ? REPORT_FULL_NAME : child.id === "Control · Dashboards" ? SLIDES_LONG_TEXT : undefined}
+                          title={child.id === "Control · Bench C" ? BENCH_LONG_TEXT : child.id === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : child.id === "Control · Dashboards" ? SLIDES_LONG_TEXT : undefined}
                           onClick={() => child.id === "__cfg_control__" ? setCtrlCfgOpen((o) => !o) : setActive((child.id ?? child.label))}
                           className={`w-full flex items-center gap-3 ${child.nivel === 2 ? "pl-14" : "pl-9"} pr-3 py-2 rounded-lg text-sm transition-colors ${
                             childActive
@@ -529,8 +528,6 @@ const Index = () => {
             <CtrlContas />
           ) : active === "Control · Orçamento Vigente" ? (
             ctrlOrcDre ? <CtrlOrcamento onAba={() => setCtrlOrcDre(false)} /> : <CtrlOrcamento painel onAba={() => setCtrlOrcDre(true)} />
-          ) : active === "Control · Relatório" ? (
-            <CtrlRelatorio />
           ) : active === "Relatório · Controladoria" ? (
             <RelatorioControladoriaVisao />
           ) : active === "Control · Dashboards" ? (
