@@ -49,7 +49,7 @@ export default function UberabaQuantidadeCredenciamentos() {
                   <Icone className="h-4 w-4 shrink-0" />{l.tipo}<span className="ml-1 text-xs text-muted-foreground">({itens.length})</span>
                 </button>
               </td>
-              <td className="px-3 py-1.5 text-right tabular-nums">{numero(l.disponivel)}</td>
+              <td className="px-3 py-1.5 text-right tabular-nums">{l.disponivel == null ? "—" : numero(l.disponivel)}</td>
               <td className="px-3 py-1.5 text-right">
                 <Input inputMode="numeric" aria-label={`Autorizado — ${l.tipo}`} title={`Limite: ${numero(l.limite)} (apague para restaurar)`}
                   value={autorizados[l.id] ?? ""} placeholder={String(l.limite)}
@@ -89,7 +89,7 @@ export default function UberabaQuantidadeCredenciamentos() {
           </tr>
         </tfoot>
       </table>
-      <p className="px-3 pt-2 text-xs text-muted-foreground">Autorizado começa pelo Limite de cada tipo; apague o campo para restaurá-lo. Nas linhas abertas, a quantidade começa em 2 por especialidade médica e 1 nos demais itens; o valor digitado fica salvo neste navegador (apague para restaurar) e soma só na linha "Soma dos itens". Especialidades médicas conforme o Guia Médico do Bensaúde (consultado em 17/11/2026). {notasAgrupamento().join(" ")}</p>
+      <p className="px-3 pt-2 text-xs text-muted-foreground">Autorizado começa pelo Limite de cada tipo (Hospitais: 2, sem Disponível na referência); apague o campo para restaurá-lo. Nas linhas abertas, a quantidade começa em 2 por especialidade médica e 1 nos demais itens (inclusive cada hospital); o valor digitado fica salvo neste navegador (apague para restaurar) e soma só na linha "Soma dos itens". Especialidades médicas conforme o Guia Médico do Bensaúde (consultado em 17/11/2026). {notasAgrupamento().join(" ")}</p>
     </div>
   );
 }

@@ -1,15 +1,18 @@
 /** Quantidade de Credenciamentos (Estudo Uberaba › Resultados Rede): Disponível e Limite vêm do helper de credenciamento; Autorizado é editado na tela e gravado neste navegador. */
 import { cenarioCredenciamento, type GrupoCredenciamento } from "@/lib/uberabaCredenciamento";
 
-export type AutorizadosCredenciamento = Partial<Record<GrupoCredenciamento, number>>;
-export type LinhaQuantidadeCredenciamento = { id: GrupoCredenciamento; tipo: string; disponivel: number; autorizado: number; limite: number };
+/** Tipos do grid: os três grupos de credenciamento mais Hospitais (pedido de 18/11/2026), que existe só nesta tela e não tem Disponível na referência. */
+export type TipoQuantidade = GrupoCredenciamento | "hospitais";
+export type AutorizadosCredenciamento = Partial<Record<TipoQuantidade, number>>;
+export type LinhaQuantidadeCredenciamento = { id: TipoQuantidade; tipo: string; disponivel: number | null; autorizado: number; limite: number };
+export const TIPO_HOSPITAIS = "Hospitais";
 
 export const CHAVE_AUTORIZADOS_CREDENCIAMENTO = "uberaba.quantidadeCredenciamentos.autorizados.v1";
 
 /** Itens de cada tipo. Especialidades médicas: as listadas no Guia Médico do Bensaúde (bensaude.com.br/guia-medico, consultado em 17/11/2026),
  * sem serviços, hospitais e profissões não médicas. Diagnóstico e terapia: itens informados pelo Dênis, com a correspondência no mesmo guia. */
 export type ItemCredenciamento = { nome: string; guia?: string[] };
-export const ITENS_CREDENCIAMENTO: Record<GrupoCredenciamento, ItemCredenciamento[]> = {
+export const ITENS_CREDENCIAMENTO: Record<TipoQuantidade, ItemCredenciamento[]> = {
   medicos: [
     { nome: "Alergia e Imunologia" },
     { nome: "Alergia e Imunologia Pediátrica" },
@@ -67,6 +70,10 @@ export const ITENS_CREDENCIAMENTO: Record<GrupoCredenciamento, ItemCredenciament
     { nome: "Reumatologia" },
     { nome: "Urologia" },
   ],
+  hospitais: [
+    { nome: "Hospital Geral" },
+    { nome: "Hospital Pediátrico" },
+  ],
   diagnostico: [
     { nome: "Laboratório de Análises Clínicas", guia: ["Serviço de Patologia Clínica – Laboratórios"] },
     { nome: "Laboratório de Análises Patológicas", guia: ["Serviço de Anatomia Patológica"] },
@@ -106,25 +113,32 @@ function agruparFixos(itens: ItemExibidoCredenciamento[]): ItemExibidoCredenciam
     return g ? { ...i, nome: `${i.nome}**`, inclui: [i.nome, ...g.inclui.filter((n) => nomes.has(n))] } : i;
   });
 }
-export function itensExibidos(grupo: GrupoCredenciamento): ItemExibidoCredenciamento[] {
+export function itensExibidos(grupo: TipoQuantidade): ItemExibidoCredenciamento[] {
   return agruparFixos(agruparPediatricas(ITENS_CREDENCIAMENTO[grupo]));
 }
 /** Notas de rodapé dos agrupamentos que aparecem na lista. */
 export function notasAgrupamento(): string[] {
-  const nomes = new Set((Object.keys(ITENS_CREDENCIAMENTO) as GrupoCredenciamento[]).flatMap((g) => itensExibidos(g).map((i) => i.nome)));
+  const nomes = new Set((Object.keys(ITENS_CREDENCIAMENTO) as TipoQuantidade[]).flatMap((g) => itensExibidos(g).map((i) => i.nome)));
   return [NOTA_PEDIATRICA, ...AGRUPAMENTOS_ESPECIALIDADES.filter((g) => nomes.has(`${g.alvo}**`)).map((g) => g.nota)];
 }
 
 /** Autorizado começa pelo Limite de cada tipo; valor digitado (inteiro ≥ 0) prevalece. */
+/** Autorizado padrão de Hospitais: Hospital Geral (1) + Hospital Pediátrico (1). */
+export const AUTORIZADO_PADRAO_HOSPITAIS = 2;
 export function linhasQuantidadeCredenciamentos(autorizados: AutorizadosCredenciamento = {}) {
   const disponiveis = cenarioCredenciamento("Disponível").grupos;
   const limites = cenarioCredenciamento("Limite").grupos;
-  const linhas: LinhaQuantidadeCredenciamento[] = disponiveis.map((g, i) => {
+  const grupos: LinhaQuantidadeCredenciamento[] = disponiveis.map((g, i) => {
     const limite = limites[i].quantidade;
     const digitado = autorizados[g.id];
     return { id: g.id, tipo: g.titulo, disponivel: g.quantidade, limite, autorizado: digitado ?? limite };
   });
-  const total = { disponivel: linhas.reduce((s, l) => s + l.disponivel, 0), autorizado: linhas.reduce((s, l) => s + l.autorizado, 0) };
+  // Hospitais logo após Especialidades médicas; sem Disponível de referência, Autorizado começa pela soma dos itens padrão.
+  const limiteHosp = AUTORIZADO_PADRAO_HOSPITAIS;
+  const hospitais: LinhaQuantidadeCredenciamento = { id: "hospitais", tipo: TIPO_HOSPITAIS, disponivel: null, limite: limiteHosp, autorizado: autorizados.hospitais ?? limiteHosp };
+  const pos = grupos.findIndex((l) => l.id === "medicos") + 1;
+  const linhas = [...grupos.slice(0, pos), hospitais, ...grupos.slice(pos)];
+  const total = { disponivel: linhas.reduce((s, l) => s + (l.disponivel ?? 0), 0), autorizado: linhas.reduce((s, l) => s + l.autorizado, 0) };
   return { linhas, total };
 }
 
@@ -140,7 +154,7 @@ export function carregarAutorizados(): AutorizadosCredenciamento {
   try {
     const bruto = JSON.parse(localStorage.getItem(CHAVE_AUTORIZADOS_CREDENCIAMENTO) ?? "{}");
     const saida: AutorizadosCredenciamento = {};
-    for (const id of ["medicos", "diagnostico", "nao-medicos"] as const) if (Number.isInteger(bruto?.[id]) && bruto[id] >= 0) saida[id] = bruto[id];
+    for (const id of ["medicos", "hospitais", "diagnostico", "nao-medicos"] as const) if (Number.isInteger(bruto?.[id]) && bruto[id] >= 0) saida[id] = bruto[id];
     return saida;
   } catch { return {}; }
 }
@@ -152,15 +166,15 @@ export function salvarAutorizados(valores: AutorizadosCredenciamento) {
 /** Quantidade digitada em cada linha expandida (item exibido), gravada neste navegador; chave `grupo:nome exibido`. Não altera Disponível nem Autorizado do tipo. */
 export type QuantidadesItens = Record<string, number>;
 export const CHAVE_QUANTIDADES_ITENS = "uberaba.quantidadeCredenciamentos.itens.v1";
-export const chaveItem = (grupo: GrupoCredenciamento, nome: string) => `${grupo}:${nome}`;
+export const chaveItem = (grupo: TipoQuantidade, nome: string) => `${grupo}:${nome}`;
 /** Quantidade padrão de cada item (pedido de 17/11/2026): 2 por especialidade médica e 1 para os demais itens. */
-export const QUANTIDADE_PADRAO_ITEM: Record<GrupoCredenciamento, number> = { medicos: 2, diagnostico: 1, "nao-medicos": 1 };
+export const QUANTIDADE_PADRAO_ITEM: Record<TipoQuantidade, number> = { medicos: 2, hospitais: 1, diagnostico: 1, "nao-medicos": 1 };
 /** Quantidade do item: a digitada prevalece; sem digitação, o padrão do tipo. */
-export function quantidadeItem(grupo: GrupoCredenciamento, nome: string, valores: QuantidadesItens) {
+export function quantidadeItem(grupo: TipoQuantidade, nome: string, valores: QuantidadesItens) {
   return valores[chaveItem(grupo, nome)] ?? QUANTIDADE_PADRAO_ITEM[grupo];
 }
 /** Soma das quantidades dos itens do tipo (digitadas ou padrão), quantos itens há e quantos foram alterados. */
-export function somaItens(grupo: GrupoCredenciamento, valores: QuantidadesItens) {
+export function somaItens(grupo: TipoQuantidade, valores: QuantidadesItens) {
   const itens = itensExibidos(grupo);
   return {
     soma: itens.reduce((s, i) => s + quantidadeItem(grupo, i.nome, valores), 0),

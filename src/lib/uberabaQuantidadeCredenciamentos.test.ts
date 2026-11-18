@@ -2,24 +2,25 @@ import { describe, expect, it } from "vitest";
 import { ITENS_CREDENCIAMENTO, alterarItem, chaveItem, itensExibidos, somaItens, lerAutorizado, notasAgrupamento, linhasQuantidadeCredenciamentos } from "./uberabaQuantidadeCredenciamentos";
 
 describe("Quantidade de Credenciamentos", () => {
-  it("tem os três tipos de credenciado com a quantidade disponível", () => {
+  it("tem os tipos de credenciado com a quantidade disponível, Hospitais logo após Especialidades médicas", () => {
     const { linhas, total } = linhasQuantidadeCredenciamentos();
     expect(linhas.map((l) => [l.tipo, l.disponivel])).toEqual([
       ["Especialidades médicas", 229],
+      ["Hospitais", null],
       ["Serviços auxiliares de diagnóstico e terapia", 69],
       ["Serviços auxiliares e profissionais não médicos", 55],
     ]);
     expect(total.disponivel).toBe(353);
   });
-  it("Autorizado começa pelo Limite (112, 15, 12)", () => {
+  it("Autorizado começa pelo Limite (112, Hospitais 2, 15, 12)", () => {
     const { linhas, total } = linhasQuantidadeCredenciamentos();
-    expect(linhas.map((l) => l.autorizado)).toEqual([112, 15, 12]);
-    expect(total.autorizado).toBe(139);
+    expect(linhas.map((l) => l.autorizado)).toEqual([112, 2, 15, 12]);
+    expect(total.autorizado).toBe(141);
   });
   it("Autorizado digitado substitui o Limite só no tipo editado", () => {
     const { linhas, total } = linhasQuantidadeCredenciamentos({ medicos: 150 });
-    expect(linhas.map((l) => l.autorizado)).toEqual([150, 15, 12]);
-    expect(total.autorizado).toBe(177);
+    expect(linhas.map((l) => l.autorizado)).toEqual([150, 2, 15, 12]);
+    expect(total.autorizado).toBe(179);
   });
   it("campo vazio restaura o Limite e texto inválido é recusado", () => {
     expect(lerAutorizado("")).toBeUndefined();
@@ -57,6 +58,10 @@ describe("Quantidade de Credenciamentos", () => {
     expect(itens.find((i) => i.nome === "Clínico Geral**")?.inclui).toEqual(["Clínico Geral", "Clínica Médica"]);
     expect(notasAgrupamento()).toContain("** Inclui também Clínica Médica.");
   });
+  it("Hospitais: Hospital Geral (1) e Hospital Pediátrico (1)", () => {
+    expect(itensExibidos("hospitais").map((i) => i.nome)).toEqual(["Hospital Geral", "Hospital Pediátrico"]);
+    expect(somaItens("hospitais", {})).toEqual({ soma: 2, itens: 2, alterados: 0 });
+  });
   it("quantidade padrão dos itens: 2 por especialidade médica e 1 nos demais (92, 4 e 4)", () => {
     expect(somaItens("medicos", {})).toEqual({ soma: 92, itens: 46, alterados: 0 });
     expect(somaItens("diagnostico", {})).toEqual({ soma: 4, itens: 4, alterados: 0 });
@@ -70,6 +75,6 @@ describe("Quantidade de Credenciamentos", () => {
     expect(somaItens("diagnostico", v)).toEqual({ soma: 3, itens: 4, alterados: 1 });
     expect(alterarItem(v, chaveItem("medicos", "Cardiologia*"), "2,5")).toBeNull();
     expect(somaItens("medicos", alterarItem(v, chaveItem("medicos", "Cardiologia*"), "")!).soma).toBe(92 - 2 + 10);
-    expect(linhasQuantidadeCredenciamentos().total.autorizado).toBe(139);
+    expect(linhasQuantidadeCredenciamentos().total.autorizado).toBe(141);
   });
 });
