@@ -25,6 +25,7 @@ const controlItem: MenuItem = {
 
 export const labItems: MenuItem[] = [
   { icon: FileText, label: "Proposta APB" },
+  { icon: CalendarCheck, label: "Simular Datas FM" },
   {
     icon: Users,
     label: "vCarteira",
@@ -131,6 +132,7 @@ export const homeShortcuts = [
   { icon: Tags, label: "Res. Comerciais", destination: UBERABA_RESULTADOS_COMERCIAIS, menu: "Laboratory" },
   { icon: FlaskConical, label: "Laboratory", destination: "Laboratory", menu: "Laboratory" },
   { icon: FileText, label: "Proposta APB", destination: "Proposta APB", menu: "Laboratory" },
+  { icon: CalendarCheck, label: "Simular Datas FM", destination: "Simular Datas FM", menu: "Laboratory" },
   { icon: Layers, label: "Evolução Produtos", destination: "Evolução Produtos", menu: "Sinistralidade" },
   { icon: LayoutDashboard, label: "Painel", destination: "Carteira · Painel", menu: "Carteira" },
   { icon: BarChart3, label: "Bench Vidas", destination: "Carteira · Bench Vidas", menu: "Carteira" },

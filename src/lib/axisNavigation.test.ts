@@ -61,7 +61,7 @@ describe("Home shortcut groups", () => {
       ["Control", ["Controladoria", "Demonstrações", "Bench Contábil"]],
       ["Carteira", ["Movimentação", "Área Geográfica", "Painel", "Bench Vidas"]],
       ["Sinistralidade", ["Período", "Evolução Produtos"]],
-      ["Laboratory", ["Proj. Uberaba", "Res. Comerciais", "Laboratory", "Proposta APB"]],
+      ["Laboratory", ["Proj. Uberaba", "Res. Comerciais", "Laboratory", "Proposta APB", "Simular Datas FM"]],
     ]);
   });
   it("omits a menu with no permitted shortcut", () => {

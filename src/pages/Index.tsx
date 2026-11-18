@@ -82,6 +82,7 @@ import InteligenciaUnimed from "@/components/InteligenciaUnimed";
 import Promocoes from "@/components/Promocoes";
 import UberabaHospitais from "@/components/UberabaHospitais";
 import AdministradorasSim from "@/components/AdministradorasSim";
+import SimularDatasFm from "@/components/SimularDatasFm";
 import ControlPainel from "@/control/OrcamentoFaturamento";
 import PainelBeneficiario from "@/components/PainelBeneficiario";
 import CtrlDRE from "@/control/DRETrial";
@@ -463,6 +464,8 @@ const Index = () => {
             <SinistralidadePeriodosMV />
           ) : active === "Proposta APB" ? (
             <PropostaApb />
+          ) : active === "Simular Datas FM" ? (
+            <SimularDatasFm />
           ) : active === "APB" ? (
             <SinistralidadeAPB />
           ) : active === "APB Top10" ? (
