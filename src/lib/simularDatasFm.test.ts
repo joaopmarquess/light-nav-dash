@@ -13,8 +13,14 @@ describe("Simular Datas FM", () => {
     ]);
   });
   it("linhas no mês seguinte, sem virar o ano fora de dezembro", () => {
-    const linhas = simularDatasFm({ mes: 5, ano: 2027, dias: { dare: 12 } });
-    expect(linhas.find((l) => l.id === "dare")!.data).toBe("12/06/2027");
+    const linhas = simularDatasFm({ mes: 5, ano: 2027, dias: {} });
+    expect(linhas.find((l) => l.id === "dare")!.data).toBe("15/06/2027");
+  });
+  it("REFERÊNCIA fixa de Dare (15), DIOPS (30) e Pagamento (30): valor digitado é ignorado", () => {
+    const linhas = simularDatasFm({ ...COMPETENCIA_PADRAO, dias: { dare: 12, diops: 20, pagamento: 25 } });
+    expect(linhas.filter((l) => ["dare", "diops", "pagamento"].includes(l.id)).map((l) => [l.dia, l.data])).toEqual([
+      [15, "15/01/2027"], [30, "30/01/2027"], [30, "30/01/2027"],
+    ]);
   });
   it("dia além do fim do mês vira o último dia (30 em fevereiro)", () => {
     expect(dataDaLinha(1, 2027, 30, true)).toEqual({ data: "28/02/2027", ajustado: true });
@@ -90,12 +96,12 @@ describe("Simular Datas FM", () => {
     // Arquivo 20/12 + 21 → Fechamento 10/01: Dare 15/01 = 5 dias, DIOPS e Pagamento 30/01 = 20 dias, PEONA 11 dias.
     const f = { fechamento: 21 };
     expect(niveis(20, 12, f)).toEqual({ peona: "Moderado", fechamento: "Ideal", dare: "Moderado", diops: "Ideal", pagamento: "Ideal" });
-    expect(niveis(20, 12, { ...f, dare: 14 })).toMatchObject({ dare: "Crítico" }); // 4 dias
-    expect(niveis(20, 12, { ...f, dare: 19 })).toMatchObject({ dare: "Moderado" }); // 9 dias
-    expect(niveis(20, 12, { ...f, dare: 20 })).toMatchObject({ dare: "Ideal" }); // 10 dias
-    expect(niveis(20, 12, { ...f, diops: 24 })).toMatchObject({ diops: "Moderado" }); // 14 dias
-    expect(niveis(20, 12, { ...f, pagamento: 24 })).toMatchObject({ pagamento: "Moderado" }); // 14 dias
-    expect(niveis(20, 12, { ...f, pagamento: 25 })).toMatchObject({ pagamento: "Ideal" }); // 15 dias
+    // Arquivo 20/12 + X → Dare 15/01 a 26 − X dias; DIOPS e Pagamento 30/01 a 41 − X dias.
+    expect(niveis(20, 12, { fechamento: 22 })).toMatchObject({ dare: "Crítico" }); // 4 dias
+    expect(niveis(20, 12, { fechamento: 17 })).toMatchObject({ dare: "Moderado" }); // 9 dias
+    expect(niveis(20, 12, { fechamento: 16 })).toMatchObject({ dare: "Ideal" }); // 10 dias
+    expect(niveis(20, 12, { fechamento: 27 })).toMatchObject({ diops: "Moderado", pagamento: "Moderado" }); // 14 dias
+    expect(niveis(20, 12, { fechamento: 26 })).toMatchObject({ diops: "Ideal", pagamento: "Ideal" }); // 15 dias
   });
   it("FECHAMENTO: menos de 10 dias Crítico, 10 a 19 Moderado, 20 ou mais Ideal", () => {
     const fech = (fechamento: number) => avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { fechamento } }).find((i) => i.id === "fechamento")!;

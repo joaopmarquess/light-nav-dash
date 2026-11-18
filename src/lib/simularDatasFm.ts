@@ -3,7 +3,7 @@
  * Dia maior que o último dia do mês vira o último dia (ex.: 30 em fevereiro → 28 ou 29).
  * Último Dia (pedido de 18/11/2026): se o mês do Arquivo = mês da competência, dia do Arquivo − 1; senão, último dia útil do mês da competência (ultimoDiaUtil). */
 export type IdDataFm = "arquivo" | "fechamento" | "dare" | "diops" | "pagamento";
-export type LinhaDataFmDef = { id: IdDataFm; rotulo: string; diaPadrao: number; mesSeguinte: boolean; destaque?: boolean; separadorAntes?: boolean; pedeMes?: boolean; somaAoArquivo?: boolean };
+export type LinhaDataFmDef = { id: IdDataFm; rotulo: string; diaPadrao: number; mesSeguinte: boolean; destaque?: boolean; separadorAntes?: boolean; pedeMes?: boolean; somaAoArquivo?: boolean; fixo?: boolean };
 
 export const LINHAS_DATAS_FM: LinhaDataFmDef[] = [
   // Arquivo logo após a Competência (pedido de 18/11/2026).
@@ -12,9 +12,10 @@ export const LINHAS_DATAS_FM: LinhaDataFmDef[] = [
   // De e Até retirados do grid (pedido de 18/11/2026); o Período acima do grid substitui.
   // Fechamento = data do Arquivo + REFERÊNCIA em dias corridos (pedido de 18/11/2026; substitui "dia no mês seguinte ao Arquivo").
   { id: "fechamento", rotulo: "Fechamento", diaPadrao: 10, mesSeguinte: true, somaAoArquivo: true },
-  { id: "dare", rotulo: "Dare", diaPadrao: 15, mesSeguinte: true, separadorAntes: true },
-  { id: "diops", rotulo: "DIOPS", diaPadrao: 30, mesSeguinte: true },
-  { id: "pagamento", rotulo: "Pagamento", diaPadrao: 30, mesSeguinte: true },
+  // Dare, DIOPS e Pagamento com REFERÊNCIA fixa, não editável (pedido de 18/11/2026): valores digitados antes são ignorados.
+  { id: "dare", rotulo: "Dare", diaPadrao: 15, mesSeguinte: true, separadorAntes: true, fixo: true },
+  { id: "diops", rotulo: "DIOPS", diaPadrao: 30, mesSeguinte: true, fixo: true },
+  { id: "pagamento", rotulo: "Pagamento", diaPadrao: 30, mesSeguinte: true, fixo: true },
 ];
 export const COMPETENCIA_PADRAO = { mes: 12, ano: 2026 };
 
@@ -62,7 +63,7 @@ function linhasDatasFm({ mes, ano, dias, arquivoMes }: EntradaDatasFm) {
   const diaArquivo = dias.arquivo ?? LINHAS_DATAS_FM.find((l) => l.id === "arquivo")!.diaPadrao;
   const dataArquivo = dataDiaMes(mes, ano, diaArquivo, mesArquivo).data;
   return LINHAS_DATAS_FM.map((l) => {
-    const dia = dias[l.id] ?? l.diaPadrao;
+    const dia = l.fixo ? l.diaPadrao : dias[l.id] ?? l.diaPadrao;
     if (l.pedeMes) {
       return { ...l, dia, mesLinha: mesArquivo, diaMes: `${dd(dia)}/${dd(mesArquivo)}`, ...dataDiaMes(mes, ano, dia, mesArquivo) };
     }
@@ -156,7 +157,7 @@ export function carregarDatasFm(): EntradaDatasFm {
   try {
     const b = JSON.parse(localStorage.getItem(CHAVE_DATAS_FM) ?? "{}");
     const dias: EntradaDatasFm["dias"] = {};
-    for (const l of LINHAS_DATAS_FM) if (Number.isInteger(b?.dias?.[l.id]) && b.dias[l.id] >= 1 && b.dias[l.id] <= 31) dias[l.id] = b.dias[l.id];
+    for (const l of LINHAS_DATAS_FM) if (!l.fixo && Number.isInteger(b?.dias?.[l.id]) && b.dias[l.id] >= 1 && b.dias[l.id] <= 31) dias[l.id] = b.dias[l.id];
     const arquivoMes = Number.isInteger(b?.arquivoMes) && b.arquivoMes >= 1 && b.arquivoMes <= 12 ? b.arquivoMes : undefined;
     const referenciaUltimoDia = Number.isInteger(b?.referenciaUltimoDia) && b.referenciaUltimoDia >= 1 && b.referenciaUltimoDia <= 31 ? b.referenciaUltimoDia : undefined;
     return {

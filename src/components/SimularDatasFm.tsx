@@ -90,12 +90,14 @@ export default function SimularDatasFm() {
               <tr className={`border-b border-border ${l.separadorAntes ? "border-t-2 border-t-foreground" : ""} ${l.destaque ? "font-bold" : ""}`}>
                 <td className="px-3 py-1.5 uppercase">{l.rotulo}</td>
                 <td className="px-3 py-1.5">
+                  {/* Dare, DIOPS e Pagamento: REFERÊNCIA fixa, só exibida (pedido de 18/11/2026). */}
+                  {l.fixo ? <div className="ml-auto w-20 pr-3 text-right tabular-nums" aria-label={`Dia — ${l.rotulo}`}>{l.dia}</div> :
                   <Input aria-label={`Dia — ${l.rotulo}`} inputMode="numeric" title={l.somaAoArquivo ? "Dias somados à data do Arquivo; apague para restaurar o padrão" : "Apague para restaurar o padrão"} className={`ml-auto ${cls} ${l.destaque ? "font-bold" : ""}`}
                     {...campo(l.id, l.dia, 1, 31, (v) => {
                       const dias = { ...entrada.dias };
                       if (v === undefined) delete dias[l.id as IdDataFm]; else dias[l.id as IdDataFm] = v;
                       gravar({ ...entrada, dias });
-                    })} />
+                    })} />}
                 </td>
                 <td className="px-3 py-1.5 text-right tabular-nums" title={l.ajustado ? "Dia limitado ao último dia do mês" : undefined}>
                   {l.data}{l.ajustado ? " *" : ""}
