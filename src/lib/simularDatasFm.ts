@@ -187,15 +187,15 @@ export function impactosFm(e: EntradaDatasFm) {
  * DIOPS — entregue sempre no dia 30; o ideal é ter pelo menos 15 dias;
  * PAGAMENTO — sempre no dia 30; quanto mais perto do Fechamento, pior; o ideal é ter pelo menos 15 dias. */
 export const PEONA_CONTROLADO = 10, DARE_MINIMO = 5, DARE_IDEAL = 10, DIOPS_IDEAL = 15, PAGAMENTO_IDEAL = 15;
-export type NivelImpactoFm = "ok" | "atencao" | "critico";
+export type NivelImpactoFm = "ok" | "atencao" | "limite" | "critico";
 export type ImpactoFm = { id: "peona" | "dare" | "diops" | "pagamento"; rotulo: string; dias: number; nivel: NivelImpactoFm; status: string; descricao: string };
 const plural = (n: number) => `${n} ${Math.abs(n) === 1 ? "dia" : "dias"}`;
 export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
   const { peona, dare, diops, pagamento } = impactosFm(e);
   return [
-    // PEONA (pedido de 18/11/2026): 0 = Sem Impacto; abaixo de 10 dias = Menor Impacto; 10 dias (ou mais) = Impacto Controlado.
+    // PEONA (pedido de 18/11/2026): 0 = Sem Impacto; abaixo de 10 dias = Menor Impacto; 10 dias (ou mais) = Impacto Controlado, em verde.
     peona >= PEONA_CONTROLADO
-      ? { id: "peona", rotulo: "PEONA", dias: peona, nivel: "atencao", status: "Impacto Controlado",
+      ? { id: "peona", rotulo: "PEONA", dias: peona, nivel: "ok", status: "Impacto Controlado",
           descricao: `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA; quanto mais dias, maior o impacto.` }
       : peona > 0
         ? { id: "peona", rotulo: "PEONA", dias: peona, nivel: "atencao", status: "Menor Impacto",
@@ -204,6 +204,9 @@ export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
     dare < DARE_MINIMO
       ? { id: "dare", rotulo: "DARE", dias: dare, nivel: "critico", status: "Crítico",
           descricao: `${plural(dare)} para fechar o Dare (entrega no dia 15); o mínimo é ${DARE_MINIMO} e o ideal, ${DARE_IDEAL}.` }
+      : dare === DARE_MINIMO // exatamente no mínimo: "No limite", em amarelo (pedido de 18/11/2026)
+        ? { id: "dare", rotulo: "DARE", dias: dare, nivel: "limite", status: "No limite",
+            descricao: `${plural(dare)} para fechar o Dare (entrega no dia 15): exatamente o mínimo de ${DARE_MINIMO}; o ideal é ${DARE_IDEAL}.` }
       : dare < DARE_IDEAL
         ? { id: "dare", rotulo: "DARE", dias: dare, nivel: "atencao", status: "Abaixo do ideal",
             descricao: `${plural(dare)} para fechar o Dare (entrega no dia 15): atende ao mínimo de ${DARE_MINIMO}, mas fica abaixo do ideal de ${DARE_IDEAL}.` }

@@ -89,18 +89,23 @@ describe("Simular Datas FM", () => {
       Object.fromEntries(avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo, ...extra }, arquivoMes: mes }).map((i) => [i.id, i.status]));
     // Arquivo 20/12 + 21 → Fechamento 10/01: Dare 15/01 = 5 dias, DIOPS 30/01 = 20 dias, PEONA 11 dias.
     const f = { fechamento: 21 };
-    expect(niveis(20, 12, f)).toEqual({ peona: "Impacto Controlado", dare: "Abaixo do ideal", diops: "Ideal", pagamento: "Ideal" });
+    expect(niveis(20, 12, f)).toEqual({ peona: "Impacto Controlado", dare: "No limite", diops: "Ideal", pagamento: "Ideal" });
     expect(niveis(20, 12, { ...f, pagamento: 24 })).toMatchObject({ pagamento: "Abaixo do ideal" }); // 14 dias
     expect(niveis(20, 12, { ...f, pagamento: 25 })).toMatchObject({ pagamento: "Ideal" }); // 15 dias
     expect(niveis(20, 12, { ...f, dare: 14 })).toMatchObject({ dare: "Crítico" });
+    expect(niveis(20, 12, { ...f, dare: 16 })).toMatchObject({ dare: "Abaixo do ideal" }); // 6 dias
     expect(niveis(20, 12, { ...f, dare: 20 })).toMatchObject({ dare: "Ideal" });
     expect(niveis(20, 12, { ...f, diops: 24 })).toMatchObject({ diops: "Abaixo do ideal" });
     expect(niveis(5, 1)).toMatchObject({ peona: "Sem Impacto" });
   });
+  it("DARE com exatamente 5 dias fica No limite (amarelo)", () => {
+    const dare = avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20, fechamento: 21 }, arquivoMes: 12 }).find((i) => i.id === "dare")!;
+    expect(dare).toMatchObject({ dias: 5, status: "No limite", nivel: "limite" });
+  });
   it("PEONA: 0 Sem Impacto, abaixo de 10 dias Menor Impacto, 10 dias Impacto Controlado", () => {
     const peona = (arquivo: number) => avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo }, arquivoMes: 12 }).find((i) => i.id === "peona")!;
     expect(peona(22)).toMatchObject({ dias: 9, status: "Menor Impacto" }); // 22/11 a 21/12
-    expect(peona(21)).toMatchObject({ dias: 10, status: "Impacto Controlado" }); // 21/11 a 20/12
+    expect(peona(21)).toMatchObject({ dias: 10, status: "Impacto Controlado", nivel: "ok" }); // 21/11 a 20/12, verde
     expect(avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: {} }).find((i) => i.id === "peona")).toMatchObject({ dias: 0, status: "Sem Impacto" });
   });
   it("PRAZO: Fechamento desde o Arquivo; Dare, DIOPS e Pagamento desde o Fechamento", () => {
