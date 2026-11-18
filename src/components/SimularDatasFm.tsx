@@ -216,7 +216,7 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
         <span className="font-semibold">Período:</span>{" "}
         <span className="tabular-nums">{periodo.de} a {periodo.ate}</span>
       </p>
-      {/* Simular em blocos (pedido de 18/11/2026): Período em 4 blocos de ~7 dias, cada um com o seu Fechamento. */}
+      {/* Simular em blocos (pedido de 18/11/2026): Período em 4 blocos de ~7 dias, cada um com o seu Arquivo (dia seguinte ao fim do bloco). */}
       <label className="flex w-fit cursor-pointer items-center gap-2 text-sm">
         <Checkbox checked={!!entrada.blocos} aria-label="Simular em blocos"
           onCheckedChange={(v) => { const { blocos: _, ...resto } = entrada; gravar(v === true ? { ...resto, blocos: true } : resto); }} />
@@ -231,7 +231,7 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
                 <th className="px-3 py-1.5 text-left font-semibold">BLOCO</th>
                 <th className="px-3 py-1.5 text-right font-semibold">PERÍODO DO BLOCO</th>
                 <th className="px-3 py-1.5 text-right font-semibold">DIAS</th>
-                <th className="px-3 py-1.5 text-right font-semibold" title="Dia seguinte ao fim do bloco; o do 4º bloco coincide com o Fechamento da referência">FECHAMENTO</th>
+                <th className="px-3 py-1.5 text-right font-semibold" title="Dia seguinte ao fim do período do bloco">ARQUIVO</th>
               </tr>
             </thead>
             <tbody>
@@ -240,7 +240,7 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
                   <td className="px-3 py-1.5 font-semibold">Bloco {b.bloco}</td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{b.de} a {b.ate}</td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{formatarPrazo(b.dias)} <span className="text-xs text-muted-foreground">dias</span></td>
-                  <td className="px-3 py-1.5 text-right font-semibold tabular-nums">{b.fechamento}</td>
+                  <td className="px-3 py-1.5 text-right font-semibold tabular-nums">{b.arquivo}</td>
                 </tr>
               ))}
             </tbody>

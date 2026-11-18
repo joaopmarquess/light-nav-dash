@@ -148,21 +148,20 @@ export function periodoFm(e: EntradaDatasFm) {
 }
 
 /** Simular em blocos (pedido de 18/11/2026): o Período em 4 blocos de mais ou menos 7 dias (diferença máxima de 01 dia; os dias a mais
- * ficam nos primeiros blocos). Bloco 1 começa no início do Período e o 4 termina no fim. Fechamento de cada bloco = dia seguinte ao fim do bloco;
- * o do 4º coincide com o Fechamento da REFERÊNCIA (linha Fechamento do grid). */
+ * ficam nos primeiros blocos). Bloco 1 começa no início do Período e o 4 termina no fim.
+ * Arquivo de cada bloco (substitui a coluna Fechamento, pedido de 18/11/2026) = dia seguinte ao fim do bloco. */
 export const BLOCOS_FM = 4;
-export type BlocoFm = { bloco: number; de: string; ate: string; dias: number; fechamento: string };
+export type BlocoFm = { bloco: number; de: string; ate: string; dias: number; arquivo: string };
 export function blocosPeriodoFm(e: EntradaDatasFm): BlocoFm[] {
   const p = periodoFm(e);
   const inicio = utcDe(p.de), total = Math.round((utcDe(p.ate) - inicio) / DIA_MS) + 1;
   const base = Math.floor(total / BLOCOS_FM), resto = total % BLOCOS_FM;
-  const fechamentoRef = simularDatasFm(e).find((l) => l.id === "fechamento")!.data;
   const blocos: BlocoFm[] = [];
   let t = inicio;
   for (let i = 0; i < BLOCOS_FM; i++) {
     const dias = base + (i < resto ? 1 : 0);
     const fim = t + (dias - 1) * DIA_MS;
-    blocos.push({ bloco: i + 1, de: dataUtc(new Date(t)), ate: dataUtc(new Date(fim)), dias, fechamento: i === BLOCOS_FM - 1 ? fechamentoRef : dataUtc(new Date(fim + DIA_MS)) });
+    blocos.push({ bloco: i + 1, de: dataUtc(new Date(t)), ate: dataUtc(new Date(fim)), dias, arquivo: dataUtc(new Date(fim + DIA_MS)) });
     t = fim + DIA_MS;
   }
   return blocos;

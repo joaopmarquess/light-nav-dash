@@ -238,11 +238,9 @@ describe("Simular em blocos", () => {
       ["20/11/2026", "27/11/2026", 8], ["28/11/2026", "05/12/2026", 8], ["06/12/2026", "12/12/2026", 7], ["13/12/2026", "19/12/2026", 7],
     ]);
   });
-  it("closes blocks 1–3 the day after they end and block 4 on the reference Fechamento", () => {
-    const e = { ...COMPETENCIA_PADRAO, dias: {} };
-    const b = blocosPeriodoFm(e);
-    expect(b.map((x) => x.fechamento)).toEqual(["28/11/2026", "06/12/2026", "13/12/2026", simularDatasFm(e).find((l) => l.id === "fechamento")!.data]);
-    expect(b[3].fechamento).toBe("14/01/2027");
+  it("sets each block's Arquivo to the day after the block ends", () => {
+    const b = blocosPeriodoFm({ ...COMPETENCIA_PADRAO, dias: {} });
+    expect(b.map((x) => x.arquivo)).toEqual(["28/11/2026", "06/12/2026", "13/12/2026", "20/12/2026"]);
   });
   it("keeps the option when saved and drops it when off", () => {
     expect(normalizarEntradaFm({ mes: 12, ano: 2026, dias: {}, blocos: true }).blocos).toBe(true);
