@@ -1,6 +1,7 @@
 // Proposta de Credenciamento e Gestão de Rede (Proj. Uberaba, pedido de 18/11/2026), destinada à Siga Soluções.
 // Tópicos: 1 Introdução; 2 Condições de Credenciamento (quadro das Condições Rede, cenário Disponível);
-// 3 Gestão de Rede (quadro dos Parâmetros de Resultados Rede). A IA redige os três textos só com estes dados;
+// 3 Gestão de Rede (quadro dos Parâmetros de Resultados Rede); 4 Condições Gerais (texto fixo do Dênis, nunca redigido pela IA).
+// A IA redige os textos dos tópicos 1 a 3 só com estes dados;
 // o PDF usa o texto padrão até o usuário aprovar a revisão ("Incluir no PDF"). Tudo fica guardado neste navegador.
 import { MODO_CREDENCIAMENTO_PADRAO, cenarioCredenciamento, moedaCredenciamento } from "@/lib/uberabaCredenciamento";
 import { ANO_RESULTADO_REDE } from "@/lib/uberabaResultadoRede";
@@ -15,13 +16,20 @@ export const SECOES_REDE = [
   { id: "gestao", titulo: "3. Gestão de Rede" },
 ] as const;
 export type SecaoRedeId = (typeof SECOES_REDE)[number]["id"];
+
+/** Tópico 4 (pedido do Dênis em 18/11/2026): condições fixas, sem texto da IA. */
+export const TITULO_CONDICOES_GERAIS_REDE = "4. Condições Gerais";
+export const CONDICOES_GERAIS_REDE: readonly { item: string; valor: string }[] = [
+  { item: "Prazo do Contrato", valor: "Ano de 2027" },
+  { item: "A partir de 2028", valor: "A gestão de rede e a Sinistralidade estarão a cargo do Bensaúde" },
+];
 export type TextosRede = Record<SecaoRedeId, string>;
 export const TEXTO_REDE_MAX = 4000;
 
 /** Texto padrão (provisório, até a revisão do Dênis): só descreve o que os quadros mostram, sem condições novas. */
 export const TEXTOS_REDE_PADRAO: TextosRede = {
   introducao:
-    "Apresentamos à Siga Soluções a proposta de credenciamento e gestão da rede assistencial do Bensaúde em Uberaba (MG), no âmbito do projeto Bensaúde|Uberaba. As condições de credenciamento estão na seção 2 e as condições da gestão de rede, na seção 3.",
+    "Apresentamos à Siga Soluções a proposta de credenciamento e gestão da rede assistencial do Bensaúde em Uberaba (MG), no âmbito do projeto Bensaúde|Uberaba. As condições de credenciamento estão na seção 2, as condições da gestão de rede, na seção 3, e as condições gerais, na seção 4.",
   condicoes:
     "O quadro abaixo apresenta, por grupo, as categorias, as quantidades disponíveis identificadas nas redes de referência, o valor por credenciamento e o valor máximo projetado.",
   gestao:
@@ -69,6 +77,7 @@ export type DadosRascunhoRede = {
   destinatario: string;
   condicoes: { colunas: string[]; linhas: string[][]; nota: string };
   gestao: { parametros: { item: string; valor: string }[]; regra: string; frentes: { frente: string; responsaveis: string[] }[] };
+  condicoesGerais: { item: string; valor: string }[];
 };
 
 export function dadosRascunhoRede(p: ParametrosRede): DadosRascunhoRede {
@@ -81,6 +90,7 @@ export function dadosRascunhoRede(p: ParametrosRede): DadosRascunhoRede {
       regra: regraMensalidadeRede(p),
       frentes: (gestao?.itens ?? []).map((i) => ({ frente: i.titulo, responsaveis: i.subitens?.length ? [...i.subitens] : [i.rotulo ?? ""].filter(Boolean) })),
     },
+    condicoesGerais: CONDICOES_GERAIS_REDE.map((c) => ({ ...c })),
   };
 }
 
@@ -96,9 +106,9 @@ export function assinaturaDadosRede(d: DadosRascunhoRede): string {
 }
 
 const NUMERO = /\d+(?:[.,]\d+)*/g;
-/** Números do texto ausentes dos dados (os números dos tópicos 1 a 3 são aceitos): alerta de valor criado pela IA. */
+/** Números do texto ausentes dos dados (os números dos tópicos 1 a 4 são aceitos): alerta de valor criado pela IA. */
 export function numerosForaDosDadosRede(texto: string, dados: DadosRascunhoRede): string[] {
-  const permitidos = new Set<string>(["1", "2", "3"]);
+  const permitidos = new Set<string>(["1", "2", "3", "4"]);
   textosDe(dados).forEach((t) => (t.match(NUMERO) ?? []).forEach((n) => permitidos.add(n)));
   return [...new Set((texto.match(NUMERO) ?? []).filter((n) => !permitidos.has(n)))];
 }

@@ -8,14 +8,14 @@ import { CABECALHO, FONTES_PROPOSTA as F, LINHA, RODAPE, SECUNDARIO, TINTA, ZEBR
 import { paragrafosDe } from "@/lib/uberabaPropostaTextos";
 import { PARAMETROS_REDE_PADRAO, type ParametrosRede } from "@/lib/uberabaParametrosRede";
 import {
-  COLUNAS_CONDICOES_REDE, NOTA_CONDICOES_REDE, SECOES_REDE, TEXTOS_REDE_PADRAO, linhasCondicoesRede, linhasParametrosRede, regraMensalidadeRede,
+  COLUNAS_CONDICOES_REDE, CONDICOES_GERAIS_REDE, NOTA_CONDICOES_REDE, SECOES_REDE, TITULO_CONDICOES_GERAIS_REDE, TEXTOS_REDE_PADRAO, linhasCondicoesRede, linhasParametrosRede, regraMensalidadeRede,
   type SecaoRedeId, type TextosRede,
 } from "@/lib/uberabaPropostaRede";
 
 const alturaLinha = (pt: number) => pt * 0.3528 * 1.35;
 
-/** Tópicos do PDF, na ordem. */
-export const TOPICOS_PROPOSTA_REDE = SECOES_REDE.map((s) => s.titulo);
+/** Tópicos do PDF, na ordem (o 4, Condições Gerais, é fixo e não tem texto da IA). */
+export const TOPICOS_PROPOSTA_REDE = [...SECOES_REDE.map((s) => s.titulo), TITULO_CONDICOES_GERAIS_REDE];
 
 /** Parágrafos de cada tópico: o texto aprovado ou, sem aprovação, o padrão. */
 export function paragrafosPropostaRede(textos: TextosRede | null = null): string[][] {
@@ -123,6 +123,12 @@ export function buildPropostaRedePdf(timbradoDataUrl?: string | null, parametros
     y += 2;
     blocoDados[s.id]?.();
   });
+
+  // 4. Condições Gerais: título e quadro sempre juntos na mesma página.
+  garantir(12 + 12 + CONDICOES_GERAIS_REDE.length * 12);
+  drawSectionTitle(doc, TITULO_CONDICOES_GERAIS_REDE, marginL, y, pageW - marginR, TINTA, F.topico);
+  y += 10;
+  tabela(["CONDIÇÃO", "DEFINIÇÃO"], CONDICOES_GERAIS_REDE.map((c) => [c.item, c.valor]), { 0: { halign: "left", cellWidth: 55 }, 1: { halign: "left" } }, false);
 
   const total = doc.getNumberOfPages();
   for (let p = 1; p <= total; p++) {

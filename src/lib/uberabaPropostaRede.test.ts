@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { PARAMETROS_REDE_PADRAO } from "./uberabaParametrosRede";
 import {
-  TEXTOS_REDE_PADRAO, aprovarTextosRede, dadosRascunhoRede, estadoRedeVazio, linhasCondicoesRede, linhasParametrosRede, mesInicioRede, mesclarRascunhoRede,
+  CONDICOES_GERAIS_REDE, TEXTOS_REDE_PADRAO, aprovarTextosRede, dadosRascunhoRede, estadoRedeVazio, linhasCondicoesRede, linhasParametrosRede, mesInicioRede, mesclarRascunhoRede,
   numerosForaDosDadosRede, regraMensalidadeRede, textosRedeParaPdf, topicosRedeDesatualizados,
 } from "./uberabaPropostaRede";
 import { TOPICOS_PROPOSTA_REDE, buildPropostaRedePdf } from "./uberabaPropostaRedePdf";
@@ -9,8 +9,15 @@ import { TOPICOS_PROPOSTA_REDE, buildPropostaRedePdf } from "./uberabaPropostaRe
 const semNbsp = (s: string) => s.replace(/\u00a0/g, " ");
 
 describe("Proposta de Credenciamento e Gestão de Rede", () => {
-  it("has the topics Introdução, Condições de Credenciamento and Gestão de Rede", () => {
-    expect(TOPICOS_PROPOSTA_REDE).toEqual(["1. Introdução", "2. Condições de Credenciamento", "3. Gestão de Rede"]);
+  it("has the topics Introdução, Condições de Credenciamento, Gestão de Rede and Condições Gerais", () => {
+    expect(TOPICOS_PROPOSTA_REDE).toEqual(["1. Introdução", "2. Condições de Credenciamento", "3. Gestão de Rede", "4. Condições Gerais"]);
+  });
+  it("sets the contract term to 2027 and hands network management and loss ratio to the Bensaúde from 2028", () => {
+    expect(CONDICOES_GERAIS_REDE).toEqual([
+      { item: "Prazo do Contrato", valor: "Ano de 2027" },
+      { item: "A partir de 2028", valor: "A gestão de rede e a Sinistralidade estarão a cargo do Bensaúde" },
+    ]);
+    expect(numerosForaDosDadosRede("Contrato em 2027; a partir de 2028 o Bensaúde assume.", dadosRascunhoRede(PARAMETROS_REDE_PADRAO))).toEqual([]);
   });
   it("brings the Condições Rede (Disponível) groups and total", () => {
     const l = linhasCondicoesRede().map((r) => r.map(semNbsp));
