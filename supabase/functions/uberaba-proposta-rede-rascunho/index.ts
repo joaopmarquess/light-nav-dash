@@ -54,7 +54,7 @@ ESTRUTURA DA PROPOSTA (o texto de cada seção abre o tópico; os quadros vêm l
 1. Contexto e Objeto da Proposta · 2. Estruturação da Rede Assistencial · 3. Modelo de Gestão da Rede (seguido do subtítulo fixo "Projeção financeira" e do quadro do Resultado) · 4. Condições Gerais (fixo, sem texto da IA).
 
 SEÇÕES (somente estas três)
-- introducao: um parágrafo curto (2 a 4 frases) que apresente a proposta ao destinatário, o objeto (credenciamento e gestão da rede assistencial do Bensaúde em Uberaba, MG) e indique que as condições estão nas seções 2 a 4.
+- introducao: um parágrafo curto (3 a 5 frases) que apresente a proposta ao destinatário, o objeto (credenciamento e gestão da rede assistencial do Bensaúde em Uberaba, MG) e indique que as condições estão nas seções 2 a 4. Termine com a definição da contratada de DADOS.condicoesGerais (Siga Soluções e a equipe, incluindo o profissional médico), copiada exatamente, sem alterar nenhuma palavra.
 - condicoes (tópico "Estruturação da Rede Assistencial"): 1 a 3 frases que expliquem o quadro do Credenciamento (tipos de credenciado e seus itens, quantidade, valor por credenciamento e adesão), podendo citar a quantidade total e a adesão total da linha TOTAL. Pode lembrar que o pagamento depende da formalização de cada credenciamento, como na nota.
 - gestao: 1 ou 2 frases que expliquem a remuneração da gestão de rede segundo a regra dos DADOS (parcelas fixas a partir do mês de início e, depois, valor por vida sobre as vidas vendidas acumuladas), podendo citar as frentes de Gestão de Rede e seus responsáveis.`;
 

@@ -17,7 +17,7 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
   });
   it("contracts Siga Soluções (team with médico auditor), term 2027, and hands network management and loss ratio to the Bensaúde from 2028", () => {
     expect(CONDICOES_GERAIS_REDE).toEqual([
-      { item: "Contratada", valor: "A contratação será formalizada com a Siga Soluções, responsável pela composição e disponibilização da equipe necessária à execução dos serviços, incluindo médico auditor." },
+      { item: "Contratada", valor: "A contratação será formalizada com a Siga Soluções, responsável pela composição e disponibilização da equipe necessária à execução dos serviços, incluindo o profissional médico responsável pelo relacionamento com a rede credenciada, pela avaliação da qualidade dos profissionais, pela auditoria e pelo controle de desperdícios e da sinistralidade." },
       { item: "Período de atuação", valor: "Os serviços objeto desta proposta serão prestados durante o ano de 2027." },
       { item: "Vigência financeira", valor: "As condições financeiras desta proposta, incluindo os valores de credenciamento e a remuneração pela gestão da rede, aplicam-se exclusivamente ao ano de 2027 e não se estendem a períodos posteriores." },
       { item: "Transição da gestão", valor: "A partir de 2028, a gestão da rede assistencial e o acompanhamento da sinistralidade passarão a ser conduzidos diretamente pelo Bensaúde." },
@@ -45,6 +45,10 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
     expect(TEXTO_PROJECAO_REDE).toContain("Trata-se de uma estimativa");
     expect(TEXTO_PROJECAO_REDE).toContain("com exceção das parcelas mensais fixas da gestão");
     expect(TEXTO_PROJECAO_REDE).toContain("não devem ser considerados valores certos ou garantidos");
+  });
+  it("ends the introduction with the same Contratada definition used in the Condições Gerais", () => {
+    expect(TEXTOS_REDE_PADRAO.introducao.endsWith(CONDICOES_GERAIS_REDE[0].valor)).toBe(true);
+    expect(TEXTOS_REDE_PADRAO.introducao).toContain("Siga Soluções");
   });
   it("heads the quantity column ATÉ", () => {
     expect(COLUNAS_CONDICOES_REDE).toEqual(["TIPO CREDENCIADO", "ATÉ", "VALOR", "ADESÃO"]);

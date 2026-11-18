@@ -22,10 +22,13 @@ export type SecaoRedeId = (typeof SECOES_REDE)[number]["id"];
 
 /** Tópico 4 (textos do Dênis, 18/11/2026): texto de abertura e condições fixas, sem texto da IA. */
 export const TITULO_CONDICOES_GERAIS_REDE = "4. Condições Gerais";
+/** Definição da Contratada (pedido de 18/11/2026): a mesma frase abre a proposta (fim do tópico 1) e define a Contratada nas Condições Gerais. */
+export const TEXTO_CONTRATADA_REDE =
+  "A contratação será formalizada com a Siga Soluções, responsável pela composição e disponibilização da equipe necessária à execução dos serviços, incluindo o profissional médico responsável pelo relacionamento com a rede credenciada, pela avaliação da qualidade dos profissionais, pela auditoria e pelo controle de desperdícios e da sinistralidade.";
 export const TEXTO_CONDICOES_GERAIS_REDE =
   "As condições a seguir delimitam as responsabilidades e o período de atuação previsto para esta etapa do Projeto Bensaúde|Uberaba, especialmente quanto à execução dos serviços durante o ano de implantação e à posterior internalização das atividades pelo Bensaúde.";
 export const CONDICOES_GERAIS_REDE: readonly { item: string; valor: string }[] = [
-  { item: "Contratada", valor: "A contratação será formalizada com a Siga Soluções, responsável pela composição e disponibilização da equipe necessária à execução dos serviços, incluindo médico auditor." },
+  { item: "Contratada", valor: TEXTO_CONTRATADA_REDE },
   { item: "Período de atuação", valor: "Os serviços objeto desta proposta serão prestados durante o ano de 2027." },
   { item: "Vigência financeira", valor: "As condições financeiras desta proposta, incluindo os valores de credenciamento e a remuneração pela gestão da rede, aplicam-se exclusivamente ao ano de 2027 e não se estendem a períodos posteriores." },
   { item: "Transição da gestão", valor: "A partir de 2028, a gestão da rede assistencial e o acompanhamento da sinistralidade passarão a ser conduzidos diretamente pelo Bensaúde." },
@@ -44,7 +47,7 @@ export const TEXTO_REDE_MAX = 4000;
 /** Textos dos tópicos 1 a 3 fornecidos pelo Dênis (18/11/2026), usados no PDF até uma revisão ser aprovada. */
 export const TEXTOS_REDE_PADRAO: TextosRede = {
   introducao:
-    "Esta proposta integra o Projeto Bensaúde|Uberaba e estabelece as condições para o credenciamento e a gestão inicial da rede assistencial necessária à implantação e ao desenvolvimento da operação do Bensaúde em Uberaba (MG). O documento contempla a composição prevista da rede, as condições comerciais para sua formação, o modelo de remuneração pela gestão e as demais condições aplicáveis à prestação dos serviços.",
+    "Esta proposta integra o Projeto Bensaúde|Uberaba e estabelece as condições para o credenciamento e a gestão inicial da rede assistencial necessária à implantação e ao desenvolvimento da operação do Bensaúde em Uberaba (MG). O documento contempla a composição prevista da rede, as condições comerciais para sua formação, o modelo de remuneração pela gestão e as demais condições aplicáveis à prestação dos serviços. " + TEXTO_CONTRATADA_REDE,
   condicoes:
     "A estruturação da rede assistencial foi definida considerando as necessidades previstas para o início da operação do Bensaúde em Uberaba. A composição contempla especialidades médicas, hospitais, serviços de apoio diagnóstico e terapêutico, além de profissionais e serviços assistenciais complementares, conforme detalhamento a seguir.",
   gestao:
@@ -183,7 +186,7 @@ export type EstadoTextosRede = {
 export const estadoRedeVazio = (): EstadoTextosRede => ({ rascunho: null, assinaturaRascunho: null, geradoEm: null, aprovado: null, assinaturaAprovado: null, aprovadoEm: null });
 
 /** v2: os textos do Dênis (18/11/2026) substituem a revisão aprovada antes deles. */
-export const CHAVE_TEXTOS_REDE = "uberaba-proposta-rede-textos-v2";
+export const CHAVE_TEXTOS_REDE = "uberaba-proposta-rede-textos-v3"; // v3 (18/11/2026): introdução passou a incluir a Contratada
 const str = (v: unknown) => (typeof v === "string" ? v : null);
 
 export function lerTextosRede(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): EstadoTextosRede {
