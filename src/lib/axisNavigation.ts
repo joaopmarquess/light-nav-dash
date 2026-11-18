@@ -33,7 +33,6 @@ export const labItems: MenuItem[] = [
       { icon: TrendingUp, label: "Vendas" },
       { icon: TrendingUp, label: "Vendas ate 08/2026" },
       { icon: TrendingUp, label: "Cancelamentos" },
-      { icon: BarChart3, label: "Gráfico Carteira" },
       { icon: Building2, label: "Mapa" },
     ],
   },

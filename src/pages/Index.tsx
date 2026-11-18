@@ -60,7 +60,6 @@ const formatBR = (d: Date) =>
 
 import ConsultaBeneficiarioDenis from "@/components/ConsultaBeneficiarioDenis";
 import BIOverview from "@/components/BIOverview";
-import CarteiraGraficos from "@/components/CarteiraGraficos";
 import CarteiraMapa from "@/components/CarteiraMapa";
 import VendasMatriz from "@/components/VendasMatriz";
 import SinistralidadeGraficos from "@/components/SinistralidadeGraficos";
@@ -538,8 +537,6 @@ const Index = () => {
             )
           ) : active === "B.I. Overview" ? (
             <BIOverview />
-          ) : active === "Gráfico Carteira" ? (
-            <CarteiraGraficos />
           ) : active === "Mapa" ? (
             <CarteiraMapa />
           ) : active === "Gráfico Sinistralidade" ? (
