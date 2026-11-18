@@ -1,7 +1,7 @@
 import { Fragment, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { QUANTIDADE_PADRAO_ITEM, alterarItem, carregarAutorizados, carregarQuantidadesItens, chaveItem, itensExibidos, notasAgrupamento, salvarQuantidadesItens, somaItens, type QuantidadesItens, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
+import { QUANTIDADE_PADRAO_ITEM, alterarItem, carregarAutorizados, carregarQuantidadesItens, chaveItem, itensExibidos, salvarQuantidadesItens, somaItens, type QuantidadesItens, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
 
 const numero = (v: number) => v.toLocaleString("pt-BR");
 
@@ -89,7 +89,6 @@ export default function UberabaQuantidadeCredenciamentos() {
           </tr>
         </tfoot>
       </table>
-      <p className="px-3 pt-2 text-xs text-muted-foreground">Autorizado começa pelo Limite de cada tipo (Hospitais: 2, sem Disponível na referência); apague o campo para restaurá-lo. Nas linhas abertas, a quantidade começa em 2 por especialidade médica e 1 nos demais itens (inclusive cada hospital); o valor digitado fica salvo neste navegador (apague para restaurar) e soma só na linha "Soma dos itens". Especialidades médicas conforme o Guia Médico do Bensaúde (consultado em 17/11/2026). {notasAgrupamento().join(" ")}</p>
     </div>
   );
 }
