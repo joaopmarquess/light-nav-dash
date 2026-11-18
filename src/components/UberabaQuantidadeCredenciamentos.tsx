@@ -3,7 +3,7 @@ import { ChevronDown, ChevronRight, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
-import { QUANTIDADE_PADRAO_ITEM, alterarItem, carregarAutorizados, carregarQuantidadesItens, chaveItem, itensExibidos, salvarQuantidadesItens, somaItens, type QuantidadesItens, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento, carregarValores, salvarValores, lerValor, replicarValorEspecialidades, type ValoresCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
+import { QUANTIDADE_PADRAO_ITEM, alterarItem, carregarAutorizados, carregarQuantidadesItens, chaveItem, itensExibidos, salvarQuantidadesItens, somaItens, type QuantidadesItens, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento, carregarValores, salvarValores, lerValor, replicarValorEspecialidades, ajusteTecnico, AJUSTE_TECNICO, type ValoresCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
 
 const numero = (v: number) => v.toLocaleString("pt-BR");
 const moeda = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -106,13 +106,20 @@ export default function UberabaQuantidadeCredenciamentos() {
                 <td colSpan={2} />
               </tr>
             ); })}
-            {aberto && (() => { const s = somaItens(l.id, itensQtd); return (
+            {aberto && (() => { const s = somaItens(l.id, itensQtd); const ajuste = ajusteTecnico(l.id, l.autorizado, itensQtd); return (<>
+              {ajuste !== null && (
+                <tr className="border-b border-border/60 bg-muted/40 text-xs">
+                  <td className="py-1 pl-8 pr-3"><span className="font-medium" title={`Qtde. ${numero(l.autorizado)} − ${numero(s.soma)} dos itens`}>{AJUSTE_TECNICO}</span></td>
+                  <td className={`px-3 py-1 text-right tabular-nums ${ajuste < 0 ? "text-destructive" : ""}`}>{numero(ajuste)}</td>
+                  <td colSpan={2} />
+                </tr>
+              )}
               <tr className="border-b border-border bg-muted/40 text-xs font-semibold">
-                <td className="py-1 pl-8 pr-3" >Soma dos itens <span className="font-normal text-muted-foreground">({s.itens} itens{s.alterados ? `, ${s.alterados} alterado${s.alterados > 1 ? "s" : ""}` : ""})</span></td>
-                <td className="px-3 py-1 text-right tabular-nums">{numero(s.soma)}</td>
+                <td className="py-1 pl-8 pr-3" >{ajuste !== null ? "Soma dos itens + ajuste técnico" : "Soma dos itens"} <span className="font-normal text-muted-foreground">({s.itens} itens{s.alterados ? `, ${s.alterados} alterado${s.alterados > 1 ? "s" : ""}` : ""})</span></td>
+                <td className="px-3 py-1 text-right tabular-nums">{numero(s.soma + (ajuste ?? 0))}</td>
                 <td colSpan={2} />
               </tr>
-            ); })()}
+            </>); })()}
             </Fragment>
             );
           })}

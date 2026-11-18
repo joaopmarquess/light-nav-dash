@@ -130,11 +130,13 @@ export function notasAgrupamento(): string[] {
 /** Autorizado começa pelo Limite de cada tipo; valor digitado (inteiro ≥ 0) prevalece. */
 /** Autorizado padrão de Hospitais: Hospital Geral (1) + Hospital Pediátrico (1). */
 export const AUTORIZADO_PADRAO_HOSPITAIS = 2;
+/** Qtde. padrão de Especialidades médicas (pedido de 18/11/2026): 200, no lugar do Limite; a diferença para os itens vai ao Ajuste técnico. */
+export const AUTORIZADO_PADRAO_MEDICOS = 200;
 export function linhasQuantidadeCredenciamentos(autorizados: AutorizadosCredenciamento = {}, valores: ValoresCredenciamento = {}) {
   const disponiveis = cenarioCredenciamento("Disponível").grupos;
   const limites = cenarioCredenciamento("Limite").grupos;
   const grupos: LinhaQuantidadeCredenciamento[] = disponiveis.map((g, i) => {
-    const limite = limites[i].quantidade;
+    const limite = g.id === "medicos" ? AUTORIZADO_PADRAO_MEDICOS : limites[i].quantidade;
     const digitado = autorizados[g.id];
     const autorizado = digitado ?? limite;
     const valor = valores[g.id] ?? limites[i].valor ?? 0;
@@ -225,6 +227,11 @@ export function somaItens(grupo: TipoQuantidade, valores: QuantidadesItens) {
     itens: itens.length,
     alterados: itens.filter((i) => valores[chaveItem(grupo, i.nome)] !== undefined).length,
   };
+}
+/** Linha "Ajuste técnico" das Especialidades médicas: Qtde. do tipo − soma dos itens (2 por especialidade, ou o digitado); outros tipos não têm ajuste. */
+export const AJUSTE_TECNICO = "Ajuste técnico";
+export function ajusteTecnico(grupo: TipoQuantidade, qtde: number, valores: QuantidadesItens): number | null {
+  return grupo === "medicos" ? qtde - somaItens(grupo, valores).soma : null;
 }
 /** Atualiza um item a partir do texto: vazio restaura o padrão; texto inválido não altera (null). */
 export function alterarItem(valores: QuantidadesItens, chave: string, texto: string): QuantidadesItens | null {
