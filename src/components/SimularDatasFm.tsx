@@ -72,7 +72,7 @@ export default function SimularDatasFm() {
               <th className="px-3 py-2 text-left font-semibold">VARIÁVEL</th>
               <th className="px-3 py-2 text-right font-semibold">REFERÊNCIA</th>
               <th className="px-3 py-2 text-right font-semibold">DATA</th>
-              <th className="px-3 py-2 text-right font-semibold" title="Dias corridos: Fechamento desde o Arquivo; Dare, DIOPS e Pagamento desde o Fechamento">PRAZO</th>
+              <th className="px-3 py-2 text-left font-semibold" title="Dias corridos: Fechamento desde o Arquivo; Dare, DIOPS e Pagamento desde o Fechamento">PRAZO</th>
             </tr>
           </thead>
           <tbody>
@@ -91,7 +91,7 @@ export default function SimularDatasFm() {
                 <td className="px-3 py-1.5 text-right tabular-nums" title={l.ajustado ? "Dia limitado ao último dia do mês" : undefined}>
                   {l.data}{l.ajustado ? " *" : ""}
                 </td>
-                <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums">{l.diasBase} <span className="text-xs font-normal text-muted-foreground">{Math.abs(l.diasBase) === 1 ? "dia" : "dias"} desde o {l.base}</span></td>
+                <td className="whitespace-nowrap px-3 py-1.5 text-left tabular-nums">{l.diasBase} <span className="text-xs font-normal text-muted-foreground">{Math.abs(l.diasBase) === 1 ? "dia" : "dias"} desde o {l.base}</span></td>
               </tr>
               </Fragment>
             ))}
