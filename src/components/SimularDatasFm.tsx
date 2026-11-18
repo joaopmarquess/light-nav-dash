@@ -1,8 +1,8 @@
 import { Fragment, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { DIAS_PADRAO, carregarDatasFm, lerInteiro, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { carregarDatasFm, formatarCompetencia, lerCompetencia, lerInteiro, ultimoDiaUtil, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
-// Laboratory › Simular Datas FM: Competência (mês/ano) e o dia de cada linha, com a data calculada; valores digitados ficam neste navegador.
+// Laboratory › Simular Datas FM: Competência (MM/AAAA, acima do grid), Último Dia (último dia útil, calculado) e o dia de cada linha, com a data calculada; valores digitados ficam neste navegador.
 export default function SimularDatasFm() {
   const [entrada, setEntrada] = useState<EntradaDatasFm>(carregarDatasFm);
   const [texto, setTexto] = useState<Record<string, string>>({});
@@ -19,10 +19,26 @@ export default function SimularDatasFm() {
     onBlur: () => setTexto((p) => { const n = { ...p }; delete n[chave]; return n; }),
   });
   const linhas = simularDatasFm(entrada);
+  const ultimo = ultimoDiaUtil(entrada.mes, entrada.ano);
+  const [competenciaTexto, setCompetenciaTexto] = useState<string | null>(null);
+  const alterarCompetencia = (t: string) => {
+    if (!/^[\d/]*$/.test(t)) return;
+    setCompetenciaTexto(t);
+    const c = lerCompetencia(t);
+    if (c) gravar({ ...entrada, ...c });
+  };
   const cls = "h-8 w-20 text-right tabular-nums";
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-semibold">Simular Datas FM</h1>
+      <label className="flex items-center gap-2 text-sm">
+        <span className="font-semibold">Competência:</span>
+        <Input aria-label="Competência" inputMode="numeric" placeholder="MM/AAAA" maxLength={7}
+          value={competenciaTexto ?? formatarCompetencia(entrada.mes, entrada.ano)}
+          onChange={(e) => alterarCompetencia(e.target.value)}
+          onBlur={() => setCompetenciaTexto(null)}
+          className={`h-8 w-28 text-center tabular-nums ${competenciaTexto !== null && !lerCompetencia(competenciaTexto) ? "border-destructive" : ""}`} />
+      </label>
       <div className="max-w-xl overflow-hidden rounded-md border border-border">
         <table className="w-full border-collapse text-sm">
           <thead>
@@ -33,23 +49,13 @@ export default function SimularDatasFm() {
             </tr>
           </thead>
           <tbody>
-            <tr className="border-b border-border">
-              <td className="px-3 py-1.5">Competência</td>
-              <td className="px-3 py-1.5"><Input aria-label="Mês da competência" inputMode="numeric" className={`ml-auto ${cls}`}
-                {...campo("mes", entrada.mes, 1, 12, (v) => gravar({ ...entrada, mes: v ?? 12 }))} /></td>
-              <td className="px-3 py-1.5"><Input aria-label="Ano da competência" inputMode="numeric" className={`ml-auto ${cls}`}
-                {...campo("ano", entrada.ano, 2000, 2100, (v) => v !== undefined && gravar({ ...entrada, ano: v }))} /></td>
-            </tr>
             {linhas.map((l) => (
               <Fragment key={l.id}>
               {l.id === "arquivo" && (
                 <tr className="border-b border-border">
                   <td className="px-3 py-1.5">Último Dia</td>
-                  <td className="px-3 py-1.5">
-                    <Input aria-label="Último Dia" inputMode="numeric" title="Apague para restaurar o padrão" className={`ml-auto ${cls}`}
-                      {...campo("qtdDias", entrada.qtdDias ?? DIAS_PADRAO, 0, 365, (v) => { const { qtdDias: _, ...resto } = entrada; gravar(v === undefined ? resto : { ...resto, qtdDias: v }); })} />
-                  </td>
-                  <td />
+                  <td className="px-3 py-1.5 text-right tabular-nums" title="Último dia útil do mês da competência (sem sábados, domingos e feriados nacionais)">{ultimo.dia}</td>
+                  <td className="px-3 py-1.5 text-right tabular-nums">{ultimo.data}</td>
                 </tr>
               )}
               <tr className={`border-b border-border ${l.separadorAntes ? "border-t-2 border-t-foreground" : ""} ${l.destaque ? "font-bold" : ""}`}>

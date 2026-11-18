@@ -1,6 +1,7 @@
 /** Simular Datas FM (Laboratory, pedido de 18/11/2026): a partir da Competência (mês/ano), cada linha recebe um dia e mostra a data.
  * De e Até caem no próprio mês da competência; Arquivo, Fechamento, Dare, DIOPS e Pagamento, no mês seguinte.
- * Dia maior que o último dia do mês vira o último dia (ex.: 30 em fevereiro → 28 ou 29). */
+ * Dia maior que o último dia do mês vira o último dia (ex.: 30 em fevereiro → 28 ou 29).
+ * Último Dia (pedido de 18/11/2026) = último dia útil do mês da competência, calculado por ultimoDiaUtil. */
 export type IdDataFm = "de" | "ate" | "arquivo" | "fechamento" | "dare" | "diops" | "pagamento";
 export type LinhaDataFmDef = { id: IdDataFm; rotulo: string; diaPadrao: number; mesSeguinte: boolean; destaque?: boolean; separadorAntes?: boolean };
 
@@ -16,9 +17,7 @@ export const LINHAS_DATAS_FM: LinhaDataFmDef[] = [
 ];
 export const COMPETENCIA_PADRAO = { mes: 12, ano: 2026 };
 
-/** "Último Dia" (pedido de 18/11/2026; antes "Dias"): variável numérica própria, padrão 1, exibida logo antes de Arquivo; ainda sem efeito nas datas. */
-export const DIAS_PADRAO = 1;
-export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>>; qtdDias?: number };
+export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>> };
 
 const ultimoDia = (ano: number, mes: number) => new Date(Date.UTC(ano, mes, 0)).getUTCDate();
 const dd = (n: number) => String(n).padStart(2, "0");
@@ -37,6 +36,42 @@ export function simularDatasFm({ mes, ano, dias }: EntradaDatasFm) {
     const dia = dias[l.id] ?? l.diaPadrao;
     return { ...l, dia, ...dataDaLinha(mes, ano, dia, l.mesSeguinte) };
   });
+}
+
+/** Competência digitada como MM/AAAA (ex.: "12/2026"); inválida → null. */
+export function lerCompetencia(texto: string): { mes: number; ano: number } | null {
+  const m = /^(\d{1,2})\/(\d{4})$/.exec(texto.trim());
+  if (!m) return null;
+  const mes = Number(m[1]), ano = Number(m[2]);
+  return mes >= 1 && mes <= 12 && ano >= 2000 && ano <= 2100 ? { mes, ano } : null;
+}
+export const formatarCompetencia = (mes: number, ano: number) => `${dd(mes)}/${ano}`;
+
+/** Domingo de Páscoa (algoritmo de Meeus/Jones/Butcher), em UTC. */
+function pascoa(ano: number) {
+  const a = ano % 19, b = Math.floor(ano / 100), c = ano % 100, d = Math.floor(b / 4), e = b % 4;
+  const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const mes = Math.floor((h + l - 7 * m + 114) / 31), dia = ((h + l - 7 * m + 114) % 31) + 1;
+  return Date.UTC(ano, mes - 1, dia);
+}
+const DIA_MS = 86400000;
+/** Feriados nacionais (calendário de dias úteis bancários/ANBIMA): fixos, Carnaval (seg. e ter.), Sexta-feira Santa e Corpus Christi. */
+export function feriadosNacionais(ano: number): Set<string> {
+  const fixos = ["01-01", "04-21", "05-01", "09-07", "10-12", "11-02", "11-15", "11-20", "12-25"].map((md) => `${ano}-${md}`);
+  const p = pascoa(ano);
+  const moveis = [-48, -47, -2, 60].map((d) => new Date(p + d * DIA_MS).toISOString().slice(0, 10));
+  return new Set([...fixos, ...moveis]);
+}
+/** Último dia útil do mês da competência: recua do último dia, pulando sábados, domingos e feriados nacionais. */
+export function ultimoDiaUtil(mes: number, ano: number) {
+  const feriados = feriadosNacionais(ano);
+  for (let dia = ultimoDia(ano, mes); dia >= 1; dia--) {
+    const t = new Date(Date.UTC(ano, mes - 1, dia));
+    const semana = t.getUTCDay();
+    if (semana !== 0 && semana !== 6 && !feriados.has(t.toISOString().slice(0, 10))) return { dia, data: `${dd(dia)}/${dd(mes)}/${ano}` };
+  }
+  throw new Error("Mês sem dia útil.");
 }
 
 /** Inteiro digitado dentro do intervalo; vazio → undefined (restaura o padrão); inválido → null (recusado). */
@@ -58,7 +93,6 @@ export function carregarDatasFm(): EntradaDatasFm {
       mes: Number.isInteger(b?.mes) && b.mes >= 1 && b.mes <= 12 ? b.mes : COMPETENCIA_PADRAO.mes,
       ano: Number.isInteger(b?.ano) && b.ano >= 2000 && b.ano <= 2100 ? b.ano : COMPETENCIA_PADRAO.ano,
       dias,
-      ...(Number.isInteger(b?.qtdDias) && b.qtdDias >= 0 && b.qtdDias <= 365 ? { qtdDias: b.qtdDias } : {}),
     };
   } catch { return { ...COMPETENCIA_PADRAO, dias: {} }; }
 }

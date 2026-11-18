@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COMPETENCIA_PADRAO, dataDaLinha, lerInteiro, simularDatasFm } from "./simularDatasFm";
+import { COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerInteiro, simularDatasFm, ultimoDiaUtil } from "./simularDatasFm";
 
 describe("Simular Datas FM", () => {
   it("competência 12/2026 com os dias padrão reproduz o quadro fornecido, com Arquivo na primeira linha de datas", () => {
@@ -28,5 +28,20 @@ describe("Simular Datas FM", () => {
     expect(lerInteiro("15", 1, 31)).toBe(15);
     expect(lerInteiro("32", 1, 31)).toBeNull();
     expect(lerInteiro("0", 1, 31)).toBeNull();
+  });
+  it("Competência padrão 12/2026 no formato MM/AAAA", () => {
+    expect(formatarCompetencia(COMPETENCIA_PADRAO.mes, COMPETENCIA_PADRAO.ano)).toBe("12/2026");
+    expect(lerCompetencia("01/2027")).toEqual({ mes: 1, ano: 2027 });
+    expect(lerCompetencia("13/2026")).toBeNull();
+    expect(lerCompetencia("2026-12")).toBeNull();
+  });
+  it("Último Dia = último dia útil do mês da competência", () => {
+    expect(ultimoDiaUtil(12, 2026)).toEqual({ dia: 31, data: "31/12/2026" }); // quinta-feira
+    expect(ultimoDiaUtil(1, 2027).data).toBe("29/01/2027"); // 30 e 31 caem no fim de semana
+    expect(ultimoDiaUtil(10, 2026).data).toBe("30/10/2026"); // 31 é sábado
+    expect(ultimoDiaUtil(4, 2027).data).toBe("30/04/2027");
+  });
+  it("feriado nacional no fim do mês é pulado (Sexta-feira Santa em 29/03/2024)", () => {
+    expect(ultimoDiaUtil(3, 2024).data).toBe("28/03/2024");
   });
 });
