@@ -23,7 +23,8 @@ export const COMPETENCIA_PADRAO = { mes: 12, ano: 2026 };
 
 /** arquivoMes: mês (1–12) digitado no Arquivo; ausente → mês da competência (padrão 20/competência, pedido de 18/11/2026). */
 /** O campo "Referência de Último Dia" foi retirado (pedido de 18/11/2026); valores guardados antes são descartados ao ler. */
-export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>>; arquivoMes?: number };
+/** blocos: opção "Simular em blocos" (pedido de 18/11/2026); ausente = desligada. */
+export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>>; arquivoMes?: number; blocos?: boolean };
 
 const ultimoDia = (ano: number, mes: number) => new Date(Date.UTC(ano, mes, 0)).getUTCDate();
 const dd = (n: number) => String(n).padStart(2, "0");
@@ -146,6 +147,27 @@ export function periodoFm(e: EntradaDatasFm) {
   return { de: `${dd(d)}/${dd(m)}/${a}`, ate: ultimo.data };
 }
 
+/** Simular em blocos (pedido de 18/11/2026): o Período em 4 blocos de mais ou menos 7 dias (diferença máxima de 01 dia; os dias a mais
+ * ficam nos primeiros blocos). Bloco 1 começa no início do Período e o 4 termina no fim. Fechamento de cada bloco = dia seguinte ao fim do bloco;
+ * o do 4º coincide com o Fechamento da REFERÊNCIA (linha Fechamento do grid). */
+export const BLOCOS_FM = 4;
+export type BlocoFm = { bloco: number; de: string; ate: string; dias: number; fechamento: string };
+export function blocosPeriodoFm(e: EntradaDatasFm): BlocoFm[] {
+  const p = periodoFm(e);
+  const inicio = utcDe(p.de), total = Math.round((utcDe(p.ate) - inicio) / DIA_MS) + 1;
+  const base = Math.floor(total / BLOCOS_FM), resto = total % BLOCOS_FM;
+  const fechamentoRef = simularDatasFm(e).find((l) => l.id === "fechamento")!.data;
+  const blocos: BlocoFm[] = [];
+  let t = inicio;
+  for (let i = 0; i < BLOCOS_FM; i++) {
+    const dias = base + (i < resto ? 1 : 0);
+    const fim = t + (dias - 1) * DIA_MS;
+    blocos.push({ bloco: i + 1, de: dataUtc(new Date(t)), ate: dataUtc(new Date(fim)), dias, fechamento: i === BLOCOS_FM - 1 ? fechamentoRef : dataUtc(new Date(fim + DIA_MS)) });
+    t = fim + DIA_MS;
+  }
+  return blocos;
+}
+
 /** Inteiro digitado dentro do intervalo; vazio → undefined (restaura o padrão); inválido → null (recusado). */
 export function lerInteiro(texto: string, min: number, max: number): number | undefined | null {
   const t = texto.trim();
@@ -165,6 +187,7 @@ export function normalizarEntradaFm(b: unknown): EntradaDatasFm {
   const arquivoMes = Number.isInteger(o.arquivoMes) && o.arquivoMes >= 1 && o.arquivoMes <= 12 ? o.arquivoMes : undefined;
   return {
     ...(arquivoMes ? { arquivoMes } : {}),
+    ...(o.blocos === true ? { blocos: true } : {}),
     mes: Number.isInteger(o.mes) && o.mes >= 1 && o.mes <= 12 ? o.mes : COMPETENCIA_PADRAO.mes,
     ano: Number.isInteger(o.ano) && o.ano >= 2000 && o.ano <= 2100 ? o.ano : COMPETENCIA_PADRAO.ano,
     dias,

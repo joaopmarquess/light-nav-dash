@@ -6,8 +6,9 @@ import { loadMarcaAxis } from "@/lib/pdfMarcaAxis";
 import { buildCenariosFmPdf } from "@/lib/simularDatasFmPdf";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvarUltimoNumeroFm, simulacaoAlteradaFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, prazoFolhaFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvarUltimoNumeroFm, simulacaoAlteradaFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, prazoFolhaFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, blocosPeriodoFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
 const novoId = () => globalThis.crypto?.randomUUID?.() ?? `fm-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const agora = () => new Date().toISOString();
@@ -215,6 +216,37 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
         <span className="font-semibold">Período:</span>{" "}
         <span className="tabular-nums">{periodo.de} a {periodo.ate}</span>
       </p>
+      {/* Simular em blocos (pedido de 18/11/2026): Período em 4 blocos de ~7 dias, cada um com o seu Fechamento. */}
+      <label className="flex w-fit cursor-pointer items-center gap-2 text-sm">
+        <Checkbox checked={!!entrada.blocos} aria-label="Simular em blocos"
+          onCheckedChange={(v) => { const { blocos: _, ...resto } = entrada; gravar(v === true ? { ...resto, blocos: true } : resto); }} />
+        <span className="font-semibold">Simular em blocos</span>
+      </label>
+      {entrada.blocos && (
+        <div className="max-w-3xl overflow-hidden rounded-md border border-border">
+          <div className="border-b border-border bg-secondary px-3 py-2 text-sm font-semibold text-secondary-foreground">PERÍODO EM 4 BLOCOS</div>
+          <table className="w-full border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/50">
+                <th className="px-3 py-1.5 text-left font-semibold">BLOCO</th>
+                <th className="px-3 py-1.5 text-right font-semibold">PERÍODO DO BLOCO</th>
+                <th className="px-3 py-1.5 text-right font-semibold">DIAS</th>
+                <th className="px-3 py-1.5 text-right font-semibold" title="Dia seguinte ao fim do bloco; o do 4º bloco coincide com o Fechamento da referência">FECHAMENTO</th>
+              </tr>
+            </thead>
+            <tbody>
+              {blocosPeriodoFm(entrada).map((b) => (
+                <tr key={b.bloco} className="border-b border-border last:border-b-0">
+                  <td className="px-3 py-1.5 font-semibold">Bloco {b.bloco}</td>
+                  <td className="px-3 py-1.5 text-right tabular-nums">{b.de} a {b.ate}</td>
+                  <td className="px-3 py-1.5 text-right tabular-nums">{formatarPrazo(b.dias)} <span className="text-xs text-muted-foreground">dias</span></td>
+                  <td className="px-3 py-1.5 text-right font-semibold tabular-nums">{b.fechamento}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       <div className="max-w-3xl overflow-hidden rounded-md border border-border">
         <table className="w-full border-collapse text-sm">
           <thead>

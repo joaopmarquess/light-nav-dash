@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatarPrazo, normalizarEntradaFm, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil , lerSimulacoesFm, novaSimulacaoFm, gravarSimulacaoFm, simulacaoAlteradaFm, duplicarSimulacaoFm, ordenarSimulacoesFm, proximoNumeroFm, DESCRICAO_FM_MAX, prazoFolhaFm } from "./simularDatasFm";
+import { formatarPrazo, normalizarEntradaFm, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil , lerSimulacoesFm, novaSimulacaoFm, gravarSimulacaoFm, simulacaoAlteradaFm, duplicarSimulacaoFm, ordenarSimulacoesFm, proximoNumeroFm, DESCRICAO_FM_MAX, prazoFolhaFm, blocosPeriodoFm } from "./simularDatasFm";
 
 // Entrada do quadro fornecido antes do novo padrão: Arquivo 05/01 e Fechamento 10.
 const QUADRO = { ...COMPETENCIA_PADRAO, dias: { arquivo: 5, fechamento: 10 }, arquivoMes: 1 };
@@ -228,5 +228,24 @@ describe("Controle de Simulações FM", () => {
       { id: "z", descricao: "Z", entrada: {} },
     ]);
     expect(lerSimulacoesFm(guardada, null, agora, id).map((s) => [s.id, s.numero])).toEqual([["x", 6], ["y", 5], ["z", 7]]);
+  });
+});
+
+describe("Simular em blocos", () => {
+  it("splits the default 30-day Período into 4 blocks of about 7 days, from its start to its end", () => {
+    const b = blocosPeriodoFm({ ...COMPETENCIA_PADRAO, dias: {} });
+    expect(b.map((x) => [x.de, x.ate, x.dias])).toEqual([
+      ["20/11/2026", "27/11/2026", 8], ["28/11/2026", "05/12/2026", 8], ["06/12/2026", "12/12/2026", 7], ["13/12/2026", "19/12/2026", 7],
+    ]);
+  });
+  it("closes blocks 1–3 the day after they end and block 4 on the reference Fechamento", () => {
+    const e = { ...COMPETENCIA_PADRAO, dias: {} };
+    const b = blocosPeriodoFm(e);
+    expect(b.map((x) => x.fechamento)).toEqual(["28/11/2026", "06/12/2026", "13/12/2026", simularDatasFm(e).find((l) => l.id === "fechamento")!.data]);
+    expect(b[3].fechamento).toBe("14/01/2027");
+  });
+  it("keeps the option when saved and drops it when off", () => {
+    expect(normalizarEntradaFm({ mes: 12, ano: 2026, dias: {}, blocos: true }).blocos).toBe(true);
+    expect("blocos" in normalizarEntradaFm({ mes: 12, ano: 2026, dias: {}, blocos: false })).toBe(false);
   });
 });
