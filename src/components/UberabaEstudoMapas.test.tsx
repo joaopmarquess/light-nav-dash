@@ -70,23 +70,11 @@ describe("Estudo view selection", () => {
     expect(screen.getByRole("button", { name: "Resumo por faixa etária" })).toBeVisible();
   }, 20000);
 
-  it("opens the Gestão Rede view with its variables", () => {
+  it("Resultados Rede não tem mais a seção Antecipação × Mensal", () => {
     abrir();
     abrirSimulacoes("Resultados Rede");
-    const bloco = screen.getByRole("region", { name: "Antecipação × Mensal" });
-    expect(bloco).toBeVisible();
-    expect(bloco).toContainElement(screen.getByRole("region", { name: "Variáveis", hidden: true }));
-    const todo = screen.getByRole("button", { name: "Expandir Antecipação × Mensal" });
-    expect(todo).toHaveAttribute("aria-expanded", "false");
-    expect(within(bloco).getByRole("table", { hidden: true })).not.toBeVisible();
-    fireEvent.click(todo);
-    expect(within(bloco).getByRole("table")).toBeVisible();
-    const botao = screen.getByRole("button", { name: "Expandir Variáveis" });
-    expect(botao).toHaveAttribute("aria-expanded", "false");
-    expect(screen.getByLabelText("Valor Vida Paulo")).not.toBeVisible();
-    fireEvent.click(botao);
-    expect(screen.getByLabelText("Valor Vida Paulo")).toBeVisible();
-    expect(screen.getByLabelText("Número Vidas total")).toBeVisible();
+    expect(screen.queryByRole("region", { name: "Antecipação × Mensal", hidden: true })).toBeNull();
+    expect(screen.getByRole("button", { name: "Expandir Quantidade de Credenciamentos" })).toBeVisible();
   });
 
   it("opens the Comercial tables with their indices", () => {
@@ -99,14 +87,14 @@ describe("Estudo view selection", () => {
     expect(screen.getByRole("button", { name: "Referência" })).toBeVisible();
   });
 
-  it("shows Condições Rede as a collapsed container before Antecipação × Mensal in Resultados Rede", () => {
+  it("shows Condições Rede as a collapsed container before Quantidade de Credenciamentos in Resultados Rede", () => {
     abrir();
     abrirSimulacoes("Resultados Rede");
     expect(screen.queryByRole("button", { name: "Condições Rede" })).toBeNull();
     const botao = screen.getByRole("button", { name: "Expandir Condições Rede" });
     expect(botao).toHaveAttribute("aria-expanded", "false");
-    const antecipacao = screen.getByRole("button", { name: "Expandir Antecipação × Mensal" });
-    expect(botao.compareDocumentPosition(antecipacao) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const quantidade = screen.getByRole("button", { name: "Expandir Quantidade de Credenciamentos" });
+    expect(botao.compareDocumentPosition(quantidade) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByRole("group", { name: "Cenário de credenciamento", hidden: true })).not.toBeVisible();
     fireEvent.click(botao);
     expect(screen.getByRole("group", { name: "Cenário de credenciamento" })).toBeVisible();
