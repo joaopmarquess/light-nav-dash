@@ -7,7 +7,7 @@ import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvar
 
 const novoId = () => globalThis.crypto?.randomUUID?.() ?? `fm-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const agora = () => new Date().toISOString();
-const corNivel = (n: NivelImpactoFm) => n === "critico" ? "text-destructive" : n === "moderado" ? "text-[hsl(var(--impacto-moderado))]" : "text-[hsl(var(--impacto-ok))]"; // Ideal e Aceito em verde claro
+const corNivel = (n: NivelImpactoFm) => n === "critico" ? "text-destructive" : n === "moderado" ? "text-[hsl(var(--impacto-moderado))]" : n === "aceito" ? "text-[hsl(var(--impacto-aceito))]" : "text-[hsl(var(--impacto-ok))]"; // Aceito num verde mais claro que o Ideal
 const dataHora = (iso: string) => { const d = new Date(iso); return isNaN(d.getTime()) ? "" : d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }); };
 
 // Controle de Simulações de Datas FM (pedido de 18/11/2026): tela Lista de Simulações → tela Simulação (a anterior, com o Cenário — antes "Descrição" — numerado por ordem de inserção, e botões Gravar/Cancelar/Excluir); tudo fica neste navegador.
