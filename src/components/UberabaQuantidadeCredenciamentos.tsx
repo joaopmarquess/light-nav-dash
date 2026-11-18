@@ -5,7 +5,7 @@ import { QUANTIDADE_PADRAO_ITEM, alterarItem, carregarAutorizados, carregarQuant
 
 const numero = (v: number) => v.toLocaleString("pt-BR");
 
-// Grid Tipo Credenciado · Disponível · Autorizado; Autorizado editável (começa pelo Limite), gravado neste navegador.
+// Grid Credenciamento: Tipo Credenciado · Autorizado; Autorizado editável (começa pelo Limite), gravado neste navegador.
 export default function UberabaQuantidadeCredenciamentos() {
   const [autorizados, setAutorizados] = useState<AutorizadosCredenciamento>(carregarAutorizados);
   const { linhas, total } = linhasQuantidadeCredenciamentos(autorizados);
@@ -31,7 +31,6 @@ export default function UberabaQuantidadeCredenciamentos() {
         <thead>
           <tr className="border-b border-border">
             <th className="px-3 py-2 text-left font-semibold">TIPO CREDENCIADO</th>
-            <th className="px-3 py-2 text-right font-semibold">DISPONÍVEL</th>
             <th className="px-3 py-2 text-right font-semibold">AUTORIZADO</th>
           </tr>
         </thead>
@@ -49,7 +48,6 @@ export default function UberabaQuantidadeCredenciamentos() {
                   <Icone className="h-4 w-4 shrink-0" />{l.tipo}<span className="ml-1 text-xs text-muted-foreground">({itens.length})</span>
                 </button>
               </td>
-              <td className="px-3 py-1.5 text-right tabular-nums">{l.disponivel == null ? "—" : numero(l.disponivel)}</td>
               <td className="px-3 py-1.5 text-right">
                 <Input inputMode="numeric" aria-label={`Autorizado — ${l.tipo}`} title={`Limite: ${numero(l.limite)} (apague para restaurar)`}
                   value={autorizados[l.id] ?? ""} placeholder={String(l.limite)}
@@ -59,7 +57,7 @@ export default function UberabaQuantidadeCredenciamentos() {
             </tr>
             {aberto && itens.map((item) => { const k = chaveItem(l.id, item.nome); return (
               <tr key={item.nome} className="border-b border-border/60 bg-muted/40 text-xs">
-                <td className="py-1 pl-8 pr-3" colSpan={2}>
+                <td className="py-1 pl-8 pr-3" >
                   <span className="font-medium" title={item.inclui?.join(" + ")}>{item.nome}</span>
                   {item.guia && <span className="ml-2 text-muted-foreground">Guia Médico: {item.guia.join(" · ")}</span>}
                 </td>
@@ -73,7 +71,7 @@ export default function UberabaQuantidadeCredenciamentos() {
             ); })}
             {aberto && (() => { const s = somaItens(l.id, itensQtd); return (
               <tr className="border-b border-border bg-muted/40 text-xs font-semibold">
-                <td className="py-1 pl-8 pr-3" colSpan={2}>Soma dos itens <span className="font-normal text-muted-foreground">({s.itens} itens{s.alterados ? `, ${s.alterados} alterado${s.alterados > 1 ? "s" : ""}` : ""})</span></td>
+                <td className="py-1 pl-8 pr-3" >Soma dos itens <span className="font-normal text-muted-foreground">({s.itens} itens{s.alterados ? `, ${s.alterados} alterado${s.alterados > 1 ? "s" : ""}` : ""})</span></td>
                 <td className="px-3 py-1 text-right tabular-nums">{numero(s.soma)}</td>
               </tr>
             ); })()}
@@ -84,7 +82,6 @@ export default function UberabaQuantidadeCredenciamentos() {
         <tfoot>
           <tr className="font-semibold">
             <td className="px-3 py-2">TOTAL</td>
-            <td className="px-3 py-2 text-right tabular-nums">{numero(total.disponivel)}</td>
             <td className="px-3 py-2 text-right tabular-nums">{numero(total.autorizado)}</td>
           </tr>
         </tfoot>

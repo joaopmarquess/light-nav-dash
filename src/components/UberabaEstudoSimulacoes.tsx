@@ -24,9 +24,9 @@ const UberabaEstudoSimulacoes = ({ subNavTarget }: { subNavTarget?: HTMLElement 
     <div className="flex flex-col gap-3">
       <EstudoSubNav itens={ABAS} ativo={aba} onSelect={(id) => setAba(id as Aba)} label="Simulações do Estudo" target={subNavTarget} extra={aba === "comercial" ? <div className="flex items-center gap-2"><ReferenciaButton /><UberabaPropostaTextosButton /><UberabaPropostaComercialButton /></div> : undefined} />
       <section aria-label={atual.label} className="min-w-0">
-        {/* Simulação de resultados fica recolhida abaixo dos Resultados Comerciais; Resultados Rede: Condições Rede e Quantidade de Credenciamentos, recolhidas (Antecipação × Mensal excluída em 18/11/2026). */}
+        {/* Simulação de resultados fica recolhida abaixo dos Resultados Comerciais; Resultados Rede: Condições Rede e Credenciamento, recolhidas (Antecipação × Mensal excluída em 18/11/2026). */}
         {aba === "comercial" && <><UberabaTabelasComerciais /><BlocoRecolhido titulo="Simulação de resultados" className="mt-4"><div className="p-3"><UberabaSimulacao /></div></BlocoRecolhido></>}
-        {aba === "gestaoRede" && <><BlocoRecolhido titulo="Condições Rede" className="mb-4"><div className="p-3"><UberabaRedeAssistencial /></div></BlocoRecolhido><BlocoRecolhido titulo="Quantidade de Credenciamentos"><div className="p-3"><UberabaQuantidadeCredenciamentos /></div></BlocoRecolhido></>}
+        {aba === "gestaoRede" && <><BlocoRecolhido titulo="Condições Rede" className="mb-4"><div className="p-3"><UberabaRedeAssistencial /></div></BlocoRecolhido><BlocoRecolhido titulo="Credenciamento"><div className="p-3"><UberabaQuantidadeCredenciamentos /></div></BlocoRecolhido></>}
       </section>
     </div>
   );

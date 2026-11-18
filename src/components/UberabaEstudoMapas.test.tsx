@@ -74,7 +74,7 @@ describe("Estudo view selection", () => {
     abrir();
     abrirSimulacoes("Resultados Rede");
     expect(screen.queryByRole("region", { name: "Antecipação × Mensal", hidden: true })).toBeNull();
-    expect(screen.getByRole("button", { name: "Expandir Quantidade de Credenciamentos" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Expandir Credenciamento" })).toBeVisible();
   });
 
   it("opens the Comercial tables with their indices", () => {
@@ -87,13 +87,13 @@ describe("Estudo view selection", () => {
     expect(screen.getByRole("button", { name: "Referência" })).toBeVisible();
   });
 
-  it("shows Condições Rede as a collapsed container before Quantidade de Credenciamentos in Resultados Rede", () => {
+  it("shows Condições Rede as a collapsed container before Credenciamento in Resultados Rede", () => {
     abrir();
     abrirSimulacoes("Resultados Rede");
     expect(screen.queryByRole("button", { name: "Condições Rede" })).toBeNull();
     const botao = screen.getByRole("button", { name: "Expandir Condições Rede" });
     expect(botao).toHaveAttribute("aria-expanded", "false");
-    const quantidade = screen.getByRole("button", { name: "Expandir Quantidade de Credenciamentos" });
+    const quantidade = screen.getByRole("button", { name: "Expandir Credenciamento" });
     expect(botao.compareDocumentPosition(quantidade) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByRole("group", { name: "Cenário de credenciamento", hidden: true })).not.toBeVisible();
     fireEvent.click(botao);

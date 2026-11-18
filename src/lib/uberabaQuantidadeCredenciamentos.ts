@@ -1,4 +1,4 @@
-/** Quantidade de Credenciamentos (Estudo Uberaba › Resultados Rede): Disponível e Limite vêm do helper de credenciamento; Autorizado é editado na tela e gravado neste navegador. */
+/** Credenciamento (Estudo Uberaba › Resultados Rede): Disponível e Limite vêm do helper de credenciamento; Autorizado é editado na tela e gravado neste navegador. */
 import { cenarioCredenciamento, type GrupoCredenciamento } from "@/lib/uberabaCredenciamento";
 
 /** Tipos do grid: os três grupos de credenciamento mais Hospitais (pedido de 18/11/2026), que existe só nesta tela e não tem Disponível na referência. */
