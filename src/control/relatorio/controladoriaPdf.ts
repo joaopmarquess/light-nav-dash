@@ -6,7 +6,7 @@ import "core-js/actual/weak-map/get-or-insert-computed";
 import autoTable from "jspdf-autotable";
 import { PDF_COLORS, baseTableStyles } from "./pdfTheme";
 import { dataBR } from "./controladoriaRegras";
-import { UNAVAILABLE, type ControladoriaReport, type ReportBlock } from "./controladoriaDados";
+import { dividirQuadro, UNAVAILABLE, type ControladoriaReport, type ReportBlock } from "./controladoriaDados";
 import axisLogo from "@/assets/axis-report-logo.png.asset.json";
 import bensaudeLogo from "@/assets/bensaude-logo.svg.asset.json";
 
@@ -83,18 +83,21 @@ export async function comporPdfRelatorio(report: ControladoriaReport): Promise<R
         }
       }
       if (block.table?.rows.length) {
+        // Quadros largos (Mensal) saem em partes, com a primeira coluna repetida.
+        for (const [parte, table] of dividirQuadro(block.table).entries()) {
+        if (parte > 0) y += 4;
         room(24);
         autoTable(doc, {
-          ...baseTableStyles(block.table.headers.length > 5 ? 7 : 8),
+          ...baseTableStyles(table.headers.length > 5 ? 7 : 8),
           startY: y, margin: { top: 27, left: margin, right: margin, bottom: 23 },
-          head: [block.table.headers], body: block.table.rows,
+          head: [table.headers], body: table.rows,
           rowPageBreak: "avoid", showHead: "everyPage", pageBreak: "auto",
-          styles: { ...baseTableStyles().styles, fontSize: block.table.headers.length > 5 ? 7 : 8, cellPadding: 2.2, overflow: "linebreak" },
-          columnStyles: block.table.numeric ? Object.fromEntries(block.table.headers.slice(1).map((_, i) => [i + 1, { halign: "right" as const }])) : { [block.table.headers.length - 1]: { halign: "right" } },
+          styles: { ...baseTableStyles().styles, fontSize: table.headers.length > 5 ? 7 : 8, cellPadding: 2.2, overflow: "linebreak" },
+          columnStyles: table.numeric ? Object.fromEntries(table.headers.slice(1).map((_, i) => [i + 1, { halign: "right" as const }])) : { [table.headers.length - 1]: { halign: "right" } },
           didParseCell: data => {
-            if (block.table?.numeric && data.section === "head" && data.column.index > 0) data.cell.styles.halign = "right";
+            if (table.numeric && data.section === "head" && data.column.index > 0) data.cell.styles.halign = "right";
             if (data.section !== "body") return;
-            if (block.table?.numeric && /^(\(=\)|Total)/.test(String(data.row.raw && (data.row.raw as string[])[0]))) data.cell.styles.fontStyle = "bold";
+            if (table.numeric && /^(\(=\)|Total)/.test(String(data.row.raw && (data.row.raw as string[])[0]))) data.cell.styles.fontStyle = "bold";
             const value = String(data.cell.raw);
             if (value.includes("desfavorável")) data.cell.styles.textColor = colors.negative;
             else if (value.includes("favorável")) data.cell.styles.textColor = colors.favorable;
@@ -102,6 +105,7 @@ export async function comporPdfRelatorio(report: ControladoriaReport): Promise<R
           },
         });
         y = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y;
+        }
         y += 7;
         paragraph(`Fonte: ${block.sourceModule}`, 8, colors.muted);
       }

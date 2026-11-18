@@ -1,4 +1,4 @@
-import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree, ArrowRightLeft, Map as MapIcon, CalendarRange, Layers, Tags, LogIn, LogOut, Table2 } from "lucide-react";
+import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree, ArrowRightLeft, Map as MapIcon, CalendarRange, Layers, Tags, LogIn, LogOut, Table2, FileBarChart2 } from "lucide-react";
 import { BENCH_SHORT_TEXT, DRE_MENU_NAME, SLIDES_SHORT_TEXT } from "@/control/dreLabels";
 export type MenuItem = {
   icon: React.ComponentType<{ className?: string }>;
@@ -114,6 +114,8 @@ export const menuItems: MenuItem[] = [
     { icon: BarChart3, label: "Bench Vidas", id: "Carteira · Bench Vidas" },
   ] },
   { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }, { icon: Layers, label: "Evolução Produtos", id: "Sinistralidade · Evolução Produtos" }] },
+  // Menu Relatório (pedido de 18/11/2026): Relatório de Controladoria Mensal ou Trimestral, sem filtros de período.
+  { icon: FileBarChart2, label: "Relatório", children: [{ icon: FileText, label: "Relatório de Controladoria", id: "Relatório · Controladoria" }] },
 ];
 
 /** Proj. Uberaba aberto direto em Estudo › Simulações › Resultados Comerciais (permissão própria do atalho, mesmo layout do Laboratory). */

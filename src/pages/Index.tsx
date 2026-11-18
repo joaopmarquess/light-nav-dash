@@ -91,6 +91,7 @@ import CtrlContas from "@/control/ContasHub";
 import CtrlOrcamento from "@/control/OrcamentoTrial";
 import CtrlDashboards from "@/control/Dashboards";
 import CtrlRelatorio from "@/control/RelatorioControladoria";
+import RelatorioControladoriaVisao from "@/control/RelatorioControladoriaVisao";
 import CtrlSimulador from "@/control/Simulador";
 import CtrlBench from "@/control/BenchC";
 import { BENCH_SHORT_TEXT, BENCH_LONG_TEXT, DRE_FULL_NAME, DRE_MENU_NAME, REPORT_FULL_NAME, SLIDES_SHORT_TEXT, SLIDES_MEDIUM_TEXT, SLIDES_LONG_TEXT } from "@/control/dreLabels";
@@ -172,7 +173,7 @@ const Index = () => {
   const [ctrlOrcDre, setCtrlOrcDre] = useState(false);
   const [ctrlCfgOpen, setCtrlCfgOpen] = useState(false);
   const [ctrlDreAba, setCtrlDreAba] = useState<"Painel" | "DRE" | "Histórico">("Painel");
-  const controlTitle = active === "Control · Bench C" ? BENCH_LONG_TEXT : active === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : active === "Control · Relatório" ? REPORT_FULL_NAME : active === "Control · Dashboards" ? SLIDES_LONG_TEXT : active === "Control · Orçamento Vigente" ? "Orçamento 2026" : active === "Control · Orçamento 2027" ? "Orçamento 2027" : active === "Control · Simulador" ? "Simulador" : active === "Control · Contas" ? "Contas" : null;
+  const controlTitle = active === "Control · Bench C" ? BENCH_LONG_TEXT : active === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : active === "Control · Relatório" ? REPORT_FULL_NAME : active === "Control · Dashboards" ? SLIDES_LONG_TEXT : active === "Control · Orçamento Vigente" ? "Orçamento 2026" : active === "Control · Orçamento 2027" ? "Orçamento 2027" : active === "Control · Simulador" ? "Simulador" : active === "Control · Contas" ? "Contas" : active === "Relatório · Controladoria" ? REPORT_FULL_NAME : null;
   const controlSubtitle = active === "Control · Dashboards" ? SLIDES_MEDIUM_TEXT : null;
   useEffect(() => {
     if (active === "Control · Orçamento 2027") return;
@@ -530,6 +531,8 @@ const Index = () => {
             ctrlOrcDre ? <CtrlOrcamento onAba={() => setCtrlOrcDre(false)} /> : <CtrlOrcamento painel onAba={() => setCtrlOrcDre(true)} />
           ) : active === "Control · Relatório" ? (
             <CtrlRelatorio />
+          ) : active === "Relatório · Controladoria" ? (
+            <RelatorioControladoriaVisao />
           ) : active === "Control · Dashboards" ? (
             <CtrlDashboards />
           ) : active === "Control · Orçamento 2027" ? (

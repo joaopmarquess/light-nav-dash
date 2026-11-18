@@ -12,7 +12,19 @@ import { resumoPainelDre } from "@/control/drePainel";
 import { aplicarRealizadoMv, gruposOrcamentoDre, impostosFederais, resultadoLiquido, valoresOrcamento } from "@/control/orcamentoDre";
 
 export const UNAVAILABLE = "Informação não disponível na fonte atual.";
-export type ReportTable = { headers: string[]; rows: string[][]; /** Colunas após a primeira alinhadas à direita e totais (=)/Total em negrito. */ numeric?: boolean };
+export type ReportTable = { headers: string[]; rows: string[][]; /** Colunas após a primeira alinhadas à direita e totais (=)/Total em negrito. */ numeric?: boolean; /** PDF: divide o quadro em partes com no máximo N colunas de valores (a primeira se repete); ausente = quadro inteiro. */ colunasPorQuadro?: number };
+
+/** Divide um quadro largo em partes com a primeira coluna repetida e no máximo `n` colunas de valores cada. */
+export function dividirQuadro(t: ReportTable): ReportTable[] {
+  const n = t.colunasPorQuadro, valores = t.headers.length - 1;
+  if (!n || valores <= n) return [t];
+  const partes: ReportTable[] = [];
+  for (let i = 1; i <= valores; i += n) {
+    const fim = Math.min(i + n, valores + 1);
+    partes.push({ ...t, headers: [t.headers[0], ...t.headers.slice(i, fim)], rows: t.rows.map((r) => [r[0], ...r.slice(i, fim)]) });
+  }
+  return partes;
+}
 export type ReportSeries = { label: string; values: number[] };
 export type ReportBlock = {
   id: string; title: string; introduction: string; sourceModule: "AXIS" | "CONTROL";
