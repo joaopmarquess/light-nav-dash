@@ -1,5 +1,4 @@
 import { Fragment, useState } from "react";
-import { ArrowDown, ArrowUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { carregarDatasFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, lerInteiro, periodoFm, REFERENCIA_ULTIMO_DIA_PADRAO, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
@@ -116,13 +115,9 @@ export default function SimularDatasFm() {
               <tr key={imp.id} className="border-b border-border align-middle last:border-b-0">
                 <td className="w-20 px-3 py-1.5 font-semibold">{imp.rotulo}</td>
                 <td className="w-14 px-3 py-1.5 text-right tabular-nums">{imp.dias}</td>
-                {/* Três níveis (pedido de 18/11/2026): Ideal em verde claro com seta para cima, Moderado em laranja, Crítico em vermelho com seta para baixo. */}
+                {/* Três níveis (pedido de 18/11/2026): Ideal em verde claro, Moderado em laranja, Crítico em vermelho, sem setas. */}
                 <td className={`w-36 whitespace-nowrap px-3 py-1.5 font-semibold ${imp.nivel === "critico" ? "text-destructive" : imp.nivel === "moderado" ? "text-[hsl(var(--impacto-moderado))]" : "text-[hsl(var(--impacto-ok))]"}`}>
-                  <span className="inline-flex items-center gap-1">
-                    {imp.nivel === "ideal" && <ArrowUp className="h-4 w-4" aria-hidden />}
-                    {imp.nivel === "critico" && <ArrowDown className="h-4 w-4" aria-hidden />}
-                    {imp.status}
-                  </span>
+                  {imp.status}
                 </td>
                 <td className="px-3 py-1.5 text-muted-foreground">{imp.descricao}</td>
               </tr>
