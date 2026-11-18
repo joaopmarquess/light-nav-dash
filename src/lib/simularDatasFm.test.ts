@@ -44,7 +44,7 @@ describe("Simular Datas FM", () => {
   it("feriado nacional no fim do mês é pulado (Sexta-feira Santa em 29/03/2024)", () => {
     expect(ultimoDiaUtil(3, 2024).data).toBe("28/03/2024");
   });
-  it("Período vai do Último Dia − 30 dias até o Último Dia", () => {
+  it("Período: do dia seguinte ao Último Dia, um mês antes, até o Último Dia", () => {
     expect(periodoFm({ ...COMPETENCIA_PADRAO, dias: {} })).toEqual({ de: "01/12/2026", ate: "31/12/2026" });
     expect(periodoFm({ mes: 1, ano: 2027, dias: {} })).toEqual({ de: "30/12/2026", ate: "29/01/2027" });
   });
@@ -60,7 +60,9 @@ describe("Simular Datas FM", () => {
   });
   it("Último Dia: Arquivo no mês da competência → dia do Arquivo − 1; senão, último dia útil da competência", () => {
     expect(ultimoDiaFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 28 }, arquivoMes: 12 }).data).toBe("27/12/2026");
-    expect(periodoFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 28 }, arquivoMes: 12 })).toEqual({ de: "27/11/2026", ate: "27/12/2026" });
+    expect(periodoFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 28 }, arquivoMes: 12 })).toEqual({ de: "28/11/2026", ate: "27/12/2026" });
+    expect(periodoFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20 }, arquivoMes: 12 })).toEqual({ de: "20/11/2026", ate: "19/12/2026" });
+    expect(periodoFm({ mes: 3, ano: 2027, dias: { arquivo: 31 }, arquivoMes: 3 })).toEqual({ de: "28/02/2027", ate: "30/03/2027" });
     expect(ultimoDiaFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 1 }, arquivoMes: 12 }).data).toBe("30/11/2026");
     expect(ultimoDiaFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 5 }, arquivoMes: 1 }).data).toBe("31/12/2026");
   });

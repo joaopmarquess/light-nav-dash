@@ -98,7 +98,6 @@ export function ultimoDiaUtil(mes: number, ano: number) {
   throw new Error("Mês sem dia útil.");
 }
 
-/** Período (pedido de 18/11/2026): De = Último Dia − 30 dias corridos; Até = Último Dia (último dia útil da competência). */
 const dataUtc = (t: Date) => `${dd(t.getUTCDate())}/${dd(t.getUTCMonth() + 1)}/${t.getUTCFullYear()}`;
 /** Último Dia da simulação: Arquivo no mês da competência → dia do Arquivo − 1 (dia 1 recua ao mês anterior); senão, último dia útil da competência. */
 export function ultimoDiaFm(e: EntradaDatasFm): { data: string; utc: number } {
@@ -111,9 +110,14 @@ export function ultimoDiaFm(e: EntradaDatasFm): { data: string; utc: number } {
   const u = ultimoDiaUtil(e.mes, e.ano);
   return { data: u.data, utc: Date.UTC(e.ano, e.mes - 1, u.dia) };
 }
+/** Período (pedido de 18/11/2026): De = dia seguinte ao Último Dia, um mês antes (Arquivo 20/12 → 20/11 a 19/12); dia além do fim do mês vira o último dia. */
 export function periodoFm(e: EntradaDatasFm) {
   const ultimo = ultimoDiaFm(e);
-  return { de: dataUtc(new Date(ultimo.utc - 30 * DIA_MS)), ate: ultimo.data };
+  const seguinte = new Date(ultimo.utc + DIA_MS);
+  const m = seguinte.getUTCMonth() === 0 ? 12 : seguinte.getUTCMonth();
+  const a = seguinte.getUTCMonth() === 0 ? seguinte.getUTCFullYear() - 1 : seguinte.getUTCFullYear();
+  const d = Math.min(seguinte.getUTCDate(), ultimoDia(a, m));
+  return { de: `${dd(d)}/${dd(m)}/${a}`, ate: ultimo.data };
 }
 
 /** Inteiro digitado dentro do intervalo; vazio → undefined (restaura o padrão); inválido → null (recusado). */
