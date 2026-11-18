@@ -27,8 +27,8 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
     const q = linhasQuantidadeCredenciamentos();
     const l = linhasCondicoesRede(q, {}).map((r) => r.map(semNbsp));
     expect(l.filter((r) => r[2] !== "" || r[0] === "TOTAL").map((r) => r[0])).toEqual([...q.linhas.map((x) => x.tipo), "TOTAL"]);
-    expect(l[0]).toEqual(["Especialidades médicas", "200", "R$ 200,00", "R$ 40.000,00"]);
-    expect(l[1]).toEqual(["Hospitais", "2", "R$ 200,00", "R$ 400,00"]);
+    expect(l[0]).toEqual(["Especialidades médicas", "200", "R$ 300,00", "R$ 60.000,00"]);
+    expect(l[1]).toEqual(["Hospitais", "2", "R$ 300,00", "R$ 600,00"]);
     expect(l[l.length - 1][3]).toBe(semNbsp(moedaCredenciamento(q.total.adesao)));
     const editado = linhasCondicoesRede(linhasQuantidadeCredenciamentos({ medicos: 10 }, { medicos: 300 }), {}).map((r) => r.map(semNbsp));
     expect(editado[0]).toEqual(["Especialidades médicas", "10", "R$ 300,00", "R$ 3.000,00"]);

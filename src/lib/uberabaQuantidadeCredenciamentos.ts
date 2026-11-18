@@ -8,8 +8,10 @@ export type LinhaQuantidadeCredenciamento = { id: TipoQuantidade; tipo: string; 
 /** Valor (R$) por credenciado de cada tipo, editado na tela (pedido de 18/11/2026); Adesão = Qtde. (Autorizado) × Valor. */
 export type ValoresCredenciamento = Partial<Record<TipoQuantidade, number>>;
 export const CHAVE_VALORES_CREDENCIAMENTO = "uberaba.quantidadeCredenciamentos.valores.v1";
-/** Valor padrão: o mesmo valor unitário de cada grupo no Modelo de Credenciamento; Hospitais, sem referência, usa R$ 200,00 como os demais. */
-export const VALOR_PADRAO_HOSPITAIS = 200;
+/** Valor padrão por credenciamento (pedido de 18/11/2026): R$ 300,00 em todos os tipos, inclusive Hospitais;
+ * o valor unitário do Modelo de Credenciamento (referência) não muda. */
+export const VALOR_PADRAO_CREDENCIAMENTO = 300;
+export const VALOR_PADRAO_HOSPITAIS = VALOR_PADRAO_CREDENCIAMENTO;
 export const TIPO_HOSPITAIS = "Hospitais";
 
 export const CHAVE_AUTORIZADOS_CREDENCIAMENTO = "uberaba.quantidadeCredenciamentos.autorizados.v1";
@@ -139,7 +141,7 @@ export function linhasQuantidadeCredenciamentos(autorizados: AutorizadosCredenci
     const limite = g.id === "medicos" ? AUTORIZADO_PADRAO_MEDICOS : limites[i].quantidade;
     const digitado = autorizados[g.id];
     const autorizado = digitado ?? limite;
-    const valor = valores[g.id] ?? limites[i].valor ?? 0;
+    const valor = valores[g.id] ?? VALOR_PADRAO_CREDENCIAMENTO;
     return { id: g.id, tipo: g.titulo, disponivel: g.quantidade, limite, autorizado, valor, adesao: arred2(autorizado * valor) };
   });
   // Hospitais logo após Especialidades médicas; sem Disponível de referência, Autorizado começa pela soma dos itens padrão.

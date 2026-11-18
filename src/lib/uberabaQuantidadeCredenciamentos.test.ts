@@ -27,22 +27,22 @@ describe("Quantidade de Credenciamentos", () => {
     expect(linhas.map((l) => l.autorizado)).toEqual([150, 2, 15, 12]);
     expect(total.autorizado).toBe(179);
   });
-  it("Valor começa em R$ 200,00 por tipo e Adesão = Qtde. × Valor (total R$ 45.800,00)", () => {
+  it("Valor começa em R$ 300,00 por tipo e Adesão = Qtde. × Valor (total R$ 68.700,00)", () => {
     const { linhas, total } = linhasQuantidadeCredenciamentos();
-    expect(linhas.map((l) => l.valor)).toEqual([200, 200, 200, 200]);
-    expect(linhas.map((l) => l.adesao)).toEqual([40000, 400, 3000, 2400]);
-    expect(total.adesao).toBe(45800);
+    expect(linhas.map((l) => l.valor)).toEqual([300, 300, 300, 300]);
+    expect(linhas.map((l) => l.adesao)).toEqual([60000, 600, 4500, 3600]);
+    expect(total.adesao).toBe(68700);
   });
   it("Valor digitado muda só a Adesão do tipo editado", () => {
     const { linhas, total } = linhasQuantidadeCredenciamentos({ medicos: 100 }, { hospitais: 1500.5 });
-    expect(linhas.map((l) => l.adesao)).toEqual([20000, 3001, 3000, 2400]);
-    expect(total.adesao).toBe(28401);
+    expect(linhas.map((l) => l.adesao)).toEqual([30000, 3001, 4500, 3600]);
+    expect(total.adesao).toBe(41101);
   });
   it("Replicar copia o Valor de Especialidades médicas para todos os tipos", () => {
     const valores = replicarValorEspecialidades({ medicos: 350, hospitais: 1500 });
     expect(valores).toEqual({ medicos: 350, hospitais: 350, diagnostico: 350, "nao-medicos": 350 });
     expect(linhasQuantidadeCredenciamentos({}, valores).total.adesao).toBe(229 * 350);
-    expect(replicarValorEspecialidades({ hospitais: 900 }).hospitais).toBe(200);
+    expect(replicarValorEspecialidades({ hospitais: 900 }).hospitais).toBe(300);
   });
   it("Valor aceita reais com vírgula; vazio restaura e inválido é recusado", () => {
     expect(lerValor("")).toBeUndefined();
