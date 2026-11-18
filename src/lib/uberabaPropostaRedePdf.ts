@@ -120,7 +120,8 @@ export function buildPropostaRedePdf(
   // e o quadro da seção Resultado, juntos e inteiros numa mesma página.
   const desenharProjecao = () => {
     const linhasRes = linhasResultadoRede(parametros, quantidades);
-    garantir(10 + alturaParagrafos([TEXTO_PROJECAO_REDE]) + 10 + (linhasRes.length + 1) * 7.2 + 16);
+    // Fluxo contínuo (pedido de 18/11/2026): começa logo após o quadro anterior; só evita deixar o subtítulo sozinho no fim da página.
+    garantir(10 + LINHA_TEXTO * 2);
     doc.setFont("helvetica", "bold"); doc.setFontSize(F.texto); doc.setTextColor(...TINTA);
     doc.text(textoPdf(SUBTITULO_PROJECAO_REDE), marginL, y + 3);
     y += 10;
@@ -140,13 +141,6 @@ export function buildPropostaRedePdf(
   };
   const blocoDados: Partial<Record<SecaoRedeId, () => void>> = { condicoes: desenharCondicoes, gestao: desenharGestao };
 
-  /** Altura exata dos parágrafos (mesma quebra e espaçamento de `paragrafo`). */
-  const alturaParagrafos = (lista: string[]) => {
-    fonteTexto();
-    return lista.reduce((h, t) => h + (doc.splitTextToSize(textoPdf(t), LARGURA) as string[]).length * LINHA_TEXTO + 3, 0);
-  };
-  /** Altura aproximada de cada quadro com a sua nota: título, texto e quadro ficam juntos na mesma página. */
-  const ALTURA_BLOCO: Partial<Record<SecaoRedeId, number>> = { condicoes: 60, gestao: 48 };
 
   /** Título longo (ex.: "2. ... | Credenciamento por Captação") quebra em mais linhas no mesmo tamanho, nunca passando da margem;
    * a linha do título fica sob a última. Retorna a altura extra das linhas acima dela. */
@@ -174,8 +168,8 @@ export function buildPropostaRedePdf(
   const corpo = paragrafosPropostaRede(textos);
   SECOES_REDE.forEach((s, i) => {
     const extra = (linhasTitulo(s.titulo).length - 1) * LINHA_TOPICO;
-    const h = 12 + extra + alturaParagrafos(corpo[i]) + (ALTURA_BLOCO[s.id] ?? 0);
-    garantir(h > pageH - top - bottom ? 10 + extra + LINHA_TEXTO * 3 : h);
+    // Tópicos corridos, sem saltar página (pedido de 18/11/2026): só evita título sem ao menos duas linhas de texto abaixo.
+    garantir(12 + extra + LINHA_TEXTO * 2);
     tituloTopico(s.titulo);
     y += 10;
     corpo[i].forEach(paragrafo);
@@ -184,7 +178,7 @@ export function buildPropostaRedePdf(
   });
 
   // 4. Condições Gerais: título e quadro sempre juntos na mesma página.
-  garantir(12 + alturaParagrafos([TEXTO_CONDICOES_GERAIS_REDE]) + 2 + 12 + CONDICOES_GERAIS_REDE.length * 14);
+  garantir(12 + LINHA_TEXTO * 2);
   drawSectionTitle(doc, TITULO_CONDICOES_GERAIS_REDE, marginL, y, pageW - marginR, TINTA, F.topico);
   y += 10;
   paragrafo(TEXTO_CONDICOES_GERAIS_REDE);
