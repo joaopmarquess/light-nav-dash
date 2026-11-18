@@ -1,9 +1,23 @@
 import { describe, expect, it } from "vitest";
 import { formatarPrazo, normalizarEntradaFm, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil , lerSimulacoesFm, novaSimulacaoFm, gravarSimulacaoFm, simulacaoAlteradaFm, duplicarSimulacaoFm, ordenarSimulacoesFm, proximoNumeroFm, DESCRICAO_FM_MAX } from "./simularDatasFm";
 
+// Entrada do quadro fornecido antes do novo padrão: Arquivo 05/01 e Fechamento 10.
+const QUADRO = { ...COMPETENCIA_PADRAO, dias: { arquivo: 5, fechamento: 10 }, arquivoMes: 1 };
+
 describe("Simular Datas FM", () => {
-  it("competência 12/2026 com os dias padrão reproduz o quadro fornecido, com Arquivo na primeira linha de datas", () => {
-    const linhas = simularDatasFm({ ...COMPETENCIA_PADRAO, dias: {} });
+  it("padrão dos cenários: Arquivo 20/competência e Fechamento 25", () => {
+    expect(simularDatasFm({ ...COMPETENCIA_PADRAO, dias: {} }).map((l) => [l.rotulo, l.dia, l.data])).toEqual([
+      ["Arquivo", 20, "20/12/2026"],
+      ["Fechamento", 25, "14/01/2027"], // 20/12 + 25 dias
+      ["Dare", 15, "15/01/2027"],
+      ["DIOPS", 30, "30/01/2027"],
+      ["Pagamento", 30, "30/01/2027"],
+    ]);
+    expect(simularDatasFm({ mes: 3, ano: 2027, dias: {} }).find((l) => l.id === "arquivo")).toMatchObject({ diaMes: "20/03", data: "20/03/2027" });
+    expect(periodoFm({ ...COMPETENCIA_PADRAO, dias: {} })).toEqual({ de: "20/11/2026", ate: "19/12/2026" });
+  });
+  it("competência 12/2026 com Arquivo 05/01 e Fechamento 10 reproduz o quadro fornecido", () => {
+    const linhas = simularDatasFm(QUADRO);
     expect(linhas.map((l) => [l.rotulo, l.dia, l.data])).toEqual([
       ["Arquivo", 5, "05/01/2027"],
       ["Fechamento", 10, "15/01/2027"],
@@ -48,12 +62,13 @@ describe("Simular Datas FM", () => {
     expect(ultimoDiaUtil(3, 2024).data).toBe("28/03/2024");
   });
   it("Período: do dia seguinte ao Último Dia, um mês antes, até o Último Dia", () => {
-    expect(periodoFm({ ...COMPETENCIA_PADRAO, dias: {} })).toEqual({ de: "01/12/2026", ate: "31/12/2026" });
-    expect(periodoFm({ mes: 1, ano: 2027, dias: {} })).toEqual({ de: "30/12/2026", ate: "29/01/2027" });
+    expect(periodoFm(QUADRO)).toEqual({ de: "01/12/2026", ate: "31/12/2026" });
+    expect(periodoFm({ mes: 1, ano: 2027, dias: { arquivo: 5 }, arquivoMes: 2 })).toEqual({ de: "30/12/2026", ate: "29/01/2027" });
   });
-  it("Arquivo pede dia/mês: padrão 05 do mês seguinte; mês anterior ao da competência vira o ano", () => {
+  it("Arquivo pede dia/mês: padrão 20 da competência; mês anterior ao da competência vira o ano", () => {
     const arq = (e: Parameters<typeof simularDatasFm>[0]) => simularDatasFm(e).find((l) => l.id === "arquivo")!;
-    expect(arq({ ...COMPETENCIA_PADRAO, dias: {} })).toMatchObject({ diaMes: "05/01", data: "05/01/2027" });
+    expect(arq({ ...COMPETENCIA_PADRAO, dias: {} })).toMatchObject({ diaMes: "20/12", data: "20/12/2026" });
+    expect(arq(QUADRO)).toMatchObject({ diaMes: "05/01", data: "05/01/2027" });
     expect(arq({ ...COMPETENCIA_PADRAO, dias: { arquivo: 8 }, arquivoMes: 2 }).data).toBe("08/02/2027");
     expect(arq({ ...COMPETENCIA_PADRAO, dias: { arquivo: 28 }, arquivoMes: 12 }).data).toBe("28/12/2026");
     expect(lerDiaMes("05/01")).toEqual({ dia: 5, mes: 1 });
@@ -71,13 +86,13 @@ describe("Simular Datas FM", () => {
   });
   it("Fechamento = data do Arquivo + REFERÊNCIA em dias corridos", () => {
     const fech = (e: Parameters<typeof simularDatasFm>[0]) => simularDatasFm(e).find((l) => l.id === "fechamento")!.data;
-    expect(fech({ ...COMPETENCIA_PADRAO, dias: {} })).toBe("15/01/2027"); // 05/01 + 10
-    expect(fech({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20 }, arquivoMes: 12 })).toBe("30/12/2026"); // 20/12 + 10
+    expect(fech(QUADRO)).toBe("15/01/2027"); // 05/01 + 10
+    expect(fech({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20, fechamento: 10 }, arquivoMes: 12 })).toBe("30/12/2026"); // 20/12 + 10
     expect(fech({ ...COMPETENCIA_PADRAO, dias: { arquivo: 25, fechamento: 10 }, arquivoMes: 12 })).toBe("04/01/2027"); // vira o ano
     expect(fech({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20, fechamento: 30 }, arquivoMes: 1 })).toBe("19/02/2027"); // vira o mês
   });
   it("DIAS: Fechamento − Arquivo; Dare, DIOPS e Pagamento − Fechamento, em dias corridos", () => {
-    const linhas = simularDatasFm({ ...COMPETENCIA_PADRAO, dias: {} });
+    const linhas = simularDatasFm(QUADRO);
     expect(linhas.map((l) => [l.rotulo, l.data, l.diasBase])).toEqual([
       ["Arquivo", "05/01/2027", 0],
       ["Fechamento", "15/01/2027", 10],
@@ -87,7 +102,8 @@ describe("Simular Datas FM", () => {
     ]);
   });
   it("IMPACTOS: PEONA conta dias do Período fora da competência; DARE e DIOPS repetem a coluna DIAS", () => {
-    expect(impactosFm({ ...COMPETENCIA_PADRAO, dias: {} })).toEqual({ peona: 0, fechamento: 10, dare: 0, diops: 15, pagamento: 15 });
+    expect(impactosFm(QUADRO)).toEqual({ peona: 0, fechamento: 10, dare: 0, diops: 15, pagamento: 15 });
+    expect(impactosFm({ ...COMPETENCIA_PADRAO, dias: {} })).toEqual({ peona: 11, fechamento: 25, dare: 1, diops: 16, pagamento: 16 });
     expect(impactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20 }, arquivoMes: 12 }).peona).toBe(11); // 20/11 a 30/11
   });
   it("IMPACTOS em três níveis: Crítico, Moderado e Ideal", () => {
@@ -113,13 +129,13 @@ describe("Simular Datas FM", () => {
   it("PEONA: 0 Ideal, 1 a 15 Moderado, acima de 15 Crítico", () => {
     // Competência 12/2026 com Arquivo em dezembro: Arquivo dia N → Período de N/11 a (N−1)/12 → PEONA = 31 − N dias de novembro.
     const peona = (arquivo: number) => avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo }, arquivoMes: 12 }).find((i) => i.id === "peona")!;
-    expect(avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: {} }).find((i) => i.id === "peona")).toMatchObject({ dias: 0, status: "Ideal" });
+    expect(avaliarImpactosFm(QUADRO).find((i) => i.id === "peona")).toMatchObject({ dias: 0, status: "Ideal" });
     expect(peona(30)).toMatchObject({ dias: 1, status: "Moderado" });
     expect(peona(16)).toMatchObject({ dias: 15, status: "Moderado" });
     expect(peona(15)).toMatchObject({ dias: 16, status: "Crítico" });
   });
   it("PRAZO: Fechamento desde o Arquivo; Dare, DIOPS e Pagamento desde o Fechamento", () => {
-    expect(simularDatasFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20 }, arquivoMes: 12 }).map((l) => [l.rotulo, l.diasBase, l.base])).toEqual([
+    expect(simularDatasFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20, fechamento: 10 }, arquivoMes: 12 }).map((l) => [l.rotulo, l.diasBase, l.base])).toEqual([
       ["Arquivo", 0, "Arquivo"], ["Fechamento", 10, "Arquivo"], ["Dare", 16, "Fechamento"], ["DIOPS", 31, "Fechamento"], ["Pagamento", 31, "Fechamento"],
     ]);
   });

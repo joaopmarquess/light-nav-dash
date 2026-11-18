@@ -8,10 +8,12 @@ export type LinhaDataFmDef = { id: IdDataFm; rotulo: string; diaPadrao: number; 
 export const LINHAS_DATAS_FM: LinhaDataFmDef[] = [
   // Arquivo logo após a Competência (pedido de 18/11/2026).
   // Arquivo pede dia/mês (pedido de 18/11/2026); sem mês digitado, usa o mês seguinte à competência.
-  { id: "arquivo", rotulo: "Arquivo", diaPadrao: 5, mesSeguinte: true, destaque: true, pedeMes: true },
+  // Padrão dos cenários (pedido de 18/11/2026): Arquivo 20/competência (dia 20 do mês da competência).
+  { id: "arquivo", rotulo: "Arquivo", diaPadrao: 20, mesSeguinte: false, destaque: true, pedeMes: true },
   // De e Até retirados do grid (pedido de 18/11/2026); o Período acima do grid substitui.
   // Fechamento = data do Arquivo + REFERÊNCIA em dias corridos (pedido de 18/11/2026; substitui "dia no mês seguinte ao Arquivo").
-  { id: "fechamento", rotulo: "Fechamento", diaPadrao: 10, mesSeguinte: true, somaAoArquivo: true },
+  // Padrão dos cenários (pedido de 18/11/2026): Fechamento 25 (dias somados ao Arquivo).
+  { id: "fechamento", rotulo: "Fechamento", diaPadrao: 25, mesSeguinte: true, somaAoArquivo: true },
   // Dare, DIOPS e Pagamento com REFERÊNCIA fixa, não editável (pedido de 18/11/2026): valores digitados antes são ignorados.
   { id: "dare", rotulo: "Dare", diaPadrao: 15, mesSeguinte: true, separadorAntes: true, fixo: true },
   { id: "diops", rotulo: "DIOPS", diaPadrao: 30, mesSeguinte: true, fixo: true },
@@ -19,7 +21,7 @@ export const LINHAS_DATAS_FM: LinhaDataFmDef[] = [
 ];
 export const COMPETENCIA_PADRAO = { mes: 12, ano: 2026 };
 
-/** arquivoMes: mês (1–12) digitado no Arquivo; ausente → mês seguinte à competência. */
+/** arquivoMes: mês (1–12) digitado no Arquivo; ausente → mês da competência (padrão 20/competência, pedido de 18/11/2026). */
 /** O campo "Referência de Último Dia" foi retirado (pedido de 18/11/2026); valores guardados antes são descartados ao ler. */
 export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>>; arquivoMes?: number };
 
@@ -60,7 +62,7 @@ export function simularDatasFm(e: EntradaDatasFm) {
 }
 
 function linhasDatasFm({ mes, ano, dias, arquivoMes }: EntradaDatasFm) {
-  const mesArquivo = arquivoMes ?? (mes === 12 ? 1 : mes + 1);
+  const mesArquivo = arquivoMes ?? mes;
   const diaArquivo = dias.arquivo ?? LINHAS_DATAS_FM.find((l) => l.id === "arquivo")!.diaPadrao;
   const dataArquivo = dataDiaMes(mes, ano, diaArquivo, mesArquivo).data;
   return LINHAS_DATAS_FM.map((l) => {
