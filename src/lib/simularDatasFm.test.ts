@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatarPrazo, REFERENCIA_ULTIMO_DIA_PADRAO, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil } from "./simularDatasFm";
+import { formatarPrazo, REFERENCIA_ULTIMO_DIA_PADRAO, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil , lerSimulacoesFm, novaSimulacaoFm, alterarSimulacaoFm, duplicarSimulacaoFm, ordenarSimulacoesFm, DESCRICAO_FM_MAX } from "./simularDatasFm";
 
 describe("Simular Datas FM", () => {
   it("competência 12/2026 com os dias padrão reproduz o quadro fornecido, com Arquivo na primeira linha de datas", () => {
@@ -135,5 +135,40 @@ describe("Simular Datas FM", () => {
   });
   it("Referência de Último Dia começa em 20", () => {
     expect(REFERENCIA_ULTIMO_DIA_PADRAO).toBe(20);
+  });
+});
+
+describe("Controle de Simulações FM", () => {
+  const agora = "2026-11-18T15:00:00.000Z";
+  let n = 0;
+  const id = () => `id${++n}`;
+  it("migra a simulação única anterior para a primeira da lista", () => {
+    const lista = lerSimulacoesFm(null, JSON.stringify({ mes: 11, ano: 2026, dias: { arquivo: 20, fechamento: 21 }, arquivoMes: 12 }), agora, id);
+    expect(lista).toHaveLength(1);
+    expect(lista[0].descricao).toBe("");
+    expect(lista[0].entrada).toEqual({ mes: 11, ano: 2026, dias: { arquivo: 20, fechamento: 21 }, arquivoMes: 12 });
+  });
+  it("sem lista nem legado começa vazia; lista guardada tem precedência", () => {
+    expect(lerSimulacoesFm(null, null, agora, id)).toEqual([]);
+    const guardada = JSON.stringify([{ id: "a", descricao: "Cenário A", criadaEm: agora, atualizadaEm: agora, entrada: { mes: 12, ano: 2026, dias: { dare: 3 } } }]);
+    const lista = lerSimulacoesFm(guardada, JSON.stringify({ mes: 1, ano: 2027, dias: {} }), agora, id);
+    expect(lista.map((s) => s.descricao)).toEqual(["Cenário A"]);
+    expect(lista[0].entrada.dias).toEqual({}); // DARE tem REFERÊNCIA fixa
+  });
+  it("alterar a descrição limita o tamanho e marca a data de alteração", () => {
+    const base = [novaSimulacaoFm("a", agora), novaSimulacaoFm("b", agora)];
+    const depois = alterarSimulacaoFm(base, "b", { descricao: "x".repeat(DESCRICAO_FM_MAX + 50) }, "2026-11-19T10:00:00.000Z");
+    expect(depois[1].descricao).toHaveLength(DESCRICAO_FM_MAX);
+    expect(depois[1].atualizadaEm).toBe("2026-11-19T10:00:00.000Z");
+    expect(depois[0]).toBe(base[0]);
+    expect(ordenarSimulacoesFm(depois).map((s) => s.id)).toEqual(["b", "a"]);
+  });
+  it("duplicar copia as entradas com descrição '(cópia)' sem compartilhar os dias", () => {
+    const s = novaSimulacaoFm("a", agora, { mes: 12, ano: 2026, dias: { arquivo: 20 } }, "Cenário A");
+    const c = duplicarSimulacaoFm(s, "b", agora);
+    expect(c.descricao).toBe("Cenário A (cópia)");
+    expect(c.entrada).toEqual(s.entrada);
+    c.entrada.dias.arquivo = 1;
+    expect(s.entrada.dias.arquivo).toBe(20);
   });
 });

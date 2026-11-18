@@ -154,25 +154,70 @@ export function lerInteiro(texto: string, min: number, max: number): number | un
   return n >= min && n <= max ? n : null;
 }
 
+/** Chave da simulação única anterior ao Controle de Simulações; lida só para migrar para a lista. */
 export const CHAVE_DATAS_FM = "laboratory.simularDatasFm.v1";
-export function carregarDatasFm(): EntradaDatasFm {
-  try {
-    const b = JSON.parse(localStorage.getItem(CHAVE_DATAS_FM) ?? "{}");
-    const dias: EntradaDatasFm["dias"] = {};
-    for (const l of LINHAS_DATAS_FM) if (!l.fixo && Number.isInteger(b?.dias?.[l.id]) && b.dias[l.id] >= 1 && b.dias[l.id] <= 31) dias[l.id] = b.dias[l.id];
-    const arquivoMes = Number.isInteger(b?.arquivoMes) && b.arquivoMes >= 1 && b.arquivoMes <= 12 ? b.arquivoMes : undefined;
-    const referenciaUltimoDia = Number.isInteger(b?.referenciaUltimoDia) && b.referenciaUltimoDia >= 1 && b.referenciaUltimoDia <= 31 ? b.referenciaUltimoDia : undefined;
-    return {
-      ...(arquivoMes ? { arquivoMes } : {}),
-      ...(referenciaUltimoDia ? { referenciaUltimoDia } : {}),
-      mes: Number.isInteger(b?.mes) && b.mes >= 1 && b.mes <= 12 ? b.mes : COMPETENCIA_PADRAO.mes,
-      ano: Number.isInteger(b?.ano) && b.ano >= 2000 && b.ano <= 2100 ? b.ano : COMPETENCIA_PADRAO.ano,
-      dias,
-    };
-  } catch { return { ...COMPETENCIA_PADRAO, dias: {} }; }
+/** Valida uma entrada guardada (campos inválidos voltam ao padrão; REFERÊNCIA fixa é ignorada). */
+export function normalizarEntradaFm(b: unknown): EntradaDatasFm {
+  const o = (b && typeof b === "object" ? b : {}) as Record<string, any>;
+  const dias: EntradaDatasFm["dias"] = {};
+  for (const l of LINHAS_DATAS_FM) if (!l.fixo && Number.isInteger(o?.dias?.[l.id]) && o.dias[l.id] >= 1 && o.dias[l.id] <= 31) dias[l.id] = o.dias[l.id];
+  const arquivoMes = Number.isInteger(o.arquivoMes) && o.arquivoMes >= 1 && o.arquivoMes <= 12 ? o.arquivoMes : undefined;
+  const referenciaUltimoDia = Number.isInteger(o.referenciaUltimoDia) && o.referenciaUltimoDia >= 1 && o.referenciaUltimoDia <= 31 ? o.referenciaUltimoDia : undefined;
+  return {
+    ...(arquivoMes ? { arquivoMes } : {}),
+    ...(referenciaUltimoDia ? { referenciaUltimoDia } : {}),
+    mes: Number.isInteger(o.mes) && o.mes >= 1 && o.mes <= 12 ? o.mes : COMPETENCIA_PADRAO.mes,
+    ano: Number.isInteger(o.ano) && o.ano >= 2000 && o.ano <= 2100 ? o.ano : COMPETENCIA_PADRAO.ano,
+    dias,
+  };
 }
-export function salvarDatasFm(v: EntradaDatasFm) {
-  try { localStorage.setItem(CHAVE_DATAS_FM, JSON.stringify(v)); } catch { /* navegador sem armazenamento */ }
+/** Controle de Simulações (pedido de 18/11/2026): lista de simulações, cada uma com Descrição e as entradas da tela Simulação. */
+export type SimulacaoFm = { id: string; descricao: string; criadaEm: string; atualizadaEm: string; entrada: EntradaDatasFm };
+export const CHAVE_SIMULACOES_FM = "laboratory.simularDatasFm.simulacoes.v1";
+export const DESCRICAO_FM_MAX = 200;
+
+/** Lê a lista guardada; sem lista, a simulação única anterior (legado) vira a primeira, para nada se perder. */
+export function lerSimulacoesFm(bruto: string | null, legado: string | null, agora: string, novoId: () => string): SimulacaoFm[] {
+  try {
+    if (bruto !== null) {
+      const lista = JSON.parse(bruto);
+      if (!Array.isArray(lista)) return [];
+      return lista.filter((s) => s && typeof s.id === "string" && s.id).map((s) => ({
+        id: s.id,
+        descricao: typeof s.descricao === "string" ? s.descricao.slice(0, DESCRICAO_FM_MAX) : "",
+        criadaEm: typeof s.criadaEm === "string" ? s.criadaEm : agora,
+        atualizadaEm: typeof s.atualizadaEm === "string" ? s.atualizadaEm : (typeof s.criadaEm === "string" ? s.criadaEm : agora),
+        entrada: normalizarEntradaFm(s.entrada),
+      }));
+    }
+    if (legado !== null) return [novaSimulacaoFm(novoId(), agora, normalizarEntradaFm(JSON.parse(legado)))];
+  } catch { /* conteúdo inválido */ }
+  return [];
+}
+export function novaSimulacaoFm(id: string, agora: string, entrada: EntradaDatasFm = { ...COMPETENCIA_PADRAO, dias: {} }, descricao = ""): SimulacaoFm {
+  return { id, descricao, criadaEm: agora, atualizadaEm: agora, entrada };
+}
+export function duplicarSimulacaoFm(s: SimulacaoFm, id: string, agora: string): SimulacaoFm {
+  return novaSimulacaoFm(id, agora, { ...s.entrada, dias: { ...s.entrada.dias } }, `${s.descricao || "Sem descrição"} (cópia)`.slice(0, DESCRICAO_FM_MAX));
+}
+/** Altera uma simulação da lista (descrição limitada a DESCRICAO_FM_MAX) e marca a data de alteração. */
+export function alterarSimulacaoFm(lista: SimulacaoFm[], id: string, mudanca: Partial<Pick<SimulacaoFm, "descricao" | "entrada">>, agora: string): SimulacaoFm[] {
+  return lista.map((s) => s.id !== id ? s : {
+    ...s, ...mudanca,
+    ...(mudanca.descricao !== undefined ? { descricao: mudanca.descricao.slice(0, DESCRICAO_FM_MAX) } : {}),
+    atualizadaEm: agora,
+  });
+}
+/** Lista: alteradas mais recentemente primeiro. */
+export const ordenarSimulacoesFm = (lista: SimulacaoFm[]) => [...lista].sort((a, b) => b.atualizadaEm.localeCompare(a.atualizadaEm));
+export function carregarSimulacoesFm(): SimulacaoFm[] {
+  try {
+    const novoId = () => (globalThis.crypto?.randomUUID?.() ?? `fm-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    return lerSimulacoesFm(localStorage.getItem(CHAVE_SIMULACOES_FM), localStorage.getItem(CHAVE_DATAS_FM), new Date().toISOString(), novoId);
+  } catch { return []; }
+}
+export function salvarSimulacoesFm(lista: SimulacaoFm[]) {
+  try { localStorage.setItem(CHAVE_SIMULACOES_FM, JSON.stringify(lista)); } catch { /* navegador sem armazenamento */ }
 }
 
 /** IMPACTOS (pedido de 18/11/2026): PEONA = dias do Período fora do mês da competência; DARE e DIOPS = coluna DIAS dessas linhas. */
