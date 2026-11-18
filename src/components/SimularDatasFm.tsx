@@ -1,8 +1,8 @@
 import { Fragment, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { carregarDatasFm, formatarCompetencia, lerCompetencia, lerInteiro, periodoFm, ultimoDiaUtil, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { carregarDatasFm, formatarCompetencia, lerCompetencia, lerInteiro, periodoFm, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
-// Laboratory › Simular Datas FM: Competência (MM/AAAA, acima do grid), Último Dia (último dia útil, calculado) e o dia de cada linha, com a data calculada; valores digitados ficam neste navegador.
+// Laboratory › Simular Datas FM: Competência (MM/AAAA) e Período (Último Dia útil − 30 dias a Último Dia) acima do grid, sem a linha Último Dia (pedido de 18/11/2026), e o dia de cada linha, com a data calculada; valores digitados ficam neste navegador.
 export default function SimularDatasFm() {
   const [entrada, setEntrada] = useState<EntradaDatasFm>(carregarDatasFm);
   const [texto, setTexto] = useState<Record<string, string>>({});
@@ -19,7 +19,6 @@ export default function SimularDatasFm() {
     onBlur: () => setTexto((p) => { const n = { ...p }; delete n[chave]; return n; }),
   });
   const linhas = simularDatasFm(entrada);
-  const ultimo = ultimoDiaUtil(entrada.mes, entrada.ano);
   const periodo = periodoFm(entrada.mes, entrada.ano);
   const [competenciaTexto, setCompetenciaTexto] = useState<string | null>(null);
   const alterarCompetencia = (t: string) => {
@@ -56,13 +55,6 @@ export default function SimularDatasFm() {
           <tbody>
             {linhas.map((l) => (
               <Fragment key={l.id}>
-              {l.id === "arquivo" && (
-                <tr className="border-b border-border">
-                  <td className="px-3 py-1.5">Último Dia</td>
-                  <td className="px-3 py-1.5 text-right tabular-nums" title="Último dia útil do mês da competência (sem sábados, domingos e feriados nacionais)">{ultimo.dia}</td>
-                  <td className="px-3 py-1.5 text-right tabular-nums">{ultimo.data}</td>
-                </tr>
-              )}
               <tr className={`border-b border-border ${l.separadorAntes ? "border-t-2 border-t-foreground" : ""} ${l.destaque ? "font-bold" : ""}`}>
                 <td className="px-3 py-1.5">{l.rotulo}</td>
                 <td className="px-3 py-1.5">
