@@ -12,7 +12,7 @@ const ler = () => ({
   vidas: lerVidasSimulacao(),
 });
 
-// Resultado de Resultados Rede: Mês · Adesão · Mensalidade, relido a cada alteração do Credenciamento, dos Parâmetros ou das vidas da simulação.
+// Resultado de Resultados Rede: Mês · Adesão · Mensalidade · Total, relido a cada alteração do Credenciamento, dos Parâmetros ou das vidas da simulação.
 export default function UberabaResultadoRede() {
   const [dados, setDados] = useState(ler);
   useEffect(() => {
@@ -30,6 +30,7 @@ export default function UberabaResultadoRede() {
             <th className="px-3 py-2 text-left font-semibold">MÊS</th>
             <th className="px-3 py-2 text-right font-semibold">ADESÃO</th>
             <th className="px-3 py-2 text-right font-semibold">MENSALIDADE</th>
+            <th className="px-3 py-2 text-right font-semibold">TOTAL</th>
           </tr>
         </thead>
         <tbody>
@@ -41,6 +42,7 @@ export default function UberabaResultadoRede() {
                 title={l.parcelaFixa ? "Parcela fixa (Valor Parcela)" : `${moeda(dados.parametros.valorPorVida)} × ${inteiro(l.vidasAcumuladas)} vidas vendidas acumuladas`}>
                 {moeda(l.mensalidade)}
               </td>
+              <td className="px-3 py-1.5 text-right font-semibold tabular-nums">{moeda(l.total)}</td>
             </tr>
           ))}
         </tbody>
@@ -49,6 +51,7 @@ export default function UberabaResultadoRede() {
             <td className="px-3 py-2">TOTAL</td>
             <td className="px-3 py-2 text-right tabular-nums">{moeda(total.adesao)}</td>
             <td className="px-3 py-2 text-right tabular-nums">{moeda(total.mensalidade)}</td>
+            <td className="px-3 py-2 text-right tabular-nums">{moeda(total.total)}</td>
           </tr>
         </tfoot>
       </table>

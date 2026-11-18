@@ -25,6 +25,12 @@ describe("Resultado de Resultados Rede", () => {
     expect(linhas[11].vidasAcumuladas).toBe(10000);
     expect(linhas[11].mensalidade).toBe(10000);
   });
+  it("Total = Adesão + Mensalidade por mês e no ano", () => {
+    const { linhas, total } = resultadoRede(45800, PARAMETROS_REDE_PADRAO, vidasSimulacaoPadrao());
+    expect(linhas[0].total).toBe(22900 + 15000);
+    expect(linhas[11].total).toBe(10000);
+    expect(total.total).toBe(total.adesao + total.mensalidade);
+  });
   it("Parcelas fixas e Valor por vida alterados mudam a Mensalidade", () => {
     const { linhas } = resultadoRede(0, { parcelasFixas: 3, valorParcela: 20000, valorPorVida: 2 }, { PCA: 1000 });
     expect(linhas.slice(0, 3).map((l) => l.mensalidade)).toEqual([20000, 20000, 20000]);
