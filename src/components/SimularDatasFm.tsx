@@ -50,7 +50,7 @@ export default function SimularDatasFm() {
               <th className="px-3 py-2 text-left font-semibold">VARIÁVEL</th>
               <th className="px-3 py-2 text-right font-semibold">REFERÊNCIA</th>
               <th className="px-3 py-2 text-right font-semibold">DATA</th>
-              <th className="px-3 py-2 text-right font-semibold" title="Dias corridos entre a data da variável e a do Arquivo">DIAS</th>
+              <th className="px-3 py-2 text-right font-semibold" title="Dias corridos: Fechamento − Arquivo; Dare, DIOPS e Pagamento − Fechamento">DIAS</th>
             </tr>
           </thead>
           <tbody>
@@ -86,7 +86,7 @@ export default function SimularDatasFm() {
                 <td className="px-3 py-1.5 text-right tabular-nums" title={l.ajustado ? "Dia limitado ao último dia do mês" : undefined}>
                   {l.data}{l.ajustado ? " *" : ""}
                 </td>
-                <td className="px-3 py-1.5 text-right tabular-nums">{l.diasArquivo}</td>
+                <td className="px-3 py-1.5 text-right tabular-nums">{l.diasBase}</td>
               </tr>
               </Fragment>
             ))}

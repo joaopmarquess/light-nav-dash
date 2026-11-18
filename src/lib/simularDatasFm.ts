@@ -43,11 +43,13 @@ export function dataDiaMes(mesCompetencia: number, anoCompetencia: number, dia: 
 
 const utcDe = (data: string) => { const [d, m, a] = data.split("/").map(Number); return Date.UTC(a, m - 1, d); };
 
-/** Linhas do grid; diasArquivo (coluna DIAS, pedido de 18/11/2026) = data da linha − data do Arquivo, em dias corridos. */
+/** Coluna DIAS (pedidos de 18/11/2026), em dias corridos: Dare, DIOPS e Pagamento = data − Fechamento; Arquivo e Fechamento = data − Arquivo. */
+const DIAS_DESDE_FECHAMENTO: IdDataFm[] = ["dare", "diops", "pagamento"];
 export function simularDatasFm(e: EntradaDatasFm) {
   const linhas = linhasDatasFm(e);
-  const arquivo = utcDe(linhas.find((l) => l.id === "arquivo")!.data);
-  return linhas.map((l) => ({ ...l, diasArquivo: Math.round((utcDe(l.data) - arquivo) / 86400000) }));
+  const base = (id: IdDataFm) => utcDe(linhas.find((l) => l.id === id)!.data);
+  const arquivo = base("arquivo"), fechamento = base("fechamento");
+  return linhas.map((l) => ({ ...l, diasBase: Math.round((utcDe(l.data) - (DIAS_DESDE_FECHAMENTO.includes(l.id) ? fechamento : arquivo)) / 86400000) }));
 }
 
 function linhasDatasFm({ mes, ano, dias, arquivoMes }: EntradaDatasFm) {

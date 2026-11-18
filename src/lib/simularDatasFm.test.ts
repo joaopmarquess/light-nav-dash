@@ -69,14 +69,14 @@ describe("Simular Datas FM", () => {
     expect(fech({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20 }, arquivoMes: 12 })).toBe("10/01/2027");
     expect(fech({ ...COMPETENCIA_PADRAO, dias: { arquivo: 5, fechamento: 30 }, arquivoMes: 1 })).toBe("28/02/2027");
   });
-  it("DIAS = data da variável − data do Arquivo, em dias corridos", () => {
+  it("DIAS: Fechamento − Arquivo; Dare, DIOPS e Pagamento − Fechamento, em dias corridos", () => {
     const linhas = simularDatasFm({ ...COMPETENCIA_PADRAO, dias: {} });
-    expect(linhas.map((l) => [l.rotulo, l.data, l.diasArquivo])).toEqual([
+    expect(linhas.map((l) => [l.rotulo, l.data, l.diasBase])).toEqual([
       ["Arquivo", "05/01/2027", 0],
       ["Fechamento", "10/02/2027", 36],
-      ["Dare", "15/01/2027", 10],
-      ["DIOPS", "30/01/2027", 25],
-      ["Pagamento", "30/01/2027", 25],
+      ["Dare", "15/01/2027", -26],
+      ["DIOPS", "30/01/2027", -11],
+      ["Pagamento", "30/01/2027", -11],
     ]);
   });
 });
