@@ -3,7 +3,7 @@ import { Copy, Plus, Save, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvarUltimoNumeroFm, simulacaoAlteradaFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvarUltimoNumeroFm, simulacaoAlteradaFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, prazoFolhaFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
 const novoId = () => globalThis.crypto?.randomUUID?.() ?? `fm-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const agora = () => new Date().toISOString();
@@ -37,11 +37,11 @@ export default function SimularDatasFm() {
   const ordenada = ordenarSimulacoesFm(lista);
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4 max-w-5xl">
+      <div className="flex items-center justify-between gap-4 max-w-7xl">
         <h1 className="text-xl font-semibold">Lista de Simulações — Datas FM</h1>
         <Button size="sm" onClick={nova}><Plus className="mr-1 h-4 w-4" />Nova simulação</Button>
       </div>
-      <div className="max-w-5xl overflow-hidden rounded-md border border-border">
+      <div className="max-w-7xl overflow-x-auto rounded-md border border-border">
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-border bg-secondary text-secondary-foreground">
@@ -50,6 +50,7 @@ export default function SimularDatasFm() {
               <th className="px-3 py-2 text-center font-semibold">COMPETÊNCIA</th>
               <th className="px-3 py-2 text-right font-semibold">ARQUIVO</th>
               <th className="px-3 py-2 text-right font-semibold">FECHAMENTO</th>
+              <th className="px-3 py-2 text-left font-semibold">PRAZO</th>
               <th className="px-3 py-2 text-left font-semibold">IMPACTOS</th>
               <th className="px-3 py-2 text-right font-semibold">ALTERADA EM</th>
               <th className="w-20 px-3 py-2" />
@@ -57,7 +58,7 @@ export default function SimularDatasFm() {
           </thead>
           <tbody>
             {ordenada.length === 0 ? (
-              <tr><td colSpan={8} className="px-3 py-6 text-center text-muted-foreground">Nenhuma simulação. Use “Nova simulação” para começar.</td></tr>
+              <tr><td colSpan={9} className="px-3 py-6 text-center text-muted-foreground">Nenhuma simulação. Use “Nova simulação” para começar.</td></tr>
             ) : ordenada.map((s) => {
               const linhas = simularDatasFm(s.entrada);
               const data = (id: IdDataFm) => linhas.find((l) => l.id === id)!.data;
@@ -68,6 +69,7 @@ export default function SimularDatasFm() {
                   <td className="px-3 py-1.5 text-center tabular-nums">{formatarCompetencia(s.entrada.mes, s.entrada.ano)}</td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{data("arquivo")}</td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{data("fechamento")}</td>
+                  <td className="px-3 py-1.5 tabular-nums">{prazoFolhaFm(s.entrada)}</td>
                   <td className="px-3 py-1.5 text-xs">
                     {avaliarImpactosFm(s.entrada).map((imp, i) => (
                       <Fragment key={imp.id}>{i > 0 && <span className="text-muted-foreground"> · </span>}<span className={`font-semibold ${corNivel(imp.nivel)}`} title={`${imp.rotulo}: ${imp.status}`}>{imp.rotulo}</span></Fragment>

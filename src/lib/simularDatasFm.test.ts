@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatarPrazo, normalizarEntradaFm, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil , lerSimulacoesFm, novaSimulacaoFm, gravarSimulacaoFm, simulacaoAlteradaFm, duplicarSimulacaoFm, ordenarSimulacoesFm, proximoNumeroFm, DESCRICAO_FM_MAX } from "./simularDatasFm";
+import { formatarPrazo, normalizarEntradaFm, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil , lerSimulacoesFm, novaSimulacaoFm, gravarSimulacaoFm, simulacaoAlteradaFm, duplicarSimulacaoFm, ordenarSimulacoesFm, proximoNumeroFm, DESCRICAO_FM_MAX, prazoFolhaFm } from "./simularDatasFm";
 
 // Entrada do quadro fornecido antes do novo padrão: Arquivo 05/01 e Fechamento 10.
 const QUADRO = { ...COMPETENCIA_PADRAO, dias: { arquivo: 5, fechamento: 10 }, arquivoMes: 1 };
@@ -142,6 +142,11 @@ describe("Simular Datas FM", () => {
     expect(simularDatasFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20, fechamento: 10 }, arquivoMes: 12 }).map((l) => [l.rotulo, l.diasBase, l.base])).toEqual([
       ["Arquivo", 0, "Arquivo"], ["Fechamento", 10, "Arquivo"], ["Dare", 16, "Fechamento"], ["DIOPS", 31, "Fechamento"], ["Pagamento", 31, "Fechamento"],
     ]);
+  });
+  it("Lista: dias entre o Arquivo e o Fechamento para Fechar a Folha", () => {
+    expect(prazoFolhaFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20, fechamento: 5 }, arquivoMes: 12 })).toBe("05 dias para Fechar a Folha");
+    expect(prazoFolhaFm({ ...COMPETENCIA_PADRAO, dias: {} })).toBe("25 dias para Fechar a Folha");
+    expect(prazoFolhaFm({ ...COMPETENCIA_PADRAO, dias: { fechamento: 1 } })).toBe("01 dia para Fechar a Folha");
   });
   it("PRAZO com dois dígitos: 09 dias", () => {
     expect(formatarPrazo(9)).toBe("09");

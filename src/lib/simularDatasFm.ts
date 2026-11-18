@@ -266,6 +266,8 @@ export const STATUS_IMPACTO_FM: Record<NivelImpactoFm, string> = { ideal: "Ideal
 export type ImpactoFm = { id: "peona" | "fechamento" | "dare" | "diops" | "pagamento"; rotulo: string; dias: number; nivel: NivelImpactoFm; status: string; descricao: string };
 // Toda contagem de dias com zero à esquerda, "0#" (pedido de 18/11/2026).
 const plural = (n: number) => `${formatarPrazo(n)} ${Math.abs(n) === 1 ? "dia" : "dias"}`;
+/** Lista de Simulações, depois de FECHAMENTO (pedido de 18/11/2026): dias entre o Arquivo e o Fechamento, ex.: "05 dias para Fechar a Folha". */
+export const prazoFolhaFm = (e: EntradaDatasFm) => `${plural(simularDatasFm(e).find((l) => l.id === "fechamento")!.diasBase)} para Fechar a Folha`;
 export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
   const { peona, fechamento, dare, diops, pagamento } = impactosFm(e);
   const item = (id: ImpactoFm["id"], rotulo: string, dias: number, nivel: NivelImpactoFm, descricao: string): ImpactoFm =>
