@@ -39,8 +39,6 @@ const todayBR = () => {
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   return `${dd}/${mm}/${d.getFullYear()}`;
 };
-import AtivosEm from "@/components/AtivosEm";
-import AtivosCidade from "@/components/AtivosCidade";
 import HomeView from "@/components/Home";
 import Entradas from "@/components/Entradas";
 import Cancelamentos from "@/components/Cancelamentos";
@@ -62,7 +60,6 @@ const formatBR = (d: Date) =>
 
 import ConsultaBeneficiarioDenis from "@/components/ConsultaBeneficiarioDenis";
 import BIOverview from "@/components/BIOverview";
-import DWCarteira from "@/components/DWCarteira";
 import CarteiraGraficos from "@/components/CarteiraGraficos";
 import CarteiraMapa from "@/components/CarteiraMapa";
 import VendasMatriz from "@/components/VendasMatriz";
@@ -187,18 +184,8 @@ const Index = () => {
   const [labOpen, setLabOpen] = useState<Record<string, boolean>>({});
   const [collapsed, setCollapsed] = useState(true);
   const [labMenuAberto, setLabMenuAberto] = useState<string | null>(null);
-  const [dateValue, setDateValue] = useState(todayBR());
-  const [ativosDrillNome, setAtivosDrillNome] = useState<string | null>(null);
 
   useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent<{ nome: string }>).detail;
-      if (detail?.nome) {
-        setAtivosDrillNome(detail.nome);
-        setActive("Área Geográfica");
-      }
-    };
-    window.addEventListener("open-ativos-em", handler as EventListener);
     const biHandler = () => setActive("B.I. Overview");
     window.addEventListener("open-bi-overview", biHandler);
     const unimedHandler = () => {
@@ -208,15 +195,11 @@ const Index = () => {
     };
     window.addEventListener("open-unimed-uberaba", unimedHandler);
     return () => {
-      window.removeEventListener("open-ativos-em", handler as EventListener);
       window.removeEventListener("open-bi-overview", biHandler);
       window.removeEventListener("open-unimed-uberaba", unimedHandler);
     };
   }, [setActive]);
 
-  useEffect(() => {
-    if (active !== "Área Geográfica" && ativosDrillNome) setAtivosDrillNome(null);
-  }, [active, ativosDrillNome]);
 
   const consulta = useConsultaState();
   const showConsultaBadge =
@@ -410,49 +393,6 @@ const Index = () => {
             {controlTitle ? controlSubtitle && <p className="text-xs text-muted-foreground">{controlSubtitle}</p> : <p className="text-xs text-muted-foreground">AXIS | Executive Intelligence Platform <span className="italic">by Dênis Santana</span></p>}
           </div>
           <div className="flex items-center gap-3">
-            {(active === "Área Geográfica" || active === "Dashboard" || active === "Ativos por Cidade") && (
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        aria-label="Abrir calendário"
-                        className="absolute left-2 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-primary transition-colors"
-                      >
-                        <CalendarIcon className="h-4 w-4" />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        locale={ptBR}
-                        selected={parseBR(dateValue)}
-                        onSelect={(d) => d && setDateValue(formatBR(d))}
-                        initialFocus
-                        className={cn("p-3 pointer-events-auto")}
-                      />
-                      <div className="p-2 border-t border-border flex justify-end">
-                        <button
-                          type="button"
-                          onClick={() => setDateValue(todayBR())}
-                          className="h-8 px-3 rounded-md border border-border bg-background text-sm text-foreground hover:bg-accent hover:text-primary transition-colors"
-                        >
-                          Hoje
-                        </button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                  <input
-                    type="text"
-                    value={dateValue}
-                    onChange={(e) => setDateValue(e.target.value)}
-                    placeholder="dd/mm/aaaa"
-                    className="h-9 w-40 pl-9 pr-3 rounded-md border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  />
-                </div>
-              </div>
-            )}
             {can("Configurações") && <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -481,18 +421,12 @@ const Index = () => {
           </div>
         </header>
 
-        <main className={`flex-1 min-h-0 overflow-hidden flex ${LAB_IDS.has(active) ? "flex-row gap-4" : "flex-col"} ${LAB_IDS.has(active) ? "py-8 pl-2 pr-8" : active === "Área Geográfica" || active === "Dashboard" ? "" : active === "Carteira · Bench Vidas" ? "p-3 sm:p-8" : active === "Carteira · Área Geográfica" ? "p-3 sm:p-4" : "p-8"}`}>
+        <main className={`flex-1 min-h-0 overflow-hidden flex ${LAB_IDS.has(active) ? "flex-row gap-4" : "flex-col"} ${LAB_IDS.has(active) ? "py-8 pl-2 pr-8" : active === "Carteira · Bench Vidas" ? "p-3 sm:p-8" : active === "Carteira · Área Geográfica" ? "p-3 sm:p-4" : "p-8"}`}>
           {LAB_IDS.has(active) && (
             <LaboratoryNav items={visibleLabs} active={active} canHome={can("Laboratory")} onSelect={setActive} onMenuOpenChange={setLabMenuAberto} />
           )}
           <div className="min-h-0 min-w-0 flex-1">
-          {accessLoading ? <p className="text-sm text-muted-foreground">Carregando acessos…</p> : !can(active) ? <p className="text-sm text-muted-foreground">Nenhum menu autorizado. Solicite acesso ao administrador.</p> : active === "Área Geográfica" ? (
-            <AtivosEm dateValue={dateValue} />
-          ) : active === "Ativos por Cidade" ? (
-            <AtivosCidade dateValue={dateValue} />
-          ) : active === "Dashboard" ? (
-            <DWCarteira dateValue={dateValue} />
-          ) : active === "Vendas" ? (
+          {accessLoading ? <p className="text-sm text-muted-foreground">Carregando acessos…</p> : !can(active) ? <p className="text-sm text-muted-foreground">Nenhum menu autorizado. Solicite acesso ao administrador.</p> : active === "Vendas" ? (
             <Entradas />
           ) : active === "Vendas ate 08/2026" ? (
             <VendasMatriz />

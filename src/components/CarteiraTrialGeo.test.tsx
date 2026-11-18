@@ -8,7 +8,7 @@ const renderGeo = () => render(<QueryClientProvider client={new QueryClient({ de
 vi.mock("@/lib/hostingerClient", () => ({
   hostinger: { rpc: vi.fn().mockResolvedValue({ data: [{ uf: "SP", cidade: "São José do Rio Preto", ativos: 1000 }], error: null }) },
 }));
-vi.mock("@/components/DWCarteira", () => ({ UF_FLAGS: {} }));
+vi.mock("@/lib/dwCarteiraDados", () => ({ UF_FLAGS: {} }));
 vi.mock("@/components/BrazilHeatMap", () => ({ BrazilHeatMap: () => null }));
 vi.mock("@/components/StateHeatMap", () => ({
   StateHeatMap: ({ core, outlineOnly, showOverview }: { core?: boolean; outlineOnly?: boolean; showOverview?: boolean }) => (

@@ -13,7 +13,7 @@ import {
   CartesianGrid,
   LabelList,
 } from "recharts";
-import { useDWCarteira } from "@/components/DWCarteira";
+import { useDWCarteira } from "@/lib/dwCarteiraDados";
 
 const fmtInt = (v: number) => v.toLocaleString("pt-BR");
 const COLORS = ["#3b82f6", "#f59e0b", "#a855f7", "#ef4444", "#06b6d4", "#ec4899", "#f97316", "#eab308", "#8b5cf6", "#14b8a6"];
