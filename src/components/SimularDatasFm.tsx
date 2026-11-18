@@ -116,7 +116,7 @@ export default function SimularDatasFm() {
             {impactos.map((imp) => (
               <tr key={imp.id} className="border-b border-border align-middle last:border-b-0">
                 <td className="w-20 px-3 py-1.5 font-semibold">{imp.rotulo}</td>
-                <td className="w-14 px-3 py-1.5 text-right tabular-nums">{imp.dias}</td>
+                <td className="w-14 px-3 py-1.5 text-right tabular-nums">{formatarPrazo(imp.dias)}</td>
                 {/* Três níveis (pedido de 18/11/2026): Ideal em verde claro, Moderado em laranja, Crítico em vermelho, sem setas. */}
                 <td className={`w-36 whitespace-nowrap px-3 py-1.5 font-semibold ${imp.nivel === "critico" ? "text-destructive" : imp.nivel === "moderado" ? "text-[hsl(var(--impacto-moderado))]" : "text-[hsl(var(--impacto-ok))]"}`}>
                   {imp.status}

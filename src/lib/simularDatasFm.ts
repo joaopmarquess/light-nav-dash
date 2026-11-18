@@ -47,7 +47,7 @@ export function dataDiaMes(mesCompetencia: number, anoCompetencia: number, dia: 
 const utcDe = (data: string) => { const [d, m, a] = data.split("/").map(Number); return Date.UTC(a, m - 1, d); };
 
 /** Coluna PRAZO, antes DIAS (pedidos de 18/11/2026), em dias corridos: Dare, DIOPS e Pagamento = data − Fechamento; Arquivo e Fechamento = data − Arquivo. */
-/** Número da coluna PRAZO com dois dígitos (pedido de 18/11/2026): 9 → "09", −5 → "−05". */
+/** Contagem de dias (PRAZO e IMPACTOS) com dois dígitos, "0#" (pedidos de 18/11/2026): 9 → "09", −5 → "−05". */
 export const formatarPrazo = (n: number) => `${n < 0 ? "−" : ""}${String(Math.abs(n)).padStart(2, "0")}`;
 const DIAS_DESDE_FECHAMENTO: IdDataFm[] = ["dare", "diops", "pagamento"];
 export function simularDatasFm(e: EntradaDatasFm) {
@@ -198,7 +198,8 @@ export const PEONA_MODERADO_ATE = 15, FECHAMENTO_MINIMO = 10, FECHAMENTO_IDEAL =
 export type NivelImpactoFm = "ideal" | "moderado" | "critico";
 export const STATUS_IMPACTO_FM: Record<NivelImpactoFm, string> = { ideal: "Ideal", moderado: "Moderado", critico: "Crítico" };
 export type ImpactoFm = { id: "peona" | "fechamento" | "dare" | "diops" | "pagamento"; rotulo: string; dias: number; nivel: NivelImpactoFm; status: string; descricao: string };
-const plural = (n: number) => `${n} ${Math.abs(n) === 1 ? "dia" : "dias"}`;
+// Toda contagem de dias com zero à esquerda, "0#" (pedido de 18/11/2026).
+const plural = (n: number) => `${formatarPrazo(n)} ${Math.abs(n) === 1 ? "dia" : "dias"}`;
 export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
   const { peona, fechamento, dare, diops, pagamento } = impactosFm(e);
   const item = (id: ImpactoFm["id"], rotulo: string, dias: number, nivel: NivelImpactoFm, descricao: string): ImpactoFm =>
@@ -207,24 +208,24 @@ export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
     peona === 0
       ? item("peona", "PEONA", peona, "ideal", "Todo o Período está no mês da competência.")
       : item("peona", "PEONA", peona, peona > PEONA_MODERADO_ATE ? "critico" : "moderado",
-          `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA; acima de ${PEONA_MODERADO_ATE} dias é crítico.`),
+          `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA; acima de ${formatarPrazo(PEONA_MODERADO_ATE)} dias é crítico.`),
     // FECHAMENTO no quadro (pedido de 18/11/2026): dias desde o Arquivo.
     fechamento < FECHAMENTO_MINIMO
-      ? item("fechamento", "FECHAMENTO", fechamento, "critico", `${plural(fechamento)} entre o Arquivo e o Fechamento; o mínimo é ${FECHAMENTO_MINIMO} e o ideal, ${FECHAMENTO_IDEAL}.`)
+      ? item("fechamento", "FECHAMENTO", fechamento, "critico", `${plural(fechamento)} entre o Arquivo e o Fechamento; o mínimo é ${formatarPrazo(FECHAMENTO_MINIMO)} e o ideal, ${formatarPrazo(FECHAMENTO_IDEAL)}.`)
       : fechamento < FECHAMENTO_IDEAL
-        ? item("fechamento", "FECHAMENTO", fechamento, "moderado", `${plural(fechamento)} entre o Arquivo e o Fechamento: atende ao mínimo de ${FECHAMENTO_MINIMO}, mas fica abaixo do ideal de ${FECHAMENTO_IDEAL}.`)
-        : item("fechamento", "FECHAMENTO", fechamento, "ideal", `${plural(fechamento)} entre o Arquivo e o Fechamento, dentro do ideal de ${FECHAMENTO_IDEAL}.`),
+        ? item("fechamento", "FECHAMENTO", fechamento, "moderado", `${plural(fechamento)} entre o Arquivo e o Fechamento: atende ao mínimo de ${formatarPrazo(FECHAMENTO_MINIMO)}, mas fica abaixo do ideal de ${formatarPrazo(FECHAMENTO_IDEAL)}.`)
+        : item("fechamento", "FECHAMENTO", fechamento, "ideal", `${plural(fechamento)} entre o Arquivo e o Fechamento, dentro do ideal de ${formatarPrazo(FECHAMENTO_IDEAL)}.`),
     dare < DARE_MINIMO
-      ? item("dare", "DARE", dare, "critico", `${plural(dare)} para fechar o Dare (entrega no dia 15); o mínimo é ${DARE_MINIMO} e o ideal, ${DARE_IDEAL}.`)
+      ? item("dare", "DARE", dare, "critico", `${plural(dare)} para fechar o Dare (entrega no dia 15); o mínimo é ${formatarPrazo(DARE_MINIMO)} e o ideal, ${formatarPrazo(DARE_IDEAL)}.`)
       : dare < DARE_IDEAL
-        ? item("dare", "DARE", dare, "moderado", `${plural(dare)} para fechar o Dare (entrega no dia 15): atende ao mínimo de ${DARE_MINIMO}, mas fica abaixo do ideal de ${DARE_IDEAL}.`)
-        : item("dare", "DARE", dare, "ideal", `${plural(dare)} para fechar o Dare (entrega no dia 15), dentro do ideal de ${DARE_IDEAL}.`),
+        ? item("dare", "DARE", dare, "moderado", `${plural(dare)} para fechar o Dare (entrega no dia 15): atende ao mínimo de ${formatarPrazo(DARE_MINIMO)}, mas fica abaixo do ideal de ${formatarPrazo(DARE_IDEAL)}.`)
+        : item("dare", "DARE", dare, "ideal", `${plural(dare)} para fechar o Dare (entrega no dia 15), dentro do ideal de ${formatarPrazo(DARE_IDEAL)}.`),
     diops < DIOPS_IDEAL
-      ? item("diops", "DIOPS", diops, "moderado", `${plural(diops)} até a entrega do DIOPS (dia 30); o ideal é ter pelo menos ${DIOPS_IDEAL}.`)
-      : item("diops", "DIOPS", diops, "ideal", `${plural(diops)} até a entrega do DIOPS (dia 30), dentro do ideal de ${DIOPS_IDEAL}.`),
+      ? item("diops", "DIOPS", diops, "moderado", `${plural(diops)} até a entrega do DIOPS (dia 30); o ideal é ter pelo menos ${formatarPrazo(DIOPS_IDEAL)}.`)
+      : item("diops", "DIOPS", diops, "ideal", `${plural(diops)} até a entrega do DIOPS (dia 30), dentro do ideal de ${formatarPrazo(DIOPS_IDEAL)}.`),
     pagamento < PAGAMENTO_IDEAL
-      ? item("pagamento", "PAGAMENTO", pagamento, "moderado", `${plural(pagamento)} entre o Fechamento e o Pagamento (dia 30); quanto mais perto do Fechamento, pior. O ideal é ter pelo menos ${PAGAMENTO_IDEAL}.`)
-      : item("pagamento", "PAGAMENTO", pagamento, "ideal", `${plural(pagamento)} entre o Fechamento e o Pagamento (dia 30), dentro do ideal de ${PAGAMENTO_IDEAL}.`),
+      ? item("pagamento", "PAGAMENTO", pagamento, "moderado", `${plural(pagamento)} entre o Fechamento e o Pagamento (dia 30); quanto mais perto do Fechamento, pior. O ideal é ter pelo menos ${formatarPrazo(PAGAMENTO_IDEAL)}.`)
+      : item("pagamento", "PAGAMENTO", pagamento, "ideal", `${plural(pagamento)} entre o Fechamento e o Pagamento (dia 30), dentro do ideal de ${formatarPrazo(PAGAMENTO_IDEAL)}.`),
   ];
 }
 

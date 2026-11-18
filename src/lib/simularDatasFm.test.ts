@@ -129,6 +129,10 @@ describe("Simular Datas FM", () => {
     expect(formatarPrazo(21)).toBe("21");
     expect(formatarPrazo(-5)).toBe("−05");
   });
+  it("IMPACTOS descrevem os dias com zero à esquerda", () => {
+    const dare = avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20, fechamento: 21 }, arquivoMes: 12 }).find((i) => i.id === "dare")!;
+    expect(dare.descricao.startsWith("05 dias para fechar o Dare")).toBe(true);
+  });
   it("Referência de Último Dia começa em 20", () => {
     expect(REFERENCIA_ULTIMO_DIA_PADRAO).toBe(20);
   });
