@@ -182,21 +182,22 @@ export function impactosFm(e: EntradaDatasFm) {
   }
   const linhas = simularDatasFm(e);
   const dias = (id: IdDataFm) => linhas.find((l) => l.id === id)!.diasBase;
-  return { peona, dare: dias("dare"), diops: dias("diops"), pagamento: dias("pagamento") };
+  return { peona, fechamento: dias("fechamento"), dare: dias("dare"), diops: dias("diops"), pagamento: dias("pagamento") };
 }
 
 /** Premissas dos IMPACTOS (pedidos de 18/11/2026), classificadas em apenas três níveis: Crítico, Moderado e Ideal.
  * PEONA — dias do Período fora da competência aumentam o valor do PEONA: 0 Ideal; 1 a 15 Moderado; acima de 15 Crítico;
+ * FECHAMENTO — dias desde o Arquivo: menos de 10 Crítico; 10 a 19 Moderado; 20 ou mais Ideal;
  * DARE — entregue sempre no dia 15: menos de 5 dias Crítico; 5 a 9 Moderado; 10 ou mais Ideal;
  * DIOPS — entregue sempre no dia 30: menos de 15 dias Moderado; 15 ou mais Ideal;
  * PAGAMENTO — sempre no dia 30, quanto mais perto do Fechamento, pior: menos de 15 dias Moderado; 15 ou mais Ideal. */
-export const PEONA_MODERADO_ATE = 15, DARE_MINIMO = 5, DARE_IDEAL = 10, DIOPS_IDEAL = 15, PAGAMENTO_IDEAL = 15;
+export const PEONA_MODERADO_ATE = 15, FECHAMENTO_MINIMO = 10, FECHAMENTO_IDEAL = 20, DARE_MINIMO = 5, DARE_IDEAL = 10, DIOPS_IDEAL = 15, PAGAMENTO_IDEAL = 15;
 export type NivelImpactoFm = "ideal" | "moderado" | "critico";
 export const STATUS_IMPACTO_FM: Record<NivelImpactoFm, string> = { ideal: "Ideal", moderado: "Moderado", critico: "Crítico" };
-export type ImpactoFm = { id: "peona" | "dare" | "diops" | "pagamento"; rotulo: string; dias: number; nivel: NivelImpactoFm; status: string; descricao: string };
+export type ImpactoFm = { id: "peona" | "fechamento" | "dare" | "diops" | "pagamento"; rotulo: string; dias: number; nivel: NivelImpactoFm; status: string; descricao: string };
 const plural = (n: number) => `${n} ${Math.abs(n) === 1 ? "dia" : "dias"}`;
 export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
-  const { peona, dare, diops, pagamento } = impactosFm(e);
+  const { peona, fechamento, dare, diops, pagamento } = impactosFm(e);
   const item = (id: ImpactoFm["id"], rotulo: string, dias: number, nivel: NivelImpactoFm, descricao: string): ImpactoFm =>
     ({ id, rotulo, dias, nivel, status: STATUS_IMPACTO_FM[nivel], descricao });
   return [
@@ -204,6 +205,12 @@ export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
       ? item("peona", "PEONA", peona, "ideal", "Todo o Período está no mês da competência.")
       : item("peona", "PEONA", peona, peona > PEONA_MODERADO_ATE ? "critico" : "moderado",
           `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA; acima de ${PEONA_MODERADO_ATE} dias é crítico.`),
+    // FECHAMENTO no quadro (pedido de 18/11/2026): dias desde o Arquivo.
+    fechamento < FECHAMENTO_MINIMO
+      ? item("fechamento", "FECHAMENTO", fechamento, "critico", `${plural(fechamento)} entre o Arquivo e o Fechamento; o mínimo é ${FECHAMENTO_MINIMO} e o ideal, ${FECHAMENTO_IDEAL}.`)
+      : fechamento < FECHAMENTO_IDEAL
+        ? item("fechamento", "FECHAMENTO", fechamento, "moderado", `${plural(fechamento)} entre o Arquivo e o Fechamento: atende ao mínimo de ${FECHAMENTO_MINIMO}, mas fica abaixo do ideal de ${FECHAMENTO_IDEAL}.`)
+        : item("fechamento", "FECHAMENTO", fechamento, "ideal", `${plural(fechamento)} entre o Arquivo e o Fechamento, dentro do ideal de ${FECHAMENTO_IDEAL}.`),
     dare < DARE_MINIMO
       ? item("dare", "DARE", dare, "critico", `${plural(dare)} para fechar o Dare (entrega no dia 15); o mínimo é ${DARE_MINIMO} e o ideal, ${DARE_IDEAL}.`)
       : dare < DARE_IDEAL

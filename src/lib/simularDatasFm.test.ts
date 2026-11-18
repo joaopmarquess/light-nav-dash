@@ -81,7 +81,7 @@ describe("Simular Datas FM", () => {
     ]);
   });
   it("IMPACTOS: PEONA conta dias do Período fora da competência; DARE e DIOPS repetem a coluna DIAS", () => {
-    expect(impactosFm({ ...COMPETENCIA_PADRAO, dias: {} })).toEqual({ peona: 0, dare: 0, diops: 15, pagamento: 15 });
+    expect(impactosFm({ ...COMPETENCIA_PADRAO, dias: {} })).toEqual({ peona: 0, fechamento: 10, dare: 0, diops: 15, pagamento: 15 });
     expect(impactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20 }, arquivoMes: 12 }).peona).toBe(11); // 20/11 a 30/11
   });
   it("IMPACTOS em três níveis: Crítico, Moderado e Ideal", () => {
@@ -89,13 +89,20 @@ describe("Simular Datas FM", () => {
       Object.fromEntries(avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo, ...extra }, arquivoMes: mes }).map((i) => [i.id, i.status]));
     // Arquivo 20/12 + 21 → Fechamento 10/01: Dare 15/01 = 5 dias, DIOPS e Pagamento 30/01 = 20 dias, PEONA 11 dias.
     const f = { fechamento: 21 };
-    expect(niveis(20, 12, f)).toEqual({ peona: "Moderado", dare: "Moderado", diops: "Ideal", pagamento: "Ideal" });
+    expect(niveis(20, 12, f)).toEqual({ peona: "Moderado", fechamento: "Ideal", dare: "Moderado", diops: "Ideal", pagamento: "Ideal" });
     expect(niveis(20, 12, { ...f, dare: 14 })).toMatchObject({ dare: "Crítico" }); // 4 dias
     expect(niveis(20, 12, { ...f, dare: 19 })).toMatchObject({ dare: "Moderado" }); // 9 dias
     expect(niveis(20, 12, { ...f, dare: 20 })).toMatchObject({ dare: "Ideal" }); // 10 dias
     expect(niveis(20, 12, { ...f, diops: 24 })).toMatchObject({ diops: "Moderado" }); // 14 dias
     expect(niveis(20, 12, { ...f, pagamento: 24 })).toMatchObject({ pagamento: "Moderado" }); // 14 dias
     expect(niveis(20, 12, { ...f, pagamento: 25 })).toMatchObject({ pagamento: "Ideal" }); // 15 dias
+  });
+  it("FECHAMENTO: menos de 10 dias Crítico, 10 a 19 Moderado, 20 ou mais Ideal", () => {
+    const fech = (fechamento: number) => avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { fechamento } }).find((i) => i.id === "fechamento")!;
+    expect(fech(9)).toMatchObject({ dias: 9, status: "Crítico" });
+    expect(fech(10)).toMatchObject({ dias: 10, status: "Moderado" });
+    expect(fech(19)).toMatchObject({ dias: 19, status: "Moderado" });
+    expect(fech(20)).toMatchObject({ dias: 20, status: "Ideal" });
   });
   it("PEONA: 0 Ideal, 1 a 15 Moderado, acima de 15 Crítico", () => {
     // Competência 12/2026 com Arquivo em dezembro: Arquivo dia N → Período de N/11 a (N−1)/12 → PEONA = 31 − N dias de novembro.
