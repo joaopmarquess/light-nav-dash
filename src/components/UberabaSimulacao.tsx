@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useMemo, useState, type ReactElement } from 'react';
+import { publicarVidasSimulacao } from '@/lib/uberabaResultadoRede';
 import { Calculator, ChevronRight, Copy, RotateCcw, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -107,6 +108,8 @@ export default function UberabaSimulacao() {
   // Texto digitado por campo e modalidade (chave `campo:modalidade`).
   const [textos, setTextos] = useState<Record<string, string>>({});
   const { indices, indicadores } = useResultadosComerciais();
+  // Vidas projetadas publicadas para o Resultado de Resultados Rede (Mensalidade por vida).
+  useEffect(() => { publicarVidasSimulacao(configuracoes); }, [configuracoes]);
   // Resultado por Ente em dois cenários (pedido de 13/11/2026): Agenciamento Contratual e Promocional.
   // Chave PERCENTUAL / MÉDIA ASSIST. (pedido de 13/11/2026): como calcular a Despesa Assistencial nos dois cenários.
   const [baseDespesa, setBaseDespesa] = useState<BaseDespesa>('percentual');

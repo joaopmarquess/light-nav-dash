@@ -184,8 +184,13 @@ export function carregarValores(): ValoresCredenciamento {
   } catch { return {}; }
 }
 
+/** Avisado a cada gravação de Qtde. ou Valor, para o Resultado de Resultados Rede reler a Adesão. */
+export const EVENTO_CREDENCIAMENTO = "uberaba-credenciamento-alterado";
+const avisarCredenciamento = () => { try { globalThis.dispatchEvent?.(new Event(EVENTO_CREDENCIAMENTO)); } catch { /* sem janela */ } };
+
 export function salvarValores(valores: ValoresCredenciamento) {
   try { localStorage.setItem(CHAVE_VALORES_CREDENCIAMENTO, JSON.stringify(valores)); } catch { /* navegador sem armazenamento */ }
+  avisarCredenciamento();
 }
 
 export function carregarAutorizados(): AutorizadosCredenciamento {
@@ -199,6 +204,7 @@ export function carregarAutorizados(): AutorizadosCredenciamento {
 
 export function salvarAutorizados(valores: AutorizadosCredenciamento) {
   try { localStorage.setItem(CHAVE_AUTORIZADOS_CREDENCIAMENTO, JSON.stringify(valores)); } catch { /* navegador sem armazenamento */ }
+  avisarCredenciamento();
 }
 
 /** Quantidade digitada em cada linha expandida (item exibido), gravada neste navegador; chave `grupo:nome exibido`. Não altera Disponível nem Autorizado do tipo. */

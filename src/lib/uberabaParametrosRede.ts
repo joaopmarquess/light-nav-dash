@@ -36,6 +36,9 @@ export function carregarParametrosRede(): Partial<ParametrosRede> {
   } catch { return {}; }
 }
 
+/** Avisado a cada gravação, para o Resultado de Resultados Rede reler os parâmetros. */
+export const EVENTO_PARAMETROS_REDE = "uberaba-parametros-rede-alterados";
 export function salvarParametrosRede(valores: Partial<ParametrosRede>) {
   try { localStorage.setItem(CHAVE_PARAMETROS_REDE, JSON.stringify(valores)); } catch { /* navegador sem armazenamento */ }
+  try { globalThis.dispatchEvent?.(new Event(EVENTO_PARAMETROS_REDE)); } catch { /* sem janela */ }
 }
