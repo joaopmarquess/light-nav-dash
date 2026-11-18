@@ -19,7 +19,7 @@ export default function SimularDatasFm() {
     onBlur: () => setTexto((p) => { const n = { ...p }; delete n[chave]; return n; }),
   });
   const linhas = simularDatasFm(entrada);
-  const periodo = periodoFm(entrada.mes, entrada.ano);
+  const periodo = periodoFm(entrada);
   const [competenciaTexto, setCompetenciaTexto] = useState<string | null>(null);
   const alterarCompetencia = (t: string) => {
     if (!/^[\d/]*$/.test(t)) return;

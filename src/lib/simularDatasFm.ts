@@ -1,7 +1,7 @@
 /** Simular Datas FM (Laboratory, pedido de 18/11/2026): a partir da Competência (mês/ano), cada linha recebe um dia e mostra a data.
  * De e Até caem no próprio mês da competência; Arquivo, Fechamento, Dare, DIOPS e Pagamento, no mês seguinte.
  * Dia maior que o último dia do mês vira o último dia (ex.: 30 em fevereiro → 28 ou 29).
- * Último Dia (pedido de 18/11/2026) = último dia útil do mês da competência, calculado por ultimoDiaUtil. */
+ * Último Dia (pedido de 18/11/2026): se o mês do Arquivo = mês da competência, dia do Arquivo − 1; senão, último dia útil do mês da competência (ultimoDiaUtil). */
 export type IdDataFm = "de" | "ate" | "arquivo" | "fechamento" | "dare" | "diops" | "pagamento";
 export type LinhaDataFmDef = { id: IdDataFm; rotulo: string; diaPadrao: number; mesSeguinte: boolean; destaque?: boolean; separadorAntes?: boolean; pedeMes?: boolean };
 
@@ -99,10 +99,21 @@ export function ultimoDiaUtil(mes: number, ano: number) {
 }
 
 /** Período (pedido de 18/11/2026): De = Último Dia − 30 dias corridos; Até = Último Dia (último dia útil da competência). */
-export function periodoFm(mes: number, ano: number) {
-  const ultimo = ultimoDiaUtil(mes, ano);
-  const inicio = new Date(Date.UTC(ano, mes - 1, ultimo.dia) - 30 * DIA_MS);
-  return { de: `${dd(inicio.getUTCDate())}/${dd(inicio.getUTCMonth() + 1)}/${inicio.getUTCFullYear()}`, ate: ultimo.data };
+const dataUtc = (t: Date) => `${dd(t.getUTCDate())}/${dd(t.getUTCMonth() + 1)}/${t.getUTCFullYear()}`;
+/** Último Dia da simulação: Arquivo no mês da competência → dia do Arquivo − 1 (dia 1 recua ao mês anterior); senão, último dia útil da competência. */
+export function ultimoDiaFm(e: EntradaDatasFm): { data: string; utc: number } {
+  const arquivo = simularDatasFm(e).find((l) => l.id === "arquivo")!;
+  if (arquivo.mesLinha === e.mes) {
+    const [d, m, a] = arquivo.data.split("/").map(Number);
+    const utc = Date.UTC(a, m - 1, d) - DIA_MS;
+    return { data: dataUtc(new Date(utc)), utc };
+  }
+  const u = ultimoDiaUtil(e.mes, e.ano);
+  return { data: u.data, utc: Date.UTC(e.ano, e.mes - 1, u.dia) };
+}
+export function periodoFm(e: EntradaDatasFm) {
+  const ultimo = ultimoDiaFm(e);
+  return { de: dataUtc(new Date(ultimo.utc - 30 * DIA_MS)), ate: ultimo.data };
 }
 
 /** Inteiro digitado dentro do intervalo; vazio → undefined (restaura o padrão); inválido → null (recusado). */

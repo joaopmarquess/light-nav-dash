@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, lerInteiro, periodoFm, simularDatasFm, ultimoDiaUtil } from "./simularDatasFm";
+import { COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil } from "./simularDatasFm";
 
 describe("Simular Datas FM", () => {
   it("competência 12/2026 com os dias padrão reproduz o quadro fornecido, com Arquivo na primeira linha de datas", () => {
@@ -45,8 +45,8 @@ describe("Simular Datas FM", () => {
     expect(ultimoDiaUtil(3, 2024).data).toBe("28/03/2024");
   });
   it("Período vai do Último Dia − 30 dias até o Último Dia", () => {
-    expect(periodoFm(12, 2026)).toEqual({ de: "01/12/2026", ate: "31/12/2026" });
-    expect(periodoFm(1, 2027)).toEqual({ de: "30/12/2026", ate: "29/01/2027" });
+    expect(periodoFm({ ...COMPETENCIA_PADRAO, dias: {} })).toEqual({ de: "01/12/2026", ate: "31/12/2026" });
+    expect(periodoFm({ mes: 1, ano: 2027, dias: {} })).toEqual({ de: "30/12/2026", ate: "29/01/2027" });
   });
   it("Arquivo pede dia/mês: padrão 05 do mês seguinte; mês anterior ao da competência vira o ano", () => {
     const arq = (e: Parameters<typeof simularDatasFm>[0]) => simularDatasFm(e).find((l) => l.id === "arquivo")!;
@@ -57,5 +57,11 @@ describe("Simular Datas FM", () => {
     expect(lerDiaMes("")).toBeUndefined();
     expect(lerDiaMes("05/13")).toBeNull();
     expect(lerDiaMes("5")).toBeNull();
+  });
+  it("Último Dia: Arquivo no mês da competência → dia do Arquivo − 1; senão, último dia útil da competência", () => {
+    expect(ultimoDiaFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 28 }, arquivoMes: 12 }).data).toBe("27/12/2026");
+    expect(periodoFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 28 }, arquivoMes: 12 })).toEqual({ de: "27/11/2026", ate: "27/12/2026" });
+    expect(ultimoDiaFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 1 }, arquivoMes: 12 }).data).toBe("30/11/2026");
+    expect(ultimoDiaFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 5 }, arquivoMes: 1 }).data).toBe("31/12/2026");
   });
 });
