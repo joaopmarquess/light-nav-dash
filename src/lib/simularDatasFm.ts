@@ -19,7 +19,9 @@ export const LINHAS_DATAS_FM: LinhaDataFmDef[] = [
 export const COMPETENCIA_PADRAO = { mes: 12, ano: 2026 };
 
 /** arquivoMes: mês (1–12) digitado no Arquivo; ausente → mês seguinte à competência. */
-export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>>; arquivoMes?: number };
+/** referenciaUltimoDia: campo "Referência de Último Dia" (pedido de 18/11/2026), padrão 20; ainda sem efeito nos cálculos, aguardando instruções. */
+export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>>; arquivoMes?: number; referenciaUltimoDia?: number };
+export const REFERENCIA_ULTIMO_DIA_PADRAO = 20;
 
 const ultimoDia = (ano: number, mes: number) => new Date(Date.UTC(ano, mes, 0)).getUTCDate();
 const dd = (n: number) => String(n).padStart(2, "0");
@@ -156,8 +158,10 @@ export function carregarDatasFm(): EntradaDatasFm {
     const dias: EntradaDatasFm["dias"] = {};
     for (const l of LINHAS_DATAS_FM) if (Number.isInteger(b?.dias?.[l.id]) && b.dias[l.id] >= 1 && b.dias[l.id] <= 31) dias[l.id] = b.dias[l.id];
     const arquivoMes = Number.isInteger(b?.arquivoMes) && b.arquivoMes >= 1 && b.arquivoMes <= 12 ? b.arquivoMes : undefined;
+    const referenciaUltimoDia = Number.isInteger(b?.referenciaUltimoDia) && b.referenciaUltimoDia >= 1 && b.referenciaUltimoDia <= 31 ? b.referenciaUltimoDia : undefined;
     return {
       ...(arquivoMes ? { arquivoMes } : {}),
+      ...(referenciaUltimoDia ? { referenciaUltimoDia } : {}),
       mes: Number.isInteger(b?.mes) && b.mes >= 1 && b.mes <= 12 ? b.mes : COMPETENCIA_PADRAO.mes,
       ano: Number.isInteger(b?.ano) && b.ano >= 2000 && b.ano <= 2100 ? b.ano : COMPETENCIA_PADRAO.ano,
       dias,

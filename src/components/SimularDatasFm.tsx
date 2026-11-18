@@ -1,7 +1,7 @@
 import { Fragment, useState } from "react";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { carregarDatasFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, lerInteiro, periodoFm, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { carregarDatasFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, lerInteiro, periodoFm, REFERENCIA_ULTIMO_DIA_PADRAO, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
 // Laboratory › Simular Datas FM: Competência (MM/AAAA) e Período (dia seguinte ao Último Dia, um mês antes, a Último Dia) acima do grid, sem a linha Último Dia (pedido de 18/11/2026), Arquivo como dia/mês fora do grid e o dia de cada linha, com a data calculada; valores digitados ficam neste navegador.
 export default function SimularDatasFm() {
@@ -43,6 +43,15 @@ export default function SimularDatasFm() {
           onChange={(e) => alterarCompetencia(e.target.value)}
           onBlur={() => setCompetenciaTexto(null)}
           className={`h-8 w-28 text-center tabular-nums ${competenciaTexto !== null && !lerCompetencia(competenciaTexto) ? "border-destructive" : ""}`} />
+      </label>
+      {/* Referência de Último Dia logo após a Competência (pedido de 18/11/2026); padrão 20, ainda sem efeito nos cálculos. */}
+      <label className="flex items-center gap-2 text-sm">
+        <span className="font-semibold">Referência de Último Dia:</span>
+        <Input aria-label="Referência de Último Dia" inputMode="numeric" title="Apague para restaurar o padrão" className="h-8 w-16 text-center tabular-nums"
+          {...campo("referenciaUltimoDia", entrada.referenciaUltimoDia ?? REFERENCIA_ULTIMO_DIA_PADRAO, 1, 31, (v) => {
+            const { referenciaUltimoDia: _, ...resto } = entrada;
+            gravar(v === undefined ? resto : { ...resto, referenciaUltimoDia: v });
+          })} />
       </label>
       <div className="flex items-center gap-2 text-sm">
         <span className="font-semibold">Arquivo:</span>
