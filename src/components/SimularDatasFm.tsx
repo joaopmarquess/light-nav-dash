@@ -91,7 +91,7 @@ export default function SimularDatasFm() {
                 <td className="px-3 py-1.5 text-right tabular-nums" title={l.ajustado ? "Dia limitado ao último dia do mês" : undefined}>
                   {l.data}{l.ajustado ? " *" : ""}
                 </td>
-                <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums">{l.diasBase} <span className="text-xs font-normal text-muted-foreground">desde o {l.base}</span></td>
+                <td className="whitespace-nowrap px-3 py-1.5 text-right tabular-nums">{l.diasBase} <span className="text-xs font-normal text-muted-foreground">{Math.abs(l.diasBase) === 1 ? "dia" : "dias"} desde o {l.base}</span></td>
               </tr>
               </Fragment>
             ))}
