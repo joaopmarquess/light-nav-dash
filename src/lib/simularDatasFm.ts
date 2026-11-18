@@ -1,16 +1,15 @@
 /** Simular Datas FM (Laboratory, pedido de 18/11/2026): a partir da Competência (mês/ano), cada linha recebe um dia e mostra a data.
- * De e Até caem no próprio mês da competência; Arquivo, Fechamento, Dare, DIOPS e Pagamento, no mês seguinte.
+ * Arquivo, Fechamento, Dare, DIOPS e Pagamento caem no mês seguinte (De e Até saíram do grid em 18/11/2026).
  * Dia maior que o último dia do mês vira o último dia (ex.: 30 em fevereiro → 28 ou 29).
  * Último Dia (pedido de 18/11/2026): se o mês do Arquivo = mês da competência, dia do Arquivo − 1; senão, último dia útil do mês da competência (ultimoDiaUtil). */
-export type IdDataFm = "de" | "ate" | "arquivo" | "fechamento" | "dare" | "diops" | "pagamento";
+export type IdDataFm = "arquivo" | "fechamento" | "dare" | "diops" | "pagamento";
 export type LinhaDataFmDef = { id: IdDataFm; rotulo: string; diaPadrao: number; mesSeguinte: boolean; destaque?: boolean; separadorAntes?: boolean; pedeMes?: boolean };
 
 export const LINHAS_DATAS_FM: LinhaDataFmDef[] = [
   // Arquivo logo após a Competência (pedido de 18/11/2026).
   // Arquivo pede dia/mês (pedido de 18/11/2026); sem mês digitado, usa o mês seguinte à competência.
   { id: "arquivo", rotulo: "Arquivo", diaPadrao: 5, mesSeguinte: true, destaque: true, pedeMes: true },
-  { id: "de", rotulo: "De", diaPadrao: 1, mesSeguinte: false },
-  { id: "ate", rotulo: "Até", diaPadrao: 30, mesSeguinte: false },
+  // De e Até retirados do grid (pedido de 18/11/2026); o Período acima do grid substitui.
   { id: "fechamento", rotulo: "Fechamento", diaPadrao: 10, mesSeguinte: true },
   { id: "dare", rotulo: "Dare", diaPadrao: 15, mesSeguinte: true, separadorAntes: true },
   { id: "diops", rotulo: "DIOPS", diaPadrao: 30, mesSeguinte: true },
