@@ -37,12 +37,12 @@ export default function SimularDatasFm() {
   const ordenada = ordenarSimulacoesFm(lista);
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4 max-w-7xl">
+      <div className="flex items-center justify-between gap-4 max-w-screen-2xl">
         <h1 className="text-xl font-semibold">Lista de Simulações — Datas FM</h1>
         <Button size="sm" onClick={nova}><Plus className="mr-1 h-4 w-4" />Nova simulação</Button>
       </div>
-      <div className="max-w-7xl overflow-x-auto rounded-md border border-border">
-        <table className="w-full border-collapse text-sm">
+      <div className="max-w-screen-2xl overflow-x-auto rounded-md border border-border">
+        <table className="w-full border-collapse whitespace-nowrap text-sm">
           <thead>
             <tr className="border-b border-border bg-secondary text-secondary-foreground">
               <th className="w-12 px-3 py-2 text-right font-semibold">Nº</th>
