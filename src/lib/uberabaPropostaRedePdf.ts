@@ -113,7 +113,10 @@ export function buildPropostaRedePdf(
       0: { halign: "left", cellWidth: 70 }, 1: { cellWidth: 26 }, 2: { cellWidth: 36 }, 3: { cellWidth: LARGURA - 132 },
     }, true, new Set(quadro.flatMap((l, i) => (l.item ? [i] : []))));
     nota(NOTA_CONDICOES_REDE);
-    // Antes do tópico 3: subtítulo e texto da Projeção financeira e o quadro da seção Resultado, juntos e inteiros numa mesma página.
+  };
+  // Depois do tópico 3, antes das Condições Gerais (pedido de 18/11/2026): subtítulo e texto da Projeção financeira
+  // e o quadro da seção Resultado, juntos e inteiros numa mesma página.
+  const desenharProjecao = () => {
     const linhasRes = linhasResultadoRede(parametros, quantidades);
     garantir(10 + alturaParagrafos([TEXTO_PROJECAO_REDE]) + 10 + (linhasRes.length + 1) * 7.2);
     doc.setFont("helvetica", "bold"); doc.setFontSize(F.texto); doc.setTextColor(...TINTA);
@@ -131,6 +134,7 @@ export function buildPropostaRedePdf(
   const desenharGestao = () => {
     tabela(["PARÂMETRO", "VALOR"], linhasParametrosRede(parametros), { 0: { halign: "left" }, 1: { cellWidth: 50 } }, false);
     nota(regraMensalidadeRede(parametros));
+    desenharProjecao();
   };
   const blocoDados: Partial<Record<SecaoRedeId, () => void>> = { condicoes: desenharCondicoes, gestao: desenharGestao };
 
