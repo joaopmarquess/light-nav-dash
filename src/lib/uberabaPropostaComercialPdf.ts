@@ -15,12 +15,12 @@ type RGB = [number, number, number];
  * e textos, linhas e contornos usam tinta escura para não sumirem no papel.
  */
 const COR_FRENTE: Record<FrenteId, RGB> = { pcaAdm: [128, 90, 15], pmeAdm: [90, 55, 125], pceAdm: [15, 85, 140], pce100: [150, 65, 35] };
-const TINTA: RGB = [10, 38, 72];
-const CABECALHO: RGB = [205, 222, 236];
-const ZEBRA: RGB = [236, 241, 245];
-const LINHA: RGB = [95, 105, 115];
-const SECUNDARIO: RGB = [35, 42, 50];
-const RODAPE: RGB = [45, 45, 45];
+export const TINTA: RGB = [10, 38, 72];
+export const CABECALHO: RGB = [205, 222, 236];
+export const ZEBRA: RGB = [236, 241, 245];
+export const LINHA: RGB = [95, 105, 115];
+export const SECUNDARIO: RGB = [35, 42, 50];
+export const RODAPE: RGB = [45, 45, 45];
 
 /**
  * Tamanhos de fonte (pt): texto geral 13; títulos dos tópicos e das tabelas 1 ou 2 pontos acima; tabelas, rótulos
