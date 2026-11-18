@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ITENS_CREDENCIAMENTO, alterarItem, chaveItem, itensExibidos, somaItens, lerAutorizado, lerValor, notasAgrupamento, linhasQuantidadeCredenciamentos } from "./uberabaQuantidadeCredenciamentos";
+import { ITENS_CREDENCIAMENTO, alterarItem, chaveItem, itensExibidos, somaItens, lerAutorizado, lerValor, replicarValorEspecialidades, notasAgrupamento, linhasQuantidadeCredenciamentos } from "./uberabaQuantidadeCredenciamentos";
 
 describe("Quantidade de Credenciamentos", () => {
   it("tem os tipos de credenciado com a quantidade disponível, Hospitais logo após Especialidades médicas", () => {
@@ -32,6 +32,12 @@ describe("Quantidade de Credenciamentos", () => {
     const { linhas, total } = linhasQuantidadeCredenciamentos({ medicos: 100 }, { hospitais: 1500.5 });
     expect(linhas.map((l) => l.adesao)).toEqual([20000, 3001, 3000, 2400]);
     expect(total.adesao).toBe(28401);
+  });
+  it("Replicar copia o Valor de Especialidades médicas para todos os tipos", () => {
+    const valores = replicarValorEspecialidades({ medicos: 350, hospitais: 1500 });
+    expect(valores).toEqual({ medicos: 350, hospitais: 350, diagnostico: 350, "nao-medicos": 350 });
+    expect(linhasQuantidadeCredenciamentos({}, valores).total.adesao).toBe(141 * 350);
+    expect(replicarValorEspecialidades({ hospitais: 900 }).hospitais).toBe(200);
   });
   it("Valor aceita reais com vírgula; vazio restaura e inválido é recusado", () => {
     expect(lerValor("")).toBeUndefined();

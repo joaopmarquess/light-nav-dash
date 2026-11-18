@@ -1,7 +1,9 @@
 import { Fragment, useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
-import { QUANTIDADE_PADRAO_ITEM, alterarItem, carregarAutorizados, carregarQuantidadesItens, chaveItem, itensExibidos, salvarQuantidadesItens, somaItens, type QuantidadesItens, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento, carregarValores, salvarValores, lerValor, type ValoresCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
+import { QUANTIDADE_PADRAO_ITEM, alterarItem, carregarAutorizados, carregarQuantidadesItens, chaveItem, itensExibidos, salvarQuantidadesItens, somaItens, type QuantidadesItens, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento, carregarValores, salvarValores, lerValor, replicarValorEspecialidades, type ValoresCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
 
 const numero = (v: number) => v.toLocaleString("pt-BR");
 const moeda = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -38,6 +40,12 @@ export default function UberabaQuantidadeCredenciamentos() {
     setAutorizados(proximo);
     salvarAutorizados(proximo);
   };
+  const replicarValor = () => {
+    const proximo = replicarValorEspecialidades(valores);
+    setEditandoValor({});
+    setValores(proximo);
+    salvarValores(proximo);
+  };
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse text-sm">
@@ -70,11 +78,16 @@ export default function UberabaQuantidadeCredenciamentos() {
                   className="ml-auto h-8 w-24 text-right tabular-nums placeholder:text-foreground" />
               </td>
               <td className="px-3 py-1.5 text-right">
+                <div className="flex items-center justify-end gap-1">
+                {l.id === "medicos"
+                  ? <Tooltip><TooltipTrigger asChild><Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0" aria-label="Replicar Valor de Especialidades médicas nos demais" onClick={replicarValor}><Copy className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Replicar</TooltipContent></Tooltip>
+                  : <span aria-hidden className="h-7 w-7 shrink-0" />}
                 <Input inputMode="decimal" aria-label={`Valor — ${l.tipo}`} title="Valor por credenciado, em R$ (apague para restaurar)"
                   value={editandoValor[l.id] ?? (valores[l.id] !== undefined ? valorTexto(valores[l.id]!) : "")} placeholder={valorTexto(l.valor)}
                   onChange={(e) => alterarValor(l.id, e.target.value)}
                   onBlur={() => setEditandoValor((e) => { const p = { ...e }; delete p[l.id]; return p; })}
-                  className="ml-auto h-8 w-28 text-right tabular-nums placeholder:text-foreground" />
+                  className="h-8 w-28 text-right tabular-nums placeholder:text-foreground" />
+                </div>
               </td>
               <td className="px-3 py-1.5 text-right tabular-nums" title={`${numero(l.autorizado)} × ${moeda(l.valor)}`}>{moeda(l.adesao)}</td>
             </tr>

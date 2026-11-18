@@ -169,6 +169,12 @@ export function lerValor(texto: string): number | undefined | null {
   return Number(t.replace(/\./g, "").replace(",", "."));
 }
 
+/** Ícone Replicar (pedido de 18/11/2026): copia o Valor atual de Especialidades médicas (digitado ou padrão) para todos os tipos. */
+export function replicarValorEspecialidades(valores: ValoresCredenciamento): ValoresCredenciamento {
+  const origem = linhasQuantidadeCredenciamentos({}, valores).linhas.find((l) => l.id === "medicos")!.valor;
+  return Object.fromEntries((["medicos", "hospitais", "diagnostico", "nao-medicos"] as const).map((id) => [id, origem])) as ValoresCredenciamento;
+}
+
 export function carregarValores(): ValoresCredenciamento {
   try {
     const bruto = JSON.parse(localStorage.getItem(CHAVE_VALORES_CREDENCIAMENTO) ?? "{}");
