@@ -79,7 +79,7 @@ export default function SimularDatasFm() {
             {linhas.map((l) => (
               <Fragment key={l.id}>
               <tr className={`border-b border-border ${l.separadorAntes ? "border-t-2 border-t-foreground" : ""} ${l.destaque ? "font-bold" : ""}`}>
-                <td className="px-3 py-1.5">{l.rotulo}</td>
+                <td className="px-3 py-1.5 uppercase">{l.rotulo}</td>
                 <td className="px-3 py-1.5">
                   <Input aria-label={`Dia — ${l.rotulo}`} inputMode="numeric" title="Apague para restaurar o padrão" className={`ml-auto ${cls} ${l.destaque ? "font-bold" : ""}`}
                     {...campo(l.id, l.dia, 1, 31, (v) => {
