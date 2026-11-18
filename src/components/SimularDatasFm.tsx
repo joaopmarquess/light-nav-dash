@@ -44,9 +44,9 @@ export default function SimularDatasFm() {
               <Fragment key={l.id}>
               {l.id === "arquivo" && (
                 <tr className="border-b border-border">
-                  <td className="px-3 py-1.5">Dias</td>
+                  <td className="px-3 py-1.5">Último Dia</td>
                   <td className="px-3 py-1.5">
-                    <Input aria-label="Dias" inputMode="numeric" title="Apague para restaurar o padrão" className={`ml-auto ${cls}`}
+                    <Input aria-label="Último Dia" inputMode="numeric" title="Apague para restaurar o padrão" className={`ml-auto ${cls}`}
                       {...campo("qtdDias", entrada.qtdDias ?? DIAS_PADRAO, 0, 365, (v) => { const { qtdDias: _, ...resto } = entrada; gravar(v === undefined ? resto : { ...resto, qtdDias: v }); })} />
                   </td>
                   <td />
