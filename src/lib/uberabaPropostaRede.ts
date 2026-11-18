@@ -33,11 +33,11 @@ export const CONDICOES_GERAIS_REDE: readonly { item: string; valor: string }[] =
 
 /** Subtítulo e texto antes do quadro Resultado, no tópico 2 (textos do Dênis, 18/11/2026). */
 export const SUBTITULO_PROJECAO_REDE = "Projeção financeira";
-/** Nota abaixo do quadro Resultado (pedido de 18/11/2026): a projeção segue as premissas; só as parcelas fixas não são estimadas. */
+/** Nota abaixo do quadro Resultado (pedidos de 18/11/2026): a projeção segue as premissas; só as parcelas fixas não são estimadas; valores podem ser menores ou maiores (credenciamentos até o "ATÉ"). */
 export const NOTA_PROJECAO_REDE =
-  "A projeção financeira baseia-se nas premissas desta proposta: quantidades e valores de credenciamento e vidas vendidas acumuladas. Os valores calculados a partir dessas premissas são estimados, exceto as parcelas mensais fixas da gestão, que não dependem delas.";
+  "A projeção financeira baseia-se nas premissas desta proposta: quantidades e valores de credenciamento e vidas vendidas acumuladas. Os valores calculados a partir dessas premissas são estimados e não devem ser considerados certos ou garantidos; somente as parcelas mensais fixas da gestão não dependem delas. Os valores efetivos poderão ser menores, caso sejam captados menos credenciamentos ou vendidas menos vidas que o previsto, ou maiores, caso sejam captados mais credenciamentos, até o limite indicado na coluna \"ATÉ\" do tópico 2, ou vendidas mais vidas acumuladas que o estimado.";
 export const TEXTO_PROJECAO_REDE =
-  "Considerando o cronograma previsto para formação da rede e o início da gestão, apresenta-se a seguir a projeção mensal da remuneração ao longo de 2027, contemplando os valores relativos ao credenciamento e à gestão da rede.";
+  "Considerando o cronograma previsto para formação da rede e o início da gestão, apresenta-se a seguir a projeção mensal da remuneração ao longo de 2027, contemplando os valores relativos ao credenciamento e à gestão da rede. Trata-se de uma estimativa: com exceção das parcelas mensais fixas da gestão, os valores apresentados dependem da quantidade de credenciamentos efetivamente captados e das vidas vendidas acumuladas, podendo ser menores ou maiores que os indicados, e não devem ser considerados valores certos ou garantidos.";
 export type TextosRede = Record<SecaoRedeId, string>;
 export const TEXTO_REDE_MAX = 4000;
 

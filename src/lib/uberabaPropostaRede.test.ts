@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { PARAMETROS_REDE_PADRAO } from "./uberabaParametrosRede";
 import {
-  COLUNAS_CONDICOES_REDE, CONDICOES_GERAIS_REDE, NOTA_PROJECAO_REDE, TEXTOS_REDE_PADRAO, quadroCondicoesRede, aprovarTextosRede, dadosRascunhoRede, estadoRedeVazio, linhasCondicoesRede, linhasParametrosRede, mesInicioRede, mesclarRascunhoRede,
+  COLUNAS_CONDICOES_REDE, CONDICOES_GERAIS_REDE, NOTA_PROJECAO_REDE, TEXTO_PROJECAO_REDE, TEXTOS_REDE_PADRAO, quadroCondicoesRede, aprovarTextosRede, dadosRascunhoRede, estadoRedeVazio, linhasCondicoesRede, linhasParametrosRede, mesInicioRede, mesclarRascunhoRede,
   linhasResultadoRede, numerosForaDosDadosRede, regraMensalidadeRede, textosRedeParaPdf, topicosRedeDesatualizados,
 } from "./uberabaPropostaRede";
 import { TOPICOS_PROPOSTA_REDE, buildPropostaRedePdf } from "./uberabaPropostaRedePdf";
@@ -36,7 +36,15 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
   });
   it("explains that the projection is estimated from the premises, except the fixed installments", () => {
     expect(NOTA_PROJECAO_REDE).toContain("baseia-se nas premissas");
-    expect(NOTA_PROJECAO_REDE).toContain("são estimados, exceto as parcelas mensais fixas");
+    expect(NOTA_PROJECAO_REDE).toContain("são estimados e não devem ser considerados certos ou garantidos");
+    expect(NOTA_PROJECAO_REDE).toContain("somente as parcelas mensais fixas da gestão não dependem delas");
+    expect(NOTA_PROJECAO_REDE).toContain("poderão ser menores");
+    expect(NOTA_PROJECAO_REDE).toContain("até o limite indicado na coluna \"ATÉ\"");
+  });
+  it("warns at the start of the projection that values are estimates, except the fixed installments", () => {
+    expect(TEXTO_PROJECAO_REDE).toContain("Trata-se de uma estimativa");
+    expect(TEXTO_PROJECAO_REDE).toContain("com exceção das parcelas mensais fixas da gestão");
+    expect(TEXTO_PROJECAO_REDE).toContain("não devem ser considerados valores certos ou garantidos");
   });
   it("heads the quantity column ATÉ", () => {
     expect(COLUNAS_CONDICOES_REDE).toEqual(["TIPO CREDENCIADO", "ATÉ", "VALOR", "ADESÃO"]);
