@@ -8,6 +8,8 @@ import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvar
 const novoId = () => globalThis.crypto?.randomUUID?.() ?? `fm-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const agora = () => new Date().toISOString();
 const corNivel = (n: NivelImpactoFm) => n === "critico" ? "text-destructive" : n === "moderado" ? "text-[hsl(var(--impacto-moderado))]" : n === "aceito" ? "text-[hsl(var(--impacto-aceito))]" : "text-[hsl(var(--impacto-ok))]"; // Aceito num verde mais claro que o Ideal
+// PEONA Ideal em verde e negrito (pedido de 18/11/2026); demais situações em seminegrito.
+const pesoImpacto = (imp: { id: string; nivel: NivelImpactoFm }) => imp.id === "peona" && imp.nivel === "ideal" ? "font-bold" : "font-semibold";
 const dataHora = (iso: string) => { const d = new Date(iso); return isNaN(d.getTime()) ? "" : d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }); };
 
 // Controle de Simulações de Datas FM (pedido de 18/11/2026): tela Lista de Simulações → tela Simulação (a anterior, com o Cenário — antes "Descrição" — numerado por ordem de inserção, e botões Gravar/Cancelar/Excluir); tudo fica neste navegador.
@@ -72,7 +74,7 @@ export default function SimularDatasFm() {
                   <td className="px-3 py-1.5 tabular-nums">{prazoFolhaFm(s.entrada)}</td>
                   <td className="px-3 py-1.5 text-xs">
                     {avaliarImpactosFm(s.entrada).map((imp, i) => (
-                      <Fragment key={imp.id}>{i > 0 && <span className="text-muted-foreground"> · </span>}<span className={`font-semibold ${corNivel(imp.nivel)}`} title={`${imp.rotulo}: ${imp.status}`}>{imp.rotulo}</span></Fragment>
+                      <Fragment key={imp.id}>{i > 0 && <span className="text-muted-foreground"> · </span>}<span className={`${pesoImpacto(imp)} ${corNivel(imp.nivel)}`} title={`${imp.rotulo}: ${imp.status}`}>{imp.rotulo}</span></Fragment>
                     ))}
                   </td>
                   <td className="px-3 py-1.5 text-right tabular-nums text-muted-foreground">{dataHora(s.atualizadaEm)}</td>
@@ -243,7 +245,7 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
                 <td className="w-20 px-3 py-1.5 font-semibold">{imp.rotulo}</td>
                 <td className="w-14 px-3 py-1.5 text-right tabular-nums">{formatarPrazo(imp.dias)}</td>
                 {/* Três níveis (pedido de 18/11/2026): Ideal em verde claro, Moderado em laranja, Crítico em vermelho, sem setas. */}
-                <td className={`w-36 whitespace-nowrap px-3 py-1.5 font-semibold ${corNivel(imp.nivel)}`}>
+                <td className={`w-36 whitespace-nowrap px-3 py-1.5 ${pesoImpacto(imp)} ${corNivel(imp.nivel)}`}>
                   {imp.status}
                 </td>
                 <td className="px-3 py-1.5 text-muted-foreground">{imp.descricao}</td>
