@@ -171,8 +171,9 @@ export function normalizarEntradaFm(b: unknown): EntradaDatasFm {
     dias,
   };
 }
-/** Controle de Simulações (pedido de 18/11/2026): lista de simulações, cada uma com Descrição e as entradas da tela Simulação. */
-export type SimulacaoFm = { id: string; descricao: string; criadaEm: string; atualizadaEm: string; entrada: EntradaDatasFm };
+/** Controle de Simulações (pedido de 18/11/2026): lista de simulações, cada uma com o Cenário (campo descricao, antes "Descrição") e as entradas da tela Simulação.
+ * numero: enumeração do Cenário por ordem de inserção (pedido de 18/11/2026), fixa — excluir não renumera os demais. */
+export type SimulacaoFm = { id: string; numero: number; descricao: string; criadaEm: string; atualizadaEm: string; entrada: EntradaDatasFm };
 export const CHAVE_SIMULACOES_FM = "laboratory.simularDatasFm.simulacoes.v1";
 export const DESCRICAO_FM_MAX = 200;
 
@@ -182,23 +183,35 @@ export function lerSimulacoesFm(bruto: string | null, legado: string | null, ago
     if (bruto !== null) {
       const lista = JSON.parse(bruto);
       if (!Array.isArray(lista)) return [];
-      return lista.filter((s) => s && typeof s.id === "string" && s.id).map((s) => ({
+      const validas = lista.filter((s) => s && typeof s.id === "string" && s.id);
+      // Sem número (guardadas antes da enumeração): numera na ordem da lista, depois do maior número existente.
+      let proximo = Math.max(0, ...validas.map((s) => Number.isInteger(s.numero) && s.numero > 0 ? s.numero : 0));
+      const usados = new Set<number>();
+      return validas.map((s) => {
+        const numero = Number.isInteger(s.numero) && s.numero > 0 && !usados.has(s.numero) ? s.numero : ++proximo;
+        usados.add(numero);
+        return {
         id: s.id,
+        numero,
         descricao: typeof s.descricao === "string" ? s.descricao.slice(0, DESCRICAO_FM_MAX) : "",
         criadaEm: typeof s.criadaEm === "string" ? s.criadaEm : agora,
         atualizadaEm: typeof s.atualizadaEm === "string" ? s.atualizadaEm : (typeof s.criadaEm === "string" ? s.criadaEm : agora),
         entrada: normalizarEntradaFm(s.entrada),
-      }));
+      }; });
     }
-    if (legado !== null) return [novaSimulacaoFm(novoId(), agora, normalizarEntradaFm(JSON.parse(legado)))];
+    if (legado !== null) return [novaSimulacaoFm(novoId(), agora, 1, normalizarEntradaFm(JSON.parse(legado)))];
   } catch { /* conteúdo inválido */ }
   return [];
 }
-export function novaSimulacaoFm(id: string, agora: string, entrada: EntradaDatasFm = { ...COMPETENCIA_PADRAO, dias: {} }, descricao = ""): SimulacaoFm {
-  return { id, descricao, criadaEm: agora, atualizadaEm: agora, entrada };
+/** Próximo número de Cenário: maior número já usado + 1. */
+export const proximoNumeroFm = (lista: SimulacaoFm[]) => Math.max(0, ...lista.map((s) => s.numero)) + 1;
+/** Número do Cenário com dois dígitos ("01", "02"…). */
+export const formatarNumeroFm = (n: number) => String(n).padStart(2, "0");
+export function novaSimulacaoFm(id: string, agora: string, numero: number, entrada: EntradaDatasFm = { ...COMPETENCIA_PADRAO, dias: {} }, descricao = ""): SimulacaoFm {
+  return { id, numero, descricao, criadaEm: agora, atualizadaEm: agora, entrada };
 }
-export function duplicarSimulacaoFm(s: SimulacaoFm, id: string, agora: string): SimulacaoFm {
-  return novaSimulacaoFm(id, agora, { ...s.entrada, dias: { ...s.entrada.dias } }, `${s.descricao || "Sem descrição"} (cópia)`.slice(0, DESCRICAO_FM_MAX));
+export function duplicarSimulacaoFm(s: SimulacaoFm, id: string, agora: string, numero: number): SimulacaoFm {
+  return novaSimulacaoFm(id, agora, numero, { ...s.entrada, dias: { ...s.entrada.dias } }, `${s.descricao || `Cenário ${formatarNumeroFm(s.numero)}`} (cópia)`.slice(0, DESCRICAO_FM_MAX));
 }
 /** Altera uma simulação da lista (descrição limitada a DESCRICAO_FM_MAX) e marca a data de alteração. */
 export function alterarSimulacaoFm(lista: SimulacaoFm[], id: string, mudanca: Partial<Pick<SimulacaoFm, "descricao" | "entrada">>, agora: string): SimulacaoFm[] {
@@ -208,8 +221,8 @@ export function alterarSimulacaoFm(lista: SimulacaoFm[], id: string, mudanca: Pa
     atualizadaEm: agora,
   });
 }
-/** Lista: alteradas mais recentemente primeiro. */
-export const ordenarSimulacoesFm = (lista: SimulacaoFm[]) => [...lista].sort((a, b) => b.atualizadaEm.localeCompare(a.atualizadaEm));
+/** Lista na ordem de inserção (número do Cenário). */
+export const ordenarSimulacoesFm = (lista: SimulacaoFm[]) => [...lista].sort((a, b) => a.numero - b.numero);
 export function carregarSimulacoesFm(): SimulacaoFm[] {
   try {
     const novoId = () => (globalThis.crypto?.randomUUID?.() ?? `fm-${Date.now()}-${Math.random().toString(36).slice(2)}`);

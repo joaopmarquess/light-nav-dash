@@ -3,14 +3,14 @@ import { ArrowLeft, Copy, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { alterarSimulacaoFm, carregarSimulacoesFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, novaSimulacaoFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, REFERENCIA_ULTIMO_DIA_PADRAO, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { alterarSimulacaoFm, carregarSimulacoesFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, REFERENCIA_ULTIMO_DIA_PADRAO, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
 const novoId = () => globalThis.crypto?.randomUUID?.() ?? `fm-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const agora = () => new Date().toISOString();
 const corNivel = (n: NivelImpactoFm) => n === "critico" ? "text-destructive" : n === "moderado" ? "text-[hsl(var(--impacto-moderado))]" : "text-[hsl(var(--impacto-ok))]";
 const dataHora = (iso: string) => { const d = new Date(iso); return isNaN(d.getTime()) ? "" : d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }); };
 
-// Controle de Simulações de Datas FM (pedido de 18/11/2026): tela Lista de Simulações → tela Simulação (a anterior, com Descrição); tudo fica neste navegador.
+// Controle de Simulações de Datas FM (pedido de 18/11/2026): tela Lista de Simulações → tela Simulação (a anterior, com o Cenário — antes "Descrição" — numerado por ordem de inserção); tudo fica neste navegador.
 export default function SimularDatasFm() {
   const [lista, setLista] = useState<SimulacaoFm[]>(carregarSimulacoesFm);
   const [aberta, setAberta] = useState<string | null>(null);
@@ -21,7 +21,7 @@ export default function SimularDatasFm() {
     <SimulacaoDatasFm key={atual.id} simulacao={atual} onVoltar={() => setAberta(null)}
       onAlterar={(m) => gravar(alterarSimulacaoFm(lista, atual.id, m, agora()))} />
   );
-  const nova = () => { const s = novaSimulacaoFm(novoId(), agora()); gravar([...lista, s]); setAberta(s.id); };
+  const nova = () => { const s = novaSimulacaoFm(novoId(), agora(), proximoNumeroFm(lista)); gravar([...lista, s]); setAberta(s.id); };
   const ordenada = ordenarSimulacoesFm(lista);
   return (
     <div className="space-y-4">
@@ -33,7 +33,8 @@ export default function SimularDatasFm() {
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-border bg-secondary text-secondary-foreground">
-              <th className="px-3 py-2 text-left font-semibold">DESCRIÇÃO</th>
+              <th className="w-12 px-3 py-2 text-right font-semibold">Nº</th>
+              <th className="px-3 py-2 text-left font-semibold">CENÁRIO</th>
               <th className="px-3 py-2 text-center font-semibold">COMPETÊNCIA</th>
               <th className="px-3 py-2 text-right font-semibold">ARQUIVO</th>
               <th className="px-3 py-2 text-right font-semibold">FECHAMENTO</th>
@@ -44,13 +45,14 @@ export default function SimularDatasFm() {
           </thead>
           <tbody>
             {ordenada.length === 0 ? (
-              <tr><td colSpan={7} className="px-3 py-6 text-center text-muted-foreground">Nenhuma simulação. Use “Nova simulação” para começar.</td></tr>
+              <tr><td colSpan={8} className="px-3 py-6 text-center text-muted-foreground">Nenhuma simulação. Use “Nova simulação” para começar.</td></tr>
             ) : ordenada.map((s) => {
               const linhas = simularDatasFm(s.entrada);
               const data = (id: IdDataFm) => linhas.find((l) => l.id === id)!.data;
               return (
                 <tr key={s.id} className="cursor-pointer border-b border-border last:border-b-0 hover:bg-muted/50" onClick={() => setAberta(s.id)} title="Abrir simulação">
-                  <td className={`px-3 py-1.5 ${s.descricao ? "font-medium" : "italic text-muted-foreground"}`}>{s.descricao || "Sem descrição"}</td>
+                  <td className="px-3 py-1.5 text-right font-semibold tabular-nums">{formatarNumeroFm(s.numero)}</td>
+                  <td className={`px-3 py-1.5 ${s.descricao ? "font-medium" : "italic text-muted-foreground"}`}>{s.descricao || "Sem nome"}</td>
                   <td className="px-3 py-1.5 text-center tabular-nums">{formatarCompetencia(s.entrada.mes, s.entrada.ano)}</td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{data("arquivo")}</td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{data("fechamento")}</td>
@@ -61,9 +63,9 @@ export default function SimularDatasFm() {
                   </td>
                   <td className="px-3 py-1.5 text-right tabular-nums text-muted-foreground">{dataHora(s.atualizadaEm)}</td>
                   <td className="px-3 py-1.5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" title="Duplicar" aria-label={`Duplicar ${s.descricao || "simulação"}`}
-                      onClick={() => gravar([...lista, duplicarSimulacaoFm(s, novoId(), agora())])}><Copy className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" title="Excluir" aria-label={`Excluir ${s.descricao || "simulação"}`}
+                    <Button variant="ghost" size="icon" className="h-7 w-7" title="Duplicar" aria-label={`Duplicar Cenário ${formatarNumeroFm(s.numero)}`}
+                      onClick={() => gravar([...lista, duplicarSimulacaoFm(s, novoId(), agora(), proximoNumeroFm(lista))])}><Copy className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" title="Excluir" aria-label={`Excluir Cenário ${formatarNumeroFm(s.numero)}`}
                       onClick={() => setExcluir(s)}><Trash2 className="h-4 w-4" /></Button>
                   </td>
                 </tr>
@@ -76,7 +78,7 @@ export default function SimularDatasFm() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir simulação?</AlertDialogTitle>
-            <AlertDialogDescription>“{excluir?.descricao || "Sem descrição"}” será removida da lista. Isso não pode ser desfeito.</AlertDialogDescription>
+            <AlertDialogDescription>Cenário {excluir ? formatarNumeroFm(excluir.numero) : ""}{excluir?.descricao ? ` — “${excluir.descricao}”` : ""} será removido da lista. Isso não pode ser desfeito.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
@@ -125,10 +127,10 @@ function SimulacaoDatasFm({ simulacao, onAlterar, onVoltar }: { simulacao: Simul
         <Button variant="ghost" size="sm" onClick={onVoltar} className="-ml-2"><ArrowLeft className="mr-1 h-4 w-4" />Lista de Simulações</Button>
       </div>
       <h1 className="text-xl font-semibold">Simulação de Datas FM</h1>
-      {/* Descrição da Simulação (pedido de 18/11/2026), mostrada na Lista de Simulações. */}
+      {/* Cenário da Simulação (antes "Descrição", pedidos de 18/11/2026), com o número por ordem de inserção. */}
       <label className="flex max-w-3xl items-center gap-2 text-sm">
-        <span className="whitespace-nowrap font-semibold">Descrição:</span>
-        <Input aria-label="Descrição da Simulação" placeholder="Descreva esta simulação" maxLength={DESCRICAO_FM_MAX} className="h-8"
+        <span className="whitespace-nowrap font-semibold">Cenário {formatarNumeroFm(simulacao.numero)}:</span>
+        <Input aria-label="Cenário da Simulação" placeholder="Descreva este cenário" maxLength={DESCRICAO_FM_MAX} className="h-8"
           value={simulacao.descricao} onChange={(e) => onAlterar({ descricao: e.target.value })} autoFocus={!simulacao.descricao} />
       </label>
       <label className="flex items-center gap-2 text-sm">
