@@ -167,6 +167,15 @@ export function blocosPeriodoFm(e: EntradaDatasFm): BlocoFm[] {
   return blocos;
 }
 
+/** Simular em blocos dividido em duas partes (pedido de 18/11/2026): Parte 1 Outros Credenciados = os 4 blocos (blocosPeriodoFm);
+ * Parte 2 Hospital Benê = o Período geral inteiro, com o Arquivo na data limite (o Arquivo do cenário). */
+export const PARTES_BLOCOS_FM = { outros: "Outros Credenciados", hospital: "Hospital Benê" } as const;
+export function hospitalBeneFm(e: EntradaDatasFm): Omit<BlocoFm, "bloco"> {
+  const p = periodoFm(e);
+  const dias = Math.round((utcDe(p.ate) - utcDe(p.de)) / DIA_MS) + 1;
+  return { de: p.de, ate: p.ate, dias, arquivo: simularDatasFm(e).find((l) => l.id === "arquivo")!.data };
+}
+
 /** Inteiro digitado dentro do intervalo; vazio → undefined (restaura o padrão); inválido → null (recusado). */
 export function lerInteiro(texto: string, min: number, max: number): number | undefined | null {
   const t = texto.trim();

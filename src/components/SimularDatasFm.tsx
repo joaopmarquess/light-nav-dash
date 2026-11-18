@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvarUltimoNumeroFm, simulacaoAlteradaFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, prazoFolhaFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, blocosPeriodoFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvarUltimoNumeroFm, simulacaoAlteradaFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, prazoFolhaFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, blocosPeriodoFm, hospitalBeneFm, PARTES_BLOCOS_FM, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
 const novoId = () => globalThis.crypto?.randomUUID?.() ?? `fm-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const agora = () => new Date().toISOString();
@@ -222,31 +222,42 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
           onCheckedChange={(v) => { const { blocos: _, ...resto } = entrada; gravar(v === true ? { ...resto, blocos: true } : resto); }} />
         <span className="font-semibold">Simular em blocos</span>
       </label>
-      {entrada.blocos && (
-        <div className="max-w-3xl overflow-hidden rounded-md border border-border">
-          <div className="border-b border-border bg-secondary px-3 py-2 text-sm font-semibold text-secondary-foreground">PERÍODO EM 4 BLOCOS</div>
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/50">
-                <th className="px-3 py-1.5 text-left font-semibold">BLOCO</th>
-                <th className="px-3 py-1.5 text-right font-semibold">PERÍODO DO BLOCO</th>
-                <th className="px-3 py-1.5 text-right font-semibold">DIAS</th>
-                <th className="px-3 py-1.5 text-right font-semibold" title="Dia seguinte ao fim do período do bloco">ARQUIVO</th>
-              </tr>
-            </thead>
-            <tbody>
-              {blocosPeriodoFm(entrada).map((b) => (
-                <tr key={b.bloco} className="border-b border-border last:border-b-0">
-                  <td className="px-3 py-1.5 font-semibold">Bloco {b.bloco}</td>
-                  <td className="px-3 py-1.5 text-right tabular-nums">{b.de} a {b.ate}</td>
-                  <td className="px-3 py-1.5 text-right tabular-nums">{formatarPrazo(b.dias)} <span className="text-xs text-muted-foreground">dias</span></td>
-                  <td className="px-3 py-1.5 text-right font-semibold tabular-nums">{b.arquivo}</td>
+      {entrada.blocos && (() => {
+        // Duas partes (pedido de 18/11/2026): Parte 1 Outros Credenciados em blocos; Parte 2 Hospital Benê com o Período geral e o Arquivo na data limite.
+        const hospital = hospitalBeneFm(entrada);
+        const parte = (n: number, nome: string) => (
+          <tr className="border-b border-border bg-muted/30"><td colSpan={4} className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Parte {n} — {nome}</td></tr>
+        );
+        const linha = (rotulo: string, b: { de: string; ate: string; dias: number; arquivo: string }) => (
+          <tr key={rotulo} className="border-b border-border last:border-b-0">
+            <td className="px-3 py-1.5 font-semibold">{rotulo}</td>
+            <td className="px-3 py-1.5 text-right tabular-nums">{b.de} a {b.ate}</td>
+            <td className="px-3 py-1.5 text-right tabular-nums">{formatarPrazo(b.dias)} <span className="text-xs text-muted-foreground">dias</span></td>
+            <td className="px-3 py-1.5 text-right font-semibold tabular-nums">{b.arquivo}</td>
+          </tr>
+        );
+        return (
+          <div className="max-w-3xl overflow-hidden rounded-md border border-border">
+            <div className="border-b border-border bg-secondary px-3 py-2 text-sm font-semibold text-secondary-foreground">SIMULAÇÃO EM BLOCOS</div>
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="px-3 py-1.5 text-left font-semibold">BLOCO</th>
+                  <th className="px-3 py-1.5 text-right font-semibold">PERÍODO</th>
+                  <th className="px-3 py-1.5 text-right font-semibold">DIAS</th>
+                  <th className="px-3 py-1.5 text-right font-semibold" title="Outros Credenciados: dia seguinte ao fim do bloco; Hospital Benê: data limite (Arquivo do cenário)">ARQUIVO</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {parte(1, PARTES_BLOCOS_FM.outros)}
+                {blocosPeriodoFm(entrada).map((b) => linha(`Bloco ${b.bloco}`, b))}
+                {parte(2, PARTES_BLOCOS_FM.hospital)}
+                {linha("Período geral", hospital)}
+              </tbody>
+            </table>
+          </div>
+        );
+      })()}
       <div className="max-w-3xl overflow-hidden rounded-md border border-border">
         <table className="w-full border-collapse text-sm">
           <thead>

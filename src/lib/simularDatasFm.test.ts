@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatarPrazo, normalizarEntradaFm, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil , lerSimulacoesFm, novaSimulacaoFm, gravarSimulacaoFm, simulacaoAlteradaFm, duplicarSimulacaoFm, ordenarSimulacoesFm, proximoNumeroFm, DESCRICAO_FM_MAX, prazoFolhaFm, blocosPeriodoFm } from "./simularDatasFm";
+import { formatarPrazo, normalizarEntradaFm, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil , lerSimulacoesFm, novaSimulacaoFm, gravarSimulacaoFm, simulacaoAlteradaFm, duplicarSimulacaoFm, ordenarSimulacoesFm, proximoNumeroFm, DESCRICAO_FM_MAX, prazoFolhaFm, blocosPeriodoFm, hospitalBeneFm } from "./simularDatasFm";
 
 // Entrada do quadro fornecido antes do novo padrão: Arquivo 05/01 e Fechamento 10.
 const QUADRO = { ...COMPETENCIA_PADRAO, dias: { arquivo: 5, fechamento: 10 }, arquivoMes: 1 };
@@ -241,6 +241,10 @@ describe("Simular em blocos", () => {
   it("sets each block's Arquivo to the day after the block ends", () => {
     const b = blocosPeriodoFm({ ...COMPETENCIA_PADRAO, dias: {} });
     expect(b.map((x) => x.arquivo)).toEqual(["28/11/2026", "06/12/2026", "13/12/2026", "20/12/2026"]);
+  });
+  it("gives Hospital Benê the whole Período with the scenario Arquivo as its deadline", () => {
+    expect(hospitalBeneFm({ ...COMPETENCIA_PADRAO, dias: {} })).toEqual({ de: "20/11/2026", ate: "19/12/2026", dias: 30, arquivo: "20/12/2026" });
+    expect(hospitalBeneFm({ mes: 1, ano: 2027, dias: { arquivo: 5 }, arquivoMes: 2 }).arquivo).toBe("05/02/2027");
   });
   it("keeps the option when saved and drops it when off", () => {
     expect(normalizarEntradaFm({ mes: 12, ano: 2026, dias: {}, blocos: true }).blocos).toBe(true);
