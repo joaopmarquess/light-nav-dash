@@ -8,7 +8,7 @@ import { CABECALHO, FONTES_PROPOSTA as F, LINHA, RODAPE, SECUNDARIO, TINTA, ZEBR
 import { paragrafosDe } from "@/lib/uberabaPropostaTextos";
 import { PARAMETROS_REDE_PADRAO, type ParametrosRede } from "@/lib/uberabaParametrosRede";
 import {
-  COLUNAS_CONDICOES_REDE, CONDICOES_GERAIS_REDE, NOTA_CONDICOES_REDE, SECOES_REDE, TITULO_CONDICOES_GERAIS_REDE, TEXTOS_REDE_PADRAO, linhasCondicoesRede, linhasParametrosRede, regraMensalidadeRede,
+  COLUNAS_CONDICOES_REDE, COLUNAS_RESULTADO_REDE, CONDICOES_GERAIS_REDE, linhasResultadoRede, quantidadesRedeAtuais, type QuantidadesRede, NOTA_CONDICOES_REDE, SECOES_REDE, TITULO_CONDICOES_GERAIS_REDE, TEXTOS_REDE_PADRAO, linhasCondicoesRede, linhasParametrosRede, regraMensalidadeRede,
   type SecaoRedeId, type TextosRede,
 } from "@/lib/uberabaPropostaRede";
 
@@ -23,7 +23,10 @@ export function paragrafosPropostaRede(textos: TextosRede | null = null): string
   return SECOES_REDE.map((s) => paragrafosDe(t[s.id]));
 }
 
-export function buildPropostaRedePdf(timbradoDataUrl?: string | null, parametros: ParametrosRede = PARAMETROS_REDE_PADRAO, textos: TextosRede | null = null): jsPDF {
+export function buildPropostaRedePdf(
+  timbradoDataUrl?: string | null, parametros: ParametrosRede = PARAMETROS_REDE_PADRAO, textos: TextosRede | null = null,
+  quantidades: QuantidadesRede = quantidadesRedeAtuais(),
+): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   attachTimbrado(doc, timbradoDataUrl);
   const pageW = doc.internal.pageSize.getWidth();
@@ -56,6 +59,7 @@ export function buildPropostaRedePdf(timbradoDataUrl?: string | null, parametros
 
   const tabela = (head: string[], body: string[][], colunas: Record<number, { halign?: "left" | "center" | "right"; cellWidth?: number }>, negritoUltima: boolean) => {
     autoTable(doc, {
+      rowPageBreak: "avoid",
       theme: "plain",
       startY: y,
       tableWidth: LARGURA,
@@ -93,11 +97,21 @@ export function buildPropostaRedePdf(timbradoDataUrl?: string | null, parametros
   };
 
   const desenharCondicoes = () => {
-    // Larguras fixas (somam a largura do texto): nenhum título de coluna ou valor se parte no meio da palavra.
-    tabela([...COLUNAS_CONDICOES_REDE], linhasCondicoesRede(), {
-      0: { halign: "left", cellWidth: 46 }, 1: { cellWidth: 28 }, 2: { cellWidth: 28 }, 3: { cellWidth: 38 }, 4: { cellWidth: LARGURA - 140 },
+    // Quadro de quantidades montado a partir da seção Credenciamento (pedido de 18/11/2026); larguras fixas para não partir palavras.
+    tabela([...COLUNAS_CONDICOES_REDE], linhasCondicoesRede(quantidades), {
+      0: { halign: "left", cellWidth: 70 }, 1: { cellWidth: 26 }, 2: { cellWidth: 36 }, 3: { cellWidth: LARGURA - 132 },
     }, true);
     nota(NOTA_CONDICOES_REDE);
+    // Antes do tópico 3, o quadro da seção Resultado (pedido de 18/11/2026), inteiro numa mesma página.
+    const linhasRes = linhasResultadoRede(parametros, quantidades);
+    garantir(10 + (linhasRes.length + 1) * 7.2);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(F.parametros); doc.setTextColor(...TINTA);
+    doc.text(textoPdf("Resultado"), marginL, y + 3);
+    y += 6;
+    tabela([...COLUNAS_RESULTADO_REDE], linhasRes, {
+      0: { halign: "left", cellWidth: 24 }, 1: { halign: "right", cellWidth: 36 }, 2: { halign: "right", cellWidth: 38 }, 3: { halign: "right", cellWidth: 38 }, 4: { halign: "right", cellWidth: LARGURA - 136 },
+    }, true);
+    y += 6;
   };
   const desenharGestao = () => {
     tabela(["PARÂMETRO", "VALOR"], linhasParametrosRede(parametros), { 0: { halign: "left" }, 1: { cellWidth: 50 } }, false);
@@ -111,7 +125,7 @@ export function buildPropostaRedePdf(timbradoDataUrl?: string | null, parametros
     return lista.reduce((h, t) => h + (doc.splitTextToSize(textoPdf(t), LARGURA) as string[]).length * LINHA_TEXTO + 3, 0);
   };
   /** Altura aproximada de cada quadro com a sua nota: título, texto e quadro ficam juntos na mesma página. */
-  const ALTURA_BLOCO: Partial<Record<SecaoRedeId, number>> = { condicoes: 78, gestao: 48 };
+  const ALTURA_BLOCO: Partial<Record<SecaoRedeId, number>> = { condicoes: 60, gestao: 48 };
 
   const corpo = paragrafosPropostaRede(textos);
   SECOES_REDE.forEach((s, i) => {

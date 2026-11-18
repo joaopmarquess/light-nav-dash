@@ -48,6 +48,12 @@ export function resultadoRede(adesaoTotal: number, parametros: ParametrosRede, v
   return { linhas, total };
 }
 
+/** Coluna VIDAS do Resultado, depois de MENSALIDADE (pedido de 18/11/2026): só nos meses em que a mensalidade é Valor por vida × vidas,
+ * o número de vidas vendidas acumuladas com a expressão "estimadas"; nos demais meses, vazia. Mesma regra na tela e no PDF. */
+export function vidasEstimadasRede(l: LinhaResultadoRede): string {
+  return l.antesInicio || l.parcelaFixa ? "" : `${l.vidasAcumuladas.toLocaleString("pt-BR")} estimadas`;
+}
+
 /** Vidas atuais da Simulação de resultados nesta sessão: a simulação publica a cada alteração; sem publicação, os padrões. */
 export const EVENTO_VIDAS_SIMULACAO = "uberaba-vidas-simulacao-alteradas";
 let vidasPublicadas: VidasSimulacao | null = null;

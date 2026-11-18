@@ -1,10 +1,11 @@
 // Proposta de Credenciamento e Gestão de Rede (Proj. Uberaba, pedido de 18/11/2026), destinada à Siga Soluções.
-// Tópicos: 1 Introdução; 2 Condições de Credenciamento (quadro das Condições Rede, cenário Disponível);
+// Tópicos: 1 Introdução; 2 Condições de Credenciamento (quadro da seção Credenciamento e, antes do tópico 3, o quadro da seção Resultado — pedido de 18/11/2026);
 // 3 Gestão de Rede (quadro dos Parâmetros de Resultados Rede); 4 Condições Gerais (texto fixo do Dênis, nunca redigido pela IA).
 // A IA redige os textos dos tópicos 1 a 3 só com estes dados;
 // o PDF usa o texto padrão até o usuário aprovar a revisão ("Incluir no PDF"). Tudo fica guardado neste navegador.
-import { MODO_CREDENCIAMENTO_PADRAO, cenarioCredenciamento, moedaCredenciamento } from "@/lib/uberabaCredenciamento";
-import { ANO_RESULTADO_REDE } from "@/lib/uberabaResultadoRede";
+import { moedaCredenciamento } from "@/lib/uberabaCredenciamento";
+import { ANO_RESULTADO_REDE, lerVidasSimulacao, resultadoRede, vidasEstimadasRede, type VidasSimulacao } from "@/lib/uberabaResultadoRede";
+import { carregarAutorizados, carregarValores, linhasQuantidadeCredenciamentos } from "@/lib/uberabaQuantidadeCredenciamentos";
 import type { ParametrosRede } from "@/lib/uberabaParametrosRede";
 import { REDE_UBERABA } from "@/lib/uberabaFrentes";
 
@@ -31,24 +32,36 @@ export const TEXTOS_REDE_PADRAO: TextosRede = {
   introducao:
     "Apresentamos à Siga Soluções a proposta de credenciamento e gestão da rede assistencial do Bensaúde em Uberaba (MG), no âmbito do projeto Bensaúde|Uberaba. As condições de credenciamento estão na seção 2, as condições da gestão de rede, na seção 3, e as condições gerais, na seção 4.",
   condicoes:
-    "O quadro abaixo apresenta, por grupo, as categorias, as quantidades disponíveis identificadas nas redes de referência, o valor por credenciamento e o valor máximo projetado.",
+    "O quadro abaixo apresenta, por tipo de credenciado, a quantidade, o valor por credenciamento e o valor de adesão. Em seguida, o quadro do Resultado mostra, mês a mês, a adesão, a mensalidade e o total.",
   gestao:
     "O quadro abaixo apresenta os parâmetros da remuneração mensal pela gestão de rede: parcelas fixas a partir do mês de início e, em seguida, valor por vida sobre as vidas vendidas acumuladas.",
 };
 
-/** Nota das Condições Rede (mesmo texto da tela, cenário Disponível). */
-export const NOTA_CONDICOES_REDE =
-  "Os quantitativos apresentados representam disponibilidade identificada nas redes de referência e não equivalem a credenciamentos concluídos. A rede EVO foi utilizada como fonte principal e a Unimed como referência complementar nos casos em que não foi identificada disponibilidade na EVO. O pagamento dependerá da conclusão, aprovação e formalização de cada credenciamento pelo Bensaúde.";
+/** Nota do quadro de quantidades: só a condição de pagamento da nota das Condições Rede, que vale para o Credenciamento
+ * (o restante falava da disponibilidade das redes de referência, que não é mais o que o quadro mostra). */
+export const NOTA_CONDICOES_REDE = "O pagamento dependerá da conclusão, aprovação e formalização de cada credenciamento pelo Bensaúde.";
 
-export const COLUNAS_CONDICOES_REDE = ["GRUPO", "CATEGORIAS", "QUANTIDADE DISPONÍVEL", "VALOR POR CREDENCIAMENTO", "VALOR MÁXIMO PROJETADO"] as const;
+/** Quadro de quantidades do tópico 2 (pedido de 18/11/2026): montado a partir da seção Credenciamento, mesmas colunas da tela. */
+export const COLUNAS_CONDICOES_REDE = ["TIPO CREDENCIADO", "QTDE.", "VALOR", "ADESÃO"] as const;
 const inteiro = (n: number) => n.toLocaleString("pt-BR");
+export type QuantidadesRede = ReturnType<typeof linhasQuantidadeCredenciamentos>;
+export const quantidadesRedeAtuais = (): QuantidadesRede => linhasQuantidadeCredenciamentos(carregarAutorizados(), carregarValores());
 
-/** Tópico 2: uma linha por grupo das Condições Rede (cenário padrão da tela) e a linha TOTAL. */
-export function linhasCondicoesRede(): string[][] {
-  const { grupos, resumo } = cenarioCredenciamento(MODO_CREDENCIAMENTO_PADRAO);
+/** Tópico 2: uma linha por tipo do Credenciamento (Qtde., Valor e Adesão da tela) e a linha TOTAL. */
+export function linhasCondicoesRede(q: QuantidadesRede = quantidadesRedeAtuais()): string[][] {
   return [
-    ...grupos.map((g) => [g.titulo, inteiro(g.categorias), inteiro(g.quantidade), moedaCredenciamento(g.valor), moedaCredenciamento(g.total)]),
-    ["TOTAL", inteiro(resumo.categorias), inteiro(resumo.quantidade), "", moedaCredenciamento(resumo.total)],
+    ...q.linhas.map((l) => [l.tipo, inteiro(l.autorizado), moedaCredenciamento(l.valor), moedaCredenciamento(l.adesao)]),
+    ["TOTAL", inteiro(q.total.autorizado), "", moedaCredenciamento(q.total.adesao)],
+  ];
+}
+
+/** Quadro da seção Resultado, no fim do tópico 2 (pedido de 18/11/2026): mesmas colunas e valores da tela, com VIDAS "estimadas". */
+export const COLUNAS_RESULTADO_REDE = ["MÊS", "ADESÃO", "MENSALIDADE", "VIDAS", "TOTAL"] as const;
+export function linhasResultadoRede(p: ParametrosRede, q: QuantidadesRede = quantidadesRedeAtuais(), vidas: VidasSimulacao = lerVidasSimulacao()): string[][] {
+  const { linhas, total } = resultadoRede(q.total.adesao, p, vidas);
+  return [
+    ...linhas.map((l) => [l.mes, moedaCredenciamento(l.adesao), moedaCredenciamento(l.mensalidade), vidasEstimadasRede(l), moedaCredenciamento(l.total)]),
+    ["TOTAL", moedaCredenciamento(total.adesao), moedaCredenciamento(total.mensalidade), "", moedaCredenciamento(total.total)],
   ];
 }
 
@@ -75,16 +88,19 @@ export function regraMensalidadeRede(p: ParametrosRede): string {
 
 export type DadosRascunhoRede = {
   destinatario: string;
-  condicoes: { colunas: string[]; linhas: string[][]; nota: string };
+  condicoes: { colunas: string[]; linhas: string[][]; nota: string; resultado: { colunas: string[]; linhas: string[][] } };
   gestao: { parametros: { item: string; valor: string }[]; regra: string; frentes: { frente: string; responsaveis: string[] }[] };
   condicoesGerais: { item: string; valor: string }[];
 };
 
-export function dadosRascunhoRede(p: ParametrosRede): DadosRascunhoRede {
+export function dadosRascunhoRede(p: ParametrosRede, q: QuantidadesRede = quantidadesRedeAtuais(), vidas: VidasSimulacao = lerVidasSimulacao()): DadosRascunhoRede {
   const gestao = REDE_UBERABA.grupos.find((g) => g.id === "gestao-rede");
   return {
     destinatario: DESTINATARIO_PROPOSTA_REDE,
-    condicoes: { colunas: [...COLUNAS_CONDICOES_REDE], linhas: linhasCondicoesRede(), nota: NOTA_CONDICOES_REDE },
+    condicoes: {
+      colunas: [...COLUNAS_CONDICOES_REDE], linhas: linhasCondicoesRede(q), nota: NOTA_CONDICOES_REDE,
+      resultado: { colunas: [...COLUNAS_RESULTADO_REDE], linhas: linhasResultadoRede(p, q, vidas) },
+    },
     gestao: {
       parametros: linhasParametrosRede(p).map(([item, valor]) => ({ item, valor })),
       regra: regraMensalidadeRede(p),

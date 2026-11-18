@@ -19,7 +19,10 @@ const t = (max: number) => z.string().max(max);
 const entrada = z.object({
   dados: z.object({
     destinatario: t(80),
-    condicoes: z.object({ colunas: z.array(t(40)).max(8), linhas: z.array(z.array(t(80)).max(8)).max(10), nota: t(600) }),
+    condicoes: z.object({
+      colunas: z.array(t(40)).max(8), linhas: z.array(z.array(t(80)).max(8)).max(10), nota: t(600),
+      resultado: z.object({ colunas: z.array(t(40)).max(8), linhas: z.array(z.array(t(40)).max(8)).max(14) }).optional(),
+    }),
     gestao: z.object({
       parametros: z.array(z.object({ item: t(60), valor: t(30) })).max(10),
       regra: t(300),
@@ -44,7 +47,7 @@ REGRAS INVIOLÁVEIS
 1. Use somente os fatos que estão nos DADOS. Não invente nem suponha valores, quantidades, prazos, datas, vigência, reajustes, metas, multas, formas de pagamento, obrigações, exclusividade ou qualquer outra condição.
 2. Todo número que você escrever deve aparecer nos DADOS exatamente com a mesma grafia (por exemplo "229", "R$ 200,00", "03/2027"). Não calcule totais, médias, diferenças ou novos valores.
 3. Quando a seção precisar de uma informação que não está nos DADOS, escreva um marcador no formato [A definir: o que falta]. Nunca preencha a lacuna com suposições.
-4. Não repita os quadros linha a linha: o sistema insere o quadro das Condições de Credenciamento no tópico 2 e o quadro dos Parâmetros no tópico 3, cada um com sua nota. O tópico 4, Condições Gerais (DADOS.condicoesGerais: prazo do contrato e o que muda a partir de 2028), é fixo e inserido pelo sistema; não o redija e não o contradiga.
+4. Não repita os quadros linha a linha: o sistema insere no tópico 2 o quadro do Credenciamento (tipo de credenciado, quantidade, valor e adesão) com sua nota e, em seguida, o quadro do Resultado mês a mês (DADOS.condicoes.resultado; as vidas desse quadro são estimadas), e no tópico 3 o quadro dos Parâmetros com sua nota. O tópico 4, Condições Gerais (DADOS.condicoesGerais: prazo do contrato e o que muda a partir de 2028), é fixo e inserido pelo sistema; não o redija e não o contradiga.
 5. Sem markdown, títulos, numeração ou listas com marcadores.
 
 ESTRUTURA DA PROPOSTA (o texto de cada seção abre o tópico; os quadros vêm logo abaixo)
@@ -52,7 +55,7 @@ ESTRUTURA DA PROPOSTA (o texto de cada seção abre o tópico; os quadros vêm l
 
 SEÇÕES (somente estas três)
 - introducao: um parágrafo curto (2 a 4 frases) que apresente a proposta ao destinatário, o objeto (credenciamento e gestão da rede assistencial do Bensaúde em Uberaba, MG) e indique que as condições estão nas seções 2 a 4.
-- condicoes: 1 ou 2 frases que expliquem o que o quadro mostra (grupos, categorias, quantidades disponíveis, valor por credenciamento e valor máximo projetado), podendo citar o total de referências e o valor máximo total da linha TOTAL. Pode lembrar que o pagamento depende da formalização de cada credenciamento, como na nota.
+- condicoes: 1 a 3 frases que expliquem os dois quadros: o do Credenciamento (tipos de credenciado, quantidade, valor por credenciamento e adesão), podendo citar a quantidade total e a adesão total da linha TOTAL, e o do Resultado (adesão, mensalidade e total por mês; vidas estimadas). Pode lembrar que o pagamento depende da formalização de cada credenciamento, como na nota.
 - gestao: 1 ou 2 frases que expliquem a remuneração da gestão de rede segundo a regra dos DADOS (parcelas fixas a partir do mês de início e, depois, valor por vida sobre as vidas vendidas acumuladas), podendo citar as frentes de Gestão de Rede e seus responsáveis.`;
 
 Deno.serve(async (req) => {

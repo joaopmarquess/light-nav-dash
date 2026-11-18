@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { EVENTO_CREDENCIAMENTO, carregarAutorizados, carregarValores, linhasQuantidadeCredenciamentos } from "@/lib/uberabaQuantidadeCredenciamentos";
 import { EVENTO_PARAMETROS_REDE, carregarParametrosRede, parametrosRede } from "@/lib/uberabaParametrosRede";
-import { EVENTO_VIDAS_SIMULACAO, lerVidasSimulacao, resultadoRede } from "@/lib/uberabaResultadoRede";
+import { EVENTO_VIDAS_SIMULACAO, lerVidasSimulacao, resultadoRede, vidasEstimadasRede } from "@/lib/uberabaResultadoRede";
 
 const moeda = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const inteiro = (v: number) => v.toLocaleString("pt-BR");
@@ -12,7 +12,7 @@ const ler = () => ({
   vidas: lerVidasSimulacao(),
 });
 
-// Resultado de Resultados Rede: Mês · Adesão · Mensalidade · Total, relido a cada alteração do Credenciamento, dos Parâmetros ou das vidas da simulação.
+// Resultado de Resultados Rede: Mês · Adesão · Mensalidade · Vidas (só nos meses × vidas, "estimadas") · Total, relido a cada alteração do Credenciamento, dos Parâmetros ou das vidas da simulação.
 export default function UberabaResultadoRede() {
   const [dados, setDados] = useState(ler);
   useEffect(() => {
@@ -30,6 +30,7 @@ export default function UberabaResultadoRede() {
             <th className="px-3 py-2 text-left font-semibold">MÊS</th>
             <th className="px-3 py-2 text-right font-semibold">ADESÃO</th>
             <th className="px-3 py-2 text-right font-semibold">MENSALIDADE</th>
+            <th className="px-3 py-2 text-right font-semibold" title="Vidas vendidas acumuladas, nos meses de Valor por vida × vidas">VIDAS</th>
             <th className="px-3 py-2 text-right font-semibold">TOTAL</th>
           </tr>
         </thead>
@@ -42,6 +43,7 @@ export default function UberabaResultadoRede() {
                 title={l.antesInicio ? "Antes do mês Iniciar em" : l.parcelaFixa ? "Parcela fixa (Valor Parcela)" : `${moeda(dados.parametros.valorPorVida)} × ${inteiro(l.vidasAcumuladas)} vidas vendidas acumuladas`}>
                 {moeda(l.mensalidade)}
               </td>
+              <td className="px-3 py-1.5 text-right tabular-nums text-muted-foreground">{vidasEstimadasRede(l)}</td>
               <td className="px-3 py-1.5 text-right font-semibold tabular-nums">{moeda(l.total)}</td>
             </tr>
           ))}
@@ -51,6 +53,7 @@ export default function UberabaResultadoRede() {
             <td className="px-3 py-2">TOTAL</td>
             <td className="px-3 py-2 text-right tabular-nums">{moeda(total.adesao)}</td>
             <td className="px-3 py-2 text-right tabular-nums">{moeda(total.mensalidade)}</td>
+            <td className="px-3 py-2" />
             <td className="px-3 py-2 text-right tabular-nums">{moeda(total.total)}</td>
           </tr>
         </tfoot>
