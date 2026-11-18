@@ -41,7 +41,16 @@ export function dataDiaMes(mesCompetencia: number, anoCompetencia: number, dia: 
   return { data: `${dd(d)}/${dd(mes)}/${a}`, ajustado: d !== dia };
 }
 
-export function simularDatasFm({ mes, ano, dias, arquivoMes }: EntradaDatasFm) {
+const utcDe = (data: string) => { const [d, m, a] = data.split("/").map(Number); return Date.UTC(a, m - 1, d); };
+
+/** Linhas do grid; diasArquivo (coluna DIAS, pedido de 18/11/2026) = data da linha − data do Arquivo, em dias corridos. */
+export function simularDatasFm(e: EntradaDatasFm) {
+  const linhas = linhasDatasFm(e);
+  const arquivo = utcDe(linhas.find((l) => l.id === "arquivo")!.data);
+  return linhas.map((l) => ({ ...l, diasArquivo: Math.round((utcDe(l.data) - arquivo) / 86400000) }));
+}
+
+function linhasDatasFm({ mes, ano, dias, arquivoMes }: EntradaDatasFm) {
   const mesArquivo = arquivoMes ?? (mes === 12 ? 1 : mes + 1);
   return LINHAS_DATAS_FM.map((l) => {
     const dia = dias[l.id] ?? l.diaPadrao;
