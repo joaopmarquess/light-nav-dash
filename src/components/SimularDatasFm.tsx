@@ -3,7 +3,7 @@ import { Copy, Plus, Save, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvarUltimoNumeroFm, simulacaoAlteradaFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, REFERENCIA_ULTIMO_DIA_PADRAO, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvarUltimoNumeroFm, simulacaoAlteradaFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
 const novoId = () => globalThis.crypto?.randomUUID?.() ?? `fm-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const agora = () => new Date().toISOString();
@@ -183,15 +183,6 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
           onChange={(e) => alterarCompetencia(e.target.value)}
           onBlur={() => setCompetenciaTexto(null)}
           className={`h-8 w-28 text-center tabular-nums ${competenciaTexto !== null && !lerCompetencia(competenciaTexto) ? "border-destructive" : ""}`} />
-      </label>
-      {/* Referência de Último Dia logo após a Competência (pedido de 18/11/2026); padrão 20, ainda sem efeito nos cálculos. */}
-      <label className="flex items-center gap-2 text-sm">
-        <span className="font-semibold">Referência de Último Dia:</span>
-        <Input aria-label="Referência de Último Dia" inputMode="numeric" title="Apague para restaurar o padrão" className="h-8 w-16 text-center tabular-nums"
-          {...campo("referenciaUltimoDia", entrada.referenciaUltimoDia ?? REFERENCIA_ULTIMO_DIA_PADRAO, 1, 31, (v) => {
-            const { referenciaUltimoDia: _, ...resto } = entrada;
-            gravar(v === undefined ? resto : { ...resto, referenciaUltimoDia: v });
-          })} />
       </label>
       <div className="flex items-center gap-2 text-sm">
         <span className="font-semibold">Arquivo:</span>

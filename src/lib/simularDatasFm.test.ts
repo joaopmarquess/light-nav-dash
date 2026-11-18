@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatarPrazo, REFERENCIA_ULTIMO_DIA_PADRAO, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil , lerSimulacoesFm, novaSimulacaoFm, gravarSimulacaoFm, simulacaoAlteradaFm, duplicarSimulacaoFm, ordenarSimulacoesFm, proximoNumeroFm, DESCRICAO_FM_MAX } from "./simularDatasFm";
+import { formatarPrazo, normalizarEntradaFm, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil , lerSimulacoesFm, novaSimulacaoFm, gravarSimulacaoFm, simulacaoAlteradaFm, duplicarSimulacaoFm, ordenarSimulacoesFm, proximoNumeroFm, DESCRICAO_FM_MAX } from "./simularDatasFm";
 
 describe("Simular Datas FM", () => {
   it("competência 12/2026 com os dias padrão reproduz o quadro fornecido, com Arquivo na primeira linha de datas", () => {
@@ -133,8 +133,8 @@ describe("Simular Datas FM", () => {
     const dare = avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20, fechamento: 21 }, arquivoMes: 12 }).find((i) => i.id === "dare")!;
     expect(dare.descricao.startsWith("05 dias para fechar o Dare")).toBe(true);
   });
-  it("Referência de Último Dia começa em 20", () => {
-    expect(REFERENCIA_ULTIMO_DIA_PADRAO).toBe(20);
+  it("Referência de Último Dia retirada: valor guardado antes é descartado", () => {
+    expect(normalizarEntradaFm({ mes: 12, ano: 2026, dias: {}, referenciaUltimoDia: 20 })).toEqual({ mes: 12, ano: 2026, dias: {} });
   });
 });
 
