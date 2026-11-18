@@ -208,7 +208,7 @@ export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
     dare < DARE_MINIMO
       ? { id: "dare", rotulo: "DARE", dias: dare, nivel: "critico", status: "Crítico",
           descricao: `${plural(dare)} para fechar o Dare (entrega no dia 15); o mínimo é ${DARE_MINIMO} e o ideal, ${DARE_IDEAL}.` }
-      : dare === DARE_MINIMO // exatamente no mínimo: "No limite", em amarelo (pedido de 18/11/2026)
+      : dare === DARE_MINIMO // exatamente no mínimo: "No limite", em laranja como Impacto Controlado (pedidos de 18/11/2026)
         ? { id: "dare", rotulo: "DARE", dias: dare, nivel: "limite", status: "No limite",
             descricao: `${plural(dare)} para fechar o Dare (entrega no dia 15): exatamente o mínimo de ${DARE_MINIMO}; o ideal é ${DARE_IDEAL}.` }
       : dare < DARE_IDEAL

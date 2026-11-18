@@ -98,7 +98,7 @@ describe("Simular Datas FM", () => {
     expect(niveis(20, 12, { ...f, diops: 24 })).toMatchObject({ diops: "Abaixo do ideal" });
     expect(niveis(5, 1)).toMatchObject({ peona: "Sem Impacto" });
   });
-  it("DARE com exatamente 5 dias fica No limite (amarelo)", () => {
+  it("DARE com exatamente 5 dias fica No limite (laranja)", () => {
     const dare = avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20, fechamento: 21 }, arquivoMes: 12 }).find((i) => i.id === "dare")!;
     expect(dare).toMatchObject({ dias: 5, status: "No limite", nivel: "limite" });
   });
