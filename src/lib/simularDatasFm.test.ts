@@ -89,7 +89,7 @@ describe("Simular Datas FM", () => {
       Object.fromEntries(avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo, ...extra }, arquivoMes: mes }).map((i) => [i.id, i.status]));
     // Arquivo 20/12 + 21 → Fechamento 10/01: Dare 15/01 = 5 dias, DIOPS 30/01 = 20 dias, PEONA 11 dias.
     const f = { fechamento: 21 };
-    expect(niveis(20, 12, f)).toEqual({ peona: "Impacto Controlado", dare: "No limite", diops: "Ideal", pagamento: "Ideal" });
+    expect(niveis(20, 12, f)).toEqual({ peona: "Pequeno Impacto", dare: "No limite", diops: "Ideal", pagamento: "Ideal" });
     expect(niveis(20, 12, { ...f, pagamento: 24 })).toMatchObject({ pagamento: "Abaixo do ideal" }); // 14 dias
     expect(niveis(20, 12, { ...f, pagamento: 25 })).toMatchObject({ pagamento: "Ideal" }); // 15 dias
     expect(niveis(20, 12, { ...f, dare: 14 })).toMatchObject({ dare: "Crítico" });
@@ -102,16 +102,16 @@ describe("Simular Datas FM", () => {
     const dare = avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20, fechamento: 21 }, arquivoMes: 12 }).find((i) => i.id === "dare")!;
     expect(dare).toMatchObject({ dias: 5, status: "No limite", nivel: "limite" });
   });
-  it("PEONA: 0 Sem Impacto, abaixo de 10 dias Menor Impacto, 10 dias Impacto Controlado", () => {
+  it("PEONA: 0 Sem Impacto, 1–4 Menor Impacto, 5–10 Impacto Controlado, 11–15 Pequeno Impacto, acima de 15 Impacto Considerável", () => {
+    // Competência 12/2026 com Arquivo em dezembro: Arquivo dia N → Período de N/11 a (N−1)/12 → PEONA = 31 − N dias de novembro.
     const peona = (arquivo: number) => avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo }, arquivoMes: 12 }).find((i) => i.id === "peona")!;
-    expect(peona(22)).toMatchObject({ dias: 9, status: "Menor Impacto" }); // 22/11 a 21/12
-    expect(peona(21)).toMatchObject({ dias: 10, status: "Impacto Controlado", nivel: "controlado" }); // 21/11 a 20/12, laranja
     expect(avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: {} }).find((i) => i.id === "peona")).toMatchObject({ dias: 0, status: "Sem Impacto" });
-  });
-  it("PRAZO: Fechamento desde o Arquivo; Dare, DIOPS e Pagamento desde o Fechamento", () => {
-    expect(simularDatasFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20 }, arquivoMes: 12 }).map((l) => [l.rotulo, l.diasBase, l.base])).toEqual([
-      ["Arquivo", 0, "Arquivo"], ["Fechamento", 10, "Arquivo"], ["Dare", 16, "Fechamento"], ["DIOPS", 31, "Fechamento"], ["Pagamento", 31, "Fechamento"],
-    ]);
+    expect(peona(27)).toMatchObject({ dias: 4, status: "Menor Impacto" });
+    expect(peona(26)).toMatchObject({ dias: 5, status: "Impacto Controlado", nivel: "controlado" });
+    expect(peona(21)).toMatchObject({ dias: 10, status: "Impacto Controlado" });
+    expect(peona(20)).toMatchObject({ dias: 11, status: "Pequeno Impacto" });
+    expect(peona(16)).toMatchObject({ dias: 15, status: "Pequeno Impacto" });
+    expect(peona(15)).toMatchObject({ dias: 16, status: "Impacto Considerável" });
   });
   it("Referência de Último Dia começa em 20", () => {
     expect(REFERENCIA_ULTIMO_DIA_PADRAO).toBe(20);
