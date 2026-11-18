@@ -80,14 +80,16 @@ describe("Simular Datas FM", () => {
     ]);
   });
   it("IMPACTOS: PEONA conta dias do Período fora da competência; DARE e DIOPS repetem a coluna DIAS", () => {
-    expect(impactosFm({ ...COMPETENCIA_PADRAO, dias: {} })).toEqual({ peona: 0, dare: -26, diops: -11 });
+    expect(impactosFm({ ...COMPETENCIA_PADRAO, dias: {} })).toEqual({ peona: 0, dare: -26, diops: -11, pagamento: -11 });
     expect(impactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20 }, arquivoMes: 12 }).peona).toBe(11); // 20/11 a 30/11
   });
   it("premissas dos IMPACTOS: DARE < 5 crítico, 5–9 abaixo do ideal, ≥ 10 ideal; DIOPS ideal ≥ 15; PEONA impacta com dias fora da competência", () => {
-    const niveis = (arquivo: number, mes: number, extra: Partial<Record<"dare" | "diops", number>> = {}) =>
+    const niveis = (arquivo: number, mes: number, extra: Partial<Record<"dare" | "diops" | "pagamento", number>> = {}) =>
       Object.fromEntries(avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo, ...extra }, arquivoMes: mes }).map((i) => [i.id, i.status]));
     // Arquivo 20/12 → Fechamento 10/01: Dare 15/01 = 5 dias, DIOPS 30/01 = 20 dias, PEONA 11 dias.
-    expect(niveis(20, 12)).toEqual({ peona: "Com impacto", dare: "Abaixo do ideal", diops: "Ideal" });
+    expect(niveis(20, 12)).toEqual({ peona: "Com impacto", dare: "Abaixo do ideal", diops: "Ideal", pagamento: "Ideal" });
+    expect(niveis(20, 12, { pagamento: 24 })).toMatchObject({ pagamento: "Abaixo do ideal" }); // 14 dias
+    expect(niveis(20, 12, { pagamento: 25 })).toMatchObject({ pagamento: "Ideal" }); // 15 dias
     expect(niveis(20, 12, { dare: 14 })).toMatchObject({ dare: "Crítico" });
     expect(niveis(20, 12, { dare: 20 })).toMatchObject({ dare: "Ideal" });
     expect(niveis(20, 12, { diops: 24 })).toMatchObject({ diops: "Abaixo do ideal" });
