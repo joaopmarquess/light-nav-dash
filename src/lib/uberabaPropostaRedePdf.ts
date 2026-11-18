@@ -57,11 +57,12 @@ export function buildPropostaRedePdf(
     }
   };
 
-  const tabela = (head: string[], body: string[][], colunas: Record<number, { halign?: "left" | "center" | "right" | "justify"; cellWidth?: number }>, negritoUltima: boolean, itens: ReadonlySet<number> = new Set()) => {
-    autoTable(doc, {
+  type Colunas = Record<number, { halign?: "left" | "center" | "right" | "justify"; cellWidth?: number }>;
+  const desenharTabela = (alvo: jsPDF, inicio: number, head: string[], body: string[][], colunas: Colunas, negritoUltima: boolean, itens: ReadonlySet<number>) => {
+    autoTable(alvo, {
       rowPageBreak: "avoid",
       theme: "plain",
-      startY: y,
+      startY: inicio,
       tableWidth: LARGURA,
       margin: { left: marginL, right: pageW - marginL - LARGURA, top, bottom },
       head: [head],
@@ -82,11 +83,23 @@ export function buildPropostaRedePdf(
       },
       didDrawCell: (c) => {
         if (c.section === "head") return;
-        doc.setDrawColor(...LINHA);
-        doc.setLineWidth(0.2);
-        doc.line(c.cell.x, c.cell.y, c.cell.x + c.cell.width, c.cell.y);
+        alvo.setDrawColor(...LINHA);
+        alvo.setLineWidth(0.2);
+        alvo.line(c.cell.x, c.cell.y, c.cell.x + c.cell.width, c.cell.y);
       },
     });
+  };
+  /** Altura do quadro inteiro, medida num rascunho descartado do mesmo tamanho (para mantê-lo numa só página). */
+  const alturaTabela = (head: string[], body: string[][], colunas: Colunas, negritoUltima: boolean) => {
+    const rascunho = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    desenharTabela(rascunho, top, head, body, colunas, negritoUltima, new Set());
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (((rascunho as any).lastAutoTable?.finalY as number | undefined) ?? top) - top;
+  };
+  const tabela = (head: string[], body: string[][], colunas: Colunas, negritoUltima: boolean, itens: ReadonlySet<number> = new Set()) => {
+    // Cabeçalho nunca fica sozinho no fim da página: precisa caber com a primeira linha.
+    if (body.length) garantir(alturaTabela(head, body.slice(0, 1), colunas, false));
+    desenharTabela(doc, y, head, body, colunas, negritoUltima, itens);
     const fimT = fimTabela(y);
     doc.setDrawColor(...TINTA);
     doc.setLineWidth(0.6);
@@ -131,12 +144,15 @@ export function buildPropostaRedePdf(
     doc.text(textoPdf(SUBTITULO_PROJECAO_REDE), marginL, y + 3);
     y += 10;
     paragrafo(TEXTO_PROJECAO_REDE);
+    // O quadro Resultado começa e termina na mesma página (pedido de 18/11/2026): se não couber inteiro com seu título, ambos vão para a próxima.
+    const colunasRes: Colunas = {
+      0: { halign: "left", cellWidth: 24 }, 1: { halign: "right", cellWidth: 36 }, 2: { halign: "right", cellWidth: 38 }, 3: { halign: "right", cellWidth: 38 }, 4: { halign: "right", cellWidth: LARGURA - 136 },
+    };
+    garantir(6 + alturaTabela([...COLUNAS_RESULTADO_REDE], linhasRes, colunasRes, true));
     doc.setFont("helvetica", "bold"); doc.setFontSize(F.parametros); doc.setTextColor(...TINTA);
     doc.text(textoPdf("Resultado"), marginL, y + 3);
     y += 6;
-    tabela([...COLUNAS_RESULTADO_REDE], linhasRes, {
-      0: { halign: "left", cellWidth: 24 }, 1: { halign: "right", cellWidth: 36 }, 2: { halign: "right", cellWidth: 38 }, 3: { halign: "right", cellWidth: 38 }, 4: { halign: "right", cellWidth: LARGURA - 136 },
-    }, true);
+    tabela([...COLUNAS_RESULTADO_REDE], linhasRes, colunasRes, true);
     nota(NOTA_PROJECAO_REDE);
   };
   const desenharGestao = () => {
