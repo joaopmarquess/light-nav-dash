@@ -65,7 +65,7 @@ export default function SimularDatasFm() {
         <span className="font-semibold">Período:</span>{" "}
         <span className="tabular-nums">{periodo.de} a {periodo.ate}</span>
       </p>
-      <div className="max-w-xl overflow-hidden rounded-md border border-border">
+      <div className="max-w-3xl overflow-hidden rounded-md border border-border">
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-border bg-secondary text-secondary-foreground">
