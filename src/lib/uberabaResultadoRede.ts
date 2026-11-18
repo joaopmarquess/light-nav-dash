@@ -1,6 +1,6 @@
 /** Resultado de Resultados Rede (Estudo Uberaba, pedido de 18/11/2026): meses 01/2027–12/2027 com
  * Adesão = total de Adesão do Credenciamento dividido igualmente nos 2 primeiros meses (demais 0) e
- * Mensalidade = Valor Parcela nos meses das Parcelas fixas; depois, Valor por vida × vidas vendidas acumuladas até o mês
+ * Mensalidade = 0 antes do mês "Iniciar em", Valor Parcela nos meses das Parcelas fixas a partir dele; depois, Valor por vida × vidas vendidas acumuladas até o mês
 ; Total = Adesão + Mensalidade
  * (vidas projetadas da Simulação de resultados, mesma distribuição mensal da simulação). */
 import { distribuirResidual, fontesSimulacao } from "@/lib/uberabaSimulacao";
@@ -30,16 +30,19 @@ export function distribuirAdesao(total: number, meses = MESES_ADESAO_REDE, quant
   return Array.from({ length: quantidade }, (_, i) => (i < meses - 1 ? parcela : i === meses - 1 ? centavos(total - parcela * (meses - 1)) : 0));
 }
 
-export type LinhaResultadoRede = { mes: string; vidasMes: number; vidasAcumuladas: number; adesao: number; mensalidade: number; total: number; parcelaFixa: boolean };
+export type LinhaResultadoRede = { mes: string; vidasMes: number; vidasAcumuladas: number; adesao: number; mensalidade: number; total: number; parcelaFixa: boolean; antesInicio: boolean };
 export function resultadoRede(adesaoTotal: number, parametros: ParametrosRede, vidas: VidasSimulacao) {
   const vendidas = vidasVendidasPorMes(vidas);
   const adesoes = distribuirAdesao(adesaoTotal);
   let acumuladas = 0;
   const linhas: LinhaResultadoRede[] = MESES_RESULTADO_REDE.map((mes, i) => {
     acumuladas += vendidas[i];
-    const parcelaFixa = i < parametros.parcelasFixas;
-    const mensalidade = parcelaFixa ? parametros.valorParcela : centavos(parametros.valorPorVida * acumuladas);
-    return { mes, vidasMes: vendidas[i], vidasAcumuladas: acumuladas, adesao: adesoes[i], mensalidade, total: centavos(adesoes[i] + mensalidade), parcelaFixa };
+    // Mensalidade começa no mês "Iniciar em" (1 = 01/2027): antes dele 0; depois, as Parcelas fixas e, em seguida, Valor por vida × vidas acumuladas.
+    const inicio = Math.max(1, parametros.iniciarEm) - 1;
+    const antesInicio = i < inicio;
+    const parcelaFixa = !antesInicio && i < inicio + parametros.parcelasFixas;
+    const mensalidade = antesInicio ? 0 : parcelaFixa ? parametros.valorParcela : centavos(parametros.valorPorVida * acumuladas);
+    return { mes, vidasMes: vendidas[i], vidasAcumuladas: acumuladas, adesao: adesoes[i], mensalidade, total: centavos(adesoes[i] + mensalidade), parcelaFixa, antesInicio };
   });
   const total = { adesao: centavos(linhas.reduce((s, l) => s + l.adesao, 0)), mensalidade: centavos(linhas.reduce((s, l) => s + l.mensalidade, 0)), total: centavos(linhas.reduce((s, l) => s + l.total, 0)) };
   return { linhas, total };

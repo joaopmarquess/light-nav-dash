@@ -39,7 +39,7 @@ export default function UberabaResultadoRede() {
               <td className="px-3 py-1.5 tabular-nums">{l.mes}</td>
               <td className="px-3 py-1.5 text-right tabular-nums">{moeda(l.adesao)}</td>
               <td className="px-3 py-1.5 text-right tabular-nums"
-                title={l.parcelaFixa ? "Parcela fixa (Valor Parcela)" : `${moeda(dados.parametros.valorPorVida)} × ${inteiro(l.vidasAcumuladas)} vidas vendidas acumuladas`}>
+                title={l.antesInicio ? "Antes do mês Iniciar em" : l.parcelaFixa ? "Parcela fixa (Valor Parcela)" : `${moeda(dados.parametros.valorPorVida)} × ${inteiro(l.vidasAcumuladas)} vidas vendidas acumuladas`}>
                 {moeda(l.mensalidade)}
               </td>
               <td className="px-3 py-1.5 text-right font-semibold tabular-nums">{moeda(l.total)}</td>

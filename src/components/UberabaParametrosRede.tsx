@@ -19,7 +19,7 @@ export default function UberabaParametrosRede() {
     salvarParametrosRede(proximo);
   };
   return (
-    <div className="grid gap-x-6 gap-y-2 sm:grid-cols-3">
+    <div className="grid gap-x-6 gap-y-2 sm:grid-cols-4">
       {CAMPOS_PARAMETROS_REDE.map(({ campo, rotulo, moeda, inteiro }) => (
         <label key={campo} className="flex flex-col gap-1 text-sm">
           <span className="font-semibold">{rotulo}{moeda ? " (R$)" : ""}</span>

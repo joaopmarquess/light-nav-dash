@@ -1,10 +1,12 @@
 /** Parâmetros de Resultados Rede (Estudo Uberaba, pedido de 18/11/2026): variáveis editadas na tela e gravadas neste navegador; vazio restaura o padrão. */
-export type CampoParametroRede = "parcelasFixas" | "valorParcela" | "valorPorVida";
+export type CampoParametroRede = "parcelasFixas" | "iniciarEm" | "valorParcela" | "valorPorVida";
 export type ParametrosRede = Record<CampoParametroRede, number>;
 
-export const PARAMETROS_REDE_PADRAO: ParametrosRede = { parcelasFixas: 6, valorParcela: 15000, valorPorVida: 1 };
+export const PARAMETROS_REDE_PADRAO: ParametrosRede = { parcelasFixas: 6, iniciarEm: 3, valorParcela: 15000, valorPorVida: 1 };
 export const CAMPOS_PARAMETROS_REDE: { campo: CampoParametroRede; rotulo: string; moeda: boolean; inteiro: boolean }[] = [
   { campo: "parcelasFixas", rotulo: "Parcelas fixas", moeda: false, inteiro: true },
+  // Mês (1 = 01/2027) em que começam as parcelas fixas da Mensalidade (pedido de 18/11/2026); antes dele, Mensalidade 0.
+  { campo: "iniciarEm", rotulo: "Iniciar em", moeda: false, inteiro: true },
   { campo: "valorParcela", rotulo: "Valor Parcela", moeda: true, inteiro: false },
   { campo: "valorPorVida", rotulo: "Valor por vida", moeda: true, inteiro: false },
 ];
