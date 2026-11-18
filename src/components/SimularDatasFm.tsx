@@ -1,6 +1,6 @@
 import { Fragment, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { carregarDatasFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, lerInteiro, periodoFm, REFERENCIA_ULTIMO_DIA_PADRAO, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { carregarDatasFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, REFERENCIA_ULTIMO_DIA_PADRAO, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
 // Laboratory › Simular Datas FM: Competência (MM/AAAA) e Período (dia seguinte ao Último Dia, um mês antes, a Último Dia) acima do grid, sem a linha Último Dia (pedido de 18/11/2026), Arquivo como dia/mês fora do grid e o dia de cada linha, com a data calculada; valores digitados ficam neste navegador.
 export default function SimularDatasFm() {
@@ -102,7 +102,7 @@ export default function SimularDatasFm() {
                 <td className="px-3 py-1.5 text-right tabular-nums" title={l.ajustado ? "Dia limitado ao último dia do mês" : undefined}>
                   {l.data}{l.ajustado ? " *" : ""}
                 </td>
-                <td className="whitespace-nowrap px-3 py-1.5 text-left tabular-nums">{l.diasBase} <span className="text-xs font-normal text-muted-foreground">{Math.abs(l.diasBase) === 1 ? "dia" : "dias"} desde o {l.base}</span></td>
+                <td className="whitespace-nowrap px-3 py-1.5 text-left tabular-nums">{formatarPrazo(l.diasBase)} <span className="text-xs font-normal text-muted-foreground">{Math.abs(l.diasBase) === 1 ? "dia" : "dias"} desde o {l.base}</span></td>
               </tr>
               </Fragment>
             ))}

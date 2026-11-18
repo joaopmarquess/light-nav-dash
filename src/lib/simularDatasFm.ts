@@ -47,6 +47,8 @@ export function dataDiaMes(mesCompetencia: number, anoCompetencia: number, dia: 
 const utcDe = (data: string) => { const [d, m, a] = data.split("/").map(Number); return Date.UTC(a, m - 1, d); };
 
 /** Coluna PRAZO, antes DIAS (pedidos de 18/11/2026), em dias corridos: Dare, DIOPS e Pagamento = data − Fechamento; Arquivo e Fechamento = data − Arquivo. */
+/** Número da coluna PRAZO com dois dígitos (pedido de 18/11/2026): 9 → "09", −5 → "−05". */
+export const formatarPrazo = (n: number) => `${n < 0 ? "−" : ""}${String(Math.abs(n)).padStart(2, "0")}`;
 const DIAS_DESDE_FECHAMENTO: IdDataFm[] = ["dare", "diops", "pagamento"];
 export function simularDatasFm(e: EntradaDatasFm) {
   const linhas = linhasDatasFm(e);

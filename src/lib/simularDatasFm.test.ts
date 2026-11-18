@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { REFERENCIA_ULTIMO_DIA_PADRAO, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil } from "./simularDatasFm";
+import { formatarPrazo, REFERENCIA_ULTIMO_DIA_PADRAO, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil } from "./simularDatasFm";
 
 describe("Simular Datas FM", () => {
   it("competência 12/2026 com os dias padrão reproduz o quadro fornecido, com Arquivo na primeira linha de datas", () => {
@@ -122,6 +122,12 @@ describe("Simular Datas FM", () => {
     expect(simularDatasFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20 }, arquivoMes: 12 }).map((l) => [l.rotulo, l.diasBase, l.base])).toEqual([
       ["Arquivo", 0, "Arquivo"], ["Fechamento", 10, "Arquivo"], ["Dare", 16, "Fechamento"], ["DIOPS", 31, "Fechamento"], ["Pagamento", 31, "Fechamento"],
     ]);
+  });
+  it("PRAZO com dois dígitos: 09 dias", () => {
+    expect(formatarPrazo(9)).toBe("09");
+    expect(formatarPrazo(0)).toBe("00");
+    expect(formatarPrazo(21)).toBe("21");
+    expect(formatarPrazo(-5)).toBe("−05");
   });
   it("Referência de Último Dia começa em 20", () => {
     expect(REFERENCIA_ULTIMO_DIA_PADRAO).toBe(20);
