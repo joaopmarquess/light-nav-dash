@@ -203,8 +203,8 @@ export function lerSimulacoesFm(bruto: string | null, legado: string | null, ago
   } catch { /* conteúdo inválido */ }
   return [];
 }
-/** Próximo número de Cenário: maior número já usado + 1. */
-export const proximoNumeroFm = (lista: SimulacaoFm[]) => Math.max(0, ...lista.map((s) => s.numero)) + 1;
+/** Próximo número de Cenário: maior número já usado (na lista ou no último gravado, ainda que excluído) + 1, para nunca reaproveitar números. */
+export const proximoNumeroFm = (lista: SimulacaoFm[], ultimo = 0) => Math.max(0, ultimo, ...lista.map((s) => s.numero)) + 1;
 /** Número do Cenário com dois dígitos ("01", "02"…). */
 export const formatarNumeroFm = (n: number) => String(n).padStart(2, "0");
 export function novaSimulacaoFm(id: string, agora: string, numero: number, entrada: EntradaDatasFm = { ...COMPETENCIA_PADRAO, dias: {} }, descricao = ""): SimulacaoFm {
@@ -213,13 +213,15 @@ export function novaSimulacaoFm(id: string, agora: string, numero: number, entra
 export function duplicarSimulacaoFm(s: SimulacaoFm, id: string, agora: string, numero: number): SimulacaoFm {
   return novaSimulacaoFm(id, agora, numero, { ...s.entrada, dias: { ...s.entrada.dias } }, `${s.descricao || `Cenário ${formatarNumeroFm(s.numero)}`} (cópia)`.slice(0, DESCRICAO_FM_MAX));
 }
-/** Altera uma simulação da lista (descrição limitada a DESCRICAO_FM_MAX) e marca a data de alteração. */
-export function alterarSimulacaoFm(lista: SimulacaoFm[], id: string, mudanca: Partial<Pick<SimulacaoFm, "descricao" | "entrada">>, agora: string): SimulacaoFm[] {
-  return lista.map((s) => s.id !== id ? s : {
-    ...s, ...mudanca,
-    ...(mudanca.descricao !== undefined ? { descricao: mudanca.descricao.slice(0, DESCRICAO_FM_MAX) } : {}),
-    atualizadaEm: agora,
-  });
+/** Botão Gravar da tela Simulação (pedido de 18/11/2026): substitui o Cenário de mesmo id ou insere o novo no fim, marcando a data de alteração (Cenário limitado a DESCRICAO_FM_MAX). */
+export function gravarSimulacaoFm(lista: SimulacaoFm[], rascunho: SimulacaoFm, agora: string): SimulacaoFm[] {
+  const gravada: SimulacaoFm = { ...rascunho, descricao: rascunho.descricao.slice(0, DESCRICAO_FM_MAX), atualizadaEm: agora };
+  return lista.some((s) => s.id === rascunho.id) ? lista.map((s) => s.id === rascunho.id ? gravada : s) : [...lista, { ...gravada, criadaEm: agora }];
+}
+/** Há algo a gravar? Cenário novo (sem original) sempre; existente quando o Cenário ou as entradas mudaram. */
+export function simulacaoAlteradaFm(original: SimulacaoFm | undefined, rascunho: SimulacaoFm) {
+  if (!original) return true;
+  return original.descricao !== rascunho.descricao || JSON.stringify(normalizarEntradaFm(original.entrada)) !== JSON.stringify(normalizarEntradaFm(rascunho.entrada));
 }
 /** Lista na ordem de inserção (número do Cenário). */
 export const ordenarSimulacoesFm = (lista: SimulacaoFm[]) => [...lista].sort((a, b) => a.numero - b.numero);
@@ -228,6 +230,13 @@ export function carregarSimulacoesFm(): SimulacaoFm[] {
     const novoId = () => (globalThis.crypto?.randomUUID?.() ?? `fm-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     return lerSimulacoesFm(localStorage.getItem(CHAVE_SIMULACOES_FM), localStorage.getItem(CHAVE_DATAS_FM), new Date().toISOString(), novoId);
   } catch { return []; }
+}
+export const CHAVE_ULTIMO_NUMERO_FM = "laboratory.simularDatasFm.ultimoNumero.v1";
+export function carregarUltimoNumeroFm() {
+  try { const n = Number(localStorage.getItem(CHAVE_ULTIMO_NUMERO_FM)); return Number.isInteger(n) && n > 0 ? n : 0; } catch { return 0; }
+}
+export function salvarUltimoNumeroFm(n: number) {
+  try { localStorage.setItem(CHAVE_ULTIMO_NUMERO_FM, String(n)); } catch { /* navegador sem armazenamento */ }
 }
 export function salvarSimulacoesFm(lista: SimulacaoFm[]) {
   try { localStorage.setItem(CHAVE_SIMULACOES_FM, JSON.stringify(lista)); } catch { /* navegador sem armazenamento */ }

@@ -1,27 +1,39 @@
 import { Fragment, useState } from "react";
-import { ArrowLeft, Copy, Plus, Trash2 } from "lucide-react";
+import { Copy, Plus, Save, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { alterarSimulacaoFm, carregarSimulacoesFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, REFERENCIA_ULTIMO_DIA_PADRAO, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvarUltimoNumeroFm, simulacaoAlteradaFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, REFERENCIA_ULTIMO_DIA_PADRAO, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
 const novoId = () => globalThis.crypto?.randomUUID?.() ?? `fm-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const agora = () => new Date().toISOString();
 const corNivel = (n: NivelImpactoFm) => n === "critico" ? "text-destructive" : n === "moderado" ? "text-[hsl(var(--impacto-moderado))]" : "text-[hsl(var(--impacto-ok))]";
 const dataHora = (iso: string) => { const d = new Date(iso); return isNaN(d.getTime()) ? "" : d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }); };
 
-// Controle de Simulações de Datas FM (pedido de 18/11/2026): tela Lista de Simulações → tela Simulação (a anterior, com o Cenário — antes "Descrição" — numerado por ordem de inserção); tudo fica neste navegador.
+// Controle de Simulações de Datas FM (pedido de 18/11/2026): tela Lista de Simulações → tela Simulação (a anterior, com o Cenário — antes "Descrição" — numerado por ordem de inserção, e botões Gravar/Cancelar/Excluir); tudo fica neste navegador.
 export default function SimularDatasFm() {
   const [lista, setLista] = useState<SimulacaoFm[]>(carregarSimulacoesFm);
-  const [aberta, setAberta] = useState<string | null>(null);
+  const [ultimoNumero, setUltimoNumero] = useState(carregarUltimoNumeroFm);
+  // Tela Simulação edita um rascunho; só o botão Gravar leva as alterações à lista (pedido de 18/11/2026).
+  const [rascunho, setRascunho] = useState<SimulacaoFm | null>(null);
   const [excluir, setExcluir] = useState<SimulacaoFm | null>(null);
-  const gravar = (proxima: SimulacaoFm[]) => { setLista(proxima); salvarSimulacoesFm(proxima); };
-  const atual = lista.find((s) => s.id === aberta);
-  if (atual) return (
-    <SimulacaoDatasFm key={atual.id} simulacao={atual} onVoltar={() => setAberta(null)}
-      onAlterar={(m) => gravar(alterarSimulacaoFm(lista, atual.id, m, agora()))} />
-  );
-  const nova = () => { const s = novaSimulacaoFm(novoId(), agora(), proximoNumeroFm(lista)); gravar([...lista, s]); setAberta(s.id); };
+  const gravar = (proxima: SimulacaoFm[]) => {
+    setLista(proxima); salvarSimulacoesFm(proxima);
+    const maior = Math.max(ultimoNumero, ...proxima.map((s) => s.numero));
+    if (maior !== ultimoNumero) { setUltimoNumero(maior); salvarUltimoNumeroFm(maior); }
+  };
+  const proximo = () => proximoNumeroFm(lista, ultimoNumero);
+  if (rascunho) {
+    const original = lista.find((s) => s.id === rascunho.id);
+    return (
+      <SimulacaoDatasFm key={rascunho.id} simulacao={rascunho} gravada={original !== undefined} alterada={simulacaoAlteradaFm(original, rascunho)}
+        onAlterar={(m) => setRascunho({ ...rascunho, ...m })}
+        onGravar={() => { gravar(gravarSimulacaoFm(lista, rascunho, agora())); setRascunho(null); }}
+        onCancelar={() => setRascunho(null)}
+        onExcluir={() => { gravar(lista.filter((s) => s.id !== rascunho.id)); setRascunho(null); }} />
+    );
+  }
+  const nova = () => setRascunho(novaSimulacaoFm(novoId(), agora(), proximo()));
   const ordenada = ordenarSimulacoesFm(lista);
   return (
     <div className="space-y-4">
@@ -50,7 +62,7 @@ export default function SimularDatasFm() {
               const linhas = simularDatasFm(s.entrada);
               const data = (id: IdDataFm) => linhas.find((l) => l.id === id)!.data;
               return (
-                <tr key={s.id} className="cursor-pointer border-b border-border last:border-b-0 hover:bg-muted/50" onClick={() => setAberta(s.id)} title="Abrir simulação">
+                <tr key={s.id} className="cursor-pointer border-b border-border last:border-b-0 hover:bg-muted/50" onClick={() => setRascunho(s)} title="Abrir simulação">
                   <td className="px-3 py-1.5 text-right font-semibold tabular-nums">{formatarNumeroFm(s.numero)}</td>
                   <td className={`px-3 py-1.5 ${s.descricao ? "font-medium" : "italic text-muted-foreground"}`}>{s.descricao || "Sem nome"}</td>
                   <td className="px-3 py-1.5 text-center tabular-nums">{formatarCompetencia(s.entrada.mes, s.entrada.ano)}</td>
@@ -64,7 +76,7 @@ export default function SimularDatasFm() {
                   <td className="px-3 py-1.5 text-right tabular-nums text-muted-foreground">{dataHora(s.atualizadaEm)}</td>
                   <td className="px-3 py-1.5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                     <Button variant="ghost" size="icon" className="h-7 w-7" title="Duplicar" aria-label={`Duplicar Cenário ${formatarNumeroFm(s.numero)}`}
-                      onClick={() => gravar([...lista, duplicarSimulacaoFm(s, novoId(), agora(), proximoNumeroFm(lista))])}><Copy className="h-4 w-4" /></Button>
+                      onClick={() => gravar([...lista, duplicarSimulacaoFm(s, novoId(), agora(), proximo())])}><Copy className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" title="Excluir" aria-label={`Excluir Cenário ${formatarNumeroFm(s.numero)}`}
                       onClick={() => setExcluir(s)}><Trash2 className="h-4 w-4" /></Button>
                   </td>
@@ -91,9 +103,15 @@ export default function SimularDatasFm() {
   );
 }
 
-// Tela Simulação — Competência (MM/AAAA) e Período (dia seguinte ao Último Dia, um mês antes, a Último Dia) acima do grid, sem a linha Último Dia (pedido de 18/11/2026), Arquivo como dia/mês fora do grid e o dia de cada linha, com a data calculada; valores digitados ficam neste navegador.
-function SimulacaoDatasFm({ simulacao, onAlterar, onVoltar }: { simulacao: SimulacaoFm; onAlterar: (m: { descricao?: string; entrada?: EntradaDatasFm }) => void; onVoltar: () => void }) {
+// Tela Simulação — Competência (MM/AAAA) e Período (dia seguinte ao Último Dia, um mês antes, a Último Dia) acima do grid, sem a linha Último Dia (pedido de 18/11/2026), Arquivo como dia/mês fora do grid e o dia de cada linha, com a data calculada; valores digitados só vão para a lista ao Gravar.
+type PropsSimulacao = {
+  simulacao: SimulacaoFm; gravada: boolean; alterada: boolean;
+  onAlterar: (m: { descricao?: string; entrada?: EntradaDatasFm }) => void; onGravar: () => void; onCancelar: () => void; onExcluir: () => void;
+};
+function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, onCancelar, onExcluir }: PropsSimulacao) {
   const entrada = simulacao.entrada;
+  const [confirmar, setConfirmar] = useState<"cancelar" | "excluir" | null>(null);
+  const cancelar = () => (gravada && !alterada) ? onCancelar() : setConfirmar("cancelar");
   const [texto, setTexto] = useState<Record<string, string>>({});
   const gravar = (proximo: EntradaDatasFm) => onAlterar({ entrada: proximo });
   const campo = (chave: string, valorAtual: number, min: number, max: number, aplicar: (v: number | undefined) => void) => ({
@@ -123,10 +141,35 @@ function SimulacaoDatasFm({ simulacao, onAlterar, onVoltar }: { simulacao: Simul
   const cls = "h-8 w-20 text-right tabular-nums";
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" onClick={onVoltar} className="-ml-2"><ArrowLeft className="mr-1 h-4 w-4" />Lista de Simulações</Button>
+      {/* Botões Gravar, Cancelar e Excluir (pedido de 18/11/2026): Gravar e Cancelar voltam à Lista; Excluir só para Cenário já gravado. */}
+      <div className="flex max-w-3xl flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-semibold">Simulação de Datas FM</h1>
+        <div className="flex items-center gap-2">
+          <Button size="sm" onClick={onGravar}><Save className="mr-1 h-4 w-4" />Gravar</Button>
+          <Button size="sm" variant="outline" onClick={cancelar}><X className="mr-1 h-4 w-4" />Cancelar</Button>
+          <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" disabled={!gravada}
+            title={gravada ? undefined : "Cenário ainda não gravado"} onClick={() => setConfirmar("excluir")}><Trash2 className="mr-1 h-4 w-4" />Excluir</Button>
+        </div>
       </div>
-      <h1 className="text-xl font-semibold">Simulação de Datas FM</h1>
+      <AlertDialog open={confirmar !== null} onOpenChange={(o) => { if (!o) setConfirmar(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmar === "excluir" ? "Excluir simulação?" : gravada ? "Descartar alterações?" : "Descartar novo cenário?"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmar === "excluir"
+                ? `Cenário ${formatarNumeroFm(simulacao.numero)}${simulacao.descricao ? ` — “${simulacao.descricao}”` : ""} será removido da lista. Isso não pode ser desfeito.`
+                : gravada ? "As alterações feitas desde a última gravação serão perdidas." : `O Cenário ${formatarNumeroFm(simulacao.numero)} não foi gravado e não entrará na lista.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Voltar</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => { const c = confirmar; setConfirmar(null); if (c === "excluir") onExcluir(); else onCancelar(); }}>
+              {confirmar === "excluir" ? "Excluir" : "Descartar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {/* Cenário da Simulação (antes "Descrição", pedidos de 18/11/2026), com o número por ordem de inserção. */}
       <label className="flex max-w-3xl items-center gap-2 text-sm">
         <span className="whitespace-nowrap font-semibold">Cenário {formatarNumeroFm(simulacao.numero)}:</span>
