@@ -255,14 +255,14 @@ export function impactosFm(e: EntradaDatasFm) {
 }
 
 /** Premissas dos IMPACTOS (pedidos de 18/11/2026), classificadas em apenas três níveis: Crítico, Moderado e Ideal.
- * PEONA — dias do Período fora da competência aumentam o valor do PEONA: 0 Ideal; 1 a 15 Moderado; acima de 15 Crítico;
+ * PEONA — dias do Período fora da competência aumentam o valor do PEONA (pedido de 18/11/2026): 0 a 4 Ideal; 5 a 12 Aceito (verde); 13 a 15 Moderado; acima de 15 Crítico;
  * FECHAMENTO — dias desde o Arquivo: menos de 10 Crítico; 10 a 19 Moderado; 20 ou mais Ideal;
  * DARE — entregue sempre no dia 15 (pedido de 18/11/2026): até 2 dias Crítico; 3 a 4 Moderado; 5 ou mais Ideal;
  * DIOPS — entregue sempre no dia 30: menos de 15 dias Moderado; 15 ou mais Ideal;
  * PAGAMENTO — sempre no dia 30, quanto mais perto do Fechamento, pior: menos de 15 dias Moderado; 15 ou mais Ideal. */
-export const PEONA_MODERADO_ATE = 15, FECHAMENTO_MINIMO = 10, FECHAMENTO_IDEAL = 20, DARE_MINIMO = 3, DARE_IDEAL = 5, DIOPS_IDEAL = 15, PAGAMENTO_IDEAL = 15;
-export type NivelImpactoFm = "ideal" | "moderado" | "critico";
-export const STATUS_IMPACTO_FM: Record<NivelImpactoFm, string> = { ideal: "Ideal", moderado: "Moderado", critico: "Crítico" };
+export const PEONA_IDEAL_ATE = 4, PEONA_ACEITO_ATE = 12, PEONA_MODERADO_ATE = 15, FECHAMENTO_MINIMO = 10, FECHAMENTO_IDEAL = 20, DARE_MINIMO = 3, DARE_IDEAL = 5, DIOPS_IDEAL = 15, PAGAMENTO_IDEAL = 15;
+export type NivelImpactoFm = "ideal" | "aceito" | "moderado" | "critico";
+export const STATUS_IMPACTO_FM: Record<NivelImpactoFm, string> = { ideal: "Ideal", aceito: "Aceito", moderado: "Moderado", critico: "Crítico" };
 export type ImpactoFm = { id: "peona" | "fechamento" | "dare" | "diops" | "pagamento"; rotulo: string; dias: number; nivel: NivelImpactoFm; status: string; descricao: string };
 // Toda contagem de dias com zero à esquerda, "0#" (pedido de 18/11/2026).
 const plural = (n: number) => `${formatarPrazo(n)} ${Math.abs(n) === 1 ? "dia" : "dias"}`;
@@ -275,8 +275,9 @@ export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
   return [
     peona === 0
       ? item("peona", "PEONA", peona, "ideal", "Todo o Período está no mês da competência.")
-      : item("peona", "PEONA", peona, peona > PEONA_MODERADO_ATE ? "critico" : "moderado",
-          `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA; acima de ${formatarPrazo(PEONA_MODERADO_ATE)} dias é crítico.`),
+      : item("peona", "PEONA", peona,
+          peona <= PEONA_IDEAL_ATE ? "ideal" : peona <= PEONA_ACEITO_ATE ? "aceito" : peona <= PEONA_MODERADO_ATE ? "moderado" : "critico",
+          `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA; até ${formatarPrazo(PEONA_IDEAL_ATE)} é ideal, até ${formatarPrazo(PEONA_ACEITO_ATE)} é aceito e acima de ${formatarPrazo(PEONA_MODERADO_ATE)} dias é crítico.`),
     // FECHAMENTO no quadro (pedido de 18/11/2026): dias desde o Arquivo.
     fechamento < FECHAMENTO_MINIMO
       ? item("fechamento", "FECHAMENTO", fechamento, "critico", `${plural(fechamento)} entre o Arquivo e o Fechamento; o mínimo é ${formatarPrazo(FECHAMENTO_MINIMO)} e o ideal, ${formatarPrazo(FECHAMENTO_IDEAL)}.`)

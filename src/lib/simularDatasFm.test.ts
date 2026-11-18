@@ -111,7 +111,7 @@ describe("Simular Datas FM", () => {
       Object.fromEntries(avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo, ...extra }, arquivoMes: mes }).map((i) => [i.id, i.status]));
     // Arquivo 20/12 + 21 → Fechamento 10/01: Dare 15/01 = 5 dias, DIOPS e Pagamento 30/01 = 20 dias, PEONA 11 dias.
     const f = { fechamento: 21 };
-    expect(niveis(20, 12, f)).toEqual({ peona: "Moderado", fechamento: "Ideal", dare: "Ideal", diops: "Ideal", pagamento: "Ideal" });
+    expect(niveis(20, 12, f)).toEqual({ peona: "Aceito", fechamento: "Ideal", dare: "Ideal", diops: "Ideal", pagamento: "Ideal" });
     // Arquivo 20/12 + X → Dare 15/01 a 26 − X dias; DIOPS e Pagamento 30/01 a 41 − X dias.
     // DARE (pedido de 18/11/2026): até 02 dias Crítico; 03 a 04 Moderado; 05 ou mais Ideal.
     expect(niveis(20, 12, { fechamento: 26 })).toMatchObject({ dare: "Crítico" }); // 0 dias
@@ -130,11 +130,15 @@ describe("Simular Datas FM", () => {
     expect(fech(19)).toMatchObject({ dias: 19, status: "Moderado" });
     expect(fech(20)).toMatchObject({ dias: 20, status: "Ideal" });
   });
-  it("PEONA: 0 Ideal, 1 a 15 Moderado, acima de 15 Crítico", () => {
+  it("PEONA: 0 a 4 Ideal, 5 a 12 Aceito, 13 a 15 Moderado, acima de 15 Crítico", () => {
     // Competência 12/2026 com Arquivo em dezembro: Arquivo dia N → Período de N/11 a (N−1)/12 → PEONA = 31 − N dias de novembro.
     const peona = (arquivo: number) => avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo }, arquivoMes: 12 }).find((i) => i.id === "peona")!;
     expect(avaliarImpactosFm(QUADRO).find((i) => i.id === "peona")).toMatchObject({ dias: 0, status: "Ideal" });
-    expect(peona(30)).toMatchObject({ dias: 1, status: "Moderado" });
+    expect(peona(30)).toMatchObject({ dias: 1, status: "Ideal" });
+    expect(peona(27)).toMatchObject({ dias: 4, status: "Ideal" });
+    expect(peona(26)).toMatchObject({ dias: 5, status: "Aceito", nivel: "aceito" });
+    expect(peona(19)).toMatchObject({ dias: 12, status: "Aceito" });
+    expect(peona(18)).toMatchObject({ dias: 13, status: "Moderado" });
     expect(peona(16)).toMatchObject({ dias: 15, status: "Moderado" });
     expect(peona(15)).toMatchObject({ dias: 16, status: "Crítico" });
   });
