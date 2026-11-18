@@ -182,21 +182,25 @@ export function impactosFm(e: EntradaDatasFm) {
 }
 
 /** Premissas dos IMPACTOS (pedido de 18/11/2026):
- * PEONA — quanto mais dias do Período fora da competência, maior o impacto (aumento do valor do PEONA);
+ * PEONA — quanto mais dias do Período fora da competência, maior o impacto (aumento do valor do PEONA): 0 Sem Impacto, 1–9 Menor Impacto, 10+ Impacto Controlado;
  * DARE — entregue sempre no dia 15; menos de 5 dias para fechar é crítico, o ideal é 10 ou mais;
  * DIOPS — entregue sempre no dia 30; o ideal é ter pelo menos 15 dias;
  * PAGAMENTO — sempre no dia 30; quanto mais perto do Fechamento, pior; o ideal é ter pelo menos 15 dias. */
-export const DARE_MINIMO = 5, DARE_IDEAL = 10, DIOPS_IDEAL = 15, PAGAMENTO_IDEAL = 15;
+export const PEONA_CONTROLADO = 10, DARE_MINIMO = 5, DARE_IDEAL = 10, DIOPS_IDEAL = 15, PAGAMENTO_IDEAL = 15;
 export type NivelImpactoFm = "ok" | "atencao" | "critico";
 export type ImpactoFm = { id: "peona" | "dare" | "diops" | "pagamento"; rotulo: string; dias: number; nivel: NivelImpactoFm; status: string; descricao: string };
 const plural = (n: number) => `${n} ${Math.abs(n) === 1 ? "dia" : "dias"}`;
 export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
   const { peona, dare, diops, pagamento } = impactosFm(e);
   return [
-    peona > 0
-      ? { id: "peona", rotulo: "PEONA", dias: peona, nivel: "atencao", status: "Com impacto",
+    // PEONA (pedido de 18/11/2026): 0 = Sem Impacto; abaixo de 10 dias = Menor Impacto; 10 dias (ou mais) = Impacto Controlado.
+    peona >= PEONA_CONTROLADO
+      ? { id: "peona", rotulo: "PEONA", dias: peona, nivel: "atencao", status: "Impacto Controlado",
           descricao: `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA; quanto mais dias, maior o impacto.` }
-      : { id: "peona", rotulo: "PEONA", dias: peona, nivel: "ok", status: "Sem impacto", descricao: "Todo o Período está no mês da competência." },
+      : peona > 0
+        ? { id: "peona", rotulo: "PEONA", dias: peona, nivel: "atencao", status: "Menor Impacto",
+            descricao: `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA, abaixo de ${PEONA_CONTROLADO} dias.` }
+        : { id: "peona", rotulo: "PEONA", dias: peona, nivel: "ok", status: "Sem Impacto", descricao: "Todo o Período está no mês da competência." },
     dare < DARE_MINIMO
       ? { id: "dare", rotulo: "DARE", dias: dare, nivel: "critico", status: "Crítico",
           descricao: `${plural(dare)} para fechar o Dare (entrega no dia 15); o mínimo é ${DARE_MINIMO} e o ideal, ${DARE_IDEAL}.` }
