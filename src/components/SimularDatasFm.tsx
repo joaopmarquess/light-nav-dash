@@ -106,7 +106,7 @@ export default function SimularDatasFm() {
               <tr key={imp.id} className="border-b border-border align-top last:border-b-0">
                 <td className="w-20 px-3 py-1.5 font-semibold">{imp.rotulo}</td>
                 <td className="w-14 px-3 py-1.5 text-right tabular-nums">{imp.dias}</td>
-                <td className={`w-32 px-3 py-1.5 font-semibold ${imp.nivel === "critico" ? "text-destructive" : imp.nivel === "ok" ? "text-muted-foreground" : "text-foreground"}`}>{imp.status}</td>
+                <td className={`w-36 whitespace-nowrap px-3 py-1.5 font-semibold ${imp.nivel === "critico" ? "text-destructive" : imp.nivel === "ok" ? "text-muted-foreground" : "text-foreground"}`}>{imp.status}</td>
                 <td className="px-3 py-1.5 text-muted-foreground">{imp.descricao}</td>
               </tr>
             ))}
