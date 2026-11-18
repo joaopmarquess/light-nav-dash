@@ -9,7 +9,7 @@ describe("Simular Datas FM", () => {
     expect(simularDatasFm({ ...COMPETENCIA_PADRAO, dias: {} }).map((l) => [l.rotulo, l.dia, l.data])).toEqual([
       ["Arquivo", 20, "20/12/2026"],
       ["Fechamento", 25, "14/01/2027"], // 20/12 + 25 dias
-      ["Dare", 15, "15/01/2027"],
+      ["DeRE", 15, "15/01/2027"],
       ["DIOPS", 30, "30/01/2027"],
       ["Pagamento", 30, "30/01/2027"],
     ]);
@@ -21,7 +21,7 @@ describe("Simular Datas FM", () => {
     expect(linhas.map((l) => [l.rotulo, l.dia, l.data])).toEqual([
       ["Arquivo", 5, "05/01/2027"],
       ["Fechamento", 10, "15/01/2027"],
-      ["Dare", 15, "15/01/2027"],
+      ["DeRE", 15, "15/01/2027"],
       ["DIOPS", 30, "30/01/2027"],
       ["Pagamento", 30, "30/01/2027"],
     ]);
@@ -96,7 +96,7 @@ describe("Simular Datas FM", () => {
     expect(linhas.map((l) => [l.rotulo, l.data, l.diasBase])).toEqual([
       ["Arquivo", "05/01/2027", 0],
       ["Fechamento", "15/01/2027", 10],
-      ["Dare", "15/01/2027", 0],
+      ["DeRE", "15/01/2027", 0],
       ["DIOPS", "30/01/2027", 15],
       ["Pagamento", "30/01/2027", 15],
     ]);
@@ -144,7 +144,7 @@ describe("Simular Datas FM", () => {
   });
   it("PRAZO: Fechamento desde o Arquivo; Dare, DIOPS e Pagamento desde o Fechamento", () => {
     expect(simularDatasFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20, fechamento: 10 }, arquivoMes: 12 }).map((l) => [l.rotulo, l.diasBase, l.base])).toEqual([
-      ["Arquivo", 0, "Arquivo"], ["Fechamento", 10, "Arquivo"], ["Dare", 16, "Fechamento"], ["DIOPS", 31, "Fechamento"], ["Pagamento", 31, "Fechamento"],
+      ["Arquivo", 0, "Arquivo"], ["Fechamento", 10, "Arquivo"], ["DeRE", 16, "Fechamento"], ["DIOPS", 31, "Fechamento"], ["Pagamento", 31, "Fechamento"],
     ]);
   });
   it("Lista: dias entre o Arquivo e o Fechamento para Fechar a Folha", () => {
@@ -160,7 +160,7 @@ describe("Simular Datas FM", () => {
   });
   it("IMPACTOS descrevem os dias com zero à esquerda", () => {
     const dare = avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20, fechamento: 21 }, arquivoMes: 12 }).find((i) => i.id === "dare")!;
-    expect(dare.descricao.startsWith("05 dias para fechar o Dare")).toBe(true);
+    expect(dare.descricao.startsWith("05 dias para fechar o DeRE")).toBe(true);
   });
   it("Referência de Último Dia retirada: valor guardado antes é descartado", () => {
     expect(normalizarEntradaFm({ mes: 12, ano: 2026, dias: {}, referenciaUltimoDia: 20 })).toEqual({ mes: 12, ano: 2026, dias: {} });

@@ -222,7 +222,7 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
               <th className="px-3 py-2 text-left font-semibold">VARIÁVEL</th>
               <th className="px-3 py-2 text-right font-semibold">REFERÊNCIA</th>
               <th className="px-3 py-2 text-right font-semibold">DATA</th>
-              <th className="px-3 py-2 text-left font-semibold" title="Dias corridos: Fechamento desde o Arquivo; Dare, DIOPS e Pagamento desde o Fechamento">PRAZO</th>
+              <th className="px-3 py-2 text-left font-semibold" title="Dias corridos: Fechamento desde o Arquivo; DeRE, DIOPS e Pagamento desde o Fechamento">PRAZO</th>
             </tr>
           </thead>
           <tbody>
@@ -231,7 +231,7 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
               <tr className={`border-b border-border ${l.separadorAntes ? "border-t-2 border-t-foreground" : ""} ${l.destaque ? "font-bold" : ""}`}>
                 <td className="px-3 py-1.5 uppercase">{l.rotulo}</td>
                 <td className="px-3 py-1.5">
-                  {/* Dare, DIOPS e Pagamento: REFERÊNCIA fixa, só exibida (pedido de 18/11/2026). */}
+                  {/* DeRE, DIOPS e Pagamento: REFERÊNCIA fixa, só exibida (pedido de 18/11/2026). */}
                   {l.fixo ? <div className="ml-auto w-20 pr-3 text-right tabular-nums" aria-label={`Dia — ${l.rotulo}`}>{l.dia}</div> :
                   <Input aria-label={`Dia — ${l.rotulo}`} inputMode="numeric" title={l.somaAoArquivo ? "Dias somados à data do Arquivo; apague para restaurar o padrão" : "Apague para restaurar o padrão"} className={`ml-auto ${cls} ${l.destaque ? "font-bold" : ""}`}
                     {...campo(l.id, l.dia, 1, 31, (v) => {

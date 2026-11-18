@@ -15,7 +15,7 @@ export const LINHAS_DATAS_FM: LinhaDataFmDef[] = [
   // Padrão dos cenários (pedido de 18/11/2026): Fechamento 25 (dias somados ao Arquivo).
   { id: "fechamento", rotulo: "Fechamento", diaPadrao: 25, mesSeguinte: true, somaAoArquivo: true },
   // Dare, DIOPS e Pagamento com REFERÊNCIA fixa, não editável (pedido de 18/11/2026): valores digitados antes são ignorados.
-  { id: "dare", rotulo: "Dare", diaPadrao: 15, mesSeguinte: true, separadorAntes: true, fixo: true },
+  { id: "dare", rotulo: "DeRE", diaPadrao: 15, mesSeguinte: true, separadorAntes: true, fixo: true },
   { id: "diops", rotulo: "DIOPS", diaPadrao: 30, mesSeguinte: true, fixo: true },
   { id: "pagamento", rotulo: "Pagamento", diaPadrao: 30, mesSeguinte: true, fixo: true },
 ];
@@ -285,10 +285,10 @@ export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
         ? item("fechamento", "FECHAMENTO", fechamento, "moderado", `${plural(fechamento)} entre o Arquivo e o Fechamento: atende ao mínimo de ${formatarPrazo(FECHAMENTO_MINIMO)}, mas fica abaixo do ideal de ${formatarPrazo(FECHAMENTO_IDEAL)}.`)
         : item("fechamento", "FECHAMENTO", fechamento, "ideal", `${plural(fechamento)} entre o Arquivo e o Fechamento, dentro do ideal de ${formatarPrazo(FECHAMENTO_IDEAL)}.`),
     dare < DARE_MINIMO
-      ? item("dare", "DARE", dare, "critico", `${plural(dare)} para fechar o Dare (entrega no dia 15); o mínimo é ${formatarPrazo(DARE_MINIMO)} e o ideal, ${formatarPrazo(DARE_IDEAL)}.`)
+      ? item("dare", "DeRE", dare, "critico", `${plural(dare)} para fechar o DeRE (entrega no dia 15); o mínimo é ${formatarPrazo(DARE_MINIMO)} e o ideal, ${formatarPrazo(DARE_IDEAL)}.`)
       : dare < DARE_IDEAL
-        ? item("dare", "DARE", dare, "moderado", `${plural(dare)} para fechar o Dare (entrega no dia 15): atende ao mínimo de ${formatarPrazo(DARE_MINIMO)}, mas fica abaixo do ideal de ${formatarPrazo(DARE_IDEAL)}.`)
-        : item("dare", "DARE", dare, "ideal", `${plural(dare)} para fechar o Dare (entrega no dia 15), dentro do ideal de ${formatarPrazo(DARE_IDEAL)}.`),
+        ? item("dare", "DeRE", dare, "moderado", `${plural(dare)} para fechar o DeRE (entrega no dia 15): atende ao mínimo de ${formatarPrazo(DARE_MINIMO)}, mas fica abaixo do ideal de ${formatarPrazo(DARE_IDEAL)}.`)
+        : item("dare", "DeRE", dare, "ideal", `${plural(dare)} para fechar o DeRE (entrega no dia 15), dentro do ideal de ${formatarPrazo(DARE_IDEAL)}.`),
     diops < DIOPS_IDEAL
       ? item("diops", "DIOPS", diops, "moderado", `${plural(diops)} até a entrega do DIOPS (dia 30); o ideal é ter pelo menos ${formatarPrazo(DIOPS_IDEAL)}.`)
       : item("diops", "DIOPS", diops, "ideal", `${plural(diops)} até a entrega do DIOPS (dia 30), dentro do ideal de ${formatarPrazo(DIOPS_IDEAL)}.`),
