@@ -85,3 +85,10 @@ describe("Nível 5 — variáveis", () => {
     expect(t[9][1]).toBeCloseTo(120 * 663.1 / 110.53 * 1.5, 6);
   });
 });
+
+import _copiaTela from "@/data/propostaApb/vidasPrecos20261029";
+describe("Base da tela", () => {
+  it("a cópia usada pela tela é idêntica ao CSV preservado", () => {
+    expect(_copiaTela).toBe(_csv);
+  });
+});

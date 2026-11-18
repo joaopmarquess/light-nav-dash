@@ -24,7 +24,7 @@
 - Test explicit green Uberaba inclusions after fitting to preserve framing and life-based colors.
 - Test Uberaba credentialing reference selection and supplied summaries separately from presentation to preserve quantities and source precedence.
 - Keep MAA geometry and area classification in a focused helper, with tests, so map presentation does not change beneficiary counts or geographic membership; simplify display outlines only, classifying cities by the original ring.
-- APB: test Menu tickets/defaults; preview the Strategic PDF itself before download.
+- APB: test Menu tickets/defaults; preview the Strategic PDF itself before download. App code imports source CSVs through tested literal TS copies, never `?raw`, because the dev preloader drops the query and the preview errors.
 - Simplify and round cropped-map exterior and state strokes in projected pixel space only; keep open state runs open and preserve northern attenuation, original fitting and membership.
 - Simplify Goiás municipal display geometry through shared topology arcs only; retain original geometry for fitting, membership, centroids and counts so visual smoothing cannot change data or separate neighboring boundaries.
 - Keep localized northern state-border attenuation in a display-only helper matching shared municipal arcs; never alter original polygons, projection fitting, MAA membership or totals.
