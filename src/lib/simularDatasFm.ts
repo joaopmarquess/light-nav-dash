@@ -74,6 +74,13 @@ export function ultimoDiaUtil(mes: number, ano: number) {
   throw new Error("Mês sem dia útil.");
 }
 
+/** Período (pedido de 18/11/2026): De = Último Dia − 30 dias corridos; Até = Último Dia (último dia útil da competência). */
+export function periodoFm(mes: number, ano: number) {
+  const ultimo = ultimoDiaUtil(mes, ano);
+  const inicio = new Date(Date.UTC(ano, mes - 1, ultimo.dia) - 30 * DIA_MS);
+  return { de: `${dd(inicio.getUTCDate())}/${dd(inicio.getUTCMonth() + 1)}/${inicio.getUTCFullYear()}`, ate: ultimo.data };
+}
+
 /** Inteiro digitado dentro do intervalo; vazio → undefined (restaura o padrão); inválido → null (recusado). */
 export function lerInteiro(texto: string, min: number, max: number): number | undefined | null {
   const t = texto.trim();

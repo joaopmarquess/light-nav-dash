@@ -1,6 +1,6 @@
 import { Fragment, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { carregarDatasFm, formatarCompetencia, lerCompetencia, lerInteiro, ultimoDiaUtil, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { carregarDatasFm, formatarCompetencia, lerCompetencia, lerInteiro, periodoFm, ultimoDiaUtil, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
 // Laboratory › Simular Datas FM: Competência (MM/AAAA, acima do grid), Último Dia (último dia útil, calculado) e o dia de cada linha, com a data calculada; valores digitados ficam neste navegador.
 export default function SimularDatasFm() {
@@ -20,6 +20,7 @@ export default function SimularDatasFm() {
   });
   const linhas = simularDatasFm(entrada);
   const ultimo = ultimoDiaUtil(entrada.mes, entrada.ano);
+  const periodo = periodoFm(entrada.mes, entrada.ano);
   const [competenciaTexto, setCompetenciaTexto] = useState<string | null>(null);
   const alterarCompetencia = (t: string) => {
     if (!/^[\d/]*$/.test(t)) return;
@@ -39,6 +40,10 @@ export default function SimularDatasFm() {
           onBlur={() => setCompetenciaTexto(null)}
           className={`h-8 w-28 text-center tabular-nums ${competenciaTexto !== null && !lerCompetencia(competenciaTexto) ? "border-destructive" : ""}`} />
       </label>
+      <p className="text-sm" title="De = Último Dia − 30 dias; Até = Último Dia">
+        <span className="font-semibold">Período:</span>{" "}
+        <span className="tabular-nums">{periodo.de} a {periodo.ate}</span>
+      </p>
       <div className="max-w-xl overflow-hidden rounded-md border border-border">
         <table className="w-full border-collapse text-sm">
           <thead>

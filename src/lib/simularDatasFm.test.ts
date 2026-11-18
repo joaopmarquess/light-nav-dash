@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerInteiro, simularDatasFm, ultimoDiaUtil } from "./simularDatasFm";
+import { COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerInteiro, periodoFm, simularDatasFm, ultimoDiaUtil } from "./simularDatasFm";
 
 describe("Simular Datas FM", () => {
   it("competência 12/2026 com os dias padrão reproduz o quadro fornecido, com Arquivo na primeira linha de datas", () => {
@@ -43,5 +43,9 @@ describe("Simular Datas FM", () => {
   });
   it("feriado nacional no fim do mês é pulado (Sexta-feira Santa em 29/03/2024)", () => {
     expect(ultimoDiaUtil(3, 2024).data).toBe("28/03/2024");
+  });
+  it("Período vai do Último Dia − 30 dias até o Último Dia", () => {
+    expect(periodoFm(12, 2026)).toEqual({ de: "01/12/2026", ate: "31/12/2026" });
+    expect(periodoFm(1, 2027)).toEqual({ de: "30/12/2026", ate: "29/01/2027" });
   });
 });
