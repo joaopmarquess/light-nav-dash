@@ -10,7 +10,7 @@ export const LINHAS_DATAS_FM: LinhaDataFmDef[] = [
   // Arquivo pede dia/mês (pedido de 18/11/2026); sem mês digitado, usa o mês seguinte à competência.
   { id: "arquivo", rotulo: "Arquivo", diaPadrao: 5, mesSeguinte: true, destaque: true, pedeMes: true },
   // De e Até retirados do grid (pedido de 18/11/2026); o Período acima do grid substitui.
-  // Fechamento: dia indicado no mês (e ano) do Arquivo (pedido de 18/11/2026).
+  // Fechamento: dia indicado no mês subsequente ao do Arquivo (pedido de 18/11/2026).
   { id: "fechamento", rotulo: "Fechamento", diaPadrao: 10, mesSeguinte: true, mesDoArquivo: true },
   { id: "dare", rotulo: "Dare", diaPadrao: 15, mesSeguinte: true, separadorAntes: true },
   { id: "diops", rotulo: "DIOPS", diaPadrao: 30, mesSeguinte: true },
@@ -48,7 +48,12 @@ export function simularDatasFm({ mes, ano, dias, arquivoMes }: EntradaDatasFm) {
     if (l.pedeMes) {
       return { ...l, dia, mesLinha: mesArquivo, diaMes: `${dd(dia)}/${dd(mesArquivo)}`, ...dataDiaMes(mes, ano, dia, mesArquivo) };
     }
-    if (l.mesDoArquivo) return { ...l, dia, mesLinha: mesArquivo, diaMes: undefined, ...dataDiaMes(mes, ano, dia, mesArquivo) };
+    if (l.mesDoArquivo) {
+      const anoArquivo = mesArquivo >= mes ? ano : ano + 1;
+      const m = mesArquivo === 12 ? 1 : mesArquivo + 1, a = mesArquivo === 12 ? anoArquivo + 1 : anoArquivo;
+      const d = Math.min(Math.max(1, dia), ultimoDia(a, m));
+      return { ...l, dia, mesLinha: m, diaMes: undefined, data: `${dd(d)}/${dd(m)}/${a}`, ajustado: d !== dia };
+    }
     return { ...l, dia, mesLinha: undefined, diaMes: undefined, ...dataDaLinha(mes, ano, dia, l.mesSeguinte) };
   });
 }
