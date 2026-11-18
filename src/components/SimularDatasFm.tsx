@@ -141,16 +141,7 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
   const cls = "h-8 w-20 text-right tabular-nums";
   return (
     <div className="space-y-4">
-      {/* Botões Gravar, Cancelar e Excluir (pedido de 18/11/2026): Gravar e Cancelar voltam à Lista; Excluir só para Cenário já gravado. */}
-      <div className="flex max-w-3xl flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">Simulação de Datas FM</h1>
-        <div className="flex items-center gap-2">
-          <Button size="sm" onClick={onGravar}><Save className="mr-1 h-4 w-4" />Gravar</Button>
-          <Button size="sm" variant="outline" onClick={cancelar}><X className="mr-1 h-4 w-4" />Cancelar</Button>
-          <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" disabled={!gravada}
-            title={gravada ? undefined : "Cenário ainda não gravado"} onClick={() => setConfirmar("excluir")}><Trash2 className="mr-1 h-4 w-4" />Excluir</Button>
-        </div>
-      </div>
+      <h1 className="text-xl font-semibold">Simulação de Datas FM</h1>
       <AlertDialog open={confirmar !== null} onOpenChange={(o) => { if (!o) setConfirmar(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -258,6 +249,13 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
             ))}
           </tbody>
         </table>
+      </div>
+      {/* Botões Gravar, Cancelar e Excluir no final da tela (pedidos de 18/11/2026): Gravar e Cancelar voltam à Lista; Excluir só para Cenário já gravado. */}
+      <div className="flex max-w-3xl items-center justify-end gap-2 border-t border-border pt-4">
+        <Button size="sm" onClick={onGravar}><Save className="mr-1 h-4 w-4" />Gravar</Button>
+        <Button size="sm" variant="outline" onClick={cancelar}><X className="mr-1 h-4 w-4" />Cancelar</Button>
+        <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" disabled={!gravada}
+          title={gravada ? undefined : "Cenário ainda não gravado"} onClick={() => setConfirmar("excluir")}><Trash2 className="mr-1 h-4 w-4" />Excluir</Button>
       </div>
     </div>
   );
