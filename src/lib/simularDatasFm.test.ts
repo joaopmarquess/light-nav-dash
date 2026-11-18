@@ -63,4 +63,10 @@ describe("Simular Datas FM", () => {
     expect(ultimoDiaFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 1 }, arquivoMes: 12 }).data).toBe("30/11/2026");
     expect(ultimoDiaFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 5 }, arquivoMes: 1 }).data).toBe("31/12/2026");
   });
+  it("Fechamento usa o dia indicado no mês do Arquivo", () => {
+    const fech = (e: Parameters<typeof simularDatasFm>[0]) => simularDatasFm(e).find((l) => l.id === "fechamento")!.data;
+    expect(fech({ ...COMPETENCIA_PADRAO, dias: {} })).toBe("10/01/2027");
+    expect(fech({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20 }, arquivoMes: 12 })).toBe("10/12/2026");
+    expect(fech({ ...COMPETENCIA_PADRAO, dias: { arquivo: 5, fechamento: 30 }, arquivoMes: 2 })).toBe("28/02/2027");
+  });
 });

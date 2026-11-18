@@ -3,14 +3,15 @@
  * Dia maior que o último dia do mês vira o último dia (ex.: 30 em fevereiro → 28 ou 29).
  * Último Dia (pedido de 18/11/2026): se o mês do Arquivo = mês da competência, dia do Arquivo − 1; senão, último dia útil do mês da competência (ultimoDiaUtil). */
 export type IdDataFm = "arquivo" | "fechamento" | "dare" | "diops" | "pagamento";
-export type LinhaDataFmDef = { id: IdDataFm; rotulo: string; diaPadrao: number; mesSeguinte: boolean; destaque?: boolean; separadorAntes?: boolean; pedeMes?: boolean };
+export type LinhaDataFmDef = { id: IdDataFm; rotulo: string; diaPadrao: number; mesSeguinte: boolean; destaque?: boolean; separadorAntes?: boolean; pedeMes?: boolean; mesDoArquivo?: boolean };
 
 export const LINHAS_DATAS_FM: LinhaDataFmDef[] = [
   // Arquivo logo após a Competência (pedido de 18/11/2026).
   // Arquivo pede dia/mês (pedido de 18/11/2026); sem mês digitado, usa o mês seguinte à competência.
   { id: "arquivo", rotulo: "Arquivo", diaPadrao: 5, mesSeguinte: true, destaque: true, pedeMes: true },
   // De e Até retirados do grid (pedido de 18/11/2026); o Período acima do grid substitui.
-  { id: "fechamento", rotulo: "Fechamento", diaPadrao: 10, mesSeguinte: true },
+  // Fechamento: dia indicado no mês (e ano) do Arquivo (pedido de 18/11/2026).
+  { id: "fechamento", rotulo: "Fechamento", diaPadrao: 10, mesSeguinte: true, mesDoArquivo: true },
   { id: "dare", rotulo: "Dare", diaPadrao: 15, mesSeguinte: true, separadorAntes: true },
   { id: "diops", rotulo: "DIOPS", diaPadrao: 30, mesSeguinte: true },
   { id: "pagamento", rotulo: "Pagamento", diaPadrao: 30, mesSeguinte: true },
@@ -41,12 +42,13 @@ export function dataDiaMes(mesCompetencia: number, anoCompetencia: number, dia: 
 }
 
 export function simularDatasFm({ mes, ano, dias, arquivoMes }: EntradaDatasFm) {
+  const mesArquivo = arquivoMes ?? (mes === 12 ? 1 : mes + 1);
   return LINHAS_DATAS_FM.map((l) => {
     const dia = dias[l.id] ?? l.diaPadrao;
     if (l.pedeMes) {
-      const m = arquivoMes ?? (mes === 12 ? 1 : mes + 1);
-      return { ...l, dia, mesLinha: m, diaMes: `${dd(dia)}/${dd(m)}`, ...dataDiaMes(mes, ano, dia, m) };
+      return { ...l, dia, mesLinha: mesArquivo, diaMes: `${dd(dia)}/${dd(mesArquivo)}`, ...dataDiaMes(mes, ano, dia, mesArquivo) };
     }
+    if (l.mesDoArquivo) return { ...l, dia, mesLinha: mesArquivo, diaMes: undefined, ...dataDiaMes(mes, ano, dia, mesArquivo) };
     return { ...l, dia, mesLinha: undefined, diaMes: undefined, ...dataDaLinha(mes, ano, dia, l.mesSeguinte) };
   });
 }
