@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ITENS_CREDENCIAMENTO, alterarItem, chaveItem, itensExibidos, somaItens, lerAutorizado, notasAgrupamento, linhasQuantidadeCredenciamentos } from "./uberabaQuantidadeCredenciamentos";
+import { ITENS_CREDENCIAMENTO, alterarItem, chaveItem, itensExibidos, somaItens, lerAutorizado, lerValor, notasAgrupamento, linhasQuantidadeCredenciamentos } from "./uberabaQuantidadeCredenciamentos";
 
 describe("Quantidade de Credenciamentos", () => {
   it("tem os tipos de credenciado com a quantidade disponível, Hospitais logo após Especialidades médicas", () => {
@@ -21,6 +21,24 @@ describe("Quantidade de Credenciamentos", () => {
     const { linhas, total } = linhasQuantidadeCredenciamentos({ medicos: 150 });
     expect(linhas.map((l) => l.autorizado)).toEqual([150, 2, 15, 12]);
     expect(total.autorizado).toBe(179);
+  });
+  it("Valor começa em R$ 200,00 por tipo e Adesão = Qtde. × Valor (total R$ 28.200,00)", () => {
+    const { linhas, total } = linhasQuantidadeCredenciamentos();
+    expect(linhas.map((l) => l.valor)).toEqual([200, 200, 200, 200]);
+    expect(linhas.map((l) => l.adesao)).toEqual([22400, 400, 3000, 2400]);
+    expect(total.adesao).toBe(28200);
+  });
+  it("Valor digitado muda só a Adesão do tipo editado", () => {
+    const { linhas, total } = linhasQuantidadeCredenciamentos({ medicos: 100 }, { hospitais: 1500.5 });
+    expect(linhas.map((l) => l.adesao)).toEqual([20000, 3001, 3000, 2400]);
+    expect(total.adesao).toBe(28401);
+  });
+  it("Valor aceita reais com vírgula; vazio restaura e inválido é recusado", () => {
+    expect(lerValor("")).toBeUndefined();
+    expect(lerValor("250,50")).toBe(250.5);
+    expect(lerValor("1.250,00")).toBe(1250);
+    expect(lerValor("-1")).toBeNull();
+    expect(lerValor("abc")).toBeNull();
   });
   it("campo vazio restaura o Limite e texto inválido é recusado", () => {
     expect(lerAutorizado("")).toBeUndefined();

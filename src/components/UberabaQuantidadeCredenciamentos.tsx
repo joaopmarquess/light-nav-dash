@@ -1,14 +1,27 @@
 import { Fragment, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { QUANTIDADE_PADRAO_ITEM, alterarItem, carregarAutorizados, carregarQuantidadesItens, chaveItem, itensExibidos, salvarQuantidadesItens, somaItens, type QuantidadesItens, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
+import { QUANTIDADE_PADRAO_ITEM, alterarItem, carregarAutorizados, carregarQuantidadesItens, chaveItem, itensExibidos, salvarQuantidadesItens, somaItens, type QuantidadesItens, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento, carregarValores, salvarValores, lerValor, type ValoresCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
 
 const numero = (v: number) => v.toLocaleString("pt-BR");
+const moeda = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const valorTexto = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-// Grid Credenciamento: Tipo Credenciado · Autorizado; Autorizado editável (começa pelo Limite), gravado neste navegador.
+// Grid Credenciamento: Tipo Credenciado · Qtde. · Valor · Adesão (Qtde. × Valor); Qtde. (começa pelo Limite) e Valor editáveis, gravados neste navegador.
 export default function UberabaQuantidadeCredenciamentos() {
   const [autorizados, setAutorizados] = useState<AutorizadosCredenciamento>(carregarAutorizados);
-  const { linhas, total } = linhasQuantidadeCredenciamentos(autorizados);
+  const [valores, setValores] = useState<ValoresCredenciamento>(carregarValores);
+  const [editandoValor, setEditandoValor] = useState<Record<string, string>>({});
+  const { linhas, total } = linhasQuantidadeCredenciamentos(autorizados, valores);
+  const alterarValor = (id: keyof ValoresCredenciamento, texto: string) => {
+    const valor = lerValor(texto);
+    if (valor === null) return;
+    setEditandoValor((e) => ({ ...e, [id]: texto }));
+    const proximo = { ...valores };
+    if (valor === undefined) delete proximo[id]; else proximo[id] = valor;
+    setValores(proximo);
+    salvarValores(proximo);
+  };
   const [abertos, setAbertos] = useState<Record<string, boolean>>({});
   const [itensQtd, setItensQtd] = useState<QuantidadesItens>(carregarQuantidadesItens);
   const alterarQtdItem = (chave: string, texto: string) => {
@@ -31,7 +44,9 @@ export default function UberabaQuantidadeCredenciamentos() {
         <thead>
           <tr className="border-b border-border">
             <th className="px-3 py-2 text-left font-semibold">TIPO CREDENCIADO</th>
-            <th className="px-3 py-2 text-right font-semibold">AUTORIZADO</th>
+            <th className="px-3 py-2 text-right font-semibold">QTDE.</th>
+            <th className="px-3 py-2 text-right font-semibold">VALOR</th>
+            <th className="px-3 py-2 text-right font-semibold">ADESÃO</th>
           </tr>
         </thead>
         <tbody>
@@ -49,11 +64,19 @@ export default function UberabaQuantidadeCredenciamentos() {
                 </button>
               </td>
               <td className="px-3 py-1.5 text-right">
-                <Input inputMode="numeric" aria-label={`Autorizado — ${l.tipo}`} title={`Limite: ${numero(l.limite)} (apague para restaurar)`}
+                <Input inputMode="numeric" aria-label={`Qtde. — ${l.tipo}`} title={`Limite: ${numero(l.limite)} (apague para restaurar)`}
                   value={autorizados[l.id] ?? ""} placeholder={String(l.limite)}
                   onChange={(e) => alterar(l.id, e.target.value)}
                   className="ml-auto h-8 w-24 text-right tabular-nums placeholder:text-foreground" />
               </td>
+              <td className="px-3 py-1.5 text-right">
+                <Input inputMode="decimal" aria-label={`Valor — ${l.tipo}`} title="Valor por credenciado, em R$ (apague para restaurar)"
+                  value={editandoValor[l.id] ?? (valores[l.id] !== undefined ? valorTexto(valores[l.id]!) : "")} placeholder={valorTexto(l.valor)}
+                  onChange={(e) => alterarValor(l.id, e.target.value)}
+                  onBlur={() => setEditandoValor((e) => { const p = { ...e }; delete p[l.id]; return p; })}
+                  className="ml-auto h-8 w-28 text-right tabular-nums placeholder:text-foreground" />
+              </td>
+              <td className="px-3 py-1.5 text-right tabular-nums" title={`${numero(l.autorizado)} × ${moeda(l.valor)}`}>{moeda(l.adesao)}</td>
             </tr>
             {aberto && itens.map((item) => { const k = chaveItem(l.id, item.nome); return (
               <tr key={item.nome} className="border-b border-border/60 bg-muted/40 text-xs">
@@ -67,12 +90,14 @@ export default function UberabaQuantidadeCredenciamentos() {
                     onChange={(e) => alterarQtdItem(k, e.target.value)}
                     className="ml-auto h-7 w-24 text-right text-xs tabular-nums placeholder:text-foreground" />
                 </td>
+                <td colSpan={2} />
               </tr>
             ); })}
             {aberto && (() => { const s = somaItens(l.id, itensQtd); return (
               <tr className="border-b border-border bg-muted/40 text-xs font-semibold">
                 <td className="py-1 pl-8 pr-3" >Soma dos itens <span className="font-normal text-muted-foreground">({s.itens} itens{s.alterados ? `, ${s.alterados} alterado${s.alterados > 1 ? "s" : ""}` : ""})</span></td>
                 <td className="px-3 py-1 text-right tabular-nums">{numero(s.soma)}</td>
+                <td colSpan={2} />
               </tr>
             ); })()}
             </Fragment>
@@ -83,6 +108,8 @@ export default function UberabaQuantidadeCredenciamentos() {
           <tr className="font-semibold">
             <td className="px-3 py-2">TOTAL</td>
             <td className="px-3 py-2 text-right tabular-nums">{numero(total.autorizado)}</td>
+            <td />
+            <td className="px-3 py-2 text-right tabular-nums">{moeda(total.adesao)}</td>
           </tr>
         </tfoot>
       </table>

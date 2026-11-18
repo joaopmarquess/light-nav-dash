@@ -4,7 +4,12 @@ import { cenarioCredenciamento, type GrupoCredenciamento } from "@/lib/uberabaCr
 /** Tipos do grid: os três grupos de credenciamento mais Hospitais (pedido de 18/11/2026), que existe só nesta tela e não tem Disponível na referência. */
 export type TipoQuantidade = GrupoCredenciamento | "hospitais";
 export type AutorizadosCredenciamento = Partial<Record<TipoQuantidade, number>>;
-export type LinhaQuantidadeCredenciamento = { id: TipoQuantidade; tipo: string; disponivel: number | null; autorizado: number; limite: number };
+export type LinhaQuantidadeCredenciamento = { id: TipoQuantidade; tipo: string; disponivel: number | null; autorizado: number; limite: number; valor: number; adesao: number };
+/** Valor (R$) por credenciado de cada tipo, editado na tela (pedido de 18/11/2026); Adesão = Qtde. (Autorizado) × Valor. */
+export type ValoresCredenciamento = Partial<Record<TipoQuantidade, number>>;
+export const CHAVE_VALORES_CREDENCIAMENTO = "uberaba.quantidadeCredenciamentos.valores.v1";
+/** Valor padrão: o mesmo valor unitário de cada grupo no Modelo de Credenciamento; Hospitais, sem referência, usa R$ 200,00 como os demais. */
+export const VALOR_PADRAO_HOSPITAIS = 200;
 export const TIPO_HOSPITAIS = "Hospitais";
 
 export const CHAVE_AUTORIZADOS_CREDENCIAMENTO = "uberaba.quantidadeCredenciamentos.autorizados.v1";
@@ -125,20 +130,24 @@ export function notasAgrupamento(): string[] {
 /** Autorizado começa pelo Limite de cada tipo; valor digitado (inteiro ≥ 0) prevalece. */
 /** Autorizado padrão de Hospitais: Hospital Geral (1) + Hospital Pediátrico (1). */
 export const AUTORIZADO_PADRAO_HOSPITAIS = 2;
-export function linhasQuantidadeCredenciamentos(autorizados: AutorizadosCredenciamento = {}) {
+export function linhasQuantidadeCredenciamentos(autorizados: AutorizadosCredenciamento = {}, valores: ValoresCredenciamento = {}) {
   const disponiveis = cenarioCredenciamento("Disponível").grupos;
   const limites = cenarioCredenciamento("Limite").grupos;
   const grupos: LinhaQuantidadeCredenciamento[] = disponiveis.map((g, i) => {
     const limite = limites[i].quantidade;
     const digitado = autorizados[g.id];
-    return { id: g.id, tipo: g.titulo, disponivel: g.quantidade, limite, autorizado: digitado ?? limite };
+    const autorizado = digitado ?? limite;
+    const valor = valores[g.id] ?? limites[i].valor ?? 0;
+    return { id: g.id, tipo: g.titulo, disponivel: g.quantidade, limite, autorizado, valor, adesao: arred2(autorizado * valor) };
   });
   // Hospitais logo após Especialidades médicas; sem Disponível de referência, Autorizado começa pela soma dos itens padrão.
   const limiteHosp = AUTORIZADO_PADRAO_HOSPITAIS;
-  const hospitais: LinhaQuantidadeCredenciamento = { id: "hospitais", tipo: TIPO_HOSPITAIS, disponivel: null, limite: limiteHosp, autorizado: autorizados.hospitais ?? limiteHosp };
+  const autorizadoHosp = autorizados.hospitais ?? limiteHosp;
+  const valorHosp = valores.hospitais ?? VALOR_PADRAO_HOSPITAIS;
+  const hospitais: LinhaQuantidadeCredenciamento = { id: "hospitais", tipo: TIPO_HOSPITAIS, disponivel: null, limite: limiteHosp, autorizado: autorizadoHosp, valor: valorHosp, adesao: arred2(autorizadoHosp * valorHosp) };
   const pos = grupos.findIndex((l) => l.id === "medicos") + 1;
   const linhas = [...grupos.slice(0, pos), hospitais, ...grupos.slice(pos)];
-  const total = { disponivel: linhas.reduce((s, l) => s + (l.disponivel ?? 0), 0), autorizado: linhas.reduce((s, l) => s + l.autorizado, 0) };
+  const total = { disponivel: linhas.reduce((s, l) => s + (l.disponivel ?? 0), 0), autorizado: linhas.reduce((s, l) => s + l.autorizado, 0), adesao: arred2(linhas.reduce((s, l) => s + l.adesao, 0)) };
   return { linhas, total };
 }
 
@@ -148,6 +157,29 @@ export function lerAutorizado(texto: string): number | undefined | null {
   if (t === "") return undefined;
   if (!/^\d+$/.test(t)) return null;
   return Number(t);
+}
+
+const arred2 = (v: number) => Math.round(v * 100) / 100;
+
+/** Valor digitado em reais ("200", "200,50", "1.250,00"): vazio restaura o padrão (undefined); inválido ou negativo é recusado (null). */
+export function lerValor(texto: string): number | undefined | null {
+  const t = texto.trim();
+  if (t === "") return undefined;
+  if (!/^\d{1,3}(\.\d{3})*(,\d{0,2})?$|^\d+(,\d{0,2})?$/.test(t)) return null;
+  return Number(t.replace(/\./g, "").replace(",", "."));
+}
+
+export function carregarValores(): ValoresCredenciamento {
+  try {
+    const bruto = JSON.parse(localStorage.getItem(CHAVE_VALORES_CREDENCIAMENTO) ?? "{}");
+    const saida: ValoresCredenciamento = {};
+    for (const id of ["medicos", "hospitais", "diagnostico", "nao-medicos"] as const) if (typeof bruto?.[id] === "number" && Number.isFinite(bruto[id]) && bruto[id] >= 0) saida[id] = bruto[id];
+    return saida;
+  } catch { return {}; }
+}
+
+export function salvarValores(valores: ValoresCredenciamento) {
+  try { localStorage.setItem(CHAVE_VALORES_CREDENCIAMENTO, JSON.stringify(valores)); } catch { /* navegador sem armazenamento */ }
 }
 
 export function carregarAutorizados(): AutorizadosCredenciamento {
