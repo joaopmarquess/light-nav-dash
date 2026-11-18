@@ -13,6 +13,8 @@ const controlItem: MenuItem = {
     children: [
       { icon: FileText, label: DRE_MENU_NAME, id: "Control · DRE Gerencial PE" },
       { icon: BarChart3, label: BENCH_SHORT_TEXT, id: "Control · Bench C" },
+      // Relatório de Controladoria (Mensal ou Trimestral, sem filtros de período) como submenu do Control (pedido de 18/11/2026); id mantido para preservar permissões.
+      { icon: FileBarChart2, label: "Relatório de Controladoria", id: "Relatório · Controladoria" },
       { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente" },
       { icon: TrendingUp, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
       { icon: FlaskConical, label: "Simulador", id: "Control · Simulador" },
@@ -113,8 +115,6 @@ export const menuItems: MenuItem[] = [
     { icon: BarChart3, label: "Bench Vidas", id: "Carteira · Bench Vidas" },
   ] },
   { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }, { icon: Layers, label: "Evolução Produtos", id: "Sinistralidade · Evolução Produtos" }] },
-  // Menu Relatório (pedido de 18/11/2026): Relatório de Controladoria Mensal ou Trimestral, sem filtros de período.
-  { icon: FileBarChart2, label: "Relatório", children: [{ icon: FileText, label: "Relatório de Controladoria", id: "Relatório · Controladoria" }] },
 ];
 
 /** Proj. Uberaba aberto direto em Estudo › Simulações › Resultados Comerciais (permissão própria do atalho, mesmo layout do Laboratory). */
