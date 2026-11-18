@@ -101,7 +101,9 @@ export function buildPropostaRedePdf(
     doc.setTextColor(...SECUNDARIO);
     const linhas = doc.splitTextToSize(textoPdf(texto), LARGURA) as string[];
     const LN = alturaLinha(F.notaPrecos);
-    linhas.forEach((l) => { garantir(LN); doc.text(l, marginL, y); y += LN; });
+    // A nota nunca se divide entre páginas; basta a linha de base da última linha caber acima da margem inferior.
+    garantir((linhas.length - 1) * LN + 1);
+    linhas.forEach((l) => { doc.text(l, marginL, y); y += LN; });
     y += 6;
   };
 
@@ -146,11 +148,35 @@ export function buildPropostaRedePdf(
   /** Altura aproximada de cada quadro com a sua nota: título, texto e quadro ficam juntos na mesma página. */
   const ALTURA_BLOCO: Partial<Record<SecaoRedeId, number>> = { condicoes: 60, gestao: 48 };
 
+  /** Título longo (ex.: "2. ... | Credenciamento por Captação") quebra em mais linhas no mesmo tamanho, nunca passando da margem;
+   * a linha do título fica sob a última. Retorna a altura extra das linhas acima dela. */
+  const LINHA_TOPICO = alturaLinha(F.topico);
+  const linhasTitulo = (titulo: string) => {
+    doc.setFont("helvetica", "bold"); doc.setFontSize(F.topico);
+    const largura = pageW - marginL - marginR;
+    const t = titulo.toUpperCase();
+    if (doc.getTextWidth(t) <= largura) return [t];
+    // Quebra preferencial na barra: "2. ... ASSISTENCIAL |" / "CREDENCIAMENTO POR CAPTAÇÃO".
+    const partes = t.split(" | ");
+    if (partes.length === 2 && doc.getTextWidth(`${partes[0]} |`) <= largura && doc.getTextWidth(partes[1]) <= largura) return [`${partes[0]} |`, partes[1]];
+    return doc.splitTextToSize(t, largura) as string[];
+  };
+  const tituloTopico = (titulo: string) => {
+    const linhas = linhasTitulo(titulo);
+    linhas.slice(0, -1).forEach((l, i) => {
+      doc.setFont("helvetica", "bold"); doc.setFontSize(F.topico); doc.setTextColor(...TINTA);
+      doc.text(l, marginL, y + i * LINHA_TOPICO);
+    });
+    y += (linhas.length - 1) * LINHA_TOPICO;
+    drawSectionTitle(doc, linhas[linhas.length - 1], marginL, y, pageW - marginR, TINTA, F.topico);
+  };
+
   const corpo = paragrafosPropostaRede(textos);
   SECOES_REDE.forEach((s, i) => {
-    const h = 12 + alturaParagrafos(corpo[i]) + (ALTURA_BLOCO[s.id] ?? 0);
-    garantir(h > pageH - top - bottom ? 10 + LINHA_TEXTO * 3 : h);
-    drawSectionTitle(doc, s.titulo, marginL, y, pageW - marginR, TINTA, F.topico);
+    const extra = (linhasTitulo(s.titulo).length - 1) * LINHA_TOPICO;
+    const h = 12 + extra + alturaParagrafos(corpo[i]) + (ALTURA_BLOCO[s.id] ?? 0);
+    garantir(h > pageH - top - bottom ? 10 + extra + LINHA_TEXTO * 3 : h);
+    tituloTopico(s.titulo);
     y += 10;
     corpo[i].forEach(paragrafo);
     y += 2;

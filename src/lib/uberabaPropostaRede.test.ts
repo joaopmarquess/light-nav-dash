@@ -13,7 +13,7 @@ const semNbsp = (s: string) => s.replace(/\u00a0/g, " ");
 
 describe("Proposta de Credenciamento e Gestão de Rede", () => {
   it("uses the topic titles supplied by Dênis", () => {
-    expect(TOPICOS_PROPOSTA_REDE).toEqual(["1. Contexto e Objeto da Proposta", "2. Estruturação da Rede Assistencial", "3. Modelo de Gestão da Rede", "4. Condições Gerais"]);
+    expect(TOPICOS_PROPOSTA_REDE).toEqual(["1. Contexto e Objeto da Proposta", "2. Estruturação da Rede Assistencial | Credenciamento por Captação", "3. Modelo de Gestão da Rede", "4. Condições Gerais"]);
   });
   it("contracts Siga Soluções (team with médico auditor), term 2027, and hands network management and loss ratio to the Bensaúde from 2028", () => {
     expect(CONDICOES_GERAIS_REDE).toEqual([

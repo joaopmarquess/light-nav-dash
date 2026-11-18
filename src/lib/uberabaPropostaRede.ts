@@ -15,7 +15,7 @@ export const DESTINATARIO_PROPOSTA_REDE = "Siga Soluções";
 
 export const SECOES_REDE = [
   { id: "introducao", titulo: "1. Contexto e Objeto da Proposta" },
-  { id: "condicoes", titulo: "2. Estruturação da Rede Assistencial" },
+  { id: "condicoes", titulo: "2. Estruturação da Rede Assistencial | Credenciamento por Captação" },
   { id: "gestao", titulo: "3. Modelo de Gestão da Rede" },
 ] as const;
 export type SecaoRedeId = (typeof SECOES_REDE)[number]["id"];
