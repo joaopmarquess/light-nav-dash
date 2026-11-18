@@ -3,11 +3,12 @@
  * Dia maior que o último dia do mês vira o último dia (ex.: 30 em fevereiro → 28 ou 29).
  * Último Dia (pedido de 18/11/2026) = último dia útil do mês da competência, calculado por ultimoDiaUtil. */
 export type IdDataFm = "de" | "ate" | "arquivo" | "fechamento" | "dare" | "diops" | "pagamento";
-export type LinhaDataFmDef = { id: IdDataFm; rotulo: string; diaPadrao: number; mesSeguinte: boolean; destaque?: boolean; separadorAntes?: boolean };
+export type LinhaDataFmDef = { id: IdDataFm; rotulo: string; diaPadrao: number; mesSeguinte: boolean; destaque?: boolean; separadorAntes?: boolean; pedeMes?: boolean };
 
 export const LINHAS_DATAS_FM: LinhaDataFmDef[] = [
   // Arquivo logo após a Competência (pedido de 18/11/2026).
-  { id: "arquivo", rotulo: "Arquivo", diaPadrao: 5, mesSeguinte: true, destaque: true },
+  // Arquivo pede dia/mês (pedido de 18/11/2026); sem mês digitado, usa o mês seguinte à competência.
+  { id: "arquivo", rotulo: "Arquivo", diaPadrao: 5, mesSeguinte: true, destaque: true, pedeMes: true },
   { id: "de", rotulo: "De", diaPadrao: 1, mesSeguinte: false },
   { id: "ate", rotulo: "Até", diaPadrao: 30, mesSeguinte: false },
   { id: "fechamento", rotulo: "Fechamento", diaPadrao: 10, mesSeguinte: true },
@@ -17,7 +18,8 @@ export const LINHAS_DATAS_FM: LinhaDataFmDef[] = [
 ];
 export const COMPETENCIA_PADRAO = { mes: 12, ano: 2026 };
 
-export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>> };
+/** arquivoMes: mês (1–12) digitado no Arquivo; ausente → mês seguinte à competência. */
+export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>>; arquivoMes?: number };
 
 const ultimoDia = (ano: number, mes: number) => new Date(Date.UTC(ano, mes, 0)).getUTCDate();
 const dd = (n: number) => String(n).padStart(2, "0");
@@ -31,11 +33,33 @@ export function dataDaLinha(mes: number, ano: number, dia: number, mesSeguinte: 
   return { data: `${dd(d)}/${dd(m)}/${a}`, ajustado: d !== dia };
 }
 
-export function simularDatasFm({ mes, ano, dias }: EntradaDatasFm) {
+/** Data de um dia/mês informado: mês igual ou posterior ao da competência fica no mesmo ano; anterior, no ano seguinte. */
+export function dataDiaMes(mesCompetencia: number, anoCompetencia: number, dia: number, mes: number) {
+  const a = mes >= mesCompetencia ? anoCompetencia : anoCompetencia + 1;
+  const fim = ultimoDia(a, mes);
+  const d = Math.min(Math.max(1, dia), fim);
+  return { data: `${dd(d)}/${dd(mes)}/${a}`, ajustado: d !== dia };
+}
+
+export function simularDatasFm({ mes, ano, dias, arquivoMes }: EntradaDatasFm) {
   return LINHAS_DATAS_FM.map((l) => {
     const dia = dias[l.id] ?? l.diaPadrao;
-    return { ...l, dia, ...dataDaLinha(mes, ano, dia, l.mesSeguinte) };
+    if (l.pedeMes) {
+      const m = arquivoMes ?? (mes === 12 ? 1 : mes + 1);
+      return { ...l, dia, mesLinha: m, diaMes: `${dd(dia)}/${dd(m)}`, ...dataDiaMes(mes, ano, dia, m) };
+    }
+    return { ...l, dia, mesLinha: undefined, diaMes: undefined, ...dataDaLinha(mes, ano, dia, l.mesSeguinte) };
   });
+}
+
+/** Dia/mês digitado como DD/MM (ex.: "05/01"); vazio → undefined (restaura o padrão); inválido → null. */
+export function lerDiaMes(texto: string): { dia: number; mes: number } | undefined | null {
+  const t = texto.trim();
+  if (t === "") return undefined;
+  const m = /^(\d{1,2})\/(\d{1,2})$/.exec(t);
+  if (!m) return null;
+  const dia = Number(m[1]), mes = Number(m[2]);
+  return dia >= 1 && dia <= 31 && mes >= 1 && mes <= 12 ? { dia, mes } : null;
 }
 
 /** Competência digitada como MM/AAAA (ex.: "12/2026"); inválida → null. */
@@ -96,7 +120,9 @@ export function carregarDatasFm(): EntradaDatasFm {
     const b = JSON.parse(localStorage.getItem(CHAVE_DATAS_FM) ?? "{}");
     const dias: EntradaDatasFm["dias"] = {};
     for (const l of LINHAS_DATAS_FM) if (Number.isInteger(b?.dias?.[l.id]) && b.dias[l.id] >= 1 && b.dias[l.id] <= 31) dias[l.id] = b.dias[l.id];
+    const arquivoMes = Number.isInteger(b?.arquivoMes) && b.arquivoMes >= 1 && b.arquivoMes <= 12 ? b.arquivoMes : undefined;
     return {
+      ...(arquivoMes ? { arquivoMes } : {}),
       mes: Number.isInteger(b?.mes) && b.mes >= 1 && b.mes <= 12 ? b.mes : COMPETENCIA_PADRAO.mes,
       ano: Number.isInteger(b?.ano) && b.ano >= 2000 && b.ano <= 2100 ? b.ano : COMPETENCIA_PADRAO.ano,
       dias,

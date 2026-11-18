@@ -1,8 +1,8 @@
 import { Fragment, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { carregarDatasFm, formatarCompetencia, lerCompetencia, lerInteiro, periodoFm, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { carregarDatasFm, formatarCompetencia, lerCompetencia, lerDiaMes, lerInteiro, periodoFm, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
-// Laboratory › Simular Datas FM: Competência (MM/AAAA) e Período (Último Dia útil − 30 dias a Último Dia) acima do grid, sem a linha Último Dia (pedido de 18/11/2026), e o dia de cada linha, com a data calculada; valores digitados ficam neste navegador.
+// Laboratory › Simular Datas FM: Competência (MM/AAAA) e Período (Último Dia útil − 30 dias a Último Dia) acima do grid, sem a linha Último Dia (pedido de 18/11/2026), Arquivo como dia/mês e o dia de cada linha, com a data calculada; valores digitados ficam neste navegador.
 export default function SimularDatasFm() {
   const [entrada, setEntrada] = useState<EntradaDatasFm>(carregarDatasFm);
   const [texto, setTexto] = useState<Record<string, string>>({});
@@ -58,12 +58,29 @@ export default function SimularDatasFm() {
               <tr className={`border-b border-border ${l.separadorAntes ? "border-t-2 border-t-foreground" : ""} ${l.destaque ? "font-bold" : ""}`}>
                 <td className="px-3 py-1.5">{l.rotulo}</td>
                 <td className="px-3 py-1.5">
+                  {l.pedeMes ? (
+                  <Input aria-label={`Dia/mês — ${l.rotulo}`} inputMode="numeric" placeholder="DD/MM" maxLength={5} title="Dia/mês (DD/MM); apague para restaurar o padrão"
+                    value={texto[l.id] ?? l.diaMes}
+                    onChange={(e) => {
+                      const t = e.target.value;
+                      if (!/^[\d/]*$/.test(t)) return;
+                      setTexto((p) => ({ ...p, [l.id]: t }));
+                      const v = lerDiaMes(t);
+                      if (v === null) return;
+                      const dias = { ...entrada.dias };
+                      if (v === undefined) { delete dias[l.id]; const { arquivoMes: _, ...resto } = entrada; gravar({ ...resto, dias }); }
+                      else { dias[l.id] = v.dia; gravar({ ...entrada, dias, arquivoMes: v.mes }); }
+                    }}
+                    onBlur={() => setTexto((p) => { const n = { ...p }; delete n[l.id]; return n; })}
+                    className={`ml-auto ${cls} font-bold ${texto[l.id] !== undefined && texto[l.id] !== "" && !lerDiaMes(texto[l.id]) ? "border-destructive" : ""}`} />
+                  ) : (
                   <Input aria-label={`Dia — ${l.rotulo}`} inputMode="numeric" title="Apague para restaurar o padrão" className={`ml-auto ${cls} ${l.destaque ? "font-bold" : ""}`}
                     {...campo(l.id, l.dia, 1, 31, (v) => {
                       const dias = { ...entrada.dias };
                       if (v === undefined) delete dias[l.id as IdDataFm]; else dias[l.id as IdDataFm] = v;
                       gravar({ ...entrada, dias });
                     })} />
+                  )}
                 </td>
                 <td className="px-3 py-1.5 text-right tabular-nums" title={l.ajustado ? "Dia limitado ao último dia do mês" : undefined}>
                   {l.data}{l.ajustado ? " *" : ""}

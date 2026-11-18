@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerInteiro, periodoFm, simularDatasFm, ultimoDiaUtil } from "./simularDatasFm";
+import { COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, lerInteiro, periodoFm, simularDatasFm, ultimoDiaUtil } from "./simularDatasFm";
 
 describe("Simular Datas FM", () => {
   it("competência 12/2026 com os dias padrão reproduz o quadro fornecido, com Arquivo na primeira linha de datas", () => {
@@ -47,5 +47,15 @@ describe("Simular Datas FM", () => {
   it("Período vai do Último Dia − 30 dias até o Último Dia", () => {
     expect(periodoFm(12, 2026)).toEqual({ de: "01/12/2026", ate: "31/12/2026" });
     expect(periodoFm(1, 2027)).toEqual({ de: "30/12/2026", ate: "29/01/2027" });
+  });
+  it("Arquivo pede dia/mês: padrão 05 do mês seguinte; mês anterior ao da competência vira o ano", () => {
+    const arq = (e: Parameters<typeof simularDatasFm>[0]) => simularDatasFm(e).find((l) => l.id === "arquivo")!;
+    expect(arq({ ...COMPETENCIA_PADRAO, dias: {} })).toMatchObject({ diaMes: "05/01", data: "05/01/2027" });
+    expect(arq({ ...COMPETENCIA_PADRAO, dias: { arquivo: 8 }, arquivoMes: 2 }).data).toBe("08/02/2027");
+    expect(arq({ ...COMPETENCIA_PADRAO, dias: { arquivo: 28 }, arquivoMes: 12 }).data).toBe("28/12/2026");
+    expect(lerDiaMes("05/01")).toEqual({ dia: 5, mes: 1 });
+    expect(lerDiaMes("")).toBeUndefined();
+    expect(lerDiaMes("05/13")).toBeNull();
+    expect(lerDiaMes("5")).toBeNull();
   });
 });
