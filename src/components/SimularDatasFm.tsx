@@ -1,6 +1,6 @@
 import { Fragment, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { carregarDatasFm, formatarCompetencia, lerCompetencia, lerDiaMes, lerInteiro, periodoFm, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { carregarDatasFm, formatarCompetencia, lerCompetencia, lerDiaMes, impactosFm, lerInteiro, periodoFm, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
 // Laboratory › Simular Datas FM: Competência (MM/AAAA) e Período (dia seguinte ao Último Dia, um mês antes, a Último Dia) acima do grid, sem a linha Último Dia (pedido de 18/11/2026), Arquivo como dia/mês e o dia de cada linha, com a data calculada; valores digitados ficam neste navegador.
 export default function SimularDatasFm() {
@@ -20,6 +20,7 @@ export default function SimularDatasFm() {
   });
   const linhas = simularDatasFm(entrada);
   const periodo = periodoFm(entrada);
+  const impactos = impactosFm(entrada);
   const [competenciaTexto, setCompetenciaTexto] = useState<string | null>(null);
   const alterarCompetencia = (t: string) => {
     if (!/^[\d/]*$/.test(t)) return;
@@ -89,6 +90,23 @@ export default function SimularDatasFm() {
                 <td className="px-3 py-1.5 text-right tabular-nums">{l.diasBase}</td>
               </tr>
               </Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="max-w-xl overflow-hidden rounded-md border border-border">
+        <div className="border-b border-border bg-secondary px-3 py-2 text-sm font-semibold text-secondary-foreground">IMPACTOS</div>
+        <table className="w-full border-collapse text-sm">
+          <tbody>
+            {[
+              ["PEONA", impactos.peona, "Dias do Período que não são do mês da competência"],
+              ["DARE", impactos.dare, "Dias de Dare (coluna DIAS)"],
+              ["DIOPS", impactos.diops, "Dias de DIOPS (coluna DIAS)"],
+            ].map(([rotulo, valor, dica]) => (
+              <tr key={rotulo as string} className="border-b border-border last:border-b-0" title={dica as string}>
+                <td className="px-3 py-1.5">{rotulo}</td>
+                <td className="px-3 py-1.5 text-right tabular-nums">{valor}</td>
+              </tr>
             ))}
           </tbody>
         </table>

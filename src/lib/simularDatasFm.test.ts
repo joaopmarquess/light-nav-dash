@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil } from "./simularDatasFm";
+import { COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil } from "./simularDatasFm";
 
 describe("Simular Datas FM", () => {
   it("competência 12/2026 com os dias padrão reproduz o quadro fornecido, com Arquivo na primeira linha de datas", () => {
@@ -78,5 +78,9 @@ describe("Simular Datas FM", () => {
       ["DIOPS", "30/01/2027", -11],
       ["Pagamento", "30/01/2027", -11],
     ]);
+  });
+  it("IMPACTOS: PEONA conta dias do Período fora da competência; DARE e DIOPS repetem a coluna DIAS", () => {
+    expect(impactosFm({ ...COMPETENCIA_PADRAO, dias: {} })).toEqual({ peona: 0, dare: -26, diops: -11 });
+    expect(impactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20 }, arquivoMes: 12 }).peona).toBe(11); // 20/11 a 30/11
   });
 });

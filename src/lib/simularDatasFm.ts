@@ -164,3 +164,16 @@ export function carregarDatasFm(): EntradaDatasFm {
 export function salvarDatasFm(v: EntradaDatasFm) {
   try { localStorage.setItem(CHAVE_DATAS_FM, JSON.stringify(v)); } catch { /* navegador sem armazenamento */ }
 }
+
+/** IMPACTOS (pedido de 18/11/2026): PEONA = dias do Período fora do mês da competência; DARE e DIOPS = coluna DIAS dessas linhas. */
+export function impactosFm(e: EntradaDatasFm) {
+  const p = periodoFm(e);
+  let peona = 0;
+  for (let t = utcDe(p.de), fim = utcDe(p.ate); t <= fim; t += DIA_MS) {
+    const d = new Date(t);
+    if (d.getUTCMonth() + 1 !== e.mes || d.getUTCFullYear() !== e.ano) peona++;
+  }
+  const linhas = simularDatasFm(e);
+  const dias = (id: IdDataFm) => linhas.find((l) => l.id === id)!.diasBase;
+  return { peona, dare: dias("dare"), diops: dias("diops") };
+}
