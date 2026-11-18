@@ -17,6 +17,7 @@ const corNivel = (n: NivelImpactoFm) => n === "critico" ? "text-destructive" : n
 const pesoImpacto = (imp: { id: string; nivel: NivelImpactoFm }) => imp.id === "peona" && imp.nivel === "ideal" ? "font-bold" : "font-semibold";
 const dataHora = (iso: string) => { const d = new Date(iso); return isNaN(d.getTime()) ? "" : d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }); };
 
+// Lista e Simulação rolam dentro da própria tela (a área principal nunca rola), para o quadro Simular em blocos não esconder o restante (pedido de 18/11/2026).
 // Controle de Simulações de Datas FM (pedido de 18/11/2026): tela Lista de Simulações → tela Simulação (a anterior, com o Cenário — antes "Descrição" — numerado por ordem de inserção, e botões Gravar/Cancelar/Excluir); tudo fica neste navegador.
 export default function SimularDatasFm() {
   const [lista, setLista] = useState<SimulacaoFm[]>(carregarSimulacoesFm);
@@ -44,7 +45,7 @@ export default function SimularDatasFm() {
   const nova = () => setRascunho(novaSimulacaoFm(novoId(), agora(), proximo()));
   const ordenada = ordenarSimulacoesFm(lista);
   return (
-    <div className="space-y-4">
+    <div className="h-full space-y-4 overflow-y-auto pb-4 pr-2 [scrollbar-gutter:stable]">
       <div className="flex items-center justify-between gap-4 max-w-screen-2xl">
         <h1 className="text-xl font-semibold">Lista de Simulações — Datas FM</h1>
         <div className="flex items-center gap-2">
@@ -159,7 +160,7 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
   };
   const cls = "h-8 w-20 text-right tabular-nums";
   return (
-    <div className="space-y-4">
+    <div className="h-full space-y-4 overflow-y-auto pb-4 pr-2 [scrollbar-gutter:stable]">
       <h1 className="text-xl font-semibold">Simulação de Datas FM</h1>
       <AlertDialog open={confirmar !== null} onOpenChange={(o) => { if (!o) setConfirmar(null); }}>
         <AlertDialogContent>
