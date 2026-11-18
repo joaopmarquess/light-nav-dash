@@ -105,7 +105,7 @@ describe("Simular Datas FM", () => {
   it("PEONA: 0 Sem Impacto, abaixo de 10 dias Menor Impacto, 10 dias Impacto Controlado", () => {
     const peona = (arquivo: number) => avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo }, arquivoMes: 12 }).find((i) => i.id === "peona")!;
     expect(peona(22)).toMatchObject({ dias: 9, status: "Menor Impacto" }); // 22/11 a 21/12
-    expect(peona(21)).toMatchObject({ dias: 10, status: "Impacto Controlado", nivel: "ok" }); // 21/11 a 20/12, verde
+    expect(peona(21)).toMatchObject({ dias: 10, status: "Impacto Controlado", nivel: "controlado" }); // 21/11 a 20/12, laranja
     expect(avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: {} }).find((i) => i.id === "peona")).toMatchObject({ dias: 0, status: "Sem Impacto" });
   });
   it("PRAZO: Fechamento desde o Arquivo; Dare, DIOPS e Pagamento desde o Fechamento", () => {

@@ -107,8 +107,8 @@ export default function SimularDatasFm() {
               <tr key={imp.id} className="border-b border-border align-middle last:border-b-0">
                 <td className="w-20 px-3 py-1.5 font-semibold">{imp.rotulo}</td>
                 <td className="w-14 px-3 py-1.5 text-right tabular-nums">{imp.dias}</td>
-                {/* Sem impacto/Ideal em verde claro com seta para cima; Crítico em vermelho com seta para baixo; No limite em amarelo (pedidos de 18/11/2026). */}
-                <td className={`w-40 whitespace-nowrap px-3 py-1.5 font-semibold ${imp.nivel === "critico" ? "text-destructive" : imp.nivel === "ok" ? "text-[hsl(var(--impacto-ok))]" : imp.nivel === "limite" ? "text-[hsl(var(--impacto-limite))]" : "text-foreground"}`}>
+                {/* Sem impacto/Ideal em verde claro com seta para cima; Crítico em vermelho com seta para baixo; No limite em amarelo; Impacto Controlado em laranja (pedidos de 18/11/2026). */}
+                <td className={`w-40 whitespace-nowrap px-3 py-1.5 font-semibold ${imp.nivel === "critico" ? "text-destructive" : imp.nivel === "ok" ? "text-[hsl(var(--impacto-ok))]" : imp.nivel === "limite" ? "text-[hsl(var(--impacto-limite))]" : imp.nivel === "controlado" ? "text-[hsl(var(--impacto-controlado))]" : "text-foreground"}`}>
                   <span className="inline-flex items-center gap-1">
                     {imp.nivel === "ok" && <ArrowUp className="h-4 w-4" aria-hidden />}
                     {imp.nivel === "critico" && <ArrowDown className="h-4 w-4" aria-hidden />}
