@@ -8,6 +8,7 @@ export function useCarteiraTrialGeo(date: string) {
   return useQuery({
     queryKey: ["carteira-trial-geo", date],
     staleTime: 60_000,
+    retry: 1,
     queryFn: async (): Promise<GeographicRow[]> => {
       const { data, error } = await hostinger.rpc("carteira_trial_geo", { p_data: date });
       if (error) throw error;

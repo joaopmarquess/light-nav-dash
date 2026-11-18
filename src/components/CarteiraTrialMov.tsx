@@ -1,3 +1,4 @@
+import { AvisoErroDados } from "@/components/AvisoErroDados";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { type BlocoMes, type TransfPar, type TipoReentrada } from "@/lib/transferencias";
@@ -327,16 +328,16 @@ export default function CarteiraTrialMov() {
         {card("Final", vidasIndicadores.fin, Users, false, null, true)}
         {card("Crescimento", resumo.crescimento, Scale, resumo.crescimento < 0)}
       </div>
-      {err && <div className="p-4 text-center text-destructive">Erro: {err}</div>}
+      <AvisoErroDados erro={err} onTentar={buscar} />
       {mensalLoading && <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-5 w-5 motion-safe:animate-spin" />Consultando vidas no fechamento de cada mês…</div>}
-      {mensalErro && <div role="alert" className="text-destructive">Erro no gráfico: {mensalErro}</div>}
+      <AvisoErroDados erro={mensalErro} onTentar={buscar} />
       {cortado && <div className="text-xs text-muted-foreground">Limite de busca atingido, reduza o período.</div>}
       <div className={`grid h-[900px] w-full min-w-0 sm:h-[max(600px,calc(100vh-28rem))] motion-safe:transition-[grid-template-rows] motion-safe:duration-500 motion-safe:ease-in-out ${depuracaoAberta ? "grid-rows-[520px_minmax(0,1fr)] xl:grid-rows-[360px_minmax(0,1fr)]" : "grid-rows-[0px_minmax(0,1fr)]"}`}>
       <div className={`min-h-0 overflow-hidden motion-safe:transition-opacity motion-safe:duration-500 ${depuracaoAberta ? "visible opacity-100" : "invisible opacity-0"}`} aria-hidden={!depuracaoAberta}>
       <section id="depuracao-transferencias" className="h-full space-y-5 overflow-auto border-t pb-4 pt-5">
         <h2 className="text-lg font-semibold">Saldo das Transferências: <span className="tabular-nums">{num(resumo.transferenciasLiquidas)}</span></h2>
         {detalhesLoading && <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-5 w-5 motion-safe:animate-spin" />{detalhesEtapa}</div>}
-        {detalhesErro && <div role="alert" className="text-destructive">Erro: {detalhesErro}</div>}
+        <AvisoErroDados erro={detalhesErro} />
         <div className="grid gap-8 xl:grid-cols-2">{quadro("T+")}{quadro("T-")}</div>
       </section>
       </div>
@@ -347,7 +348,7 @@ export default function CarteiraTrialMov() {
       </>}
 
       {sel && !depuracaoAberta && detalhesLoading && <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-5 w-5 motion-safe:animate-spin" />{detalhesEtapa}</div>}
-      {sel && !depuracaoAberta && detalhesErro && <div role="alert" className="text-destructive">Erro: {detalhesErro}</div>}
+      {sel && !depuracaoAberta && <AvisoErroDados erro={detalhesErro} />}
       {sel && !loading && !detalhesLoading && detalhesProntos && (
         <div ref={listaRef} className="scroll-mt-4 rounded-xl border bg-card overflow-auto max-h-[60vh]">
           <div className="px-4 py-2 text-sm font-medium border-b">{sel.tipo}{sel.sub ? ` · ${sel.sub === "Pura" ? "Direta" : sel.sub}` : ""} · {num(lista.length)} registro(s){isT ? " · ligação por CPF" : ""}</div>

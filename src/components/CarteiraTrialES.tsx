@@ -1,3 +1,4 @@
+import { AvisoErroDados } from "@/components/AvisoErroDados";
 import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { normalizarVendedor } from "@/lib/vendedorTransferencia";
@@ -168,7 +169,7 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
         </button>
       </div>
 
-      {error && <div className="mb-3 text-sm text-destructive">Erro: {error}</div>}
+      <AvisoErroDados erro={error} onTentar={consultar} className="mb-3" />
       {loading && !rows && <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin mr-2" />Carregando…</div>}
 
       {rows && (

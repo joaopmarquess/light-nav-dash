@@ -1,3 +1,4 @@
+import { AvisoErroDados } from "@/components/AvisoErroDados";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, Search, User, Users, FileText, Wallet, Activity, History, LayoutGrid, X } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -95,7 +96,7 @@ function GrupoFamiliar({ familia, loading, erro, matSelecionada }: { familia: Fa
     <td className="whitespace-nowrap px-2 text-right">{fmtDec(t.despesa)}</td>
     <td className={`whitespace-nowrap px-2 text-right ${t.saldo < 0 ? "text-destructive" : ""}`}>{fmtDec(t.saldo)}</td>
   </>);
-  if (erro) return <p className="text-sm text-destructive">{erro}</p>;
+  if (erro) return <AvisoErroDados erro={erro} />;
   if (loading || !familia || !g) return <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando o grupo familiar…</div>;
   return (
     <div className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">
@@ -183,7 +184,7 @@ function ResultadoAssistencial({ eard, ate, escopo, onEscopo, familia, familiaLo
         </p>
       )}
       {aguardando ? <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Carregando o grupo familiar…</div>
-        : escopo === "Família" && familiaErro ? <p className="text-sm text-destructive">{familiaErro}</p> : (<>
+        : escopo === "Família" && familiaErro ? <AvisoErroDados erro={familiaErro} /> : (<>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Card label="Total Receitas" value={total.temDado ? fmtR(total.totalReceitas) : "—"} sub="no período" />
         <Card label="Despesas" value={total.temDado ? fmtR(total.despesa) : "—"} sub="no período" />
@@ -455,7 +456,7 @@ export default function PainelBeneficiario() {
               <Card label="Despesa assistencial" value={eardLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : ultimo ? fmtR(despesaMes(ultimo)) : "—"} sub={ultimo ? `competência ${fmtComp(ultimo.dt_competencia)}` : eard ? "sem registros" : undefined} />
             </div>
         )}
-        {erro && <p className="mt-2 text-xs text-destructive">{erro}</p>}
+        <AvisoErroDados erro={erro} className="mt-2" />
         {resultados && resultados.length === 0 && <p className="mt-2 text-xs text-muted-foreground">Nenhum beneficiário encontrado.</p>}
         {resultados && resultados.length > 1 && (
           <div className="mt-3 max-h-64 overflow-auto rounded-lg border border-border">

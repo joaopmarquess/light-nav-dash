@@ -1,3 +1,4 @@
+import { AvisoErroDados } from "@/components/AvisoErroDados";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { hostinger } from "@/lib/hostingerClient";
@@ -55,7 +56,7 @@ export default function CarteiraTabelas() {
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}Consultar
         </button>
       </div>
-      {erro && <div className="text-xs text-destructive">{erro}</div>}
+      <AvisoErroDados erro={erro} onTentar={/^\d{4}$/.test(plano) ? consultar : undefined} />
       {res && (
         <>
           <div className="text-sm">

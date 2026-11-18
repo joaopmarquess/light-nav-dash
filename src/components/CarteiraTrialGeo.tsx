@@ -1,3 +1,4 @@
+import { AvisoErroDados } from "@/components/AvisoErroDados";
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowLeft, Eye, EyeOff, Hospital, Loader2, Map as MapIcon, Scissors, Slash, X } from "lucide-react";
@@ -15,7 +16,7 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
   const [localDate, setLocalDate] = useState(geographicToday);
   const data = selectedDate ?? localDate;
   const setData = onDateChange ?? setLocalDate;
-  const { data: rows, isLoading: loading, error: queryError } = useCarteiraTrialGeo(data);
+  const { data: rows, isLoading: loading, error: queryError, refetch } = useCarteiraTrialGeo(data);
   const error = queryError?.message;
   const [sel, setSel] = useState<"SP" | "MG" | "MS" | "GO" | "BRASIL" | null>(null);
   const [showMAA, setShowMAA] = useState(false);
@@ -99,7 +100,7 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
   const corpo = loading ? (
     <div className="h-full flex items-center justify-center text-muted-foreground text-sm"><Loader2 className="h-4 w-4 mr-2 animate-spin" />Carregando…</div>
   ) : error ? (
-    <div className="p-4 text-destructive text-sm">Erro: {error}</div>
+    <div className="p-4"><AvisoErroDados erro={error} onTentar={() => void refetch()} /></div>
   ) : (
     <div className="flex h-full min-h-0 flex-col md:flex-row">
       {!mapOnly && listaEstados}

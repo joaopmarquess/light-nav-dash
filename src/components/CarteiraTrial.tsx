@@ -1,3 +1,4 @@
+import { AvisoErroDados } from "@/components/AvisoErroDados";
 import { useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { normalizarVendedor } from "@/lib/vendedorTransferencia";
@@ -142,11 +143,13 @@ export default function CarteiraTrial() {
   const [sp, setSp] = useState(periodoInicialSuspensos);
   const [susp, setSusp] = useState<{ sigla: string; motivo: string; faixa: string; vidas: number }[] | null | "erro">(null);
   const [kpi, setKpi] = useState<{ ativos?: number; futuros?: number; cancelados?: number; total?: number; contratos?: number; PIF?: number; PCA?: number; PCE?: number; cPIF?: number; cPCA?: number; cPCE?: number } | null>(null);
+  const [kpiErro, setKpiErro] = useState<string | null>(null);
+  const [tentativa, setTentativa] = useState(0);
   useEffect(() => {
     if (!ap) return;
-    setKpi(null);
+    setKpi(null); setKpiErro(null);
     hostinger.rpc("carteira_trial_kpis", { p_data: dRef, p_q: df.q.trim() || null, p_empresa: df.empresa.trim() || null, p_cidade: df.cidade.trim() || null }).then(({ data, error }: any) => {
-      if (error) { console.error(error); return; }
+      if (error) { console.error(error); setKpiErro(error.message); return; }
       const r = Array.isArray(data) ? data[0] : data;
       if (r) setKpi((k) => ({ ...k, ativos: Number(r.ativos), futuros: Number(r.futuros), cancelados: Number(r.cancelados), total: Number(r.total) }));
     });
@@ -164,7 +167,7 @@ export default function CarteiraTrial() {
       const g = (x: string) => Number((data ?? []).find((r: any) => r.sigla === x)?.contratos ?? 0);
       setKpi((k) => ({ ...k, cPIF: g("PIF"), cPCA: g("PCA"), cPCE: g("PCE") }));
     });
-  }, [ap]);
+  }, [ap, tentativa]);
   useEffect(() => {
     if (!ap || !sp || !suspensos) return;
     let cancelled = false;
@@ -238,7 +241,7 @@ export default function CarteiraTrial() {
       if (sort.key && sort.key !== "st") q = q.order(sort.key, { ascending: sort.asc, nullsFirst: false });
       const { data, error } = await q.range(page * PAGE, page * PAGE + PAGE - 1);
       if (cancel) return;
-      if (error) console.error(error);
+      if (error) { console.error(error); setListError(error.message); setFim(true); setLoading(false); return; }
       const norm = (data ?? []).map(normalizarVendedor);
       setRaw((old) => (page === 0 ? norm : [...old, ...norm]));
       setFim((data?.length ?? 0) < PAGE);
@@ -247,7 +250,7 @@ export default function CarteiraTrial() {
       if (!cancel) setTotal(count ?? null);
     })();
     return () => { cancel = true; };
-  }, [dfKey, page, sort.key === "st" ? "" : sort.key, sort.asc, grid]);
+  }, [dfKey, page, sort.key === "st" ? "" : sort.key, sort.asc, grid, tentativa]);
 
   const pages = total ? Math.ceil(total / PAGE) : 1;
   const set = (k: keyof Filters, v: string) => setF((p) => ({ ...p, [k]: v }));
@@ -306,6 +309,7 @@ export default function CarteiraTrial() {
         </div>
       </div>
 
+      {!grid && kpiErro && <AvisoErroDados erro={kpiErro} onTentar={() => setTentativa((t) => t + 1)} />}
       {!grid && (
         <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-3 gap-4 content-start">
           {!suspensos && ([
@@ -378,7 +382,7 @@ export default function CarteiraTrial() {
         </div>
       )}
       <div className={`flex-1 min-h-0 bg-card border border-border rounded-xl overflow-hidden flex-col ${grid ? "flex" : "hidden"}`}>
-        {listError && <p role="alert" className="p-3 text-sm text-destructive">{listError}</p>}
+        {listError && <div className="p-3"><AvisoErroDados erro={listError} onTentar={() => setTentativa((t) => t + 1)} /></div>}
         <div className="flex-1 min-h-0 overflow-auto" onScroll={(e) => { const el = e.currentTarget; if (df.status !== "S" && !loading && !fim && el.scrollTop + el.clientHeight > el.scrollHeight - 300) setPage((p) => p + 1); }}>
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-muted z-10">

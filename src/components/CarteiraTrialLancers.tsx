@@ -1,3 +1,4 @@
+import { AvisoErroDados } from "@/components/AvisoErroDados";
 import { planoOrFilter } from "@/lib/carteiraTabelas";
 import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
@@ -86,7 +87,7 @@ export default function CarteiraTrialLancers() {
         </button>
         <span className="text-xs text-muted-foreground ml-2">{plano ? `Plano ${plano} · ` : ""}{empresa.trim() ? `Estipulantes contendo "${empresa.trim().toUpperCase()}" · ` : "Todas as estipulantes · "}Enfermaria (Prata) · {fmtD(de)} a {fmtD(ate)}</span>
       </div>
-      {error && <div className="mb-3 text-sm text-destructive">Erro: {error}</div>}
+      <AvisoErroDados erro={error} onTentar={consultar} className="mb-3" />
       {loading && !rows && <div className="text-sm text-muted-foreground flex items-center"><Loader2 className="h-4 w-4 animate-spin mr-2" />Carregando…</div>}
       {rows && (
         <table className="w-full max-w-2xl text-sm [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border">

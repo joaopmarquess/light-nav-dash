@@ -1,3 +1,4 @@
+import { AvisoErroDados } from "@/components/AvisoErroDados";
 import { useEffect, useMemo, useState } from "react";
 import { hostinger } from "@/lib/hostingerClient";
 import { CartesianGrid, LabelList, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -58,6 +59,7 @@ async function emLotes<T, R>(xs: T[], f: (x: T) => Promise<R>, n = 4) {
 function GridVidas({ datas, de, ate }: { datas: Data[]; de: number; ate: number }) {
   const [linhas, setLinhas] = useState<Linha[] | null>(null);
   const [err, setErr] = useState("");
+  const [tent, setTent] = useState(0);
   useEffect(() => {
     let off = false;
     setLinhas(null); setErr("");
@@ -66,10 +68,10 @@ function GridVidas({ datas, de, ate }: { datas: Data[]; de: number; ate: number 
       if (!off) setLinhas([...r].reverse());
     })().catch((e: Error) => !off && setErr(e.message));
     return () => { off = true; };
-  }, [datas, de, ate]);
+  }, [datas, de, ate, tent]);
   const [abertos, setAbertos] = useState<Set<string>>(new Set());
   const nf = (n: number) => n.toLocaleString("pt-BR");
-  if (err) return <p className="text-sm text-destructive">{err}</p>;
+  if (err) return <AvisoErroDados erro={err} onTentar={() => setTent((t) => t + 1)} />;
   if (!linhas) return <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Gerando grid…</p>;
   const tog = (k: string) => setAbertos((s) => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n; });
   const Btn = ({ k }: { k: string }) => (
@@ -137,6 +139,7 @@ function Bloco({ titulo, aberto, onToggle, children }: { titulo: string; aberto:
 export default function MovimentacaoEvolucaoMensal() {
   const [dados, setDados] = useState<Record<string, any>[] | null>(null);
   const [err, setErr] = useState("");
+  const [tent, setTent] = useState(0);
   const [grafAberto, setGrafAberto] = useState(true);
   const [gridAberto, setGridAberto] = useState(false);
   const [de, setDe] = useState(2019);
@@ -171,7 +174,7 @@ export default function MovimentacaoEvolucaoMensal() {
       setDados(pts);
     })().catch((e: Error) => !off && setErr(e.message));
     return () => { off = true; };
-  }, [datas, ANOS, de, ate]);
+  }, [datas, ANOS, de, ate, tent]);
 
   const sel = "rounded-md border border-border bg-background px-2 py-1.5 text-sm";
   return (
@@ -186,7 +189,7 @@ export default function MovimentacaoEvolucaoMensal() {
         </div>
       </div>
       <Bloco titulo="Gráfico" aberto={grafAberto} onToggle={() => setGrafAberto((v) => !v)}>
-        {err ? <p className="text-sm text-destructive">{err}</p> : !dados ? (
+        {err ? <AvisoErroDados erro={err} onTentar={() => setTent((t) => t + 1)} /> : !dados ? (
           <p className="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando vidas de {de} a {ate}…</p>
         ) : (
           <div className="h-[380px]">

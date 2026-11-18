@@ -37,3 +37,10 @@
 ## AXIS › Publicação e aviso de versão (16/11/2026)
 - [x] Publicar o AXIS.
 - [ ] Enviar e-mail com o número da nova versão aos 3 usuários ativos — aguardando o Dênis escolher a caixa de envio (Gmail ou Outlook).
+
+## Carteira › Revisão (18/11/2026)
+- [x] 1. Aviso único “servidor indisponível” com Tentar de novo em todas as telas.
+- [ ] 2. Padronizar visual (cabeçalho, período MM/AAAA, blocos recolhíveis, verde claro no Painel, ícones do menu) — aguardando OK do Dênis.
+- [ ] 3. Funcionalidade (exportações, Entradas/Saídas sob Consultar + gráfico, Consulta, Tabelas com lista de planos, Evolução Mensal) — aguardando OK.
+- [ ] 4. Reorganizar ordem do menu — aguardando OK.
+- [ ] 5. Limpeza das telas antigas fora do menu — aguardando OK.
