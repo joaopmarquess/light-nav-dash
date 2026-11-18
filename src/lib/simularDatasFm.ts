@@ -5,9 +5,10 @@ export type IdDataFm = "de" | "ate" | "arquivo" | "fechamento" | "dare" | "diops
 export type LinhaDataFmDef = { id: IdDataFm; rotulo: string; diaPadrao: number; mesSeguinte: boolean; destaque?: boolean; separadorAntes?: boolean };
 
 export const LINHAS_DATAS_FM: LinhaDataFmDef[] = [
+  // Arquivo logo após a Competência (pedido de 18/11/2026).
+  { id: "arquivo", rotulo: "Arquivo", diaPadrao: 5, mesSeguinte: true, destaque: true },
   { id: "de", rotulo: "De", diaPadrao: 1, mesSeguinte: false },
   { id: "ate", rotulo: "Até", diaPadrao: 30, mesSeguinte: false },
-  { id: "arquivo", rotulo: "Arquivo", diaPadrao: 5, mesSeguinte: true, destaque: true },
   { id: "fechamento", rotulo: "Fechamento", diaPadrao: 10, mesSeguinte: true },
   { id: "dare", rotulo: "Dare", diaPadrao: 15, mesSeguinte: true, separadorAntes: true },
   { id: "diops", rotulo: "DIOPS", diaPadrao: 30, mesSeguinte: true },
@@ -15,7 +16,9 @@ export const LINHAS_DATAS_FM: LinhaDataFmDef[] = [
 ];
 export const COMPETENCIA_PADRAO = { mes: 12, ano: 2026 };
 
-export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>> };
+/** "Dias" (pedido de 18/11/2026): variável numérica própria, padrão 1, exibida logo após Arquivo; ainda sem efeito nas datas. */
+export const DIAS_PADRAO = 1;
+export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>>; qtdDias?: number };
 
 const ultimoDia = (ano: number, mes: number) => new Date(Date.UTC(ano, mes, 0)).getUTCDate();
 const dd = (n: number) => String(n).padStart(2, "0");
@@ -55,6 +58,7 @@ export function carregarDatasFm(): EntradaDatasFm {
       mes: Number.isInteger(b?.mes) && b.mes >= 1 && b.mes <= 12 ? b.mes : COMPETENCIA_PADRAO.mes,
       ano: Number.isInteger(b?.ano) && b.ano >= 2000 && b.ano <= 2100 ? b.ano : COMPETENCIA_PADRAO.ano,
       dias,
+      ...(Number.isInteger(b?.qtdDias) && b.qtdDias >= 0 && b.qtdDias <= 365 ? { qtdDias: b.qtdDias } : {}),
     };
   } catch { return { ...COMPETENCIA_PADRAO, dias: {} }; }
 }

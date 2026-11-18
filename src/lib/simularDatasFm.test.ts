@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import { COMPETENCIA_PADRAO, dataDaLinha, lerInteiro, simularDatasFm } from "./simularDatasFm";
 
 describe("Simular Datas FM", () => {
-  it("competência 12/2026 com os dias padrão reproduz o quadro fornecido", () => {
+  it("competência 12/2026 com os dias padrão reproduz o quadro fornecido, com Arquivo na primeira linha de datas", () => {
     const linhas = simularDatasFm({ ...COMPETENCIA_PADRAO, dias: {} });
     expect(linhas.map((l) => [l.rotulo, l.dia, l.data])).toEqual([
+      ["Arquivo", 5, "05/01/2027"],
       ["De", 1, "01/12/2026"],
       ["Até", 30, "30/12/2026"],
-      ["Arquivo", 5, "05/01/2027"],
       ["Fechamento", 10, "10/01/2027"],
       ["Dare", 15, "15/01/2027"],
       ["DIOPS", 30, "30/01/2027"],

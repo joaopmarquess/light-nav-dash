@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { carregarDatasFm, lerInteiro, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { DIAS_PADRAO, carregarDatasFm, lerInteiro, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
 // Laboratory › Simular Datas FM: Competência (mês/ano) e o dia de cada linha, com a data calculada; valores digitados ficam neste navegador.
 export default function SimularDatasFm() {
@@ -41,7 +41,8 @@ export default function SimularDatasFm() {
                 {...campo("ano", entrada.ano, 2000, 2100, (v) => v !== undefined && gravar({ ...entrada, ano: v }))} /></td>
             </tr>
             {linhas.map((l) => (
-              <tr key={l.id} className={`border-b border-border ${l.separadorAntes ? "border-t-2 border-t-foreground" : ""} ${l.destaque ? "font-bold" : ""}`}>
+              <Fragment key={l.id}>
+              <tr className={`border-b border-border ${l.separadorAntes ? "border-t-2 border-t-foreground" : ""} ${l.destaque ? "font-bold" : ""}`}>
                 <td className="px-3 py-1.5">{l.rotulo}</td>
                 <td className="px-3 py-1.5">
                   <Input aria-label={`Dia — ${l.rotulo}`} inputMode="numeric" title="Apague para restaurar o padrão" className={`ml-auto ${cls} ${l.destaque ? "font-bold" : ""}`}
@@ -55,6 +56,17 @@ export default function SimularDatasFm() {
                   {l.data}{l.ajustado ? " *" : ""}
                 </td>
               </tr>
+              {l.id === "arquivo" && (
+                <tr className="border-b border-border">
+                  <td className="px-3 py-1.5">Dias</td>
+                  <td className="px-3 py-1.5">
+                    <Input aria-label="Dias" inputMode="numeric" title="Apague para restaurar o padrão" className={`ml-auto ${cls}`}
+                      {...campo("qtdDias", entrada.qtdDias ?? DIAS_PADRAO, 0, 365, (v) => { const { qtdDias: _, ...resto } = entrada; gravar(v === undefined ? resto : { ...resto, qtdDias: v }); })} />
+                  </td>
+                  <td />
+                </tr>
+              )}
+              </Fragment>
             ))}
           </tbody>
         </table>
