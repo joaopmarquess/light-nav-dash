@@ -57,7 +57,7 @@ export function buildPropostaRedePdf(
     }
   };
 
-  const tabela = (head: string[], body: string[][], colunas: Record<number, { halign?: "left" | "center" | "right"; cellWidth?: number }>, negritoUltima: boolean, itens: ReadonlySet<number> = new Set()) => {
+  const tabela = (head: string[], body: string[][], colunas: Record<number, { halign?: "left" | "center" | "right" | "justify"; cellWidth?: number }>, negritoUltima: boolean, itens: ReadonlySet<number> = new Set()) => {
     autoTable(doc, {
       rowPageBreak: "avoid",
       theme: "plain",
@@ -103,7 +103,12 @@ export function buildPropostaRedePdf(
     const LN = alturaLinha(F.notaPrecos);
     // A nota nunca se divide entre páginas; basta a linha de base da última linha caber acima da margem inferior.
     garantir((linhas.length - 1) * LN + 1);
-    linhas.forEach((l) => { doc.text(l, marginL, y); y += LN; });
+    // Justificada às margens (pedido de 18/11/2026); a última linha fica alinhada à esquerda, como nos parágrafos.
+    linhas.forEach((l, i) => {
+      if (i < linhas.length - 1) doc.text([l, ""], marginL, y, { align: "justify", maxWidth: LARGURA });
+      else doc.text(l, marginL, y);
+      y += LN;
+    });
     y += 6;
   };
 
@@ -112,7 +117,7 @@ export function buildPropostaRedePdf(
     // Tipos abertos item a item, exceto Especialidades médicas (pedido de 18/11/2026).
     const quadro = quadroCondicoesRede(quantidades);
     tabela([...COLUNAS_CONDICOES_REDE], quadro.map((l) => l.celulas), {
-      0: { halign: "left", cellWidth: 70 }, 1: { cellWidth: 26 }, 2: { cellWidth: 36 }, 3: { cellWidth: LARGURA - 132 },
+      0: { halign: "justify", cellWidth: 70 }, 1: { cellWidth: 26 }, 2: { cellWidth: 36 }, 3: { cellWidth: LARGURA - 132 },
     }, true, new Set(quadro.flatMap((l, i) => (l.item ? [i] : []))));
     nota(NOTA_CONDICOES_REDE);
   };
@@ -135,7 +140,7 @@ export function buildPropostaRedePdf(
     nota(NOTA_PROJECAO_REDE);
   };
   const desenharGestao = () => {
-    tabela(["PARÂMETRO", "VALOR"], linhasParametrosRede(parametros), { 0: { halign: "left" }, 1: { cellWidth: 50 } }, false);
+    tabela(["PARÂMETRO", "VALOR"], linhasParametrosRede(parametros), { 0: { halign: "justify" }, 1: { cellWidth: 50 } }, false);
     nota(regraMensalidadeRede(parametros));
     desenharProjecao();
   };
@@ -183,7 +188,7 @@ export function buildPropostaRedePdf(
   y += 10;
   paragrafo(TEXTO_CONDICOES_GERAIS_REDE);
   y += 2;
-  tabela(["CONDIÇÃO", "DEFINIÇÃO"], CONDICOES_GERAIS_REDE.map((c) => [c.item, c.valor]), { 0: { halign: "left", cellWidth: 55 }, 1: { halign: "left" } }, false);
+  tabela(["CONDIÇÃO", "DEFINIÇÃO"], CONDICOES_GERAIS_REDE.map((c) => [c.item, c.valor]), { 0: { halign: "justify", cellWidth: 55 }, 1: { halign: "justify" } }, false);
 
   const total = doc.getNumberOfPages();
   for (let p = 1; p <= total; p++) {
