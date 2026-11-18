@@ -1,0 +1,41 @@
+/** Parâmetros de Resultados Rede (Estudo Uberaba, pedido de 18/11/2026): variáveis editadas na tela e gravadas neste navegador; vazio restaura o padrão. */
+export type CampoParametroRede = "parcelasFixas" | "valorParcela" | "valorPorVida";
+export type ParametrosRede = Record<CampoParametroRede, number>;
+
+export const PARAMETROS_REDE_PADRAO: ParametrosRede = { parcelasFixas: 6, valorParcela: 15000, valorPorVida: 1 };
+export const CAMPOS_PARAMETROS_REDE: { campo: CampoParametroRede; rotulo: string; moeda: boolean; inteiro: boolean }[] = [
+  { campo: "parcelasFixas", rotulo: "Parcelas fixas", moeda: false, inteiro: true },
+  { campo: "valorParcela", rotulo: "Valor Parcela", moeda: true, inteiro: false },
+  { campo: "valorPorVida", rotulo: "Valor por vida", moeda: true, inteiro: false },
+];
+export const CHAVE_PARAMETROS_REDE = "uberaba.resultadosRede.parametros.v1";
+
+/** Texto digitado em pt-BR ("15.000", "1,50"): vazio → undefined (restaura o padrão); inválido, negativo ou fração em campo inteiro → null (recusado). */
+export function lerParametroRede(texto: string, inteiro: boolean): number | undefined | null {
+  const t = texto.trim();
+  if (t === "") return undefined;
+  const ok = inteiro ? /^\d{1,3}(\.\d{3})*$|^\d+$/ : /^\d{1,3}(\.\d{3})*(,\d{0,2})?$|^\d+(,\d{0,2})?$/;
+  if (!ok.test(t)) return null;
+  return Number(t.replace(/\./g, "").replace(",", "."));
+}
+
+/** Valores efetivos: o digitado prevalece sobre o padrão. */
+export function parametrosRede(digitados: Partial<ParametrosRede> = {}): ParametrosRede {
+  return { ...PARAMETROS_REDE_PADRAO, ...digitados };
+}
+
+export function carregarParametrosRede(): Partial<ParametrosRede> {
+  try {
+    const bruto = JSON.parse(localStorage.getItem(CHAVE_PARAMETROS_REDE) ?? "{}");
+    const saida: Partial<ParametrosRede> = {};
+    for (const { campo, inteiro } of CAMPOS_PARAMETROS_REDE) {
+      const v = bruto?.[campo];
+      if (typeof v === "number" && Number.isFinite(v) && v >= 0 && (!inteiro || Number.isInteger(v))) saida[campo] = v;
+    }
+    return saida;
+  } catch { return {}; }
+}
+
+export function salvarParametrosRede(valores: Partial<ParametrosRede>) {
+  try { localStorage.setItem(CHAVE_PARAMETROS_REDE, JSON.stringify(valores)); } catch { /* navegador sem armazenamento */ }
+}
