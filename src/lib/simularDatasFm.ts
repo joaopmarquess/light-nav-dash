@@ -185,53 +185,36 @@ export function impactosFm(e: EntradaDatasFm) {
   return { peona, dare: dias("dare"), diops: dias("diops"), pagamento: dias("pagamento") };
 }
 
-/** Premissas dos IMPACTOS (pedido de 18/11/2026):
- * PEONA — quanto mais dias do Período fora da competência, maior o impacto (aumento do valor do PEONA): 0 Sem Impacto, 1–4 Menor Impacto, 5–10 Impacto Controlado, 11–15 Pequeno Impacto, acima de 15 Impacto Considerável;
- * DARE — entregue sempre no dia 15; menos de 5 dias para fechar é crítico, o ideal é 10 ou mais;
- * DIOPS — entregue sempre no dia 30; o ideal é ter pelo menos 15 dias;
- * PAGAMENTO — sempre no dia 30; quanto mais perto do Fechamento, pior; o ideal é ter pelo menos 15 dias. */
-export const PEONA_CONTROLADO_DE = 5, PEONA_CONTROLADO_ATE = 10, PEONA_PEQUENO = 15, DARE_MINIMO = 5, DARE_IDEAL = 10, DIOPS_IDEAL = 15, PAGAMENTO_IDEAL = 15;
-export type NivelImpactoFm = "ok" | "atencao" | "controlado" | "limite" | "critico";
+/** Premissas dos IMPACTOS (pedidos de 18/11/2026), classificadas em apenas três níveis: Crítico, Moderado e Ideal.
+ * PEONA — dias do Período fora da competência aumentam o valor do PEONA: 0 Ideal; 1 a 15 Moderado; acima de 15 Crítico;
+ * DARE — entregue sempre no dia 15: menos de 5 dias Crítico; 5 a 9 Moderado; 10 ou mais Ideal;
+ * DIOPS — entregue sempre no dia 30: menos de 15 dias Moderado; 15 ou mais Ideal;
+ * PAGAMENTO — sempre no dia 30, quanto mais perto do Fechamento, pior: menos de 15 dias Moderado; 15 ou mais Ideal. */
+export const PEONA_MODERADO_ATE = 15, DARE_MINIMO = 5, DARE_IDEAL = 10, DIOPS_IDEAL = 15, PAGAMENTO_IDEAL = 15;
+export type NivelImpactoFm = "ideal" | "moderado" | "critico";
+export const STATUS_IMPACTO_FM: Record<NivelImpactoFm, string> = { ideal: "Ideal", moderado: "Moderado", critico: "Crítico" };
 export type ImpactoFm = { id: "peona" | "dare" | "diops" | "pagamento"; rotulo: string; dias: number; nivel: NivelImpactoFm; status: string; descricao: string };
 const plural = (n: number) => `${n} ${Math.abs(n) === 1 ? "dia" : "dias"}`;
 export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
   const { peona, dare, diops, pagamento } = impactosFm(e);
+  const item = (id: ImpactoFm["id"], rotulo: string, dias: number, nivel: NivelImpactoFm, descricao: string): ImpactoFm =>
+    ({ id, rotulo, dias, nivel, status: STATUS_IMPACTO_FM[nivel], descricao });
   return [
-    // PEONA (pedidos de 18/11/2026): 0 Sem Impacto; 1–4 Menor Impacto; 5–10 Impacto Controlado (laranja); 11–15 Pequeno Impacto; acima de 15 Impacto Considerável.
-    peona > PEONA_PEQUENO
-      ? { id: "peona", rotulo: "PEONA", dias: peona, nivel: "atencao", status: "Impacto Considerável",
-          descricao: `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA, acima de ${PEONA_PEQUENO} dias.` }
-      : peona > PEONA_CONTROLADO_ATE
-        ? { id: "peona", rotulo: "PEONA", dias: peona, nivel: "atencao", status: "Pequeno Impacto",
-            descricao: `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA, entre ${PEONA_CONTROLADO_ATE + 1} e ${PEONA_PEQUENO} dias.` }
-        : peona >= PEONA_CONTROLADO_DE
-          ? { id: "peona", rotulo: "PEONA", dias: peona, nivel: "controlado", status: "Impacto Controlado",
-              descricao: `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA, entre ${PEONA_CONTROLADO_DE} e ${PEONA_CONTROLADO_ATE} dias.` }
-          : peona > 0
-            ? { id: "peona", rotulo: "PEONA", dias: peona, nivel: "atencao", status: "Menor Impacto",
-                descricao: `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA, abaixo de ${PEONA_CONTROLADO_DE} dias.` }
-            : { id: "peona", rotulo: "PEONA", dias: peona, nivel: "ok", status: "Sem Impacto", descricao: "Todo o Período está no mês da competência." },
+    peona === 0
+      ? item("peona", "PEONA", peona, "ideal", "Todo o Período está no mês da competência.")
+      : item("peona", "PEONA", peona, peona > PEONA_MODERADO_ATE ? "critico" : "moderado",
+          `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA; acima de ${PEONA_MODERADO_ATE} dias é crítico.`),
     dare < DARE_MINIMO
-      ? { id: "dare", rotulo: "DARE", dias: dare, nivel: "critico", status: "Crítico",
-          descricao: `${plural(dare)} para fechar o Dare (entrega no dia 15); o mínimo é ${DARE_MINIMO} e o ideal, ${DARE_IDEAL}.` }
-      : dare === DARE_MINIMO // exatamente no mínimo: "No limite", em laranja como Impacto Controlado (pedidos de 18/11/2026)
-        ? { id: "dare", rotulo: "DARE", dias: dare, nivel: "limite", status: "No limite",
-            descricao: `${plural(dare)} para fechar o Dare (entrega no dia 15): exatamente o mínimo de ${DARE_MINIMO}; o ideal é ${DARE_IDEAL}.` }
+      ? item("dare", "DARE", dare, "critico", `${plural(dare)} para fechar o Dare (entrega no dia 15); o mínimo é ${DARE_MINIMO} e o ideal, ${DARE_IDEAL}.`)
       : dare < DARE_IDEAL
-        ? { id: "dare", rotulo: "DARE", dias: dare, nivel: "atencao", status: "Abaixo do ideal",
-            descricao: `${plural(dare)} para fechar o Dare (entrega no dia 15): atende ao mínimo de ${DARE_MINIMO}, mas fica abaixo do ideal de ${DARE_IDEAL}.` }
-        : { id: "dare", rotulo: "DARE", dias: dare, nivel: "ok", status: "Ideal",
-            descricao: `${plural(dare)} para fechar o Dare (entrega no dia 15), dentro do ideal de ${DARE_IDEAL}.` },
+        ? item("dare", "DARE", dare, "moderado", `${plural(dare)} para fechar o Dare (entrega no dia 15): atende ao mínimo de ${DARE_MINIMO}, mas fica abaixo do ideal de ${DARE_IDEAL}.`)
+        : item("dare", "DARE", dare, "ideal", `${plural(dare)} para fechar o Dare (entrega no dia 15), dentro do ideal de ${DARE_IDEAL}.`),
     diops < DIOPS_IDEAL
-      ? { id: "diops", rotulo: "DIOPS", dias: diops, nivel: "atencao", status: "Abaixo do ideal",
-          descricao: `${plural(diops)} até a entrega do DIOPS (dia 30); o ideal é ter pelo menos ${DIOPS_IDEAL}.` }
-      : { id: "diops", rotulo: "DIOPS", dias: diops, nivel: "ok", status: "Ideal",
-          descricao: `${plural(diops)} até a entrega do DIOPS (dia 30), dentro do ideal de ${DIOPS_IDEAL}.` },
+      ? item("diops", "DIOPS", diops, "moderado", `${plural(diops)} até a entrega do DIOPS (dia 30); o ideal é ter pelo menos ${DIOPS_IDEAL}.`)
+      : item("diops", "DIOPS", diops, "ideal", `${plural(diops)} até a entrega do DIOPS (dia 30), dentro do ideal de ${DIOPS_IDEAL}.`),
     pagamento < PAGAMENTO_IDEAL
-      ? { id: "pagamento", rotulo: "PAGAMENTO", dias: pagamento, nivel: "atencao", status: "Abaixo do ideal",
-          descricao: `${plural(pagamento)} entre o Fechamento e o Pagamento (dia 30); quanto mais perto do Fechamento, pior. O ideal é ter pelo menos ${PAGAMENTO_IDEAL}.` }
-      : { id: "pagamento", rotulo: "PAGAMENTO", dias: pagamento, nivel: "ok", status: "Ideal",
-          descricao: `${plural(pagamento)} entre o Fechamento e o Pagamento (dia 30), dentro do ideal de ${PAGAMENTO_IDEAL}.` },
+      ? item("pagamento", "PAGAMENTO", pagamento, "moderado", `${plural(pagamento)} entre o Fechamento e o Pagamento (dia 30); quanto mais perto do Fechamento, pior. O ideal é ter pelo menos ${PAGAMENTO_IDEAL}.`)
+      : item("pagamento", "PAGAMENTO", pagamento, "ideal", `${plural(pagamento)} entre o Fechamento e o Pagamento (dia 30), dentro do ideal de ${PAGAMENTO_IDEAL}.`),
   ];
 }
 
