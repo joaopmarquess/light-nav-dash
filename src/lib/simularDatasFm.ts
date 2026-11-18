@@ -1,17 +1,17 @@
 /** Simular Datas FM (Laboratory, pedido de 18/11/2026): a partir da Competência (mês/ano), cada linha recebe um dia e mostra a data.
- * Arquivo, Fechamento, Dare, DIOPS e Pagamento caem no mês seguinte (De e Até saíram do grid em 18/11/2026).
+ * Arquivo, Dare, DIOPS e Pagamento caem no mês seguinte; Fechamento = Arquivo + REFERÊNCIA dias (De e Até saíram do grid em 18/11/2026).
  * Dia maior que o último dia do mês vira o último dia (ex.: 30 em fevereiro → 28 ou 29).
  * Último Dia (pedido de 18/11/2026): se o mês do Arquivo = mês da competência, dia do Arquivo − 1; senão, último dia útil do mês da competência (ultimoDiaUtil). */
 export type IdDataFm = "arquivo" | "fechamento" | "dare" | "diops" | "pagamento";
-export type LinhaDataFmDef = { id: IdDataFm; rotulo: string; diaPadrao: number; mesSeguinte: boolean; destaque?: boolean; separadorAntes?: boolean; pedeMes?: boolean; mesDoArquivo?: boolean };
+export type LinhaDataFmDef = { id: IdDataFm; rotulo: string; diaPadrao: number; mesSeguinte: boolean; destaque?: boolean; separadorAntes?: boolean; pedeMes?: boolean; somaAoArquivo?: boolean };
 
 export const LINHAS_DATAS_FM: LinhaDataFmDef[] = [
   // Arquivo logo após a Competência (pedido de 18/11/2026).
   // Arquivo pede dia/mês (pedido de 18/11/2026); sem mês digitado, usa o mês seguinte à competência.
   { id: "arquivo", rotulo: "Arquivo", diaPadrao: 5, mesSeguinte: true, destaque: true, pedeMes: true },
   // De e Até retirados do grid (pedido de 18/11/2026); o Período acima do grid substitui.
-  // Fechamento: dia indicado no mês subsequente ao do Arquivo (pedido de 18/11/2026).
-  { id: "fechamento", rotulo: "Fechamento", diaPadrao: 10, mesSeguinte: true, mesDoArquivo: true },
+  // Fechamento = data do Arquivo + REFERÊNCIA em dias corridos (pedido de 18/11/2026; substitui "dia no mês seguinte ao Arquivo").
+  { id: "fechamento", rotulo: "Fechamento", diaPadrao: 10, mesSeguinte: true, somaAoArquivo: true },
   { id: "dare", rotulo: "Dare", diaPadrao: 15, mesSeguinte: true, separadorAntes: true },
   { id: "diops", rotulo: "DIOPS", diaPadrao: 30, mesSeguinte: true },
   { id: "pagamento", rotulo: "Pagamento", diaPadrao: 30, mesSeguinte: true },
@@ -57,16 +57,16 @@ export function simularDatasFm(e: EntradaDatasFm) {
 
 function linhasDatasFm({ mes, ano, dias, arquivoMes }: EntradaDatasFm) {
   const mesArquivo = arquivoMes ?? (mes === 12 ? 1 : mes + 1);
+  const diaArquivo = dias.arquivo ?? LINHAS_DATAS_FM.find((l) => l.id === "arquivo")!.diaPadrao;
+  const dataArquivo = dataDiaMes(mes, ano, diaArquivo, mesArquivo).data;
   return LINHAS_DATAS_FM.map((l) => {
     const dia = dias[l.id] ?? l.diaPadrao;
     if (l.pedeMes) {
       return { ...l, dia, mesLinha: mesArquivo, diaMes: `${dd(dia)}/${dd(mesArquivo)}`, ...dataDiaMes(mes, ano, dia, mesArquivo) };
     }
-    if (l.mesDoArquivo) {
-      const anoArquivo = mesArquivo >= mes ? ano : ano + 1;
-      const m = mesArquivo === 12 ? 1 : mesArquivo + 1, a = mesArquivo === 12 ? anoArquivo + 1 : anoArquivo;
-      const d = Math.min(Math.max(1, dia), ultimoDia(a, m));
-      return { ...l, dia, mesLinha: m, diaMes: undefined, data: `${dd(d)}/${dd(m)}/${a}`, ajustado: d !== dia };
+    if (l.somaAoArquivo) {
+      const t = new Date(utcDe(dataArquivo) + dia * 86400000);
+      return { ...l, dia, mesLinha: t.getUTCMonth() + 1, diaMes: undefined, data: `${dd(t.getUTCDate())}/${dd(t.getUTCMonth() + 1)}/${t.getUTCFullYear()}`, ajustado: false };
     }
     return { ...l, dia, mesLinha: undefined, diaMes: undefined, ...dataDaLinha(mes, ano, dia, l.mesSeguinte) };
   });

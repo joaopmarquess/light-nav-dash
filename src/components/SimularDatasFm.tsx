@@ -81,7 +81,7 @@ export default function SimularDatasFm() {
               <tr className={`border-b border-border ${l.separadorAntes ? "border-t-2 border-t-foreground" : ""} ${l.destaque ? "font-bold" : ""}`}>
                 <td className="px-3 py-1.5 uppercase">{l.rotulo}</td>
                 <td className="px-3 py-1.5">
-                  <Input aria-label={`Dia — ${l.rotulo}`} inputMode="numeric" title="Apague para restaurar o padrão" className={`ml-auto ${cls} ${l.destaque ? "font-bold" : ""}`}
+                  <Input aria-label={`Dia — ${l.rotulo}`} inputMode="numeric" title={l.somaAoArquivo ? "Dias somados à data do Arquivo; apague para restaurar o padrão" : "Apague para restaurar o padrão"} className={`ml-auto ${cls} ${l.destaque ? "font-bold" : ""}`}
                     {...campo(l.id, l.dia, 1, 31, (v) => {
                       const dias = { ...entrada.dias };
                       if (v === undefined) delete dias[l.id as IdDataFm]; else dias[l.id as IdDataFm] = v;
