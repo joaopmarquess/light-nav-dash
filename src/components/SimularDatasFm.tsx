@@ -1,5 +1,9 @@
 import { Fragment, useState } from "react";
-import { Copy, Plus, Save, Trash2, X } from "lucide-react";
+import { Copy, Plus, Printer, Save, Trash2, X } from "lucide-react";
+import PdfPreview from "@/components/PdfPreview";
+import { loadTimbrado } from "@/lib/pdfTimbrado";
+import { loadMarcaAxis } from "@/lib/pdfMarcaAxis";
+import { buildCenariosFmPdf } from "@/lib/simularDatasFmPdf";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -19,6 +23,7 @@ export default function SimularDatasFm() {
   // Tela Simulação edita um rascunho; só o botão Gravar leva as alterações à lista (pedido de 18/11/2026).
   const [rascunho, setRascunho] = useState<SimulacaoFm | null>(null);
   const [excluir, setExcluir] = useState<SimulacaoFm | null>(null);
+  const [imprimir, setImprimir] = useState(false);
   const gravar = (proxima: SimulacaoFm[]) => {
     setLista(proxima); salvarSimulacoesFm(proxima);
     const maior = Math.max(ultimoNumero, ...proxima.map((s) => s.numero));
@@ -41,7 +46,12 @@ export default function SimularDatasFm() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4 max-w-screen-2xl">
         <h1 className="text-xl font-semibold">Lista de Simulações — Datas FM</h1>
-        <Button size="sm" onClick={nova}><Plus className="mr-1 h-4 w-4" />Nova simulação</Button>
+        <div className="flex items-center gap-2">
+          {/* Imprimir Cenários (pedido de 18/11/2026): relatório padrão com uma página por cenário. */}
+          <Button size="icon" variant="outline" className="h-9 w-9" title={lista.length ? "Imprimir Cenários" : "Nenhum cenário para imprimir"} aria-label="Imprimir Cenários"
+            disabled={lista.length === 0} onClick={() => setImprimir(true)}><Printer className="h-4 w-4" /></Button>
+          <Button size="sm" onClick={nova}><Plus className="mr-1 h-4 w-4" />Nova simulação</Button>
+        </div>
       </div>
       <div className="max-w-screen-2xl overflow-x-auto rounded-md border border-border">
         <table className="w-full border-collapse whitespace-nowrap text-sm">
@@ -90,6 +100,10 @@ export default function SimularDatasFm() {
           </tbody>
         </table>
       </div>
+      {imprimir && (
+        <PdfPreview build={async () => buildCenariosFmPdf(await loadTimbrado(), lista, { marcaAxis: await loadMarcaAxis() })}
+          fileName={`Simulacoes_Datas_FM_${new Date().toISOString().slice(0, 10)}.pdf`} onClose={() => setImprimir(false)} />
+      )}
       <AlertDialog open={excluir !== null} onOpenChange={(o) => { if (!o) setExcluir(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
