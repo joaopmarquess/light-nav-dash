@@ -85,7 +85,7 @@ describe("Simular Datas FM", () => {
     expect(impactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo: 20 }, arquivoMes: 12 }).peona).toBe(11); // 20/11 a 30/11
   });
   it("premissas dos IMPACTOS: DARE < 5 crítico, 5–9 abaixo do ideal, ≥ 10 ideal; DIOPS ideal ≥ 15; PEONA impacta com dias fora da competência", () => {
-    const niveis = (arquivo: number, mes: number, extra: Partial<Record<"dare" | "diops" | "pagamento", number>> = {}) =>
+    const niveis = (arquivo: number, mes: number, extra: Partial<Record<"fechamento" | "dare" | "diops" | "pagamento", number>> = {}) =>
       Object.fromEntries(avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo, ...extra }, arquivoMes: mes }).map((i) => [i.id, i.status]));
     // Arquivo 20/12 + 21 → Fechamento 10/01: Dare 15/01 = 5 dias, DIOPS 30/01 = 20 dias, PEONA 11 dias.
     const f = { fechamento: 21 };
