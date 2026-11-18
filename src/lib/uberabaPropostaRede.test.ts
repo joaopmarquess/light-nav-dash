@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { PARAMETROS_REDE_PADRAO } from "./uberabaParametrosRede";
 import {
-  CONDICOES_GERAIS_REDE, TEXTOS_REDE_PADRAO, aprovarTextosRede, dadosRascunhoRede, estadoRedeVazio, linhasCondicoesRede, linhasParametrosRede, mesInicioRede, mesclarRascunhoRede,
+  CONDICOES_GERAIS_REDE, TEXTOS_REDE_PADRAO, quadroCondicoesRede, aprovarTextosRede, dadosRascunhoRede, estadoRedeVazio, linhasCondicoesRede, linhasParametrosRede, mesInicioRede, mesclarRascunhoRede,
   linhasResultadoRede, numerosForaDosDadosRede, regraMensalidadeRede, textosRedeParaPdf, topicosRedeDesatualizados,
 } from "./uberabaPropostaRede";
 import { TOPICOS_PROPOSTA_REDE, buildPropostaRedePdf } from "./uberabaPropostaRedePdf";
@@ -12,11 +12,12 @@ import { moedaCredenciamento } from "./uberabaCredenciamento";
 const semNbsp = (s: string) => s.replace(/\u00a0/g, " ");
 
 describe("Proposta de Credenciamento e Gestão de Rede", () => {
-  it("has the topics Introdução, Condições de Credenciamento, Gestão de Rede and Condições Gerais", () => {
-    expect(TOPICOS_PROPOSTA_REDE).toEqual(["1. Introdução", "2. Condições de Credenciamento", "3. Gestão de Rede", "4. Condições Gerais"]);
+  it("has the topics Introdução, Rede, Gestão de Rede and Condições Gerais", () => {
+    expect(TOPICOS_PROPOSTA_REDE).toEqual(["1. Introdução", "2. Rede", "3. Gestão de Rede", "4. Condições Gerais"]);
   });
-  it("sets the contract term to 2027 and hands network management and loss ratio to the Bensaúde from 2028", () => {
+  it("contracts Siga Soluções (team with médico auditor), term 2027, and hands network management and loss ratio to the Bensaúde from 2028", () => {
     expect(CONDICOES_GERAIS_REDE).toEqual([
+      { item: "Contratada", valor: "O Contrato será celebrado com a Siga Soluções, que se responsabiliza por montar o time, que inclui médico auditor" },
       { item: "Prazo do Contrato", valor: "Ano de 2027" },
       { item: "A partir de 2028", valor: "A gestão de rede e a Sinistralidade estarão a cargo do Bensaúde" },
     ]);
@@ -24,13 +25,24 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
   });
   it("builds the quantities table from the Credenciamento section (Qtde., Valor, Adesão and TOTAL)", () => {
     const q = linhasQuantidadeCredenciamentos();
-    const l = linhasCondicoesRede(q).map((r) => r.map(semNbsp));
-    expect(l.map((r) => r[0])).toEqual([...q.linhas.map((x) => x.tipo), "TOTAL"]);
+    const l = linhasCondicoesRede(q, {}).map((r) => r.map(semNbsp));
+    expect(l.filter((r) => r[2] !== "" || r[0] === "TOTAL").map((r) => r[0])).toEqual([...q.linhas.map((x) => x.tipo), "TOTAL"]);
     expect(l[0]).toEqual(["Especialidades médicas", "200", "R$ 200,00", "R$ 40.000,00"]);
     expect(l[1]).toEqual(["Hospitais", "2", "R$ 200,00", "R$ 400,00"]);
     expect(l[l.length - 1][3]).toBe(semNbsp(moedaCredenciamento(q.total.adesao)));
-    const editado = linhasCondicoesRede(linhasQuantidadeCredenciamentos({ medicos: 10 }, { medicos: 300 })).map((r) => r.map(semNbsp));
+    const editado = linhasCondicoesRede(linhasQuantidadeCredenciamentos({ medicos: 10 }, { medicos: 300 }), {}).map((r) => r.map(semNbsp));
     expect(editado[0]).toEqual(["Especialidades médicas", "10", "R$ 300,00", "R$ 3.000,00"]);
+  });
+  it("opens every type item by item except Especialidades médicas", () => {
+    const quadro = quadroCondicoesRede(linhasQuantidadeCredenciamentos(), { "hospitais:Hospital Geral": 3 });
+    const nomes = quadro.map((l) => l.celulas[0]);
+    expect(nomes.slice(0, 5)).toEqual(["Especialidades médicas", "Hospitais", "Hospital Geral", "Hospital Pediátrico", "Serviços auxiliares de diagnóstico e terapia"]);
+    expect(quadro[2]).toEqual({ celulas: ["Hospital Geral", "3", "", ""], item: true });
+    expect(quadro[3].celulas[1]).toBe("1");
+    expect(nomes).toContain("Laboratório de Análises Clínicas");
+    expect(nomes).toContain("Psicologia");
+    expect(nomes).not.toContain("Cardiologia*");
+    expect(quadro.filter((l) => l.item)).toHaveLength(10);
   });
   it("adds the Resultado table with estimated lives only in the per-life months", () => {
     const q = linhasQuantidadeCredenciamentos();

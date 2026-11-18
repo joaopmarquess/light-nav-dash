@@ -1,11 +1,13 @@
 // Proposta de Credenciamento e Gestão de Rede (Proj. Uberaba, pedido de 18/11/2026), destinada à Siga Soluções.
-// Tópicos: 1 Introdução; 2 Condições de Credenciamento (quadro da seção Credenciamento e, antes do tópico 3, o quadro da seção Resultado — pedido de 18/11/2026);
+// Tópicos: 1 Introdução; 2 Rede (antes "Condições de Credenciamento"; quadro da seção Credenciamento e, antes do tópico 3, o quadro da seção Resultado — pedido de 18/11/2026);
 // 3 Gestão de Rede (quadro dos Parâmetros de Resultados Rede); 4 Condições Gerais (texto fixo do Dênis, nunca redigido pela IA).
 // A IA redige os textos dos tópicos 1 a 3 só com estes dados;
 // o PDF usa o texto padrão até o usuário aprovar a revisão ("Incluir no PDF"). Tudo fica guardado neste navegador.
 import { moedaCredenciamento } from "@/lib/uberabaCredenciamento";
 import { ANO_RESULTADO_REDE, lerVidasSimulacao, resultadoRede, vidasEstimadasRede, type VidasSimulacao } from "@/lib/uberabaResultadoRede";
-import { carregarAutorizados, carregarValores, linhasQuantidadeCredenciamentos } from "@/lib/uberabaQuantidadeCredenciamentos";
+import {
+  carregarAutorizados, carregarQuantidadesItens, carregarValores, itensExibidos, linhasQuantidadeCredenciamentos, quantidadeItem, type QuantidadesItens,
+} from "@/lib/uberabaQuantidadeCredenciamentos";
 import type { ParametrosRede } from "@/lib/uberabaParametrosRede";
 import { REDE_UBERABA } from "@/lib/uberabaFrentes";
 
@@ -13,14 +15,15 @@ export const DESTINATARIO_PROPOSTA_REDE = "Siga Soluções";
 
 export const SECOES_REDE = [
   { id: "introducao", titulo: "1. Introdução" },
-  { id: "condicoes", titulo: "2. Condições de Credenciamento" },
+  { id: "condicoes", titulo: "2. Rede" },
   { id: "gestao", titulo: "3. Gestão de Rede" },
 ] as const;
 export type SecaoRedeId = (typeof SECOES_REDE)[number]["id"];
 
-/** Tópico 4 (pedido do Dênis em 18/11/2026): condições fixas, sem texto da IA. */
+/** Tópico 4 (pedidos do Dênis em 18/11/2026): condições fixas, sem texto da IA. */
 export const TITULO_CONDICOES_GERAIS_REDE = "4. Condições Gerais";
 export const CONDICOES_GERAIS_REDE: readonly { item: string; valor: string }[] = [
+  { item: "Contratada", valor: "O Contrato será celebrado com a Siga Soluções, que se responsabiliza por montar o time, que inclui médico auditor" },
   { item: "Prazo do Contrato", valor: "Ano de 2027" },
   { item: "A partir de 2028", valor: "A gestão de rede e a Sinistralidade estarão a cargo do Bensaúde" },
 ];
@@ -30,7 +33,7 @@ export const TEXTO_REDE_MAX = 4000;
 /** Texto padrão (provisório, até a revisão do Dênis): só descreve o que os quadros mostram, sem condições novas. */
 export const TEXTOS_REDE_PADRAO: TextosRede = {
   introducao:
-    "Apresentamos à Siga Soluções a proposta de credenciamento e gestão da rede assistencial do Bensaúde em Uberaba (MG), no âmbito do projeto Bensaúde|Uberaba. As condições de credenciamento estão na seção 2, as condições da gestão de rede, na seção 3, e as condições gerais, na seção 4.",
+    "Apresentamos à Siga Soluções a proposta de credenciamento e gestão da rede assistencial do Bensaúde em Uberaba (MG), no âmbito do projeto Bensaúde|Uberaba. A rede a credenciar está na seção 2, as condições da gestão de rede, na seção 3, e as condições gerais, na seção 4.",
   condicoes:
     "O quadro abaixo apresenta, por tipo de credenciado, a quantidade, o valor por credenciamento e o valor de adesão. Em seguida, o quadro do Resultado mostra, mês a mês, a adesão, a mensalidade e o total.",
   gestao:
@@ -47,13 +50,23 @@ const inteiro = (n: number) => n.toLocaleString("pt-BR");
 export type QuantidadesRede = ReturnType<typeof linhasQuantidadeCredenciamentos>;
 export const quantidadesRedeAtuais = (): QuantidadesRede => linhasQuantidadeCredenciamentos(carregarAutorizados(), carregarValores());
 
-/** Tópico 2: uma linha por tipo do Credenciamento (Qtde., Valor e Adesão da tela) e a linha TOTAL. */
-export function linhasCondicoesRede(q: QuantidadesRede = quantidadesRedeAtuais()): string[][] {
+/** Tipos abertos item a item no quadro (pedido de 18/11/2026): todos, exceto Especialidades médicas. */
+export const TIPOS_FECHADOS_REDE: readonly string[] = ["medicos"];
+export type LinhaCondicaoRede = { celulas: string[]; item: boolean };
+/** Tópico 2: uma linha por tipo do Credenciamento (Qtde., Valor e Adesão da tela), seguida dos itens dos tipos abertos
+ * (quantidade digitada na tela ou o padrão; Valor e Adesão ficam no tipo), e a linha TOTAL. */
+export function quadroCondicoesRede(q: QuantidadesRede = quantidadesRedeAtuais(), itens: QuantidadesItens = lerQuantidadesItens()): LinhaCondicaoRede[] {
   return [
-    ...q.linhas.map((l) => [l.tipo, inteiro(l.autorizado), moedaCredenciamento(l.valor), moedaCredenciamento(l.adesao)]),
-    ["TOTAL", inteiro(q.total.autorizado), "", moedaCredenciamento(q.total.adesao)],
+    ...q.linhas.flatMap((l) => [
+      { celulas: [l.tipo, inteiro(l.autorizado), moedaCredenciamento(l.valor), moedaCredenciamento(l.adesao)], item: false },
+      ...(TIPOS_FECHADOS_REDE.includes(l.id) ? [] : itensExibidos(l.id).map((i) => ({ celulas: [i.nome, inteiro(quantidadeItem(l.id, i.nome, itens)), "", ""], item: true }))),
+    ]),
+    { celulas: ["TOTAL", inteiro(q.total.autorizado), "", moedaCredenciamento(q.total.adesao)], item: false },
   ];
 }
+export const linhasCondicoesRede = (q: QuantidadesRede = quantidadesRedeAtuais(), itens: QuantidadesItens = lerQuantidadesItens()): string[][] =>
+  quadroCondicoesRede(q, itens).map((l) => l.celulas);
+const lerQuantidadesItens = (): QuantidadesItens => (typeof localStorage === "undefined" ? {} : carregarQuantidadesItens());
 
 /** Quadro da seção Resultado, no fim do tópico 2 (pedido de 18/11/2026): mesmas colunas e valores da tela, com VIDAS "estimadas". */
 export const COLUNAS_RESULTADO_REDE = ["MÊS", "ADESÃO", "MENSALIDADE", "VIDAS", "TOTAL"] as const;

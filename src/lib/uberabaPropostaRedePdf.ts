@@ -8,7 +8,7 @@ import { CABECALHO, FONTES_PROPOSTA as F, LINHA, RODAPE, SECUNDARIO, TINTA, ZEBR
 import { paragrafosDe } from "@/lib/uberabaPropostaTextos";
 import { PARAMETROS_REDE_PADRAO, type ParametrosRede } from "@/lib/uberabaParametrosRede";
 import {
-  COLUNAS_CONDICOES_REDE, COLUNAS_RESULTADO_REDE, CONDICOES_GERAIS_REDE, linhasResultadoRede, quantidadesRedeAtuais, type QuantidadesRede, NOTA_CONDICOES_REDE, SECOES_REDE, TITULO_CONDICOES_GERAIS_REDE, TEXTOS_REDE_PADRAO, linhasCondicoesRede, linhasParametrosRede, regraMensalidadeRede,
+  COLUNAS_CONDICOES_REDE, COLUNAS_RESULTADO_REDE, CONDICOES_GERAIS_REDE, linhasResultadoRede, quantidadesRedeAtuais, type QuantidadesRede, NOTA_CONDICOES_REDE, SECOES_REDE, TITULO_CONDICOES_GERAIS_REDE, TEXTOS_REDE_PADRAO, quadroCondicoesRede, linhasParametrosRede, regraMensalidadeRede,
   type SecaoRedeId, type TextosRede,
 } from "@/lib/uberabaPropostaRede";
 
@@ -57,7 +57,7 @@ export function buildPropostaRedePdf(
     }
   };
 
-  const tabela = (head: string[], body: string[][], colunas: Record<number, { halign?: "left" | "center" | "right"; cellWidth?: number }>, negritoUltima: boolean) => {
+  const tabela = (head: string[], body: string[][], colunas: Record<number, { halign?: "left" | "center" | "right"; cellWidth?: number }>, negritoUltima: boolean, itens: ReadonlySet<number> = new Set()) => {
     autoTable(doc, {
       rowPageBreak: "avoid",
       theme: "plain",
@@ -70,7 +70,16 @@ export function buildPropostaRedePdf(
       headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: F.parametros - 2 },
       columnStyles: colunas,
       alternateRowStyles: { fillColor: ZEBRA },
-      didParseCell: (c) => { if (negritoUltima && c.section === "body" && c.row.index === body.length - 1) c.cell.styles.fontStyle = "bold"; },
+      didParseCell: (c) => {
+        if (c.section !== "body") return;
+        if (negritoUltima && c.row.index === body.length - 1) c.cell.styles.fontStyle = "bold";
+        // Itens dos tipos abertos: recuados, letra menor e tinta secundária, abaixo do seu tipo.
+        if (itens.has(c.row.index)) {
+          c.cell.styles.fontSize = F.parametros - 2;
+          c.cell.styles.textColor = SECUNDARIO;
+          c.cell.styles.cellPadding = { top: 1, bottom: 1, left: c.column.index === 0 ? 7 : 1.8, right: 1.8 };
+        }
+      },
       didDrawCell: (c) => {
         if (c.section === "head") return;
         doc.setDrawColor(...LINHA);
@@ -98,9 +107,11 @@ export function buildPropostaRedePdf(
 
   const desenharCondicoes = () => {
     // Quadro de quantidades montado a partir da seção Credenciamento (pedido de 18/11/2026); larguras fixas para não partir palavras.
-    tabela([...COLUNAS_CONDICOES_REDE], linhasCondicoesRede(quantidades), {
+    // Tipos abertos item a item, exceto Especialidades médicas (pedido de 18/11/2026).
+    const quadro = quadroCondicoesRede(quantidades);
+    tabela([...COLUNAS_CONDICOES_REDE], quadro.map((l) => l.celulas), {
       0: { halign: "left", cellWidth: 70 }, 1: { cellWidth: 26 }, 2: { cellWidth: 36 }, 3: { cellWidth: LARGURA - 132 },
-    }, true);
+    }, true, new Set(quadro.flatMap((l, i) => (l.item ? [i] : []))));
     nota(NOTA_CONDICOES_REDE);
     // Antes do tópico 3, o quadro da seção Resultado (pedido de 18/11/2026), inteiro numa mesma página.
     const linhasRes = linhasResultadoRede(parametros, quantidades);
