@@ -8,7 +8,7 @@ import { CABECALHO, FONTES_PROPOSTA as F, LINHA, RODAPE, SECUNDARIO, TINTA, ZEBR
 import { paragrafosDe } from "@/lib/uberabaPropostaTextos";
 import { PARAMETROS_REDE_PADRAO, type ParametrosRede } from "@/lib/uberabaParametrosRede";
 import {
-  COLUNAS_CONDICOES_REDE, COLUNAS_RESULTADO_REDE, CONDICOES_GERAIS_REDE, linhasResultadoRede, quantidadesRedeAtuais, type QuantidadesRede, NOTA_CONDICOES_REDE, SECOES_REDE, TITULO_CONDICOES_GERAIS_REDE, TEXTOS_REDE_PADRAO, quadroCondicoesRede, linhasParametrosRede, regraMensalidadeRede,
+  COLUNAS_CONDICOES_REDE, COLUNAS_RESULTADO_REDE, CONDICOES_GERAIS_REDE, linhasResultadoRede, quantidadesRedeAtuais, type QuantidadesRede, NOTA_CONDICOES_REDE, SECOES_REDE, TITULO_CONDICOES_GERAIS_REDE, TEXTO_CONDICOES_GERAIS_REDE, SUBTITULO_PROJECAO_REDE, TEXTO_PROJECAO_REDE, TEXTOS_REDE_PADRAO, quadroCondicoesRede, linhasParametrosRede, regraMensalidadeRede,
   type SecaoRedeId, type TextosRede,
 } from "@/lib/uberabaPropostaRede";
 
@@ -113,9 +113,13 @@ export function buildPropostaRedePdf(
       0: { halign: "left", cellWidth: 70 }, 1: { cellWidth: 26 }, 2: { cellWidth: 36 }, 3: { cellWidth: LARGURA - 132 },
     }, true, new Set(quadro.flatMap((l, i) => (l.item ? [i] : []))));
     nota(NOTA_CONDICOES_REDE);
-    // Antes do tópico 3, o quadro da seção Resultado (pedido de 18/11/2026), inteiro numa mesma página.
+    // Antes do tópico 3: subtítulo e texto da Projeção financeira e o quadro da seção Resultado, juntos e inteiros numa mesma página.
     const linhasRes = linhasResultadoRede(parametros, quantidades);
-    garantir(10 + (linhasRes.length + 1) * 7.2);
+    garantir(10 + alturaParagrafos([TEXTO_PROJECAO_REDE]) + 10 + (linhasRes.length + 1) * 7.2);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(F.texto); doc.setTextColor(...TINTA);
+    doc.text(textoPdf(SUBTITULO_PROJECAO_REDE), marginL, y + 3);
+    y += 10;
+    paragrafo(TEXTO_PROJECAO_REDE);
     doc.setFont("helvetica", "bold"); doc.setFontSize(F.parametros); doc.setTextColor(...TINTA);
     doc.text(textoPdf("Resultado"), marginL, y + 3);
     y += 6;
@@ -150,9 +154,11 @@ export function buildPropostaRedePdf(
   });
 
   // 4. Condições Gerais: título e quadro sempre juntos na mesma página.
-  garantir(12 + 12 + CONDICOES_GERAIS_REDE.length * 12);
+  garantir(12 + alturaParagrafos([TEXTO_CONDICOES_GERAIS_REDE]) + 2 + 12 + CONDICOES_GERAIS_REDE.length * 14);
   drawSectionTitle(doc, TITULO_CONDICOES_GERAIS_REDE, marginL, y, pageW - marginR, TINTA, F.topico);
   y += 10;
+  paragrafo(TEXTO_CONDICOES_GERAIS_REDE);
+  y += 2;
   tabela(["CONDIÇÃO", "DEFINIÇÃO"], CONDICOES_GERAIS_REDE.map((c) => [c.item, c.valor]), { 0: { halign: "left", cellWidth: 55 }, 1: { halign: "left" } }, false);
 
   const total = doc.getNumberOfPages();

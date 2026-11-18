@@ -1,6 +1,6 @@
 // Proposta de Credenciamento e Gestão de Rede (Proj. Uberaba, pedido de 18/11/2026), destinada à Siga Soluções.
-// Tópicos: 1 Introdução; 2 Rede (antes "Condições de Credenciamento"; quadro da seção Credenciamento e, antes do tópico 3, o quadro da seção Resultado — pedido de 18/11/2026);
-// 3 Gestão de Rede (quadro dos Parâmetros de Resultados Rede); 4 Condições Gerais (texto fixo do Dênis, nunca redigido pela IA).
+// Tópicos (títulos do Dênis, 18/11/2026): 1 Contexto e Objeto da Proposta; 2 Estruturação da Rede Assistencial ( quadro da seção Credenciamento e, antes do tópico 3, o quadro da seção Resultado — pedido de 18/11/2026);
+// 3 Modelo de Gestão da Rede (quadro dos Parâmetros de Resultados Rede); 4 Condições Gerais (texto fixo do Dênis, nunca redigido pela IA).
 // A IA redige os textos dos tópicos 1 a 3 só com estes dados;
 // o PDF usa o texto padrão até o usuário aprovar a revisão ("Incluir no PDF"). Tudo fica guardado neste navegador.
 import { moedaCredenciamento } from "@/lib/uberabaCredenciamento";
@@ -14,30 +14,37 @@ import { REDE_UBERABA } from "@/lib/uberabaFrentes";
 export const DESTINATARIO_PROPOSTA_REDE = "Siga Soluções";
 
 export const SECOES_REDE = [
-  { id: "introducao", titulo: "1. Introdução" },
-  { id: "condicoes", titulo: "2. Rede" },
-  { id: "gestao", titulo: "3. Gestão de Rede" },
+  { id: "introducao", titulo: "1. Contexto e Objeto da Proposta" },
+  { id: "condicoes", titulo: "2. Estruturação da Rede Assistencial" },
+  { id: "gestao", titulo: "3. Modelo de Gestão da Rede" },
 ] as const;
 export type SecaoRedeId = (typeof SECOES_REDE)[number]["id"];
 
-/** Tópico 4 (pedidos do Dênis em 18/11/2026): condições fixas, sem texto da IA. */
+/** Tópico 4 (textos do Dênis, 18/11/2026): texto de abertura e condições fixas, sem texto da IA. */
 export const TITULO_CONDICOES_GERAIS_REDE = "4. Condições Gerais";
+export const TEXTO_CONDICOES_GERAIS_REDE =
+  "As condições a seguir delimitam as responsabilidades e o período de atuação previsto para esta etapa do Projeto Bensaúde|Uberaba, especialmente quanto à execução dos serviços durante o ano de implantação e à posterior internalização das atividades pelo Bensaúde.";
 export const CONDICOES_GERAIS_REDE: readonly { item: string; valor: string }[] = [
-  { item: "Contratada", valor: "O Contrato será celebrado com a Siga Soluções, que se responsabiliza por montar o time, que inclui médico auditor" },
-  { item: "Prazo do Contrato", valor: "Ano de 2027" },
-  { item: "A partir de 2028", valor: "A gestão de rede e a Sinistralidade estarão a cargo do Bensaúde" },
+  { item: "Contratada", valor: "A contratação será formalizada com a Siga Soluções, responsável pela composição e disponibilização da equipe necessária à execução dos serviços, incluindo médico auditor." },
+  { item: "Período de atuação", valor: "Os serviços objeto desta proposta serão prestados durante o ano de 2027." },
+  { item: "Transição da gestão", valor: "A partir de 2028, a gestão da rede assistencial e o acompanhamento da sinistralidade passarão a ser conduzidos diretamente pelo Bensaúde." },
 ];
+
+/** Subtítulo e texto antes do quadro Resultado, no tópico 2 (textos do Dênis, 18/11/2026). */
+export const SUBTITULO_PROJECAO_REDE = "Projeção financeira";
+export const TEXTO_PROJECAO_REDE =
+  "Considerando o cronograma previsto para formação da rede e o início da gestão, apresenta-se a seguir a projeção mensal da remuneração ao longo de 2027, contemplando os valores relativos ao credenciamento e à gestão da rede.";
 export type TextosRede = Record<SecaoRedeId, string>;
 export const TEXTO_REDE_MAX = 4000;
 
-/** Texto padrão (provisório, até a revisão do Dênis): só descreve o que os quadros mostram, sem condições novas. */
+/** Textos dos tópicos 1 a 3 fornecidos pelo Dênis (18/11/2026), usados no PDF até uma revisão ser aprovada. */
 export const TEXTOS_REDE_PADRAO: TextosRede = {
   introducao:
-    "Apresentamos à Siga Soluções a proposta de credenciamento e gestão da rede assistencial do Bensaúde em Uberaba (MG), no âmbito do projeto Bensaúde|Uberaba. A rede a credenciar está na seção 2, as condições da gestão de rede, na seção 3, e as condições gerais, na seção 4.",
+    "Esta proposta integra o Projeto Bensaúde|Uberaba e estabelece as condições para o credenciamento e a gestão inicial da rede assistencial necessária à implantação e ao desenvolvimento da operação do Bensaúde em Uberaba (MG). O documento contempla a composição prevista da rede, as condições comerciais para sua formação, o modelo de remuneração pela gestão e as demais condições aplicáveis à prestação dos serviços.",
   condicoes:
-    "O quadro abaixo apresenta, por tipo de credenciado, a quantidade, o valor por credenciamento e o valor de adesão. Em seguida, o quadro do Resultado mostra, mês a mês, a adesão, a mensalidade e o total.",
+    "A estruturação da rede assistencial foi definida considerando as necessidades previstas para o início da operação do Bensaúde em Uberaba. A composição contempla especialidades médicas, hospitais, serviços de apoio diagnóstico e terapêutico, além de profissionais e serviços assistenciais complementares, conforme detalhamento a seguir.",
   gestao:
-    "O quadro abaixo apresenta os parâmetros da remuneração mensal pela gestão de rede: parcelas fixas a partir do mês de início e, em seguida, valor por vida sobre as vidas vendidas acumuladas.",
+    "Concluída a etapa inicial de estruturação da rede, inicia-se a fase de gestão assistencial, destinada a acompanhar e sustentar a operação da rede credenciada durante o período de implantação do Projeto Bensaúde|Uberaba. A remuneração dessa etapa será composta inicialmente por parcelas mensais fixas e, posteriormente, passará a acompanhar a evolução da carteira de beneficiários.",
 };
 
 /** Nota do quadro de quantidades: só a condição de pagamento da nota das Condições Rede, que vale para o Credenciamento
@@ -94,9 +101,12 @@ export function linhasParametrosRede(p: ParametrosRede): [string, string][] {
   ];
 }
 
-/** Regra da Mensalidade, a mesma do Resultado de Resultados Rede, escrita com os parâmetros atuais. */
+const EXTENSO = ["", "primeiro", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze"];
+/** Quantidade de parcelas por extenso no texto ("seis primeiros meses"; 1 → "No primeiro mês"). */
+const primeirosMeses = (n: number) => (n === 1 ? "No primeiro mês" : `Nos ${EXTENSO[n] ?? inteiro(n)} primeiros meses`);
+/** Texto abaixo dos Parâmetros (redação do Dênis, 18/11/2026) com os valores atuais da tela, para nunca divergir do quadro. */
 export function regraMensalidadeRede(p: ParametrosRede): string {
-  return `Mensalidade: ${inteiro(p.parcelasFixas)} parcelas fixas de ${moedaCredenciamento(p.valorParcela)} a partir de ${mesInicioRede(p.iniciarEm)}; depois, ${moedaCredenciamento(p.valorPorVida)} × vidas vendidas acumuladas.`;
+  return `${primeirosMeses(p.parcelasFixas)} da gestão, a remuneração mensal será de ${moedaCredenciamento(p.valorParcela)}, com início em ${mesInicioRede(p.iniciarEm)}. Encerrado esse período, a remuneração será calculada à razão de ${moedaCredenciamento(p.valorPorVida)} por vida vendida acumulada.`;
 }
 
 export type DadosRascunhoRede = {
@@ -168,7 +178,8 @@ export type EstadoTextosRede = {
 };
 export const estadoRedeVazio = (): EstadoTextosRede => ({ rascunho: null, assinaturaRascunho: null, geradoEm: null, aprovado: null, assinaturaAprovado: null, aprovadoEm: null });
 
-export const CHAVE_TEXTOS_REDE = "uberaba-proposta-rede-textos-v1";
+/** v2: os textos do Dênis (18/11/2026) substituem a revisão aprovada antes deles. */
+export const CHAVE_TEXTOS_REDE = "uberaba-proposta-rede-textos-v2";
 const str = (v: unknown) => (typeof v === "string" ? v : null);
 
 export function lerTextosRede(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): EstadoTextosRede {

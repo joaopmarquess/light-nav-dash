@@ -47,15 +47,15 @@ REGRAS INVIOLÁVEIS
 1. Use somente os fatos que estão nos DADOS. Não invente nem suponha valores, quantidades, prazos, datas, vigência, reajustes, metas, multas, formas de pagamento, obrigações, exclusividade ou qualquer outra condição.
 2. Todo número que você escrever deve aparecer nos DADOS exatamente com a mesma grafia (por exemplo "229", "R$ 200,00", "03/2027"). Não calcule totais, médias, diferenças ou novos valores.
 3. Quando a seção precisar de uma informação que não está nos DADOS, escreva um marcador no formato [A definir: o que falta]. Nunca preencha a lacuna com suposições.
-4. Não repita os quadros linha a linha: o sistema insere no tópico 2 o quadro do Credenciamento (tipo de credenciado, quantidade, valor e adesão; abaixo de cada tipo, exceto Especialidades médicas, vêm os seus itens com a quantidade, sem valor nem adesão) com sua nota e, em seguida, o quadro do Resultado mês a mês (DADOS.condicoes.resultado; as vidas desse quadro são estimadas), e no tópico 3 o quadro dos Parâmetros com sua nota. O tópico 4, Condições Gerais (DADOS.condicoesGerais: contratada e o time que ela monta, prazo do contrato e o que muda a partir de 2028), é fixo e inserido pelo sistema; não o redija e não o contradiga.
+4. Não repita os quadros linha a linha: o sistema insere no tópico 2 o quadro do Credenciamento (tipo de credenciado, quantidade, valor e adesão; abaixo de cada tipo, exceto Especialidades médicas, vêm os seus itens com a quantidade, sem valor nem adesão) com sua nota e, em seguida, o quadro do Resultado mês a mês (DADOS.condicoes.resultado; as vidas desse quadro são estimadas), e no tópico 3 o quadro dos Parâmetros com sua nota. O tópico 4, Condições Gerais (DADOS.condicoesGerais: contratada e a equipe que ela disponibiliza, período de atuação e transição da gestão a partir de 2028), é fixo e inserido pelo sistema; não o redija e não o contradiga.
 5. Sem markdown, títulos, numeração ou listas com marcadores.
 
 ESTRUTURA DA PROPOSTA (o texto de cada seção abre o tópico; os quadros vêm logo abaixo)
-1. Introdução · 2. Rede · 3. Gestão de Rede · 4. Condições Gerais (fixo, sem texto da IA).
+1. Contexto e Objeto da Proposta · 2. Estruturação da Rede Assistencial (com o subtítulo fixo "Projeção financeira" antes do quadro do Resultado) · 3. Modelo de Gestão da Rede · 4. Condições Gerais (fixo, sem texto da IA).
 
 SEÇÕES (somente estas três)
 - introducao: um parágrafo curto (2 a 4 frases) que apresente a proposta ao destinatário, o objeto (credenciamento e gestão da rede assistencial do Bensaúde em Uberaba, MG) e indique que as condições estão nas seções 2 a 4.
-- condicoes (tópico "Rede"): 1 a 3 frases que expliquem os dois quadros: o do Credenciamento (tipos de credenciado e seus itens, quantidade, valor por credenciamento e adesão), podendo citar a quantidade total e a adesão total da linha TOTAL, e o do Resultado (adesão, mensalidade e total por mês; vidas estimadas). Pode lembrar que o pagamento depende da formalização de cada credenciamento, como na nota.
+- condicoes (tópico "Estruturação da Rede Assistencial"): 1 a 3 frases que expliquem os dois quadros: o do Credenciamento (tipos de credenciado e seus itens, quantidade, valor por credenciamento e adesão), podendo citar a quantidade total e a adesão total da linha TOTAL, e o do Resultado (adesão, mensalidade e total por mês; vidas estimadas). Pode lembrar que o pagamento depende da formalização de cada credenciamento, como na nota.
 - gestao: 1 ou 2 frases que expliquem a remuneração da gestão de rede segundo a regra dos DADOS (parcelas fixas a partir do mês de início e, depois, valor por vida sobre as vidas vendidas acumuladas), podendo citar as frentes de Gestão de Rede e seus responsáveis.`;
 
 Deno.serve(async (req) => {

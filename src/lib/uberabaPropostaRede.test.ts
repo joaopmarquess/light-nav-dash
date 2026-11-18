@@ -12,14 +12,14 @@ import { moedaCredenciamento } from "./uberabaCredenciamento";
 const semNbsp = (s: string) => s.replace(/\u00a0/g, " ");
 
 describe("Proposta de Credenciamento e Gestão de Rede", () => {
-  it("has the topics Introdução, Rede, Gestão de Rede and Condições Gerais", () => {
-    expect(TOPICOS_PROPOSTA_REDE).toEqual(["1. Introdução", "2. Rede", "3. Gestão de Rede", "4. Condições Gerais"]);
+  it("uses the topic titles supplied by Dênis", () => {
+    expect(TOPICOS_PROPOSTA_REDE).toEqual(["1. Contexto e Objeto da Proposta", "2. Estruturação da Rede Assistencial", "3. Modelo de Gestão da Rede", "4. Condições Gerais"]);
   });
   it("contracts Siga Soluções (team with médico auditor), term 2027, and hands network management and loss ratio to the Bensaúde from 2028", () => {
     expect(CONDICOES_GERAIS_REDE).toEqual([
-      { item: "Contratada", valor: "O Contrato será celebrado com a Siga Soluções, que se responsabiliza por montar o time, que inclui médico auditor" },
-      { item: "Prazo do Contrato", valor: "Ano de 2027" },
-      { item: "A partir de 2028", valor: "A gestão de rede e a Sinistralidade estarão a cargo do Bensaúde" },
+      { item: "Contratada", valor: "A contratação será formalizada com a Siga Soluções, responsável pela composição e disponibilização da equipe necessária à execução dos serviços, incluindo médico auditor." },
+      { item: "Período de atuação", valor: "Os serviços objeto desta proposta serão prestados durante o ano de 2027." },
+      { item: "Transição da gestão", valor: "A partir de 2028, a gestão da rede assistencial e o acompanhamento da sinistralidade passarão a ser conduzidos diretamente pelo Bensaúde." },
     ]);
     expect(numerosForaDosDadosRede("Contrato em 2027; a partir de 2028 o Bensaúde assume.", dadosRascunhoRede(PARAMETROS_REDE_PADRAO))).toEqual([]);
   });
@@ -59,7 +59,8 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
     expect(linhasParametrosRede(PARAMETROS_REDE_PADRAO).map(([a, b]) => [a, semNbsp(b)])).toEqual([
       ["Parcelas fixas", "6"], ["Início das parcelas", "03/2027"], ["Valor da parcela", "R$ 15.000,00"], ["Valor por vida (após as parcelas fixas)", "R$ 1,00"],
     ]);
-    expect(semNbsp(regraMensalidadeRede({ ...PARAMETROS_REDE_PADRAO, valorParcela: 12000 }))).toContain("6 parcelas fixas de R$ 12.000,00 a partir de 03/2027");
+    expect(semNbsp(regraMensalidadeRede({ ...PARAMETROS_REDE_PADRAO, valorParcela: 10000 }))).toBe(
+      "Nos seis primeiros meses da gestão, a remuneração mensal será de R$ 10.000,00, com início em 03/2027. Encerrado esse período, a remuneração será calculada à razão de R$ 1,00 por vida vendida acumulada.");
   });
   it("rolls the start month into the next year after month 12", () => {
     expect(mesInicioRede(1)).toBe("01/2027");
@@ -81,7 +82,7 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
   it("warns when an approved text cites a parameter that changed", () => {
     const e = aprovarTextosRede(estadoRedeVazio(), { ...TEXTOS_REDE_PADRAO, gestao: "Parcelas de R$ 15.000,00." });
     expect(topicosRedeDesatualizados(e, dadosRascunhoRede(PARAMETROS_REDE_PADRAO))).toEqual([]);
-    expect(topicosRedeDesatualizados(e, dadosRascunhoRede({ ...PARAMETROS_REDE_PADRAO, valorParcela: 12000 }))).toEqual(["3. Gestão de Rede"]);
+    expect(topicosRedeDesatualizados(e, dadosRascunhoRede({ ...PARAMETROS_REDE_PADRAO, valorParcela: 12000 }))).toEqual(["3. Modelo de Gestão da Rede"]);
   });
   it("builds the PDF with the three topics", () => {
     const doc = buildPropostaRedePdf(null);
