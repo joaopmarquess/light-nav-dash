@@ -69,80 +69,102 @@ type RGB = [number, number, number];
 const TINTA: RGB = [26, 46, 79], TEXTO: RGB = [0, 0, 0], SECUNDARIO: RGB = [38, 38, 38], LINHA: RGB = [74, 85, 104], CARTAO: RGB = [238, 242, 247], ZEBRA: RGB = [245, 247, 250];
 const MARCADOR: Record<NivelImpactoFm, RGB> = { ideal: [46, 179, 92], aceito: [125, 214, 150], moderado: [247, 129, 22], critico: [220, 38, 38] };
 
+const MM_PT = 0.3528;
+/** Escalas tentadas, da maior para a menor: cada cenário usa a maior com que cabe inteiro numa página A4 (pedido de 18/11/2026). */
+export const ESCALAS_CENARIO_FM = Array.from({ length: 26 }, (_, i) => Math.round((1 - i * 0.02) * 100) / 100);
+
+/** Desenha um cenário a partir da página atual de `doc`, com fontes, alturas e espaços multiplicados por `k`. */
+function desenharCenario(doc: jsPDF, p: PaginaCenarioFm, totalCenarios: number, gerado: string, k: number) {
+  const pageW = doc.internal.pageSize.getWidth();
+  const mL = 18, mR = 18, top = 42, w = pageW - mL - mR, right = pageW - mR;
+  const fs = (n: number) => n * k;
+  let y = top;
+  doc.setFont("helvetica", "bold"); doc.setFontSize(fs(16)); doc.setTextColor(...TINTA);
+  doc.text("Simulação de Datas FM", mL, y + 5 * k);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(fs(10)); doc.setTextColor(...SECUNDARIO);
+  doc.text(`Laboratory · Lista de Simulações · ${p.titulo} de ${totalCenarios}${p.blocos ? ` · ${EM_BLOCOS_FM}` : ""}`, mL, y + 11 * k);
+  doc.setDrawColor(...TINTA); doc.setLineWidth(0.6); doc.line(mL, y + 14 * k, right, y + 14 * k);
+  y += 21 * k;
+
+  // Cenário e dados de entrada
+  doc.setFont("helvetica", "bold"); doc.setFontSize(fs(13)); doc.setTextColor(...TINTA);
+  const nome = doc.splitTextToSize(`${p.titulo}: ${p.cenario}`, w) as string[];
+  doc.text(nome, mL, y + 4 * k); y += nome.length * 5.6 * k + 3 * k;
+  const campos: [string, string][] = [["Competência", p.competencia], ["Arquivo", p.arquivo], ["Período", p.periodo], ["Prazo", p.prazoFolha]];
+  const ch = 17 * k, gap = 3, cw = (w - gap * 3) / 4;
+  campos.forEach(([r, v], i) => {
+    const x = mL + i * (cw + gap);
+    doc.setFillColor(...CARTAO); doc.setDrawColor(...LINHA); doc.setLineWidth(0.3); doc.roundedRect(x, y, cw, ch, 2, 2, "FD");
+    doc.setFont("helvetica", "bold"); doc.setFontSize(fs(8.5)); doc.setTextColor(...SECUNDARIO); doc.text(r.toUpperCase(), x + 3, y + 5.5 * k);
+    doc.setTextColor(...TINTA); let f = fs(11); doc.setFontSize(f); while (f > 6 && doc.getTextWidth(v) > cw - 6) doc.setFontSize((f -= 0.5));
+    doc.text(v, x + 3, y + ch - 4.5 * k);
+  });
+  y += ch + 8 * k;
+
+  const pad = 2 * k;
+  const tabela = (titulo: string, head: string[], body: RowInput[], extra: Parameters<typeof autoTable>[1]) => {
+    doc.setFont("helvetica", "bold"); doc.setFontSize(fs(11)); doc.setTextColor(...TINTA); doc.text(titulo, mL, y);
+    autoTable(doc, {
+      startY: y + 2.5 * k, margin: { left: mL, right: mR, top, bottom: 25 }, head: [head], body, theme: "grid", rowPageBreak: "avoid",
+      styles: { font: "helvetica", fontSize: fs(10), cellPadding: { top: pad, bottom: pad, left: 3, right: 3 }, textColor: TEXTO, lineColor: LINHA, lineWidth: 0.15, valign: "middle" },
+      headStyles: { fillColor: TINTA, textColor: [255, 255, 255], fontStyle: "bold", lineColor: TINTA },
+      alternateRowStyles: { fillColor: ZEBRA }, tableLineColor: TINTA, tableLineWidth: 0.4, ...extra,
+    });
+    y = ((doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y) + 9 * k;
+  };
+  if (p.blocos) {
+    // Simulação em blocos (pedido de 18/11/2026): texto de contexto + o mesmo quadro da tela, antes das Datas (mesma ordem da tela).
+    doc.setFont("helvetica", "normal"); doc.setFontSize(fs(9.5)); doc.setTextColor(...TEXTO);
+    const ctx = doc.splitTextToSize(pdfTexto(p.blocos.contexto), w) as string[];
+    doc.text(ctx, mL, y, { lineHeightFactor: 1.3 }); y += ctx.length * fs(9.5) * MM_PT * 1.3 + 4 * k;
+    const corpo: RowInput[] = p.blocos.partes.flatMap((pt) => [
+      [{ content: pt.titulo.toUpperCase(), colSpan: 4, styles: { fontStyle: "bold", fillColor: CARTAO, textColor: TINTA, fontSize: fs(8.5) } }],
+      ...pt.linhas.map((l) => [l.bloco, l.periodo, l.dias, l.arquivo]),
+    ]);
+    tabela("Simulação em blocos", ["BLOCO", "PERÍODO", "DIAS", "ARQUIVO"], corpo, {
+      alternateRowStyles: {},
+      columnStyles: { 0: { fontStyle: "bold", cellWidth: 38 }, 2: { halign: "right", cellWidth: 25 }, 3: { halign: "right", fontStyle: "bold", cellWidth: 32 } },
+    });
+  }
+  tabela("Datas", ["VARIÁVEL", "REFERÊNCIA", "DATA", "PRAZO"], p.datas.map((d) => [d.variavel, d.referencia, d.data, d.prazo]), {
+    columnStyles: { 0: { fontStyle: "bold", cellWidth: 32 }, 1: { cellWidth: 48 }, 2: { halign: "right", cellWidth: 30 } },
+  });
+  const q = 2.8 * k;
+  tabela("Impactos", ["VARIÁVEL", "DIAS", "SITUAÇÃO", "DESCRIÇÃO"], p.impactos.map((i) => [i.variavel, i.dias, i.situacao, i.descricao]), {
+    columnStyles: { 0: { fontStyle: "bold", cellWidth: 35 }, 1: { halign: "right", cellWidth: 15 }, 2: { fontStyle: "bold", cellWidth: 30, cellPadding: { top: pad, bottom: pad, left: 7, right: 3 } } },
+    didDrawCell: (d) => {
+      const nivel = p.impactos[d.row.index]?.nivel;
+      if (d.section !== "body" || d.column.index !== 2 || !nivel) return;
+      doc.setFillColor(...MARCADOR[nivel]); doc.setDrawColor(...LINHA); doc.setLineWidth(0.2);
+      doc.rect(d.cell.x + 2.2, d.cell.y + d.cell.height / 2 - q / 2, q, q, "FD");
+    },
+  });
+
+  doc.setFont("helvetica", "italic"); doc.setFontSize(fs(8.5)); doc.setTextColor(...SECUNDARIO);
+  doc.text(`Cenário alterado em ${p.alteradaEm} · Gerado em ${gerado}${p.datas.some((d) => d.data.endsWith("*")) ? " · * dia limitado ao último dia do mês" : ""}`, mL, y - 9 * k + 4);
+}
+
+/** Maior escala com que o cenário cabe numa única página (medido num documento descartável); a menor como último recurso. */
+export function escalaCenarioFm(p: PaginaCenarioFm, totalCenarios = 1): number {
+  for (const k of ESCALAS_CENARIO_FM) {
+    const rascunho = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    desenharCenario(rascunho, p, totalCenarios, "00/00/0000, 00:00:00", k);
+    if (rascunho.getNumberOfPages() === 1) return k;
+  }
+  return ESCALAS_CENARIO_FM[ESCALAS_CENARIO_FM.length - 1];
+}
+
 export function buildCenariosFmPdf(timbrado: string | null, lista: SimulacaoFm[], o: { marcaAxis?: string | null; geradoEm?: Date } = {}): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   attachTimbrado(doc, timbrado, { semRazaoSocial: true });
   const pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
-  const mL = 18, mR = 18, top = 42, w = pageW - mL - mR, right = pageW - mR;
+  const right = pageW - 18;
   const gerado = (o.geradoEm ?? new Date()).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
   const paginas = paginasCenariosFm(lista);
-
+  // Uma página por cenário, inclusive "Em blocos" (pedido de 18/11/2026): cada um na maior escala que cabe inteira na folha.
   paginas.forEach((p, idx) => {
     if (idx > 0) doc.addPage();
-    let y = top;
-    doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(...TINTA);
-    doc.text("Simulação de Datas FM", mL, y + 5);
-    doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(...SECUNDARIO);
-    doc.text(`Laboratory · Lista de Simulações · ${p.titulo} de ${paginas.length}${p.blocos ? ` · ${EM_BLOCOS_FM}` : ""}`, mL, y + 11);
-    doc.setDrawColor(...TINTA); doc.setLineWidth(0.6); doc.line(mL, y + 14, right, y + 14);
-    y += 21;
-
-    // Cenário e dados de entrada
-    doc.setFont("helvetica", "bold"); doc.setFontSize(13); doc.setTextColor(...TINTA);
-    const nome = doc.splitTextToSize(`${p.titulo}: ${p.cenario}`, w) as string[];
-    doc.text(nome, mL, y + 4); y += nome.length * 5.6 + 3;
-    const campos: [string, string][] = [["Competência", p.competencia], ["Arquivo", p.arquivo], ["Período", p.periodo], ["Prazo", p.prazoFolha]];
-    // Cenários em blocos: quadros mais compactos para tudo caber na página do cenário.
-    const compacto = !!p.blocos;
-    const ch = compacto ? 15 : 17, gap = 3, cw = (w - gap * 3) / 4;
-    campos.forEach(([r, v], i) => {
-      const x = mL + i * (cw + gap);
-      doc.setFillColor(...CARTAO); doc.setDrawColor(...LINHA); doc.setLineWidth(0.3); doc.roundedRect(x, y, cw, ch, 2, 2, "FD");
-      doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.setTextColor(...SECUNDARIO); doc.text(r.toUpperCase(), x + 3, y + 5.5);
-      doc.setTextColor(...TINTA); let f = 11; doc.setFontSize(f); while (f > 7 && doc.getTextWidth(v) > cw - 6) doc.setFontSize((f -= 0.5));
-      doc.text(v, x + 3, y + ch - 4.5);
-    });
-    y += ch + (compacto ? 6 : 8);
-
-    const tabela = (titulo: string, head: string[], body: RowInput[], extra: Parameters<typeof autoTable>[1]) => {
-      doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(...TINTA); doc.text(titulo, mL, y);
-      autoTable(doc, {
-        startY: y + 2.5, margin: { left: mL, right: mR, top, bottom: 25 }, head: [head], body, theme: "grid",
-        styles: { font: "helvetica", fontSize: compacto ? 9 : 10, cellPadding: { top: compacto ? 1.3 : 2, bottom: compacto ? 1.3 : 2, left: 3, right: 3 }, textColor: TEXTO, lineColor: LINHA, lineWidth: 0.15, valign: "middle" },
-        headStyles: { fillColor: TINTA, textColor: [255, 255, 255], fontStyle: "bold", lineColor: TINTA },
-        alternateRowStyles: { fillColor: ZEBRA }, tableLineColor: TINTA, tableLineWidth: 0.4, ...extra,
-      });
-      y = ((doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y) + (compacto ? 6.5 : 9);
-    };
-    if (p.blocos) {
-      // Simulação em blocos (pedido de 18/11/2026): texto de contexto + o mesmo quadro da tela, antes das Datas (mesma ordem da tela).
-      doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(...TEXTO);
-      const ctx = doc.splitTextToSize(pdfTexto(p.blocos.contexto), w) as string[];
-      doc.text(ctx, mL, y, { lineHeightFactor: 1.3 }); y += ctx.length * 9.5 * 0.3528 * 1.3 + 4;
-      const corpo: RowInput[] = p.blocos.partes.flatMap((pt) => [
-        [{ content: pt.titulo.toUpperCase(), colSpan: 4, styles: { fontStyle: "bold", fillColor: CARTAO, textColor: TINTA, fontSize: 8.5 } }],
-        ...pt.linhas.map((l) => [l.bloco, l.periodo, l.dias, l.arquivo]),
-      ]);
-      tabela("Simulação em blocos", ["BLOCO", "PERÍODO", "DIAS", "ARQUIVO"], corpo, {
-        alternateRowStyles: {},
-        columnStyles: { 0: { fontStyle: "bold", cellWidth: 38 }, 2: { halign: "right", cellWidth: 25 }, 3: { halign: "right", fontStyle: "bold", cellWidth: 32 } },
-      });
-    }
-    tabela("Datas", ["VARIÁVEL", "REFERÊNCIA", "DATA", "PRAZO"], p.datas.map((d) => [d.variavel, d.referencia, d.data, d.prazo]), {
-      columnStyles: { 0: { fontStyle: "bold", cellWidth: 32 }, 1: { cellWidth: 48 }, 2: { halign: "right", cellWidth: 30 } },
-    });
-    tabela("Impactos", ["VARIÁVEL", "DIAS", "SITUAÇÃO", "DESCRIÇÃO"], p.impactos.map((i) => [i.variavel, i.dias, i.situacao, i.descricao]), {
-      columnStyles: { 0: { fontStyle: "bold", cellWidth: 35 }, 1: { halign: "right", cellWidth: 15 }, 2: { fontStyle: "bold", cellWidth: 30, cellPadding: { top: 2, bottom: 2, left: 7, right: 3 } } },
-      didDrawCell: (d) => {
-        if (d.section !== "body" || d.column.index !== 2) return;
-        doc.setFillColor(...MARCADOR[p.impactos[d.row.index].nivel]); doc.setDrawColor(...LINHA); doc.setLineWidth(0.2);
-        const q = compacto ? 2.4 : 2.8;
-        doc.rect(d.cell.x + 2.2, d.cell.y + d.cell.height / 2 - q / 2, q, q, "FD");
-      },
-    });
-
-    doc.setFont("helvetica", "italic"); doc.setFontSize(8.5); doc.setTextColor(...SECUNDARIO);
-    doc.text(`Cenário alterado em ${p.alteradaEm} · Gerado em ${gerado}${p.datas.some((d) => d.data.endsWith("*")) ? " · * dia limitado ao último dia do mês" : ""}`, mL, y - 4);
+    desenharCenario(doc, p, paginas.length, gerado, escalaCenarioFm(p, paginas.length));
   });
 
   const total = doc.getNumberOfPages();

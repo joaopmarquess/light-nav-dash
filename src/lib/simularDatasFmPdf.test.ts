@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EM_BLOCOS_FM, buildCenariosFmPdf, paginasCenariosFm } from "./simularDatasFmPdf";
+import { EM_BLOCOS_FM, buildCenariosFmPdf, escalaCenarioFm, paginasCenariosFm } from "./simularDatasFmPdf";
 import { avaliarImpactosFm, novaSimulacaoFm, simularDatasFm } from "./simularDatasFm";
 
 const AGORA = "2026-11-18T16:00:00.000Z";
@@ -33,5 +33,16 @@ describe("Imprimir Cenários (Simular Datas FM)", () => {
     expect(b.contexto).toContain("data limite do cenário (20/12/2026)");
     expect(EM_BLOCOS_FM).toBe("Em blocos");
     expect(buildCenariosFmPdf(null, comBlocos).getNumberOfPages()).toBe(4);
+  });
+  it("fits every scenario on exactly one page, including long names in blocks", () => {
+    const longo = "Cenário com descrição bem longa para testar a quebra do título ".repeat(4).slice(0, 200);
+    const todos = [
+      ...lista,
+      novaSimulacaoFm("e", AGORA, 5, { mes: 12, ano: 2026, dias: { fechamento: 5 }, blocos: true }, longo),
+      novaSimulacaoFm("f", AGORA, 6, { mes: 2, ano: 2027, dias: { arquivo: 31 }, arquivoMes: 3, blocos: true }, longo),
+    ];
+    expect(buildCenariosFmPdf(null, todos).getNumberOfPages()).toBe(todos.length);
+    const [padrao] = paginasCenariosFm(lista);
+    expect(escalaCenarioFm(padrao)).toBe(1);
   });
 });
