@@ -52,7 +52,7 @@ export const TEXTOS_REDE_PADRAO: TextosRede = {
 export const NOTA_CONDICOES_REDE = "O pagamento dependerá da conclusão, aprovação e formalização de cada credenciamento pelo Bensaúde.";
 
 /** Quadro de quantidades do tópico 2 (pedido de 18/11/2026): montado a partir da seção Credenciamento, mesmas colunas da tela. */
-export const COLUNAS_CONDICOES_REDE = ["TIPO CREDENCIADO", "QTDE.", "VALOR", "ADESÃO"] as const;
+export const COLUNAS_CONDICOES_REDE = ["TIPO CREDENCIADO", "ATÉ", "VALOR", "ADESÃO"] as const; // "ATÉ" no lugar de "QTDE." (pedido de 18/11/2026): quantidade máxima a credenciar
 const inteiro = (n: number) => n.toLocaleString("pt-BR");
 export type QuantidadesRede = ReturnType<typeof linhasQuantidadeCredenciamentos>;
 export const quantidadesRedeAtuais = (): QuantidadesRede => linhasQuantidadeCredenciamentos(carregarAutorizados(), carregarValores());
