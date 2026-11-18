@@ -8,7 +8,7 @@ import { CABECALHO, FONTES_PROPOSTA as F, LINHA, RODAPE, SECUNDARIO, TINTA, ZEBR
 import { paragrafosDe } from "@/lib/uberabaPropostaTextos";
 import { PARAMETROS_REDE_PADRAO, type ParametrosRede } from "@/lib/uberabaParametrosRede";
 import {
-  COLUNAS_CONDICOES_REDE, COLUNAS_RESULTADO_REDE, CONDICOES_GERAIS_REDE, linhasResultadoRede, quantidadesRedeAtuais, type QuantidadesRede, NOTA_CONDICOES_REDE, SECOES_REDE, TITULO_CONDICOES_GERAIS_REDE, TEXTO_CONDICOES_GERAIS_REDE, SUBTITULO_PROJECAO_REDE, TEXTO_PROJECAO_REDE, TEXTOS_REDE_PADRAO, quadroCondicoesRede, linhasParametrosRede, regraMensalidadeRede,
+  COLUNAS_CONDICOES_REDE, COLUNAS_RESULTADO_REDE, CONDICOES_GERAIS_REDE, linhasResultadoRede, quantidadesRedeAtuais, type QuantidadesRede, NOTA_CONDICOES_REDE, SECOES_REDE, TITULO_CONDICOES_GERAIS_REDE, TEXTO_CONDICOES_GERAIS_REDE, SUBTITULO_PROJECAO_REDE, TEXTO_PROJECAO_REDE, NOTA_PROJECAO_REDE, TEXTOS_REDE_PADRAO, quadroCondicoesRede, linhasParametrosRede, regraMensalidadeRede,
   type SecaoRedeId, type TextosRede,
 } from "@/lib/uberabaPropostaRede";
 
@@ -120,7 +120,7 @@ export function buildPropostaRedePdf(
   // e o quadro da seção Resultado, juntos e inteiros numa mesma página.
   const desenharProjecao = () => {
     const linhasRes = linhasResultadoRede(parametros, quantidades);
-    garantir(10 + alturaParagrafos([TEXTO_PROJECAO_REDE]) + 10 + (linhasRes.length + 1) * 7.2);
+    garantir(10 + alturaParagrafos([TEXTO_PROJECAO_REDE]) + 10 + (linhasRes.length + 1) * 7.2 + 16);
     doc.setFont("helvetica", "bold"); doc.setFontSize(F.texto); doc.setTextColor(...TINTA);
     doc.text(textoPdf(SUBTITULO_PROJECAO_REDE), marginL, y + 3);
     y += 10;
@@ -131,7 +131,7 @@ export function buildPropostaRedePdf(
     tabela([...COLUNAS_RESULTADO_REDE], linhasRes, {
       0: { halign: "left", cellWidth: 24 }, 1: { halign: "right", cellWidth: 36 }, 2: { halign: "right", cellWidth: 38 }, 3: { halign: "right", cellWidth: 38 }, 4: { halign: "right", cellWidth: LARGURA - 136 },
     }, true);
-    y += 6;
+    nota(NOTA_PROJECAO_REDE);
   };
   const desenharGestao = () => {
     tabela(["PARÂMETRO", "VALOR"], linhasParametrosRede(parametros), { 0: { halign: "left" }, 1: { cellWidth: 50 } }, false);

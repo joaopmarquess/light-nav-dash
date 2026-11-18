@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { PARAMETROS_REDE_PADRAO } from "./uberabaParametrosRede";
 import {
-  COLUNAS_CONDICOES_REDE, CONDICOES_GERAIS_REDE, TEXTOS_REDE_PADRAO, quadroCondicoesRede, aprovarTextosRede, dadosRascunhoRede, estadoRedeVazio, linhasCondicoesRede, linhasParametrosRede, mesInicioRede, mesclarRascunhoRede,
+  COLUNAS_CONDICOES_REDE, CONDICOES_GERAIS_REDE, NOTA_PROJECAO_REDE, TEXTOS_REDE_PADRAO, quadroCondicoesRede, aprovarTextosRede, dadosRascunhoRede, estadoRedeVazio, linhasCondicoesRede, linhasParametrosRede, mesInicioRede, mesclarRascunhoRede,
   linhasResultadoRede, numerosForaDosDadosRede, regraMensalidadeRede, textosRedeParaPdf, topicosRedeDesatualizados,
 } from "./uberabaPropostaRede";
 import { TOPICOS_PROPOSTA_REDE, buildPropostaRedePdf } from "./uberabaPropostaRedePdf";
@@ -33,6 +33,10 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
     expect(l[l.length - 1][3]).toBe(semNbsp(moedaCredenciamento(q.total.adesao)));
     const editado = linhasCondicoesRede(linhasQuantidadeCredenciamentos({ medicos: 10 }, { medicos: 300 }), {}).map((r) => r.map(semNbsp));
     expect(editado[0]).toEqual(["Especialidades médicas", "10", "R$ 300,00", "R$ 3.000,00"]);
+  });
+  it("explains that the projection is estimated from the premises, except the fixed installments", () => {
+    expect(NOTA_PROJECAO_REDE).toContain("baseia-se nas premissas");
+    expect(NOTA_PROJECAO_REDE).toContain("são estimados, exceto as parcelas mensais fixas");
   });
   it("heads the quantity column ATÉ", () => {
     expect(COLUNAS_CONDICOES_REDE).toEqual(["TIPO CREDENCIADO", "ATÉ", "VALOR", "ADESÃO"]);

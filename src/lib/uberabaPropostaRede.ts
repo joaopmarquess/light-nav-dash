@@ -33,6 +33,9 @@ export const CONDICOES_GERAIS_REDE: readonly { item: string; valor: string }[] =
 
 /** Subtítulo e texto antes do quadro Resultado, no tópico 2 (textos do Dênis, 18/11/2026). */
 export const SUBTITULO_PROJECAO_REDE = "Projeção financeira";
+/** Nota abaixo do quadro Resultado (pedido de 18/11/2026): a projeção segue as premissas; só as parcelas fixas não são estimadas. */
+export const NOTA_PROJECAO_REDE =
+  "A projeção financeira baseia-se nas premissas desta proposta: quantidades e valores de credenciamento e vidas vendidas acumuladas. Os valores calculados a partir dessas premissas são estimados, exceto as parcelas mensais fixas da gestão, que não dependem delas.";
 export const TEXTO_PROJECAO_REDE =
   "Considerando o cronograma previsto para formação da rede e o início da gestão, apresenta-se a seguir a projeção mensal da remuneração ao longo de 2027, contemplando os valores relativos ao credenciamento e à gestão da rede.";
 export type TextosRede = Record<SecaoRedeId, string>;
