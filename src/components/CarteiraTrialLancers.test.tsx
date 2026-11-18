@@ -1,4 +1,4 @@
-import { render, waitFor, cleanup } from '@testing-library/react';
+import { render, waitFor, cleanup, fireEvent, screen } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import CarteiraTrialLancers, { percentualEntradasFaixa, ticketMedioEntradas } from './CarteiraTrialLancers';
 
@@ -31,5 +31,7 @@ it('ticket médio divide Soma TMM pelas entradas', () => {
 });
 it('consulta somente Enfermaria (Prata) em Entradas Lancers', async () => {
   render(<CarteiraTrialLancers />);
+  expect(eq).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: 'Buscar' }));
   await waitFor(() => expect(eq).toHaveBeenCalledWith('tp_acomodacao', 'PRATA'));
 });

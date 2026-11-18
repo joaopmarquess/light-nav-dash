@@ -1,4 +1,4 @@
-import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree, ArrowRightLeft, Map as MapIcon, CalendarRange, Layers, Tags } from "lucide-react";
+import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree, ArrowRightLeft, Map as MapIcon, CalendarRange, Layers, Tags, LogIn, LogOut, Table2 } from "lucide-react";
 import { BENCH_SHORT_TEXT, DRE_MENU_NAME, SLIDES_SHORT_TEXT } from "@/control/dreLabels";
 export type MenuItem = {
   icon: React.ComponentType<{ className?: string }>;
@@ -106,7 +106,16 @@ export const labItems: MenuItem[] = [
 export const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   controlItem,
-  { icon: Users, label: "Carteira", children: [{ icon: Search, label: "Consulta", id: "Carteira · Consulta" }, { icon: LayoutDashboard, label: "Painel", id: "Carteira · Painel" }, { icon: UserCheck, label: "Área Geográfica", id: "Carteira · Área Geográfica" }, { icon: Search, label: "Movimentação", id: "Carteira · Movimentação" }, { icon: TrendingUp, label: "Evolução Mensal", id: "Carteira · Evolução Mensal" }, { icon: BarChart3, label: "Bench Vidas", id: "Carteira · Bench Vidas" }, { icon: TrendingUp, label: "Entradas", id: "Carteira · Entradas" }, { icon: TrendingUp, label: "Saídas", id: "Carteira · Saídas" }, { icon: BarChart3, label: "Tabelas", id: "Carteira · Tabelas" }] },
+  { icon: Users, label: "Carteira", children: [
+    // Visão geral
+    { icon: LayoutDashboard, label: "Painel", id: "Carteira · Painel" }, { icon: MapIcon, label: "Área Geográfica", id: "Carteira · Área Geográfica" }, { icon: TrendingUp, label: "Evolução Mensal", id: "Carteira · Evolução Mensal" },
+    // Movimento
+    { icon: ArrowRightLeft, label: "Movimentação", id: "Carteira · Movimentação" }, { icon: LogIn, label: "Entradas", id: "Carteira · Entradas" }, { icon: LogOut, label: "Saídas", id: "Carteira · Saídas" },
+    // Consulta e apoio
+    { icon: Search, label: "Consulta", id: "Carteira · Consulta" }, { icon: Table2, label: "Tabelas", id: "Carteira · Tabelas" },
+    // Mercado
+    { icon: BarChart3, label: "Bench Vidas", id: "Carteira · Bench Vidas" },
+  ] },
   { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }, { icon: Layers, label: "Evolução Produtos", id: "Sinistralidade · Evolução Produtos" }] },
 ];
 

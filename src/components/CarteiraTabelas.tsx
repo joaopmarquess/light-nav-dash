@@ -1,6 +1,7 @@
 import { AvisoErroDados } from "@/components/AvisoErroDados";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
+import * as XLSX from "xlsx";
 import { hostinger } from "@/lib/hostingerClient";
 import { agruparFaixas, planoOrFilter, type BenefTabela } from "@/lib/carteiraTabelas";
 
@@ -38,6 +39,14 @@ export default function CarteiraTabelas() {
     } finally { setLoading(false); }
   };
 
+  const exportarXlsx = () => {
+    if (!res) return;
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["Faixa etária", "Enfermaria", "Apartamento", "Total"], ...res.linhas.map((l) => [l.faixa, l.enfermaria, l.apartamento, l.total])]), "Vidas");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["Faixa etária", "TMM Enfermaria", "TMM Apartamento"], ...res.linhas.map((l) => [l.faixa, l.tmmEnfermaria?.max ?? "", l.tmmApartamento?.max ?? ""])]), "TMM");
+    XLSX.writeFile(wb, `carteira_tabelas_plano_${res.plano}_${res.data}.xlsx`);
+  };
+  const semVidas = !!res && res.linhas.every((l) => l.total === 0);
   const tot = res?.linhas.reduce((a, l) => ({ e: a.e + l.enfermaria, p: a.p + l.apartamento, t: a.t + l.total }), { e: 0, p: 0, t: 0 });
 
   return (
@@ -55,9 +64,14 @@ export default function CarteiraTabelas() {
         <button onClick={consultar} disabled={loading} className="h-10 px-5 rounded-md bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50 inline-flex items-center gap-2">
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}Consultar
         </button>
+        <button onClick={exportarXlsx} disabled={!res || semVidas} title="Gerar XLSX das duas tabelas" className="h-10 px-3 rounded-md border border-border bg-background text-sm inline-flex items-center gap-1 hover:bg-accent/40 disabled:opacity-50">
+          <Download className="h-4 w-4" />XLSX
+        </button>
       </div>
       <AvisoErroDados erro={erro} onTentar={/^\d{4}$/.test(plano) ? consultar : undefined} />
-      {res && (
+      {!res && !loading && !erro && <p className="text-sm text-muted-foreground">Informe a data e o código do plano (4 dígitos) e clique em Consultar.</p>}
+      {semVidas && <p className="text-sm text-muted-foreground">Nenhuma vida ativa no plano {res!.plano} em {res!.data.split("-").reverse().join("/")}. Confira o código do plano ou a data.</p>}
+      {res && !semVidas && (
         <>
           <div className="text-sm">
             <span className="text-muted-foreground">Estipulante do plano {res.plano}: </span>
@@ -66,6 +80,7 @@ export default function CarteiraTabelas() {
           <div className="grid lg:grid-cols-2 gap-4 items-start">
           <div>
           <h3 className="text-sm font-semibold mb-2">Vidas (CPFs distintos)</h3>
+          <div className="overflow-x-auto">
           <table className="w-full text-sm border border-border rounded-lg overflow-hidden">
             <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
               <tr><th className="px-3 py-2 text-left">Faixa etária</th><th className="px-3 py-2 text-right">Enfermaria</th><th className="px-3 py-2 text-right">Apartamento</th><th className="px-3 py-2 text-right">Total</th></tr>
@@ -88,8 +103,10 @@ export default function CarteiraTabelas() {
             </tbody>
           </table>
           </div>
+          </div>
           <div>
           <h3 className="text-sm font-semibold mb-2">TMM (R$)</h3>
+          <div className="overflow-x-auto">
           <table className="w-full text-sm border border-border rounded-lg overflow-hidden">
             <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
               <tr><th className="px-3 py-2 text-left">Faixa etária</th><th className="px-3 py-2 text-right">Enfermaria</th><th className="px-3 py-2 text-right">Apartamento</th></tr>
@@ -104,6 +121,7 @@ export default function CarteiraTabelas() {
               ))}
             </tbody>
           </table>
+          </div>
           </div>
           </div>
           <p className="text-xs text-muted-foreground">CPFs distintos ativos em {res.data.split("-").reverse().join("/")}; idade calculada nessa data. Enfermaria = PRATA, Apartamento = OURO.</p>

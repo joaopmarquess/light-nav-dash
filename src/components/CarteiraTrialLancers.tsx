@@ -1,6 +1,6 @@
 import { AvisoErroDados } from "@/components/AvisoErroDados";
 import { planoOrFilter } from "@/lib/carteiraTabelas";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { hostinger } from "@/lib/hostingerClient";
 
@@ -55,7 +55,6 @@ export default function CarteiraTrialLancers() {
     setRows([...m.values()]);
     setLoading(false);
   };
-  useEffect(() => { consultar(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
 
   const grid = useMemo(() => {
     const g = FAIXAS.map(([, , l]) => ({ faixa: l, qtd: 0, tmm: 0 }));
@@ -88,6 +87,7 @@ export default function CarteiraTrialLancers() {
         <span className="text-xs text-muted-foreground ml-2">{plano ? `Plano ${plano} · ` : ""}{empresa.trim() ? `Estipulantes contendo "${empresa.trim().toUpperCase()}" · ` : "Todas as estipulantes · "}Enfermaria (Prata) · {fmtD(de)} a {fmtD(ate)}</span>
       </div>
       <AvisoErroDados erro={error} onTentar={consultar} className="mb-3" />
+      {!loading && !rows && !error && <div className="text-sm text-muted-foreground">Escolha o período e clique em Buscar.</div>}
       {loading && !rows && <div className="text-sm text-muted-foreground flex items-center"><Loader2 className="h-4 w-4 animate-spin mr-2" />Carregando…</div>}
       {rows && (
         <table className="w-full max-w-2xl text-sm [&_td]:border [&_td]:border-border [&_th]:border [&_th]:border-border">

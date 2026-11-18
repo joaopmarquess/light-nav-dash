@@ -36,7 +36,7 @@ const fmtComp = (c: number) => `${String(c).slice(4, 6)}/${String(c).slice(0, 4)
 const SEXO: Record<string, string> = { M: "Masculino", F: "Feminino" };
 
 const TONE: Record<string, string> = {
-  ok: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+  ok: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300 border-emerald-300",
   warn: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
   bad: "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30",
   neutral: "bg-muted text-muted-foreground border-border",

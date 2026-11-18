@@ -309,6 +309,7 @@ export default function CarteiraTrial() {
         </div>
       </div>
 
+      {!grid && <p className="text-xs text-muted-foreground">Os totais abaixo usam a data e os filtros aplicados em Buscar. Para ver os beneficiários, clique em Mostrar lista.</p>}
       {!grid && kpiErro && <AvisoErroDados erro={kpiErro} onTentar={() => setTentativa((t) => t + 1)} />}
       {!grid && (
         <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-3 gap-4 content-start">

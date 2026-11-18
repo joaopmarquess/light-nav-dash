@@ -40,7 +40,10 @@
 
 ## Carteira › Revisão (18/11/2026)
 - [x] 1. Aviso único “servidor indisponível” com Tentar de novo em todas as telas.
-- [ ] 2. Padronizar visual (cabeçalho, período MM/AAAA, blocos recolhíveis, verde claro no Painel, ícones do menu) — aguardando OK do Dênis.
-- [ ] 3. Funcionalidade (exportações, Entradas/Saídas sob Consultar + gráfico, Consulta, Tabelas com lista de planos, Evolução Mensal) — aguardando OK.
-- [ ] 4. Reorganizar ordem do menu — aguardando OK.
-- [ ] 5. Limpeza das telas antigas fora do menu — aguardando OK.
+- [x] 2. Verde claro no Painel e ícones próprios no menu.
+- [ ] 2b. Cabeçalho comum, MM/AAAA em todas as telas e blocos recolhíveis padrão — aguardando decisão do Dênis (mudança grande).
+- [x] 3. Entradas/Saídas só ao Buscar, gráfico mensal, aviso de corte, XLSX; Tabelas XLSX e aviso sem vidas; dica na Consulta.
+- [ ] 3b. Evolução Mensal × Evolução Produtos — aguardando decisão do Dênis.
+- [x] 4. Menu reordenado por uso.
+- [x] 5. Removidas duas telas antigas sem uso.
+- [ ] 5b. Telas antigas usadas no B.I. Overview (Ativos Em, Ativos por Cidade, DW Carteira) — aguardando decisão do Dênis.

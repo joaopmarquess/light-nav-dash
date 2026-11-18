@@ -1,6 +1,9 @@
 import { AvisoErroDados } from "@/components/AvisoErroDados";
-import { useEffect, useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Download, Loader2, TriangleAlert } from "lucide-react";
+import * as XLSX from "xlsx";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip as RTooltip, XAxis, YAxis } from "recharts";
+import { contagemMensal } from "@/lib/carteiraES";
 import { normalizarVendedor } from "@/lib/vendedorTransferencia";
 import { hostinger } from "@/lib/hostingerClient";
 import { useGruposVendedor, useGruposMotivo } from "@/lib/vendedorGrupo";
@@ -63,7 +66,6 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
     setLoading(false);
   };
 
-  useEffect(() => { consultar(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
 
   const filtered = useMemo(() => {
     if (!rows) return null;
@@ -128,6 +130,16 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
                           </table>
                         </div>
   );
+  const mensal = useMemo(() => (filtered ? contagemMensal(filtered, campo, periodoAplicado.de, periodoAplicado.ate) : []), [filtered, campo, periodoAplicado]);
+  const exportarXlsx = () => {
+    if (!filtered) return;
+    const cab = ["Grupo", "Matrícula", "Beneficiário", "Plano", "Vendedor", ...(modo === "saidas" ? ["Motivo"] : []), "Empresa", "Cidade", "Data"];
+    const linhas = grouped.flatMap((g) => g.itens.map((r) => [g.key, fmtMat(r.cd_mat_alternativa), r.nm_beneficiario ?? "", r.ds_plano ?? "", r.nm_vendedor ?? "", ...(modo === "saidas" ? [motDs(r)] : []), r.nm_empresa_estipulante ?? "", cidade(r), fmtD(r[campo])]));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["Mês", "Quantidade"], ...mensal.map((m) => [m.mes, m.qtd])]), "Por mês");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([cab, ...linhas]), modo === "entradas" ? "Entradas" : "Saídas");
+    XLSX.writeFile(wb, `carteira_${modo}_${periodoAplicado.de}_a_${periodoAplicado.ate}.xlsx`);
+  };
   const total = filtered ? new Set(filtered.map((r) => r.cd_mat_alternativa)).size : 0;
   const max = grouped[0]?.qtd ?? 0;
   const inp = "h-9 rounded-md border border-border bg-background text-sm px-2";
@@ -167,18 +179,36 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
         <button onClick={consultar} disabled={loading} className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Buscar"}
         </button>
+        <button onClick={exportarXlsx} disabled={!filtered?.length} title="Gerar XLSX com o resumo mensal e a lista do período" className="h-9 px-3 rounded-md border border-border bg-background text-sm inline-flex items-center gap-1 hover:bg-accent/40 disabled:opacity-50">
+          <Download className="h-4 w-4" />XLSX
+        </button>
       </div>
 
       <AvisoErroDados erro={error} onTentar={consultar} className="mb-3" />
+      {!loading && !rows && !error && <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">Escolha o período e clique em Buscar.</div>}
       {loading && !rows && <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin mr-2" />Carregando…</div>}
 
       {rows && (
         <>
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
             <span>Período: <span className="text-foreground font-medium">{fmtD(de)}</span> a <span className="text-foreground font-medium">{fmtD(ate)}</span>
-              {cortado && <span className="text-destructive ml-2">(limitado a {num(LIMITE)} registros)</span>}</span>
+</span>
             <span><span className="font-semibold text-foreground tabular-nums">{num(total)}</span> {modo === "entradas" ? "entrada(s)" : "saída(s)"} · <span className="font-semibold text-foreground tabular-nums">{num(grouped.length)}</span> grupo(s)</span>
           </div>
+          {cortado && <div role="alert" className="mb-3 flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive"><TriangleAlert className="h-4 w-4 shrink-0" />O período passou de {num(LIMITE)} registros e a lista foi cortada. Reduza o período para ver todos.</div>}
+          {mensal.length > 1 && (
+            <div className="h-32 mb-3 shrink-0" aria-label={`${modo === "entradas" ? "Entradas" : "Saídas"} por mês`}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={mensal} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                  <XAxis dataKey="mes" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} interval="preserveStartEnd" />
+                  <YAxis width={44} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => num(Number(v))} />
+                  <RTooltip formatter={(v) => [num(Number(v)), modo === "entradas" ? "Entradas" : "Saídas"]} contentStyle={{ fontSize: 12 }} />
+                  <Bar dataKey="qtd" fill={modo === "saidas" ? "hsl(var(--destructive))" : "hsl(var(--primary))"} radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
           <div className="flex-1 overflow-auto border border-border rounded-lg p-4">
             {grouped.length === 0 ? (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Nenhuma {modo === "entradas" ? "entrada" : "saída"} no período.</div>

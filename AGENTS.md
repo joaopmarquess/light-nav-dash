@@ -40,3 +40,4 @@
 - Home shortcuts declare their equivalent main menu in axisNavigation and are grouped by tested homeShortcutGroups (sidebar order, Laboratory last), so new shortcuts land under the right subtitle without Home logic changes.
 - Lay out Carteira › Área Geográfica as one card: a thin toolbar (map buttons, date, total) and a narrow state list beside a map that fills the rest; portal-toolbar mode keeps its own controls, so maximizing the map never touches data or MAA behaviour.
 - Carteira screens show Hostinger read failures through the shared AvisoErroDados (message from tested src/lib/erroDados.ts, retry button); the Hostinger client aborts requests after a fixed wait, so an unreachable server never looks like empty data or endless loading.
+- Carteira › Entradas/Saídas and Faixas Etárias load only on Buscar; their monthly chart and XLSX derive from already-loaded rows via tested src/lib/carteiraES.ts, so exports never re-query.
