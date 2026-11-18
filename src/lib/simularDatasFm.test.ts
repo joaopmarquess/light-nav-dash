@@ -111,10 +111,14 @@ describe("Simular Datas FM", () => {
       Object.fromEntries(avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo, ...extra }, arquivoMes: mes }).map((i) => [i.id, i.status]));
     // Arquivo 20/12 + 21 → Fechamento 10/01: Dare 15/01 = 5 dias, DIOPS e Pagamento 30/01 = 20 dias, PEONA 11 dias.
     const f = { fechamento: 21 };
-    expect(niveis(20, 12, f)).toEqual({ peona: "Moderado", fechamento: "Ideal", dare: "Moderado", diops: "Ideal", pagamento: "Ideal" });
+    expect(niveis(20, 12, f)).toEqual({ peona: "Moderado", fechamento: "Ideal", dare: "Ideal", diops: "Ideal", pagamento: "Ideal" });
     // Arquivo 20/12 + X → Dare 15/01 a 26 − X dias; DIOPS e Pagamento 30/01 a 41 − X dias.
-    expect(niveis(20, 12, { fechamento: 22 })).toMatchObject({ dare: "Crítico" }); // 4 dias
-    expect(niveis(20, 12, { fechamento: 17 })).toMatchObject({ dare: "Moderado" }); // 9 dias
+    // DARE (pedido de 18/11/2026): até 02 dias Crítico; 03 a 04 Moderado; 05 ou mais Ideal.
+    expect(niveis(20, 12, { fechamento: 26 })).toMatchObject({ dare: "Crítico" }); // 0 dias
+    expect(niveis(20, 12, { fechamento: 24 })).toMatchObject({ dare: "Crítico" }); // 2 dias
+    expect(niveis(20, 12, { fechamento: 23 })).toMatchObject({ dare: "Moderado" }); // 3 dias
+    expect(niveis(20, 12, { fechamento: 22 })).toMatchObject({ dare: "Moderado" }); // 4 dias
+    expect(niveis(20, 12, { fechamento: 21 })).toMatchObject({ dare: "Ideal" }); // 5 dias
     expect(niveis(20, 12, { fechamento: 16 })).toMatchObject({ dare: "Ideal" }); // 10 dias
     expect(niveis(20, 12, { fechamento: 27 })).toMatchObject({ diops: "Moderado", pagamento: "Moderado" }); // 14 dias
     expect(niveis(20, 12, { fechamento: 26 })).toMatchObject({ diops: "Ideal", pagamento: "Ideal" }); // 15 dias

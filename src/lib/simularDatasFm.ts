@@ -257,10 +257,10 @@ export function impactosFm(e: EntradaDatasFm) {
 /** Premissas dos IMPACTOS (pedidos de 18/11/2026), classificadas em apenas três níveis: Crítico, Moderado e Ideal.
  * PEONA — dias do Período fora da competência aumentam o valor do PEONA: 0 Ideal; 1 a 15 Moderado; acima de 15 Crítico;
  * FECHAMENTO — dias desde o Arquivo: menos de 10 Crítico; 10 a 19 Moderado; 20 ou mais Ideal;
- * DARE — entregue sempre no dia 15: menos de 5 dias Crítico; 5 a 9 Moderado; 10 ou mais Ideal;
+ * DARE — entregue sempre no dia 15 (pedido de 18/11/2026): até 2 dias Crítico; 3 a 4 Moderado; 5 ou mais Ideal;
  * DIOPS — entregue sempre no dia 30: menos de 15 dias Moderado; 15 ou mais Ideal;
  * PAGAMENTO — sempre no dia 30, quanto mais perto do Fechamento, pior: menos de 15 dias Moderado; 15 ou mais Ideal. */
-export const PEONA_MODERADO_ATE = 15, FECHAMENTO_MINIMO = 10, FECHAMENTO_IDEAL = 20, DARE_MINIMO = 5, DARE_IDEAL = 10, DIOPS_IDEAL = 15, PAGAMENTO_IDEAL = 15;
+export const PEONA_MODERADO_ATE = 15, FECHAMENTO_MINIMO = 10, FECHAMENTO_IDEAL = 20, DARE_MINIMO = 3, DARE_IDEAL = 5, DIOPS_IDEAL = 15, PAGAMENTO_IDEAL = 15;
 export type NivelImpactoFm = "ideal" | "moderado" | "critico";
 export const STATUS_IMPACTO_FM: Record<NivelImpactoFm, string> = { ideal: "Ideal", moderado: "Moderado", critico: "Crítico" };
 export type ImpactoFm = { id: "peona" | "fechamento" | "dare" | "diops" | "pagamento"; rotulo: string; dias: number; nivel: NivelImpactoFm; status: string; descricao: string };
