@@ -22,7 +22,7 @@ export type ReportBlock = {
   chart?: { title: string; labels: string[]; series: ReportSeries[] };
   paragraphs: string[]; considerations: string[]; children?: ReportBlock[];
 };
-export type ControladoriaReport = { period: ReportPeriod; generatedAt: string; blocks: ReportBlock[]; conclusions: string[]; /** Textos da capa; ausente = capa padrão do relatório completo. */ capa?: { subtitulo: string[]; topicos: string } };
+export type ControladoriaReport = { period: ReportPeriod; generatedAt: string; blocks: ReportBlock[]; conclusions: string[]; /** Textos da capa; ausente = capa padrão do relatório completo. */ capa?: { subtitulo: string[]; topicos: string; /** Logomarca da capa: "bensaude" usa a do Bensaúde; ausente = AXIS. */ logo?: "bensaude" } };
 const strip = (s: string) => s.replace(/^\d+\|/, "");
 const sum = (rows: DreHRow[]) => rows.reduce((t, r) => t + r.valor, 0);
 const group = (rows: DreHRow[], level: "g1" | "g2" | "g3") => {

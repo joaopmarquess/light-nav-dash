@@ -120,6 +120,8 @@ export function montarRelatorioTrimestral(o: { ano: number; tris: number[]; rows
   return {
     period, generatedAt, blocks,
     conclusions: blocks.map((b) => `${b.title.replace(/^\d+\. /, "")}: ${b.paragraphs[0]}`),
-    capa: { subtitulo: ["Visão trimestral", "Vidas e resultado"], topicos: `Carteira · ${DRE_FULL_NAME} · ${primeiro}${tris.length > 1 ? ` a ${ultimo}` : ""}` },
+    capa: { subtitulo: ["Visão trimestral", "Vidas e resultado"], topicos: `Carteira · ${DRE_FULL_NAME} · ${primeiro}${tris.length > 1 ? ` a ${ultimo}` : ""}`,
+      // Capa com a logomarca do Bensaúde, não a do AXIS (pedido de 18/11/2026).
+      logo: "bensaude" },
   };
 }

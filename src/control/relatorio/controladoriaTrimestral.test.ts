@@ -43,4 +43,5 @@ describe("Relatório de Controladoria trimestral", () => {
     expect(() => montarRelatorioTrimestral({ ano: 2026, tris: [], rows, vidasInicio, vidas: [] })).toThrow();
   });
   it("negativos entre parênteses, como na tela", () => expect(valorDre(-1234.5)).toBe("(1.234,50)"));
+  it("capa com a logomarca do Bensaúde, não a do AXIS", () => expect(rel.capa?.logo).toBe("bensaude"));
 });

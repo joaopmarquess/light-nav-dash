@@ -8,6 +8,7 @@ import { PDF_COLORS, baseTableStyles } from "./pdfTheme";
 import { dataBR } from "./controladoriaRegras";
 import { UNAVAILABLE, type ControladoriaReport, type ReportBlock } from "./controladoriaDados";
 import axisLogo from "@/assets/axis-report-logo.png.asset.json";
+import bensaudeLogo from "@/assets/bensaude-logo.svg.asset.json";
 
 export type ReportPdf = { doc: jsPDF; contents: { id: string; title: string; page: number }[] };
 export async function comporPdfRelatorio(report: ControladoriaReport): Promise<ReportPdf> {
@@ -34,12 +35,18 @@ export async function comporPdfRelatorio(report: ControladoriaReport): Promise<R
     doc.setDrawColor(...colors.blue); doc.setLineWidth(0.6); doc.line(margin, y, margin + width, y); y += 9;
   };
   // Cover uses an actual brand asset and an abstract corporate composition, never fictitious data.
+  // capa.logo "bensaude" (DRE Trimestral): logomarca do Bensaúde em SVG, convertida em PNG para o PDF.
+  const bensaude = report.capa?.logo === "bensaude";
   try {
-    const image = new Image(); image.crossOrigin = "anonymous"; image.src = axisLogo.url;
+    const image = new Image(); image.crossOrigin = "anonymous"; image.src = bensaude ? bensaudeLogo.url : axisLogo.url;
     await image.decode();
-    const h = 55 * image.naturalHeight / image.naturalWidth;
-    doc.addImage(image, "PNG", margin, 22, 55, h);
-  } catch { text(20, true, colors.navy); doc.text("AXIS / CONTROL", margin, 34); }
+    const largura = bensaude ? 70 : 55, h = largura * image.naturalHeight / image.naturalWidth;
+    if (bensaude) {
+      const canvas = document.createElement("canvas"); canvas.width = image.naturalWidth * 4; canvas.height = image.naturalHeight * 4;
+      canvas.getContext("2d")!.drawImage(image, 0, 0, canvas.width, canvas.height);
+      doc.addImage(canvas.toDataURL("image/png"), "PNG", margin, 22, largura, h);
+    } else doc.addImage(image, "PNG", margin, 22, largura, h);
+  } catch { text(20, true, colors.navy); doc.text(bensaude ? "Bensaúde" : "AXIS / CONTROL", margin, 34); }
   doc.setFillColor(...colors.navy); doc.rect(0, 65, 210, 119, "F");
   doc.setFillColor(...colors.blue); doc.rect(0, 65, 5, 119, "F");
   text(24, true, colors.headText); doc.text(doc.splitTextToSize(REPORT_FULL_NAME, width), margin, 100);
