@@ -177,3 +177,35 @@ export function impactosFm(e: EntradaDatasFm) {
   const dias = (id: IdDataFm) => linhas.find((l) => l.id === id)!.diasBase;
   return { peona, dare: dias("dare"), diops: dias("diops") };
 }
+
+/** Premissas dos IMPACTOS (pedido de 18/11/2026):
+ * PEONA — quanto mais dias do Período fora da competência, maior o impacto (aumento do valor do PEONA);
+ * DARE — entregue sempre no dia 15; menos de 5 dias para fechar é crítico, o ideal é 10 ou mais;
+ * DIOPS — entregue sempre no dia 30; o ideal é ter pelo menos 15 dias. */
+export const DARE_MINIMO = 5, DARE_IDEAL = 10, DIOPS_IDEAL = 15;
+export type NivelImpactoFm = "ok" | "atencao" | "critico";
+export type ImpactoFm = { id: "peona" | "dare" | "diops"; rotulo: string; dias: number; nivel: NivelImpactoFm; status: string; descricao: string };
+const plural = (n: number) => `${n} ${Math.abs(n) === 1 ? "dia" : "dias"}`;
+export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
+  const { peona, dare, diops } = impactosFm(e);
+  return [
+    peona > 0
+      ? { id: "peona", rotulo: "PEONA", dias: peona, nivel: "atencao", status: "Com impacto",
+          descricao: `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA; quanto mais dias, maior o impacto.` }
+      : { id: "peona", rotulo: "PEONA", dias: peona, nivel: "ok", status: "Sem impacto", descricao: "Todo o Período está no mês da competência." },
+    dare < DARE_MINIMO
+      ? { id: "dare", rotulo: "DARE", dias: dare, nivel: "critico", status: "Crítico",
+          descricao: `${plural(dare)} para fechar o Dare (entrega no dia 15); o mínimo é ${DARE_MINIMO} e o ideal, ${DARE_IDEAL}.` }
+      : dare < DARE_IDEAL
+        ? { id: "dare", rotulo: "DARE", dias: dare, nivel: "atencao", status: "Abaixo do ideal",
+            descricao: `${plural(dare)} para fechar o Dare (entrega no dia 15): atende ao mínimo de ${DARE_MINIMO}, mas fica abaixo do ideal de ${DARE_IDEAL}.` }
+        : { id: "dare", rotulo: "DARE", dias: dare, nivel: "ok", status: "Ideal",
+            descricao: `${plural(dare)} para fechar o Dare (entrega no dia 15), dentro do ideal de ${DARE_IDEAL}.` },
+    diops < DIOPS_IDEAL
+      ? { id: "diops", rotulo: "DIOPS", dias: diops, nivel: "atencao", status: "Abaixo do ideal",
+          descricao: `${plural(diops)} até a entrega do DIOPS (dia 30); o ideal é ter pelo menos ${DIOPS_IDEAL}.` }
+      : { id: "diops", rotulo: "DIOPS", dias: diops, nivel: "ok", status: "Ideal",
+          descricao: `${plural(diops)} até a entrega do DIOPS (dia 30), dentro do ideal de ${DIOPS_IDEAL}.` },
+  ];
+}
+

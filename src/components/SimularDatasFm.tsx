@@ -1,6 +1,6 @@
 import { Fragment, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { carregarDatasFm, formatarCompetencia, lerCompetencia, lerDiaMes, impactosFm, lerInteiro, periodoFm, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { carregarDatasFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, lerInteiro, periodoFm, salvarDatasFm, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
 // Laboratory › Simular Datas FM: Competência (MM/AAAA) e Período (dia seguinte ao Último Dia, um mês antes, a Último Dia) acima do grid, sem a linha Último Dia (pedido de 18/11/2026), Arquivo como dia/mês fora do grid e o dia de cada linha, com a data calculada; valores digitados ficam neste navegador.
 export default function SimularDatasFm() {
@@ -23,7 +23,7 @@ export default function SimularDatasFm() {
   const arquivo = todas.find((l) => l.id === "arquivo")!;
   const linhas = todas.filter((l) => l.id !== "arquivo");
   const periodo = periodoFm(entrada);
-  const impactos = impactosFm(entrada);
+  const impactos = avaliarImpactosFm(entrada);
   const [competenciaTexto, setCompetenciaTexto] = useState<string | null>(null);
   const alterarCompetencia = (t: string) => {
     if (!/^[\d/]*$/.test(t)) return;
@@ -98,18 +98,16 @@ export default function SimularDatasFm() {
           </tbody>
         </table>
       </div>
-      <div className="max-w-xl overflow-hidden rounded-md border border-border">
+      <div className="max-w-3xl overflow-hidden rounded-md border border-border">
         <div className="border-b border-border bg-secondary px-3 py-2 text-sm font-semibold text-secondary-foreground">IMPACTOS</div>
         <table className="w-full border-collapse text-sm">
           <tbody>
-            {[
-              ["PEONA", impactos.peona, "Dias do Período que não são do mês da competência"],
-              ["DARE", impactos.dare, "Dias de Dare (coluna DIAS)"],
-              ["DIOPS", impactos.diops, "Dias de DIOPS (coluna DIAS)"],
-            ].map(([rotulo, valor, dica]) => (
-              <tr key={rotulo as string} className="border-b border-border last:border-b-0" title={dica as string}>
-                <td className="px-3 py-1.5">{rotulo}</td>
-                <td className="px-3 py-1.5 text-right tabular-nums">{valor}</td>
+            {impactos.map((imp) => (
+              <tr key={imp.id} className="border-b border-border align-top last:border-b-0">
+                <td className="w-20 px-3 py-1.5 font-semibold">{imp.rotulo}</td>
+                <td className="w-14 px-3 py-1.5 text-right tabular-nums">{imp.dias}</td>
+                <td className={`w-32 px-3 py-1.5 font-semibold ${imp.nivel === "critico" ? "text-destructive" : imp.nivel === "ok" ? "text-muted-foreground" : "text-foreground"}`}>{imp.status}</td>
+                <td className="px-3 py-1.5 text-muted-foreground">{imp.descricao}</td>
               </tr>
             ))}
           </tbody>
