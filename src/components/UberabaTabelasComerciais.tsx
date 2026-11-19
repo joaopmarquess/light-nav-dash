@@ -95,19 +95,26 @@ const ChaveOutras = ({ modo, onModo }: { modo: ValorOutrasBensaude; onModo: (m: 
   </span>
 );
 
-const OutrasBensaude = ({ aberto, onAlternar, modo, onModo, comApartamento }: { aberto: boolean; onAlternar: () => void; modo: ValorOutrasBensaude; onModo: (m: ValorOutrasBensaude) => void; comApartamento: boolean }) => {
-  const { colunas, linhas } = outrasBensaude(modo, comApartamento);
-  const rotulo = `${aberto ? "Recolher" : "Expandir"} Outras Bensaúde`;
+// Topo dos contêineres da comparação: título e seta para recolher/expandir.
+const TopoComparado = ({ titulo, aberto, onAlternar }: { titulo: string; aberto: boolean; onAlternar: () => void }) => {
+  const rotulo = `${aberto ? "Recolher" : "Expandir"} ${titulo}`;
   const Icone = aberto ? ChevronLeft : ChevronRight;
   return (
-    <section className="comercial-card comercial-comparado comercial-outras" aria-label="Outras Bensaúde">
-      <div className="flex items-center justify-center gap-1 text-center">
-        <span className="text-xl font-bold">Outras Bensaúde</span>
-        <button type="button" onClick={onAlternar} aria-label={rotulo} title={rotulo} aria-expanded={aberto}
-          className="inline-flex h-6 w-6 items-center justify-center rounded-sm opacity-70 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-          <Icone className="h-4 w-4" />
-        </button>
-      </div>
+    <div className="flex items-center justify-center gap-1 text-center">
+      <span className="text-xl font-bold">{titulo}</span>
+      <button type="button" onClick={onAlternar} aria-label={rotulo} title={rotulo} aria-expanded={aberto}
+        className="inline-flex h-6 w-6 items-center justify-center rounded-sm opacity-70 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <Icone className="h-4 w-4" />
+      </button>
+    </div>
+  );
+};
+
+const OutrasBensaude = ({ aberto, onAlternar, modo, onModo, comApartamento }: { aberto: boolean; onAlternar: () => void; modo: ValorOutrasBensaude; onModo: (m: ValorOutrasBensaude) => void; comApartamento: boolean }) => {
+  const { colunas, linhas } = outrasBensaude(modo, comApartamento);
+  return (
+    <section className="comercial-card comercial-comparado comercial-outras" aria-label="OUTRAS BENSAÚDE" data-recolhido={!aberto || undefined}>
+      <TopoComparado titulo="OUTRAS BENSAÚDE" aberto={aberto} onAlternar={onAlternar} />
       {aberto && (
         <section className="comercial-secao">
           <p className="comercial-secao-titulo">Tabelas<ChaveOutras modo={modo} onModo={onModo} /></p>
@@ -136,10 +143,10 @@ const OutrasBensaude = ({ aberto, onAlternar, modo, onModo, comApartamento }: { 
 };
 
 // Tabela Concorrentes (valores enviados pelo Dênis), uma linha por faixa para comparar com a tabela escolhida.
-const TabelaConcorrentes = () => (
-  <section className="comercial-card comercial-comparado comercial-concorrentes" aria-label="Concorrentes">
-    <div className="flex items-center justify-center text-center"><span className="text-xl font-bold">Concorrentes</span></div>
-    <section className="comercial-secao">
+const TabelaConcorrentes = ({ aberto, onAlternar }: { aberto: boolean; onAlternar: () => void }) => (
+  <section className="comercial-card comercial-comparado comercial-concorrentes" aria-label="CONCORRENTES" data-recolhido={!aberto || undefined}>
+    <TopoComparado titulo="CONCORRENTES" aberto={aberto} onAlternar={onAlternar} />
+    {aberto && <section className="comercial-secao">
       <p className="comercial-secao-titulo">Tabelas</p>
       <div className="comercial-precos overflow-x-auto">
         <table className="comercial-table w-full border-collapse text-center text-lg leading-6">
@@ -159,7 +166,7 @@ const TabelaConcorrentes = () => (
           </tbody>
         </table>
       </div>
-    </section>
+    </section>}
   </section>
 );
 
@@ -374,8 +381,9 @@ const UberabaTabelasComerciais = ({ comparada: comparadaExterna, onComparar }: {
   const controlado = comparadaExterna !== undefined;
   const comparada = controlado ? comparadaExterna : comparadaLocal;
   const setComparada = (id: FrenteId | null) => { if (!controlado) setComparadaLocal(id); };
-  // "Outras Bensaúde" (3019 e 3020) abre recolhido, com chave Venda/Net própria.
-  const [outrasAberto, setOutrasAberto] = useState(false);
+  // "OUTRAS BENSAÚDE" (3019 e 3020, chave Venda/Net própria) abre expandido; "CONCORRENTES" abre recolhido.
+  const [outrasAberto, setOutrasAberto] = useState(true);
+  const [concorrentesAberto, setConcorrentesAberto] = useState(false);
   const [modoOutras, setModoOutras] = useState<ValorOutrasBensaude>("venda");
   const comparar = (id: FrenteId | null) => { setComparada(id); onComparar?.(id); };
   const [indices, setIndices] = useState<Indices>(() => lerIndices());
@@ -426,7 +434,7 @@ const UberabaTabelasComerciais = ({ comparada: comparadaExterna, onComparar }: {
           <div className="comercial-comparar-area">
             {FRENTES.filter((f) => f.id === comparada).map((f) => cartao(f, true))}
             <OutrasBensaude aberto={outrasAberto} onAlternar={() => setOutrasAberto((v) => !v)} modo={modoOutras} onModo={setModoOutras} comApartamento={aptoVisivel} />
-            <TabelaConcorrentes />
+            <TabelaConcorrentes aberto={concorrentesAberto} onAlternar={() => setConcorrentesAberto((v) => !v)} />
           </div>
         </div>
       ) : (
