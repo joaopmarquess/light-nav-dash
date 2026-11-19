@@ -67,6 +67,9 @@ export const linhasFaixaLancers = (p: ProdutoLancers, acomodacao: AcomodacaoLanc
     return { faixa, net: l?.net ?? null, venda: l?.venda ?? null, spread: l?.spread ?? null };
   });
 
-/** Tabelas do filtro de Plano: só os planos com nome informado, na ordem informada (o 3096 traz as suas duas tabelas). */
-export const produtosFiltroLancers = (todos: ProdutoLancers[] = produtosLancers()) =>
-  NOMES_PLANOS_LANCERS.flatMap((n) => todos.filter((p) => p.plano === n.plano));
+/** Tabelas do filtro de Plano: os planos com nome informado, na ordem informada (o 3096 traz as suas duas tabelas);
+ *  com "Incluir Tabelas de Produtos mais Antigos", as demais tabelas vêm depois, na ordem da planilha. */
+export const produtosFiltroLancers = (todos: ProdutoLancers[] = produtosLancers(), incluirAntigos = false) => {
+  const nomeados = NOMES_PLANOS_LANCERS.flatMap((n) => todos.filter((p) => p.plano === n.plano));
+  return incluirAntigos ? [...nomeados, ...todos.filter((p) => !nomeados.includes(p))] : nomeados;
+};

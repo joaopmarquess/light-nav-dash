@@ -73,4 +73,10 @@ describe("Filtro de Plano dos Produtos Lancers", () => {
       "3019 PCA RIO PRETO", "3020 PCE RIO PRETO", "3120 Desconhecido",
       "3096 PCA LINS/VOTUPORANGA", "3096 Desconhecido", "3097 Desconhecido", "3116 Desconhecido"]);
   });
+  it("adds the older tables after the named ones when requested", () => {
+    const todos = produtosFiltroLancers(produtosLancers(), true);
+    expect(todos).toHaveLength(13);
+    expect(todos.slice(0, 7)).toEqual(produtosFiltroLancers());
+    expect(todos.slice(7).map((p) => p.plano)).toEqual([2961, 2962, 2997, 2998, 3095, 2933]);
+  });
 });

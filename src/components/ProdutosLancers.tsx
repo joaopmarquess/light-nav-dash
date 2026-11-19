@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { Tags } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ACOMODACOES_LANCERS, formatarValorLancers, linhasFaixaLancers, produtosFiltroLancers, produtosLancers, rotuloProdutoLancers, type AcomodacaoLancers } from "@/lib/produtosLancers";
 
 const TODOS = produtosLancers();
-// Filtro só com as tabelas dos planos que o Dênis nomeou (pedido de 19/11/2026).
-const PRODUTOS = produtosFiltroLancers(TODOS);
+// Filtro com as tabelas dos planos que o Dênis nomeou; "Incluir Tabelas de Produtos mais Antigos" (desmarcado) traz as demais (pedido de 19/11/2026).
 
 // Laboratory › Produtos Lancers (pedido de 19/11/2026): filtro por Plano e chave de acomodação; mostra a descrição e o grid
 // Faixa / Net / Venda / Spread; valores da planilha TABELAS_LANCERS.xlsx, sem recálculo.
 export default function ProdutosLancers() {
+  const [incluirAntigos, setIncluirAntigos] = useState(false);
+  const PRODUTOS = produtosFiltroLancers(TODOS, incluirAntigos);
   const [chave, setChave] = useState(PRODUTOS[0].chave);
   const [acomodacao, setAcomodacao] = useState<AcomodacaoLancers>("PRATA");
   const produto = PRODUTOS.find((p) => p.chave === chave) ?? PRODUTOS[0];
@@ -20,10 +22,18 @@ export default function ProdutosLancers() {
       <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground"><Tags className="h-5 w-5 text-primary" />Produtos Lancers</h2>
       <div className="flex flex-wrap items-end gap-4">
         <label className="text-xs text-muted-foreground">Plano
-          <select value={chave} onChange={(e) => setChave(e.target.value)}
+          <select value={produto.chave} onChange={(e) => setChave(e.target.value)}
             className="block h-10 mt-1 px-3 min-w-64 rounded-md border border-border bg-background text-sm text-foreground">
             {PRODUTOS.map((p) => <option key={p.chave} value={p.chave}>{rotuloProdutoLancers(p, TODOS)}</option>)}
           </select>
+        </label>
+        <label className="flex h-10 items-center gap-2 text-sm text-foreground cursor-pointer">
+          <Checkbox checked={incluirAntigos} onCheckedChange={(v) => {
+            const marcar = v === true; setIncluirAntigos(marcar);
+            const lista = produtosFiltroLancers(TODOS, marcar);
+            if (!lista.some((p) => p.chave === chave)) setChave(lista[0].chave); // desmarcar volta ao primeiro plano nomeado
+          }} />
+          Incluir Tabelas de Produtos mais Antigos
         </label>
         <div className="flex flex-col text-xs text-muted-foreground">Acomodação
           <div role="group" aria-label="Acomodação" className="mt-1 inline-flex h-10 items-center rounded-md border border-border bg-background p-0.5">
