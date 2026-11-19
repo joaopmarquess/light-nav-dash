@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Tags } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ACOMODACOES_LANCERS, formatarSpreadTabela, formatarValorLancers, linhasFaixaLancers, spreadTabelaLancers, produtosFiltroLancers, produtosLancers, rotuloProdutoLancers, type AcomodacaoLancers } from "@/lib/produtosLancers";
@@ -21,7 +20,6 @@ export default function ProdutosLancers() {
   return (
     <section className="h-full min-h-0 w-full overflow-auto bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col gap-5">
       <div className="flex flex-wrap items-end gap-x-8 gap-y-4">
-        <h2 className="flex h-10 items-center gap-2 text-xl font-semibold text-foreground"><Tags className="h-5 w-5 text-primary" />Produtos Lancers</h2>
         <label className="text-xs text-muted-foreground">Plano
           <select value={produto.chave} onChange={(e) => setChave(e.target.value)}
             className="block h-10 mt-1 px-3 min-w-72 rounded-md border border-border bg-background text-sm text-foreground">
