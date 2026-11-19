@@ -68,8 +68,7 @@ export function metasGrupo(id: PropostaGrupoId, vidas: VidasSimulacao): string[]
   const total = PROPOSTAS_GRUPO[id].produtos.reduce((s, f) => s + vidasDaFrente(f, vidas), 0);
   const primeiro = Math.floor(total / 2);
   const n = (v: number) => v.toLocaleString("pt-BR");
-  const rotulo = BOTOES_PROPOSTA_COMERCIAL.find((b) => b.id === id)!.rotulo.toUpperCase();
-  return [`${rotulo}: ${n(total)} em ${ANO_RESULTADO_REDE}`, `1º Semestre: ${n(primeiro)}`, `2º Semestre: ${n(total - primeiro)}`];
+  return [`${n(total)} em ${ANO_RESULTADO_REDE}`, `1º Semestre: ${n(primeiro)}`, `2º Semestre: ${n(total - primeiro)}`];
 }
 
 export type TabelaProdutoGrupo = { id: FrenteId; titulo: string; subtitulo: string; linhas: [string, string, string][] };

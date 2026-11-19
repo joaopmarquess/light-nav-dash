@@ -49,14 +49,14 @@ describe("Proposta Empresariais", () => {
 
 describe("Batimento de metas › soma das vidas dos produtos, metade por semestre", () => {
   it("default simulation (19/11/2026): ADMINISTRADOS 3.000 + 1.000 = 4.000, 2.000 por semestre", () => {
-    expect(propostaGrupo("administrados").metas).toEqual(["ADMINISTRADOS: 4.000 em 2027", "1º Semestre: 2.000", "2º Semestre: 2.000"]);
+    expect(propostaGrupo("administrados").metas).toEqual(["4.000 em 2027", "1º Semestre: 2.000", "2º Semestre: 2.000"]);
   });
   it("default simulation: EMPRESARIAIS 1.000 + 5.000 = 6.000, 3.000 por semestre", () => {
-    expect(propostaGrupo("empresariais").metas).toEqual(["EMPRESARIAIS: 6.000 em 2027", "1º Semestre: 3.000", "2º Semestre: 3.000"]);
+    expect(propostaGrupo("empresariais").metas).toEqual(["6.000 em 2027", "1º Semestre: 3.000", "2º Semestre: 3.000"]);
   });
   it("follows the lives edited in the simulation; odd total leaves the extra life in the 2nd semester", () => {
     const vidas = { PCA: 3000, PME_ADMINISTRADO: 2501, PCE_50_99: 1000, PCE_100_MAIS: 5000 };
-    expect(propostaGrupo("administrados", undefined, undefined, undefined, undefined, vidas).metas).toEqual(["ADMINISTRADOS: 5.501 em 2027", "1º Semestre: 2.750", "2º Semestre: 2.751"]);
+    expect(propostaGrupo("administrados", undefined, undefined, undefined, undefined, vidas).metas).toEqual(["5.501 em 2027", "1º Semestre: 2.750", "2º Semestre: 2.751"]);
   });
 });
 
