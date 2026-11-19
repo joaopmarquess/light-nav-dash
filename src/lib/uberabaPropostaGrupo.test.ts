@@ -47,14 +47,15 @@ describe("Proposta Empresariais", () => {
   });
 });
 
-describe("Metas das propostas › Total de vidas da Simulação", () => {
-  it("default simulation (19/11/2026): Adesão 3.000 + PME 1.000; EMPRESAS MÉDIAS 1.000 + EMPRESARIAL 5.000", () => {
-    expect(propostaGrupo("administrados").metas).toEqual(["Venda de 3.000 + 1.000 vidas em 2027"]);
-    expect(propostaGrupo("empresariais").metas).toEqual(["Venda de 1.000 + 5.000 vidas em 2027"]);
+describe("Batimento de metas › soma das vidas dos produtos, metade por semestre", () => {
+  it("default simulation (19/11/2026): ADMINISTRADOS 3.000 + 1.000 = 4.000, 2.000 por semestre", () => {
+    expect(propostaGrupo("administrados").metas).toEqual(["ADMINISTRADOS: 4.000 em 2027", "1º Semestre: 2.000", "2º Semestre: 2.000"]);
   });
-  it("follows the lives edited in the simulation parameters", () => {
-    const vidas = { PCA: 2000, PME_ADMINISTRADO: 2000, PCE_50_99: 3000, PCE_100_MAIS: 3000 };
-    expect(propostaGrupo("administrados", undefined, undefined, undefined, undefined, vidas).metas).toEqual(["Venda de 2.000 + 2.000 vidas em 2027"]);
-    expect(propostaGrupo("empresariais", undefined, undefined, undefined, undefined, vidas).metas).toEqual(["Venda de 3.000 + 3.000 vidas em 2027"]);
+  it("default simulation: EMPRESARIAIS 1.000 + 5.000 = 6.000, 3.000 por semestre", () => {
+    expect(propostaGrupo("empresariais").metas).toEqual(["EMPRESARIAIS: 6.000 em 2027", "1º Semestre: 3.000", "2º Semestre: 3.000"]);
+  });
+  it("follows the lives edited in the simulation; odd total leaves the extra life in the 2nd semester", () => {
+    const vidas = { PCA: 3000, PME_ADMINISTRADO: 2501, PCE_50_99: 1000, PCE_100_MAIS: 5000 };
+    expect(propostaGrupo("administrados", undefined, undefined, undefined, undefined, vidas).metas).toEqual(["ADMINISTRADOS: 5.501 em 2027", "1º Semestre: 2.750", "2º Semestre: 2.751"]);
   });
 });

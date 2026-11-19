@@ -45,10 +45,16 @@ export function vidasDaFrente(f: FrenteId, vidas: VidasSimulacao): number {
   return codigo ? vidas[codigo] ?? 0 : 0;
 }
 
-/** Metas (pedido de 19/11/2026): buscadas do Total de vidas de cada produto nos parâmetros da Simulação de resultados. */
+/**
+ * Batimento de metas (pedido de 19/11/2026): meta do ano = soma do Total de vidas dos dois produtos nos parâmetros
+ * da Simulação de resultados; cada semestre = meta do ano / 2 (ano ímpar: o 2º semestre fica com a vida restante).
+ */
 export function metasGrupo(id: PropostaGrupoId, vidas: VidasSimulacao): string[] {
-  const [a, b] = PROPOSTAS_GRUPO[id].produtos.map((f) => vidasDaFrente(f, vidas).toLocaleString("pt-BR"));
-  return [`Venda de ${a} + ${b} vidas em ${ANO_RESULTADO_REDE}`];
+  const total = PROPOSTAS_GRUPO[id].produtos.reduce((s, f) => s + vidasDaFrente(f, vidas), 0);
+  const primeiro = Math.floor(total / 2);
+  const n = (v: number) => v.toLocaleString("pt-BR");
+  const rotulo = BOTOES_PROPOSTA_COMERCIAL.find((b) => b.id === id)!.rotulo.toUpperCase();
+  return [`${rotulo}: ${n(total)} em ${ANO_RESULTADO_REDE}`, `1º Semestre: ${n(primeiro)}`, `2º Semestre: ${n(total - primeiro)}`];
 }
 
 export type TabelaProdutoGrupo = { id: FrenteId; titulo: string; subtitulo: string; linhas: [string, string, string][] };
