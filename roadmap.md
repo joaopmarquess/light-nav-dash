@@ -51,3 +51,8 @@
 
 ## Concorrentes
 - [x] PDF avulso "Concorrentes" com a tabela enviada (Nº, Produto R$/mês, 10 faixas).
+
+## Tabelas Comerciais › Comparar (19/11/2026)
+- [x] Tirar a linha de parâmetros (PCA · plano coletivo… / Boletagem… Distribuidores…) das Tabelas.
+- [x] Ícone Comparar ao lado do nome; só a tabela escolhida à esquerda; botão Voltar às Tabelas.
+- [x] Tabela Concorrentes à direita na comparação.

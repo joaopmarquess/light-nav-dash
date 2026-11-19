@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Pin, Printer } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, GitCompare, Pin, Printer } from "lucide-react";
 import PdfPreview from "@/components/PdfPreview";
 import { loadTimbrado } from "@/lib/pdfTimbrado";
 import { loadMarcaAxis } from "@/lib/pdfMarcaAxis";
@@ -9,7 +9,8 @@ import { buildTabelasImpressaoPdf, paginasImpressao } from "@/lib/uberabaTabelas
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import RestaurarPadraoButton from "@/components/RestaurarPadraoButton";
-import { frenteNoPadrao, restaurarFrentePadrao, FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, formatarFator, gravarFatores, lerFatores, parseFator, type Fatores, FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, parametrosDe, vidasTexto, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, gravarPadraoRotulos, gravarRotulos, lerIndicadores, lerIndices, lerPadraoRotulos, lerRotulos, normalizarRotulo, ROTULO_MAX, parseIndicador, parseIndice, tabelaIndexada, tabelaNet, tabelaVenda, operadoraDe, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices, type Rotulos, type RotulosPorFrente } from "@/lib/uberabaTabelasComerciais";
+import { colunasConcorrentes, linhasConcorrentesPorFaixa } from "@/lib/concorrentesUberaba";
+import { frenteNoPadrao, restaurarFrentePadrao, FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, formatarFator, gravarFatores, lerFatores, parseFator, type Fatores, FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, gravarPadraoRotulos, gravarRotulos, lerIndicadores, lerIndices, lerPadraoRotulos, lerRotulos, normalizarRotulo, ROTULO_MAX, parseIndicador, parseIndice, tabelaIndexada, tabelaNet, tabelaVenda, operadoraDe, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices, type Rotulos, type RotulosPorFrente } from "@/lib/uberabaTabelasComerciais";
 
 // Preços calculados pela Referência × índice de cada frente; indicadores variáveis editáveis por frente (cálculos no helper).
 type Linha = [string, string, string];
@@ -62,15 +63,49 @@ const BotaoApartamento = ({ t }: { t: ApartamentoToggle }) => {
   );
 };
 
-// Sigla, contratação, vidas, boletagem e distribuidores da tabela (parâmetros do Proj. Uberaba).
-const ParametrosLinha = ({ id }: { id: FrenteId }) => {
-  const p = parametrosDe(id);
-  const vidas = vidasTexto(p);
+// Ícone [Comparar] ao lado do nome: mostra só esta tabela, à esquerda do contêiner.
+const BotaoComparar = ({ nome, onClick }: { nome: string; onClick: () => void }) => {
+  const rotulo = `Comparar ${nome}`;
   return (
-    <div className="comercial-parametros">
-      <p><strong>{p.sigla}</strong> · {p.contratacao.toLowerCase()}{vidas && <> · {vidas}</>}</p>
-      <p>Boletagem: {p.boletagem.toLowerCase()} · Distribuidores: {p.distribuidores.toLowerCase()}</p>
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button type="button" onClick={onClick} aria-label={rotulo} className="comercial-rotulo-padrao comercial-comparar-botao">
+          <GitCompare className="h-3.5 w-3.5" aria-hidden />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>Comparar</TooltipContent>
+    </Tooltip>
+  );
+};
+
+// Tabela Concorrentes (valores enviados pelo Dênis), uma linha por faixa para comparar com a tabela escolhida.
+const TabelaConcorrentes = () => {
+  const th = "px-2 py-1.5 text-base font-semibold";
+  return (
+    <section className="comercial-card comercial-concorrentes" aria-label="Concorrentes">
+      <div className="px-4 py-2 text-center"><span className="text-xl font-bold">Concorrentes</span></div>
+      <section className="comercial-secao">
+        <p className="comercial-secao-titulo">Preço mensal por faixa (R$)</p>
+        <div className="comercial-precos overflow-x-auto">
+          <table className="comercial-table w-full border-collapse text-center text-lg leading-6">
+            <thead>
+              <tr>
+                <th className={th}>FAIXA</th>
+                {colunasConcorrentes().map((c) => <th key={c.numero} className={`${th} whitespace-normal`}>{c.produto.toUpperCase()}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {linhasConcorrentesPorFaixa().map((l) => (
+                <tr key={l.faixa}>
+                  <td className="whitespace-nowrap px-2 py-1.5 tabular-nums">{l.faixa}</td>
+                  {l.centavos.map((v, j) => <td key={j} className="px-2 py-1.5 tabular-nums">{formatarCentavos(v)}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
   );
 };
 
@@ -151,7 +186,7 @@ const IndiceCampo = ({ f, valor, onChange }: { f: Frente; valor: number; onChang
         value={texto}
         onChange={(e) => { setTexto(e.target.value); const v = parseIndice(e.target.value); if (v !== null) onChange(v); }}
         onBlur={() => setTexto(String(valor).replace(".", ","))}
-        className="h-8 w-16 px-2 text-right tabular-nums"
+        className="h-8 w-12 px-1.5 text-right tabular-nums"
       />
       <span>%</span>
     </label>
@@ -216,8 +251,8 @@ const GravarPadrao = ({ f, ativo, onClick }: { f: Frente; ativo: boolean; onClic
   );
 };
 
-const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variaveis, indicadores, onIndicador, rotulos, padroes, onRotulo, onGravarPadrao, modo, onModo, onImprimir, noPadrao, onRestaurar }: {
-  modo: ModoPreco; onModo: (m: ModoPreco) => void; onImprimir: () => void; noPadrao: boolean; onRestaurar: () => void;
+const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variaveis, indicadores, onIndicador, rotulos, padroes, onRotulo, onGravarPadrao, modo, onModo, onImprimir, noPadrao, onRestaurar, onComparar, comparando = false }: {
+  modo: ModoPreco; onModo: (m: ModoPreco) => void; onImprimir: () => void; noPadrao: boolean; onRestaurar: () => void; onComparar: () => void; comparando?: boolean;
   f: Frente; indice: number; onIndice: (v: number) => void; fator: number; onFator: (v: number) => void; apartamento: ApartamentoToggle; precos: ApartamentoToggle; variaveis: ApartamentoToggle;
   rotulos: Rotulos; padroes: Rotulos; onRotulo: (campo: keyof Rotulos, v: string) => void; onGravarPadrao: () => void;
   indicadores: Indicadores; onIndicador: (campo: CampoIndicador, v: number) => void;
@@ -227,17 +262,17 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
   const blocos: [string, LinhaIndicador[]][] = blocosIndicadores(f.id, indicadores).map((b) => [b.titulo, b.linhas.map((l) => ({ rotulo: l.rotulo, campo: l.campo, calculado: l.campo ? undefined : l.valor, formula: l.formula }))]);
   return (
     <div className={`comercial-card ${f.cor}`}>
-      <div className="flex items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center">
-        <span className="inline-flex items-center gap-1">
+      <div className="flex items-center justify-center gap-x-2 gap-y-1 px-4 py-2 text-center">
+        <span className="inline-flex items-center gap-0.5">
           <RotuloEditavel valor={rotulos.titulo} padrao={padroes.titulo} onChange={(v) => onRotulo("titulo", v)} rotulo={`Nome da frente ${f.titulo}`} className="text-xl font-bold" />
           <GravarPadrao f={f} ativo={rotulos.titulo !== padroes.titulo} onClick={onGravarPadrao} />
+          {!comparando && <BotaoComparar nome={rotulos.titulo} onClick={onComparar} />}
         </span>
         <IndiceCampo f={f} valor={indice} onChange={onIndice} />
-        <RestaurarPadraoButton alvo={`${rotulos.titulo} (índice, fator Apartamento e Indicadores variáveis)`} desativado={noPadrao} onRestaurar={onRestaurar} className="h-7 w-7" />
+        <RestaurarPadraoButton alvo={`${rotulos.titulo} (índice, fator Apartamento e Indicadores variáveis)`} desativado={noPadrao} onRestaurar={onRestaurar} className="h-6 w-6" />
       </div>
-      <ParametrosLinha id={f.id} />
       <section className="comercial-secao" aria-label={`Tabelas ${f.titulo}`}>
-        <p className="comercial-secao-titulo">Tabelas{precos.visivel && <><ChavePreco modo={modo} onModo={onModo} operadora={operadora} /><BotaoImprimir onClick={onImprimir} /></>}<BotaoSecao t={precos} nome="Tabelas" /></p>
+        <p className="comercial-secao-titulo">Tabelas{precos.visivel && <><ChavePreco modo={modo} onModo={onModo} operadora={operadora} /><BotaoImprimir onClick={onImprimir} /></>}{!comparando && <BotaoSecao t={precos} nome="Tabelas" />}</p>
         {precos.visivel && (
           <div className="comercial-precos" data-modo={modo}>
             <Tabela linhas={linhas} apartamento={apartamento} fator={fator} />
@@ -245,7 +280,7 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
           </div>
         )}
       </section>
-      <div className="comercial-secao comercial-secao-indicadores">
+      {!comparando && <div className="comercial-secao comercial-secao-indicadores">
         <p className="comercial-secao-titulo">Indicadores variáveis<BotaoSecao t={variaveis} nome="Indicadores variáveis" /></p>
         {variaveis.visivel && <div className="comercial-indicadores">
           {blocos.map(([titulo, linhas]) => (
@@ -268,12 +303,16 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
             </table>
           ))}
         </div>}
-      </div>
+      </div>}
     </div>
   );
 };
 
-const UberabaTabelasComerciais = () => {
+// onComparar avisa a tela-mãe para esconder o restante do contêiner enquanto uma tabela está sendo comparada.
+const UberabaTabelasComerciais = ({ onComparar }: { onComparar?: (ativo: boolean) => void } = {}) => {
+  // Frente em comparação: só ela fica visível, com a grade de preços aberta; "Voltar às Tabelas" restaura a tela anterior.
+  const [comparada, setComparada] = useState<FrenteId | null>(null);
+  const comparar = (id: FrenteId | null) => { setComparada(id); onComparar?.(id !== null); };
   const [indices, setIndices] = useState<Indices>(() => lerIndices());
   // Coluna Apartamento recolhida por padrão; o mesmo controle vale para as quatro frentes.
   const [aptoVisivel, setAptoVisivel] = useState(false);
@@ -312,11 +351,23 @@ const UberabaTabelasComerciais = () => {
     gravarIndices(novo.indices); gravarFatores(novo.fatores); gravarIndicadores(novo.indicadores);
     setIndices(novo.indices); setFatores(novo.fatores); setIndicadores(novo.indicadores);
   };
+  const precosComparacao: ApartamentoToggle = { visivel: true, alternar: () => {} };
+  const cartao = (f: Frente, comparando: boolean) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} fator={fatores[f.id]} onFator={(v) => alterarFator(f.id, v)} apartamento={apartamento} precos={comparando ? precosComparacao : precos} variaveis={variaveis} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} padroes={padroes[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} onGravarPadrao={() => gravarPadrao(f.id)} modo={modo} onModo={setModo} onImprimir={() => setImprimindo(true)} noPadrao={frenteNoPadrao(f.id, { indices, fatores, indicadores })} onRestaurar={() => restaurar(f.id)} onComparar={() => comparar(f.id)} comparando={comparando} />;
   return (
     <section className="comercial-presentation" aria-label="Tabelas comerciais">
-      <div className={`comercial-grid ${variaveisVisivel ? "" : "indicadores-recolhidos"}`}>
-        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} fator={fatores[f.id]} onFator={(v) => alterarFator(f.id, v)} apartamento={apartamento} precos={precos} variaveis={variaveis} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} padroes={padroes[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} onGravarPadrao={() => gravarPadrao(f.id)} modo={modo} onModo={setModo} onImprimir={() => setImprimindo(true)} noPadrao={frenteNoPadrao(f.id, { indices, fatores, indicadores })} onRestaurar={() => restaurar(f.id)} />)}
-      </div>
+      {comparada ? (
+        <div className="comercial-comparar">
+          <Button size="sm" variant="outline" className="self-start" onClick={() => comparar(null)}><ArrowLeft className="mr-1 h-4 w-4" />Voltar às Tabelas</Button>
+          <div className="comercial-comparar-area">
+            {FRENTES.filter((f) => f.id === comparada).map((f) => cartao(f, true))}
+            <TabelaConcorrentes />
+          </div>
+        </div>
+      ) : (
+        <div className={`comercial-grid ${variaveisVisivel ? "" : "indicadores-recolhidos"}`}>
+          {FRENTES.map((f) => cartao(f, false))}
+        </div>
+      )}
       {imprimindo && (
         <PdfPreview
           build={async () => buildTabelasImpressaoPdf(await loadTimbrado(), await loadMarcaAxis(), paginasImpressao({ indices, fatores, indicadores, rotulos }))}

@@ -875,11 +875,16 @@ All colors MUST be HSL.
 .comercial-adesao { --commercial-color: hsl(var(--hospital-gold)); }
 .comercial-pme { --commercial-color: hsl(var(--commercial-pme)); }
 .comercial-medias { --commercial-color: hsl(var(--hospital-blue)); }
-.comercial-parametros { margin: -8px 12px 10px; text-align: center; font-size: 13px; line-height: 1.35; color: hsl(var(--credential-secondary)); }
-.comercial-parametros p:first-letter { text-transform: uppercase; }
-.comercial-parametros strong { color: var(--commercial-color); font-weight: 700; }
+/* Comparar: a tabela escolhida à esquerda (largura de uma coluna da grade) e a tabela Concorrentes à direita. */
+.comercial-comparar { display: flex; flex-direction: column; gap: 12px; }
+.comercial-comparar-area { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 18px; align-items: start; }
+@media (min-width: 1800px) { .comercial-comparar-area { grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); } }
+.comercial-concorrentes { --commercial-color: hsl(var(--credential-secondary)); }
+.comercial-comparar-area > .comercial-card { display: flex; grid-row: auto; }
+.comercial-comparar-area > .comercial-card > div:last-child, .comercial-comparar-area > .comercial-card > section { display: block; grid-row: auto; }
+.comercial-comparar-botao { opacity: .6; }
 .comercial-grandes { --commercial-color: hsl(var(--credential-nonmedical)); }
-.comercial-card > div:first-child { flex-wrap: nowrap; white-space: nowrap; min-width: 0; padding: 16px; }
+.comercial-card > div:first-child { flex-wrap: nowrap; white-space: nowrap; min-width: 0; padding: 16px 10px; }
 .comercial-card > div:first-child > * { flex-shrink: 0; }
 .comercial-rotulo { field-sizing: content; min-width: 1ch; max-width: 100%; padding: 0 2px; background: transparent; color: inherit; border: 0; border-bottom: 1px dashed transparent; border-radius: 0; outline: none; text-align: center; font: inherit; cursor: text; }
 .comercial-rotulo.text-xl { font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; }
@@ -945,7 +950,7 @@ All colors MUST be HSL.
   .timeline-presentation .hospital-slide-indicator { padding: 12px; }
   .timeline-presentation .formalizacao-siga { padding: 18px 22px; gap: 10px; }
   .timeline-presentation .formalizacao-products { padding: 14px 22px; }
-  .comercial-card > div:first-child { padding: 10px 16px; }
+  .comercial-card > div:first-child { padding: 10px; }
   .comercial-card .comercial-table th, .comercial-card .comercial-table td { padding-top: 3px; padding-bottom: 3px; }
   .comercial-card > div:last-child table th, .comercial-card > div:last-child table td { padding-top: 4px; padding-bottom: 4px; }
   .modelo-rede .credenciamento-card h3 { min-height: 60px; padding: 10px; }
@@ -986,7 +991,7 @@ All colors MUST be HSL.
   .timeline-presentation .hospital-slide-identity { padding: 0; }
   .timeline-presentation .hospital-slide-facade { height: 100%; }
   .timeline-presentation .marketing-message img { max-height: 280px; }
-  .modelo-fronts, .comercial-grid, .modelo-rede-grid { grid-template-columns: 1fr; }
+  .modelo-fronts, .comercial-grid, .modelo-rede-grid, .comercial-comparar-area { grid-template-columns: 1fr; }
 }
 @container (max-width: 719px) {
   .hospital-presentation.timeline-presentation, .modelo-presentation, .timeline-presentation .marketing-page, .timeline-presentation .formalizacao-page { padding: 20px 18px; }
