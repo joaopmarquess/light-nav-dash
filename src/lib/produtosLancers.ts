@@ -87,6 +87,14 @@ export const rotuloProdutoLancers = (p: ProdutoLancers, todos: ProdutoLancers[] 
   return repetido ? `${p.plano} · ${p.nome} · ${p.descricao}` : `${p.plano} · ${p.nome}`;
 };
 
+/** Rótulo da faixa na tela (padrão do Dênis, 19/11/2026): "0 a 18" → "00 A 18"; "59 anos ou mais" → "59 OU +". */
+export const rotuloFaixaLancers = (faixa: string) => {
+  const ini = faixa.match(/^\d+/)?.[0] ?? faixa;
+  if (faixa.includes("ou mais")) return `${ini.padStart(2, "0")} OU +`;
+  const [a, b] = faixa.split(" a ");
+  return b ? `${a.padStart(2, "0")} A ${b.padStart(2, "0")}` : faixa;
+};
+
 /** Linhas do grid Faixa / Net / Venda de um produto numa acomodação, na ordem das faixas. */
 export const linhasFaixaLancers = (p: ProdutoLancers, acomodacao: AcomodacaoLancers): LinhaFaixaLancers[] =>
   FAIXAS_LANCERS.map((faixa, i) => {

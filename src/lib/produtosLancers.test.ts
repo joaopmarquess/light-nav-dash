@@ -128,3 +128,12 @@ describe("Spread por faixa (1 − Net ÷ Venda)", () => {
     expect(primeira.spread).not.toBeCloseTo(p.porAcomodacao.OURO[0]!.spread, 3);
   });
 });
+
+import { rotuloFaixaLancers } from "./produtosLancers";
+
+describe("Rótulo das faixas", () => {
+  it("shows bands as 00 A 18 … 54 A 58, 59 OU +", () => {
+    expect(FAIXAS_LANCERS.map(rotuloFaixaLancers)).toEqual([
+      "00 A 18", "19 A 23", "24 A 28", "29 A 33", "34 A 38", "39 A 43", "44 A 48", "49 A 53", "54 A 58", "59 OU +"]);
+  });
+});

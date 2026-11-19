@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ACOMODACOES_LANCERS, formatarSpreadTabela, formatarValorLancers, linhasFaixaLancers, spreadTabelaLancers, produtosFiltroLancers, produtosLancers, rotuloProdutoLancers, type AcomodacaoLancers } from "@/lib/produtosLancers";
+import { ACOMODACOES_LANCERS, formatarSpreadTabela, formatarValorLancers, linhasFaixaLancers, spreadTabelaLancers, produtosFiltroLancers, produtosLancers, rotuloProdutoLancers, rotuloFaixaLancers, type AcomodacaoLancers } from "@/lib/produtosLancers";
 
 const TODOS = produtosLancers();
 // Filtro com as tabelas dos planos que o Dênis nomeou; "Incluir Tabelas de Produtos mais Antigos" (desmarcado) traz as demais (pedido de 19/11/2026).
@@ -73,7 +73,7 @@ export default function ProdutosLancers() {
           <tbody>
             {linhas.map((l) => (
               <tr key={l.faixa} className="border-t border-border even:bg-muted/30 hover:bg-muted/50">
-                <td className="px-4 py-1.5">{l.faixa}</td>
+                <td className="px-4 py-1.5 tabular-nums">{rotuloFaixaLancers(l.faixa)}</td>
                 <td className="px-4 py-1.5 text-right tabular-nums">{formatarValorLancers(l.net, "net")}</td>
                 <td className={cn("px-4 py-1.5 text-right tabular-nums", estimada && "italic text-muted-foreground")}>{formatarValorLancers(l.venda, "venda")}</td>
                 <td className="px-4 py-1.5 text-right tabular-nums">{formatarSpreadTabela(l.spread)}</td>
