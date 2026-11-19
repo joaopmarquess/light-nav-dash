@@ -365,7 +365,7 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
   );
 };
 
-// Botão que encerra a comparação; a tela-mãe o coloca na linha dos botões Referência e Proposta.
+// Botão que encerra a comparação, logo abaixo do contêiner da tabela comparada.
 // iconOnly: só o ícone (com dica), para caber na barra da Timeline.
 export const VoltarTabelasButton = ({ onClick, iconOnly = false }: { onClick: () => void; iconOnly?: boolean }) => iconOnly ? (
   <Tooltip>
@@ -434,12 +434,13 @@ const UberabaTabelasComerciais = ({ comparada: comparadaExterna, onComparar }: {
     <section className="comercial-presentation" aria-label="Tabelas comerciais">
       {comparada ? (
         <div className="comercial-comparar">
-          {!controlado && <div className="self-start"><VoltarTabelasButton onClick={() => comparar(null)} /></div>}
           <div className="comercial-comparar-area">
             {/* Tabela comparada e OUTRAS BENSAÚDE no mesmo par: mesma largura e altura. */}
             <div className="comercial-comparar-par">
             {FRENTES.filter((f) => f.id === comparada).map((f) => cartao(f, true))}
             <OutrasBensaude aberto={outrasAberto} onAlternar={() => setOutrasAberto((v) => !v)} modo={modoOutras} onModo={setModoOutras} comApartamento={aptoVisivel} />
+            {/* "Voltar às Tabelas" logo abaixo do contêiner da tabela comparada. */}
+            <div className="comercial-comparar-voltar"><VoltarTabelasButton onClick={() => comparar(null)} /></div>
             </div>
             <TabelaConcorrentes aberto={concorrentesAberto} onAlternar={() => setConcorrentesAberto((v) => !v)} />
           </div>
