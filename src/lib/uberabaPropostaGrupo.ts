@@ -38,9 +38,9 @@ export const PROPOSTAS_GRUPO: Record<PropostaGrupoId, DefinicaoGrupo> = {
     ],
     produtos: ["pcaAdm", "pmeAdm"],
     distribuidores: ["Rede de Distribuição da Lancers", "SDR Bensaúde"],
-    // Definição proposta em 19/11/2026, a confirmar pelo Dênis.
+    // Definição de 19/11/2026: a venda é concluída pela equipe própria do Bensaúde (confirmado pelo Dênis).
     definicoes: {
-      "SDR Bensaúde": "SDR (Sales Development Representative) é a equipe de pré-vendas do Bensaúde, responsável por prospectar e qualificar potenciais clientes dos produtos administrados, e por encaminhar as oportunidades qualificadas para a conclusão da venda pelos canais de distribuição.",
+      "SDR Bensaúde": "SDR (Sales Development Representative) é a equipe de pré-vendas do Bensaúde, responsável por prospectar e qualificar potenciais clientes dos produtos administrados, e pela conclusão da venda com a equipe própria do Bensaúde.",
     },
     promocao: "Comissionamento Promocional por 6 meses renováveis por mais 6 meses com batimento das seguintes Metas:",
     arquivo: "Proposta_Administrados_Bensaude_Uberaba.pdf",
