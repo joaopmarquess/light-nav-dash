@@ -1,4 +1,4 @@
-import { TABELAS_LANCERS, type LinhaTabelaLancers } from "@/data/produtosLancers";
+import { NOMES_PLANOS_LANCERS, TABELAS_LANCERS, type LinhaTabelaLancers } from "@/data/produtosLancers";
 
 /** Faixas na ordem da planilha TABELAS_LANCERS.xlsx. */
 export const FAIXAS_LANCERS = ["0 a 18", "19 a 23", "24 a 28", "29 a 33", "34 a 38", "39 a 43", "44 a 48", "49 a 53", "54 a 58", "59 anos ou mais"] as const;
@@ -11,6 +11,9 @@ export const ACOMODACOES_LANCERS = [
 export type ProdutoLancers = {
   chave: string;
   plano: number;
+  /** Nome do plano informado pelo Dênis (null quando não informado). */
+  nome: string | null;
+  /** Descrição da planilha (coluna CONTRATACAO). */
   descricao: string;
   /** Venda calculada pela planilha a partir do net (TIPO "PRECO VENDA DESCONHECIDO"). */
   vendaEstimada: boolean;
@@ -24,7 +27,7 @@ export function produtosLancers(linhas: LinhaTabelaLancers[] = TABELAS_LANCERS):
     const chave = `${l.plano}|${l.contratacao}|${l.tipo}`;
     let p = mapa.get(chave);
     if (!p) {
-      p = { chave, plano: l.plano, descricao: l.contratacao, vendaEstimada: l.tipo === "PRECO VENDA DESCONHECIDO",
+      p = { chave, plano: l.plano, nome: NOMES_PLANOS_LANCERS[l.plano] ?? null, descricao: l.contratacao, vendaEstimada: l.tipo === "PRECO VENDA DESCONHECIDO",
         porAcomodacao: { PRATA: FAIXAS_LANCERS.map(() => null), OURO: FAIXAS_LANCERS.map(() => null) } };
       mapa.set(chave, p);
     }
@@ -49,8 +52,13 @@ export const formatarVfe = (v: number | null) => (v == null ? "—" : pct.format
 export type LinhaFaixaLancers = { faixa: string; net: number | null; venda: number | null; spread: number | null };
 export type AcomodacaoLancers = (typeof ACOMODACOES_LANCERS)[number]["id"];
 
-/** Rótulo do filtro de Plano: o 3096 aparece duas vezes e se distingue pela descrição. */
-export const rotuloProdutoLancers = (p: ProdutoLancers) => `${p.plano} · ${p.descricao}`;
+/** Rótulo do filtro de Plano: nome informado (ou a descrição da planilha); quando o plano tem mais de uma tabela
+ *  (o 3096), acrescenta a descrição da planilha para distinguir. */
+export const rotuloProdutoLancers = (p: ProdutoLancers, todos: ProdutoLancers[] = produtosLancers()) => {
+  const repetido = todos.filter((o) => o.plano === p.plano).length > 1;
+  if (!p.nome) return `${p.plano} · ${p.descricao}`;
+  return repetido ? `${p.plano} · ${p.nome} · ${p.descricao}` : `${p.plano} · ${p.nome}`;
+};
 
 /** Linhas do grid Faixa / Net / Venda / Spread de um produto numa acomodação, na ordem das faixas. */
 export const linhasFaixaLancers = (p: ProdutoLancers, acomodacao: AcomodacaoLancers): LinhaFaixaLancers[] =>

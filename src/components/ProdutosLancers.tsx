@@ -20,7 +20,7 @@ export default function ProdutosLancers() {
         <label className="text-xs text-muted-foreground">Plano
           <select value={chave} onChange={(e) => setChave(e.target.value)}
             className="block h-10 mt-1 px-3 min-w-64 rounded-md border border-border bg-background text-sm text-foreground">
-            {PRODUTOS.map((p) => <option key={p.chave} value={p.chave}>{rotuloProdutoLancers(p)}</option>)}
+            {PRODUTOS.map((p) => <option key={p.chave} value={p.chave}>{rotuloProdutoLancers(p, PRODUTOS)}</option>)}
           </select>
         </label>
         <div className="flex flex-col text-xs text-muted-foreground">Acomodação
@@ -36,7 +36,8 @@ export default function ProdutosLancers() {
       </div>
       <div>
         <p className="text-xs text-muted-foreground">Descrição</p>
-        <p className="text-lg font-semibold text-foreground">{produto.descricao}</p>
+        <p className="text-lg font-semibold text-foreground">{produto.nome ?? produto.descricao}</p>
+        {produto.nome && <p className="text-sm text-muted-foreground">Na planilha: {produto.descricao}</p>}
         {estimada && <p className="text-xs text-muted-foreground">Preço de venda desconhecido: venda estimada pela planilha a partir do net (Venda = Net ÷ 0,77).</p>}
       </div>
       <table className="w-full text-sm border border-border">

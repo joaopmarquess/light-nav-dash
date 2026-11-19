@@ -43,7 +43,17 @@ import { linhasFaixaLancers, rotuloProdutoLancers } from "./produtosLancers";
 describe("Produtos Lancers por plano e acomodação", () => {
   const produtos = produtosLancers();
   it("labels each plan option, telling the two 3096 tables apart", () => {
-    expect(produtos.filter((p) => p.plano === 3096).map(rotuloProdutoLancers)).toEqual(["3096 · PCA LINS/VOTUPORANGA", "3096 · Desconhecido"]);
+    expect(produtos.filter((p) => p.plano === 3096).map((p) => rotuloProdutoLancers(p, produtos))).toEqual([
+      "3096 · F50 PCA (ENTIDADES FECHADAS) · PCA LINS/VOTUPORANGA", "3096 · F50 PCA (ENTIDADES FECHADAS) · Desconhecido"]);
+  });
+  it("uses the plan names supplied by the user and keeps the spreadsheet description", () => {
+    const nome = (plano: number) => produtos.find((p) => p.plano === plano)?.nome;
+    expect([3019, 3020, 3120, 3096, 3097, 3116].map(nome)).toEqual([
+      "F50 PCA (GERAL)", "F50 PCE (GERAL)", "F50 PCA (MELHOR IDADE)", "F50 PCA (ENTIDADES FECHADAS)", "F50 PCA (ACE MIRASSOL)", "F50 PCA (LINS E SERV. PÚBLICOS)"]);
+    expect(produtos.find((p) => p.plano === 3019)?.descricao).toBe("PCA RIO PRETO");
+    expect(nome(2961)).toBeNull();
+    expect(rotuloProdutoLancers(produtos.find((p) => p.plano === 3019)!, produtos)).toBe("3019 · F50 PCA (GERAL)");
+    expect(rotuloProdutoLancers(produtos.find((p) => p.plano === 2961)!, produtos)).toBe("2961 · PCA");
   });
   it("returns faixa, net, venda and spread for the chosen accommodation", () => {
     const pca = produtos.find((p) => p.plano === 2961)!;

@@ -269,3 +269,13 @@ export const TABELAS_LANCERS: LinhaTabelaLancers[] = [
   {"plano": 3120, "contratacao": "Desconhecido", "faixa": "54 a 58", "vfe": 0.327, "acomodacao": "OURO", "venda": 1644.7792207792209, "net": 1266.48, "spread": 0.23, "tipo": "PRECO VENDA DESCONHECIDO"},
   {"plano": 3120, "contratacao": "Desconhecido", "faixa": "59 anos ou mais", "vfe": 0.4785, "acomodacao": "OURO", "venda": 2431.805194805195, "net": 1872.49, "spread": 0.23, "tipo": "PRECO VENDA DESCONHECIDO"},
 ];
+
+/** Nomes dos planos informados pelo Dênis em 19/11/2026 (complementam a descrição da planilha, sem substituí-la). */
+export const NOMES_PLANOS_LANCERS: Record<number, string> = {
+  3019: "F50 PCA (GERAL)",
+  3020: "F50 PCE (GERAL)",
+  3120: "F50 PCA (MELHOR IDADE)",
+  3096: "F50 PCA (ENTIDADES FECHADAS)",
+  3097: "F50 PCA (ACE MIRASSOL)",
+  3116: "F50 PCA (LINS E SERV. PÚBLICOS)",
+};
