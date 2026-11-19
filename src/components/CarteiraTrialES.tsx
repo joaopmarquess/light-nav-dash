@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { Download, Loader2, TriangleAlert } from "lucide-react";
 import * as XLSX from "xlsx";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip as RTooltip, XAxis, YAxis } from "recharts";
-import { contagemMensal } from "@/lib/carteiraES";
+import { NIVEIS_ENTRADAS, chaveEntrada, contagemMensal, descricoesPorPlano, type NivelEntradas } from "@/lib/carteiraES";
 import { normalizarVendedor } from "@/lib/vendedorTransferencia";
 import { hostinger } from "@/lib/hostingerClient";
 import { useGruposVendedor, useGruposMotivo } from "@/lib/vendedorGrupo";
@@ -32,6 +32,7 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
   const [groupBy, setGroupBy] = useState(modo === "saidas" ? "motivo" : "grupo");
   const [filtro, setFiltro] = useState("");
   const [chave, setChave] = useState<"venda" | "outros">("venda");
+  const [nivel, setNivel] = useState<NivelEntradas>("vendedor");
   const [tipoSaida, setTipoSaida] = useState<FiltroSaidas>(FILTRO_SAIDAS_DEFAULT);
   const [periodoAplicado, setPeriodoAplicado] = useState({ de, ate });
   const [rows, setRows] = useState<Row[] | null>(null);
@@ -79,10 +80,13 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
       .some((v) => String(v ?? "").toLowerCase().includes(f)));
   }, [rows, filtro, chave, grupos, modo, tipoSaida, motivos, periodoAplicado]);
 
-  const gb = modo === "entradas" ? "vendedor" : groupBy;
+  const gb = modo === "entradas" ? nivel : groupBy;
+  const descricoes = useMemo(() => descricoesPorPlano(rows ?? []), [rows]);
+  // Entradas: nível 1 escolhido em "Agrupar por"; fora de Vendedor, o nível 2 é o vendedor.
+  const comSubnivel = modo === "entradas" ? nivel !== "vendedor" : (gb === "grupo" || gb === "motivo");
   const grouped = useMemo(() => {
     if (!filtered) return [];
-    const key = (r: Row) => String(
+    const key = (r: Row) => modo === "entradas" ? chaveEntrada(r, nivel, { grupos, descricoes }) : String(
       gb === "vendedor" ? r.nm_vendedor || "SEM VENDEDOR"
       : gb === "grupo" ? grupos[r.cd_vendedor] || "SEM GRUPO"
       : gb === "plano" ? r.ds_plano || "SEM PLANO"
@@ -93,9 +97,9 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
     for (const r of filtered) { const k = key(r); if (!map.has(k)) map.set(k, []); map.get(k)!.push(r); }
     return [...map.entries()].map(([key, itens]) => ({ key, itens, qtd: new Set(itens.map((i) => i.cd_mat_alternativa)).size }))
       .sort((a, b) => b.qtd - a.qtd);
-  }, [filtered, gb, grupos, motivos]);
+  }, [filtered, gb, grupos, motivos, modo, nivel, descricoes]);
 
-  const subVend = (its: Row[]) => { const m = new Map<string, Row[]>(); for (const r of its) { const k = String(groupBy === "motivo" ? motDs(r) : r.nm_vendedor || "SEM VENDEDOR").trim(); if (!m.has(k)) m.set(k, []); m.get(k)!.push(r); }
+  const subVend = (its: Row[]) => { const m = new Map<string, Row[]>(); for (const r of its) { const k = String(modo === "saidas" && groupBy === "motivo" ? motDs(r) : r.nm_vendedor || "SEM VENDEDOR").trim(); if (!m.has(k)) m.set(k, []); m.get(k)!.push(r); }
     return [...m.entries()].map(([key, itens]) => ({ key, itens, qtd: new Set(itens.map((i) => i.cd_mat_alternativa)).size })).sort((a, b) => b.qtd - a.qtd); };
   const tabela = (its: Row[]) => (
                         <div className="max-h-80 overflow-auto border-t border-border/60">
@@ -169,6 +173,10 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
             <option value="empresa">Empresa</option>
             <option value="cidade">Cidade</option>
           </select></div>}
+        {modo === "entradas" && <div><label htmlFor="nivel-entradas" className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Agrupar por</label>
+          <select id="nivel-entradas" value={nivel} onChange={(e) => { setNivel(e.target.value as NivelEntradas); setExpanded({}); }} className={inp}>
+            {NIVEIS_ENTRADAS.map((n) => <option key={n.id} value={n.id}>{n.rotulo}</option>)}
+          </select></div>}
         {modo === "entradas" && <div><label className="block text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Chave</label>
           <div className="flex h-9 rounded-md border border-border overflow-hidden">
             {(["venda", "outros"] as const).map((c) => (
@@ -228,7 +236,7 @@ export default function CarteiraTrialES({ modo }: { modo: Modo }) {
                         <div className="w-32 shrink-0 text-right text-xs tabular-nums text-foreground">{num(g.qtd)} <span className="text-muted-foreground">({share.toFixed(1)}%)</span></div>
                       </button>
                       {open && (
-                        (gb === "grupo" || gb === "motivo") ? (
+                        comSubnivel ? (
                           <div className="border-t border-border/60 p-2 space-y-1">
                             {subVend(g.itens).map((v) => { const id = `${g.key}||${v.key}`; const o = !!expanded[id]; return (
                               <div key={id} className="border border-border/40 rounded">
