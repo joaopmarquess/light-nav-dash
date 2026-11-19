@@ -67,10 +67,13 @@ describe("Introdução da proposta Administrados (19/11/2026)", () => {
     expect(p.introducao[0]).toBe("A presente proposta é destinada à LANCERS ADMINISTRADORA, conforme os entendimentos iniciais entre as partes.");
     expect(p.introducao[1]).toContain("como a SIGA, que também atua na comercialização dos produtos empresariais da Operadora.");
   });
-  it("Empresariais keeps its four topics without Introdução", () => {
+  it("Empresariais opens with the SIGA introduction: partial exclusivity in 2027, none assured from 2028", () => {
     const p = propostaGrupo("empresariais");
-    expect(p.introducao).toEqual([]);
-    expect(p.topicos).toEqual(["1. Tabela Net", "2. Sugestão de Venda", "3. Distribuidores", "4. Promoção e Metas"]);
+    expect(p.topicos).toEqual(["1. Introdução", "2. Tabela Net", "3. Sugestão de Venda", "4. Distribuidores", "5. Promoção e Metas"]);
+    expect(p.introducao[0]).toBe("A presente proposta considera a SIGA como responsável pela operação comercial do segmento EMPRESARIAL em Uberaba, observadas as condições e responsabilidades que vierem a ser acordadas entre as partes e formalizadas em instrumento contratual específico.");
+    expect(p.introducao[1]).toContain("no 1º semestre, a comercialização caberá somente à SIGA");
+    expect(p.introducao[1]).toContain("no 2º semestre, passará a contar também com a equipe própria do Bensaúde");
+    expect(p.introducao[1]).toContain("a partir de 2028");
   });
 });
 

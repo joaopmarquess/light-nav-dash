@@ -47,6 +47,11 @@ export const PROPOSTAS_GRUPO: Record<PropostaGrupoId, DefinicaoGrupo> = {
   },
   empresariais: {
     nome: "Planos Coletivos Empresariais",
+    // Introdução de 19/11/2026: 1º parágrafo do Dênis, sem reescrever; 2º redigido a partir das instruções dele.
+    introducao: [
+      "A presente proposta considera a SIGA como responsável pela operação comercial do segmento EMPRESARIAL em Uberaba, observadas as condições e responsabilidades que vierem a ser acordadas entre as partes e formalizadas em instrumento contratual específico.",
+      "Essa operação comercial não será exclusiva. Entretanto, em 2027, será parcialmente exclusiva: no 1º semestre, a comercialização caberá somente à SIGA; no 2º semestre, passará a contar também com a equipe própria do Bensaúde. Não é possível afirmar, neste momento, se haverá exclusividade da SIGA a partir de 2028.",
+    ],
     produtos: ["pceAdm", "pce100"],
     distribuidores: ["Siga Soluções (Exclusividade por 6 meses)", "Hunter Bensaúde após 6 meses"],
     promocao: "Comissionamento Promocional por 6 meses renováveis por mais 6 meses com batimento das seguintes Metas:",
