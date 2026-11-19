@@ -378,6 +378,24 @@ export const VoltarTabelasButton = ({ onClick, iconOnly = false }: { onClick: ()
   <Button size="sm" variant="outline" onClick={onClick}><ArrowLeft className="mr-1 h-4 w-4" />Voltar às Tabelas</Button>
 );
 
+/** Tabela vizinha na ordem da tela de Tabelas, circular: depois da última vem a primeira. */
+const vizinha = (id: FrenteId, passo: 1 | -1): FrenteId => {
+  const i = FRENTES.findIndex((f) => f.id === id);
+  return FRENTES[(i + passo + FRENTES.length) % FRENTES.length].id;
+};
+const SetaComparar = ({ direcao, nome, onClick }: { direcao: "anterior" | "seguinte"; nome: string; onClick: () => void }) => {
+  const Icone = direcao === "anterior" ? ChevronLeft : ChevronRight;
+  const rotulo = `Comparar ${direcao === "anterior" ? "tabela anterior" : "próxima tabela"}: ${nome}`;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button size="icon" variant="outline" className="h-9 w-9" aria-label={rotulo} onClick={onClick}><Icone className="h-5 w-5" /></Button>
+      </TooltipTrigger>
+      <TooltipContent>{nome}</TooltipContent>
+    </Tooltip>
+  );
+};
+
 // Frente em comparação controlada pela tela-mãe (que esconde o restante do contêiner e mostra "Voltar às Tabelas");
 // sem controle, o estado fica aqui e o botão aparece acima das tabelas.
 const UberabaTabelasComerciais = ({ comparada: comparadaExterna, onComparar }: { comparada?: FrenteId | null; onComparar?: (id: FrenteId | null) => void } = {}) => {
@@ -440,7 +458,12 @@ const UberabaTabelasComerciais = ({ comparada: comparadaExterna, onComparar }: {
             {FRENTES.filter((f) => f.id === comparada).map((f) => cartao(f, true))}
             <OutrasBensaude aberto={outrasAberto} onAlternar={() => setOutrasAberto((v) => !v)} modo={modoOutras} onModo={setModoOutras} comApartamento={aptoVisivel} />
             {/* "Voltar às Tabelas" logo abaixo do contêiner da tabela comparada. */}
-            <div className="comercial-comparar-voltar"><VoltarTabelasButton onClick={() => comparar(null)} /></div>
+            {/* Setas: passam para a tabela anterior/seguinte da tela de Tabelas sem sair da comparação (volta ao início no fim). */}
+            <div className="comercial-comparar-voltar">
+              <SetaComparar direcao="anterior" nome={rotulos[vizinha(comparada, -1)].titulo} onClick={() => comparar(vizinha(comparada, -1))} />
+              <VoltarTabelasButton onClick={() => comparar(null)} />
+              <SetaComparar direcao="seguinte" nome={rotulos[vizinha(comparada, 1)].titulo} onClick={() => comparar(vizinha(comparada, 1))} />
+            </div>
             </div>
             <TabelaConcorrentes aberto={concorrentesAberto} onAlternar={() => setConcorrentesAberto((v) => !v)} />
           </div>

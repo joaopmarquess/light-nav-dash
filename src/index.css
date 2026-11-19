@@ -880,7 +880,7 @@ All colors MUST be HSL.
 .comercial-comparar-area { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 18px; align-items: start; }
 /* Par tabela comparada + OUTRAS BENSAÚDE: colunas iguais (a maior das duas) e mesma altura. */
 .comercial-comparar-par { display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 18px; row-gap: 10px; align-items: stretch; }
-.comercial-comparar-voltar { grid-column: 1; justify-self: start; }
+.comercial-comparar-voltar { grid-column: 1; justify-self: start; display: flex; align-items: center; gap: 8px; }
 .comercial-concorrentes { --commercial-color: hsl(var(--credential-secondary)); }
 .comercial-outras { --commercial-color: hsl(var(--primary)); }
 .comercial-comparar-area .comercial-card { display: flex; grid-row: auto; }
