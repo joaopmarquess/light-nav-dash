@@ -22,8 +22,8 @@ describe("Proposta Administrados", () => {
     expect(p.venda[0].linhas[0]).toEqual(["00 a 18", "166,25", "207,81"]);
     expect(p.net[0].linhas[0][1]).toBe("128,01");
   });
-  it("lists Lancers network and SDR Bensaúde", () => {
-    expect(p.distribuidores).toEqual(["Rede de Distribuição da Lancers", "SDR Bensaúde"]);
+  it("lists Lancers network and the Bensaúde own team (no SDR)", () => {
+    expect(p.distribuidores).toEqual(["Rede de Distribuição da Lancers", "Equipe própria do Bensaúde"]);
     expect(p.promocao).toContain("6 meses renováveis por mais 6 meses");
   });
   it("follows the participation edited on screen", () => {
@@ -77,10 +77,9 @@ describe("Introdução da proposta Administrados (19/11/2026)", () => {
   });
 });
 
-describe("Definição dos SDR Bensaúde (19/11/2026)", () => {
-  it("Administrados explains SDR Bensaúde as the Bensaúde pre-sales team", () => {
-    expect(propostaGrupo("administrados").definicoes["SDR Bensaúde"]).toContain("equipe de pré-vendas do Bensaúde");
-    expect(propostaGrupo("administrados").definicoes["SDR Bensaúde"]).toContain("conclusão da venda com a equipe própria do Bensaúde");
+describe("Equipe própria do Bensaúde nos Distribuidores (19/11/2026)", () => {
+  it("Administrados says the own team also sells through its call center", () => {
+    expect(propostaGrupo("administrados").definicoes["Equipe própria do Bensaúde"]).toContain("por meio do seu call center");
   });
   it("Empresariais has no definitions", () => {
     expect(propostaGrupo("empresariais").definicoes).toEqual({});

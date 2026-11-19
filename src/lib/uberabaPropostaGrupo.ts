@@ -37,10 +37,10 @@ export const PROPOSTAS_GRUPO: Record<PropostaGrupoId, DefinicaoGrupo> = {
       "Assim como já ocorre com os produtos Bensaúde em sua área de atuação local, caberá à LANCERS estruturar e coordenar, em Uberaba, a rede de distribuição dos produtos por ela administrados, incluindo plataformas e parceiros locais, como a SIGA, que também atua na comercialização dos produtos empresariais da Operadora.",
     ],
     produtos: ["pcaAdm", "pmeAdm"],
-    distribuidores: ["Rede de Distribuição da Lancers", "SDR Bensaúde"],
-    // Definição de 19/11/2026: a venda é concluída pela equipe própria do Bensaúde (confirmado pelo Dênis).
+    distribuidores: ["Rede de Distribuição da Lancers", "Equipe própria do Bensaúde"],
+    // 19/11/2026: SDR Bensaúde retirado a pedido do Dênis; a equipe própria vende pelo call center.
     definicoes: {
-      "SDR Bensaúde": "SDR (Sales Development Representative) é a equipe de pré-vendas do Bensaúde, responsável por prospectar e qualificar potenciais clientes dos produtos administrados, e pela conclusão da venda com a equipe própria do Bensaúde.",
+      "Equipe própria do Bensaúde": "A equipe própria do Bensaúde também efetua vendas dos produtos administrados por meio do seu call center.",
     },
     promocao: "Comissionamento Promocional por 6 meses renováveis por mais 6 meses com batimento das seguintes Metas:",
     arquivo: "Proposta_Administrados_Bensaude_Uberaba.pdf",
