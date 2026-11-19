@@ -96,7 +96,7 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
   titulo(t1, ALTURA_QUADROS);
   quadros(p.venda);
   titulo(t2, p.distribuidores.length * LINHA_TEXTO);
-  p.distribuidores.forEach(item);
+  p.distribuidores.forEach((d) => { item(d); if (p.definicoes[d]) texto(p.definicoes[d], 6); });
   y += 6;
   titulo(t3, LINHA_TEXTO * 3);
   texto(p.promocao);

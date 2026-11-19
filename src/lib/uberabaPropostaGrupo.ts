@@ -27,7 +27,7 @@ export function topicosGrupo(id: PropostaGrupoId): string[] {
 }
 
 /** Textos fornecidos pelo Dênis (19/11/2026), sem reescrever. */
-type DefinicaoGrupo = { nome: string; introducao?: string[]; produtos: [FrenteId, FrenteId]; distribuidores: string[]; promocao: string; arquivo: string };
+type DefinicaoGrupo = { nome: string; introducao?: string[]; produtos: [FrenteId, FrenteId]; distribuidores: string[]; definicoes?: Record<string, string>; promocao: string; arquivo: string };
 export const PROPOSTAS_GRUPO: Record<PropostaGrupoId, DefinicaoGrupo> = {
   administrados: {
     nome: "Produtos da Administradora",
@@ -38,6 +38,10 @@ export const PROPOSTAS_GRUPO: Record<PropostaGrupoId, DefinicaoGrupo> = {
     ],
     produtos: ["pcaAdm", "pmeAdm"],
     distribuidores: ["Rede de Distribuição da Lancers", "SDR Bensaúde"],
+    // Definição proposta em 19/11/2026, a confirmar pelo Dênis.
+    definicoes: {
+      "SDR Bensaúde": "SDR (Sales Development Representative) é a equipe de pré-vendas do Bensaúde, responsável por prospectar e qualificar potenciais clientes dos produtos administrados, e por encaminhar as oportunidades qualificadas para a conclusão da venda pelos canais de distribuição.",
+    },
     promocao: "Comissionamento Promocional por 6 meses renováveis por mais 6 meses com batimento das seguintes Metas:",
     arquivo: "Proposta_Administrados_Bensaude_Uberaba.pdf",
   },
@@ -71,7 +75,7 @@ export function metasGrupo(id: PropostaGrupoId, vidas: VidasSimulacao): string[]
 export type TabelaProdutoGrupo = { id: FrenteId; titulo: string; subtitulo: string; linhas: [string, string, string][] };
 export type PropostaGrupo = {
   id: PropostaGrupoId; nome: string; topicos: string[]; introducao: string[]; net: TabelaProdutoGrupo[]; venda: TabelaProdutoGrupo[];
-  distribuidores: string[]; promocao: string; metas: string[]; arquivo: string;
+  distribuidores: string[]; definicoes: Record<string, string>; promocao: string; metas: string[]; arquivo: string;
 };
 
 /** Conteúdo da proposta do grupo, sobre os índices, indicadores, nomes e fatores atuais de Resultados Comerciais. */
@@ -85,7 +89,7 @@ export function propostaGrupo(id: PropostaGrupoId, indices: Indices = INDICES_PA
   const linhas = (t: { faixa: string; enfermariaCentavos: number; apartamentoCentavos: number }[]) =>
     t.map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos), formatarCentavos(l.apartamentoCentavos)] as [string, string, string]);
   return {
-    id, nome: d.nome, topicos: topicosGrupo(id), introducao: d.introducao ?? [], distribuidores: d.distribuidores, promocao: d.promocao, metas: metasGrupo(id, vidas), arquivo: d.arquivo,
+    id, nome: d.nome, topicos: topicosGrupo(id), introducao: d.introducao ?? [], distribuidores: d.distribuidores, definicoes: d.definicoes ?? {}, promocao: d.promocao, metas: metasGrupo(id, vidas), arquivo: d.arquivo,
     net: d.produtos.map((f) => ({ ...cabecalho(f), linhas: linhas(tabelaNet(indices[f], operadoraDe(f, indicadores[f]), fatores[f])) })),
     venda: d.produtos.map((f) => ({ ...cabecalho(f), linhas: linhas(tabelaVenda(indices[f], fatores[f])) })),
   };

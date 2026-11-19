@@ -73,3 +73,12 @@ describe("Introdução da proposta Administrados (19/11/2026)", () => {
     expect(p.topicos).toEqual(["1. Tabela Net", "2. Sugestão de Venda", "3. Distribuidores", "4. Promoção e Metas"]);
   });
 });
+
+describe("Definição dos SDR Bensaúde (19/11/2026)", () => {
+  it("Administrados explains SDR Bensaúde as the Bensaúde pre-sales team", () => {
+    expect(propostaGrupo("administrados").definicoes["SDR Bensaúde"]).toContain("equipe de pré-vendas do Bensaúde");
+  });
+  it("Empresariais has no definitions", () => {
+    expect(propostaGrupo("empresariais").definicoes).toEqual({});
+  });
+});
