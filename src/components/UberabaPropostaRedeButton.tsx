@@ -9,22 +9,17 @@ import { loadTimbrado } from "@/lib/pdfTimbrado";
 import { carregarParametrosRede, parametrosRede } from "@/lib/uberabaParametrosRede";
 import { buildPropostaRedePdf } from "@/lib/uberabaPropostaRedePdf";
 import { buildPropostaRedeDocx, carregarTimbradoBytes } from "@/lib/uberabaPropostaRedeDocx";
-import { dadosRascunhoRede, lerTextosRede, textosRedeParaPdf, topicosRedeDesatualizados } from "@/lib/uberabaPropostaRede";
 
-/** Ícone "Gerar Proposta de Credenciamento e Gestão de Rede" (Resultados Rede): Condições Rede, Parâmetros atuais e textos aprovados. */
+/** Ícone "Gerar Proposta de Credenciamento e Gestão de Rede" (Resultados Rede): Condições Rede, Parâmetros atuais e os textos fixos do modelo (sugestão por IA retirada em 19/11/2026). */
 export default function UberabaPropostaRedeButton() {
   const [aberto, setAberto] = useState(false);
-  const abrir = () => {
-    const antigos = topicosRedeDesatualizados(lerTextosRede(), dadosRascunhoRede(parametrosRede(carregarParametrosRede())));
-    if (antigos.length) toast.warning(`Texto aprovado com números que não estão mais nos quadros: ${antigos.join("; ")}. Revise em “Textos da Proposta de Credenciamento e Gestão de Rede”.`, { duration: 10000 });
-    setAberto(true);
-  };
+  const abrir = () => setAberto(true);
   const [gerandoWord, setGerandoWord] = useState(false);
   // Word com os mesmos textos, quadros e Parâmetros atuais do PDF (pedido de 19/11/2026).
   const gerarWord = async () => {
     setGerandoWord(true);
     try {
-      const blob = await buildPropostaRedeDocx(await carregarTimbradoBytes(), parametrosRede(carregarParametrosRede()), textosRedeParaPdf(lerTextosRede()));
+      const blob = await buildPropostaRedeDocx(await carregarTimbradoBytes(), parametrosRede(carregarParametrosRede()), null);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -50,7 +45,7 @@ export default function UberabaPropostaRedeButton() {
       </Tooltip>
       {aberto && createPortal(
         <PdfPreview
-          build={async () => buildPropostaRedePdf(await loadTimbrado(), parametrosRede(carregarParametrosRede()), textosRedeParaPdf(lerTextosRede()))}
+          build={async () => buildPropostaRedePdf(await loadTimbrado(), parametrosRede(carregarParametrosRede()), null)}
           fileName="Proposta_Credenciamento_Gestao_Rede_Bensaude_Uberaba.pdf"
           onClose={() => setAberto(false)}
           acoesExtras={

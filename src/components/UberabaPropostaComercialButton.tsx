@@ -7,18 +7,11 @@ import PdfPreview from "@/components/PdfPreview";
 import { loadTimbrado } from "@/lib/pdfTimbrado";
 import { lerFatores, lerIndicadores, lerIndices, lerRotulos } from "@/lib/uberabaTabelasComerciais";
 import { buildPropostaComercialPdf } from "@/lib/uberabaPropostaComercialPdf";
-import { toast } from "sonner";
-import { dadosRascunho, lerTextos, textosParaPdf, topicosComNumerosAntigos } from "@/lib/uberabaPropostaTextos";
 
-/** Ícone "Gerar Proposta Comercial" (Resultados Comerciais): usa os índices e indicadores atuais das tabelas e os textos revisados. */
+/** Ícone "Gerar Proposta Comercial" (Resultados Comerciais): usa os índices e indicadores atuais das tabelas e os textos fixos (sugestão por IA retirada em 19/11/2026). */
 export default function UberabaPropostaComercialButton() {
   const [aberto, setAberto] = useState(false);
-  const abrir = () => {
-    // Textos aprovados não mudam sozinhos: se citam números que não estão mais nas tabelas, avisa antes de gerar.
-    const antigos = topicosComNumerosAntigos(lerTextos(), dadosRascunho(lerIndices(), lerIndicadores(), lerRotulos(), lerFatores()));
-    if (antigos.length) toast.warning(`Texto aprovado com números que não estão mais nas tabelas: ${antigos.join("; ")}. Revise em “Textos da Proposta Comercial”.`, { duration: 10000 });
-    setAberto(true);
-  };
+  const abrir = () => setAberto(true);
   return (
     <>
       <Tooltip>
@@ -31,7 +24,7 @@ export default function UberabaPropostaComercialButton() {
       </Tooltip>
       {aberto && createPortal(
         <PdfPreview
-          build={async () => buildPropostaComercialPdf(await loadTimbrado(), lerIndices(), lerIndicadores(), lerRotulos(), lerFatores(), textosParaPdf(lerTextos()))}
+          build={async () => buildPropostaComercialPdf(await loadTimbrado(), lerIndices(), lerIndicadores(), lerRotulos(), lerFatores(), null)}
           fileName="Proposta_Comercial_Bensaude_Uberaba.pdf"
           onClose={() => setAberto(false)}
         />,

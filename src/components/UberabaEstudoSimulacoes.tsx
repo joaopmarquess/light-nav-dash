@@ -9,9 +9,7 @@ import UberabaParametrosRede from "@/components/UberabaParametrosRede";
 import UberabaResultadoRede from "@/components/UberabaResultadoRede";
 import EstudoSubNav from "@/components/EstudoSubNav";
 import UberabaPropostaComercialButton from "@/components/UberabaPropostaComercialButton";
-import UberabaPropostaTextosButton from "@/components/UberabaPropostaTextosButton";
 import UberabaPropostaRedeButton from "@/components/UberabaPropostaRedeButton";
-import UberabaPropostaRedeTextosButton from "@/components/UberabaPropostaRedeTextosButton";
 
 type Aba = "gestaoRede" | "comercial";
 
@@ -26,7 +24,7 @@ const UberabaEstudoSimulacoes = ({ subNavTarget }: { subNavTarget?: HTMLElement 
   const atual = ABAS.find((a) => a.id === aba)!;
   return (
     <div className="flex flex-col gap-3">
-      <EstudoSubNav itens={ABAS} ativo={aba} onSelect={(id) => setAba(id as Aba)} label="Simulações do Estudo" target={subNavTarget} extra={aba === "comercial" ? <div className="flex items-center gap-2"><ReferenciaButton /><UberabaPropostaTextosButton /><UberabaPropostaComercialButton /></div> : <div className="flex items-center gap-2"><UberabaPropostaRedeTextosButton /><UberabaPropostaRedeButton /></div>} />
+      <EstudoSubNav itens={ABAS} ativo={aba} onSelect={(id) => setAba(id as Aba)} label="Simulações do Estudo" target={subNavTarget} extra={aba === "comercial" ? <div className="flex items-center gap-2"><ReferenciaButton /><UberabaPropostaComercialButton /></div> : <div className="flex items-center gap-2"><UberabaPropostaRedeButton /></div>} />
       <section aria-label={atual.label} className="min-w-0">
         {/* Simulação de resultados fica recolhida abaixo dos Resultados Comerciais; Resultados Rede: Condições Rede, Credenciamento, Parâmetros e Resultado, recolhidas (Antecipação × Mensal excluída em 18/11/2026). */}
         {aba === "comercial" && <><UberabaTabelasComerciais /><BlocoRecolhido titulo="Simulação de resultados" className="mt-4"><div className="p-3"><UberabaSimulacao /></div></BlocoRecolhido></>}
