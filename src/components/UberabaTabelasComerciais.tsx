@@ -122,14 +122,12 @@ const OutrasBensaude = ({ aberto, onAlternar, modo, onModo, comApartamento }: { 
             <table className="comercial-table w-full border-collapse text-center text-lg leading-6">
               <thead>
                 <tr>
-                  <th className={th}>FAIXA</th>
                   {colunas.map((c) => <th key={c.rotulo} className={th} title={`${c.plano} · ${c.nome} · ${c.acomodacao === "PRATA" ? "Enfermaria (Prata)" : "Apartamento (Ouro)"}`}>{c.rotulo}</th>)}
                 </tr>
               </thead>
               <tbody>
                 {linhas.map((l) => (
                   <tr key={l.faixa}>
-                    <td className={td}>{l.faixa}</td>
                     {l.centavos.map((v, j) => <td key={j} className={td}>{formatarOuTraco(v)}</td>)}
                   </tr>
                 ))}
@@ -152,14 +150,12 @@ const TabelaConcorrentes = ({ aberto, onAlternar }: { aberto: boolean; onAlterna
         <table className="comercial-table w-full border-collapse text-center text-lg leading-6">
           <thead>
             <tr>
-              <th className={th}>FAIXA</th>
               {colunasConcorrentes().map((c) => <th key={c.numero} className={th} title={c.produto} data-sem-quebra={c.rotulo.startsWith("Hapvida") || undefined}>{c.rotulo.toUpperCase()}</th>)}
             </tr>
           </thead>
           <tbody>
             {linhasConcorrentesPorFaixa().map((l) => (
               <tr key={l.faixa}>
-                <td className={td}>{l.faixa}</td>
                 {l.centavos.map((v, j) => <td key={j} className={td}>{formatarCentavos(v)}</td>)}
               </tr>
             ))}
@@ -440,8 +436,11 @@ const UberabaTabelasComerciais = ({ comparada: comparadaExterna, onComparar }: {
         <div className="comercial-comparar">
           {!controlado && <div className="self-start"><VoltarTabelasButton onClick={() => comparar(null)} /></div>}
           <div className="comercial-comparar-area">
+            {/* Tabela comparada e OUTRAS BENSAÚDE no mesmo par: mesma largura e altura. */}
+            <div className="comercial-comparar-par">
             {FRENTES.filter((f) => f.id === comparada).map((f) => cartao(f, true))}
             <OutrasBensaude aberto={outrasAberto} onAlternar={() => setOutrasAberto((v) => !v)} modo={modoOutras} onModo={setModoOutras} comApartamento={aptoVisivel} />
+            </div>
             <TabelaConcorrentes aberto={concorrentesAberto} onAlternar={() => setConcorrentesAberto((v) => !v)} />
           </div>
         </div>

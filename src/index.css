@@ -877,20 +877,22 @@ All colors MUST be HSL.
 .comercial-medias { --commercial-color: hsl(var(--hospital-blue)); }
 /* Comparar: a tabela escolhida à esquerda (largura de uma coluna da grade) e a tabela Concorrentes à direita. */
 .comercial-comparar { display: flex; flex-direction: column; gap: 12px; }
-.comercial-comparar-area { display: grid; grid-template-columns: max-content max-content minmax(0, 1fr); gap: 18px; align-items: start; }
+.comercial-comparar-area { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 18px; align-items: start; }
+/* Par tabela comparada + OUTRAS BENSAÚDE: colunas iguais (a maior das duas) e mesma altura. */
+.comercial-comparar-par { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; align-items: stretch; }
 .comercial-concorrentes { --commercial-color: hsl(var(--credential-secondary)); }
 .comercial-outras { --commercial-color: hsl(var(--primary)); }
-.comercial-comparar-area > .comercial-card { display: flex; grid-row: auto; }
+.comercial-comparar-area .comercial-card { display: flex; grid-row: auto; }
 /* Mesmas alturas em todos os contêineres da comparação: as faixas ficam no mesmo nível. */
-.comercial-comparar-area > .comercial-card > div:first-child { display: flex; grid-row: auto; height: 3rem; padding-top: 0; padding-bottom: 0; }
+.comercial-comparar-area .comercial-card > div:first-child { display: flex; grid-row: auto; height: 3rem; padding-top: 0; padding-bottom: 0; }
 .comercial-comparar-area .comercial-secao-titulo { height: 2rem; padding-top: 0; padding-bottom: 0; }
 .comercial-comparar-area .comercial-table thead th { height: 2.5rem; padding-top: 0; padding-bottom: 0; white-space: nowrap; }
 .comercial-concorrentes .comercial-table thead th { white-space: normal; font-size: 0.875rem; line-height: 1.1rem; }
 .comercial-concorrentes .comercial-table thead th[data-sem-quebra] { white-space: nowrap; }
 .comercial-comparar-area .comercial-table tbody td { height: 2rem; padding-top: 0; padding-bottom: 0; white-space: nowrap; }
-.comercial-comparar-area > .comercial-card > div:last-child:not(:first-child), .comercial-comparar-area > .comercial-card > section { display: block; grid-row: auto; }
+.comercial-comparar-area .comercial-card > div:last-child:not(:first-child), .comercial-comparar-area .comercial-card > section { display: block; grid-row: auto; }
 .comercial-comparar-botao { opacity: .6; }
-.comercial-comparar-area > .comercial-card[data-recolhido] { justify-self: start; }
+.comercial-comparar-area .comercial-card[data-recolhido] { justify-self: start; align-self: start; }
 .comercial-comparar-area .comercial-fator { padding-top: 6px; padding-bottom: 6px; }
 .comercial-grandes { --commercial-color: hsl(var(--credential-nonmedical)); }
 .comercial-card > div:first-child { flex-wrap: nowrap; white-space: nowrap; min-width: 0; padding: 16px 10px; }
@@ -1000,7 +1002,7 @@ All colors MUST be HSL.
   .timeline-presentation .hospital-slide-identity { padding: 0; }
   .timeline-presentation .hospital-slide-facade { height: 100%; }
   .timeline-presentation .marketing-message img { max-height: 280px; }
-  .modelo-fronts, .comercial-grid, .modelo-rede-grid, .comercial-comparar-area { grid-template-columns: 1fr; }
+  .modelo-fronts, .comercial-grid, .modelo-rede-grid, .comercial-comparar-area, .comercial-comparar-par { grid-template-columns: 1fr; }
 }
 @container (max-width: 719px) {
   .hospital-presentation.timeline-presentation, .modelo-presentation, .timeline-presentation .marketing-page, .timeline-presentation .formalizacao-page { padding: 20px 18px; }
