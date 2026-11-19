@@ -4,7 +4,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { attachTimbrado } from "@/lib/pdfTimbrado";
-import { inserirCapaESumario, mesAnoCapa, type CapaProposta, type ItemSumario, type LogoCapa } from "@/lib/pdfCapaProposta";
+import { inserirCapaESumario, mesAnoCapa, numerarPaginasProposta, type CapaProposta, type ItemSumario, type LogoCapa } from "@/lib/pdfCapaProposta";
 import { drawSectionTitle } from "@/lib/pdfTheme";
 import { CABECALHO, LINHA, RODAPE, SECUNDARIO, TINTA, ZEBRA, textoPdf } from "@/lib/uberabaPropostaComercialPdf";
 import { paragrafosDe } from "@/lib/uberabaPropostaTextos";
@@ -176,14 +176,12 @@ export function comporPropostaRedePdf(
 
   const sumario = inserirCapaESumario(doc, capaPropostaRede(logo), topicos.map((t) => ({ ...t, titulo: textoPdf(t.titulo) })),
     { tinta: TINTA, secundario: SECUNDARIO, timbrado, topoSumario: top + 2, margem: marginL });
-  // Capa e sumário sem número; o rodapé conta as páginas físicas, as mesmas do sumário.
-  const total = doc.getNumberOfPages();
-  for (let p = 3; p <= total; p++) {
-    doc.setPage(p);
+  // A capa não conta: o sumário é a "Página 1 de N", com a mesma numeração do sumário.
+  numerarPaginasProposta(doc, (texto) => {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(F.rodape);
     doc.setTextColor(...RODAPE);
-    doc.text(`Página ${p} de ${total}`, pageW - marginR, pageH - 16.5, { align: "right" });
-  }
+    doc.text(texto, pageW - marginR, pageH - 16.5, { align: "right" });
+  });
   return { doc, sumario };
 }

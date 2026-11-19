@@ -129,13 +129,14 @@ export function documentoPropostaRede(blocos: BlocoPropostaRede[], timbrado: Uin
     altText: { title: "Papel timbrado", description: "Papel timbrado do Bensaúde", name: "timbrado" },
   })] })] : [];
   const pagina = { size: { width: 11906, height: 16838 }, margin: { top: 2381, bottom: 1417, left: 1020, right: 1020, header: 0, footer: 850 } };
+  // Com capa, o total é o desta seção (a capa fica numa seção própria e não conta).
   const rodape = () => new Footer({ children: [new Paragraph({ alignment: AlignmentType.RIGHT,
-    children: [new TextRun({ children: ["Página ", PageNumber.CURRENT, " de ", PageNumber.TOTAL_PAGES], size: T.rodape, color: "2D2D2D" })] })] });
+    children: [new TextRun({ children: ["Página ", PageNumber.CURRENT, " de ", capa ? PageNumber.TOTAL_PAGES_IN_SECTION : PageNumber.TOTAL_PAGES], size: T.rodape, color: "2D2D2D" })] })] });
   const conteudo = {
-    // Com capa: o sumário é a primeira página desta seção (com timbrado e sem número); a numeração segue as páginas físicas.
-    properties: { page: pagina, ...(capa ? { titlePage: true } : {}) },
-    headers: capa ? { default: new Header({ children: fundo() }), first: new Header({ children: fundo() }) } : { default: new Header({ children: fundo() }) },
-    footers: capa ? { default: rodape(), first: new Footer({ children: [] }) } : { default: rodape() },
+    // Com capa: o sumário abre esta seção como "Página 1 de N" (numeração reiniciada em 1), igual ao PDF.
+    properties: { page: capa ? { ...pagina, pageNumbers: { start: 1 } } : pagina },
+    headers: { default: new Header({ children: fundo() }) },
+    footers: { default: rodape() },
     children: [...(capa ? paginaSumario(capa.sumario) : []), ...elementos(blocos)],
   };
   return new Document({

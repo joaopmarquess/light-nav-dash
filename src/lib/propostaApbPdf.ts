@@ -2,7 +2,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { FAIXAS_APB, PLANO_NOVO, tabelaLinear, tabelaDependente } from "@/lib/propostaApb";
 import type { VariaveisApb } from "@/lib/propostaApbDefaults";
-import { inserirCapaESumario, mesAnoCapa, type ItemSumario, type LogoCapa } from "@/lib/pdfCapaProposta";
+import { inserirCapaESumario, mesAnoCapa, numerarPaginasProposta, type ItemSumario, type LogoCapa } from "@/lib/pdfCapaProposta";
 import { LIMITES_PADRAO, NOTAS_COPART_2027, fmtLimite, linhasComLimites, type LimitesCopart } from "@/lib/propostaApbCopart";
 
 const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -44,14 +44,13 @@ export function montarPropostaPdf(estrategico: VariaveisApb, limites: LimitesCop
     if (y + linhas.length * 3.5 > 285) { doc.addPage(); y = 20; }
     doc.text(linhas, 14, y); y += linhas.length * 3.5 + 2;
   }
-  // Capa com a logomarca do Bensaúde e sumário no verso (pedido de 19/11/2026); rodapé com as páginas físicas do sumário.
+  // Capa com a logomarca do Bensaúde e sumário no verso (pedido de 19/11/2026); rodapé sem contar a capa.
   inserirCapaESumario(doc, { titulo: "Proposta APB", subtitulo: `Plano ${PLANO_NOVO}`, mesAno: mesAnoCapa(), logo }, topicos,
     { tinta: [10, 38, 72], secundario: [35, 42, 50], topoSumario: 24, margem: 14 });
-  const total = doc.getNumberOfPages();
-  for (let p = 3; p <= total; p++) {
-    doc.setPage(p);
+  // A capa não conta: o sumário é a "Página 1 de N".
+  numerarPaginasProposta(doc, (texto) => {
     doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(90);
-    doc.text(`Página ${p} de ${total}`, 196, 290, { align: "right" });
-  }
+    doc.text(texto, 196, 290, { align: "right" });
+  });
   return doc;
 }

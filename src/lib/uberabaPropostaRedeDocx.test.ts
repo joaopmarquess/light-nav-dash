@@ -32,13 +32,18 @@ describe("Word da Proposta de Credenciamento e Gestão de Rede", () => {
   });
   it("Word com capa e sumário: páginas do sumário como campos PAGEREF apontando para os tópicos", async () => {
     const JSZip = (await import("jszip")).default;
-    const sumario = [{ titulo: "1. Introdução", pagina: 3 }, { titulo: "2. Credenciamento por Captação", pagina: 3 }];
+    const sumario = [{ titulo: "1. Introdução", pagina: 2 }, { titulo: "2. Credenciamento por Captação", pagina: 2 }];
     const buf = await Packer.toBuffer(documentoPropostaRede(blocos, null, { capa: { titulo: "Proposta de Credenciamento e Gestão de Rede", mesAno: "Novembro de 2026", destinatario: "Siga Soluções" }, sumario }));
     const xml = await (await JSZip.loadAsync(buf)).file("word/document.xml")!.async("string");
     expect(xml).toContain("SUMÁRIO");
     expect(xml).toContain("Novembro de 2026");
     expect(xml).toContain("PAGEREF topico_1");
     expect(xml).toContain('w:name="topico_1"');
+    // A capa não conta: a seção do sumário recomeça em 1 e o total é o da seção ("Página 1 de N" no sumário).
+    expect(xml).toMatch(/<w:pgNumType[^>]*w:start="1"/);
+    const rodapes = await Promise.all(Object.keys((await JSZip.loadAsync(buf)).files).filter((f) => /word\/footer\d+\.xml/.test(f)).map(async (f) => (await JSZip.loadAsync(buf)).file(f)!.async("string")));
+    expect(rodapes.join("")).toContain("SECTIONPAGES");
+    expect(rodapes.join("")).not.toContain("NUMPAGES");
   });
   it("produces a Word file", async () => {
     const buf = await Packer.toBuffer(documentoPropostaRede(blocos, null));

@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { attachTimbrado } from "@/lib/pdfTimbrado";
-import { inserirCapaESumario, mesAnoCapa, type ItemSumario, type LogoCapa } from "@/lib/pdfCapaProposta";
+import { inserirCapaESumario, mesAnoCapa, numerarPaginasProposta, type ItemSumario, type LogoCapa } from "@/lib/pdfCapaProposta";
 import { PDF_COLORS, drawSectionTitle } from "@/lib/pdfTheme";
 import {
   FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, FRENTES_COMERCIAIS, INDICES_PADRAO, PARAMETROS_UBERABA, blocosIndicadores, parametrosDe, vidasTexto, formatarCentavos, formatarFator, formatarPercentual, indicadoresPadrao, rotulosPadrao, tabelaVenda, tabelaReferencia,
@@ -594,13 +594,12 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   // Capa (sem timbrado) e sumário no verso, com as páginas físicas dos tópicos (pedido de 19/11/2026).
   inserirCapaESumario(doc, { titulo: "Proposta Comercial", subtitulo: "Bensaúde|Uberaba", mesAno: mesAnoCapa(), logo }, topicos,
     { tinta: TINTA, secundario: SECUNDARIO, timbrado, topoSumario: top + 2, margem: marginL });
-  const total = doc.getNumberOfPages();
-  for (let p = 3; p <= total; p++) {
-    doc.setPage(p);
+  // A capa não conta: o sumário é a "Página 1 de N".
+  numerarPaginasProposta(doc, (texto) => {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(F.rodape);
     doc.setTextColor(...RODAPE);
-    doc.text(`Página ${p} de ${total}`, pageW - marginR, pageH - 16.5, { align: "right" }); // acima do traço do rodapé do timbrado (~284 mm)
-  }
+    doc.text(texto, pageW - marginR, pageH - 16.5, { align: "right" }); // acima do traço do rodapé do timbrado (~284 mm)
+  });
   return doc;
 }

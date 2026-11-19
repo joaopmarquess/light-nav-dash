@@ -1,6 +1,7 @@
 // Capa e sumário das propostas (Comercial, Credenciamento e Gestão de Rede, APB), pedido do Dênis em 19/11/2026:
 // capa limpa, sem timbrado, com a logomarca grande do Bensaúde, título e mês/ano; no verso, o sumário com os tópicos e suas páginas.
-// As páginas do sumário são as físicas do documento (capa = 1, sumário = 2), as mesmas do rodapé "Página X de Y".
+// Paginação (pedido de 19/11/2026): a capa não conta; o sumário é a "Página 1 de N" e o conteúdo segue a partir da 2,
+// com N = páginas sem a capa. As páginas do sumário usam essa mesma numeração do rodapé.
 import type jsPDF from "jspdf";
 import bensaudeLogo from "@/assets/bensaude-logo.svg.asset.json";
 
@@ -12,8 +13,25 @@ export type CapaProposta = {
 };
 export type ItemSumario = { titulo: string; pagina: number };
 
-/** Capa e sumário ficam antes do conteúdo. */
+/** Capa e sumário ficam antes do conteúdo (páginas físicas). */
 export const PAGINAS_ANTES_CONTEUDO = 2;
+/** Páginas que não entram na numeração: só a capa. */
+export const PAGINAS_SEM_NUMERO = 1;
+
+/** Rótulo do rodapé da página física `fisica` (capa = 1): "Página 1 de N" no sumário; null na capa. */
+export function rotuloPaginaProposta(fisica: number, totalFisico: number): string | null {
+  if (fisica <= PAGINAS_SEM_NUMERO) return null;
+  return `Página ${fisica - PAGINAS_SEM_NUMERO} de ${totalFisico - PAGINAS_SEM_NUMERO}`;
+}
+
+/** Numera o documento já com capa e sumário: o sumário e todas as páginas seguintes, nunca a capa. */
+export function numerarPaginasProposta(doc: jsPDF, escrever: (texto: string) => void) {
+  const total = doc.getNumberOfPages();
+  for (let p = PAGINAS_SEM_NUMERO + 1; p <= total; p++) {
+    doc.setPage(p);
+    escrever(rotuloPaginaProposta(p, total)!);
+  }
+}
 
 const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 /** Só mês e ano, no horário de Brasília: "Novembro de 2026". */
@@ -24,9 +42,9 @@ export function mesAnoCapa(d: Date = new Date()): string {
   return `${MESES[mes - 1]} de ${ano}`;
 }
 
-/** Páginas do conteúdo (contadas sem a capa e o sumário) convertidas nas páginas finais do documento. */
+/** Páginas do conteúdo (contadas sem a capa e o sumário) na numeração do rodapé: o sumário é a 1, o conteúdo começa na 2. */
 export function sumarioComCapa(itens: ItemSumario[]): ItemSumario[] {
-  return itens.map((i) => ({ ...i, pagina: i.pagina + PAGINAS_ANTES_CONTEUDO }));
+  return itens.map((i) => ({ ...i, pagina: i.pagina + PAGINAS_ANTES_CONTEUDO - PAGINAS_SEM_NUMERO }));
 }
 
 /** Logomarca do Bensaúde (SVG) convertida em PNG nítido para PDF e Word; sem navegador, devolve null (a capa usa o nome em texto). */
