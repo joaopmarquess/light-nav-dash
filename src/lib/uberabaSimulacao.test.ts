@@ -20,7 +20,7 @@ describe('Resumo consolidado por faixa etária', () => {
   });
   it('recalcula após alterar as vidas e retorna zero sem entradas', () => {
     const resultados=fonte.padroes.map((c,i)=>calcularSimulacao({...c,total_vidas:i===0?1500:c.total_vidas}));
-    expect(consolidarFaixasSimulacao(resultados).total.entradas).toBe(9500);
+    expect(consolidarFaixasSimulacao(resultados).total.entradas).toBe(8500);
     expect(consolidarFaixasSimulacao([]).total).toEqual({entradas:0,percentual:0,tmm:0,ticket:0});
   });
 });
@@ -159,9 +159,9 @@ describe('Simulação comercial fornecida',()=>{
 });
 
 describe('Bensaúde Regra e cenário solicitado', () => {
-  it('inicia com 10.000 vidas: 5.000 no PJ+ e 2.000 no PCA', () => {
+  it('inicia com 10.000 vidas: PCA 3.000, PME ADM. 1.000, PCE 30-99 1.000 e PJ+ 5.000 (19/11/2026)', () => {
     expect(fonte.padroes.map(c => [c.produto_codigo, c.total_vidas])).toEqual([
-      ['PCA', 2000], ['PME_ADMINISTRADO', 1000], ['PCE_50_99', 2000], ['PCE_100_MAIS', 5000],
+      ['PCA', 3000], ['PME_ADMINISTRADO', 1000], ['PCE_50_99', 1000], ['PCE_100_MAIS', 5000],
     ]);
     expect(fonte.padroes.every(c => c.condicao_comercial === 'Bensaúde Regra')).toBe(true);
     expect(consolidarSimulacao(fonte.padroes.map(calcularSimulacao)).anual.vidas).toBe(10000);
@@ -335,7 +335,7 @@ describe('Relatório da Memória de Cálculo (Resultado por Ente)', () => {
   });
   it('parâmetros usam as vidas e percentuais do cenário, com os dois agenciamentos', () => {
     const p = parametrosMemoriaCalculo(cenarios, nomesR);
-    expect(p.map(x => x.vidas)).toEqual([2000, 1000, 2000, 5000]);
+    expect(p.map(x => x.vidas)).toEqual([3000, 1000, 1000, 5000]);
     expect(p.map(x => x.agenciamentos)).toEqual([[0.9, 1.5], [0.9, 1.5], [0.9, 1], [0.9, 1]]);
     expect(p[0].lancers).toBeCloseTo(0.23, 9);
     expect(p[3].siga).toBeCloseTo(0.05, 9);
@@ -438,8 +438,8 @@ describe('Chave PERCENTUAL / MÉDIA ASSIST. da Despesa Assistencial (pedido de 1
     const [c] = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao(), 'media');
     const m = memoriaCalculo('bensaude.despesa', c.resultados, nomesR);
     const pca = m.itens[0].calculo;
-    expect(pca).toContain('Jan 100 = 28.045,00');
-    expect(pca).toContain('Dez 2.000 = 560.900,00');
+    expect(pca).toContain('Jan 150 = 42.067,50');
+    expect(pca).toContain('Dez 3.000 = 841.350,00');
     expect(pca).not.toContain('vidas-mês');
     expect(m.itens.every(it => !/11\.184|55\.920/.test(it.calculo))).toBe(true);
   });

@@ -9,6 +9,7 @@ import { buildPropostaComercialPdf } from "@/lib/uberabaPropostaComercialPdf";
 import { BOTOES_PROPOSTA_COMERCIAL, propostaGrupo, PROPOSTAS_GRUPO, type PropostaGrupoId } from "@/lib/uberabaPropostaGrupo";
 import { buildPropostaGrupoPdf } from "@/lib/uberabaPropostaGrupoPdf";
 import { carregarLogoBensaude } from "@/lib/pdfCapaProposta";
+import { lerVidasSimulacao } from "@/lib/uberabaResultadoRede";
 
 type Escolha = PropostaGrupoId | "original";
 
@@ -21,7 +22,7 @@ export default function UberabaPropostaComercialButton() {
   const build = async (e: Escolha) => {
     const [timbrado, logo] = [await loadTimbrado(), await carregarLogoBensaude()];
     if (e === "original") return buildPropostaComercialPdf(timbrado, lerIndices(), lerIndicadores(), lerRotulos(), lerFatores(), null, logo);
-    return buildPropostaGrupoPdf(propostaGrupo(e, lerIndices(), lerIndicadores(), lerRotulos(), lerFatores()), timbrado, logo);
+    return buildPropostaGrupoPdf(propostaGrupo(e, lerIndices(), lerIndicadores(), lerRotulos(), lerFatores(), lerVidasSimulacao()), timbrado, logo);
   };
   return (
     <>

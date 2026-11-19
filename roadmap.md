@@ -58,3 +58,4 @@
 - [x] Tabela Concorrentes à direita na comparação.
 - [x] Contêiner recolhido "Outras Bensaúde" (3019 e 3020) com chave Venda/Net, faixas no mesmo nível, Hapvida 1–4.
 - [x] Tirar calendário e exportar PDF da barra do Proj. Uberaba; canto direito recebe os botões/ícones de cada tela.
+- [x] Padrões de vidas da Simulação: PCA 3.000, PME ADM. 1.000, PCE 30-99 1.000, PJ+ 5.000 (metas das propostas seguem)

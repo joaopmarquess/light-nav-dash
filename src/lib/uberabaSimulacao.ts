@@ -17,7 +17,8 @@ const condicoes = [...condicoesBase, ...condicoesImportadas
     agenciamento_parcela_2: 0, agenciamento_parcela_3: 0,
     agenciamento_parcela_4: 0, agenciamento_parcela_5: 0 }))];
 // Vidas iniciais pedidas em 13/11/2026: 10.000 no total, 5.000 no PJ+ e 2.000 no PCA (PME ADM. e PCE 30-99 mantidos).
-const vidasIniciais: Record<string, number> = { PCA: 2000, PME_ADMINISTRADO: 1000, PCE_50_99: 2000, PCE_100_MAIS: 5000 };
+// Padrões de vidas pedidos pelo Dênis em 19/11/2026 (também usados nas metas das propostas Administrados e Empresariais).
+const vidasIniciais: Record<string, number> = { PCA: 3000, PME_ADMINISTRADO: 1000, PCE_50_99: 1000, PCE_100_MAIS: 5000 };
 const padroes = padroesImportados.map(c => ({ ...c, condicao_comercial: 'Bensaúde Regra', total_vidas: vidasIniciais[c.produto_codigo] ?? c.total_vidas }));
 // %CART da imagem fornecida em 26/10/2026, aplicado às quatro modalidades.
 const percentuaisCart = [0.2850, 0.0610, 0.1058, 0.1137, 0.0976, 0.1000, 0.0857, 0.0634, 0.0388, 0.0490];
