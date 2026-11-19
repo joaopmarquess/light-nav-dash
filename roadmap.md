@@ -48,3 +48,6 @@
 - [x] 5. Removidas duas telas antigas sem uso.
 - [x] 5b. Removidas Ativos Em, Ativos por Cidade e DW Carteira (Laboratory › vCarteira e B.I. Overview).
 - [x] 5c. Removido Gráfico Carteira (Laboratory › vCarteira).
+
+## Concorrentes
+- [x] PDF avulso "Concorrentes" com a tabela enviada (Nº, Produto R$/mês, 10 faixas).
