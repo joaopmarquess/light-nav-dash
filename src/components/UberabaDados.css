@@ -19,6 +19,7 @@
 .study-data-table thead { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
 .study-data-table tbody tr:nth-child(even) { background: hsl(var(--muted) / .35); }
 .study-data-table .data-reference { background: hsl(var(--accent)); font-weight: 650; }
+.study-data-table.numerada td, .study-data-table.numerada thead th { overflow-wrap: normal; white-space: nowrap; }
 .study-data-notice { display: flex; gap: 12px; padding: 14px 18px; background: hsl(var(--marketing-offline)); border-left: 4px solid hsl(var(--hospital-gold)); font-size: 14px; line-height: 1.5; }
 .study-data-notice svg { width: 22px; height: 22px; flex-shrink: 0; }
 .study-data-price-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }

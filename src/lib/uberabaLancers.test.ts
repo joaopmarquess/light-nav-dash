@@ -31,16 +31,18 @@ describe("Dados dos anexos Lancers", () => {
   it("inclui na tabela completa da Enfermaria a Referencial e as quatro tabelas do Proj. Uberaba, após as três linhas Bensaúde", () => {
     const t = tabelaCompletaEnfermaria();
     expect(t.rows.length).toBe(14);
-    expect(t.rows.slice(3, 8).map(r => r[0])).toEqual([
+    expect(t.rows.slice(3, 8).map(r => r[1])).toEqual([
       "Proj. Uberaba · Referencial (100%)", "Proj. Uberaba · PCA (95%)", "Proj. Uberaba · PME ADM. (90%)", "Proj. Uberaba · PCE ADM. (85%)", "Proj. Uberaba · PJ+ (75%)",
     ]);
-    expect(t.rows[3].slice(1)).toEqual(["175,00","204,22","238,32","262,62","306,46","350,27","429,07","535,04","709,99","1.049,70"]);
-    expect(t.rows[4][1]).toBe("166,25");
-    expect(t.rows[7][1]).toBe("131,25");
-    expect(t.rows[8][0]).toBe(LANCERS_SOURCES.precos.tables[1].rows[3][0]);
+    expect(t.rows[3].slice(2)).toEqual(["175,00","204,22","238,32","262,62","306,46","350,27","429,07","535,04","709,99","1.049,70"]);
+    expect(t.rows[4][2]).toBe("166,25");
+    expect(t.rows[7][2]).toBe("131,25");
+    expect(t.rows[8][1]).toBe(LANCERS_SOURCES.precos.tables[1].rows[3][0]);
+    expect(t.headers[0]).toBe("Nº");
+    expect(t.rows.map(r => r[0])).toEqual(Array.from({ length: 14 }, (_, i) => String(i + 1)));
   });
   it("usa o índice atual dos Resultados Comerciais nas linhas do Proj. Uberaba", () => {
-    expect(tabelaCompletaEnfermaria({ ...INDICES_PADRAO, pcaAdm: 100 }).rows[4][1]).toBe("175,00");
+    expect(tabelaCompletaEnfermaria({ ...INDICES_PADRAO, pcaAdm: 100 }).rows[4][2]).toBe("175,00");
   });
   it("não altera o anexo Lancers", () => {
     tabelaCompletaEnfermaria();

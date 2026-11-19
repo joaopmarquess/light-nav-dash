@@ -17,7 +17,7 @@ const views = [
 ] as const;
 
 function Table({ table }: { table: LancersTable }) {
-  return <table className="study-data-table"><thead><tr>{table.headers.map((header, i) => <th scope="col" key={i}>{header}</th>)}</tr></thead><tbody>{table.rows.map((row, i) => <tr key={i} className={row[0]?.startsWith("★") ? "data-reference" : ""}>{row.map((cell, j) => j === 0 ? <th scope="row" key={j}>{cell}</th> : <td key={j}>{cell}</td>)}</tr>)}</tbody></table>;
+  return <table className={`study-data-table${table.headers[0] === "Nº" ? " numerada" : ""}`}><thead><tr>{table.headers.map((header, i) => <th scope="col" key={i}>{header}</th>)}</tr></thead><tbody>{table.rows.map((row, i) => <tr key={i} className={row.some(cell => cell?.startsWith("★")) ? "data-reference" : ""}>{row.map((cell, j) => j === 0 || (j === 1 && table.headers[0] === "Nº") ? <th scope="row" key={j}>{cell}</th> : <td key={j}>{cell}</td>)}</tr>)}</tbody></table>;
 }
 function Kpi({ label, value, note }: { label: string; value: string; note: string }) {
   return <section className="study-data-kpi"><span>{label}</span><strong>{value}</strong><small>{note}</small></section>;

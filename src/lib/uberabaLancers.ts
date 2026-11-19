@@ -55,5 +55,7 @@ export function linhasProjetoUberabaEnfermaria(indices: Indices = INDICES_PADRAO
 }
 export function tabelaCompletaEnfermaria(indices: Indices = INDICES_PADRAO): LancersTable {
   const base = anexos.precos.tables[1];
-  return { ...base, rows: [...base.rows.slice(0, 3), ...linhasProjetoUberabaEnfermaria(indices), ...base.rows.slice(3)] };
+  // Linhas numeradas de 1 a 14 na primeira coluna "Nº" (pedido do Dênis, 19/11/2026).
+  const rows = [...base.rows.slice(0, 3), ...linhasProjetoUberabaEnfermaria(indices), ...base.rows.slice(3)];
+  return { ...base, headers: ["Nº", ...base.headers], rows: rows.map((r, i) => [String(i + 1), ...r]) };
 }
