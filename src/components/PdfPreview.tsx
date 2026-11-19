@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type jsPDF from "jspdf";
 import { FileDown, Loader2, Printer, X } from "lucide-react";
 import { htmlImpressao } from "@/lib/pdfImpressao";
@@ -9,12 +9,15 @@ export default function PdfPreview({
   fileName,
   onClose,
   onDownload,
+  acoesExtras,
 }: {
   build: () => Promise<jsPDF>;
   fileName: string;
   onClose: () => void;
   /** Substitui o download padrão (ex.: baixar mais de um arquivo). */
   onDownload?: () => void | Promise<void>;
+  /** Botões extras ao lado de "Baixar PDF" (ex.: "Gerar Word"). */
+  acoesExtras?: ReactNode;
 }) {
   const [pages, setPages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,6 +82,7 @@ export default function PdfPreview({
           >
             <FileDown className="h-4 w-4" /> Baixar PDF
           </button>
+          {acoesExtras}
           <button
             onClick={doPrint}
             disabled={loading || pages.length === 0}

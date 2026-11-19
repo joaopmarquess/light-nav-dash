@@ -50,6 +50,7 @@
     "core-js": "^3.51.0",
     "d3-geo": "^3.1.1",
     "date-fns": "^3.6.0",
+    "docx": "^9.16.0",
     "embla-carousel-react": "^8.6.0",
     "fflate": "^0.8.3",
     "html2canvas": "^1.4.1",
