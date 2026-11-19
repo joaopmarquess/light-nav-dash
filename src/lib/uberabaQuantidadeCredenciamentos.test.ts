@@ -12,10 +12,10 @@ describe("Quantidade de Credenciamentos", () => {
     ]);
     expect(total.disponivel).toBe(353);
   });
-  it("Qtde. padrão: Especialidades 200, Hospitais 2 e os demais pelo Limite (15, 12)", () => {
+  it("Qtde. padrão: Especialidades 200, Hospitais 2, Diagnóstico e terapia 4 e não médicos pelo Limite (12)", () => {
     const { linhas, total } = linhasQuantidadeCredenciamentos();
-    expect(linhas.map((l) => l.autorizado)).toEqual([200, 2, 15, 12]);
-    expect(total.autorizado).toBe(229);
+    expect(linhas.map((l) => l.autorizado)).toEqual([200, 2, 4, 12]);
+    expect(total.autorizado).toBe(218);
   });
   it("Ajuste técnico = 200 − 2 por especialidade (46 × 2 = 92) = 108 e acompanha os itens digitados", () => {
     expect(ajusteTecnico("medicos", 200, {})).toBe(108);
@@ -24,24 +24,24 @@ describe("Quantidade de Credenciamentos", () => {
   });
   it("Autorizado digitado substitui o Limite só no tipo editado", () => {
     const { linhas, total } = linhasQuantidadeCredenciamentos({ medicos: 150 });
-    expect(linhas.map((l) => l.autorizado)).toEqual([150, 2, 15, 12]);
-    expect(total.autorizado).toBe(179);
+    expect(linhas.map((l) => l.autorizado)).toEqual([150, 2, 4, 12]);
+    expect(total.autorizado).toBe(168);
   });
-  it("Valor começa em R$ 300,00 por tipo e Adesão = Qtde. × Valor (total R$ 68.700,00)", () => {
+  it("Valor começa em R$ 300,00 por tipo e Adesão = Qtde. × Valor (total R$ 65.400,00)", () => {
     const { linhas, total } = linhasQuantidadeCredenciamentos();
     expect(linhas.map((l) => l.valor)).toEqual([300, 300, 300, 300]);
-    expect(linhas.map((l) => l.adesao)).toEqual([60000, 600, 4500, 3600]);
-    expect(total.adesao).toBe(68700);
+    expect(linhas.map((l) => l.adesao)).toEqual([60000, 600, 1200, 3600]);
+    expect(total.adesao).toBe(65400);
   });
   it("Valor digitado muda só a Adesão do tipo editado", () => {
     const { linhas, total } = linhasQuantidadeCredenciamentos({ medicos: 100 }, { hospitais: 1500.5 });
-    expect(linhas.map((l) => l.adesao)).toEqual([30000, 3001, 4500, 3600]);
-    expect(total.adesao).toBe(41101);
+    expect(linhas.map((l) => l.adesao)).toEqual([30000, 3001, 1200, 3600]);
+    expect(total.adesao).toBe(37801);
   });
   it("Replicar copia o Valor de Especialidades médicas para todos os tipos", () => {
     const valores = replicarValorEspecialidades({ medicos: 350, hospitais: 1500 });
     expect(valores).toEqual({ medicos: 350, hospitais: 350, diagnostico: 350, "nao-medicos": 350 });
-    expect(linhasQuantidadeCredenciamentos({}, valores).total.adesao).toBe(229 * 350);
+    expect(linhasQuantidadeCredenciamentos({}, valores).total.adesao).toBe(218 * 350);
     expect(replicarValorEspecialidades({ hospitais: 900 }).hospitais).toBe(300);
   });
   it("Valor aceita reais com vírgula; vazio restaura e inválido é recusado", () => {
@@ -104,18 +104,18 @@ describe("Quantidade de Credenciamentos", () => {
     expect(somaItens("diagnostico", v)).toEqual({ soma: 3, itens: 4, alterados: 1 });
     expect(alterarItem(v, chaveItem("medicos", "Cardiologia*"), "2,5")).toBeNull();
     expect(somaItens("medicos", alterarItem(v, chaveItem("medicos", "Cardiologia*"), "")!).soma).toBe(92 - 2 + 10);
-    expect(linhasQuantidadeCredenciamentos().total.autorizado).toBe(229);
+    expect(linhasQuantidadeCredenciamentos().total.autorizado).toBe(218);
   });
 });
 
 describe("Restaurar padrão do Credenciamento", () => {
-  it("apaga Qtde., Valor e itens digitados: Adesão volta a R$ 68.700,00 e cada item ao padrão", async () => {
+  it("apaga Qtde., Valor e itens digitados: Adesão volta a R$ 65.400,00 e cada item ao padrão", async () => {
     const m = await import("./uberabaQuantidadeCredenciamentos");
     m.salvarAutorizados({ medicos: 10 });
     m.salvarValores({ medicos: 500 });
     m.salvarQuantidadesItens({ [m.chaveItem("hospitais", "X")]: 9 });
     m.restaurarCredenciamento();
-    expect(m.linhasQuantidadeCredenciamentos(m.carregarAutorizados(), m.carregarValores()).total.adesao).toBe(68700);
+    expect(m.linhasQuantidadeCredenciamentos(m.carregarAutorizados(), m.carregarValores()).total.adesao).toBe(65400);
     expect(m.carregarQuantidadesItens()).toEqual({});
   });
 });

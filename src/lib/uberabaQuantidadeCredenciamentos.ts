@@ -134,11 +134,13 @@ export function notasAgrupamento(): string[] {
 export const AUTORIZADO_PADRAO_HOSPITAIS = 2;
 /** Qtde. padrão de Especialidades médicas (pedido de 18/11/2026): 200, no lugar do Limite; a diferença para os itens vai ao Ajuste técnico. */
 export const AUTORIZADO_PADRAO_MEDICOS = 200;
+/** Qtde. padrão de Serviços auxiliares de diagnóstico e terapia (pedido de 19/11/2026): 4, um por item, no lugar do Limite (15). */
+export const AUTORIZADO_PADRAO_DIAGNOSTICO = 4;
 export function linhasQuantidadeCredenciamentos(autorizados: AutorizadosCredenciamento = {}, valores: ValoresCredenciamento = {}) {
   const disponiveis = cenarioCredenciamento("Disponível").grupos;
   const limites = cenarioCredenciamento("Limite").grupos;
   const grupos: LinhaQuantidadeCredenciamento[] = disponiveis.map((g, i) => {
-    const limite = g.id === "medicos" ? AUTORIZADO_PADRAO_MEDICOS : limites[i].quantidade;
+    const limite = g.id === "medicos" ? AUTORIZADO_PADRAO_MEDICOS : g.id === "diagnostico" ? AUTORIZADO_PADRAO_DIAGNOSTICO : limites[i].quantidade;
     const digitado = autorizados[g.id];
     const autorizado = digitado ?? limite;
     const valor = valores[g.id] ?? VALOR_PADRAO_CREDENCIAMENTO;
