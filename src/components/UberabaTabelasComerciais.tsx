@@ -63,14 +63,14 @@ const BotaoApartamento = ({ t }: { t: ApartamentoToggle }) => {
   );
 };
 
-// Ícone [Comparar] ao lado do nome: mostra só esta tabela, à esquerda do contêiner.
+// Ícone [Comparar] à esquerda do nome, em destaque: mostra só esta tabela, à esquerda do contêiner.
 const BotaoComparar = ({ nome, onClick }: { nome: string; onClick: () => void }) => {
   const rotulo = `Comparar ${nome}`;
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button type="button" onClick={onClick} aria-label={rotulo} className="comercial-rotulo-padrao comercial-comparar-botao">
-          <GitCompare className="h-3.5 w-3.5" aria-hidden />
+        <button type="button" onClick={onClick} aria-label={rotulo} className="comercial-comparar-botao">
+          <GitCompare className="h-[18px] w-[18px]" strokeWidth={2.25} aria-hidden />
         </button>
       </TooltipTrigger>
       <TooltipContent>Comparar</TooltipContent>
@@ -321,9 +321,9 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
     <div className={`comercial-card ${f.cor}`}>
       <div className="flex items-center justify-center gap-x-2 gap-y-1 px-4 py-2 text-center">
         <span className="inline-flex items-center gap-0.5">
+          {!comparando && <BotaoComparar nome={rotulos.titulo} onClick={onComparar} />}
           <RotuloEditavel valor={rotulos.titulo} padrao={padroes.titulo} onChange={(v) => onRotulo("titulo", v)} rotulo={`Nome da frente ${f.titulo}`} className="text-xl font-bold" />
           <GravarPadrao f={f} ativo={rotulos.titulo !== padroes.titulo} onClick={onGravarPadrao} />
-          {!comparando && <BotaoComparar nome={rotulos.titulo} onClick={onComparar} />}
         </span>
         <IndiceCampo f={f} valor={indice} onChange={onIndice} />
         <RestaurarPadraoButton alvo={`${rotulos.titulo} (índice, fator Apartamento e Indicadores variáveis)`} desativado={noPadrao} onRestaurar={onRestaurar} className="h-6 w-6" />
