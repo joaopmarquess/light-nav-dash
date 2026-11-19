@@ -26,11 +26,10 @@ describe("Produtos Lancers", () => {
     expect(formatarValorLancers(valorLancers(l, "spread"), "spread")).toBe("20,0%");
     expect(pca.porAcomodacao.OURO[9]?.venda).toBe(1489.73);
   });
-  it("keeps the spreadsheet's estimated venda (net ÷ 0,77) for unknown prices", () => {
-    const l = produtos.find((p) => p.plano === 3116)!.porAcomodacao.PRATA[0]!;
-    expect(l.net).toBe(93.9);
-    expect(formatarValorLancers(l.venda, "venda")).toBe("121,95");
-    expect(l.spread).toBe(0.23);
+  it("keeps the spreadsheet's estimated venda (net ÷ 0,77) for unknown prices without a new sale price", () => {
+    const l = produtos.find((p) => p.plano === 2933)!.porAcomodacao.PRATA[0]!;
+    expect(l.venda).toBeCloseTo(l.net / 0.77, 6);
+    expect(produtos.find((p) => p.plano === 2933)!.vendaEstimada).toBe(true);
   });
   it("reads VFE per band", () => {
     expect(vfeLancers()[0]).toBeNull();
@@ -90,8 +89,33 @@ describe("Spread da tabela Lancers", () => {
     const p = plano(3019);
     const net = p.porAcomodacao.PRATA.reduce((s, l) => s + l!.net, 0), venda = p.porAcomodacao.PRATA.reduce((s, l) => s + l!.venda, 0);
     expect(spreadTabelaLancers(p, "PRATA")).toBeCloseTo(1 - net / venda, 12);
-    expect(formatarSpreadTabela(spreadTabelaLancers(p, "PRATA"))).toBe("23,01%");
     expect(formatarSpreadTabela(spreadTabelaLancers(plano(2961), "OURO"))).toBe("20,00%");
-    expect(formatarSpreadTabela(spreadTabelaLancers(plano(3020), "PRATA"))).toBe("18,00%");
+  });
+});
+
+import { PRECOS_VENDA_LANCERS } from "@/data/precosVendaLancers";
+
+describe("Preços de venda atualizados (arquivo de 19/11/2026)", () => {
+  const produtos = produtosLancers();
+  const visivel = (n: number) => produtos.find((p) => p.plano === n && p.descricao !== "Desconhecido") ?? produtos.find((p) => p.plano === n)!;
+  it("keeps the 60 supplied prices for the six named plans", () => {
+    expect(PRECOS_VENDA_LANCERS).toHaveLength(60);
+    expect([...new Set(PRECOS_VENDA_LANCERS.map((v) => v.plano))]).toEqual([3019, 3020, 3120, 3096, 3097, 3116]);
+  });
+  it("uses the new Enfermaria/Apartamento sale prices and keeps the spreadsheet net", () => {
+    const p3019 = visivel(3019);
+    expect(p3019.porAcomodacao.PRATA[0]).toMatchObject({ venda: 134.14, net: 103.28 });
+    expect(p3019.porAcomodacao.OURO[9]?.venda).toBe(1119.82);
+    const p3116 = visivel(3116);
+    expect(p3116.porAcomodacao.PRATA[0]).toMatchObject({ venda: 117.38, net: 93.9 });
+    expect(p3116.vendaEstimada).toBe(false);
+    expect(p3116.vendaAtualizada).toBe(true);
+    expect(visivel(3120).porAcomodacao.OURO[9]?.venda).toBe(2340.7);
+    expect(visivel(3096).porAcomodacao.PRATA[2]?.venda).toBe(158.27);
+  });
+  it("leaves the hidden 3096 table and older tables with the spreadsheet sale price", () => {
+    const oculta = produtos.find((p) => p.plano === 3096 && p.descricao === "Desconhecido")!;
+    expect(oculta.vendaAtualizada).toBe(false);
+    expect(visivel(2961).porAcomodacao.PRATA[0]?.venda).toBe(165.55);
   });
 });
