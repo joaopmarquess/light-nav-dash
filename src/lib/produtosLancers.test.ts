@@ -53,7 +53,7 @@ describe("Produtos Lancers por plano e acomodação", () => {
     expect(produtos.find((p) => p.plano === 3019)?.descricao).toBe("PCA RIO PRETO");
     expect(nome(2961)).toBeNull();
     expect(rotuloProdutoLancers(produtos.find((p) => p.plano === 3019)!, produtos)).toBe("3019 · F50 PCA (GERAL)");
-    expect(rotuloProdutoLancers(produtos.find((p) => p.plano === 2961)!, produtos)).toBe("2961 · PCA");
+    expect(rotuloProdutoLancers(produtos.find((p) => p.plano === 2961)!, produtos)).toBe("2961* · PCA");
   });
   it("returns faixa, net, venda and spread for the chosen accommodation", () => {
     const pca = produtos.find((p) => p.plano === 2961)!;

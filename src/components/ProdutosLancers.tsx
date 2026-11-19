@@ -72,6 +72,7 @@ export default function ProdutosLancers() {
           ))}
         </tbody>
       </table>
+      {incluirAntigos && <p className="text-xs text-muted-foreground">* Tabela de produto mais antigo.</p>}
       <p className="text-xs text-muted-foreground">Valores mensais por beneficiário. Spread = (Venda − Net) ÷ Venda. Fonte: planilha TABELAS_LANCERS.xlsx enviada em 19/11/2026.</p>
     </section>
   );

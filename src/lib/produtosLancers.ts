@@ -56,7 +56,7 @@ export type AcomodacaoLancers = (typeof ACOMODACOES_LANCERS)[number]["id"];
  *  (o 3096), acrescenta a descrição da planilha para distinguir. */
 export const rotuloProdutoLancers = (p: ProdutoLancers, todos: ProdutoLancers[] = produtosLancers()) => {
   const repetido = todos.filter((o) => o.plano === p.plano).length > 1;
-  if (!p.nome) return `${p.plano} · ${p.descricao}`;
+  if (!p.nome) return `${p.plano}* · ${p.descricao}`; // * = tabela de produto mais antigo (pedido de 19/11/2026)
   return repetido ? `${p.plano} · ${p.nome} · ${p.descricao}` : `${p.plano} · ${p.nome}`;
 };
 
