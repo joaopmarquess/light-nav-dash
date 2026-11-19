@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Calculator, Network, Tags } from "lucide-react";
 import BlocoRecolhido from "@/components/BlocoRecolhido";
 import UberabaSimulacao from "@/components/UberabaSimulacao";
-import UberabaTabelasComerciais, { ReferenciaButton } from "@/components/UberabaTabelasComerciais";
+import UberabaTabelasComerciais, { ReferenciaButton, VoltarTabelasButton } from "@/components/UberabaTabelasComerciais";
+import type { FrenteId } from "@/lib/uberabaTabelasComerciais";
 import UberabaRedeAssistencial from "@/components/UberabaRedeAssistencial";
 import UberabaQuantidadeCredenciamentos from "@/components/UberabaQuantidadeCredenciamentos";
 import UberabaParametrosRede from "@/components/UberabaParametrosRede";
@@ -29,13 +30,15 @@ const UberabaEstudoSimulacoes = ({ subNavTarget }: { subNavTarget?: HTMLElement 
   const [versaoCred, setVersaoCred] = useState(0);
   const [versaoParam, setVersaoParam] = useState(0);
   // Enquanto uma tabela é comparada, o restante do contêiner (Simulação de resultados) fica invisível.
-  const [comparando, setComparando] = useState(false);
+  // A tabela comparada fica aqui para o "Voltar às Tabelas" subir à linha dos botões Referência e Proposta.
+  const [comparada, setComparada] = useState<FrenteId | null>(null);
+  const comparando = comparada !== null;
   return (
     <div className="flex flex-col gap-3">
-      <EstudoSubNav itens={ABAS} ativo={aba} onSelect={(id) => setAba(id as Aba)} label="Simulações do Estudo" target={subNavTarget} extra={aba === "comercial" ? <div className="flex items-center gap-2"><ReferenciaButton /><UberabaPropostaComercialButton /></div> : <div className="flex items-center gap-2"><UberabaPropostaRedeButton /></div>} />
+      <EstudoSubNav itens={ABAS} ativo={aba} onSelect={(id) => setAba(id as Aba)} label="Simulações do Estudo" target={subNavTarget} extra={aba === "comercial" ? <div className="flex w-full items-center gap-2">{comparando && <VoltarTabelasButton onClick={() => setComparada(null)} />}<div className="ml-auto flex items-center gap-2"><ReferenciaButton /><UberabaPropostaComercialButton /></div></div> : <div className="flex items-center gap-2"><UberabaPropostaRedeButton /></div>} />
       <section aria-label={atual.label} className="min-w-0">
         {/* Simulação de resultados fica recolhida abaixo dos Resultados Comerciais; Resultados Rede: Condições Rede, Credenciamento, Parâmetros e Resultado, recolhidas (Antecipação × Mensal excluída em 18/11/2026). */}
-        {aba === "comercial" && <><UberabaTabelasComerciais onComparar={setComparando} /><div hidden={comparando}><BlocoRecolhido titulo="Simulação de resultados" className="mt-4"><div className="p-3"><UberabaSimulacao /></div></BlocoRecolhido></div></>}
+        {aba === "comercial" && <><UberabaTabelasComerciais comparada={comparada} onComparar={setComparada} /><div hidden={comparando}><BlocoRecolhido titulo="Simulação de resultados" className="mt-4"><div className="p-3"><UberabaSimulacao /></div></BlocoRecolhido></div></>}
         {aba === "gestaoRede" && <><BlocoRecolhido titulo="Condições Rede" className="mb-4"><div className="p-3"><UberabaRedeAssistencial /></div></BlocoRecolhido><BlocoRecolhido titulo="Credenciamento" className="mb-4" acoes={<RestaurarPadraoButton alvo="Credenciamento (Qtde., Valor e quantidades dos itens)" onRestaurar={() => { restaurarCredenciamento(); setVersaoCred((v) => v + 1); }} />}><div className="p-3"><UberabaQuantidadeCredenciamentos key={versaoCred} /></div></BlocoRecolhido><BlocoRecolhido titulo="Parâmetros" className="mb-4" acoes={<RestaurarPadraoButton alvo="Parâmetros" onRestaurar={() => { restaurarParametrosRede(); setVersaoParam((v) => v + 1); }} />}><div className="p-3"><UberabaParametrosRede key={versaoParam} /></div></BlocoRecolhido><BlocoRecolhido titulo="Resultado"><div className="p-3"><UberabaResultadoRede /></div></BlocoRecolhido></>}
       </section>
     </div>

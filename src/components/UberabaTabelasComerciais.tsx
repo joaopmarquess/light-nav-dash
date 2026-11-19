@@ -362,14 +362,22 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
   );
 };
 
-// onComparar avisa a tela-mãe para esconder o restante do contêiner enquanto uma tabela está sendo comparada.
-const UberabaTabelasComerciais = ({ onComparar }: { onComparar?: (ativo: boolean) => void } = {}) => {
-  // Frente em comparação: só ela fica visível, com a grade de preços aberta; "Voltar às Tabelas" restaura a tela anterior.
-  const [comparada, setComparada] = useState<FrenteId | null>(null);
+// Botão que encerra a comparação; a tela-mãe o coloca na linha dos botões Referência e Proposta.
+export const VoltarTabelasButton = ({ onClick }: { onClick: () => void }) => (
+  <Button size="sm" variant="outline" onClick={onClick}><ArrowLeft className="mr-1 h-4 w-4" />Voltar às Tabelas</Button>
+);
+
+// Frente em comparação controlada pela tela-mãe (que esconde o restante do contêiner e mostra "Voltar às Tabelas");
+// sem controle, o estado fica aqui e o botão aparece acima das tabelas.
+const UberabaTabelasComerciais = ({ comparada: comparadaExterna, onComparar }: { comparada?: FrenteId | null; onComparar?: (id: FrenteId | null) => void } = {}) => {
+  const [comparadaLocal, setComparadaLocal] = useState<FrenteId | null>(null);
+  const controlado = comparadaExterna !== undefined;
+  const comparada = controlado ? comparadaExterna : comparadaLocal;
+  const setComparada = (id: FrenteId | null) => { if (!controlado) setComparadaLocal(id); };
   // "Outras Bensaúde" (3019 e 3020) abre recolhido, com chave Venda/Net própria.
   const [outrasAberto, setOutrasAberto] = useState(false);
   const [modoOutras, setModoOutras] = useState<ValorOutrasBensaude>("venda");
-  const comparar = (id: FrenteId | null) => { setComparada(id); onComparar?.(id !== null); };
+  const comparar = (id: FrenteId | null) => { setComparada(id); onComparar?.(id); };
   const [indices, setIndices] = useState<Indices>(() => lerIndices());
   // Coluna Apartamento recolhida por padrão; o mesmo controle vale para as quatro frentes.
   const [aptoVisivel, setAptoVisivel] = useState(false);
@@ -414,7 +422,7 @@ const UberabaTabelasComerciais = ({ onComparar }: { onComparar?: (ativo: boolean
     <section className="comercial-presentation" aria-label="Tabelas comerciais">
       {comparada ? (
         <div className="comercial-comparar">
-          <Button size="sm" variant="outline" className="self-start" onClick={() => comparar(null)}><ArrowLeft className="mr-1 h-4 w-4" />Voltar às Tabelas</Button>
+          {!controlado && <div className="self-start"><VoltarTabelasButton onClick={() => comparar(null)} /></div>}
           <div className="comercial-comparar-area">
             {FRENTES.filter((f) => f.id === comparada).map((f) => cartao(f, true))}
             <OutrasBensaude aberto={outrasAberto} onAlternar={() => setOutrasAberto((v) => !v)} modo={modoOutras} onModo={setModoOutras} comApartamento={aptoVisivel} />

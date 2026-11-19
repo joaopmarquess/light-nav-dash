@@ -882,14 +882,15 @@ All colors MUST be HSL.
 .comercial-outras { --commercial-color: hsl(var(--primary)); }
 .comercial-comparar-area > .comercial-card { display: flex; grid-row: auto; }
 /* Mesmas alturas em todos os contêineres da comparação: as faixas ficam no mesmo nível. */
-.comercial-comparar-area > .comercial-card > div:first-child { display: flex; grid-row: auto; height: 4rem; padding-top: 0; padding-bottom: 0; }
-.comercial-comparar-area .comercial-secao-titulo { height: 2.25rem; padding-top: 0; padding-bottom: 0; }
-.comercial-comparar-area .comercial-table thead th { height: 2.75rem; padding-top: 0; padding-bottom: 0; white-space: nowrap; }
+.comercial-comparar-area > .comercial-card > div:first-child { display: flex; grid-row: auto; height: 3rem; padding-top: 0; padding-bottom: 0; }
+.comercial-comparar-area .comercial-secao-titulo { height: 2rem; padding-top: 0; padding-bottom: 0; }
+.comercial-comparar-area .comercial-table thead th { height: 2.5rem; padding-top: 0; padding-bottom: 0; white-space: nowrap; }
 .comercial-concorrentes .comercial-table thead th { white-space: normal; font-size: 0.875rem; line-height: 1.1rem; }
 .comercial-concorrentes .comercial-table thead th[data-sem-quebra] { white-space: nowrap; }
-.comercial-comparar-area .comercial-table tbody td { height: 2.25rem; padding-top: 0; padding-bottom: 0; white-space: nowrap; }
+.comercial-comparar-area .comercial-table tbody td { height: 2rem; padding-top: 0; padding-bottom: 0; white-space: nowrap; }
 .comercial-comparar-area > .comercial-card > div:last-child:not(:first-child), .comercial-comparar-area > .comercial-card > section { display: block; grid-row: auto; }
 .comercial-comparar-botao { opacity: .6; }
+.comercial-comparar-area .comercial-fator { padding-top: 6px; padding-bottom: 6px; }
 .comercial-grandes { --commercial-color: hsl(var(--credential-nonmedical)); }
 .comercial-card > div:first-child { flex-wrap: nowrap; white-space: nowrap; min-width: 0; padding: 16px 10px; }
 .comercial-card > div:first-child > * { flex-shrink: 0; }
