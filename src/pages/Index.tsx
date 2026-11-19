@@ -83,6 +83,7 @@ import Promocoes from "@/components/Promocoes";
 import UberabaHospitais from "@/components/UberabaHospitais";
 import AdministradorasSim from "@/components/AdministradorasSim";
 import SimularDatasFm from "@/components/SimularDatasFm";
+import ProdutosLancers from "@/components/ProdutosLancers";
 import ControlPainel from "@/control/OrcamentoFaturamento";
 import PainelBeneficiario from "@/components/PainelBeneficiario";
 import CtrlDRE from "@/control/DRETrial";
@@ -466,6 +467,8 @@ const Index = () => {
             <PropostaApb />
           ) : active === "Simular Datas FM" ? (
             <SimularDatasFm />
+          ) : active === "Produtos Lancers" ? (
+            <ProdutosLancers />
           ) : active === "APB" ? (
             <SinistralidadeAPB />
           ) : active === "APB Top10" ? (

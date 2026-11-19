@@ -27,6 +27,7 @@ const controlItem: MenuItem = {
 export const labItems: MenuItem[] = [
   { icon: FileText, label: "Proposta APB" },
   { icon: CalendarCheck, label: "Simular Datas FM" },
+  { icon: Tags, label: "Produtos Lancers" },
   {
     icon: Users,
     label: "vCarteira",
