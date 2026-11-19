@@ -22,3 +22,15 @@ describe("Tabelas da carteira", () => {
     expect(t[2].tmmApartamento).toBeNull();
   });
 });
+
+import { planoOrFilter } from "./carteiraTabelas";
+
+describe("planoOrFilter", () => {
+  it("devolve a lista sem parênteses externos, pronta para .or()", () => {
+    const f = planoOrFilter("3116");
+    expect(f.startsWith("and(cd_mat_alternativa.gte.3116,cd_mat_alternativa.lt.3117)")).toBe(true);
+    expect(f.endsWith("cd_mat_alternativa.lt.311700000000000)")).toBe(true);
+    expect(f.startsWith("(")).toBe(false);
+    expect(f.split("and(").length - 1).toBe(12);
+  });
+});

@@ -31,9 +31,10 @@ export const ativoEm = (r: BenefTabela, ref: string) => {
   return !!reat && reat >= desl && reat <= ref;
 };
 
-/** Faixas para matrículas cujo cd_mat_alternativa começa com o plano (bigint). */
+/** Faixas para matrículas cujo cd_mat_alternativa começa com o plano (bigint).
+ *  Devolve a lista sem parênteses externos, pronta para `.or(...)` (que já os acrescenta). */
 export const planoOrFilter = (plano: string) =>
-  `(${Array.from({ length: 12 }, (_, k) => `and(cd_mat_alternativa.gte.${plano}${"0".repeat(k)},cd_mat_alternativa.lt.${Number(plano) + 1}${"0".repeat(k)})`).join(",")})`;
+  Array.from({ length: 12 }, (_, k) => `and(cd_mat_alternativa.gte.${plano}${"0".repeat(k)},cd_mat_alternativa.lt.${Number(plano) + 1}${"0".repeat(k)})`).join(",");
 
 /** Enfermaria = PRATA; Apartamento = OURO. Conta CPFs distintos ativos na data. */
 export function agruparFaixas(rows: BenefTabela[], ref: string) {

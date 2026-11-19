@@ -26,7 +26,7 @@ export default function CarteiraTabelas() {
         const { data: chunk, error } = await hostinger.from("view_ecarteira")
           .select("nr_cpf,tp_acomodacao,dt_nascimento,dt_vigencia_beneficiario,dt_desligamento,dt_reativacao,vl_tmm,nm_empresa_estipulante,cd_matricula")
           .eq("tp_plano", "SAUDE")
-          .or(planoOrFilter(plano).slice(1, -1))
+          .or(planoOrFilter(plano))
           .order("cd_matricula").range(from, from + 999);
         if (error) throw error;
         rows.push(...((chunk ?? []) as never[]));
