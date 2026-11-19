@@ -61,7 +61,6 @@ export default function ProdutosLancers() {
           </div>
           <div className="mt-auto space-y-2">
             {incluirAntigos && <p className="text-xs text-muted-foreground">* Tabela de produto mais antigo.</p>}
-            <p className="text-xs text-muted-foreground break-words [overflow-wrap:anywhere]">Valores mensais por beneficiário. Fonte: net da planilha TABELAS_LANCERS.xlsx; {produto.vendaAtualizada ? "venda do arquivo Tabelas_de_Precos_Planos_3019_3020_3120_3096_3097_3116.xlsx" : "venda da mesma planilha"} (enviados em 19/11/2026).</p>
           </div>
         </div>
         <table className="w-full h-full text-sm border border-border">
