@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { Packer } from "docx";
 import { blocosPropostaRede, documentoPropostaRede } from "./uberabaPropostaRedeDocx";
 import { TOPICOS_PROPOSTA_REDE } from "./uberabaPropostaRedePdf";
-import { CONDICOES_GERAIS_REDE, regraMensalidadeRede } from "./uberabaPropostaRede";
+import { CONDICOES_GERAIS_REDE, linhasParametrosRede } from "./uberabaPropostaRede";
 import { PARAMETROS_REDE_PADRAO } from "./uberabaParametrosRede";
 
 describe("Word da Proposta de Credenciamento e Gestão de Rede", () => {
@@ -10,18 +10,23 @@ describe("Word da Proposta de Credenciamento e Gestão de Rede", () => {
   it("keeps the PDF topics in the same order", () => {
     expect(blocos.filter((b) => b.tipo === "topico").map((b) => (b as { texto: string }).texto)).toEqual(TOPICOS_PROPOSTA_REDE);
   });
-  it("writes the Condições Gerais as subtopics 4.1 to 4.5, never as a table", () => {
+  it("writes the Condições Gerais as unnumbered subtopics, never as a table", () => {
     const i = blocos.findIndex((b) => b.tipo === "topico" && b.texto === TOPICOS_PROPOSTA_REDE[3]);
     const resto = blocos.slice(i);
     expect(resto.some((b) => b.tipo === "quadro")).toBe(false);
     expect(resto.filter((b) => b.tipo === "subtopico").map((b) => (b as { texto: string }).texto))
-      .toEqual(CONDICOES_GERAIS_REDE.map((c, k) => `4.${k + 1} ${c.item}`));
+      .toEqual(CONDICOES_GERAIS_REDE.map((c) => c.item));
+  });
+  it("labels the three tables Quadro 1, 2 and 3, each right before its table", () => {
+    const rotulos = blocos.flatMap((b, k) => (b.tipo === "rotulo" ? [[b.texto, blocos[k + 1]?.tipo]] : []));
+    expect(rotulos).toEqual([["Quadro 1", "quadro"], ["Quadro 2", "quadro"], ["Quadro 3", "quadro"]]);
   });
   it("uses the current parameters in the gestão text and the Resultado table", () => {
     const p = { ...PARAMETROS_REDE_PADRAO, parcelasFixas: 4, valorPorVida: 3 };
     const b = blocosPropostaRede(p);
-    expect(b.some((x) => x.tipo === "paragrafo" && x.texto === regraMensalidadeRede(p))).toBe(true);
-    const resultado = b.filter((x) => x.tipo === "quadro").at(-1) as Extract<(typeof b)[number], { tipo: "quadro" }>;
+    const quadros = b.filter((x) => x.tipo === "quadro") as Extract<(typeof b)[number], { tipo: "quadro" }>[];
+    expect(quadros[1].linhas).toEqual(linhasParametrosRede(p));
+    const resultado = quadros.at(-1)!;
     expect(resultado.linhas.at(-1)?.[0]).toBe("TOTAL");
     expect(resultado.juntos).toBe(true);
   });

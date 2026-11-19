@@ -1,17 +1,22 @@
-// PDF da Proposta de Credenciamento e Gestão de Rede (Proj. Uberaba): mesmo padrão da Proposta Comercial —
-// papel timbrado, sem cabeçalho de título, tópicos corridos, texto 13 pt justificado e tinta escura para impressão p/b.
+// PDF da Proposta de Credenciamento e Gestão de Rede (Proj. Uberaba): segue o modelo do Dênis (Proposta_Rede_Uberaba_v1.docx, 19/11/2026) —
+// papel timbrado, tópicos corridos, texto 12 pt justificado, quadros numerados e tinta escura para impressão p/b.
+// O conteúdo vem de blocosPropostaRede, o mesmo do Word.
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { attachTimbrado } from "@/lib/pdfTimbrado";
-import { PDF_COLORS, drawSectionTitle } from "@/lib/pdfTheme";
-import { CABECALHO, FONTES_PROPOSTA as F, LINHA, RODAPE, SECUNDARIO, TINTA, ZEBRA, textoPdf } from "@/lib/uberabaPropostaComercialPdf";
+import { drawSectionTitle } from "@/lib/pdfTheme";
+import { CABECALHO, LINHA, RODAPE, SECUNDARIO, TINTA, ZEBRA, textoPdf } from "@/lib/uberabaPropostaComercialPdf";
 import { paragrafosDe } from "@/lib/uberabaPropostaTextos";
 import { PARAMETROS_REDE_PADRAO, type ParametrosRede } from "@/lib/uberabaParametrosRede";
 import {
-  COLUNAS_CONDICOES_REDE, COLUNAS_RESULTADO_REDE, CONDICOES_GERAIS_REDE, linhasResultadoRede, quantidadesRedeAtuais, type QuantidadesRede, NOTA_CONDICOES_REDE, SECOES_REDE, TITULO_CONDICOES_GERAIS_REDE, TEXTO_CONDICOES_GERAIS_REDE, SUBTITULO_PROJECAO_REDE, TEXTO_PROJECAO_REDE, NOTA_PROJECAO_REDE, TEXTOS_REDE_PADRAO, quadroCondicoesRede, linhasParametrosRede, regraMensalidadeRede,
-  type SecaoRedeId, type TextosRede,
+  SECOES_REDE, TEXTOS_REDE_PADRAO, TITULO_CONDICOES_GERAIS_REDE, blocosPropostaRede, quantidadesRedeAtuais,
+  type BlocoPropostaRede, type QuantidadesRede, type TextosRede,
 } from "@/lib/uberabaPropostaRede";
 
+/** Tamanhos do modelo do Dênis (pt): texto e títulos 12, rótulo dos quadros 10, Quadro 1 com 10 e os demais com 11. */
+export const FONTES_PROPOSTA_REDE = { texto: 12, topico: 12, rotulo: 10, quadroGrupos: 10, quadro: 11, rodape: 9 } as const;
+const F = FONTES_PROPOSTA_REDE;
+const TEXTO: [number, number, number] = [30, 30, 30];
 const alturaLinha = (pt: number) => pt * 0.3528 * 1.35;
 
 /** Tópicos do PDF, na ordem (o 4, Condições Gerais, é fixo e não tem texto da IA). */
@@ -23,6 +28,8 @@ export function paragrafosPropostaRede(textos: TextosRede | null = null): string
   return SECOES_REDE.map((s) => paragrafosDe(t[s.id]));
 }
 
+type Quadro = Extract<BlocoPropostaRede, { tipo: "quadro" }>;
+
 export function buildPropostaRedePdf(
   timbradoDataUrl?: string | null, parametros: ParametrosRede = PARAMETROS_REDE_PADRAO, textos: TextosRede | null = null,
   quantidades: QuantidadesRede = quantidadesRedeAtuais(),
@@ -32,16 +39,16 @@ export function buildPropostaRedePdf(
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
   const marginL = 18, marginR = 18, top = 42, bottom = 25;
-  const usableW = pageW - marginL - marginR;
-  const LARGURA = usableW - 2;
+  const LARGURA = pageW - marginL - marginR;
   let y = top;
   const novaPagina = () => { doc.addPage(); y = top; };
   const garantir = (h: number) => { if (y + h > pageH - bottom) novaPagina(); };
   const LINHA_TEXTO = alturaLinha(F.texto);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const fimTabela = (fallback: number) => ((doc as any).lastAutoTable?.finalY as number | undefined) ?? fallback;
+  const fimTabela = (alvo: jsPDF, fallback: number) => ((alvo as any).lastAutoTable?.finalY as number | undefined) ?? fallback;
 
-  const fonteTexto = () => { doc.setFont("helvetica", "normal"); doc.setFontSize(F.texto); doc.setTextColor(...PDF_COLORS.text); };
+  const fonteTexto = () => { doc.setFont("helvetica", "normal"); doc.setFontSize(F.texto); doc.setTextColor(...TEXTO); };
+  /** Parágrafo justificado; continua na página seguinte quando preciso, nunca deixando uma linha sozinha. */
   const paragrafo = (texto: string) => {
     fonteTexto();
     let linhas = doc.splitTextToSize(textoPdf(texto), LARGURA) as string[];
@@ -57,149 +64,98 @@ export function buildPropostaRedePdf(
     }
   };
 
-  type Colunas = Record<number, { halign?: "left" | "center" | "right" | "justify"; cellWidth?: number }>;
-  const desenharTabela = (alvo: jsPDF, inicio: number, head: string[], body: string[][], colunas: Colunas, negritoUltima: boolean, itens: ReadonlySet<number>) => {
+  const desenharTabela = (alvo: jsPDF, inicio: number, q: Quadro, linhas: string[][]) => {
+    const soma = q.larguras.reduce((s, v) => s + v, 0);
+    const itens = new Set(q.itens);
+    const fonte = q.grupos ? F.quadroGrupos : F.quadro;
+    const ehItem = (r: number) => itens.has(r);
     autoTable(alvo, {
       rowPageBreak: "avoid",
       theme: "plain",
       startY: inicio,
       tableWidth: LARGURA,
-      margin: { left: marginL, right: pageW - marginL - LARGURA, top, bottom },
-      head: [head],
-      body,
-      styles: { font: "helvetica", fontSize: F.parametros, cellPadding: { top: 1.6, bottom: 1.6, left: 1.8, right: 1.8 }, textColor: PDF_COLORS.text, halign: "center", valign: "middle", overflow: "linebreak" },
-      headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: F.parametros - 2 },
-      columnStyles: colunas,
-      alternateRowStyles: { fillColor: ZEBRA },
+      margin: { left: marginL, right: marginR, top, bottom },
+      head: [q.cabecalho],
+      body: linhas,
+      styles: { font: "helvetica", fontSize: fonte, cellPadding: { top: 1.4, bottom: 1.4, left: 1.8, right: 1.8 }, textColor: TEXTO, halign: "center", valign: "middle", overflow: "linebreak" },
+      headStyles: { fillColor: CABECALHO, textColor: q.grupos ? TEXTO : TINTA, fontStyle: "bold", fontSize: fonte },
+      columnStyles: Object.fromEntries(q.larguras.map((w, i) => [i, { cellWidth: (w / soma) * LARGURA, halign: q.alinhamentos[i] }])),
       didParseCell: (c) => {
         if (c.section !== "body") return;
-        if (negritoUltima && c.row.index === body.length - 1) c.cell.styles.fontStyle = "bold";
-        // Itens dos tipos abertos: recuados, letra menor e tinta secundária, abaixo do seu tipo.
-        if (itens.has(c.row.index)) {
-          c.cell.styles.fontSize = F.parametros - 2;
+        const ultima = c.row.index === linhas.length - 1;
+        // Zebra como no modelo: primeira linha clara, segunda sombreada, e assim por diante.
+        if (c.row.index % 2 === 1) c.cell.styles.fillColor = ZEBRA;
+        if (q.grupos ? !ehItem(c.row.index) : q.negritoUltima && ultima) c.cell.styles.fontStyle = "bold";
+        // Itens dos tipos abertos: recuados e em tinta secundária, abaixo do seu tipo.
+        if (ehItem(c.row.index)) {
           c.cell.styles.textColor = SECUNDARIO;
-          c.cell.styles.cellPadding = { top: 1, bottom: 1, left: c.column.index === 0 ? 7 : 1.8, right: 1.8 };
+          if (c.column.index === 0) c.cell.styles.cellPadding = { top: 1.4, bottom: 1.4, left: 7, right: 1.8 };
         }
       },
       didDrawCell: (c) => {
-        if (c.section === "head") return;
-        alvo.setDrawColor(...LINHA);
-        alvo.setLineWidth(0.2);
+        if (c.section !== "body" || c.row.index === 0) return;
+        // Quadro 1: traço forte acima de cada tipo e entre o tipo e o seu primeiro item; traço fino entre itens.
+        const forte = q.grupos && (!ehItem(c.row.index) || !ehItem(c.row.index - 1));
+        alvo.setDrawColor(...(forte ? TEXTO : LINHA));
+        alvo.setLineWidth(forte ? 0.5 : 0.2);
         alvo.line(c.cell.x, c.cell.y, c.cell.x + c.cell.width, c.cell.y);
       },
     });
   };
-  /** Altura do quadro inteiro, medida num rascunho descartado do mesmo tamanho (para mantê-lo numa só página). */
-  const alturaTabela = (head: string[], body: string[][], colunas: Colunas, negritoUltima: boolean) => {
+  /** Altura do quadro (ou de parte dele), medida num rascunho descartado do mesmo tamanho. */
+  const alturaTabela = (q: Quadro, linhas: string[][]) => {
     const rascunho = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    desenharTabela(rascunho, top, head, body, colunas, negritoUltima, new Set());
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (((rascunho as any).lastAutoTable?.finalY as number | undefined) ?? top) - top;
+    desenharTabela(rascunho, top, q, linhas);
+    return fimTabela(rascunho, top) - top;
   };
-  const tabela = (head: string[], body: string[][], colunas: Colunas, negritoUltima: boolean, itens: ReadonlySet<number> = new Set()) => {
-    // Cabeçalho nunca fica sozinho no fim da página: precisa caber com a primeira linha.
-    if (body.length) garantir(alturaTabela(head, body.slice(0, 1), colunas, false));
-    desenharTabela(doc, y, head, body, colunas, negritoUltima, itens);
-    const fimT = fimTabela(y);
+  const ALTURA_ROTULO = 7;
+  const rotulo = (texto: string) => {
+    doc.setFont("helvetica", "bolditalic"); doc.setFontSize(F.rotulo); doc.setTextColor(...TEXTO);
+    doc.text(textoPdf(texto), marginL, y + 3.5);
+    y += ALTURA_ROTULO;
+  };
+  const tabela = (q: Quadro, rotuloTexto: string | null) => {
+    // Rótulo e cabeçalho nunca ficam sozinhos no fim da página; o quadro "juntos" (Quadro 3) começa e termina na mesma página.
+    const extra = rotuloTexto ? ALTURA_ROTULO : 0;
+    garantir(extra + alturaTabela(q, q.juntos ? q.linhas : q.linhas.slice(0, 1)));
+    if (rotuloTexto) rotulo(rotuloTexto);
+    desenharTabela(doc, y, q, q.linhas);
+    const fimT = fimTabela(doc, y);
     doc.setDrawColor(...TINTA);
     doc.setLineWidth(0.6);
     doc.line(marginL, fimT, marginL + LARGURA, fimT);
     doc.setDrawColor(0);
-    y = fimT + 8; // espaço para o parágrafo do corpo que segue cada quadro (pedido de 19/11/2026)
+    y = fimT + 7;
   };
 
-  /** Subtópico (ex.: "4.1 Contratada"): título em negrito no tamanho do texto, nunca sozinho no fim da página. */
-  const subtopico = (titulo: string) => {
-    garantir(8 + LINHA_TEXTO * 2);
-    doc.setFont("helvetica", "bold"); doc.setFontSize(F.texto); doc.setTextColor(...TINTA);
-    doc.text(textoPdf(titulo), marginL, y + 3);
-    y += 9;
-  };
-
-  const desenharCondicoes = () => {
-    // Quadro de quantidades montado a partir da seção Credenciamento (pedido de 18/11/2026); larguras fixas para não partir palavras.
-    // Tipos abertos item a item, exceto Especialidades médicas (pedido de 18/11/2026).
-    const quadro = quadroCondicoesRede(quantidades);
-    tabela([...COLUNAS_CONDICOES_REDE], quadro.map((l) => l.celulas), {
-      0: { halign: "justify", cellWidth: 70 }, 1: { cellWidth: 26 }, 2: { cellWidth: 36 }, 3: { cellWidth: LARGURA - 132 },
-    }, true, new Set(quadro.flatMap((l, i) => (l.item ? [i] : []))));
-    // Antes nota em itálico; agora parágrafo normal do corpo (pedido de 19/11/2026).
-    paragrafo(NOTA_CONDICOES_REDE);
-  };
-  // Depois do tópico 3, antes das Condições Gerais (pedido de 18/11/2026): subtítulo e texto da Projeção financeira
-  // e o quadro da seção Resultado, juntos e inteiros numa mesma página.
-  const desenharProjecao = () => {
-    const linhasRes = linhasResultadoRede(parametros, quantidades);
-    // Fluxo contínuo (pedido de 18/11/2026): começa logo após o quadro anterior; só evita deixar o subtítulo sozinho no fim da página.
-    garantir(10 + LINHA_TEXTO * 2);
-    doc.setFont("helvetica", "bold"); doc.setFontSize(F.texto); doc.setTextColor(...TINTA);
-    doc.text(textoPdf(SUBTITULO_PROJECAO_REDE), marginL, y + 3);
-    y += 10;
-    paragrafo(TEXTO_PROJECAO_REDE);
-    // O quadro Resultado começa e termina na mesma página (pedido de 18/11/2026): se não couber inteiro com seu título, ambos vão para a próxima.
-    const colunasRes: Colunas = {
-      0: { halign: "left", cellWidth: 24 }, 1: { halign: "right", cellWidth: 36 }, 2: { halign: "right", cellWidth: 38 }, 3: { halign: "right", cellWidth: 38 }, 4: { halign: "right", cellWidth: LARGURA - 136 },
-    };
-    garantir(6 + alturaTabela([...COLUNAS_RESULTADO_REDE], linhasRes, colunasRes, true));
-    doc.setFont("helvetica", "bold"); doc.setFontSize(F.parametros); doc.setTextColor(...TINTA);
-    doc.text(textoPdf("Resultado"), marginL, y + 3);
-    y += 6;
-    tabela([...COLUNAS_RESULTADO_REDE], linhasRes, colunasRes, true);
-    paragrafo(NOTA_PROJECAO_REDE);
-  };
-  const desenharGestao = () => {
-    tabela(["PARÂMETRO", "VALOR"], linhasParametrosRede(parametros), { 0: { halign: "justify" }, 1: { cellWidth: 50 } }, false);
-    paragrafo(regraMensalidadeRede(parametros));
-    desenharProjecao();
-  };
-  const blocoDados: Partial<Record<SecaoRedeId, () => void>> = { condicoes: desenharCondicoes, gestao: desenharGestao };
-
-
-  /** Título longo (ex.: "2. ... | Credenciamento por Captação") quebra em mais linhas no mesmo tamanho, nunca passando da margem;
-   * a linha do título fica sob a última. Retorna a altura extra das linhas acima dela. */
   const LINHA_TOPICO = alturaLinha(F.topico);
-  const linhasTitulo = (titulo: string) => {
-    doc.setFont("helvetica", "bold"); doc.setFontSize(F.topico);
-    const largura = pageW - marginL - marginR;
-    const t = titulo.toUpperCase();
-    if (doc.getTextWidth(t) <= largura) return [t];
-    // Quebra preferencial na barra: "2. ... ASSISTENCIAL |" / "CREDENCIAMENTO POR CAPTAÇÃO".
-    const partes = t.split(" | ");
-    if (partes.length === 2 && doc.getTextWidth(`${partes[0]} |`) <= largura && doc.getTextWidth(partes[1]) <= largura) return [`${partes[0]} |`, partes[1]];
-    return doc.splitTextToSize(t, largura) as string[];
-  };
   const tituloTopico = (titulo: string) => {
-    const linhas = linhasTitulo(titulo);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(F.topico);
+    const linhas = doc.splitTextToSize(titulo.toUpperCase(), LARGURA) as string[];
+    // Título nunca sozinho no fim da página: precisa caber com duas linhas de texto.
+    garantir(12 + (linhas.length - 1) * LINHA_TOPICO + LINHA_TEXTO * 2);
     linhas.slice(0, -1).forEach((l, i) => {
       doc.setFont("helvetica", "bold"); doc.setFontSize(F.topico); doc.setTextColor(...TINTA);
       doc.text(l, marginL, y + i * LINHA_TOPICO);
     });
     y += (linhas.length - 1) * LINHA_TOPICO;
     drawSectionTitle(doc, linhas[linhas.length - 1], marginL, y, pageW - marginR, TINTA, F.topico);
+    y += 9;
+  };
+  const subtopico = (texto: string) => {
+    garantir(8 + LINHA_TEXTO * 2);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(F.texto); doc.setTextColor(...TINTA);
+    doc.text(textoPdf(texto), marginL, y + 2);
+    y += 7.5;
   };
 
-  const corpo = paragrafosPropostaRede(textos);
-  SECOES_REDE.forEach((s, i) => {
-    const extra = (linhasTitulo(s.titulo).length - 1) * LINHA_TOPICO;
-    // Tópicos corridos, sem saltar página (pedido de 18/11/2026): só evita título sem ao menos duas linhas de texto abaixo.
-    garantir(12 + extra + LINHA_TEXTO * 2);
-    tituloTopico(s.titulo);
-    y += 10;
-    corpo[i].forEach(paragrafo);
-    y += 2;
-    blocoDados[s.id]?.();
-  });
-
-  // 4. Condições Gerais: título nunca sozinho no fim da página.
-  garantir(12 + LINHA_TEXTO * 2);
-  drawSectionTitle(doc, TITULO_CONDICOES_GERAIS_REDE, marginL, y, pageW - marginR, TINTA, F.topico);
-  y += 10;
-  paragrafo(TEXTO_CONDICOES_GERAIS_REDE);
-  y += 2;
-  // Antes quadro Condição/Definição; agora subtópicos 4.1, 4.2... com texto corrido (pedido de 19/11/2026).
-  CONDICOES_GERAIS_REDE.forEach((c, i) => {
-    subtopico(`${TITULO_CONDICOES_GERAIS_REDE.split(".")[0]}.${i + 1} ${c.item}`);
-    paragrafo(c.valor);
+  const blocos = blocosPropostaRede(parametros, textos, quantidades);
+  blocos.forEach((b, i) => {
+    if (b.tipo === "topico") { if (i > 0) y += 2; tituloTopico(b.texto); }
+    else if (b.tipo === "subtopico") subtopico(b.texto);
+    else if (b.tipo === "paragrafo") paragrafo(b.texto);
+    else if (b.tipo === "quadro") tabela(b, blocos[i - 1]?.tipo === "rotulo" ? (blocos[i - 1] as { texto: string }).texto : null);
+    // O rótulo é desenhado junto com o seu quadro, para nunca ficar sozinho no fim da página.
   });
 
   const total = doc.getNumberOfPages();

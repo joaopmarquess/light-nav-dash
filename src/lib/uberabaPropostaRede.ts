@@ -1,6 +1,6 @@
 // Proposta de Credenciamento e Gestão de Rede (Proj. Uberaba, pedido de 18/11/2026), destinada à Siga Soluções.
-// Tópicos (títulos do Dênis, 18/11/2026): 1 Contexto e Objeto da Proposta; 2 Estruturação da Rede Assistencial ( quadro da seção Credenciamento e, antes do tópico 3, o quadro da seção Resultado — pedido de 18/11/2026);
-// 3 Modelo de Gestão da Rede (quadro dos Parâmetros de Resultados Rede); 4 Condições Gerais (texto fixo do Dênis, nunca redigido pela IA).
+// Modelo do Dênis (Proposta_Rede_Uberaba_v1.docx, 19/11/2026): 1 Introdução; 2 Credenciamento por Captação (Quadro 1);
+// 3 Gestão da Rede (Quadro 2 dos Parâmetros, Projeção financeira com o Quadro 3 do Resultado); 4 Condições Gerais (subtópicos fixos do Dênis, nunca redigidos pela IA).
 // A IA redige os textos dos tópicos 1 a 3 só com estes dados;
 // o PDF usa o texto padrão até o usuário aprovar a revisão ("Incluir no PDF"). Tudo fica guardado neste navegador.
 import { moedaCredenciamento } from "@/lib/uberabaCredenciamento";
@@ -10,13 +10,14 @@ import {
 } from "@/lib/uberabaQuantidadeCredenciamentos";
 import type { ParametrosRede } from "@/lib/uberabaParametrosRede";
 import { REDE_UBERABA } from "@/lib/uberabaFrentes";
+import { paragrafosDe } from "@/lib/uberabaPropostaTextos";
 
 export const DESTINATARIO_PROPOSTA_REDE = "Siga Soluções";
 
 export const SECOES_REDE = [
-  { id: "introducao", titulo: "1. Contexto e Objeto da Proposta" },
-  { id: "condicoes", titulo: "2. Estruturação da Rede Assistencial | Credenciamento por Captação" },
-  { id: "gestao", titulo: "3. Modelo de Gestão da Rede" },
+  { id: "introducao", titulo: "1. Introdução" },
+  { id: "condicoes", titulo: "2. Credenciamento por Captação" },
+  { id: "gestao", titulo: "3. Gestão da Rede" },
 ] as const;
 export type SecaoRedeId = (typeof SECOES_REDE)[number]["id"];
 
@@ -25,8 +26,6 @@ export const TITULO_CONDICOES_GERAIS_REDE = "4. Condições Gerais";
 /** Definição da Contratada (pedido de 18/11/2026): a mesma frase abre a proposta (fim do tópico 1) e define a Contratada nas Condições Gerais. */
 export const TEXTO_CONTRATADA_REDE =
   "A contratação será formalizada com a Siga Soluções, responsável pela composição e disponibilização da equipe necessária à execução dos serviços, incluindo o profissional médico responsável pelo relacionamento com a rede credenciada, pela avaliação da qualidade dos profissionais, pela auditoria e pelo controle de desperdícios e da sinistralidade.";
-export const TEXTO_CONDICOES_GERAIS_REDE =
-  "As condições a seguir delimitam as responsabilidades e o período de atuação previsto para esta etapa do Projeto Bensaúde|Uberaba, especialmente quanto à execução dos serviços durante o ano de implantação e à posterior internalização das atividades pelo Bensaúde.";
 export const CONDICOES_GERAIS_REDE: readonly { item: string; valor: string }[] = [
   { item: "Contratada", valor: TEXTO_CONTRATADA_REDE },
   { item: "Período de atuação", valor: "Os serviços objeto desta proposta serão prestados durante o ano de 2027." },
@@ -37,30 +36,31 @@ export const CONDICOES_GERAIS_REDE: readonly { item: string; valor: string }[] =
 
 /** Subtítulo e texto antes do quadro Resultado, no tópico 2 (textos do Dênis, 18/11/2026). */
 export const SUBTITULO_PROJECAO_REDE = "Projeção financeira";
-/** Nota abaixo do quadro Resultado (pedidos de 18/11/2026): a projeção segue as premissas; só as parcelas fixas não são estimadas; valores podem ser menores ou maiores (credenciamentos até o "ATÉ"). */
+/** Texto abaixo do Quadro 3 (modelo do Dênis, 19/11/2026, redação dele sem alteração). */
 export const NOTA_PROJECAO_REDE =
-  "A projeção financeira baseia-se nas premissas desta proposta: quantidades e valores de credenciamento e vidas vendidas acumuladas. Os valores calculados a partir dessas premissas são estimados e não devem ser considerados certos ou garantidos; somente as parcelas mensais fixas da gestão não dependem delas. Os valores efetivos poderão ser menores, caso sejam captados menos credenciamentos ou vendidas menos vidas que o previsto, ou maiores, caso sejam captados mais credenciamentos, até o limite indicado na coluna \"ATÉ\" do tópico 2, ou vendidas mais vidas acumuladas que o estimado.";
+  "A projeção financeira é estimativa baseada nas premissas desta proposta, exceto pelas parcelas mensais fixas de gestão indicadas no quadro 1. Os demais valores poderão ser maiores ou menores conforme a quantidade efetiva de credenciamentos e de vidas vendidas acumuladas, respeitado o limite da coluna “ATÉ” do Tópico 2 para os credenciamentos.";
 export const TEXTO_PROJECAO_REDE =
-  "Considerando o cronograma previsto para formação da rede e o início da gestão, apresenta-se a seguir a projeção mensal da remuneração ao longo de 2027, contemplando os valores relativos ao credenciamento e à gestão da rede. Trata-se de uma estimativa: com exceção das parcelas mensais fixas da gestão, os valores apresentados dependem da quantidade de credenciamentos efetivamente captados e das vidas vendidas acumuladas, podendo ser menores ou maiores que os indicados, e não devem ser considerados valores certos ou garantidos.";
+  "Considerando o cronograma previsto para formação da rede e o início da gestão, apresenta-se a seguir a projeção mensal da remuneração ao longo de 2027:";
 export type TextosRede = Record<SecaoRedeId, string>;
 export const TEXTO_REDE_MAX = 4000;
 
-/** Textos dos tópicos 1 a 3 fornecidos pelo Dênis (18/11/2026), usados no PDF até uma revisão ser aprovada. */
+/** Textos dos tópicos 1 a 3 do modelo do Dênis (19/11/2026), usados no PDF e no Word até uma revisão ser aprovada. */
 export const TEXTOS_REDE_PADRAO: TextosRede = {
   introducao:
-    "Esta proposta integra o Projeto Bensaúde|Uberaba e estabelece as condições para o credenciamento e a gestão inicial da rede assistencial necessária à implantação e ao desenvolvimento da operação do Bensaúde em Uberaba (MG). O documento contempla a composição prevista da rede, as condições comerciais para sua formação, o modelo de remuneração pela gestão e as demais condições aplicáveis à prestação dos serviços. " + TEXTO_CONTRATADA_REDE,
+    "Esta proposta integra o Projeto Bensaúde|Uberaba e estabelece as condições para o credenciamento e a gestão inicial da rede assistencial necessária à implantação e ao desenvolvimento da operação do Bensaúde em Uberaba (MG). A contratação será formalizada com a Siga Soluções, responsável pela composição e disponibilização da equipe necessária à execução dos serviços, incluindo o profissional médico responsável pelo relacionamento, avaliação e auditoria da rede credenciada. A contratação ocorrerá para o decorrer do ano de 2027, encerrando-se ao final do exercício.",
   condicoes:
-    "A estruturação da rede assistencial foi definida considerando as necessidades previstas para o início da operação do Bensaúde em Uberaba. A composição contempla especialidades médicas, hospitais, serviços de apoio diagnóstico e terapêutico, além de profissionais e serviços assistenciais complementares, conforme detalhamento a seguir.",
+    "A estruturação da rede assistencial foi definida considerando as necessidades previstas para o início da operação do Bensaúde em Uberaba. Esta etapa será remunerada pelo valor definido para a adesão à captação realizada e dependerá da conclusão, aprovação e formalização de cada credenciamento pelo Bensaúde. A composição da rede será definida, conforme detalhamento a seguir:",
   gestao:
-    "Concluída a etapa inicial de estruturação da rede, inicia-se a fase de gestão assistencial, destinada a acompanhar e sustentar a operação da rede credenciada durante o período de implantação do Projeto Bensaúde|Uberaba. A remuneração dessa etapa será composta inicialmente por parcelas mensais fixas e, posteriormente, passará a acompanhar a evolução da carteira de beneficiários.",
+    "Concluída a etapa inicial de estruturação da rede, inicia-se a fase de gestão da rede, destinada a acompanhar e sustentar a operação da rede credenciada durante o período de implantação do Projeto. A remuneração dessa etapa será composta inicialmente por parcelas mensais fixas e, posteriormente, passará a acompanhar a evolução da carteira de beneficiários, conforme detalhamento a seguir:",
 };
 
-/** Nota do quadro de quantidades: só a condição de pagamento da nota das Condições Rede, que vale para o Credenciamento
- * (o restante falava da disponibilidade das redes de referência, que não é mais o que o quadro mostra). */
+/** Condição de pagamento do Credenciamento: desde o modelo de 19/11/2026 faz parte do texto do tópico 2; segue só nos dados da IA. */
 export const NOTA_CONDICOES_REDE = "O pagamento dependerá da conclusão, aprovação e formalização de cada credenciamento pelo Bensaúde.";
 
 /** Quadro de quantidades do tópico 2 (pedido de 18/11/2026): montado a partir da seção Credenciamento, mesmas colunas da tela. */
-export const COLUNAS_CONDICOES_REDE = ["TIPO CREDENCIADO", "ATÉ", "VALOR", "ADESÃO"] as const; // "ATÉ" no lugar de "QTDE." (pedido de 18/11/2026): quantidade máxima a credenciar
+export const COLUNAS_CONDICOES_REDE = ["TIPO CREDENCIADO", "ATÉ", "POR ADESÃO", "TOTAL"] as const; // "ATÉ" = quantidade máxima a credenciar; colunas do modelo de 19/11/2026
+/** Nomes curtos dos tipos na proposta (modelo de 19/11/2026); a tela de Credenciamento mantém os nomes completos. */
+export const ROTULOS_TIPOS_REDE: Readonly<Record<string, string>> = { diagnostico: "Serviços Aux. Diagnóstico", "nao-medicos": "Serviços Aux. Terapias" };
 const inteiro = (n: number) => n.toLocaleString("pt-BR");
 export type QuantidadesRede = ReturnType<typeof linhasQuantidadeCredenciamentos>;
 export const quantidadesRedeAtuais = (): QuantidadesRede => linhasQuantidadeCredenciamentos(carregarAutorizados(), carregarValores());
@@ -73,7 +73,7 @@ export type LinhaCondicaoRede = { celulas: string[]; item: boolean };
 export function quadroCondicoesRede(q: QuantidadesRede = quantidadesRedeAtuais(), itens: QuantidadesItens = lerQuantidadesItens()): LinhaCondicaoRede[] {
   return [
     ...q.linhas.flatMap((l) => [
-      { celulas: [l.tipo, inteiro(l.autorizado), moedaCredenciamento(l.valor), moedaCredenciamento(l.adesao)], item: false },
+      { celulas: [ROTULOS_TIPOS_REDE[l.id] ?? l.tipo, inteiro(l.autorizado), moedaCredenciamento(l.valor), moedaCredenciamento(l.adesao)], item: false },
       ...(TIPOS_FECHADOS_REDE.includes(l.id) ? [] : itensExibidos(l.id).map((i) => ({ celulas: [i.nome, inteiro(quantidadeItem(l.id, i.nome, itens)), "", ""], item: true }))),
     ]),
     { celulas: ["TOTAL", inteiro(q.total.autorizado), "", moedaCredenciamento(q.total.adesao)], item: false },
@@ -187,7 +187,7 @@ export type EstadoTextosRede = {
 export const estadoRedeVazio = (): EstadoTextosRede => ({ rascunho: null, assinaturaRascunho: null, geradoEm: null, aprovado: null, assinaturaAprovado: null, aprovadoEm: null });
 
 /** v2: os textos do Dênis (18/11/2026) substituem a revisão aprovada antes deles. */
-export const CHAVE_TEXTOS_REDE = "uberaba-proposta-rede-textos-v3"; // v3 (18/11/2026): introdução passou a incluir a Contratada
+export const CHAVE_TEXTOS_REDE = "uberaba-proposta-rede-textos-v4"; // v4 (19/11/2026): textos do modelo do Dênis substituem revisões aprovadas antes
 const str = (v: unknown) => (typeof v === "string" ? v : null);
 
 export function lerTextosRede(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): EstadoTextosRede {
@@ -221,4 +221,51 @@ export const textosRedeParaPdf = (e: EstadoTextosRede): TextosRede => e.aprovado
 export function topicosRedeDesatualizados(e: EstadoTextosRede, dados: DadosRascunhoRede): string[] {
   if (!e.aprovado) return [];
   return SECOES_REDE.filter((s) => numerosForaDosDadosRede(e.aprovado![s.id], dados).length > 0).map((s) => s.titulo);
+}
+
+/** Sequência do documento (modelo do Dênis, 19/11/2026), comum ao PDF e ao Word para os dois nunca divergirem:
+ * tópicos 1–3 com seus quadros numerados (Quadro 1, 2, 3), Projeção financeira e Condições Gerais em subtópicos sem número. */
+export type BlocoPropostaRede =
+  | { tipo: "topico"; texto: string }
+  | { tipo: "subtopico"; texto: string }
+  | { tipo: "rotulo"; texto: string }
+  | { tipo: "paragrafo"; texto: string }
+  | {
+    tipo: "quadro"; cabecalho: string[]; linhas: string[][]; larguras: number[]; alinhamentos: ("left" | "center" | "right" | "justify")[];
+    /** Quadro 1: tipos em negrito separados por traço forte, itens abaixo de cada tipo; letra menor. */
+    grupos: boolean; itens: number[]; negritoUltima: boolean;
+    /** Começa e termina na mesma página, com o seu rótulo. */
+    juntos: boolean;
+  };
+
+export function blocosPropostaRede(
+  parametros: ParametrosRede, textos: TextosRede | null = null, quantidades: QuantidadesRede = quantidadesRedeAtuais(),
+): BlocoPropostaRede[] {
+  const t = textos ?? TEXTOS_REDE_PADRAO;
+  const b: BlocoPropostaRede[] = [];
+  let n = 0;
+  const rotulo = () => b.push({ tipo: "rotulo", texto: `Quadro ${++n}` });
+  SECOES_REDE.forEach((s) => {
+    b.push({ tipo: "topico", texto: s.titulo });
+    paragrafosDe(t[s.id]).forEach((p) => b.push({ tipo: "paragrafo", texto: p }));
+    if (s.id === "condicoes") {
+      const quadro = quadroCondicoesRede(quantidades);
+      rotulo();
+      b.push({ tipo: "quadro", cabecalho: [...COLUNAS_CONDICOES_REDE], linhas: quadro.map((l) => l.celulas), larguras: [4820, 686, 2065, 2295],
+        alinhamentos: ["justify", "center", "center", "center"], grupos: true, itens: quadro.flatMap((l, k) => (l.item ? [k] : [])), negritoUltima: true, juntos: false });
+    }
+    if (s.id === "gestao") {
+      rotulo();
+      b.push({ tipo: "quadro", cabecalho: ["PARÂMETRO", "VALOR"], linhas: linhasParametrosRede(parametros), larguras: [6998, 2868],
+        alinhamentos: ["justify", "center"], grupos: false, itens: [], negritoUltima: false, juntos: false });
+      b.push({ tipo: "subtopico", texto: SUBTITULO_PROJECAO_REDE }, { tipo: "paragrafo", texto: TEXTO_PROJECAO_REDE });
+      rotulo();
+      b.push({ tipo: "quadro", cabecalho: [...COLUNAS_RESULTADO_REDE], linhas: linhasResultadoRede(parametros, quantidades), larguras: [1377, 2065, 2180, 2180, 2064],
+        alinhamentos: ["left", "right", "right", "right", "right"], grupos: false, itens: [], negritoUltima: true, juntos: true });
+      b.push({ tipo: "paragrafo", texto: NOTA_PROJECAO_REDE });
+    }
+  });
+  b.push({ tipo: "topico", texto: TITULO_CONDICOES_GERAIS_REDE });
+  CONDICOES_GERAIS_REDE.forEach((c) => b.push({ tipo: "subtopico", texto: c.item }, { tipo: "paragrafo", texto: c.valor }));
+  return b;
 }

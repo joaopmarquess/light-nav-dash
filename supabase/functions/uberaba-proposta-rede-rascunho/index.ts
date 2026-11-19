@@ -1,6 +1,6 @@
 // Rascunho dos tópicos da Proposta de Credenciamento e Gestão de Rede (Bensaúde|Uberaba), destinada à Siga Soluções,
 // a partir das Condições Rede e dos Parâmetros de Resultados Rede. O texto volta para revisão; nada vai ao PDF sem aprovação.
-import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { corsHeaders } from "npm:@supabase/supabase-js@2.119.1/cors";
 import { z } from "npm:zod@3";
 import { createOpenAI } from "npm:@ai-sdk/openai@4";
 import { APICallError, NoObjectGeneratedError, Output, jsonSchema, streamText } from "npm:ai@7";
@@ -47,16 +47,16 @@ REGRAS INVIOLÁVEIS
 1. Use somente os fatos que estão nos DADOS. Não invente nem suponha valores, quantidades, prazos, datas, vigência, reajustes, metas, multas, formas de pagamento, obrigações, exclusividade ou qualquer outra condição.
 2. Todo número que você escrever deve aparecer nos DADOS exatamente com a mesma grafia (por exemplo "229", "R$ 200,00", "03/2027"). Não calcule totais, médias, diferenças ou novos valores.
 3. Quando a seção precisar de uma informação que não está nos DADOS, escreva um marcador no formato [A definir: o que falta]. Nunca preencha a lacuna com suposições.
-4. Não repita os quadros linha a linha: o sistema insere no tópico 2 o quadro do Credenciamento (tipo de credenciado, quantidade, valor e adesão; abaixo de cada tipo, exceto Especialidades médicas, vêm os seus itens com a quantidade, sem valor nem adesão) com sua nota, e no tópico 3 o quadro dos Parâmetros com sua nota seguido da Projeção financeira com o quadro do Resultado mês a mês (DADOS.condicoes.resultado; as vidas desse quadro são estimadas). O tópico 4, Condições Gerais (DADOS.condicoesGerais: contratada e a equipe que ela disponibiliza, período de atuação, vigência financeira, investimento do Bensaúde e transição da gestão a partir de 2028), é fixo e inserido pelo sistema; não o redija e não o contradiga.
+4. Não repita os quadros linha a linha: o sistema insere no tópico 2 o Quadro 1 do Credenciamento (tipo de credenciado, quantidade máxima "ATÉ", valor por adesão e total; abaixo de cada tipo, exceto Especialidades médicas, vêm os seus itens com a quantidade, sem valor nem total), e no tópico 3 o Quadro 2 dos Parâmetros seguido da Projeção financeira com o Quadro 3 do Resultado mês a mês (DADOS.condicoes.resultado; as vidas desse quadro são estimadas). O tópico 4, Condições Gerais (DADOS.condicoesGerais: contratada e a equipe que ela disponibiliza, período de atuação, vigência financeira, investimento do Bensaúde e transição da gestão a partir de 2028), é fixo e inserido pelo sistema; não o redija e não o contradiga.
 5. Sem markdown, títulos, numeração ou listas com marcadores.
 
 ESTRUTURA DA PROPOSTA (o texto de cada seção abre o tópico; os quadros vêm logo abaixo)
-1. Contexto e Objeto da Proposta · 2. Estruturação da Rede Assistencial · 3. Modelo de Gestão da Rede (seguido do subtítulo fixo "Projeção financeira" e do quadro do Resultado) · 4. Condições Gerais (fixo, sem texto da IA).
+1. Introdução · 2. Credenciamento por Captação · 3. Gestão da Rede (seguido do subtítulo fixo "Projeção financeira" e do Quadro 3 do Resultado) · 4. Condições Gerais (fixo, sem texto da IA).
 
 SEÇÕES (somente estas três)
-- introducao: um parágrafo curto (3 a 5 frases) que apresente a proposta ao destinatário, o objeto (credenciamento e gestão da rede assistencial do Bensaúde em Uberaba, MG) e indique que as condições estão nas seções 2 a 4. Termine com a definição da contratada de DADOS.condicoesGerais (Siga Soluções e a equipe, incluindo o profissional médico), copiada exatamente, sem alterar nenhuma palavra.
-- condicoes (tópico "Estruturação da Rede Assistencial"): 1 a 3 frases que expliquem o quadro do Credenciamento (tipos de credenciado e seus itens, quantidade, valor por credenciamento e adesão), podendo citar a quantidade total e a adesão total da linha TOTAL. Pode lembrar que o pagamento depende da formalização de cada credenciamento, como na nota.
-- gestao: 1 ou 2 frases que expliquem a remuneração da gestão de rede segundo a regra dos DADOS (parcelas fixas a partir do mês de início e, depois, valor por vida sobre as vidas vendidas acumuladas), podendo citar as frentes de Gestão de Rede e seus responsáveis.`;
+- introducao: um parágrafo curto (3 a 5 frases) que apresente a proposta ao destinatário, o objeto (credenciamento e gestão da rede assistencial do Bensaúde em Uberaba, MG) informe que a contratação será formalizada com a Siga Soluções, responsável pela equipe que inclui o profissional médico responsável pelo relacionamento, avaliação e auditoria da rede credenciada, e que a contratação ocorre durante o ano de 2027 (DADOS.condicoesGerais), sem acrescentar responsabilidades.
+- condicoes (tópico "Credenciamento por Captação"): 1 a 3 frases que expliquem o Quadro 1 (tipos de credenciado e seus itens, quantidade máxima, valor por adesão e total), podendo citar a quantidade total e o total da linha TOTAL. Diga que a etapa é remunerada pelo valor por adesão e que o pagamento depende da conclusão, aprovação e formalização de cada credenciamento pelo Bensaúde (DADOS.condicoes.nota). Termine anunciando o detalhamento a seguir.
+- gestao (tópico "Gestão da Rede"): 1 ou 2 frases que expliquem a remuneração da gestão de rede segundo a regra dos DADOS (parcelas fixas a partir do mês de início e, depois, valor por vida sobre as vidas vendidas acumuladas), podendo citar as frentes de Gestão de Rede e seus responsáveis.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });

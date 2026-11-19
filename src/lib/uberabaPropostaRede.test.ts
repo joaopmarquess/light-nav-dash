@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { PARAMETROS_REDE_PADRAO } from "./uberabaParametrosRede";
 import {
-  COLUNAS_CONDICOES_REDE, CONDICOES_GERAIS_REDE, NOTA_PROJECAO_REDE, TEXTO_PROJECAO_REDE, TEXTOS_REDE_PADRAO, quadroCondicoesRede, aprovarTextosRede, dadosRascunhoRede, estadoRedeVazio, linhasCondicoesRede, linhasParametrosRede, mesInicioRede, mesclarRascunhoRede,
+  COLUNAS_CONDICOES_REDE, CONDICOES_GERAIS_REDE, ROTULOS_TIPOS_REDE, NOTA_PROJECAO_REDE, TEXTO_PROJECAO_REDE, TEXTOS_REDE_PADRAO, quadroCondicoesRede, aprovarTextosRede, dadosRascunhoRede, estadoRedeVazio, linhasCondicoesRede, linhasParametrosRede, mesInicioRede, mesclarRascunhoRede,
   linhasResultadoRede, numerosForaDosDadosRede, regraMensalidadeRede, textosRedeParaPdf, topicosRedeDesatualizados,
 } from "./uberabaPropostaRede";
 import { TOPICOS_PROPOSTA_REDE, buildPropostaRedePdf } from "./uberabaPropostaRedePdf";
@@ -12,8 +12,8 @@ import { moedaCredenciamento } from "./uberabaCredenciamento";
 const semNbsp = (s: string) => s.replace(/\u00a0/g, " ");
 
 describe("Proposta de Credenciamento e Gestão de Rede", () => {
-  it("uses the topic titles supplied by Dênis", () => {
-    expect(TOPICOS_PROPOSTA_REDE).toEqual(["1. Contexto e Objeto da Proposta", "2. Estruturação da Rede Assistencial | Credenciamento por Captação", "3. Modelo de Gestão da Rede", "4. Condições Gerais"]);
+  it("uses the topic titles of Dênis's model (19/11/2026)", () => {
+    expect(TOPICOS_PROPOSTA_REDE).toEqual(["1. Introdução", "2. Credenciamento por Captação", "3. Gestão da Rede", "4. Condições Gerais"]);
   });
   it("contracts Siga Soluções (team with médico auditor), term 2027, and hands network management and loss ratio to the Bensaúde from 2028", () => {
     expect(CONDICOES_GERAIS_REDE).toEqual([
@@ -28,36 +28,33 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
   it("builds the quantities table from the Credenciamento section (Qtde., Valor, Adesão and TOTAL)", () => {
     const q = linhasQuantidadeCredenciamentos();
     const l = linhasCondicoesRede(q, {}).map((r) => r.map(semNbsp));
-    expect(l.filter((r) => r[2] !== "" || r[0] === "TOTAL").map((r) => r[0])).toEqual([...q.linhas.map((x) => x.tipo), "TOTAL"]);
+    expect(l.filter((r) => r[2] !== "" || r[0] === "TOTAL").map((r) => r[0])).toEqual([...q.linhas.map((x) => ROTULOS_TIPOS_REDE[x.id] ?? x.tipo), "TOTAL"]);
     expect(l[0]).toEqual(["Especialidades médicas", "200", "R$ 300,00", "R$ 60.000,00"]);
     expect(l[1]).toEqual(["Hospitais", "2", "R$ 300,00", "R$ 600,00"]);
     expect(l[l.length - 1][3]).toBe(semNbsp(moedaCredenciamento(q.total.adesao)));
     const editado = linhasCondicoesRede(linhasQuantidadeCredenciamentos({ medicos: 10 }, { medicos: 300 }), {}).map((r) => r.map(semNbsp));
     expect(editado[0]).toEqual(["Especialidades médicas", "10", "R$ 300,00", "R$ 3.000,00"]);
   });
-  it("explains that the projection is estimated from the premises, except the fixed installments", () => {
-    expect(NOTA_PROJECAO_REDE).toContain("baseia-se nas premissas");
-    expect(NOTA_PROJECAO_REDE).toContain("são estimados e não devem ser considerados certos ou garantidos");
-    expect(NOTA_PROJECAO_REDE).toContain("somente as parcelas mensais fixas da gestão não dependem delas");
-    expect(NOTA_PROJECAO_REDE).toContain("poderão ser menores");
-    expect(NOTA_PROJECAO_REDE).toContain("até o limite indicado na coluna \"ATÉ\"");
+  it("explains below Quadro 3 that the projection is estimated, except the fixed installments, within the ATÉ limit", () => {
+    expect(NOTA_PROJECAO_REDE).toContain("é estimativa baseada nas premissas desta proposta");
+    expect(NOTA_PROJECAO_REDE).toContain("exceto pelas parcelas mensais fixas de gestão");
+    expect(NOTA_PROJECAO_REDE).toContain("poderão ser maiores ou menores");
+    expect(NOTA_PROJECAO_REDE).toContain("respeitado o limite da coluna “ATÉ”");
+    expect(TEXTO_PROJECAO_REDE.endsWith("ao longo de 2027:")).toBe(true);
   });
-  it("warns at the start of the projection that values are estimates, except the fixed installments", () => {
-    expect(TEXTO_PROJECAO_REDE).toContain("Trata-se de uma estimativa");
-    expect(TEXTO_PROJECAO_REDE).toContain("com exceção das parcelas mensais fixas da gestão");
-    expect(TEXTO_PROJECAO_REDE).toContain("não devem ser considerados valores certos ou garantidos");
+  it("states in the introduction the Siga Soluções contract during 2027 and, in topic 2, the payment condition", () => {
+    expect(TEXTOS_REDE_PADRAO.introducao).toContain("A contratação será formalizada com a Siga Soluções");
+    expect(TEXTOS_REDE_PADRAO.introducao).toContain("encerrando-se ao final do exercício");
+    expect(TEXTOS_REDE_PADRAO.condicoes).toContain("dependerá da conclusão, aprovação e formalização de cada credenciamento pelo Bensaúde");
   });
-  it("ends the introduction with the same Contratada definition used in the Condições Gerais", () => {
-    expect(TEXTOS_REDE_PADRAO.introducao.endsWith(CONDICOES_GERAIS_REDE[0].valor)).toBe(true);
-    expect(TEXTOS_REDE_PADRAO.introducao).toContain("Siga Soluções");
-  });
-  it("heads the quantity column ATÉ", () => {
-    expect(COLUNAS_CONDICOES_REDE).toEqual(["TIPO CREDENCIADO", "ATÉ", "VALOR", "ADESÃO"]);
+  it("heads Quadro 1 with ATÉ, POR ADESÃO and TOTAL", () => {
+    expect(COLUNAS_CONDICOES_REDE).toEqual(["TIPO CREDENCIADO", "ATÉ", "POR ADESÃO", "TOTAL"]);
   });
   it("opens every type item by item except Especialidades médicas", () => {
     const quadro = quadroCondicoesRede(linhasQuantidadeCredenciamentos(), { "hospitais:Hospital Geral": 3 });
     const nomes = quadro.map((l) => l.celulas[0]);
-    expect(nomes.slice(0, 5)).toEqual(["Especialidades médicas", "Hospitais", "Hospital Geral", "Hospital Pediátrico", "Serviços auxiliares de diagnóstico e terapia"]);
+    expect(nomes.slice(0, 5)).toEqual(["Especialidades médicas", "Hospitais", "Hospital Geral", "Hospital Pediátrico", "Serviços Aux. Diagnóstico"]);
+    expect(nomes).toContain("Serviços Aux. Terapias");
     expect(quadro[2]).toEqual({ celulas: ["Hospital Geral", "3", "", ""], item: true });
     expect(quadro[3].celulas[1]).toBe("1");
     expect(nomes).toContain("Laboratório de Análises Clínicas");
@@ -103,7 +100,7 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
   it("warns when an approved text cites a parameter that changed", () => {
     const e = aprovarTextosRede(estadoRedeVazio(), { ...TEXTOS_REDE_PADRAO, gestao: "Parcelas de R$ 15.000,00." });
     expect(topicosRedeDesatualizados(e, dadosRascunhoRede(PARAMETROS_REDE_PADRAO))).toEqual([]);
-    expect(topicosRedeDesatualizados(e, dadosRascunhoRede({ ...PARAMETROS_REDE_PADRAO, valorParcela: 12000 }))).toEqual(["3. Modelo de Gestão da Rede"]);
+    expect(topicosRedeDesatualizados(e, dadosRascunhoRede({ ...PARAMETROS_REDE_PADRAO, valorParcela: 12000 }))).toEqual(["3. Gestão da Rede"]);
   });
   it("builds the PDF with the three topics", () => {
     const doc = buildPropostaRedePdf(null);
