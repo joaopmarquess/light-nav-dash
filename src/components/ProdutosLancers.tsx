@@ -47,8 +47,8 @@ export default function ProdutosLancers() {
           Incluir Tabelas de Produtos mais Antigos
         </label>
       </div>
-      <div className="flex-1 min-h-0 grid gap-6 lg:grid-cols-[minmax(260px,340px)_1fr]">
-        <div className="flex flex-col gap-5 border-t border-border pt-4 lg:border-t-0 lg:pt-0 lg:border-r lg:pr-6">
+      <div className="flex-1 min-h-0 grid gap-6 lg:grid-cols-[1fr_minmax(260px,340px)]">
+        <div className="flex flex-col gap-5 border-t border-border pt-4 lg:border-t-0 lg:pt-0 lg:order-2 lg:border-l lg:pl-6">
           <div>
             <p className="text-xs text-muted-foreground">Descrição</p>
             <p className="text-lg font-semibold text-foreground">{produto.nome ?? produto.descricao}</p>
@@ -63,7 +63,7 @@ export default function ProdutosLancers() {
             {incluirAntigos && <p className="text-xs text-muted-foreground">* Tabela de produto mais antigo.</p>}
           </div>
         </div>
-        <table className="w-full h-full text-sm border border-border">
+        <table className="w-full h-full text-sm border border-border lg:order-1">
           <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
             <tr>
               <th className="px-4 py-2 text-left">Faixa</th>
