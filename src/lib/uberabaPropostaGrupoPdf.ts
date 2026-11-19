@@ -6,7 +6,7 @@ import { attachTimbrado } from "@/lib/pdfTimbrado";
 import { inserirCapaESumario, mesAnoCapa, numerarPaginasProposta, type ItemSumario, type LogoCapa } from "@/lib/pdfCapaProposta";
 import { PDF_COLORS, drawSectionTitle } from "@/lib/pdfTheme";
 import { CABECALHO, COR_FRENTE, FONTES_PROPOSTA as F, LINHA, RODAPE, SECUNDARIO, TINTA, ZEBRA, textoPdf } from "@/lib/uberabaPropostaComercialPdf";
-import { TOPICOS_PROPOSTA_GRUPO, type PropostaGrupo, type TabelaProdutoGrupo } from "@/lib/uberabaPropostaGrupo";
+import { type PropostaGrupo, type TabelaProdutoGrupo } from "@/lib/uberabaPropostaGrupo";
 
 const alturaLinha = (pt: number) => pt * 0.3528 * 1.35;
 
@@ -84,14 +84,21 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
     texto(t, 6);
   };
 
-  titulo(TOPICOS_PROPOSTA_GRUPO[0], ALTURA_QUADROS);
+  // Com Introdução, ela é o tópico 1 e os demais seguem a numeração de p.topicos.
+  const [t0, t1, t2, t3] = p.introducao.length ? p.topicos.slice(1) : p.topicos;
+  if (p.introducao.length) {
+    titulo(p.topicos[0], LINHA_TEXTO * 2);
+    p.introducao.forEach((par) => texto(par));
+    y += 6;
+  }
+  titulo(t0, ALTURA_QUADROS);
   quadros(p.net);
-  titulo(TOPICOS_PROPOSTA_GRUPO[1], ALTURA_QUADROS);
+  titulo(t1, ALTURA_QUADROS);
   quadros(p.venda);
-  titulo(TOPICOS_PROPOSTA_GRUPO[2], p.distribuidores.length * LINHA_TEXTO);
+  titulo(t2, p.distribuidores.length * LINHA_TEXTO);
   p.distribuidores.forEach(item);
   y += 6;
-  titulo(TOPICOS_PROPOSTA_GRUPO[3], LINHA_TEXTO * 3);
+  titulo(t3, LINHA_TEXTO * 3);
   texto(p.promocao);
   p.metas.forEach(item);
 

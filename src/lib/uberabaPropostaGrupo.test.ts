@@ -59,3 +59,17 @@ describe("Batimento de metas › soma das vidas dos produtos, metade por semestr
     expect(propostaGrupo("administrados", undefined, undefined, undefined, undefined, vidas).metas).toEqual(["ADMINISTRADOS: 5.501 em 2027", "1º Semestre: 2.750", "2º Semestre: 2.751"]);
   });
 });
+
+describe("Introdução da proposta Administrados (19/11/2026)", () => {
+  it("opens with the two user paragraphs addressed to LANCERS ADMINISTRADORA, shifting the numbering", () => {
+    const p = propostaGrupo("administrados");
+    expect(p.topicos).toEqual(["1. Introdução", "2. Tabela Net", "3. Sugestão de Venda", "4. Distribuidores", "5. Promoção e Metas"]);
+    expect(p.introducao[0]).toBe("A presente proposta é destinada à LANCERS ADMINISTRADORA, conforme os entendimentos iniciais entre as partes.");
+    expect(p.introducao[1]).toContain("como a SIGA, que também atua na comercialização dos produtos empresariais da Operadora.");
+  });
+  it("Empresariais keeps its four topics without Introdução", () => {
+    const p = propostaGrupo("empresariais");
+    expect(p.introducao).toEqual([]);
+    expect(p.topicos).toEqual(["1. Tabela Net", "2. Sugestão de Venda", "3. Distribuidores", "4. Promoção e Metas"]);
+  });
+});
