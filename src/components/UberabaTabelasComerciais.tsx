@@ -9,7 +9,7 @@ import { buildTabelasImpressaoPdf, paginasImpressao } from "@/lib/uberabaTabelas
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import RestaurarPadraoButton from "@/components/RestaurarPadraoButton";
-import { colunasConcorrentes, linhasConcorrentesPorFaixa } from "@/lib/concorrentesUberaba";
+import { colunasConcorrentes, linhasConcorrentesPorFaixa, outrasBensaude, type ValorOutrasBensaude } from "@/lib/concorrentesUberaba";
 import { frenteNoPadrao, restaurarFrentePadrao, FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, formatarFator, gravarFatores, lerFatores, parseFator, type Fatores, FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, gravarPadraoRotulos, gravarRotulos, lerIndicadores, lerIndices, lerPadraoRotulos, lerRotulos, normalizarRotulo, ROTULO_MAX, parseIndicador, parseIndice, tabelaIndexada, tabelaNet, tabelaVenda, operadoraDe, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices, type Rotulos, type RotulosPorFrente } from "@/lib/uberabaTabelasComerciais";
 
 // Preços calculados pela Referência × índice de cada frente; indicadores variáveis editáveis por frente (cálculos no helper).
@@ -78,36 +78,90 @@ const BotaoComparar = ({ nome, onClick }: { nome: string; onClick: () => void })
   );
 };
 
-// Tabela Concorrentes (valores enviados pelo Dênis), uma linha por faixa para comparar com a tabela escolhida.
-const TabelaConcorrentes = () => {
-  const th = "px-2 py-1.5 text-base font-semibold";
+// Contêineres ao lado da tabela comparada: mesmas alturas de topo, título, cabeçalho e linhas (CSS .comercial-comparar-area),
+// para que cada faixa fique exatamente no mesmo nível da tabela escolhida.
+const th = "px-2 text-base font-semibold";
+const td = "px-2 tabular-nums";
+const formatarOuTraco = (c: number | null) => (c == null ? "—" : formatarCentavos(c));
+
+const ChaveOutras = ({ modo, onModo }: { modo: ValorOutrasBensaude; onModo: (m: ValorOutrasBensaude) => void }) => (
+  <span className="comercial-chave" role="group" aria-label="Preço exibido em Outras Bensaúde">
+    {(["venda", "net"] as const).map((m) => (
+      <button key={m} type="button" aria-pressed={modo === m} onClick={() => onModo(m)}
+        title={m === "venda" ? "Preço de Venda (tabela de preços dos planos)" : "Preço Net (planilha Lancers)"}>
+        {m === "venda" ? "Venda" : "Net"}
+      </button>
+    ))}
+  </span>
+);
+
+const OutrasBensaude = ({ aberto, onAlternar, modo, onModo, comApartamento }: { aberto: boolean; onAlternar: () => void; modo: ValorOutrasBensaude; onModo: (m: ValorOutrasBensaude) => void; comApartamento: boolean }) => {
+  const { colunas, linhas } = outrasBensaude(modo, comApartamento);
+  const rotulo = `${aberto ? "Recolher" : "Expandir"} Outras Bensaúde`;
+  const Icone = aberto ? ChevronLeft : ChevronRight;
   return (
-    <section className="comercial-card comercial-concorrentes" aria-label="Concorrentes">
-      <div className="px-4 py-2 text-center"><span className="text-xl font-bold">Concorrentes</span></div>
-      <section className="comercial-secao">
-        <p className="comercial-secao-titulo">Preço mensal por faixa (R$)</p>
-        <div className="comercial-precos overflow-x-auto">
-          <table className="comercial-table w-full border-collapse text-center text-lg leading-6">
-            <thead>
-              <tr>
-                <th className={th}>FAIXA</th>
-                {colunasConcorrentes().map((c) => <th key={c.numero} className={`${th} whitespace-normal`}>{c.produto.toUpperCase()}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {linhasConcorrentesPorFaixa().map((l) => (
-                <tr key={l.faixa}>
-                  <td className="whitespace-nowrap px-2 py-1.5 tabular-nums">{l.faixa}</td>
-                  {l.centavos.map((v, j) => <td key={j} className="px-2 py-1.5 tabular-nums">{formatarCentavos(v)}</td>)}
+    <section className="comercial-card comercial-comparado comercial-outras" aria-label="Outras Bensaúde">
+      <div className="flex items-center justify-center gap-1 text-center">
+        <span className="text-xl font-bold">Outras Bensaúde</span>
+        <button type="button" onClick={onAlternar} aria-label={rotulo} title={rotulo} aria-expanded={aberto}
+          className="inline-flex h-6 w-6 items-center justify-center rounded-sm opacity-70 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <Icone className="h-4 w-4" />
+        </button>
+      </div>
+      {aberto && (
+        <section className="comercial-secao">
+          <p className="comercial-secao-titulo">Tabelas<ChaveOutras modo={modo} onModo={onModo} /></p>
+          <div className="comercial-precos">
+            <table className="comercial-table w-full border-collapse text-center text-lg leading-6">
+              <thead>
+                <tr>
+                  <th className={th}>FAIXA</th>
+                  {colunas.map((c) => <th key={c.rotulo} className={th} title={`${c.plano} · ${c.nome} · ${c.acomodacao === "PRATA" ? "Enfermaria (Prata)" : "Apartamento (Ouro)"}`}>{c.rotulo}</th>)}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
+              <tbody>
+                {linhas.map((l) => (
+                  <tr key={l.faixa}>
+                    <td className={td}>{l.faixa}</td>
+                    {l.centavos.map((v, j) => <td key={j} className={td}>{formatarOuTraco(v)}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
     </section>
   );
 };
+
+// Tabela Concorrentes (valores enviados pelo Dênis), uma linha por faixa para comparar com a tabela escolhida.
+const TabelaConcorrentes = () => (
+  <section className="comercial-card comercial-comparado comercial-concorrentes" aria-label="Concorrentes">
+    <div className="flex items-center justify-center text-center"><span className="text-xl font-bold">Concorrentes</span></div>
+    <section className="comercial-secao">
+      <p className="comercial-secao-titulo">Tabelas</p>
+      <div className="comercial-precos overflow-x-auto">
+        <table className="comercial-table w-full border-collapse text-center text-lg leading-6">
+          <thead>
+            <tr>
+              <th className={th}>FAIXA</th>
+              {colunasConcorrentes().map((c) => <th key={c.numero} className={th} title={c.produto} data-sem-quebra={c.rotulo.startsWith("Hapvida") || undefined}>{c.rotulo.toUpperCase()}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {linhasConcorrentesPorFaixa().map((l) => (
+              <tr key={l.faixa}>
+                <td className={td}>{l.faixa}</td>
+                {l.centavos.map((v, j) => <td key={j} className={td}>{formatarCentavos(v)}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+);
 
 // Recolher/expandir uma seção (grade de preços ou Indicadores variáveis) nas quatro tabelas ao mesmo tempo.
 const BotaoSecao = ({ t, nome }: { t: ApartamentoToggle; nome: string }) => {
@@ -312,6 +366,9 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
 const UberabaTabelasComerciais = ({ onComparar }: { onComparar?: (ativo: boolean) => void } = {}) => {
   // Frente em comparação: só ela fica visível, com a grade de preços aberta; "Voltar às Tabelas" restaura a tela anterior.
   const [comparada, setComparada] = useState<FrenteId | null>(null);
+  // "Outras Bensaúde" (3019 e 3020) abre recolhido, com chave Venda/Net própria.
+  const [outrasAberto, setOutrasAberto] = useState(false);
+  const [modoOutras, setModoOutras] = useState<ValorOutrasBensaude>("venda");
   const comparar = (id: FrenteId | null) => { setComparada(id); onComparar?.(id !== null); };
   const [indices, setIndices] = useState<Indices>(() => lerIndices());
   // Coluna Apartamento recolhida por padrão; o mesmo controle vale para as quatro frentes.
@@ -360,6 +417,7 @@ const UberabaTabelasComerciais = ({ onComparar }: { onComparar?: (ativo: boolean
           <Button size="sm" variant="outline" className="self-start" onClick={() => comparar(null)}><ArrowLeft className="mr-1 h-4 w-4" />Voltar às Tabelas</Button>
           <div className="comercial-comparar-area">
             {FRENTES.filter((f) => f.id === comparada).map((f) => cartao(f, true))}
+            <OutrasBensaude aberto={outrasAberto} onAlternar={() => setOutrasAberto((v) => !v)} modo={modoOutras} onModo={setModoOutras} comApartamento={aptoVisivel} />
             <TabelaConcorrentes />
           </div>
         </div>

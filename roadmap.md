@@ -56,3 +56,4 @@
 - [x] Tirar a linha de parâmetros (PCA · plano coletivo… / Boletagem… Distribuidores…) das Tabelas.
 - [x] Ícone Comparar ao lado do nome; só a tabela escolhida à esquerda; botão Voltar às Tabelas.
 - [x] Tabela Concorrentes à direita na comparação.
+- [x] Contêiner recolhido "Outras Bensaúde" (3019 e 3020) com chave Venda/Net, faixas no mesmo nível, Hapvida 1–4.

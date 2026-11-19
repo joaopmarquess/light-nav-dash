@@ -877,11 +877,18 @@ All colors MUST be HSL.
 .comercial-medias { --commercial-color: hsl(var(--hospital-blue)); }
 /* Comparar: a tabela escolhida à esquerda (largura de uma coluna da grade) e a tabela Concorrentes à direita. */
 .comercial-comparar { display: flex; flex-direction: column; gap: 12px; }
-.comercial-comparar-area { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 18px; align-items: start; }
-@media (min-width: 1800px) { .comercial-comparar-area { grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); } }
+.comercial-comparar-area { display: grid; grid-template-columns: max-content max-content minmax(0, 1fr); gap: 18px; align-items: start; }
 .comercial-concorrentes { --commercial-color: hsl(var(--credential-secondary)); }
+.comercial-outras { --commercial-color: hsl(var(--primary)); }
 .comercial-comparar-area > .comercial-card { display: flex; grid-row: auto; }
-.comercial-comparar-area > .comercial-card > div:last-child, .comercial-comparar-area > .comercial-card > section { display: block; grid-row: auto; }
+/* Mesmas alturas em todos os contêineres da comparação: as faixas ficam no mesmo nível. */
+.comercial-comparar-area > .comercial-card > div:first-child { display: flex; grid-row: auto; height: 4rem; padding-top: 0; padding-bottom: 0; }
+.comercial-comparar-area .comercial-secao-titulo { height: 2.25rem; padding-top: 0; padding-bottom: 0; }
+.comercial-comparar-area .comercial-table thead th { height: 2.75rem; padding-top: 0; padding-bottom: 0; white-space: nowrap; }
+.comercial-concorrentes .comercial-table thead th { white-space: normal; font-size: 0.875rem; line-height: 1.1rem; }
+.comercial-concorrentes .comercial-table thead th[data-sem-quebra] { white-space: nowrap; }
+.comercial-comparar-area .comercial-table tbody td { height: 2.25rem; padding-top: 0; padding-bottom: 0; white-space: nowrap; }
+.comercial-comparar-area > .comercial-card > div:last-child:not(:first-child), .comercial-comparar-area > .comercial-card > section { display: block; grid-row: auto; }
 .comercial-comparar-botao { opacity: .6; }
 .comercial-grandes { --commercial-color: hsl(var(--credential-nonmedical)); }
 .comercial-card > div:first-child { flex-wrap: nowrap; white-space: nowrap; min-width: 0; padding: 16px 10px; }
