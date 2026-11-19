@@ -105,24 +105,15 @@ export function buildPropostaRedePdf(
     doc.setLineWidth(0.6);
     doc.line(marginL, fimT, marginL + LARGURA, fimT);
     doc.setDrawColor(0);
-    y = fimT + 5;
+    y = fimT + 8; // espaço para o parágrafo do corpo que segue cada quadro (pedido de 19/11/2026)
   };
 
-  const nota = (texto: string) => {
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(F.notaPrecos);
-    doc.setTextColor(...SECUNDARIO);
-    const linhas = doc.splitTextToSize(textoPdf(texto), LARGURA) as string[];
-    const LN = alturaLinha(F.notaPrecos);
-    // A nota nunca se divide entre páginas; basta a linha de base da última linha caber acima da margem inferior.
-    garantir((linhas.length - 1) * LN + 1);
-    // Justificada às margens (pedido de 18/11/2026); a última linha fica alinhada à esquerda, como nos parágrafos.
-    linhas.forEach((l, i) => {
-      if (i < linhas.length - 1) doc.text([l, ""], marginL, y, { align: "justify", maxWidth: LARGURA });
-      else doc.text(l, marginL, y);
-      y += LN;
-    });
-    y += 6;
+  /** Subtópico (ex.: "4.1 Contratada"): título em negrito no tamanho do texto, nunca sozinho no fim da página. */
+  const subtopico = (titulo: string) => {
+    garantir(8 + LINHA_TEXTO * 2);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(F.texto); doc.setTextColor(...TINTA);
+    doc.text(textoPdf(titulo), marginL, y + 3);
+    y += 9;
   };
 
   const desenharCondicoes = () => {
@@ -132,7 +123,8 @@ export function buildPropostaRedePdf(
     tabela([...COLUNAS_CONDICOES_REDE], quadro.map((l) => l.celulas), {
       0: { halign: "justify", cellWidth: 70 }, 1: { cellWidth: 26 }, 2: { cellWidth: 36 }, 3: { cellWidth: LARGURA - 132 },
     }, true, new Set(quadro.flatMap((l, i) => (l.item ? [i] : []))));
-    nota(NOTA_CONDICOES_REDE);
+    // Antes nota em itálico; agora parágrafo normal do corpo (pedido de 19/11/2026).
+    paragrafo(NOTA_CONDICOES_REDE);
   };
   // Depois do tópico 3, antes das Condições Gerais (pedido de 18/11/2026): subtítulo e texto da Projeção financeira
   // e o quadro da seção Resultado, juntos e inteiros numa mesma página.
@@ -153,11 +145,11 @@ export function buildPropostaRedePdf(
     doc.text(textoPdf("Resultado"), marginL, y + 3);
     y += 6;
     tabela([...COLUNAS_RESULTADO_REDE], linhasRes, colunasRes, true);
-    nota(NOTA_PROJECAO_REDE);
+    paragrafo(NOTA_PROJECAO_REDE);
   };
   const desenharGestao = () => {
     tabela(["PARÂMETRO", "VALOR"], linhasParametrosRede(parametros), { 0: { halign: "justify" }, 1: { cellWidth: 50 } }, false);
-    nota(regraMensalidadeRede(parametros));
+    paragrafo(regraMensalidadeRede(parametros));
     desenharProjecao();
   };
   const blocoDados: Partial<Record<SecaoRedeId, () => void>> = { condicoes: desenharCondicoes, gestao: desenharGestao };
@@ -198,13 +190,17 @@ export function buildPropostaRedePdf(
     blocoDados[s.id]?.();
   });
 
-  // 4. Condições Gerais: título e quadro sempre juntos na mesma página.
+  // 4. Condições Gerais: título nunca sozinho no fim da página.
   garantir(12 + LINHA_TEXTO * 2);
   drawSectionTitle(doc, TITULO_CONDICOES_GERAIS_REDE, marginL, y, pageW - marginR, TINTA, F.topico);
   y += 10;
   paragrafo(TEXTO_CONDICOES_GERAIS_REDE);
   y += 2;
-  tabela(["CONDIÇÃO", "DEFINIÇÃO"], CONDICOES_GERAIS_REDE.map((c) => [c.item, c.valor]), { 0: { halign: "justify", cellWidth: 55 }, 1: { halign: "justify" } }, false);
+  // Antes quadro Condição/Definição; agora subtópicos 4.1, 4.2... com texto corrido (pedido de 19/11/2026).
+  CONDICOES_GERAIS_REDE.forEach((c, i) => {
+    subtopico(`${TITULO_CONDICOES_GERAIS_REDE.split(".")[0]}.${i + 1} ${c.item}`);
+    paragrafo(c.valor);
+  });
 
   const total = doc.getNumberOfPages();
   for (let p = 1; p <= total; p++) {
