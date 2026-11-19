@@ -110,26 +110,26 @@ export type TermoGlossario = { termo: string; nota: string; provisorio?: boolean
  * `provisorio` são minuta para ele confirmar ou reescrever; "Lorem ipsum" onde o significado não foi informado.
  */
 export const GLOSSARIO_PROPOSTA: TermoGlossario[] = [
-  { termo: "DISTRIBUIDORES", provisorio: true, nota: "Canais responsáveis pela comercialização dos produtos junto aos clientes. Nesta proposta, os produtos com boletagem pela Administradora (PCA, PME ADM. e PCE ADM.) são distribuídos pelas Plataformas Associadas, e o Plano Empresarial (PJ+) pode ser distribuído por Agenciadoras e Corretoras Autorizadas.", itens: [
-    { termo: "PLATAFORMAS ASSOCIADAS", provisorio: true, nota: "Canais de venda parceiros da Administradora, por meio dos quais são comercializados o PCA, o PME ADM. e o PCE ADM., com boletagem pela Administradora. A Siga Soluções também pode atuar como Plataforma Associada (ver Agenciadora)." },
-    { termo: "CORRETORAS", provisorio: true, nota: "Corretoras Autorizadas: empresas de corretagem habilitadas a comercializar o Plano Empresarial (PJ+), destinado a empresas com 100 ou mais vidas, com boletagem pela Operadora." },
+  { termo: "DISTRIBUIDORES", provisorio: true, nota: "Canais responsáveis pela comercialização dos produtos junto aos clientes. Nesta proposta, os produtos com boletagem pela Administradora (PCA e PME ADM.) são distribuídos pelas Plataformas Associadas, e os Planos Empresariais (PCE 30-99 e PJ+) podem ser distribuídos por Agenciadoras e Corretoras Autorizadas.", itens: [
+    { termo: "PLATAFORMAS ASSOCIADAS", provisorio: true, nota: "Canais de venda parceiros da Administradora, por meio dos quais são comercializados o PCA e o PME ADM., com boletagem pela Administradora. A Siga Soluções também pode atuar como Plataforma Associada (ver Agenciadora)." },
+    { termo: "CORRETORAS", provisorio: true, nota: "Corretoras Autorizadas: empresas de corretagem habilitadas a comercializar os Planos Empresariais (PCE 30-99, de 30 a 99 vidas, e PJ+, de 100 ou mais vidas), com boletagem pela Operadora." },
   ] },
   { termo: "ENTES", provisorio: true, nota: "Partes que participam da operação dos produtos desta proposta e entre as quais se distribuem as receitas e os custos de cada contrato.", itens: [
-    { termo: "ADMINISTRADORA", provisorio: true, nota: "A Administradora é a Lancers Administradora de Benefícios, responsável pela boletagem (emissão e cobrança das mensalidades) e pela administração dos contratos do PCA, do PME ADM. e do PCE ADM., remunerada pela sua participação na mensalidade." },
-    { termo: "AGENCIADORA", provisorio: true, nota: "A Agenciadora é a Siga Soluções, responsável pela venda e captação de novos contratos, sem atuação na gestão ou na operação do plano, remunerada conforme as condições comerciais de cada produto. Nos produtos diferentes do Plano Empresarial (PCA, PME ADM. e PCE ADM.), a Siga também pode atuar como Plataforma Associada; nesse caso, os percentuais da Plataforma dependem de negociação entre a Siga e a Lancers." },
+    { termo: "ADMINISTRADORA", provisorio: true, nota: "A Administradora é a Lancers Administradora de Benefícios, responsável pela boletagem (emissão e cobrança das mensalidades) e pela administração dos contratos do PCA e do PME ADM., remunerada pela sua participação na mensalidade." },
+    { termo: "AGENCIADORA", provisorio: true, nota: "A Agenciadora é a Siga Soluções, responsável pela venda e captação de novos contratos, sem atuação na gestão ou na operação do plano, remunerada conforme as condições comerciais de cada produto. Nos produtos com Administradora (PCA e PME ADM.), a Siga também pode atuar como Plataforma Associada; nesse caso, os percentuais da Plataforma dependem de negociação entre a Siga e a Lancers." },
     { termo: "OPERADORA", provisorio: true, nota: "O Bensaúde, operadora de planos de saúde responsável pelos produtos, pela rede assistencial e pela cobertura dos beneficiários." },
     { termo: "BENEFICIÁRIO", provisorio: true, nota: "Pessoa física vinculada ao plano, como titular ou dependente, que paga a mensalidade e, quando houver, a taxa de adesão." },
   ] },
-  { termo: "ADMINISTRADAS", provisorio: true, nota: "Tabelas dos planos coletivos empresariais com boletagem e administração pela Administradora: PME ADMINISTRADAS (PME ADM., de 03 a 29 vidas) e PJ ADMINISTRADAS (PCE ADM., de 30 a 99 vidas)." },
+  { termo: "ADMINISTRADAS", provisorio: true, nota: "Tabelas com boletagem e administração pela Administradora: ADESÃO (PCA) e PME ADMINISTRADAS (PME ADM., de 03 a 29 vidas)." },
   { termo: "PARTICIPAÇÃO", provisorio: true, nota: "Divisão percentual da mensalidade entre a Operadora e o parceiro de cada produto.", itens: [
     { termo: "TABELA CHEIA", provisorio: true, nota: "Preço de venda da tabela, pago pelo beneficiário ou pela empresa contratante." },
     { termo: "TABELA NET", provisorio: true, nota: "Parcela da tabela cheia que cabe à Operadora: tabela cheia × participação da Operadora." },
-    { termo: "SPREAD", provisorio: true, nota: "Diferença entre a tabela cheia e a tabela net: valores atribuídos à Administradora nos produtos com Administradora (no Plano Empresarial, a parcela da Agenciadora corresponde à vitaliciedade)." },
+    { termo: "SPREAD", provisorio: true, nota: "Diferença entre a tabela cheia e a tabela net: valores atribuídos à Administradora nos produtos com Administradora (nos Planos Empresariais, PCE 30-99 e PJ+, a parcela da Agenciadora corresponde à vitaliciedade)." },
   ] },
   { termo: "AGENCIAMENTO", provisorio: true, nota: "Remuneração pela venda de cada novo contrato, paga pela Operadora e expressa como percentual da primeira mensalidade da venda." },
   { termo: "CONTRATUAL", provisorio: true, nota: "Percentual de agenciamento previsto em contrato, aplicado nas condições normais de venda." },
   { termo: "PROMOCIONAL", provisorio: true, nota: "Percentual de agenciamento superior ao contratual, aplicado por período determinado durante campanhas comerciais com metas de vendas previamente definidas. Encerrado o período da campanha, volta a valer o percentual contratual." },
-  { termo: "TAXA DE ADESÃO", provisorio: true, nota: "Valor pago pelo beneficiário ao ingressar no plano, expresso como percentual da primeira mensalidade e destinado à Agenciadora. Aplica-se aos produtos com Administradora; o Plano Empresarial não tem taxa de adesão." },
+  { termo: "TAXA DE ADESÃO", provisorio: true, nota: "Valor pago pelo beneficiário ao ingressar no plano, expresso como percentual da primeira mensalidade e destinado à Agenciadora. Aplica-se aos produtos com Administradora (PCA e PME ADM.); os Planos Empresariais (PCE 30-99 e PJ+) não têm taxa de adesão." },
 ];
 
 /** Termos do Glossário na ordem do PDF. */
@@ -232,11 +232,10 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     const largura = (larguraTotal - gap * (n - 1)) / n;
     return { xs: Array.from({ length: n }, (_, k) => inicioX + k * (largura + gap)), largura, inset, wSec: largura - inset * 2 };
   };
-  // Produtos com Administradora: três quadros lado a lado; tabela ocupando o quadro todo, para ficarem o mais largas possível.
-  const nAdm = Math.max(1, doGrupo("administradora").length);
-  const GEO_REMUNERACAO = geometria(nAdm, 5, 2);
-  const GEO_TABELAS = geometria(nAdm, 3, 0);
-  // Plano Empresarial: um produto; a tabela de preços e os Indicadores variáveis ficam lado a lado.
+  // Grupos com mais de um produto: quadros lado a lado; tabela ocupando o quadro todo, para ficarem o mais largas possível.
+  const geoTabelas = (n: number) => geometria(Math.max(1, n), 3, 0);
+  const geoRemuneracao = (n: number) => geometria(Math.max(1, n), 5, 2);
+  // Grupo com um só produto: a tabela de preços e os Indicadores variáveis ficam lado a lado.
   const GAP_EMPRESARIAL = 6;
   const L_EMP = (LARGURA_TEXTO - GAP_EMPRESARIAL) / 2;
   const GEO_EMP_TABELAS = geometria(1, 0, 0, marginL, L_EMP);
@@ -366,6 +365,10 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   // Tópico 2: Tabela Referencial (100%), com Enfermaria e Apartamento pelo fator padrão.
   const desenharReferencia = () => {
     const w = Math.min(120, usableW);
+    // Linhas um pouco mais baixas só quando preciso para a tabela inteira caber na página 1, logo após a Introdução.
+    const alturaTextoLinha = F.tabelaReferencia * 1.15 * 0.3528;
+    const livre = pageH - bottom - y - 8;
+    const respiro = Math.max(0.6, Math.min(1.05, (livre / 11 - alturaTextoLinha) / 2));
     const x = marginL + (usableW - w) / 2;
     autoTable(doc, {
       theme: "plain",
@@ -374,7 +377,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
       margin: margem(x, w),
       head: [["FAIXA", "ENFERMARIA", "APARTAMENTO"]],
       body: linhasReferencia(),
-      styles: { font: "helvetica", fontSize: F.tabelaReferencia, cellPadding: { top: 1.05, bottom: 1.05, left: 2, right: 2 }, textColor: PDF_COLORS.text, halign: "center" },
+      styles: { font: "helvetica", fontSize: F.tabelaReferencia, cellPadding: { top: respiro, bottom: respiro, left: 2, right: 2 }, textColor: PDF_COLORS.text, halign: "center" },
       headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: F.cabecalhoReferencia },
       alternateRowStyles: { fillColor: ZEBRA },
       didDrawCell: (c) => {
@@ -536,30 +539,37 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   // quando não cabem no resto da página, passam inteiros para a seguinte.
   const ALTURA_EMPRESARIAL = 125;
   /** Tabela Referencial inteira (cabeçalho, dez faixas e a linha do fator): fica na mesma página do seu título e texto. */
-  const ALTURA_REFERENCIA = 84;
-  // 3 · Produtos com Administradora: tabelas e remuneração na mesma página; as tabelas diminuem para caber.
-  // A altura da remuneração é medida desenhando-a numa página provisória, descartada em seguida.
-  const listaAdm = doGrupo("administradora");
-  const alturaRemuneracaoAdm = (() => {
-    doc.addPage(); y = top;
-    desenharRemuneracao(listaAdm, GEO_REMUNERACAO);
-    const h = y - top - 11; // sem o espaço que segue o quadro
-    doc.deletePage(doc.getNumberOfPages());
-    doc.setPage(doc.getNumberOfPages());
-    y = top;
-    return h;
-  })();
-  const nLinhasAdm = Math.max(1, ...listaAdm.map((q) => q.linhas.length)) + 1;
-  /** Altura mínima das tabelas da Administradora: nomes, TABELAS, linhas na altura mínima e a nota do fator. */
-  const ALTURA_PRECOS_ADM_MIN = alturaNome(GEO_TABELAS, listaAdm) + ALTURA_TITULO_SECAO + nLinhasAdm * LINHA_PRECO_MIN + 20;
-  const desenharAdministradora = () => {
-    garantir(ALTURA_PRECOS_ADM_MIN + alturaRemuneracaoAdm);
-    desenharPrecos(listaAdm, GEO_TABELAS, alturaRemuneracaoAdm);
-    desenharRemuneracao(listaAdm, GEO_REMUNERACAO);
+  const ALTURA_REFERENCIA = 75;
+  // 3 · Produtos com Administradora (e 4 · Plano Empresarial, quando tem mais de um produto): tabelas e remuneração na
+  // mesma página; as tabelas diminuem para caber. A altura da remuneração é medida numa página provisória, descartada em seguida.
+  const lado = (lista: Quadro[]) => {
+    const gT = geoTabelas(lista.length), gR = geoRemuneracao(lista.length);
+    const alturaRem = (() => {
+      doc.addPage(); y = top;
+      desenharRemuneracao(lista, gR);
+      const h = y - top - 11; // sem o espaço que segue o quadro
+      doc.deletePage(doc.getNumberOfPages());
+      doc.setPage(doc.getNumberOfPages());
+      y = top;
+      return h;
+    })();
+    const nLinhas = Math.max(1, ...lista.map((q) => q.linhas.length)) + 1;
+    /** Altura mínima das tabelas: nomes, TABELAS, linhas na altura mínima e a nota do fator. */
+    const minimo = alturaNome(gT, lista) + ALTURA_TITULO_SECAO + nLinhas * LINHA_PRECO_MIN + 20;
+    return { altura: minimo + alturaRem, desenhar: () => {
+      garantir(minimo + alturaRem);
+      desenharPrecos(lista, gT, alturaRem);
+      desenharRemuneracao(lista, gR);
+    } };
   };
-  // 4 · Plano Empresarial: tabela de preços e Indicadores variáveis lado a lado.
+  const ladoAdm = lado(doGrupo("administradora"));
+  const listaEmp = doGrupo("empresarial");
+  const ladoEmp = listaEmp.length > 1 ? lado(listaEmp) : null;
+  const desenharAdministradora = ladoAdm.desenhar;
+  // 4 · Plano Empresarial com um só produto: tabela de preços e Indicadores variáveis lado a lado.
   const desenharEmpresarial = () => {
-    const lista = doGrupo("empresarial");
+    if (ladoEmp) { ladoEmp.desenhar(); return; }
+    const lista = listaEmp;
     garantir(ALTURA_EMPRESARIAL);
     const inicio = y;
     const fimQuadroPrecos = desenharPrecos(lista, GEO_EMP_TABELAS, null);
@@ -573,7 +583,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
   const INICIO_TOPICO = 10 + LINHA_TEXTO * 2; // título com pelo menos duas linhas de texto abaixo
   SECOES_TEXTO.forEach((s, i) => {
     // Produtos com Administradora e Plano Empresarial: título, texto e quadros ficam juntos na mesma página.
-    const juntos = s.id === "empresarial" ? ALTURA_EMPRESARIAL : s.id === "administradora" ? ALTURA_PRECOS_ADM_MIN + alturaRemuneracaoAdm : s.id === "referencia" ? ALTURA_REFERENCIA : null;
+    const juntos = s.id === "empresarial" ? (ladoEmp?.altura ?? ALTURA_EMPRESARIAL) : s.id === "administradora" ? ladoAdm.altura : s.id === "referencia" ? ALTURA_REFERENCIA : null;
     // A Tabela Referencial mede o próprio texto, para caber na página 1 logo após a Introdução.
     const alturaTexto = s.id === "referencia" ? alturaParagrafos(corpo[i]) + 2 : corpo[i].length * LINHA_TEXTO * 3;
     garantir(juntos === null ? INICIO_TOPICO : 10 + alturaTexto + juntos);

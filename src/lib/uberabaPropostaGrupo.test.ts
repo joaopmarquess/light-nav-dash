@@ -36,8 +36,8 @@ describe("Proposta Administrados", () => {
 
 describe("Proposta Empresariais", () => {
   const p = propostaGrupo("empresariais");
-  it("puts PJ ADMINISTRADAS beside EMPRESARIAL", () => {
-    expect(p.net.map((q) => q.titulo)).toEqual(["PJ ADMINISTRADAS", "EMPRESARIAL"]);
+  it("puts EMPRESAS MÉDIAS beside EMPRESARIAL", () => {
+    expect(p.net.map((q) => q.titulo)).toEqual(["EMPRESAS MÉDIAS", "EMPRESARIAL"]);
   });
   it("Empresarial Net = 131,25 × 95%", () => {
     expect(p.venda[1].linhas[0][1]).toBe("131,25");

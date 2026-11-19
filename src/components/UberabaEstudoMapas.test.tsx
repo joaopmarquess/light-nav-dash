@@ -82,7 +82,7 @@ describe("Estudo view selection", () => {
     abrirSimulacoes("Resultados Comerciais");
     expect(screen.getByLabelText("Índice ADESÃO x Referência")).toHaveValue("95");
     expect(screen.getByLabelText("Índice PME ADMINISTRADAS x Referência")).toHaveValue("90");
-    expect(screen.getByLabelText("Índice PJ ADMINISTRADAS x Referência")).toHaveValue("85");
+    expect(screen.getByLabelText("Índice EMPRESAS MÉDIAS x Referência")).toHaveValue("85");
     expect(screen.getByLabelText("Índice EMPRESARIAL x Referência")).toHaveValue("75");
     expect(screen.getByRole("button", { name: "Referência" })).toBeVisible();
   });

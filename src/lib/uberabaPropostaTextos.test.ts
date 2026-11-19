@@ -12,9 +12,9 @@ const memoria = () => { const m = new Map<string, string>(); return { getItem: (
 describe("dados enviados à IA", () => {
   it("leva as quatro tabelas com nome, índice, fator e preços formatados como no PDF", () => {
     const d = padrao();
-    expect(d.tabelas.map((t) => t.nome)).toEqual(["ADESÃO", "PME ADMINISTRADAS", "PJ ADMINISTRADAS", "EMPRESARIAL"]);
+    expect(d.tabelas.map((t) => t.nome)).toEqual(["ADESÃO", "PME ADMINISTRADAS", "EMPRESAS MÉDIAS", "EMPRESARIAL"]);
     expect(d.tabelas.map((t) => t.indiceSobreReferencia)).toEqual(["95%", "90%", "85%", "75%"]);
-    expect(d.tabelas.map((t) => t.secao)).toEqual(["Produtos com Administradora", "Produtos com Administradora", "Produtos com Administradora", "Plano Empresarial"]);
+    expect(d.tabelas.map((t) => t.secao)).toEqual(["Produtos com Administradora", "Produtos com Administradora", "Plano Empresarial", "Plano Empresarial"]);
     expect(d.tabelas[3]).toMatchObject({ sigla: "PJ+", vidas: "100 OU MAIS", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS" });
     expect(d.tabelas[0].indiceSobreReferencia).toBe("95%");
     expect(d.tabelas[0].fatorApartamento).toBe("1,25");
@@ -29,7 +29,7 @@ describe("dados enviados à IA", () => {
 
 describe("conferência de números do rascunho", () => {
   it("aceita números que estão nas tabelas", () => {
-    expect(numerosForaDasTabelas("A PME ADM. (03 a 29 vidas), a PCE ADM. (30 a 99 vidas) e o PJ+ (100 ou mais vidas) usam a Referência.", padrao())).toEqual([]);
+    expect(numerosForaDasTabelas("A PME ADM. (03 a 29 vidas), a PCE 30-99 (30 a 99 vidas) e o PJ+ (100 ou mais vidas) usam a Referência.", padrao())).toEqual([]);
     expect(numerosForaDasTabelas("PCA Adm. com índice de 90%, fator 1,25, Spread de 23% e faixa 00 a 18 por 166,25.", padrao())).toEqual([]);
   });
   it("aponta números inventados", () => {

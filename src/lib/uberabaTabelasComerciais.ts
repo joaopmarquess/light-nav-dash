@@ -20,7 +20,9 @@ export type ParametrosFrente = {
 export const PARAMETROS_UBERABA: ParametrosFrente[] = [
   { id: "pcaAdm", sigla: "PCA", contratacao: "PLANO COLETIVO POR ADESÃO", vidas: "-", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "ADESÃO", fatorReferencia: 0.95, grupo: "administradora" },
   { id: "pmeAdm", sigla: "PME ADM.", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "03 A 29", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "PME ADMINISTRADAS", fatorReferencia: 0.9, grupo: "administradora" },
-  { id: "pceAdm", sigla: "PCE ADM.", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "30 A 99", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "PJ ADMINISTRADAS", fatorReferencia: 0.85, grupo: "administradora" },
+  // Mudança de conceito (Dênis, 19/11/2026): Administradas são só Adesão e PME; a terceira tabela passa a "EMPRESAS MÉDIAS",
+  // com Agenciadora e sem Taxa de adesão, no grupo dos Planos Empresariais (boletagem e distribuidores como o Empresarial).
+  { id: "pceAdm", sigla: "PCE 30-99", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "30 A 99", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS", descricao: "EMPRESAS MÉDIAS", fatorReferencia: 0.85, grupo: "empresarial" },
   { id: "pce100", sigla: "PJ+", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "100 OU MAIS", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS", descricao: "EMPRESARIAL", fatorReferencia: 0.75, grupo: "empresarial" },
 ];
 export const parametrosDe = (id: FrenteId) => PARAMETROS_UBERABA.find((p) => p.id === id)!;
@@ -150,24 +152,24 @@ export function gravarIndices(indices: Indices, storage: Pick<Storage, "setItem"
 export type Indicadores = { spread: number; contratual: number; promocional: number; adesao: number };
 export type CampoIndicador = keyof Indicadores;
 
-/** Padrão informado pelo usuário para os produtos com Administradora (PCA, PME ADM. e PCE ADM.). */
+/** Padrão informado pelo usuário para os produtos com Administradora (PCA e PME ADM.). */
 export const INDICADORES_PADRAO: Indicadores = { spread: 23, contratual: 90, promocional: 150, adesao: 99 };
-/** Taxa de adesão padrão das Administradas (PME ADMINISTRADAS e PJ ADMINISTRADAS), pedido de 13/11/2026. */
+/** Taxa de adesão padrão da PME ADMINISTRADAS, pedido de 13/11/2026. */
 export const ADESAO_PADRAO_ADMINISTRADAS = 50;
 
 /**
  * Modelo de participação por frente:
  * - "administradora": Administradora editável (guardada em `spread`); Operadora = 100 − Administradora; com Taxa de adesão.
- * - "vitalicio" (PJ+, boletagem pela Operadora): Agenciadora editável (guardada em `spread`); Operadora = 100 − Agenciadora; sem Taxa de adesão.
+ * - "vitalicio" (EMPRESAS MÉDIAS e PJ+, boletagem pela Operadora): Agenciadora editável (guardada em `spread`); Operadora = 100 − Agenciadora; sem Taxa de adesão.
  */
 export type ModeloIndicadores = "administradora" | "vitalicio";
-export const MODELO_INDICADORES: Record<FrenteId, ModeloIndicadores> = { pcaAdm: "administradora", pmeAdm: "administradora", pceAdm: "administradora", pce100: "vitalicio" };
+export const MODELO_INDICADORES: Record<FrenteId, ModeloIndicadores> = { pcaAdm: "administradora", pmeAdm: "administradora", pceAdm: "vitalicio", pce100: "vitalicio" };
 
-/** Padrões por frente; PJ+ segue a planilha própria (Vitalício 5%, Contratual 90%, Promocional 100%). */
+/** Padrões por frente; PJ+ segue a planilha própria (Vitalício 5%, Contratual 90%, Promocional 100%), e a EMPRESAS MÉDIAS, os mesmos do PJ+ (19/11/2026). */
 export const INDICADORES_PADRAO_POR_FRENTE: Record<FrenteId, Indicadores> = {
   pcaAdm: { ...INDICADORES_PADRAO },
   pmeAdm: { ...INDICADORES_PADRAO, adesao: ADESAO_PADRAO_ADMINISTRADAS },
-  pceAdm: { ...INDICADORES_PADRAO, adesao: ADESAO_PADRAO_ADMINISTRADAS },
+  pceAdm: { spread: 5, contratual: 90, promocional: 100, adesao: 0 },
   pce100: { spread: 5, contratual: 90, promocional: 100, adesao: 0 },
 };
 
@@ -202,8 +204,10 @@ export function parseIndicador(campo: CampoIndicador, texto: string): number | n
 export const formatarPercentual = (n: number) => `${n.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%`;
 
 export type IndicadoresPorFrente = Record<FrenteId, Indicadores>;
+/** v4: EMPRESAS MÉDIAS passou a Agenciadora, sem Taxa de adesão (19/11/2026); das versões anteriores, ela volta ao padrão. */
+const CHAVE_INDICADORES = "uberaba-tabelas-comerciais-indicadores-v4";
 /** v3: Taxa de adesão padrão 50% nas Administradas (13/11/2026); da v2 aproveita-se tudo, menos essa taxa. */
-const CHAVE_INDICADORES = "uberaba-tabelas-comerciais-indicadores-v3";
+const CHAVE_INDICADORES_V3 = "uberaba-tabelas-comerciais-indicadores-v3";
 const CHAVE_INDICADORES_V2 = "uberaba-tabelas-comerciais-indicadores-v2";
 /** v1 tinha o modelo antigo também em PCE 100+; dela só se aproveitam PCA Adm. e PCE Adm. */
 const CHAVE_INDICADORES_V1 = "uberaba-tabelas-comerciais-indicadores-v1";
@@ -215,6 +219,8 @@ export function lerIndicadores(storage: Pick<Storage, "getItem"> | undefined = g
   const out = indicadoresPadrao();
   try {
     let salvo = JSON.parse(storage?.getItem(CHAVE_INDICADORES) ?? "null");
+    const atual = !!salvo && typeof salvo === "object";
+    if (!salvo || typeof salvo !== "object") salvo = JSON.parse(storage?.getItem(CHAVE_INDICADORES_V3) ?? "null");
     if (!salvo || typeof salvo !== "object") {
       const v2 = JSON.parse(storage?.getItem(CHAVE_INDICADORES_V2) ?? "null");
       if (v2 && typeof v2 === "object") {
@@ -229,6 +235,8 @@ export function lerIndicadores(storage: Pick<Storage, "getItem"> | undefined = g
       salvo = v1 && typeof v1 === "object" ? { pcaAdm: v1.pcaAdm, pceAdm: v1.pceAdm } : null;
     }
     if (!salvo || typeof salvo !== "object") return out;
+    // Valores de antes da mudança de conceito eram da Administradora: a EMPRESAS MÉDIAS recomeça no padrão novo.
+    if (!atual) { salvo = { ...salvo }; delete salvo.pceAdm; }
     FRENTE_IDS.forEach((id) => {
       const s = salvo[id];
       if (!s || typeof s !== "object") return;
@@ -280,14 +288,22 @@ export function normalizarRotulo(texto: unknown, padrao: string): string {
   const t = texto.replace(/\s+/g, " ").trim().slice(0, ROTULO_MAX).trim();
   return t || padrao;
 }
-/** v3: nomes passaram a ser a Descrição da Tabela (13/11/2026); nomes gravados antes deixam de valer. */
-const CHAVE_ROTULOS = "uberaba-tabelas-comerciais-rotulos-v3";
+/** v4: a terceira tabela passou a "EMPRESAS MÉDIAS" (19/11/2026); da v3 aproveitam-se os nomes das outras três. */
+const CHAVE_ROTULOS = "uberaba-tabelas-comerciais-rotulos-v4";
 /** Padrão gravado pelo usuário (ícone ao lado do nome); sem gravação, valem os nomes originais. */
-const CHAVE_ROTULOS_PADRAO = "uberaba-tabelas-comerciais-rotulos-padrao-v3";
+const CHAVE_ROTULOS_PADRAO = "uberaba-tabelas-comerciais-rotulos-padrao-v4";
+const ANTERIOR_ROTULOS: Record<string, string> = {
+  [CHAVE_ROTULOS]: "uberaba-tabelas-comerciais-rotulos-v3",
+  [CHAVE_ROTULOS_PADRAO]: "uberaba-tabelas-comerciais-rotulos-padrao-v3",
+};
 const lerRotulosDe = (storage: Pick<Storage, "getItem"> | undefined, chave: string, base: RotulosPorFrente): RotulosPorFrente => {
   const out: RotulosPorFrente = JSON.parse(JSON.stringify(base));
   try {
-    const salvo = JSON.parse(storage?.getItem(chave) ?? "null");
+    let salvo = JSON.parse(storage?.getItem(chave) ?? "null");
+    if ((!salvo || typeof salvo !== "object") && ANTERIOR_ROTULOS[chave]) {
+      const v3 = JSON.parse(storage?.getItem(ANTERIOR_ROTULOS[chave]) ?? "null");
+      if (v3 && typeof v3 === "object") { salvo = { ...v3 }; delete salvo.pceAdm; }
+    }
     if (!salvo || typeof salvo !== "object") return out;
     FRENTE_IDS.forEach((id) => {
       const s = salvo[id];

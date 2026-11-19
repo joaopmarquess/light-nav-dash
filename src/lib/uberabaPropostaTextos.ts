@@ -40,9 +40,9 @@ export const TEXTOS_PADRAO: TextosSecoes = {
   referencia:
     "Matriz referencial de preços para Uberaba, no padrão atuarial do Bensaúde e calibrada para o mercado local, base das tabelas dos quatro produtos.",
   administradora:
-    "A seguir, apresentamos as tabelas de preços e as condições comerciais de remuneração dos produtos com boletagem pela Administradora (PCA, PME ADM. e PCE ADM.), distribuídos por meio das Plataformas Associadas.",
+    "A seguir, apresentamos as tabelas de preços e as condições comerciais de remuneração dos produtos com boletagem pela Administradora (PCA e PME ADM.), distribuídos por meio das Plataformas Associadas.",
   empresarial:
-    "A seguir, apresentamos a tabela de preços e as condições comerciais de remuneração do Plano Empresarial (PJ+), para empresas com 100 ou mais vidas, com boletagem pela operadora e distribuição por meio de Agenciadoras e Corretoras Autorizadas.",
+    "A seguir, apresentamos as tabelas de preços e as condições comerciais de remuneração dos Planos Empresariais, EMPRESAS MÉDIAS (PCE 30-99, de 30 a 99 vidas) e EMPRESARIAL (PJ+, de 100 ou mais vidas), com boletagem pela operadora e distribuição por meio de Agenciadoras e Corretoras Autorizadas.",
   conclusao:
     "Com esta proposta, o Bensaúde reafirma o compromisso de levar a Uberaba produtos de saúde com preço justo e qualidade assistencial. Contamos com a parceria da Lancers Administradora e de suas Plataformas Associadas, das Agenciadoras e Corretoras Autorizadas e da Siga Soluções para construir, juntos, uma operação sólida e duradoura, e permanecemos à disposição para os próximos passos.",
 };

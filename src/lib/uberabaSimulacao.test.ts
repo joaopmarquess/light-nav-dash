@@ -223,7 +223,8 @@ describe('Simulação de resultados com as tabelas de Resultados Comerciais', ()
     // Bensaúde = Operadora, Lancers = Administradora, SIGA = Agenciadora, agenciamento = Contratual, adesão = Taxa de adesão.
     ['PCA', 0.77, 0.23, 0, 0.9, 0.99],
     ['PME_ADMINISTRADO', 0.77, 0.23, 0, 0.9, 0.5],
-    ['PCE_50_99', 0.77, 0.23, 0, 0.9, 0.5],
+    // EMPRESAS MÉDIAS (19/11/2026): Agenciadora 5%, sem Taxa de adesão, como o Empresarial.
+    ['PCE_50_99', 0.95, 0, 0.05, 0.9, 0],
     ['PCE_100_MAIS', 0.95, 0, 0.05, 0.9, 0],
   ] as const)('%s usa os Indicadores variáveis padrão', (codigo, bensaude, lancers, siga, agenciamento, adesao) => {
     const r = simular(codigo);
@@ -242,7 +243,7 @@ describe('Simulação de resultados com as tabelas de Resultados Comerciais', ()
     expect([pj.condicao.participacao_bensaude, pj.condicao.participacao_siga]).toEqual([0.92, 0.08]);
   });
   it.each([
-    ['PCA', 0.9, 1.5], ['PME_ADMINISTRADO', 0.9, 1.5], ['PCE_50_99', 0.9, 1.5], ['PCE_100_MAIS', 0.9, 1],
+    ['PCA', 0.9, 1.5], ['PME_ADMINISTRADO', 0.9, 1.5], ['PCE_50_99', 0.9, 1], ['PCE_100_MAIS', 0.9, 1],
   ] as const)('%s usa Contratual por padrão e Promocional pela chave', (codigo, contratual, promocional) => {
     expect(comercialDaFrente(codigo, INDICES_PADRAO, indicadoresPadrao()).condicao.agenciamento_parcela_1).toBe(contratual);
     expect(comercialDaFrente(codigo, INDICES_PADRAO, indicadoresPadrao(), 'contratual').condicao.agenciamento_parcela_1).toBe(contratual);
@@ -259,7 +260,7 @@ describe('Simulação de resultados com as tabelas de Resultados Comerciais', ()
 
 describe('Memória de cálculo do Resultado por Ente', () => {
   const rs = fonte.padroes.map(c => calcularSimulacaoComercial(c, comercialDaFrente(c.produto_codigo, INDICES_PADRAO, indicadoresPadrao())));
-  const nomes = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
+  const nomes = ['PCA', 'PME ADM.', 'PCE 30-99', 'PJ+'];
   const fmt = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   it('Faturamento OPERADORA lista Faturamento × OPERADORA de cada produto e a soma', () => {
     const m = memoriaCalculo('bensaude.faturamento', rs, nomes);
@@ -287,7 +288,7 @@ describe('Memória de cálculo do Resultado por Ente', () => {
 });
 
 describe('Relatório da Memória de Cálculo (Resultado por Ente)', () => {
-  const nomesR = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
+  const nomesR = ['PCA', 'PME ADM.', 'PCE 30-99', 'PJ+'];
   const configs = fonte.padroes.map(c => ({ ...c, sinistralidade_percentual: sinistralidadePadrao }));
   const cenarios = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao());
   const [contratual, promocional] = cenarios;
@@ -335,7 +336,7 @@ describe('Relatório da Memória de Cálculo (Resultado por Ente)', () => {
   it('parâmetros usam as vidas e percentuais do cenário, com os dois agenciamentos', () => {
     const p = parametrosMemoriaCalculo(cenarios, nomesR);
     expect(p.map(x => x.vidas)).toEqual([2000, 1000, 2000, 5000]);
-    expect(p.map(x => x.agenciamentos)).toEqual([[0.9, 1.5], [0.9, 1.5], [0.9, 1.5], [0.9, 1]]);
+    expect(p.map(x => x.agenciamentos)).toEqual([[0.9, 1.5], [0.9, 1.5], [0.9, 1], [0.9, 1]]);
     expect(p[0].lancers).toBeCloseTo(0.23, 9);
     expect(p[3].siga).toBeCloseTo(0.05, 9);
     expect(p.every(x => x.sinistralidade === 0.7)).toBe(true);
@@ -372,7 +373,7 @@ describe('Resultado total no título do quadro recolhido', () => {
 });
 
 describe('Desp. Assist. média e % Copart (pedido de 13/11/2026)', () => {
-  const nomesR = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
+  const nomesR = ['PCA', 'PME ADM.', 'PCE 30-99', 'PJ+'];
   const configs = fonte.padroes.map(c => ({ ...c, sinistralidade_percentual: 70, despesa_media: despesaMediaPadrao, copart_percentual: copartPadrao }));
   const [contratual] = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao());
   const rs = contratual.resultados;
@@ -418,7 +419,7 @@ describe('Desp. Assist. média e % Copart (pedido de 13/11/2026)', () => {
 });
 
 describe('Chave PERCENTUAL / MÉDIA ASSIST. da Despesa Assistencial (pedido de 13/11/2026)', () => {
-  const nomesR = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
+  const nomesR = ['PCA', 'PME ADM.', 'PCE 30-99', 'PJ+'];
   const configs = fonte.padroes.map(c => ({ ...c, sinistralidade_percentual: 70, despesa_media: 280.45, copart_percentual: 20 }));
   it('Percentual (padrão): despesa = faturamento × sinistralidade', () => {
     const [c] = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao());
@@ -449,7 +450,7 @@ describe('Chave PERCENTUAL / MÉDIA ASSIST. da Despesa Assistencial (pedido de 1
 });
 
 describe('Equipe Própria e Agenciamento Externo/Próprio (pedido de 13/11/2026)', () => {
-  const nomesE = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
+  const nomesE = ['PCA', 'PME ADM.', 'PCE 30-99', 'PJ+'];
   const configs = fonte.padroes.map(c => ({ ...c, ...PADRAO_PARAMETRO }));
   const [contratual, promocional] = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao());
   const vendas = (r: (typeof contratual.resultados)[number]) => r.novasReceitas.reduce((s, v) => s + v, 0);
@@ -476,7 +477,7 @@ describe('Equipe Própria e Agenciamento Externo/Próprio (pedido de 13/11/2026)
     expect(r.siga.resultado).toBeCloseTo(r.siga.adesao + r.siga.faturamento + r.siga.agenciamento, 6);
     expect(r.lancers.resultado).toBeCloseTo(r.lancers.faturamento + r.lancers.agenciamento, 6);
   });
-  it('Agenciamento Externo do PCA e do PME ADM. vai para a ADMINISTRADORA; do PCE ADM. e do PJ+, para a AGENCIADORA', () => {
+  it('Agenciamento Externo do PCA e do PME ADM. vai para a ADMINISTRADORA; do PCE 30-99 e do PJ+, para a AGENCIADORA', () => {
     for (const cenario of [contratual, promocional]) {
       const [pca, pme, pce, pj] = cenario.resultados;
       for (const x of [pca, pme]) { expect(x.anual.agenciamento_lancers).toBeCloseTo(x.anual.agenciamento_externo, 6); expect(x.anual.agenciamento_siga).toBe(0); }

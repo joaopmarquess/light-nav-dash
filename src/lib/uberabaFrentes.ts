@@ -57,15 +57,15 @@ export const COMERCIAL_UBERABA: ModeloFrenteContent = {
       id: "produtos",
       titulo: "Produtos",
       itens: [
-        { id: "pca-pme", numero: 4, titulo: "PCA, PME ADM. e PCE ADM.", cor: "atendimento", subitens: ["Boletagem pela Administradora", "Distribuição pelas Plataformas Associadas"] },
-        { id: "pce-100", numero: 5, titulo: "PJ+ (100 ou mais vidas)", cor: "virtual", subitens: ["Boletagem pela Operadora", "Distribuição por Corretoras"] },
+        { id: "pca-pme", numero: 4, titulo: "PCA e PME ADM.", cor: "atendimento", subitens: ["Boletagem pela Administradora", "Distribuição pelas Plataformas Associadas"] },
+        { id: "pce-100", numero: 5, titulo: "PCE 30-99 e PJ+ (30 ou mais vidas)", cor: "virtual", subitens: ["Boletagem pela Operadora", "Distribuição por Corretoras"] },
       ],
     },
   ],
   imagem_url: comercialImagem,
   imagem_placeholder: "Imagem da atividade comercial",
   imagem_alt: "Executivo comercial cumprimenta cliente empresarial em reunião de negociação, com colegas e propostas sobre a mesa.",
-  indicadores: ["FARMER EM UBERABA", "SDR EM RIO PRETO", "AGENTES AUTORIZADOS", "PCA / PME ADM. / PCE ADM.", "PJ+"],
+  indicadores: ["FARMER EM UBERABA", "SDR EM RIO PRETO", "AGENTES AUTORIZADOS", "PCA / PME ADM.", "PCE 30-99 / PJ+"],
   destaque_titulo: "MODELO COMERCIAL",
   destaque_itens: ["Presença local em Uberaba", "Apoio SDR em Rio Preto", "Agentes autorizados", "Portfólio direcionado"],
 };

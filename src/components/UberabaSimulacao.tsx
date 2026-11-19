@@ -9,11 +9,11 @@ import UberabaSimulacaoFaixas from '@/components/UberabaSimulacaoFaixas';
 import BlocoRecolhido from '@/components/BlocoRecolhido';
 import UberabaMemoriaCalculoButton from '@/components/UberabaMemoriaCalculoButton';
 import UberabaResultadoImprimirButton from '@/components/UberabaResultadoImprimirButton';
-import { EVENTO_TABELAS_COMERCIAIS, lerIndicadores, lerIndices } from '@/lib/uberabaTabelasComerciais';
+import { EVENTO_TABELAS_COMERCIAIS, PARAMETROS_UBERABA, lerIndicadores, lerIndices } from '@/lib/uberabaTabelasComerciais';
 import { simularPorBase, BASES_DESPESA, premissaDespesa, baseDespesaDos, type BaseDespesa, replicarParametro, PADRAO_PARAMETRO, validarDespesaMedia, validarCopart, validarPercentual, coparticipacaoVidaMes, receitaVidaMes, netVidaMes, type ParametroReplicavel, type CenarioAgenciamento, fontesSimulacao as fonte, inteiroSimulacao as int, numeroSimulacao as num, percentualSimulacao as pct, validarVidas, validarSinistralidade, resumoSimulacao, memoriaCalculo, ENTES_RESULTADO, resultadoTotalEnte, type IndicadorEnte, type ConfigSimulacao, type ResultadoSimulacao } from '@/lib/uberabaSimulacao';
 
 // Siglas dos parâmetros do Proj. Uberaba (13/11/2026); preços e percentuais vêm das tabelas de Resultados Comerciais.
-const nomes = ['PCA', 'PME ADM.', 'PCE ADM.', 'PJ+'];
+const nomes = PARAMETROS_UBERABA.map((p) => p.sigla);
 const entes = ENTES_RESULTADO;
 // Valores digitados mostrados com vírgula decimal (pt-BR).
 const campoTexto = (campo: ParametroReplicavel, v?: number) => String(v ?? PADRAO_PARAMETRO[campo]).replace('.', ',');

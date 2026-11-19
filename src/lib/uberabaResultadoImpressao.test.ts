@@ -3,7 +3,7 @@ import { buildResultadoImpressaoPdf, cenariosPorBaseDespesa, paginasResultado } 
 import { fontesSimulacao, PADRAO_PARAMETRO, resumoSimulacao } from "./uberabaSimulacao";
 import { INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO } from "./uberabaTabelasComerciais";
 
-const nomes = ["PCA", "PME ADM.", "PCE ADM.", "PJ+"];
+const nomes = ["PCA", "PME ADM.", "PCE 30-99", "PJ+"];
 const configs = fontesSimulacao.padroes.map((c) => ({ ...c, ...PADRAO_PARAMETRO }));
 const porBase = cenariosPorBaseDespesa(configs, INDICES_PADRAO, INDICADORES_PADRAO_POR_FRENTE);
 const paginas = paginasResultado(porBase, nomes, INDICES_PADRAO, INDICADORES_PADRAO_POR_FRENTE);
@@ -19,8 +19,8 @@ describe("impressão do Resultado por Ente", () => {
   });
   it("parâmetros das tabelas: % sobre Referência e % Spread de cada tabela", () => {
     expect(paginas[0].tabelas.map((t) => t.sobreReferencia)).toEqual([0.95, 0.9, 0.85, 0.75]);
-    expect(paginas[0].tabelas.map((t) => t.spread)).toEqual([0.23, 0.23, 0.23, 0.05]);
-    expect(paginas[0].tabelas.map((t) => t.spreadPara)).toEqual(["ADMINISTRADORA", "ADMINISTRADORA", "ADMINISTRADORA", "AGENCIADORA"]);
+    expect(paginas[0].tabelas.map((t) => t.spread)).toEqual([0.23, 0.23, 0.05, 0.05]);
+    expect(paginas[0].tabelas.map((t) => t.spreadPara)).toEqual(["ADMINISTRADORA", "ADMINISTRADORA", "AGENCIADORA", "AGENCIADORA"]);
   });
   it("cada folha usa o agenciamento do seu cenário: PCA 90% contratual e 150% promocional", () => {
     expect(paginas[0].tabelas[0].agenciamento).toBe(0.9);

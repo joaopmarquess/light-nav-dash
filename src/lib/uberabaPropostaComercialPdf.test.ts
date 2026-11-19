@@ -4,11 +4,11 @@ import { indicadoresPadrao } from "./uberabaTabelasComerciais";
 
 describe("Proposta Comercial › 1. Tabelas", () => {
   it("lists the four Resultados Comerciais tables in screen order", () => {
-    expect(quadrosProposta().map((q) => q.titulo)).toEqual(["ADESÃO", "PME ADMINISTRADAS", "PJ ADMINISTRADAS", "EMPRESARIAL"]);
-    expect(quadrosProposta().map((q) => q.subtitulo)).toEqual(["PCA", "PME ADM. · 03 A 29 VIDAS", "PCE ADM. · 30 A 99 VIDAS", "PJ+ · 100 OU MAIS VIDAS"]);
+    expect(quadrosProposta().map((q) => q.titulo)).toEqual(["ADESÃO", "PME ADMINISTRADAS", "EMPRESAS MÉDIAS", "EMPRESARIAL"]);
+    expect(quadrosProposta().map((q) => q.subtitulo)).toEqual(["PCA", "PME ADM. · 03 A 29 VIDAS", "PCE 30-99 · 30 A 99 VIDAS", "PJ+ · 100 OU MAIS VIDAS"]);
   });
   it("splits the Proposal into Administradora products and the Empresarial", () => {
-    expect(quadrosProposta().map((q) => q.grupo)).toEqual(["administradora", "administradora", "administradora", "empresarial"]);
+    expect(quadrosProposta().map((q) => q.grupo)).toEqual(["administradora", "administradora", "empresarial", "empresarial"]);
   });
   it("shows the Preço de Venda: Referência × table factor, nothing else", () => {
     const [pca, pme, pce, pce100] = quadrosProposta();
@@ -37,9 +37,12 @@ describe("Proposta Comercial › 1. Tabelas", () => {
   });
   it("follows the indicators edited in Resultados Comerciais", () => {
     const ind = indicadoresPadrao();
-    ind.pceAdm.adesao = 50;
-    const [, , pce] = quadrosProposta(undefined, ind);
-    expect(pce.blocos[2].linhas).toEqual([["PERCENTUAL", "50%"]]);
+    ind.pmeAdm.adesao = 40;
+    const [, pme, pce] = quadrosProposta(undefined, ind);
+    expect(pme.blocos[2].linhas).toEqual([["PERCENTUAL", "40%"]]);
+    // EMPRESAS MÉDIAS: Agenciadora e sem Taxa de adesão (19/11/2026).
+    expect(pce.blocos.map((b) => b.titulo)).toEqual(["PARTICIPAÇÃO", "AGENCIAMENTO"]);
+    expect(pce.blocos[0].linhas).toEqual([["AGENCIADORA", "5%"], ["OPERADORA", "95%"]]);
   });
 });
 
@@ -60,12 +63,12 @@ describe("Proposta Comercial › Glossário e Notas Explicativas", () => {
     const ente = (t: string) => GLOSSARIO_PROPOSTA.find((g) => g.termo === "ENTES")?.itens?.find((i) => i.termo === t)?.nota ?? "";
     expect(ente("ADMINISTRADORA")).toMatch(/^A Administradora é a Lancers/);
     expect(ente("AGENCIADORA")).toMatch(/^A Agenciadora é a Siga/);
-    expect(ente("AGENCIADORA")).toContain("diferentes do Plano Empresarial");
+    expect(ente("AGENCIADORA")).toContain("Nos produtos com Administradora (PCA e PME ADM.)");
     expect(ente("AGENCIADORA")).toContain("negociação entre a Siga e a Lancers");
   });
   it("não traz mais a nota de Enfermaria nem as siglas", () => {
     const termos = GLOSSARIO_PROPOSTA.map((g) => g.termo);
-    for (const t of ["ENFERMARIA", "PCA", "PME ADM.", "PCE ADM.", "PJ+"]) expect(termos).not.toContain(t);
+    for (const t of ["ENFERMARIA", "PCA", "PME ADM.", "PCE 30-99", "PJ+"]) expect(termos).not.toContain(t);
   });
 });
 
@@ -133,7 +136,7 @@ describe("Proposta · quadro de parâmetros da Introdução", () => {
     expect(linhasParametros()).toEqual([
       ["PCA", "PLANO COLETIVO POR ADESÃO", "-", "ADMINISTRADORA", "PLATAFORMAS ASSOCIADAS", "ADESÃO", "0,95"],
       ["PME ADM.", "PLANO COLETIVO EMPRESARIAL", "03 A 29", "ADMINISTRADORA", "PLATAFORMAS ASSOCIADAS", "PME ADMINISTRADAS", "0,90"],
-      ["PCE ADM.", "PLANO COLETIVO EMPRESARIAL", "30 A 99", "ADMINISTRADORA", "PLATAFORMAS ASSOCIADAS", "PJ ADMINISTRADAS", "0,85"],
+      ["PCE 30-99", "PLANO COLETIVO EMPRESARIAL", "30 A 99", "OPERADORA", "AGENCIADORAS E CORRETORAS AUTORIZADAS", "EMPRESAS MÉDIAS", "0,85"],
       ["PJ+", "PLANO COLETIVO EMPRESARIAL", "100 OU MAIS", "OPERADORA", "AGENCIADORAS E CORRETORAS AUTORIZADAS", "EMPRESARIAL", "0,75"],
     ]);
   });
@@ -150,7 +153,7 @@ describe("Glossário · tópicos e subtópicos numerados", () => {
     expect(t.slice(0, 3).map((x) => `${x.numero} ${x.termo}`)).toEqual(["6.1 DISTRIBUIDORES", "6.1.1 PLATAFORMAS ASSOCIADAS", "6.1.2 CORRETORAS"]);
     expect(GLOSSARIO_PROPOSTA.find((g) => g.termo === "PROMOCIONAL")?.nota).toMatch(/período determinado.*campanhas.*metas/);
     expect(t.find((x) => x.termo === "ADMINISTRADORA")?.numero).toBe("6.2.1");
-    expect(GLOSSARIO_PROPOSTA[0].nota).toContain("Plano Empresarial (PJ+) pode ser distribuído por Agenciadoras e Corretoras Autorizadas");
+    expect(GLOSSARIO_PROPOSTA[0].nota).toContain("Planos Empresariais (PCE 30-99 e PJ+) podem ser distribuídos por Agenciadoras e Corretoras Autorizadas");
     expect(t.find((x) => x.termo === "SPREAD")?.numero).toBe("6.4.3");
     expect(t.at(-1)).toMatchObject({ numero: "6.8", termo: "TAXA DE ADESÃO" });
   });
@@ -169,5 +172,7 @@ describe("Proposta · capa, sumário e primeira página de conteúdo", () => {
     expect(p1).toContain("2. TABELA REFERENCIAL");
     expect(p1).toContain("59 ou +");
     expect(paginas[4].join("\n")).toContain("3. PRODUTOS COM ADMINISTRADORA");
+    expect(paginas[5].join("\n")).toContain("4. PLANO EMPRESARIAL");
+    expect(paginas[5].join("\n")).toContain("EMPRESAS M");
   });
 });

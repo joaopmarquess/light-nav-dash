@@ -68,13 +68,14 @@ describe("tabelas comerciais Uberaba", () => {
 import { INDICADORES_PADRAO, MODELO_INDICADORES, blocosIndicadores, derivarIndicadores, derivarVitalicio, lerIndicadores, parseIndicador } from "./uberabaTabelasComerciais";
 
 describe("indicadores variáveis Uberaba", () => {
-  it("padrão da planilha em PCA Adm. e PCE Adm.", () => {
+  it("padrão da planilha em PCA e PME ADM.; EMPRESAS MÉDIAS com Agenciadora como o Empresarial (19/11/2026)", () => {
     expect(INDICADORES_PADRAO).toEqual({ spread: 23, contratual: 90, promocional: 150, adesao: 99 });
     const t = lerIndicadores({ getItem: () => null });
     expect(t.pcaAdm).toEqual(INDICADORES_PADRAO);
     expect(t.pmeAdm).toEqual({ ...INDICADORES_PADRAO, adesao: 50 });
-    expect(t.pceAdm).toEqual({ ...INDICADORES_PADRAO, adesao: 50 });
+    expect(t.pceAdm).toEqual({ spread: 5, contratual: 90, promocional: 100, adesao: 0 });
     expect(MODELO_INDICADORES.pmeAdm).toBe("administradora");
+    expect(MODELO_INDICADORES.pceAdm).toBe("vitalicio");
   });
 
   it("PCE 100+ usa Vitalício 5%, Contratual 90% e Promocional 100%", () => {
@@ -106,7 +107,7 @@ describe("indicadores variáveis Uberaba", () => {
   it("Taxa de adesão das Administradas volta a 50% mesmo com valor antigo gravado", () => {
     const antigo = JSON.stringify({ pcaAdm: { adesao: 99, spread: 25 }, pmeAdm: { adesao: 99, spread: 20 }, pceAdm: { adesao: 99 } });
     const t = lerIndicadores({ getItem: (k: string) => (k.endsWith("-v2") ? antigo : null) });
-    expect([t.pcaAdm.adesao, t.pmeAdm.adesao, t.pceAdm.adesao]).toEqual([99, 50, 50]);
+    expect([t.pcaAdm.adesao, t.pmeAdm.adesao, t.pceAdm.adesao]).toEqual([99, 50, 0]);
     expect([t.pcaAdm.spread, t.pmeAdm.spread]).toEqual([25, 20]);
   });
 
@@ -130,7 +131,7 @@ describe("nomes das tabelas (redigitáveis)", () => {
     const r = rotulosPadrao();
     expect(r.pcaAdm).toEqual({ titulo: "ADESÃO", segmento: "PLANO COLETIVO POR ADESÃO" });
     expect(r.pmeAdm).toEqual({ titulo: "PME ADMINISTRADAS", segmento: "PLANO COLETIVO EMPRESARIAL" });
-    expect(r.pceAdm).toEqual({ titulo: "PJ ADMINISTRADAS", segmento: "PLANO COLETIVO EMPRESARIAL" });
+    expect(r.pceAdm).toEqual({ titulo: "EMPRESAS MÉDIAS", segmento: "PLANO COLETIVO EMPRESARIAL" });
     expect(r.pce100).toEqual({ titulo: "EMPRESARIAL", segmento: "PLANO COLETIVO EMPRESARIAL" });
   });
   it("names saved before the rename do not hide the new labels", () => {
@@ -207,20 +208,21 @@ describe("fator Apartamento x Enfermaria", () => {
 import { GRUPOS_FRENTES, PARAMETROS_UBERABA, parametrosDe, vidasTexto } from "./uberabaTabelasComerciais";
 
 describe("parâmetros das tabelas (13/11/2026)", () => {
-  it("four tables in the order PCA, PME ADM., PCE ADM., PJ+", () => {
-    expect(PARAMETROS_UBERABA.map((p) => p.sigla)).toEqual(["PCA", "PME ADM.", "PCE ADM.", "PJ+"]);
+  it("four tables in the order PCA, PME ADM., PCE 30-99, PJ+", () => {
+    expect(PARAMETROS_UBERABA.map((p) => p.sigla)).toEqual(["PCA", "PME ADM.", "PCE 30-99", "PJ+"]);
     expect(PARAMETROS_UBERABA.map((p) => p.fatorReferencia)).toEqual([0.95, 0.9, 0.85, 0.75]);
   });
   it("lives, billing and distributors as supplied", () => {
     expect(PARAMETROS_UBERABA.map((p) => p.vidas)).toEqual(["-", "03 A 29", "30 A 99", "100 OU MAIS"]);
-    expect(PARAMETROS_UBERABA.map((p) => p.boletagem)).toEqual(["ADMINISTRADORA", "ADMINISTRADORA", "ADMINISTRADORA", "OPERADORA"]);
+    expect(PARAMETROS_UBERABA.map((p) => p.boletagem)).toEqual(["ADMINISTRADORA", "ADMINISTRADORA", "OPERADORA", "OPERADORA"]);
+    expect(parametrosDe("pceAdm").distribuidores).toBe("AGENCIADORAS E CORRETORAS AUTORIZADAS");
     expect(parametrosDe("pce100").distribuidores).toBe("AGENCIADORAS E CORRETORAS AUTORIZADAS");
     expect(parametrosDe("pmeAdm").distribuidores).toBe("PLATAFORMAS ASSOCIADAS");
     expect(vidasTexto(parametrosDe("pcaAdm"))).toBeNull();
     expect(vidasTexto(parametrosDe("pmeAdm"))).toBe("03 a 29 vidas");
   });
   it("Proposal sections: Administradora products and the Empresarial", () => {
-    expect(GRUPOS_FRENTES.map((g) => g.frentes)).toEqual([["pcaAdm", "pmeAdm", "pceAdm"], ["pce100"]]);
+    expect(GRUPOS_FRENTES.map((g) => g.frentes)).toEqual([["pcaAdm", "pmeAdm"], ["pceAdm", "pce100"]]);
   });
 });
 
@@ -239,5 +241,28 @@ describe("Restaurar padrão de uma tabela", () => {
     expect(r.indices.pce100).toBe(70);
     expect(m.frenteNoPadrao("pcaAdm", r)).toBe(true);
     expect(m.frenteNoPadrao("pce100", r)).toBe(false);
+  });
+});
+
+describe("EMPRESAS MÉDIAS (mudança de conceito, 19/11/2026)", () => {
+  it("substitui a PJ ADMINISTRADAS, com Agenciadora e sem Taxa de adesão", () => {
+    expect(rotulosPadrao().pceAdm.titulo).toBe("EMPRESAS MÉDIAS");
+    expect(blocosIndicadores("pceAdm", lerIndicadores({ getItem: () => null }).pceAdm).map((b) => b.titulo)).toEqual(["Participação", "Agenciamento"]);
+    expect(blocosIndicadores("pceAdm", lerIndicadores({ getItem: () => null }).pceAdm)[0].linhas.map((l) => l.rotulo)).toEqual(["Agenciadora", "Operadora"]);
+  });
+  it("Adesão e PME seguem com Administradora e Taxa de adesão", () => {
+    const ind = lerIndicadores({ getItem: () => null });
+    for (const id of ["pcaAdm", "pmeAdm"] as const) {
+      expect(blocosIndicadores(id, ind[id]).map((b) => b.titulo)).toEqual(["Participação", "Agenciamento", "Taxa de adesão"]);
+      expect(blocosIndicadores(id, ind[id])[0].linhas[0].rotulo).toBe("Administradora");
+    }
+  });
+  it("nome e indicadores gravados antes da mudança não valem para a EMPRESAS MÉDIAS", () => {
+    const v3 = (k: string) => (k.endsWith("rotulos-v3") ? JSON.stringify({ pcaAdm: { titulo: "MINHA ADESÃO" }, pceAdm: { titulo: "PJ ADMINISTRADAS" } })
+      : k.endsWith("indicadores-v3") ? JSON.stringify({ pcaAdm: { spread: 20 }, pceAdm: { spread: 23, adesao: 50 } }) : null);
+    expect(lerRotulos({ getItem: v3 }).pceAdm.titulo).toBe("EMPRESAS MÉDIAS");
+    expect(lerRotulos({ getItem: v3 }).pcaAdm.titulo).toBe("MINHA ADESÃO");
+    expect(lerIndicadores({ getItem: v3 }).pceAdm).toEqual({ spread: 5, contratual: 90, promocional: 100, adesao: 0 });
+    expect(lerIndicadores({ getItem: v3 }).pcaAdm.spread).toBe(20);
   });
 });
