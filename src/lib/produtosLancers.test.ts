@@ -57,7 +57,7 @@ describe("Produtos Lancers por plano e acomodação", () => {
     const pca = produtos.find((p) => p.plano === 2961)!;
     const prata = linhasFaixaLancers(pca, "PRATA");
     expect(prata).toHaveLength(10);
-    expect(prata[0]).toEqual({ faixa: "0 a 18", net: 132.44, venda: 165.55 });
+    expect(prata[0]).toEqual({ faixa: "0 a 18", net: 132.44, venda: 165.55, spread: 1 - 132.44 / 165.55 });
     const ouro = linhasFaixaLancers(pca, "OURO");
     expect(ouro[9]).toMatchObject({ faixa: "59 anos ou mais", net: 1191.78, venda: 1489.73 });
   });
@@ -117,5 +117,14 @@ describe("Preços de venda atualizados (arquivo de 19/11/2026)", () => {
     const oculta = produtos.find((p) => p.plano === 3096 && p.descricao === "Desconhecido")!;
     expect(oculta.vendaAtualizada).toBe(false);
     expect(visivel(2961).porAcomodacao.PRATA[0]?.venda).toBe(165.55);
+  });
+});
+
+describe("Spread por faixa (1 − Net ÷ Venda)", () => {
+  it("computes each band's spread from net and venda, not the spreadsheet column", () => {
+    const p = produtosLancers().find((x) => x.plano === 3019)!;
+    const [primeira] = linhasFaixaLancers(p, "OURO");
+    expect(primeira.spread).toBeCloseTo(1 - primeira.net! / primeira.venda!, 12);
+    expect(primeira.spread).not.toBeCloseTo(p.porAcomodacao.OURO[0]!.spread, 3);
   });
 });

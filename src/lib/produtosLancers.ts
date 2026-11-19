@@ -75,7 +75,8 @@ export const formatarValorLancers = (v: number | null, valor: ValorLancers) =>
   v == null ? "—" : valor === "spread" ? pct.format(v) : brl.format(v);
 export const formatarVfe = (v: number | null) => (v == null ? "—" : pct.format(v));
 
-export type LinhaFaixaLancers = { faixa: string; net: number | null; venda: number | null };
+/** spread da faixa = 1 − Net ÷ Venda (calculado; nunca a coluna SPREAD da planilha). */
+export type LinhaFaixaLancers = { faixa: string; net: number | null; venda: number | null; spread: number | null };
 export type AcomodacaoLancers = (typeof ACOMODACOES_LANCERS)[number]["id"];
 
 /** Rótulo do filtro de Plano: nome informado (ou a descrição da planilha); quando o plano tem mais de uma tabela
@@ -90,7 +91,8 @@ export const rotuloProdutoLancers = (p: ProdutoLancers, todos: ProdutoLancers[] 
 export const linhasFaixaLancers = (p: ProdutoLancers, acomodacao: AcomodacaoLancers): LinhaFaixaLancers[] =>
   FAIXAS_LANCERS.map((faixa, i) => {
     const l = p.porAcomodacao[acomodacao][i];
-    return { faixa, net: l?.net ?? null, venda: l?.venda ?? null };
+    const net = l?.net ?? null, venda = l?.venda ?? null;
+    return { faixa, net, venda, spread: net != null && venda ? 1 - net / venda : null };
   });
 
 /** Spread da tabela (pedido de 19/11/2026): calculado pelo net e pela venda, nunca pela coluna SPREAD da planilha:
