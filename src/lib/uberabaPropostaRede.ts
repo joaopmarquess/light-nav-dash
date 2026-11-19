@@ -42,7 +42,7 @@ export const SUBTITULO_PROJECAO_REDE = "Projeção financeira";
 export const NOTA_PROJECAO_REDE =
   "A projeção financeira é estimativa baseada nas premissas desta proposta, exceto pelas parcelas mensais fixas de gestão indicadas no quadro 1. Os demais valores poderão ser maiores ou menores conforme a quantidade efetiva de credenciamentos e de vidas vendidas acumuladas, respeitado o limite da coluna “ATÉ” do Tópico 2 para os credenciamentos.";
 export const TEXTO_PROJECAO_REDE =
-  "Considerando o cronograma previsto para formação da rede e o início da gestão, apresenta-se a seguir a projeção mensal da remuneração ao longo de 2027:";
+  "Considerando o cronograma previsto para formação da rede e o início da gestão, apresenta-se a seguir a projeção mensal estimada da remuneração ao longo de 2027:";
 export type TextosRede = Record<SecaoRedeId, string>;
 export const TEXTO_REDE_MAX = 4000;
 
