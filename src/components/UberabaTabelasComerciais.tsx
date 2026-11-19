@@ -455,7 +455,13 @@ const UberabaTabelasComerciais = ({ comparada: comparadaExterna, onComparar }: {
           <div className="comercial-comparar-area">
             {/* Tabela comparada e OUTRAS BENSAÚDE no mesmo par: mesma largura e altura. */}
             <div className="comercial-comparar-par">
-            {FRENTES.filter((f) => f.id === comparada).map((f) => cartao(f, true))}
+            {/* As quatro tabelas ficam empilhadas na mesma célula e só a comparada aparece: a largura do contêiner
+                é sempre a da maior (PME ADMINISTRADAS), sem mudar ao trocar de tabela pelas setas. */}
+            <div className="comercial-comparar-pilha">
+              {FRENTES.map((f) => (
+                <div key={f.id} data-oculta={f.id !== comparada ? "" : undefined} aria-hidden={f.id !== comparada || undefined}>{cartao(f, true)}</div>
+              ))}
+            </div>
             <OutrasBensaude aberto={outrasAberto} onAlternar={() => setOutrasAberto((v) => !v)} modo={modoOutras} onModo={setModoOutras} comApartamento={aptoVisivel} />
             {/* "Voltar às Tabelas" logo abaixo do contêiner da tabela comparada. */}
             {/* Setas: passam para a tabela anterior/seguinte da tela de Tabelas sem sair da comparação (volta ao início no fim). */}
