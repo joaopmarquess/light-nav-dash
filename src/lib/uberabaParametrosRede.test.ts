@@ -3,10 +3,10 @@ import { PARAMETROS_REDE_PADRAO, lerParametroRede, parametrosRede } from "./uber
 
 describe("Parâmetros de Resultados Rede", () => {
   it("padrões: 6 parcelas fixas iniciando no mês 3, parcela R$ 15.000 e R$ 1 por vida", () => {
-    expect(PARAMETROS_REDE_PADRAO).toEqual({ parcelasFixas: 6, iniciarEm: 3, valorParcela: 15000, valorPorVida: 1 });
+    expect(PARAMETROS_REDE_PADRAO).toEqual({ parcelasFixas: 3, iniciarEm: 3, valorParcela: 15000, valorPorVida: 2 });
   });
   it("valor digitado prevalece só no campo editado", () => {
-    expect(parametrosRede({ valorParcela: 20000 })).toEqual({ parcelasFixas: 6, iniciarEm: 3, valorParcela: 20000, valorPorVida: 1 });
+    expect(parametrosRede({ valorParcela: 20000 })).toEqual({ parcelasFixas: 3, iniciarEm: 3, valorParcela: 20000, valorPorVida: 2 });
   });
   it("lê números em pt-BR; vazio restaura e inválido é recusado", () => {
     expect(lerParametroRede("", false)).toBeUndefined();

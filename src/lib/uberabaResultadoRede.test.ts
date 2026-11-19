@@ -18,19 +18,19 @@ describe("Resultado de Resultados Rede", () => {
     expect(Object.values(vidas).reduce((s, v) => s + v, 0)).toBe(10000);
     expect(vidasVendidasPorMes(vidas).reduce((s, v) => s + v, 0)).toBe(10000);
   });
-  it("Mensalidade: 0 em 01–02/2027, R$ 15.000 nas 6 parcelas fixas de 03 a 08/2027; depois R$ 1 × vidas vendidas acumuladas", () => {
+  it("Padrão (19/11/2026): 0 em 01–02/2027, R$ 15.000 nas 3 parcelas fixas de 03 a 05/2027; depois R$ 2 × vidas vendidas acumuladas", () => {
     const { linhas } = resultadoRede(28200, PARAMETROS_REDE_PADRAO, vidasSimulacaoPadrao());
     expect(linhas.slice(0, 2).map((l) => l.mensalidade)).toEqual([0, 0]);
-    expect(linhas.slice(2, 8).map((l) => l.mensalidade)).toEqual([15000, 15000, 15000, 15000, 15000, 15000]);
-    expect(linhas[8].mensalidade).toBe(linhas[8].vidasAcumuladas);
+    expect(linhas.slice(2, 5).map((l) => l.mensalidade)).toEqual([15000, 15000, 15000]);
+    expect(linhas[5].mensalidade).toBe(linhas[5].vidasAcumuladas * 2);
     expect(linhas[11].vidasAcumuladas).toBe(10000);
-    expect(linhas[11].mensalidade).toBe(10000);
+    expect(linhas[11].mensalidade).toBe(20000);
   });
   it("Total = Adesão + Mensalidade por mês e no ano", () => {
     const { linhas, total } = resultadoRede(45800, PARAMETROS_REDE_PADRAO, vidasSimulacaoPadrao());
     expect(linhas[0].total).toBe(22900);
     expect(linhas[2].total).toBe(15000);
-    expect(linhas[11].total).toBe(10000);
+    expect(linhas[11].total).toBe(20000);
     expect(total.total).toBe(total.adesao + total.mensalidade);
   });
   it("Parcelas fixas e Valor por vida alterados mudam a Mensalidade", () => {

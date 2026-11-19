@@ -78,9 +78,9 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
   });
   it("brings the current Resultados Rede parameters", () => {
     expect(linhasParametrosRede(PARAMETROS_REDE_PADRAO).map(([a, b]) => [a, semNbsp(b)])).toEqual([
-      ["Parcelas fixas", "6"], ["Início das parcelas", "03/2027"], ["Valor da parcela", "R$ 15.000,00"], ["Valor por vida (após as parcelas fixas)", "R$ 1,00"],
+      ["Parcelas fixas", "3"], ["Início das parcelas", "03/2027"], ["Valor da parcela", "R$ 15.000,00"], ["Valor por vida (após as parcelas fixas)", "R$ 2,00"],
     ]);
-    expect(semNbsp(regraMensalidadeRede({ ...PARAMETROS_REDE_PADRAO, valorParcela: 10000 }))).toBe(
+    expect(semNbsp(regraMensalidadeRede({ ...PARAMETROS_REDE_PADRAO, parcelasFixas: 6, valorParcela: 10000, valorPorVida: 1 }))).toBe(
       "Nos seis primeiros meses da gestão, a remuneração mensal será de R$ 10.000,00, com início em 03/2027. Encerrado esse período, a remuneração será calculada à razão de R$ 1,00 por vida vendida acumulada.");
   });
   it("rolls the start month into the next year after month 12", () => {
@@ -89,7 +89,7 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
   });
   it("flags numbers the AI wrote that are not in the data", () => {
     const d = dadosRascunhoRede(PARAMETROS_REDE_PADRAO);
-    expect(numerosForaDosDadosRede("São 200 especialidades e 6 parcelas de 15.000,00.", d)).toEqual([]);
+    expect(numerosForaDosDadosRede("São 200 especialidades e 3 parcelas de 15.000,00.", d)).toEqual([]);
     expect(numerosForaDosDadosRede("Prazo de 90 dias.", d)).toEqual(["90"]);
   });
   it("uses the default text until a revision is approved", () => {

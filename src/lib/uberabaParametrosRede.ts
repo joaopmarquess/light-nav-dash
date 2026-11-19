@@ -2,7 +2,8 @@
 export type CampoParametroRede = "parcelasFixas" | "iniciarEm" | "valorParcela" | "valorPorVida";
 export type ParametrosRede = Record<CampoParametroRede, number>;
 
-export const PARAMETROS_REDE_PADRAO: ParametrosRede = { parcelasFixas: 6, iniciarEm: 3, valorParcela: 15000, valorPorVida: 1 };
+// Padrões do Dênis (19/11/2026): 3 parcelas fixas de R$ 15.000,00 a partir do mês 3 e R$ 2,00 por vida.
+export const PARAMETROS_REDE_PADRAO: ParametrosRede = { parcelasFixas: 3, iniciarEm: 3, valorParcela: 15000, valorPorVida: 2 };
 export const CAMPOS_PARAMETROS_REDE: { campo: CampoParametroRede; rotulo: string; moeda: boolean; inteiro: boolean }[] = [
   { campo: "parcelasFixas", rotulo: "Parcelas fixas", moeda: false, inteiro: true },
   // Mês (1 = 01/2027) em que começam as parcelas fixas da Mensalidade (pedido de 18/11/2026); antes dele, Mensalidade 0.
