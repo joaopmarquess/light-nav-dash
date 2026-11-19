@@ -49,7 +49,6 @@ export default function ProdutosLancers() {
       <div>
         <p className="text-xs text-muted-foreground">Descrição</p>
         <p className="text-lg font-semibold text-foreground">{produto.nome ?? produto.descricao}</p>
-        {produto.nome && <p className="text-sm text-muted-foreground">Na planilha: {produto.descricao}</p>}
         {estimada && <p className="text-xs text-muted-foreground">Preço de venda desconhecido: venda estimada pela planilha a partir do net (Venda = Net ÷ 0,77).</p>}
       </div>
       <table className="w-full text-sm border border-border">
