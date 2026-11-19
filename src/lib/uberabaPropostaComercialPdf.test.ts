@@ -158,14 +158,16 @@ describe("Glossário · tópicos e subtópicos numerados", () => {
 
 import { buildPropostaComercialPdf } from "./uberabaPropostaComercialPdf";
 
-describe("Proposta · página 1", () => {
-  it("Introdução e Tabela Referencial (com a última faixa) cabem na primeira página", () => {
+describe("Proposta · capa, sumário e primeira página de conteúdo", () => {
+  it("capa na página 1, sumário na 2; Introdução e Tabela Referencial (com a última faixa) cabem na página 3", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const paginas = (buildPropostaComercialPdf(null) as any).internal.pages as string[][];
-    const p1 = paginas[1].join("\n");
+    expect(paginas[1].join("\n")).toContain("Proposta Comercial");
+    expect(paginas[2].join("\n")).toContain("SUM");
+    const p1 = paginas[3].join("\n");
     expect(p1).toContain("1. INTRODU");
     expect(p1).toContain("2. TABELA REFERENCIAL");
     expect(p1).toContain("59 ou +");
-    expect(paginas[2].join("\n")).toContain("3. PRODUTOS COM ADMINISTRADORA");
+    expect(paginas[4].join("\n")).toContain("3. PRODUTOS COM ADMINISTRADORA");
   });
 });

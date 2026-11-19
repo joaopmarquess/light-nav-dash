@@ -30,6 +30,16 @@ describe("Word da Proposta de Credenciamento e Gestão de Rede", () => {
     expect(resultado.linhas.at(-1)?.[0]).toBe("TOTAL");
     expect(resultado.juntos).toBe(true);
   });
+  it("Word com capa e sumário: páginas do sumário como campos PAGEREF apontando para os tópicos", async () => {
+    const JSZip = (await import("jszip")).default;
+    const sumario = [{ titulo: "1. Introdução", pagina: 3 }, { titulo: "2. Credenciamento por Captação", pagina: 3 }];
+    const buf = await Packer.toBuffer(documentoPropostaRede(blocos, null, { capa: { titulo: "Proposta de Credenciamento e Gestão de Rede", mesAno: "Novembro de 2026", destinatario: "Siga Soluções" }, sumario }));
+    const xml = await (await JSZip.loadAsync(buf)).file("word/document.xml")!.async("string");
+    expect(xml).toContain("SUMÁRIO");
+    expect(xml).toContain("Novembro de 2026");
+    expect(xml).toContain("PAGEREF topico_1");
+    expect(xml).toContain('w:name="topico_1"');
+  });
   it("produces a Word file", async () => {
     const buf = await Packer.toBuffer(documentoPropostaRede(blocos, null));
     expect(buf.subarray(0, 2).toString()).toBe("PK");

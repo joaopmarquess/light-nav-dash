@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import PropostaApbSinistralidade from "@/components/PropostaApbSinistralidade";
 import { montarPropostaPdf } from "@/lib/propostaApbPdf";
+import { carregarLogoBensaude } from "@/lib/pdfCapaProposta";
 import PropostaApbReport from "@/components/PropostaApbReport";
 import type jsPDF from "jspdf";
 import PropostaApbCopart from "@/components/PropostaApbCopart";
@@ -112,7 +113,7 @@ export default function PropostaApb() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
         <Tooltip>
-          <TooltipTrigger asChild><Button type="button" size="icon" variant="outline" className="h-14" aria-label="Gerar Proposta" onClick={() => setReportDoc(montarPropostaPdf(vars[4], lerLimitesCopart(window.localStorage)))}><Printer className="h-4 w-4" aria-hidden="true" /></Button></TooltipTrigger>
+          <TooltipTrigger asChild><Button type="button" size="icon" variant="outline" className="h-14" aria-label="Gerar Proposta" onClick={async () => setReportDoc(montarPropostaPdf(vars[4], lerLimitesCopart(window.localStorage), await carregarLogoBensaude()))}><Printer className="h-4 w-4" aria-hidden="true" /></Button></TooltipTrigger>
           <TooltipContent>Gerar Proposta</TooltipContent>
         </Tooltip>
         <Dialog>

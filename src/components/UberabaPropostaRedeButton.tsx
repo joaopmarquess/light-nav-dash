@@ -8,6 +8,8 @@ import PdfPreview from "@/components/PdfPreview";
 import { loadTimbrado } from "@/lib/pdfTimbrado";
 import { carregarParametrosRede, parametrosRede } from "@/lib/uberabaParametrosRede";
 import { buildPropostaRedePdf } from "@/lib/uberabaPropostaRedePdf";
+import { carregarLogoBensaude } from "@/lib/pdfCapaProposta";
+import { quantidadesRedeAtuais } from "@/lib/uberabaPropostaRede";
 import { buildPropostaRedeDocx, carregarTimbradoBytes } from "@/lib/uberabaPropostaRedeDocx";
 
 /** Ícone "Gerar Proposta de Credenciamento e Gestão de Rede" (Resultados Rede): Condições Rede, Parâmetros atuais e os textos fixos do modelo (sugestão por IA retirada em 19/11/2026). */
@@ -19,7 +21,7 @@ export default function UberabaPropostaRedeButton() {
   const gerarWord = async () => {
     setGerandoWord(true);
     try {
-      const blob = await buildPropostaRedeDocx(await carregarTimbradoBytes(), parametrosRede(carregarParametrosRede()), null);
+      const blob = await buildPropostaRedeDocx(await carregarTimbradoBytes(), parametrosRede(carregarParametrosRede()), null, quantidadesRedeAtuais(), await carregarLogoBensaude());
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -45,7 +47,7 @@ export default function UberabaPropostaRedeButton() {
       </Tooltip>
       {aberto && createPortal(
         <PdfPreview
-          build={async () => buildPropostaRedePdf(await loadTimbrado(), parametrosRede(carregarParametrosRede()), null)}
+          build={async () => buildPropostaRedePdf(await loadTimbrado(), parametrosRede(carregarParametrosRede()), null, quantidadesRedeAtuais(), await carregarLogoBensaude())}
           fileName="Proposta_Credenciamento_Gestao_Rede_Bensaude_Uberaba.pdf"
           onClose={() => setAberto(false)}
           acoesExtras={

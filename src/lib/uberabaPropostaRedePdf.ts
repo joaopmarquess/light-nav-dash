@@ -4,6 +4,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { attachTimbrado } from "@/lib/pdfTimbrado";
+import { inserirCapaESumario, mesAnoCapa, type CapaProposta, type ItemSumario, type LogoCapa } from "@/lib/pdfCapaProposta";
 import { drawSectionTitle } from "@/lib/pdfTheme";
 import { CABECALHO, LINHA, RODAPE, SECUNDARIO, TINTA, ZEBRA, textoPdf } from "@/lib/uberabaPropostaComercialPdf";
 import { paragrafosDe } from "@/lib/uberabaPropostaTextos";
@@ -30,12 +31,26 @@ export function paragrafosPropostaRede(textos: TextosRede | null = null): string
 
 type Quadro = Extract<BlocoPropostaRede, { tipo: "quadro" }>;
 
+/** Capa da proposta: título, projeto e destinatário (Siga Soluções). */
+export function capaPropostaRede(logo: LogoCapa | null = null, mesAno: string = mesAnoCapa()): CapaProposta {
+  return { titulo: "Proposta de Credenciamento e Gestão de Rede", subtitulo: "Bensaúde|Uberaba", destinatario: "Siga Soluções", mesAno, logo };
+}
+
 export function buildPropostaRedePdf(
   timbradoDataUrl?: string | null, parametros: ParametrosRede = PARAMETROS_REDE_PADRAO, textos: TextosRede | null = null,
-  quantidades: QuantidadesRede = quantidadesRedeAtuais(),
+  quantidades: QuantidadesRede = quantidadesRedeAtuais(), logo: LogoCapa | null = null,
 ): jsPDF {
+  return comporPropostaRedePdf(timbradoDataUrl, parametros, textos, quantidades, logo).doc;
+}
+
+/** PDF com capa e sumário; devolve também o sumário com as páginas finais (o Word usa as mesmas páginas). */
+export function comporPropostaRedePdf(
+  timbradoDataUrl?: string | null, parametros: ParametrosRede = PARAMETROS_REDE_PADRAO, textos: TextosRede | null = null,
+  quantidades: QuantidadesRede = quantidadesRedeAtuais(), logo: LogoCapa | null = null,
+): { doc: jsPDF; sumario: ItemSumario[] } {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  attachTimbrado(doc, timbradoDataUrl);
+  const timbrado = attachTimbrado(doc, timbradoDataUrl);
+  const topicos: ItemSumario[] = [];
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
   const marginL = 18, marginR = 18, top = 42, bottom = 25;
@@ -134,6 +149,7 @@ export function buildPropostaRedePdf(
     const linhas = doc.splitTextToSize(titulo.toUpperCase(), LARGURA) as string[];
     // Título nunca sozinho no fim da página: precisa caber com duas linhas de texto.
     garantir(12 + (linhas.length - 1) * LINHA_TOPICO + LINHA_TEXTO * 2);
+    topicos.push({ titulo, pagina: doc.getNumberOfPages() });
     linhas.slice(0, -1).forEach((l, i) => {
       doc.setFont("helvetica", "bold"); doc.setFontSize(F.topico); doc.setTextColor(...TINTA);
       doc.text(l, marginL, y + i * LINHA_TOPICO);
@@ -158,13 +174,16 @@ export function buildPropostaRedePdf(
     // O rótulo é desenhado junto com o seu quadro, para nunca ficar sozinho no fim da página.
   });
 
+  const sumario = inserirCapaESumario(doc, capaPropostaRede(logo), topicos.map((t) => ({ ...t, titulo: textoPdf(t.titulo) })),
+    { tinta: TINTA, secundario: SECUNDARIO, timbrado, topoSumario: top + 2, margem: marginL });
+  // Capa e sumário sem número; o rodapé conta as páginas físicas, as mesmas do sumário.
   const total = doc.getNumberOfPages();
-  for (let p = 1; p <= total; p++) {
+  for (let p = 3; p <= total; p++) {
     doc.setPage(p);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(F.rodape);
     doc.setTextColor(...RODAPE);
     doc.text(`Página ${p} de ${total}`, pageW - marginR, pageH - 16.5, { align: "right" });
   }
-  return doc;
+  return { doc, sumario };
 }

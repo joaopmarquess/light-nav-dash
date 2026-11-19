@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { attachTimbrado } from "@/lib/pdfTimbrado";
+import { inserirCapaESumario, mesAnoCapa, type ItemSumario, type LogoCapa } from "@/lib/pdfCapaProposta";
 import { PDF_COLORS, drawSectionTitle } from "@/lib/pdfTheme";
 import {
   FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, FRENTES_COMERCIAIS, INDICES_PADRAO, PARAMETROS_UBERABA, blocosIndicadores, parametrosDe, vidasTexto, formatarCentavos, formatarFator, formatarPercentual, indicadoresPadrao, rotulosPadrao, tabelaVenda, tabelaReferencia,
@@ -161,9 +162,10 @@ export function textoPdf(texto: string): string {
     .replace(/[\u202F\u2007]/g, " ");
 }
 
-export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao(), rotulos: RotulosPorFrente = rotulosPadrao(), fatores: Fatores = FATORES_PADRAO, textos: TextosSecoes | null = null): jsPDF {
+export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indices: Indices = INDICES_PADRAO, indicadores: IndicadoresPorFrente = indicadoresPadrao(), rotulos: RotulosPorFrente = rotulosPadrao(), fatores: Fatores = FATORES_PADRAO, textos: TextosSecoes | null = null, logo: LogoCapa | null = null): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  attachTimbrado(doc, timbradoDataUrl);
+  const timbrado = attachTimbrado(doc, timbradoDataUrl);
+  const topicos: ItemSumario[] = [];
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
   // Sem cabeçalho de título: o traço azul do timbrado termina em ~31 mm e o primeiro tópico começa logo abaixo, em todas as páginas.
@@ -575,6 +577,7 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     // A Tabela Referencial mede o próprio texto, para caber na página 1 logo após a Introdução.
     const alturaTexto = s.id === "referencia" ? alturaParagrafos(corpo[i]) + 2 : corpo[i].length * LINHA_TEXTO * 3;
     garantir(juntos === null ? INICIO_TOPICO : 10 + alturaTexto + juntos);
+    topicos.push({ titulo: textoPdf(s.titulo), pagina: doc.getNumberOfPages() });
     drawSectionTitle(doc, s.titulo, marginL, y, pageW - marginR, TINTA, F.topico);
     y += 10;
     corpo[i].forEach(paragrafo);
@@ -583,12 +586,16 @@ export function buildPropostaComercialPdf(timbradoDataUrl?: string | null, indic
     if (dados) { garantir(ALTURA_BLOCO[s.id] ?? 0); dados(); }
   });
   garantir(INICIO_TOPICO + 14); // título do Glossário junto com o primeiro termo e sua nota
+  topicos.push({ titulo: textoPdf(TITULO_GLOSSARIO), pagina: doc.getNumberOfPages() });
   drawSectionTitle(doc, TITULO_GLOSSARIO, marginL, y, pageW - marginR, TINTA, F.topico);
   y += 10;
   desenharGlossario();
 
+  // Capa (sem timbrado) e sumário no verso, com as páginas físicas dos tópicos (pedido de 19/11/2026).
+  inserirCapaESumario(doc, { titulo: "Proposta Comercial", subtitulo: "Bensaúde|Uberaba", mesAno: mesAnoCapa(), logo }, topicos,
+    { tinta: TINTA, secundario: SECUNDARIO, timbrado, topoSumario: top + 2, margem: marginL });
   const total = doc.getNumberOfPages();
-  for (let p = 1; p <= total; p++) {
+  for (let p = 3; p <= total; p++) {
     doc.setPage(p);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(F.rodape);

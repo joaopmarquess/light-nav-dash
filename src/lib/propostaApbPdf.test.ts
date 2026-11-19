@@ -10,7 +10,7 @@ describe("proposta PDF Estratégico", () => {
     expect(text).toContain("130,00");
     expect(text).toContain("195,00");
     expect(text).not.toContain("110,53");
-    expect(pdf.getNumberOfPages()).toBe(2);
+    expect(pdf.getNumberOfPages()).toBe(4); // capa + sumário + duas páginas de tabelas
   });
   it("inclui os limites da coparticipação do Plano Proposto 2027", () => {
     const text = montarPropostaPdf({ linEnf: 199.99, depBase: 125, sinPct: 90, copartPct: 25 }).output();

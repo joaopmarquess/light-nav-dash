@@ -7,6 +7,7 @@ import PdfPreview from "@/components/PdfPreview";
 import { loadTimbrado } from "@/lib/pdfTimbrado";
 import { lerFatores, lerIndicadores, lerIndices, lerRotulos } from "@/lib/uberabaTabelasComerciais";
 import { buildPropostaComercialPdf } from "@/lib/uberabaPropostaComercialPdf";
+import { carregarLogoBensaude } from "@/lib/pdfCapaProposta";
 
 /** Ícone "Gerar Proposta Comercial" (Resultados Comerciais): usa os índices e indicadores atuais das tabelas e os textos fixos (sugestão por IA retirada em 19/11/2026). */
 export default function UberabaPropostaComercialButton() {
@@ -24,7 +25,7 @@ export default function UberabaPropostaComercialButton() {
       </Tooltip>
       {aberto && createPortal(
         <PdfPreview
-          build={async () => buildPropostaComercialPdf(await loadTimbrado(), lerIndices(), lerIndicadores(), lerRotulos(), lerFatores(), null)}
+          build={async () => buildPropostaComercialPdf(await loadTimbrado(), lerIndices(), lerIndicadores(), lerRotulos(), lerFatores(), null, await carregarLogoBensaude())}
           fileName="Proposta_Comercial_Bensaude_Uberaba.pdf"
           onClose={() => setAberto(false)}
         />,
