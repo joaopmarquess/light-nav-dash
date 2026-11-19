@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
-import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, GitCompare, Pin, Printer } from "lucide-react";
+import { ArrowLeft, Table2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, GitCompare, Pin, Printer } from "lucide-react";
 import PdfPreview from "@/components/PdfPreview";
 import { loadTimbrado } from "@/lib/pdfTimbrado";
 import { loadMarcaAxis } from "@/lib/pdfMarcaAxis";
@@ -370,7 +370,15 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
 };
 
 // Botão que encerra a comparação; a tela-mãe o coloca na linha dos botões Referência e Proposta.
-export const VoltarTabelasButton = ({ onClick }: { onClick: () => void }) => (
+// iconOnly: só o ícone (com dica), para caber na barra da Timeline.
+export const VoltarTabelasButton = ({ onClick, iconOnly = false }: { onClick: () => void; iconOnly?: boolean }) => iconOnly ? (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Button size="icon" variant="outline" className="h-9 w-9" aria-label="Voltar às Tabelas" onClick={onClick}><ArrowLeft className="h-4 w-4" /></Button>
+    </TooltipTrigger>
+    <TooltipContent>Voltar às Tabelas</TooltipContent>
+  </Tooltip>
+) : (
   <Button size="sm" variant="outline" onClick={onClick}><ArrowLeft className="mr-1 h-4 w-4" />Voltar às Tabelas</Button>
 );
 
@@ -455,7 +463,7 @@ const UberabaTabelasComerciais = ({ comparada: comparadaExterna, onComparar }: {
 
 export default UberabaTabelasComerciais;
 
-export const ReferenciaButton = () => {
+export const ReferenciaButton = ({ iconOnly = false }: { iconOnly?: boolean } = {}) => {
   const [dx, setDx] = useState(0);
   const drag = useRef<{ x: number; dx: number } | null>(null);
   const down = (e: PointerEvent<HTMLDivElement>) => { drag.current = { x: e.clientX, dx }; e.currentTarget.setPointerCapture(e.pointerId); };
@@ -463,9 +471,20 @@ export const ReferenciaButton = () => {
   const up = () => { drag.current = null; };
   return (
     <Dialog onOpenChange={(o) => o && setDx(0)}>
-      <DialogTrigger asChild>
-        <Button size="sm" variant="outline">Referência</Button>
-      </DialogTrigger>
+      {iconOnly ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>
+              <Button size="icon" variant="outline" className="h-9 w-9" aria-label="Referência"><Table2 className="h-4 w-4" /></Button>
+            </DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent>Referência</TooltipContent>
+        </Tooltip>
+      ) : (
+        <DialogTrigger asChild>
+          <Button size="sm" variant="outline">Referência</Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="comercial-reference max-w-xl" style={{ marginLeft: dx }}>
         <DialogHeader onPointerDown={down} onPointerMove={move} onPointerUp={up} className="cursor-ew-resize select-none" title="Arraste para mover">
           <DialogTitle>Referência</DialogTitle>

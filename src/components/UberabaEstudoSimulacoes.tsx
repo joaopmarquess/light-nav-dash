@@ -23,7 +23,8 @@ const ABAS: { id: Aba; label: string; icon: typeof Calculator }[] = [
 ];
 
 // Simulações do Estudo: mesmos sub-botões do Painel, reunindo as telas existentes sem alterá-las.
-const UberabaEstudoSimulacoes = ({ subNavTarget }: { subNavTarget?: HTMLElement | null } = {}) => {
+// acoesTarget: canto de ações da barra da Timeline (Voltar às Tabelas, Referência e propostas sobem para lá).
+const UberabaEstudoSimulacoes = ({ subNavTarget, acoesTarget }: { subNavTarget?: HTMLElement | null; acoesTarget?: HTMLElement | null } = {}) => {
   const [aba, setAba] = useState<Aba>("comercial");
   const atual = ABAS.find((a) => a.id === aba)!;
   // "Restaurar padrão": apaga os valores digitados e remonta o bloco para mostrar os padrões.
@@ -35,7 +36,7 @@ const UberabaEstudoSimulacoes = ({ subNavTarget }: { subNavTarget?: HTMLElement 
   const comparando = comparada !== null;
   return (
     <div className="flex flex-col gap-3">
-      <EstudoSubNav itens={ABAS} ativo={aba} onSelect={(id) => setAba(id as Aba)} label="Simulações do Estudo" target={subNavTarget} extra={aba === "comercial" ? <div className="flex w-full items-center gap-2">{comparando && <VoltarTabelasButton onClick={() => setComparada(null)} />}<div className="ml-auto flex items-center gap-2"><ReferenciaButton /><UberabaPropostaComercialButton /></div></div> : <div className="flex items-center gap-2"><UberabaPropostaRedeButton /></div>} />
+      <EstudoSubNav itens={ABAS} ativo={aba} onSelect={(id) => setAba(id as Aba)} label="Simulações do Estudo" target={subNavTarget} extraTarget={acoesTarget} extra={aba === "comercial" ? <div className={`flex items-center gap-2 ${acoesTarget === undefined ? "w-full" : ""}`}>{comparando && <VoltarTabelasButton iconOnly={acoesTarget !== undefined} onClick={() => setComparada(null)} />}<div className={`flex items-center gap-2 ${acoesTarget === undefined ? "ml-auto" : ""}`}><ReferenciaButton iconOnly={acoesTarget !== undefined} /><UberabaPropostaComercialButton /></div></div> : <div className="flex items-center gap-2"><UberabaPropostaRedeButton /></div>} />
       <section aria-label={atual.label} className="min-w-0">
         {/* Simulação de resultados fica recolhida abaixo dos Resultados Comerciais; Resultados Rede: Condições Rede, Credenciamento, Parâmetros e Resultado, recolhidas (Antecipação × Mensal excluída em 18/11/2026). */}
         {aba === "comercial" && <><UberabaTabelasComerciais comparada={comparada} onComparar={setComparada} /><div hidden={comparando}><BlocoRecolhido titulo="Simulação de resultados" className="mt-4"><div className="p-3"><UberabaSimulacao /></div></BlocoRecolhido></div></>}

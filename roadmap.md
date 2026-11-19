@@ -57,3 +57,4 @@
 - [x] Ícone Comparar ao lado do nome; só a tabela escolhida à esquerda; botão Voltar às Tabelas.
 - [x] Tabela Concorrentes à direita na comparação.
 - [x] Contêiner recolhido "Outras Bensaúde" (3019 e 3020) com chave Venda/Net, faixas no mesmo nível, Hapvida 1–4.
+- [x] Tirar calendário e exportar PDF da barra do Proj. Uberaba; canto direito recebe os botões/ícones de cada tela.

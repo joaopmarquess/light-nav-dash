@@ -10,12 +10,8 @@ import UberabaGuias from "@/components/UberabaGuias";
 import { COMERCIAL_UBERABA, ESCRITORIO_UBERABA, REDE_UBERABA } from "@/lib/uberabaFrentes";
 import UberabaModeloFrente from "@/components/UberabaModeloFrente";
 import outdoorImagem from "@/assets/projeto-uberaba-home-v2.svg.asset.json";
-import { Building2, CalendarDays, FileCheck2, FileSignature, House, Megaphone, Rocket, Stethoscope, Tags } from "lucide-react";
-import { CRONOGRAMA_UBERABA } from "@/lib/uberabaCronograma";
-import UberabaCronograma from "@/components/UberabaCronograma";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Building2, FileCheck2, FileSignature, House, Megaphone, Rocket, Stethoscope, Tags } from "lucide-react";
 import TimelinePresentationHeader from "@/components/TimelinePresentationHeader";
-import UberabaPresentationPdfButton from "@/components/UberabaPresentationPdfButton";
 
 type Etapa = { nome: string; filhos?: string[]; texto?: string; conteudo?: ReactNode };
 
@@ -42,15 +38,6 @@ const SUB_PLANO = [
 ] as const;
 type SubPlano = (typeof SUB_PLANO)[number]["nome"];
 
-// Faixa de datas: os itens planejados do cronograma (datas inalteradas), cada um levando à etapa/submenu correspondente.
-const destinoAgenda = (item: string): { etapa: string; sub?: SubPlano; numero: string } => {
-  if (item === "Operação Iniciada") return { etapa: PLANO, sub: HOME, numero: "3.1" };
-  const sub = SUB_PLANO.findIndex((s) => s.nome === item);
-  if (sub >= 0) return { etapa: PLANO, sub: SUB_PLANO[sub].nome, numero: `3.${sub + 1}` };
-  return { etapa: item, numero: String(ETAPAS.findIndex((e) => e.nome === item) + 1) };
-};
-const AGENDA = Object.keys(CRONOGRAMA_UBERABA).map((item) => ({ item, ...destinoAgenda(item) }));
-
 const FRENTES = [
   { nome: "Comercial", icone: Tags },
   { nome: "Rede Assistencial", icone: Stethoscope },
@@ -61,8 +48,9 @@ const FRENTES = [
 // estudoSimulacoes: abre na etapa Estudo › Simulações (Resultados Comerciais é a primeira aba), pelo atalho da Home.
 const UberabaTimeline = ({ estudoSimulacoes = false }: { estudoSimulacoes?: boolean } = {}) => {
   const [aberta, setAberta] = useState<string | null>(estudoSimulacoes ? "Estudo" : HOME);
-  const [mostrarDatas, setMostrarDatas] = useState(false);
   const [navEstudo, setNavEstudo] = useState<HTMLDivElement | null>(null);
+  // Canto direito da barra: botões e ícones da tela aberta (ex.: Referência, Proposta, Voltar às Tabelas), vindos de cada tela.
+  const [acoesTela, setAcoesTela] = useState<HTMLDivElement | null>(null);
   const [frente, setFrente] = useState<(typeof FRENTES)[number]["nome"]>(FRENTES[0].nome);
   const [subPlano, setSubPlano] = useState<SubPlano>(HOME);
   const atual = ETAPAS.find((e) => e.nome === aberta);
@@ -71,7 +59,6 @@ const UberabaTimeline = ({ estudoSimulacoes = false }: { estudoSimulacoes?: bool
   const permiteRolagem = vista === "Estudo";
   const apresentacaoPropria = ["Operação Iniciada", "Plano de Marketing", "Formalização", "Modelo de Atuação", "Implantação"].includes(vista ?? "");
   const abrir = (etapa: string, sub: SubPlano = HOME) => { setAberta(etapa); setFrente(FRENTES[0].nome); setSubPlano(sub); };
-  const agendaAtual = AGENDA.findIndex((a) => a.item === vista);
   const timelineRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -104,69 +91,14 @@ const UberabaTimeline = ({ estudoSimulacoes = false }: { estudoSimulacoes?: bool
           </ol>
         </nav>
         {(aberta === "Estudo" || aberta === PLANO) && <span aria-hidden className="h-6 w-px bg-border" />}
-        {aberta === "Estudo" && <div ref={setNavEstudo} className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2" />}
+        {aberta === "Estudo" && <div ref={setNavEstudo} className="flex flex-1 flex-wrap items-center gap-x-4 gap-y-2" />}
         {aberta === PLANO && (
           <div className="flex flex-wrap gap-2" role="group" aria-label="Submenus do Plano de Ação">
             {SUB_PLANO.map((s) => { const Icone = s.icone; const on = subPlano === s.nome; return <Button key={s.nome} variant={on ? "default" : "outline"} aria-pressed={on} onClick={() => setSubPlano(s.nome)}><Icone />{s.nome}</Button>; })}
           </div>
         )}
-        <div className="ml-auto flex shrink-0 items-center gap-3">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button size="icon" className="h-9 w-9" variant={mostrarDatas ? "default" : "outline"} aria-label={mostrarDatas ? "Ocultar datas planejadas" : "Mostrar datas planejadas"} aria-pressed={mostrarDatas} onClick={() => setMostrarDatas(!mostrarDatas)}>
-                  <CalendarDays className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{mostrarDatas ? "Ocultar datas planejadas" : "Mostrar datas planejadas"}</TooltipContent>
-            </Tooltip>
-            {mostrarDatas && <span className="text-xs font-medium text-muted-foreground">Datas planejadas</span>}
-          <UberabaPresentationPdfButton iconOnly />
-        </div>
+        <div ref={setAcoesTela} aria-label="Ações da tela" className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2 empty:hidden" />
       </div>
-      {mostrarDatas && <div className="relative shrink-0 overflow-x-auto rounded-lg border border-border bg-card px-8 py-4" aria-label="Datas planejadas por etapa">
-        <div className="relative min-w-[840px] md:min-w-0">
-          <div className="absolute top-5 h-0.5 bg-border" style={{ left: `${50 / AGENDA.length}%`, right: `${50 / AGENDA.length}%` }} />
-          <ol className="relative grid gap-4" style={{ gridTemplateColumns: `repeat(${AGENDA.length}, minmax(0, 1fr))` }}>
-            {AGENDA.map((a, i) => {
-              const on = i === agendaAtual;
-              const clicavel = true;
-              return (
-                <li key={a.item} className="flex flex-col items-center gap-3 text-center">
-                  <button
-                    type="button"
-                    disabled={!clicavel}
-                    onClick={() => abrir(a.etapa, a.sub)}
-                    className={`flex flex-col items-center gap-3 ${clicavel ? "cursor-pointer" : "cursor-default"}`}
-                  >
-                    <span
-                      className={`flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary text-sm font-semibold ${
-                        on ? "bg-primary text-primary-foreground" : "bg-background text-primary"
-                      }`}
-                    >
-                      {a.numero}
-                    </span>
-                    <span className={`text-sm font-medium text-foreground ${clicavel ? "underline decoration-dotted underline-offset-4" : ""}`}>
-                      {a.item}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
-          {mostrarDatas && <UberabaCronograma />}
-        </div>
-      </div>}
-
-      {mostrarDatas && agendaAtual >= 0 && (
-        <div className="-my-6 grid gap-4 px-8" style={{ gridTemplateColumns: `repeat(${AGENDA.length}, minmax(0, 1fr))` }}>
-          <div
-            className="flex justify-center"
-            style={{ gridColumnStart: agendaAtual + 1 }}
-          >
-            <div className="h-6 w-0.5 bg-primary" />
-          </div>
-        </div>
-      )}
 
       {aberta === HOME && (
         <section aria-label="Home do projeto" className="timeline-stage-panel flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden rounded-lg border border-border bg-card p-4">
@@ -178,7 +110,7 @@ const UberabaTimeline = ({ estudoSimulacoes = false }: { estudoSimulacoes?: bool
         <div ref={panelRef} data-expansivel={permiteRolagem} className={`timeline-stage-panel flex min-h-0 w-full flex-1 flex-col rounded-lg border border-border bg-card ${permiteRolagem ? "overflow-auto" : "timeline-stage-static"} ${apresentacaoPropria ? "" : "px-4 py-4 sm:px-8"}`}>
           {!apresentacaoPropria && !(atual.nome === "Estudo") && <div className="mb-5"><TimelinePresentationHeader title={atual.nome} /></div>}
           {vista === "Operação Iniciada" ? <UberabaOperacaoIniciada key="plano-home" /> : vista === "Plano de Marketing" ? <UberabaMarketing key="plano-marketing" /> : vista === "Formalização" ? <UberabaFormalizacao key="plano-formalizacao" /> : vista === "Implantação" ? <UberabaImplantacao key="plano-implantacao" /> : atual.nome === "Estudo" ? (
-            <UberabaEstudoMapas navTarget={navEstudo} visaoInicial={estudoSimulacoes ? "simulacoes" : "home"} />
+            <UberabaEstudoMapas navTarget={navEstudo} acoesTarget={acoesTela} visaoInicial={estudoSimulacoes ? "simulacoes" : "home"} />
           ) : atual.nome === "Modelo de Atuação" ? (
             <article className="timeline-presentation modelo-presentation modelo-guias-aberta" aria-label="Modelo de Atuação do Bensaúde|Uberaba">
               <div className="modelo-menu" role="group" aria-label="Frentes do Modelo de Atuação">

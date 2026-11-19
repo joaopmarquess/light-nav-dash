@@ -20,8 +20,9 @@ const PAINEL_EXTRAS: PainelExtraTab[] = [
 ];
 
 // navTarget: quando informado (Timeline), os botões do Estudo ficam no mesmo quadro de "Etapa".
+// acoesTarget: canto direito da barra da Timeline, onde ficam os botões e ícones da tela aberta.
 // visaoInicial: visão aberta ao entrar (atalho da Home abre direto em Simulações).
-const UberabaEstudoMapas = ({ navTarget, visaoInicial = "home" }: { navTarget?: HTMLElement | null; visaoInicial?: Visao } = {}) => {
+const UberabaEstudoMapas = ({ navTarget, acoesTarget, visaoInicial = "home" }: { navTarget?: HTMLElement | null; acoesTarget?: HTMLElement | null; visaoInicial?: Visao } = {}) => {
   const [selected, setSelected] = useState<Visao>(visaoInicial);
   const [date] = useState(geographicToday);
   const [toolbar, setToolbar] = useState<HTMLDivElement | null>(null);
@@ -56,8 +57,8 @@ const UberabaEstudoMapas = ({ navTarget, visaoInicial = "home" }: { navTarget?: 
           {UBERABA_ESTUDO.split("\n\n").map((paragraph, index) => <p key={index}>{paragraph.split("**").map((text, part) => part % 2 ? <strong key={part} className="font-semibold text-foreground">{text}</strong> : text)}</p>)}
         </article>}
         {selected === "painel" && <UberabaShell embedded extraTabs={PAINEL_EXTRAS} subNavTarget={subNav} />}
-        {selected === "uberaba" && <UberabaMapa embedded selectedDate={date} toolbarTarget={toolbar} />}
-        {selected === "simulacoes" && <UberabaEstudoSimulacoes subNavTarget={subNav} />}
+        {selected === "uberaba" && <UberabaMapa embedded selectedDate={date} toolbarTarget={acoesTarget !== undefined ? acoesTarget : toolbar} />}
+        {selected === "simulacoes" && <UberabaEstudoSimulacoes subNavTarget={subNav} acoesTarget={acoesTarget} />}
       </section>
     </div>
   );
