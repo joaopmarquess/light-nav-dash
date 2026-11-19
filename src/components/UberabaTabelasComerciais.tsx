@@ -385,9 +385,9 @@ const UberabaTabelasComerciais = ({ comparada: comparadaExterna, onComparar }: {
   const controlado = comparadaExterna !== undefined;
   const comparada = controlado ? comparadaExterna : comparadaLocal;
   const setComparada = (id: FrenteId | null) => { if (!controlado) setComparadaLocal(id); };
-  // "OUTRAS BENSAÚDE" (3019 e 3020, chave Venda/Net própria) abre expandido; "CONCORRENTES" abre recolhido.
+  // "OUTRAS BENSAÚDE" (3019 e 3020, chave Venda/Net própria) e "CONCORRENTES" abrem expandidos.
   const [outrasAberto, setOutrasAberto] = useState(true);
-  const [concorrentesAberto, setConcorrentesAberto] = useState(false);
+  const [concorrentesAberto, setConcorrentesAberto] = useState(true);
   const [modoOutras, setModoOutras] = useState<ValorOutrasBensaude>("venda");
   const comparar = (id: FrenteId | null) => { setComparada(id); onComparar?.(id); };
   const [indices, setIndices] = useState<Indices>(() => lerIndices());
