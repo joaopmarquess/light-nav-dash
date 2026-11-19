@@ -57,7 +57,7 @@ describe("Produtos Lancers por plano e acomodação", () => {
     const pca = produtos.find((p) => p.plano === 2961)!;
     const prata = linhasFaixaLancers(pca, "PRATA");
     expect(prata).toHaveLength(10);
-    expect(prata[0]).toEqual({ faixa: "0 a 18", net: 132.44, venda: 165.55, spread: 1 - 132.44 / 165.55, spreadDiv: 132.44 / 165.55 });
+    expect(prata[0]).toEqual({ faixa: "0 a 18", net: 132.44, venda: 165.55, spread: 1 - 132.44 / 165.55, spreadDiv: 1 - 132.44 / 165.55 });
     const ouro = linhasFaixaLancers(pca, "OURO");
     expect(ouro[9]).toMatchObject({ faixa: "59 anos ou mais", net: 1191.78, venda: 1489.73 });
   });
@@ -138,10 +138,10 @@ describe("Rótulo das faixas", () => {
   });
 });
 
-describe("Spread div. (Net ÷ Venda)", () => {
-  it("divides net by venda in each band", () => {
+describe("Spread div. (100% − Net ÷ Venda)", () => {
+  it("is 100% minus net divided by venda in each band", () => {
     const [l] = linhasFaixaLancers(produtosLancers().find((x) => x.plano === 3019)!, "PRATA");
-    expect(l.spreadDiv).toBeCloseTo(103.28 / 134.14, 12);
-    expect(formatarSpreadTabela(l.spreadDiv)).toBe("76,99%");
+    expect(l.spreadDiv).toBeCloseTo(1 - 103.28 / 134.14, 12);
+    expect(formatarSpreadTabela(l.spreadDiv)).toBe("23,01%");
   });
 });
