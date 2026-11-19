@@ -68,6 +68,7 @@ export default function ProdutosLancers() {
               <th className="px-4 py-2 text-right">Net (R$)</th>
               <th className="px-4 py-2 text-right">Venda (R$){estimada && "*"}</th>
               <th className="px-4 py-2 text-right">Spread</th>
+              <th className="px-4 py-2 text-right">Spread div.</th>
             </tr>
           </thead>
           <tbody>
@@ -77,6 +78,7 @@ export default function ProdutosLancers() {
                 <td className="px-4 py-1.5 text-right tabular-nums">{formatarValorLancers(l.net, "net")}</td>
                 <td className={cn("px-4 py-1.5 text-right tabular-nums", estimada && "italic text-muted-foreground")}>{formatarValorLancers(l.venda, "venda")}</td>
                 <td className="px-4 py-1.5 text-right tabular-nums">{formatarSpreadTabela(l.spread)}</td>
+                <td className="px-4 py-1.5 text-right tabular-nums">{formatarSpreadTabela(l.spreadDiv)}</td>
               </tr>
             ))}
           </tbody>
