@@ -19,22 +19,14 @@ export default function ProdutosLancers() {
   const estimada = produto.vendaEstimada;
   const spread = spreadTabelaLancers(produto, acomodacao);
   return (
-    <section className="bg-card rounded-xl border border-border shadow-sm p-6 space-y-5 max-w-3xl">
-      <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground"><Tags className="h-5 w-5 text-primary" />Produtos Lancers</h2>
-      <div className="flex flex-wrap items-end gap-4">
+    <section className="h-full min-h-0 w-full overflow-auto bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col gap-5">
+      <div className="flex flex-wrap items-end gap-x-8 gap-y-4">
+        <h2 className="flex h-10 items-center gap-2 text-xl font-semibold text-foreground"><Tags className="h-5 w-5 text-primary" />Produtos Lancers</h2>
         <label className="text-xs text-muted-foreground">Plano
           <select value={produto.chave} onChange={(e) => setChave(e.target.value)}
-            className="block h-10 mt-1 px-3 min-w-64 rounded-md border border-border bg-background text-sm text-foreground">
+            className="block h-10 mt-1 px-3 min-w-72 rounded-md border border-border bg-background text-sm text-foreground">
             {PRODUTOS.map((p) => <option key={p.chave} value={p.chave}>{rotuloProdutoLancers(p, TODOS)}</option>)}
           </select>
-        </label>
-        <label className="flex h-10 items-center gap-2 text-sm text-foreground cursor-pointer">
-          <Checkbox checked={incluirAntigos} onCheckedChange={(v) => {
-            const marcar = v === true; setIncluirAntigos(marcar);
-            const lista = produtosFiltroLancers(TODOS, marcar);
-            if (!lista.some((p) => p.chave === chave)) setChave(lista[0].chave); // desmarcar volta ao primeiro plano nomeado
-          }} />
-          Incluir Tabelas de Produtos mais Antigos
         </label>
         <div className="flex flex-col text-xs text-muted-foreground">Acomodação
           <div role="group" aria-label="Acomodação" className="mt-1 inline-flex h-10 items-center rounded-md border border-border bg-background p-0.5">
@@ -46,37 +38,51 @@ export default function ProdutosLancers() {
             ))}
           </div>
         </div>
+        <label className="flex h-10 items-center gap-2 text-sm text-foreground cursor-pointer">
+          <Checkbox checked={incluirAntigos} onCheckedChange={(v) => {
+            const marcar = v === true; setIncluirAntigos(marcar);
+            const lista = produtosFiltroLancers(TODOS, marcar);
+            if (!lista.some((p) => p.chave === chave)) setChave(lista[0].chave); // desmarcar volta ao primeiro plano nomeado
+          }} />
+          Incluir Tabelas de Produtos mais Antigos
+        </label>
       </div>
-      <div>
-        <p className="text-xs text-muted-foreground">Descrição</p>
-        <p className="text-lg font-semibold text-foreground">{produto.nome ?? produto.descricao}</p>
-        {estimada && <p className="text-xs text-muted-foreground">Preço de venda desconhecido: venda estimada pela planilha a partir do net (Venda = Net ÷ 0,77).</p>}
-      </div>
-      <div>
-        <p className="text-xs text-muted-foreground">Spread da tabela</p>
-        <p className="text-lg font-semibold text-foreground tabular-nums">{formatarSpreadTabela(spread)}</p>
-        <p className="text-xs text-muted-foreground">Spread = 1 − (Net ÷ Venda), somando as 10 faixas.</p>
-      </div>
-      <table className="w-full text-sm border border-border">
-        <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
-          <tr>
-            <th className="px-3 py-2 text-left">Faixa</th>
-            <th className="px-3 py-2 text-right">Net (R$)</th>
-            <th className="px-3 py-2 text-right">Venda (R$){estimada && "*"}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {linhas.map((l) => (
-            <tr key={l.faixa} className="border-t border-border">
-              <td className="px-3 py-1.5">{l.faixa}</td>
-              <td className="px-3 py-1.5 text-right tabular-nums">{formatarValorLancers(l.net, "net")}</td>
-              <td className={cn("px-3 py-1.5 text-right tabular-nums", estimada && "italic text-muted-foreground")}>{formatarValorLancers(l.venda, "venda")}</td>
+      <div className="flex-1 min-h-0 grid gap-6 lg:grid-cols-[minmax(260px,340px)_1fr]">
+        <div className="flex flex-col gap-5 border-t border-border pt-4 lg:border-t-0 lg:pt-0 lg:border-r lg:pr-6">
+          <div>
+            <p className="text-xs text-muted-foreground">Descrição</p>
+            <p className="text-lg font-semibold text-foreground">{produto.nome ?? produto.descricao}</p>
+            {estimada && <p className="text-xs text-muted-foreground">Preço de venda desconhecido: venda estimada pela planilha a partir do net (Venda = Net ÷ 0,77).</p>}
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Spread da tabela</p>
+            <p className="text-2xl font-semibold text-foreground tabular-nums">{formatarSpreadTabela(spread)}</p>
+            <p className="text-xs text-muted-foreground">Spread = 1 − (Net ÷ Venda), somando as 10 faixas.</p>
+          </div>
+          <div className="mt-auto space-y-2">
+            {incluirAntigos && <p className="text-xs text-muted-foreground">* Tabela de produto mais antigo.</p>}
+            <p className="text-xs text-muted-foreground break-words [overflow-wrap:anywhere]">Valores mensais por beneficiário. Fonte: net da planilha TABELAS_LANCERS.xlsx; {produto.vendaAtualizada ? "venda do arquivo Tabelas_de_Precos_Planos_3019_3020_3120_3096_3097_3116.xlsx" : "venda da mesma planilha"} (enviados em 19/11/2026).</p>
+          </div>
+        </div>
+        <table className="w-full h-full text-sm border border-border">
+          <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
+            <tr>
+              <th className="px-4 py-2 text-left">Faixa</th>
+              <th className="px-4 py-2 text-right">Net (R$)</th>
+              <th className="px-4 py-2 text-right">Venda (R$){estimada && "*"}</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      {incluirAntigos && <p className="text-xs text-muted-foreground">* Tabela de produto mais antigo.</p>}
-      <p className="text-xs text-muted-foreground">Valores mensais por beneficiário. Fonte: net da planilha TABELAS_LANCERS.xlsx; {produto.vendaAtualizada ? "venda do arquivo Tabelas_de_Precos_Planos_3019_3020_3120_3096_3097_3116.xlsx" : "venda da mesma planilha"} (enviados em 19/11/2026).</p>
+          </thead>
+          <tbody>
+            {linhas.map((l) => (
+              <tr key={l.faixa} className="border-t border-border">
+                <td className="px-4 py-1.5">{l.faixa}</td>
+                <td className="px-4 py-1.5 text-right tabular-nums">{formatarValorLancers(l.net, "net")}</td>
+                <td className={cn("px-4 py-1.5 text-right tabular-nums", estimada && "italic text-muted-foreground")}>{formatarValorLancers(l.venda, "venda")}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }
