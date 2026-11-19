@@ -1,33 +1,46 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { FileSignature } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import PdfPreview from "@/components/PdfPreview";
 import { loadTimbrado } from "@/lib/pdfTimbrado";
 import { lerFatores, lerIndicadores, lerIndices, lerRotulos } from "@/lib/uberabaTabelasComerciais";
 import { buildPropostaComercialPdf } from "@/lib/uberabaPropostaComercialPdf";
+import { BOTOES_PROPOSTA_COMERCIAL, propostaGrupo, PROPOSTAS_GRUPO, type PropostaGrupoId } from "@/lib/uberabaPropostaGrupo";
+import { buildPropostaGrupoPdf } from "@/lib/uberabaPropostaGrupoPdf";
 import { carregarLogoBensaude } from "@/lib/pdfCapaProposta";
 
-/** Ícone "Gerar Proposta Comercial" (Resultados Comerciais): usa os índices e indicadores atuais das tabelas e os textos fixos (sugestão por IA retirada em 19/11/2026). */
+type Escolha = PropostaGrupoId | "original";
+
+/**
+ * Botões da Proposta Comercial (Resultados Comerciais), pedido de 19/11/2026: Administrados, Empresariais e Original;
+ * o nome completo aparece só na dica. Todos usam os índices, indicadores, nomes e fatores atuais das tabelas.
+ */
 export default function UberabaPropostaComercialButton() {
-  const [aberto, setAberto] = useState(false);
-  const abrir = () => setAberto(true);
+  const [aberto, setAberto] = useState<Escolha | null>(null);
+  const build = async (e: Escolha) => {
+    const [timbrado, logo] = [await loadTimbrado(), await carregarLogoBensaude()];
+    if (e === "original") return buildPropostaComercialPdf(timbrado, lerIndices(), lerIndicadores(), lerRotulos(), lerFatores(), null, logo);
+    return buildPropostaGrupoPdf(propostaGrupo(e, lerIndices(), lerIndicadores(), lerRotulos(), lerFatores()), timbrado, logo);
+  };
   return (
     <>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="outline" size="icon" className="h-9 w-9" aria-label="Gerar Proposta Comercial" onClick={abrir}>
-            <FileSignature />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Gerar Proposta Comercial</TooltipContent>
-      </Tooltip>
+      {BOTOES_PROPOSTA_COMERCIAL.map((b) => (
+        <Tooltip key={b.id}>
+          <TooltipTrigger asChild>
+            <Button variant="outline" size="sm" className="h-9 px-3" aria-label={b.nome} onClick={() => setAberto(b.id)}>
+              {b.rotulo}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{b.nome}</TooltipContent>
+        </Tooltip>
+      ))}
       {aberto && createPortal(
         <PdfPreview
-          build={async () => buildPropostaComercialPdf(await loadTimbrado(), lerIndices(), lerIndicadores(), lerRotulos(), lerFatores(), null, await carregarLogoBensaude())}
-          fileName="Proposta_Comercial_Bensaude_Uberaba.pdf"
-          onClose={() => setAberto(false)}
+          key={aberto}
+          build={() => build(aberto)}
+          fileName={aberto === "original" ? "Proposta_Comercial_Bensaude_Uberaba.pdf" : PROPOSTAS_GRUPO[aberto].arquivo}
+          onClose={() => setAberto(null)}
         />,
         document.body,
       )}

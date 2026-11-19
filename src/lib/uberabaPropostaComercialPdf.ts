@@ -15,7 +15,7 @@ type RGB = [number, number, number];
  * Paleta pensada para impressão em preto e branco: as cores de cada frente seguem a tela, mas escurecidas,
  * e textos, linhas e contornos usam tinta escura para não sumirem no papel.
  */
-const COR_FRENTE: Record<FrenteId, RGB> = { pcaAdm: [128, 90, 15], pmeAdm: [90, 55, 125], pceAdm: [15, 85, 140], pce100: [150, 65, 35] };
+export const COR_FRENTE: Record<FrenteId, RGB> = { pcaAdm: [128, 90, 15], pmeAdm: [90, 55, 125], pceAdm: [15, 85, 140], pce100: [150, 65, 35] };
 export const TINTA: RGB = [10, 38, 72];
 export const CABECALHO: RGB = [205, 222, 236];
 export const ZEBRA: RGB = [236, 241, 245];
