@@ -1,4 +1,5 @@
 import anexos from "@/data/uberabaLancers.json";
+import { INDICES_PADRAO, PARAMETROS_UBERABA, tabelaReferencia, tabelaVenda, type Indices } from "@/lib/uberabaTabelasComerciais";
 
 export type LancersTable = { title: string; headers: string[]; rows: string[][] };
 export type Accommodation = "enfermaria" | "apartamento";
@@ -39,3 +40,20 @@ export const LANCERS_PREMISSAS = [
   { titulo: "Canal e contratos", texto: "As oportunidades Lancers são insumos de estudo. Não substituem os modelos PCA/ACIU, PCE 50 a 99 e PCE 100+, nem definem parceiros ou remuneração." },
   { titulo: "Preço e sustentabilidade", texto: "Mensalidade não é custo total. Coparticipações, rede, abrangência e carências precisam ser validadas antes de divulgar uma oferta para Uberaba." },
 ];
+/**
+ * Tabela de preços completa da Enfermaria (pedido do Dênis, 19/11/2026): as linhas do anexo Lancers, sem alteração,
+ * seguidas da Enfermaria da Referencial e das quatro tabelas do Proj. Uberaba (Referencial × índice atual dos
+ * Resultados Comerciais), logo após as três linhas Bensaúde. Só para exibição; o anexo e o ranking não mudam.
+ */
+export const centavosLancers = (c: number) => (c / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+export function linhasProjetoUberabaEnfermaria(indices: Indices = INDICES_PADRAO): string[][] {
+  const fmt = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 2 });
+  return [
+    ["Proj. Uberaba · Referencial (100%)", ...tabelaReferencia().map((l) => centavosLancers(l.enfermariaCentavos))],
+    ...PARAMETROS_UBERABA.map((p) => [`Proj. Uberaba · ${p.sigla} (${fmt(indices[p.id])}%)`, ...tabelaVenda(indices[p.id]).map((l) => centavosLancers(l.enfermariaCentavos))]),
+  ];
+}
+export function tabelaCompletaEnfermaria(indices: Indices = INDICES_PADRAO): LancersTable {
+  const base = anexos.precos.tables[1];
+  return { ...base, rows: [...base.rows.slice(0, 3), ...linhasProjetoUberabaEnfermaria(indices), ...base.rows.slice(3)] };
+}
