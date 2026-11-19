@@ -107,3 +107,15 @@ describe("Quantidade de Credenciamentos", () => {
     expect(linhasQuantidadeCredenciamentos().total.autorizado).toBe(229);
   });
 });
+
+describe("Restaurar padrão do Credenciamento", () => {
+  it("apaga Qtde., Valor e itens digitados: Adesão volta a R$ 68.700,00 e cada item ao padrão", async () => {
+    const m = await import("./uberabaQuantidadeCredenciamentos");
+    m.salvarAutorizados({ medicos: 10 });
+    m.salvarValores({ medicos: 500 });
+    m.salvarQuantidadesItens({ [m.chaveItem("hospitais", "X")]: 9 });
+    m.restaurarCredenciamento();
+    expect(m.linhasQuantidadeCredenciamentos(m.carregarAutorizados(), m.carregarValores()).total.adesao).toBe(68700);
+    expect(m.carregarQuantidadesItens()).toEqual({});
+  });
+});

@@ -252,3 +252,10 @@ export function carregarQuantidadesItens(): QuantidadesItens {
 export function salvarQuantidadesItens(valores: QuantidadesItens) {
   try { localStorage.setItem(CHAVE_QUANTIDADES_ITENS, JSON.stringify(valores)); } catch { /* navegador sem armazenamento */ }
 }
+
+/** Ícone "Restaurar padrão" do Credenciamento (19/11/2026): apaga Qtde., Valor e quantidades dos itens digitadas; tudo volta ao padrão. */
+export function restaurarCredenciamento() {
+  salvarQuantidadesItens({});
+  salvarValores({});
+  salvarAutorizados({});
+}

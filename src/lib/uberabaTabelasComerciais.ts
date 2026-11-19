@@ -246,6 +246,22 @@ export function gravarIndicadores(v: IndicadoresPorFrente, storage: Pick<Storage
   avisarAlteracao();
 }
 
+/** Variáveis de uma tabela que o ícone "Restaurar padrão" volta ao padrão: índice x Referência, fator Apartamento e Indicadores variáveis (o nome tem o próprio padrão). */
+export type VariaveisFrentes = { indices: Indices; fatores: Fatores; indicadores: IndicadoresPorFrente };
+export function restaurarFrentePadrao(id: FrenteId, v: VariaveisFrentes): VariaveisFrentes {
+  return {
+    indices: { ...v.indices, [id]: INDICES_PADRAO[id] },
+    fatores: { ...v.fatores, [id]: FATORES_PADRAO[id] },
+    indicadores: { ...v.indicadores, [id]: { ...INDICADORES_PADRAO_POR_FRENTE[id] } },
+  };
+}
+/** A tabela já está toda no padrão (ícone desativado). */
+export function frenteNoPadrao(id: FrenteId, v: VariaveisFrentes): boolean {
+  const p = INDICADORES_PADRAO_POR_FRENTE[id];
+  return v.indices[id] === INDICES_PADRAO[id] && v.fatores[id] === FATORES_PADRAO[id]
+    && (Object.keys(p) as CampoIndicador[]).every((c) => v.indicadores[id][c] === p[c]);
+}
+
 // ---------- Quadros das frentes (tela e Proposta Comercial) ----------
 /** Nome e segmento de cada frente, na ordem da tela. */
 /** Nome = Descrição da Tabela; segmento = Contratação (parâmetros de 13/11/2026). */

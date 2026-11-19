@@ -17,3 +17,12 @@ describe("Parâmetros de Resultados Rede", () => {
     expect(lerParametroRede("6,5", true)).toBeNull();
   });
 });
+
+describe("Restaurar padrão dos Parâmetros", () => {
+  it("volta a 3 parcelas de R$ 15.000,00 a partir do mês 3 e R$ 2,00 por vida", async () => {
+    const m = await import("./uberabaParametrosRede");
+    m.salvarParametrosRede({ parcelasFixas: 6, iniciarEm: 1, valorParcela: 10000, valorPorVida: 1 });
+    m.restaurarParametrosRede();
+    expect(m.parametrosRede(m.carregarParametrosRede())).toEqual({ parcelasFixas: 3, iniciarEm: 3, valorParcela: 15000, valorPorVida: 2 });
+  });
+});

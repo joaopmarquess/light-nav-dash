@@ -45,3 +45,8 @@ export function salvarParametrosRede(valores: Partial<ParametrosRede>) {
   try { localStorage.setItem(CHAVE_PARAMETROS_REDE, JSON.stringify(valores)); } catch { /* navegador sem armazenamento */ }
   try { globalThis.dispatchEvent?.(new Event(EVENTO_PARAMETROS_REDE)); } catch { /* sem janela */ }
 }
+
+/** Ícone "Restaurar padrão" (19/11/2026): apaga os valores digitados; os Parâmetros voltam a PARAMETROS_REDE_PADRAO. */
+export function restaurarParametrosRede() {
+  salvarParametrosRede({});
+}

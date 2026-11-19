@@ -223,3 +223,21 @@ describe("parâmetros das tabelas (13/11/2026)", () => {
     expect(GRUPOS_FRENTES.map((g) => g.frentes)).toEqual([["pcaAdm", "pmeAdm", "pceAdm"], ["pce100"]]);
   });
 });
+
+describe("Restaurar padrão de uma tabela", () => {
+  it("volta índice, fator Apartamento e Indicadores só da tabela escolhida", async () => {
+    const m = await import("./uberabaTabelasComerciais");
+    const alterado = {
+      indices: { ...m.INDICES_PADRAO, pcaAdm: 80, pce100: 70 },
+      fatores: { ...m.FATORES_PADRAO, pcaAdm: 1.5 },
+      indicadores: { ...m.indicadoresPadrao(), pcaAdm: { ...m.indicadoresPadrao().pcaAdm, spread: 40 } },
+    };
+    const r = m.restaurarFrentePadrao("pcaAdm", alterado);
+    expect(r.indices.pcaAdm).toBe(95);
+    expect(r.fatores.pcaAdm).toBe(m.FATORES_PADRAO.pcaAdm);
+    expect(r.indicadores.pcaAdm).toEqual(m.INDICADORES_PADRAO_POR_FRENTE.pcaAdm);
+    expect(r.indices.pce100).toBe(70);
+    expect(m.frenteNoPadrao("pcaAdm", r)).toBe(true);
+    expect(m.frenteNoPadrao("pce100", r)).toBe(false);
+  });
+});

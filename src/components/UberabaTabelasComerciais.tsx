@@ -8,7 +8,8 @@ import { loadMarcaAxis } from "@/lib/pdfMarcaAxis";
 import { buildTabelasImpressaoPdf, paginasImpressao } from "@/lib/uberabaTabelasImpressao";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, formatarFator, gravarFatores, lerFatores, parseFator, type Fatores, FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, parametrosDe, vidasTexto, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, gravarPadraoRotulos, gravarRotulos, lerIndicadores, lerIndices, lerPadraoRotulos, lerRotulos, normalizarRotulo, ROTULO_MAX, parseIndicador, parseIndice, tabelaIndexada, tabelaNet, tabelaVenda, operadoraDe, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices, type Rotulos, type RotulosPorFrente } from "@/lib/uberabaTabelasComerciais";
+import RestaurarPadraoButton from "@/components/RestaurarPadraoButton";
+import { frenteNoPadrao, restaurarFrentePadrao, FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, formatarFator, gravarFatores, lerFatores, parseFator, type Fatores, FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, parametrosDe, vidasTexto, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, gravarPadraoRotulos, gravarRotulos, lerIndicadores, lerIndices, lerPadraoRotulos, lerRotulos, normalizarRotulo, ROTULO_MAX, parseIndicador, parseIndice, tabelaIndexada, tabelaNet, tabelaVenda, operadoraDe, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices, type Rotulos, type RotulosPorFrente } from "@/lib/uberabaTabelasComerciais";
 
 // Preços calculados pela Referência × índice de cada frente; indicadores variáveis editáveis por frente (cálculos no helper).
 type Linha = [string, string, string];
@@ -215,8 +216,8 @@ const GravarPadrao = ({ f, ativo, onClick }: { f: Frente; ativo: boolean; onClic
   );
 };
 
-const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variaveis, indicadores, onIndicador, rotulos, padroes, onRotulo, onGravarPadrao, modo, onModo, onImprimir }: {
-  modo: ModoPreco; onModo: (m: ModoPreco) => void; onImprimir: () => void;
+const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variaveis, indicadores, onIndicador, rotulos, padroes, onRotulo, onGravarPadrao, modo, onModo, onImprimir, noPadrao, onRestaurar }: {
+  modo: ModoPreco; onModo: (m: ModoPreco) => void; onImprimir: () => void; noPadrao: boolean; onRestaurar: () => void;
   f: Frente; indice: number; onIndice: (v: number) => void; fator: number; onFator: (v: number) => void; apartamento: ApartamentoToggle; precos: ApartamentoToggle; variaveis: ApartamentoToggle;
   rotulos: Rotulos; padroes: Rotulos; onRotulo: (campo: keyof Rotulos, v: string) => void; onGravarPadrao: () => void;
   indicadores: Indicadores; onIndicador: (campo: CampoIndicador, v: number) => void;
@@ -232,6 +233,7 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
           <GravarPadrao f={f} ativo={rotulos.titulo !== padroes.titulo} onClick={onGravarPadrao} />
         </span>
         <IndiceCampo f={f} valor={indice} onChange={onIndice} />
+        <RestaurarPadraoButton alvo={`${rotulos.titulo} (índice, fator Apartamento e Indicadores variáveis)`} desativado={noPadrao} onRestaurar={onRestaurar} className="h-7 w-7" />
       </div>
       <ParametrosLinha id={f.id} />
       <section className="comercial-secao" aria-label={`Tabelas ${f.titulo}`}>
@@ -305,10 +307,15 @@ const UberabaTabelasComerciais = () => {
   const [fatores, setFatores] = useState<Fatores>(() => lerFatores());
   const alterarFator = (id: FrenteId, v: number) => setFatores((atual) => { const novo = { ...atual, [id]: v }; gravarFatores(novo); return novo; });
   const alterar = (id: FrenteId, v: number) => setIndices((atual) => { const novo = { ...atual, [id]: v }; gravarIndices(novo); return novo; });
+  const restaurar = (id: FrenteId) => {
+    const novo = restaurarFrentePadrao(id, { indices, fatores, indicadores });
+    gravarIndices(novo.indices); gravarFatores(novo.fatores); gravarIndicadores(novo.indicadores);
+    setIndices(novo.indices); setFatores(novo.fatores); setIndicadores(novo.indicadores);
+  };
   return (
     <section className="comercial-presentation" aria-label="Tabelas comerciais">
       <div className={`comercial-grid ${variaveisVisivel ? "" : "indicadores-recolhidos"}`}>
-        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} fator={fatores[f.id]} onFator={(v) => alterarFator(f.id, v)} apartamento={apartamento} precos={precos} variaveis={variaveis} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} padroes={padroes[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} onGravarPadrao={() => gravarPadrao(f.id)} modo={modo} onModo={setModo} onImprimir={() => setImprimindo(true)} />)}
+        {FRENTES.map((f) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} fator={fatores[f.id]} onFator={(v) => alterarFator(f.id, v)} apartamento={apartamento} precos={precos} variaveis={variaveis} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} padroes={padroes[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} onGravarPadrao={() => gravarPadrao(f.id)} modo={modo} onModo={setModo} onImprimir={() => setImprimindo(true)} noPadrao={frenteNoPadrao(f.id, { indices, fatores, indicadores })} onRestaurar={() => restaurar(f.id)} />)}
       </div>
       {imprimindo && (
         <PdfPreview

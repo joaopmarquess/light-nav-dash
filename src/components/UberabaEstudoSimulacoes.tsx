@@ -8,6 +8,9 @@ import UberabaQuantidadeCredenciamentos from "@/components/UberabaQuantidadeCred
 import UberabaParametrosRede from "@/components/UberabaParametrosRede";
 import UberabaResultadoRede from "@/components/UberabaResultadoRede";
 import EstudoSubNav from "@/components/EstudoSubNav";
+import RestaurarPadraoButton from "@/components/RestaurarPadraoButton";
+import { restaurarCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
+import { restaurarParametrosRede } from "@/lib/uberabaParametrosRede";
 import UberabaPropostaComercialButton from "@/components/UberabaPropostaComercialButton";
 import UberabaPropostaRedeButton from "@/components/UberabaPropostaRedeButton";
 
@@ -22,13 +25,16 @@ const ABAS: { id: Aba; label: string; icon: typeof Calculator }[] = [
 const UberabaEstudoSimulacoes = ({ subNavTarget }: { subNavTarget?: HTMLElement | null } = {}) => {
   const [aba, setAba] = useState<Aba>("comercial");
   const atual = ABAS.find((a) => a.id === aba)!;
+  // "Restaurar padrão": apaga os valores digitados e remonta o bloco para mostrar os padrões.
+  const [versaoCred, setVersaoCred] = useState(0);
+  const [versaoParam, setVersaoParam] = useState(0);
   return (
     <div className="flex flex-col gap-3">
       <EstudoSubNav itens={ABAS} ativo={aba} onSelect={(id) => setAba(id as Aba)} label="Simulações do Estudo" target={subNavTarget} extra={aba === "comercial" ? <div className="flex items-center gap-2"><ReferenciaButton /><UberabaPropostaComercialButton /></div> : <div className="flex items-center gap-2"><UberabaPropostaRedeButton /></div>} />
       <section aria-label={atual.label} className="min-w-0">
         {/* Simulação de resultados fica recolhida abaixo dos Resultados Comerciais; Resultados Rede: Condições Rede, Credenciamento, Parâmetros e Resultado, recolhidas (Antecipação × Mensal excluída em 18/11/2026). */}
         {aba === "comercial" && <><UberabaTabelasComerciais /><BlocoRecolhido titulo="Simulação de resultados" className="mt-4"><div className="p-3"><UberabaSimulacao /></div></BlocoRecolhido></>}
-        {aba === "gestaoRede" && <><BlocoRecolhido titulo="Condições Rede" className="mb-4"><div className="p-3"><UberabaRedeAssistencial /></div></BlocoRecolhido><BlocoRecolhido titulo="Credenciamento" className="mb-4"><div className="p-3"><UberabaQuantidadeCredenciamentos /></div></BlocoRecolhido><BlocoRecolhido titulo="Parâmetros" className="mb-4"><div className="p-3"><UberabaParametrosRede /></div></BlocoRecolhido><BlocoRecolhido titulo="Resultado"><div className="p-3"><UberabaResultadoRede /></div></BlocoRecolhido></>}
+        {aba === "gestaoRede" && <><BlocoRecolhido titulo="Condições Rede" className="mb-4"><div className="p-3"><UberabaRedeAssistencial /></div></BlocoRecolhido><BlocoRecolhido titulo="Credenciamento" className="mb-4" acoes={<RestaurarPadraoButton alvo="Credenciamento (Qtde., Valor e quantidades dos itens)" onRestaurar={() => { restaurarCredenciamento(); setVersaoCred((v) => v + 1); }} />}><div className="p-3"><UberabaQuantidadeCredenciamentos key={versaoCred} /></div></BlocoRecolhido><BlocoRecolhido titulo="Parâmetros" className="mb-4" acoes={<RestaurarPadraoButton alvo="Parâmetros" onRestaurar={() => { restaurarParametrosRede(); setVersaoParam((v) => v + 1); }} />}><div className="p-3"><UberabaParametrosRede key={versaoParam} /></div></BlocoRecolhido><BlocoRecolhido titulo="Resultado"><div className="p-3"><UberabaResultadoRede /></div></BlocoRecolhido></>}
       </section>
     </div>
   );
