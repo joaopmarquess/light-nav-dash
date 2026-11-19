@@ -55,7 +55,7 @@ export type AcomodacaoLancers = (typeof ACOMODACOES_LANCERS)[number]["id"];
 /** Rótulo do filtro de Plano: nome informado (ou a descrição da planilha); quando o plano tem mais de uma tabela
  *  (o 3096), acrescenta a descrição da planilha para distinguir. */
 export const rotuloProdutoLancers = (p: ProdutoLancers, todos: ProdutoLancers[] = produtosLancers()) => {
-  const repetido = todos.filter((o) => o.plano === p.plano).length > 1;
+  const repetido = todos.filter((o) => o.plano === p.plano && !tabelaOcultaLancers(o)).length > 1;
   if (!p.nome) return `${p.plano}* · ${p.descricao}`; // * = tabela de produto mais antigo (pedido de 19/11/2026)
   return repetido ? `${p.plano} · ${p.nome} · ${p.descricao}` : `${p.plano} · ${p.nome}`;
 };
@@ -67,9 +67,16 @@ export const linhasFaixaLancers = (p: ProdutoLancers, acomodacao: AcomodacaoLanc
     return { faixa, net: l?.net ?? null, venda: l?.venda ?? null, spread: l?.spread ?? null };
   });
 
-/** Tabelas do filtro de Plano: os planos com nome informado, na ordem informada (o 3096 traz as suas duas tabelas);
+/** Tabelas retiradas do filtro a pedido do Dênis (19/11/2026): a do 3096 sem preço de venda ("Desconhecido").
+ *  Os dados da planilha continuam intactos. */
+export const TABELAS_OCULTAS_LANCERS = [{ plano: 3096, descricao: "Desconhecido" }] as const;
+export const tabelaOcultaLancers = (p: ProdutoLancers) =>
+  TABELAS_OCULTAS_LANCERS.some((t) => t.plano === p.plano && t.descricao === p.descricao);
+
+/** Tabelas do filtro de Plano: os planos com nome informado, na ordem informada (sem as TABELAS_OCULTAS_LANCERS);
  *  com "Incluir Tabelas de Produtos mais Antigos", as demais tabelas vêm depois, na ordem da planilha. */
 export const produtosFiltroLancers = (todos: ProdutoLancers[] = produtosLancers(), incluirAntigos = false) => {
-  const nomeados = NOMES_PLANOS_LANCERS.flatMap((n) => todos.filter((p) => p.plano === n.plano));
-  return incluirAntigos ? [...nomeados, ...todos.filter((p) => !nomeados.includes(p))] : nomeados;
+  const visiveis = todos.filter((p) => !tabelaOcultaLancers(p));
+  const nomeados = NOMES_PLANOS_LANCERS.flatMap((n) => visiveis.filter((p) => p.plano === n.plano));
+  return incluirAntigos ? [...nomeados, ...visiveis.filter((p) => !nomeados.includes(p))] : nomeados;
 };

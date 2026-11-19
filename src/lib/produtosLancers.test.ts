@@ -42,9 +42,8 @@ import { linhasFaixaLancers, rotuloProdutoLancers } from "./produtosLancers";
 
 describe("Produtos Lancers por plano e acomodação", () => {
   const produtos = produtosLancers();
-  it("labels each plan option, telling the two 3096 tables apart", () => {
-    expect(produtos.filter((p) => p.plano === 3096).map((p) => rotuloProdutoLancers(p, produtos))).toEqual([
-      "3096 · F50 PCA (ENTIDADES FECHADAS) · PCA LINS/VOTUPORANGA", "3096 · F50 PCA (ENTIDADES FECHADAS) · Desconhecido"]);
+  it("labels 3096 by its name only, since its Desconhecido table is hidden", () => {
+    expect(rotuloProdutoLancers(produtos.find((p) => p.plano === 3096)!, produtos)).toBe("3096 · F50 PCA (ENTIDADES FECHADAS)");
   });
   it("uses the plan names supplied by the user and keeps the spreadsheet description", () => {
     const nome = (plano: number) => produtos.find((p) => p.plano === plano)?.nome;
@@ -68,15 +67,16 @@ describe("Produtos Lancers por plano e acomodação", () => {
 import { produtosFiltroLancers } from "./produtosLancers";
 
 describe("Filtro de Plano dos Produtos Lancers", () => {
-  it("lists only the named plans, in the order given, with both 3096 tables", () => {
+  it("lists only the named plans, in the order given, without the 3096 Desconhecido table", () => {
     expect(produtosFiltroLancers().map((p) => `${p.plano} ${p.descricao}`)).toEqual([
       "3019 PCA RIO PRETO", "3020 PCE RIO PRETO", "3120 Desconhecido",
-      "3096 PCA LINS/VOTUPORANGA", "3096 Desconhecido", "3097 Desconhecido", "3116 Desconhecido"]);
+      "3096 PCA LINS/VOTUPORANGA", "3097 Desconhecido", "3116 Desconhecido"]);
   });
   it("adds the older tables after the named ones when requested", () => {
     const todos = produtosFiltroLancers(produtosLancers(), true);
-    expect(todos).toHaveLength(13);
-    expect(todos.slice(0, 7)).toEqual(produtosFiltroLancers());
-    expect(todos.slice(7).map((p) => p.plano)).toEqual([2961, 2962, 2997, 2998, 3095, 2933]);
+    expect(todos).toHaveLength(12);
+    expect(todos.some((p) => p.plano === 3096 && p.descricao === "Desconhecido")).toBe(false);
+    expect(todos.slice(0, 6)).toEqual(produtosFiltroLancers());
+    expect(todos.slice(6).map((p) => p.plano)).toEqual([2961, 2962, 2997, 2998, 3095, 2933]);
   });
 });
