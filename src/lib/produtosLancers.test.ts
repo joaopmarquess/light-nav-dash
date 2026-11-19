@@ -64,3 +64,13 @@ describe("Produtos Lancers por plano e acomodação", () => {
     expect(ouro[9]).toMatchObject({ faixa: "59 anos ou mais", net: 1191.78, venda: 1489.73 });
   });
 });
+
+import { produtosFiltroLancers } from "./produtosLancers";
+
+describe("Filtro de Plano dos Produtos Lancers", () => {
+  it("lists only the named plans, in the order given, with both 3096 tables", () => {
+    expect(produtosFiltroLancers().map((p) => `${p.plano} ${p.descricao}`)).toEqual([
+      "3019 PCA RIO PRETO", "3020 PCE RIO PRETO", "3120 Desconhecido",
+      "3096 PCA LINS/VOTUPORANGA", "3096 Desconhecido", "3097 Desconhecido", "3116 Desconhecido"]);
+  });
+});

@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Tags } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ACOMODACOES_LANCERS, formatarValorLancers, linhasFaixaLancers, produtosLancers, rotuloProdutoLancers, type AcomodacaoLancers } from "@/lib/produtosLancers";
+import { ACOMODACOES_LANCERS, formatarValorLancers, linhasFaixaLancers, produtosFiltroLancers, produtosLancers, rotuloProdutoLancers, type AcomodacaoLancers } from "@/lib/produtosLancers";
 
-const PRODUTOS = produtosLancers();
+const TODOS = produtosLancers();
+// Filtro só com as tabelas dos planos que o Dênis nomeou (pedido de 19/11/2026).
+const PRODUTOS = produtosFiltroLancers(TODOS);
 
 // Laboratory › Produtos Lancers (pedido de 19/11/2026): filtro por Plano e chave de acomodação; mostra a descrição e o grid
 // Faixa / Net / Venda / Spread; valores da planilha TABELAS_LANCERS.xlsx, sem recálculo.
@@ -20,7 +22,7 @@ export default function ProdutosLancers() {
         <label className="text-xs text-muted-foreground">Plano
           <select value={chave} onChange={(e) => setChave(e.target.value)}
             className="block h-10 mt-1 px-3 min-w-64 rounded-md border border-border bg-background text-sm text-foreground">
-            {PRODUTOS.map((p) => <option key={p.chave} value={p.chave}>{rotuloProdutoLancers(p, PRODUTOS)}</option>)}
+            {PRODUTOS.map((p) => <option key={p.chave} value={p.chave}>{rotuloProdutoLancers(p, TODOS)}</option>)}
           </select>
         </label>
         <div className="flex flex-col text-xs text-muted-foreground">Acomodação

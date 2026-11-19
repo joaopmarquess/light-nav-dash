@@ -27,7 +27,7 @@ export function produtosLancers(linhas: LinhaTabelaLancers[] = TABELAS_LANCERS):
     const chave = `${l.plano}|${l.contratacao}|${l.tipo}`;
     let p = mapa.get(chave);
     if (!p) {
-      p = { chave, plano: l.plano, nome: NOMES_PLANOS_LANCERS[l.plano] ?? null, descricao: l.contratacao, vendaEstimada: l.tipo === "PRECO VENDA DESCONHECIDO",
+      p = { chave, plano: l.plano, nome: NOMES_PLANOS_LANCERS.find((n) => n.plano === l.plano)?.nome ?? null, descricao: l.contratacao, vendaEstimada: l.tipo === "PRECO VENDA DESCONHECIDO",
         porAcomodacao: { PRATA: FAIXAS_LANCERS.map(() => null), OURO: FAIXAS_LANCERS.map(() => null) } };
       mapa.set(chave, p);
     }
@@ -66,3 +66,7 @@ export const linhasFaixaLancers = (p: ProdutoLancers, acomodacao: AcomodacaoLanc
     const l = p.porAcomodacao[acomodacao][i];
     return { faixa, net: l?.net ?? null, venda: l?.venda ?? null, spread: l?.spread ?? null };
   });
+
+/** Tabelas do filtro de Plano: só os planos com nome informado, na ordem informada (o 3096 traz as suas duas tabelas). */
+export const produtosFiltroLancers = (todos: ProdutoLancers[] = produtosLancers()) =>
+  NOMES_PLANOS_LANCERS.flatMap((n) => todos.filter((p) => p.plano === n.plano));
