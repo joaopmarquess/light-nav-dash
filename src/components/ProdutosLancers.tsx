@@ -2,13 +2,13 @@ import { useState } from "react";
 import { Tags } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ACOMODACOES_LANCERS, formatarValorLancers, linhasFaixaLancers, produtosFiltroLancers, produtosLancers, rotuloProdutoLancers, type AcomodacaoLancers } from "@/lib/produtosLancers";
+import { ACOMODACOES_LANCERS, formatarSpreadTabela, formatarValorLancers, linhasFaixaLancers, spreadTabelaLancers, produtosFiltroLancers, produtosLancers, rotuloProdutoLancers, type AcomodacaoLancers } from "@/lib/produtosLancers";
 
 const TODOS = produtosLancers();
 // Filtro com as tabelas dos planos que o Dênis nomeou; "Incluir Tabelas de Produtos mais Antigos" (desmarcado) traz as demais (pedido de 19/11/2026).
 
 // Laboratory › Produtos Lancers (pedido de 19/11/2026): filtro por Plano e chave de acomodação; mostra a descrição e o grid
-// Faixa / Net / Venda / Spread; valores da planilha TABELAS_LANCERS.xlsx, sem recálculo.
+// Faixa / Net / Venda, com o spread da tabela (net ÷ venda) acima; valores da planilha TABELAS_LANCERS.xlsx, sem recálculo.
 export default function ProdutosLancers() {
   const [incluirAntigos, setIncluirAntigos] = useState(false);
   const PRODUTOS = produtosFiltroLancers(TODOS, incluirAntigos);
@@ -17,6 +17,7 @@ export default function ProdutosLancers() {
   const produto = PRODUTOS.find((p) => p.chave === chave) ?? PRODUTOS[0];
   const linhas = linhasFaixaLancers(produto, acomodacao);
   const estimada = produto.vendaEstimada;
+  const spread = spreadTabelaLancers(produto, acomodacao);
   return (
     <section className="bg-card rounded-xl border border-border shadow-sm p-6 space-y-5 max-w-3xl">
       <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground"><Tags className="h-5 w-5 text-primary" />Produtos Lancers</h2>
@@ -51,13 +52,17 @@ export default function ProdutosLancers() {
         <p className="text-lg font-semibold text-foreground">{produto.nome ?? produto.descricao}</p>
         {estimada && <p className="text-xs text-muted-foreground">Preço de venda desconhecido: venda estimada pela planilha a partir do net (Venda = Net ÷ 0,77).</p>}
       </div>
+      <div>
+        <p className="text-xs text-muted-foreground">Spread da tabela</p>
+        <p className="text-lg font-semibold text-foreground tabular-nums">{formatarSpreadTabela(spread)}</p>
+        <p className="text-xs text-muted-foreground">Spread = 1 − (Net ÷ Venda), somando as 10 faixas.</p>
+      </div>
       <table className="w-full text-sm border border-border">
         <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
           <tr>
             <th className="px-3 py-2 text-left">Faixa</th>
             <th className="px-3 py-2 text-right">Net (R$)</th>
             <th className="px-3 py-2 text-right">Venda (R$){estimada && "*"}</th>
-            <th className="px-3 py-2 text-right">Spread</th>
           </tr>
         </thead>
         <tbody>
@@ -66,13 +71,12 @@ export default function ProdutosLancers() {
               <td className="px-3 py-1.5">{l.faixa}</td>
               <td className="px-3 py-1.5 text-right tabular-nums">{formatarValorLancers(l.net, "net")}</td>
               <td className={cn("px-3 py-1.5 text-right tabular-nums", estimada && "italic text-muted-foreground")}>{formatarValorLancers(l.venda, "venda")}</td>
-              <td className="px-3 py-1.5 text-right tabular-nums">{formatarValorLancers(l.spread, "spread")}</td>
             </tr>
           ))}
         </tbody>
       </table>
       {incluirAntigos && <p className="text-xs text-muted-foreground">* Tabela de produto mais antigo.</p>}
-      <p className="text-xs text-muted-foreground">Valores mensais por beneficiário. Spread = (Venda − Net) ÷ Venda. Fonte: planilha TABELAS_LANCERS.xlsx enviada em 19/11/2026.</p>
+      <p className="text-xs text-muted-foreground">Valores mensais por beneficiário. Fonte: planilha TABELAS_LANCERS.xlsx enviada em 19/11/2026.</p>
     </section>
   );
 }

@@ -54,11 +54,11 @@ describe("Produtos Lancers por plano e acomodação", () => {
     expect(rotuloProdutoLancers(produtos.find((p) => p.plano === 3019)!, produtos)).toBe("3019 · F50 PCA (GERAL)");
     expect(rotuloProdutoLancers(produtos.find((p) => p.plano === 2961)!, produtos)).toBe("2961* · PCA");
   });
-  it("returns faixa, net, venda and spread for the chosen accommodation", () => {
+  it("returns faixa, net and venda for the chosen accommodation", () => {
     const pca = produtos.find((p) => p.plano === 2961)!;
     const prata = linhasFaixaLancers(pca, "PRATA");
     expect(prata).toHaveLength(10);
-    expect(prata[0]).toEqual({ faixa: "0 a 18", net: 132.44, venda: 165.55, spread: pca.porAcomodacao.PRATA[0]!.spread });
+    expect(prata[0]).toEqual({ faixa: "0 a 18", net: 132.44, venda: 165.55 });
     const ouro = linhasFaixaLancers(pca, "OURO");
     expect(ouro[9]).toMatchObject({ faixa: "59 anos ou mais", net: 1191.78, venda: 1489.73 });
   });
@@ -78,5 +78,20 @@ describe("Filtro de Plano dos Produtos Lancers", () => {
     expect(todos.some((p) => p.plano === 3096 && p.descricao === "Desconhecido")).toBe(false);
     expect(todos.slice(0, 6)).toEqual(produtosFiltroLancers());
     expect(todos.slice(6).map((p) => p.plano)).toEqual([2961, 2962, 2997, 2998, 3095, 2933]);
+  });
+});
+
+import { formatarSpreadTabela, spreadTabelaLancers } from "./produtosLancers";
+
+describe("Spread da tabela Lancers", () => {
+  const produtos = produtosLancers();
+  const plano = (n: number) => produtos.find((p) => p.plano === n)!;
+  it("computes spread as 1 − net ÷ venda over the table, not from the spreadsheet column", () => {
+    const p = plano(3019);
+    const net = p.porAcomodacao.PRATA.reduce((s, l) => s + l!.net, 0), venda = p.porAcomodacao.PRATA.reduce((s, l) => s + l!.venda, 0);
+    expect(spreadTabelaLancers(p, "PRATA")).toBeCloseTo(1 - net / venda, 12);
+    expect(formatarSpreadTabela(spreadTabelaLancers(p, "PRATA"))).toBe("23,01%");
+    expect(formatarSpreadTabela(spreadTabelaLancers(plano(2961), "OURO"))).toBe("20,00%");
+    expect(formatarSpreadTabela(spreadTabelaLancers(plano(3020), "PRATA"))).toBe("18,00%");
   });
 });
