@@ -37,3 +37,20 @@ describe("Produtos Lancers", () => {
     expect(vfeLancers()[9]).toBe(0.4785);
   });
 });
+
+import { linhasFaixaLancers, rotuloProdutoLancers } from "./produtosLancers";
+
+describe("Produtos Lancers por plano e acomodação", () => {
+  const produtos = produtosLancers();
+  it("labels each plan option, telling the two 3096 tables apart", () => {
+    expect(produtos.filter((p) => p.plano === 3096).map(rotuloProdutoLancers)).toEqual(["3096 · PCA LINS/VOTUPORANGA", "3096 · Desconhecido"]);
+  });
+  it("returns faixa, net, venda and spread for the chosen accommodation", () => {
+    const pca = produtos.find((p) => p.plano === 2961)!;
+    const prata = linhasFaixaLancers(pca, "PRATA");
+    expect(prata).toHaveLength(10);
+    expect(prata[0]).toEqual({ faixa: "0 a 18", net: 132.44, venda: 165.55, spread: pca.porAcomodacao.PRATA[0]!.spread });
+    const ouro = linhasFaixaLancers(pca, "OURO");
+    expect(ouro[9]).toMatchObject({ faixa: "59 anos ou mais", net: 1191.78, venda: 1489.73 });
+  });
+});

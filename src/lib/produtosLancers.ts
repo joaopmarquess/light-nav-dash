@@ -45,3 +45,16 @@ const pct = new Intl.NumberFormat("pt-BR", { style: "percent", minimumFractionDi
 export const formatarValorLancers = (v: number | null, valor: ValorLancers) =>
   v == null ? "—" : valor === "spread" ? pct.format(v) : brl.format(v);
 export const formatarVfe = (v: number | null) => (v == null ? "—" : pct.format(v));
+
+export type LinhaFaixaLancers = { faixa: string; net: number | null; venda: number | null; spread: number | null };
+export type AcomodacaoLancers = (typeof ACOMODACOES_LANCERS)[number]["id"];
+
+/** Rótulo do filtro de Plano: o 3096 aparece duas vezes e se distingue pela descrição. */
+export const rotuloProdutoLancers = (p: ProdutoLancers) => `${p.plano} · ${p.descricao}`;
+
+/** Linhas do grid Faixa / Net / Venda / Spread de um produto numa acomodação, na ordem das faixas. */
+export const linhasFaixaLancers = (p: ProdutoLancers, acomodacao: AcomodacaoLancers): LinhaFaixaLancers[] =>
+  FAIXAS_LANCERS.map((faixa, i) => {
+    const l = p.porAcomodacao[acomodacao][i];
+    return { faixa, net: l?.net ?? null, venda: l?.venda ?? null, spread: l?.spread ?? null };
+  });
