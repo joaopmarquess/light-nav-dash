@@ -11,7 +11,7 @@ import {
 const corValor = (linha: LinhaAjuste, valor: number) =>
   linha.tipo === "resultado"
     ? valor < 0 ? "text-[hsl(var(--ajuste-negativo-claro))]" : "text-[hsl(var(--ajuste-positivo-claro))]"
-    : valor < 0 ? "text-[hsl(var(--ajuste-negativo))]" : "";
+    : "";
 
 const fundoCelula = (linha: LinhaAjuste, cenario: CenarioAjuste) =>
   linha.tipo === "item" || linha.tipo === "linha" ? (cenario === "realista" ? "bg-[hsl(var(--ajuste-coluna))]" : "") : "";
@@ -34,8 +34,8 @@ function CampoAjuste({ valor, aoMudar, rotulo, alterado, largura }: { valor: str
     onBlur={() => setRascunho(null)}
     onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") { setRascunho(null); e.currentTarget.blur(); } }}
     className={cn(
-      "h-6 rounded-sm border border-dashed border-border bg-background/70 px-1 text-right tabular-nums text-inherit focus:outline-none focus:ring-1 focus:ring-ring",
-      alterado && "border-solid bg-[hsl(var(--ajuste-editado))] font-semibold text-foreground",
+      "h-6 rounded-sm border border-[hsl(var(--ajuste-editado-borda))] bg-[hsl(var(--ajuste-editado))] px-1 text-right tabular-nums text-foreground focus:outline-none focus:ring-1 focus:ring-ring",
+      alterado && "border-[hsl(var(--ajuste-alterado-borda))] bg-[hsl(var(--ajuste-alterado))] font-semibold",
       largura,
     )}
   />;
