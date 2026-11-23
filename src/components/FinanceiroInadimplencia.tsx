@@ -9,7 +9,7 @@ import {
   agrupar, COLUNAS_CR, consolidarTitulos, DIMENSOES, medir, normalizarLinha, pctInadimplencia, pctRecebido,
   rotuloCompetencia, SITUACOES, titulosDobrados, total, type Dimensao, type Filtros, type Medido, type Metricas, type No, type Titulo,
 } from "@/lib/inadimplencia";
-import { FAIXAS_SINISTRALIDADE, rotuloPeriodoSinistralidade, sinistralidadeItens, type SomaContrato } from "@/lib/inadimplenciaSinistralidade";
+import { FAIXAS_SINISTRALIDADE, rotuloPeriodoSinistralidade, sinistralidadeItens, type BeneficiarioContrato, type SomaContrato } from "@/lib/inadimplenciaSinistralidade";
 import { carregarSinistralidadeContratos } from "@/lib/inadimplenciaSinistralidadeDados";
 
 /** Tabela definitiva na base externa (DW); enquanto não existir, a tela usa o arquivo de amostra gravado na base do AXIS. */
@@ -35,10 +35,10 @@ const hoje = () => new Date().toISOString().slice(0, 10);
 const brl = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const int = (n: number) => n.toLocaleString("pt-BR");
 const pct = (n: number | null) => (n == null ? "—" : `${(n * 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`);
-const NIVEIS_PADRAO: Dimensao[] = ["competencia", "faixaAtraso", "plano"];
+const NIVEIS_PADRAO: Dimensao[] = ["competencia", "beneficiario"];
 
 type Coluna = { rotulo: string; valor: (m: Metricas) => string; destaque?: boolean; titulo?: string };
-type Sinistralidade = { periodo: { de: number; ate: number }; porContrato: Map<string, SomaContrato> };
+type Sinistralidade = { periodo: { de: number; ate: number }; porContrato: Map<string, SomaContrato>; titulares: Map<string, BeneficiarioContrato> };
 const COLUNAS: Coluna[] = [
   { rotulo: "Títulos", valor: (m) => int(m.titulos) },
   { rotulo: "A receber", valor: (m) => brl(m.aReceber), titulo: "Valor dos títulos vencidos até a posição (duplicata − desconto)" },
@@ -61,7 +61,7 @@ export default function FinanceiroInadimplencia() {
 
   const [posicao, setPosicao] = useState(hoje());
   const [filtros, setFiltros] = useState<Filtros>({});
-  const [niveis, setNiveis] = useState<(Dimensao | "")[]>([...NIVEIS_PADRAO, ""]);
+  const [niveis, setNiveis] = useState<(Dimensao | "")[]>([...NIVEIS_PADRAO, "", ""]);
   const [abertos, setAbertos] = useState<Set<string>>(new Set());
   const [dobradoAberto, setDobradoAberto] = useState(false);
   const [sin, setSin] = useState<Sinistralidade | null>(null);
@@ -98,6 +98,7 @@ export default function FinanceiroInadimplencia() {
   /** Títulos com a sinistralidade do contrato interno (undefined enquanto carrega; null sem dados no período). */
   const titulosSin = useMemo(() => titulos?.map((t) => ({
     ...t, sinistralidade: !sin ? (sinErro ? null : undefined) : t.cd_contrato_interno ? (sin.porContrato.get(t.cd_contrato_interno) ?? null) : null,
+    beneficiario: !sin ? (sinErro ? null : undefined) : t.cd_contrato_interno ? (sin.titulares.get(t.cd_contrato_interno) ?? null) : null,
   })) ?? null, [titulos, sin, sinErro]);
 
   const opcoes = useMemo(() => {

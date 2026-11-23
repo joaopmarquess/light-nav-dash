@@ -2,7 +2,7 @@
 import { hostinger } from "./hostingerClient";
 import { carregarUltimaCompetenciaValida } from "./sinistralidadeValida";
 import { CAMPOS_DESP, CAMPOS_REC, type LinhaEard } from "./sinistralidadeCompetencias";
-import { faixaMatAlternativa, periodoSinistralidade, somarPorContrato, type SomaContrato } from "./inadimplenciaSinistralidade";
+import { faixaMatAlternativa, periodoSinistralidade, somarPorContrato, titularesPorContrato, type BeneficiarioContrato, type SomaContrato } from "./inadimplenciaSinistralidade";
 
 const CONTRATOS_POR_CONSULTA = 40;
 const MATRICULAS_POR_CONSULTA = 150;
@@ -19,7 +19,7 @@ async function emParalelo<T, R>(itens: T[], f: (x: T) => Promise<R>, aoAvancar: 
   return out;
 }
 
-export type ResultadoSinistralidade = { periodo: { de: number; ate: number }; porContrato: Map<string, SomaContrato> };
+export type ResultadoSinistralidade = { periodo: { de: number; ate: number }; porContrato: Map<string, SomaContrato>; titulares: Map<string, BeneficiarioContrato> };
 
 /** Contratos internos → matrículas (beneficiarios) → receitas/despesas do período (view_eard_mensal). */
 export async function carregarSinistralidadeContratos(
@@ -34,9 +34,9 @@ export async function carregarSinistralidadeContratos(
 
   const benef = (await emParalelo(lotesContrato, async (lote) => {
     const or = lote.map((ci) => { const f = faixaMatAlternativa(ci); return `and(cd_mat_alternativa.gte.${f.de},cd_mat_alternativa.lte.${f.ate})`; }).join(",");
-    const { data, error } = await hostinger.from("beneficiarios").select("cd_matricula,cd_mat_alternativa").or(or).limit(5000);
+    const { data, error } = await hostinger.from("beneficiarios").select("cd_matricula,cd_mat_alternativa,nm_beneficiario,tp_relacionamento").or(or).limit(5000);
     if (error) throw error;
-    return (data ?? []) as { cd_matricula: number; cd_mat_alternativa: string }[];
+    return (data ?? []) as { cd_matricula: number; cd_mat_alternativa: string; nm_beneficiario: string | null; tp_relacionamento: string | null }[];
   }, avancar)).flat();
 
   const lotesMat = lotes([...new Set(benef.map((b) => b.cd_matricula))], MATRICULAS_POR_CONSULTA);
@@ -55,5 +55,5 @@ export async function carregarSinistralidadeContratos(
     return linhas;
   }, avancar)).flat();
 
-  return { periodo, porContrato: somarPorContrato(benef, eard) };
+  return { periodo, porContrato: somarPorContrato(benef, eard), titulares: titularesPorContrato(benef) };
 }

@@ -50,6 +50,23 @@ export function somarPorContrato(
   return out;
 }
 
+/** Beneficiário que identifica o contrato no grid: o titular (ou, sem titular, a menor matrícula alternativa). */
+export type BeneficiarioContrato = { matricula: string; nome: string };
+export function titularesPorContrato(
+  beneficiarios: { cd_matricula: number | string; cd_mat_alternativa: unknown; nm_beneficiario?: string | null; tp_relacionamento?: string | null }[],
+): Map<string, BeneficiarioContrato> {
+  const melhor = new Map<string, { b: (typeof beneficiarios)[number]; alt: string }>();
+  const titular = (b: (typeof beneficiarios)[number]) => (b.tp_relacionamento ?? "").toUpperCase() === "TITULAR";
+  for (const b of beneficiarios) {
+    const ci = contratoDaMatAlternativa(b.cd_mat_alternativa);
+    if (!ci) continue;
+    const alt = String(b.cd_mat_alternativa ?? "").replace(/\D/g, "").padStart(12, "0");
+    const cur = melhor.get(ci);
+    if (!cur || (titular(b) && !titular(cur.b)) || (titular(b) === titular(cur.b) && alt < cur.alt)) melhor.set(ci, { b, alt });
+  }
+  return new Map([...melhor].map(([ci, { b }]) => [ci, { matricula: String(b.cd_matricula), nome: (b.nm_beneficiario ?? "").trim() || "Sem nome" }]));
+}
+
 export const sinistralidade = (s: SomaContrato | null | undefined) => (s && s.receita > 0 ? s.despesa / s.receita : null);
 
 /** Faixas: limite superior incluído (50% exatos fica em "Até 50%"). */

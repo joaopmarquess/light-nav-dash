@@ -55,3 +55,26 @@ describe("Inadimplência · sinistralidade do contrato", () => {
     expect(medir(ts, "2026-01-31", { faixaSinistralidade: "3" }).map((i) => i.t.cd_itcon_rec)).toEqual(["1", "2"]);
   });
 });
+
+describe("Inadimplência · beneficiário do contrato", () => {
+  it("usa o titular do contrato interno; sem titular, a menor matrícula alternativa", async () => {
+    const { titularesPorContrato } = await import("./inadimplenciaSinistralidade");
+    const m = titularesPorContrato([
+      { cd_matricula: 2, cd_mat_alternativa: "001900455901", nm_beneficiario: "FILHO", tp_relacionamento: "DEPENDENTE" },
+      { cd_matricula: 1835050007, cd_mat_alternativa: "001900455900", nm_beneficiario: "LUIS FERNANDO SADOCA", tp_relacionamento: "TITULAR" },
+      { cd_matricula: 8, cd_mat_alternativa: "001504359702", nm_beneficiario: "B", tp_relacionamento: "DEPENDENTE" },
+      { cd_matricula: 7, cd_mat_alternativa: "001504359701", nm_beneficiario: "A", tp_relacionamento: "DEPENDENTE" },
+    ]);
+    expect(m.get("0019004559")).toEqual({ matricula: "1835050007", nome: "LUIS FERNANDO SADOCA" });
+    expect(m.get("0015043597")).toEqual({ matricula: "7", nome: "A" });
+  });
+
+  it("nível Beneficiário agrupa os títulos pela matrícula e nome do titular", () => {
+    const ts: Titulo[] = consolidarTitulos([
+      normalizarLinha({ cd_itcon_rec: "1", dt_competencia: "202601", dt_vencimento: "2026-01-12", vl_duplicata: 100, cd_contrato_interno: "0019004559" }),
+      normalizarLinha({ cd_itcon_rec: "2", dt_competencia: "202601", dt_vencimento: "2026-01-12", vl_duplicata: 50, cd_contrato_interno: "0019004559" }),
+    ]).map((t) => ({ ...t, beneficiario: { matricula: "1835050007", nome: "LUIS FERNANDO SADOCA" } }));
+    const nos = agrupar(medir(ts, "2026-01-31"), ["beneficiario"], "2026-01-31");
+    expect(nos.map((n) => [n.rotulo, n.metricas.titulos, n.metricas.aReceber])).toEqual([["1835050007 · LUIS FERNANDO SADOCA", 2, 150]]);
+  });
+});

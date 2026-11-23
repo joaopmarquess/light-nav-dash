@@ -1,5 +1,5 @@
 import { feriadosNacionais } from "@/lib/simularDatasFm";
-import { faixaSinistralidade, normalizarContratoInterno, type SomaContrato } from "@/lib/inadimplenciaSinistralidade";
+import { faixaSinistralidade, normalizarContratoInterno, type BeneficiarioContrato, type SomaContrato } from "@/lib/inadimplenciaSinistralidade";
 
 /**
  * Financeiro › Inadimplência: regras de consolidação e medição das contas a receber.
@@ -62,6 +62,8 @@ export type Titulo = Omit<LinhaCR, "vl_recebido" | "vl_acrescimo" | "dt_recebime
   linhas: number;
   /** Receita e despesa dos últimos 12 meses do contrato interno: undefined = carregando; null = sem dados. */
   sinistralidade?: SomaContrato | null;
+  /** Titular do contrato interno (beneficiarios): undefined = carregando; null = não encontrado. */
+  beneficiario?: BeneficiarioContrato | null;
 };
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
@@ -147,7 +149,7 @@ export function faixaAtraso(t: Titulo, m: Metricas, posicao: string): string {
   return d <= 0 ? "5 · Pago em dia" : d <= 5 ? "6 · Pago 1 a 5 dias após" : d <= 30 ? "7 · Pago 6 a 30 dias após" : "8 · Pago mais de 30 dias após";
 }
 
-export type Dimensao = "competencia" | "vencimento" | "tipoPlano" | "coparticipativo" | "plano" | "banco" | "situacao" | "faixaAtraso" | "contrato" | "responsavel" | "sinistralidade";
+export type Dimensao = "competencia" | "vencimento" | "tipoPlano" | "coparticipativo" | "plano" | "banco" | "situacao" | "faixaAtraso" | "contrato" | "responsavel" | "sinistralidade" | "beneficiario";
 export const DIMENSOES: { id: Dimensao; rotulo: string }[] = [
   { id: "competencia", rotulo: "Competência" },
   { id: "vencimento", rotulo: "Vencimento" },
@@ -158,6 +160,7 @@ export const DIMENSOES: { id: Dimensao; rotulo: string }[] = [
   { id: "banco", rotulo: "Banco" },
   { id: "situacao", rotulo: "Quitação" },
   { id: "sinistralidade", rotulo: "Faixa de sinistralidade" },
+  { id: "beneficiario", rotulo: "Beneficiário" },
   { id: "contrato", rotulo: "Contrato" },
   { id: "responsavel", rotulo: "Responsável financeiro" },
 ];
@@ -179,6 +182,13 @@ export function valorDimensao(d: Dimensao, t: Titulo, m: Metricas, posicao: stri
     case "situacao": { const s = t.tp_quitacao ?? ""; return { chave: s, rotulo: SITUACOES[s] ?? (s || "Sem quitação") }; }
     case "contrato": return { chave: t.cd_contrato ?? "", rotulo: t.cd_contrato ? `Contrato ${t.cd_contrato}` : "Sem contrato" };
     case "sinistralidade": return faixaSinistralidade(t.sinistralidade, !!t.cd_contrato_interno);
+    case "beneficiario": {
+      if (t.beneficiario) return { chave: `m:${t.beneficiario.matricula}`, rotulo: `${t.beneficiario.matricula} · ${t.beneficiario.nome}` };
+      const resp = t.nm_responsavel_financeiro ?? "Sem nome";
+      return t.cd_contrato_interno
+        ? { chave: `c:${t.cd_contrato_interno}`, rotulo: `${t.beneficiario === undefined ? "Carregando matrícula" : "Matrícula não encontrada"} · ${resp} (contrato ${t.cd_contrato_interno})` }
+        : { chave: `r:${resp}`, rotulo: `Sem contrato interno · ${resp}` };
+    }
     case "responsavel": return { chave: `${t.nm_responsavel_financeiro ?? ""}|${t.nr_cpf_cgc ?? ""}`, rotulo: `${t.nm_responsavel_financeiro ?? "Sem nome"}${t.nr_cpf_cgc ? ` · ${t.nr_cpf_cgc}` : ""}` };
   }
 }
