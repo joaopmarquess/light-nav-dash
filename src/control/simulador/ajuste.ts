@@ -44,3 +44,83 @@ export const valorAjuste = (chave: ChaveLinhaAjuste, cenario: CenarioAjuste) =>
 /** Centavos em "1.234.567,89" (sinal de menos quando negativo). */
 export const formatarAjuste = (centavos: number) =>
   (centavos / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// ---------------------------------------------------------------------------
+// Ajuste variável (23/11/2026): cada linha mostra o percentual sobre o FATURAMENTO
+// do mesmo cenário. O valor do Faturamento e os percentuais das linhas editáveis
+// podem ser alterados; as linhas de total somam a variação das linhas que as compõem
+// ao valor fornecido, de modo que, sem alterações, a tela mostra exatamente a imagem.
+
+/** Linhas que compõem cada total, com o sinal com que entram. */
+export const COMPOSICAO_AJUSTE: Partial<Record<ChaveLinhaAjuste, readonly (readonly [ChaveLinhaAjuste, 1 | -1])[]>> = {
+  entradas: [["faturamento", 1], ["coparticipacao", 1]],
+  demaisOperacionais: [["comercializacao", 1], ["impostosDiretos", 1], ["provisoes", 1], ["secundarias", 1]],
+  administrativas: [["pessoal", 1], ["informatica", 1], ["marketing", 1], ["demaisAdministrativas", 1]],
+  antesImpostos: [["entradas", 1], ["assistenciais", 1], ["demaisOperacionais", 1], ["administrativas", 1], ["financeiro", 1]],
+  liquido: [["antesImpostos", 1], ["impostosFederais", 1]],
+  ebitda: [["antesImpostos", 1], ["financeiro", -1]],
+};
+
+/** Percentual editável: todas as linhas sem composição, exceto o próprio Faturamento (sempre 100%). */
+export const percentualEditavel = (chave: ChaveLinhaAjuste) => chave !== "faturamento" && !COMPOSICAO_AJUSTE[chave];
+
+/** Alterações de um cenário: valor do Faturamento (centavos) e percentuais (ex.: -10,5 = -10,5%). */
+export interface AlteracoesCenarioAjuste { faturamento?: number; percentuais?: Partial<Record<ChaveLinhaAjuste, number>> }
+export type AlteracoesAjuste = Partial<Record<CenarioAjuste, AlteracoesCenarioAjuste>>;
+
+/** Percentual original da linha sobre o Faturamento fornecido, sem arredondar. */
+export const percentualOriginalAjuste = (chave: ChaveLinhaAjuste, cenario: CenarioAjuste) =>
+  (valorAjuste(chave, cenario) / valorAjuste("faturamento", cenario)) * 100;
+
+/** Valores (centavos) de todas as linhas de um cenário, aplicando as alterações. */
+export function valoresCenarioAjuste(cenario: CenarioAjuste, alt: AlteracoesCenarioAjuste = {}): Record<ChaveLinhaAjuste, number> {
+  const fat = alt.faturamento ?? valorAjuste("faturamento", cenario);
+  const fatAlterado = alt.faturamento !== undefined && alt.faturamento !== valorAjuste("faturamento", cenario);
+  const res = {} as Record<ChaveLinhaAjuste, number>;
+  const calc = (chave: ChaveLinhaAjuste): number => {
+    if (res[chave] !== undefined) return res[chave];
+    const original = valorAjuste(chave, cenario);
+    const comp = COMPOSICAO_AJUSTE[chave];
+    let valor: number;
+    if (chave === "faturamento") valor = fat;
+    else if (comp) valor = original + comp.reduce((s, [k, sinal]) => s + sinal * (calc(k) - valorAjuste(k, cenario)), 0);
+    else {
+      const pct = alt.percentuais?.[chave];
+      valor = pct !== undefined ? Math.round((pct / 100) * fat)
+        : fatAlterado ? Math.round((percentualOriginalAjuste(chave, cenario) / 100) * fat)
+        : original;
+    }
+    return (res[chave] = valor);
+  };
+  LINHAS_AJUSTE.forEach((l) => calc(l.chave));
+  return res;
+}
+
+/** Percentual de um valor sobre o Faturamento (ex.: -96,97). */
+export const percentualSobreFaturamento = (valor: number, faturamento: number) => (faturamento === 0 ? 0 : (valor / faturamento) * 100);
+
+/** "-96,97" (2 casas, pt-BR). */
+export const formatarPercentualAjuste = (pct: number) =>
+  pct.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const numeroDigitado = (texto: string) => {
+  const t = texto.replace(/[%R$\s]/g, "");
+  const n = Number(t.includes(",") ? t.replace(/\./g, "").replace(",", ".") : t);
+  return t === "" || t === "-" || t === "+" || !Number.isFinite(n) ? null : n;
+};
+
+/** Lê o percentual digitado. Sem sinal digitado, segue o sinal do valor original (despesas continuam negativas). */
+export function lerPercentualAjuste(texto: string, originalNegativo: boolean): number | null {
+  const n = numeroDigitado(texto);
+  if (n === null) return null;
+  const temSinal = /^\s*[-+]/.test(texto);
+  return !temSinal && originalNegativo ? -Math.abs(n) : n;
+}
+
+/** Lê um valor em reais ("455.000.000,00") e devolve centavos. */
+export function lerValorAjuste(texto: string): number | null {
+  const n = numeroDigitado(texto);
+  return n === null ? null : Math.round(n * 100);
+}
+
+export const CHAVE_ALTERACOES_AJUSTE = "axis-simulador-ajuste-alteracoes-v1";
