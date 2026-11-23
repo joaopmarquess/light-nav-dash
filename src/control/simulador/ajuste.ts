@@ -124,3 +124,7 @@ export function lerValorAjuste(texto: string): number | null {
 }
 
 export const CHAVE_ALTERACOES_AJUSTE = "axis-simulador-ajuste-alteracoes-v1";
+
+/** Sinistralidade Operacional (slide 4): Despesas Assistenciais ÷ Entradas Operacionais, em % positivo (ex.: 92,00). */
+export const sinistralidadeOperacional = (valores: Record<ChaveLinhaAjuste, number>) =>
+  valores.entradas === 0 ? 0 : (Math.abs(valores.assistenciais) / valores.entradas) * 100;

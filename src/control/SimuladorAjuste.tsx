@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   CENARIOS_AJUSTE, CHAVE_ALTERACOES_AJUSTE, LINHAS_AJUSTE, ROTULOS_CENARIO_AJUSTE, formatarAjuste, formatarPercentualAjuste,
-  lerPercentualAjuste, lerValorAjuste, percentualEditavel, percentualSobreFaturamento, valorAjuste, valoresCenarioAjuste,
+  lerPercentualAjuste, lerValorAjuste, percentualEditavel, percentualSobreFaturamento, sinistralidadeOperacional, valorAjuste, valoresCenarioAjuste,
   type AlteracoesAjuste, type CenarioAjuste, type ChaveLinhaAjuste, type LinhaAjuste,
 } from "@/control/simulador/ajuste";
 
@@ -55,10 +55,12 @@ function CampoAjuste({ valor, aoMudar, rotulo, alterado, largura, altura }: { va
 }
 
 /** Grid do Ajuste (% sobre o Faturamento editável + valor), usado na tela e no slide 4 de Slides Simulação. */
-export function GradeAjuste({ alteracoes, setAlteracoes, slide = false }: {
+export function GradeAjuste({ alteracoes, setAlteracoes, slide = false, sinistralidade = false }: {
   alteracoes: AlteracoesAjuste;
   setAlteracoes: React.Dispatch<React.SetStateAction<AlteracoesAjuste>>;
   slide?: boolean;
+  /** Linha extra abaixo do EBITDA: Despesas Assistenciais ÷ Entradas Operacionais (slide 4). */
+  sinistralidade?: boolean;
 }) {
   const valores = useMemo(
     () => Object.fromEntries(CENARIOS_AJUSTE.map((c) => [c, valoresCenarioAjuste(c, alteracoes[c])])) as Record<CenarioAjuste, Record<ChaveLinhaAjuste, number>>,
@@ -113,6 +115,13 @@ export function GradeAjuste({ alteracoes, setAlteracoes, slide = false }: {
           ];
         })}
       </tr>)}
+      {sinistralidade && <tr className={cn("bg-[hsl(var(--ajuste-head))] text-primary-foreground font-bold border-0", slide ? "text-[20px]" : "text-[15px]")}>
+        <td className={cn(py, "px-4")}>SINISTRALIDADE OPERACIONAL</td>
+        {CENARIOS_AJUSTE.map((c) => [
+          <td key={`${c}-p`} className={py} />,
+          <td key={`${c}-v`} className={cn("pl-2 pr-5 text-right whitespace-nowrap", py)}>{formatarPercentualAjuste(sinistralidadeOperacional(valores[c]))}%</td>,
+        ])}
+      </tr>}
     </tbody>
   </table>;
 }

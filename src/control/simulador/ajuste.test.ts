@@ -58,3 +58,17 @@ describe("Ajuste variável sobre o Faturamento", () => {
     expect(lerValorAjuste("455.000.000,10")).toBe(45500000010);
   });
 });
+
+import { formatarPercentualAjuste, sinistralidadeOperacional } from "./ajuste";
+
+describe("Sinistralidade Operacional do slide 4", () => {
+  it("é Despesas Assistenciais ÷ Entradas Operacionais nos valores originais", () => {
+    expect(formatarPercentualAjuste(sinistralidadeOperacional(valoresCenarioAjuste("pessimista")))).toBe("92,00");
+    expect(formatarPercentualAjuste(sinistralidadeOperacional(valoresCenarioAjuste("realista")))).toBe("89,91");
+    expect(formatarPercentualAjuste(sinistralidadeOperacional(valoresCenarioAjuste("otimista")))).toBe("89,00");
+  });
+  it("acompanha as alterações do Ajuste", () => {
+    const v = valoresCenarioAjuste("realista", { percentuais: { assistenciais: -90 } });
+    expect(sinistralidadeOperacional(v)).toBeCloseTo((0.9 * 45619564759) / v.entradas * 100, 6);
+  });
+});
