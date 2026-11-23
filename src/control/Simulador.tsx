@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, Check, ChevronRight, Download, Lock, Plus, Trash2, Save, RotateCcw, Loader2 } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Download, Lock, Plus, Trash2, Save, RotateCcw, Loader2, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/control/useAuth";
 import OrcamentoFaturamento from "./OrcamentoFaturamento";
+import SimuladorAjuste from "./SimuladorAjuste";
 import { SimulatorContext } from "@/control/simulador/context";
 import { ETAPAS, VISOES, authorLabel, ownsSimulation, modelSchema, pdfEligible, progress, resume, stageData, stageUnlocked, viewModel, viewUnlocked, type BudgetModel, type SimulationRecord } from "@/control/simulador/model";
 import { deleteSimulation, listSimulations, simulatorAction } from "@/control/simulador/api";
@@ -16,6 +17,7 @@ export default function Simulador({ requestedView, onViewState, onDirty, onBusy 
   const [list,setList]=useState<SimulationRecord[]>([]), [selected,setSelected]=useState<string|null>(null);
   const [position,setPosition]=useState(0), [stage,setStage]=useState(0), [model,setModel]=useState<BudgetModel|null>(null);
   const [dirty,setDirty]=useState(false), [busy,setBusy]=useState(false), [loading,setLoading]=useState(true), [loadError,setLoadError]=useState(false);
+  const [ajuste,setAjuste]=useState(false);
   const [newOpen,setNewOpen]=useState(false), [name,setName]=useState(""), [reopenOpen,setReopenOpen]=useState(false), [finished,setFinished]=useState(false), [errors,setErrors]=useState<string[]>([]), [toDelete,setToDelete]=useState<SimulationRecord|null>(null);
   const sim=list.find(s=>s.id===selected), view=sim?.simulador_visoes.find(v=>v.position===position);
   const refresh=useCallback(async()=>{ const rows=await listSimulations(); setList(rows); return rows; },[]);
@@ -43,9 +45,10 @@ export default function Simulador({ requestedView, onViewState, onDirty, onBusy 
   const update=(key:keyof BudgetModel,value:unknown)=>{if(!view||view.status==='completed'||!mine||busy)return;setModel(old=>old?{...old,[key]:value}:old);setDirty(true);setErrors([]);};
   const completeStages=view?.simulador_etapas.filter(s=>s.status==='completed').length??0;
   const readOnly=view?.status==='completed'||!mine;
+  if(ajuste&&!sim)return <SimuladorAjuste onVoltar={()=>setAjuste(false)}/>;
   return <div className="h-full min-h-0 flex flex-col gap-3">
     {!sim ? <>
-      <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-semibold">Simulações</h2><Button onClick={()=>{setName("");setNewOpen(true);}}><Plus/>Nova simulação</Button></div>
+      <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-semibold">Simulações</h2><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={()=>setAjuste(true)}><SlidersHorizontal/>Ajuste</Button><Button onClick={()=>{setName("");setNewOpen(true);}}><Plus/>Nova simulação</Button></div></div>
       <div className="flex-1 overflow-auto">
         {loading?<div className="flex gap-2 items-center text-muted-foreground"><Loader2 className="animate-spin h-4 w-4"/>Carregando simulações…</div>:loadError?<Button variant="outline" onClick={()=>execute(async()=>{await refresh();setLoadError(false);})}>Tentar novamente</Button>:list.length===0?<div className="py-12 text-center text-muted-foreground">Nenhuma simulação cadastrada.</div>:<table className="w-full text-sm"><thead className="border-b border-border text-muted-foreground"><tr>{["Identificação","Usuário","Criada em","Atualizada em","Visão / etapa","Conclusão","Status",""].map(t=><th key={t} className="text-left px-3 py-3 whitespace-nowrap">{t}</th>)}</tr></thead><tbody>{list.map(s=>{const r=resume(s),own=ownsSimulation(s,user?.id);return <tr key={s.id} className="border-b border-border"><td className="px-3 py-4 font-medium max-w-64 break-words">{s.name}</td><td className="px-3 max-w-56 break-words">{authorLabel(s)}{ownsSimulation(s,user?.id)&&<span className="ml-1 text-xs text-muted-foreground">(você)</span>}</td><td className="px-3 whitespace-nowrap">{date(s.created_at)}</td><td className="px-3 whitespace-nowrap">{date(s.updated_at)}</td><td className="px-3">{s.status==='completed'?'Concluída':`${VISOES[r.view]} · ${ETAPAS[r.stage]}`}</td><td className="px-3 tabular-nums">{progress(s)}%</td><td className="px-3 whitespace-nowrap">{s.status==='completed'?'Concluída':'Em preenchimento'}</td><td className="px-3"><div className="flex gap-2"><Button variant="outline" onClick={()=>open(s)}>{s.status==='completed'||!own?'Visualizar':'Continuar'}<ChevronRight/></Button>{pdfEligible(s)&&<Button disabled={busy} variant="ghost" onClick={()=>pdf(s)}><Download/>Gerar PDF</Button>}{own&&<Button disabled={busy} variant="ghost" size="icon" title="Apagar simulação" aria-label="Apagar simulação" onClick={()=>setToDelete(s)}><Trash2/></Button>}</div></td></tr>;})}</tbody></table>}
       </div>

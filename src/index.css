@@ -129,6 +129,12 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    --ajuste-head: 213 55% 15%;
+    --ajuste-grupo: 199 85% 90%;
+    --ajuste-coluna: 199 80% 96%;
+    --ajuste-negativo: 0 68% 44%;
+    --ajuste-negativo-claro: 0 85% 74%;
+    --ajuste-positivo-claro: 115 55% 72%;
     --sigla-pif: 28 90% 52%;
     --sigla-pca: 205 85% 62%;
     --sigla-pce: 220 75% 32%;
