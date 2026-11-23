@@ -6,7 +6,7 @@ import { comporPdfRelatorio } from "@/control/relatorio/controladoriaPdf";
 import type { ControladoriaReport } from "@/control/relatorio/controladoriaDados";
 import { carregarVidasTrimestres, montarRelatorioTrimestral } from "@/control/relatorio/controladoriaTrimestral";
 import { loadDreHostinger, loadMesesDemonstracoes, type DreHRow } from "@/control/dreHostinger";
-import { grupoPainelDre } from "@/control/drePainel";
+import { formatarSinistralidadePainel, grupoPainelDre, sinistralidadeOperacionalPainel } from "@/control/drePainel";
 import { DRE_FULL_NAME, REPORT_FULL_NAME } from "@/control/dreLabels";
 import { initialDreExpansion } from "@/control/dreExpansion";
 import { dreMargin, formatDreMargin } from "@/control/dreMargin";
@@ -251,6 +251,13 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
                 </span>
               </div>
             ))}
+            <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/10 px-3 py-1 text-[17px] font-semibold text-foreground" title="Despesas Assistenciais ÷ Entradas Operacionais">
+              <span>Sinistralidade Operacional</span>
+              <span className="flex gap-6 tabular-nums">
+                <span>{formatarSinistralidadePainel(sinistralidadeOperacionalPainel(b.ent, b.desp))}</span>
+                <span className="w-20" />
+              </span>
+            </div>
           </div>
         </section>
         <Barra ativa="Painel" onAba={onAba} historico={historico} />

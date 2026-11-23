@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resumoPainelDre } from "./drePainel";
+import { formatarSinistralidadePainel, resumoPainelDre, sinistralidadeOperacionalPainel } from "./drePainel";
 import { gruposOrcamentoDre, impostosFederais, resultadoLiquido, valoresOrcamento } from "./orcamentoDre";
 import type { DreHRow } from "./dreHostinger";
 
@@ -11,6 +11,16 @@ describe("Painel DRE", () => {
     expect(r.fat).toBe(1000);
     expect(r.liq).toBe(190);
     expect(r.cards.find(c => c[0] === "EBITDA")?.[1]).toBe(200);
+  });
+});
+
+describe("Sinistralidade Operacional dos Painéis", () => {
+  it("divide despesas assistenciais por entradas operacionais", () => {
+    expect(sinistralidadeOperacionalPainel(1000, -920)).toBeCloseTo(92, 10);
+    expect(formatarSinistralidadePainel(sinistralidadeOperacionalPainel(1000, -899.1))).toBe("89,91%");
+  });
+  it("mostra traço sem entradas", () => {
+    expect(formatarSinistralidadePainel(sinistralidadeOperacionalPainel(0, -10))).toBe("-");
   });
 });
 

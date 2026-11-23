@@ -35,3 +35,11 @@ export function resumoPainelDre(rows: DreHRow[]) {
   ];
   return { fat, liq, cards, linhas, pctFat: (x: number) => (fat ? x / fat : null) };
 }
+
+/** Sinistralidade Operacional dos Painéis do Control: Despesas Assistenciais ÷ Entradas Operacionais, em % positivo (null sem entradas). */
+export function sinistralidadeOperacionalPainel(entradas: number, despesasAssistenciais: number): number | null {
+  return Math.abs(entradas) >= 0.005 ? (Math.abs(despesasAssistenciais) / Math.abs(entradas)) * 100 : null;
+}
+
+export const formatarSinistralidadePainel = (v: number | null) =>
+  v === null ? "-" : `${new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v)}%`;

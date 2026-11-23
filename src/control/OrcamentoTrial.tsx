@@ -8,6 +8,7 @@ import { DRE_FULL_NAME } from "@/control/dreLabels";
 import { Button } from "@/components/ui/button";
 
 import { itemDe } from "@/control/orcamentoRegras";
+import { formatarSinistralidadePainel, sinistralidadeOperacionalPainel } from "@/control/drePainel";
 
 type Row = { item: string; mes: number; previsto: number; realizado: number; projetado: number };
 
@@ -478,6 +479,13 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                 </span>
               </div>
             ))}
+            <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/10 px-3 py-1 text-[17px] font-semibold text-foreground" title="Despesas Assistenciais ÷ Entradas Operacionais">
+              <span>Sinistralidade Operacional</span>
+              <span className="flex gap-6 tabular-nums">
+                <span>{formatarSinistralidadePainel(sinistralidadeOperacionalPainel(ent, desp))}</span>
+                <span className="w-20" />
+              </span>
+            </div>
           </div>
         </section>
         <Barra ativa="Painel" onAba={onAba} />
