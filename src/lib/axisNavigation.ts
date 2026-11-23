@@ -1,4 +1,4 @@
-import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree, ArrowRightLeft, Map as MapIcon, CalendarRange, Layers, Tags, LogIn, LogOut, Table2, FileBarChart2 } from "lucide-react";
+import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree, ArrowRightLeft, Map as MapIcon, CalendarRange, Layers, Tags, LogIn, LogOut, Table2, FileBarChart2, Presentation } from "lucide-react";
 import { BENCH_SHORT_TEXT, DRE_MENU_NAME, SLIDES_SHORT_TEXT } from "@/control/dreLabels";
 export type MenuItem = {
   icon: React.ComponentType<{ className?: string }>;
@@ -18,6 +18,8 @@ const controlItem: MenuItem = {
       { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente" },
       { icon: TrendingUp, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
       { icon: FlaskConical, label: "Simulador", id: "Control · Simulador" },
+      // Apresentação "Orçamento 2027" (pptx de 23/11/2026); o slide 4 é o Ajuste do Simulador ao vivo.
+      { icon: Presentation, label: "Slides Simulação", id: "Control · Slides Simulação" },
       { icon: BarChart3, label: SLIDES_SHORT_TEXT, id: "Control · Dashboards" },
       { icon: Settings, label: "Configurações", id: "__cfg_control__" },
       { icon: ListTree, label: "Contas", id: "Control · Contas", nivel: 2 },
