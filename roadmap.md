@@ -61,6 +61,6 @@
 - [x] Padrões de vidas da Simulação: PCA 3.000, PME ADM. 1.000, PCE 30-99 1.000, PJ+ 5.000 (metas das propostas seguem)
 
 ## Financeiro › Inadimplência (23/11/2026)
-- [ ] Menu Financeiro (irmão do Control) com a tela Inadimplência: filtros, indicadores e grid em níveis.
-- [ ] Ler a tabela contas_a_receber da base externa quando existir; até lá, mostrar o arquivo enviado (gravado na base, acesso pela permissão do menu). Sem botão de importar.
-- [ ] "L" conta como em aberto; linhas repetidas contam uma vez, com seção "Dobrado" listando esses títulos.
+- [x] Menu Financeiro (irmão do Control) com a tela Inadimplência: filtros, indicadores e grid em níveis.
+- [x] Ler a tabela contas_a_receber da base externa quando existir; até lá, mostrar o arquivo enviado (gravado na base, acesso pela permissão do menu). Sem botão de importar.
+- [x] "L" conta como em aberto; linhas repetidas contam uma vez, com seção "Dobrado" listando esses títulos.

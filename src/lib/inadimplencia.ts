@@ -1,3 +1,5 @@
+import { feriadosNacionais } from "@/lib/simularDatasFm";
+
 /**
  * Financeiro › Inadimplência: regras de consolidação e medição das contas a receber.
  * Cada título é identificado por CD_ITCON_REC; o arquivo traz uma linha por recebimento,
@@ -24,6 +26,20 @@ export type LinhaCR = {
 };
 
 export const COLUNAS_CR = "cd_itcon_rec,dt_competencia,dt_vencimento,dt_recebimento,vl_duplicata,vl_recebido,vl_acrescimo,vl_desconto,tp_quitacao,tp_plano,sn_coparticipativo,cd_plano,ds_con_cor,nm_responsavel_financeiro,nr_cpf_cgc,cd_contrato";
+
+/** Ajusta uma linha vinda de qualquer base (datas com hora, números como texto) ao formato do cálculo. */
+export function normalizarLinha(r: Record<string, unknown>): LinhaCR {
+  const txt = (v: unknown) => (v == null || String(v).trim() === "" ? null : String(v).trim());
+  const data = (v: unknown) => { const t = txt(v); if (!t) return null; const br = t.match(/^(\d{2})\/(\d{2})\/(\d{4})/); return br ? `${br[3]}-${br[2]}-${br[1]}` : t.slice(0, 10); };
+  const num = (v: unknown) => (typeof v === "number" ? v : Number(String(v ?? "0").replace(",", ".")) || 0);
+  return {
+    cd_itcon_rec: txt(r.cd_itcon_rec) ?? "", dt_competencia: (txt(r.dt_competencia) ?? "").replace(/\D/g, "").slice(0, 6),
+    dt_vencimento: data(r.dt_vencimento), dt_recebimento: data(r.dt_recebimento),
+    vl_duplicata: num(r.vl_duplicata), vl_recebido: num(r.vl_recebido), vl_acrescimo: num(r.vl_acrescimo), vl_desconto: num(r.vl_desconto),
+    tp_quitacao: txt(r.tp_quitacao), tp_plano: txt(r.tp_plano), sn_coparticipativo: txt(r.sn_coparticipativo), cd_plano: txt(r.cd_plano),
+    ds_con_cor: txt(r.ds_con_cor), nm_responsavel_financeiro: txt(r.nm_responsavel_financeiro), nr_cpf_cgc: txt(r.nr_cpf_cgc), cd_contrato: txt(r.cd_contrato),
+  };
+}
 
 export const SITUACOES: Record<string, string> = { Q: "Quitado", C: "Cancelado", L: "L (em aberto)" };
 /** Situações que saem da base de cálculo (o título deixou de ser devido). */
@@ -77,17 +93,30 @@ export const metricasVazias = (): Metricas => ({ titulos: 0, aReceber: 0, recebi
 export const pctRecebido = (m: Metricas) => (m.aReceber > 0 ? m.recebido / m.aReceber : null);
 export const pctInadimplencia = (m: Metricas) => (m.aReceber > 0 ? m.emAberto / m.aReceber : null);
 
+/** Vencimento em sábado, domingo ou feriado nacional passa para o próximo dia útil (pagamento nesse dia é em dia). */
+export function vencimentoUtil(venc: string): string {
+  let t = Date.parse(venc + "T00:00:00Z");
+  for (let i = 0; i < 10; i++) {
+    const d = new Date(t); const iso = d.toISOString().slice(0, 10);
+    if (d.getUTCDay() !== 0 && d.getUTCDay() !== 6 && !feriadosNacionais(d.getUTCFullYear()).has(iso)) return iso;
+    t += 86400000;
+  }
+  return venc;
+}
+
 const dias = (de: string, ate: string) => Math.round((Date.parse(ate + "T00:00:00Z") - Date.parse(de + "T00:00:00Z")) / 86400000);
 
-/** Mede um título na data de posição: só entra se venceu até a posição; recebido conta até a posição. */
+/** Mede um título na data de posição: só entra se venceu (no dia útil) até a posição; recebido conta até a posição. */
 export function medirTitulo(t: Titulo, posicao: string): Metricas | null {
-  if (!t.dt_vencimento || t.dt_vencimento > posicao) return null;
+  if (!t.dt_vencimento) return null;
+  const venc = vencimentoUtil(t.dt_vencimento);
+  if (venc > posicao) return null;
   const recs = t.recebimentos.filter((r) => r.data <= posicao);
   const recebido = r2(recs.reduce((s, r) => s + r.valor, 0));
   const emAberto = r2(Math.max(0, t.valor - recebido));
   return {
     titulos: 1, aReceber: t.valor, recebido, emAberto, inadimplentes: emAberto > 0.005 ? 1 : 0,
-    recebidoAtraso: r2(recs.filter((r) => r.data > t.dt_vencimento!).reduce((s, r) => s + r.valor, 0)),
+    recebidoAtraso: r2(recs.filter((r) => r.data > venc).reduce((s, r) => s + r.valor, 0)),
     acrescimos: t.acrescimo, excesso: t.excesso,
   };
 }
@@ -102,7 +131,7 @@ export function somar(a: Metricas, b: Metricas): Metricas {
 
 /** Faixa de atraso na posição: em aberto pelos dias desde o vencimento; quitado pelo atraso do último recebimento. */
 export function faixaAtraso(t: Titulo, m: Metricas, posicao: string): string {
-  const venc = t.dt_vencimento!;
+  const venc = vencimentoUtil(t.dt_vencimento!);
   if (m.emAberto > 0.005) {
     const d = dias(venc, posicao);
     return d <= 30 ? "1 · Em aberto até 30 dias" : d <= 60 ? "2 · Em aberto 31 a 60 dias" : d <= 90 ? "3 · Em aberto 61 a 90 dias" : "4 · Em aberto mais de 90 dias";
@@ -194,37 +223,4 @@ export function agrupar(itens: Medido[], niveis: Dimensao[], posicao: string, pr
   });
   nos.sort((a, b) => ORDEM_NATURAL.has(d) ? a.chave.localeCompare(b.chave) : b.no.metricas.aReceber - a.no.metricas.aReceber || a.no.rotulo.localeCompare(b.no.rotulo));
   return nos.map((n) => n.no);
-}
-
-// ---------- Importação do CSV (separador ";", datas DD/MM/AAAA, decimais com vírgula) ----------
-const DATAS = new Set(["dt_venda", "dt_ultimo_reajuste", "dt_prox_reajuste", "dt_vencimento", "dt_prevista_recebimento", "dt_recebimento"]);
-const NUMEROS = new Set(["vl_duplicata", "vl_recebido", "vl_acrescimo", "vl_desconto"]);
-const INTEIROS = new Set(["nr_ano", "nr_mes", "nr_parcela", "nr_dias_receita", "nr_dias_fat_antecip", "nr_dias_cobertura"]);
-export const COLUNAS_ARQUIVO = ["tp_plano", "sn_coparticipativo", "cd_contrato", "cd_contrato_interno", "cd_contrato_tem", "cd_plano", "nm_responsavel_financeiro", "nr_cpf_cgc", "dt_venda", "dt_ultimo_reajuste", "dt_prox_reajuste", "cd_con_rec", "cd_reduzido", "cd_tip_doc", "ds_tip_doc", "nr_documento", "nr_serie", "nr_ano", "nr_mes", "dt_competencia", "cd_itcon_rec", "nr_parcela", "dt_vencimento", "dt_prevista_recebimento", "tp_quitacao", "vl_duplicata", "dt_recebimento", "vl_recebido", "vl_acrescimo", "vl_desconto", "nr_dias_receita", "nr_dias_fat_antecip", "nr_dias_cobertura", "cd_con_cor", "ds_con_cor"];
-
-export function converterValor(coluna: string, bruto: string): string | number | null {
-  const v = bruto.trim();
-  if (v === "") return NUMEROS.has(coluna) ? 0 : null;
-  if (DATAS.has(coluna)) {
-    const m = v.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
-    return m ? `${m[3]}-${m[2]}-${m[1]}` : null;
-  }
-  if (NUMEROS.has(coluna)) return Number(v.replace(/\./g, "").replace(",", ".")) || 0;
-  if (INTEIROS.has(coluna)) { const n = parseInt(v, 10); return Number.isFinite(n) ? n : null; }
-  return v;
-}
-
-export function lerCsvContasReceber(texto: string): Record<string, string | number | null>[] {
-  const linhas = texto.replace(/^\uFEFF/, "").split(/\r?\n/).filter((l) => l.trim() !== "");
-  if (!linhas.length) throw new Error("Arquivo vazio.");
-  const cab = linhas[0].split(";").map((c) => c.trim().toLowerCase());
-  const faltam = ["cd_itcon_rec", "dt_competencia", "dt_vencimento", "vl_duplicata", "vl_recebido"].filter((c) => !cab.includes(c));
-  if (faltam.length) throw new Error(`Colunas ausentes no arquivo: ${faltam.join(", ").toUpperCase()}.`);
-  return linhas.slice(1).map((l, i) => {
-    const partes = l.split(";");
-    const row: Record<string, string | number | null> = { linha: i + 1 };
-    cab.forEach((c, j) => { if (COLUNAS_ARQUIVO.includes(c)) row[c] = converterValor(c, partes[j] ?? ""); });
-    if (!row.cd_itcon_rec || !row.dt_competencia) throw new Error(`Linha ${i + 2} sem CD_ITCON_REC ou DT_COMPETENCIA.`);
-    return row;
-  });
 }

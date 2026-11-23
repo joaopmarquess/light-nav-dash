@@ -1,16 +1,34 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronRight, ChevronsDownUp, ChevronsUpDown, Download, Loader2, Upload } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ChevronRight, ChevronsDownUp, ChevronsUpDown, Download, Loader2 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
-import { useAxisAccess } from "@/hooks/useAxisAccess";
+import { hostinger } from "@/lib/hostingerClient";
 import { AvisoErroDados } from "@/components/AvisoErroDados";
 import { cn } from "@/lib/utils";
 import {
-  agrupar, COLUNAS_CR, consolidarTitulos, DIMENSOES, lerCsvContasReceber, medir, pctInadimplencia, pctRecebido,
-  rotuloCompetencia, SITUACOES, titulosDobrados, total, type Dimensao, type Filtros, type LinhaCR, type Metricas, type No, type Titulo,
+  agrupar, COLUNAS_CR, consolidarTitulos, DIMENSOES, medir, normalizarLinha, pctInadimplencia, pctRecebido,
+  rotuloCompetencia, SITUACOES, titulosDobrados, total, type Dimensao, type Filtros, type Metricas, type No, type Titulo,
 } from "@/lib/inadimplencia";
 
-const TABELA = "financeiro_contas_receber";
+/** Tabela definitiva na base externa (DW); enquanto não existir, a tela usa o arquivo de amostra gravado na base do AXIS. */
+const TABELA_DW = "contas_a_receber";
+const TABELA_AMOSTRA = "financeiro_contas_receber";
+type Fonte = "dw" | "amostra";
+const tabelaInexistente = (e: unknown) => !!e && typeof e === "object" && ["PGRST205", "42P01"].includes(String((e as { code?: string }).code));
+
+async function lerTudo(fonte: Fonte) {
+  const linhas: Record<string, unknown>[] = [];
+  for (let de = 0; ; de += 1000) {
+    const q = fonte === "dw"
+      ? hostinger.from(TABELA_DW).select(COLUNAS_CR).order("cd_itcon_rec").order("dt_recebimento", { nullsFirst: true }).order("vl_recebido")
+      : supabase.from(TABELA_AMOSTRA).select(COLUNAS_CR).order("id");
+    const { data, error } = await q.range(de, de + 999);
+    if (error) throw error;
+    linhas.push(...((data ?? []) as unknown as Record<string, unknown>[]));
+    if (!data || data.length < 1000) break;
+  }
+  return linhas.map(normalizarLinha);
+}
 const hoje = () => new Date().toISOString().slice(0, 10);
 const brl = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const int = (n: number) => n.toLocaleString("pt-BR");
@@ -33,14 +51,10 @@ const COLUNAS: Coluna[] = [
 const sel = "h-9 rounded-md border border-border bg-background px-2 text-sm text-foreground";
 
 export default function FinanceiroInadimplencia() {
-  const { access } = useAxisAccess();
-  const admin = access.status === "ok" && access.role === "admin";
   const [titulos, setTitulos] = useState<Titulo[] | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState<unknown>(null);
-  const [aviso, setAviso] = useState<string | null>(null);
-  const [importando, setImportando] = useState(false);
-  const arquivoRef = useRef<HTMLInputElement>(null);
+  const [fonte, setFonte] = useState<Fonte | null>(null);
 
   const [posicao, setPosicao] = useState(hoje());
   const [filtros, setFiltros] = useState<Filtros>({});
@@ -51,13 +65,13 @@ export default function FinanceiroInadimplencia() {
   const carregar = useCallback(async () => {
     setCarregando(true); setErro(null);
     try {
-      const linhas: LinhaCR[] = [];
-      for (let de = 0; ; de += 1000) {
-        const { data, error } = await supabase.from(TABELA).select(COLUNAS_CR).order("id").range(de, de + 999);
-        if (error) throw error;
-        linhas.push(...((data ?? []) as unknown as LinhaCR[]));
-        if (!data || data.length < 1000) break;
+      let origem: Fonte = "dw";
+      let linhas;
+      try { linhas = await lerTudo("dw"); } catch (e) {
+        if (!tabelaInexistente(e)) throw e;
+        origem = "amostra"; linhas = await lerTudo("amostra");
       }
+      setFonte(origem);
       const ts = consolidarTitulos(linhas);
       setTitulos(ts);
       const comps = [...new Set(ts.map((t) => t.dt_competencia))].sort();
@@ -83,25 +97,6 @@ export default function FinanceiroInadimplencia() {
   const setF = (k: keyof Filtros, v: string | boolean) => setFiltros((f) => ({ ...f, [k]: v === "" ? undefined : v }));
   const setNivel = (i: number, v: string) => setNiveis((ns) => { const n = [...ns]; n[i] = v as Dimensao | ""; if (!v) for (let j = i + 1; j < n.length; j++) n[j] = ""; return n; });
 
-  const importar = async (arquivo: File) => {
-    setAviso(null); setErro(null);
-    try {
-      const texto = new TextDecoder("windows-1252").decode(await arquivo.arrayBuffer());
-      const linhas = lerCsvContasReceber(texto);
-      const comps = [...new Set(linhas.map((l) => String(l.dt_competencia)))].sort();
-      if (!window.confirm(`Importar ${int(linhas.length)} linhas de "${arquivo.name}"?\n\nAs competências ${comps.map(rotuloCompetencia).join(", ")} já gravadas serão substituídas por este arquivo.`)) return;
-      setImportando(true);
-      const { error: del } = await supabase.from(TABELA).delete().in("dt_competencia", comps);
-      if (del) throw del;
-      for (let i = 0; i < linhas.length; i += 500) {
-        const { error } = await supabase.from(TABELA).insert(linhas.slice(i, i + 500).map((l) => ({ ...l, arquivo: arquivo.name })) as never);
-        if (error) throw error;
-      }
-      setAviso(`${int(linhas.length)} linhas importadas (competências ${comps.map(rotuloCompetencia).join(", ")}).`);
-      await carregar();
-    } catch (e) { setErro(e); } finally { setImportando(false); if (arquivoRef.current) arquivoRef.current.value = ""; }
-  };
-
   const exportar = () => {
     const linhas: (string | number)[][] = [["Nível", ...niveisAtivos.map((d) => DIMENSOES.find((x) => x.id === d)!.rotulo), "Títulos", "A receber", "Recebido", "Em aberto", "% Recebido", "% Inadimplência", "Inadimplentes", "Recebido em atraso", "Acréscimos"]];
     const linha = (rot: string[], nivel: number | string, m: Metricas) => [nivel, ...niveisAtivos.map((_, i) => rot[i] ?? ""), m.titulos, m.aReceber, m.recebido, m.emAberto, pctRecebido(m) ?? "", pctInadimplencia(m) ?? "", m.inadimplentes, m.recebidoAtraso, m.acrescimos];
@@ -121,7 +116,7 @@ export default function FinanceiroInadimplencia() {
   const vazio = titulos && titulos.length === 0;
 
   return (
-    <section className="h-full min-h-0 flex flex-col gap-3 bg-card rounded-xl border border-border shadow-sm p-4">
+    <section className="h-full min-h-0 overflow-y-auto flex flex-col gap-3 bg-card rounded-xl border border-border shadow-sm p-4">
       <div className="flex flex-wrap items-end gap-3">
         <label className="text-xs text-muted-foreground">Posição em
           <input type="date" value={posicao} onChange={(e) => e.target.value && setPosicao(e.target.value)} className={cn(sel, "block mt-1")} />
@@ -165,12 +160,6 @@ export default function FinanceiroInadimplencia() {
           <input type="checkbox" checked={!!filtros.incluirCancelados} onChange={(e) => setF("incluirCancelados", e.target.checked)} />Incluir cancelados
         </label>
         <div className="ml-auto flex items-end gap-2">
-          {admin && <>
-            <input ref={arquivoRef} type="file" accept=".csv,text/csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void importar(f); }} />
-            <button onClick={() => arquivoRef.current?.click()} disabled={importando} title="Importar CSV de contas a receber (substitui as competências do arquivo)" className="h-9 px-3 rounded-md border border-border bg-background text-sm inline-flex items-center gap-1.5 hover:bg-accent/40 disabled:opacity-50">
-              {importando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}Importar CSV
-            </button>
-          </>}
           <button onClick={exportar} disabled={!medidos.length} title="Gerar XLSX do grid em níveis" className="h-9 px-3 rounded-md border border-border bg-background text-sm inline-flex items-center gap-1.5 hover:bg-accent/40 disabled:opacity-50">
             <Download className="h-4 w-4" />XLSX
           </button>
@@ -178,9 +167,9 @@ export default function FinanceiroInadimplencia() {
       </div>
 
       <AvisoErroDados erro={erro} onTentar={carregar} />
-      {aviso && <p className="text-sm text-primary">{aviso}</p>}
+      {fonte === "amostra" && <p className="text-xs text-muted-foreground">Fonte: arquivo contas_a_receber.csv enviado em 23/11/2026 (amostra de 1.000 linhas). A tela passa a ler a tabela {TABELA_DW} da base externa assim que ela existir.</p>}
       {carregando && <p className="text-sm text-muted-foreground inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Carregando contas a receber…</p>}
-      {vazio && <p className="text-sm text-muted-foreground">Nenhuma conta a receber gravada ainda.{admin ? " Use Importar CSV para carregar o arquivo." : ""}</p>}
+      {vazio && <p className="text-sm text-muted-foreground">Nenhuma conta a receber gravada ainda.</p>}
 
       {titulos && !vazio && <>
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2">
@@ -211,7 +200,7 @@ export default function FinanceiroInadimplencia() {
 
         </div>
 
-        <div className="flex-1 min-h-0 overflow-auto rounded-lg border border-border">
+        <div className="flex-1 min-h-[18rem] overflow-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead className="sticky top-0 z-10 bg-muted">
               <tr>
@@ -252,7 +241,7 @@ export default function FinanceiroInadimplencia() {
               <span className="font-normal text-muted-foreground">· {int(dobrados.length)} títulos com linhas repetidas no arquivo · R$ {brl(tot.excesso)} além do valor, fora do cálculo (cada título conta uma vez)</span>
             </button>
             {dobradoAberto && (
-              <div className="max-h-64 overflow-auto border-t border-border">
+              <div className="max-h-56 overflow-auto border-t border-border">
                 <table className="w-full text-sm">
                   <thead className="sticky top-0 bg-muted">
                     <tr>{["Título", "Contrato", "Responsável financeiro", "Plano", "Vencimento", "Recebimento", "Linhas", "Valor do título", "Recebido no arquivo", "Contado", "Dobrado"].map((h, i) => <th key={h} className={cn("px-3 py-1.5 font-semibold whitespace-nowrap", i >= 6 ? "text-right" : "text-left")}>{h}</th>)}</tr>

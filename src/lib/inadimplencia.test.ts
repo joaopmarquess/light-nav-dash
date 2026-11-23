@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { agrupar, titulosDobrados, consolidarTitulos, converterValor, lerCsvContasReceber, medir, pctInadimplencia, pctRecebido, total, type LinhaCR } from "./inadimplencia";
+import { agrupar, titulosDobrados, vencimentoUtil, consolidarTitulos, medir, normalizarLinha, pctInadimplencia, pctRecebido, total, type LinhaCR } from "./inadimplencia";
 
 const base = (o: Partial<LinhaCR>): LinhaCR => ({
   cd_itcon_rec: "1", dt_competencia: "202601", dt_vencimento: "2026-01-10", dt_recebimento: "2026-01-10",
@@ -62,8 +62,8 @@ describe("Inadimplência", () => {
   });
 
   it("na posição: título a vencer fica fora e recebimento posterior ainda é aberto", () => {
-    const t = consolidarTitulos([base({ dt_vencimento: "2026-01-10", dt_recebimento: "2026-01-12" }), base({ cd_itcon_rec: "2", dt_vencimento: "2026-02-10" })]);
-    const m = total(medir(t, "2026-01-11"));
+    const t = consolidarTitulos([base({ dt_vencimento: "2026-01-08", dt_recebimento: "2026-01-12" }), base({ cd_itcon_rec: "2", dt_vencimento: "2026-02-10" })]);
+    const m = total(medir(t, "2026-01-09"));
     expect(m.titulos).toBe(1);
     expect(m.emAberto).toBe(100);
   });
@@ -81,10 +81,19 @@ describe("Inadimplência", () => {
     expect(nos[0].filhos[0].filhos.map((n) => n.rotulo)).toEqual(["Em aberto 31 a 60 dias", "Pago em dia"]);
   });
 
-  it("lê o CSV no formato do arquivo (datas DD/MM/AAAA, vírgula decimal)", () => {
-    expect(converterValor("dt_vencimento", "29/12/2025 00:00:00")).toBe("2025-12-29");
-    expect(converterValor("vl_duplicata", "1.647,34")).toBe(1647.34);
-    const rows = lerCsvContasReceber("CD_ITCON_REC;DT_COMPETENCIA;DT_VENCIMENTO;VL_DUPLICATA;VL_RECEBIDO\r\n8326513;202512;29/12/2025 00:00:00;647,34;647,34\r\n");
-    expect(rows).toEqual([{ linha: 1, cd_itcon_rec: "8326513", dt_competencia: "202512", dt_vencimento: "2025-12-29", vl_duplicata: 647.34, vl_recebido: 647.34 }]);
+  it("vencimento em fim de semana ou feriado vale no próximo dia útil", () => {
+    expect(vencimentoUtil("2026-01-10")).toBe("2026-01-12"); // sábado → segunda
+    expect(vencimentoUtil("2026-01-01")).toBe("2026-01-02"); // feriado → sexta
+    const t = consolidarTitulos([base({ dt_vencimento: "2026-01-10", dt_recebimento: "2026-01-12" })]);
+    const med = medir(t, "2026-01-31");
+    expect(total(med).recebidoAtraso).toBe(0);
+    expect(agrupar(med, ["faixaAtraso"], "2026-01-31").map((n) => n.rotulo)).toEqual(["Pago em dia"]);
+    expect(medir(t, "2026-01-11")).toEqual([]);
+  });
+
+  it("normaliza linhas da base externa (data com hora, número como texto)", () => {
+    expect(normalizarLinha({ cd_itcon_rec: 8326513, dt_competencia: 202512, dt_vencimento: "2025-12-29T00:00:00", dt_recebimento: "29/12/2025 00:00:00", vl_duplicata: "647.34", vl_recebido: 647.34 })).toMatchObject({
+      cd_itcon_rec: "8326513", dt_competencia: "202512", dt_vencimento: "2025-12-29", dt_recebimento: "2025-12-29", vl_duplicata: 647.34, vl_recebido: 647.34, vl_acrescimo: 0,
+    });
   });
 });
