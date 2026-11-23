@@ -149,7 +149,7 @@ export function faixaAtraso(t: Titulo, m: Metricas, posicao: string): string {
   return d <= 0 ? "5 · Pago em dia" : d <= 5 ? "6 · Pago 1 a 5 dias após" : d <= 30 ? "7 · Pago 6 a 30 dias após" : "8 · Pago mais de 30 dias após";
 }
 
-export type Dimensao = "competencia" | "vencimento" | "tipoPlano" | "coparticipativo" | "plano" | "banco" | "situacao" | "faixaAtraso" | "contrato" | "responsavel" | "sinistralidade" | "beneficiario";
+export type Dimensao = "competencia" | "vencimento" | "tipoPlano" | "coparticipativo" | "plano" | "banco" | "situacao" | "faixaAtraso" | "contrato" | "responsavel" | "sinistralidade" | "beneficiario" | "planoInterno";
 export const DIMENSOES: { id: Dimensao; rotulo: string }[] = [
   { id: "competencia", rotulo: "Competência" },
   { id: "vencimento", rotulo: "Vencimento" },
@@ -182,6 +182,7 @@ export function valorDimensao(d: Dimensao, t: Titulo, m: Metricas, posicao: stri
     case "situacao": { const s = t.tp_quitacao ?? ""; return { chave: s, rotulo: SITUACOES[s] ?? (s || "Sem quitação") }; }
     case "contrato": return { chave: t.cd_contrato ?? "", rotulo: t.cd_contrato ? `Contrato ${t.cd_contrato}` : "Sem contrato" };
     case "sinistralidade": return faixaSinistralidade(t.sinistralidade, !!t.cd_contrato_interno);
+    case "planoInterno": { const p = t.cd_contrato_interno?.slice(0, 4); return p ? { chave: p, rotulo: `Plano ${p}` } : { chave: "", rotulo: "Sem contrato interno" }; }
     case "beneficiario": {
       if (t.beneficiario) return { chave: `m:${t.beneficiario.matricula}`, rotulo: `${t.beneficiario.matricula} · ${t.beneficiario.nome}` };
       const resp = t.nm_responsavel_financeiro ?? "Sem nome";

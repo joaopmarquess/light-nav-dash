@@ -11,6 +11,8 @@ import {
 } from "@/lib/inadimplencia";
 import { FAIXAS_SINISTRALIDADE, rotuloPeriodoSinistralidade, sinistralidadeItens, type BeneficiarioContrato, type SomaContrato } from "@/lib/inadimplenciaSinistralidade";
 import { carregarSinistralidadeContratos } from "@/lib/inadimplenciaSinistralidadeDados";
+import { contextoBaseIa } from "@/lib/inadimplenciaIa";
+import FinanceiroInadimplenciaIa from "@/components/FinanceiroInadimplenciaIa";
 
 /** Tabela definitiva na base externa (DW); enquanto não existir, a tela usa o arquivo de amostra gravado na base do AXIS. */
 const TABELA_DW = "contas_a_receber";
@@ -67,6 +69,7 @@ export default function FinanceiroInadimplencia() {
   const [sin, setSin] = useState<Sinistralidade | null>(null);
   const [sinProgresso, setSinProgresso] = useState<string | null>(null);
   const [sinErro, setSinErro] = useState<unknown>(null);
+  const [iaAberta, setIaAberta] = useState(false);
 
   const carregarSin = useCallback(async (ts: Titulo[]) => {
     const contratos = ts.map((t) => t.cd_contrato_interno).filter((c): c is string => !!c);
@@ -140,6 +143,11 @@ export default function FinanceiroInadimplencia() {
   const vazio = titulos && titulos.length === 0;
 
   return (
+    <>
+    <FinanceiroInadimplenciaIa aberto={iaAberta} onAbertoChange={setIaAberta} dados={() => ({
+      titulos: titulosSin, posicao,
+      contexto: titulosSin ? contextoBaseIa(titulosSin, posicao, fonte === "dw" ? `tabela ${TABELA_DW} da base externa` : "amostra contas_a_receber.csv de 23/11/2026", sin ? rotuloPeriodoSinistralidade(sin.periodo) : null) : "Títulos ainda carregando.",
+    })} />
     <section className="h-full min-h-0 overflow-y-auto flex flex-col gap-3 bg-card rounded-xl border border-border shadow-sm p-4">
       <div className="flex flex-wrap items-end gap-3">
         <label className="text-xs text-muted-foreground">Posição em
@@ -189,6 +197,7 @@ export default function FinanceiroInadimplencia() {
           <input type="checkbox" checked={!!filtros.incluirCancelados} onChange={(e) => setF("incluirCancelados", e.target.checked)} />Incluir cancelados
         </label>
         <div className="ml-auto flex items-end gap-2">
+          <button onClick={() => setIaAberta(true)} title="Perguntar à IA sobre estes títulos" className="h-9 px-3 rounded-md border border-primary/40 bg-primary/10 text-sm font-semibold text-primary hover:bg-primary/20">IA</button>
           <button onClick={exportar} disabled={!medidos.length} title="Gerar XLSX do grid em níveis" className="h-9 px-3 rounded-md border border-border bg-background text-sm inline-flex items-center gap-1.5 hover:bg-accent/40 disabled:opacity-50">
             <Download className="h-4 w-4" />XLSX
           </button>
@@ -306,5 +315,6 @@ export default function FinanceiroInadimplencia() {
         <p className="text-xs text-muted-foreground">Entram os títulos vencidos até a posição; o recebido conta só o principal pago até essa data. Cancelados ficam fora, salvo quando incluídos. Sinistralidade: despesas ÷ receitas dos últimos 12 meses válidos do contrato interno (10 primeiros dígitos da matrícula alternativa).</p>
       </>}
     </section>
+    </>
   );
 }
