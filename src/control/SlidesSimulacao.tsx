@@ -79,20 +79,49 @@ export default function SlidesSimulacao() {
     return () => window.removeEventListener("keydown", aoTeclar);
   }, [atual]);
 
+  // Tela cheia: a apresentação cobre toda a janela (por cima do menu e do cabeçalho) e, quando o navegador
+  // permite, também a tela inteira do monitor. Esc ou o botão saem.
+  const sairTelaCheia = useCallback(() => {
+    setTelaCheia(false);
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
+  }, []);
+  const alternarTelaCheia = useCallback(() => {
+    if (telaCheia) { sairTelaCheia(); return; }
+    setTelaCheia(true);
+    raiz.current?.requestFullscreen?.().catch(() => {});
+  }, [telaCheia, sairTelaCheia]);
   useEffect(() => {
-    const aoMudar = () => setTelaCheia(document.fullscreenElement === raiz.current);
+    const aoMudar = () => { if (!document.fullscreenElement) setTelaCheia(false); };
     document.addEventListener("fullscreenchange", aoMudar);
     return () => document.removeEventListener("fullscreenchange", aoMudar);
   }, []);
-  const alternarTelaCheia = useCallback(() => {
-    if (document.fullscreenElement) void document.exitFullscreen();
-    else void raiz.current?.requestFullscreen();
-  }, []);
+  useEffect(() => {
+    if (!telaCheia) return;
+    const aoTeclar = (e: KeyboardEvent) => { if (e.key === "Escape" && !campoDeTexto(e.target)) sairTelaCheia(); };
+    window.addEventListener("keydown", aoTeclar);
+    return () => window.removeEventListener("keydown", aoTeclar);
+  }, [telaCheia, sairTelaCheia]);
+  useEffect(() => () => { if (document.fullscreenElement) void document.exitFullscreen().catch(() => {}); }, []);
 
-  return <div ref={raiz} className={cn("h-full min-h-0 flex flex-col gap-2", telaCheia && "bg-[hsl(var(--ajuste-head))] p-3")}>
+  // Em tela cheia, os botões de navegação ficam por cima do slide e somem após alguns segundos sem mexer o mouse.
+  const [controlesVisiveis, setControlesVisiveis] = useState(true);
+  const timer = useRef<number>();
+  const mostrarControles = useCallback(() => {
+    setControlesVisiveis(true);
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setControlesVisiveis(false), 2500);
+  }, []);
+  useEffect(() => { if (telaCheia) mostrarControles(); else { window.clearTimeout(timer.current); setControlesVisiveis(true); } }, [telaCheia, mostrarControles]);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  return <div
+    ref={raiz}
+    onMouseMove={telaCheia ? mostrarControles : undefined}
+    className={cn("flex flex-col", telaCheia ? cn("fixed inset-0 z-[100] bg-background", !controlesVisiveis && "cursor-none") : "h-full min-h-0 gap-2")}
+  >
     <div ref={palco} className="relative flex-1 min-h-0 overflow-hidden">
       {escala > 0 && <div
-        className="absolute left-1/2 top-1/2 bg-background shadow-md"
+        className={cn("absolute left-1/2 top-1/2 bg-background", !telaCheia && "shadow-md")}
         style={{ width: LARGURA, height: ALTURA, transform: `translate(-50%, -50%) scale(${escala})` }}
         role="region" aria-label={`Slide ${atual} de ${TOTAL_SLIDES_SIMULACAO}`}
       >
@@ -100,9 +129,13 @@ export default function SlidesSimulacao() {
         {atual === SLIDE_AJUSTE && <SlideAjuste rever={rever} setRever={setRever} />}
       </div>}
     </div>
-    <div className="flex items-center justify-center gap-3">
+    <div className={cn(
+      "flex items-center justify-center gap-3",
+      telaCheia && "absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-full border border-border bg-background/90 px-3 py-1.5 shadow-md transition-opacity duration-300",
+      telaCheia && !controlesVisiveis && "pointer-events-none opacity-0",
+    )}>
       <Button size="icon" variant="outline" className="h-8 w-8" aria-label="Slide anterior" title="Slide anterior (←)" disabled={atual === 1} onClick={() => setAtual((n) => Math.max(1, n - 1))}><ChevronLeft /></Button>
-      <span className={cn("min-w-[4.5rem] text-center text-sm tabular-nums", telaCheia ? "text-primary-foreground" : "text-muted-foreground")}>{atual} / {TOTAL_SLIDES_SIMULACAO}</span>
+      <span className={cn("min-w-[4.5rem] text-center text-sm tabular-nums", "text-muted-foreground")}>{atual} / {TOTAL_SLIDES_SIMULACAO}</span>
       <Button size="icon" variant="outline" className="h-8 w-8" aria-label="Próximo slide" title="Próximo slide (→)" disabled={atual === TOTAL_SLIDES_SIMULACAO} onClick={() => setAtual((n) => Math.min(TOTAL_SLIDES_SIMULACAO, n + 1))}><ChevronRight /></Button>
       <Button size="icon" variant="outline" className="h-8 w-8" aria-label={telaCheia ? "Sair da tela cheia" : "Tela cheia"} title={telaCheia ? "Sair da tela cheia" : "Tela cheia"} onClick={alternarTelaCheia}>{telaCheia ? <Minimize2 /> : <Maximize2 />}</Button>
     </div>
