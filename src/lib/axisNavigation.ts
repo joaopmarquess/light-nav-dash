@@ -16,10 +16,9 @@ const controlItem: MenuItem = {
       // Relatório de Controladoria (Mensal ou Trimestral, sem filtros de período) como submenu do Control (pedido de 18/11/2026); id mantido para preservar permissões.
       { icon: FileBarChart2, label: "Relatório de Controladoria", id: "Relatório · Controladoria" },
       { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente" },
-      { icon: TrendingUp, label: "Orçamento 2027", id: "Control · Orçamento 2027" },
       { icon: FlaskConical, label: "Simulador", id: "Control · Simulador" },
-      // Apresentação "Orçamento 2027" (pptx de 23/11/2026); o slide 4 é o Ajuste do Simulador ao vivo.
-      { icon: Presentation, label: "Slides Simulação", id: "Control · Slides Simulação" },
+      // Apresentação "Orçamento 2027" (pptx de 23/11/2026; antes "Slides Simulação"); o slide 4 é o Ajuste do Simulador ao vivo. Id mantido para preservar permissões.
+      { icon: Presentation, label: "Orçamento 2027", id: "Control · Slides Simulação" },
       { icon: BarChart3, label: SLIDES_SHORT_TEXT, id: "Control · Dashboards" },
       { icon: Settings, label: "Configurações", id: "__cfg_control__" },
       { icon: ListTree, label: "Contas", id: "Control · Contas", nivel: 2 },
@@ -87,7 +86,11 @@ export const labItems: MenuItem[] = [
   {
     icon: Coins,
     label: "Orçamento ",
-    children: [{ icon: LayoutDashboard, label: "Painel", id: "Painel Orçamento" }],
+    children: [
+      { icon: LayoutDashboard, label: "Painel", id: "Painel Orçamento" },
+      // Antigo Control › Orçamento 2027, movido para o Laboratory em 23/11/2026; id mantido para preservar permissões e dados.
+      { icon: TrendingUp, label: "old Orçamento 2027", id: "Control · Orçamento 2027" },
+    ],
   },
   {
     icon: FileText,
