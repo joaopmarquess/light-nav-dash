@@ -428,7 +428,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
       ["(=) Resultado Líquido", liq, 2],
     ];
     return (
-      <div className="flex flex-col gap-3 h-[calc(100vh-9rem)] overflow-y-auto">
+      <div className="flex flex-col gap-2 h-[calc(100vh-9rem)] overflow-y-auto">
         <div className="rounded-xl bg-primary text-primary-foreground shadow-md px-4 py-1.5 flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="text-xs uppercase tracking-widest opacity-80">Resultado Líquido 2026</div>
@@ -444,8 +444,8 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
           {cards.map(([t, x, h, naoRes]) => (
             <div key={t} title={h} className="rounded-xl border border-border bg-card overflow-hidden cursor-help hover:shadow-md transition-shadow">
               <div className={`h-1 ${x < 0 ? "bg-destructive" : "bg-primary"}`} />
-              <div className="px-3 py-2.5">
-                <div className="text-[10px] uppercase tracking-wide text-muted-foreground leading-tight min-h-[1.6rem]">{t}</div>
+              <div className="px-3 py-1.5">
+                <div className="text-[10px] uppercase tracking-wide text-muted-foreground leading-tight min-h-[1.3rem]">{t}</div>
                 <div className={`text-base font-bold tabular-nums ${x < 0 && !naoRes ? "text-destructive" : "text-foreground"}`}>R$ {fmt(x)}</div>
                 <div className="mt-1 h-1 rounded-full bg-muted overflow-hidden">
                   <div className={`h-full ${x < 0 ? "bg-destructive" : "bg-primary"}`} style={{ width: `${Math.min(100, fat ? Math.abs(x / fat) * 100 : 0)}%` }} />
@@ -455,7 +455,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
             </div>
           ))}
         </div>
-        <section className="rounded-2xl border border-border bg-card shadow-sm px-3 py-2 flex-1 flex flex-col">
+        <section className="rounded-2xl border border-border bg-card shadow-sm px-3 py-2 flex-1 min-h-0 flex flex-col">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
             <h3 className="text-base font-semibold text-foreground">{DRE_FULL_NAME} · 2026</h3>
             <div className="flex items-center gap-3">
@@ -471,7 +471,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
           </div>
           <div className="flex-1 flex flex-col justify-between gap-0.5">
             {linhas.map(([t, x, k]) => (
-              <div key={t} className={`flex items-center justify-between rounded-lg border px-3 py-1 text-[17px] ${k === 2 ? "border-primary bg-primary text-primary-foreground font-bold" : k === 1 ? "border-primary/20 bg-primary/10 font-semibold text-foreground" : "border-border/60 text-foreground"}`}>
+              <div key={t} className={`flex items-center justify-between rounded-lg border px-3 py-0.5 text-[15px] ${k === 2 ? "border-primary bg-primary text-primary-foreground font-bold" : k === 1 ? "border-primary/20 bg-primary/10 font-semibold text-foreground" : "border-border/60 text-foreground"}`}>
                 <span>{t}</span>
                 <span className="flex gap-6 tabular-nums">
                   <span className={k === 1 && x < 0 ? "text-destructive" : ""}>{fmt(x)}</span>
@@ -479,7 +479,7 @@ const OrcamentoTrial = ({ painel = false, onAba }: { painel?: boolean; onAba?: (
                 </span>
               </div>
             ))}
-            <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/10 px-3 py-1 text-[17px] font-semibold text-foreground" title="Despesas Assistenciais ÷ Entradas Operacionais">
+            <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/10 px-3 py-0.5 text-[15px] font-semibold text-foreground" title="Despesas Assistenciais ÷ Entradas Operacionais">
               <span>Sinistralidade Operacional</span>
               <span className="flex gap-6 tabular-nums">
                 <span>{formatarSinistralidadePainel(sinistralidadeOperacionalPainel(ent, desp))}</span>
