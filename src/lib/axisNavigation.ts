@@ -1,4 +1,4 @@
-import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree, ArrowRightLeft, Map as MapIcon, CalendarRange, Layers, Tags, LogIn, LogOut, Table2, FileBarChart2, Presentation, Wallet } from "lucide-react";
+import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree, ArrowRightLeft, Map as MapIcon, CalendarRange, Layers, Tags, LogIn, LogOut, Table2, FileBarChart2, Presentation, Wallet, Landmark, AlertTriangle } from "lucide-react";
 import { BENCH_SHORT_TEXT, DRE_MENU_NAME, SLIDES_SHORT_TEXT } from "@/control/dreLabels";
 export type MenuItem = {
   icon: React.ComponentType<{ className?: string }>;
@@ -24,6 +24,15 @@ const controlItem: MenuItem = {
       { icon: Settings, label: "Configurações", id: "__cfg_control__" },
       { icon: ListTree, label: "Contas", id: "Control · Contas", nivel: 2 },
     ],
+};
+
+/** Menu Financeiro (irmão do Control, pedido de 23/11/2026): contas a receber e inadimplência. */
+const financeiroItem: MenuItem = {
+  icon: Landmark,
+  label: "Financeiro",
+  children: [
+    { icon: AlertTriangle, label: "Inadimplência", id: "Financeiro · Inadimplência" },
+  ],
 };
 
 /** Ícone do título de cada subgrupo do menu lateral (campo `grupo` dos submenus). */
@@ -114,6 +123,7 @@ export const labItems: MenuItem[] = [
 export const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   controlItem,
+  financeiroItem,
   { icon: Users, label: "Carteira", children: [
     // Visão geral
     { icon: LayoutDashboard, label: "Painel", id: "Carteira · Painel" }, { icon: MapIcon, label: "Área Geográfica", id: "Carteira · Área Geográfica" }, { icon: TrendingUp, label: "Evolução Mensal", id: "Carteira · Evolução Mensal" },

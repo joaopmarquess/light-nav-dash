@@ -84,3 +84,14 @@ describe("Control › Orçamento submenu", () => {
     expect(items.find(i => i.id === "Control · Simulador")?.label).toBe("Orçamento · Simulador 2027");
   });
 });
+
+describe("Financeiro menu", () => {
+  it("sits right after Control with its own Inadimplência permission", () => {
+    expect(menuItems.map(m => m.label).slice(0, 3)).toEqual(["Home", "Control", "Financeiro"]);
+    const items = axisPermissionGroups.find(g => g.label === "Financeiro")?.items ?? [];
+    expect(items).toEqual([{ id: "Financeiro · Inadimplência", label: "Inadimplência" }]);
+    const access: AxisAccess = { status: "ok", role: "user", permissions: ["Financeiro · Inadimplência"] };
+    expect(canAccess(access, "Financeiro · Inadimplência")).toBe(true);
+    expect(canAccess(access, "Control · DRE Gerencial PE")).toBe(false);
+  });
+});

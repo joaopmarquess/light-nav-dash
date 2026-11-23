@@ -226,6 +226,132 @@ export type Database = {
         }
         Relationships: []
       }
+      financeiro_contas_receber: {
+        Row: {
+          arquivo: string | null
+          cd_con_cor: string | null
+          cd_con_rec: string | null
+          cd_contrato: string | null
+          cd_contrato_interno: string | null
+          cd_contrato_tem: string | null
+          cd_itcon_rec: string
+          cd_plano: string | null
+          cd_reduzido: string | null
+          cd_tip_doc: string | null
+          ds_con_cor: string | null
+          ds_tip_doc: string | null
+          dt_competencia: string
+          dt_prevista_recebimento: string | null
+          dt_prox_reajuste: string | null
+          dt_recebimento: string | null
+          dt_ultimo_reajuste: string | null
+          dt_vencimento: string | null
+          dt_venda: string | null
+          id: number
+          importado_em: string
+          linha: number
+          nm_responsavel_financeiro: string | null
+          nr_ano: number | null
+          nr_cpf_cgc: string | null
+          nr_dias_cobertura: number | null
+          nr_dias_fat_antecip: number | null
+          nr_dias_receita: number | null
+          nr_documento: string | null
+          nr_mes: number | null
+          nr_parcela: number | null
+          nr_serie: string | null
+          sn_coparticipativo: string | null
+          tp_plano: string | null
+          tp_quitacao: string | null
+          vl_acrescimo: number
+          vl_desconto: number
+          vl_duplicata: number
+          vl_recebido: number
+        }
+        Insert: {
+          arquivo?: string | null
+          cd_con_cor?: string | null
+          cd_con_rec?: string | null
+          cd_contrato?: string | null
+          cd_contrato_interno?: string | null
+          cd_contrato_tem?: string | null
+          cd_itcon_rec: string
+          cd_plano?: string | null
+          cd_reduzido?: string | null
+          cd_tip_doc?: string | null
+          ds_con_cor?: string | null
+          ds_tip_doc?: string | null
+          dt_competencia: string
+          dt_prevista_recebimento?: string | null
+          dt_prox_reajuste?: string | null
+          dt_recebimento?: string | null
+          dt_ultimo_reajuste?: string | null
+          dt_vencimento?: string | null
+          dt_venda?: string | null
+          id?: never
+          importado_em?: string
+          linha: number
+          nm_responsavel_financeiro?: string | null
+          nr_ano?: number | null
+          nr_cpf_cgc?: string | null
+          nr_dias_cobertura?: number | null
+          nr_dias_fat_antecip?: number | null
+          nr_dias_receita?: number | null
+          nr_documento?: string | null
+          nr_mes?: number | null
+          nr_parcela?: number | null
+          nr_serie?: string | null
+          sn_coparticipativo?: string | null
+          tp_plano?: string | null
+          tp_quitacao?: string | null
+          vl_acrescimo?: number
+          vl_desconto?: number
+          vl_duplicata?: number
+          vl_recebido?: number
+        }
+        Update: {
+          arquivo?: string | null
+          cd_con_cor?: string | null
+          cd_con_rec?: string | null
+          cd_contrato?: string | null
+          cd_contrato_interno?: string | null
+          cd_contrato_tem?: string | null
+          cd_itcon_rec?: string
+          cd_plano?: string | null
+          cd_reduzido?: string | null
+          cd_tip_doc?: string | null
+          ds_con_cor?: string | null
+          ds_tip_doc?: string | null
+          dt_competencia?: string
+          dt_prevista_recebimento?: string | null
+          dt_prox_reajuste?: string | null
+          dt_recebimento?: string | null
+          dt_ultimo_reajuste?: string | null
+          dt_vencimento?: string | null
+          dt_venda?: string | null
+          id?: never
+          importado_em?: string
+          linha?: number
+          nm_responsavel_financeiro?: string | null
+          nr_ano?: number | null
+          nr_cpf_cgc?: string | null
+          nr_dias_cobertura?: number | null
+          nr_dias_fat_antecip?: number | null
+          nr_dias_receita?: number | null
+          nr_documento?: string | null
+          nr_mes?: number | null
+          nr_parcela?: number | null
+          nr_serie?: string | null
+          sn_coparticipativo?: string | null
+          tp_plano?: string | null
+          tp_quitacao?: string | null
+          vl_acrescimo?: number
+          vl_desconto?: number
+          vl_duplicata?: number
+          vl_recebido?: number
+        }
+        Relationships: []
+      }
       orcamento_2026: {
         Row: {
           created_at: string

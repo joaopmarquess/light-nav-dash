@@ -71,6 +71,13 @@
       "when": 1794491335233,
       "tag": "0009_bench_vidas_envio_admin_read",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795451340573,
+      "tag": "0010_create_financeiro_contas_receber",
+      "breakpoints": true
     }
   ]
 }
