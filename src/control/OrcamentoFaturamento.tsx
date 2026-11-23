@@ -159,6 +159,13 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
                     <span className="w-20" />
                   </span>
                 </div>
+                <div className={`flex items-center justify-between rounded-lg border border-primary/20 bg-primary/10 px-3 ${simulator ? "py-0 text-sm" : "py-0.5 text-[15px]"} font-semibold text-foreground`} title="Contas 411 ÷ Contas 311 · o orçamento não tem contas contábeis">
+                  <span>Sinistralidade Contábil</span>
+                  <span className="flex gap-6 tabular-nums">
+                    <span>-</span>
+                    <span className="w-20" />
+                  </span>
+                </div>
               </div>
             </section>
           );

@@ -7,6 +7,7 @@ import type { ControladoriaReport } from "@/control/relatorio/controladoriaDados
 import { carregarVidasTrimestres, montarRelatorioTrimestral } from "@/control/relatorio/controladoriaTrimestral";
 import { loadDreHostinger, loadMesesDemonstracoes, type DreHRow } from "@/control/dreHostinger";
 import { formatarSinistralidadePainel, grupoPainelDre, sinistralidadeOperacionalPainel } from "@/control/drePainel";
+import { sinistralidadeContabilAnsAno, sinistralidadeContabilMv } from "@/control/sinistralidadeContabil";
 import { DRE_FULL_NAME, REPORT_FULL_NAME } from "@/control/dreLabels";
 import { initialDreExpansion } from "@/control/dreExpansion";
 import { dreMargin, formatDreMargin } from "@/control/dreMargin";
@@ -152,6 +153,20 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
     } finally { setGerandoRel(false); }
   };
 
+  // Painel: Sinistralidade Contábil (contas 411 ÷ 311) — balancete MV nas Demonstrações, arquivos ANS no Histórico.
+  const [sinContabil, setSinContabil] = useState<{ valor: number | null; erro?: boolean } | null>(null);
+  const mesesKey = (meses ?? []).join(",");
+  useEffect(() => {
+    if (!painel || (!historico && dados) || (!historico && !meses)) return;
+    let cancelado = false;
+    setSinContabil(null);
+    (historico ? sinistralidadeContabilAnsAno(ano) : sinistralidadeContabilMv(ano, meses ?? []))
+      .then((valor) => { if (!cancelado) setSinContabil({ valor }); })
+      .catch(() => { if (!cancelado) setSinContabil({ valor: null, erro: true }); });
+    return () => { cancelado = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [painel, historico, ano, mesesKey, !!dados]);
+
   const tree = useMemo(() => buildTree(rows || [], cols), [rows, cols]);
   useEffect(() => {
     setOpen(initialDreExpansion(tree, recolhidoInicial));
@@ -257,6 +272,13 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
               <span>Sinistralidade Operacional</span>
               <span className="flex gap-6 tabular-nums">
                 <span>{formatarSinistralidadePainel(sinistralidadeOperacionalPainel(b.ent, b.desp))}</span>
+                <span className="w-20" />
+              </span>
+            </div>
+            <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/10 px-3 py-0.5 text-[15px] font-semibold text-foreground" title={`Contas 411 ÷ Contas 311${historico ? " · arquivos trimestrais da ANS" : " · balancete"}${sinContabil?.erro ? " · não foi possível carregar as contas" : ""}`}>
+              <span>Sinistralidade Contábil</span>
+              <span className="flex gap-6 tabular-nums">
+                <span>{sinContabil ? formatarSinistralidadePainel(sinContabil.valor) : "…"}</span>
                 <span className="w-20" />
               </span>
             </div>
