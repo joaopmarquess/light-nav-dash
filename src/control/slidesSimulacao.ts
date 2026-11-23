@@ -6,6 +6,11 @@ export const TOTAL_SLIDES_SIMULACAO = 7;
 export const SLIDE_AJUSTE = 4;
 export const SLIDE_INDICADORES = 5;
 
+/** Control › Orçamento › Orçamento 2027 mostra só o slide 4 (Ajuste ao vivo), pedido de 23/11/2026. */
+export const SLIDES_ORCAMENTO_2027 = [SLIDE_AJUSTE];
+/** Laboratory › Orçamento › Slides Simulador 2027: a apresentação inteira, slides 1 a 7. */
+export const SLIDES_SIMULADOR_2027 = Array.from({ length: TOTAL_SLIDES_SIMULACAO }, (_, i) => i + 1);
+
 /**
  * Slide 5 (Indicadores-chave): no lugar de "Sinistralidade líquida de coparticipação" mostra a Sinistralidade
  * Operacional do slide 4. Segue o que o slide 4 mostra: com "Rever" marcado, os valores ajustados; desmarcado, os originais.

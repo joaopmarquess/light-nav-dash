@@ -95,3 +95,12 @@ describe("Financeiro menu", () => {
     expect(canAccess(access, "Control · DRE Gerencial PE")).toBe(false);
   });
 });
+
+describe("Laboratory › Slides Simulador 2027", () => {
+  it("has its own permission inside the Laboratory Orçamento group", () => {
+    const items = axisPermissionGroups.find(g => g.label === "Laboratory")?.items ?? [];
+    expect(items.find(i => i.id === "Slides Simulador 2027")?.label).toBe("Orçamento · Slides Simulador 2027");
+    const access: AxisAccess = { status: "ok", role: "user", permissions: ["Slides Simulador 2027"] };
+    expect(canAccess(access, "Control · Slides Simulação")).toBe(false);
+  });
+});

@@ -18,7 +18,7 @@ const controlItem: MenuItem = {
       // Submenu "Orçamento" (pedido de 23/11/2026): itens consecutivos com o mesmo grupo abrem sob um título recolhível; ids mantidos para preservar permissões.
       { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente", grupo: "Orçamento" },
       { icon: FlaskConical, label: "Simulador 2027", id: "Control · Simulador", grupo: "Orçamento" },
-      // Apresentação "Orçamento 2027" (pptx de 23/11/2026; antes "Slides Simulação"); o slide 4 é o Ajuste do Simulador ao vivo.
+      // Apresentação "Orçamento 2027" (pptx de 23/11/2026; antes "Slides Simulação"): mostra só o slide 4, o Ajuste do Simulador ao vivo; a apresentação completa está no Laboratory.
       { icon: Presentation, label: "Orçamento 2027", id: "Control · Slides Simulação", grupo: "Orçamento" },
       { icon: BarChart3, label: SLIDES_SHORT_TEXT, id: "Control · Dashboards" },
       { icon: Settings, label: "Configurações", id: "__cfg_control__" },
@@ -103,6 +103,8 @@ export const labItems: MenuItem[] = [
       { icon: LayoutDashboard, label: "Painel", id: "Painel Orçamento" },
       // Antigo Control › Orçamento 2027, movido para o Laboratory em 23/11/2026; id mantido para preservar permissões e dados.
       { icon: TrendingUp, label: "old Orçamento 2027", id: "Control · Orçamento 2027" },
+      // Apresentação completa "Orçamento 2027" (slides 1–7, pedido de 23/11/2026); no Control fica só o slide 4.
+      { icon: Presentation, label: "Slides Simulador 2027" },
     ],
   },
   {

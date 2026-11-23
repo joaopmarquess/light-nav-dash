@@ -95,6 +95,7 @@ import CtrlDashboards from "@/control/Dashboards";
 import RelatorioControladoriaVisao from "@/control/RelatorioControladoriaVisao";
 import CtrlSimulador from "@/control/Simulador";
 import CtrlSlidesSimulacao from "@/control/SlidesSimulacao";
+import { SLIDES_ORCAMENTO_2027, SLIDES_SIMULADOR_2027 } from "@/control/slidesSimulacao";
 import CtrlBench from "@/control/BenchC";
 import { BENCH_SHORT_TEXT, BENCH_LONG_TEXT, DRE_FULL_NAME, DRE_MENU_NAME, REPORT_FULL_NAME, SLIDES_SHORT_TEXT, SLIDES_MEDIUM_TEXT, SLIDES_LONG_TEXT } from "@/control/dreLabels";
 import { ListTree, Users2, ArrowLeft } from "lucide-react";
@@ -559,7 +560,9 @@ const Index = () => {
           ) : active === "Control · Dashboards" ? (
             <CtrlDashboards />
           ) : active === "Control · Slides Simulação" ? (
-            <div className="h-[calc(100vh-9rem)] min-h-0"><CtrlSlidesSimulacao /></div>
+            <div className="h-[calc(100vh-9rem)] min-h-0"><CtrlSlidesSimulacao key="orc27" slides={SLIDES_ORCAMENTO_2027} /></div>
+          ) : active === "Slides Simulador 2027" ? (
+            <div className="h-[calc(100vh-9rem)] min-h-0"><CtrlSlidesSimulacao key="lab" slides={SLIDES_SIMULADOR_2027} /></div>
           ) : active === "Control · Orçamento 2027" ? (
             ctrlAba ? (
               <ControlPainel key={ctrlAba} abaInicial={ctrlAba} onPainel={() => setCtrlAba(null)} />

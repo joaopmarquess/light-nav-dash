@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { SLIDE_AJUSTE, TOTAL_SLIDES_SIMULACAO, sinistralidadeSlideIndicadores, slideAposTecla } from "./slidesSimulacao";
+import { SLIDE_AJUSTE, SLIDES_ORCAMENTO_2027, SLIDES_SIMULADOR_2027, TOTAL_SLIDES_SIMULACAO, sinistralidadeSlideIndicadores, slideAposTecla } from "./slidesSimulacao";
 import { formatarPercentualAjuste } from "./simulador/ajuste";
 
 describe("Slides Simulação", () => {
   it("tem os 7 slides do pptx, com o Ajuste no slide 4", () => {
     expect(TOTAL_SLIDES_SIMULACAO).toBe(7);
     expect(SLIDE_AJUSTE).toBe(4);
+  });
+  it("Orçamento 2027 mostra só o slide 4; Slides Simulador 2027 mostra os 7", () => {
+    expect(SLIDES_ORCAMENTO_2027).toEqual([4]);
+    expect(SLIDES_SIMULADOR_2027).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(slideAposTecla(1, "ArrowRight", SLIDES_ORCAMENTO_2027.length)).toBe(1);
   });
   it("seta direita avança e seta esquerda volta, sem passar dos limites", () => {
     expect(slideAposTecla(3, "ArrowRight")).toBe(4);

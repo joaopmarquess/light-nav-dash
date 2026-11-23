@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BotaoReverterAjuste, GradeAjuste, useAlteracoesAjuste } from "@/control/SimuladorAjuste";
-import { SLIDE_AJUSTE, SLIDE_INDICADORES, TOTAL_SLIDES_SIMULACAO, sinistralidadeSlideIndicadores, slideAposTecla } from "@/control/slidesSimulacao";
+import { SLIDE_AJUSTE, SLIDE_INDICADORES, SLIDES_SIMULADOR_2027, sinistralidadeSlideIndicadores, slideAposTecla } from "@/control/slidesSimulacao";
 import { formatarPercentualAjuste } from "@/control/simulador/ajuste";
 import "@fontsource/noto-sans/700.css";
 import s1 from "@/assets/slides-simulacao/slide-01.webp.asset.json";
@@ -69,8 +69,11 @@ function SlideAjuste({ rever, setRever }: { rever: boolean; setRever: (v: boolea
 const campoDeTexto = (alvo: EventTarget | null) =>
   alvo instanceof HTMLElement && (alvo.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(alvo.tagName));
 
-export default function SlidesSimulacao() {
-  const [atual, setAtual] = useState(1);
+/** `slides`: números dos slides do pptx exibidos, na ordem (padrão: todos). A navegação percorre só essa lista. */
+export default function SlidesSimulacao({ slides = SLIDES_SIMULADOR_2027 }: { slides?: number[] }) {
+  const [posicao, setAtual] = useState(1);
+  const total = slides.length;
+  const atual = slides[Math.min(posicao, total) - 1];
   const [escala, setEscala] = useState(0);
   const [telaCheia, setTelaCheia] = useState(false);
   const [rever, setRever] = useState(false);
@@ -94,14 +97,14 @@ export default function SlidesSimulacao() {
       if (e.ctrlKey || e.metaKey || e.altKey || campoDeTexto(e.target)) return;
       // Espaço/Enter num botão ou na opção Rever acionam o próprio controle, sem trocar de slide.
       if ((e.key === " " || e.key === "Enter") && e.target instanceof HTMLElement && e.target.closest("button, [role=checkbox], label")) return;
-      const proximo = slideAposTecla(atual, e.key);
+      const proximo = slideAposTecla(posicao, e.key, total);
       if (proximo === null) return;
       e.preventDefault();
       setAtual(proximo);
     };
     window.addEventListener("keydown", aoTeclar);
     return () => window.removeEventListener("keydown", aoTeclar);
-  }, [atual]);
+  }, [posicao, total]);
 
   // Tela cheia: a apresentação cobre toda a janela (por cima do menu e do cabeçalho) e, quando o navegador
   // permite, também a tela inteira do monitor. Esc ou o botão saem.
@@ -147,7 +150,7 @@ export default function SlidesSimulacao() {
       {escala > 0 && <div
         className={cn("absolute left-1/2 top-1/2 bg-background", !telaCheia && "shadow-md")}
         style={{ width: LARGURA, height: ALTURA, transform: `translate(-50%, -50%) scale(${escala})` }}
-        role="region" aria-label={`Slide ${atual} de ${TOTAL_SLIDES_SIMULACAO}`}
+        role="region" aria-label={`Slide ${posicao} de ${total}`}
       >
         <img src={IMAGENS[atual - 1]} alt={`Slide ${atual}`} className="absolute inset-0 h-full w-full select-none" draggable={false} />
         {atual === SLIDE_AJUSTE && <SlideAjuste rever={rever} setRever={setRever} />}
@@ -159,9 +162,11 @@ export default function SlidesSimulacao() {
       telaCheia && "absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-full border border-border bg-background/90 px-3 py-1.5 shadow-md transition-opacity duration-300",
       telaCheia && !controlesVisiveis && "pointer-events-none opacity-0",
     )}>
-      <Button size="icon" variant="outline" className="h-8 w-8" aria-label="Slide anterior" title="Slide anterior (←)" disabled={atual === 1} onClick={() => setAtual((n) => Math.max(1, n - 1))}><ChevronLeft /></Button>
-      <span className={cn("min-w-[4.5rem] text-center text-sm tabular-nums", "text-muted-foreground")}>{atual} / {TOTAL_SLIDES_SIMULACAO}</span>
-      <Button size="icon" variant="outline" className="h-8 w-8" aria-label="Próximo slide" title="Próximo slide (→)" disabled={atual === TOTAL_SLIDES_SIMULACAO} onClick={() => setAtual((n) => Math.min(TOTAL_SLIDES_SIMULACAO, n + 1))}><ChevronRight /></Button>
+      {total > 1 && <>
+        <Button size="icon" variant="outline" className="h-8 w-8" aria-label="Slide anterior" title="Slide anterior (←)" disabled={posicao === 1} onClick={() => setAtual((n) => Math.max(1, n - 1))}><ChevronLeft /></Button>
+        <span className={cn("min-w-[4.5rem] text-center text-sm tabular-nums", "text-muted-foreground")}>{posicao} / {total}</span>
+        <Button size="icon" variant="outline" className="h-8 w-8" aria-label="Próximo slide" title="Próximo slide (→)" disabled={posicao === total} onClick={() => setAtual((n) => Math.min(total, n + 1))}><ChevronRight /></Button>
+      </>}
       <Button size="icon" variant="outline" className="h-8 w-8" aria-label={telaCheia ? "Sair da tela cheia" : "Tela cheia"} title={telaCheia ? "Sair da tela cheia" : "Tela cheia"} onClick={alternarTelaCheia}>{telaCheia ? <Minimize2 /> : <Maximize2 />}</Button>
     </div>
   </div>;
