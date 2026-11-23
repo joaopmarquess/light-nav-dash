@@ -145,6 +145,7 @@ import { Button } from "@/components/ui/button";
 
 
 import AxisSettings from "@/components/AxisSettings";
+import PesquisaApp from "@/components/PesquisaApp";
 import { useAxisAccess } from "@/hooks/useAxisAccess";
 import { menuItems, labItems, LAB_IDS, UBERABA_RESULTADOS_COMERCIAIS, menuSubgroupIcons } from "@/lib/axisNavigation";
 const onControlSimulatorViewState = (_enabled: boolean[]) => {};
@@ -418,6 +419,7 @@ const Index = () => {
             {controlTitle ? controlSubtitle && <p className="text-xs text-muted-foreground">{controlSubtitle}</p> : <p className="text-xs text-muted-foreground">AXIS | Executive Intelligence Platform <span className="italic">by Dênis Santana</span></p>}
           </div>
           <div className="flex items-center gap-3">
+            {!accessLoading && <PesquisaApp can={can} onAbrir={setActive} disabled={ctrlSimBusy} />}
             {can("Configurações") && <Tooltip>
               <TooltipTrigger asChild>
                 <Button
