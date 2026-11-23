@@ -1,4 +1,5 @@
 import { feriadosNacionais } from "@/lib/simularDatasFm";
+import { faixaSinistralidade, normalizarContratoInterno, type SomaContrato } from "@/lib/inadimplenciaSinistralidade";
 
 /**
  * Financeiro › Inadimplência: regras de consolidação e medição das contas a receber.
@@ -23,9 +24,11 @@ export type LinhaCR = {
   nm_responsavel_financeiro: string | null;
   nr_cpf_cgc: string | null;
   cd_contrato: string | null;
+  /** Plano (4) + Contrato (6): 10 primeiros dígitos da matrícula alternativa dos beneficiários. */
+  cd_contrato_interno?: string | null;
 };
 
-export const COLUNAS_CR = "cd_itcon_rec,dt_competencia,dt_vencimento,dt_recebimento,vl_duplicata,vl_recebido,vl_acrescimo,vl_desconto,tp_quitacao,tp_plano,sn_coparticipativo,cd_plano,ds_con_cor,nm_responsavel_financeiro,nr_cpf_cgc,cd_contrato";
+export const COLUNAS_CR = "cd_itcon_rec,dt_competencia,dt_vencimento,dt_recebimento,vl_duplicata,vl_recebido,vl_acrescimo,vl_desconto,tp_quitacao,tp_plano,sn_coparticipativo,cd_plano,ds_con_cor,nm_responsavel_financeiro,nr_cpf_cgc,cd_contrato,cd_contrato_interno";
 
 /** Ajusta uma linha vinda de qualquer base (datas com hora, números como texto) ao formato do cálculo. */
 export function normalizarLinha(r: Record<string, unknown>): LinhaCR {
@@ -38,6 +41,7 @@ export function normalizarLinha(r: Record<string, unknown>): LinhaCR {
     vl_duplicata: num(r.vl_duplicata), vl_recebido: num(r.vl_recebido), vl_acrescimo: num(r.vl_acrescimo), vl_desconto: num(r.vl_desconto),
     tp_quitacao: txt(r.tp_quitacao), tp_plano: txt(r.tp_plano), sn_coparticipativo: txt(r.sn_coparticipativo), cd_plano: txt(r.cd_plano),
     ds_con_cor: txt(r.ds_con_cor), nm_responsavel_financeiro: txt(r.nm_responsavel_financeiro), nr_cpf_cgc: txt(r.nr_cpf_cgc), cd_contrato: txt(r.cd_contrato),
+    cd_contrato_interno: normalizarContratoInterno(r.cd_contrato_interno),
   };
 }
 
@@ -56,6 +60,8 @@ export type Titulo = Omit<LinhaCR, "vl_recebido" | "vl_acrescimo" | "dt_recebime
   /** Principal somado de todas as linhas do arquivo, antes do limite ao valor do título. */
   recebidoArquivo: number;
   linhas: number;
+  /** Receita e despesa dos últimos 12 meses do contrato interno: undefined = carregando; null = sem dados. */
+  sinistralidade?: SomaContrato | null;
 };
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
@@ -141,7 +147,7 @@ export function faixaAtraso(t: Titulo, m: Metricas, posicao: string): string {
   return d <= 0 ? "5 · Pago em dia" : d <= 5 ? "6 · Pago 1 a 5 dias após" : d <= 30 ? "7 · Pago 6 a 30 dias após" : "8 · Pago mais de 30 dias após";
 }
 
-export type Dimensao = "competencia" | "vencimento" | "tipoPlano" | "coparticipativo" | "plano" | "banco" | "situacao" | "faixaAtraso" | "contrato" | "responsavel";
+export type Dimensao = "competencia" | "vencimento" | "tipoPlano" | "coparticipativo" | "plano" | "banco" | "situacao" | "faixaAtraso" | "contrato" | "responsavel" | "sinistralidade";
 export const DIMENSOES: { id: Dimensao; rotulo: string }[] = [
   { id: "competencia", rotulo: "Competência" },
   { id: "vencimento", rotulo: "Vencimento" },
@@ -151,10 +157,11 @@ export const DIMENSOES: { id: Dimensao; rotulo: string }[] = [
   { id: "plano", rotulo: "Plano" },
   { id: "banco", rotulo: "Banco" },
   { id: "situacao", rotulo: "Quitação" },
+  { id: "sinistralidade", rotulo: "Faixa de sinistralidade" },
   { id: "contrato", rotulo: "Contrato" },
   { id: "responsavel", rotulo: "Responsável financeiro" },
 ];
-const ORDEM_NATURAL = new Set<Dimensao>(["competencia", "vencimento", "faixaAtraso"]);
+const ORDEM_NATURAL = new Set<Dimensao>(["competencia", "vencimento", "faixaAtraso", "sinistralidade"]);
 
 const brData = (iso: string) => iso.split("-").reverse().join("/");
 export const rotuloCompetencia = (c: string) => `${c.slice(4, 6)}/${c.slice(0, 4)}`;
@@ -171,6 +178,7 @@ export function valorDimensao(d: Dimensao, t: Titulo, m: Metricas, posicao: stri
     case "banco": return { chave: t.ds_con_cor ?? "", rotulo: t.ds_con_cor || "Sem banco" };
     case "situacao": { const s = t.tp_quitacao ?? ""; return { chave: s, rotulo: SITUACOES[s] ?? (s || "Sem quitação") }; }
     case "contrato": return { chave: t.cd_contrato ?? "", rotulo: t.cd_contrato ? `Contrato ${t.cd_contrato}` : "Sem contrato" };
+    case "sinistralidade": return faixaSinistralidade(t.sinistralidade, !!t.cd_contrato_interno);
     case "responsavel": return { chave: `${t.nm_responsavel_financeiro ?? ""}|${t.nr_cpf_cgc ?? ""}`, rotulo: `${t.nm_responsavel_financeiro ?? "Sem nome"}${t.nr_cpf_cgc ? ` · ${t.nr_cpf_cgc}` : ""}` };
   }
 }
@@ -178,6 +186,8 @@ export function valorDimensao(d: Dimensao, t: Titulo, m: Metricas, posicao: stri
 export type Filtros = {
   competenciaDe?: string; competenciaAte?: string; tipoPlano?: string; coparticipativo?: string;
   banco?: string; situacao?: string; incluirCancelados?: boolean; plano?: string;
+  /** Chave da faixa de sinistralidade (FAIXAS_SINISTRALIDADE). */
+  faixaSinistralidade?: string;
 };
 
 export type Medido = { t: Titulo; m: Metricas };
@@ -193,6 +203,7 @@ export function medir(titulos: Titulo[], posicao: string, f: Filtros = {}): Medi
     if (f.banco && (t.ds_con_cor ?? "") !== f.banco) continue;
     if (f.situacao && (t.tp_quitacao ?? "") !== f.situacao) continue;
     if (f.plano && t.cd_plano !== f.plano) continue;
+    if (f.faixaSinistralidade && faixaSinistralidade(t.sinistralidade, !!t.cd_contrato_interno).chave !== f.faixaSinistralidade) continue;
     const m = medirTitulo(t, posicao);
     if (m) out.push({ t, m });
   }
@@ -204,7 +215,7 @@ export const titulosDobrados = (itens: Medido[]) => itens.filter((i) => i.t.exce
 
 export const total = (itens: Medido[]) => itens.reduce((s, i) => somar(s, i.m), metricasVazias());
 
-export type No = { id: string; rotulo: string; nivel: number; metricas: Metricas; filhos: No[] };
+export type No = { id: string; rotulo: string; nivel: number; metricas: Metricas; filhos: No[]; itens: Medido[] };
 
 /** Agrupa em níveis; competência, vencimento e faixa em ordem natural, demais pelo maior valor a receber. */
 export function agrupar(itens: Medido[], niveis: Dimensao[], posicao: string, prefixo = "", nivel = 0): No[] {
@@ -219,7 +230,7 @@ export function agrupar(itens: Medido[], niveis: Dimensao[], posicao: string, pr
   }
   const nos = [...grupos.entries()].map(([chave, g]) => {
     const id = `${prefixo}/${d}:${chave}`;
-    return { chave, no: { id, rotulo: g.rotulo, nivel, metricas: total(g.itens), filhos: agrupar(g.itens, niveis, posicao, id, nivel + 1) } };
+    return { chave, no: { id, rotulo: g.rotulo, nivel, metricas: total(g.itens), itens: g.itens, filhos: agrupar(g.itens, niveis, posicao, id, nivel + 1) } };
   });
   nos.sort((a, b) => ORDEM_NATURAL.has(d) ? a.chave.localeCompare(b.chave) : b.no.metricas.aReceber - a.no.metricas.aReceber || a.no.rotulo.localeCompare(b.no.rotulo));
   return nos.map((n) => n.no);

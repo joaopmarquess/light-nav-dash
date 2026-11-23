@@ -7,8 +7,10 @@ import { AvisoErroDados } from "@/components/AvisoErroDados";
 import { cn } from "@/lib/utils";
 import {
   agrupar, COLUNAS_CR, consolidarTitulos, DIMENSOES, medir, normalizarLinha, pctInadimplencia, pctRecebido,
-  rotuloCompetencia, SITUACOES, titulosDobrados, total, type Dimensao, type Filtros, type Metricas, type No, type Titulo,
+  rotuloCompetencia, SITUACOES, titulosDobrados, total, type Dimensao, type Filtros, type Medido, type Metricas, type No, type Titulo,
 } from "@/lib/inadimplencia";
+import { FAIXAS_SINISTRALIDADE, rotuloPeriodoSinistralidade, sinistralidadeItens, type SomaContrato } from "@/lib/inadimplenciaSinistralidade";
+import { carregarSinistralidadeContratos } from "@/lib/inadimplenciaSinistralidadeDados";
 
 /** Tabela definitiva na base externa (DW); enquanto não existir, a tela usa o arquivo de amostra gravado na base do AXIS. */
 const TABELA_DW = "contas_a_receber";
@@ -36,6 +38,7 @@ const pct = (n: number | null) => (n == null ? "—" : `${(n * 100).toLocaleStri
 const NIVEIS_PADRAO: Dimensao[] = ["competencia", "faixaAtraso", "plano"];
 
 type Coluna = { rotulo: string; valor: (m: Metricas) => string; destaque?: boolean; titulo?: string };
+type Sinistralidade = { periodo: { de: number; ate: number }; porContrato: Map<string, SomaContrato> };
 const COLUNAS: Coluna[] = [
   { rotulo: "Títulos", valor: (m) => int(m.titulos) },
   { rotulo: "A receber", valor: (m) => brl(m.aReceber), titulo: "Valor dos títulos vencidos até a posição (duplicata − desconto)" },
@@ -61,6 +64,17 @@ export default function FinanceiroInadimplencia() {
   const [niveis, setNiveis] = useState<(Dimensao | "")[]>([...NIVEIS_PADRAO, ""]);
   const [abertos, setAbertos] = useState<Set<string>>(new Set());
   const [dobradoAberto, setDobradoAberto] = useState(false);
+  const [sin, setSin] = useState<Sinistralidade | null>(null);
+  const [sinProgresso, setSinProgresso] = useState<string | null>(null);
+  const [sinErro, setSinErro] = useState<unknown>(null);
+
+  const carregarSin = useCallback(async (ts: Titulo[]) => {
+    const contratos = ts.map((t) => t.cd_contrato_interno).filter((c): c is string => !!c);
+    setSin(null); setSinErro(null); setSinProgresso("0%");
+    try {
+      setSin(await carregarSinistralidadeContratos(contratos, (f, n) => setSinProgresso(`${Math.round((f / Math.max(1, n)) * 100)}%`)));
+    } catch (e) { setSinErro(e); } finally { setSinProgresso(null); }
+  }, []);
 
   const carregar = useCallback(async () => {
     setCarregando(true); setErro(null);
@@ -74,11 +88,17 @@ export default function FinanceiroInadimplencia() {
       setFonte(origem);
       const ts = consolidarTitulos(linhas);
       setTitulos(ts);
+      void carregarSin(ts);
       const comps = [...new Set(ts.map((t) => t.dt_competencia))].sort();
       setFiltros((f) => ({ ...f, competenciaDe: comps[0], competenciaAte: comps.at(-1) }));
     } catch (e) { setErro(e); } finally { setCarregando(false); }
-  }, []);
+  }, [carregarSin]);
   useEffect(() => { void carregar(); }, [carregar]);
+
+  /** Títulos com a sinistralidade do contrato interno (undefined enquanto carrega; null sem dados no período). */
+  const titulosSin = useMemo(() => titulos?.map((t) => ({
+    ...t, sinistralidade: !sin ? (sinErro ? null : undefined) : t.cd_contrato_interno ? (sin.porContrato.get(t.cd_contrato_interno) ?? null) : null,
+  })) ?? null, [titulos, sin, sinErro]);
 
   const opcoes = useMemo(() => {
     const u = (f: (t: Titulo) => string | null) => [...new Set((titulos ?? []).map(f).filter((v): v is string => !!v))].sort((a, b) => a.localeCompare(b, "pt-BR", { numeric: true }));
@@ -86,10 +106,13 @@ export default function FinanceiroInadimplencia() {
   }, [titulos]);
 
   const niveisAtivos = useMemo(() => { const out: Dimensao[] = []; for (const n of niveis) { if (!n) break; out.push(n); } return out; }, [niveis]);
-  const medidos = useMemo(() => (titulos ? medir(titulos, posicao, filtros) : []), [titulos, posicao, filtros]);
+  const medidos = useMemo(() => (titulosSin ? medir(titulosSin, posicao, filtros) : []), [titulosSin, posicao, filtros]);
   const arvore = useMemo(() => agrupar(medidos, niveisAtivos, posicao), [medidos, niveisAtivos, posicao]);
   const tot = useMemo(() => total(medidos), [medidos]);
   const dobrados = useMemo(() => titulosDobrados(medidos), [medidos]);
+  const sinTotal = useMemo(() => sinistralidadeItens(medidos), [medidos]);
+  const colSin = (itens: Medido[]) => (sin ? pct(sinistralidadeItens(itens).valor) : sinProgresso ? "…" : "—");
+  const rotuloSin = sin ? `Sinistralidade ${rotuloPeriodoSinistralidade(sin.periodo)}` : "Sinistralidade 12 meses";
 
   const todosIds = useMemo(() => { const ids: string[] = []; const walk = (ns: No[]) => ns.forEach((n) => { if (n.filhos.length) { ids.push(n.id); walk(n.filhos); } }); walk(arvore); return ids; }, [arvore]);
   const alternar = (id: string) => setAbertos((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -98,11 +121,11 @@ export default function FinanceiroInadimplencia() {
   const setNivel = (i: number, v: string) => setNiveis((ns) => { const n = [...ns]; n[i] = v as Dimensao | ""; if (!v) for (let j = i + 1; j < n.length; j++) n[j] = ""; return n; });
 
   const exportar = () => {
-    const linhas: (string | number)[][] = [["Nível", ...niveisAtivos.map((d) => DIMENSOES.find((x) => x.id === d)!.rotulo), "Títulos", "A receber", "Recebido", "Em aberto", "% Recebido", "% Inadimplência", "Inadimplentes", "Recebido em atraso", "Acréscimos"]];
-    const linha = (rot: string[], nivel: number | string, m: Metricas) => [nivel, ...niveisAtivos.map((_, i) => rot[i] ?? ""), m.titulos, m.aReceber, m.recebido, m.emAberto, pctRecebido(m) ?? "", pctInadimplencia(m) ?? "", m.inadimplentes, m.recebidoAtraso, m.acrescimos];
-    const walk = (ns: No[], rot: string[]) => ns.forEach((n) => { linhas.push(linha([...rot, n.rotulo], n.nivel + 1, n.metricas)); walk(n.filhos, [...rot, n.rotulo]); });
+    const linhas: (string | number)[][] = [["Nível", ...niveisAtivos.map((d) => DIMENSOES.find((x) => x.id === d)!.rotulo), "Títulos", "A receber", "Recebido", "Em aberto", "% Recebido", "% Inadimplência", "Inadimplentes", "Recebido em atraso", "Acréscimos", rotuloSin]];
+    const linha = (rot: string[], nivel: number | string, m: Metricas, itens: Medido[]) => [nivel, ...niveisAtivos.map((_, i) => rot[i] ?? ""), m.titulos, m.aReceber, m.recebido, m.emAberto, pctRecebido(m) ?? "", pctInadimplencia(m) ?? "", m.inadimplentes, m.recebidoAtraso, m.acrescimos, sin ? (sinistralidadeItens(itens).valor ?? "") : ""];
+    const walk = (ns: No[], rot: string[]) => ns.forEach((n) => { linhas.push(linha([...rot, n.rotulo], n.nivel + 1, n.metricas, n.itens)); walk(n.filhos, [...rot, n.rotulo]); });
     walk(arvore, []);
-    linhas.push(linha(["Total"], "Total", tot));
+    linhas.push(linha(["Total"], "Total", tot, medidos));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([[`Inadimplência · posição em ${posicao.split("-").reverse().join("/")}`], [], ...linhas]), "Inadimplência");
     if (dobrados.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["Título", "Contrato", "Responsável financeiro", "Plano", "Vencimento", "Linhas", "Valor do título", "Recebido no arquivo", "Contado", "Dobrado"], ...dobrados.map(({ t, m }) => [t.cd_itcon_rec, t.cd_contrato ?? "", t.nm_responsavel_financeiro ?? "", t.cd_plano ?? "", t.dt_vencimento ?? "", t.linhas, t.valor, t.recebidoArquivo, m.recebido, t.excesso])]), "Dobrado");
@@ -156,6 +179,11 @@ export default function FinanceiroInadimplencia() {
             <option value="">Todas</option>{opcoes.situacoes.filter((s) => filtros.incluirCancelados || s !== "C").map((c) => <option key={c} value={c}>{SITUACOES[c] ?? c}</option>)}
           </select>
         </label>
+        <label className="text-xs text-muted-foreground">Sinistralidade
+          <select value={filtros.faixaSinistralidade ?? ""} onChange={(e) => setF("faixaSinistralidade", e.target.value)} disabled={!sin} className={cn(sel, "block mt-1")}>
+            <option value="">Todas</option>{FAIXAS_SINISTRALIDADE.map((f) => <option key={f.chave} value={f.chave}>{f.rotulo}</option>)}
+          </select>
+        </label>
         <label className="h-9 inline-flex items-center gap-2 text-sm text-foreground">
           <input type="checkbox" checked={!!filtros.incluirCancelados} onChange={(e) => setF("incluirCancelados", e.target.checked)} />Incluir cancelados
         </label>
@@ -168,14 +196,17 @@ export default function FinanceiroInadimplencia() {
 
       <AvisoErroDados erro={erro} onTentar={carregar} />
       {fonte === "amostra" && <p className="text-xs text-muted-foreground">Fonte: arquivo contas_a_receber.csv enviado em 23/11/2026 (amostra de 1.000 linhas). A tela passa a ler a tabela {TABELA_DW} da base externa assim que ela existir.</p>}
+      <AvisoErroDados erro={sinErro} onTentar={() => titulos && carregarSin(titulos)} />
+      {sinProgresso && <p className="text-xs text-muted-foreground inline-flex items-center gap-2"><Loader2 className="h-3.5 w-3.5 animate-spin" />Carregando sinistralidade dos contratos… {sinProgresso}</p>}
       {carregando && <p className="text-sm text-muted-foreground inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Carregando contas a receber…</p>}
       {vazio && <p className="text-sm text-muted-foreground">Nenhuma conta a receber gravada ainda.</p>}
 
       {titulos && !vazio && <>
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-2">
           {[
             ["A receber", brl(tot.aReceber)], ["Recebido", brl(tot.recebido)], ["Em aberto", brl(tot.emAberto)],
             ["% Recebido", pct(pctRecebido(tot))], ["% Inadimplência", pct(pctInadimplencia(tot))], ["Títulos · inadimplentes", `${int(tot.titulos)} · ${int(tot.inadimplentes)}`],
+            [rotuloSin, sin ? `${pct(sinTotal.valor)} · ${int(sinTotal.contratos)} contratos` : sinProgresso ? "…" : "—"],
           ].map(([r, v]) => (
             <div key={r} className="rounded-lg border border-border px-3 py-2">
               <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{r}</div>
@@ -206,6 +237,7 @@ export default function FinanceiroInadimplencia() {
               <tr>
                 <th className="text-left font-semibold px-3 py-2">{niveisAtivos.map((d) => DIMENSOES.find((x) => x.id === d)!.rotulo).join(" › ")}</th>
                 {COLUNAS.map((c) => <th key={c.rotulo} title={c.titulo} className="text-right font-semibold px-3 py-2 whitespace-nowrap">{c.rotulo}</th>)}
+                <th title="Despesas assistenciais ÷ receitas dos contratos internos do grupo (cada contrato conta uma vez), view_eard_mensal" className="text-right font-semibold px-3 py-2 whitespace-nowrap">{rotuloSin}</th>
               </tr>
             </thead>
             <tbody>
@@ -220,15 +252,17 @@ export default function FinanceiroInadimplencia() {
                       </span>
                     </td>
                     {COLUNAS.map((c) => <td key={c.rotulo} className={cn("px-3 py-1.5 text-right tabular-nums whitespace-nowrap", c.destaque && n.metricas.emAberto > 0.005 && "text-destructive font-semibold")}>{c.valor(n.metricas)}</td>)}
+                    <td className="px-3 py-1.5 text-right tabular-nums whitespace-nowrap">{colSin(n.itens)}</td>
                   </tr>
                 );
               })}
-              {!linhasGrid.length && <tr><td colSpan={COLUNAS.length + 1} className="px-3 py-6 text-center text-muted-foreground">Nenhum título vencido até a posição com os filtros escolhidos.</td></tr>}
+              {!linhasGrid.length && <tr><td colSpan={COLUNAS.length + 2} className="px-3 py-6 text-center text-muted-foreground">Nenhum título vencido até a posição com os filtros escolhidos.</td></tr>}
             </tbody>
             <tfoot className="sticky bottom-0 bg-muted font-semibold">
               <tr className="border-t border-border">
                 <td className="px-3 py-2">Total</td>
                 {COLUNAS.map((c) => <td key={c.rotulo} className="px-3 py-2 text-right tabular-nums whitespace-nowrap">{c.valor(tot)}</td>)}
+                <td className="px-3 py-2 text-right tabular-nums whitespace-nowrap">{colSin(medidos)}</td>
               </tr>
             </tfoot>
           </table>
@@ -268,7 +302,7 @@ export default function FinanceiroInadimplencia() {
             )}
           </div>
         )}
-        <p className="text-xs text-muted-foreground">Entram os títulos vencidos até a posição; o recebido conta só o principal pago até essa data. Cancelados ficam fora, salvo quando incluídos.</p>
+        <p className="text-xs text-muted-foreground">Entram os títulos vencidos até a posição; o recebido conta só o principal pago até essa data. Cancelados ficam fora, salvo quando incluídos. Sinistralidade: despesas ÷ receitas dos últimos 12 meses válidos do contrato interno (10 primeiros dígitos da matrícula alternativa).</p>
       </>}
     </section>
   );
