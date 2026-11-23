@@ -4,13 +4,15 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BotaoReverterAjuste, GradeAjuste, useAlteracoesAjuste } from "@/control/SimuladorAjuste";
-import { SLIDE_AJUSTE, TOTAL_SLIDES_SIMULACAO, slideAposTecla } from "@/control/slidesSimulacao";
+import { SLIDE_AJUSTE, SLIDE_INDICADORES, TOTAL_SLIDES_SIMULACAO, sinistralidadeSlideIndicadores, slideAposTecla } from "@/control/slidesSimulacao";
+import { formatarPercentualAjuste } from "@/control/simulador/ajuste";
+import "@fontsource/noto-sans/700.css";
 import s1 from "@/assets/slides-simulacao/slide-01.webp.asset.json";
 import s2 from "@/assets/slides-simulacao/slide-02.webp.asset.json";
 import s3 from "@/assets/slides-simulacao/slide-03.webp.asset.json";
 import s4 from "@/assets/slides-simulacao/slide-04-fundo.webp.asset.json";
 import s4Original from "@/assets/slides-simulacao/slide-04-original.webp.asset.json";
-import s5 from "@/assets/slides-simulacao/slide-05.webp.asset.json";
+import s5 from "@/assets/slides-simulacao/slide-05-fundo.webp.asset.json";
 import s6 from "@/assets/slides-simulacao/slide-06.webp.asset.json";
 import s7 from "@/assets/slides-simulacao/slide-07.webp.asset.json";
 
@@ -22,6 +24,28 @@ const LARGURA = 1920;
 const ALTURA = 1080;
 // Posição da tabela no slide 4 do pptx (EMU convertidos para 1920×1080).
 const AREA_TABELA = { left: 101, top: 268, width: 1714 };
+
+// Slide 5: a linha "Sinistralidade líquida de coparticipação" foi apagada do fundo; aqui entra a Sinistralidade
+// Operacional do slide 4, nas posições e fonte/cores do pptx (EMU ÷ 6350 = px em 1920×1080).
+const LINHA_INDICADORES = { top: 436, height: 84 };
+const CORES_PPTX = { titulo: "#0E2841", lateral: "#595959" };
+const COLUNAS_INDICADORES = [
+  { cenario: "pessimista", left: 590, tamanho: 56, cor: CORES_PPTX.lateral },
+  { cenario: "realista", left: 999, tamanho: 64, cor: CORES_PPTX.titulo },
+  { cenario: "otimista", left: 1408, tamanho: 56, cor: CORES_PPTX.lateral },
+] as const;
+
+function SlideIndicadores({ rever }: { rever: boolean }) {
+  const { alteracoes } = useAlteracoesAjuste();
+  const valores = sinistralidadeSlideIndicadores(alteracoes, rever);
+  const base = { position: "absolute", ...LINHA_INDICADORES, display: "flex", alignItems: "center", fontFamily: "'Noto Sans', sans-serif", fontWeight: 700 } as const;
+  return <>
+    <div style={{ ...base, left: 115, width: 475, fontSize: 28, lineHeight: 1.2, color: CORES_PPTX.titulo }}>Sinistralidade Operacional</div>
+    {COLUNAS_INDICADORES.map((c) => <div key={c.cenario} style={{ ...base, left: c.left, width: 409, justifyContent: "center", fontSize: c.tamanho, lineHeight: 1, color: c.cor }}>
+      {formatarPercentualAjuste(valores[c.cenario])}%
+    </div>)}
+  </>;
+}
 
 function SlideAjuste({ rever, setRever }: { rever: boolean; setRever: (v: boolean) => void }) {
   const { alteracoes, setAlteracoes, alterado, reverter } = useAlteracoesAjuste();
@@ -127,6 +151,7 @@ export default function SlidesSimulacao() {
       >
         <img src={IMAGENS[atual - 1]} alt={`Slide ${atual}`} className="absolute inset-0 h-full w-full select-none" draggable={false} />
         {atual === SLIDE_AJUSTE && <SlideAjuste rever={rever} setRever={setRever} />}
+        {atual === SLIDE_INDICADORES && <SlideIndicadores rever={rever} />}
       </div>}
     </div>
     <div className={cn(
