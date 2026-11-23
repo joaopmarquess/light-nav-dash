@@ -94,13 +94,15 @@ type DRETrialProps = {
   alturaCompleta?: boolean;
   recolhidoInicial?: boolean;
   faturamento?: number[];
+  /** Bench: Sinistralidade Contábil (contas 411 ÷ 311) por coluna, exibida abaixo do RESULTADO. */
+  sinistralidadeContabil?: (number | null)[];
 };
 
 // Cache em memória: trocar Painel/DRE/Histórico não recarrega nem pisca a tela.
 const cacheMeses = new Map<number, number[]>();
 const cacheRows = new Map<string, DreHRow[]>();
 
-const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, historico = false, colunas, semBarra = false, alturaCompleta = false, recolhidoInicial = false, faturamento }: DRETrialProps = {}) => {
+const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, historico = false, colunas, semBarra = false, alturaCompleta = false, recolhidoInicial = false, faturamento, sinistralidadeContabil }: DRETrialProps = {}) => {
   const [mesesAuto, setMesesAuto] = useState<number[] | null>(() => cacheMeses.get(ano) ?? null);
   const meses = mesesProp ?? mesesAuto;
   const [rows, setRows] = useState<DreHRow[] | null>(() => dados ?? (meses ? cacheRows.get(`${ano}:${meses.join(",")}`) ?? null : null));
@@ -301,6 +303,10 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
                   return <td key={i} className="py-2.5 px-4 text-right tabular-nums whitespace-nowrap">{fmt(v)}{faturamento && <span className="ml-2 font-normal">{formatDreMargin(margem)}</span>}</td>;
                 })}
               </tr>
+              {sinistralidadeContabil && <tr className="border-t border-primary-foreground/30 font-bold" title="Contas 411 ÷ Contas 311">
+                <td className="py-2.5 px-4">Sinistralidade Contábil</td>
+                {sinistralidadeContabil.map((v, i) => <td key={i} className="py-2.5 px-4 text-right tabular-nums whitespace-nowrap">{formatarSinistralidadePainel(v)}</td>)}
+              </tr>}
             </tfoot>
           </table>
         )}

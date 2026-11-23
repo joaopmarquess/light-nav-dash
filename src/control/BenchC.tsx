@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import DRETrial, { type DreColumn } from "./DRETrial";
 import { dadosVisaoAns, valorDreAns, type BenchPlanRow, type BenchRow, type BenchVision } from "@/control/benchClassification";
-import { C_BENSAUDE, C_SUGGESTED, mergeQuarters, operatorFilterName, operatorResults, faturamentoAns, benchYears } from "@/control/benchC";
+import { C_BENSAUDE, C_SUGGESTED, mergeQuarters, operatorFilterName, operatorResults, faturamentoAns, benchYears, sinistralidadeContabilAns } from "@/control/benchC";
 import BenchResultsChart from "./BenchResultsChart";
 import { loadCCatalog, loadCPeriods, loadCQuarter, loadCPlan, quarterQueryKey } from "@/control/benchCLoader";
 import { prepareBenchYears } from "@/control/benchPrefetch";
@@ -44,13 +44,14 @@ export default function BenchC() {
     catch (error) { return error instanceof Error ? error.message : "Não foi possível calcular os saldos trimestrais."; }
   }, [files, current]);
   const readyFiles = calculationError ? [] : files;
-  const { rows, columns, faturamento } = useMemo(() => {
+  const { rows, columns, faturamento, sinistralidade } = useMemo(() => {
     const file = mergeQuarters(readyFiles.filter(f => f !== undefined), current);
     const names = new Set((plan.data?.plano ?? []).flatMap(p => [p.n2, p.n3, p.n4, p.n5].map(n => n?.split("|")[0]?.trim())));
     const extra: BenchPlanRow[] = Object.entries(file.n).filter(([code]) => !names.has(code)).map(([code, name]) => ({ _9d: "", g1: null, g2: null, g3: null, g4: null, [`n${code.length}`]: `${code}|${name}` }));
     const data: BenchRow[] = file.r.map(([code, quarter, movement]) => ({ operadora: operator?.nome ?? current, nr_ano: currentYear ?? 2026, nr_trimestre: quarter, nr_semestre: quarter <= 2 ? 1 : 2, cd_operadora_ans: Number(current), cd_conta_contabil: code, ds_descricao: "", vl_saldo_inicial: 0, vl_saldo_final: 0, vl_movimento: movement }));
     return {
       faturamento: faturamentoAns(file, [...quarters.map(q => [q]), quarters]),
+      sinistralidade: sinistralidadeContabilAns(file, [...quarters.map(q => [q]), quarters]),
       rows: dadosVisaoAns(data, [...(plan.data?.plano ?? []), ...extra], vision === "Gráfico" ? "Contábil" : vision).map(row => ({ ano: row.nr_ano, mes: row.nr_trimestre, tri: row.nr_trimestre, g1: row.g1, g2: row.g2, g3: row.g3, g4: row.g4, valor: valorDreAns(row) ?? 0 })),
       columns: [...quarters.map(q => ({ label: `${q}º tri/${currentYear}`, meses: [q], kind: "mes" as const })), { label: "Acumulado", meses: quarters, kind: "ano" as const }] as DreColumn[],
     };
@@ -139,7 +140,7 @@ export default function BenchC() {
     {refreshing ? <BenchRefreshThermometer progress={refreshProgress} /> : vision === "Gráfico" ? <BenchResultsChart year={year ?? currentYear} quarters={quarters} loading={loading || refreshing} error={calculationError ?? failures[0]?.error?.message} data={!loading && !refreshing ? operatorResults(readyFiles.filter(f => f !== undefined), regs, catalog.data ?? []) : []} /> : failures.length || calculationError ? <div role="alert" className="p-6 text-destructive">Não foi possível carregar Bench C: {calculationError ?? failures[0]?.error?.message}<Button variant="outline" className="ml-3" onClick={() => { failures.forEach(q => { void q.refetch(); }); if (calculationError) queries.forEach(q => { void q.refetch(); }); }}>Tentar novamente</Button></div>
       : loading || refreshing ? <div role="status" className="p-6 text-muted-foreground">{refreshing ? "Atualizando arquivos oficiais da ANS…" : "Buscando arquivos oficiais da ANS…"} {!refreshing && queries.length > 0 && `${queries.filter(q => q.isSuccess).length}/${queries.length} trimestres`}</div>
       : !quarters.length ? <p className="p-6 text-muted-foreground">Nenhum trimestre disponibilizado pela ANS para este ano.</p>
-      : <><div className="text-center text-sm font-semibold">{operator?.nome ?? current} <span className="font-normal text-muted-foreground">· ANS {current} · {currentYear}</span></div><div className="min-h-0 flex-1 overflow-x-auto">{rows.length ? <div className="h-full min-w-[820px]"><DRETrial key={`${current}-${currentYear}`} dados={rows} ano={currentYear} meses={quarters} colunas={columns} faturamento={faturamento} semBarra alturaCompleta recolhidoInicial /></div> : <p className="p-6 text-muted-foreground">Nenhum registro DRE disponível para esta operadora nos trimestres publicados.</p>}</div></>}
+      : <><div className="text-center text-sm font-semibold">{operator?.nome ?? current} <span className="font-normal text-muted-foreground">· ANS {current} · {currentYear}</span></div><div className="min-h-0 flex-1 overflow-x-auto">{rows.length ? <div className="h-full min-w-[820px]"><DRETrial key={`${current}-${currentYear}`} dados={rows} ano={currentYear} meses={quarters} colunas={columns} faturamento={faturamento} sinistralidadeContabil={sinistralidade} semBarra alturaCompleta recolhidoInicial /></div> : <p className="p-6 text-muted-foreground">Nenhum registro DRE disponível para esta operadora nos trimestres publicados.</p>}</div></>}
     {years.length > 0 && <nav aria-label="Anos do Bench" className="mt-auto flex shrink-0 justify-center pb-2 pt-1">
       <div className="flex max-w-full flex-wrap justify-center gap-0.5 rounded-full border border-border bg-card p-1.5 shadow-sm">
         {years.map(y => <Button key={y} variant="ghost" disabled={refreshing} aria-pressed={(year ?? currentYear) === y} onClick={() => setYear(y)} className={`h-8 rounded-full px-3 ${(year ?? currentYear) === y ? "bg-primary text-primary-foreground" : "text-foreground/70"}`}>{y}</Button>)}

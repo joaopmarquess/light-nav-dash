@@ -98,6 +98,19 @@ export function faturamentoAns(file: CFile, periods: number[][]): number[] {
   return periods.map(quarters => file.r.reduce((total, [code, quarter, movement]) =>
     String(code).startsWith("3111") && quarters.includes(quarter) ? total + movement : total, 0));
 }
+/** Sinistralidade Contábil do Bench: soma das contas 411 ÷ soma das contas 311, em % positivo por período (null sem 311). */
+export function sinistralidadeContabilAns(file: CFile, periods: number[][]): (number | null)[] {
+  return periods.map(quarters => {
+    let eventos = 0, contraprestacoes = 0;
+    for (const [code, quarter, movement] of file.r) {
+      if (!quarters.includes(quarter)) continue;
+      const conta = String(code);
+      if (conta.startsWith("411")) eventos += movement;
+      else if (conta.startsWith("311")) contraprestacoes += movement;
+    }
+    return Math.abs(contraprestacoes) >= 0.005 ? (Math.abs(eventos) / Math.abs(contraprestacoes)) * 100 : null;
+  });
+}
 export function operatorResults(files: Record<string, CFile>[], regs: string[], catalog: COperator[]) {
   const names = new Map(catalog.map(op => [op.reg, op.nome]));
   return [...new Set(regs)].map(reg => {

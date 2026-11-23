@@ -1,11 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { aggregateQuarter, mergeQuarters, parseCatalog, operatorFilterName, operatorResults, faturamentoAns, benchYears } from "./benchC";
+import { aggregateQuarter, mergeQuarters, parseCatalog, operatorFilterName, operatorResults, faturamentoAns, benchYears, sinistralidadeContabilAns } from "./benchC";
 describe("Bench C oficial", () => {
   it("oferece histórico desde 2015, excluindo anos anteriores", () => {
     expect(benchYears([2026, 2025, 2019, 2018, 2017, 2016, 2015, 2014, 2001])).toEqual([2026, 2025, 2019, 2018, 2017, 2016, 2015]);
   });
   it("totaliza faturamento apenas do nível 3 3111 por trimestre e acumulado", () => {
     expect(faturamentoAns({ n: {}, r: [[311111011, 1, 1000], [311121011, 1, -100], [311111011, 2, 500], [311211011, 1, 999], [411111011, 2, 300], [311111011, 3, 700]] }, [[1], [2], [1, 2]])).toEqual([900, 500, 1400]);
+  });
+  it("calcula a Sinistralidade Contábil como contas 411 ÷ contas 311 por trimestre e acumulado", () => {
+    const file = { n: {}, r: [[311111011, 1, 1000], [312111011, 1, 999], [411111011, 1, 800], [411211011, 1, 100], [412111011, 1, 555], [311111011, 2, 500], [411111011, 2, 400]] as [number, number, number][] };
+    expect(sinistralidadeContabilAns(file, [[1], [2], [1, 2]])).toEqual([90, 80, (1300 / 1500) * 100]);
+  });
+  it("não calcula a Sinistralidade Contábil sem contas 311", () => {
+    expect(sinistralidadeContabilAns({ n: {}, r: [[411111011, 1, 800]] }, [[1]])).toEqual([null]);
   });
   it("compara o resultado acumulado somente das OPS do filtro com os mesmos sinais do DRE", () => {
     const results = operatorResults([
