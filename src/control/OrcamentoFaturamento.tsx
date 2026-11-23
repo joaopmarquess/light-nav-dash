@@ -96,7 +96,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
       ["Impostos Federais", -imp, "34% do resultado mensal, quando positivo"],
     ];
     return (
-      <div className={simulator ? "flex flex-col gap-2 min-h-0" : "flex flex-col gap-2 h-[calc(100vh-9rem)] overflow-y-auto"}>
+      <div className={simulator ? "flex flex-col gap-2 min-h-full" : "flex flex-col gap-2 h-[calc(100vh-9rem)] overflow-y-auto"}>
         <div className="rounded-xl bg-primary text-primary-foreground shadow-md px-4 py-1.5 flex flex-wrap items-center justify-between gap-4" title="Antes dos Impostos − Impostos Federais">
           <div>
             <div className="text-xs uppercase tracking-widest opacity-80">Resultado Líquido 2027</div>
@@ -144,7 +144,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
               </div>
               <div className="flex-1 flex flex-col justify-between gap-0.5">
                 {linhas.map(([t, v, k]) => (
-                  <div key={t} className={`flex items-center justify-between rounded-lg border px-3 py-0.5 text-[15px] ${k === 2 ? "border-primary bg-primary text-primary-foreground font-bold" : k === 1 ? "border-primary/20 bg-primary/10 font-semibold text-foreground" : "border-border/60 text-foreground"}`}>
+                  <div key={t} className={`flex items-center justify-between rounded-lg border px-3 ${simulator ? "py-0 text-sm" : "py-0.5 text-[15px]"} ${k === 2 ? "border-primary bg-primary text-primary-foreground font-bold" : k === 1 ? "border-primary/20 bg-primary/10 font-semibold text-foreground" : "border-border/60 text-foreground"}`}>
                     <span>{t}</span>
                     <span className="flex gap-6 tabular-nums">
                       <span className={k === 1 && v < 0 ? "text-destructive" : ""}>{n2(v)}</span>
@@ -152,7 +152,7 @@ const OrcamentoFaturamento = ({ home = false, onSimulacao, onPainel, abaInicial 
                     </span>
                   </div>
                 ))}
-                <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/10 px-3 py-0.5 text-[15px] font-semibold text-foreground" title="Despesas Assistenciais ÷ Entradas Operacionais">
+                <div className={`flex items-center justify-between rounded-lg border border-primary/20 bg-primary/10 px-3 ${simulator ? "py-0 text-sm" : "py-0.5 text-[15px]"} font-semibold text-foreground`} title="Despesas Assistenciais ÷ Entradas Operacionais">
                   <span>Sinistralidade Operacional</span>
                   <span className="flex gap-6 tabular-nums">
                     <span>{formatarSinistralidadePainel(sinistralidadeOperacionalPainel(entT, despT))}</span>
