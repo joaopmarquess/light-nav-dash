@@ -6,7 +6,7 @@ import MovimentacaoEvolucaoMensal from "@/components/MovimentacaoEvolucaoMensal"
 import BenchVidas from "@/components/BenchVidas";
 import LaboratoryNav from "@/components/LaboratoryNav";
 import CarteiraTabelas from "@/components/CarteiraTabelas";
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Home,
@@ -144,7 +144,7 @@ import { Button } from "@/components/ui/button";
 
 import AxisSettings from "@/components/AxisSettings";
 import { useAxisAccess } from "@/hooks/useAxisAccess";
-import { menuItems, labItems, LAB_IDS, UBERABA_RESULTADOS_COMERCIAIS } from "@/lib/axisNavigation";
+import { menuItems, labItems, LAB_IDS, UBERABA_RESULTADOS_COMERCIAIS, menuSubgroupIcons } from "@/lib/axisNavigation";
 const onControlSimulatorViewState = (_enabled: boolean[]) => {};
 
 const Index = () => {
@@ -174,7 +174,7 @@ const Index = () => {
   const [ctrlOrcDre, setCtrlOrcDre] = useState(false);
   const [ctrlCfgOpen, setCtrlCfgOpen] = useState(false);
   const [ctrlDreAba, setCtrlDreAba] = useState<"Painel" | "DRE" | "Histórico">("Painel");
-  const controlTitle = active === "Control · Bench C" ? BENCH_LONG_TEXT : active === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : active === "Control · Dashboards" ? SLIDES_LONG_TEXT : active === "Control · Orçamento Vigente" ? "Orçamento 2026" : active === "Control · Orçamento 2027" ? "old Orçamento 2027" : active === "Control · Simulador" ? "Simulador" : active === "Control · Slides Simulação" ? "Orçamento 2027" : active === "Control · Contas" ? "Contas" : active === "Relatório · Controladoria" ? REPORT_FULL_NAME : null;
+  const controlTitle = active === "Control · Bench C" ? BENCH_LONG_TEXT : active === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : active === "Control · Dashboards" ? SLIDES_LONG_TEXT : active === "Control · Orçamento Vigente" ? "Orçamento 2026" : active === "Control · Orçamento 2027" ? "old Orçamento 2027" : active === "Control · Simulador" ? "Simulador 2027" : active === "Control · Slides Simulação" ? "Orçamento 2027" : active === "Control · Contas" ? "Contas" : active === "Relatório · Controladoria" ? REPORT_FULL_NAME : null;
   const controlSubtitle = active === "Control · Dashboards" ? SLIDES_MEDIUM_TEXT : null;
   useEffect(() => {
     if (active === "Control · Orçamento 2027") return;
@@ -184,6 +184,7 @@ const Index = () => {
   const [abaOrc, setAbaOrc] = useState("Faturamento");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [labOpen, setLabOpen] = useState<Record<string, boolean>>({});
+  const [subgrupoAberto, setSubgrupoAberto] = useState<Record<string, boolean>>({});
   const [collapsed, setCollapsed] = useState(true);
   const [labMenuAberto, setLabMenuAberto] = useState<string | null>(null);
 
@@ -287,15 +288,34 @@ const Index = () => {
 
                 {hasChildren && isOpen && !collapsed && (
                   <div className="mt-1 space-y-1">
-                    {(item.children ?? []).map((child: any) => {
+                    {(item.children ?? []).map((child: any, idx: number, lista: any[]) => {
                       if (child.nivel === 2 && !ctrlCfgOpen && active !== child.id) return null;
                       const childActive = active === (child.id ?? child.label) || ((child.id ?? child.label) === "Painel Orçamento" && active === "Simulação");
+                      const grupoChave = child.grupo ? `${item.label}|${child.grupo}` : null;
+                      const grupoAtivo = !!child.grupo && lista.some((c: any) => c.grupo === child.grupo && active === (c.id ?? c.label));
+                      const grupoAberto = !!grupoChave && (subgrupoAberto[grupoChave] ?? grupoAtivo);
+                      const GrupoIcone = child.grupo ? menuSubgroupIcons[child.grupo] ?? child.icon : null;
+                      const cabecalho = child.grupo && lista[idx - 1]?.grupo !== child.grupo && GrupoIcone ? (
+                        <button
+                          key={`grupo-${child.grupo}`}
+                          onClick={() => setSubgrupoAberto((p) => ({ ...p, [grupoChave!]: !grupoAberto }))}
+                          aria-expanded={grupoAberto}
+                          className={`w-full flex items-center gap-3 pl-9 pr-3 py-2 rounded-lg text-sm transition-colors ${grupoAtivo && !grupoAberto ? "bg-accent text-primary font-medium" : grupoAtivo ? "text-primary font-medium hover:bg-accent/60" : "text-foreground/60 hover:bg-accent/60 hover:text-primary"}`}
+                        >
+                          <GrupoIcone className="h-4 w-4 shrink-0" />
+                          <span className="flex-1 text-left whitespace-nowrap">{child.grupo}</span>
+                          <ChevronDown className={`h-4 w-4 transition-transform ${grupoAberto ? "" : "-rotate-90"}`} />
+                        </button>
+                      ) : null;
+                      if (child.grupo && !grupoAberto) return cabecalho;
                       return (
+                        <Fragment key={child.label}>
+                        {cabecalho}
                         <button
                           key={child.label}
                           title={child.id === "Control · Bench C" ? BENCH_LONG_TEXT : child.id === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : child.id === "Control · Dashboards" ? SLIDES_LONG_TEXT : undefined}
                           onClick={() => child.id === "__cfg_control__" ? setCtrlCfgOpen((o) => !o) : setActive((child.id ?? child.label))}
-                          className={`w-full flex items-center gap-3 ${child.nivel === 2 ? "pl-14" : "pl-9"} pr-3 py-2 rounded-lg text-sm transition-colors ${
+                          className={`w-full flex items-center gap-3 ${child.nivel === 2 || child.grupo ? "pl-14" : "pl-9"} pr-3 py-2 rounded-lg text-sm transition-colors ${
                             childActive
                               ? "bg-accent text-primary font-medium"
                               : "text-foreground/60 hover:bg-accent/60 hover:text-primary"
@@ -304,6 +324,7 @@ const Index = () => {
                           <child.icon className="h-4 w-4 shrink-0" />
                           <span className="whitespace-nowrap">{child.label}</span>
                         </button>
+                        </Fragment>
                       );
                     })}
                   </div>

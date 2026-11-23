@@ -1,9 +1,9 @@
-import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree, ArrowRightLeft, Map as MapIcon, CalendarRange, Layers, Tags, LogIn, LogOut, Table2, FileBarChart2, Presentation } from "lucide-react";
+import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree, ArrowRightLeft, Map as MapIcon, CalendarRange, Layers, Tags, LogIn, LogOut, Table2, FileBarChart2, Presentation, Wallet } from "lucide-react";
 import { BENCH_SHORT_TEXT, DRE_MENU_NAME, SLIDES_SHORT_TEXT } from "@/control/dreLabels";
 export type MenuItem = {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
-  children?: { icon: React.ComponentType<{ className?: string }>; label: string; id?: string; nivel?: number }[];
+  children?: { icon: React.ComponentType<{ className?: string }>; label: string; id?: string; nivel?: number; grupo?: string }[];
   lab?: MenuItem[];
 };
 
@@ -15,15 +15,19 @@ const controlItem: MenuItem = {
       { icon: BarChart3, label: BENCH_SHORT_TEXT, id: "Control · Bench C" },
       // Relatório de Controladoria (Mensal ou Trimestral, sem filtros de período) como submenu do Control (pedido de 18/11/2026); id mantido para preservar permissões.
       { icon: FileBarChart2, label: "Relatório de Controladoria", id: "Relatório · Controladoria" },
-      { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente" },
-      { icon: FlaskConical, label: "Simulador", id: "Control · Simulador" },
-      // Apresentação "Orçamento 2027" (pptx de 23/11/2026; antes "Slides Simulação"); o slide 4 é o Ajuste do Simulador ao vivo. Id mantido para preservar permissões.
-      { icon: Presentation, label: "Orçamento 2027", id: "Control · Slides Simulação" },
+      // Submenu "Orçamento" (pedido de 23/11/2026): itens consecutivos com o mesmo grupo abrem sob um título recolhível; ids mantidos para preservar permissões.
+      { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente", grupo: "Orçamento" },
+      { icon: FlaskConical, label: "Simulador 2027", id: "Control · Simulador", grupo: "Orçamento" },
+      // Apresentação "Orçamento 2027" (pptx de 23/11/2026; antes "Slides Simulação"); o slide 4 é o Ajuste do Simulador ao vivo.
+      { icon: Presentation, label: "Orçamento 2027", id: "Control · Slides Simulação", grupo: "Orçamento" },
       { icon: BarChart3, label: SLIDES_SHORT_TEXT, id: "Control · Dashboards" },
       { icon: Settings, label: "Configurações", id: "__cfg_control__" },
       { icon: ListTree, label: "Contas", id: "Control · Contas", nivel: 2 },
     ],
 };
+
+/** Ícone do título de cada subgrupo do menu lateral (campo `grupo` dos submenus). */
+export const menuSubgroupIcons: Record<string, React.ComponentType<{ className?: string }>> = { "Orçamento": Wallet };
 
 export const labItems: MenuItem[] = [
   { icon: FileText, label: "Proposta APB" },
@@ -161,7 +165,7 @@ export const axisPermissionGroups = [
     label: g.label,
     items: g.label === "Home"
       ? [{ id: "Home", label: "Home" }, ...homeShortcuts.map(s => ({ id: s.destination, label: s.label }))]
-      : g.children?.filter(c => c.id !== "__cfg_control__").map(c => ({ id: c.id ?? c.label, label: c.label })) ?? [{ id: g.label, label: g.label }],
+      : g.children?.filter(c => c.id !== "__cfg_control__").map(c => ({ id: c.id ?? c.label, label: c.grupo ? `${c.grupo} · ${c.label}` : c.label })) ?? [{ id: g.label, label: g.label }],
   })),
   { label: "Laboratory", items: [{ id: "Laboratory", label: "Laboratory" }, ...labItems.flatMap(g => g.children ? g.children.map(c => ({ id: c.id ?? c.label, label: `${g.label.trim()} · ${c.label}` })) : [{ id: g.label, label: g.label }])] },
 ];

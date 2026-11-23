@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { axisPermissionGroups, homeShortcutGroups, homeShortcuts } from "./axisNavigation";
+import { axisPermissionGroups, homeShortcutGroups, homeShortcuts, menuItems } from "./axisNavigation";
 import { canAccess, type AxisAccess } from "./axisAccess";
 
 describe("Home shortcut permissions", () => {
@@ -68,5 +68,19 @@ describe("Home shortcut groups", () => {
   it("omits a menu with no permitted shortcut", () => {
     const only = homeShortcuts.filter(s => s.menu === "Carteira");
     expect(homeShortcutGroups(only).map(g => g.menu)).toEqual(["Carteira"]);
+  });
+});
+
+describe("Control › Orçamento submenu", () => {
+  it("groups Orçamento 2026, Simulador 2027 and Orçamento 2027 under Orçamento, keeping their permission ids", () => {
+    const control = menuItems.find(m => m.label === "Control");
+    const grupo = (control?.children ?? []).filter(c => c.grupo === "Orçamento");
+    expect(grupo.map(c => [c.label, c.id])).toEqual([
+      ["Orçamento 2026", "Control · Orçamento Vigente"],
+      ["Simulador 2027", "Control · Simulador"],
+      ["Orçamento 2027", "Control · Slides Simulação"],
+    ]);
+    const items = axisPermissionGroups.find(g => g.label === "Control")?.items ?? [];
+    expect(items.find(i => i.id === "Control · Simulador")?.label).toBe("Orçamento · Simulador 2027");
   });
 });
