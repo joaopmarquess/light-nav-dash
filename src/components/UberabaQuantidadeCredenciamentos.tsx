@@ -95,7 +95,6 @@ export default function UberabaQuantidadeCredenciamentos() {
               <tr key={item.nome} className="border-b border-border/60 bg-muted/40 text-xs">
                 <td className="py-1 pl-8 pr-3" >
                   <span className="font-medium" title={item.inclui?.join(" + ")}>{item.nome}</span>
-                  {item.guia && <span className="ml-2 text-muted-foreground">Guia Médico: {item.guia.join(" · ")}</span>}
                 </td>
                 <td className="px-3 py-0.5 text-right">
                   <Input inputMode="numeric" aria-label={`Quantidade — ${item.nome}`} value={itensQtd[k] ?? ""} placeholder={String(QUANTIDADE_PADRAO_ITEM[l.id])}
