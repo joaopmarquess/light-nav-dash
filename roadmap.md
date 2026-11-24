@@ -1,5 +1,5 @@
 ## Laboratory › Simular Datas FM (24/11/2026)
-- [ ] Perguntar a quantidade de blocos; preservar quatro e unir os grupos em pares para dois, com gravação e impressão consistentes.
+- [x] Oferecer somente 4 ou 2 blocos; em 2, unir linhas 1+2 e 3+4, com gravação e impressão consistentes (43 testes e conferência na tela).
 
 ## Bench Vidas
 - [x] Ocultar modalidades ausentes nos filtros e grids.

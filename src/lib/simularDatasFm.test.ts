@@ -232,6 +232,11 @@ describe("Controle de Simulações FM", () => {
 });
 
 describe("Simular em blocos", () => {
+  it("aceita somente dois ou quatro blocos, descartando quantidades inválidas", () => {
+    for (const quantidadeBlocos of [1, 3, 5, 2.5]) {
+      expect(normalizarEntradaFm({ ...COMPETENCIA_PADRAO, dias: {}, blocos: true, quantidadeBlocos }).quantidadeBlocos).toBe(4);
+    }
+  });
   it("quatro blocos explícitos preservam exatamente a divisão atual", () => {
     const entrada = { ...COMPETENCIA_PADRAO, dias: {} };
     expect(blocosPeriodoFm({ ...entrada, quantidadeBlocos: 4 })).toEqual(blocosPeriodoFm(entrada));

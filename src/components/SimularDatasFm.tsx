@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { BLOCOS_FM, quantidadeBlocosFm } from "@/lib/simularDatasFm";
+import { quantidadeBlocosFm } from "@/lib/simularDatasFm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvarUltimoNumeroFm, simulacaoAlteradaFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, prazoFolhaFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, blocosPeriodoFm, hospitalBeneFm, PARTES_BLOCOS_FM, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
@@ -139,7 +139,7 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
   const [confirmar, setConfirmar] = useState<"cancelar" | "excluir" | null>(null);
   const [perguntarBlocos, setPerguntarBlocos] = useState(false);
   const [quantidadeTexto, setQuantidadeTexto] = useState(String(quantidadeBlocosFm(entrada)));
-  const quantidadeEscolhida = lerInteiro(quantidadeTexto, 1, BLOCOS_FM);
+  const quantidadeEscolhida = quantidadeTexto === "2" ? 2 : 4;
   const cancelar = () => (gravada && !alterada) ? onCancelar() : setConfirmar("cancelar");
   const [texto, setTexto] = useState<Record<string, string>>({});
   const gravar = (proximo: EntradaDatasFm) => onAlterar({ entrada: proximo });
@@ -240,13 +240,14 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
       <Dialog open={perguntarBlocos} onOpenChange={setPerguntarBlocos}>
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>Quantos blocos?</DialogTitle></DialogHeader>
-          <Input aria-label="Quantidade de blocos" type="number" min={1} max={BLOCOS_FM} step={1} autoFocus
-            value={quantidadeTexto} onChange={(e) => setQuantidadeTexto(e.target.value)} />
-          {quantidadeEscolhida == null && <p role="alert" className="text-sm text-destructive">Informe um número inteiro de 1 a {BLOCOS_FM}.</p>}
+          <div role="radiogroup" aria-label="Quantidade de blocos" className="flex gap-2">
+            {[4, 2].map((n) => <Button key={n} role="radio" aria-checked={quantidadeEscolhida === n}
+              variant={quantidadeEscolhida === n ? "default" : "outline"} className="flex-1"
+              onClick={() => setQuantidadeTexto(String(n))}>{n} blocos</Button>)}
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setPerguntarBlocos(false)}>Cancelar</Button>
-            <Button disabled={quantidadeEscolhida == null} onClick={() => {
-              if (quantidadeEscolhida == null) return;
+            <Button onClick={() => {
               gravar({ ...entrada, blocos: true, quantidadeBlocos: quantidadeEscolhida }); setPerguntarBlocos(false);
             }}>Aplicar</Button>
           </DialogFooter>

@@ -177,7 +177,7 @@ export function blocosPeriodoFm(e: EntradaDatasFm): BlocoFm[] {
 }
 
 export const quantidadeBlocosFm = (e: Pick<EntradaDatasFm, "quantidadeBlocos">) =>
-  Number.isInteger(e.quantidadeBlocos) && Number(e.quantidadeBlocos) >= 1 && Number(e.quantidadeBlocos) <= BLOCOS_FM ? Number(e.quantidadeBlocos) : BLOCOS_FM;
+  e.quantidadeBlocos === 2 ? 2 : BLOCOS_FM;
 
 /** Simular em blocos dividido em duas partes (pedido de 18/11/2026): Parte 1 Outros Credenciados = os 4 blocos (blocosPeriodoFm);
  * Parte 2 Hospital Benê = o Período geral inteiro, com o Arquivo na data limite (o Arquivo do cenário). */
