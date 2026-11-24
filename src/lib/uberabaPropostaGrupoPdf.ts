@@ -45,6 +45,7 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
       doc.text(textoPdf(q.titulo), x + wQ / 2, inicio + 7, { align: "center", baseline: "middle" });
       doc.setFont("helvetica", "normal"); doc.setFontSize(F.subtituloQuadro); doc.setTextColor(...SECUNDARIO);
       doc.text(textoPdf(q.subtitulo), x + wQ / 2, inicio + 12.5, { align: "center", baseline: "middle" });
+      const bordasFaixa: { x: number; y: number; width: number; height: number }[] = [];
       autoTable(doc, {
         theme: "plain",
         startY: inicio + 17,
@@ -58,11 +59,17 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
         headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: F.cabecalhoTabela },
         alternateRowStyles: { fillColor: ZEBRA },
         didDrawCell: (c) => {
+          if (avisoPreco && c.column.index === 0 && (c.section === "head" || c.section === "body")) {
+            bordasFaixa.push({ x: c.cell.x, y: c.cell.y, width: c.cell.width, height: c.cell.height });
+            return;
+          }
           if (c.section !== "body") return;
           doc.setDrawColor(...LINHA); doc.setLineWidth(0.2);
           doc.line(c.cell.x, c.cell.y, c.cell.x + c.cell.width, c.cell.y);
         },
       });
+      doc.setDrawColor(...TINTA); doc.setLineWidth(0.25);
+      bordasFaixa.forEach((c) => doc.rect(c.x, c.y, c.width, c.height, "S"));
       fim = Math.max(fim, fimTabela(inicio));
     });
     doc.setDrawColor(...TINTA); doc.setLineWidth(0.35);
