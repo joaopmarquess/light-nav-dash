@@ -40,10 +40,6 @@ export const PROPOSTAS_GRUPO: Record<PropostaGrupoId, DefinicaoGrupo> = {
     sugestaoVenda: "A tabela de venda praticada deve ser previamente aprovada com o Bensaúde",
     produtos: ["pcaAdm", "pmeAdm"],
     distribuidores: ["Rede de Distribuição da Lancers", "Equipe própria do Bensaúde"],
-    // 19/11/2026: SDR Bensaúde retirado a pedido do Dênis; a equipe própria vende pelo call center.
-    definicoes: {
-      "Equipe própria do Bensaúde": "A equipe própria do Bensaúde também efetua vendas dos produtos administrados por meio do seu call center.",
-    },
     promocao: "À Rede de Distribuição Lancers, aplica-se: Comissionamento Promocional por 6 meses renováveis por mais 6 meses com batimento das seguintes Metas:",
     arquivo: "Proposta_Administrados_Bensaude_Uberaba.pdf",
   },

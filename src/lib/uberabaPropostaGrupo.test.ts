@@ -87,8 +87,8 @@ describe("Introdução da proposta Administrados (19/11/2026)", () => {
 });
 
 describe("Equipe própria do Bensaúde nos Distribuidores (19/11/2026)", () => {
-  it("Administrados says the own team also sells through its call center", () => {
-    expect(propostaGrupo("administrados").definicoes["Equipe própria do Bensaúde"]).toContain("por meio do seu call center");
+  it("Administrados has no definitions", () => {
+    expect(propostaGrupo("administrados").definicoes).toEqual({});
   });
   it("Empresariais has no definitions", () => {
     expect(propostaGrupo("empresariais").definicoes).toEqual({});
