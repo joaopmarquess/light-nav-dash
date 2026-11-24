@@ -27,15 +27,16 @@ export function topicosGrupo(id: PropostaGrupoId): string[] {
 }
 
 /** Textos fornecidos pelo Dênis (19/11/2026), sem reescrever. */
-type DefinicaoGrupo = { nome: string; introducao?: string[]; produtos: [FrenteId, FrenteId]; distribuidores: string[]; definicoes?: Record<string, string>; promocao: string; arquivo: string };
+type DefinicaoGrupo = { nome: string; introducao?: string[]; sugestaoVenda?: string; produtos: [FrenteId, FrenteId]; distribuidores: string[]; definicoes?: Record<string, string>; promocao: string; arquivo: string };
 export const PROPOSTAS_GRUPO: Record<PropostaGrupoId, DefinicaoGrupo> = {
   administrados: {
     nome: "Produtos da Administradora",
     // Introdução fornecida pelo Dênis em 19/11/2026, sem reescrever.
     introducao: [
       "A presente proposta é destinada à LANCERS ADMINISTRADORA, conforme os entendimentos iniciais entre as partes.",
-      "Assim como já ocorre com os produtos Bensaúde em sua área de atuação local, caberá à LANCERS estruturar e coordenar, em Uberaba, a rede de distribuição dos produtos por ela administrados, incluindo plataformas e parceiros locais, como a SIGA, que também atua na comercialização dos produtos empresariais da Operadora.",
+      "Assim como já ocorre com os produtos Bensaúde em sua área de atuação local, caberá à LANCERS estruturar e coordenar, em Uberaba, a rede de distribuição dos produtos por ela administrados.",
     ],
+    sugestaoVenda: "A tabela de venda praticada deve ser previamente aprovada com o Bensaúde",
     produtos: ["pcaAdm", "pmeAdm"],
     distribuidores: ["Rede de Distribuição da Lancers", "Equipe própria do Bensaúde"],
     // 19/11/2026: SDR Bensaúde retirado a pedido do Dênis; a equipe própria vende pelo call center.
@@ -78,7 +79,7 @@ export function metasGrupo(id: PropostaGrupoId, vidas: VidasSimulacao): string[]
 
 export type TabelaProdutoGrupo = { id: FrenteId; titulo: string; subtitulo: string; linhas: [string, string, string][] };
 export type PropostaGrupo = {
-  id: PropostaGrupoId; nome: string; topicos: string[]; introducao: string[]; net: TabelaProdutoGrupo[]; venda: TabelaProdutoGrupo[];
+  id: PropostaGrupoId; nome: string; topicos: string[]; introducao: string[]; sugestaoVenda?: string; net: TabelaProdutoGrupo[]; venda: TabelaProdutoGrupo[];
   distribuidores: string[]; definicoes: Record<string, string>; promocao: string; metas: string[]; arquivo: string;
 };
 
@@ -93,8 +94,8 @@ export function propostaGrupo(id: PropostaGrupoId, indices: Indices = INDICES_PA
   const linhas = (t: { faixa: string; enfermariaCentavos: number; apartamentoCentavos: number }[]) =>
     t.map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos), formatarCentavos(l.apartamentoCentavos)] as [string, string, string]);
   return {
-    id, nome: d.nome, topicos: topicosGrupo(id), introducao: d.introducao ?? [], distribuidores: d.distribuidores, definicoes: d.definicoes ?? {}, promocao: d.promocao, metas: metasGrupo(id, vidas), arquivo: d.arquivo,
+    id, nome: d.nome, topicos: topicosGrupo(id), introducao: d.introducao ?? [], sugestaoVenda: d.sugestaoVenda, distribuidores: d.distribuidores, definicoes: d.definicoes ?? {}, promocao: d.promocao, metas: metasGrupo(id, vidas), arquivo: d.arquivo,
     net: d.produtos.map((f) => ({ ...cabecalho(f), linhas: linhas(tabelaNet(indices[f], operadoraDe(f, indicadores[f]), fatores[f])) })),
-    venda: d.produtos.map((f) => ({ ...cabecalho(f), linhas: linhas(tabelaVenda(indices[f], fatores[f])) })),
+    venda: d.sugestaoVenda ? [] : d.produtos.map((f) => ({ ...cabecalho(f), linhas: linhas(tabelaVenda(indices[f], fatores[f])) })),
   };
 }

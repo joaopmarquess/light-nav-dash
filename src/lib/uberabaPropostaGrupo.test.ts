@@ -16,11 +16,13 @@ describe("Proposta Administrados", () => {
   const p = propostaGrupo("administrados");
   it("puts Adesão beside PME ADMINISTRADAS", () => {
     expect(p.net.map((q) => q.titulo)).toEqual(["ADESÃO", "PME ADMINISTRADAS"]);
-    expect(p.venda.map((q) => q.titulo)).toEqual(["ADESÃO", "PME ADMINISTRADAS"]);
   });
-  it("Net = Venda × Operadora (77%), Venda = Referência × fator", () => {
-    expect(p.venda[0].linhas[0]).toEqual(["00 a 18", "166,25", "207,81"]);
+  it("keeps Net = Venda × Operadora (77%)", () => {
     expect(p.net[0].linhas[0][1]).toBe("128,01");
+  });
+  it("omits sale tables only from the Administrados proposal", () => {
+    expect(p.venda).toHaveLength(0);
+    expect(propostaGrupo("empresariais").venda).toHaveLength(2);
   });
   it("lists Lancers network and the Bensaúde own team (no SDR)", () => {
     expect(p.distribuidores).toEqual(["Rede de Distribuição da Lancers", "Equipe própria do Bensaúde"]);
@@ -65,7 +67,6 @@ describe("Introdução da proposta Administrados (19/11/2026)", () => {
     const p = propostaGrupo("administrados");
     expect(p.topicos).toEqual(["1. Introdução", "2. Tabela Net", "3. Sugestão de Venda", "4. Distribuidores", "5. Promoção e Metas"]);
     expect(p.introducao[0]).toBe("A presente proposta é destinada à LANCERS ADMINISTRADORA, conforme os entendimentos iniciais entre as partes.");
-    expect(p.introducao[1]).toContain("como a SIGA, que também atua na comercialização dos produtos empresariais da Operadora.");
   });
   it("Empresariais opens with the SIGA introduction: partial exclusivity in 2027, none assured from 2028", () => {
     const p = propostaGrupo("empresariais");

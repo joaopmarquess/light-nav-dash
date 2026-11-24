@@ -93,8 +93,9 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
   }
   titulo(t0, ALTURA_QUADROS);
   quadros(p.net);
-  titulo(t1, ALTURA_QUADROS);
-  quadros(p.venda);
+  titulo(t1, p.sugestaoVenda ? LINHA_TEXTO * 2 : ALTURA_QUADROS);
+  if (p.sugestaoVenda) texto(p.sugestaoVenda);
+  else quadros(p.venda);
   titulo(t2, p.distribuidores.length * LINHA_TEXTO);
   p.distribuidores.forEach((d) => { item(d); if (p.definicoes[d]) texto(p.definicoes[d], 6); });
   y += 6;

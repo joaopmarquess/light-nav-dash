@@ -60,6 +60,9 @@
 - [x] Tirar calendário e exportar PDF da barra do Proj. Uberaba; canto direito recebe os botões/ícones de cada tela.
 - [x] Padrões de vidas da Simulação: PCA 3.000, PME ADM. 1.000, PCE 30-99 1.000, PJ+ 5.000 (metas das propostas seguem)
 
+## Proposta Comercial › Administrados (24/11/2026)
+- [x] Encerrar introdução no trecho indicado e substituir tabelas de venda pelo texto de aprovação; conferir todas as páginas do PDF.
+
 ## Financeiro › Inadimplência (23/11/2026)
 - [x] Menu Financeiro (irmão do Control) com a tela Inadimplência: filtros, indicadores e grid em níveis.
 - [x] Ler a tabela contas_a_receber da base externa quando existir; até lá, mostrar o arquivo enviado (gravado na base, acesso pela permissão do menu). Sem botão de importar.
