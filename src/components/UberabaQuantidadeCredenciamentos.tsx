@@ -116,7 +116,7 @@ export default function UberabaQuantidadeCredenciamentos() {
                 {(["minimo", "maximo"] as const).map((campo) => (
                   <td key={campo} className="px-3 py-0.5 text-right">
                     <Input inputMode="numeric" aria-label={`${campo === "minimo" ? "Mínimo" : "Máximo"} — ${item.nome}`} value={limitesItens[k]?.[campo] ?? ""}
-                      placeholder={campo === "minimo" ? String(limiteItem(l.id, item.nome, campo, limitesItens, itensQtd)) : ""}
+                      placeholder={String(limiteItem(l.id, item.nome, campo, limitesItens, itensQtd) ?? "")}
                       onChange={(e) => alterarLimite(k, campo, e.target.value)}
                       className="ml-auto h-7 w-24 text-right text-xs tabular-nums placeholder:text-foreground" />
                   </td>

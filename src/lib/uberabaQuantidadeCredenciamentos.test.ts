@@ -132,13 +132,19 @@ describe("Restaurar padrão do Credenciamento", () => {
 });
 
 describe("Mínimo e Máximo por item do Credenciamento", () => {
-  it.each(["medicos", "hospitais", "diagnostico"] as const)("em %s inicia Mínimo na quantidade atual e Máximo em branco", async (grupo) => {
+  it.each(["medicos", "hospitais", "diagnostico"] as const)("em %s inicia Mínimo na quantidade atual e Máximo conforme a modalidade", async (grupo) => {
     const m = await import("./uberabaQuantidadeCredenciamentos");
     const nome = m.itensExibidos(grupo)[0].nome;
     expect(m.limiteItem(grupo, nome, "minimo", {}, {})).toBe(grupo === "medicos" ? 2 : 1);
-    expect(m.limiteItem(grupo, nome, "maximo", {}, {})).toBeUndefined();
+    expect(m.limiteItem(grupo, nome, "maximo", {}, {})).toBe(grupo === "medicos" ? 3 : undefined);
     expect(m.limiteItem(grupo, nome, "minimo", {}, { [m.chaveItem(grupo, nome)]: 7 })).toBe(7);
     expect(m.limiteItem(grupo, nome, "minimo", { [m.chaveItem(grupo, nome)]: { minimo: 0 } }, {})).toBe(0);
+  });
+  it("todas as 50 especialidades têm Máximo padrão 3", async () => {
+    const m = await import("./uberabaQuantidadeCredenciamentos");
+    const itens = m.itensExibidos("medicos");
+    expect(itens).toHaveLength(50);
+    for (const item of itens) expect(m.limiteItem("medicos", item.nome, "maximo", {}, {})).toBe(3);
   });
   it.each(["medicos", "hospitais", "diagnostico"] as const)("guarda os dois campos independentemente em %s, sem alterar a quantidade", async (grupo) => {
     const m = await import("./uberabaQuantidadeCredenciamentos");

@@ -268,7 +268,7 @@ export type CampoLimiteItem = "minimo" | "maximo";
 export type LimitesItens = Record<string, Partial<Record<CampoLimiteItem, number>>>;
 export const CHAVE_LIMITES_ITENS = "uberaba.quantidadeCredenciamentos.limites.v1";
 export function limiteItem(grupo: TipoQuantidade, nome: string, campo: CampoLimiteItem, limites: LimitesItens, quantidades: QuantidadesItens): number | undefined {
-  return limites[chaveItem(grupo, nome)]?.[campo] ?? (campo === "minimo" ? quantidadeItem(grupo, nome, quantidades) : undefined);
+  return limites[chaveItem(grupo, nome)]?.[campo] ?? (campo === "minimo" ? quantidadeItem(grupo, nome, quantidades) : grupo === "medicos" ? 3 : undefined);
 }
 export function alterarLimiteItem(valores: LimitesItens, chave: string, campo: CampoLimiteItem, texto: string): LimitesItens | null {
   const v = lerAutorizado(texto);
