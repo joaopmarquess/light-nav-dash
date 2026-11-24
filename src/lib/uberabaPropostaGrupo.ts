@@ -55,7 +55,7 @@ export const PROPOSTAS_GRUPO: Record<PropostaGrupoId, DefinicaoGrupo> = {
     ],
     produtos: ["pceAdm", "pce100"],
     distribuidores: ["Siga Soluções", "Equipe própria Bensaúde"],
-    promocao: "Comissionamento Promocional por 6 meses renováveis por mais 6 meses com batimento das seguintes Metas:",
+    promocao: "À Siga Soluções, aplica-se:\nComissionamento Promocional por 6 meses renováveis por mais 6 meses com batimento das seguintes Metas:",
     arquivo: "Proposta_Empresariais_Bensaude_Uberaba.pdf",
   },
 };
