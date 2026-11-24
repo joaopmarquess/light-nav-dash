@@ -114,7 +114,7 @@ function paginaSumario(sumario: ItemSumario[]): Paragraph[] {
       children: [new TextRun({ text: "SUMÁRIO", bold: true, size: 28, color: TINTA })] }),
     ...sumario.map((item, n) => new Paragraph({
       spacing: { after: 160 }, tabStops: [{ type: TabStopType.RIGHT, position: LARGURA, leader: "dot" }],
-      children: [new TextRun({ text: item.titulo, size: T.texto, color: TXT }), new TextRun({ children: [new Tab()], size: T.texto }),
+      children: [new TextRun({ text: item.titulo.toUpperCase(), size: T.texto, color: TXT }), new TextRun({ children: [new Tab()], size: T.texto }),
         new SimpleField(`PAGEREF ${marcador(n)} \\h`, String(item.pagina))],
     })),
     new Paragraph({ children: [new PageBreak()] }),

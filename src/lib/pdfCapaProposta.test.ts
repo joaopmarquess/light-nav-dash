@@ -38,7 +38,7 @@ describe("capa e sumário das propostas", () => {
   it("Proposta Comercial e APB também abrem com capa e sumário", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const com = (buildPropostaComercialPdf(null) as any).internal.pages as string[][];
-    expect(com[2].join("\n")).toContain("Gloss");
+    expect(com[2].join("\n")).toContain("GLOSS");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const apb = (montarPropostaPdf({ linEnf: 210, depBase: 130, sinPct: 90, copartPct: 25 }) as any).internal.pages as string[][];
     expect(apb[1].join("\n")).toContain("Proposta APB");

@@ -149,7 +149,7 @@ export function inserirCapaESumario(doc: jsPDF, capa: CapaProposta, itens: ItemS
     doc.setFont("helvetica", "normal"); doc.setTextColor(30, 30, 30);
     const num = String(item.pagina);
     const larguraNum = doc.getTextWidth(num);
-    const linhas = doc.splitTextToSize(item.titulo, x1 - x0 - larguraNum - 12) as string[];
+    const linhas = doc.splitTextToSize(item.titulo.toUpperCase(), x1 - x0 - larguraNum - 12) as string[];
     linhas.forEach((l, i) => doc.text(l, x0, ys + i * LINHA));
     const yUlt = ys + (linhas.length - 1) * LINHA;
     // Pontilhado entre o título e o número da página.
