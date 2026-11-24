@@ -7,14 +7,14 @@ export type AutorizadosCredenciamento = Partial<Record<TipoQuantidade, number>>;
 export type LinhaQuantidadeCredenciamento = { id: TipoQuantidade; tipo: string; disponivel: number | null; autorizado: number; limite: number; valor: number; adesao: number };
 /** Valor (R$) por credenciado de cada tipo, editado na tela (pedido de 18/11/2026); Adesão = Qtde. (Autorizado) × Valor. */
 export type ValoresCredenciamento = Partial<Record<TipoQuantidade, number>>;
-export const CHAVE_VALORES_CREDENCIAMENTO = "uberaba.quantidadeCredenciamentos.valores.v1";
-/** Valor padrão por credenciamento (pedido de 18/11/2026): R$ 300,00 em todos os tipos, inclusive Hospitais;
- * o valor unitário do Modelo de Credenciamento (referência) não muda. */
+export const CHAVE_VALORES_CREDENCIAMENTO = "uberaba.quantidadeCredenciamentos.valores.v2";
+/** Valores padrão da imagem de 24/11/2026; a referência institucional não muda. */
 export const VALOR_PADRAO_CREDENCIAMENTO = 300;
-export const VALOR_PADRAO_HOSPITAIS = VALOR_PADRAO_CREDENCIAMENTO;
+export const VALOR_PADRAO_HOSPITAIS = 2000;
+export const VALOR_PADRAO_DIAGNOSTICO = 750;
 export const TIPO_HOSPITAIS = "Hospitais";
 
-export const CHAVE_AUTORIZADOS_CREDENCIAMENTO = "uberaba.quantidadeCredenciamentos.autorizados.v1";
+export const CHAVE_AUTORIZADOS_CREDENCIAMENTO = "uberaba.quantidadeCredenciamentos.autorizados.v2";
 
 /** Itens de cada tipo. Especialidades médicas: as listadas no Guia Médico do Bensaúde (bensaude.com.br/guia-medico, consultado em 17/11/2026),
  * sem serviços, hospitais e profissões não médicas. Diagnóstico e terapia: itens informados pelo Dênis, com a correspondência no mesmo guia. */
@@ -140,8 +140,8 @@ export function notasAgrupamento(): string[] {
 /** Autorizado começa pelo Limite de cada tipo; valor digitado (inteiro ≥ 0) prevalece. */
 /** Autorizado padrão de Hospitais: seis itens, incluindo um geral em município limítrofe (24/11/2026). */
 export const AUTORIZADO_PADRAO_HOSPITAIS = 6;
-/** Qtde. padrão de Especialidades médicas (pedido de 18/11/2026): 200, no lugar do Limite; a diferença para os itens vai ao Ajuste técnico. */
-export const AUTORIZADO_PADRAO_MEDICOS = 200;
+/** Qtde. padrão de Especialidades na imagem de 24/11/2026: 150. */
+export const AUTORIZADO_PADRAO_MEDICOS = 150;
 /** Qtde. padrão de Serviços auxiliares de diagnóstico e terapia (pedido de 19/11/2026): 4, um por item, no lugar do Limite (15). */
 export const AUTORIZADO_PADRAO_DIAGNOSTICO = 4;
 export function linhasQuantidadeCredenciamentos(autorizados: AutorizadosCredenciamento = {}, valores: ValoresCredenciamento = {}) {
@@ -150,7 +150,7 @@ export function linhasQuantidadeCredenciamentos(autorizados: AutorizadosCredenci
     const limite = g.id === "medicos" ? AUTORIZADO_PADRAO_MEDICOS : AUTORIZADO_PADRAO_DIAGNOSTICO;
     const digitado = autorizados[g.id];
     const autorizado = digitado ?? limite;
-    const valor = valores[g.id] ?? VALOR_PADRAO_CREDENCIAMENTO;
+    const valor = valores[g.id] ?? (g.id === "diagnostico" ? VALOR_PADRAO_DIAGNOSTICO : VALOR_PADRAO_CREDENCIAMENTO);
     return { id: g.id, tipo: g.id === "medicos" ? "Especialidades" : g.titulo, disponivel: g.quantidade, limite, autorizado, valor, adesao: arred2(autorizado * valor) };
   });
   // Hospitais logo após Especialidades médicas; sem Disponível de referência, Autorizado começa pela soma dos itens padrão.

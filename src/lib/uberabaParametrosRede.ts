@@ -2,8 +2,8 @@
 export type CampoParametroRede = "parcelasFixas" | "iniciarEm" | "valorParcela" | "valorPorVida";
 export type ParametrosRede = Record<CampoParametroRede, number>;
 
-// Padrões do Dênis (19/11/2026): 3 parcelas fixas de R$ 15.000,00 a partir do mês 3 e R$ 2,00 por vida.
-export const PARAMETROS_REDE_PADRAO: ParametrosRede = { parcelasFixas: 3, iniciarEm: 3, valorParcela: 15000, valorPorVida: 2 };
+// Padrões da imagem do Dênis (24/11/2026): seis parcelas desde o mês 1, sem remuneração por vida.
+export const PARAMETROS_REDE_PADRAO: ParametrosRede = { parcelasFixas: 6, iniciarEm: 1, valorParcela: 15000, valorPorVida: 0 };
 export const CAMPOS_PARAMETROS_REDE: { campo: CampoParametroRede; rotulo: string; moeda: boolean; inteiro: boolean }[] = [
   { campo: "parcelasFixas", rotulo: "Parcelas fixas", moeda: false, inteiro: true },
   // Mês (1 = 01/2027) em que começam as parcelas fixas da Mensalidade (pedido de 18/11/2026); antes dele, Mensalidade 0.
@@ -11,7 +11,7 @@ export const CAMPOS_PARAMETROS_REDE: { campo: CampoParametroRede; rotulo: string
   { campo: "valorParcela", rotulo: "Valor Parcela", moeda: true, inteiro: false },
   { campo: "valorPorVida", rotulo: "Valor por vida", moeda: true, inteiro: false },
 ];
-export const CHAVE_PARAMETROS_REDE = "uberaba.resultadosRede.parametros.v1";
+export const CHAVE_PARAMETROS_REDE = "uberaba.resultadosRede.parametros.v2";
 
 /** Texto digitado em pt-BR ("15.000", "1,50"): vazio → undefined (restaura o padrão); inválido, negativo ou fração em campo inteiro → null (recusado). */
 export function lerParametroRede(texto: string, inteiro: boolean): number | undefined | null {

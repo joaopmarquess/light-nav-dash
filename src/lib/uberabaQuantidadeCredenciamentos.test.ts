@@ -11,10 +11,10 @@ describe("Quantidade de Credenciamentos", () => {
     ]);
     expect(total.disponivel).toBe(298);
   });
-  it("Qtde. padrão: Especialidades 200, Hospitais 6 e Diagnóstico e terapia 4", () => {
+  it("Qtde. padrão: Especialidades 150, Hospitais 6 e Diagnóstico e terapia 4", () => {
     const { linhas, total } = linhasQuantidadeCredenciamentos();
-    expect(linhas.map((l) => l.autorizado)).toEqual([200, 6, 4]);
-    expect(total.autorizado).toBe(210);
+    expect(linhas.map((l) => l.autorizado)).toEqual([150, 6, 4]);
+    expect(total.autorizado).toBe(160);
   });
   it("Ajuste técnico = 200 − 2 por especialidade (50 × 2 = 100) = 100 e acompanha os itens digitados", () => {
     expect(ajusteTecnico("medicos", 200, {})).toBe(100);
@@ -26,21 +26,21 @@ describe("Quantidade de Credenciamentos", () => {
     expect(linhas.map((l) => l.autorizado)).toEqual([150, 6, 4]);
     expect(total.autorizado).toBe(160);
   });
-  it("Valor começa em R$ 300,00 por tipo e Adesão = Qtde. × Valor (total R$ 63.000,00)", () => {
+  it("Valor padrão: R$ 300 por especialidade, R$ 2.000 por hospital e R$ 750 por serviço e Adesão = Qtde. × Valor (total R$ 60.000,00)", () => {
     const { linhas, total } = linhasQuantidadeCredenciamentos();
-    expect(linhas.map((l) => l.valor)).toEqual([300, 300, 300]);
-    expect(linhas.map((l) => l.adesao)).toEqual([60000, 1800, 1200]);
-    expect(total.adesao).toBe(63000);
+    expect(linhas.map((l) => l.valor)).toEqual([300, 2000, 750]);
+    expect(linhas.map((l) => l.adesao)).toEqual([45000, 12000, 3000]);
+    expect(total.adesao).toBe(60000);
   });
   it("Valor digitado muda só a Adesão do tipo editado", () => {
     const { linhas, total } = linhasQuantidadeCredenciamentos({ medicos: 100 }, { hospitais: 1500.5 });
-    expect(linhas.map((l) => l.adesao)).toEqual([30000, 9003, 1200]);
-    expect(total.adesao).toBe(40203);
+    expect(linhas.map((l) => l.adesao)).toEqual([30000, 9003, 3000]);
+    expect(total.adesao).toBe(42003);
   });
   it("Replicar copia o Valor de Especialidades para todos os tipos", () => {
     const valores = replicarValorEspecialidades({ medicos: 350, hospitais: 1500 });
     expect(valores).toEqual({ medicos: 350, hospitais: 350, diagnostico: 350 });
-    expect(linhasQuantidadeCredenciamentos({}, valores).total.adesao).toBe(210 * 350);
+    expect(linhasQuantidadeCredenciamentos({}, valores).total.adesao).toBe(160 * 350);
     expect(replicarValorEspecialidades({ hospitais: 900 }).hospitais).toBe(300);
   });
   it("Valor aceita reais com vírgula; vazio restaura e inválido é recusado", () => {
@@ -64,8 +64,8 @@ describe("Quantidade de Credenciamentos", () => {
     expect(nomes.slice(-4)).toEqual(["Psicologia", "Fonoaudiologia", "Fisioterapia", "Acupuntura"]);
   });
   it("o grupo removido não altera os totais mesmo com valores antigos salvos", () => {
-    expect(linhasQuantidadeCredenciamentos({ "nao-medicos": 999 }, { "nao-medicos": 900 }).total.autorizado).toBe(210);
-    expect(linhasQuantidadeCredenciamentos({ "nao-medicos": 999 }, { "nao-medicos": 900 }).total.adesao).toBe(63000);
+    expect(linhasQuantidadeCredenciamentos({ "nao-medicos": 999 }, { "nao-medicos": 900 }).total.autorizado).toBe(160);
+    expect(linhasQuantidadeCredenciamentos({ "nao-medicos": 999 }, { "nao-medicos": 900 }).total.adesao).toBe(60000);
   });
   it("diagnóstico e terapia trazem os quatro itens informados", () => {
     expect(ITENS_CREDENCIAMENTO.diagnostico.map((i) => i.nome)).toEqual(["Laboratório de Análises Clínicas", "Laboratório de Análises Patológicas", "Serviços de Imagem", "Serviços de Endoscopia/Colonoscopia"]);
@@ -106,25 +106,25 @@ describe("Quantidade de Credenciamentos", () => {
     expect(somaItens("nao-medicos", {})).toEqual({ soma: 4, itens: 4, alterados: 0 });
   });
   it("quantidade digitada substitui o padrão do item sem mudar o Autorizado do tipo", () => {
-    let v = alterarItem({}, chaveItem("medicos", "Cardiologia*"), "3")!;
-    v = alterarItem(v, chaveItem("medicos", "Clínico Geral**"), "10")!;
-    v = alterarItem(v, chaveItem("diagnostico", "Serviços de Imagem"), "0")!;
+    let v = alterarItem({}, chaveItem("medicos", "Cardiologia*"), "3") ?? {};
+    v = alterarItem(v, chaveItem("medicos", "Clínico Geral**"), "10") ?? {};
+    v = alterarItem(v, chaveItem("diagnostico", "Serviços de Imagem"), "0") ?? {};
     expect(somaItens("medicos", v)).toEqual({ soma: 100 - 4 + 13, itens: 50, alterados: 2 });
     expect(somaItens("diagnostico", v)).toEqual({ soma: 3, itens: 4, alterados: 1 });
     expect(alterarItem(v, chaveItem("medicos", "Cardiologia*"), "2,5")).toBeNull();
-    expect(somaItens("medicos", alterarItem(v, chaveItem("medicos", "Cardiologia*"), "")!).soma).toBe(100 - 2 + 10);
-    expect(linhasQuantidadeCredenciamentos().total.autorizado).toBe(210);
+    expect(somaItens("medicos", alterarItem(v, chaveItem("medicos", "Cardiologia*"), "") ?? {}).soma).toBe(100 - 2 + 10);
+    expect(linhasQuantidadeCredenciamentos().total.autorizado).toBe(160);
   });
 });
 
 describe("Restaurar padrão do Credenciamento", () => {
-  it("apaga Qtde., Valor e itens digitados: Adesão volta a R$ 63.000,00 e cada item ao padrão", async () => {
+  it("apaga Qtde., Valor e itens digitados: Adesão volta a R$ 60.000,00 e cada item ao padrão", async () => {
     const m = await import("./uberabaQuantidadeCredenciamentos");
     m.salvarAutorizados({ medicos: 10 });
     m.salvarValores({ medicos: 500 });
     m.salvarQuantidadesItens({ [m.chaveItem("hospitais", "X")]: 9 });
     m.restaurarCredenciamento();
-    expect(m.linhasQuantidadeCredenciamentos(m.carregarAutorizados(), m.carregarValores()).total.adesao).toBe(63000);
+    expect(m.linhasQuantidadeCredenciamentos(m.carregarAutorizados(), m.carregarValores()).total.adesao).toBe(60000);
     expect(m.carregarQuantidadesItens()).toEqual({});
   });
 });

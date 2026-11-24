@@ -30,8 +30,8 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
     const q = linhasQuantidadeCredenciamentos();
     const l = linhasCondicoesRede(q, {}).map((r) => r.map(semNbsp));
     expect(l.filter((r) => r[2] !== "" || r[0] === "TOTAL").map((r) => r[0])).toEqual([...q.linhas.map((x) => ROTULOS_TIPOS_REDE[x.id] ?? x.tipo), "TOTAL"]);
-    expect(l[0]).toEqual(["Especialidades", "200", "R$ 300,00", "R$ 60.000,00"]);
-    expect(l[1]).toEqual(["Hospitais", "6", "R$ 300,00", "R$ 1.800,00"]);
+    expect(l[0]).toEqual(["Especialidades", "150", "R$ 300,00", "R$ 45.000,00"]);
+    expect(l[1]).toEqual(["Hospitais", "6", "R$ 2.000,00", "R$ 12.000,00"]);
     expect(l[l.length - 1][3]).toBe(semNbsp(moedaCredenciamento(q.total.adesao)));
     const editado = linhasCondicoesRede(linhasQuantidadeCredenciamentos({ medicos: 10 }, { medicos: 300 }), {}).map((r) => r.map(semNbsp));
     expect(editado[0]).toEqual(["Especialidades", "10", "R$ 300,00", "R$ 3.000,00"]);
@@ -39,9 +39,9 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
   it("pays 30% on signing and the remaining 70% on completion of the minimum network", () => {
     const q = linhasQuantidadeCredenciamentos({ medicos: 10, hospitais: 6, diagnostico: 4 });
     const v = pagamentosPropostaRede(PARAMETROS_REDE_PADRAO, q);
-    expect(v.totalCredenciamento).toBe(6000);
-    expect(v.assinatura).toBe(1800);
-    expect(v.redeMinima).toBe(4200);
+    expect(v.totalCredenciamento).toBe(18000);
+    expect(v.assinatura).toBe(5400);
+    expect(v.redeMinima).toBe(12600);
     expect(v.assinatura + v.redeMinima).toBe(v.totalCredenciamento);
   });
   it("uses six fixed installments regardless of the simulator's installment count", () => {
@@ -89,7 +89,7 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
       ["Parcelas fixas", "6"], ["Início das parcelas", "Mês subsequente à assinatura do contrato"], ["Valor da parcela", "R$ 15.000,00"],
     ]);
     expect(semNbsp(regraMensalidadeRede({ ...PARAMETROS_REDE_PADRAO, parcelasFixas: 6, valorParcela: 10000, valorPorVida: 1 }))).toBe(
-      "Nos seis primeiros meses da gestão, a remuneração mensal será de R$ 10.000,00, com início em 03/2027. Encerrado esse período, a remuneração será calculada à razão de R$ 1,00 por vida vendida acumulada.");
+      "Nos seis primeiros meses da gestão, a remuneração mensal será de R$ 10.000,00, com início em 01/2027. Encerrado esse período, a remuneração será calculada à razão de R$ 1,00 por vida vendida acumulada.");
   });
   it("rolls the start month into the next year after month 12", () => {
     expect(mesInicioRede(1)).toBe("01/2027");
@@ -97,7 +97,7 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
   });
   it("flags numbers the AI wrote that are not in the data", () => {
     const d = dadosRascunhoRede(PARAMETROS_REDE_PADRAO);
-    expect(numerosForaDosDadosRede("São 200 especialidades e 3 parcelas de 15.000,00.", d)).toEqual([]);
+    expect(numerosForaDosDadosRede("São 150 especialidades e 6 parcelas de 15.000,00.", d)).toEqual([]);
     expect(numerosForaDosDadosRede("Prazo de 90 dias.", d)).toEqual(["90"]);
   });
   it("uses the default text until a revision is approved", () => {
