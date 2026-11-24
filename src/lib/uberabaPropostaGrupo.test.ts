@@ -81,7 +81,7 @@ describe("Introdução da proposta Administrados (19/11/2026)", () => {
   });
   it("Empresariais opens with the SIGA introduction", () => {
     const p = propostaGrupo("empresariais");
-    expect(p.topicos).toEqual(["1. Introdução", "2. Médias Empresas", "3. Empresarial", "4. Distribuidores", "5. Promoção e Metas"]);
+    expect(p.topicos).toEqual(["1. Introdução", "2. EMPRESAS MÉDIAS (50 A 99 VIDAS) | TABELA DE VENDA", "3. EMPRESAS GRANDES (100 OU MAIS VIDAS) | TABELA DE VENDA", "4. Distribuidores", "5. Promoção e Metas"]);
     expect(p.introducao[0]).toBe("A presente proposta considera a SIGA como responsável pela operação comercial do segmento EMPRESARIAL em Uberaba, observadas as condições e responsabilidades que vierem a ser acordadas entre as partes e formalizadas em instrumento contratual específico.");
   });
 });

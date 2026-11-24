@@ -22,7 +22,7 @@ export const TOPICOS_PROPOSTA_GRUPO = ["Tabela Net", "Sugestão de Venda", "Dist
 
 /** Tópicos numerados da proposta: a Introdução (quando houver) vem antes e desloca a numeração. */
 export function topicosGrupo(id: PropostaGrupoId): string[] {
-  const secoes = id === "empresariais" ? ["Médias Empresas", "Empresarial", "Distribuidores", "Promoção e Metas"] : [...TOPICOS_PROPOSTA_GRUPO];
+  const secoes = id === "empresariais" ? ["EMPRESAS MÉDIAS (50 A 99 VIDAS) | TABELA DE VENDA", "EMPRESAS GRANDES (100 OU MAIS VIDAS) | TABELA DE VENDA", "Distribuidores", "Promoção e Metas"] : [...TOPICOS_PROPOSTA_GRUPO];
   const nomes = PROPOSTAS_GRUPO[id].introducao ? ["Introdução", ...secoes] : secoes;
   return nomes.map((t, i) => `${i + 1}. ${t}`);
 }

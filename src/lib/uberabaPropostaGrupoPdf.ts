@@ -24,9 +24,19 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
   const fimTabela = (fallback: number) => ((doc as any).lastAutoTable?.finalY as number | undefined) ?? fallback;
 
   const titulo = (t: string, juntos: number) => {
-    garantir(10 + juntos);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(F.topico);
+    const linhas = doc.splitTextToSize(textoPdf(t).toUpperCase(), largura) as string[];
+    const passo = alturaLinha(F.topico);
+    garantir(10 + (linhas.length - 1) * passo + juntos);
     topicos.push({ titulo: textoPdf(t), pagina: doc.getNumberOfPages() });
-    drawSectionTitle(doc, t, marginL, y, pageW - marginR, TINTA, F.topico);
+    linhas.forEach((linha, i) => {
+      if (i === linhas.length - 1) drawSectionTitle(doc, linha, marginL, y, pageW - marginR, TINTA, F.topico);
+      else {
+        doc.setTextColor(...TINTA);
+        doc.text(linha, marginL, y);
+        y += passo;
+      }
+    });
     y += 10;
   };
 
