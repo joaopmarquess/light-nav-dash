@@ -117,6 +117,7 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
     if (p.sugestaoVenda) texto(p.sugestaoVenda);
     else quadros(p.venda);
   }
+  if (p.id === "administrados") y += LINHA_TEXTO;
   titulo(t2, p.distribuidores.length * LINHA_TEXTO);
   p.distribuidores.forEach((d) => { item(d); if (p.definicoes[d]) texto(p.definicoes[d], 6); });
   y += 6;
