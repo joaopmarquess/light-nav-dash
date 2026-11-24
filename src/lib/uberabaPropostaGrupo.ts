@@ -101,7 +101,7 @@ export function propostaGrupo(id: PropostaGrupoId, indices: Indices = INDICES_PA
     produtosEmpresariais: id === "empresariais" ? d.produtos.map((f) => ({
       tabela: { ...cabecalho(f), linhas: linhas(tabelaVenda(indices[f], fatores[f])).map(([faixa, enf, apt]) =>
         [faixa, f === "pce100" ? "" : enf, f === "pce100" ? "" : apt]) },
-      avisoPreco: f === "pce100" ? "O preço deve ser previamente estudado pelo Bensaúde." : undefined,
+      avisoPreco: f === "pce100" ? "A tabela de preços será elaborada pelo Bensaúde com base em estudo técnico da carteira proponente, considerando seus dados, características e perfil de risco." : undefined,
       vitalicio: indicadores[f].spread, contratual: indicadores[f].contratual, promocional: indicadores[f].promocional,
     })) : [],
   };
