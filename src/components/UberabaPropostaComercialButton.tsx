@@ -10,6 +10,10 @@ import { BOTOES_PROPOSTA_COMERCIAL, propostaGrupo, PROPOSTAS_GRUPO, type Propost
 import { buildPropostaGrupoPdf } from "@/lib/uberabaPropostaGrupoPdf";
 import { carregarLogoBensaude } from "@/lib/pdfCapaProposta";
 import { lerVidasSimulacao } from "@/lib/uberabaResultadoRede";
+import { FileText, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { buildPropostaGrupoDocx } from "@/lib/uberabaPropostaGrupoDocx";
+import { carregarTimbradoBytes } from "@/lib/uberabaPropostaRedeDocx";
 
 type Escolha = PropostaGrupoId | "original";
 
@@ -23,6 +27,26 @@ export default function UberabaPropostaComercialButton() {
     const [timbrado, logo] = [await loadTimbrado(), await carregarLogoBensaude()];
     if (e === "original") return buildPropostaComercialPdf(timbrado, lerIndices(), lerIndicadores(), lerRotulos(), lerFatores(), null, logo);
     return buildPropostaGrupoPdf(propostaGrupo(e, lerIndices(), lerIndicadores(), lerRotulos(), lerFatores(), lerVidasSimulacao()), timbrado, logo);
+  };
+  const [gerandoWord, setGerandoWord] = useState(false);
+  // Word com o mesmo conteúdo do PDF (pedido de 24/11/2026); a Original não tem versão Word.
+  const gerarWord = async (e: PropostaGrupoId) => {
+    setGerandoWord(true);
+    try {
+      const p = propostaGrupo(e, lerIndices(), lerIndicadores(), lerRotulos(), lerFatores(), lerVidasSimulacao());
+      const blob = await buildPropostaGrupoDocx(p, await carregarTimbradoBytes(), await carregarLogoBensaude());
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = PROPOSTAS_GRUPO[e].arquivo.replace(/\.pdf$/i, "") + ".docx";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error("[PropostaComercial] falha ao gerar Word:", err);
+      toast.error("Não foi possível gerar o Word da proposta.");
+    } finally {
+      setGerandoWord(false);
+    }
   };
   return (
     <>
@@ -42,6 +66,15 @@ export default function UberabaPropostaComercialButton() {
           build={() => build(aberto)}
           fileName={aberto === "original" ? "Proposta_Comercial_Bensaude_Uberaba.pdf" : PROPOSTAS_GRUPO[aberto].arquivo}
           onClose={() => setAberto(null)}
+          acoesExtras={aberto !== "original" ? (
+            <button
+              onClick={() => gerarWord(aberto)}
+              disabled={gerandoWord}
+              className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent disabled:opacity-50 inline-flex items-center gap-2"
+            >
+              {gerandoWord ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />} Gerar Word
+            </button>
+          ) : undefined}
         />,
         document.body,
       )}

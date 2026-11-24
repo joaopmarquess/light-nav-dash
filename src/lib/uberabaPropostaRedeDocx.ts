@@ -121,7 +121,7 @@ function paginaSumario(sumario: ItemSumario[]): Paragraph[] {
   ];
 }
 
-export function documentoPropostaRede(blocos: BlocoPropostaRede[], timbrado: Uint8Array | null, capa?: { capa: CapaProposta; sumario: ItemSumario[] }): Document {
+export function documentoPropostaRede(blocos: BlocoPropostaRede[], timbrado: Uint8Array | null, capa?: { capa: CapaProposta; sumario: ItemSumario[] }, titulo = "Proposta de Credenciamento e Gestão de Rede — Bensaúde|Uberaba"): Document {
   const fundo = () => timbrado ? [new Paragraph({ children: [new ImageRun({
     type: "png", data: timbrado, transformation: { width: 794, height: 1123 },
     floating: { horizontalPosition: { relative: HorizontalPositionRelativeFrom.PAGE, offset: 0 }, verticalPosition: { relative: VerticalPositionRelativeFrom.PAGE, offset: 0 },
@@ -140,7 +140,7 @@ export function documentoPropostaRede(blocos: BlocoPropostaRede[], timbrado: Uin
     children: [...(capa ? paginaSumario(capa.sumario) : []), ...elementos(blocos)],
   };
   return new Document({
-    creator: "Bensaúde", title: "Proposta de Credenciamento e Gestão de Rede — Bensaúde|Uberaba",
+    creator: "Bensaúde", title: titulo,
     styles: { default: { document: { run: { font: "Arial", size: T.texto } } } },
     sections: [
       ...(capa ? [{

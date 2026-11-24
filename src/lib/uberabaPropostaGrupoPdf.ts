@@ -10,7 +10,7 @@ import { type PropostaGrupo, type TabelaProdutoGrupo } from "@/lib/uberabaPropos
 
 const alturaLinha = (pt: number) => pt * 0.3528 * 1.35;
 
-export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string | null, logo: LogoCapa | null = null): jsPDF {
+export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string | null, logo: LogoCapa | null = null, aoSumario?: (s: ItemSumario[]) => void): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const timbrado = attachTimbrado(doc, timbradoDataUrl);
   const pageW = doc.internal.pageSize.getWidth();
@@ -135,8 +135,9 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
   texto(p.promocao);
   p.metas.forEach(item);
 
-  inserirCapaESumario(doc, { titulo: "Proposta Comercial", subtitulo: `Bensaúde|Uberaba · ${p.nome}`, mesAno: mesAnoCapa(), logo }, topicos,
+  const sumario = inserirCapaESumario(doc, { titulo: "Proposta Comercial", subtitulo: `Bensaúde|Uberaba · ${p.nome}`, mesAno: mesAnoCapa(), logo }, topicos,
     { tinta: TINTA, secundario: SECUNDARIO, timbrado, topoSumario: top + 2, margem: marginL });
+  aoSumario?.(sumario);
   numerarPaginasProposta(doc, (t) => {
     doc.setFont("helvetica", "normal"); doc.setFontSize(F.rodape); doc.setTextColor(...RODAPE);
     doc.text(t, pageW - marginR, pageH - 16.5, { align: "right" });
