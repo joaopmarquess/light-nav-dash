@@ -3,7 +3,7 @@ import { buildResultadoImpressaoPdf, cenariosPorBaseDespesa, paginasResultado } 
 import { fontesSimulacao, PADRAO_PARAMETRO, resumoSimulacao } from "./uberabaSimulacao";
 import { INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO } from "./uberabaTabelasComerciais";
 
-const nomes = ["PCA", "PME ADM.", "PCE 30-99", "PJ+"];
+const nomes = ["PCA", "PME ADM.", "PCE 50-99", "PJ+"];
 const configs = fontesSimulacao.padroes.map((c) => ({ ...c, ...PADRAO_PARAMETRO }));
 const porBase = cenariosPorBaseDespesa(configs, INDICES_PADRAO, INDICADORES_PADRAO_POR_FRENTE);
 const paginas = paginasResultado(porBase, nomes, INDICES_PADRAO, INDICADORES_PADRAO_POR_FRENTE);

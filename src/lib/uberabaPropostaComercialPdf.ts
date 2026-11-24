@@ -110,9 +110,9 @@ export type TermoGlossario = { termo: string; nota: string; provisorio?: boolean
  * `provisorio` são minuta para ele confirmar ou reescrever; "Lorem ipsum" onde o significado não foi informado.
  */
 export const GLOSSARIO_PROPOSTA: TermoGlossario[] = [
-  { termo: "DISTRIBUIDORES", provisorio: true, nota: "Canais responsáveis pela comercialização dos produtos junto aos clientes. Nesta proposta, os produtos com boletagem pela Administradora (PCA e PME ADM.) são distribuídos pelas Plataformas Associadas, e os Planos Empresariais (PCE 30-99 e PJ+) podem ser distribuídos por Agenciadoras e Corretoras Autorizadas.", itens: [
+  { termo: "DISTRIBUIDORES", provisorio: true, nota: "Canais responsáveis pela comercialização dos produtos junto aos clientes. Nesta proposta, os produtos com boletagem pela Administradora (PCA e PME ADM.) são distribuídos pelas Plataformas Associadas, e os Planos Empresariais (PCE 50-99 e PJ+) podem ser distribuídos por Agenciadoras e Corretoras Autorizadas.", itens: [
     { termo: "PLATAFORMAS ASSOCIADAS", provisorio: true, nota: "Canais de venda parceiros da Administradora, por meio dos quais são comercializados o PCA e o PME ADM., com boletagem pela Administradora. A Siga Soluções também pode atuar como Plataforma Associada (ver Agenciadora)." },
-    { termo: "CORRETORAS", provisorio: true, nota: "Corretoras Autorizadas: empresas de corretagem habilitadas a comercializar os Planos Empresariais (PCE 30-99, de 30 a 99 vidas, e PJ+, de 100 ou mais vidas), com boletagem pela Operadora." },
+    { termo: "CORRETORAS", provisorio: true, nota: "Corretoras Autorizadas: empresas de corretagem habilitadas a comercializar os Planos Empresariais (PCE 50-99, de 50 a 99 vidas, e PJ+, de 100 ou mais vidas), com boletagem pela Operadora." },
   ] },
   { termo: "ENTES", provisorio: true, nota: "Partes que participam da operação dos produtos desta proposta e entre as quais se distribuem as receitas e os custos de cada contrato.", itens: [
     { termo: "ADMINISTRADORA", provisorio: true, nota: "A Administradora é a Lancers Administradora de Benefícios, responsável pela boletagem (emissão e cobrança das mensalidades) e pela administração dos contratos do PCA e do PME ADM., remunerada pela sua participação na mensalidade." },
@@ -120,16 +120,16 @@ export const GLOSSARIO_PROPOSTA: TermoGlossario[] = [
     { termo: "OPERADORA", provisorio: true, nota: "O Bensaúde, operadora de planos de saúde responsável pelos produtos, pela rede assistencial e pela cobertura dos beneficiários." },
     { termo: "BENEFICIÁRIO", provisorio: true, nota: "Pessoa física vinculada ao plano, como titular ou dependente, que paga a mensalidade e, quando houver, a taxa de adesão." },
   ] },
-  { termo: "ADMINISTRADAS", provisorio: true, nota: "Tabelas com boletagem e administração pela Administradora: ADESÃO (PCA) e PME ADMINISTRADAS (PME ADM., de 03 a 29 vidas)." },
+  { termo: "ADMINISTRADAS", provisorio: true, nota: "Tabelas com boletagem e administração pela Administradora: ADESÃO (PCA) e PME ADMINISTRADAS (PME ADM., de 02 a 49 vidas)." },
   { termo: "PARTICIPAÇÃO", provisorio: true, nota: "Divisão percentual da mensalidade entre a Operadora e o parceiro de cada produto.", itens: [
     { termo: "TABELA CHEIA", provisorio: true, nota: "Preço de venda da tabela, pago pelo beneficiário ou pela empresa contratante." },
     { termo: "TABELA NET", provisorio: true, nota: "Parcela da tabela cheia que cabe à Operadora: tabela cheia × participação da Operadora." },
-    { termo: "SPREAD", provisorio: true, nota: "Diferença entre a tabela cheia e a tabela net: valores atribuídos à Administradora nos produtos com Administradora (nos Planos Empresariais, PCE 30-99 e PJ+, a parcela da Agenciadora corresponde à vitaliciedade)." },
+    { termo: "SPREAD", provisorio: true, nota: "Diferença entre a tabela cheia e a tabela net: valores atribuídos à Administradora nos produtos com Administradora (nos Planos Empresariais, PCE 50-99 e PJ+, a parcela da Agenciadora corresponde à vitaliciedade)." },
   ] },
   { termo: "AGENCIAMENTO", provisorio: true, nota: "Remuneração pela venda de cada novo contrato, paga pela Operadora e expressa como percentual da primeira mensalidade da venda." },
   { termo: "CONTRATUAL", provisorio: true, nota: "Percentual de agenciamento previsto em contrato, aplicado nas condições normais de venda." },
   { termo: "PROMOCIONAL", provisorio: true, nota: "Percentual de agenciamento superior ao contratual, aplicado por período determinado durante campanhas comerciais com metas de vendas previamente definidas. Encerrado o período da campanha, volta a valer o percentual contratual." },
-  { termo: "TAXA DE ADESÃO", provisorio: true, nota: "Valor pago pelo beneficiário ao ingressar no plano, expresso como percentual da primeira mensalidade e destinado à Agenciadora. Aplica-se aos produtos com Administradora (PCA e PME ADM.); os Planos Empresariais (PCE 30-99 e PJ+) não têm taxa de adesão." },
+  { termo: "TAXA DE ADESÃO", provisorio: true, nota: "Valor pago pelo beneficiário ao ingressar no plano, expresso como percentual da primeira mensalidade e destinado à Agenciadora. Aplica-se aos produtos com Administradora (PCA e PME ADM.); os Planos Empresariais (PCE 50-99 e PJ+) não têm taxa de adesão." },
 ];
 
 /** Termos do Glossário na ordem do PDF. */

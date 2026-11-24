@@ -19,14 +19,14 @@ export type ParametrosFrente = {
 };
 export const PARAMETROS_UBERABA: ParametrosFrente[] = [
   { id: "pcaAdm", sigla: "PCA", contratacao: "PLANO COLETIVO POR ADESÃO", vidas: "-", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "ADESÃO", fatorReferencia: 0.95, grupo: "administradora" },
-  { id: "pmeAdm", sigla: "PME ADM.", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "03 A 29", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "PME ADMINISTRADAS", fatorReferencia: 0.9, grupo: "administradora" },
+  { id: "pmeAdm", sigla: "PME ADM.", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "02 A 49", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "PME ADMINISTRADAS", fatorReferencia: 0.9, grupo: "administradora" },
   // Mudança de conceito (Dênis, 19/11/2026): Administradas são só Adesão e PME; a terceira tabela passa a "EMPRESAS MÉDIAS",
   // com Agenciadora e sem Taxa de adesão, no grupo dos Planos Empresariais (boletagem e distribuidores como o Empresarial).
-  { id: "pceAdm", sigla: "PCE 30-99", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "30 A 99", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS", descricao: "EMPRESAS MÉDIAS", fatorReferencia: 0.85, grupo: "empresarial" },
+  { id: "pceAdm", sigla: "PCE 50-99", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "50 A 99", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS", descricao: "EMPRESAS MÉDIAS", fatorReferencia: 0.85, grupo: "empresarial" },
   { id: "pce100", sigla: "PJ+", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "100 OU MAIS", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS", descricao: "EMPRESARIAL", fatorReferencia: 0.75, grupo: "empresarial" },
 ];
 export const parametrosDe = (id: FrenteId) => PARAMETROS_UBERABA.find((p) => p.id === id)!;
-/** Faixa de vidas para leitura: "03 a 29 vidas", "100 ou mais vidas"; sem limite ("-") devolve null. */
+/** Faixa de vidas para leitura: "02 a 49 vidas", "100 ou mais vidas"; sem limite ("-") devolve null. */
 export const vidasTexto = (p: ParametrosFrente) => (p.vidas.trim() === "-" ? null : `${p.vidas.toLowerCase()} vidas`);
 
 /** Seções da Proposta: produtos com boletagem pela Administradora e o Empresarial. */

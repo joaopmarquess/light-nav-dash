@@ -9,11 +9,11 @@ describe("Modelo de Atuação fronts", () => {
     expect(forcas.itens.map((i) => i.titulo)).toEqual(["Farmer em Uberaba", "Equipe própria SDR em Rio Preto", "Agentes Comerciais Autorizados em Uberaba"]);
     expect(forcas.itens[2].subitens).toEqual(["Siga Soluções", "Corretores Lancers"]);
     expect(produtos.titulo).toBe("Produtos");
-    expect(produtos.itens.map((i) => i.titulo)).toEqual(["PCA e PME ADM.", "PCE 30-99 e PJ+ (30 ou mais vidas)"]);
+    expect(produtos.itens.map((i) => i.titulo)).toEqual(["PCA e PME ADM.", "PCE 50-99 e PJ+ (50 ou mais vidas)"]);
   });
 
   it("uses the five supplied Comercial indicators and the MODELO COMERCIAL band", () => {
-    expect(COMERCIAL_UBERABA.indicadores).toEqual(["FARMER EM UBERABA", "SDR EM RIO PRETO", "AGENTES AUTORIZADOS", "PCA / PME ADM.", "PCE 30-99 / PJ+"]);
+    expect(COMERCIAL_UBERABA.indicadores).toEqual(["FARMER EM UBERABA", "SDR EM RIO PRETO", "AGENTES AUTORIZADOS", "PCA / PME ADM.", "PCE 50-99 / PJ+"]);
     expect(COMERCIAL_UBERABA.destaque_titulo).toBe("MODELO COMERCIAL");
     expect(COMERCIAL_UBERABA.destaque_itens.join(" • ")).toBe("Presença local em Uberaba • Apoio SDR em Rio Preto • Agentes autorizados • Portfólio direcionado");
   });

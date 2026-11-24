@@ -32,7 +32,7 @@ describe("Dados dos anexos Lancers", () => {
     const t = tabelaCompletaEnfermaria();
     expect(t.rows.length).toBe(14);
     expect(t.rows.slice(3, 8).map(r => r[1])).toEqual([
-      "Proj. Uberaba · Referencial (100%)", "Proj. Uberaba · PCA (95%)", "Proj. Uberaba · PME ADM. (90%)", "Proj. Uberaba · PCE 30-99 (85%)", "Proj. Uberaba · PJ+ (75%)",
+      "Proj. Uberaba · Referencial (100%)", "Proj. Uberaba · PCA (95%)", "Proj. Uberaba · PME ADM. (90%)", "Proj. Uberaba · PCE 50-99 (85%)", "Proj. Uberaba · PJ+ (75%)",
     ]);
     expect(t.rows[3].slice(2)).toEqual(["175,00","204,22","238,32","262,62","306,46","350,27","429,07","535,04","709,99","1.049,70"]);
     expect(t.rows[4][2]).toBe("166,25");

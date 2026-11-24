@@ -16,7 +16,7 @@ const condicoes = [...condicoesBase, ...condicoesImportadas
   .map(c => ({ ...c, condicao: 'Bensaúde Regra', agenciamento_parcela_1: 0.9,
     agenciamento_parcela_2: 0, agenciamento_parcela_3: 0,
     agenciamento_parcela_4: 0, agenciamento_parcela_5: 0 }))];
-// Vidas iniciais pedidas em 13/11/2026: 10.000 no total, 5.000 no PJ+ e 2.000 no PCA (PME ADM. e PCE 30-99 mantidos).
+// Vidas iniciais pedidas em 13/11/2026: 10.000 no total, 5.000 no PJ+ e 2.000 no PCA (PME ADM. e PCE 50-99 mantidos).
 // Padrões de vidas pedidos pelo Dênis em 19/11/2026 (também usados nas metas das propostas Administrados e Empresariais).
 const vidasIniciais: Record<string, number> = { PCA: 3000, PME_ADMINISTRADO: 1000, PCE_50_99: 1000, PCE_100_MAIS: 5000 };
 const padroes = padroesImportados.map(c => ({ ...c, condicao_comercial: 'Bensaúde Regra', total_vidas: vidasIniciais[c.produto_codigo] ?? c.total_vidas }));
@@ -35,7 +35,7 @@ export const copartPadrao = 20;
 // (ou da ADMINISTRADORA nas modalidades de AGENCIAMENTO_ADMINISTRADORA);
 // Agenciamento Próprio = % Equipe Própria × vendas × % Agenc. Próprio, igual nos dois cenários; a OPERADORA paga a soma.
 export const equipePropriaPadrao = 35;
-/** Pedido de 13/11/2026: o Agenciamento Externo do PCA e do PME ADM. (03 a 29 vidas) é creditado à ADMINISTRADORA; nas demais, à AGENCIADORA. */
+/** Pedido de 13/11/2026: o Agenciamento Externo do PCA e do PME ADM. (02 a 49 vidas) é creditado à ADMINISTRADORA; nas demais, à AGENCIADORA. */
 export const AGENCIAMENTO_ADMINISTRADORA: readonly string[] = ['PCA', 'PME_ADMINISTRADO'];
 export const agencProprioPadrao = 30;
 /**
@@ -107,7 +107,7 @@ export function calcularSimulacao(config: ConfigSimulacao) {
   return simular(config, { condicao, mensalidades: tabela.map(p => config.tabela_preco === 'SIGA' ? p.preco_siga : p.preco_bensaude) });
 }
 
-/** Modalidade da simulação → tabela de Resultados Comerciais (PCA, PME ADM., PCE 30-99, PJ+). */
+/** Modalidade da simulação → tabela de Resultados Comerciais (PCA, PME ADM., PCE 50-99, PJ+). */
 export const FRENTE_DO_PRODUTO: Record<string, FrenteId> = { PCA: 'pcaAdm', PME_ADMINISTRADO: 'pmeAdm', PCE_50_99: 'pceAdm', PCE_100_MAIS: 'pce100' };
 export const ORIGEM_RESULTADOS_COMERCIAIS = 'Resultados Comerciais';
 
