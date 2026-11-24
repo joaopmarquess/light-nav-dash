@@ -87,6 +87,7 @@ export const ITENS_CREDENCIAMENTO: Record<TipoQuantidade, ItemCredenciamento[]> 
     { nome: "Oftalmológico" },
     { nome: "Cardiológico" },
     { nome: "Oncológico (Carece de Validação)" },
+    { nome: "Geral em município limítrofe" },
   ],
   diagnostico: [
     { nome: "Laboratório de Análises Clínicas", guia: ["Serviço de Patologia Clínica – Laboratórios"] },
@@ -137,8 +138,8 @@ export function notasAgrupamento(): string[] {
 }
 
 /** Autorizado começa pelo Limite de cada tipo; valor digitado (inteiro ≥ 0) prevalece. */
-/** Autorizado padrão de Hospitais: cinco tipos, um por item (24/11/2026). */
-export const AUTORIZADO_PADRAO_HOSPITAIS = 5;
+/** Autorizado padrão de Hospitais: seis itens, incluindo um geral em município limítrofe (24/11/2026). */
+export const AUTORIZADO_PADRAO_HOSPITAIS = 6;
 /** Qtde. padrão de Especialidades médicas (pedido de 18/11/2026): 200, no lugar do Limite; a diferença para os itens vai ao Ajuste técnico. */
 export const AUTORIZADO_PADRAO_MEDICOS = 200;
 /** Qtde. padrão de Serviços auxiliares de diagnóstico e terapia (pedido de 19/11/2026): 4, um por item, no lugar do Limite (15). */
