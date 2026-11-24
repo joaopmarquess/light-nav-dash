@@ -15,16 +15,12 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
   it("uses the topic titles of Dênis's model (19/11/2026)", () => {
     expect(TOPICOS_PROPOSTA_REDE).toEqual(["1. Introdução", "2. Credenciamento por Captação", "3. Gestão da Rede", "4. Condições Gerais"]);
   });
-  it("contracts Siga Soluções (team with médico auditor), term 2027, and hands network management and loss ratio to the Bensaúde from 2028", () => {
-    expect(CONDICOES_GERAIS_REDE).toEqual([
-      { item: "Contratada", valor: "A contratação será formalizada com a Siga Soluções, responsável pela composição e disponibilização da equipe necessária à execução dos serviços, incluindo o profissional médico responsável pelo relacionamento com a rede credenciada, pela avaliação da qualidade dos profissionais, pela auditoria e pelo controle de desperdícios." },
-      { item: "Subordinação", valor: "A gestão da rede pela Siga Soluções será subordinada à Diretoria de Operações do Bensaúde, sob responsabilidade de Fabiana Matos, e contará com o suporte das equipes internas do Bensaúde." },
-      { item: "Abrangência", valor: "Esta proposta refere-se exclusivamente à gestão da rede assistencial da cidade de Uberaba (MG), não se aplicando às demais novas praças do Triângulo Mineiro, nem às atuais praças de atuação do Bensaúde." },
-      { item: "Período de atuação e vigência financeira", valor: "As condições financeiras desta proposta, incluindo os valores de credenciamento e a remuneração pela gestão da rede, aplicam-se exclusivamente ao ano de 2027 e não se estendem a períodos posteriores." },
-      { item: "Investimento do Bensaúde", valor: "O valor excedente aos R$ 200,00 por captação (primeira proposta) e as parcelas mensais fixas da gestão foram considerados investimento do Bensaúde nesta operação. Assim, o sucesso do projeto e o consequente retorno desse investimento dependem da qualidade dos serviços prestados e do empenho no cumprimento das metas." },
-      { item: "Transição da gestão", valor: "A partir de 2028, a gestão da rede assistencial passará a ser conduzida diretamente pelo Bensaúde." },
-    ]);
-    expect(numerosForaDosDadosRede("Contrato em 2027; a partir de 2028 o Bensaúde assume.", dadosRascunhoRede(PARAMETROS_REDE_PADRAO))).toEqual([]);
+  it("does not change contractual amounts when estimated per-life remuneration changes", () => {
+    const v = pagamentosPropostaRede({ ...PARAMETROS_REDE_PADRAO, valorPorVida: 100 });
+    expect(v.totalCredenciamento).toBe(60000);
+    expect(v.assinatura).toBe(18000);
+    expect(v.redeMinima).toBe(42000);
+    expect(v.totalParcelas).toBe(90000);
   });
   it("builds the quantities table from the Credenciamento section (Qtde., Valor, Adesão and TOTAL)", () => {
     const q = linhasQuantidadeCredenciamentos();
@@ -52,11 +48,6 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
   });
   it("starts installments one month after signing, independent of the simulator calendar", () => {
     expect(pagamentosPropostaRede({ ...PARAMETROS_REDE_PADRAO, iniciarEm: 9 }).inicioAposAssinatura).toBe(1);
-  });
-  it("states in the introduction the Siga Soluções contract during 2027 and, in topic 2, the payment condition", () => {
-    expect(TEXTOS_REDE_PADRAO.introducao).toContain("A contratação será formalizada com a Siga Soluções");
-    expect(TEXTOS_REDE_PADRAO.introducao).toContain("encerrando-se ao final do exercício");
-    expect(TEXTOS_REDE_PADRAO.condicoes).toContain("dependerá da conclusão, aprovação e formalização de cada credenciamento pelo Bensaúde");
   });
   it("heads Quadro 1 with ATÉ, POR ADESÃO and TOTAL", () => {
     expect(COLUNAS_CONDICOES_REDE).toEqual(["TIPO CREDENCIADO", "ATÉ", "POR ADESÃO", "TOTAL"]);
@@ -88,8 +79,6 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
     expect(linhasParametrosRede(PARAMETROS_REDE_PADRAO).map(([a, b]) => [a, semNbsp(b)])).toEqual([
       ["Parcelas fixas", "6"], ["Início das parcelas", "Mês subsequente à assinatura do contrato"], ["Valor da parcela", "R$ 15.000,00"],
     ]);
-    expect(semNbsp(regraMensalidadeRede({ ...PARAMETROS_REDE_PADRAO, parcelasFixas: 6, valorParcela: 10000, valorPorVida: 1 }))).toBe(
-      "Nos seis primeiros meses da gestão, a remuneração mensal será de R$ 10.000,00, com início em 01/2027. Encerrado esse período, a remuneração será calculada à razão de R$ 1,00 por vida vendida acumulada.");
   });
   it("rolls the start month into the next year after month 12", () => {
     expect(mesInicioRede(1)).toBe("01/2027");

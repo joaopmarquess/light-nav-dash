@@ -30,13 +30,13 @@ export const CONDICOES_GERAIS_REDE: readonly { item: string; valor: string }[] =
   { item: "Contratada", valor: TEXTO_CONTRATADA_REDE },
   { item: "Subordinação", valor: "A gestão da rede pela Siga Soluções será subordinada à Diretoria de Operações do Bensaúde, sob responsabilidade de Fabiana Matos, e contará com o suporte das equipes internas do Bensaúde." },
   { item: "Abrangência", valor: "Esta proposta refere-se exclusivamente à gestão da rede assistencial da cidade de Uberaba (MG), não se aplicando às demais novas praças do Triângulo Mineiro, nem às atuais praças de atuação do Bensaúde." },
-  { item: "Período de atuação e vigência financeira", valor: "As condições financeiras desta proposta, incluindo os valores de credenciamento e a remuneração pela gestão da rede, aplicam-se exclusivamente ao ano de 2027 e não se estendem a períodos posteriores." },
-  { item: "Investimento do Bensaúde", valor: "O valor excedente aos R$ 200,00 por captação (primeira proposta) e as parcelas mensais fixas da gestão foram considerados investimento do Bensaúde nesta operação. Assim, o sucesso do projeto e o consequente retorno desse investimento dependem da qualidade dos serviços prestados e do empenho no cumprimento das metas." },
-  { item: "Transição da gestão", valor: "A partir de 2028, a gestão da rede assistencial passará a ser conduzida diretamente pelo Bensaúde." },
+  { item: "Período de atuação e vigência financeira", valor: "A execução dos serviços e a vigência das condições financeiras desta proposta abrangem o período em que vigorarem as seis parcelas mensais fixas da gestão da rede, iniciadas no mês subsequente à assinatura do contrato. Esse período não está vinculado a um ano-calendário. O credenciamento será remunerado nas condições do Quadro 3, e a gestão da rede será remunerada exclusivamente pelas parcelas fixas, sem pagamento por vidas estimadas ou vendidas e sem continuidade automática da remuneração após a última parcela." },
+  { item: "Investimento do Bensaúde", valor: "Os valores destinados ao credenciamento por captação/adesão e às seis parcelas mensais fixas da gestão constituem investimento do Bensaúde nesta operação. Assim, o sucesso do projeto e o consequente retorno desse investimento dependem da qualidade dos serviços prestados e do empenho no cumprimento das metas." },
+  { item: "Transição da gestão", valor: "Encerrado o período de vigência das seis parcelas mensais fixas, a gestão da rede assistencial passará a ser conduzida diretamente pelo Bensaúde." },
 ];
 
 /** Subtítulo e texto antes do quadro Resultado, no tópico 2 (textos do Dênis, 18/11/2026). */
-export const SUBTITULO_PROJECAO_REDE = "Projeção financeira";
+export const SUBTITULO_PROJECAO_REDE = "Resumo financeiro";
 /** Texto abaixo do Quadro 3 (modelo do Dênis, 19/11/2026, redação dele sem alteração). */
 export const NOTA_QUANTIDADE_CREDENCIAMENTO_REDE = "A quantidade de credenciamentos deverá ser aquela definida no Quadro 1. Entretanto, no tipo de credenciamento “Especialidades”, o total não deverá ser inferior ao total ali definido, sendo necessário que cada especialidade básica tenha pelo menos 2 (dois) credenciados.";
 export const NOTA_PROJECAO_REDE =
@@ -49,15 +49,15 @@ export const TEXTO_REDE_MAX = 4000;
 /** Textos dos tópicos 1 a 3 do modelo do Dênis (19/11/2026), usados no PDF e no Word até uma revisão ser aprovada. */
 export const TEXTOS_REDE_PADRAO: TextosRede = {
   introducao:
-    "Esta proposta integra o Projeto Bensaúde|Uberaba e estabelece as condições para o credenciamento e a gestão inicial da rede assistencial necessária à implantação e ao desenvolvimento da operação do Bensaúde em Uberaba (MG). A contratação será formalizada com a Siga Soluções, responsável pela composição e disponibilização da equipe necessária à execução dos serviços, incluindo o profissional médico responsável pelo relacionamento, avaliação e auditoria da rede credenciada. A contratação ocorrerá para o decorrer do ano de 2027, encerrando-se ao final do exercício.",
+    "Esta proposta integra o Projeto Bensaúde|Uberaba e estabelece as condições para o credenciamento e a gestão inicial da rede assistencial necessária à implantação e ao desenvolvimento da operação do Bensaúde em Uberaba (MG). A contratação será formalizada com a Siga Soluções, responsável pela composição e disponibilização da equipe necessária à execução dos serviços, incluindo o profissional médico responsável pelo relacionamento, avaliação e auditoria da rede credenciada. A execução dos serviços abrangerá o período de vigência das seis parcelas mensais fixas da gestão da rede, iniciadas no mês subsequente à assinatura do contrato, encerrando-se ao término desse período.",
   condicoes:
-    "A estruturação da rede assistencial foi definida considerando as necessidades previstas para o início da operação do Bensaúde em Uberaba. Esta etapa será remunerada pelo valor definido para a adesão à captação realizada e dependerá da conclusão, aprovação e formalização de cada credenciamento pelo Bensaúde. A composição da rede será definida, conforme detalhamento a seguir:",
+    "A estruturação da rede assistencial foi definida considerando as necessidades previstas para o início da operação do Bensaúde em Uberaba. Os valores por adesão e as quantidades definidos no Quadro 1 compõem o total da remuneração pelo credenciamento. O pagamento desse total será realizado em duas etapas: 30% na assinatura do contrato e 70% quando toda a rede mínima estiver credenciada, com conclusão, aprovação e formalização dos credenciamentos pelo Bensaúde, conforme o Quadro 3. A composição da rede será definida, conforme detalhamento a seguir:",
   gestao:
-    "A gestão da rede destina-se a acompanhar e sustentar a operação da rede credenciada durante o período de implantação do Projeto. A remuneração dessa etapa será composta por seis parcelas mensais fixas, com início no mês subsequente à assinatura do contrato, conforme detalhamento a seguir:",
+    "A gestão da rede destina-se a acompanhar e sustentar a operação da rede credenciada durante o período de vigência das seis parcelas mensais fixas. A remuneração dessa etapa será composta exclusivamente por essas parcelas, com início no mês subsequente à assinatura do contrato, sem pagamento por vidas estimadas ou vendidas, conforme detalhamento a seguir:",
 };
 
 /** Condição de pagamento do Credenciamento: desde o modelo de 19/11/2026 faz parte do texto do tópico 2; segue só nos dados da IA. */
-export const NOTA_CONDICOES_REDE = "O pagamento dependerá da conclusão, aprovação e formalização de cada credenciamento pelo Bensaúde.";
+export const NOTA_CONDICOES_REDE = "O pagamento do credenciamento será realizado em duas etapas: 30% na assinatura do contrato e 70% quando toda a rede mínima estiver credenciada, com conclusão, aprovação e formalização dos credenciamentos pelo Bensaúde.";
 
 /** Quadro de quantidades do tópico 2 (pedido de 18/11/2026): montado a partir da seção Credenciamento, mesmas colunas da tela. */
 export const COLUNAS_CONDICOES_REDE = ["TIPO CREDENCIADO", "ATÉ", "POR ADESÃO", "TOTAL"] as const; // "ATÉ" = quantidade máxima a credenciar; colunas do modelo de 19/11/2026
@@ -131,12 +131,9 @@ export function linhasPagamentosPropostaRede(p: ParametrosRede, q: QuantidadesRe
   ];
 }
 
-const EXTENSO = ["", "primeiro", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze"];
-/** Quantidade de parcelas por extenso no texto ("seis primeiros meses"; 1 → "No primeiro mês"). */
-const primeirosMeses = (n: number) => (n === 1 ? "No primeiro mês" : `Nos ${EXTENSO[n] ?? inteiro(n)} primeiros meses`);
-/** Texto abaixo dos Parâmetros (redação do Dênis, 18/11/2026) com os valores atuais da tela, para nunca divergir do quadro. */
+/** Proposal-only management terms, independent of the simulator calendar and per-life assumptions. */
 export function regraMensalidadeRede(p: ParametrosRede): string {
-  return `${primeirosMeses(p.parcelasFixas)} da gestão, a remuneração mensal será de ${moedaCredenciamento(p.valorParcela)}, com início em ${mesInicioRede(p.iniciarEm)}. Encerrado esse período, a remuneração será calculada à razão de ${moedaCredenciamento(p.valorPorVida)} por vida vendida acumulada.`;
+  return `A remuneração da gestão será composta exclusivamente por seis parcelas mensais fixas de ${moedaCredenciamento(p.valorParcela)}, com início no mês subsequente à assinatura do contrato e vigência até a última parcela, sem pagamento por vidas estimadas ou vendidas.`;
 }
 
 export type DadosRascunhoRede = {
