@@ -123,8 +123,39 @@ describe("Restaurar padrão do Credenciamento", () => {
     m.salvarAutorizados({ medicos: 10 });
     m.salvarValores({ medicos: 500 });
     m.salvarQuantidadesItens({ [m.chaveItem("hospitais", "X")]: 9 });
+    m.salvarLimitesItens({ "hospitais:Geral": { minimo: 1, maximo: 3 } });
     m.restaurarCredenciamento();
     expect(m.linhasQuantidadeCredenciamentos(m.carregarAutorizados(), m.carregarValores()).total.adesao).toBe(60000);
     expect(m.carregarQuantidadesItens()).toEqual({});
+    expect(m.carregarLimitesItens()).toEqual({});
+  });
+});
+
+describe("Mínimo e Máximo por item do Credenciamento", () => {
+  it.each(["medicos", "hospitais", "diagnostico"] as const)("em %s inicia Mínimo na quantidade atual e Máximo em branco", async (grupo) => {
+    const m = await import("./uberabaQuantidadeCredenciamentos");
+    const nome = m.itensExibidos(grupo)[0].nome;
+    expect(m.limiteItem(grupo, nome, "minimo", {}, {})).toBe(grupo === "medicos" ? 2 : 1);
+    expect(m.limiteItem(grupo, nome, "maximo", {}, {})).toBeUndefined();
+    expect(m.limiteItem(grupo, nome, "minimo", {}, { [m.chaveItem(grupo, nome)]: 7 })).toBe(7);
+    expect(m.limiteItem(grupo, nome, "minimo", { [m.chaveItem(grupo, nome)]: { minimo: 0 } }, {})).toBe(0);
+  });
+  it.each(["medicos", "hospitais", "diagnostico"] as const)("guarda os dois campos independentemente em %s, sem alterar a quantidade", async (grupo) => {
+    const m = await import("./uberabaQuantidadeCredenciamentos");
+    const item = m.itensExibidos(grupo)[0];
+    const chave = m.chaveItem(grupo, item.nome);
+    const minimo = m.alterarLimiteItem({}, chave, "minimo", "1");
+    expect(minimo).toEqual({ [chave]: { minimo: 1 } });
+    const limites = m.alterarLimiteItem(minimo ?? {}, chave, "maximo", "5");
+    expect(limites).toEqual({ [chave]: { minimo: 1, maximo: 5 } });
+    m.salvarLimitesItens(limites ?? {});
+    expect(m.carregarLimitesItens()).toEqual(limites);
+    expect(m.quantidadeItem(grupo, item.nome, {})).toBe(grupo === "medicos" ? 2 : 1);
+    expect(m.alterarLimiteItem(limites ?? {}, chave, "minimo", "")).toEqual({ [chave]: { maximo: 5 } });
+  });
+  it("recusa limites negativos ou fracionados", async () => {
+    const m = await import("./uberabaQuantidadeCredenciamentos");
+    expect(m.alterarLimiteItem({}, "hospitais:Geral", "minimo", "-1")).toBeNull();
+    expect(m.alterarLimiteItem({}, "hospitais:Geral", "maximo", "1,5")).toBeNull();
   });
 });

@@ -263,9 +263,45 @@ export function salvarQuantidadesItens(valores: QuantidadesItens) {
   try { localStorage.setItem(CHAVE_QUANTIDADES_ITENS, JSON.stringify(valores)); } catch { /* navegador sem armazenamento */ }
 }
 
+/** Limites informativos por item, independentes da quantidade e dos cálculos atuais. */
+export type CampoLimiteItem = "minimo" | "maximo";
+export type LimitesItens = Record<string, Partial<Record<CampoLimiteItem, number>>>;
+export const CHAVE_LIMITES_ITENS = "uberaba.quantidadeCredenciamentos.limites.v1";
+export function limiteItem(grupo: TipoQuantidade, nome: string, campo: CampoLimiteItem, limites: LimitesItens, quantidades: QuantidadesItens): number | undefined {
+  return limites[chaveItem(grupo, nome)]?.[campo] ?? (campo === "minimo" ? quantidadeItem(grupo, nome, quantidades) : undefined);
+}
+export function alterarLimiteItem(valores: LimitesItens, chave: string, campo: CampoLimiteItem, texto: string): LimitesItens | null {
+  const v = lerAutorizado(texto);
+  if (v === null || (v !== undefined && !Number.isSafeInteger(v))) return null;
+  const item = { ...valores[chave] };
+  if (v === undefined) delete item[campo]; else item[campo] = v;
+  const proximo = { ...valores };
+  if (Object.keys(item).length) proximo[chave] = item; else delete proximo[chave];
+  return proximo;
+}
+export function carregarLimitesItens(): LimitesItens {
+  try {
+    const bruto: unknown = JSON.parse(localStorage.getItem(CHAVE_LIMITES_ITENS) ?? "{}");
+    if (!bruto || typeof bruto !== "object" || Array.isArray(bruto)) return {};
+    const saida: LimitesItens = {};
+    for (const [chave, item] of Object.entries(bruto)) {
+      if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+      for (const campo of ["minimo", "maximo"] as const) {
+        const v: unknown = item[campo];
+        if (typeof v === "number" && Number.isSafeInteger(v) && v >= 0) saida[chave] = { ...saida[chave], [campo]: v };
+      }
+    }
+    return saida;
+  } catch { return {}; }
+}
+export function salvarLimitesItens(valores: LimitesItens) {
+  try { localStorage.setItem(CHAVE_LIMITES_ITENS, JSON.stringify(valores)); } catch { /* navegador sem armazenamento */ }
+}
+
 /** Ícone "Restaurar padrão" do Credenciamento (19/11/2026): apaga Qtde., Valor e quantidades dos itens digitadas; tudo volta ao padrão. */
 export function restaurarCredenciamento() {
   salvarQuantidadesItens({});
+  salvarLimitesItens({});
   salvarValores({});
   salvarAutorizados({});
 }

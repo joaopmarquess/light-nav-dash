@@ -70,6 +70,7 @@
 - [x] Redefinir PME Administradas para 02–49 e Empresas Médias para 50–99 nas apresentações atuais, preservando preços, totais e fontes históricas; validar propostas.
 
 ## Resultados Rede › Credenciamento (24/11/2026)
+- [x] Colunas Mínimo e Máximo por item das três modalidades: Mínimo igual à quantidade atual e Máximo em branco; validar edição e persistência.
 - [x] Proposta: retirar valor por vida do Quadro 2 e substituir Quadro 3 por pagamento 30%/70% e seis parcelas a partir do mês seguinte à assinatura; conferir PDF/Word.
 - [x] Renomear Especialidades e acrescentar Psicologia, Fonoaudiologia, Fisioterapia e Acupuntura ao final.
 - [x] Definir cinco hospitais padrão e remover o grupo de serviços/profissionais não médicos dos parâmetros.
