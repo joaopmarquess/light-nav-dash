@@ -19,7 +19,7 @@ describe("impressão das Tabelas", () => {
   });
   it("imprime as quatro tabelas, com Apartamento mesmo quando a coluna está recolhida na tela", () => {
     const qs = quadrosImpressao("venda", dados);
-    expect(qs.map((q) => q.sigla)).toEqual(["PCA", "PME ADM.", "PCE 50-99", "PJ+"]);
+    expect(qs.map((q) => q.sigla)).toEqual(["PCA", "PME ADM.", "PCE 50+", "PJ+"]);
     const venda = tabelaVenda(dados.indices.pcaAdm, dados.fatores.pcaAdm);
     expect(qs[0].linhas[9][2]).toBe(formatarCentavos(venda[9].apartamentoCentavos));
   });

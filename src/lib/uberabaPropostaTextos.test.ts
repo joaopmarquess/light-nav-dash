@@ -29,7 +29,7 @@ describe("dados enviados à IA", () => {
 
 describe("conferência de números do rascunho", () => {
   it("aceita números que estão nas tabelas", () => {
-    expect(numerosForaDasTabelas("A PME ADM. (02 a 49 vidas), a PCE 50-99 (50 a 99 vidas) e o PJ+ (100 ou mais vidas) usam a Referência.", padrao())).toEqual([]);
+    expect(numerosForaDasTabelas("A PME ADM. (02 a 49 vidas), a PCE 50+ (50 a 99 vidas) e o PJ+ (100 ou mais vidas) usam a Referência.", padrao())).toEqual([]);
     expect(numerosForaDasTabelas("PCA Adm. com índice de 90%, fator 1,25, Spread de 23% e faixa 00 a 18 por 166,25.", padrao())).toEqual([]);
   });
   it("aponta números inventados", () => {

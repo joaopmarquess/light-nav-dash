@@ -42,7 +42,7 @@ export const TEXTOS_PADRAO: TextosSecoes = {
   administradora:
     "A seguir, apresentamos as tabelas de preços e as condições comerciais de remuneração dos produtos com boletagem pela Administradora (PCA e PME ADM.), distribuídos por meio das Plataformas Associadas.",
   empresarial:
-    "A seguir, apresentamos as tabelas de preços e as condições comerciais de remuneração dos Planos Empresariais, EMPRESAS MÉDIAS (PCE 50-99, de 50 a 99 vidas) e EMPRESARIAL (PJ+, de 100 ou mais vidas), com boletagem pela operadora e distribuição por meio de Agenciadoras e Corretoras Autorizadas.",
+    "A seguir, apresentamos as tabelas de preços e as condições comerciais de remuneração dos Planos Empresariais, EMPRESAS MÉDIAS (PCE 50+, de 50 a 99 vidas) e EMPRESARIAL (PJ+, de 100 ou mais vidas), com boletagem pela operadora e distribuição por meio de Agenciadoras e Corretoras Autorizadas.",
   conclusao:
     "Com esta proposta, o Bensaúde reafirma o compromisso de levar a Uberaba produtos de saúde com preço justo e qualidade assistencial. Contamos com a parceria da Lancers Administradora e de suas Plataformas Associadas, das Agenciadoras e Corretoras Autorizadas e da Siga Soluções para construir, juntos, uma operação sólida e duradoura, e permanecemos à disposição para os próximos passos.",
 };

@@ -159,7 +159,7 @@ describe('Simulação comercial fornecida',()=>{
 });
 
 describe('Bensaúde Regra e cenário solicitado', () => {
-  it('inicia com 10.000 vidas: PCA 3.000, PME ADM. 1.000, PCE 50-99 1.000 e PJ+ 5.000 (19/11/2026)', () => {
+  it('inicia com 10.000 vidas: PCA 3.000, PME ADM. 1.000, PCE 50+ 1.000 e PJ+ 5.000 (19/11/2026)', () => {
     expect(fonte.padroes.map(c => [c.produto_codigo, c.total_vidas])).toEqual([
       ['PCA', 3000], ['PME_ADMINISTRADO', 1000], ['PCE_50_99', 1000], ['PCE_100_MAIS', 5000],
     ]);
@@ -260,7 +260,7 @@ describe('Simulação de resultados com as tabelas de Resultados Comerciais', ()
 
 describe('Memória de cálculo do Resultado por Ente', () => {
   const rs = fonte.padroes.map(c => calcularSimulacaoComercial(c, comercialDaFrente(c.produto_codigo, INDICES_PADRAO, indicadoresPadrao())));
-  const nomes = ['PCA', 'PME ADM.', 'PCE 50-99', 'PJ+'];
+  const nomes = ['PCA', 'PME ADM.', 'PCE 50+', 'PJ+'];
   const fmt = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   it('Faturamento OPERADORA lista Faturamento × OPERADORA de cada produto e a soma', () => {
     const m = memoriaCalculo('bensaude.faturamento', rs, nomes);
@@ -288,7 +288,7 @@ describe('Memória de cálculo do Resultado por Ente', () => {
 });
 
 describe('Relatório da Memória de Cálculo (Resultado por Ente)', () => {
-  const nomesR = ['PCA', 'PME ADM.', 'PCE 50-99', 'PJ+'];
+  const nomesR = ['PCA', 'PME ADM.', 'PCE 50+', 'PJ+'];
   const configs = fonte.padroes.map(c => ({ ...c, sinistralidade_percentual: sinistralidadePadrao }));
   const cenarios = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao());
   const [contratual, promocional] = cenarios;
@@ -373,7 +373,7 @@ describe('Resultado total no título do quadro recolhido', () => {
 });
 
 describe('Desp. Assist. média e % Copart (pedido de 13/11/2026)', () => {
-  const nomesR = ['PCA', 'PME ADM.', 'PCE 50-99', 'PJ+'];
+  const nomesR = ['PCA', 'PME ADM.', 'PCE 50+', 'PJ+'];
   const configs = fonte.padroes.map(c => ({ ...c, sinistralidade_percentual: 70, despesa_media: despesaMediaPadrao, copart_percentual: copartPadrao }));
   const [contratual] = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao());
   const rs = contratual.resultados;
@@ -419,7 +419,7 @@ describe('Desp. Assist. média e % Copart (pedido de 13/11/2026)', () => {
 });
 
 describe('Chave PERCENTUAL / MÉDIA ASSIST. da Despesa Assistencial (pedido de 13/11/2026)', () => {
-  const nomesR = ['PCA', 'PME ADM.', 'PCE 50-99', 'PJ+'];
+  const nomesR = ['PCA', 'PME ADM.', 'PCE 50+', 'PJ+'];
   const configs = fonte.padroes.map(c => ({ ...c, sinistralidade_percentual: 70, despesa_media: 280.45, copart_percentual: 20 }));
   it('Percentual (padrão): despesa = faturamento × sinistralidade', () => {
     const [c] = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao());
@@ -450,7 +450,7 @@ describe('Chave PERCENTUAL / MÉDIA ASSIST. da Despesa Assistencial (pedido de 1
 });
 
 describe('Equipe Própria e Agenciamento Externo/Próprio (pedido de 13/11/2026)', () => {
-  const nomesE = ['PCA', 'PME ADM.', 'PCE 50-99', 'PJ+'];
+  const nomesE = ['PCA', 'PME ADM.', 'PCE 50+', 'PJ+'];
   const configs = fonte.padroes.map(c => ({ ...c, ...PADRAO_PARAMETRO }));
   const [contratual, promocional] = simularPorBase(configs, INDICES_PADRAO, indicadoresPadrao());
   const vendas = (r: (typeof contratual.resultados)[number]) => r.novasReceitas.reduce((s, v) => s + v, 0);
@@ -477,7 +477,7 @@ describe('Equipe Própria e Agenciamento Externo/Próprio (pedido de 13/11/2026)
     expect(r.siga.resultado).toBeCloseTo(r.siga.adesao + r.siga.faturamento + r.siga.agenciamento, 6);
     expect(r.lancers.resultado).toBeCloseTo(r.lancers.faturamento + r.lancers.agenciamento, 6);
   });
-  it('Agenciamento Externo do PCA e do PME ADM. vai para a ADMINISTRADORA; do PCE 50-99 e do PJ+, para a AGENCIADORA', () => {
+  it('Agenciamento Externo do PCA e do PME ADM. vai para a ADMINISTRADORA; do PCE 50+ e do PJ+, para a AGENCIADORA', () => {
     for (const cenario of [contratual, promocional]) {
       const [pca, pme, pce, pj] = cenario.resultados;
       for (const x of [pca, pme]) { expect(x.anual.agenciamento_lancers).toBeCloseTo(x.anual.agenciamento_externo, 6); expect(x.anual.agenciamento_siga).toBe(0); }

@@ -22,7 +22,7 @@ export const PARAMETROS_UBERABA: ParametrosFrente[] = [
   { id: "pmeAdm", sigla: "PME ADM.", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "02 A 49", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "PME ADMINISTRADAS", fatorReferencia: 0.9, grupo: "administradora" },
   // Mudança de conceito (Dênis, 19/11/2026): Administradas são só Adesão e PME; a terceira tabela passa a "EMPRESAS MÉDIAS",
   // com Agenciadora e sem Taxa de adesão, no grupo dos Planos Empresariais (boletagem e distribuidores como o Empresarial).
-  { id: "pceAdm", sigla: "PCE 50-99", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "50 A 99", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS", descricao: "EMPRESAS MÉDIAS", fatorReferencia: 0.85, grupo: "empresarial" },
+  { id: "pceAdm", sigla: "PCE 50+", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "50 A 99", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS", descricao: "EMPRESAS MÉDIAS", fatorReferencia: 0.85, grupo: "empresarial" },
   { id: "pce100", sigla: "PJ+", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "100 OU MAIS", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS", descricao: "EMPRESARIAL", fatorReferencia: 0.75, grupo: "empresarial" },
 ];
 export const parametrosDe = (id: FrenteId) => PARAMETROS_UBERABA.find((p) => p.id === id)!;

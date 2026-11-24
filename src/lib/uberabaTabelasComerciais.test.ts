@@ -214,8 +214,8 @@ describe("parâmetros das tabelas (13/11/2026)", () => {
   it("Empresas Médias atende de 50 a 99 vidas", () => {
     expect(parametrosDe("pceAdm").vidas).toBe("50 A 99");
   });
-  it("four tables in the order PCA, PME ADM., PCE 50-99, PJ+", () => {
-    expect(PARAMETROS_UBERABA.map((p) => p.sigla)).toEqual(["PCA", "PME ADM.", "PCE 50-99", "PJ+"]);
+  it("four tables in the order PCA, PME ADM., PCE 50+, PJ+", () => {
+    expect(PARAMETROS_UBERABA.map((p) => p.sigla)).toEqual(["PCA", "PME ADM.", "PCE 50+", "PJ+"]);
     expect(PARAMETROS_UBERABA.map((p) => p.fatorReferencia)).toEqual([0.95, 0.9, 0.85, 0.75]);
   });
   it("lives, billing and distributors as supplied", () => {
