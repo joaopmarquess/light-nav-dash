@@ -412,10 +412,10 @@ const UberabaTabelasComerciais = ({ comparada: comparadaExterna, onComparar }: {
   // Coluna Apartamento recolhida por padrão; o mesmo controle vale para as quatro frentes.
   const [aptoVisivel, setAptoVisivel] = useState(false);
   const apartamento: ApartamentoToggle = { visivel: aptoVisivel, alternar: () => setAptoVisivel((v) => !v) };
-  // Tabelas e Indicadores variáveis abrem recolhidos; cada ícone vale para as quatro frentes.
-  const [precosVisivel, setPrecosVisivel] = useState(false);
+  // Tabelas e Indicadores variáveis abrem expandidos; cada ícone vale para as quatro frentes.
+  const [precosVisivel, setPrecosVisivel] = useState(true);
   const precos: ApartamentoToggle = { visivel: precosVisivel, alternar: () => setPrecosVisivel((v) => !v) };
-  const [variaveisVisivel, setVariaveisVisivel] = useState(false);
+  const [variaveisVisivel, setVariaveisVisivel] = useState(true);
   const variaveis: ApartamentoToggle = { visivel: variaveisVisivel, alternar: () => setVariaveisVisivel((v) => !v) };
   // Preço de Venda por padrão; a chave vale para as quatro tabelas e só muda a exibição.
   const [modo, setModo] = useState<ModoPreco>("venda");
