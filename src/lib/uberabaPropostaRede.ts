@@ -31,7 +31,7 @@ export const CONDICOES_GERAIS_REDE: readonly { item: string; valor: string }[] =
   { item: "Subordinação", valor: "A gestão da rede pela Siga Soluções será subordinada à Diretoria de Operações do Bensaúde, sob responsabilidade de Fabiana Matos, e contará com o suporte das equipes internas do Bensaúde." },
   { item: "Abrangência", valor: "Esta proposta refere-se exclusivamente à gestão da rede assistencial da cidade de Uberaba (MG), não se aplicando às demais novas praças do Triângulo Mineiro, nem às atuais praças de atuação do Bensaúde." },
   { item: "Período de atuação e vigência financeira", valor: "As condições financeiras desta proposta, incluindo os valores de credenciamento e a remuneração pela gestão da rede, aplicam-se exclusivamente ao ano de 2027 e não se estendem a períodos posteriores." },
-  { item: "Investimento do Bensaúde", valor: "O valor excedente aos R$ 200,00 por captação (primeira proposta), as parcelas mensais fixas da gestão e a remuneração estimada por vidas vendidas acumuladas foram considerados investimento do Bensaúde nesta operação. Assim, o sucesso do projeto e o consequente retorno desse investimento dependem da qualidade dos serviços prestados e do empenho no cumprimento das metas." },
+  { item: "Investimento do Bensaúde", valor: "O valor excedente aos R$ 200,00 por captação (primeira proposta) e as parcelas mensais fixas da gestão foram considerados investimento do Bensaúde nesta operação. Assim, o sucesso do projeto e o consequente retorno desse investimento dependem da qualidade dos serviços prestados e do empenho no cumprimento das metas." },
   { item: "Transição da gestão", valor: "A partir de 2028, a gestão da rede assistencial passará a ser conduzida diretamente pelo Bensaúde." },
 ];
 
@@ -39,9 +39,9 @@ export const CONDICOES_GERAIS_REDE: readonly { item: string; valor: string }[] =
 export const SUBTITULO_PROJECAO_REDE = "Projeção financeira";
 /** Texto abaixo do Quadro 3 (modelo do Dênis, 19/11/2026, redação dele sem alteração). */
 export const NOTA_PROJECAO_REDE =
-  "A projeção financeira é estimativa baseada nas premissas desta proposta, exceto pelas parcelas mensais fixas de gestão indicadas no quadro 1. Os demais valores poderão ser maiores ou menores conforme a quantidade de vidas vendidas acumuladas e da quantidade efetiva de credenciamentos, respeitado o limite da coluna “ATÉ” do Tópico 2 para os credenciamentos.";
+  "O total do credenciamento é estimado conforme a quantidade efetiva de credenciamentos, respeitado o limite da coluna “ATÉ” do Tópico 2. Seu pagamento será realizado em duas etapas: 30% na assinatura do contrato e os outros 70% quando toda a rede mínima estiver credenciada. As seis parcelas mensais fixas terão início no mês subsequente à assinatura do contrato.";
 export const TEXTO_PROJECAO_REDE =
-  "Considerando o cronograma previsto para formação da rede e o início da gestão, apresenta-se a seguir a projeção mensal estimada da remuneração ao longo de 2027:";
+  "Apresentam-se a seguir os valores e as condições de pagamento do credenciamento por captação/adesão e das parcelas fixas de gestão da rede:";
 export type TextosRede = Record<SecaoRedeId, string>;
 export const TEXTO_REDE_MAX = 4000;
 
@@ -52,7 +52,7 @@ export const TEXTOS_REDE_PADRAO: TextosRede = {
   condicoes:
     "A estruturação da rede assistencial foi definida considerando as necessidades previstas para o início da operação do Bensaúde em Uberaba. Esta etapa será remunerada pelo valor definido para a adesão à captação realizada e dependerá da conclusão, aprovação e formalização de cada credenciamento pelo Bensaúde. A composição da rede será definida, conforme detalhamento a seguir:",
   gestao:
-    "Concluída a etapa inicial de estruturação da rede, inicia-se a fase de gestão da rede, destinada a acompanhar e sustentar a operação da rede credenciada durante o período de implantação do Projeto. A remuneração dessa etapa será composta inicialmente por parcelas mensais fixas e, posteriormente, passará a acompanhar a evolução da carteira de beneficiários, conforme detalhamento a seguir:",
+    "A gestão da rede destina-se a acompanhar e sustentar a operação da rede credenciada durante o período de implantação do Projeto. A remuneração dessa etapa será composta por seis parcelas mensais fixas, com início no mês subsequente à assinatura do contrato, conforme detalhamento a seguir:",
 };
 
 /** Condição de pagamento do Credenciamento: desde o modelo de 19/11/2026 faz parte do texto do tópico 2; segue só nos dados da IA. */
@@ -100,13 +100,33 @@ export function mesInicioRede(iniciarEm: number): string {
   return `${String(((n - 1) % 12) + 1).padStart(2, "0")}/${ANO_RESULTADO_REDE + Math.floor((n - 1) / 12)}`;
 }
 
-/** Tópico 3: os Parâmetros de Resultados Rede, com os valores atuais da tela. */
+/** Proposal-only payment terms; simulator parameters and monthly results remain independent. */
+export function pagamentosPropostaRede(p: ParametrosRede, q: QuantidadesRede = quantidadesRedeAtuais()) {
+  const totalCredenciamento = q.total.adesao;
+  const assinatura = Math.round(totalCredenciamento * 0.3 * 100) / 100;
+  return {
+    totalCredenciamento, assinatura, redeMinima: Math.round((totalCredenciamento - assinatura) * 100) / 100,
+    parcelasFixas: 6, inicioAposAssinatura: 1, valorParcela: p.valorParcela, totalParcelas: p.valorParcela * 6,
+  };
+}
+
+/** Quadro 2: condições da proposta, sem remuneração por vida. */
 export function linhasParametrosRede(p: ParametrosRede): [string, string][] {
   return [
-    ["Parcelas fixas", inteiro(p.parcelasFixas)],
-    ["Início das parcelas", mesInicioRede(p.iniciarEm)],
+    ["Parcelas fixas", "6"],
+    ["Início das parcelas", "Mês subsequente à assinatura do contrato"],
     ["Valor da parcela", moedaCredenciamento(p.valorParcela)],
-    ["Valor por vida (após as parcelas fixas)", moedaCredenciamento(p.valorPorVida)],
+  ];
+}
+
+/** Quadro 3: resumo financeiro por obrigação e marco contratual, sem calendário presumido. */
+export function linhasPagamentosPropostaRede(p: ParametrosRede, q: QuantidadesRede = quantidadesRedeAtuais()): string[][] {
+  const v = pagamentosPropostaRede(p, q);
+  return [
+    ["TOTAL DO CREDENCIAMENTO CAPTAÇÃO/ADESÃO", moedaCredenciamento(v.totalCredenciamento),
+      `30% (${moedaCredenciamento(v.assinatura)}) na assinatura do contrato e os outros 70% (${moedaCredenciamento(v.redeMinima)}) quando toda a rede mínima estiver credenciada.`],
+    ["PARCELAS FIXAS", moedaCredenciamento(v.totalParcelas),
+      `6 parcelas mensais de ${moedaCredenciamento(v.valorParcela)}, a iniciar no mês subsequente à assinatura do contrato.`],
   ];
 }
 
@@ -261,8 +281,8 @@ export function blocosPropostaRede(
         alinhamentos: ["justify", "center"], grupos: false, itens: [], negritoUltima: false, juntos: false });
       b.push({ tipo: "subtopico", texto: SUBTITULO_PROJECAO_REDE }, { tipo: "paragrafo", texto: TEXTO_PROJECAO_REDE });
       rotulo();
-      b.push({ tipo: "quadro", cabecalho: [...COLUNAS_RESULTADO_REDE], linhas: linhasResultadoRede(parametros, quantidades), larguras: [1377, 2065, 2180, 2180, 2064],
-        alinhamentos: ["left", "right", "right", "right", "right"], grupos: false, itens: [], negritoUltima: true, juntos: true });
+      b.push({ tipo: "quadro", cabecalho: ["REMUNERAÇÃO", "VALOR TOTAL", "CONDIÇÕES DE PAGAMENTO"], linhas: linhasPagamentosPropostaRede(parametros, quantidades), larguras: [3100, 1800, 4966],
+        alinhamentos: ["left", "center", "left"], grupos: false, itens: [], negritoUltima: false, juntos: true });
       b.push({ tipo: "paragrafo", texto: NOTA_PROJECAO_REDE });
     }
   });

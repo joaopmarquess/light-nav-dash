@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { Packer } from "docx";
 import { blocosPropostaRede, documentoPropostaRede } from "./uberabaPropostaRedeDocx";
 import { TOPICOS_PROPOSTA_REDE } from "./uberabaPropostaRedePdf";
-import { CONDICOES_GERAIS_REDE, linhasParametrosRede } from "./uberabaPropostaRede";
+import { CONDICOES_GERAIS_REDE, linhasParametrosRede, linhasPagamentosPropostaRede } from "./uberabaPropostaRede";
 import { PARAMETROS_REDE_PADRAO } from "./uberabaParametrosRede";
 
 describe("Word da Proposta de Credenciamento e Gestão de Rede", () => {
@@ -26,9 +26,9 @@ describe("Word da Proposta de Credenciamento e Gestão de Rede", () => {
     const b = blocosPropostaRede(p);
     const quadros = b.filter((x) => x.tipo === "quadro") as Extract<(typeof b)[number], { tipo: "quadro" }>[];
     expect(quadros[1].linhas).toEqual(linhasParametrosRede(p));
-    const resultado = quadros.at(-1)!;
-    expect(resultado.linhas.at(-1)?.[0]).toBe("TOTAL");
-    expect(resultado.juntos).toBe(true);
+    const resultado = quadros.at(-1);
+    expect(resultado?.linhas).toEqual(linhasPagamentosPropostaRede(p));
+    expect(resultado?.juntos).toBe(true);
   });
   it("Word com capa e sumário: páginas do sumário como campos PAGEREF apontando para os tópicos", async () => {
     const JSZip = (await import("jszip")).default;

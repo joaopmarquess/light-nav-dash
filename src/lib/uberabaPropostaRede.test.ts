@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { PARAMETROS_REDE_PADRAO } from "./uberabaParametrosRede";
 import { blocosPropostaRede,
-  COLUNAS_CONDICOES_REDE, CONDICOES_GERAIS_REDE, ROTULOS_TIPOS_REDE, NOTA_PROJECAO_REDE, TEXTO_PROJECAO_REDE, TEXTOS_REDE_PADRAO, quadroCondicoesRede, aprovarTextosRede, dadosRascunhoRede, estadoRedeVazio, linhasCondicoesRede, linhasParametrosRede, mesInicioRede, mesclarRascunhoRede,
+  pagamentosPropostaRede, COLUNAS_CONDICOES_REDE, CONDICOES_GERAIS_REDE, ROTULOS_TIPOS_REDE, NOTA_PROJECAO_REDE, TEXTO_PROJECAO_REDE, TEXTOS_REDE_PADRAO, quadroCondicoesRede, aprovarTextosRede, dadosRascunhoRede, estadoRedeVazio, linhasCondicoesRede, linhasParametrosRede, mesInicioRede, mesclarRascunhoRede,
   linhasResultadoRede, numerosForaDosDadosRede, regraMensalidadeRede, textosRedeParaPdf, topicosRedeDesatualizados,
 } from "./uberabaPropostaRede";
 import { TOPICOS_PROPOSTA_REDE, buildPropostaRedePdf } from "./uberabaPropostaRedePdf";
@@ -21,7 +21,7 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
       { item: "Subordinação", valor: "A gestão da rede pela Siga Soluções será subordinada à Diretoria de Operações do Bensaúde, sob responsabilidade de Fabiana Matos, e contará com o suporte das equipes internas do Bensaúde." },
       { item: "Abrangência", valor: "Esta proposta refere-se exclusivamente à gestão da rede assistencial da cidade de Uberaba (MG), não se aplicando às demais novas praças do Triângulo Mineiro, nem às atuais praças de atuação do Bensaúde." },
       { item: "Período de atuação e vigência financeira", valor: "As condições financeiras desta proposta, incluindo os valores de credenciamento e a remuneração pela gestão da rede, aplicam-se exclusivamente ao ano de 2027 e não se estendem a períodos posteriores." },
-      { item: "Investimento do Bensaúde", valor: "O valor excedente aos R$ 200,00 por captação (primeira proposta), as parcelas mensais fixas da gestão e a remuneração estimada por vidas vendidas acumuladas foram considerados investimento do Bensaúde nesta operação. Assim, o sucesso do projeto e o consequente retorno desse investimento dependem da qualidade dos serviços prestados e do empenho no cumprimento das metas." },
+      { item: "Investimento do Bensaúde", valor: "O valor excedente aos R$ 200,00 por captação (primeira proposta) e as parcelas mensais fixas da gestão foram considerados investimento do Bensaúde nesta operação. Assim, o sucesso do projeto e o consequente retorno desse investimento dependem da qualidade dos serviços prestados e do empenho no cumprimento das metas." },
       { item: "Transição da gestão", valor: "A partir de 2028, a gestão da rede assistencial passará a ser conduzida diretamente pelo Bensaúde." },
     ]);
     expect(numerosForaDosDadosRede("Contrato em 2027; a partir de 2028 o Bensaúde assume.", dadosRascunhoRede(PARAMETROS_REDE_PADRAO))).toEqual([]);
@@ -36,12 +36,22 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
     const editado = linhasCondicoesRede(linhasQuantidadeCredenciamentos({ medicos: 10 }, { medicos: 300 }), {}).map((r) => r.map(semNbsp));
     expect(editado[0]).toEqual(["Especialidades", "10", "R$ 300,00", "R$ 3.000,00"]);
   });
-  it("explains below Quadro 3 that the projection is estimated, except the fixed installments, within the ATÉ limit", () => {
-    expect(NOTA_PROJECAO_REDE).toContain("é estimativa baseada nas premissas desta proposta");
-    expect(NOTA_PROJECAO_REDE).toContain("exceto pelas parcelas mensais fixas de gestão");
-    expect(NOTA_PROJECAO_REDE).toContain("poderão ser maiores ou menores");
-    expect(NOTA_PROJECAO_REDE).toContain("respeitado o limite da coluna “ATÉ”");
-    expect(TEXTO_PROJECAO_REDE.endsWith("ao longo de 2027:")).toBe(true);
+  it("pays 30% on signing and the remaining 70% on completion of the minimum network", () => {
+    const q = linhasQuantidadeCredenciamentos({ medicos: 10, hospitais: 6, diagnostico: 4 });
+    const v = pagamentosPropostaRede(PARAMETROS_REDE_PADRAO, q);
+    expect(v.totalCredenciamento).toBe(6000);
+    expect(v.assinatura).toBe(1800);
+    expect(v.redeMinima).toBe(4200);
+    expect(v.assinatura + v.redeMinima).toBe(v.totalCredenciamento);
+  });
+  it("uses six fixed installments regardless of the simulator's installment count", () => {
+    const v = pagamentosPropostaRede({ ...PARAMETROS_REDE_PADRAO, parcelasFixas: 3, valorParcela: 15000 });
+    expect(v.parcelasFixas).toBe(6);
+    expect(v.valorParcela).toBe(15000);
+    expect(v.totalParcelas).toBe(90000);
+  });
+  it("starts installments one month after signing, independent of the simulator calendar", () => {
+    expect(pagamentosPropostaRede({ ...PARAMETROS_REDE_PADRAO, iniciarEm: 9 }).inicioAposAssinatura).toBe(1);
   });
   it("states in the introduction the Siga Soluções contract during 2027 and, in topic 2, the payment condition", () => {
     expect(TEXTOS_REDE_PADRAO.introducao).toContain("A contratação será formalizada com a Siga Soluções");
@@ -76,7 +86,7 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
   });
   it("brings the current Resultados Rede parameters", () => {
     expect(linhasParametrosRede(PARAMETROS_REDE_PADRAO).map(([a, b]) => [a, semNbsp(b)])).toEqual([
-      ["Parcelas fixas", "3"], ["Início das parcelas", "03/2027"], ["Valor da parcela", "R$ 15.000,00"], ["Valor por vida (após as parcelas fixas)", "R$ 2,00"],
+      ["Parcelas fixas", "6"], ["Início das parcelas", "Mês subsequente à assinatura do contrato"], ["Valor da parcela", "R$ 15.000,00"],
     ]);
     expect(semNbsp(regraMensalidadeRede({ ...PARAMETROS_REDE_PADRAO, parcelasFixas: 6, valorParcela: 10000, valorPorVida: 1 }))).toBe(
       "Nos seis primeiros meses da gestão, a remuneração mensal será de R$ 10.000,00, com início em 03/2027. Encerrado esse período, a remuneração será calculada à razão de R$ 1,00 por vida vendida acumulada.");
