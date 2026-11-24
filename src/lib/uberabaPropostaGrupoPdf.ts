@@ -39,7 +39,7 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
     let fim = inicio;
     lista.forEach((q, k) => {
       const x = marginL + k * (wQ + GAP);
-      doc.setFillColor(...COR_FRENTE[q.id]);
+      doc.setFillColor(...(avisoPreco ? COR_FRENTE.pceAdm : COR_FRENTE[q.id]));
       doc.rect(x, inicio, wQ, 2, "F");
       doc.setFont("helvetica", "bold"); doc.setFontSize(F.quadro); doc.setTextColor(...TINTA);
       doc.text(textoPdf(q.titulo), x + wQ / 2, inicio + 7, { align: "center", baseline: "middle" });
@@ -59,7 +59,7 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
         headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: F.cabecalhoTabela },
         alternateRowStyles: { fillColor: ZEBRA },
         didDrawCell: (c) => {
-          if (avisoPreco && c.column.index === 0 && (c.section === "head" || c.section === "body")) {
+          if (avisoPreco && (c.section === "head" || c.section === "body")) {
             bordasFaixa.push({ x: c.cell.x, y: c.cell.y, width: c.cell.width, height: c.cell.height });
             return;
           }
@@ -68,11 +68,11 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
           doc.line(c.cell.x, c.cell.y, c.cell.x + c.cell.width, c.cell.y);
         },
       });
-      doc.setDrawColor(...TINTA); doc.setLineWidth(0.25);
+      doc.setDrawColor(...COR_FRENTE.pceAdm); doc.setLineWidth(0.3);
       bordasFaixa.forEach((c) => doc.rect(c.x, c.y, c.width, c.height, "S"));
       fim = Math.max(fim, fimTabela(inicio));
     });
-    doc.setDrawColor(...TINTA); doc.setLineWidth(0.35);
+    doc.setDrawColor(...(avisoPreco ? COR_FRENTE.pceAdm : TINTA)); doc.setLineWidth(avisoPreco ? 0.45 : 0.35);
     lista.forEach((_, k) => doc.rect(marginL + k * (wQ + GAP), inicio, wQ, fim - inicio, "S"));
     doc.setDrawColor(0);
     y = fim + 10;
