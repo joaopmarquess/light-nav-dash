@@ -22,7 +22,8 @@ export const TOPICOS_PROPOSTA_GRUPO = ["Tabela Net", "Sugestão de Venda", "Dist
 
 /** Tópicos numerados da proposta: a Introdução (quando houver) vem antes e desloca a numeração. */
 export function topicosGrupo(id: PropostaGrupoId): string[] {
-  const nomes = PROPOSTAS_GRUPO[id].introducao ? ["Introdução", ...TOPICOS_PROPOSTA_GRUPO] : [...TOPICOS_PROPOSTA_GRUPO];
+  const secoes = id === "empresariais" ? ["Médias Empresas", "Empresarial", "Distribuidores", "Promoção e Metas"] : [...TOPICOS_PROPOSTA_GRUPO];
+  const nomes = PROPOSTAS_GRUPO[id].introducao ? ["Introdução", ...secoes] : secoes;
   return nomes.map((t, i) => `${i + 1}. ${t}`);
 }
 
@@ -48,13 +49,12 @@ export const PROPOSTAS_GRUPO: Record<PropostaGrupoId, DefinicaoGrupo> = {
   },
   empresariais: {
     nome: "Planos Coletivos Empresariais",
-    // Introdução de 19/11/2026: 1º parágrafo do Dênis, sem reescrever; 2º redigido a partir das instruções dele.
+    // Introdução fornecida pelo Dênis, encerrada em "específico." em 24/11/2026.
     introducao: [
       "A presente proposta considera a SIGA como responsável pela operação comercial do segmento EMPRESARIAL em Uberaba, observadas as condições e responsabilidades que vierem a ser acordadas entre as partes e formalizadas em instrumento contratual específico.",
-      "Essa operação comercial não será exclusiva. Entretanto, em 2027, será parcialmente exclusiva: no 1º semestre, a comercialização caberá somente à SIGA; no 2º semestre, passará a contar também com a equipe própria do Bensaúde. Não é possível afirmar, neste momento, se haverá exclusividade da SIGA a partir de 2028.",
     ],
     produtos: ["pceAdm", "pce100"],
-    distribuidores: ["Siga Soluções (Exclusividade por 6 meses)", "Hunter Bensaúde após 6 meses"],
+    distribuidores: ["Siga Soluções", "Hunter Bensaúde após 6 meses"],
     promocao: "Comissionamento Promocional por 6 meses renováveis por mais 6 meses com batimento das seguintes Metas:",
     arquivo: "Proposta_Empresariais_Bensaude_Uberaba.pdf",
   },
@@ -78,9 +78,14 @@ export function metasGrupo(id: PropostaGrupoId, vidas: VidasSimulacao): string[]
 }
 
 export type TabelaProdutoGrupo = { id: FrenteId; titulo: string; subtitulo: string; linhas: [string, string, string][] };
+export type ProdutoEmpresarialProposta = {
+  tabela: TabelaProdutoGrupo; avisoPreco?: string;
+  vitalicio: number; contratual: number; promocional: number;
+};
 export type PropostaGrupo = {
   id: PropostaGrupoId; nome: string; topicos: string[]; introducao: string[]; sugestaoVenda?: string; net: TabelaProdutoGrupo[]; venda: TabelaProdutoGrupo[];
   distribuidores: string[]; definicoes: Record<string, string>; promocao: string; metas: string[]; arquivo: string;
+  produtosEmpresariais: ProdutoEmpresarialProposta[];
 };
 
 /** Conteúdo da proposta do grupo, sobre os índices, indicadores, nomes e fatores atuais de Resultados Comerciais. */
@@ -97,5 +102,11 @@ export function propostaGrupo(id: PropostaGrupoId, indices: Indices = INDICES_PA
     id, nome: d.nome, topicos: topicosGrupo(id), introducao: d.introducao ?? [], sugestaoVenda: d.sugestaoVenda, distribuidores: d.distribuidores, definicoes: d.definicoes ?? {}, promocao: d.promocao, metas: metasGrupo(id, vidas), arquivo: d.arquivo,
     net: d.produtos.map((f) => ({ ...cabecalho(f), linhas: linhas(tabelaNet(indices[f], operadoraDe(f, indicadores[f]), fatores[f])) })),
     venda: d.sugestaoVenda ? [] : d.produtos.map((f) => ({ ...cabecalho(f), linhas: linhas(tabelaVenda(indices[f], fatores[f])) })),
+    produtosEmpresariais: id === "empresariais" ? d.produtos.map((f) => ({
+      tabela: { ...cabecalho(f), linhas: linhas(tabelaVenda(indices[f], fatores[f])).map(([faixa, enf, apt]) =>
+        [faixa, f === "pce100" ? "" : enf, f === "pce100" ? "" : apt]) },
+      avisoPreco: f === "pce100" ? "O preço deve ser previamente estudado pelo Bensaúde." : undefined,
+      vitalicio: indicadores[f].spread, contratual: indicadores[f].contratual, promocional: indicadores[f].promocional,
+    })) : [],
   };
 }

@@ -32,9 +32,9 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
 
   // Dois quadros lado a lado: faixa colorida, nome da tabela, sigla/vidas e Faixa × Enfermaria × Apartamento.
   const GAP = 6;
-  const wQ = (largura - GAP) / 2;
   const ALTURA_QUADROS = 2 + 15 + 11 * 6.6 + 4;
-  const quadros = (lista: TabelaProdutoGrupo[]) => {
+  const quadros = (lista: TabelaProdutoGrupo[], avisoPreco?: string) => {
+    const wQ = lista.length === 1 ? largura : (largura - GAP) / 2;
     const inicio = y;
     let fim = inicio;
     lista.forEach((q, k) => {
@@ -51,7 +51,9 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
         tableWidth: wQ,
         margin: { left: x, right: pageW - x - wQ, top, bottom },
         head: [["FAIXA", "ENFERMARIA", "APARTAMENTO"]],
-        body: q.linhas,
+        body: avisoPreco ? q.linhas.map(([faixa], i) => i === 0
+          ? [faixa, { content: textoPdf(avisoPreco), colSpan: 2, rowSpan: q.linhas.length }]
+          : [faixa]) : q.linhas,
         styles: { font: "helvetica", fontSize: 12, cellPadding: { top: 1, bottom: 1, left: 1.5, right: 1.5 }, minCellHeight: 6.6, valign: "middle", textColor: PDF_COLORS.text, halign: "center" },
         headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: F.cabecalhoTabela },
         alternateRowStyles: { fillColor: ZEBRA },
@@ -91,11 +93,23 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
     p.introducao.forEach((par) => texto(par));
     y += 6;
   }
-  titulo(t0, ALTURA_QUADROS);
-  quadros(p.net);
-  titulo(t1, p.sugestaoVenda ? LINHA_TEXTO * 2 : ALTURA_QUADROS);
-  if (p.sugestaoVenda) texto(p.sugestaoVenda);
-  else quadros(p.venda);
+  if (p.produtosEmpresariais.length) {
+    p.produtosEmpresariais.forEach((produto, i) => {
+      titulo(i === 0 ? t0 : t1, ALTURA_QUADROS + LINHA_TEXTO * 3 + 6);
+      quadros([produto.tabela], produto.avisoPreco);
+      const percentual = (v: number) => `${v.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%`;
+      texto(`Vitalício: ${percentual(produto.vitalicio)}`);
+      texto(`Comissionamento contratual: ${percentual(produto.contratual)}`);
+      texto(`Comissionamento promocional: ${percentual(produto.promocional)}`);
+      y += 6;
+    });
+  } else {
+    titulo(t0, ALTURA_QUADROS);
+    quadros(p.net);
+    titulo(t1, p.sugestaoVenda ? LINHA_TEXTO * 2 : ALTURA_QUADROS);
+    if (p.sugestaoVenda) texto(p.sugestaoVenda);
+    else quadros(p.venda);
+  }
   titulo(t2, p.distribuidores.length * LINHA_TEXTO);
   p.distribuidores.forEach((d) => { item(d); if (p.definicoes[d]) texto(p.definicoes[d], 6); });
   y += 6;

@@ -44,8 +44,19 @@ describe("Proposta Empresariais", () => {
     expect(p.venda[1].linhas[0][1]).toBe("131,25");
     expect(p.net[1].linhas[0][1]).toBe("124,69");
   });
-  it("lists Siga with 6-month exclusivity then Hunter Bensaúde", () => {
-    expect(p.distribuidores).toEqual(["Siga Soluções (Exclusividade por 6 meses)", "Hunter Bensaúde após 6 meses"]);
+  it("lists Siga then Hunter Bensaúde", () => {
+    expect(p.distribuidores).toEqual(["Siga Soluções", "Hunter Bensaúde após 6 meses"]);
+  });
+  it("shows sale prices for Médias Empresas but no price values for Empresarial", () => {
+    expect(p.produtosEmpresariais[0].tabela.linhas[0]).toEqual(["00 a 18", "148,75", "185,93"]);
+    expect(p.produtosEmpresariais[1].tabela.linhas.every((l) => l[1] === "" && l[2] === "")).toBe(true);
+  });
+  it("takes all three commissions separately from each product's current parameters", () => {
+    const ind = indicadoresPadrao();
+    ind.pceAdm = { spread: 7, contratual: 80, promocional: 120, adesao: 0 };
+    ind.pce100 = { spread: 6, contratual: 85, promocional: 110, adesao: 0 };
+    const produtos = propostaGrupo("empresariais", undefined, ind).produtosEmpresariais;
+    expect(produtos.map(({ vitalicio, contratual, promocional }) => [vitalicio, contratual, promocional])).toEqual([[7, 80, 120], [6, 85, 110]]);
   });
 });
 
@@ -68,13 +79,10 @@ describe("Introdução da proposta Administrados (19/11/2026)", () => {
     expect(p.topicos).toEqual(["1. Introdução", "2. Tabela Net", "3. Sugestão de Venda", "4. Distribuidores", "5. Promoção e Metas"]);
     expect(p.introducao[0]).toBe("A presente proposta é destinada à LANCERS ADMINISTRADORA, conforme os entendimentos iniciais entre as partes.");
   });
-  it("Empresariais opens with the SIGA introduction: partial exclusivity in 2027, none assured from 2028", () => {
+  it("Empresariais opens with the SIGA introduction", () => {
     const p = propostaGrupo("empresariais");
-    expect(p.topicos).toEqual(["1. Introdução", "2. Tabela Net", "3. Sugestão de Venda", "4. Distribuidores", "5. Promoção e Metas"]);
+    expect(p.topicos).toEqual(["1. Introdução", "2. Médias Empresas", "3. Empresarial", "4. Distribuidores", "5. Promoção e Metas"]);
     expect(p.introducao[0]).toBe("A presente proposta considera a SIGA como responsável pela operação comercial do segmento EMPRESARIAL em Uberaba, observadas as condições e responsabilidades que vierem a ser acordadas entre as partes e formalizadas em instrumento contratual específico.");
-    expect(p.introducao[1]).toContain("no 1º semestre, a comercialização caberá somente à SIGA");
-    expect(p.introducao[1]).toContain("no 2º semestre, passará a contar também com a equipe própria do Bensaúde");
-    expect(p.introducao[1]).toContain("a partir de 2028");
   });
 });
 
