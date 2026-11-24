@@ -44,7 +44,7 @@ export const PROPOSTAS_GRUPO: Record<PropostaGrupoId, DefinicaoGrupo> = {
     definicoes: {
       "Equipe própria do Bensaúde": "A equipe própria do Bensaúde também efetua vendas dos produtos administrados por meio do seu call center.",
     },
-    promocao: "Comissionamento Promocional por 6 meses renováveis por mais 6 meses com batimento das seguintes Metas:",
+    promocao: "À Rede de Distribuição Lancers, aplica-se:\nComissionamento Promocional por 6 meses renováveis por mais 6 meses com batimento das seguintes Metas:",
     arquivo: "Proposta_Administrados_Bensaude_Uberaba.pdf",
   },
   empresariais: {
