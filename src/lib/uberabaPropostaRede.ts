@@ -259,6 +259,9 @@ export type BlocoPropostaRede =
     juntos: boolean;
   };
 
+/** Texto do Dênis (24/11/2026), logo após o Quadro 1. */
+export const NOTA_QUANTIDADE_CREDENCIAMENTO_REDE = "A quantidade de credenciamentos deverá ser aquela definida no Quadro 1. Entretanto, no tipo de credenciamento “Especialidades”, o total não deverá ser inferior ao total ali definido, sendo necessário que cada especialidade básica tenha pelo menos 2 (dois) credenciados.";
+
 export function blocosPropostaRede(
   parametros: ParametrosRede, textos: TextosRede | null = null, quantidades: QuantidadesRede = quantidadesRedeAtuais(),
 ): BlocoPropostaRede[] {
@@ -274,6 +277,7 @@ export function blocosPropostaRede(
       rotulo();
       b.push({ tipo: "quadro", cabecalho: [...COLUNAS_CONDICOES_REDE], linhas: quadro.map((l) => l.celulas), larguras: [4820, 686, 2065, 2295],
         alinhamentos: ["justify", "center", "center", "center"], grupos: true, itens: quadro.flatMap((l, k) => (l.item ? [k] : [])), negritoUltima: true, juntos: false });
+      b.push({ tipo: "paragrafo", texto: NOTA_QUANTIDADE_CREDENCIAMENTO_REDE });
     }
     if (s.id === "gestao") {
       rotulo();
