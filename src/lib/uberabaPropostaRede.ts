@@ -38,8 +38,9 @@ export const CONDICOES_GERAIS_REDE: readonly { item: string; valor: string }[] =
 /** Subtítulo e texto antes do quadro Resultado, no tópico 2 (textos do Dênis, 18/11/2026). */
 export const SUBTITULO_PROJECAO_REDE = "Projeção financeira";
 /** Texto abaixo do Quadro 3 (modelo do Dênis, 19/11/2026, redação dele sem alteração). */
+export const NOTA_QUANTIDADE_CREDENCIAMENTO_REDE = "A quantidade de credenciamentos deverá ser aquela definida no Quadro 1. Entretanto, no tipo de credenciamento “Especialidades”, o total não deverá ser inferior ao total ali definido, sendo necessário que cada especialidade básica tenha pelo menos 2 (dois) credenciados.";
 export const NOTA_PROJECAO_REDE =
-  "O total do credenciamento é estimado conforme a quantidade efetiva de credenciamentos, respeitado o limite da coluna “ATÉ” do Tópico 2. Seu pagamento será realizado em duas etapas: 30% na assinatura do contrato e os outros 70% quando toda a rede mínima estiver credenciada. As seis parcelas mensais fixas terão início no mês subsequente à assinatura do contrato.";
+  `${NOTA_QUANTIDADE_CREDENCIAMENTO_REDE} Seu pagamento será realizado em duas etapas: 30% na assinatura do contrato e os outros 70% quando toda a rede mínima estiver credenciada. As seis parcelas mensais fixas terão início no mês subsequente à assinatura do contrato.`;
 export const TEXTO_PROJECAO_REDE =
   "Apresentam-se a seguir os valores e as condições de pagamento do credenciamento por captação/adesão e das parcelas fixas de gestão da rede:";
 export type TextosRede = Record<SecaoRedeId, string>;
@@ -259,9 +260,6 @@ export type BlocoPropostaRede =
     juntos: boolean;
   };
 
-/** Texto do Dênis (24/11/2026), logo após o Quadro 1. */
-export const NOTA_QUANTIDADE_CREDENCIAMENTO_REDE = "A quantidade de credenciamentos deverá ser aquela definida no Quadro 1. Entretanto, no tipo de credenciamento “Especialidades”, o total não deverá ser inferior ao total ali definido, sendo necessário que cada especialidade básica tenha pelo menos 2 (dois) credenciados.";
-
 export function blocosPropostaRede(
   parametros: ParametrosRede, textos: TextosRede | null = null, quantidades: QuantidadesRede = quantidadesRedeAtuais(),
 ): BlocoPropostaRede[] {
@@ -277,7 +275,6 @@ export function blocosPropostaRede(
       rotulo();
       b.push({ tipo: "quadro", cabecalho: [...COLUNAS_CONDICOES_REDE], linhas: quadro.map((l) => l.celulas), larguras: [4820, 686, 2065, 2295],
         alinhamentos: ["justify", "center", "center", "center"], grupos: true, itens: quadro.flatMap((l, k) => (l.item ? [k] : [])), negritoUltima: true, juntos: false });
-      b.push({ tipo: "paragrafo", texto: NOTA_QUANTIDADE_CREDENCIAMENTO_REDE });
     }
     if (s.id === "gestao") {
       rotulo();
