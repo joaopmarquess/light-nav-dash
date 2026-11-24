@@ -38,17 +38,17 @@ describe("Proposta Administrados", () => {
 describe("Proposta Empresariais", () => {
   const p = propostaGrupo("empresariais");
   it("puts EMPRESAS MÉDIAS beside EMPRESARIAL", () => {
-    expect(p.net.map((q) => q.titulo)).toEqual(["EMPRESAS MÉDIAS", "EMPRESARIAL"]);
+    expect(p.net.map((q) => q.titulo)).toEqual(["EMPRESAS MÉDIAS", "EMPRESAS GRANDES"]);
   });
   it("Empresarial Net = 131,25 × 95%", () => {
-    expect(p.venda[1].linhas[0][1]).toBe("131,25");
-    expect(p.net[1].linhas[0][1]).toBe("124,69");
+    expect(p.venda[1].linhas[0][1]).toBe("148,75");
+    expect(p.net[1].linhas[0][1]).toBe("141,31");
   });
   it("lists Siga then the Bensaúde own team", () => {
     expect(p.distribuidores).toEqual(["Siga Soluções", "Equipe própria Bensaúde"]);
   });
   it("shows sale prices for Médias Empresas but no price values for Empresarial", () => {
-    expect(p.produtosEmpresariais[0].tabela.linhas[0]).toEqual(["00 a 18", "148,75", "185,93"]);
+    expect(p.produtosEmpresariais[0].tabela.linhas[0]).toEqual(["00 a 18", "155,75", "194,68"]);
     expect(p.produtosEmpresariais[1].tabela.linhas.every((l) => l[1] === "" && l[2] === "")).toBe(true);
   });
   it("takes all three commissions separately from each product's current parameters", () => {

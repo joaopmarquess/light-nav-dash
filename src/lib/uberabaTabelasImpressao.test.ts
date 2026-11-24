@@ -5,9 +5,9 @@ import { FATORES_PADRAO, INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO, lerRotul
 const dados = { indices: INDICES_PADRAO, fatores: FATORES_PADRAO, indicadores: INDICADORES_PADRAO_POR_FRENTE, rotulos: lerRotulos(undefined) };
 
 describe("impressão das Tabelas", () => {
-  it("Venda imprime Referência × fator: Empresarial primeira faixa 131,25", () => {
+  it("Venda imprime Referência × fator: Empresarial primeira faixa 148,75", () => {
     const q = quadrosImpressao("venda", dados).find((x) => x.id === "pce100")!;
-    expect(q.linhas[0][1]).toBe("131,25");
+    expect(q.linhas[0][1]).toBe("148,75");
     expect(q.linhas.length).toBe(10);
   });
   it("Net imprime Venda × OPERADORA de cada tabela, igual à tela", () => {

@@ -19,11 +19,11 @@ export type ParametrosFrente = {
 };
 export const PARAMETROS_UBERABA: ParametrosFrente[] = [
   { id: "pcaAdm", sigla: "PCA", contratacao: "PLANO COLETIVO POR ADESÃO", vidas: "-", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "ADESÃO", fatorReferencia: 0.95, grupo: "administradora" },
-  { id: "pmeAdm", sigla: "PME ADM.", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "02 A 49", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "PME ADMINISTRADAS", fatorReferencia: 0.9, grupo: "administradora" },
+  { id: "pmeAdm", sigla: "PME ADM.", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "02 A 49", boletagem: "ADMINISTRADORA", distribuidores: "PLATAFORMAS ASSOCIADAS", descricao: "PME ADMINISTRADAS", fatorReferencia: 0.95, grupo: "administradora" },
   // Mudança de conceito (Dênis, 19/11/2026): Administradas são só Adesão e PME; a terceira tabela passa a "EMPRESAS MÉDIAS",
   // com Agenciadora e sem Taxa de adesão, no grupo dos Planos Empresariais (boletagem e distribuidores como o Empresarial).
-  { id: "pceAdm", sigla: "PCE 50+", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "50 A 99", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS", descricao: "EMPRESAS MÉDIAS", fatorReferencia: 0.85, grupo: "empresarial" },
-  { id: "pce100", sigla: "PJ+", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "100 OU MAIS", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS", descricao: "EMPRESARIAL", fatorReferencia: 0.75, grupo: "empresarial" },
+  { id: "pceAdm", sigla: "PCE 50+", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "50 A 99", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS", descricao: "EMPRESAS MÉDIAS", fatorReferencia: 0.89, grupo: "empresarial" },
+  { id: "pce100", sigla: "PJ+", contratacao: "PLANO COLETIVO EMPRESARIAL", vidas: "100 OU MAIS", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS", descricao: "EMPRESAS GRANDES", fatorReferencia: 0.85, grupo: "empresarial" },
 ];
 export const parametrosDe = (id: FrenteId) => PARAMETROS_UBERABA.find((p) => p.id === id)!;
 /** Faixa de vidas para leitura: "02 a 49 vidas", "100 ou mais vidas"; sem limite ("-") devolve null. */
@@ -117,8 +117,8 @@ export function parseIndice(texto: string): number | null {
   return Math.round(n * 100) / 100;
 }
 
-/** v2: fatores padrão 0,95 / 0,90 / 0,85 / 0,75 (pedido do Dênis, 13/11/2026); índices gravados antes deixam de valer. */
-const CHAVE = "uberaba-tabelas-comerciais-indices-v2";
+/** v3: padrões 95 / 95 / 89 / 85 (24/11/2026); índices anteriores deixam de valer. */
+const CHAVE = "uberaba-tabelas-comerciais-indices-v3";
 
 /** Avisado após gravar índices ou indicadores, para a Simulação de resultados da mesma tela se atualizar. */
 export const EVENTO_TABELAS_COMERCIAIS = "uberaba-tabelas-comerciais-alteradas";
@@ -288,21 +288,25 @@ export function normalizarRotulo(texto: unknown, padrao: string): string {
   const t = texto.replace(/\s+/g, " ").trim().slice(0, ROTULO_MAX).trim();
   return t || padrao;
 }
-/** v4: a terceira tabela passou a "EMPRESAS MÉDIAS" (19/11/2026); da v3 aproveitam-se os nomes das outras três. */
-const CHAVE_ROTULOS = "uberaba-tabelas-comerciais-rotulos-v4";
+/** v5: a quarta tabela passou a "EMPRESAS GRANDES"; preserva os nomes personalizados das demais. */
+const CHAVE_ROTULOS = "uberaba-tabelas-comerciais-rotulos-v5";
 /** Padrão gravado pelo usuário (ícone ao lado do nome); sem gravação, valem os nomes originais. */
-const CHAVE_ROTULOS_PADRAO = "uberaba-tabelas-comerciais-rotulos-padrao-v4";
+const CHAVE_ROTULOS_PADRAO = "uberaba-tabelas-comerciais-rotulos-padrao-v5";
 const ANTERIOR_ROTULOS: Record<string, string> = {
-  [CHAVE_ROTULOS]: "uberaba-tabelas-comerciais-rotulos-v3",
-  [CHAVE_ROTULOS_PADRAO]: "uberaba-tabelas-comerciais-rotulos-padrao-v3",
+  [CHAVE_ROTULOS]: "uberaba-tabelas-comerciais-rotulos-v4",
+  [CHAVE_ROTULOS_PADRAO]: "uberaba-tabelas-comerciais-rotulos-padrao-v4",
 };
 const lerRotulosDe = (storage: Pick<Storage, "getItem"> | undefined, chave: string, base: RotulosPorFrente): RotulosPorFrente => {
   const out: RotulosPorFrente = JSON.parse(JSON.stringify(base));
   try {
     let salvo = JSON.parse(storage?.getItem(chave) ?? "null");
     if ((!salvo || typeof salvo !== "object") && ANTERIOR_ROTULOS[chave]) {
-      const v3 = JSON.parse(storage?.getItem(ANTERIOR_ROTULOS[chave]) ?? "null");
-      if (v3 && typeof v3 === "object") { salvo = { ...v3 }; delete salvo.pceAdm; }
+      const anterior = JSON.parse(storage?.getItem(ANTERIOR_ROTULOS[chave]) ?? "null");
+      if (anterior && typeof anterior === "object") { salvo = { ...anterior }; delete salvo.pce100; }
+      else {
+        const v3 = JSON.parse(storage?.getItem(ANTERIOR_ROTULOS[chave].replace("-v4", "-v3")) ?? "null");
+        if (v3 && typeof v3 === "object") { salvo = { ...v3 }; delete salvo.pceAdm; delete salvo.pce100; }
+      }
     }
     if (!salvo || typeof salvo !== "object") return out;
     FRENTE_IDS.forEach((id) => {

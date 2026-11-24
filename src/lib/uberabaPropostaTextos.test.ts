@@ -12,8 +12,8 @@ const memoria = () => { const m = new Map<string, string>(); return { getItem: (
 describe("dados enviados à IA", () => {
   it("leva as quatro tabelas com nome, índice, fator e preços formatados como no PDF", () => {
     const d = padrao();
-    expect(d.tabelas.map((t) => t.nome)).toEqual(["ADESÃO", "PME ADMINISTRADAS", "EMPRESAS MÉDIAS", "EMPRESARIAL"]);
-    expect(d.tabelas.map((t) => t.indiceSobreReferencia)).toEqual(["95%", "90%", "85%", "75%"]);
+    expect(d.tabelas.map((t) => t.nome)).toEqual(["ADESÃO", "PME ADMINISTRADAS", "EMPRESAS MÉDIAS", "EMPRESAS GRANDES"]);
+    expect(d.tabelas.map((t) => t.indiceSobreReferencia)).toEqual(["95%", "95%", "89%", "85%"]);
     expect(d.tabelas.map((t) => t.secao)).toEqual(["Produtos com Administradora", "Produtos com Administradora", "Plano Empresarial", "Plano Empresarial"]);
     expect(d.tabelas[3]).toMatchObject({ sigla: "PJ+", vidas: "100 OU MAIS", boletagem: "OPERADORA", distribuidores: "AGENCIADORAS E CORRETORAS AUTORIZADAS" });
     expect(d.tabelas[0].indiceSobreReferencia).toBe("95%");
@@ -30,7 +30,7 @@ describe("dados enviados à IA", () => {
 describe("conferência de números do rascunho", () => {
   it("aceita números que estão nas tabelas", () => {
     expect(numerosForaDasTabelas("A PME ADM. (02 a 49 vidas), a PCE 50+ (50 a 99 vidas) e o PJ+ (100 ou mais vidas) usam a Referência.", padrao())).toEqual([]);
-    expect(numerosForaDasTabelas("PCA Adm. com índice de 90%, fator 1,25, Spread de 23% e faixa 00 a 18 por 166,25.", padrao())).toEqual([]);
+    expect(numerosForaDasTabelas("PCA Adm. com índice de 95%, fator 1,25, Spread de 23% e faixa 00 a 18 por 166,25.", padrao())).toEqual([]);
   });
   it("aponta números inventados", () => {
     expect(numerosForaDasTabelas("Carência de 45 dias e reajuste de 12,5%.", padrao())).toEqual(["45", "12,5"]);
@@ -174,7 +174,7 @@ describe("textos aprovados com números antigos", () => {
   it("aponta preço antigo e ignora faixas e vidas", () => {
     const aprovado = aprovarTextos(estadoVazio(), { ...TEXTOS_PADRAO, empresarial: "Faixa 00 a 18 por 140,00, para 100 ou mais vidas." });
     expect(topicosComNumerosAntigos(aprovado, padrao())).toEqual([SECOES_TEXTO[3].titulo]);
-    const atual = aprovarTextos(estadoVazio(), { ...TEXTOS_PADRAO, empresarial: "Faixa 00 a 18 por 131,25, para 100 ou mais vidas." });
+    const atual = aprovarTextos(estadoVazio(), { ...TEXTOS_PADRAO, empresarial: "Faixa 00 a 18 por 148,75, para 100 ou mais vidas." });
     expect(topicosComNumerosAntigos(atual, padrao())).toEqual([]);
   });
   it("não avisa sem texto aprovado", () => {

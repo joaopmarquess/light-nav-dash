@@ -23,8 +23,8 @@ describe("tabelas comerciais Uberaba", () => {
     expect(formatarCentavos(tabelaNet(95, 77)[0].enfermariaCentavos)).toBe("128,01");
   });
 
-  it("usa os fatores de referência 0,95 / 0,90 / 0,85 / 0,75 como índices padrão", () => {
-    expect(INDICES_PADRAO).toEqual({ pcaAdm: 95, pmeAdm: 90, pceAdm: 85, pce100: 75 });
+  it("usa os fatores de referência 0,95 / 0,95 / 0,89 / 0,85 como índices padrão", () => {
+    expect(INDICES_PADRAO).toEqual({ pcaAdm: 95, pmeAdm: 95, pceAdm: 89, pce100: 85 });
   });
 
   it("PME ADM. a 85% indexa a Referência", () => {
@@ -61,7 +61,7 @@ describe("tabelas comerciais Uberaba", () => {
 
   it("volta aos padrões quando não há índices gravados", () => {
     expect(lerIndices({ getItem: () => null })).toEqual(INDICES_PADRAO);
-    expect(lerIndices({ getItem: () => JSON.stringify({ pce100: 70 }) })).toEqual({ pcaAdm: 95, pmeAdm: 90, pceAdm: 85, pce100: 70 });
+    expect(lerIndices({ getItem: () => JSON.stringify({ pce100: 70 }) })).toEqual({ pcaAdm: 95, pmeAdm: 95, pceAdm: 89, pce100: 70 });
   });
 });
 
@@ -132,7 +132,7 @@ describe("nomes das tabelas (redigitáveis)", () => {
     expect(r.pcaAdm).toEqual({ titulo: "ADESÃO", segmento: "PLANO COLETIVO POR ADESÃO" });
     expect(r.pmeAdm).toEqual({ titulo: "PME ADMINISTRADAS", segmento: "PLANO COLETIVO EMPRESARIAL" });
     expect(r.pceAdm).toEqual({ titulo: "EMPRESAS MÉDIAS", segmento: "PLANO COLETIVO EMPRESARIAL" });
-    expect(r.pce100).toEqual({ titulo: "EMPRESARIAL", segmento: "PLANO COLETIVO EMPRESARIAL" });
+    expect(r.pce100).toEqual({ titulo: "EMPRESAS GRANDES", segmento: "PLANO COLETIVO EMPRESARIAL" });
   });
   it("names saved before the rename do not hide the new labels", () => {
     const mem = new Map<string, string>([
@@ -142,7 +142,7 @@ describe("nomes das tabelas (redigitáveis)", () => {
     ]);
     const st = { getItem: (k: string) => mem.get(k) ?? null };
     expect(lerRotulos(st).pcaAdm.titulo).toBe("ADESÃO");
-    expect(lerRotulos(st).pce100.titulo).toBe("EMPRESARIAL");
+    expect(lerRotulos(st).pce100.titulo).toBe("EMPRESAS GRANDES");
   });
   it("keeps one line and falls back to the default when empty", () => {
     expect(normalizarRotulo("  PCA\n  Novo  ", "PCA Adm.")).toBe("PCA Novo");
@@ -216,7 +216,7 @@ describe("parâmetros das tabelas (13/11/2026)", () => {
   });
   it("four tables in the order PCA, PME ADM., PCE 50+, PJ+", () => {
     expect(PARAMETROS_UBERABA.map((p) => p.sigla)).toEqual(["PCA", "PME ADM.", "PCE 50+", "PJ+"]);
-    expect(PARAMETROS_UBERABA.map((p) => p.fatorReferencia)).toEqual([0.95, 0.9, 0.85, 0.75]);
+    expect(PARAMETROS_UBERABA.map((p) => p.fatorReferencia)).toEqual([0.95, 0.95, 0.89, 0.85]);
   });
   it("lives, billing and distributors as supplied", () => {
     expect(PARAMETROS_UBERABA.map((p) => p.vidas)).toEqual(["-", "02 A 49", "50 A 99", "100 OU MAIS"]);
@@ -270,5 +270,20 @@ describe("EMPRESAS MÉDIAS (mudança de conceito, 19/11/2026)", () => {
     expect(lerRotulos({ getItem: v3 }).pcaAdm.titulo).toBe("MINHA ADESÃO");
     expect(lerIndicadores({ getItem: v3 }).pceAdm).toEqual({ spread: 5, contratual: 90, promocional: 100, adesao: 0 });
     expect(lerIndicadores({ getItem: v3 }).pcaAdm.spread).toBe(20);
+  });
+});
+
+ describe("Padrões fornecidos em 24/11/2026", () => {
+  it.each([["pcaAdm", 95], ["pmeAdm", 95], ["pceAdm", 89], ["pce100", 85]] as const)("%s restaura o índice %s", async (id, indice) => {
+    const m = await import("./uberabaTabelasComerciais");
+    const v = { indices: { ...m.INDICES_PADRAO, [id]: 70 }, fatores: m.FATORES_PADRAO, indicadores: m.indicadoresPadrao() };
+    expect(m.restaurarFrentePadrao(id, v).indices[id]).toBe(indice);
+  });
+  it("não reaplica índices salvos da versão anterior", () => {
+    expect(lerIndices({ getItem: k => k.endsWith("-v2") ? JSON.stringify({ pmeAdm: 90, pceAdm: 85, pce100: 75 }) : null })).toEqual({ pcaAdm: 95, pmeAdm: 95, pceAdm: 89, pce100: 85 });
+  });
+  it("migra os nomes preservando as outras tabelas", () => {
+    expect(lerRotulos({ getItem: k => k.endsWith("rotulos-v4") ? JSON.stringify({ pcaAdm: { titulo: "ADESÃO LOCAL" }, pce100: { titulo: "EMPRESARIAL" } }) : null }).pce100.titulo).toBe("EMPRESAS GRANDES");
+    expect(lerRotulos({ getItem: k => k.endsWith("rotulos-v4") ? JSON.stringify({ pcaAdm: { titulo: "ADESÃO LOCAL" } }) : null }).pcaAdm.titulo).toBe("ADESÃO LOCAL");
   });
 });

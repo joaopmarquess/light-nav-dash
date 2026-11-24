@@ -4,7 +4,7 @@ import { indicadoresPadrao } from "./uberabaTabelasComerciais";
 
 describe("Proposta Comercial › 1. Tabelas", () => {
   it("lists the four Resultados Comerciais tables in screen order", () => {
-    expect(quadrosProposta().map((q) => q.titulo)).toEqual(["ADESÃO", "PME ADMINISTRADAS", "EMPRESAS MÉDIAS", "EMPRESARIAL"]);
+    expect(quadrosProposta().map((q) => q.titulo)).toEqual(["ADESÃO", "PME ADMINISTRADAS", "EMPRESAS MÉDIAS", "EMPRESAS GRANDES"]);
     expect(quadrosProposta().map((q) => q.subtitulo)).toEqual(["PCA", "PME ADM. · 02 A 49 VIDAS", "PCE 50+ · 50 A 99 VIDAS", "PJ+ · 100 OU MAIS VIDAS"]);
   });
   it("splits the Proposal into Administradora products and the Empresarial", () => {
@@ -12,10 +12,10 @@ describe("Proposta Comercial › 1. Tabelas", () => {
   });
   it("shows the Preço de Venda: Referência × table factor, nothing else", () => {
     const [pca, pme, pce, pce100] = quadrosProposta();
-    expect(pce100.linhas[0]).toEqual(["00 a 18", "131,25"]);
+    expect(pce100.linhas[0]).toEqual(["00 a 18", "148,75"]);
     expect(pca.linhas[0]).toEqual(["00 a 18", "166,25"]);
-    expect(pme.linhas[0]).toEqual(["00 a 18", "157,50"]);
-    expect(pce.linhas[0]).toEqual(["00 a 18", "148,75"]);
+    expect(pme.linhas[0]).toEqual(["00 a 18", "166,25"]);
+    expect(pce.linhas[0]).toEqual(["00 a 18", "155,75"]);
     expect(pca.linhas).toHaveLength(10);
   });
   it("follows the indices edited in Resultados Comerciais", () => {
@@ -25,7 +25,7 @@ describe("Proposta Comercial › 1. Tabelas", () => {
   it("ignores Administradora/Agenciadora participation in the sale price", () => {
     const ind = indicadoresPadrao();
     ind.pce100.spread = 10;
-    expect(quadrosProposta(undefined, ind)[3].linhas[0]).toEqual(["00 a 18", "131,25"]);
+    expect(quadrosProposta(undefined, ind)[3].linhas[0]).toEqual(["00 a 18", "148,75"]);
   });
   it("brings the Indicadores variáveis as on screen", () => {
     const [pca, , , pce100] = quadrosProposta();
@@ -135,9 +135,9 @@ describe("Proposta · quadro de parâmetros da Introdução", () => {
   it("lista os quatro produtos com os parâmetros fornecidos", () => {
     expect(linhasParametros()).toEqual([
       ["PCA", "PLANO COLETIVO POR ADESÃO", "-", "ADMINISTRADORA", "PLATAFORMAS ASSOCIADAS", "ADESÃO", "0,95"],
-      ["PME ADM.", "PLANO COLETIVO EMPRESARIAL", "02 A 49", "ADMINISTRADORA", "PLATAFORMAS ASSOCIADAS", "PME ADMINISTRADAS", "0,90"],
-      ["PCE 50+", "PLANO COLETIVO EMPRESARIAL", "50 A 99", "OPERADORA", "AGENCIADORAS E CORRETORAS AUTORIZADAS", "EMPRESAS MÉDIAS", "0,85"],
-      ["PJ+", "PLANO COLETIVO EMPRESARIAL", "100 OU MAIS", "OPERADORA", "AGENCIADORAS E CORRETORAS AUTORIZADAS", "EMPRESARIAL", "0,75"],
+      ["PME ADM.", "PLANO COLETIVO EMPRESARIAL", "02 A 49", "ADMINISTRADORA", "PLATAFORMAS ASSOCIADAS", "PME ADMINISTRADAS", "0,95"],
+      ["PCE 50+", "PLANO COLETIVO EMPRESARIAL", "50 A 99", "OPERADORA", "AGENCIADORAS E CORRETORAS AUTORIZADAS", "EMPRESAS MÉDIAS", "0,89"],
+      ["PJ+", "PLANO COLETIVO EMPRESARIAL", "100 OU MAIS", "OPERADORA", "AGENCIADORAS E CORRETORAS AUTORIZADAS", "EMPRESAS GRANDES", "0,85"],
     ]);
   });
   it("acompanha o índice editado em Resultados Comerciais", () => {

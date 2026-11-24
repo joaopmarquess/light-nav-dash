@@ -18,7 +18,7 @@ describe("impressão do Resultado por Ente", () => {
     paginas.forEach((pg) => expect(pg.bases.map((b) => b.id)).toEqual(["percentual", "media"]));
   });
   it("parâmetros das tabelas: % sobre Referência e % Spread de cada tabela", () => {
-    expect(paginas[0].tabelas.map((t) => t.sobreReferencia)).toEqual([0.95, 0.9, 0.85, 0.75]);
+    expect(paginas[0].tabelas.map((t) => t.sobreReferencia)).toEqual([0.95, 0.95, 0.89, 0.85]);
     expect(paginas[0].tabelas.map((t) => t.spread)).toEqual([0.23, 0.23, 0.05, 0.05]);
     expect(paginas[0].tabelas.map((t) => t.spreadPara)).toEqual(["ADMINISTRADORA", "ADMINISTRADORA", "AGENCIADORA", "AGENCIADORA"]);
   });
