@@ -1,3 +1,6 @@
+## Laboratory › Simular Datas FM (24/11/2026)
+- [ ] Perguntar a quantidade de blocos; preservar quatro e unir os grupos em pares para dois, com gravação e impressão consistentes.
+
 ## Bench Vidas
 - [x] Ocultar modalidades ausentes nos filtros e grids.
 - [x] Abreviar nomes de operadoras, preservando cidade nas Unimeds.

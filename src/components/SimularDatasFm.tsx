@@ -7,6 +7,8 @@ import { EM_BLOCOS_FM, buildCenariosFmPdf } from "@/lib/simularDatasFmPdf";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { BLOCOS_FM, quantidadeBlocosFm } from "@/lib/simularDatasFm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvarUltimoNumeroFm, simulacaoAlteradaFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, prazoFolhaFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, blocosPeriodoFm, hospitalBeneFm, PARTES_BLOCOS_FM, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
@@ -135,6 +137,9 @@ type PropsSimulacao = {
 function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, onCancelar, onExcluir }: PropsSimulacao) {
   const entrada = simulacao.entrada;
   const [confirmar, setConfirmar] = useState<"cancelar" | "excluir" | null>(null);
+  const [perguntarBlocos, setPerguntarBlocos] = useState(false);
+  const [quantidadeTexto, setQuantidadeTexto] = useState(String(quantidadeBlocosFm(entrada)));
+  const quantidadeEscolhida = lerInteiro(quantidadeTexto, 1, BLOCOS_FM);
   const cancelar = () => (gravada && !alterada) ? onCancelar() : setConfirmar("cancelar");
   const [texto, setTexto] = useState<Record<string, string>>({});
   const gravar = (proximo: EntradaDatasFm) => onAlterar({ entrada: proximo });
@@ -221,12 +226,32 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
         <span className="font-semibold">Período:</span>{" "}
         <span className="tabular-nums">{periodo.de} a {periodo.ate}</span>
       </p>
-      {/* Simular em blocos (pedido de 18/11/2026): Período em 4 blocos de ~7 dias, cada um com o seu Arquivo (dia seguinte ao fim do bloco). */}
-      <label className="flex w-fit cursor-pointer items-center gap-2 text-sm">
+      <div className="flex flex-wrap items-center gap-3 text-sm">
+      <label className="flex w-fit cursor-pointer items-center gap-2">
         <Checkbox checked={!!entrada.blocos} aria-label="Simular em blocos"
-          onCheckedChange={(v) => { const { blocos: _, ...resto } = entrada; gravar(v === true ? { ...resto, blocos: true } : resto); }} />
+          onCheckedChange={(v) => {
+            if (v === true) { setQuantidadeTexto(String(quantidadeBlocosFm(entrada))); setPerguntarBlocos(true); }
+            else { const { blocos: _, quantidadeBlocos: __, ...resto } = entrada; gravar(resto); }
+          }} />
         <span className="font-semibold">Simular em blocos</span>
       </label>
+      {entrada.blocos && <Button size="sm" variant="outline" onClick={() => { setQuantidadeTexto(String(quantidadeBlocosFm(entrada))); setPerguntarBlocos(true); }}>{quantidadeBlocosFm(entrada)} blocos</Button>}
+      </div>
+      <Dialog open={perguntarBlocos} onOpenChange={setPerguntarBlocos}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>Quantos blocos?</DialogTitle></DialogHeader>
+          <Input aria-label="Quantidade de blocos" type="number" min={1} max={BLOCOS_FM} step={1} autoFocus
+            value={quantidadeTexto} onChange={(e) => setQuantidadeTexto(e.target.value)} />
+          {quantidadeEscolhida == null && <p role="alert" className="text-sm text-destructive">Informe um número inteiro de 1 a {BLOCOS_FM}.</p>}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPerguntarBlocos(false)}>Cancelar</Button>
+            <Button disabled={quantidadeEscolhida == null} onClick={() => {
+              if (quantidadeEscolhida == null) return;
+              gravar({ ...entrada, blocos: true, quantidadeBlocos: quantidadeEscolhida }); setPerguntarBlocos(false);
+            }}>Aplicar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       {entrada.blocos && (() => {
         // Duas partes (pedido de 18/11/2026): Parte 1 Outros Credenciados em blocos; Parte 2 Hospital Benê com o Período geral e o Arquivo na data limite.
         const hospital = hospitalBeneFm(entrada);

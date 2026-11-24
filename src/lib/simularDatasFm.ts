@@ -24,7 +24,7 @@ export const COMPETENCIA_PADRAO = { mes: 12, ano: 2026 };
 /** arquivoMes: mês (1–12) digitado no Arquivo; ausente → mês da competência (padrão 20/competência, pedido de 18/11/2026). */
 /** O campo "Referência de Último Dia" foi retirado (pedido de 18/11/2026); valores guardados antes são descartados ao ler. */
 /** blocos: opção "Simular em blocos" (pedido de 18/11/2026); ausente = desligada. */
-export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>>; arquivoMes?: number; blocos?: boolean };
+export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>>; arquivoMes?: number; blocos?: boolean; quantidadeBlocos?: number };
 
 const ultimoDia = (ano: number, mes: number) => new Date(Date.UTC(ano, mes, 0)).getUTCDate();
 const dd = (n: number) => String(n).padStart(2, "0");
@@ -164,8 +164,20 @@ export function blocosPeriodoFm(e: EntradaDatasFm): BlocoFm[] {
     blocos.push({ bloco: i + 1, de: dataUtc(new Date(t)), ate: dataUtc(new Date(fim)), dias, arquivo: dataUtc(new Date(fim + DIA_MS)) });
     t = fim + DIA_MS;
   }
-  return blocos;
+  const quantidade = quantidadeBlocosFm(e);
+  if (quantidade === BLOCOS_FM) return blocos;
+  const porGrupo = Math.floor(BLOCOS_FM / quantidade), extras = BLOCOS_FM % quantidade;
+  let indice = 0;
+  return Array.from({ length: quantidade }, (_, i) => {
+    const grupo = blocos.slice(indice, indice + porGrupo + (i < extras ? 1 : 0));
+    indice += grupo.length;
+    const primeiro = grupo[0], ultimo = grupo[grupo.length - 1];
+    return { bloco: i + 1, de: primeiro.de, ate: ultimo.ate, dias: grupo.reduce((soma, b) => soma + b.dias, 0), arquivo: ultimo.arquivo };
+  });
 }
+
+export const quantidadeBlocosFm = (e: Pick<EntradaDatasFm, "quantidadeBlocos">) =>
+  Number.isInteger(e.quantidadeBlocos) && Number(e.quantidadeBlocos) >= 1 && Number(e.quantidadeBlocos) <= BLOCOS_FM ? Number(e.quantidadeBlocos) : BLOCOS_FM;
 
 /** Simular em blocos dividido em duas partes (pedido de 18/11/2026): Parte 1 Outros Credenciados = os 4 blocos (blocosPeriodoFm);
  * Parte 2 Hospital Benê = o Período geral inteiro, com o Arquivo na data limite (o Arquivo do cenário). */
@@ -196,6 +208,7 @@ export function normalizarEntradaFm(b: unknown): EntradaDatasFm {
   return {
     ...(arquivoMes ? { arquivoMes } : {}),
     ...(o.blocos === true ? { blocos: true } : {}),
+    ...(o.blocos === true && o.quantidadeBlocos !== undefined ? { quantidadeBlocos: quantidadeBlocosFm(o) } : {}),
     mes: Number.isInteger(o.mes) && o.mes >= 1 && o.mes <= 12 ? o.mes : COMPETENCIA_PADRAO.mes,
     ano: Number.isInteger(o.ano) && o.ano >= 2000 && o.ano <= 2100 ? o.ano : COMPETENCIA_PADRAO.ano,
     dias,

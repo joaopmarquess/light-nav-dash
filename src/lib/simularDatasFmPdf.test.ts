@@ -10,6 +10,15 @@ const lista = [
 ];
 
 describe("Imprimir Cenários (Simular Datas FM)", () => {
+  it("imprime os mesmos dois grupos unidos do cenário salvo", () => {
+    const s = novaSimulacaoFm("dois", AGORA, 1, { mes: 12, ano: 2026, dias: {}, blocos: true, quantidadeBlocos: 2 });
+    const [pagina] = paginasCenariosFm([s]);
+    expect(pagina.blocos?.partes[0].linhas).toEqual([
+      { bloco: "Bloco 1", periodo: "20/11/2026 a 05/12/2026", dias: "16 dias", arquivo: "06/12/2026" },
+      { bloco: "Bloco 2", periodo: "06/12/2026 a 19/12/2026", dias: "14 dias", arquivo: "20/12/2026" },
+    ]);
+    expect(buildCenariosFmPdf(null, [s]).getNumberOfPages()).toBe(1);
+  });
   it("uma página por cenário, na ordem de inserção", () => {
     const p = paginasCenariosFm(lista);
     expect(p.map((x) => [x.titulo, x.cenario])).toEqual([["Cenário 01", "Padrão"], ["Cenário 02", "Sem nome"], ["Cenário 03", "Folha curta"]]);

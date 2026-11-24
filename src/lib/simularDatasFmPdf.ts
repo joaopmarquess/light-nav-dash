@@ -56,7 +56,7 @@ function blocosDaPagina(s: SimulacaoFm): NonNullable<PaginaCenarioFm["blocos"]> 
   const blocos = blocosPeriodoFm(s.entrada), hospital = hospitalBeneFm(s.entrada);
   const linha = (bloco: string, b: { de: string; ate: string; dias: number; arquivo: string }) => ({ bloco, periodo: `${b.de} a ${b.ate}`, dias: `${formatarPrazo(b.dias)} dias`, arquivo: b.arquivo });
   return {
-    contexto: `Período simulado em blocos. Parte 1: os ${PARTES_BLOCOS_FM.outros} enviam o arquivo em ${blocos.length} blocos de cerca de 07 dias, com Arquivo no dia seguinte ao fim de cada bloco. Parte 2: o ${PARTES_BLOCOS_FM.hospital} envia o Período geral, com Arquivo na data limite do cenário (${hospital.arquivo}). Datas e Impactos seguem o Arquivo do cenário.`,
+    contexto: `Período simulado em blocos. Parte 1: os ${PARTES_BLOCOS_FM.outros} enviam o arquivo em ${blocos.length} blocos, com Arquivo no dia seguinte ao fim de cada bloco. Parte 2: o ${PARTES_BLOCOS_FM.hospital} envia o Período geral, com Arquivo na data limite do cenário (${hospital.arquivo}). Datas e Impactos seguem o Arquivo do cenário.`,
     partes: [
       { titulo: `Parte 1 — ${PARTES_BLOCOS_FM.outros}`, linhas: blocos.map((b) => linha(`Bloco ${b.bloco}`, b)) },
       { titulo: `Parte 2 — ${PARTES_BLOCOS_FM.hospital}`, linhas: [linha("Período geral", hospital)] },

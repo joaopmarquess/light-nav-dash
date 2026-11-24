@@ -232,6 +232,23 @@ describe("Controle de Simulações FM", () => {
 });
 
 describe("Simular em blocos", () => {
+  it("quatro blocos explícitos preservam exatamente a divisão atual", () => {
+    const entrada = { ...COMPETENCIA_PADRAO, dias: {} };
+    expect(blocosPeriodoFm({ ...entrada, quantidadeBlocos: 4 })).toEqual(blocosPeriodoFm(entrada));
+    expect(blocosPeriodoFm({ ...entrada, quantidadeBlocos: 4 })).toHaveLength(4);
+  });
+  it("dois blocos unem os grupos 1+2 e 3+4 sem redistribuir dias", () => {
+    expect(blocosPeriodoFm({ ...COMPETENCIA_PADRAO, dias: {}, quantidadeBlocos: 2 })).toEqual([
+      { bloco: 1, de: "20/11/2026", ate: "05/12/2026", dias: 16, arquivo: "06/12/2026" },
+      { bloco: 2, de: "06/12/2026", ate: "19/12/2026", dias: 14, arquivo: "20/12/2026" },
+    ]);
+  });
+  it("mantém a quantidade escolhida após gravar e ler o cenário", () => {
+    const s = novaSimulacaoFm("blocos", "2026-11-24T20:12:00Z", 1, { ...COMPETENCIA_PADRAO, dias: {}, blocos: true, quantidadeBlocos: 2 });
+    const lista = lerSimulacoesFm(JSON.stringify([s]), null, s.criadaEm, () => "novo");
+    expect(lista[0].entrada.quantidadeBlocos).toBe(2);
+    expect(blocosPeriodoFm(lista[0].entrada)).toHaveLength(2);
+  });
   it("splits the default 30-day Período into 4 blocks of about 7 days, from its start to its end", () => {
     const b = blocosPeriodoFm({ ...COMPETENCIA_PADRAO, dias: {} });
     expect(b.map((x) => [x.de, x.ate, x.dias])).toEqual([
