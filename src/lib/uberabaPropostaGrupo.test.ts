@@ -44,8 +44,8 @@ describe("Proposta Empresariais", () => {
     expect(p.venda[1].linhas[0][1]).toBe("131,25");
     expect(p.net[1].linhas[0][1]).toBe("124,69");
   });
-  it("lists Siga then Hunter Bensaúde", () => {
-    expect(p.distribuidores).toEqual(["Siga Soluções", "Hunter Bensaúde após 6 meses"]);
+  it("lists Siga then the Bensaúde own team", () => {
+    expect(p.distribuidores).toEqual(["Siga Soluções", "Equipe própria Bensaúde"]);
   });
   it("shows sale prices for Médias Empresas but no price values for Empresarial", () => {
     expect(p.produtosEmpresariais[0].tabela.linhas[0]).toEqual(["00 a 18", "148,75", "185,93"]);

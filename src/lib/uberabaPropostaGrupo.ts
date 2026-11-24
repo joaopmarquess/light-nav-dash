@@ -54,7 +54,7 @@ export const PROPOSTAS_GRUPO: Record<PropostaGrupoId, DefinicaoGrupo> = {
       "A presente proposta considera a SIGA como responsável pela operação comercial do segmento EMPRESARIAL em Uberaba, observadas as condições e responsabilidades que vierem a ser acordadas entre as partes e formalizadas em instrumento contratual específico.",
     ],
     produtos: ["pceAdm", "pce100"],
-    distribuidores: ["Siga Soluções", "Hunter Bensaúde após 6 meses"],
+    distribuidores: ["Siga Soluções", "Equipe própria Bensaúde"],
     promocao: "Comissionamento Promocional por 6 meses renováveis por mais 6 meses com batimento das seguintes Metas:",
     arquivo: "Proposta_Empresariais_Bensaude_Uberaba.pdf",
   },
