@@ -76,10 +76,17 @@ export const ITENS_CREDENCIAMENTO: Record<TipoQuantidade, ItemCredenciamento[]> 
     { nome: "Psiquiatria" },
     { nome: "Reumatologia" },
     { nome: "Urologia" },
+    { nome: "Psicologia" },
+    { nome: "Fonoaudiologia" },
+    { nome: "Fisioterapia" },
+    { nome: "Acupuntura" },
   ],
   hospitais: [
-    { nome: "Hospital Geral" },
-    { nome: "Hospital Pediátrico" },
+    { nome: "Geral" },
+    { nome: "Pediátrico" },
+    { nome: "Oftalmológico" },
+    { nome: "Cardiológico" },
+    { nome: "Oncológico (Carece de Validação)" },
   ],
   diagnostico: [
     { nome: "Laboratório de Análises Clínicas", guia: ["Serviço de Patologia Clínica – Laboratórios"] },
@@ -130,21 +137,20 @@ export function notasAgrupamento(): string[] {
 }
 
 /** Autorizado começa pelo Limite de cada tipo; valor digitado (inteiro ≥ 0) prevalece. */
-/** Autorizado padrão de Hospitais: Hospital Geral (1) + Hospital Pediátrico (1). */
-export const AUTORIZADO_PADRAO_HOSPITAIS = 2;
+/** Autorizado padrão de Hospitais: cinco tipos, um por item (24/11/2026). */
+export const AUTORIZADO_PADRAO_HOSPITAIS = 5;
 /** Qtde. padrão de Especialidades médicas (pedido de 18/11/2026): 200, no lugar do Limite; a diferença para os itens vai ao Ajuste técnico. */
 export const AUTORIZADO_PADRAO_MEDICOS = 200;
 /** Qtde. padrão de Serviços auxiliares de diagnóstico e terapia (pedido de 19/11/2026): 4, um por item, no lugar do Limite (15). */
 export const AUTORIZADO_PADRAO_DIAGNOSTICO = 4;
 export function linhasQuantidadeCredenciamentos(autorizados: AutorizadosCredenciamento = {}, valores: ValoresCredenciamento = {}) {
   const disponiveis = cenarioCredenciamento("Disponível").grupos;
-  const limites = cenarioCredenciamento("Limite").grupos;
-  const grupos: LinhaQuantidadeCredenciamento[] = disponiveis.map((g, i) => {
-    const limite = g.id === "medicos" ? AUTORIZADO_PADRAO_MEDICOS : g.id === "diagnostico" ? AUTORIZADO_PADRAO_DIAGNOSTICO : limites[i].quantidade;
+  const grupos: LinhaQuantidadeCredenciamento[] = disponiveis.filter((g) => g.id !== "nao-medicos").map((g) => {
+    const limite = g.id === "medicos" ? AUTORIZADO_PADRAO_MEDICOS : AUTORIZADO_PADRAO_DIAGNOSTICO;
     const digitado = autorizados[g.id];
     const autorizado = digitado ?? limite;
     const valor = valores[g.id] ?? VALOR_PADRAO_CREDENCIAMENTO;
-    return { id: g.id, tipo: g.titulo, disponivel: g.quantidade, limite, autorizado, valor, adesao: arred2(autorizado * valor) };
+    return { id: g.id, tipo: g.id === "medicos" ? "Especialidades" : g.titulo, disponivel: g.quantidade, limite, autorizado, valor, adesao: arred2(autorizado * valor) };
   });
   // Hospitais logo após Especialidades médicas; sem Disponível de referência, Autorizado começa pela soma dos itens padrão.
   const limiteHosp = AUTORIZADO_PADRAO_HOSPITAIS;
@@ -177,8 +183,9 @@ export function lerValor(texto: string): number | undefined | null {
 
 /** Ícone Replicar (pedido de 18/11/2026): copia o Valor atual de Especialidades médicas (digitado ou padrão) para todos os tipos. */
 export function replicarValorEspecialidades(valores: ValoresCredenciamento): ValoresCredenciamento {
-  const origem = linhasQuantidadeCredenciamentos({}, valores).linhas.find((l) => l.id === "medicos")!.valor;
-  return Object.fromEntries((["medicos", "hospitais", "diagnostico", "nao-medicos"] as const).map((id) => [id, origem])) as ValoresCredenciamento;
+  const linhas = linhasQuantidadeCredenciamentos({}, valores).linhas;
+  const origem = linhas.find((l) => l.id === "medicos")?.valor ?? VALOR_PADRAO_CREDENCIAMENTO;
+  return Object.fromEntries(linhas.map((l) => [l.id, origem])) as ValoresCredenciamento;
 }
 
 export function carregarValores(): ValoresCredenciamento {

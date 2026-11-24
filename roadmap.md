@@ -69,6 +69,11 @@
 ## Faixas de vidas › Uberaba (24/11/2026)
 - [x] Redefinir PME Administradas para 02–49 e Empresas Médias para 50–99 nas apresentações atuais, preservando preços, totais e fontes históricas; validar propostas.
 
+## Resultados Rede › Credenciamento (24/11/2026)
+- [x] Renomear Especialidades e acrescentar Psicologia, Fonoaudiologia, Fisioterapia e Acupuntura ao final.
+- [x] Definir cinco hospitais padrão e remover o grupo de serviços/profissionais não médicos dos parâmetros.
+- [x] Validar quantidades, totais e apresentação.
+
 ## Financeiro › Inadimplência (23/11/2026)
 - [x] Menu Financeiro (irmão do Control) com a tela Inadimplência: filtros, indicadores e grid em níveis.
 - [x] Ler a tabela contas_a_receber da base externa quando existir; até lá, mostrar o arquivo enviado (gravado na base, acesso pela permissão do menu). Sem botão de importar.

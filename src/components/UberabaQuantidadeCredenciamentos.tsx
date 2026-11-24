@@ -80,7 +80,7 @@ export default function UberabaQuantidadeCredenciamentos() {
               <td className="px-3 py-1.5 text-right">
                 <div className="flex items-center justify-end gap-1">
                 {l.id === "medicos"
-                  ? <Tooltip><TooltipTrigger asChild><Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0" aria-label="Replicar Valor de Especialidades médicas nos demais" onClick={replicarValor}><Copy className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Replicar</TooltipContent></Tooltip>
+                  ? <Tooltip><TooltipTrigger asChild><Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0" aria-label="Replicar Valor de Especialidades nos demais" onClick={replicarValor}><Copy className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Replicar</TooltipContent></Tooltip>
                   : <span aria-hidden className="h-7 w-7 shrink-0" />}
                 <Input inputMode="decimal" aria-label={`Valor — ${l.tipo}`} title="Valor por credenciado, em R$ (apague para restaurar)"
                   value={editandoValor[l.id] ?? (valores[l.id] !== undefined ? valorTexto(valores[l.id]!) : "")} placeholder={valorTexto(l.valor)}

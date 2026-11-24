@@ -23,6 +23,7 @@
 - Store the full institutional Study text in a dedicated data module consumed by Study Home; retain legacy complete-stage content while exposing only the live project presentations, and preserve the internal navigation ID separately from displayed project naming.
 - Test explicit green Uberaba inclusions after fitting to preserve framing and life-based colors.
 - Test Uberaba credentialing reference selection and supplied summaries separately from presentation to preserve quantities and source precedence.
+- Resultados Rede credentialing uses its own tested active groups and defaults; leave institutional reference groups unchanged so parameter edits cannot rewrite historical availability.
 - Keep MAA geometry and area classification in a focused helper, with tests, so map presentation does not change beneficiary counts or geographic membership; simplify display outlines only, classifying cities by the original ring.
 - APB: test Menu tickets/defaults; preview the Strategic PDF itself before download. App code imports source CSVs through tested literal TS copies, never `?raw`, because the dev preloader drops the query and the preview errors.
 - Simplify and round cropped-map exterior and state strokes in projected pixel space only; keep open state runs open and preserve northern attenuation, original fitting and membership.

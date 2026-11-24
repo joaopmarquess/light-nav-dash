@@ -30,11 +30,11 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
     const q = linhasQuantidadeCredenciamentos();
     const l = linhasCondicoesRede(q, {}).map((r) => r.map(semNbsp));
     expect(l.filter((r) => r[2] !== "" || r[0] === "TOTAL").map((r) => r[0])).toEqual([...q.linhas.map((x) => ROTULOS_TIPOS_REDE[x.id] ?? x.tipo), "TOTAL"]);
-    expect(l[0]).toEqual(["Especialidades médicas", "200", "R$ 300,00", "R$ 60.000,00"]);
-    expect(l[1]).toEqual(["Hospitais", "2", "R$ 300,00", "R$ 600,00"]);
+    expect(l[0]).toEqual(["Especialidades", "200", "R$ 300,00", "R$ 60.000,00"]);
+    expect(l[1]).toEqual(["Hospitais", "5", "R$ 300,00", "R$ 1.500,00"]);
     expect(l[l.length - 1][3]).toBe(semNbsp(moedaCredenciamento(q.total.adesao)));
     const editado = linhasCondicoesRede(linhasQuantidadeCredenciamentos({ medicos: 10 }, { medicos: 300 }), {}).map((r) => r.map(semNbsp));
-    expect(editado[0]).toEqual(["Especialidades médicas", "10", "R$ 300,00", "R$ 3.000,00"]);
+    expect(editado[0]).toEqual(["Especialidades", "10", "R$ 300,00", "R$ 3.000,00"]);
   });
   it("explains below Quadro 3 that the projection is estimated, except the fixed installments, within the ATÉ limit", () => {
     expect(NOTA_PROJECAO_REDE).toContain("é estimativa baseada nas premissas desta proposta");
@@ -51,17 +51,17 @@ describe("Proposta de Credenciamento e Gestão de Rede", () => {
   it("heads Quadro 1 with ATÉ, POR ADESÃO and TOTAL", () => {
     expect(COLUNAS_CONDICOES_REDE).toEqual(["TIPO CREDENCIADO", "ATÉ", "POR ADESÃO", "TOTAL"]);
   });
-  it("opens every type item by item except Especialidades médicas", () => {
-    const quadro = quadroCondicoesRede(linhasQuantidadeCredenciamentos(), { "hospitais:Hospital Geral": 3 });
+  it("opens every type item by item except Especialidades", () => {
+    const quadro = quadroCondicoesRede(linhasQuantidadeCredenciamentos(), { "hospitais:Geral": 3 });
     const nomes = quadro.map((l) => l.celulas[0]);
-    expect(nomes.slice(0, 5)).toEqual(["Especialidades médicas", "Hospitais", "Hospital Geral", "Hospital Pediátrico", "Serviços Aux. Diagnóstico"]);
-    expect(nomes).toContain("Serviços Aux. Terapias");
-    expect(quadro[2]).toEqual({ celulas: ["Hospital Geral", "3", "", ""], item: true });
+    expect(nomes.slice(0, 8)).toEqual(["Especialidades", "Hospitais", "Geral", "Pediátrico", "Oftalmológico", "Cardiológico", "Oncológico (Carece de Validação)", "Serviços Aux. Diagnóstico"]);
+    expect(nomes).not.toContain("Serviços Aux. Terapias");
+    expect(quadro[2]).toEqual({ celulas: ["Geral", "3", "", ""], item: true });
     expect(quadro[3].celulas[1]).toBe("1");
     expect(nomes).toContain("Laboratório de Análises Clínicas");
-    expect(nomes).toContain("Psicologia");
+    expect(nomes).not.toContain("Psicologia");
     expect(nomes).not.toContain("Cardiologia*");
-    expect(quadro.filter((l) => l.item)).toHaveLength(10);
+    expect(quadro.filter((l) => l.item)).toHaveLength(9);
   });
   it("adds the Resultado table with estimated lives only in the per-life months", () => {
     const q = linhasQuantidadeCredenciamentos();
