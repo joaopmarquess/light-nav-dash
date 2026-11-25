@@ -26,8 +26,8 @@ const p = percentualSimulacao;
 
 /** Título do relatório e seções, na ordem em que aparecem no PDF. */
 export function topicosMemoriaCalculo(cenarios: CenarioAgenciamento[], nomes: string[]) {
-  return cenarios.flatMap((c, k) => [`${k + 1}. ${c.rotulo}`, `${k + 1}.1. Parâmetros da simulação`,
-    ...relatorioMemoriaCalculo([c], nomes).map((e, i) => `${k + 1}.${i + 2}. ${e.titulo}`), `${k + 1}.6. Premissas`]);
+  return cenarios.flatMap((c, k) => [`${k + 1}. ${c.rotulo}`, `${k + 1}.1. Resumo do Resultado por Ente`, `${k + 1}.2. Parâmetros da simulação`,
+    ...relatorioMemoriaCalculo([c], nomes).map((e, i) => `${k + 1}.${i + 3}. ${e.titulo}`), `${k + 1}.7. Premissas`]);
 }
 
 /**
@@ -119,9 +119,21 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
   // Duas seções, uma por cenário (pedido de 25/11/2026): 1. Contratual e 2. Promocional, cada uma completa.
   const corpo = (cenarios: CenarioAgenciamento[], sec: number) => {
   const bases = cenarios.map(c => c.rotulo.toLowerCase()).join(" e ");
-  // 1. Parâmetros.
+  // 1. Resumo do Resultado por Ente (pedido de 25/11/2026): um quadro por ente, Beneficiário, Operadora, Administradora e Agenciadora, um abaixo do outro.
+  secao(`${sec}.1. Resumo do Resultado por Ente`);
+  for (const ente of relatorioMemoriaCalculo(cenarios, nomes)) {
+    garantir(alturaTabela(ente.indicadores.length + 1));
+    tabela([ente.titulo, "Valor (R$)"],
+      ente.indicadores.map(ind => [
+        { content: textoPdf(ind.label), styles: ind.destaque ? { fontStyle: "bold" } : {} },
+        { content: n(ind.valorExibido), styles: ind.destaque ? { fontStyle: "bold" } : {} },
+      ]),
+      { colunas: { 0: { halign: "left" }, 1: { halign: "right", cellWidth: 45 } } });
+  }
+  // 2. Parâmetros.
+  novaPagina();
   const parametros = parametrosMemoriaCalculo(cenarios, nomes);
-  secao(`${sec}.1. Parâmetros da simulação`);
+  secao(`${sec}.2. Parâmetros da simulação`);
   paragrafo("Valores de cada modalidade usados nas contas abaixo, conforme as tabelas de Resultados Comerciais e as variáveis digitadas na Simulação de resultados.");
   const soma = (f: (x: (typeof parametros)[number]) => number) => parametros.reduce((s, x) => s + f(x), 0);
   const vidasTotal = soma(x => x.vidas);
@@ -177,7 +189,7 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
   relatorioMemoriaCalculo(cenarios, nomes).forEach((ente, idx) => {
     // O título do ente nunca fica sozinho no fim da página: vai junto com o primeiro indicador.
     garantir(13 + alturaIndicador(ente.indicadores[0]));
-    secao(`${sec}.${idx + 2}. ${ente.titulo}`);
+    secao(`${sec}.${idx + 3}. ${ente.titulo}`);
     for (const ind of ente.indicadores) {
       // Indicador inteiro (título, fórmula e contas) na mesma página.
       garantir(alturaIndicador(ind));
@@ -227,7 +239,7 @@ export function buildMemoriaCalculoPdf(timbradoDataUrl: string | null, cenarios:
   });
 
   // 6. Premissas.
-  secao(`${sec}.6. Premissas`);
+  secao(`${sec}.7. Premissas`);
   [
     `Agenciamento Externo: (100% − % Equipe Própria) × percentual ${bases} dos Indicadores variáveis × uma mensalidade de cada venda, pago no mês da venda; custo da OPERADORA e receita da ADMINISTRADORA no PCA e no PME ADM. (02 a 49 vidas) e da AGENCIADORA nas demais modalidades. Os indicadores que dependem dele aparecem uma vez para cada percentual.`,
     "Agenciamento Próprio: % Equipe Própria × % Agenc. Próprio × uma mensalidade de cada venda, igual nos dois cenários; custo da OPERADORA com a equipe própria, sem passar pela AGENCIADORA. Total Agenciamento = Externo + Próprio.",
