@@ -43,29 +43,35 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
   // Dois quadros lado a lado: faixa colorida, nome da tabela, sigla/vidas e Faixa × Enfermaria × Apartamento.
   const GAP = 6;
   const ALTURA_QUADROS = 2 + 15 + 11 * 6.6 + 4;
-  const quadros = (lista: TabelaProdutoGrupo[], avisoPreco?: string) => {
+  const quadros = (lista: TabelaProdutoGrupo[], avisoPreco?: string, compacto = false) => {
     const wQ = lista.length === 1 ? largura : (largura - GAP) / 2;
     const inicio = y;
     let fim = inicio;
     lista.forEach((q, k) => {
       const x = marginL + k * (wQ + GAP);
-      doc.setFillColor(...(avisoPreco ? COR_FRENTE.pceAdm : COR_FRENTE[q.id]));
-      doc.rect(x, inicio, wQ, 2, "F");
-      doc.setFont("helvetica", "bold"); doc.setFontSize(F.quadro); doc.setTextColor(...TINTA);
-      doc.text(textoPdf(q.titulo), x + wQ / 2, inicio + 7, { align: "center", baseline: "middle" });
-      doc.setFont("helvetica", "normal"); doc.setFontSize(F.subtituloQuadro); doc.setTextColor(...SECUNDARIO);
-      doc.text(textoPdf(q.subtitulo), x + wQ / 2, inicio + 12.5, { align: "center", baseline: "middle" });
+      if (compacto) {
+        doc.setFont("helvetica", "bolditalic"); doc.setFontSize(F.subtituloQuadro); doc.setTextColor(...SECUNDARIO);
+        doc.text(textoPdf(q.subtitulo), x, inicio + 3);
+      } else {
+        doc.setFillColor(...(avisoPreco ? COR_FRENTE.pceAdm : COR_FRENTE[q.id]));
+        doc.rect(x, inicio, wQ, 2, "F");
+        doc.setFont("helvetica", "bold"); doc.setFontSize(F.quadro); doc.setTextColor(...TINTA);
+        doc.text(textoPdf(q.titulo), x + wQ / 2, inicio + 7, { align: "center", baseline: "middle" });
+        doc.setFont("helvetica", "normal"); doc.setFontSize(F.subtituloQuadro); doc.setTextColor(...SECUNDARIO);
+        doc.text(textoPdf(q.subtitulo), x + wQ / 2, inicio + 12.5, { align: "center", baseline: "middle" });
+      }
       const bordasFaixa: { x: number; y: number; width: number; height: number }[] = [];
       autoTable(doc, {
         theme: "plain",
-        startY: inicio + 17,
+        startY: inicio + (compacto ? 5 : 17),
         tableWidth: wQ,
         margin: { left: x, right: pageW - x - wQ, top, bottom },
         head: [["FAIXA", "ENFERMARIA", "APARTAMENTO"]],
         body: avisoPreco ? q.linhas.map(([faixa], i) => i === 0
           ? [faixa, { content: textoPdf(avisoPreco), colSpan: 2, rowSpan: q.linhas.length }]
           : [faixa]) : q.linhas,
-        styles: { font: "helvetica", fontSize: 12, cellPadding: { top: 1, bottom: 1, left: 1.5, right: 1.5 }, minCellHeight: 6.6, valign: "middle", textColor: PDF_COLORS.text, halign: "center" },
+        styles: { font: "helvetica", fontSize: compacto ? 11 : 12, cellPadding: { top: compacto ? 0.7 : 1, bottom: compacto ? 0.7 : 1, left: 1.5, right: 1.5 }, minCellHeight: compacto ? 6 : 6.6, valign: "middle", textColor: PDF_COLORS.text, halign: "center" },
+        columnStyles: compacto ? { 0: { cellWidth: wQ / 3 }, 1: { cellWidth: wQ / 3 }, 2: { cellWidth: wQ / 3 } } : undefined,
         headStyles: { fillColor: CABECALHO, textColor: TINTA, fontStyle: "bold", fontSize: F.cabecalhoTabela },
         alternateRowStyles: { fillColor: ZEBRA },
         didDrawCell: (c) => {
@@ -83,9 +89,9 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
       fim = Math.max(fim, fimTabela(inicio));
     });
     doc.setDrawColor(...(avisoPreco ? COR_FRENTE.pceAdm : TINTA)); doc.setLineWidth(avisoPreco ? 0.45 : 0.35);
-    lista.forEach((_, k) => doc.rect(marginL + k * (wQ + GAP), inicio, wQ, fim - inicio, "S"));
+    lista.forEach((_, k) => doc.rect(marginL + k * (wQ + GAP), inicio + (compacto ? 5 : 0), wQ, fim - inicio - (compacto ? 5 : 0), "S"));
     doc.setDrawColor(0);
-    y = fim + 10;
+    y = fim + (compacto ? 4 : 10);
   };
 
   const LINHA_TEXTO = alturaLinha(F.texto);
@@ -111,15 +117,16 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
     y += 6;
   }
   if (p.produtosEmpresariais.length) {
-    p.produtosEmpresariais.forEach((produto, i) => {
-      titulo(i === 0 ? t0 : t1, ALTURA_QUADROS + LINHA_TEXTO * 3 + 6);
-      quadros([produto.tabela], produto.avisoPreco);
-      const percentual = (v: number) => `${v.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%`;
-      texto(`Vitalício: ${percentual(produto.vitalicio)}`);
-      texto(`Comissionamento contratual: ${percentual(produto.contratual)}`);
-      texto(`Comissionamento promocional: ${percentual(produto.promocional)}`);
-      y += 6;
-    });
+    titulo(t0, 150);
+    p.produtosEmpresariais.forEach((produto) => quadros([produto.tabela], produto.avisoPreco, true));
+    doc.addPage(); y = top;
+    titulo(t1, LINHA_TEXTO * 2);
+    if (p.agenciamento) {
+      const percentual = (v: number) => `${v.toLocaleString("pt-BR", { minimumIntegerDigits: 2, maximumFractionDigits: 2 })}%`;
+      item(`Vitalício: ${percentual(p.agenciamento.vitalicio)}`);
+      item(`Comissionamento Contratual: ${percentual(p.agenciamento.contratual)}`);
+    }
+    y += 6;
   } else {
     titulo(t0, ALTURA_QUADROS);
     quadros(p.net);

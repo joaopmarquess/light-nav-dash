@@ -22,7 +22,7 @@ export const TOPICOS_PROPOSTA_GRUPO = ["Tabela Net", "Sugestão de Venda", "Dist
 
 /** Tópicos numerados da proposta: a Introdução (quando houver) vem antes e desloca a numeração. */
 export function topicosGrupo(id: PropostaGrupoId): string[] {
-  const secoes = id === "empresariais" ? ["EMPRESAS MÉDIAS (50 A 99 VIDAS) | TABELA DE VENDA", "EMPRESAS GRANDES (100 OU MAIS VIDAS) | TABELA DE VENDA", "Distribuidores", "Promoção e Metas"] : [...TOPICOS_PROPOSTA_GRUPO];
+  const secoes = id === "empresariais" ? ["Tabela de Venda", "Agenciamento", "Distribuidores", "Expectativas de Metas"] : [...TOPICOS_PROPOSTA_GRUPO];
   const nomes = PROPOSTAS_GRUPO[id].introducao ? ["Introdução", ...secoes] : secoes;
   return nomes.map((t, i) => `${i + 1}. ${t}`);
 }
@@ -50,8 +50,8 @@ export const PROPOSTAS_GRUPO: Record<PropostaGrupoId, DefinicaoGrupo> = {
       "A presente proposta considera a SIGA como responsável pela operação comercial do segmento EMPRESARIAL em Uberaba, observadas as condições e responsabilidades que vierem a ser acordadas entre as partes e formalizadas em instrumento contratual específico.",
     ],
     produtos: ["pceAdm", "pce100"],
-    distribuidores: ["Siga Soluções", "Equipe própria Bensaúde"],
-    promocao: "À Siga Soluções, aplica-se: Comissionamento Promocional por 6 meses renováveis por mais 6 meses com batimento das seguintes Metas:",
+    distribuidores: ["Siga Soluções | Exclusiva no primeiro semestre de 2027", "Equipe própria Bensaúde | Ressalvadas algumas oportunidades a serem destacadas no contrato com a Siga, atuará em conjunto com a Siga a partir do segundo semestre de 2027."],
+    promocao: "O Batimento da meta abaixo, poderá ser premiado conforme poderá ser destacado no contrato com a Siga Soluções.",
     arquivo: "Proposta_Empresariais_Bensaude_Uberaba.pdf",
   },
 };
@@ -67,6 +67,7 @@ export function vidasDaFrente(f: FrenteId, vidas: VidasSimulacao): number {
  * da Simulação de resultados; cada semestre = meta do ano / 2 (ano ímpar: o 2º semestre fica com a vida restante).
  */
 export function metasGrupo(id: PropostaGrupoId, vidas: VidasSimulacao): string[] {
+  if (id === "empresariais") return ["6.000 vidas em 2027"];
   const total = PROPOSTAS_GRUPO[id].produtos.reduce((s, f) => s + vidasDaFrente(f, vidas), 0);
   const primeiro = Math.floor(total / 2);
   const n = (v: number) => v.toLocaleString("pt-BR");
@@ -76,12 +77,12 @@ export function metasGrupo(id: PropostaGrupoId, vidas: VidasSimulacao): string[]
 export type TabelaProdutoGrupo = { id: FrenteId; titulo: string; subtitulo: string; linhas: [string, string, string][] };
 export type ProdutoEmpresarialProposta = {
   tabela: TabelaProdutoGrupo; avisoPreco?: string;
-  vitalicio: number; contratual: number; promocional: number;
 };
 export type PropostaGrupo = {
   id: PropostaGrupoId; nome: string; topicos: string[]; introducao: string[]; sugestaoVenda?: string; net: TabelaProdutoGrupo[]; venda: TabelaProdutoGrupo[];
   distribuidores: string[]; definicoes: Record<string, string>; promocao: string; metas: string[]; arquivo: string;
   produtosEmpresariais: ProdutoEmpresarialProposta[];
+  agenciamento?: { vitalicio: number; contratual: number };
 };
 
 /** Conteúdo da proposta do grupo, sobre os índices, indicadores, nomes e fatores atuais de Resultados Comerciais. */
@@ -96,13 +97,13 @@ export function propostaGrupo(id: PropostaGrupoId, indices: Indices = INDICES_PA
     t.map((l) => [l.faixa, formatarCentavos(l.enfermariaCentavos), formatarCentavos(l.apartamentoCentavos)] as [string, string, string]);
   return {
     id, nome: d.nome, topicos: topicosGrupo(id), introducao: d.introducao ?? [], sugestaoVenda: d.sugestaoVenda, distribuidores: d.distribuidores, definicoes: d.definicoes ?? {}, promocao: d.promocao, metas: metasGrupo(id, vidas), arquivo: d.arquivo,
+    agenciamento: id === "empresariais" ? { vitalicio: 5, contratual: 100 } : undefined,
     net: d.produtos.map((f) => ({ ...cabecalho(f), linhas: linhas(tabelaNet(indices[f], operadoraDe(f, indicadores[f]), fatores[f])) })),
     venda: d.sugestaoVenda ? [] : d.produtos.map((f) => ({ ...cabecalho(f), linhas: linhas(tabelaVenda(indices[f], fatores[f])) })),
     produtosEmpresariais: id === "empresariais" ? d.produtos.map((f) => ({
       tabela: { ...cabecalho(f), linhas: linhas(tabelaVenda(indices[f], fatores[f])).map(([faixa, enf, apt]) =>
         [faixa, f === "pce100" ? "" : enf, f === "pce100" ? "" : apt]) },
       avisoPreco: f === "pce100" ? "A tabela de preços será elaborada pelo Bensaúde com base em estudo técnico da carteira proponente, considerando seus dados, características e perfil de risco." : undefined,
-      vitalicio: indicadores[f].spread, contratual: indicadores[f].contratual, promocional: indicadores[f].promocional,
     })) : [],
   };
 }

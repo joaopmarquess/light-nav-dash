@@ -76,7 +76,7 @@ function elementos(blocos: BlocoPropostaRede[]): (Paragraph | Table)[] {
   blocos.forEach((b, i) => {
     const aposQuadro = blocos[i - 1]?.tipo === "quadro";
     // Cada tópico tem um marcador: o número de página do sumário aponta para ele.
-    if (b.tipo === "topico") out.push(new Paragraph({ keepNext: true, spacing: { before: 200, after: 200 },
+    if (b.tipo === "topico") out.push(new Paragraph({ keepNext: true, pageBreakBefore: b.novaPagina, spacing: { before: 200, after: 200 },
       border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: TINTA, space: 2 } },
       children: [new Bookmark({ id: marcador(nTopico++), children: [new TextRun({ text: b.texto.toUpperCase(), bold: true, size: T.texto, color: TINTA })] })] }));
     else if (b.tipo === "subtopico") out.push(new Paragraph({ keepNext: true, spacing: { before: aposQuadro ? 240 : 120, after: 60 },
@@ -133,7 +133,7 @@ function paginaSumario(sumario: ItemSumario[]): Paragraph[] {
   ];
 }
 
-export function documentoPropostaRede(blocos: BlocoPropostaRede[], timbrado: Uint8Array | null, capa?: { capa: CapaProposta; sumario: ItemSumario[] }, titulo = "Proposta de Credenciamento e Gestão de Rede — Bensaúde|Uberaba"): Document {
+export function documentoPropostaRede(blocos: BlocoPropostaRede[], timbrado: Uint8Array | null, capa?: { capa: CapaProposta; sumario: ItemSumario[]; totalPaginas?: number }, titulo = "Proposta de Credenciamento e Gestão de Rede — Bensaúde|Uberaba"): Document {
   const fundo = () => timbrado ? [new Paragraph({ children: [new ImageRun({
     type: "png", data: timbrado, transformation: { width: 794, height: 1123 },
     floating: { horizontalPosition: { relative: HorizontalPositionRelativeFrom.PAGE, offset: 0 }, verticalPosition: { relative: VerticalPositionRelativeFrom.PAGE, offset: 0 },
@@ -143,7 +143,7 @@ export function documentoPropostaRede(blocos: BlocoPropostaRede[], timbrado: Uin
   const pagina = { size: { width: 11906, height: 16838 }, margin: { top: 2381, bottom: 1417, left: 1020, right: 1020, header: 0, footer: 850 } };
   // Com capa, o total é o desta seção (a capa fica numa seção própria e não conta).
   const rodape = () => new Footer({ children: [new Paragraph({ alignment: AlignmentType.RIGHT,
-    children: [new TextRun({ children: ["Página ", PageNumber.CURRENT, " de ", capa ? PageNumber.TOTAL_PAGES_IN_SECTION : PageNumber.TOTAL_PAGES], size: T.rodape, color: "2D2D2D" })] })] });
+    children: capa?.totalPaginas ? [new TextRun({ text: "Página ", size: T.rodape }), new SimpleField("PAGE", "1"), new TextRun({ text: " de ", size: T.rodape }), new SimpleField("SECTIONPAGES", String(capa.totalPaginas))] : [new TextRun({ children: ["Página ", PageNumber.CURRENT, " de ", capa ? PageNumber.TOTAL_PAGES_IN_SECTION : PageNumber.TOTAL_PAGES], size: T.rodape, color: "2D2D2D" })] })] });
   const conteudo = {
     // Com capa: o sumário abre esta seção como "Página 1 de N" (numeração reiniciada em 1), igual ao PDF.
     properties: { page: capa ? { ...pagina, pageNumbers: { start: 1 } } : pagina },

@@ -245,7 +245,7 @@ export function topicosRedeDesatualizados(e: EstadoTextosRede, dados: DadosRascu
 /** Sequência do documento (modelo do Dênis, 19/11/2026), comum ao PDF e ao Word para os dois nunca divergirem:
  * tópicos 1–3 com seus quadros numerados (Quadro 1, 2, 3), Projeção financeira e Condições Gerais em subtópicos sem número. */
 export type BlocoPropostaRede =
-  | { tipo: "topico"; texto: string }
+  | { tipo: "topico"; texto: string; novaPagina?: boolean }
   | { tipo: "subtopico"; texto: string }
   | { tipo: "rotulo"; texto: string }
   | { tipo: "paragrafo"; texto: string }

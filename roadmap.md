@@ -1,3 +1,6 @@
+## Proposta Empresarial › Base v2 (25/11/2026)
+- [x] Refazer PDF e Word com tabelas juntas, agenciamento 05%/100%, distribuidores e meta anual da base v2; documentos baixados na tela autenticada, validados e conferidos.
+
 ## Proposta Empresarial › Word (25/11/2026)
 - [x] Restaurar a tabela indicativa PJ+ com faixas e aviso de estudo técnico; Word baixado pela tela autenticada, validado e conferido visualmente contra o PDF (20 faixas, 20 preços e 6 percentuais iguais); 43 testes aprovados e demais propostas auditadas.
 
