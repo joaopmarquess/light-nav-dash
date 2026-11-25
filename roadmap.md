@@ -1,3 +1,6 @@
+## Proposta Empresarial › Word (25/11/2026)
+- [x] Restaurar a tabela indicativa PJ+ com faixas e aviso de estudo técnico; Word baixado pela tela autenticada, validado e conferido visualmente contra o PDF (20 faixas, 20 preços e 6 percentuais iguais); 43 testes aprovados e demais propostas auditadas.
+
 ## Laboratory › Simular Datas FM (24/11/2026)
 - [x] Oferecer somente 4 ou 2 blocos; em 2, unir linhas 1+2 e 3+4, com gravação e impressão consistentes (43 testes e conferência na tela).
 

@@ -13,9 +13,7 @@ function tabela(t: TabelaProdutoGrupo, aviso?: string): BlocoPropostaRede[] {
   return [
     { tipo: "subtopico", texto: t.titulo },
     ...(t.subtitulo ? [{ tipo: "rotulo" as const, texto: t.subtitulo }] : []),
-    aviso
-      ? { tipo: "paragrafo", texto: aviso }
-      : { tipo: "quadro", cabecalho: ["FAIXA", "ENFERMARIA", "APARTAMENTO"], linhas: t.linhas, larguras: [1, 1, 1], alinhamentos: ["center", "center", "center"], grupos: false, itens: [], negritoUltima: false, juntos: true },
+    { tipo: "quadro", cabecalho: ["FAIXA", "ENFERMARIA", "APARTAMENTO"], linhas: t.linhas, larguras: [1, 1, 1], alinhamentos: ["center", "center", "center"], grupos: false, itens: [], negritoUltima: false, juntos: true, avisoPrecos: aviso },
   ];
 }
 

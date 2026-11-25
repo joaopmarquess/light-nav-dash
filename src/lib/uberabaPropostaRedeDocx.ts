@@ -2,7 +2,7 @@
 // com o conteúdo de blocosPropostaRede, o mesmo do PDF, para o Word nunca divergir do PDF.
 import {
   AlignmentType, Bookmark, BorderStyle, Document, Footer, Header, HorizontalPositionRelativeFrom, ImageRun, Packer, PageBreak, PageNumber, Paragraph,
-  ShadingType, SimpleField, Tab, TabStopType, Table, TableCell, TableRow, TextRun, TextWrappingType, VerticalAlign, VerticalPositionRelativeFrom, WidthType,
+  ShadingType, SimpleField, Tab, TabStopType, Table, TableCell, TableRow, TextRun, TextWrappingType, VerticalAlign, VerticalMergeType, VerticalPositionRelativeFrom, WidthType,
 } from "docx";
 import { bytesLogo, type CapaProposta, type ItemSumario, type LogoCapa } from "@/lib/pdfCapaProposta";
 import { capaPropostaRede, comporPropostaRedePdf } from "@/lib/uberabaPropostaRedePdf";
@@ -32,13 +32,13 @@ function quadro(q: Extract<BlocoPropostaRede, { tipo: "quadro" }>): Table {
   const celula = (texto: string, c: number, r: number | null) => {
     const cabecalho = r === null, item = r !== null && ehItem(r), ultima = r === q.linhas.length - 1;
     // Quadro 1: traço forte acima de cada tipo e entre o tipo e o seu primeiro item; traço fino entre itens.
-    const topo = cabecalho || r === 0 ? nada : q.grupos && (!item || !ehItem(r! - 1)) ? grosso : fino;
+    const topo = cabecalho || r === 0 ? nada : q.grupos && r !== null && (!item || !ehItem(r - 1)) ? grosso : fino;
     const negrito = cabecalho || (q.grupos ? !item : q.negritoUltima && ultima);
     return new TableCell({
       width: { size: larg[c], type: WidthType.DXA }, verticalAlign: VerticalAlign.CENTER,
-      shading: cabecalho ? { fill: CAB, type: ShadingType.CLEAR, color: "auto" } : r! % 2 === 1 ? { fill: ZEBRA, type: ShadingType.CLEAR, color: "auto" } : undefined,
+      shading: cabecalho ? { fill: CAB, type: ShadingType.CLEAR, color: "auto" } : r !== null && r % 2 === 1 ? { fill: ZEBRA, type: ShadingType.CLEAR, color: "auto" } : undefined,
       margins: { top: 80, bottom: 80, left: item && c === 0 ? 400 : 100, right: 100 },
-      borders: { left: nada, right: nada, top: topo, bottom: ultima ? fim : nada },
+      borders: q.avisoPrecos ? { left: fino, right: fino, top: fino, bottom: fino } : { left: nada, right: nada, top: topo, bottom: ultima ? fim : nada },
       children: [new Paragraph({
         keepNext: q.juntos && !ultima, keepLines: true, alignment: cabecalho ? AlignmentType.CENTER : ALINHA[q.alinhamentos[c]],
         // Marca de parágrafo no tamanho do quadro: células vazias não ficam mais altas que as preenchidas.
@@ -51,7 +51,19 @@ function quadro(q: Extract<BlocoPropostaRede, { tipo: "quadro" }>): Table {
     width: { size: LARGURA, type: WidthType.DXA }, columnWidths: larg,
     rows: [
       new TableRow({ tableHeader: true, cantSplit: true, children: q.cabecalho.map((h, c) => celula(h, c, null)) }),
-      ...q.linhas.map((l, r) => new TableRow({ cantSplit: true, children: l.map((t, c) => celula(t, c, r)) })),
+      ...q.linhas.map((l, r) => new TableRow({ cantSplit: true, children: q.avisoPrecos ? [
+        celula(l[0], 0, r),
+        new TableCell({
+          width: { size: larg.slice(1).reduce((s, v) => s + v, 0), type: WidthType.DXA },
+          columnSpan: q.cabecalho.length - 1,
+          verticalMerge: r === 0 ? VerticalMergeType.RESTART : VerticalMergeType.CONTINUE,
+          verticalAlign: VerticalAlign.CENTER,
+          margins: { top: 80, bottom: 80, left: 100, right: 100 },
+          borders: { left: fino, right: fino, top: fino, bottom: fino },
+          children: [new Paragraph({ keepNext: q.juntos && r < q.linhas.length - 1, keepLines: true, alignment: AlignmentType.CENTER,
+            children: [new TextRun({ text: r === 0 ? q.avisoPrecos : "", size: tamanho, color: TXT })] })],
+        }),
+      ] : l.map((t, c) => celula(t, c, r)) })),
     ],
   });
 }

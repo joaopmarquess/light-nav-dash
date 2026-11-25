@@ -255,6 +255,8 @@ export type BlocoPropostaRede =
     grupos: boolean; itens: number[]; negritoUltima: boolean;
     /** Começa e termina na mesma página, com o seu rótulo. */
     juntos: boolean;
+    /** Aviso comercial ocupa as colunas de preços em todas as faixas, sem substituir a tabela. */
+    avisoPrecos?: string;
   };
 
 export function blocosPropostaRede(
