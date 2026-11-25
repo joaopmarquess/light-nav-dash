@@ -1,3 +1,6 @@
+## Home › Atalhos Laboratory (25/11/2026)
+- [x] Colocar Laboratory primeiro e renomear Res. Comerciais para Proposta Uberaba, preservando destinos e acessos; testes e navegação autenticada conferidos.
+
 ## Proposta Empresarial › Base v2 (25/11/2026)
 - [x] Refazer PDF e Word com tabelas juntas, agenciamento 05%/100%, distribuidores e meta anual da base v2; documentos baixados na tela autenticada, validados e conferidos.
 

@@ -11,7 +11,7 @@ describe("Home shortcut permissions", () => {
     ["Controladoria", "Control · DRE Gerencial PE"],
     ["Demonstrações", "Control · DRE Gerencial PE"],
     ["Proj. Uberaba", "Uberaba Timeline"],
-    ["Res. Comerciais", "Proj. Uberaba · Resultados Comerciais"],
+    ["Proposta Uberaba", "Proj. Uberaba · Resultados Comerciais"],
     ["Laboratory", "Laboratory"],
     ["Proposta APB", "Proposta APB"],
     ["Produtos Lancers", "Produtos Lancers"],
@@ -62,7 +62,7 @@ describe("Home shortcut groups", () => {
       ["Control", ["Controladoria", "Demonstrações", "Bench Contábil"]],
       ["Carteira", ["Movimentação", "Área Geográfica", "Painel", "Bench Vidas"]],
       ["Sinistralidade", ["Período", "Evolução Produtos"]],
-      ["Laboratory", ["Proj. Uberaba", "Res. Comerciais", "Laboratory", "Proposta APB", "Simular Datas FM", "Produtos Lancers"]],
+      ["Laboratory", ["Laboratory", "Proj. Uberaba", "Proposta Uberaba", "Proposta APB", "Simular Datas FM", "Produtos Lancers"]],
     ]);
   });
   it("omits a menu with no permitted shortcut", () => {
