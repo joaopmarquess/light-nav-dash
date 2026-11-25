@@ -12,6 +12,7 @@ import { loadCCatalog, loadCPeriods, loadCQuarter, loadCPlan, quarterQueryKey } 
 import { prepareBenchYears } from "@/control/benchPrefetch";
 import { refreshBenchYears, type BenchRefreshProgress } from "@/control/benchRefresh";
 import BenchRefreshThermometer from "./BenchRefreshThermometer";
+import BenchCAtualizar from "./BenchCAtualizar";
 import { useAuth } from "@/control/useAuth";
 
 export default function BenchC() {
@@ -30,6 +31,7 @@ export default function BenchC() {
   const catalog = useQuery({ queryKey: ["bench-c-catalog"], queryFn: loadCCatalog, staleTime: 3600000, retry: false });
   const periods = useQuery({ queryKey: ["bench-c-periods", year], queryFn: () => loadCPeriods(year), staleTime: 3600000, retry: false });
   const plan = useQuery({ queryKey: ["bench-c-plan"], staleTime: 300000, retry: false, queryFn: loadCPlan });
+  const latest = useQuery({ queryKey: ["bench-c-periods", undefined], queryFn: () => loadCPeriods(), staleTime: 3600000, retry: false });
   const currentYear = periods.data?.year;
   const years = benchYears(periods.data?.years ?? []);
   const quarters = periods.data?.quarters ?? [];
@@ -134,7 +136,7 @@ export default function BenchC() {
         </Popover>
       </div>
       <div role="group" aria-label="Visão" className="flex items-center gap-0.5 rounded-full border border-border bg-card p-1.5 shadow-sm"><span className="px-3 text-sm font-semibold">Visão</span>{(["Contábil", "Gerencial", "Gráfico"] as const).map(mode => <Button key={mode} variant="ghost" aria-pressed={vision === mode} onClick={() => setVision(mode)} className={`h-8 rounded-full ${vision === mode ? "bg-primary text-primary-foreground" : "text-foreground/70"}`}>{mode}</Button>)}</div>
-      <Button variant="ghost" size="icon" disabled={loading || refreshing} title="Atualizar dados da ANS" aria-label="Atualizar dados da ANS" onClick={() => { void refresh(); }}><RefreshCw className={`h-4 w-4 ${loading || refreshing ? "animate-spin motion-reduce:animate-none" : ""}`} /></Button>
+      <BenchCAtualizar disabled={loading || refreshing} ultima={latest.data?.quarters?.length ? { ano: latest.data.year, tri: Math.max(...latest.data.quarters) } : undefined} onAtualizar={() => { void refresh(); }} />
     </div>
     {refreshError && <div role="alert" className="text-sm text-destructive">{refreshError}</div>}
     {refreshing ? <BenchRefreshThermometer progress={refreshProgress} /> : vision === "Gráfico" ? <BenchResultsChart year={year ?? currentYear} quarters={quarters} loading={loading || refreshing} error={calculationError ?? failures[0]?.error?.message} data={!loading && !refreshing ? operatorResults(readyFiles.filter(f => f !== undefined), regs, catalog.data ?? []) : []} /> : failures.length || calculationError ? <div role="alert" className="p-6 text-destructive">Não foi possível carregar Bench C: {calculationError ?? failures[0]?.error?.message}<Button variant="outline" className="ml-3" onClick={() => { failures.forEach(q => { void q.refetch(); }); if (calculationError) queries.forEach(q => { void q.refetch(); }); }}>Tentar novamente</Button></div>
