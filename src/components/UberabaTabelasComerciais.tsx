@@ -9,6 +9,8 @@ import { buildTabelasImpressaoPdf, paginasImpressao } from "@/lib/uberabaTabelas
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import RestaurarPadraoButton from "@/components/RestaurarPadraoButton";
+import GuardarDefaultButton from "@/components/GuardarDefaultButton";
+import { guardarDefaultFrente } from "@/lib/uberabaTabelasComerciais";
 import { colunasConcorrentes, linhasConcorrentesPorFaixa, outrasBensaude, type ValorOutrasBensaude } from "@/lib/concorrentesUberaba";
 import { frenteNoPadrao, restaurarFrentePadrao, FATORES_PADRAO, FATOR_APARTAMENTO_PADRAO, formatarFator, gravarFatores, lerFatores, parseFator, type Fatores, FRENTES_COMERCIAIS, INDICADORES_PADRAO_POR_FRENTE, INDICES_PADRAO, blocosIndicadores, formatarCentavos, formatarPercentual, gravarIndicadores, gravarIndices, gravarPadraoRotulos, gravarRotulos, lerIndicadores, lerIndices, lerPadraoRotulos, lerRotulos, normalizarRotulo, ROTULO_MAX, parseIndicador, parseIndice, tabelaIndexada, tabelaNet, tabelaVenda, operadoraDe, type CampoIndicador, type FrenteId, type Indicadores, type IndicadoresPorFrente, type Indices, type Rotulos, type RotulosPorFrente } from "@/lib/uberabaTabelasComerciais";
 
@@ -308,8 +310,8 @@ const GravarPadrao = ({ f, ativo, onClick }: { f: Frente; ativo: boolean; onClic
   );
 };
 
-const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variaveis, indicadores, onIndicador, rotulos, padroes, onRotulo, onGravarPadrao, modo, onModo, onImprimir, noPadrao, onRestaurar, onComparar, comparando = false }: {
-  modo: ModoPreco; onModo: (m: ModoPreco) => void; onImprimir: () => void; noPadrao: boolean; onRestaurar: () => void; onComparar: () => void; comparando?: boolean;
+const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variaveis, indicadores, onIndicador, rotulos, padroes, onRotulo, onGravarPadrao, modo, onModo, onImprimir, noPadrao, onRestaurar, onComparar, comparando = false, onGuardarDefault }: {
+  modo: ModoPreco; onModo: (m: ModoPreco) => void; onImprimir: () => void; noPadrao: boolean; onRestaurar: () => void; onComparar: () => void; comparando?: boolean; onGuardarDefault?: () => void;
   f: Frente; indice: number; onIndice: (v: number) => void; fator: number; onFator: (v: number) => void; apartamento: ApartamentoToggle; precos: ApartamentoToggle; variaveis: ApartamentoToggle;
   rotulos: Rotulos; padroes: Rotulos; onRotulo: (campo: keyof Rotulos, v: string) => void; onGravarPadrao: () => void;
   indicadores: Indicadores; onIndicador: (campo: CampoIndicador, v: number) => void;
@@ -361,6 +363,7 @@ const Card = ({ f, indice, onIndice, fator, onFator, apartamento, precos, variav
           ))}
         </div>}
       </div>}
+      {!comparando && onGuardarDefault && <GuardarDefaultButton onGuardar={onGuardarDefault} className="px-4 pb-3" />}
     </div>
   );
 };
@@ -441,13 +444,14 @@ const UberabaTabelasComerciais = ({ comparada: comparadaExterna, onComparar }: {
   const [fatores, setFatores] = useState<Fatores>(() => lerFatores());
   const alterarFator = (id: FrenteId, v: number) => setFatores((atual) => { const novo = { ...atual, [id]: v }; gravarFatores(novo); return novo; });
   const alterar = (id: FrenteId, v: number) => setIndices((atual) => { const novo = { ...atual, [id]: v }; gravarIndices(novo); return novo; });
+  const [, setDefaultTick] = useState(0);
   const restaurar = (id: FrenteId) => {
     const novo = restaurarFrentePadrao(id, { indices, fatores, indicadores });
     gravarIndices(novo.indices); gravarFatores(novo.fatores); gravarIndicadores(novo.indicadores);
     setIndices(novo.indices); setFatores(novo.fatores); setIndicadores(novo.indicadores);
   };
   const precosComparacao: ApartamentoToggle = { visivel: true, alternar: () => {} };
-  const cartao = (f: Frente, comparando: boolean) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} fator={fatores[f.id]} onFator={(v) => alterarFator(f.id, v)} apartamento={apartamento} precos={comparando ? precosComparacao : precos} variaveis={variaveis} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} padroes={padroes[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} onGravarPadrao={() => gravarPadrao(f.id)} modo={modo} onModo={setModo} onImprimir={() => setImprimindo(true)} noPadrao={frenteNoPadrao(f.id, { indices, fatores, indicadores })} onRestaurar={() => restaurar(f.id)} onComparar={() => comparar(f.id)} comparando={comparando} />;
+  const cartao = (f: Frente, comparando: boolean) => <Card key={f.id} f={f} indice={indices[f.id]} onIndice={(v) => alterar(f.id, v)} fator={fatores[f.id]} onFator={(v) => alterarFator(f.id, v)} apartamento={apartamento} precos={comparando ? precosComparacao : precos} variaveis={variaveis} indicadores={indicadores[f.id]} onIndicador={(c, v) => alterarIndicador(f.id, c, v)} rotulos={rotulos[f.id]} padroes={padroes[f.id]} onRotulo={(c, v) => alterarRotulo(f.id, c, v)} onGravarPadrao={() => gravarPadrao(f.id)} modo={modo} onModo={setModo} onImprimir={() => setImprimindo(true)} noPadrao={frenteNoPadrao(f.id, { indices, fatores, indicadores })} onRestaurar={() => restaurar(f.id)} onComparar={() => comparar(f.id)} comparando={comparando} onGuardarDefault={() => { guardarDefaultFrente(f.id, { indices, fatores, indicadores }); setDefaultTick((t) => t + 1); }} />;
   return (
     <section className="comercial-presentation" aria-label="Tabelas comerciais">
       {comparada ? (

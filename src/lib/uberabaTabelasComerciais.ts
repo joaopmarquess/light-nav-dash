@@ -1,3 +1,4 @@
+import { comDefaultUsuario, guardarDefaultUsuario, lerDefaultUsuario } from "@/lib/defaultsUsuario";
 // Tabelas comerciais do Modelo de Atuação: cada frente = Referência × índice da frente.
 export const FAIXAS = ["00 a 18", "19 a 23", "24 a 28", "29 a 33", "34 a 38", "39 a 43", "44 a 48", "49 a 53", "54 a 58", "59 ou +"] as const;
 
@@ -87,8 +88,10 @@ export function parseFator(texto: string): number | null {
 export const formatarFator = (f: number) => f.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 });
 
 const CHAVE_FATORES = "uberaba-tabelas-comerciais-fator-apartamento-v1";
+/** Padrões efetivos: os do código, com o que o usuário guardou como novo Default por cima. */
+export const padraoFatores = (): Fatores => comDefaultUsuario(CHAVE_FATORES, { ...FATORES_PADRAO });
 export function lerFatores(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): Fatores {
-  const out = { ...FATORES_PADRAO };
+  const out = padraoFatores();
   try {
     const salvo = JSON.parse(storage?.getItem(CHAVE_FATORES) ?? "null");
     if (!salvo || typeof salvo !== "object") return out;
@@ -127,7 +130,9 @@ const avisarAlteracao = () => {
   queueMicrotask(() => { try { globalThis.dispatchEvent?.(new Event(EVENTO_TABELAS_COMERCIAIS)); } catch { /* sem janela */ } });
 };
 
+export const padraoIndices = (): Indices => comDefaultUsuario(CHAVE, { ...INDICES_PADRAO });
 export function lerIndices(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): Indices {
+  const INDICES_PADRAO = padraoIndices();
   try {
     const salvo = JSON.parse(storage?.getItem(CHAVE) ?? "null");
     if (!salvo || typeof salvo !== "object") return { ...INDICES_PADRAO };
@@ -215,8 +220,14 @@ const FRENTE_IDS: FrenteId[] = PARAMETROS_UBERABA.map((p) => p.id);
 export const indicadoresPadrao = (): IndicadoresPorFrente =>
   Object.fromEntries(FRENTE_IDS.map((id) => [id, { ...INDICADORES_PADRAO_POR_FRENTE[id] }])) as IndicadoresPorFrente;
 
-export function lerIndicadores(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): IndicadoresPorFrente {
+export const padraoIndicadores = (): IndicadoresPorFrente => {
   const out = indicadoresPadrao();
+  const d = lerDefaultUsuario<Partial<IndicadoresPorFrente>>(CHAVE_INDICADORES);
+  if (d) FRENTE_IDS.forEach((id) => { if (d[id]) out[id] = { ...out[id], ...d[id] }; });
+  return out;
+};
+export function lerIndicadores(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): IndicadoresPorFrente {
+  const out = padraoIndicadores();
   try {
     let salvo = JSON.parse(storage?.getItem(CHAVE_INDICADORES) ?? "null");
     const atual = !!salvo && typeof salvo === "object";
@@ -258,15 +269,15 @@ export function gravarIndicadores(v: IndicadoresPorFrente, storage: Pick<Storage
 export type VariaveisFrentes = { indices: Indices; fatores: Fatores; indicadores: IndicadoresPorFrente };
 export function restaurarFrentePadrao(id: FrenteId, v: VariaveisFrentes): VariaveisFrentes {
   return {
-    indices: { ...v.indices, [id]: INDICES_PADRAO[id] },
-    fatores: { ...v.fatores, [id]: FATORES_PADRAO[id] },
-    indicadores: { ...v.indicadores, [id]: { ...INDICADORES_PADRAO_POR_FRENTE[id] } },
+    indices: { ...v.indices, [id]: padraoIndices()[id] },
+    fatores: { ...v.fatores, [id]: padraoFatores()[id] },
+    indicadores: { ...v.indicadores, [id]: { ...padraoIndicadores()[id] } },
   };
 }
 /** A tabela já está toda no padrão (ícone desativado). */
 export function frenteNoPadrao(id: FrenteId, v: VariaveisFrentes): boolean {
-  const p = INDICADORES_PADRAO_POR_FRENTE[id];
-  return v.indices[id] === INDICES_PADRAO[id] && v.fatores[id] === FATORES_PADRAO[id]
+  const p = padraoIndicadores()[id];
+  return v.indices[id] === padraoIndices()[id] && v.fatores[id] === padraoFatores()[id]
     && (Object.keys(p) as CampoIndicador[]).every((c) => v.indicadores[id][c] === p[c]);
 }
 
@@ -359,4 +370,11 @@ export function blocosIndicadores(id: FrenteId, i: Indicadores): BlocoIndicadore
     agenciamento,
     { titulo: "Taxa de adesão", linhas: [{ rotulo: "Percentual", campo: "adesao", valor: i.adesao }] },
   ];
+}
+
+/** Guardar como novo Default (25/11/2026): índice, fator Apartamento e Indicadores atuais da tabela viram o padrão dela neste navegador. */
+export function guardarDefaultFrente(id: FrenteId, v: VariaveisFrentes) {
+  guardarDefaultUsuario(CHAVE, { ...padraoIndices(), [id]: v.indices[id] });
+  guardarDefaultUsuario(CHAVE_FATORES, { ...padraoFatores(), [id]: v.fatores[id] });
+  guardarDefaultUsuario(CHAVE_INDICADORES, { ...padraoIndicadores(), [id]: { ...v.indicadores[id] } });
 }

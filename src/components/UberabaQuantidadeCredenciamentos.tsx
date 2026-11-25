@@ -3,7 +3,8 @@ import { ChevronDown, ChevronRight, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
-import { QUANTIDADE_PADRAO_ITEM, alterarItem, carregarAutorizados, carregarQuantidadesItens, chaveItem, itensExibidos, salvarQuantidadesItens, somaItens, type QuantidadesItens, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento, carregarValores, salvarValores, lerValor, replicarValorEspecialidades, ajusteTecnico, AJUSTE_TECNICO, type ValoresCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
+import GuardarDefaultButton from "@/components/GuardarDefaultButton";
+import { guardarDefaultCredenciamento, QUANTIDADE_PADRAO_ITEM, alterarItem, carregarAutorizados, carregarQuantidadesItens, chaveItem, itensExibidos, salvarQuantidadesItens, somaItens, type QuantidadesItens, lerAutorizado, linhasQuantidadeCredenciamentos, salvarAutorizados, type AutorizadosCredenciamento, carregarValores, salvarValores, lerValor, replicarValorEspecialidades, ajusteTecnico, AJUSTE_TECNICO, type ValoresCredenciamento } from "@/lib/uberabaQuantidadeCredenciamentos";
 
 const numero = (v: number) => v.toLocaleString("pt-BR");
 const moeda = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -132,6 +133,7 @@ export default function UberabaQuantidadeCredenciamentos() {
           </tr>
         </tfoot>
       </table>
+      <GuardarDefaultButton onGuardar={() => guardarDefaultCredenciamento(autorizados, valores, itensQtd)} />
     </div>
   );
 }

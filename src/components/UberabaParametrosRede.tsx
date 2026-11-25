@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { CAMPOS_PARAMETROS_REDE, carregarParametrosRede, lerParametroRede, parametrosRede, salvarParametrosRede, type CampoParametroRede, type ParametrosRede } from "@/lib/uberabaParametrosRede";
+import GuardarDefaultButton from "@/components/GuardarDefaultButton";
+import { guardarDefaultParametrosRede, CAMPOS_PARAMETROS_REDE, carregarParametrosRede, lerParametroRede, parametrosRede, salvarParametrosRede, type CampoParametroRede, type ParametrosRede } from "@/lib/uberabaParametrosRede";
 
 const formatar = (v: number, moeda: boolean) => v.toLocaleString("pt-BR", moeda ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : { maximumFractionDigits: 0 });
 
@@ -19,6 +20,7 @@ export default function UberabaParametrosRede() {
     salvarParametrosRede(proximo);
   };
   return (
+    <div>
     <div className="grid gap-x-6 gap-y-2 sm:grid-cols-4">
       {CAMPOS_PARAMETROS_REDE.map(({ campo, rotulo, moeda, inteiro }) => (
         <label key={campo} className="flex flex-col gap-1 text-sm">
@@ -31,6 +33,8 @@ export default function UberabaParametrosRede() {
             className="h-8 w-36 text-right tabular-nums placeholder:text-foreground" />
         </label>
       ))}
+    </div>
+    <GuardarDefaultButton onGuardar={() => guardarDefaultParametrosRede(digitados)} />
     </div>
   );
 }

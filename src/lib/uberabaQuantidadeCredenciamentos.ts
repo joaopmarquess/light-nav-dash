@@ -1,3 +1,4 @@
+import { comDefaultUsuario, guardarDefaultUsuario, lerDefaultUsuario } from "@/lib/defaultsUsuario";
 /** Credenciamento (Estudo Uberaba › Resultados Rede): Disponível e Limite vêm do helper de credenciamento; Autorizado é editado na tela e gravado neste navegador. */
 import { cenarioCredenciamento, type GrupoCredenciamento } from "@/lib/uberabaCredenciamento";
 
@@ -144,7 +145,10 @@ export const AUTORIZADO_PADRAO_HOSPITAIS = 6;
 export const AUTORIZADO_PADRAO_MEDICOS = 150;
 /** Qtde. padrão de Serviços auxiliares de diagnóstico e terapia (pedido de 19/11/2026): 4, um por item, no lugar do Limite (15). */
 export const AUTORIZADO_PADRAO_DIAGNOSTICO = 4;
-export function linhasQuantidadeCredenciamentos(autorizados: AutorizadosCredenciamento = {}, valores: ValoresCredenciamento = {}) {
+export function linhasQuantidadeCredenciamentos(autorizadosDigitados: AutorizadosCredenciamento = {}, valoresDigitados: ValoresCredenciamento = {}) {
+  // Padrão guardado pelo usuário (Guardar como novo Default) vale para o que não foi digitado.
+  const autorizados = comDefaultUsuario(CHAVE_AUTORIZADOS_CREDENCIAMENTO, autorizadosDigitados);
+  const valores = comDefaultUsuario(CHAVE_VALORES_CREDENCIAMENTO, valoresDigitados);
   const disponiveis = cenarioCredenciamento("Disponível").grupos;
   const grupos: LinhaQuantidadeCredenciamento[] = disponiveis.filter((g) => g.id !== "nao-medicos").map((g) => {
     const limite = g.id === "medicos" ? AUTORIZADO_PADRAO_MEDICOS : AUTORIZADO_PADRAO_DIAGNOSTICO;
@@ -229,7 +233,8 @@ export const chaveItem = (grupo: TipoQuantidade, nome: string) => `${grupo}:${no
 export const QUANTIDADE_PADRAO_ITEM: Record<TipoQuantidade, number> = { medicos: 2, hospitais: 1, diagnostico: 1, "nao-medicos": 1 };
 /** Quantidade do item: a digitada prevalece; sem digitação, o padrão do tipo. */
 export function quantidadeItem(grupo: TipoQuantidade, nome: string, valores: QuantidadesItens) {
-  return valores[chaveItem(grupo, nome)] ?? QUANTIDADE_PADRAO_ITEM[grupo];
+  const k = chaveItem(grupo, nome);
+  return valores[k] ?? lerDefaultUsuario<QuantidadesItens>(CHAVE_QUANTIDADES_ITENS)?.[k] ?? QUANTIDADE_PADRAO_ITEM[grupo];
 }
 /** Soma das quantidades dos itens do tipo (digitadas ou padrão), quantos itens há e quantos foram alterados. */
 export function somaItens(grupo: TipoQuantidade, valores: QuantidadesItens) {
@@ -304,4 +309,13 @@ export function restaurarCredenciamento() {
   salvarLimitesItens({});
   salvarValores({});
   salvarAutorizados({});
+}
+
+/** Guardar como novo Default (25/11/2026): Qtde., Valor e quantidades dos itens atuais viram o padrão neste navegador. */
+export function guardarDefaultCredenciamento(autorizados: AutorizadosCredenciamento, valores: ValoresCredenciamento, itens: QuantidadesItens) {
+  const linhas = linhasQuantidadeCredenciamentos(autorizados, valores).linhas;
+  guardarDefaultUsuario(CHAVE_AUTORIZADOS_CREDENCIAMENTO, Object.fromEntries(linhas.map((l) => [l.id, l.autorizado])));
+  guardarDefaultUsuario(CHAVE_VALORES_CREDENCIAMENTO, Object.fromEntries(linhas.map((l) => [l.id, l.valor])));
+  const tipos: TipoQuantidade[] = ["medicos", "hospitais", "diagnostico", "nao-medicos"];
+  guardarDefaultUsuario(CHAVE_QUANTIDADES_ITENS, Object.fromEntries(tipos.flatMap((g) => itensExibidos(g).map((i) => [chaveItem(g, i.nome), quantidadeItem(g, i.nome, itens)]))));
 }

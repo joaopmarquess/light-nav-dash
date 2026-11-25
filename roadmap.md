@@ -93,3 +93,4 @@
 - [x] Menu Financeiro (irmão do Control) com a tela Inadimplência: filtros, indicadores e grid em níveis.
 - [x] Ler a tabela contas_a_receber da base externa quando existir; até lá, mostrar o arquivo enviado (gravado na base, acesso pela permissão do menu). Sem botão de importar.
 - [x] "L" conta como em aberto; linhas repetidas contam uma vez, com seção "Dobrado" listando esses títulos.
+- [ ] Relatório diário de atividades do período não coberto (até 25/11 manhã)

@@ -1,3 +1,4 @@
+import { comDefaultUsuario, guardarDefaultUsuario, lerDefaultUsuario } from "@/lib/defaultsUsuario";
 /** Parâmetros de Resultados Rede (Estudo Uberaba, pedido de 18/11/2026): variáveis editadas na tela e gravadas neste navegador; vazio restaura o padrão. */
 export type CampoParametroRede = "parcelasFixas" | "iniciarEm" | "valorParcela" | "valorPorVida";
 export type ParametrosRede = Record<CampoParametroRede, number>;
@@ -24,7 +25,7 @@ export function lerParametroRede(texto: string, inteiro: boolean): number | unde
 
 /** Valores efetivos: o digitado prevalece sobre o padrão. */
 export function parametrosRede(digitados: Partial<ParametrosRede> = {}): ParametrosRede {
-  return { ...PARAMETROS_REDE_PADRAO, ...digitados };
+  return { ...PARAMETROS_REDE_PADRAO, ...comDefaultUsuario(CHAVE_PARAMETROS_REDE, digitados) };
 }
 
 export function carregarParametrosRede(): Partial<ParametrosRede> {
@@ -49,4 +50,9 @@ export function salvarParametrosRede(valores: Partial<ParametrosRede>) {
 /** Ícone "Restaurar padrão" (19/11/2026): apaga os valores digitados; os Parâmetros voltam a PARAMETROS_REDE_PADRAO. */
 export function restaurarParametrosRede() {
   salvarParametrosRede({});
+}
+
+/** Guardar como novo Default (25/11/2026): os Parâmetros atuais viram o padrão neste navegador. */
+export function guardarDefaultParametrosRede(digitados: Partial<ParametrosRede>) {
+  guardarDefaultUsuario(CHAVE_PARAMETROS_REDE, parametrosRede(digitados));
 }

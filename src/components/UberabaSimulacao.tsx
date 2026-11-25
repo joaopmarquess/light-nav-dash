@@ -1,5 +1,8 @@
 import { Fragment, useEffect, useMemo, useState, type ReactElement } from 'react';
 import { publicarVidasSimulacao } from '@/lib/uberabaResultadoRede';
+import GuardarDefaultButton from '@/components/GuardarDefaultButton';
+import { guardarDefaultUsuario, lerDefaultUsuario } from '@/lib/defaultsUsuario';
+const CHAVE_DEFAULT_SIMULACAO = 'uberaba.simulacao.configuracoes';
 import { Calculator, ChevronRight, Copy, RotateCcw, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -103,7 +106,9 @@ function useResultadosComerciais() {
 }
 
 export default function UberabaSimulacao() {
-  const [configuracoes, setConfiguracoes] = useState<ConfigSimulacao[]>(() => fonte.padroes.map(c => ({ ...c, ...PADRAO_PARAMETRO })));
+  // Padrões: os do código, ou os guardados pelo botão Guardar como novo Default (25/11/2026), por modalidade.
+  const padroesSimulacao = (): ConfigSimulacao[] => { const g = lerDefaultUsuario<ConfigSimulacao[]>(CHAVE_DEFAULT_SIMULACAO); return fonte.padroes.map(c => ({ ...c, ...PADRAO_PARAMETRO, ...(Array.isArray(g) ? g.find(x => x?.produto_codigo === c.produto_codigo) : undefined) })); };
+  const [configuracoes, setConfiguracoes] = useState<ConfigSimulacao[]>(padroesSimulacao);
   const [vidaText, setVidaText] = useState<Record<string, string>>({});
   // Texto digitado por campo e modalidade (chave `campo:modalidade`).
   const [textos, setTextos] = useState<Record<string, string>>({});
@@ -119,9 +124,9 @@ export default function UberabaSimulacao() {
   const totalVidas = resultados.reduce((total, r) => total + r.anual.vidas, 0);
   const alterar = (codigo: string, patch: Partial<ConfigSimulacao>) => setConfiguracoes(prev => prev.map(c => c.produto_codigo === codigo ? { ...c, ...patch } : c));
   const restaurar = (codigo: string) => {
-    const original = fonte.padroes.find(c => c.produto_codigo === codigo); if (!original) return;
-    alterar(codigo, { ...original, ...PADRAO_PARAMETRO });
-    setTextos(p => ({ ...p, ...Object.fromEntries([...CAMPOS, ...CAMPOS_EQUIPE].map(({ campo }) => [`${campo}:${codigo}`, campoTexto(campo)])) }));
+    const original = padroesSimulacao().find(c => c.produto_codigo === codigo); if (!original) return;
+    alterar(codigo, original);
+    setTextos(p => ({ ...p, ...Object.fromEntries([...CAMPOS, ...CAMPOS_EQUIPE].map(({ campo }) => [`${campo}:${codigo}`, campoTexto(campo, original[campo])])) }));
     setVidaText(p => ({ ...p, [codigo]: String(original.total_vidas) }));
   };
   // Ícone Replicar na linha do PCA: copia o valor dele para as demais modalidades.
@@ -165,6 +170,7 @@ export default function UberabaSimulacao() {
           <td colSpan={8} />
         </tr></tfoot>
       </table></div>
+    <GuardarDefaultButton onGuardar={() => guardarDefaultUsuario(CHAVE_DEFAULT_SIMULACAO, configuracoes)} />
     </section></BlocoRecolhido>
     <BlocoRecolhido titulo="Resultado por Ente" className="mt-4"><div className="space-y-3 p-4">
       <div className="flex items-center justify-between gap-3">
