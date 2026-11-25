@@ -1,5 +1,6 @@
 // Word da Proposta de Credenciamento e Gestão de Rede: segue o modelo do Dênis (Proposta_Rede_Uberaba_v1.docx, 19/11/2026),
 // com o conteúdo de blocosPropostaRede, o mesmo do PDF, para o Word nunca divergir do PDF.
+import { blocosFecho, mesAnoVersao, type FechoProposta } from "@/lib/propostaVersao";
 import {
   AlignmentType, Bookmark, BorderStyle, Document, Footer, Header, HorizontalPositionRelativeFrom, ImageRun, Packer, PageBreak, PageNumber, Paragraph,
   ShadingType, SimpleField, Tab, TabStopType, Table, TableCell, TableRow, TextRun, TextWrappingType, VerticalAlign, VerticalMergeType, VerticalPositionRelativeFrom, WidthType,
@@ -85,6 +86,9 @@ function elementos(blocos: BlocoPropostaRede[]): (Paragraph | Table)[] {
       children: [new TextRun({ text: b.texto, bold: true, italics: true, size: T.rotulo, color: TXT })] }));
     else if (b.tipo === "paragrafo") out.push(new Paragraph({ alignment: AlignmentType.JUSTIFIED, spacing: { before: aposQuadro ? 200 : 0, after: 160, line: 324 },
       children: [new TextRun({ text: b.texto, size: T.texto, color: TXT })] }));
+    else if (b.tipo === "fecho") out.push(
+      new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 400, after: 0 }, children: [new TextRun({ text: b.data, size: T.texto, color: TXT })] }),
+      new Paragraph({ alignment: AlignmentType.JUSTIFIED, spacing: { before: 2400, line: 324 }, children: [new TextRun({ text: b.nota, italics: true, size: T.texto, color: TXT })] }));
     else out.push(quadro(b));
   });
   return out;
@@ -167,9 +171,10 @@ export function documentoPropostaRede(blocos: BlocoPropostaRede[], timbrado: Uin
 
 export async function buildPropostaRedeDocx(
   timbrado: Uint8Array | null, parametros: ParametrosRede = PARAMETROS_REDE_PADRAO, textos: TextosRede | null = null, quantidades: QuantidadesRede = quantidadesRedeAtuais(),
-  logo: LogoCapa | null = null,
+  logo: LogoCapa | null = null, fecho?: FechoProposta,
 ): Promise<Blob> {
   // Mesma capa do PDF; as páginas do sumário vêm da paginação do PDF (o Word as atualiza com F9).
-  const { sumario } = comporPropostaRedePdf(null, parametros, textos, quantidades);
-  return Packer.toBlob(documentoPropostaRede(blocosPropostaRede(parametros, textos, quantidades), timbrado, { capa: capaPropostaRede(logo), sumario }));
+  const { sumario } = comporPropostaRedePdf(null, parametros, textos, quantidades, null, fecho);
+  const blocos = [...blocosPropostaRede(parametros, textos, quantidades), ...blocosFecho(fecho)];
+  return Packer.toBlob(documentoPropostaRede(blocos, timbrado, { capa: capaPropostaRede(logo, fecho ? mesAnoVersao(fecho) : undefined), sumario }));
 }

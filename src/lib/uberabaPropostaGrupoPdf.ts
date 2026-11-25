@@ -6,11 +6,12 @@ import { attachTimbrado } from "@/lib/pdfTimbrado";
 import { inserirCapaESumario, mesAnoCapa, numerarPaginasProposta, type ItemSumario, type LogoCapa } from "@/lib/pdfCapaProposta";
 import { PDF_COLORS, drawSectionTitle } from "@/lib/pdfTheme";
 import { CABECALHO, COR_FRENTE, FONTES_PROPOSTA as F, LINHA, RODAPE, SECUNDARIO, TINTA, ZEBRA, textoPdf } from "@/lib/uberabaPropostaComercialPdf";
+import { desenharFechoPdf, mesAnoVersao, type FechoProposta } from "@/lib/propostaVersao";
 import { type PropostaGrupo, type TabelaProdutoGrupo } from "@/lib/uberabaPropostaGrupo";
 
 const alturaLinha = (pt: number) => pt * 0.3528 * 1.35;
 
-export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string | null, logo: LogoCapa | null = null, aoSumario?: (s: ItemSumario[]) => void): jsPDF {
+export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string | null, logo: LogoCapa | null = null, aoSumario?: (s: ItemSumario[]) => void, fecho?: FechoProposta): jsPDF {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const timbrado = attachTimbrado(doc, timbradoDataUrl);
   const pageW = doc.internal.pageSize.getWidth();
@@ -141,8 +142,9 @@ export function buildPropostaGrupoPdf(p: PropostaGrupo, timbradoDataUrl?: string
   titulo(t3, LINHA_TEXTO * 3);
   texto(p.promocao);
   p.metas.forEach(item);
+  if (fecho) desenharFechoPdf(doc, fecho, { y, top, bottom, marginL, largura, fonte: F.texto, cor: [30, 30, 30], texto: textoPdf });
 
-  const sumario = inserirCapaESumario(doc, { titulo: "Proposta Comercial", subtitulo: `Bensaúde|Uberaba · ${p.nome}`, mesAno: mesAnoCapa(), logo }, topicos,
+  const sumario = inserirCapaESumario(doc, { titulo: "Proposta Comercial", subtitulo: `Bensaúde|Uberaba · ${p.nome}`, mesAno: fecho ? mesAnoVersao(fecho) : mesAnoCapa(), logo }, topicos,
     { tinta: TINTA, secundario: SECUNDARIO, timbrado, topoSumario: top + 2, margem: marginL });
   aoSumario?.(sumario);
   numerarPaginasProposta(doc, (t) => {

@@ -14,6 +14,8 @@ import { FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { buildPropostaGrupoDocx } from "@/lib/uberabaPropostaGrupoDocx";
 import { carregarTimbradoBytes } from "@/lib/uberabaPropostaRedeDocx";
+import PropostaFechoDialog from "@/components/PropostaFechoDialog";
+import type { FechoProposta } from "@/lib/propostaVersao";
 
 type Escolha = PropostaGrupoId | "original";
 
@@ -23,10 +25,12 @@ type Escolha = PropostaGrupoId | "original";
  */
 export default function UberabaPropostaComercialButton() {
   const [aberto, setAberto] = useState<Escolha | null>(null);
+  const [pedindo, setPedindo] = useState<PropostaGrupoId | null>(null);
+  const [fecho, setFecho] = useState<FechoProposta | undefined>();
   const build = async (e: Escolha) => {
     const [timbrado, logo] = [await loadTimbrado(), await carregarLogoBensaude()];
     if (e === "original") return buildPropostaComercialPdf(timbrado, lerIndices(), lerIndicadores(), lerRotulos(), lerFatores(), null, logo);
-    return buildPropostaGrupoPdf(propostaGrupo(e, lerIndices(), lerIndicadores(), lerRotulos(), lerFatores(), lerVidasSimulacao()), timbrado, logo);
+    return buildPropostaGrupoPdf(propostaGrupo(e, lerIndices(), lerIndicadores(), lerRotulos(), lerFatores(), lerVidasSimulacao()), timbrado, logo, undefined, fecho);
   };
   const [gerandoWord, setGerandoWord] = useState(false);
   // Word com o mesmo conteúdo do PDF (pedido de 24/11/2026); a Original não tem versão Word.
@@ -34,7 +38,7 @@ export default function UberabaPropostaComercialButton() {
     setGerandoWord(true);
     try {
       const p = propostaGrupo(e, lerIndices(), lerIndicadores(), lerRotulos(), lerFatores(), lerVidasSimulacao());
-      const blob = await buildPropostaGrupoDocx(p, await carregarTimbradoBytes(), await carregarLogoBensaude());
+      const blob = await buildPropostaGrupoDocx(p, await carregarTimbradoBytes(), await carregarLogoBensaude(), fecho);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -53,13 +57,15 @@ export default function UberabaPropostaComercialButton() {
       {BOTOES_PROPOSTA_COMERCIAL.map((b) => (
         <Tooltip key={b.id}>
           <TooltipTrigger asChild>
-            <Button variant="outline" size="sm" className="h-9 px-3" aria-label={b.nome} onClick={() => setAberto(b.id)}>
+            <Button variant="outline" size="sm" className="h-9 px-3" aria-label={b.nome} onClick={() => (b.id === "original" ? (setFecho(undefined), setAberto("original")) : setPedindo(b.id))}>
               {b.rotulo}
             </Button>
           </TooltipTrigger>
           <TooltipContent>{b.nome}</TooltipContent>
         </Tooltip>
       ))}
+      <PropostaFechoDialog id={`comercial.${pedindo ?? ""}`} aberto={!!pedindo} onCancelar={() => setPedindo(null)}
+        onConfirmar={(f) => { setFecho(f); setAberto(pedindo); setPedindo(null); }} />
       {aberto && createPortal(
         <PdfPreview
           key={aberto}

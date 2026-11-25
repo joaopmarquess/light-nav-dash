@@ -249,6 +249,7 @@ export type BlocoPropostaRede =
   | { tipo: "subtopico"; texto: string }
   | { tipo: "rotulo"; texto: string }
   | { tipo: "paragrafo"; texto: string }
+  | { tipo: "fecho"; data: string; nota: string }
   | {
     tipo: "quadro"; cabecalho: string[]; linhas: string[][]; larguras: number[]; alinhamentos: ("left" | "center" | "right" | "justify")[];
     /** Quadro 1: tipos em negrito separados por traço forte, itens abaixo de cada tipo; letra menor. */

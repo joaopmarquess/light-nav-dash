@@ -11,17 +11,21 @@ import { buildPropostaRedePdf } from "@/lib/uberabaPropostaRedePdf";
 import { carregarLogoBensaude } from "@/lib/pdfCapaProposta";
 import { quantidadesRedeAtuais } from "@/lib/uberabaPropostaRede";
 import { buildPropostaRedeDocx, carregarTimbradoBytes } from "@/lib/uberabaPropostaRedeDocx";
+import PropostaFechoDialog from "@/components/PropostaFechoDialog";
+import type { FechoProposta } from "@/lib/propostaVersao";
 
 /** Ícone "Gerar Proposta de Credenciamento e Gestão de Rede" (Resultados Rede): Condições Rede, Parâmetros atuais e os textos fixos do modelo (sugestão por IA retirada em 19/11/2026). */
 export default function UberabaPropostaRedeButton() {
   const [aberto, setAberto] = useState(false);
-  const abrir = () => setAberto(true);
+  const [pedindo, setPedindo] = useState(false);
+  const [fecho, setFecho] = useState<FechoProposta | undefined>();
+  const abrir = () => setPedindo(true);
   const [gerandoWord, setGerandoWord] = useState(false);
   // Word com os mesmos textos, quadros e Parâmetros atuais do PDF (pedido de 19/11/2026).
   const gerarWord = async () => {
     setGerandoWord(true);
     try {
-      const blob = await buildPropostaRedeDocx(await carregarTimbradoBytes(), parametrosRede(carregarParametrosRede()), null, quantidadesRedeAtuais(), await carregarLogoBensaude());
+      const blob = await buildPropostaRedeDocx(await carregarTimbradoBytes(), parametrosRede(carregarParametrosRede()), null, quantidadesRedeAtuais(), await carregarLogoBensaude(), fecho);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -45,9 +49,11 @@ export default function UberabaPropostaRedeButton() {
         </TooltipTrigger>
         <TooltipContent>Gerar Proposta de Credenciamento e Gestão de Rede</TooltipContent>
       </Tooltip>
+      <PropostaFechoDialog id="rede" aberto={pedindo} onCancelar={() => setPedindo(false)}
+        onConfirmar={(f) => { setFecho(f); setPedindo(false); setAberto(true); }} />
       {aberto && createPortal(
         <PdfPreview
-          build={async () => buildPropostaRedePdf(await loadTimbrado(), parametrosRede(carregarParametrosRede()), null, quantidadesRedeAtuais(), await carregarLogoBensaude())}
+          build={async () => buildPropostaRedePdf(await loadTimbrado(), parametrosRede(carregarParametrosRede()), null, quantidadesRedeAtuais(), await carregarLogoBensaude(), fecho)}
           fileName="Proposta_Credenciamento_Gestao_Rede_Bensaude_Uberaba.pdf"
           onClose={() => setAberto(false)}
           acoesExtras={

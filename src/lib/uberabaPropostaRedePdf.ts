@@ -7,6 +7,7 @@ import { attachTimbrado } from "@/lib/pdfTimbrado";
 import { inserirCapaESumario, mesAnoCapa, numerarPaginasProposta, type CapaProposta, type ItemSumario, type LogoCapa } from "@/lib/pdfCapaProposta";
 import { drawSectionTitle } from "@/lib/pdfTheme";
 import { CABECALHO, LINHA, RODAPE, SECUNDARIO, TINTA, ZEBRA, textoPdf } from "@/lib/uberabaPropostaComercialPdf";
+import { desenharFechoPdf, mesAnoVersao, type FechoProposta } from "@/lib/propostaVersao";
 import { paragrafosDe } from "@/lib/uberabaPropostaTextos";
 import { PARAMETROS_REDE_PADRAO, type ParametrosRede } from "@/lib/uberabaParametrosRede";
 import {
@@ -38,15 +39,15 @@ export function capaPropostaRede(logo: LogoCapa | null = null, mesAno: string = 
 
 export function buildPropostaRedePdf(
   timbradoDataUrl?: string | null, parametros: ParametrosRede = PARAMETROS_REDE_PADRAO, textos: TextosRede | null = null,
-  quantidades: QuantidadesRede = quantidadesRedeAtuais(), logo: LogoCapa | null = null,
+  quantidades: QuantidadesRede = quantidadesRedeAtuais(), logo: LogoCapa | null = null, fecho?: FechoProposta,
 ): jsPDF {
-  return comporPropostaRedePdf(timbradoDataUrl, parametros, textos, quantidades, logo).doc;
+  return comporPropostaRedePdf(timbradoDataUrl, parametros, textos, quantidades, logo, fecho).doc;
 }
 
 /** PDF com capa e sumário; devolve também o sumário com as páginas finais (o Word usa as mesmas páginas). */
 export function comporPropostaRedePdf(
   timbradoDataUrl?: string | null, parametros: ParametrosRede = PARAMETROS_REDE_PADRAO, textos: TextosRede | null = null,
-  quantidades: QuantidadesRede = quantidadesRedeAtuais(), logo: LogoCapa | null = null,
+  quantidades: QuantidadesRede = quantidadesRedeAtuais(), logo: LogoCapa | null = null, fecho?: FechoProposta,
 ): { doc: jsPDF; sumario: ItemSumario[] } {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const timbrado = attachTimbrado(doc, timbradoDataUrl);
@@ -173,8 +174,9 @@ export function comporPropostaRedePdf(
     else if (b.tipo === "quadro") tabela(b, blocos[i - 1]?.tipo === "rotulo" ? (blocos[i - 1] as { texto: string }).texto : null);
     // O rótulo é desenhado junto com o seu quadro, para nunca ficar sozinho no fim da página.
   });
+  if (fecho) desenharFechoPdf(doc, fecho, { y, top, bottom, marginL, largura: LARGURA, fonte: F.texto, cor: TEXTO, texto: textoPdf });
 
-  const sumario = inserirCapaESumario(doc, capaPropostaRede(logo), topicos.map((t) => ({ ...t, titulo: textoPdf(t.titulo) })),
+  const sumario = inserirCapaESumario(doc, capaPropostaRede(logo, fecho ? mesAnoVersao(fecho) : undefined), topicos.map((t) => ({ ...t, titulo: textoPdf(t.titulo) })),
     { tinta: TINTA, secundario: SECUNDARIO, timbrado, topoSumario: top + 2, margem: marginL });
   // A capa não conta: o sumário é a "Página 1 de N", com a mesma numeração do sumário.
   numerarPaginasProposta(doc, (texto) => {

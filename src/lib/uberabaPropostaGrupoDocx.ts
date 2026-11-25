@@ -5,6 +5,7 @@ import { mesAnoCapa, type ItemSumario, type LogoCapa } from "@/lib/pdfCapaPropos
 import { type PropostaGrupo, type TabelaProdutoGrupo } from "@/lib/uberabaPropostaGrupo";
 import { buildPropostaGrupoPdf } from "@/lib/uberabaPropostaGrupoPdf";
 import { documentoPropostaRede } from "@/lib/uberabaPropostaRedeDocx";
+import { blocosFecho, mesAnoVersao, type FechoProposta } from "@/lib/propostaVersao";
 import { type BlocoPropostaRede } from "@/lib/uberabaPropostaRede";
 
 const percentual = (v: number) => `${v.toLocaleString("pt-BR", { minimumIntegerDigits: 2, maximumFractionDigits: 2 })}%`;
@@ -45,10 +46,10 @@ export function blocosPropostaGrupo(p: PropostaGrupo): BlocoPropostaRede[] {
   return b;
 }
 
-export async function buildPropostaGrupoDocx(p: PropostaGrupo, timbrado: Uint8Array | null, logo: LogoCapa | null = null): Promise<Blob> {
+export async function buildPropostaGrupoDocx(p: PropostaGrupo, timbrado: Uint8Array | null, logo: LogoCapa | null = null, fecho?: FechoProposta): Promise<Blob> {
   // Páginas do sumário vêm da paginação do PDF (o Word as atualiza com F9).
   let sumario: ItemSumario[] = [];
-  const pdf = buildPropostaGrupoPdf(p, null, null, (s) => { sumario = s; });
-  const capa = { titulo: "Proposta Comercial", subtitulo: `Bensaúde|Uberaba · ${p.nome}`, mesAno: mesAnoCapa(), logo };
-  return Packer.toBlob(documentoPropostaRede(blocosPropostaGrupo(p), timbrado, { capa, sumario, totalPaginas: pdf.getNumberOfPages() - 1 }, `Proposta Comercial — Bensaúde|Uberaba · ${p.nome}`));
+  const pdf = buildPropostaGrupoPdf(p, null, null, (s) => { sumario = s; }, fecho);
+  const capa = { titulo: "Proposta Comercial", subtitulo: `Bensaúde|Uberaba · ${p.nome}`, mesAno: fecho ? mesAnoVersao(fecho) : mesAnoCapa(), logo };
+  return Packer.toBlob(documentoPropostaRede([...blocosPropostaGrupo(p), ...blocosFecho(fecho)], timbrado, { capa, sumario, totalPaginas: pdf.getNumberOfPages() - 1 }, `Proposta Comercial — Bensaúde|Uberaba · ${p.nome}`));
 }
