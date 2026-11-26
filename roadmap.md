@@ -1,3 +1,6 @@
+## Bench Contábil › Celular (26/11/2026)
+- [x] Adaptar operadoras, anos, trimestres, indicadores e detalhes para celular, reutilizando os dados e preservando o computador; 71 testes e conferência autenticada em 390/360 px, com resultado, faturamento e sinistralidade iguais ao computador.
+
 ## DRE › IA (26/11/2026)
 - [x] Criar chat como IA · Inadimplência com cubos DRE e Contábil (icontabil), consultas testadas e validação autenticada: resultado e margem iguais à tela, maiores contas e restauração da conversa.
 

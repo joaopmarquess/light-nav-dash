@@ -1,4 +1,5 @@
 - Bench Contábil uses official ANS quarterly files, tested 9D closing-balance aggregation and consecutive-quarter movements; never substitute legacy balances or count synthetic accounts twice.
+- Bench mobile is a presentation mode of BenchC, sharing queries, caches, operators, classification and updates with desktop; tested benchCelular filters the same rows by quarter and groups each hierarchy once, so mobile never duplicates accounting logic or loads another source.
 - Reuse parameterized DRETrial for quarterly views; the main DRE Mensal/Trimestral columns (closed calendar quarters only) come from tested dreTrimestres helpers; tested expansion and margin helpers preserve default Demonstrations and Historical DRE behavior.
 - Derive Bench accounting/management classification, revenue and graph results through shared tested helpers so switching views never changes totals or performs extra financial queries.
 - Bench loads only the shared Hostinger chart through authenticated bench-c; fixed official URLs and validated claims protect proxy access, and owner-scoped Cloud caching keeps sessions isolated.
