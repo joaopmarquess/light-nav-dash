@@ -4,6 +4,7 @@ import { somarTotaisMovimentacao, type TotaisMovimentacao } from "@/lib/moviment
 import { AvisoErroDados } from "@/components/AvisoErroDados";
 import { ChevronRight } from "lucide-react";
 import { periodoHomeCelular } from "./homeCelularPeriodo";
+import { resumoMovimentacao } from "@/lib/movimentacaoResumo";
 
 // Home de celular: movimentação desde 01/01/2026 até hoje e vidas ativas nessa data.
 type App = { id: string; label: string; icon: React.ComponentType<{ className?: string }> };
@@ -26,6 +27,7 @@ export default function HomeCelular({ apps, nome, onAbrir }: { apps: App[]; nome
     });
   }, [tick, p.de, p.ate]);
   const n = (v: number | null | undefined) => (v == null ? "…" : v.toLocaleString("pt-BR"));
+  const crescimento = t ? resumoMovimentacao(t.e, t.s, t.r, t.tp, t.tm).crescimento : null;
   const card = (rotulo: string, valor: string, tom = "text-foreground") => (
     <div className="rounded-lg border border-border bg-card p-3">
       <p className="text-xs text-muted-foreground">{rotulo}</p>
@@ -43,6 +45,7 @@ export default function HomeCelular({ apps, nome, onAbrir }: { apps: App[]; nome
           <div className="col-span-2">{card("Vidas ativas atuais", n(vidas), "text-primary")}</div>
           {card("Vendas", n(t?.e))}
           {card("Cancelamentos", n(t?.s), "text-destructive")}
+          <div className="col-span-2">{card("Crescimento", n(crescimento), crescimento !== null && crescimento < 0 ? "text-destructive" : "text-primary")}</div>
         </div>
       )}
       <div>
