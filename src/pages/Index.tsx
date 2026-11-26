@@ -1,3 +1,4 @@
+import FacchiniSimulador from "@/components/FacchiniSimulador";
 import CarteiraTrial from "@/components/CarteiraTrial";
 import CarteiraTrialGeo from "@/components/CarteiraTrialGeo";
 import CarteiraTrialMov from "@/components/CarteiraTrialMov";
@@ -603,6 +604,8 @@ const Index = () => {
             <CtrlDashboards />
           ) : active === "Control · Slides Simulação" ? (
             <div className="h-[calc(100vh-9rem)] min-h-0"><Orcamento2027Dre /></div>
+          ) : active === "Facchini" ? (
+            <FacchiniSimulador />
           ) : active === "Slides Simulador 2027" ? (
             <div className="h-[calc(100vh-9rem)] min-h-0"><CtrlSlidesSimulacao key="lab" slides={SLIDES_SIMULADOR_2027} /></div>
           ) : active === "Control · Orçamento 2027" ? (

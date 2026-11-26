@@ -1,4 +1,4 @@
-import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree, ArrowRightLeft, Map as MapIcon, CalendarRange, Layers, Tags, LogIn, LogOut, Table2, FileBarChart2, Presentation, Wallet, Landmark, AlertTriangle } from "lucide-react";
+import { Home, TrendingUp, FileText, BarChart3, LayoutDashboard, Settings, Building2, Coins, Percent, Users, UserCheck, Stethoscope, CalendarCheck, Search, Trophy, DollarSign, FlaskConical, ListTree, ArrowRightLeft, Map as MapIcon, CalendarRange, Layers, Tags, LogIn, LogOut, Table2, FileBarChart2, Presentation, Wallet, Landmark, AlertTriangle, Calculator } from "lucide-react";
 import { BENCH_SHORT_TEXT, DRE_MENU_NAME, SLIDES_SHORT_TEXT } from "@/control/dreLabels";
 export type MenuItem = {
   icon: React.ComponentType<{ className?: string }>;
@@ -111,6 +111,7 @@ export const labItems: MenuItem[] = [
     icon: FileText,
     label: "Outros",
     children: [
+      { icon: Calculator, label: "Facchini" },
       { icon: CalendarCheck, label: "APB" },
       { icon: CalendarCheck, label: "APB Top10" },
       { icon: CalendarCheck, label: "APB Faturas" },

@@ -226,6 +226,197 @@ export type Database = {
         }
         Relationships: []
       }
+      facchini_empresas: {
+        Row: {
+          agente_codigo: string | null
+          agente_nome: string | null
+          cnpj: string | null
+          created_at: string
+          created_by: string
+          data_base: string | null
+          id: string
+          nome_fantasia: string | null
+          numero_proposta: string | null
+          observacoes: string | null
+          razao_social: string
+          responsavel: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agente_codigo?: string | null
+          agente_nome?: string | null
+          cnpj?: string | null
+          created_at?: string
+          created_by?: string
+          data_base?: string | null
+          id?: string
+          nome_fantasia?: string | null
+          numero_proposta?: string | null
+          observacoes?: string | null
+          razao_social: string
+          responsavel?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agente_codigo?: string | null
+          agente_nome?: string | null
+          cnpj?: string | null
+          created_at?: string
+          created_by?: string
+          data_base?: string | null
+          id?: string
+          nome_fantasia?: string | null
+          numero_proposta?: string | null
+          observacoes?: string | null
+          razao_social?: string
+          responsavel?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      facchini_historico: {
+        Row: {
+          acao: string
+          created_at: string
+          detalhe: Json | null
+          id: string
+          simulacao_id: string
+          usuario_id: string
+        }
+        Insert: {
+          acao: string
+          created_at?: string
+          detalhe?: Json | null
+          id?: string
+          simulacao_id: string
+          usuario_id?: string
+        }
+        Update: {
+          acao?: string
+          created_at?: string
+          detalhe?: Json | null
+          id?: string
+          simulacao_id?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facchini_historico_simulacao_id_fkey"
+            columns: ["simulacao_id"]
+            isOneToOne: false
+            referencedRelation: "facchini_simulacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      facchini_simulacoes: {
+        Row: {
+          created_at: string
+          created_by: string
+          dados: Json
+          empresa_id: string | null
+          etapa: number
+          id: string
+          nome: string
+          resultados: Json
+          status: string
+          tabela_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          dados?: Json
+          empresa_id?: string | null
+          etapa?: number
+          id?: string
+          nome: string
+          resultados?: Json
+          status?: string
+          tabela_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          dados?: Json
+          empresa_id?: string | null
+          etapa?: number
+          id?: string
+          nome?: string
+          resultados?: Json
+          status?: string
+          tabela_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facchini_simulacoes_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "facchini_empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "facchini_simulacoes_tabela_id_fkey"
+            columns: ["tabela_id"]
+            isOneToOne: false
+            referencedRelation: "facchini_tabelas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      facchini_tabelas: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          fonte: string | null
+          id: string
+          nome: string
+          observacoes: string | null
+          produto: string
+          status: string
+          updated_at: string
+          valores: number[]
+          versao: number
+          vigencia_final: string | null
+          vigencia_inicial: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          fonte?: string | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          produto?: string
+          status?: string
+          updated_at?: string
+          valores: number[]
+          versao?: number
+          vigencia_final?: string | null
+          vigencia_inicial?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          fonte?: string | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          produto?: string
+          status?: string
+          updated_at?: string
+          valores?: number[]
+          versao?: number
+          vigencia_final?: string | null
+          vigencia_inicial?: string | null
+        }
+        Relationships: []
+      }
       financeiro_contas_receber: {
         Row: {
           arquivo: string | null
