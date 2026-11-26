@@ -1,6 +1,8 @@
 import CarteiraTrial from "@/components/CarteiraTrial";
 import CarteiraTrialGeo from "@/components/CarteiraTrialGeo";
 import CarteiraTrialMov from "@/components/CarteiraTrialMov";
+import { Home as HomeIcon } from "lucide-react";
+import HomeCelular from "@/components/HomeCelular";
 import MovimentacaoCelular from "@/components/MovimentacaoCelular";
 import { useIsMobile } from "@/hooks/use-mobile";
 import EvolucaoProdutos from "@/components/EvolucaoProdutos";
@@ -228,6 +230,9 @@ const Index = () => {
             <SheetTitle className="text-base">Modo celular</SheetTitle>
           </div>
           <nav className="p-3 space-y-1">
+            <button onClick={() => { setActiveState("Home"); setMenuCelular(false); }}
+              className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium ${!telaCelular ? "bg-accent text-primary" : "text-foreground/70"}`}>
+              <HomeIcon className="h-4 w-4" />Home</button>
             {appsCel.map(a => <button key={a.id} onClick={() => { setActiveState(a.id); setMenuCelular(false); }}
               className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium ${active === a.id ? "bg-accent text-primary" : "text-foreground/70"}`}>
               <a.icon className="h-4 w-4" />{a.label}</button>)}
@@ -479,12 +484,7 @@ const Index = () => {
         </header>
 
         {celular ? <main className="flex-1 min-h-0 overflow-hidden">
-          {accessLoading ? <p className="p-4 text-sm text-muted-foreground">Carregando acessos…</p> : telaCelular ? <MovimentacaoCelular /> : (
-            <div className="p-4 space-y-2">
-              <p className="text-sm text-muted-foreground">Escolha um app de celular:</p>
-              {appsCel.map(a => <Button key={a.id} variant="outline" className="w-full justify-start gap-3" onClick={() => setActiveState(a.id)}><a.icon className="h-4 w-4" />{a.label}</Button>)}
-            </div>
-          )}
+          {accessLoading ? <p className="p-4 text-sm text-muted-foreground">Carregando acessos…</p> : telaCelular ? <MovimentacaoCelular /> : <HomeCelular apps={appsCel} nome={nome} onAbrir={setActiveState} />}
         </main> : <main className={`flex-1 min-h-0 overflow-hidden flex ${LAB_IDS.has(active) ? "flex-row gap-4" : "flex-col"} ${LAB_IDS.has(active) ? "py-8 pl-2 pr-8" : active === "Carteira · Bench Vidas" ? "p-3 sm:p-8" : active === "Carteira · Área Geográfica" ? "p-3 sm:p-4" : "p-8"}`}>
           {LAB_IDS.has(active) && (
             <LaboratoryNav items={visibleLabs} active={active} canHome={can("Laboratory")} onSelect={setActive} onMenuOpenChange={setLabMenuAberto} />
