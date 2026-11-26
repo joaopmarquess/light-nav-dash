@@ -18,8 +18,9 @@ export function movimentoDaView(r: RegistroViewAssistencial, indice: number): Mo
 export type FiltroAssistencial = { tipo?: string; executor?: string; recebedor?: string; guia?: string };
 export type NoAssistencial = { chave: string; nome: string; filtro: FiltroAssistencial; valor: number; quantidade: number; percentual: number; filhos: NoAssistencial[] };
 export const HOSPITAL_BENE = "HOSP BENEF PORTUGUESA DE S J RIO PRETO";
-// Preserva a classificação exata das telas assistenciais existentes.
-export const tipoExecutor = (r: MovimentoAssistencial) => r.dscrdexe === HOSPITAL_BENE ? "É Benê" : "Não é Benê";
+// Benê = executor código 924 (confirmado pelo Dênis); o nome antigo exato segue aceito.
+export const CODIGO_BENE = "924";
+export const tipoExecutor = (r: MovimentoAssistencial) => String(r.cdcrdexe ?? "").trim() === CODIGO_BENE || r.dscrdexe === HOSPITAL_BENE ? "É Benê" : "Não é Benê";
 export const chaveCredenciado = (codigo: string | number | null, nome: string | null) => codigo !== null && String(codigo) !== "0" ? `codigo:${codigo}` : `nome:${nome ?? ""}`;
 export const tipoGuia = (r: MovimentoAssistencial) => r.catipgui?.trim() || "Sem tipo de guia informado";
 export const valorAssistencial = (r: MovimentoAssistencial) => Number(r.vrevt) || 0;

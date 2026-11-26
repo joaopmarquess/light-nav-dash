@@ -16,6 +16,8 @@ describe("Análise de Despesas Assistenciais", () => {
   it("preserva a classificação Benê existente baseada no executor", () => {
     expect(tipoExecutor(row({}))).toBe("É Benê");
     expect(tipoExecutor(row({ dscrdexe: "REDE", dscrdrec: HOSPITAL_BENE }))).toBe("Não é Benê");
+    expect(tipoExecutor(row({ cdcrdexe: 924, dscrdexe: "ASSOCIACAO PORTUGUESA DE BENEFICENCIA DE SAO JOSE DO RIO PRETO" }))).toBe("É Benê");
+    expect(tipoExecutor(row({ cdcrdexe: 20, dscrdexe: "OUTRO", cdcrdrec: 924 }))).toBe("Não é Benê");
   });
   it("filtra os dois grids com executor e tipo de guia sem somar subtotais duas vezes", () => {
     const rs = [row({}), row({ ideAssist: 2, catipgui: "Internação", vrevt: 300 }), row({ ideAssist: 3, cdcrdexe: 20, vrevt: 70 })];
