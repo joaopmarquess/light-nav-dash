@@ -29,7 +29,7 @@ export default function HomeCelular({ apps, nome, onAbrir }: { apps: App[]; nome
   const n = (v: number | null | undefined) => (v == null ? "…" : v.toLocaleString("pt-BR"));
   const crescimento = t ? resumoMovimentacao(t.e, t.s, t.r, t.tp, t.tm).crescimento : null;
   const card = (rotulo: string, valor: string, tom = "text-foreground") => (
-    <div className="rounded-lg border border-border bg-card p-3">
+    <div className="rounded-lg border border-border bg-card p-3 text-center">
       <p className="text-xs text-muted-foreground">{rotulo}</p>
       <p className={`mt-1 text-xl font-semibold tabular-nums ${tom}`}>{valor}</p>
     </div>
