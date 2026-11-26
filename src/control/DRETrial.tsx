@@ -13,6 +13,8 @@ import { initialDreExpansion } from "@/control/dreExpansion";
 import { dreMargin, formatDreMargin } from "@/control/dreMargin";
 import { Button } from "@/components/ui/button";
 import { colunasDre, periodoDre, trimestresFechados, type DreVisao } from "@/control/dreTrimestres";
+import DreChatIa from "@/components/DreChatIa";
+import { FONTE_CONTABIL_IA } from "./dreIaCarga";
 
 // DRE (Trial): reconstruído do zero, só com o balancete MV + plano 9D (ver src/lib/dreHostinger.ts).
 const ANO = 2026;
@@ -108,6 +110,10 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
   const meses = mesesProp ?? mesesAuto;
   const [rows, setRows] = useState<DreHRow[] | null>(() => dados ?? (meses ? cacheRows.get(`${ano}:${meses.join(",")}`) ?? null : null));
   const [erro, setErro] = useState<string | null>(null);
+  const [chatAberto, setChatAberto] = useState(false);
+  const comChat = !!onAba && !historico && !dados;
+  const botaoChat = comChat ? <Button variant="ghost" size="sm" title="Abrir IA · DRE" aria-label="Abrir IA · DRE" disabled={!rows?.length || !!erro} onClick={() => setChatAberto(true)} className="rounded-full text-primary font-semibold">IA</Button> : null;
+  const chat = comChat ? <DreChatIa aberto={chatAberto} onAbertoChange={setChatAberto} dados={() => ({ cubo: rows && meses && !erro ? { ano, meses, rows, fonteContabil: FONTE_CONTABIL_IA } : null, contexto: `Ano: ${ano}; meses fechados: ${(meses ?? []).join(", ")}; visão: ${painel ? "Painel" : visao}; cubos: DRE da tela e public.${FONTE_CONTABIL_IA}.` })} /> : null;
   const [open, setOpen] = useState<Record<string, boolean>>({});
   // Chave Mensal/Trimestral só na DRE principal (Histórico e Bench C definem as próprias colunas)
   const comVisao = !colunas && !historico && !painel;
@@ -284,7 +290,8 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
             </div>
           </div>
         </section>
-        <Barra ativa="Painel" onAba={onAba} historico={historico} />
+        <Barra ativa="Painel" onAba={onAba} historico={historico} direita={botaoChat} />
+        {chat}
       </div>
     );
   }
@@ -338,12 +345,13 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
       <Button key={v} variant="ghost" aria-pressed={visao === v} onClick={() => setVisao(v)}
         title={v === "Trimestral" ? "Somente trimestres fechados: 1T jan–mar, 2T abr–jun, 3T jul–set, 4T out–dez" : undefined}
         className={`rounded-full px-3 py-1 text-[13px] h-auto font-medium ${visao === v ? "bg-primary text-primary-foreground shadow-md shadow-primary/30 hover:bg-primary hover:text-primary-foreground" : "text-foreground/70 hover:text-primary hover:bg-card"}`}>{v}</Button>
-    ))}{visaoAtiva === "Trimestral" && <Button variant="ghost" size="icon" title={`Gerar ${REPORT_FULL_NAME}`} aria-label={`Gerar ${REPORT_FULL_NAME}`}
+    ))}{botaoChat}{visaoAtiva === "Trimestral" && <Button variant="ghost" size="icon" title={`Gerar ${REPORT_FULL_NAME}`} aria-label={`Gerar ${REPORT_FULL_NAME}`}
         disabled={gerandoRel || !rows || !!erro || !cols.length} onClick={() => void gerarRelatorio()}
         className="ml-1 h-7 w-7 rounded-full text-foreground/70 hover:text-primary hover:bg-card">
         {gerandoRel ? <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" /> : <FileBarChart2 className="h-4 w-4" />}</Button>}</> : undefined} />}
     {relatorio && <PdfPreview build={async () => (await comporPdfRelatorio(relatorio)).doc}
       fileName={`Relatorio_Controladoria_Trimestral_${relatorio.period.de}_${relatorio.period.ate}.pdf`} onClose={() => setRelatorio(null)} />}
+    {chat}
     </div>
   );
 };

@@ -1,3 +1,6 @@
+## DRE › IA (26/11/2026)
+- [x] Criar chat como IA · Inadimplência com cubos DRE e Contábil (icontabil), consultas testadas e validação autenticada: resultado e margem iguais à tela, maiores contas e restauração da conversa.
+
 ## Home › Atalhos Laboratory (25/11/2026)
 - [x] Colocar Laboratory primeiro e renomear Res. Comerciais para Proposta Uberaba, preservando destinos e acessos; testes e navegação autenticada conferidos.
 
