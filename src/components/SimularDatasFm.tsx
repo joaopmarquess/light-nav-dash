@@ -347,10 +347,13 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
                       gravar({ ...entrada, dias });
                     })} />}
                 </td>
+                {/* Em blocos, o Fechamento só tem as datas de Benê e Rede abaixo (pedido de 26/11/2026). */}
+                {l.id === "fechamento" && entrada.blocos ? <td colSpan={2} className="px-3 py-1.5 text-xs font-normal text-muted-foreground">Datas do Benê e da Rede abaixo</td> : <>
                 <td className="px-3 py-1.5 text-right tabular-nums" title={l.ajustado ? "Dia limitado ao último dia do mês" : undefined}>
                   {l.data}{l.ajustado ? " *" : ""}
                 </td>
                 <td className="whitespace-nowrap px-3 py-1.5 text-left tabular-nums">{formatarPrazo(l.diasBase)} <span className="text-xs font-normal text-muted-foreground">{Math.abs(l.diasBase) === 1 ? "dia" : "dias"} desde o {l.base}</span></td>
+                </>}
               </tr>
               {/* Fechamento em duas datas, Benê e Rede (pedido de 26/11/2026). */}
               {l.id === "fechamento" && entrada.blocos && fechamentosFm(entrada).map((f) => (

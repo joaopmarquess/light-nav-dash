@@ -43,8 +43,9 @@ export function paginasCenariosFm(lista: SimulacaoFm[]): PaginaCenarioFm[] {
       datas: linhas.filter((l) => l.id !== "arquivo").flatMap((l) => [{
         variavel: l.rotulo.toUpperCase(),
         referencia: l.somaAoArquivo ? `${formatarPrazo(l.dia)} dias após o Arquivo` : `dia ${formatarPrazo(l.dia)}`,
+        ...(l.id === "fechamento" && s.entrada.blocos ? { data: "-", prazo: pdfTexto("Datas do Benê e da Rede abaixo") } : {
         data: `${l.data}${l.ajustado ? " *" : ""}`,
-        prazo: pdfTexto(`${formatarPrazo(l.diasBase)} ${Math.abs(l.diasBase) === 1 ? "dia" : "dias"} desde o ${l.base}`),
+        prazo: pdfTexto(`${formatarPrazo(l.diasBase)} ${Math.abs(l.diasBase) === 1 ? "dia" : "dias"} desde o ${l.base}`) }),
       }, ...(l.id === "fechamento" && s.entrada.blocos ? fechamentosFm(s.entrada).map((f) => ({
         variavel: pdfTexto(f.rotulo.toUpperCase()), referencia: `Arquivo ${f.arquivo}`, data: f.data, prazo: `${formatarPrazo(f.dias)} dias desde o Arquivo`,
       })) : [])]),
