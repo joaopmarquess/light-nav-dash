@@ -1,3 +1,9 @@
+## Facchini › Regras confirmadas da planilha (26/11/2026)
+- Pausado a pedido do Dênis; nenhuma fórmula alterada nesta rodada. Retomar somente quando solicitado.
+- [ ] Na retomada: aplicar patrocínio integral dos dependentes, mesmo com campo em 0%, e testar o total mensal da empresa de R$ 830.442,27.
+- [ ] Na retomada: aplicar margem e desconto efetivo da planilha: fator 0,3298 e preço cheio da faixa da idade média (R$ 592,18); conferir margem de R$ 371,92 a R$ 395,16 e desconto de 57,73%.
+- [ ] Na retomada: confirmar taxa de adesão e sinistralidade líquida; respostas ainda pendentes.
+
 ## Bench Contábil › Celular (26/11/2026)
 - [x] Adaptar operadoras, anos, trimestres, indicadores e detalhes para celular, reutilizando os dados e preservando o computador; 71 testes e conferência autenticada em 390/360 px, com resultado, faturamento e sinistralidade iguais ao computador.
 
