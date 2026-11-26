@@ -55,7 +55,7 @@ export default function OrcamentoCelular() {
 
   if (err) return <div className="p-4"><AvisoErroDados erro={err} onTentar={() => setTick(t => t + 1)} /></div>;
   if (!r) return <p className="flex items-center gap-2 p-4 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando orçamento…</p>;
-  const bt = (k: Sel, rot: string, extra = "") => <button key={String(k)} onClick={() => setSel(k)} className={`rounded-md py-1.5 text-sm uppercase ${extra} ${sel === k ? "bg-primary text-primary-foreground" : fechados.includes(k as number) || typeof k !== "number" ? "bg-muted text-muted-foreground" : "bg-muted/50 text-muted-foreground italic"}`}>{rot}</button>;
+  const bt = (k: Sel, rot: string, extra = "") => <button key={String(k)} onClick={() => setSel(k)} className={`rounded-md py-1.5 text-sm uppercase ${extra} ${sel === k ? "bg-primary text-primary-foreground" : fechados.includes(k as number) || typeof k !== "number" ? "bg-muted text-muted-foreground" : "bg-projetado/15 text-projetado"}`}>{rot}</button>;
   const pf = (x: number) => (r.fat[0] ? `${((x / r.fat[0]) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%` : "-");
   return (
     <div className="h-full overflow-y-auto p-4 space-y-4">
@@ -63,21 +63,21 @@ export default function OrcamentoCelular() {
         {bt("acum", "Acumulado 2026", "col-span-4")}
         {[1, 2, 3, 4].map(t => [1, 2, 3].map(i => (t - 1) * 3 + i).map(m => bt(m, MESES[m - 1])).concat(bt(`t${t}`, `${t}T26`, "font-semibold")))}
       </div>
-      <p className="text-xs text-muted-foreground">{r.aberto ? "Inclui meses ainda abertos, mostrados pelo Projetado (em itálico nos botões)." : "Realizado."} Comparação com o Previsto.</p>
+      <p className="text-xs text-muted-foreground">{r.aberto ? <><span className="font-semibold text-projetado">PROJETADO</span>: o período inclui meses ainda abertos (botões em laranja), estimados pelo Projetado.</> : "Realizado."} Comparação com o Previsto.</p>
       <div className="grid grid-cols-2 gap-3">
         <div className="col-span-2 rounded-lg border border-border bg-card p-3">
-          <p className="text-xs text-muted-foreground">Resultado Líquido</p>
-          <p className={`mt-1 text-2xl font-semibold tabular-nums ${r.liq[0] < 0 ? "text-destructive" : "text-primary"}`}>{brl(r.liq[0])}</p>
+          <p className="text-xs text-muted-foreground">Resultado Líquido{r.aberto && <span className="ml-1.5 rounded bg-projetado/15 px-1 text-[10px] font-semibold text-projetado align-middle">PROJETADO</span>}</p>
+          <p className={`mt-1 text-2xl font-semibold tabular-nums ${r.liq[0] < 0 ? "text-destructive" : r.aberto ? "text-projetado" : "text-primary"}`}>{brl(r.liq[0])}</p>
           <p className="text-xs text-muted-foreground">{pf(r.liq[0])} do faturamento · Previsto {brl(r.liq[1])}</p>
         </div>
-        <div className="rounded-lg border border-border bg-card p-3"><p className="text-xs text-muted-foreground">EBITDA</p><p className="mt-1 text-lg font-semibold tabular-nums">{brl(r.ebitda[0])}</p><p className="text-[11px] text-muted-foreground">Prev. {brl(r.ebitda[1])}</p></div>
-        <div className="rounded-lg border border-border bg-card p-3"><p className="text-xs text-muted-foreground">Faturamento</p><p className="mt-1 text-lg font-semibold tabular-nums">{brl(r.fat[0])}</p><p className="text-[11px] text-muted-foreground">Prev. {brl(r.fat[1])}</p></div>
+        <div className="rounded-lg border border-border bg-card p-3"><p className="text-xs text-muted-foreground">EBITDA{r.aberto && <span className="ml-1.5 rounded bg-projetado/15 px-1 text-[10px] font-semibold text-projetado align-middle">PROJETADO</span>}</p><p className="mt-1 text-lg font-semibold tabular-nums">{brl(r.ebitda[0])}</p><p className="text-[11px] text-muted-foreground">Prev. {brl(r.ebitda[1])}</p></div>
+        <div className="rounded-lg border border-border bg-card p-3"><p className="text-xs text-muted-foreground">Faturamento{r.aberto && <span className="ml-1.5 rounded bg-projetado/15 px-1 text-[10px] font-semibold text-projetado align-middle">PROJETADO</span>}</p><p className="mt-1 text-lg font-semibold tabular-nums">{brl(r.fat[0])}</p><p className="text-[11px] text-muted-foreground">Prev. {brl(r.fat[1])}</p></div>
       </div>
       <div className="divide-y divide-border border-y border-border">
         {r.linhas.map(([nome, [v, p], n]) => (
           <div key={nome} className={`flex items-baseline justify-between gap-3 py-2.5 text-sm ${n ? "font-semibold" : ""}`}>
-            <span className="min-w-0">{nome}</span>
-            <span className="text-right tabular-nums"><span className={v < 0 ? "text-destructive" : ""}>{brl(v)}</span><span className="block text-[11px] font-normal text-muted-foreground">Prev. {brl(p)}</span></span>
+            <span className="min-w-0">{nome}{n === 2 && r.aberto && <span className="ml-1.5 rounded bg-projetado/15 px-1 text-[10px] font-semibold text-projetado align-middle">PROJETADO</span>}</span>
+            <span className="text-right tabular-nums"><span className={v < 0 ? "text-destructive" : r.aberto ? "text-projetado" : ""}>{brl(v)}</span><span className="block text-[11px] font-normal text-muted-foreground">Prev. {brl(p)}</span></span>
           </div>
         ))}
       </div>

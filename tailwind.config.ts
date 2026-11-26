@@ -14,6 +14,7 @@ export default {
     },
     extend: {
       colors: {
+        projetado: "hsl(var(--projetado))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

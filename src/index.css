@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 :root {
+    --projetado: 32 95% 44%;
   --bench-shadow: 0 3px 12px hsl(var(--foreground) / 0.05);
 }
 .bench-vidas .bench-panel { border-radius: 8px; border: 1px solid hsl(var(--border)); background: hsl(var(--card)); box-shadow: var(--bench-shadow); overflow: hidden; }
