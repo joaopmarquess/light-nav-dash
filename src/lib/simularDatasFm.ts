@@ -24,7 +24,7 @@ export const COMPETENCIA_PADRAO = { mes: 12, ano: 2026 };
 /** arquivoMes: mês (1–12) digitado no Arquivo; ausente → mês da competência (padrão 20/competência, pedido de 18/11/2026). */
 /** O campo "Referência de Último Dia" foi retirado (pedido de 18/11/2026); valores guardados antes são descartados ao ler. */
 /** blocos: opção "Simular em blocos" (pedido de 18/11/2026); ausente = desligada. */
-export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>>; arquivoMes?: number; blocos?: boolean; quantidadeBlocos?: number };
+export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>>; arquivoMes?: number; blocos?: boolean; quantidadeBlocos?: number; beneNoBloco?: boolean };
 
 const ultimoDia = (ano: number, mes: number) => new Date(Date.UTC(ano, mes, 0)).getUTCDate();
 const dd = (n: number) => String(n).padStart(2, "0");
@@ -181,7 +181,9 @@ export const quantidadeBlocosFm = (e: Pick<EntradaDatasFm, "quantidadeBlocos">) 
 
 /** Simular em blocos dividido em duas partes (pedido de 18/11/2026): Parte 1 Outros Credenciados = os 4 blocos (blocosPeriodoFm);
  * Parte 2 Hospital Benê = o Período geral inteiro, com o Arquivo na data limite (o Arquivo do cenário). */
-export const PARTES_BLOCOS_FM = { outros: "Outros Credenciados", hospital: "Hospital Benê" } as const;
+export const PARTES_BLOCOS_FM = { outros: "Outros Credenciados", hospital: "Hospital Benê", todos: "Todos os Credenciados (com Hospital Benê)" } as const;
+/** Benê entrando nos blocos (pedido de 26/11/2026): sem Parte 2; todos os credenciados, inclusive o Hospital Benê, seguem os blocos. */
+export const beneNoBlocoFm = (e: Pick<EntradaDatasFm, "blocos" | "beneNoBloco">) => e.blocos === true && e.beneNoBloco === true;
 export function hospitalBeneFm(e: EntradaDatasFm): Omit<BlocoFm, "bloco"> {
   const p = periodoFm(e);
   const dias = Math.round((utcDe(p.ate) - utcDe(p.de)) / DIA_MS) + 1;
@@ -209,6 +211,7 @@ export function normalizarEntradaFm(b: unknown): EntradaDatasFm {
     ...(arquivoMes ? { arquivoMes } : {}),
     ...(o.blocos === true ? { blocos: true } : {}),
     ...(o.blocos === true && o.quantidadeBlocos !== undefined ? { quantidadeBlocos: quantidadeBlocosFm(o) } : {}),
+    ...(o.blocos === true && o.beneNoBloco === true ? { beneNoBloco: true } : {}),
     mes: Number.isInteger(o.mes) && o.mes >= 1 && o.mes <= 12 ? o.mes : COMPETENCIA_PADRAO.mes,
     ano: Number.isInteger(o.ano) && o.ano >= 2000 && o.ano <= 2100 ? o.ano : COMPETENCIA_PADRAO.ano,
     dias,

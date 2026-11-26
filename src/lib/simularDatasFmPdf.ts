@@ -3,7 +3,7 @@ import autoTable, { type RowInput } from "jspdf-autotable";
 import { attachTimbrado, TIMBRADO_RAZAO_SOCIAL } from "@/lib/pdfTimbrado";
 import { aplicarMarcaAxis } from "@/lib/pdfMarcaAxis";
 import {
-  PARTES_BLOCOS_FM, avaliarImpactosFm, blocosPeriodoFm, hospitalBeneFm, formatarCompetencia, formatarNumeroFm, formatarPrazo, ordenarSimulacoesFm, periodoFm, prazoFolhaFm, simularDatasFm,
+  PARTES_BLOCOS_FM, avaliarImpactosFm, blocosPeriodoFm, hospitalBeneFm, beneNoBlocoFm, formatarCompetencia, formatarNumeroFm, formatarPrazo, ordenarSimulacoesFm, periodoFm, prazoFolhaFm, simularDatasFm,
   type NivelImpactoFm, type SimulacaoFm,
 } from "@/lib/simularDatasFm";
 
@@ -55,6 +55,10 @@ export function paginasCenariosFm(lista: SimulacaoFm[]): PaginaCenarioFm[] {
 function blocosDaPagina(s: SimulacaoFm): NonNullable<PaginaCenarioFm["blocos"]> {
   const blocos = blocosPeriodoFm(s.entrada), hospital = hospitalBeneFm(s.entrada);
   const linha = (bloco: string, b: { de: string; ate: string; dias: number; arquivo: string }) => ({ bloco, periodo: `${b.de} a ${b.ate}`, dias: `${formatarPrazo(b.dias)} dias`, arquivo: b.arquivo });
+  if (beneNoBlocoFm(s.entrada)) return {
+    contexto: `Período simulado em blocos, com o ${PARTES_BLOCOS_FM.hospital} entrando nos blocos: todos os credenciados enviam o arquivo em ${blocos.length} blocos, com Arquivo no dia seguinte ao fim de cada bloco. Datas e Impactos seguem o Arquivo do cenário.`,
+    partes: [{ titulo: `Parte 1 — ${PARTES_BLOCOS_FM.todos}`, linhas: blocos.map((b) => linha(`Bloco ${b.bloco}`, b)) }],
+  };
   return {
     contexto: `Período simulado em blocos. Parte 1: os ${PARTES_BLOCOS_FM.outros} enviam o arquivo em ${blocos.length} blocos, com Arquivo no dia seguinte ao fim de cada bloco. Parte 2: o ${PARTES_BLOCOS_FM.hospital} envia o Período geral, com Arquivo na data limite do cenário (${hospital.arquivo}). Datas e Impactos seguem o Arquivo do cenário.`,
     partes: [

@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { quantidadeBlocosFm } from "@/lib/simularDatasFm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvarUltimoNumeroFm, simulacaoAlteradaFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, prazoFolhaFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, blocosPeriodoFm, hospitalBeneFm, PARTES_BLOCOS_FM, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvarUltimoNumeroFm, simulacaoAlteradaFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, prazoFolhaFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, blocosPeriodoFm, hospitalBeneFm, beneNoBlocoFm, PARTES_BLOCOS_FM, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
 const novoId = () => globalThis.crypto?.randomUUID?.() ?? `fm-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const agora = () => new Date().toISOString();
@@ -231,11 +231,16 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
         <Checkbox checked={!!entrada.blocos} aria-label="Simular em blocos"
           onCheckedChange={(v) => {
             if (v === true) { setQuantidadeTexto(String(quantidadeBlocosFm(entrada))); setPerguntarBlocos(true); }
-            else { const { blocos: _, quantidadeBlocos: __, ...resto } = entrada; gravar(resto); }
+            else { const { blocos: _, quantidadeBlocos: __, beneNoBloco: ___, ...resto } = entrada; gravar(resto); }
           }} />
         <span className="font-semibold">Simular em blocos</span>
       </label>
       {entrada.blocos && <Button size="sm" variant="outline" onClick={() => { setQuantidadeTexto(String(quantidadeBlocosFm(entrada))); setPerguntarBlocos(true); }}>{quantidadeBlocosFm(entrada)} blocos</Button>}
+      {entrada.blocos && <label className="flex w-fit cursor-pointer items-center gap-2">
+        <Checkbox checked={!!entrada.beneNoBloco} aria-label="Benê entra nos blocos"
+          onCheckedChange={(v) => { if (v === true) gravar({ ...entrada, beneNoBloco: true }); else { const { beneNoBloco: _, ...resto } = entrada; gravar(resto); } }} />
+        <span className="font-semibold">Benê entra nos blocos</span>
+      </label>}
       </div>
       <Dialog open={perguntarBlocos} onOpenChange={setPerguntarBlocos}>
         <DialogContent className="max-w-sm">
@@ -280,10 +285,15 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
                 </tr>
               </thead>
               <tbody>
-                {parte(1, PARTES_BLOCOS_FM.outros)}
-                {blocosPeriodoFm(entrada).map((b) => linha(`Bloco ${b.bloco}`, b))}
-                {parte(2, PARTES_BLOCOS_FM.hospital)}
-                {linha("Período geral", hospital)}
+                {beneNoBlocoFm(entrada) ? <>
+                  {parte(1, PARTES_BLOCOS_FM.todos)}
+                  {blocosPeriodoFm(entrada).map((b) => linha(`Bloco ${b.bloco}`, b))}
+                </> : <>
+                  {parte(1, PARTES_BLOCOS_FM.outros)}
+                  {blocosPeriodoFm(entrada).map((b) => linha(`Bloco ${b.bloco}`, b))}
+                  {parte(2, PARTES_BLOCOS_FM.hospital)}
+                  {linha("Período geral", hospital)}
+                </>}
               </tbody>
             </table>
           </div>
