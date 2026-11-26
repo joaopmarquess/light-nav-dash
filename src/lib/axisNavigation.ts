@@ -128,7 +128,7 @@ export const menuItems: MenuItem[] = [
   controlItem,
   financeiroItem,
   { icon: Stethoscope, label: "Assistencial", children: [
-    { icon: ListTree, label: "Análise de Despesas Assistenciais", id: "Assistencial · Análise de Despesas Assistenciais" },
+    { icon: ListTree, label: "Desp. Assistencial", id: "Assistencial · Análise de Despesas Assistenciais" },
   ] },
   { icon: Users, label: "Carteira", children: [
     // Visão geral
