@@ -4,7 +4,6 @@ import CarteiraTrialMov from "@/components/CarteiraTrialMov";
 import { Home as HomeIcon } from "lucide-react";
 import OrcamentoCelular from "@/components/OrcamentoCelular";
 import DRECelular from "@/components/DRECelular";
-import Orcamento2027Dre from "@/control/Orcamento2027Dre";
 import HomeCelular from "@/components/HomeCelular";
 import MovimentacaoCelular from "@/components/MovimentacaoCelular";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -602,7 +601,7 @@ const Index = () => {
           ) : active === "Control · Dashboards" ? (
             <CtrlDashboards />
           ) : active === "Control · Slides Simulação" ? (
-            <Orcamento2027Dre />
+            <div className="h-[calc(100vh-9rem)] min-h-0"><CtrlSlidesSimulacao key="orc27" slides={SLIDES_ORCAMENTO_2027} /></div>
           ) : active === "Slides Simulador 2027" ? (
             <div className="h-[calc(100vh-9rem)] min-h-0"><CtrlSlidesSimulacao key="lab" slides={SLIDES_SIMULADOR_2027} /></div>
           ) : active === "Control · Orçamento 2027" ? (
