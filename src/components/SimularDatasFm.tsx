@@ -28,6 +28,7 @@ export default function SimularDatasFm() {
   const [rascunho, setRascunho] = useState<SimulacaoFm | null>(null);
   const [excluir, setExcluir] = useState<SimulacaoFm | null>(null);
   const [imprimir, setImprimir] = useState(false);
+  const [imprimirUm, setImprimirUm] = useState<SimulacaoFm | null>(null);
   const gravar = (proxima: SimulacaoFm[]) => {
     setLista(proxima); salvarSimulacoesFm(proxima);
     const maior = Math.max(ultimoNumero, ...proxima.map((s) => s.numero));
@@ -69,7 +70,7 @@ export default function SimularDatasFm() {
               <th className="px-3 py-2 text-left font-semibold">PRAZO</th>
               <th className="px-3 py-2 text-left font-semibold">IMPACTOS</th>
               <th className="px-3 py-2 text-right font-semibold">ALTERADA EM</th>
-              <th className="w-20 px-3 py-2" />
+              <th className="w-28 px-3 py-2" />
             </tr>
           </thead>
           <tbody>
@@ -97,6 +98,8 @@ export default function SimularDatasFm() {
                   </td>
                   <td className="px-3 py-1.5 text-right tabular-nums text-muted-foreground">{dataHora(s.atualizadaEm)}</td>
                   <td className="px-3 py-1.5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" title="Imprimir" aria-label={`Imprimir Cenário ${formatarNumeroFm(s.numero)}`}
+                      onClick={() => setImprimirUm(s)}><Printer className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7" title="Duplicar" aria-label={`Duplicar Cenário ${formatarNumeroFm(s.numero)}`}
                       onClick={() => gravar([...lista, duplicarSimulacaoFm(s, novoId(), agora(), proximo())])}><Copy className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" title="Excluir" aria-label={`Excluir Cenário ${formatarNumeroFm(s.numero)}`}
@@ -111,6 +114,11 @@ export default function SimularDatasFm() {
       {imprimir && (
         <PdfPreview build={async () => buildCenariosFmPdf(await loadTimbrado(), lista, { marcaAxis: await loadMarcaAxis() })}
           fileName={`Simulacoes_Datas_FM_${new Date().toISOString().slice(0, 10)}.pdf`} onClose={() => setImprimir(false)} />
+      )}
+      {/* Imprimir de cada simulação (pedido de 26/11/2026): mesmo relatório, só com o cenário escolhido. */}
+      {imprimirUm && (
+        <PdfPreview build={async () => buildCenariosFmPdf(await loadTimbrado(), [imprimirUm], { marcaAxis: await loadMarcaAxis() })}
+          fileName={`Simulacao_Datas_FM_${formatarNumeroFm(imprimirUm.numero)}_${new Date().toISOString().slice(0, 10)}.pdf`} onClose={() => setImprimirUm(null)} />
       )}
       <AlertDialog open={excluir !== null} onOpenChange={(o) => { if (!o) setExcluir(null); }}>
         <AlertDialogContent>
