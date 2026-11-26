@@ -16,7 +16,7 @@ const novoId = () => globalThis.crypto?.randomUUID?.() ?? `fm-${Date.now()}-${Ma
 const agora = () => new Date().toISOString();
 const corNivel = (n: NivelImpactoFm) => n === "critico" ? "text-destructive" : n === "moderado" ? "text-[hsl(var(--impacto-moderado))]" : n === "aceito" ? "text-[hsl(var(--impacto-aceito))]" : "text-[hsl(var(--impacto-ok))]"; // Aceito num verde mais claro que o Ideal
 // PEONA Ideal em verde e negrito (pedido de 18/11/2026); demais situações em seminegrito.
-const pesoImpacto = (imp: { id: string; nivel: NivelImpactoFm }) => imp.id === "peona" && imp.nivel === "ideal" ? "font-bold" : "font-semibold";
+const pesoImpacto = (imp: { id: string; nivel: NivelImpactoFm }) => imp.id.startsWith("peona") && imp.nivel === "ideal" ? "font-bold" : "font-semibold";
 const dataHora = (iso: string) => { const d = new Date(iso); return isNaN(d.getTime()) ? "" : d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }); };
 
 // Lista e Simulação rolam dentro da própria tela (a área principal nunca rola), para o quadro Simular em blocos não esconder o restante (pedido de 18/11/2026).

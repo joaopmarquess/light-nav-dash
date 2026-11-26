@@ -326,7 +326,7 @@ export function impactosFm(e: EntradaDatasFm) {
 export const PEONA_IDEAL_ATE = 4, PEONA_ACEITO_ATE = 12, PEONA_MODERADO_ATE = 15, FECHAMENTO_MINIMO = 10, FECHAMENTO_IDEAL = 20, DARE_MINIMO = 3, DARE_IDEAL = 5, DIOPS_IDEAL = 15, PAGAMENTO_IDEAL = 15;
 export type NivelImpactoFm = "ideal" | "aceito" | "moderado" | "critico";
 export const STATUS_IMPACTO_FM: Record<NivelImpactoFm, string> = { ideal: "Ideal", aceito: "Aceito", moderado: "Moderado", critico: "Crítico" };
-export type ImpactoFm = { id: "peona" | "fechamento" | "dare" | "diops" | "pagamento"; rotulo: string; dias: number; nivel: NivelImpactoFm; status: string; descricao: string };
+export type ImpactoFm = { id: "peonaBene" | "peona" | "fechamento" | "dare" | "diops" | "pagamento"; rotulo: string; dias: number; nivel: NivelImpactoFm; status: string; descricao: string };
 // Toda contagem de dias com zero à esquerda, "0#" (pedido de 18/11/2026).
 const plural = (n: number) => `${formatarPrazo(n)} ${Math.abs(n) === 1 ? "dia" : "dias"}`;
 /** Lista de Simulações, depois de FECHAMENTO (pedido de 18/11/2026): dias entre o Arquivo e o Fechamento, ex.: "05 dias para Fechar a Folha". */
@@ -336,11 +336,12 @@ export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
   const item = (id: ImpactoFm["id"], rotulo: string, dias: number, nivel: NivelImpactoFm, descricao: string): ImpactoFm =>
     ({ id, rotulo, dias, nivel, status: STATUS_IMPACTO_FM[nivel], descricao });
   return [
-    peona === 0
-      ? item("peona", "PEONA", peona, "ideal", "Todo o Período está no mês da competência.")
-      : item("peona", "PEONA", peona,
+    // PEONA sempre em duas partes, Benê e Rede (pedido de 26/11/2026); a regra dos dias do Período vale para as duas.
+    ...([["peonaBene", "PEONA BENÊ"], ["peona", "PEONA REDE"]] as const).map(([id, rotulo]) => peona === 0
+      ? item(id, rotulo, peona, "ideal", "Todo o Período está no mês da competência.")
+      : item(id, rotulo, peona,
           peona <= PEONA_IDEAL_ATE ? "ideal" : peona <= PEONA_ACEITO_ATE ? "aceito" : peona <= PEONA_MODERADO_ATE ? "moderado" : "critico",
-          `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA; até ${formatarPrazo(PEONA_IDEAL_ATE)} é ideal, até ${formatarPrazo(PEONA_ACEITO_ATE)} é aceito e acima de ${formatarPrazo(PEONA_MODERADO_ATE)} dias é crítico.`),
+          `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA; até ${formatarPrazo(PEONA_IDEAL_ATE)} é ideal, até ${formatarPrazo(PEONA_ACEITO_ATE)} é aceito e acima de ${formatarPrazo(PEONA_MODERADO_ATE)} dias é crítico.`)),
     // FECHAMENTO no quadro (pedido de 18/11/2026): dias desde o Arquivo.
     fechamento < FECHAMENTO_MINIMO
       ? item("fechamento", "FECHAMENTO", fechamento, "critico", `${plural(fechamento)} entre o Arquivo e o Fechamento; o mínimo é ${formatarPrazo(FECHAMENTO_MINIMO)} e o ideal, ${formatarPrazo(FECHAMENTO_IDEAL)}.`)

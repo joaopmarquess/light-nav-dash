@@ -108,7 +108,7 @@ describe("Simular Datas FM", () => {
   });
   it("IMPACTOS em três níveis: Crítico, Moderado e Ideal", () => {
     const niveis = (arquivo: number, mes: number, extra: Partial<Record<"fechamento" | "dare" | "diops" | "pagamento", number>> = {}) =>
-      Object.fromEntries(avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo, ...extra }, arquivoMes: mes }).map((i) => [i.id, i.status]));
+      Object.fromEntries(avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo, ...extra }, arquivoMes: mes }).filter((i) => i.id !== "peonaBene").map((i) => [i.id, i.status]));
     // Arquivo 20/12 + 21 → Fechamento 10/01: Dare 15/01 = 5 dias, DIOPS e Pagamento 30/01 = 20 dias, PEONA 11 dias.
     const f = { fechamento: 21 };
     expect(niveis(20, 12, f)).toEqual({ peona: "Aceito", fechamento: "Ideal", dare: "Ideal", diops: "Ideal", pagamento: "Ideal" });
@@ -300,5 +300,12 @@ describe("Arquivo da Rede e do Benê digitados", () => {
     expect(b.map((x) => x.arquivo.slice(0, 2))).toEqual(["25", "25", "25", "25"]);
     expect(b.map((x) => x.de)).toEqual(base.map((x) => x.de));
     expect(hospitalBeneFm({ ...e, arquivoBene: { dia: 3, mes: 2 } }).arquivo.slice(0, 5)).toBe("03/02");
+  });
+});
+
+describe("PEONA em duas partes", () => {
+  it("sempre mostra Benê e Rede", () => {
+    const r = avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: {} }).filter((i) => i.id.startsWith("peona")).map((i) => i.rotulo);
+    expect(r).toEqual(["PEONA BENÊ", "PEONA REDE"]);
   });
 });
