@@ -5,6 +5,7 @@ import { canAccess, type AxisAccess } from "./axisAccess";
 describe("Home shortcut permissions", () => {
   const items = axisPermissionGroups.find(g => g.label === "Home")?.items ?? [];
   it.each([
+    ["Desp. Assistencial", "Assistencial · Análise de Despesas Assistenciais"],
     ["Movimentação", "Carteira · Movimentação"],
     ["Área Geográfica", "Carteira · Área Geográfica"],
     ["Período", "Sinistralidade · Períodos"],
@@ -60,6 +61,7 @@ describe("Home shortcut groups", () => {
   it("groups shortcuts under their main menu in sidebar order, Laboratory last", () => {
     expect(homeShortcutGroups().map(g => [g.menu, g.items.map(i => i.label)])).toEqual([
       ["Control", ["Controladoria", "Demonstrações", "Bench Contábil"]],
+      ["Assistencial", ["Desp. Assistencial"]],
       ["Carteira", ["Movimentação", "Área Geográfica", "Painel", "Bench Vidas"]],
       ["Sinistralidade", ["Período", "Evolução Produtos"]],
       ["Laboratory", ["Laboratory", "Proj. Uberaba", "Proposta Uberaba", "Proposta APB", "Simular Datas FM", "Produtos Lancers"]],

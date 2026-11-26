@@ -150,6 +150,7 @@ export const LAB_IDS = new Set<string>(["Laboratory", UBERABA_RESULTADOS_COMERCI
 
 // menu: menu equivalente na barra lateral principal (ou Laboratory), usado como subtítulo na Home.
 export const homeShortcuts = [
+  { icon: ListTree, label: "Desp. Assistencial", destination: "Assistencial · Análise de Despesas Assistenciais", menu: "Assistencial" },
   { icon: ArrowRightLeft, label: "Movimentação", destination: "Carteira · Movimentação", menu: "Carteira" },
   { icon: MapIcon, label: "Área Geográfica", destination: "Carteira · Área Geográfica", menu: "Carteira" },
   { icon: Percent, label: "Período", destination: "Sinistralidade · Períodos", menu: "Sinistralidade" },
