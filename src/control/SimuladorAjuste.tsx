@@ -37,7 +37,7 @@ export function BotaoReverterAjuste({ alterado, reverter, className }: { alterad
 }
 
 /** Campo de texto que mostra o número formatado e, enquanto digita, guarda o rascunho. */
-function CampoAjuste({ valor, aoMudar, rotulo, alterado, largura, altura }: { valor: string; aoMudar: (texto: string) => void; rotulo: string; alterado: boolean; largura: string; altura: string }) {
+function CampoAjuste({ valor, aoMudar, rotulo, alterado, largura, altura, dre = false }: { dre?: boolean; valor: string; aoMudar: (texto: string) => void; rotulo: string; alterado: boolean; largura: string; altura: string }) {
   const [rascunho, setRascunho] = useState<string | null>(null);
   return <input
     type="text" inputMode="decimal" aria-label={rotulo} title={rotulo}
@@ -49,13 +49,16 @@ function CampoAjuste({ valor, aoMudar, rotulo, alterado, largura, altura }: { va
     className={cn(
       "rounded-sm border border-[hsl(var(--ajuste-editado-borda))] bg-[hsl(var(--ajuste-editado))] px-1 text-right tabular-nums text-foreground focus:outline-none focus:ring-1 focus:ring-ring",
       alterado && "border-[hsl(var(--ajuste-alterado-borda))] bg-[hsl(var(--ajuste-alterado))] font-semibold",
+      dre && (alterado ? "border-primary bg-primary/15 text-foreground" : "border-primary/30 bg-accent"),
       largura, altura,
     )}
   />;
 }
 
 /** Grid do Ajuste (% sobre o Faturamento editável + valor), usado na tela e no slide 4 de Slides Simulação. */
-export function GradeAjuste({ alteracoes, setAlteracoes, slide = false, sinistralidade = false }: {
+export function GradeAjuste({ alteracoes, setAlteracoes, slide = false, sinistralidade = false, dre = false }: {
+  /** Visual padrão da DRE do Control (cabeçalho e resultados na cor principal, grupos com bordas), sem cara de slide. */
+  dre?: boolean;
   alteracoes: AlteracoesAjuste;
   setAlteracoes: React.Dispatch<React.SetStateAction<AlteracoesAjuste>>;
   slide?: boolean;
@@ -76,21 +79,25 @@ export function GradeAjuste({ alteracoes, setAlteracoes, slide = false, sinistra
     if (centavos === null || centavos <= 0) return;
     setAlteracoes((a) => ({ ...a, [c]: { ...a[c], faturamento: centavos } }));
   };
-  const py = slide ? "py-px" : "py-0.5";
+  const py = slide ? "py-px" : dre ? "py-1.5" : "py-0.5";
   const altura = slide ? "h-[30px]" : "h-6";
   const largPct = slide ? "w-[6.2rem]" : "w-[4.6rem]";
   const largValor = slide ? "w-[12rem]" : "w-[9rem]";
   const larg = slide ? "w-4" : "w-3";
 
   return <table className={cn("w-full tabular-nums border-collapse", slide ? "text-[19px]" : "text-sm")} aria-label="Ajuste por cenário">
-    <thead>
-      <tr className="bg-[hsl(var(--ajuste-head))] text-primary-foreground">
+    <thead className={cn(dre && "sticky top-0 z-10 shadow-md")}>
+      <tr className={dre ? "bg-primary text-primary-foreground" : "bg-[hsl(var(--ajuste-head))] text-primary-foreground"}>
         <th className={cn("px-4 text-left font-semibold", slide ? "py-1.5" : "py-2")}><span className="sr-only">Linha</span></th>
         {CENARIOS_AJUSTE.map((c) => <th key={c} colSpan={2} className={cn("px-5 text-right font-bold w-[24%]", slide ? "py-1.5" : "py-2")}>{ROTULOS_CENARIO_AJUSTE[c]}</th>)}
       </tr>
     </thead>
     <tbody>
-      {LINHAS_AJUSTE.map((l) => <tr key={l.chave} className={cn(
+      {LINHAS_AJUSTE.map((l) => <tr key={l.chave} className={dre ? cn(
+        "transition-colors hover:bg-muted",
+        l.tipo === "grupo" ? "border-y-2 border-foreground/40 font-bold" : l.tipo === "linha" ? "border-y border-foreground/25 font-semibold" : "border-b border-border",
+        l.tipo === "resultado" && "bg-primary text-primary-foreground font-bold hover:bg-primary",
+      ) : cn(
         "border-b border-border",
         l.tipo === "grupo" && "bg-[hsl(var(--ajuste-grupo))] font-bold",
         l.tipo === "resultado" && cn("bg-[hsl(var(--ajuste-head))] text-primary-foreground font-bold border-0", slide ? "text-[20px]" : "text-[15px]"),
@@ -102,20 +109,20 @@ export function GradeAjuste({ alteracoes, setAlteracoes, slide = false, sinistra
           const pctAlterado = alteracoes[c]?.percentuais?.[l.chave] !== undefined;
           const nome = `${l.rotulo} · ${ROTULOS_CENARIO_AJUSTE[c]}`;
           return [
-            <td key={`${c}-p`} className={cn("pl-5 pr-1 text-right whitespace-nowrap", py, fundoCelula(l, c), corValor(l, valor), l.tipo !== "resultado" && "opacity-90")}>
+            <td key={`${c}-p`} className={cn("pl-5 pr-1 text-right whitespace-nowrap", py, !dre && fundoCelula(l, c), !dre && corValor(l, valor), dre && l.tipo !== "resultado" && valor < 0 && "text-destructive", l.tipo !== "resultado" && "opacity-90")}>
               {percentualEditavel(l.chave)
-                ? <><CampoAjuste valor={formatarPercentualAjuste(pct)} rotulo={`Percentual sobre o Faturamento · ${nome}`} alterado={pctAlterado} largura={largPct} altura={altura} aoMudar={(t) => mudarPercentual(c, l.chave, t)} /><span className={cn("inline-block text-left", larg)}>%</span></>
+                ? <><CampoAjuste valor={formatarPercentualAjuste(pct)} rotulo={`Percentual sobre o Faturamento · ${nome}`} alterado={pctAlterado} largura={largPct} altura={altura} dre={dre} aoMudar={(t) => mudarPercentual(c, l.chave, t)} /><span className={cn("inline-block text-left", larg)}>%</span></>
                 : <>{formatarPercentualAjuste(pct)}<span className={cn("inline-block text-left", larg)}>%</span></>}
             </td>,
-            <td key={`${c}-v`} className={cn("pl-2 pr-5 text-right whitespace-nowrap", py, fundoCelula(l, c), corValor(l, valor))}>
+            <td key={`${c}-v`} className={cn("pl-2 pr-5 text-right whitespace-nowrap", py, !dre && fundoCelula(l, c), !dre && corValor(l, valor), dre && l.tipo !== "resultado" && valor < 0 && "text-destructive")}>
               {l.chave === "faturamento"
-                ? <CampoAjuste valor={formatarAjuste(valor)} rotulo={`Valor · ${nome}`} alterado={alteracoes[c]?.faturamento !== undefined} largura={largValor} altura={altura} aoMudar={(t) => mudarFaturamento(c, t)} />
+                ? <CampoAjuste valor={formatarAjuste(valor)} rotulo={`Valor · ${nome}`} alterado={alteracoes[c]?.faturamento !== undefined} largura={largValor} altura={altura} dre={dre} aoMudar={(t) => mudarFaturamento(c, t)} />
                 : formatarAjuste(valor)}
             </td>,
           ];
         })}
       </tr>)}
-      {sinistralidade && <tr className={cn("bg-[hsl(var(--ajuste-head))] text-primary-foreground font-bold border-0", slide ? "text-[20px]" : "text-[15px]")}>
+      {sinistralidade && <tr className={cn(dre ? "bg-primary border-t border-primary-foreground/30" : "bg-[hsl(var(--ajuste-head))]", "text-primary-foreground font-bold border-0", slide ? "text-[20px]" : "text-[15px]")}>
         <td className={cn(py, "px-4")}>SINISTRALIDADE OPERACIONAL</td>
         {CENARIOS_AJUSTE.map((c) => [
           <td key={`${c}-p`} className={py} />,
@@ -139,4 +146,19 @@ export default function SimuladorAjuste({ onVoltar }: { onVoltar: () => void }) 
       <GradeAjuste alteracoes={alteracoes} setAlteracoes={setAlteracoes} />
     </div>
   </div>;
+}
+
+/** Control › Orçamento 2027 no padrão das Demonstrações (DRE): mesmo grid e alterações do Ajuste, sem cara de slide. */
+export function Orcamento2027Dre() {
+  const { alteracoes, setAlteracoes, alterado, reverter } = useAlteracoesAjuste();
+  return <section className="bg-card rounded-xl border border-border shadow-sm h-full min-h-0 flex flex-col overflow-hidden">
+    <div className="flex flex-wrap items-center gap-2 px-4 py-2 border-b border-border">
+      <h3 className="text-base font-semibold text-foreground">DRE por cenário · 2027</h3>
+      <span className="text-xs uppercase tracking-wide text-muted-foreground">R$ · % fat. (editável)</span>
+      <BotaoReverterAjuste alterado={alterado} reverter={reverter} className="ml-auto" />
+    </div>
+    <div className="flex-1 min-h-0 overflow-auto">
+      <GradeAjuste alteracoes={alteracoes} setAlteracoes={setAlteracoes} sinistralidade dre />
+    </div>
+  </section>;
 }

@@ -4,6 +4,7 @@ import CarteiraTrialMov from "@/components/CarteiraTrialMov";
 import { Home as HomeIcon } from "lucide-react";
 import OrcamentoCelular from "@/components/OrcamentoCelular";
 import DRECelular from "@/components/DRECelular";
+import { Orcamento2027Dre } from "@/control/SimuladorAjuste";
 import HomeCelular from "@/components/HomeCelular";
 import MovimentacaoCelular from "@/components/MovimentacaoCelular";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -101,7 +102,7 @@ import CtrlDashboards from "@/control/Dashboards";
 import RelatorioControladoriaVisao from "@/control/RelatorioControladoriaVisao";
 import CtrlSimulador from "@/control/Simulador";
 import CtrlSlidesSimulacao from "@/control/SlidesSimulacao";
-import { SLIDES_ORCAMENTO_2027, SLIDES_SIMULADOR_2027 } from "@/control/slidesSimulacao";
+import { SLIDES_SIMULADOR_2027 } from "@/control/slidesSimulacao";
 import CtrlBench from "@/control/BenchC";
 import { BENCH_SHORT_TEXT, BENCH_LONG_TEXT, DRE_FULL_NAME, DRE_MENU_NAME, REPORT_FULL_NAME, SLIDES_SHORT_TEXT, SLIDES_MEDIUM_TEXT, SLIDES_LONG_TEXT } from "@/control/dreLabels";
 import { ListTree, Users2, ArrowLeft } from "lucide-react";
@@ -601,7 +602,7 @@ const Index = () => {
           ) : active === "Control · Dashboards" ? (
             <CtrlDashboards />
           ) : active === "Control · Slides Simulação" ? (
-            <div className="h-[calc(100vh-9rem)] min-h-0"><CtrlSlidesSimulacao key="orc27" slides={SLIDES_ORCAMENTO_2027} /></div>
+            <div className="h-[calc(100vh-9rem)] min-h-0"><Orcamento2027Dre /></div>
           ) : active === "Slides Simulador 2027" ? (
             <div className="h-[calc(100vh-9rem)] min-h-0"><CtrlSlidesSimulacao key="lab" slides={SLIDES_SIMULADOR_2027} /></div>
           ) : active === "Control · Orçamento 2027" ? (
