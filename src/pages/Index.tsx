@@ -2,6 +2,7 @@ import CarteiraTrial from "@/components/CarteiraTrial";
 import CarteiraTrialGeo from "@/components/CarteiraTrialGeo";
 import CarteiraTrialMov from "@/components/CarteiraTrialMov";
 import { Home as HomeIcon } from "lucide-react";
+import OrcamentoCelular from "@/components/OrcamentoCelular";
 import DRECelular from "@/components/DRECelular";
 import HomeCelular from "@/components/HomeCelular";
 import MovimentacaoCelular from "@/components/MovimentacaoCelular";
@@ -485,7 +486,7 @@ const Index = () => {
         </header>
 
         {celular ? <main className="flex-1 min-h-0 overflow-hidden">
-          {accessLoading ? <p className="p-4 text-sm text-muted-foreground">Carregando acessos…</p> : telaCelular ? (active === "Control · DRE Gerencial PE" ? <DRECelular /> : <MovimentacaoCelular />) : <HomeCelular apps={appsCel} nome={nome} onAbrir={setActiveState} />}
+          {accessLoading ? <p className="p-4 text-sm text-muted-foreground">Carregando acessos…</p> : telaCelular ? (active === "Control · DRE Gerencial PE" ? <DRECelular /> : active === "Control · Orçamento Vigente" ? <OrcamentoCelular /> : <MovimentacaoCelular />) : <HomeCelular apps={appsCel} nome={nome} onAbrir={setActiveState} />}
         </main> : <main className={`flex-1 min-h-0 overflow-hidden flex ${LAB_IDS.has(active) ? "flex-row gap-4" : "flex-col"} ${LAB_IDS.has(active) ? "py-8 pl-2 pr-8" : active === "Carteira · Bench Vidas" ? "p-3 sm:p-8" : active === "Carteira · Área Geográfica" ? "p-3 sm:p-4" : "p-8"}`}>
           {LAB_IDS.has(active) && (
             <LaboratoryNav items={visibleLabs} active={active} canHome={can("Laboratory")} onSelect={setActive} onMenuOpenChange={setLabMenuAberto} />

@@ -186,4 +186,5 @@ export const axisPermissionGroups = [
 export const appsCelular: { id: string; label: string; icon: typeof ArrowRightLeft }[] = [
   { id: "Carteira · Movimentação", label: "Movimentação", icon: ArrowRightLeft },
   { id: "Control · DRE Gerencial PE", label: "Demonstrações (DRE)", icon: FileText },
+  { id: "Control · Orçamento Vigente", label: "Orçamento 2026", icon: FileText },
 ];
