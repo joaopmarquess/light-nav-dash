@@ -184,10 +184,10 @@ export function arquivoDigitadoFm(padrao: string, v?: { dia: number; mes: number
   const fim = new Date(Date.UTC(ano, v.mes, 0)).getUTCDate();
   return dataUtc(new Date(Date.UTC(ano, v.mes - 1, Math.min(v.dia, fim))));
 }
-/** Blocos com o Arquivo da Rede digitado aplicado ao último bloco. */
+/** Blocos com o Arquivo da Rede digitado aplicado a todos os blocos (resposta de 26/11/2026). */
 export function blocosRedeFm(e: EntradaDatasFm): BlocoFm[] {
-  const b = blocosPeriodoFm(e);
-  return b.map((x, i) => i === b.length - 1 ? { ...x, arquivo: arquivoDigitadoFm(x.arquivo, e.arquivoRede) } : x);
+  const b = blocosPeriodoFm(e), ultimo = b[b.length - 1].arquivo;
+  return e.arquivoRede ? b.map((x) => ({ ...x, arquivo: arquivoDigitadoFm(ultimo, e.arquivoRede) })) : b;
 }
 export const quantidadeBlocosFm = (e: Pick<EntradaDatasFm, "quantidadeBlocos">) =>
   e.quantidadeBlocos === 2 || e.quantidadeBlocos === 1 ? e.quantidadeBlocos : BLOCOS_FM;

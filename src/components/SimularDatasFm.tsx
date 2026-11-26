@@ -155,7 +155,7 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
     onBlur: () => setTexto((p) => { const n = { ...p }; delete n[chave]; return n; }),
   });
   const todas = simularDatasFm(entrada);
-  // Arquivo da Rede (último bloco) e do Benê digitados à parte (pedido de 26/11/2026); vazio = data calculada.
+  // Arquivo da Rede (todos os blocos) e do Benê digitados à parte (pedido de 26/11/2026); vazio = data calculada.
   const campoArquivo = (chave: "arquivoRede" | "arquivoBene", rotulo: string) => {
     const padrao = chave === "arquivoRede" ? blocosPeriodoFm(entrada).at(-1)!.arquivo : hospitalBeneFm({ ...entrada, arquivoBene: undefined }).arquivo;
     const v = entrada[chave], t = texto[chave];

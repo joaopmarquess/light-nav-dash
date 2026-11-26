@@ -294,11 +294,11 @@ describe("1 bloco", () => {
 });
 
 describe("Arquivo da Rede e do Benê digitados", () => {
-  it("Rede muda só o último bloco; Benê muda a Parte 2", () => {
+  it("Rede muda todos os blocos; Benê muda a Parte 2", () => {
     const e = { ...COMPETENCIA_PADRAO, dias: {}, blocos: true };
     const base = blocosPeriodoFm(e), b = blocosRedeFm({ ...e, arquivoRede: { dia: 25, mes: base[3].arquivo.split("/").map(Number)[1] } });
-    expect(b.slice(0, 3)).toEqual(base.slice(0, 3));
-    expect(b[3].arquivo.slice(0, 2)).toBe("25");
+    expect(b.map((x) => x.arquivo.slice(0, 2))).toEqual(["25", "25", "25", "25"]);
+    expect(b.map((x) => x.de)).toEqual(base.map((x) => x.de));
     expect(hospitalBeneFm({ ...e, arquivoBene: { dia: 3, mes: 2 } }).arquivo.slice(0, 5)).toBe("03/02");
   });
 });
