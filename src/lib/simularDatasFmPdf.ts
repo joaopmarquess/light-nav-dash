@@ -42,7 +42,7 @@ export function paginasCenariosFm(lista: SimulacaoFm[]): PaginaCenarioFm[] {
       alteradaEm: dataHora(s.atualizadaEm),
       datas: linhas.filter((l) => l.id !== "arquivo").flatMap((l) => l.id === "fechamento" && s.entrada.blocos
         ? fechamentosFm(s.entrada).map((f) => ({
-          variavel: pdfTexto(f.rotulo.toUpperCase()), referencia: `${formatarPrazo(l.dia)} dias após o Arquivo`, data: f.data,
+          variavel: pdfTexto(f.rotulo.toUpperCase()), referencia: `${formatarPrazo(f.dias)} dias após o Arquivo`, data: f.data,
           prazo: pdfTexto(`${formatarPrazo(f.dias)} dias desde o Arquivo ${f.arquivo.slice(0, 5)}`),
         }))
         : [{

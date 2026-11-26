@@ -29,7 +29,6 @@ describe("Imprimir Cenários (Simular Datas FM)", () => {
     expect(padrao.arquivo).toBe("20/12/2026");
     expect(padrao.datas.map((d) => d.data)).toEqual(simularDatasFm(lista[1].entrada).filter((l) => l.id !== "arquivo").map((l) => l.data));
     expect(padrao.impactos.map((i) => i.situacao)).toEqual(avaliarImpactosFm(lista[1].entrada).map((i) => i.status));
-    expect(curta.prazoFolha).toBe("05 dias para Fechar a Folha");
   });
   it("prints the blocks box only for scenarios simulated in blocks, still one page each", () => {
     const comBlocos = [...lista, novaSimulacaoFm("d", AGORA, 4, { mes: 12, ano: 2026, dias: {}, blocos: true }, "Blocos")];

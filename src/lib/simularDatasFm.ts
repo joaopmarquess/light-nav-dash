@@ -75,7 +75,9 @@ function linhasDatasFm(e: EntradaDatasFm) {
       return { ...l, dia, mesLinha: mesArquivo, diaMes: `${dd(dia)}/${dd(mesArquivo)}`, ...dataDiaMes(mes, ano, dia, mesArquivo) };
     }
     if (l.somaAoArquivo) {
-      const t = new Date(utcDe(maior) + dia * 86400000);
+      // Fechamento travado no dia 09 do mês seguinte ao Arquivo (pedido de 26/11/2026); REFERÊNCIA = dias desde o Arquivo.
+      const t = new Date(fechamentoTravadoFm(maior));
+      const dia = Math.round((t.getTime() - utcDe(maior)) / 86400000);
       return { ...l, dia, mesLinha: t.getUTCMonth() + 1, diaMes: undefined, data: `${dd(t.getUTCDate())}/${dd(t.getUTCMonth() + 1)}/${t.getUTCFullYear()}`, ajustado: false };
     }
     return { ...l, dia, mesLinha: undefined, diaMes: undefined, ...dataDaLinha(mes, ano, dia, l.mesSeguinte) };
@@ -188,14 +190,20 @@ export function maiorArquivoFm(e: EntradaDatasFm, arquivoCenario: string): strin
   return datas.reduce((a, b) => (utcDe(b) > utcDe(a) ? b : a));
 }
 /** Fechamento em duas datas, Benê e Rede (pedido de 26/11/2026): Arquivo de cada um + REFERÊNCIA do Fechamento. */
+export const DIA_FECHAMENTO_FM = 9;
+/** Fechamento = dia 09 do mês seguinte ao do Arquivo (UTC). */
+export function fechamentoTravadoFm(arquivo: string): number {
+  const [, m, a] = arquivo.split("/").map(Number);
+  return Date.UTC(a, m, DIA_FECHAMENTO_FM);
+}
 export function fechamentosFm(e: EntradaDatasFm): { id: "fechamentoBene" | "fechamentoRede"; rotulo: string; arquivo: string; data: string; dias: number }[] {
-  const linhas = simularDatasFm(e), cen = linhas.find((l) => l.id === "arquivo")!.data, ref = linhas.find((l) => l.id === "fechamento")!.dia;
+  const linhas = simularDatasFm(e), cen = linhas.find((l) => l.id === "arquivo")!.data;
   const rede = e.blocos ? arquivoDigitadoFm(cen, e.arquivoRede) : cen;
   const bene = !e.blocos ? cen : e.beneNoBloco ? rede : arquivoDigitadoFm(cen, e.arquivoBene);
-  const mais = (d: string) => dataUtc(new Date(utcDe(d) + ref * DIA_MS));
+  const f = (d: string) => ({ data: dataUtc(new Date(fechamentoTravadoFm(d))), dias: Math.round((fechamentoTravadoFm(d) - utcDe(d)) / DIA_MS) });
   return [
-    { id: "fechamentoBene", rotulo: "Fechamento Benê", arquivo: bene, data: mais(bene), dias: ref },
-    { id: "fechamentoRede", rotulo: "Fechamento Rede", arquivo: rede, data: mais(rede), dias: ref },
+    { id: "fechamentoBene", rotulo: "Fechamento Benê", arquivo: bene, ...f(bene) },
+    { id: "fechamentoRede", rotulo: "Fechamento Rede", arquivo: rede, ...f(rede) },
   ];
 }
 export function arquivoDigitadoFm(padrao: string, v?: { dia: number; mes: number }): string {

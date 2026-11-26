@@ -334,10 +334,10 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
           </thead>
           <tbody>
             {linhas.map((l) => {
-              const referencia = (rotulo: string) => (
+              const referencia = (rotulo: string, dias?: number) => (
                 <td className="px-3 py-1.5">
                   {/* DeRE, DIOPS e Pagamento: REFERÊNCIA fixa, só exibida (pedido de 18/11/2026). */}
-                  {l.fixo ? <div className="ml-auto w-20 pr-3 text-right tabular-nums" aria-label={`Dia — ${rotulo}`}>{l.dia}</div> :
+                  {l.fixo || l.id === "fechamento" ? <div className="ml-auto w-20 pr-3 text-right tabular-nums" aria-label={`Dia — ${rotulo}`} title={l.id === "fechamento" ? "Fechamento travado no dia 09 do mês seguinte ao Arquivo" : undefined}>{l.id === "fechamento" && dias !== undefined ? formatarPrazo(dias) : l.dia}</div> :
                   <Input aria-label={`Dia — ${rotulo}`} inputMode="numeric" title={l.somaAoArquivo ? "Dias somados à data do Arquivo; apague para restaurar o padrão" : "Apague para restaurar o padrão"} className={`ml-auto ${cls} ${l.destaque ? "font-bold" : ""}`}
                     {...campo(l.id, l.dia, 1, 31, (v) => {
                       const dias = { ...entrada.dias };
@@ -353,7 +353,7 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
                   {fechamentosFm(entrada).map((f, i) => (
                     <tr key={f.id} className={i === 0 ? classe : "border-b border-border"}>
                       <td className="px-3 py-1.5 uppercase">{f.rotulo}</td>
-                      {referencia(f.rotulo)}
+                      {referencia(f.rotulo, f.dias)}
                       <td className="px-3 py-1.5 text-right tabular-nums">{f.data}</td>
                       <td className="whitespace-nowrap px-3 py-1.5 text-left tabular-nums">{formatarPrazo(f.dias)} <span className="text-xs font-normal text-muted-foreground">dias desde o Arquivo {f.arquivo.slice(0, 5)}</span></td>
                     </tr>
@@ -363,7 +363,7 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
               return (
               <tr key={l.id} className={classe}>
                 <td className="px-3 py-1.5 uppercase">{l.rotulo}</td>
-                {referencia(l.rotulo)}
+                {referencia(l.rotulo, l.id === "fechamento" ? l.dia : undefined)}
                 <td className="px-3 py-1.5 text-right tabular-nums" title={l.ajustado ? "Dia limitado ao último dia do mês" : undefined}>
                   {l.data}{l.ajustado ? " *" : ""}
                 </td>
