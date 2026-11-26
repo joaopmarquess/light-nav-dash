@@ -309,3 +309,16 @@ describe("PEONA em duas partes", () => {
     expect(r).toEqual(["PEONA BENÊ", "PEONA REDE"]);
   });
 });
+
+describe("Período do Benê pelo próprio Arquivo", () => {
+  it("Arquivo do Benê 20/12 difere de 15/12 no Período e no PEONA BENÊ", () => {
+    const e = { ...COMPETENCIA_PADRAO, mes: 12, ano: 2026, dias: { arquivo: 15 }, arquivoMes: 12, blocos: true };
+    const b15 = hospitalBeneFm(e), b20 = hospitalBeneFm({ ...e, arquivoBene: { dia: 20, mes: 12 } });
+    expect(b15.ate).toBe("14/12/2026");
+    expect(b20.ate).toBe("19/12/2026");
+    expect(b20.de).toBe("20/11/2026");
+    const pb = (x: typeof e) => avaliarImpactosFm(x).find((i) => i.id === "peonaBene")!.dias;
+    expect(pb(e)).toBe(16);
+    expect(pb({ ...e, arquivoBene: { dia: 20, mes: 12 } })).toBe(11);
+  });
+});

@@ -197,10 +197,15 @@ export const quantidadeBlocosFm = (e: Pick<EntradaDatasFm, "quantidadeBlocos">) 
 export const PARTES_BLOCOS_FM = { outros: "Outros Credenciados", hospital: "Hospital Benê", todos: "Todos os Credenciados (com Hospital Benê)" } as const;
 /** Benê entrando nos blocos (pedido de 26/11/2026): sem Parte 2; todos os credenciados, inclusive o Hospital Benê, seguem os blocos. */
 export const beneNoBlocoFm = (e: Pick<EntradaDatasFm, "blocos" | "beneNoBloco">) => e.blocos === true && e.beneNoBloco === true;
+/** Entrada vista pelo Benê (pedido de 26/11/2026): com Arquivo do Benê digitado, Último Dia e Período passam a sair dessa data. */
+export function entradaBeneFm(e: EntradaDatasFm): EntradaDatasFm {
+  if (!e.blocos || e.beneNoBloco || !e.arquivoBene) return e;
+  return { ...e, dias: { ...e.dias, arquivo: e.arquivoBene.dia }, arquivoMes: e.arquivoBene.mes };
+}
 export function hospitalBeneFm(e: EntradaDatasFm): Omit<BlocoFm, "bloco"> {
-  const p = periodoFm(e);
+  const eb = entradaBeneFm(e), p = periodoFm(eb);
   const dias = Math.round((utcDe(p.ate) - utcDe(p.de)) / DIA_MS) + 1;
-  return { de: p.de, ate: p.ate, dias, arquivo: arquivoDigitadoFm(simularDatasFm(e).find((l) => l.id === "arquivo")!.data, e.arquivoBene) };
+  return { de: p.de, ate: p.ate, dias, arquivo: simularDatasFm(eb).find((l) => l.id === "arquivo")!.data };
 }
 
 /** Inteiro digitado dentro do intervalo; vazio → undefined (restaura o padrão); inválido → null (recusado). */
@@ -332,12 +337,12 @@ const plural = (n: number) => `${formatarPrazo(n)} ${Math.abs(n) === 1 ? "dia" :
 /** Lista de Simulações, depois de FECHAMENTO (pedido de 18/11/2026): dias entre o Arquivo e o Fechamento, ex.: "05 dias para Fechar a Folha". */
 export const prazoFolhaFm = (e: EntradaDatasFm) => `${plural(simularDatasFm(e).find((l) => l.id === "fechamento")!.diasBase)} para Fechar a Folha`;
 export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
-  const { peona, fechamento, dare, diops, pagamento } = impactosFm(e);
+  const { peona, fechamento, dare, diops, pagamento } = impactosFm(e), peonaBene = impactosFm(entradaBeneFm(e)).peona;
   const item = (id: ImpactoFm["id"], rotulo: string, dias: number, nivel: NivelImpactoFm, descricao: string): ImpactoFm =>
     ({ id, rotulo, dias, nivel, status: STATUS_IMPACTO_FM[nivel], descricao });
   return [
     // PEONA sempre em duas partes, Benê e Rede (pedido de 26/11/2026); a regra dos dias do Período vale para as duas.
-    ...([["peonaBene", "PEONA BENÊ"], ["peona", "PEONA REDE"]] as const).map(([id, rotulo]) => peona === 0
+    ...([["peonaBene", "PEONA BENÊ", peonaBene], ["peona", "PEONA REDE", peona]] as const).map(([id, rotulo, peona]) => peona === 0
       ? item(id, rotulo, peona, "ideal", "Todo o Período está no mês da competência.")
       : item(id, rotulo, peona,
           peona <= PEONA_IDEAL_ATE ? "ideal" : peona <= PEONA_ACEITO_ATE ? "aceito" : peona <= PEONA_MODERADO_ATE ? "moderado" : "critico",
