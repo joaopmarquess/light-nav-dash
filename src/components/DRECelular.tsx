@@ -13,26 +13,25 @@ const pct = (v: number | null) => (v == null ? "-" : `${(v * 100).toLocaleString
 export default function DRECelular() {
   const [rows, setRows] = useState<DreHRow[] | null>(null);
   const [meses, setMeses] = useState<number[]>([]);
-  const [sel, setSel] = useState<number | "acum">("acum");
+  const [sel, setSel] = useState<number | "acum" | `t${number}`>("acum");
   const [err, setErr] = useState<unknown>(null);
   const [tick, setTick] = useState(0);
   useEffect(() => {
     setErr(null); setRows(null);
     loadMesesDemonstracoes(ANO).then(async ms => { setMeses(ms); setRows(await loadDreHostinger(ANO, ms)); }).catch(setErr);
   }, [tick]);
-  const r = useMemo(() => rows && resumoPainelDre(sel === "acum" ? rows : rows.filter(x => x.mes === sel)), [rows, sel]);
+  const r = useMemo(() => rows && resumoPainelDre(sel === "acum" ? rows : typeof sel === "string" ? rows.filter(x => x.tri === Number(sel.slice(1))) : rows.filter(x => x.mes === sel)), [rows, sel]);
   if (err) return <div className="p-4"><AvisoErroDados erro={err} onTentar={() => setTick(t => t + 1)} /></div>;
   if (!r) return <p className="flex items-center gap-2 p-4 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />Carregando DRE…</p>;
   const ent = r.linhas[0][1], desp = r.linhas[1][1];
-  const per = sel === "acum" ? `Acumulado ${MESES[0]}–${MESES[meses.length - 1]}/${String(ANO).slice(2)}` : `${MESES[sel - 1]}/${String(ANO).slice(2)}`;
+  const per = sel === "acum" ? `Acumulado ${MESES[0]}–${MESES[meses.length - 1]}/${String(ANO).slice(2)}` : typeof sel === "string" ? `${sel.slice(1)}T${String(ANO).slice(2)}` : `${MESES[sel - 1]}/${String(ANO).slice(2)}`;
+  const tris = [1, 2, 3, 4].filter(t => meses.some(m => Math.ceil(m / 3) === t));
+  const bt = (k: typeof sel, rot: string, extra = "") => <button key={String(k)} onClick={() => setSel(k)} className={`rounded-md py-1.5 text-sm uppercase ${extra} ${sel === k ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{rot}</button>;
   return (
     <div className="h-full overflow-y-auto p-4 space-y-4">
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {(["acum", ...meses.slice().reverse()] as const).map(m => (
-          <button key={m} onClick={() => setSel(m)} className={`shrink-0 rounded-md px-3 py-1.5 text-sm ${sel === m ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-            {m === "acum" ? "Acumulado" : MESES[m - 1]}
-          </button>
-        ))}
+      <div className="grid grid-cols-4 gap-1.5">
+        {bt("acum", "Acumulado", "col-span-4")}
+        {tris.map(t => [1, 2, 3].map(i => (t - 1) * 3 + i).map(m => meses.includes(m) ? bt(m, MESES[m - 1]) : <span key={m} />).concat(bt(`t${t}`, `${t}T${String(ANO).slice(2)}`, "font-semibold")))}
       </div>
       <p className="text-xs text-muted-foreground">{per}</p>
       <div className="grid grid-cols-2 gap-3">
