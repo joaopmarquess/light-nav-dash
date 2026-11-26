@@ -55,24 +55,27 @@ const DIAS_DESDE_FECHAMENTO: IdDataFm[] = ["dare", "diops", "pagamento"];
 export function simularDatasFm(e: EntradaDatasFm) {
   const linhas = linhasDatasFm(e);
   const base = (id: IdDataFm) => utcDe(linhas.find((l) => l.id === id)!.data);
-  const arquivo = base("arquivo"), fechamento = base("fechamento");
+  const arquivo = utcDe(maiorArquivoFm(e, linhas.find((l) => l.id === "arquivo")!.data)), fechamento = base("fechamento");
   return linhas.map((l) => {
     const desdeFechamento = DIAS_DESDE_FECHAMENTO.includes(l.id);
     return { ...l, diasBase: Math.round((utcDe(l.data) - (desdeFechamento ? fechamento : arquivo)) / 86400000), base: desdeFechamento ? "Fechamento" : "Arquivo" };
   });
 }
 
-function linhasDatasFm({ mes, ano, dias, arquivoMes }: EntradaDatasFm) {
+function linhasDatasFm(e: EntradaDatasFm) {
+  const { mes, ano, dias, arquivoMes } = e;
   const mesArquivo = arquivoMes ?? mes;
   const diaArquivo = dias.arquivo ?? LINHAS_DATAS_FM.find((l) => l.id === "arquivo")!.diaPadrao;
   const dataArquivo = dataDiaMes(mes, ano, diaArquivo, mesArquivo).data;
+  // Fechamento, DeRE, DIOPS e Pagamento contam do maior Arquivo (cenário, Rede ou Benê digitados; pedido de 26/11/2026).
+  const maior = maiorArquivoFm(e, dataArquivo);
   return LINHAS_DATAS_FM.map((l) => {
     const dia = l.fixo ? l.diaPadrao : dias[l.id] ?? l.diaPadrao;
     if (l.pedeMes) {
       return { ...l, dia, mesLinha: mesArquivo, diaMes: `${dd(dia)}/${dd(mesArquivo)}`, ...dataDiaMes(mes, ano, dia, mesArquivo) };
     }
     if (l.somaAoArquivo) {
-      const t = new Date(utcDe(dataArquivo) + dia * 86400000);
+      const t = new Date(utcDe(maior) + dia * 86400000);
       return { ...l, dia, mesLinha: t.getUTCMonth() + 1, diaMes: undefined, data: `${dd(t.getUTCDate())}/${dd(t.getUTCMonth() + 1)}/${t.getUTCFullYear()}`, ajustado: false };
     }
     return { ...l, dia, mesLinha: undefined, diaMes: undefined, ...dataDaLinha(mes, ano, dia, l.mesSeguinte) };
@@ -177,6 +180,13 @@ export function blocosPeriodoFm(e: EntradaDatasFm): BlocoFm[] {
 }
 
 /** Arquivo digitado para a Rede/Benê (pedido de 26/11/2026): DD/MM no ano do Arquivo calculado (ano seguinte se o mês for anterior). */
+/** Maior data entre o Arquivo do cenário e os Arquivos digitados da Rede e do Benê (este só quando fora dos blocos). */
+export function maiorArquivoFm(e: EntradaDatasFm, arquivoCenario: string): string {
+  if (!e.blocos) return arquivoCenario;
+  const datas = [arquivoCenario, arquivoDigitadoFm(arquivoCenario, e.arquivoRede)];
+  if (!e.beneNoBloco) datas.push(arquivoDigitadoFm(arquivoCenario, e.arquivoBene));
+  return datas.reduce((a, b) => (utcDe(b) > utcDe(a) ? b : a));
+}
 export function arquivoDigitadoFm(padrao: string, v?: { dia: number; mes: number }): string {
   if (!v) return padrao;
   const [, m, a] = padrao.split("/").map(Number);

@@ -323,3 +323,17 @@ describe("Período do Benê pelo próprio Arquivo", () => {
     expect(pb({ ...e, arquivoBene: { dia: 20, mes: 12 } })).toBe(11);
   });
 });
+
+describe("Prazos contam do maior Arquivo", () => {
+  it("Arquivo do Benê 20/12 empurra Fechamento; PEONA Rede segue o Arquivo do cenário", () => {
+    const e: EntradaDatasFm = { ...COMPETENCIA_PADRAO, mes: 12, ano: 2026, dias: { arquivo: 15 }, arquivoMes: 12, blocos: true };
+    const f = (x: EntradaDatasFm) => simularDatasFm(x).find((l) => l.id === "fechamento")!;
+    const com = { ...e, arquivoBene: { dia: 20, mes: 12 } };
+    expect(utc(f(com).data) - utc(f(e).data)).toBe(5 * 86400000);
+    expect(f(com).diasBase).toBe(f(e).diasBase);
+    const peona = (x: EntradaDatasFm, id: string) => avaliarImpactosFm(x).find((i) => i.id === id)!.dias;
+    expect(peona(com, "peona")).toBe(peona(e, "peona"));
+    expect(peona(com, "peonaBene")).toBe(11);
+  });
+});
+const utc = (d: string) => { const [a, b, c] = d.split("/").map(Number); return Date.UTC(c, b - 1, a); };
