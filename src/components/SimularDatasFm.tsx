@@ -139,7 +139,7 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
   const [confirmar, setConfirmar] = useState<"cancelar" | "excluir" | null>(null);
   const [perguntarBlocos, setPerguntarBlocos] = useState(false);
   const [quantidadeTexto, setQuantidadeTexto] = useState(String(quantidadeBlocosFm(entrada)));
-  const quantidadeEscolhida = quantidadeTexto === "2" ? 2 : 4;
+  const quantidadeEscolhida = quantidadeTexto === "2" ? 2 : quantidadeTexto === "1" ? 1 : 4;
   const cancelar = () => (gravada && !alterada) ? onCancelar() : setConfirmar("cancelar");
   const [texto, setTexto] = useState<Record<string, string>>({});
   const gravar = (proximo: EntradaDatasFm) => onAlterar({ entrada: proximo });
@@ -235,7 +235,7 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
           }} />
         <span className="font-semibold">Simular em blocos</span>
       </label>
-      {entrada.blocos && <Button size="sm" variant="outline" onClick={() => { setQuantidadeTexto(String(quantidadeBlocosFm(entrada))); setPerguntarBlocos(true); }}>{quantidadeBlocosFm(entrada)} blocos</Button>}
+      {entrada.blocos && <Button size="sm" variant="outline" onClick={() => { setQuantidadeTexto(String(quantidadeBlocosFm(entrada))); setPerguntarBlocos(true); }}>{quantidadeBlocosFm(entrada)} {quantidadeBlocosFm(entrada) === 1 ? "bloco" : "blocos"}</Button>}
       {entrada.blocos && <label className="flex w-fit cursor-pointer items-center gap-2">
         <Checkbox checked={!!entrada.beneNoBloco} aria-label="Benê entra nos blocos"
           onCheckedChange={(v) => { if (v === true) gravar({ ...entrada, beneNoBloco: true }); else { const { beneNoBloco: _, ...resto } = entrada; gravar(resto); } }} />
@@ -246,9 +246,9 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>Quantos blocos?</DialogTitle></DialogHeader>
           <div role="radiogroup" aria-label="Quantidade de blocos" className="flex gap-2">
-            {[4, 2].map((n) => <Button key={n} role="radio" aria-checked={quantidadeEscolhida === n}
+            {[4, 2, 1].map((n) => <Button key={n} role="radio" aria-checked={quantidadeEscolhida === n}
               variant={quantidadeEscolhida === n ? "default" : "outline"} className="flex-1"
-              onClick={() => setQuantidadeTexto(String(n))}>{n} blocos</Button>)}
+              onClick={() => setQuantidadeTexto(String(n))}>{n} {n === 1 ? "bloco" : "blocos"}</Button>)}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setPerguntarBlocos(false)}>Cancelar</Button>

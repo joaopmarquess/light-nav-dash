@@ -282,3 +282,13 @@ describe("Benê nos blocos", () => {
     expect(normalizarEntradaFm({ ...COMPETENCIA_PADRAO, dias: {}, beneNoBloco: true }).beneNoBloco).toBeUndefined();
   });
 });
+
+describe("1 bloco", () => {
+  it("cobre o Período inteiro", () => {
+    const e = { ...COMPETENCIA_PADRAO, dias: {}, quantidadeBlocos: 1 };
+    const b = blocosPeriodoFm(e), quatro = blocosPeriodoFm({ ...e, quantidadeBlocos: 4 });
+    expect(b).toHaveLength(1);
+    expect(b[0].de).toBe(quatro[0].de);
+    expect(b[0].ate).toBe(quatro[3].ate);
+  });
+});
