@@ -127,6 +127,9 @@ export const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   controlItem,
   financeiroItem,
+  { icon: Stethoscope, label: "Assistencial", children: [
+    { icon: ListTree, label: "Análise de Despesas Assistenciais", id: "Assistencial · Análise de Despesas Assistenciais" },
+  ] },
   { icon: Users, label: "Carteira", children: [
     // Visão geral
     { icon: LayoutDashboard, label: "Painel", id: "Carteira · Painel" }, { icon: MapIcon, label: "Área Geográfica", id: "Carteira · Área Geográfica" }, { icon: TrendingUp, label: "Evolução Mensal", id: "Carteira · Evolução Mensal" },

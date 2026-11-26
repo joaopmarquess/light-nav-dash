@@ -1,3 +1,9 @@
+## Assistencial › Análise de Despesas Assistenciais (26/11/2026)
+- [x] Identificar fontes e campos reais da Hostinger; conferir código do Painel Assistencial (contratos de CSV/PBIX, sem conexão geral reutilizável). Preservar regra Benê exata do AXIS.
+- [x] Criar menu com permissão própria, período, indicadores de conciliação, grids hierárquicos integrados e filtros sem alterar outras telas/banco.
+- [x] 33 testes aprovados; consulta autenticada de maio/2026 com 280.383 movimentos, contábil R$ 30.759.438,58 e assistencial R$ 30.768.816,30; expansão e filtros cruzados conferidos na tela atual, sem erros.
+- Limitação identificada: cadastro geral de credenciados e vínculo contábil por movimento não localizados com segurança. A análise usa códigos/nomes dos movimentos; contabilidade e diferença permanecem do período completo, sem rateio artificial nas seleções.
+
 ## Facchini › Regras confirmadas da planilha (26/11/2026)
 - Pausado a pedido do Dênis; nenhuma fórmula alterada nesta rodada. Retomar somente quando solicitado.
 - [ ] Na retomada: aplicar patrocínio integral dos dependentes, mesmo com campo em 0%, e testar o total mensal da empresa de R$ 830.442,27.

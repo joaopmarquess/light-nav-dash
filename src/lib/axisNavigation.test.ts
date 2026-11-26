@@ -96,6 +96,18 @@ describe("Financeiro menu", () => {
   });
 });
 
+describe("Assistencial menu", () => {
+  it("expõe a análise no menu principal com permissão própria sem liberar outras telas", () => {
+    const id = "Assistencial · Análise de Despesas Assistenciais";
+    const items = axisPermissionGroups.find(g => g.label === "Assistencial")?.items ?? [];
+    expect(items.map(i => i.id)).toEqual([id]);
+    const access: AxisAccess = { status: "ok", role: "user", permissions: [id] };
+    expect(canAccess(access, id)).toBe(true);
+    expect(canAccess(access, "Consulta")).toBe(false);
+    expect(canAccess(access, "Control · DRE Gerencial PE")).toBe(false);
+  });
+});
+
 describe("Laboratory › Slides Simulador 2027", () => {
   it("has its own permission inside the Laboratory Orçamento group", () => {
     const items = axisPermissionGroups.find(g => g.label === "Laboratory")?.items ?? [];

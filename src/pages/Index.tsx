@@ -1,4 +1,5 @@
 import FacchiniSimulador from "@/components/FacchiniSimulador";
+import AnaliseDespesasAssistenciais from "@/components/AnaliseDespesasAssistenciais";
 import CarteiraTrial from "@/components/CarteiraTrial";
 import CarteiraTrialGeo from "@/components/CarteiraTrialGeo";
 import CarteiraTrialMov from "@/components/CarteiraTrialMov";
@@ -653,6 +654,8 @@ const Index = () => {
             <AxisSettings />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
+          ) : active === "Assistencial · Análise de Despesas Assistenciais" ? (
+            <AnaliseDespesasAssistenciais />
           ) : active === "Assistencial" ? (
             <Assistencial />
           ) : active === "Por Competência" ? (
