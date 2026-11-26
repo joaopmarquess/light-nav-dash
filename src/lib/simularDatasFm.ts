@@ -24,7 +24,7 @@ export const COMPETENCIA_PADRAO = { mes: 12, ano: 2026 };
 /** arquivoMes: mês (1–12) digitado no Arquivo; ausente → mês da competência (padrão 20/competência, pedido de 18/11/2026). */
 /** O campo "Referência de Último Dia" foi retirado (pedido de 18/11/2026); valores guardados antes são descartados ao ler. */
 /** blocos: opção "Simular em blocos" (pedido de 18/11/2026); ausente = desligada. */
-export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>>; arquivoMes?: number; blocos?: boolean; quantidadeBlocos?: number; beneNoBloco?: boolean };
+export type EntradaDatasFm = { mes: number; ano: number; dias: Partial<Record<IdDataFm, number>>; arquivoMes?: number; blocos?: boolean; quantidadeBlocos?: number; beneNoBloco?: boolean; arquivoRede?: { dia: number; mes: number }; arquivoBene?: { dia: number; mes: number } };
 
 const ultimoDia = (ano: number, mes: number) => new Date(Date.UTC(ano, mes, 0)).getUTCDate();
 const dd = (n: number) => String(n).padStart(2, "0");
@@ -176,6 +176,19 @@ export function blocosPeriodoFm(e: EntradaDatasFm): BlocoFm[] {
   });
 }
 
+/** Arquivo digitado para a Rede/Benê (pedido de 26/11/2026): DD/MM no ano do Arquivo calculado (ano seguinte se o mês for anterior). */
+export function arquivoDigitadoFm(padrao: string, v?: { dia: number; mes: number }): string {
+  if (!v) return padrao;
+  const [, m, a] = padrao.split("/").map(Number);
+  const ano = v.mes < m - 6 ? a + 1 : v.mes > m + 6 ? a - 1 : a;
+  const fim = new Date(Date.UTC(ano, v.mes, 0)).getUTCDate();
+  return dataUtc(new Date(Date.UTC(ano, v.mes - 1, Math.min(v.dia, fim))));
+}
+/** Blocos com o Arquivo da Rede digitado aplicado ao último bloco. */
+export function blocosRedeFm(e: EntradaDatasFm): BlocoFm[] {
+  const b = blocosPeriodoFm(e);
+  return b.map((x, i) => i === b.length - 1 ? { ...x, arquivo: arquivoDigitadoFm(x.arquivo, e.arquivoRede) } : x);
+}
 export const quantidadeBlocosFm = (e: Pick<EntradaDatasFm, "quantidadeBlocos">) =>
   e.quantidadeBlocos === 2 || e.quantidadeBlocos === 1 ? e.quantidadeBlocos : BLOCOS_FM;
 
@@ -187,7 +200,7 @@ export const beneNoBlocoFm = (e: Pick<EntradaDatasFm, "blocos" | "beneNoBloco">)
 export function hospitalBeneFm(e: EntradaDatasFm): Omit<BlocoFm, "bloco"> {
   const p = periodoFm(e);
   const dias = Math.round((utcDe(p.ate) - utcDe(p.de)) / DIA_MS) + 1;
-  return { de: p.de, ate: p.ate, dias, arquivo: simularDatasFm(e).find((l) => l.id === "arquivo")!.data };
+  return { de: p.de, ate: p.ate, dias, arquivo: arquivoDigitadoFm(simularDatasFm(e).find((l) => l.id === "arquivo")!.data, e.arquivoBene) };
 }
 
 /** Inteiro digitado dentro do intervalo; vazio → undefined (restaura o padrão); inválido → null (recusado). */
@@ -199,6 +212,7 @@ export function lerInteiro(texto: string, min: number, max: number): number | un
   return n >= min && n <= max ? n : null;
 }
 
+const diaMesValido = (v: any) => !!v && Number.isInteger(v.dia) && v.dia >= 1 && v.dia <= 31 && Number.isInteger(v.mes) && v.mes >= 1 && v.mes <= 12;
 /** Chave da simulação única anterior ao Controle de Simulações; lida só para migrar para a lista. */
 export const CHAVE_DATAS_FM = "laboratory.simularDatasFm.v1";
 /** Valida uma entrada guardada (campos inválidos voltam ao padrão; REFERÊNCIA fixa é ignorada). */
@@ -212,6 +226,8 @@ export function normalizarEntradaFm(b: unknown): EntradaDatasFm {
     ...(o.blocos === true ? { blocos: true } : {}),
     ...(o.blocos === true && o.quantidadeBlocos !== undefined ? { quantidadeBlocos: quantidadeBlocosFm(o) } : {}),
     ...(o.blocos === true && o.beneNoBloco === true ? { beneNoBloco: true } : {}),
+    ...(o.blocos === true && diaMesValido(o.arquivoRede) ? { arquivoRede: { dia: o.arquivoRede.dia, mes: o.arquivoRede.mes } } : {}),
+    ...(o.blocos === true && diaMesValido(o.arquivoBene) ? { arquivoBene: { dia: o.arquivoBene.dia, mes: o.arquivoBene.mes } } : {}),
     mes: Number.isInteger(o.mes) && o.mes >= 1 && o.mes <= 12 ? o.mes : COMPETENCIA_PADRAO.mes,
     ano: Number.isInteger(o.ano) && o.ano >= 2000 && o.ano <= 2100 ? o.ano : COMPETENCIA_PADRAO.ano,
     dias,

@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { quantidadeBlocosFm } from "@/lib/simularDatasFm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvarUltimoNumeroFm, simulacaoAlteradaFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, prazoFolhaFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, blocosPeriodoFm, hospitalBeneFm, beneNoBlocoFm, PARTES_BLOCOS_FM, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvarUltimoNumeroFm, simulacaoAlteradaFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, prazoFolhaFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, blocosPeriodoFm, blocosRedeFm, arquivoDigitadoFm, hospitalBeneFm, beneNoBlocoFm, PARTES_BLOCOS_FM, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
 const novoId = () => globalThis.crypto?.randomUUID?.() ?? `fm-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const agora = () => new Date().toISOString();
@@ -155,6 +155,27 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
     onBlur: () => setTexto((p) => { const n = { ...p }; delete n[chave]; return n; }),
   });
   const todas = simularDatasFm(entrada);
+  // Arquivo da Rede (último bloco) e do Benê digitados à parte (pedido de 26/11/2026); vazio = data calculada.
+  const campoArquivo = (chave: "arquivoRede" | "arquivoBene", rotulo: string) => {
+    const padrao = chave === "arquivoRede" ? blocosPeriodoFm(entrada).at(-1)!.arquivo : hospitalBeneFm({ ...entrada, arquivoBene: undefined }).arquivo;
+    const v = entrada[chave], t = texto[chave];
+    return (
+      <span className="flex items-center gap-2">
+        <span className="font-semibold">{rotulo}:</span>
+        <Input aria-label={rotulo} inputMode="numeric" placeholder={padrao.slice(0, 5)} maxLength={5} title="DD/MM; apague para usar a data calculada"
+          value={t ?? (v ? `${String(v.dia).padStart(2, "0")}/${String(v.mes).padStart(2, "0")}` : "")}
+          onChange={(e) => {
+            const x = e.target.value; if (!/^[\d/]*$/.test(x)) return;
+            setTexto((p) => ({ ...p, [chave]: x }));
+            const lido = lerDiaMes(x); if (lido === null) return;
+            if (lido === undefined) { const { [chave]: _, ...resto } = entrada; gravar(resto); } else gravar({ ...entrada, [chave]: lido });
+          }}
+          onBlur={() => setTexto((p) => { const n = { ...p }; delete n[chave]; return n; })}
+          className={`h-8 w-20 text-center tabular-nums ${t && !lerDiaMes(t) ? "border-destructive" : ""}`} />
+        <span className="tabular-nums text-muted-foreground">{arquivoDigitadoFm(padrao, v)}</span>
+      </span>
+    );
+  };
   // Arquivo fica fora do grid de variáveis (pedido de 18/11/2026), logo abaixo da Competência.
   const arquivo = todas.find((l) => l.id === "arquivo")!;
   const linhas = todas.filter((l) => l.id !== "arquivo");
@@ -231,7 +252,7 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
         <Checkbox checked={!!entrada.blocos} aria-label="Simular em blocos"
           onCheckedChange={(v) => {
             if (v === true) { setQuantidadeTexto(String(quantidadeBlocosFm(entrada))); setPerguntarBlocos(true); }
-            else { const { blocos: _, quantidadeBlocos: __, beneNoBloco: ___, ...resto } = entrada; gravar(resto); }
+            else { const { blocos: _, quantidadeBlocos: __, beneNoBloco: ___, arquivoRede: ____, arquivoBene: _____, ...resto } = entrada; gravar(resto); }
           }} />
         <span className="font-semibold">Simular em blocos</span>
       </label>
@@ -241,6 +262,8 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
           onCheckedChange={(v) => { if (v === true) gravar({ ...entrada, beneNoBloco: true }); else { const { beneNoBloco: _, ...resto } = entrada; gravar(resto); } }} />
         <span className="font-semibold">Benê entra nos blocos</span>
       </label>}
+      {entrada.blocos && campoArquivo("arquivoRede", "Arquivo da Rede")}
+      {entrada.blocos && !entrada.beneNoBloco && campoArquivo("arquivoBene", "Arquivo do Benê")}
       </div>
       <Dialog open={perguntarBlocos} onOpenChange={setPerguntarBlocos}>
         <DialogContent className="max-w-sm">
@@ -287,10 +310,10 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
               <tbody>
                 {beneNoBlocoFm(entrada) ? <>
                   {parte(1, PARTES_BLOCOS_FM.todos)}
-                  {blocosPeriodoFm(entrada).map((b) => linha(`Bloco ${b.bloco}`, b))}
+                  {blocosRedeFm(entrada).map((b) => linha(`Bloco ${b.bloco}`, b))}
                 </> : <>
                   {parte(1, PARTES_BLOCOS_FM.outros)}
-                  {blocosPeriodoFm(entrada).map((b) => linha(`Bloco ${b.bloco}`, b))}
+                  {blocosRedeFm(entrada).map((b) => linha(`Bloco ${b.bloco}`, b))}
                   {parte(2, PARTES_BLOCOS_FM.hospital)}
                   {linha("Período geral", hospital)}
                 </>}

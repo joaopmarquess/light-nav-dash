@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatarPrazo, normalizarEntradaFm, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil , lerSimulacoesFm, novaSimulacaoFm, gravarSimulacaoFm, simulacaoAlteradaFm, duplicarSimulacaoFm, ordenarSimulacoesFm, proximoNumeroFm, DESCRICAO_FM_MAX, prazoFolhaFm, blocosPeriodoFm, hospitalBeneFm, beneNoBlocoFm } from "./simularDatasFm";
+import { formatarPrazo, normalizarEntradaFm, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil , lerSimulacoesFm, novaSimulacaoFm, gravarSimulacaoFm, simulacaoAlteradaFm, duplicarSimulacaoFm, ordenarSimulacoesFm, proximoNumeroFm, DESCRICAO_FM_MAX, prazoFolhaFm, blocosPeriodoFm, hospitalBeneFm, beneNoBlocoFm, blocosRedeFm } from "./simularDatasFm";
 
 // Entrada do quadro fornecido antes do novo padrão: Arquivo 05/01 e Fechamento 10.
 const QUADRO = { ...COMPETENCIA_PADRAO, dias: { arquivo: 5, fechamento: 10 }, arquivoMes: 1 };
@@ -290,5 +290,15 @@ describe("1 bloco", () => {
     expect(b).toHaveLength(1);
     expect(b[0].de).toBe(quatro[0].de);
     expect(b[0].ate).toBe(quatro[3].ate);
+  });
+});
+
+describe("Arquivo da Rede e do Benê digitados", () => {
+  it("Rede muda só o último bloco; Benê muda a Parte 2", () => {
+    const e = { ...COMPETENCIA_PADRAO, dias: {}, blocos: true };
+    const base = blocosPeriodoFm(e), b = blocosRedeFm({ ...e, arquivoRede: { dia: 25, mes: base[3].arquivo.split("/").map(Number)[1] } });
+    expect(b.slice(0, 3)).toEqual(base.slice(0, 3));
+    expect(b[3].arquivo.slice(0, 2)).toBe("25");
+    expect(hospitalBeneFm({ ...e, arquivoBene: { dia: 3, mes: 2 } }).arquivo.slice(0, 5)).toBe("03/02");
   });
 });
