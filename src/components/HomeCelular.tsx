@@ -3,18 +3,13 @@ import { hostinger } from "@/lib/hostingerClient";
 import { somarTotaisMovimentacao, type TotaisMovimentacao } from "@/lib/movimentacaoCarga";
 import { AvisoErroDados } from "@/components/AvisoErroDados";
 import { ChevronRight } from "lucide-react";
+import { periodoHomeCelular } from "./homeCelularPeriodo";
 
-// Home de celular: indicadores do último mês fechado (mesmas consultas da Movimentação) e atalhos aos apps de celular.
+// Home de celular: movimentação desde 01/01/2026 até hoje e vidas ativas nessa data.
 type App = { id: string; label: string; icon: React.ComponentType<{ className?: string }> };
-const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
-const ultimoMes = () => {
-  const fim = new Date(); fim.setUTCDate(0);
-  const ate = fim.toISOString().slice(0, 10);
-  return { de: ate.slice(0, 8) + "01", ate, nome: `${MESES[fim.getUTCMonth()]}/${fim.getUTCFullYear()}` };
-};
 
 export default function HomeCelular({ apps, nome, onAbrir }: { apps: App[]; nome?: string | null; onAbrir: (id: string) => void }) {
-  const p = ultimoMes();
+  const p = periodoHomeCelular();
   const [vidas, setVidas] = useState<number | null>(null);
   const [t, setT] = useState<TotaisMovimentacao | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -29,7 +24,7 @@ export default function HomeCelular({ apps, nome, onAbrir }: { apps: App[]; nome
       if (error) return setErr(error.message);
       setT(somarTotaisMovimentacao([(Array.isArray(data) ? data[0] : data) ?? {}]));
     });
-  }, [tick]);
+  }, [tick, p.de, p.ate]);
   const n = (v: number | null | undefined) => (v == null ? "…" : v.toLocaleString("pt-BR"));
   const card = (rotulo: string, valor: string, tom = "text-foreground") => (
     <div className="rounded-lg border border-border bg-card p-3">
@@ -41,11 +36,11 @@ export default function HomeCelular({ apps, nome, onAbrir }: { apps: App[]; nome
     <div className="h-full overflow-y-auto p-4 space-y-5">
       <div>
         <p className="text-lg font-semibold">Olá, {nome ?? "Usuário"}</p>
-        <p className="text-xs text-muted-foreground">Carteira em {p.nome}</p>
+        <p className="text-xs text-muted-foreground">Movimentação de {p.nome}</p>
       </div>
       {err ? <AvisoErroDados erro={err} onTentar={() => setTick(x => x + 1)} /> : (
         <div className="grid grid-cols-2 gap-3">
-          <div className="col-span-2">{card("Vidas ativas no fim do mês", n(vidas), "text-primary")}</div>
+          <div className="col-span-2">{card("Vidas ativas atuais", n(vidas), "text-primary")}</div>
           {card("Vendas", n(t?.e))}
           {card("Cancelamentos", n(t?.s), "text-destructive")}
         </div>
