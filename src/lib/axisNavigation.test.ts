@@ -107,7 +107,7 @@ describe("Laboratory › Slides Simulador 2027", () => {
 
 import { appsCelular } from "./axisNavigation";
 describe("Modo celular", () => {
-  it("lista somente Carteira · Movimentação", () => {
-    expect(appsCelular.map(a => a.id)).toEqual(["Carteira · Movimentação"]);
+  it("lista Movimentação e Demonstrações", () => {
+    expect(appsCelular.map(a => a.id)).toEqual(["Carteira · Movimentação", "Control · DRE Gerencial PE"]);
   });
 });

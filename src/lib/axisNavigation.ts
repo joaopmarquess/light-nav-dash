@@ -185,4 +185,5 @@ export const axisPermissionGroups = [
 // Apps com versão de celular: único conteúdo do menu "hamburger" no modo celular.
 export const appsCelular: { id: string; label: string; icon: typeof ArrowRightLeft }[] = [
   { id: "Carteira · Movimentação", label: "Movimentação", icon: ArrowRightLeft },
+  { id: "Control · DRE Gerencial PE", label: "Demonstrações (DRE)", icon: FileText },
 ];
