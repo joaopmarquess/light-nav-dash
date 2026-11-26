@@ -1,11 +1,11 @@
 import { hostinger } from "@/lib/hostingerClient";
 import { carregarContabilIa } from "@/control/dreIaCarga";
-import { competenciasAssistenciais, despesaContabilAssistencial, type MovimentoAssistencial } from "./analiseDespesasAssistenciais";
+import { competenciasAssistenciais, despesaContabilAssistencial, FONTE_ASSISTENCIAL, movimentoDaView, type RegistroViewAssistencial, type MovimentoAssistencial } from "./analiseDespesasAssistenciais";
 
 export async function ultimaCompetenciaAssistencial() {
-  const { data, error } = await hostinger.from("assistencial").select("bscmp").not("bscmp", "is", null).order("bscmp", { ascending: false }).limit(1);
+  const { data, error } = await hostinger.from(FONTE_ASSISTENCIAL).select("dt_competencia").not("dt_competencia", "is", null).order("dt_competencia", { ascending: false }).limit(1);
   if (error) throw error;
-  const n = Number(data?.[0]?.bscmp);
+  const n = Number(data?.[0]?.dt_competencia);
   return n ? `${Math.floor(n / 100)}-${String(n % 100).padStart(2, "0")}` : "";
 }
 export async function carregarAnaliseAssistencial(de: string, ate: string, signal: AbortSignal, progresso: (n: number) => void) {
@@ -16,19 +16,23 @@ export async function carregarAnaliseAssistencial(de: string, ate: string, signa
   const contabilidade = Promise.all([...contabeis].map(([ano, ms]) => carregarContabilIa(ano, ms))).then(rs => ({ valor: despesaContabilAssistencial(rs.flat()), erro: null as unknown })).catch(erro => ({ valor: null, erro }));
   try {
     for (const mes of meses) {
-      let ultimo: number | null = null;
+      let offset = 0;
       while (true) {
         signal.throwIfAborted();
-        let q = hostinger.from("assistencial").select("ideAssist,bscmp,nrgui,catipgui,cdcrdexe,dscrdexe,cdcrdrec,dscrdrec,vrevt").eq("bscmp", mes).order("ideAssist").limit(1000).abortSignal(signal);
-        if (ultimo !== null) q = q.gt("ideAssist", ultimo);
+        // The view has no event ID: page by offset with an order covering every selected field.
+        const q = hostinger.from(FONTE_ASSISTENCIAL)
+          .select("dt_competencia,nr_guia,ds_tipo_atendimento,cd_prestador,nm_prestador,cd_prestador_pagamento,nm_prestador_pagamento,vl_total_pago")
+          .eq("dt_competencia", mes).order("nr_guia").order("ds_tipo_atendimento")
+          .order("cd_prestador").order("nm_prestador").order("cd_prestador_pagamento")
+          .order("nm_prestador_pagamento").order("vl_total_pago")
+          .range(offset, offset + 999).abortSignal(signal);
         const { data, error } = await q;
         if (error) throw error;
-        const lote = (data ?? []) as MovimentoAssistencial[];
-        rows.push(...lote); progresso(rows.length);
+        const lote = (data ?? []) as RegistroViewAssistencial[];
+        const inicio = rows.length;
+        rows.push(...lote.map((r, i) => movimentoDaView(r, inicio + i))); progresso(rows.length);
         if (lote.length < 1000) break;
-        const proximo = Number(lote[lote.length - 1]?.ideAssist);
-        if (!Number.isFinite(proximo) || (ultimo !== null && proximo <= ultimo)) throw new Error("Não foi possível garantir a leitura completa da base assistencial.");
-        ultimo = proximo;
+        offset += lote.length;
       }
     }
     const c = await contabilidade; signal.throwIfAborted();

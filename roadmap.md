@@ -1,4 +1,5 @@
 ## Assistencial › Análise de Despesas Assistenciais (26/11/2026)
+- [x] Fonte trocada para view_eassistencial; 9 testes aprovados e consulta autenticada de maio/2026 com 318.034 movimentos e R$ 25.572.545,83 pagos; filtros conferidos, icontabil preservada. A classificação Benê por nome exato não encontra executor nessa view neste período; regra preservada, sem inferir outro nome.
 - [x] Identificar fontes e campos reais da Hostinger; conferir código do Painel Assistencial (contratos de CSV/PBIX, sem conexão geral reutilizável). Preservar regra Benê exata do AXIS.
 - [x] Criar menu com permissão própria, período, indicadores de conciliação, grids hierárquicos integrados e filtros sem alterar outras telas/banco.
 - [x] 33 testes aprovados; consulta autenticada de maio/2026 com 280.383 movimentos, contábil R$ 30.759.438,58 e assistencial R$ 30.768.816,30; expansão e filtros cruzados conferidos na tela atual, sem erros.

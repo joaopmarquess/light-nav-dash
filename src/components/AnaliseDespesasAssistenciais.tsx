@@ -59,7 +59,7 @@ export default function AnaliseDespesasAssistenciais() {
   const conciliacao = conciliacaoAssistencial(dados?.contabil ?? null, completo.total);
   const indicadores: [string, string, string?][] = [
     ["Despesa Assistencial Contábil", moeda(dados?.contabil ?? null), "Total do período · contas analíticas, líquido de recuperações"],
-    ["Despesa na base assistencial", moeda(completo.total), "Total do período · soma dos valores de eventos"],
+    ["Despesa na base assistencial", moeda(completo.total), "Total do período · soma dos valores pagos"],
     ["Diferença Contábil − Assistencial", moeda(conciliacao.diferenca), "Conciliação do período completo, sem rateio por credenciado"],
     ["Diferença percentual", percentual(conciliacao.percentual), "Diferença ÷ despesa contábil do período"],
     ["Executor · É Benê", moeda(resumo.bene)], ["Executor · Não é Benê", moeda(resumo.naoBene)],
@@ -91,10 +91,10 @@ export default function AnaliseDespesasAssistenciais() {
       </div>}
       <details className="mt-4 border-t border-border py-3 text-xs text-muted-foreground"><summary className="cursor-pointer">Fontes e critérios da análise</summary><ul className="mt-2 list-disc space-y-1 pl-5">
         <li>Contabilidade: icontabil, contas analíticas A classificadas em PRINCIPAL / DESP. ASSISTENCIAL; REALIZADO com sinal invertido para apresentar despesa líquida.</li>
-        <li>Assistencial: assistencial, período bscmp, despesa vrevt; todas as folhas, sem somar vrtotgui sobre os eventos.</li>
-        <li>Executor: cdcrdexe / dscrdexe. Recebedor: cdcrdrec / dscrdrec; conceitos independentes, inclusive quando iguais.</li>
+        <li>Assistencial: view_eassistencial, período dt_competencia, despesa vl_total_pago; cada linha de procedimento é somada uma vez, sem adicionar valores glosados.</li>
+        <li>Executor: cd_prestador / nm_prestador. Recebedor: cd_prestador_pagamento / nm_prestador_pagamento; conceitos independentes, inclusive quando iguais.</li>
         <li>É Benê: executor com nome exato HOSP BENEF PORTUGUESA DE S J RIO PRETO, conforme a regra assistencial já utilizada no AXIS.</li>
-        <li>Tipos originais de catipgui. Quantidade: guias distintas por competência e tipo; subtotais de guias não são aditivos entre credenciados.</li>
+        <li>Tipos originais de ds_tipo_atendimento. Quantidade: nr_guia distintas por competência e tipo; subtotais de guias não são aditivos entre credenciados.</li>
         <li>Não localizado cadastro geral de credenciados conectado a esta fonte nem vínculo contábil por movimento. Nomes e códigos vêm do próprio movimento; nenhuma despesa contábil é atribuída artificialmente aos credenciados.</li>
       </ul></details>
     </> : !erro && !iniciando && <p className="py-12 text-center text-sm text-muted-foreground">Nenhum período base aplicado.</p>}

@@ -1,7 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { arvoreAssistencial, competenciasAssistenciais, conciliacaoAssistencial, despesaContabilAssistencial, filtrarAssistencial, HOSPITAL_BENE, resumoAssistencial, tipoExecutor, type MovimentoAssistencial } from "./analiseDespesasAssistenciais";
+import { arvoreAssistencial, competenciasAssistenciais, conciliacaoAssistencial, despesaContabilAssistencial, filtrarAssistencial, FONTE_ASSISTENCIAL, movimentoDaView, HOSPITAL_BENE, resumoAssistencial, tipoExecutor, type MovimentoAssistencial } from "./analiseDespesasAssistenciais";
 const row = (extra: Partial<MovimentoAssistencial>): MovimentoAssistencial => ({ ideAssist: 1, bscmp: 202605, nrgui: 1, catipgui: "Consulta", cdcrdexe: 10, dscrdexe: HOSPITAL_BENE, cdcrdrec: 10, dscrdrec: HOSPITAL_BENE, vrevt: 100, ...extra });
 describe("Análise de Despesas Assistenciais", () => {
+  it("usa a view_eassistencial confirmada e preserva os valores pagos e prestadores", () => {
+    expect(FONTE_ASSISTENCIAL).toBe("view_eassistencial");
+    const r = movimentoDaView({ dt_competencia: 202610, nr_guia: 123, ds_tipo_atendimento: "SP/SADT - SOLICITAÇÃO", cd_prestador: 10, nm_prestador: HOSPITAL_BENE, cd_prestador_pagamento: 20, nm_prestador_pagamento: "Recebedor", vl_total_pago: "125.50" }, 1);
+    expect(resumoAssistencial([r]).total).toBe(125.5);
+    expect(r).toEqual(row({ bscmp: 202610, nrgui: 123, catipgui: "SP/SADT - SOLICITAÇÃO", cdcrdrec: 20, dscrdrec: "Recebedor", vrevt: "125.50" }));
+  });
   it("mantém executor igual ao recebedor sem eliminar o movimento", () => {
     const rs = [row({}), row({ ideAssist: 2, vrevt: 50 })];
     expect(resumoAssistencial(rs).total).toBe(150);

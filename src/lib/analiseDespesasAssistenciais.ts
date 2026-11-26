@@ -3,6 +3,18 @@ export type MovimentoAssistencial = {
   cdcrdexe: string | number | null; dscrdexe: string | null;
   cdcrdrec: string | number | null; dscrdrec: string | null; vrevt: string | number | null;
 };
+export const FONTE_ASSISTENCIAL = "view_eassistencial";
+export type RegistroViewAssistencial = {
+  dt_competencia: number; nr_guia: string | number | null; ds_tipo_atendimento: string | null;
+  cd_prestador: string | number | null; nm_prestador: string | null;
+  cd_prestador_pagamento: string | number | null; nm_prestador_pagamento: string | null;
+  vl_total_pago: string | number | null;
+};
+export function movimentoDaView(r: RegistroViewAssistencial, indice: number): MovimentoAssistencial {
+  return { ideAssist: indice, bscmp: Number(r.dt_competencia), nrgui: r.nr_guia, catipgui: r.ds_tipo_atendimento,
+    cdcrdexe: r.cd_prestador, dscrdexe: r.nm_prestador,
+    cdcrdrec: r.cd_prestador_pagamento, dscrdrec: r.nm_prestador_pagamento, vrevt: r.vl_total_pago };
+}
 export type FiltroAssistencial = { tipo?: string; executor?: string; recebedor?: string; guia?: string };
 export type NoAssistencial = { chave: string; nome: string; filtro: FiltroAssistencial; valor: number; quantidade: number; percentual: number; filhos: NoAssistencial[] };
 export const HOSPITAL_BENE = "HOSP BENEF PORTUGUESA DE S J RIO PRETO";
