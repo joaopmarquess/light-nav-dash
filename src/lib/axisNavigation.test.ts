@@ -104,3 +104,10 @@ describe("Laboratory › Slides Simulador 2027", () => {
     expect(canAccess(access, "Control · Slides Simulação")).toBe(false);
   });
 });
+
+import { appsCelular } from "./axisNavigation";
+describe("Modo celular", () => {
+  it("lista somente Carteira · Movimentação", () => {
+    expect(appsCelular.map(a => a.id)).toEqual(["Carteira · Movimentação"]);
+  });
+});

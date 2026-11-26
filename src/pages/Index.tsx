@@ -131,7 +131,8 @@ import AssistencialRelatorioExecutor from "@/components/AssistencialRelatorioExe
 import AssistencialReceitas2518 from "@/components/AssistencialReceitas2518";
 import Assistencial2518Prestadores from "@/components/Assistencial2518Prestadores";
 import { useConsultaState } from "@/lib/assistencialConsultaStore";
-import { Loader2, DollarSign, FlaskConical } from "lucide-react";
+import { Loader2, DollarSign, FlaskConical, Menu } from "lucide-react";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import PropostaApb from "@/components/PropostaApb";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -149,7 +150,7 @@ import { Button } from "@/components/ui/button";
 import AxisSettings from "@/components/AxisSettings";
 import PesquisaApp from "@/components/PesquisaApp";
 import { useAxisAccess } from "@/hooks/useAxisAccess";
-import { menuItems, labItems, LAB_IDS, UBERABA_RESULTADOS_COMERCIAIS, menuSubgroupIcons } from "@/lib/axisNavigation";
+import { menuItems, labItems, LAB_IDS, UBERABA_RESULTADOS_COMERCIAIS, appsCelular, menuSubgroupIcons } from "@/lib/axisNavigation";
 const onControlSimulatorViewState = (_enabled: boolean[]) => {};
 
 const Index = () => {
@@ -175,6 +176,11 @@ const Index = () => {
     setActiveState(first ?? "__no_access__");
   }, [accessLoading, active, can]);
   const { nome, signOut } = useAuth();
+  // Modo celular: menu lateral vira "hamburger" só com os apps que têm versão de celular.
+  const celular = useIsMobile();
+  const [menuCelular, setMenuCelular] = useState(false);
+  const appsCel = appsCelular.filter(a => can(a.id));
+  const telaCelular = appsCel.some(a => a.id === active);
   const [ctrlAba, setCtrlAba] = useState<string | null>(null);
   const [ctrlOrcDre, setCtrlOrcDre] = useState(false);
   const [ctrlCfgOpen, setCtrlCfgOpen] = useState(false);
@@ -215,8 +221,25 @@ const Index = () => {
 
   return (
     <div className={`h-screen overflow-hidden flex w-full bg-background ${active === "Control · Simulador" ? "control-simulator-shell" : ""}`}>
+      {celular && <Sheet open={menuCelular} onOpenChange={setMenuCelular}>
+        <SheetContent side="left" className="w-64 p-0">
+          <div className="h-16 flex items-center gap-3 px-4 border-b border-border">
+            <img src={logoIcon.url} alt="AXIS" className="h-8 w-8 object-contain" />
+            <SheetTitle className="text-base">Modo celular</SheetTitle>
+          </div>
+          <nav className="p-3 space-y-1">
+            {appsCel.map(a => <button key={a.id} onClick={() => { setActiveState(a.id); setMenuCelular(false); }}
+              className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium ${active === a.id ? "bg-accent text-primary" : "text-foreground/70"}`}>
+              <a.icon className="h-4 w-4" />{a.label}</button>)}
+            {appsCel.length === 0 && <p className="px-3 text-sm text-muted-foreground">Nenhum app de celular liberado.</p>}
+          </nav>
+          <div className="absolute bottom-0 inset-x-0 p-3 border-t border-border">
+            <button onClick={() => signOut()} className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground"><LogOut className="h-4 w-4" /> Sair</button>
+          </div>
+        </SheetContent>
+      </Sheet>}
       <aside
-        className={`${collapsed ? "w-16" : "w-64"} border-r border-border bg-card flex flex-col transition-all duration-200`}
+        className={`${celular ? "hidden" : ""} ${collapsed ? "w-16" : "w-64"} border-r border-border bg-card flex flex-col transition-all duration-200`}
       >
         <div className="h-20 flex flex-col items-center justify-center gap-1 px-3 border-b border-border">
           <Tooltip>
@@ -415,7 +438,12 @@ const Index = () => {
       </aside>
 
       <div className="flex-1 flex flex-col min-h-0 min-w-0">
-        <header className="h-20 border-b border-border bg-card flex items-center justify-between px-8">
+        {celular && <header className="h-14 border-b border-border bg-card flex items-center gap-3 px-3">
+          <Button variant="ghost" size="icon" aria-label="Abrir menu" onClick={() => setMenuCelular(true)}><Menu className="h-5 w-5" /></Button>
+          <h1 className="flex-1 truncate text-base font-semibold">{telaCelular ? appsCel.find(a => a.id === active)?.label : "AXIS"}</h1>
+          <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-primary text-sm font-semibold">{(nome ?? "U").charAt(0).toUpperCase()}</div>
+        </header>}
+        <header className={`${celular ? "hidden" : ""} h-20 border-b border-border bg-card flex items-center justify-between px-8`}>
           <div>
             <h1 className="text-xl font-semibold text-foreground">{controlTitle ?? (active === "Uberaba Timeline" || active === UBERABA_RESULTADOS_COMERCIAIS ? "Proj. Uberaba" : active)}</h1>
             {controlTitle ? controlSubtitle && <p className="text-xs text-muted-foreground">{controlSubtitle}</p> : <p className="text-xs text-muted-foreground">AXIS | Executive Intelligence Platform <span className="italic">by Dênis Santana</span></p>}
@@ -450,7 +478,14 @@ const Index = () => {
           </div>
         </header>
 
-        <main className={`flex-1 min-h-0 overflow-hidden flex ${LAB_IDS.has(active) ? "flex-row gap-4" : "flex-col"} ${LAB_IDS.has(active) ? "py-8 pl-2 pr-8" : active === "Carteira · Bench Vidas" ? "p-3 sm:p-8" : active === "Carteira · Área Geográfica" ? "p-3 sm:p-4" : "p-8"}`}>
+        {celular ? <main className="flex-1 min-h-0 overflow-hidden">
+          {accessLoading ? <p className="p-4 text-sm text-muted-foreground">Carregando acessos…</p> : telaCelular ? <MovimentacaoCelular /> : (
+            <div className="p-4 space-y-2">
+              <p className="text-sm text-muted-foreground">Escolha um app de celular:</p>
+              {appsCel.map(a => <Button key={a.id} variant="outline" className="w-full justify-start gap-3" onClick={() => setActiveState(a.id)}><a.icon className="h-4 w-4" />{a.label}</Button>)}
+            </div>
+          )}
+        </main> : <main className={`flex-1 min-h-0 overflow-hidden flex ${LAB_IDS.has(active) ? "flex-row gap-4" : "flex-col"} ${LAB_IDS.has(active) ? "py-8 pl-2 pr-8" : active === "Carteira · Bench Vidas" ? "p-3 sm:p-8" : active === "Carteira · Área Geográfica" ? "p-3 sm:p-4" : "p-8"}`}>
           {LAB_IDS.has(active) && (
             <LaboratoryNav items={visibleLabs} active={active} canHome={can("Laboratory")} onSelect={setActive} onMenuOpenChange={setLabMenuAberto} />
           )}
@@ -639,7 +674,7 @@ const Index = () => {
             </section>
           )}
           </div>
-        </main>
+        </main>}
       </div>
 
       {showConsultaBadge && (

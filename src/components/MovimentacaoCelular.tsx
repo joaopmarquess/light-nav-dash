@@ -65,7 +65,6 @@ export default function MovimentacaoCelular() {
 
   return (
     <div className="h-full overflow-y-auto p-3 pb-8">
-      <h2 className="mb-3 text-lg font-semibold">Movimentação</h2>
       <div className="grid grid-cols-2 gap-2">
         <label className="text-xs text-muted-foreground">De<Input type="date" value={f.de} onChange={e => setF({ ...f, de: e.target.value })} /></label>
         <label className="text-xs text-muted-foreground">Até<Input type="date" value={f.ate} onChange={e => setF({ ...f, ate: e.target.value })} /></label>

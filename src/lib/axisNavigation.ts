@@ -181,3 +181,8 @@ export const axisPermissionGroups = [
   })),
   { label: "Laboratory", items: [{ id: "Laboratory", label: "Laboratory" }, ...labItems.flatMap(g => g.children ? g.children.map(c => ({ id: c.id ?? c.label, label: `${g.label.trim()} · ${c.label}` })) : [{ id: g.label, label: g.label }])] },
 ];
+
+// Apps com versão de celular: único conteúdo do menu "hamburger" no modo celular.
+export const appsCelular: { id: string; label: string; icon: typeof ArrowRightLeft }[] = [
+  { id: "Carteira · Movimentação", label: "Movimentação", icon: ArrowRightLeft },
+];
