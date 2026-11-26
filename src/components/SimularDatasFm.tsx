@@ -333,39 +333,44 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
             </tr>
           </thead>
           <tbody>
-            {linhas.map((l) => (
-              <Fragment key={l.id}>
-              <tr className={`border-b border-border ${l.separadorAntes ? "border-t-2 border-t-foreground" : ""} ${l.destaque ? "font-bold" : ""}`}>
-                <td className="px-3 py-1.5 uppercase">{l.rotulo}</td>
+            {linhas.map((l) => {
+              const referencia = (rotulo: string) => (
                 <td className="px-3 py-1.5">
                   {/* DeRE, DIOPS e Pagamento: REFERÊNCIA fixa, só exibida (pedido de 18/11/2026). */}
-                  {l.fixo ? <div className="ml-auto w-20 pr-3 text-right tabular-nums" aria-label={`Dia — ${l.rotulo}`}>{l.dia}</div> :
-                  <Input aria-label={`Dia — ${l.rotulo}`} inputMode="numeric" title={l.somaAoArquivo ? "Dias somados à data do Arquivo; apague para restaurar o padrão" : "Apague para restaurar o padrão"} className={`ml-auto ${cls} ${l.destaque ? "font-bold" : ""}`}
+                  {l.fixo ? <div className="ml-auto w-20 pr-3 text-right tabular-nums" aria-label={`Dia — ${rotulo}`}>{l.dia}</div> :
+                  <Input aria-label={`Dia — ${rotulo}`} inputMode="numeric" title={l.somaAoArquivo ? "Dias somados à data do Arquivo; apague para restaurar o padrão" : "Apague para restaurar o padrão"} className={`ml-auto ${cls} ${l.destaque ? "font-bold" : ""}`}
                     {...campo(l.id, l.dia, 1, 31, (v) => {
                       const dias = { ...entrada.dias };
                       if (v === undefined) delete dias[l.id as IdDataFm]; else dias[l.id as IdDataFm] = v;
                       gravar({ ...entrada, dias });
                     })} />}
                 </td>
-                {/* Em blocos, o Fechamento só tem as datas de Benê e Rede abaixo (pedido de 26/11/2026). */}
-                {l.id === "fechamento" && entrada.blocos ? <td colSpan={2} className="px-3 py-1.5 text-xs font-normal text-muted-foreground">Datas do Benê e da Rede abaixo</td> : <>
+              );
+              const classe = `border-b border-border ${l.separadorAntes ? "border-t-2 border-t-foreground" : ""} ${l.destaque ? "font-bold" : ""}`;
+              // Em blocos, sem linha única de Fechamento: só Fechamento Benê e Fechamento Rede (pedido de 26/11/2026).
+              if (l.id === "fechamento" && entrada.blocos) return (
+                <Fragment key={l.id}>
+                  {fechamentosFm(entrada).map((f, i) => (
+                    <tr key={f.id} className={i === 0 ? classe : "border-b border-border"}>
+                      <td className="px-3 py-1.5 uppercase">{f.rotulo}</td>
+                      {referencia(f.rotulo)}
+                      <td className="px-3 py-1.5 text-right tabular-nums">{f.data}</td>
+                      <td className="whitespace-nowrap px-3 py-1.5 text-left tabular-nums">{formatarPrazo(f.dias)} <span className="text-xs font-normal text-muted-foreground">dias desde o Arquivo {f.arquivo.slice(0, 5)}</span></td>
+                    </tr>
+                  ))}
+                </Fragment>
+              );
+              return (
+              <tr key={l.id} className={classe}>
+                <td className="px-3 py-1.5 uppercase">{l.rotulo}</td>
+                {referencia(l.rotulo)}
                 <td className="px-3 py-1.5 text-right tabular-nums" title={l.ajustado ? "Dia limitado ao último dia do mês" : undefined}>
                   {l.data}{l.ajustado ? " *" : ""}
                 </td>
                 <td className="whitespace-nowrap px-3 py-1.5 text-left tabular-nums">{formatarPrazo(l.diasBase)} <span className="text-xs font-normal text-muted-foreground">{Math.abs(l.diasBase) === 1 ? "dia" : "dias"} desde o {l.base}</span></td>
-                </>}
               </tr>
-              {/* Fechamento em duas datas, Benê e Rede (pedido de 26/11/2026). */}
-              {l.id === "fechamento" && entrada.blocos && fechamentosFm(entrada).map((f) => (
-                <tr key={f.id} className="border-b border-border text-muted-foreground">
-                  <td className="px-3 py-1 pl-6 text-xs uppercase">{f.rotulo}</td>
-                  <td className="px-3 py-1 text-right text-xs tabular-nums">Arquivo {f.arquivo}</td>
-                  <td className="px-3 py-1 text-right tabular-nums font-semibold text-foreground">{f.data}</td>
-                  <td className="whitespace-nowrap px-3 py-1 text-left text-xs tabular-nums">{formatarPrazo(f.dias)} dias desde o Arquivo</td>
-                </tr>
-              ))}
-              </Fragment>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
