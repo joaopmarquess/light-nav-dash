@@ -262,4 +262,9 @@ describe("Fechamento travado no dia 09", () => {
     expect(peona(com, "peona")).toBe(peona(e, "peona"));
     expect(peona(com, "peonaBene")).toBe(11);
   });
+  it("Impactos do Fechamento usam os dias de cada um", () => {
+    const im = avaliarImpactosFm({ ...e, arquivoBene: { dia: 20, mes: 12 } });
+    expect(im.find((i) => i.id === "fechamentoBene")!.dias).toBe(20);
+    expect(im.find((i) => i.id === "fechamento")!.dias).toBe(25);
+  });
 });

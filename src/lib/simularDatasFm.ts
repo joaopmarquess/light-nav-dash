@@ -366,7 +366,7 @@ const plural = (n: number) => `${formatarPrazo(n)} ${Math.abs(n) === 1 ? "dia" :
 /** Lista de Simulações, depois de FECHAMENTO (pedido de 18/11/2026): dias entre o Arquivo e o Fechamento, ex.: "05 dias para Fechar a Folha". */
 export const prazoFolhaFm = (e: EntradaDatasFm) => `${plural(simularDatasFm(e).find((l) => l.id === "fechamento")!.diasBase)} para Fechar a Folha`;
 export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
-  const { peona, fechamento, dare, diops, pagamento } = impactosFm(e), peonaBene = impactosFm(entradaBeneFm(e)).peona;
+  const { peona, dare, diops, pagamento } = impactosFm(e), peonaBene = impactosFm(entradaBeneFm(e)).peona;
   const item = (id: ImpactoFm["id"], rotulo: string, dias: number, nivel: NivelImpactoFm, descricao: string): ImpactoFm =>
     ({ id, rotulo, dias, nivel, status: STATUS_IMPACTO_FM[nivel], descricao });
   return [
@@ -378,7 +378,7 @@ export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
           `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA; até ${formatarPrazo(PEONA_IDEAL_ATE)} é ideal, até ${formatarPrazo(PEONA_ACEITO_ATE)} é aceito e acima de ${formatarPrazo(PEONA_MODERADO_ATE)} dias é crítico.`)),
     // FECHAMENTO no quadro (pedido de 18/11/2026): dias desde o Arquivo.
     // FECHAMENTO em duas partes, Benê e Rede (pedido de 26/11/2026).
-    ...([["fechamentoBene", "FECHAMENTO BENÊ"], ["fechamento", "FECHAMENTO REDE"]] as const).map(([id, rotulo]) => fechamento < FECHAMENTO_MINIMO
+    ...([["fechamentoBene", "FECHAMENTO BENÊ", fechamentosFm(e)[0].dias], ["fechamento", "FECHAMENTO REDE", fechamentosFm(e)[1].dias]] as const).map(([id, rotulo, fechamento]) => fechamento < FECHAMENTO_MINIMO
       ? item(id, rotulo, fechamento, "critico", `${plural(fechamento)} entre o Arquivo e o Fechamento; o mínimo é ${formatarPrazo(FECHAMENTO_MINIMO)} e o ideal, ${formatarPrazo(FECHAMENTO_IDEAL)}.`)
       : fechamento < FECHAMENTO_IDEAL
         ? item(id, rotulo, fechamento, "moderado", `${plural(fechamento)} entre o Arquivo e o Fechamento: atende ao mínimo de ${formatarPrazo(FECHAMENTO_MINIMO)}, mas fica abaixo do ideal de ${formatarPrazo(FECHAMENTO_IDEAL)}.`)
