@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { axisPermissionGroups, homeShortcutGroups, homeShortcuts, menuItems } from "./axisNavigation";
+import { appsCelular, axisPermissionGroups, homeShortcutGroups, homeShortcuts, menuItems } from "./axisNavigation";
 import { canAccess, type AxisAccess } from "./axisAccess";
 
 describe("Home shortcut permissions", () => {
@@ -32,6 +32,16 @@ describe("Home shortcut permissions", () => {
     const access: AxisAccess = { status: "ok", role: "user", permissions: ["Home"] };
     expect(canAccess(access, "Home")).toBe(true);
     for (const item of items.filter(i => i.id !== "Home")) expect(canAccess(access, item.id)).toBe(false);
+  });
+});
+
+describe("Slides no celular", () => {
+  it("usa o mesmo destino do Control e aparece apenas com o acesso existente", () => {
+    expect(appsCelular.find(a => a.label === "Slides do Control")?.id).toBe("Control · Dashboards");
+    const semAcesso: AxisAccess = { status: "ok", role: "user", permissions: ["Home"] };
+    const comAcesso: AxisAccess = { status: "ok", role: "user", permissions: ["Control · Dashboards"] };
+    expect(appsCelular.filter(a => canAccess(semAcesso, a.id)).some(a => a.id === "Control · Dashboards")).toBe(false);
+    expect(appsCelular.filter(a => canAccess(comAcesso, a.id)).some(a => a.id === "Control · Dashboards")).toBe(true);
   });
 });
 
@@ -119,9 +129,8 @@ describe("Laboratory › Slides Simulador 2027", () => {
   });
 });
 
-import { appsCelular } from "./axisNavigation";
 describe("Modo celular", () => {
   it("lista Movimentação e Demonstrações", () => {
-    expect(appsCelular.map(a => a.id)).toEqual(["Carteira · Movimentação", "Control · DRE Gerencial PE", "Control · Bench C", "Control · Orçamento Vigente"]);
+    expect(appsCelular.map(a => a.id)).toEqual(["Carteira · Movimentação", "Control · DRE Gerencial PE", "Control · Bench C", "Control · Orçamento Vigente", "Control · Dashboards"]);
   });
 });

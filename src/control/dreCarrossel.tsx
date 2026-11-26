@@ -46,15 +46,19 @@ const barMin = mkBarMin("Entradas Operacionais", "Despesas Assistenciais");
 export function useDreCarrossel() {
   const [rows, setRows] = useState<DreHRow[] | null>(null);
   const [meses, setMeses] = useState<number[]>([]);
+  const [erro, setErro] = useState<unknown>(null);
+  const [tentativa, setTentativa] = useState(0);
   useEffect(() => {
+    setRows(null);
+    setErro(null);
     let cancelado = false;
     carregarDreCarrossel(ANO).then((dados) => {
       if (cancelado) return;
       setMeses(dados.meses);
       setRows(dados.rows);
-    }).catch(() => { if (!cancelado) setRows([]); });
+    }).catch((error) => { if (!cancelado) { setErro(error); setRows([]); } });
     return () => { cancelado = true; };
-  }, []);
+  }, [tentativa]);
 
   const charts = useMemo(() => {
     if (!rows || !meses.length) return [];
@@ -105,7 +109,7 @@ export function useDreCarrossel() {
     const top = somaPor("g3").slice(0, 10);
     const sub = `${DRE_FULL_NAME} · ${NOMES[(meses[0] ?? 1) - 1]}–${NOMES[(meses.at(-1) ?? 1) - 1]}/${ANO}`;
     return [
-      { title: "Resultado acumulado", subtitle: sub, chart: (
+      { title: "Resultado acumulado", subtitle: sub, data: mensal, chart: (
         <ComposedChart data={mensal} margin={{ top: 24, right: 24, left: 8, bottom: 0 }}>
           <defs><linearGradient id="acumArea" x1="0" y1="0" x2="0" y2="1"><stop offset={offAcum} stopColor="#16a34a" stopOpacity={0.3} /><stop offset={offAcum} stopColor="#dc2626" stopOpacity={0.22} /></linearGradient><linearGradient id="acumSinal" x1="0" y1="0" x2="0" y2="1">
             <stop offset={offAcum} stopColor="#16a34a" /><stop offset={offAcum} stopColor="#dc2626" /></linearGradient></defs>
@@ -113,7 +117,7 @@ export function useDreCarrossel() {
           <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeWidth={1.5} strokeDasharray="6 4" ifOverflow="extendDomain" />
           <Area type="monotone" dataKey="Acumulado" baseValue={0} fill="url(#acumArea)" stroke="none" legendType="none" tooltipType="none" isAnimationActive={false} />
           <Line type="monotone" dataKey="Acumulado" stroke="url(#acumSinal)" strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" dot={(p: any) => <circle key={p.index} cx={p.cx} cy={p.cy} r={6} strokeWidth={3} stroke="hsl(var(--card))" fill={p.value < 0 ? "#dc2626" : "#16a34a"} />}><LabelList dataKey="Acumulado" content={(p: any) => <text x={p.x} y={p.y - 14} textAnchor={p.index === mensal.length - 1 ? "end" : p.index === 0 ? "start" : "middle"} fontSize={12} fontWeight={600} fill="hsl(var(--foreground))">{fmtMi(Number(p.value))}</text>} /></Line></ComposedChart>) },
-      { title: "Resultado do mês", subtitle: sub, chart: (
+      { title: "Resultado do mês", subtitle: sub, data: mensal, chart: (
         <ComposedChart data={mensal} margin={{ top: 24, right: 24, left: 8, bottom: 0 }}>
           <defs><linearGradient id="resArea" x1="0" y1="0" x2="0" y2="1"><stop offset={offRes} stopColor="#2563eb" stopOpacity={0.3} /><stop offset={offRes} stopColor="#dc2626" stopOpacity={0.22} /></linearGradient><linearGradient id="resSinal" x1="0" y1="0" x2="0" y2="1">
             <stop offset={offRes} stopColor="#2563eb" /><stop offset={offRes} stopColor="#dc2626" /></linearGradient></defs>
@@ -121,7 +125,7 @@ export function useDreCarrossel() {
           <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeWidth={1.5} strokeDasharray="6 4" ifOverflow="extendDomain" />
           <Area type="monotone" dataKey="Resultado" baseValue={0} fill="url(#resArea)" stroke="none" legendType="none" tooltipType="none" isAnimationActive={false} />
           <Line type="monotone" dataKey="Resultado" stroke="url(#resSinal)" strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" dot={(p: any) => <circle key={p.index} cx={p.cx} cy={p.cy} r={6} strokeWidth={3} stroke="hsl(var(--card))" fill={p.value < 0 ? "#dc2626" : "#2563eb"} />}><LabelList dataKey="Resultado" content={(p: any) => <text x={p.x} y={p.y - 14} textAnchor={p.index === mensal.length - 1 ? "end" : p.index === 0 ? "start" : "middle"} fontSize={12} fontWeight={600} fill="hsl(var(--foreground))">{fmtMi(Number(p.value))}</text>} /></Line></ComposedChart>) },
-      { title: "Entradas Operacionais x Despesas Assistenciais", subtitle: `${sub} · valores absolutos`, chart: (
+      { title: "Entradas Operacionais x Despesas Assistenciais", subtitle: `${sub} · valores absolutos`, data: entDesp, chart: (
         <BarChart data={entDesp} barGap={6} barCategoryGap="22%" margin={{ top: 40, right: 10, left: 0, bottom: 0 }}>
           <CartesianGrid vertical={false} strokeDasharray="4 6" opacity={0.25} /><XAxis dataKey="mes" axisLine={false} tickLine={false} tickMargin={10} /><YAxis axisLine={false} tickLine={false} width={70} tickFormatter={fmtEixo} domain={[0, (max: number) => max * 1.25]} />
           <Tooltip {...tip} cursor={{ fill: "hsl(var(--muted) / 0.4)" }} contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))", boxShadow: "0 8px 24px -8px hsl(var(--foreground) / 0.2)" }} /><Legend iconType="circle" />
@@ -134,7 +138,7 @@ export function useDreCarrossel() {
           }} /><LabelList dataKey="Entradas Operacionais" content={(p: any) => { const cx = p.x + p.width / 2, cy = p.y + 12; return <text x={cx} y={cy} transform={`rotate(-90 ${cx} ${cy})`} textAnchor="end" dominantBaseline="central" fontSize={12} fontWeight={600} fill="#ffffff">{fmtMi(Number(p.value))}</text>; }} /></Bar>
           <Bar dataKey="Despesas Assistenciais" fill="#e57373" shape={barMin}><LabelList dataKey="Despesas Assistenciais" content={(p: any) => { const cx = p.x + p.width / 2, cy = p.y + 12; return <text x={cx} y={cy} transform={`rotate(-90 ${cx} ${cy})`} textAnchor="end" dominantBaseline="central" fontSize={12} fontWeight={600} fill="#ffffff">{fmtMi(Number(p.value))}</text>; }} /></Bar>
         </BarChart>) },
-      { title: "Receitas x Despesas · distância do mês", subtitle: `${sub} · cápsula azul = sobra, vermelha = falta`, chart: (
+      { title: "Receitas x Despesas · distância do mês", subtitle: `${sub} · cápsula azul = sobra, vermelha = falta`, data: faixa, chart: (
         <ComposedChart data={faixa} margin={{ top: 40, right: 24, left: 8, bottom: 0 }}>
           <defs>
             <linearGradient id="capPos" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#1e40af" /><stop offset="100%" stopColor="#60a5fa" /></linearGradient>
@@ -160,7 +164,7 @@ export function useDreCarrossel() {
             );
           }} />
         </ComposedChart>) },
-      { title: "Evolução da sinistralidade", subtitle: `${sub} · despesas assistenciais ÷ entradas operacionais`, chart: (
+      { title: "Evolução da sinistralidade", subtitle: `${sub} · despesas assistenciais ÷ entradas operacionais`, data: sinis, chart: (
         <ComposedChart data={sinis} margin={{ top: 24, right: 24, left: 8, bottom: 0 }}>
           <defs>{(() => {
             const vs = sinis.map((x) => x.Sinistralidade), dmx = Math.max(...vs), dmn = Math.min(...vs);
@@ -183,5 +187,5 @@ export function useDreCarrossel() {
     ];
   }, [rows, meses]);
 
-  return { charts, loading: rows === null };
+  return { charts, loading: rows === null, erro, tentarNovamente: () => setTentativa(t => t + 1) };
 }

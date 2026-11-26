@@ -193,4 +193,5 @@ export const appsCelular: { id: string; label: string; icon: typeof ArrowRightLe
   { id: "Control · DRE Gerencial PE", label: "Demonstrações (DRE)", icon: FileText },
   { id: "Control · Bench C", label: "Bench Contábil", icon: BarChart3 },
   { id: "Control · Orçamento Vigente", label: "Orçamento 2026", icon: FileText },
+  { id: "Control · Dashboards", label: "Slides do Control", icon: Presentation },
 ];

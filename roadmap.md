@@ -1,3 +1,6 @@
+## Control › Slides celulares (26/11/2026)
+- [x] Criar apresentação celular com dados e período dos slides do Control, rotação, pausa e toque; integrada à Home/menu e conferida em 390/360 px, com tela cheia e computador preservado; 32 testes aprovados.
+
 ## Assistencial › Análise de Despesas Assistenciais (26/11/2026)
 - [x] Fonte trocada para view_eassistencial; 9 testes aprovados e consulta autenticada de maio/2026 com 318.034 movimentos e R$ 25.572.545,83 pagos; filtros conferidos, icontabil preservada. A classificação Benê por nome exato não encontra executor nessa view neste período; regra preservada, sem inferir outro nome.
 - [x] Identificar fontes e campos reais da Hostinger; conferir código do Painel Assistencial (contratos de CSV/PBIX, sem conexão geral reutilizável). Preservar regra Benê exata do AXIS.
