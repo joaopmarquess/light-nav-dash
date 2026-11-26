@@ -16,6 +16,13 @@ export async function carregarAnaliseAssistencial(de: string, ate: string, signa
   const contabilidade = Promise.all([...contabeis].map(([ano, ms]) => carregarContabilIa(ano, ms))).then(rs => ({ valor: despesaContabilAssistencial(rs.flat()), erro: null as unknown })).catch(erro => ({ valor: null, erro }));
   try {
     for (const mes of meses) {
+      // Fast path: server-side monthly summary (supabase/sql/assistencial_resumo_mes.sql) in one response.
+      const resumo = await hostinger.rpc("assistencial_resumo_mes", { p_competencia: mes }).abortSignal(signal);
+      if (!resumo.error && Array.isArray(resumo.data)) {
+        const inicio = rows.length;
+        (resumo.data as unknown[][]).forEach((a, i) => rows.push(movimentoDaView({ dt_competencia: mes, nr_guia: a[0], ds_tipo_atendimento: a[1], cd_prestador: a[2], nm_prestador: a[3], cd_prestador_pagamento: a[4], nm_prestador_pagamento: a[5], vl_total_pago: a[6] } as RegistroViewAssistencial, inicio + i)));
+        progresso(rows.length); continue;
+      }
       let offset = 0;
       while (true) {
         signal.throwIfAborted();
