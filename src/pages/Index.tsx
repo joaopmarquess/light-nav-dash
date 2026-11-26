@@ -1,6 +1,8 @@
 import CarteiraTrial from "@/components/CarteiraTrial";
 import CarteiraTrialGeo from "@/components/CarteiraTrialGeo";
 import CarteiraTrialMov from "@/components/CarteiraTrialMov";
+import MovimentacaoCelular from "@/components/MovimentacaoCelular";
+import { useIsMobile } from "@/hooks/use-mobile";
 import EvolucaoProdutos from "@/components/EvolucaoProdutos";
 import MovimentacaoEvolucaoMensal from "@/components/MovimentacaoEvolucaoMensal";
 import BenchVidas from "@/components/BenchVidas";
@@ -586,7 +588,7 @@ const Index = () => {
           ) : active === "Carteira · Tabelas" ? (
             <CarteiraTabelas />
           ) : active === "Carteira · Movimentação" ? (
-            <CarteiraTrialMov />
+            <MovimentacaoResponsiva />
           ) : active === "Evolução Produtos" || active === "Sinistralidade · Evolução Produtos" ? (
             <EvolucaoProdutos />
           ) : active === "Carteira · Evolução Mensal" ? (
@@ -668,3 +670,8 @@ const Index = () => {
 };
 
 export default Index;
+
+// Celular (< 768 px) usa a visão própria; o computador continua com a tela original intacta.
+function MovimentacaoResponsiva() {
+  return useIsMobile() ? <MovimentacaoCelular /> : <CarteiraTrialMov />;
+}
