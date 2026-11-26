@@ -218,7 +218,6 @@ describe("Arquivo da Rede e do Benê digitados", () => {
     const e = { ...COMPETENCIA_PADRAO, dias: {}, blocos: true };
     const base = blocosPeriodoFm(e), b = blocosRedeFm({ ...e, arquivoRede: { dia: 25, mes: base[3].arquivo.split("/").map(Number)[1] } });
     expect(b.map((x) => x.arquivo.slice(0, 2))).toEqual(["25", "25", "25", "25"]);
-    expect(b.map((x) => x.de)).toEqual(base.map((x) => x.de));
     expect(hospitalBeneFm({ ...e, arquivoBene: { dia: 3, mes: 2 } }).arquivo.slice(0, 5)).toBe("03/02");
   });
 });
@@ -266,5 +265,10 @@ describe("Fechamento travado no dia 09", () => {
     const im = avaliarImpactosFm({ ...e, arquivoBene: { dia: 20, mes: 12 } });
     expect(im.find((i) => i.id === "fechamentoBene")!.dias).toBe(20);
     expect(im.find((i) => i.id === "fechamento")!.dias).toBe(25);
+  });
+  it("PEONA Rede e blocos usam o Período do Arquivo da Rede", () => {
+    const com = { ...e, dias: { arquivo: 20 }, arquivoRede: { dia: 15, mes: 12 } };
+    expect(avaliarImpactosFm(com).find((i) => i.id === "peona")!.dias).toBe(16);
+    expect(blocosRedeFm(com).at(-1)!.ate).toBe("14/12/2026");
   });
 });

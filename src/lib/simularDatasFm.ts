@@ -215,7 +215,7 @@ export function arquivoDigitadoFm(padrao: string, v?: { dia: number; mes: number
 }
 /** Blocos com o Arquivo da Rede digitado aplicado a todos os blocos (resposta de 26/11/2026). */
 export function blocosRedeFm(e: EntradaDatasFm): BlocoFm[] {
-  const b = blocosPeriodoFm(e), ultimo = b[b.length - 1].arquivo;
+  const b = blocosPeriodoFm(entradaRedeFm(e)), ultimo = blocosPeriodoFm(e).at(-1)!.arquivo;
   return e.arquivoRede ? b.map((x) => ({ ...x, arquivo: arquivoDigitadoFm(ultimo, e.arquivoRede) })) : b;
 }
 export const quantidadeBlocosFm = (e: Pick<EntradaDatasFm, "quantidadeBlocos">) =>
@@ -227,8 +227,14 @@ export const PARTES_BLOCOS_FM = { outros: "Outros Credenciados", hospital: "Hosp
 /** Benê entrando nos blocos (pedido de 26/11/2026): sem Parte 2; todos os credenciados, inclusive o Hospital Benê, seguem os blocos. */
 export const beneNoBlocoFm = (e: Pick<EntradaDatasFm, "blocos" | "beneNoBloco">) => e.blocos === true && e.beneNoBloco === true;
 /** Entrada vista pelo Benê (pedido de 26/11/2026): com Arquivo do Benê digitado, Último Dia e Período passam a sair dessa data. */
+/** Entrada vista pela Rede (pedido de 26/11/2026): com Arquivo da Rede digitado, Último Dia e Período da Rede saem dessa data. */
+export function entradaRedeFm(e: EntradaDatasFm): EntradaDatasFm {
+  if (!e.blocos || !e.arquivoRede) return e;
+  return { ...e, dias: { ...e.dias, arquivo: e.arquivoRede.dia }, arquivoMes: e.arquivoRede.mes };
+}
 export function entradaBeneFm(e: EntradaDatasFm): EntradaDatasFm {
-  if (!e.blocos || e.beneNoBloco || !e.arquivoBene) return e;
+  if (e.blocos && e.beneNoBloco) return entradaRedeFm(e);
+  if (!e.blocos || !e.arquivoBene) return e;
   return { ...e, dias: { ...e.dias, arquivo: e.arquivoBene.dia }, arquivoMes: e.arquivoBene.mes };
 }
 export function hospitalBeneFm(e: EntradaDatasFm): Omit<BlocoFm, "bloco"> {
@@ -366,12 +372,12 @@ const plural = (n: number) => `${formatarPrazo(n)} ${Math.abs(n) === 1 ? "dia" :
 /** Lista de Simulações, depois de FECHAMENTO (pedido de 18/11/2026): dias entre o Arquivo e o Fechamento, ex.: "05 dias para Fechar a Folha". */
 export const prazoFolhaFm = (e: EntradaDatasFm) => `${plural(simularDatasFm(e).find((l) => l.id === "fechamento")!.diasBase)} para Fechar a Folha`;
 export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
-  const { peona, dare, diops, pagamento } = impactosFm(e), peonaBene = impactosFm(entradaBeneFm(e)).peona;
+  const { peona, dare, diops, pagamento } = impactosFm(e), peonaBene = impactosFm(entradaBeneFm(e)).peona, peonaRede = impactosFm(entradaRedeFm(e)).peona;
   const item = (id: ImpactoFm["id"], rotulo: string, dias: number, nivel: NivelImpactoFm, descricao: string): ImpactoFm =>
     ({ id, rotulo, dias, nivel, status: STATUS_IMPACTO_FM[nivel], descricao });
   return [
     // PEONA sempre em duas partes, Benê e Rede (pedido de 26/11/2026); a regra dos dias do Período vale para as duas.
-    ...([["peonaBene", "PEONA BENÊ", peonaBene], ["peona", "PEONA REDE", peona]] as const).map(([id, rotulo, peona]) => peona === 0
+    ...([["peonaBene", "PEONA BENÊ", peonaBene], ["peona", "PEONA REDE", peonaRede]] as const).map(([id, rotulo, peona]) => peona === 0
       ? item(id, rotulo, peona, "ideal", "Todo o Período está no mês da competência.")
       : item(id, rotulo, peona,
           peona <= PEONA_IDEAL_ATE ? "ideal" : peona <= PEONA_ACEITO_ATE ? "aceito" : peona <= PEONA_MODERADO_ATE ? "moderado" : "critico",
