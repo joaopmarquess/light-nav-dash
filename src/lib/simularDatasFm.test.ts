@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { EntradaDatasFm } from "./simularDatasFm";
-import { formatarPrazo, normalizarEntradaFm, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil , lerSimulacoesFm, novaSimulacaoFm, gravarSimulacaoFm, simulacaoAlteradaFm, duplicarSimulacaoFm, ordenarSimulacoesFm, proximoNumeroFm, DESCRICAO_FM_MAX, prazoFolhaFm, blocosPeriodoFm, hospitalBeneFm, beneNoBlocoFm, blocosRedeFm } from "./simularDatasFm";
+import { formatarPrazo, normalizarEntradaFm, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil , lerSimulacoesFm, novaSimulacaoFm, gravarSimulacaoFm, simulacaoAlteradaFm, duplicarSimulacaoFm, ordenarSimulacoesFm, proximoNumeroFm, DESCRICAO_FM_MAX, prazoFolhaFm, blocosPeriodoFm, hospitalBeneFm, beneNoBlocoFm, blocosRedeFm, fechamentosFm } from "./simularDatasFm";
 
 // Entrada do quadro fornecido antes do novo padrão: Arquivo 05/01 e Fechamento 10.
 const QUADRO = { ...COMPETENCIA_PADRAO, dias: { arquivo: 5, fechamento: 10 }, arquivoMes: 1 };
@@ -109,7 +109,7 @@ describe("Simular Datas FM", () => {
   });
   it("IMPACTOS em três níveis: Crítico, Moderado e Ideal", () => {
     const niveis = (arquivo: number, mes: number, extra: Partial<Record<"fechamento" | "dare" | "diops" | "pagamento", number>> = {}) =>
-      Object.fromEntries(avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo, ...extra }, arquivoMes: mes }).filter((i) => i.id !== "peonaBene").map((i) => [i.id, i.status]));
+      Object.fromEntries(avaliarImpactosFm({ ...COMPETENCIA_PADRAO, dias: { arquivo, ...extra }, arquivoMes: mes }).filter((i) => i.id !== "peonaBene" && i.id !== "fechamentoBene").map((i) => [i.id, i.status]));
     // Arquivo 20/12 + 21 → Fechamento 10/01: Dare 15/01 = 5 dias, DIOPS e Pagamento 30/01 = 20 dias, PEONA 11 dias.
     const f = { fechamento: 21 };
     expect(niveis(20, 12, f)).toEqual({ peona: "Aceito", fechamento: "Ideal", dare: "Ideal", diops: "Ideal", pagamento: "Ideal" });
@@ -337,3 +337,10 @@ describe("Prazos contam do maior Arquivo", () => {
   });
 });
 const utc = (d: string) => { const [a, b, c] = d.split("/").map(Number); return Date.UTC(c, b - 1, a); };
+
+describe("Fechamento em duas datas", () => {
+  it("Benê e Rede pelo próprio Arquivo", () => {
+    const e: EntradaDatasFm = { ...COMPETENCIA_PADRAO, mes: 12, ano: 2026, dias: { arquivo: 15, fechamento: 10 }, arquivoMes: 12, blocos: true, arquivoBene: { dia: 20, mes: 12 } };
+    expect(fechamentosFm(e).map((f) => f.data)).toEqual(["30/12/2026", "25/12/2026"]);
+  });
+});

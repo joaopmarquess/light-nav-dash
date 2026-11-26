@@ -187,6 +187,17 @@ export function maiorArquivoFm(e: EntradaDatasFm, arquivoCenario: string): strin
   if (!e.beneNoBloco) datas.push(arquivoDigitadoFm(arquivoCenario, e.arquivoBene));
   return datas.reduce((a, b) => (utcDe(b) > utcDe(a) ? b : a));
 }
+/** Fechamento em duas datas, Benê e Rede (pedido de 26/11/2026): Arquivo de cada um + REFERÊNCIA do Fechamento. */
+export function fechamentosFm(e: EntradaDatasFm): { id: "fechamentoBene" | "fechamentoRede"; rotulo: string; arquivo: string; data: string; dias: number }[] {
+  const linhas = simularDatasFm(e), cen = linhas.find((l) => l.id === "arquivo")!.data, ref = linhas.find((l) => l.id === "fechamento")!.dia;
+  const rede = e.blocos ? arquivoDigitadoFm(cen, e.arquivoRede) : cen;
+  const bene = !e.blocos ? cen : e.beneNoBloco ? rede : arquivoDigitadoFm(cen, e.arquivoBene);
+  const mais = (d: string) => dataUtc(new Date(utcDe(d) + ref * DIA_MS));
+  return [
+    { id: "fechamentoBene", rotulo: "Fechamento Benê", arquivo: bene, data: mais(bene), dias: ref },
+    { id: "fechamentoRede", rotulo: "Fechamento Rede", arquivo: rede, data: mais(rede), dias: ref },
+  ];
+}
 export function arquivoDigitadoFm(padrao: string, v?: { dia: number; mes: number }): string {
   if (!v) return padrao;
   const [, m, a] = padrao.split("/").map(Number);
@@ -341,7 +352,7 @@ export function impactosFm(e: EntradaDatasFm) {
 export const PEONA_IDEAL_ATE = 4, PEONA_ACEITO_ATE = 12, PEONA_MODERADO_ATE = 15, FECHAMENTO_MINIMO = 10, FECHAMENTO_IDEAL = 20, DARE_MINIMO = 3, DARE_IDEAL = 5, DIOPS_IDEAL = 15, PAGAMENTO_IDEAL = 15;
 export type NivelImpactoFm = "ideal" | "aceito" | "moderado" | "critico";
 export const STATUS_IMPACTO_FM: Record<NivelImpactoFm, string> = { ideal: "Ideal", aceito: "Aceito", moderado: "Moderado", critico: "Crítico" };
-export type ImpactoFm = { id: "peonaBene" | "peona" | "fechamento" | "dare" | "diops" | "pagamento"; rotulo: string; dias: number; nivel: NivelImpactoFm; status: string; descricao: string };
+export type ImpactoFm = { id: "peonaBene" | "peona" | "fechamentoBene" | "fechamento" | "dare" | "diops" | "pagamento"; rotulo: string; dias: number; nivel: NivelImpactoFm; status: string; descricao: string };
 // Toda contagem de dias com zero à esquerda, "0#" (pedido de 18/11/2026).
 const plural = (n: number) => `${formatarPrazo(n)} ${Math.abs(n) === 1 ? "dia" : "dias"}`;
 /** Lista de Simulações, depois de FECHAMENTO (pedido de 18/11/2026): dias entre o Arquivo e o Fechamento, ex.: "05 dias para Fechar a Folha". */
@@ -358,11 +369,12 @@ export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
           peona <= PEONA_IDEAL_ATE ? "ideal" : peona <= PEONA_ACEITO_ATE ? "aceito" : peona <= PEONA_MODERADO_ATE ? "moderado" : "critico",
           `${plural(peona)} do Período fora do mês da competência aumentam o valor do PEONA; até ${formatarPrazo(PEONA_IDEAL_ATE)} é ideal, até ${formatarPrazo(PEONA_ACEITO_ATE)} é aceito e acima de ${formatarPrazo(PEONA_MODERADO_ATE)} dias é crítico.`)),
     // FECHAMENTO no quadro (pedido de 18/11/2026): dias desde o Arquivo.
-    fechamento < FECHAMENTO_MINIMO
-      ? item("fechamento", "FECHAMENTO", fechamento, "critico", `${plural(fechamento)} entre o Arquivo e o Fechamento; o mínimo é ${formatarPrazo(FECHAMENTO_MINIMO)} e o ideal, ${formatarPrazo(FECHAMENTO_IDEAL)}.`)
+    // FECHAMENTO em duas partes, Benê e Rede (pedido de 26/11/2026).
+    ...([["fechamentoBene", "FECHAMENTO BENÊ"], ["fechamento", "FECHAMENTO REDE"]] as const).map(([id, rotulo]) => fechamento < FECHAMENTO_MINIMO
+      ? item(id, rotulo, fechamento, "critico", `${plural(fechamento)} entre o Arquivo e o Fechamento; o mínimo é ${formatarPrazo(FECHAMENTO_MINIMO)} e o ideal, ${formatarPrazo(FECHAMENTO_IDEAL)}.`)
       : fechamento < FECHAMENTO_IDEAL
-        ? item("fechamento", "FECHAMENTO", fechamento, "moderado", `${plural(fechamento)} entre o Arquivo e o Fechamento: atende ao mínimo de ${formatarPrazo(FECHAMENTO_MINIMO)}, mas fica abaixo do ideal de ${formatarPrazo(FECHAMENTO_IDEAL)}.`)
-        : item("fechamento", "FECHAMENTO", fechamento, "ideal", `${plural(fechamento)} entre o Arquivo e o Fechamento, dentro do ideal de ${formatarPrazo(FECHAMENTO_IDEAL)}.`),
+        ? item(id, rotulo, fechamento, "moderado", `${plural(fechamento)} entre o Arquivo e o Fechamento: atende ao mínimo de ${formatarPrazo(FECHAMENTO_MINIMO)}, mas fica abaixo do ideal de ${formatarPrazo(FECHAMENTO_IDEAL)}.`)
+        : item(id, rotulo, fechamento, "ideal", `${plural(fechamento)} entre o Arquivo e o Fechamento, dentro do ideal de ${formatarPrazo(FECHAMENTO_IDEAL)}.`)),
     dare < DARE_MINIMO
       ? item("dare", "DeRE", dare, "critico", `${plural(dare)} para fechar o DeRE (entrega no dia 15); o mínimo é ${formatarPrazo(DARE_MINIMO)} e o ideal, ${formatarPrazo(DARE_IDEAL)}.`)
       : dare < DARE_IDEAL

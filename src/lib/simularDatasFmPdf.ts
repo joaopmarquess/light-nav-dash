@@ -3,7 +3,7 @@ import autoTable, { type RowInput } from "jspdf-autotable";
 import { attachTimbrado, TIMBRADO_RAZAO_SOCIAL } from "@/lib/pdfTimbrado";
 import { aplicarMarcaAxis } from "@/lib/pdfMarcaAxis";
 import {
-  PARTES_BLOCOS_FM, avaliarImpactosFm, blocosPeriodoFm, blocosRedeFm, hospitalBeneFm, beneNoBlocoFm, formatarCompetencia, formatarNumeroFm, formatarPrazo, ordenarSimulacoesFm, periodoFm, prazoFolhaFm, simularDatasFm,
+  PARTES_BLOCOS_FM, avaliarImpactosFm, blocosPeriodoFm, blocosRedeFm, fechamentosFm, hospitalBeneFm, beneNoBlocoFm, formatarCompetencia, formatarNumeroFm, formatarPrazo, ordenarSimulacoesFm, periodoFm, prazoFolhaFm, simularDatasFm,
   type NivelImpactoFm, type SimulacaoFm,
 } from "@/lib/simularDatasFm";
 
@@ -40,12 +40,14 @@ export function paginasCenariosFm(lista: SimulacaoFm[]): PaginaCenarioFm[] {
       periodo: `${p.de} a ${p.ate}`,
       prazoFolha: pdfTexto(prazoFolhaFm(s.entrada)),
       alteradaEm: dataHora(s.atualizadaEm),
-      datas: linhas.filter((l) => l.id !== "arquivo").map((l) => ({
+      datas: linhas.filter((l) => l.id !== "arquivo").flatMap((l) => [{
         variavel: l.rotulo.toUpperCase(),
         referencia: l.somaAoArquivo ? `${formatarPrazo(l.dia)} dias após o Arquivo` : `dia ${formatarPrazo(l.dia)}`,
         data: `${l.data}${l.ajustado ? " *" : ""}`,
         prazo: pdfTexto(`${formatarPrazo(l.diasBase)} ${Math.abs(l.diasBase) === 1 ? "dia" : "dias"} desde o ${l.base}`),
-      })),
+      }, ...(l.id === "fechamento" && s.entrada.blocos ? fechamentosFm(s.entrada).map((f) => ({
+        variavel: pdfTexto(f.rotulo.toUpperCase()), referencia: `Arquivo ${f.arquivo}`, data: f.data, prazo: `${formatarPrazo(f.dias)} dias desde o Arquivo`,
+      })) : [])]),
       impactos: avaliarImpactosFm(s.entrada).map((i) => ({ variavel: i.rotulo, dias: pdfTexto(formatarPrazo(i.dias)), situacao: i.status, nivel: i.nivel, descricao: pdfTexto(i.descricao) })),
       ...(s.entrada.blocos ? { blocos: blocosDaPagina(s) } : {}),
     };

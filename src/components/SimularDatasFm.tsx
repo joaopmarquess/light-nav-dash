@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { quantidadeBlocosFm } from "@/lib/simularDatasFm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvarUltimoNumeroFm, simulacaoAlteradaFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, prazoFolhaFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, blocosPeriodoFm, blocosRedeFm, arquivoDigitadoFm, hospitalBeneFm, beneNoBlocoFm, PARTES_BLOCOS_FM, simularDatasFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
+import { carregarSimulacoesFm, carregarUltimoNumeroFm, gravarSimulacaoFm, salvarUltimoNumeroFm, simulacaoAlteradaFm, DESCRICAO_FM_MAX, duplicarSimulacaoFm, formatarNumeroFm, prazoFolhaFm, novaSimulacaoFm, proximoNumeroFm, ordenarSimulacoesFm, salvarSimulacoesFm, type NivelImpactoFm, type SimulacaoFm, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, formatarPrazo, lerInteiro, periodoFm, blocosPeriodoFm, blocosRedeFm, arquivoDigitadoFm, hospitalBeneFm, beneNoBlocoFm, PARTES_BLOCOS_FM, simularDatasFm, fechamentosFm, type EntradaDatasFm, type IdDataFm } from "@/lib/simularDatasFm";
 
 const novoId = () => globalThis.crypto?.randomUUID?.() ?? `fm-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const agora = () => new Date().toISOString();
@@ -352,6 +352,15 @@ function SimulacaoDatasFm({ simulacao, gravada, alterada, onAlterar, onGravar, o
                 </td>
                 <td className="whitespace-nowrap px-3 py-1.5 text-left tabular-nums">{formatarPrazo(l.diasBase)} <span className="text-xs font-normal text-muted-foreground">{Math.abs(l.diasBase) === 1 ? "dia" : "dias"} desde o {l.base}</span></td>
               </tr>
+              {/* Fechamento em duas datas, Benê e Rede (pedido de 26/11/2026). */}
+              {l.id === "fechamento" && entrada.blocos && fechamentosFm(entrada).map((f) => (
+                <tr key={f.id} className="border-b border-border text-muted-foreground">
+                  <td className="px-3 py-1 pl-6 text-xs uppercase">{f.rotulo}</td>
+                  <td className="px-3 py-1 text-right text-xs tabular-nums">Arquivo {f.arquivo}</td>
+                  <td className="px-3 py-1 text-right tabular-nums font-semibold text-foreground">{f.data}</td>
+                  <td className="whitespace-nowrap px-3 py-1 text-left text-xs tabular-nums">{formatarPrazo(f.dias)} dias desde o Arquivo</td>
+                </tr>
+              ))}
               </Fragment>
             ))}
           </tbody>
