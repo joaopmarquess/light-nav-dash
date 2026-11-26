@@ -359,11 +359,11 @@ export function impactosFm(e: EntradaDatasFm) {
 
 /** Premissas dos IMPACTOS (pedidos de 18/11/2026), classificadas em apenas três níveis: Crítico, Moderado e Ideal.
  * PEONA — dias do Período fora da competência aumentam o valor do PEONA (pedido de 18/11/2026): 0 a 4 Ideal; 5 a 12 Aceito (verde); 13 a 15 Moderado; acima de 15 Crítico;
- * FECHAMENTO — dias desde o Arquivo: menos de 10 Crítico; 10 a 19 Moderado; 20 ou mais Ideal;
+ * FECHAMENTO — dias desde o Arquivo: menos de 10 Crítico; 10 a 19 Moderado; 20 a 24 Aceito; 25 ou mais Ideal;
  * DARE — entregue sempre no dia 15 (pedido de 18/11/2026): até 2 dias Crítico; 3 a 4 Moderado; 5 ou mais Ideal;
  * DIOPS — entregue sempre no dia 30: menos de 15 dias Moderado; 15 ou mais Ideal;
  * PAGAMENTO — sempre no dia 30, quanto mais perto do Fechamento, pior: menos de 15 dias Moderado; 15 ou mais Ideal. */
-export const PEONA_IDEAL_ATE = 4, PEONA_ACEITO_ATE = 12, PEONA_MODERADO_ATE = 15, FECHAMENTO_MINIMO = 10, FECHAMENTO_IDEAL = 20, DARE_MINIMO = 3, DARE_IDEAL = 5, DIOPS_IDEAL = 15, PAGAMENTO_IDEAL = 15;
+export const PEONA_IDEAL_ATE = 4, PEONA_ACEITO_ATE = 12, PEONA_MODERADO_ATE = 15, FECHAMENTO_MINIMO = 10, FECHAMENTO_ACEITO = 20, FECHAMENTO_IDEAL = 25, DARE_MINIMO = 3, DARE_IDEAL = 5, DIOPS_IDEAL = 15, PAGAMENTO_IDEAL = 15;
 export type NivelImpactoFm = "ideal" | "aceito" | "moderado" | "critico";
 export const STATUS_IMPACTO_FM: Record<NivelImpactoFm, string> = { ideal: "Ideal", aceito: "Aceito", moderado: "Moderado", critico: "Crítico" };
 export type ImpactoFm = { id: "peonaBene" | "peona" | "fechamentoBene" | "fechamento" | "dare" | "diops" | "pagamento"; rotulo: string; dias: number; nivel: NivelImpactoFm; status: string; descricao: string };
@@ -386,8 +386,11 @@ export function avaliarImpactosFm(e: EntradaDatasFm): ImpactoFm[] {
     // FECHAMENTO em duas partes, Benê e Rede (pedido de 26/11/2026).
     ...([["fechamentoBene", "FECHAMENTO BENÊ", fechamentosFm(e)[0].dias], ["fechamento", "FECHAMENTO REDE", fechamentosFm(e)[1].dias]] as const).map(([id, rotulo, fechamento]) => fechamento < FECHAMENTO_MINIMO
       ? item(id, rotulo, fechamento, "critico", `${plural(fechamento)} entre o Arquivo e o Fechamento; o mínimo é ${formatarPrazo(FECHAMENTO_MINIMO)} e o ideal, ${formatarPrazo(FECHAMENTO_IDEAL)}.`)
-      : fechamento < FECHAMENTO_IDEAL
+      : fechamento < FECHAMENTO_ACEITO
         ? item(id, rotulo, fechamento, "moderado", `${plural(fechamento)} entre o Arquivo e o Fechamento: atende ao mínimo de ${formatarPrazo(FECHAMENTO_MINIMO)}, mas fica abaixo do ideal de ${formatarPrazo(FECHAMENTO_IDEAL)}.`)
+      // 20 a 24 dias Aceito; 25 ou mais Ideal (pedido de 26/11/2026).
+      : fechamento < FECHAMENTO_IDEAL
+        ? item(id, rotulo, fechamento, "aceito", `${plural(fechamento)} entre o Arquivo e o Fechamento: aceitável (${formatarPrazo(FECHAMENTO_ACEITO)} a 24 dias), abaixo do ideal de ${formatarPrazo(FECHAMENTO_IDEAL)}.`)
         : item(id, rotulo, fechamento, "ideal", `${plural(fechamento)} entre o Arquivo e o Fechamento, dentro do ideal de ${formatarPrazo(FECHAMENTO_IDEAL)}.`)),
     dare < DARE_MINIMO
       ? item("dare", "DeRE", dare, "critico", `${plural(dare)} para fechar o DeRE (entrega no dia 15); o mínimo é ${formatarPrazo(DARE_MINIMO)} e o ideal, ${formatarPrazo(DARE_IDEAL)}.`)

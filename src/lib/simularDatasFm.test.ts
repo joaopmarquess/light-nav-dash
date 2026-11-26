@@ -271,4 +271,9 @@ describe("Fechamento travado no dia 09", () => {
     expect(avaliarImpactosFm(com).find((i) => i.id === "peona")!.dias).toBe(16);
     expect(blocosRedeFm(com).at(-1)!.ate).toBe("14/12/2026");
   });
+  it("Fechamento: 20 a 24 Aceito, 25 ou mais Ideal", () => {
+    const im = avaliarImpactosFm({ ...e, arquivoBene: { dia: 20, mes: 12 } });
+    expect(im.find((i) => i.id === "fechamentoBene")!.status).toBe("Aceito");
+    expect(im.find((i) => i.id === "fechamento")!.status).toBe("Ideal");
+  });
 });
