@@ -232,8 +232,8 @@ describe("Controle de Simulações FM", () => {
 });
 
 describe("Simular em blocos", () => {
-  it("aceita somente dois ou quatro blocos, descartando quantidades inválidas", () => {
-    for (const quantidadeBlocos of [1, 3, 5, 2.5]) {
+  it("aceita somente um, dois ou quatro blocos, descartando quantidades inválidas", () => {
+    for (const quantidadeBlocos of [3, 5, 2.5, 0]) {
       expect(normalizarEntradaFm({ ...COMPETENCIA_PADRAO, dias: {}, blocos: true, quantidadeBlocos }).quantidadeBlocos).toBe(4);
     }
   });
