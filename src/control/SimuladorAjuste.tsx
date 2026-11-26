@@ -79,8 +79,8 @@ export function GradeAjuste({ alteracoes, setAlteracoes, slide = false, sinistra
     if (centavos === null || centavos <= 0) return;
     setAlteracoes((a) => ({ ...a, [c]: { ...a[c], faturamento: centavos } }));
   };
-  const py = slide ? "py-px" : dre ? "py-1.5" : "py-0.5";
-  const altura = slide ? "h-[30px]" : "h-6";
+  const py = slide ? "py-px" : dre ? "py-[2px]" : "py-0.5";
+  const altura = slide ? "h-[30px]" : dre ? "h-[22px]" : "h-6";
   const largPct = slide ? "w-[6.2rem]" : "w-[4.6rem]";
   const largValor = slide ? "w-[12rem]" : "w-[9rem]";
   const larg = slide ? "w-4" : "w-3";
@@ -88,8 +88,8 @@ export function GradeAjuste({ alteracoes, setAlteracoes, slide = false, sinistra
   return <table className={cn("w-full tabular-nums border-collapse", slide ? "text-[19px]" : "text-sm")} aria-label="Ajuste por cenário">
     <thead className={cn(dre && "sticky top-0 z-10 shadow-md")}>
       <tr className={dre ? "bg-primary text-primary-foreground" : "bg-[hsl(var(--ajuste-head))] text-primary-foreground"}>
-        <th className={cn("px-4 text-left font-semibold", slide ? "py-1.5" : "py-2")}><span className="sr-only">Linha</span></th>
-        {CENARIOS_AJUSTE.map((c) => <th key={c} colSpan={2} className={cn("px-5 text-right font-bold w-[24%]", slide ? "py-1.5" : "py-2")}>{ROTULOS_CENARIO_AJUSTE[c]}</th>)}
+        <th className={cn("px-4 text-left font-semibold", slide ? "py-1.5" : dre ? "py-1" : "py-2")}><span className="sr-only">Linha</span></th>
+        {CENARIOS_AJUSTE.map((c) => <th key={c} colSpan={2} className={cn("px-5 text-right font-bold w-[24%]", slide ? "py-1.5" : dre ? "py-1" : "py-2")}>{ROTULOS_CENARIO_AJUSTE[c]}</th>)}
       </tr>
     </thead>
     <tbody>
@@ -151,13 +151,13 @@ export default function SimuladorAjuste({ onVoltar }: { onVoltar: () => void }) 
 /** Control › Orçamento 2027 no padrão das Demonstrações (DRE): mesmo grid e alterações do Ajuste, sem cara de slide. */
 export function Orcamento2027Dre() {
   const { alteracoes, setAlteracoes, alterado, reverter } = useAlteracoesAjuste();
-  return <section className="bg-card rounded-xl border border-border shadow-sm h-full min-h-0 flex flex-col overflow-hidden">
-    <div className="flex flex-wrap items-center gap-2 px-4 py-2 border-b border-border">
+  return <section className="bg-card rounded-xl border border-border shadow-sm max-h-full min-h-0 flex flex-col overflow-hidden">
+    <div className="flex flex-wrap items-center gap-2 px-4 py-1 border-b border-border">
       <h3 className="text-base font-semibold text-foreground">DRE por cenário · 2027</h3>
       <span className="text-xs uppercase tracking-wide text-muted-foreground">R$ · % fat. (editável)</span>
-      <BotaoReverterAjuste alterado={alterado} reverter={reverter} className="ml-auto" />
+      <BotaoReverterAjuste alterado={alterado} reverter={reverter} className="ml-auto h-7" />
     </div>
-    <div className="flex-1 min-h-0 overflow-auto">
+    <div className="min-h-0 overflow-hidden">
       <GradeAjuste alteracoes={alteracoes} setAlteracoes={setAlteracoes} sinistralidade dre />
     </div>
   </section>;
