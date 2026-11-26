@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { EntradaDatasFm } from "./simularDatasFm";
 import { formatarPrazo, normalizarEntradaFm, COMPETENCIA_PADRAO, dataDaLinha, formatarCompetencia, lerCompetencia, lerDiaMes, avaliarImpactosFm, impactosFm, lerInteiro, periodoFm, ultimoDiaFm, simularDatasFm, ultimoDiaUtil , lerSimulacoesFm, novaSimulacaoFm, gravarSimulacaoFm, simulacaoAlteradaFm, duplicarSimulacaoFm, ordenarSimulacoesFm, proximoNumeroFm, DESCRICAO_FM_MAX, prazoFolhaFm, blocosPeriodoFm, hospitalBeneFm, beneNoBlocoFm, blocosRedeFm } from "./simularDatasFm";
 
 // Entrada do quadro fornecido antes do novo padrão: Arquivo 05/01 e Fechamento 10.
@@ -312,7 +313,7 @@ describe("PEONA em duas partes", () => {
 
 describe("Período do Benê pelo próprio Arquivo", () => {
   it("Arquivo do Benê 20/12 difere de 15/12 no Período e no PEONA BENÊ", () => {
-    const e = { ...COMPETENCIA_PADRAO, mes: 12, ano: 2026, dias: { arquivo: 15 }, arquivoMes: 12, blocos: true };
+    const e: EntradaDatasFm = { ...COMPETENCIA_PADRAO, mes: 12, ano: 2026, dias: { arquivo: 15 }, arquivoMes: 12, blocos: true };
     const b15 = hospitalBeneFm(e), b20 = hospitalBeneFm({ ...e, arquivoBene: { dia: 20, mes: 12 } });
     expect(b15.ate).toBe("14/12/2026");
     expect(b20.ate).toBe("19/12/2026");
