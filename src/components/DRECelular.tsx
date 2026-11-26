@@ -26,12 +26,12 @@ export default function DRECelular() {
   const ent = r.linhas[0][1], desp = r.linhas[1][1];
   const per = sel === "acum" ? `Acumulado ${MESES[0]}–${MESES[meses.length - 1]}/${String(ANO).slice(2)}` : typeof sel === "string" ? `${sel.slice(1)}T${String(ANO).slice(2)}` : `${MESES[sel - 1]}/${String(ANO).slice(2)}`;
   const tris = [1, 2, 3, 4].filter(t => meses.some(m => Math.ceil(m / 3) === t));
-  const bt = (k: typeof sel, rot: string, extra = "") => <button key={String(k)} onClick={() => setSel(k)} className={`rounded-md py-1.5 text-sm uppercase ${extra} ${sel === k ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{rot}</button>;
+  const bt = (k: typeof sel, rot: string, extra = "", off = false) => <button key={String(k)} disabled={off} onClick={() => setSel(k)} className={`rounded-md py-1.5 text-sm uppercase disabled:opacity-40 ${extra} ${sel === k ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{rot}</button>;
   return (
     <div className="h-full overflow-y-auto p-4 space-y-4">
       <div className="grid grid-cols-4 gap-1.5">
         {bt("acum", "Acumulado", "col-span-4")}
-        {tris.map(t => [1, 2, 3].map(i => (t - 1) * 3 + i).map(m => meses.includes(m) ? bt(m, MESES[m - 1]) : <span key={m} />).concat(bt(`t${t}`, `${t}T${String(ANO).slice(2)}`, "font-semibold")))}
+        {[1, 2, 3, 4].map(t => [1, 2, 3].map(i => (t - 1) * 3 + i).map(m => bt(m, MESES[m - 1], "", !meses.includes(m))).concat(bt(`t${t}`, `${t}T${String(ANO).slice(2)}`, "font-semibold", !tris.includes(t))))}
       </div>
       <p className="text-xs text-muted-foreground">{per}</p>
       <div className="grid grid-cols-2 gap-3">
