@@ -2,13 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Area, Bar, BarChart, CartesianGrid, Cell, ComposedChart, LabelList, Legend, Line, LineChart, Pie, PieChart, ReferenceLine, Tooltip, XAxis, YAxis,
 } from "recharts";
-import { loadDreHostinger, type DreHRow } from "@/control/dreHostinger";
+import { type DreHRow } from "@/control/dreHostinger";
+import { carregarDreCarrossel } from "@/control/dreCarrosselCarga";
 
 import { DRE_FULL_NAME } from "@/control/dreLabels";
 
 const ANO = 2026;
-const MESES = [1, 2, 3, 4, 5, 6, 7, 8];
-const NOMES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago"];
+const NOMES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 const C = ["hsl(var(--primary))", "#f59e0b", "#a855f7", "#ef4444", "#06b6d4", "#ec4899", "#f97316", "#14b8a6", "#8b5cf6", "#eab308"];
 const fmtC = (v: number) => {
   const a = Math.abs(v);
@@ -45,20 +45,29 @@ const barMin = mkBarMin("Entradas Operacionais", "Despesas Assistenciais");
 
 export function useDreCarrossel() {
   const [rows, setRows] = useState<DreHRow[] | null>(null);
-  useEffect(() => { loadDreHostinger(ANO, MESES).then(setRows).catch(() => setRows([])); }, []);
+  const [meses, setMeses] = useState<number[]>([]);
+  useEffect(() => {
+    let cancelado = false;
+    carregarDreCarrossel(ANO).then((dados) => {
+      if (cancelado) return;
+      setMeses(dados.meses);
+      setRows(dados.rows);
+    }).catch(() => { if (!cancelado) setRows([]); });
+    return () => { cancelado = true; };
+  }, []);
 
   const charts = useMemo(() => {
-    if (!rows) return [];
+    if (!rows || !meses.length) return [];
     // por mês: soma de cada G1; G1 positivo = receita, negativo = despesa
     const porMesG1 = new Map<string, number>();
     for (const r of rows) porMesG1.set(`${r.mes}|${r.g1}`, (porMesG1.get(`${r.mes}|${r.g1}`) ?? 0) + r.valor);
     let acum = 0;
-    const mensal = MESES.map((m, i) => {
+    const mensal = meses.map((m) => {
       let rec = 0, desp = 0;
       for (const [k, v] of porMesG1) if (k.startsWith(`${m}|`)) v >= 0 ? (rec += v) : (desp += -v);
       const res = rec - desp;
       acum += res;
-      return { mes: NOMES[i], Receita: rec, Despesa: desp, Resultado: res, Acumulado: acum, Margem: rec ? (res / rec) * 100 : 0 };
+      return { mes: NOMES[m - 1], Receita: rec, Despesa: desp, Resultado: res, Acumulado: acum, Margem: rec ? (res / rec) * 100 : 0 };
     });
     const somaPor = (key: "g1" | "g3") => {
       const m = new Map<string, number>();
@@ -73,18 +82,18 @@ export function useDreCarrossel() {
     const rs = mensal.map((x) => x.Resultado);
     const rmx = Math.max(...rs), rmn = Math.min(...rs);
     const offRes = rmx <= 0 ? 0 : rmn >= 0 ? 1 : rmx / (rmx - rmn);
-    const entDesp = MESES.map((m, i) => {
+    const entDesp = meses.map((m) => {
       let e = 0, d = 0;
       for (const r of rows) if (r.mes === m && !/FINANCEIRO/i.test(r.g1) && /PRINCIPAL/i.test(r.g3)) { if (/FATUR|COPART/i.test(r.g4)) e += r.valor; else d += r.valor; }
-      return { mes: NOMES[i], "Entradas Operacionais": Math.abs(e), "Despesas Assistenciais": Math.abs(d) };
+      return { mes: NOMES[m - 1], "Entradas Operacionais": Math.abs(e), "Despesas Assistenciais": Math.abs(d) };
     });
-    const totRD = MESES.map((m, i) => {
+    const totRD = meses.map((m) => {
       let rc = 0, dp = 0;
       for (const r of rows) if (r.mes === m) {
         const ent = !/FINANCEIRO/i.test(r.g1) && /PRINCIPAL/i.test(r.g3) && /FATUR|COPART/i.test(r.g4);
         if (ent || /FINANCEIRO/i.test(r.g1)) rc += r.valor; else dp -= r.valor;
       }
-      return { mes: NOMES[i], Receitas: rc, Despesas: dp };
+      return { mes: NOMES[m - 1], Receitas: rc, Despesas: dp };
     });
     const faixa = totRD.map((x) => ({ ...x, faixa: [Math.min(x.Receitas, x.Despesas), Math.max(x.Receitas, x.Despesas)], dif: x.Receitas - x.Despesas }));
     const fMin = Math.floor(Math.min(...faixa.map((x) => x.faixa[0])) / 2e6) * 2e6 - 2e6;
@@ -94,7 +103,7 @@ export function useDreCarrossel() {
     const sinMin = Math.max(0, Math.floor(Math.min(...sinis.map((x) => x.Sinistralidade)) / 10) * 10 - 10);
     const comp = somaPor("g1");
     const top = somaPor("g3").slice(0, 10);
-    const sub = `${DRE_FULL_NAME} · Jan–Ago/${ANO}`;
+    const sub = `${DRE_FULL_NAME} · ${NOMES[(meses[0] ?? 1) - 1]}–${NOMES[(meses.at(-1) ?? 1) - 1]}/${ANO}`;
     return [
       { title: "Resultado acumulado", subtitle: sub, chart: (
         <ComposedChart data={mensal} margin={{ top: 24, right: 24, left: 8, bottom: 0 }}>
@@ -172,7 +181,7 @@ export function useDreCarrossel() {
           </Line>
         </ComposedChart>) },
     ];
-  }, [rows]);
+  }, [rows, meses]);
 
   return { charts, loading: rows === null };
 }
