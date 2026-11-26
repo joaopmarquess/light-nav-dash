@@ -76,7 +76,7 @@ function blocosDaPagina(s: SimulacaoFm): NonNullable<PaginaCenarioFm["blocos"]> 
 type RGB = [number, number, number];
 // Tintas escuras para continuar legível impresso em preto e branco; a situação vem sempre escrita, a cor só acompanha.
 const TINTA: RGB = [26, 46, 79], TEXTO: RGB = [0, 0, 0], SECUNDARIO: RGB = [38, 38, 38], LINHA: RGB = [74, 85, 104], CARTAO: RGB = [238, 242, 247], ZEBRA: RGB = [245, 247, 250];
-const MARCADOR: Record<NivelImpactoFm, RGB> = { ideal: [46, 179, 92], aceito: [125, 214, 150], moderado: [247, 129, 22], critico: [220, 38, 38] };
+const MARCADOR: Record<NivelImpactoFm, RGB> = { ideal: [46, 179, 92], aceito: [214, 168, 18], moderado: [247, 129, 22], critico: [220, 38, 38] };
 
 const MM_PT = 0.3528;
 /** Escalas tentadas, da maior para a menor: cada cenário usa a maior com que cabe inteiro numa página A4 (pedido de 18/11/2026). */
