@@ -79,10 +79,10 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
   const maxUF = Math.max(1, ...porUF.map((x) => x.total));
   // Lista compacta de vidas por estado: coluna estreita para o mapa ocupar o restante da tela.
   const maxRegiao = Math.max(1, ...porRegiao.map((x) => x.total));
-  const opcoesAgrupamento = [["estado", "Estado"], ["intermediaria", "Interm."], ["imediata", "Imediata"]] as const;
+  const opcoesAgrupamento = [["estado", "Estado"], ["imediata", "Região IBGE"]] as const;
   const listaEstados = <nav aria-label="Vidas por estado ou região IBGE" className="flex min-h-0 shrink-0 flex-col justify-start gap-1 overflow-y-auto border-b border-border p-3 md:w-60 md:border-b-0 md:border-r">
-    <h3 className="mb-1 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{agrupamento === "estado" ? "Vidas por estado" : `Vidas por região ${agrupamento === "imediata" ? "imediata" : "intermediária"} (IBGE)`}</h3>
-    <div role="group" aria-label="Agrupar por" className="mb-1 grid grid-cols-3 gap-0.5 rounded-md bg-accent/50 p-0.5 text-xs">
+    <h3 className="mb-1 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{agrupamento === "estado" ? "Vidas por estado" : "Vidas por região imediata (IBGE)"}</h3>
+    <div role="group" aria-label="Agrupar por" className="mb-1 grid grid-cols-2 gap-0.5 rounded-md bg-accent/50 p-0.5 text-xs">
       {opcoesAgrupamento.map(([v, rot]) => <button key={v} type="button" aria-pressed={agrupamento === v} onClick={() => setAgrupamento(v)}
         className={`rounded px-1 py-1 transition-colors ${agrupamento === v ? "bg-background font-semibold text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>{rot}</button>)}
     </div>

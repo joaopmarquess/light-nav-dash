@@ -17,6 +17,8 @@ export const ALIASES_CIDADE: Record<string, string> = {
   "SP|ENGENHEIROSCHMIDT": "SP|SAOJOSEDORIOPRETO",
   "SP|TALHADO": "SP|SAOJOSEDORIOPRETO",
   "SP|PLANALTOANDRADINA": "SP|PLANALTO",
+  "SP|ONDABRANCA": "SP|NOVAGRANADA",
+  "SP|PRIMAVERA": "SP|ROSANA",
   "MG|ESTRELADABARRA": "MG|CARNEIRINHO",
   "SP|SIMONSEN": "SP|SANTAFEDOSUL",
   "SP|NOVAITAPIREMA": "SP|NOVAALIANCA",
@@ -35,6 +37,9 @@ export const ALIASES_CIDADE: Record<string, string> = {
   "MS|SAOJOAODOAPORE": "MS|PARANAIBA",
 };
 
+/** Nomes de exibição escolhidos pelo usuário para regiões imediatas. */
+export const NOMES_REGIAO_IMEDIATA: Record<number, string> = { 500003: "Paranaíba" };
+
 export function regiaoImediataDaCidade(uf: string, cidade: string): number | null {
   const k = chaveCidade(uf, cidade);
   return MUNICIPIO_IMEDIATA[ALIASES_CIDADE[k] ?? k] ?? null;
@@ -47,7 +52,7 @@ export function vidasPorRegiaoIbge(rows: { uf: string; cidade: string; ativos: n
     const im = regiaoImediataDaCidade(r.uf, r.cidade);
     let linha: Omit<LinhaRegiaoIbge, "total">;
     if (im == null || !REGIOES_IMEDIATAS[im]) linha = { id: "?", nome: "Não identificada", uf: "" };
-    else if (nivel === "imediata") { const [nome, , uf] = REGIOES_IMEDIATAS[im]; linha = { id: String(im), nome, uf }; }
+    else if (nivel === "imediata") { const [nome, , uf] = REGIOES_IMEDIATAS[im]; linha = { id: String(im), nome: NOMES_REGIAO_IMEDIATA[im] ?? nome, uf }; }
     else { const it = REGIOES_IMEDIATAS[im][1]; const [nome, uf] = REGIOES_INTERMEDIARIAS[it]; linha = { id: String(it), nome, uf }; }
     const atual = acc.get(linha.id) ?? { ...linha, total: 0 };
     atual.total += r.ativos;

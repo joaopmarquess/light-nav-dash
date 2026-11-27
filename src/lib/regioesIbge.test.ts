@@ -27,4 +27,8 @@ describe("regiões IBGE", () => {
     const it2 = vidasPorRegiaoIbge(rows, "intermediaria");
     expect(it2.find((r) => r.nome === "São José do Rio Preto")?.total).toBe(145);
   });
+  it("região de Paranaíba – Chapadão do Sul – Cassilândia aparece como Paranaíba", () => {
+    const l = vidasPorRegiaoIbge([{ uf: "MS", cidade: "CASSILANDIA", ativos: 7 }], "imediata");
+    expect(l[0]).toMatchObject({ nome: "Paranaíba", total: 7 });
+  });
 });
