@@ -43,3 +43,4 @@
 - Lay out Carteira › Área Geográfica as one card: a thin toolbar (map buttons, date, total) and a narrow state list beside a map that fills the rest; portal-toolbar mode keeps its own controls, so maximizing the map never touches data or MAA behaviour.
 - Carteira screens show Hostinger read failures through the shared AvisoErroDados (message from tested src/lib/erroDados.ts, retry button); the Hostinger client aborts requests after a fixed wait, so an unreachable server never looks like empty data or endless loading.
 - Carteira › Entradas/Saídas and Faixas Etárias load only on Buscar; their monthly chart and XLSX derive from already-loaded rows via tested src/lib/carteiraES.ts, so exports never re-query.
+- Área Geográfica groups lives by IBGE intermediate/immediate region via tested src/lib/regioesIbge.ts over a literal IBGE municipality copy (src/data/ibgeRegioes.ts) plus district aliases; unmatched cities show as "Não identificada" so totals never change.

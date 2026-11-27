@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { vidasPorRegiaoIbge, type NivelRegiaoIbge } from "@/lib/regioesIbge";
 import { listarHospitaisPorTipo, type TipoHospital } from "@/lib/mapaHospitais";
 
 const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onDateChange, toolbarTarget }: { embedded?: boolean; mapOnly?: boolean; selectedDate?: string; onDateChange?: (date: string) => void; toolbarTarget?: HTMLElement | null }) => {
@@ -22,6 +23,7 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
   const [showMAA, setShowMAA] = useState(false);
   const [cropOpen, setCropOpen] = useState(false);
   const [showHospitals, setShowHospitals] = useState(false);
+  const [agrupamento, setAgrupamento] = useState<"estado" | NivelRegiaoIbge>("estado");
   const [hospitalListType, setHospitalListType] = useState<TipoHospital | null>(null);
 
   const { total, porUF, ufTotals, cityTotalsByUF } = useMemo(() => {
@@ -38,6 +40,7 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
     return { total, porUF, ufTotals, cityTotalsByUF: city };
   }, [rows]);
 
+  const porRegiao = useMemo(() => agrupamento === "estado" ? [] : vidasPorRegiaoIbge(rows ?? [], agrupamento), [rows, agrupamento]);
   const cidadesHospitalOrdenadas = useMemo(() => hospitalListType ? listarHospitaisPorTipo(cityTotalsByUF, hospitalListType) : [], [cityTotalsByUF, hospitalListType]);
 
   if (sel) {
@@ -75,9 +78,28 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
   </div>;
   const maxUF = Math.max(1, ...porUF.map((x) => x.total));
   // Lista compacta de vidas por estado: coluna estreita para o mapa ocupar o restante da tela.
-  const listaEstados = <nav aria-label="Vidas por estado" className="flex shrink-0 flex-col justify-start gap-1 border-b border-border p-3 md:w-56 md:border-b-0 md:border-r">
-    <h3 className="mb-1 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Vidas por estado</h3>
-    {porUF.map((r) => {
+  const maxRegiao = Math.max(1, ...porRegiao.map((x) => x.total));
+  const opcoesAgrupamento = [["estado", "Estado"], ["intermediaria", "Interm."], ["imediata", "Imediata"]] as const;
+  const listaEstados = <nav aria-label="Vidas por estado ou região IBGE" className="flex min-h-0 shrink-0 flex-col justify-start gap-1 overflow-y-auto border-b border-border p-3 md:w-60 md:border-b-0 md:border-r">
+    <h3 className="mb-1 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{agrupamento === "estado" ? "Vidas por estado" : `Vidas por região ${agrupamento === "imediata" ? "imediata" : "intermediária"} (IBGE)`}</h3>
+    <div role="group" aria-label="Agrupar por" className="mb-1 grid grid-cols-3 gap-0.5 rounded-md bg-accent/50 p-0.5 text-xs">
+      {opcoesAgrupamento.map(([v, rot]) => <button key={v} type="button" aria-pressed={agrupamento === v} onClick={() => setAgrupamento(v)}
+        className={`rounded px-1 py-1 transition-colors ${agrupamento === v ? "bg-background font-semibold text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>{rot}</button>)}
+    </div>
+    {agrupamento !== "estado" && porRegiao.map((r) => {
+      const share = total > 0 ? (r.total / total) * 100 : 0;
+      return (
+        <div key={r.id} className="w-full rounded-md px-2 py-1.5">
+          <div className="mb-1 flex items-baseline justify-between gap-2 text-sm">
+            <span className="min-w-0 text-foreground">{r.nome}{r.uf && <span className="ml-1 text-[11px] text-muted-foreground">{r.uf}</span>}</span>
+            <span className="whitespace-nowrap"><span className="font-semibold text-foreground tabular-nums">{r.total.toLocaleString("pt-BR")}</span>{" "}
+              <span className="text-[11px] text-muted-foreground tabular-nums">({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)</span></span>
+          </div>
+          <div className="flex h-1.5 overflow-hidden rounded-full bg-accent"><div className="h-full bg-primary" style={{ width: `${(r.total / maxRegiao) * 100}%` }} /></div>
+        </div>
+      );
+    })}
+    {agrupamento === "estado" && porUF.map((r) => {
       const share = total > 0 ? (r.total / total) * 100 : 0;
       const outros = r.uf === "Outros";
       return (
