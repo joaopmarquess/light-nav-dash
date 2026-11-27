@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Maximize2, Minimize2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useDreCarrossel } from "@/control/dreCarrossel";
+import { useSlidesMenus } from "@/control/carrosselMenus";
 import {
   ResponsiveContainer,
   BarChart,
@@ -117,7 +118,8 @@ const Dashboards = () => {
 
 
 
-  const slides = charts;
+  const menus = useSlidesMenus();
+  const slides = useMemo(() => [...charts, ...menus], [charts, menus]);
 
   useEffect(() => {
     if (!slides.length || paused || !ready) return;
