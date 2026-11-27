@@ -1,5 +1,5 @@
 import { hostinger } from "@/lib/hostingerClient";
-import { carregarContabilIa } from "@/control/dreIaCarga";
+import { loadDreHostinger } from "@/control/dreHostinger";
 import { competenciasAssistenciais, despesaContabilAssistencial, FONTE_ASSISTENCIAL, movimentoDaView, type RegistroViewAssistencial, type MovimentoAssistencial } from "./analiseDespesasAssistenciais";
 
 export async function ultimaCompetenciaAssistencial() {
@@ -13,7 +13,7 @@ export async function carregarAnaliseAssistencial(de: string, ate: string, signa
   const rows: MovimentoAssistencial[] = [];
   const contabeis = new Map<number, number[]>();
   for (const m of meses) { const ano = Math.floor(m / 100); contabeis.set(ano, [...(contabeis.get(ano) ?? []), m % 100]); }
-  const contabilidade = Promise.all([...contabeis].map(([ano, ms]) => carregarContabilIa(ano, ms))).then(rs => { const todas = rs.flat(); const porMes = new Map<number, number>(); for (const m of meses) porMes.set(m, despesaContabilAssistencial(todas.filter(r => r.ano * 100 + r.mes === m)) ?? 0); return { valor: despesaContabilAssistencial(todas), porMes, erro: null as unknown }; }).catch(erro => ({ valor: null, porMes: null, erro }));
+  const contabilidade = Promise.all([...contabeis].map(([ano, ms]) => loadDreHostinger(ano, ms))).then(rs => { const todas = rs.flat().map(r => ({ ...r, tipo: "A" })); const porMes = new Map<number, number>(); for (const m of meses) porMes.set(m, despesaContabilAssistencial(todas.filter(r => r.ano * 100 + r.mes === m)) ?? 0); return { valor: despesaContabilAssistencial(todas), porMes, erro: null as unknown }; }).catch(erro => ({ valor: null, porMes: null, erro }));
   try {
     for (const mes of meses) {
       // Fast path: server-side monthly summary (supabase/sql/assistencial_resumo_mes.sql) in one response.

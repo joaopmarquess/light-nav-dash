@@ -92,7 +92,7 @@ export default function AnaliseDespesasAssistenciais() {
         <Grid titulo="Tipos de guia" nodes={arvoreB} onSelecionar={f => setFiltro(prev => ({ ...prev, ...f }))} total={resumo.total} />
       </div>}
       <details className="mt-4 border-t border-border py-3 text-xs text-muted-foreground"><summary className="cursor-pointer">Fontes e critérios da análise</summary><ul className="mt-2 list-disc space-y-1 pl-5">
-        <li>Contabilidade: icontabil, contas analíticas A classificadas em PRINCIPAL / DESP. ASSISTENCIAL; REALIZADO com sinal invertido para apresentar despesa líquida.</li>
+        <li>Contabilidade: demonstracoes_contabeis_oracle_mv (mesmo balancete das Demonstrações), contas do plano 9D classificadas em PRINCIPAL / DESP. ASSISTENCIAL; crédito − débito com sinal invertido para apresentar despesa líquida.</li>
         <li>Assistencial: view_eassistencial, período dt_competencia, despesa vl_total_pago; cada linha de procedimento é somada uma vez, sem adicionar valores glosados.</li>
         <li>Executor: cd_prestador / nm_prestador. Recebedor: cd_prestador_pagamento / nm_prestador_pagamento; conceitos independentes, inclusive quando iguais.</li>
         <li>É Benê: executor com nome exato HOSP BENEF PORTUGUESA DE S J RIO PRETO, conforme a regra assistencial já utilizada no AXIS.</li>
