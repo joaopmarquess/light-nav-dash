@@ -35,7 +35,7 @@ export default function AreaGeograficaCelular() {
   const max = Math.max(1, ...lista.map((r) => r.total));
 
   return (
-    <div className="flex flex-col gap-3 p-3">
+    <div className="flex h-full flex-col gap-3 overflow-y-auto p-3 pb-8">
       <div className="flex items-center justify-between gap-2 text-sm">
         <label className="flex items-center gap-2"><span className="text-muted-foreground">Ativos em</span>
           <input type="date" aria-label="Ativos em" value={data} onChange={(e) => e.target.value && setData(e.target.value)} className="h-9 rounded-md border border-border bg-background px-2" />
@@ -45,7 +45,7 @@ export default function AreaGeograficaCelular() {
       {isLoading ? <div className="flex items-center justify-center p-8 text-sm text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" />Carregando…</div>
         : error ? <AvisoErroDados erro={error.message} onTentar={() => void refetch()} />
         : <>
-          <div className="h-[340px] overflow-hidden rounded-xl border border-border bg-card">
+          <div className="h-[340px] shrink-0 overflow-hidden rounded-xl border border-border bg-card">
             <StateHeatMap trialScale showOverview={false} ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} regiaoDestaque={modo === "regiao" ? regiaoSel : null} />
           </div>
           <div role="group" aria-label="Agrupar por" className="grid grid-cols-2 gap-1 rounded-lg bg-accent/50 p-1 text-sm">
