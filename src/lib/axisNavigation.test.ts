@@ -71,9 +71,9 @@ describe("Home shortcut groups", () => {
   it("groups shortcuts under their main menu in sidebar order, Laboratory last", () => {
     expect(homeShortcutGroups().map(g => [g.menu, g.items.map(i => i.label)])).toEqual([
       ["Control", ["Controladoria", "Demonstrações"]],
-      ["Assistencial", ["Desp. Assistencial"]],
       ["Carteira", ["Movimentação", "Área Geográfica", "Painel"]],
       ["Sinistralidade", ["Período", "Evolução Produtos"]],
+      ["Assistencial", ["Desp. Assistencial"]],
       ["Bench", ["Vidas", "Contábil"]],
       ["Laboratory", ["Laboratory", "Proj. Uberaba", "Proposta Uberaba", "Proposta APB", "Simular Datas FM", "Produtos Lancers"]],
     ]);

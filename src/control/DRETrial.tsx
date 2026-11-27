@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, FileBarChart2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import PdfPreview from "@/components/PdfPreview";
@@ -190,6 +190,9 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [painel, historico, ano, mesesKey, !!dados]);
 
+  // Rolagem horizontal começa à direita (colunas mais recentes e acumulado à vista).
+  const rolagem = useRef<HTMLDivElement>(null);
+  useEffect(() => { const el = rolagem.current; if (el) el.scrollLeft = el.scrollWidth; }, [rows, cols]);
   const tree = useMemo(() => buildTree(rows || [], cols), [rows, cols]);
   useEffect(() => {
     setOpen(initialDreExpansion(tree, recolhidoInicial));
@@ -330,7 +333,7 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
   return (
     <div className={`flex flex-col ${historico || alturaCompleta ? "h-full" : "h-[calc(100vh-9rem)]"} min-h-0`}>
     <section className="bg-card rounded-xl border border-border shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
-      <div className="flex-1 min-h-0 overflow-auto px-2 pt-1.5">
+      <div ref={rolagem} className="flex-1 min-h-0 overflow-auto px-2">
         {!rows ? (
           <div className="p-6 text-sm text-muted-foreground">Carregando…</div>
         ) : erro ? (
@@ -341,10 +344,11 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
           <table className="w-full h-full text-sm border-separate border-spacing-x-0 border-spacing-y-0.5">
             <thead className="sticky top-0 z-10 bg-card">
               <tr>
-                <th className="sticky left-0 z-[1] rounded-l-xl bg-primary py-2.5 px-4 text-left font-semibold text-primary-foreground">Item</th>
+                <th className="sticky left-0 z-[1] bg-card p-0 pt-1.5 pb-0.5 text-left font-semibold text-primary-foreground"><div className="rounded-l-xl bg-primary py-2.5 px-4">Item</div></th>
                 {cols.map((c, i) => (
-                  <th key={c.label} className={`py-2.5 px-4 text-right font-semibold whitespace-nowrap text-primary-foreground ${i === cols.length - 1 ? "rounded-r-xl" : ""}`}
-                    style={{ background: c.kind === "ano" ? "linear-gradient(hsl(var(--primary-foreground) / 0.15), hsl(var(--primary-foreground) / 0.15)), hsl(var(--primary))" : "hsl(var(--primary))" }}>{c.label}</th>
+                  <th key={c.label} className="bg-card p-0 pt-1.5 pb-0.5 text-right font-semibold whitespace-nowrap text-primary-foreground">
+                    <div className={`py-2.5 px-4 ${i === cols.length - 1 ? "rounded-r-xl" : ""}`}
+                      style={{ background: c.kind === "ano" ? "linear-gradient(hsl(var(--primary-foreground) / 0.15), hsl(var(--primary-foreground) / 0.15)), hsl(var(--primary))" : "hsl(var(--primary))" }}>{c.label}</div></th>
                 ))}
               </tr>
             </thead>

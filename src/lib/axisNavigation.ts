@@ -128,9 +128,6 @@ export const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   controlItem,
   financeiroItem,
-  { icon: Stethoscope, label: "Assistencial", children: [
-    { icon: ListTree, label: "Desp. Assistencial", id: "Assistencial · Análise de Despesas Assistenciais" },
-  ] },
   { icon: Users, label: "Carteira", children: [
     // Visão geral
     { icon: LayoutDashboard, label: "Painel", id: "Carteira · Painel" }, { icon: MapIcon, label: "Área Geográfica", id: "Carteira · Área Geográfica" }, { icon: TrendingUp, label: "Evolução Mensal", id: "Carteira · Evolução Mensal" },
@@ -140,6 +137,9 @@ export const menuItems: MenuItem[] = [
     { icon: Search, label: "Consulta", id: "Carteira · Consulta" }, { icon: Table2, label: "Tabelas", id: "Carteira · Tabelas" },
   ] },
   { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }, { icon: Layers, label: "Evolução Produtos", id: "Sinistralidade · Evolução Produtos" }] },
+  { icon: Stethoscope, label: "Assistencial", children: [
+    { icon: ListTree, label: "Desp. Assistencial", id: "Assistencial · Análise de Despesas Assistenciais" },
+  ] },
   // Menu Bench (antes "Mercado", pedido de 27/11/2026): benchmarks de mercado; ids antigos mantidos para preservar permissões.
   { icon: Trophy, label: "Bench", children: [
     { icon: BarChart3, label: "Contábil", id: "Control · Bench C" },
