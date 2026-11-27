@@ -43,3 +43,12 @@ export function sinistralidadeOperacionalPainel(entradas: number, despesasAssist
 
 export const formatarSinistralidadePainel = (v: number | null) =>
   v === null ? "-" : `${new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v)}%`;
+
+/** Sinistralidade Operacional por coluna do grid da DRE: soma Entradas e Despesas Assistenciais dos meses de cada coluna. */
+export function sinistralidadeOperacionalColunas(rows: DreHRow[], cols: { meses: number[] }[]): (number | null)[] {
+  return cols.map((c) => {
+    let ent = 0, desp = 0;
+    for (const r of rows) if (c.meses.includes(r.mes)) { const k = grupoPainelDre(r); if (k === "ent") ent += r.valor; else if (k === "desp") desp += r.valor; }
+    return sinistralidadeOperacionalPainel(ent, desp);
+  });
+}

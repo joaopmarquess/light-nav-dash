@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatarSinistralidadePainel, resumoPainelDre, sinistralidadeOperacionalPainel } from "./drePainel";
+import { formatarSinistralidadePainel, resumoPainelDre, sinistralidadeOperacionalColunas, sinistralidadeOperacionalPainel } from "./drePainel";
 import { gruposOrcamentoDre, impostosFederais, resultadoLiquido, valoresOrcamento } from "./orcamentoDre";
 import type { DreHRow } from "./dreHostinger";
 
@@ -36,5 +36,14 @@ describe("Orçamento DRE", () => {
     expect(impostosFederais(100)).toBe(-34);
     expect(impostosFederais(-100)).toBe(0);
     expect(resultadoLiquido(-100)).toBe(-100);
+  });
+});
+
+describe("Sinistralidade Operacional por coluna do grid", () => {
+  it("divide Despesas Assistenciais pelas Entradas dos meses de cada coluna", () => {
+    const r = (mes: number, g4: string, valor: number) => ({ ano: 2026, mes, tri: 1, g1: "1|OPERACIONAL", g2: "", g3: "1|PRINCIPAL", g4, valor });
+    const rows = [r(1, "1|FATURAMENTO", 1000), r(1, "3|DESP. ASSISTENCIAL", -900), r(2, "1|FATURAMENTO", 1000), r(2, "3|DESP. ASSISTENCIAL", -800)];
+    const v = sinistralidadeOperacionalColunas(rows, [{ meses: [1] }, { meses: [2] }, { meses: [1, 2] }, { meses: [3] }]);
+    expect(v[0]).toBeCloseTo(90, 10); expect(v[1]).toBeCloseTo(80, 10); expect(v[2]).toBeCloseTo(85, 10); expect(v[3]).toBeNull();
   });
 });

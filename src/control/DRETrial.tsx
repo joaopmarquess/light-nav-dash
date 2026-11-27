@@ -6,7 +6,7 @@ import { comporPdfRelatorio } from "@/control/relatorio/controladoriaPdf";
 import type { ControladoriaReport } from "@/control/relatorio/controladoriaDados";
 import { carregarVidasTrimestres, montarRelatorioTrimestral } from "@/control/relatorio/controladoriaTrimestral";
 import { loadDreHostinger, loadMesesDemonstracoes, type DreHRow } from "@/control/dreHostinger";
-import { formatarSinistralidadePainel, grupoPainelDre, sinistralidadeOperacionalPainel } from "@/control/drePainel";
+import { formatarSinistralidadePainel, grupoPainelDre, sinistralidadeOperacionalColunas, sinistralidadeOperacionalPainel } from "@/control/drePainel";
 import { sinistralidadeContabilAnsAno, sinistralidadeContabilMv } from "@/control/sinistralidadeContabil";
 import { DRE_FULL_NAME, REPORT_FULL_NAME } from "@/control/dreLabels";
 import { initialDreExpansion } from "@/control/dreExpansion";
@@ -177,6 +177,20 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
   useEffect(() => {
     setOpen(initialDreExpansion(tree, recolhidoInicial));
   }, [tree, recolhidoInicial]);
+  const sinOpColunas = useMemo(() => sinistralidadeOperacionalColunas(rows || [], cols), [rows, cols]);
+  // Grid: Sinistralidade Contábil (411 ÷ 311 do balancete MV) por coluna, quando a tela não recebe os valores prontos.
+  const [sinContabilColunas, setSinContabilColunas] = useState<(number | null)[] | null>(null);
+  const colsKey = cols.map((c) => c.meses.join(".")).join("|");
+  useEffect(() => {
+    if (painel || dados || sinistralidadeContabil || historico || !cols.length) { setSinContabilColunas(null); return; }
+    let cancelado = false;
+    setSinContabilColunas(null);
+    Promise.all(cols.map((c) => sinistralidadeContabilMv(ano, c.meses).catch(() => null)))
+      .then((v) => { if (!cancelado) setSinContabilColunas(v); });
+    return () => { cancelado = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [painel, historico, ano, colsKey, !!sinistralidadeContabil, !!dados]);
+  const sinContabilGrid = sinistralidadeContabil ?? sinContabilColunas ?? (!historico && !painel && !dados && cols.length ? cols.map(() => undefined) : null);
   const total = useMemo(() => { const t = novo(cols); for (const r of rows || []) somar(t, r, cols); return t; }, [rows, cols]);
 
   const render = (nodes: Node[], depth: number): JSX.Element[] =>
@@ -332,9 +346,13 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
                   return <td key={i} className="py-2.5 px-4 text-right tabular-nums whitespace-nowrap">{fmt(v)}{faturamento && <span className="ml-2 font-normal">{formatDreMargin(margem)}</span>}</td>;
                 })}
               </tr>
-              {sinistralidadeContabil && <tr className="border-t border-primary-foreground/30 font-bold" title="Contas 411 ÷ Contas 311">
+              {!dados && <tr className="border-t border-primary-foreground/30 font-bold" title="Despesas Assistenciais ÷ Entradas Operacionais">
+                <td className="py-2.5 px-4">Sinistralidade Operacional</td>
+                {sinOpColunas.map((v, i) => <td key={i} className="py-2.5 px-4 text-right tabular-nums whitespace-nowrap">{formatarSinistralidadePainel(v)}</td>)}
+              </tr>}
+              {sinContabilGrid && <tr className={`font-bold ${dados ? "border-t border-primary-foreground/30" : ""}`} title="Contas 411 ÷ Contas 311">
                 <td className="py-2.5 px-4">Sinistralidade Contábil</td>
-                {sinistralidadeContabil.map((v, i) => <td key={i} className="py-2.5 px-4 text-right tabular-nums whitespace-nowrap">{formatarSinistralidadePainel(v)}</td>)}
+                {sinContabilGrid.map((v, i) => <td key={i} className="py-2.5 px-4 text-right tabular-nums whitespace-nowrap">{v === undefined ? "…" : formatarSinistralidadePainel(v)}</td>)}
               </tr>}
             </tfoot>
           </table>
