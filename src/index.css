@@ -130,6 +130,10 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* Rodapé da DRE (Faturamento, Resultado, Sinistralidades): tons suaves, distintos do azul primário. */
+    --dre-fat-bg: 220 14% 95%; --dre-fat-fg: 220 15% 30%; --dre-fat-borda: 220 13% 86%;
+    --dre-res-bg: 38 92% 94%; --dre-res-fg: 28 70% 28%; --dre-res-borda: 38 80% 82%;
+    --dre-sin-bg: 270 70% 96%; --dre-sin-fg: 270 40% 34%; --dre-sin-borda: 270 50% 87%;
     --ajuste-head: 213 55% 15%;
     --ajuste-grupo: 199 85% 90%;
     --ajuste-coluna: 199 80% 96%;
@@ -266,6 +270,9 @@ All colors MUST be HSL.
   }
 
   .dark {
+    --dre-fat-bg: 220 14% 18%; --dre-fat-fg: 220 15% 85%; --dre-fat-borda: 220 13% 28%;
+    --dre-res-bg: 32 40% 18%; --dre-res-fg: 38 85% 80%; --dre-res-borda: 32 40% 30%;
+    --dre-sin-bg: 270 30% 20%; --dre-sin-fg: 270 70% 85%; --dre-sin-borda: 270 30% 32%;
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 

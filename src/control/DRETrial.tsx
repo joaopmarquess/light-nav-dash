@@ -40,6 +40,16 @@ const linhaFundo = (depth: number) => {
   return tom ? `linear-gradient(hsl(var(--primary) / ${tom}), hsl(var(--primary) / ${tom})), hsl(var(--card))` : "hsl(var(--card))";
 };
 
+/** Linha do rodapé da DRE em cartão arredondado e tom suave próprio (tokens --dre-*). */
+function LinhaRodape({ tom, titulo, valores, dica, forte }: { tom: "fat" | "res" | "sin"; titulo: string; valores: React.ReactNode[]; dica?: string; forte?: boolean }) {
+  const estilo = { background: `hsl(var(--dre-${tom}-bg))`, color: `hsl(var(--dre-${tom}-fg))`, borderColor: `hsl(var(--dre-${tom}-borda))` };
+  const base = `${forte ? "py-2.5 font-bold" : "py-2 font-semibold"} px-4 border-y whitespace-nowrap`;
+  return <tr title={dica}>
+    <td className={`${base} sticky left-0 z-[1] rounded-l-xl border-l`} style={estilo}>{titulo}</td>
+    {valores.map((v, i) => <td key={i} className={`${base} text-right tabular-nums ${i === valores.length - 1 ? "rounded-r-xl border-r" : ""}`} style={estilo}>{v}</td>)}
+  </tr>;
+}
+
 function buildTree(rows: DreHRow[], cols: Col[]): Node[] {
   const roots: Node[] = [];
   const map = new Map<string, Node>();
@@ -341,26 +351,12 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
               {render(tree, 0)}
               {!historico && <tr aria-hidden className="h-full"><td colSpan={cols.length + 1} /></tr>}
             </tbody>
-            <tfoot className="sticky bottom-0 z-10 bg-primary text-primary-foreground shadow-[0_-4px_8px_-2px_hsl(var(--foreground)/0.2)]">
-              {faturamento && <tr className="border-b border-primary-foreground/30 bg-primary-foreground/30 font-bold">
-                <td className="py-2.5 px-4">Faturamento</td>
-                {faturamento.map((v, i) => <td key={i} className="py-2.5 px-4 text-right tabular-nums whitespace-nowrap">{fmt(v)}</td>)}
-              </tr>}
-              <tr className="font-bold">
-                <td className="py-2.5 px-4">RESULTADO</td>
-                {total.map((v, i) => {
-                  const margem = dreMargin(v, faturamento?.[i]);
-                  return <td key={i} className="py-2.5 px-4 text-right tabular-nums whitespace-nowrap">{fmt(v)}{faturamento && <span className="ml-2 font-normal">{formatDreMargin(margem)}</span>}</td>;
-                })}
-              </tr>
-              {!dados && <tr className="border-t border-primary-foreground/30 font-bold" title="Despesas Assistenciais ÷ Entradas Operacionais">
-                <td className="py-2.5 px-4">Sinistralidade Operacional</td>
-                {sinOpColunas.map((v, i) => <td key={i} className="py-2.5 px-4 text-right tabular-nums whitespace-nowrap">{formatarSinistralidadePainel(v)}</td>)}
-              </tr>}
-              {sinContabilGrid && <tr className={`font-bold ${dados ? "border-t border-primary-foreground/30" : ""}`} title="Contas 411 ÷ Contas 311">
-                <td className="py-2.5 px-4">Sinistralidade Contábil</td>
-                {sinContabilGrid.map((v, i) => <td key={i} className="py-2.5 px-4 text-right tabular-nums whitespace-nowrap">{v === undefined ? "…" : formatarSinistralidadePainel(v)}</td>)}
-              </tr>}
+            <tfoot className="sticky bottom-0 z-10 bg-card shadow-[0_-6px_12px_-8px_hsl(var(--foreground)/0.25)]">
+              <tr aria-hidden><td colSpan={cols.length + 1} className="h-1.5 p-0" /></tr>
+              {faturamento && <LinhaRodape tom="fat" titulo="Faturamento" valores={faturamento.map(fmt)} />}
+              <LinhaRodape tom="res" titulo="Resultado" forte valores={total.map((v, i) => <>{fmt(v)}{faturamento && <span className="ml-2 text-xs font-normal opacity-80">{formatDreMargin(dreMargin(v, faturamento?.[i]))}</span>}</>)} />
+              {!dados && <LinhaRodape tom="sin" titulo="Sinistralidade Operacional" dica="Despesas Assistenciais ÷ Entradas Operacionais" valores={sinOpColunas.map(formatarSinistralidadePainel)} />}
+              {sinContabilGrid && <LinhaRodape tom="sin" titulo="Sinistralidade Contábil" dica="Contas 411 ÷ Contas 311" valores={sinContabilGrid.map((v) => v === undefined ? "…" : formatarSinistralidadePainel(v))} />}
             </tfoot>
           </table>
         )}
