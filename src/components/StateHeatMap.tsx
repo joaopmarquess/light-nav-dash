@@ -32,6 +32,7 @@ function normalize(s: string): string {
     .toUpperCase()
     .trim();
 }
+import { regiaoImediataDaCidade } from "@/lib/regioesIbge";
 
 interface Props {
   ufs: ("SP" | "MG" | "MS" | "GO")[];
@@ -45,11 +46,13 @@ interface Props {
   crop?: boolean;
   showHospitals?: boolean;
   showOverview?: boolean;
+  /** Região imediata do IBGE destacada (cor e contorno próprios); só apresentação. */
+  regiaoDestaque?: number | null;
 }
 
 type FeatWithUF = Feature<Geometry, { name?: string; _uf: string }>;
 
-export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, outrosTotal, trialScale, core, outlineOnly, crop, showHospitals = true, showOverview = true }: Props) {
+export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, outrosTotal, trialScale, core, outlineOnly, crop, showHospitals = true, showOverview = true, regiaoDestaque = null }: Props) {
   const isArea = ufs.length > 1;
   const key = ufs.join("-");
   const [features, setFeatures] = useState<FeatWithUF[] | null>(null);
@@ -337,6 +340,13 @@ export function StateHeatMap({ ufs, cityTotalsByUF, onSelectUF, stateTotals, out
             />
           );
         })}
+        {regiaoDestaque != null && (() => {
+          const ds = features.flatMap((f, i) => regiaoImediataDaCidade(f.properties._uf, f.properties?.name ?? "") === regiaoDestaque ? [pathFn(displayFeatures[i] ?? f) ?? ""] : []);
+          return <g data-regiao-destaque pointerEvents="none">
+            {ds.map((d, i) => <path key={`rd-o-${i}`} d={d} fill="none" stroke="hsl(24 95% 48%)" strokeWidth={5} strokeLinejoin="round" />)}
+            {ds.map((d, i) => <path key={`rd-f-${i}`} d={d} fill="hsl(32 98% 62%)" fillOpacity={0.85} stroke="hsl(32 90% 85%)" strokeWidth={0.6} strokeLinejoin="round" />)}
+          </g>;
+        })()}
         {!isArea && stateOutlines?.map((f, i) => (
           <path
             key={`uf-outline-${i}`}

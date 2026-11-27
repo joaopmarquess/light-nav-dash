@@ -24,6 +24,7 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
   const [cropOpen, setCropOpen] = useState(false);
   const [showHospitals, setShowHospitals] = useState(false);
   const [agrupamento, setAgrupamento] = useState<"estado" | NivelRegiaoIbge>("estado");
+  const [regiaoSel, setRegiaoSel] = useState<number | null>(null);
   const [hospitalListType, setHospitalListType] = useState<TipoHospital | null>(null);
 
   const { total, porUF, ufTotals, cityTotalsByUF } = useMemo(() => {
@@ -83,20 +84,21 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
   const listaEstados = <nav aria-label="Vidas por estado ou região IBGE" className="flex min-h-0 shrink-0 flex-col justify-start gap-1 overflow-y-auto border-b border-border p-3 md:w-60 md:border-b-0 md:border-r">
     <h3 className="mb-1 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{agrupamento === "estado" ? "Vidas por estado" : "Vidas por região imediata (IBGE)"}</h3>
     <div role="group" aria-label="Agrupar por" className="mb-1 grid grid-cols-2 gap-0.5 rounded-md bg-accent/50 p-0.5 text-xs">
-      {opcoesAgrupamento.map(([v, rot]) => <button key={v} type="button" aria-pressed={agrupamento === v} onClick={() => setAgrupamento(v)}
+      {opcoesAgrupamento.map(([v, rot]) => <button key={v} type="button" aria-pressed={agrupamento === v} onClick={() => { setAgrupamento(v); setRegiaoSel(null); }}
         className={`rounded px-1 py-1 transition-colors ${agrupamento === v ? "bg-background font-semibold text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>{rot}</button>)}
     </div>
     {agrupamento !== "estado" && porRegiao.map((r) => {
       const share = total > 0 ? (r.total / total) * 100 : 0;
       return (
-        <div key={r.id} className="w-full rounded-md px-2 py-1.5">
+        <button key={r.id} type="button" disabled={r.id === "?"} aria-pressed={regiaoSel === Number(r.id)} onClick={() => setRegiaoSel((atual) => atual === Number(r.id) ? null : Number(r.id))}
+          className={`w-full rounded-md px-2 py-1.5 text-left transition-colors ${regiaoSel === Number(r.id) ? "bg-orange-100 ring-1 ring-orange-400 dark:bg-orange-500/20" : r.id === "?" ? "" : "hover:bg-accent/40"}`}>
           <div className="mb-1 flex items-baseline justify-between gap-2 text-sm">
             <span className="min-w-0 text-foreground">{r.nome}{r.uf && <span className="ml-1 text-[11px] text-muted-foreground">{r.uf}</span>}</span>
             <span className="whitespace-nowrap"><span className="font-semibold text-foreground tabular-nums">{r.total.toLocaleString("pt-BR")}</span>{" "}
               <span className="text-[11px] text-muted-foreground tabular-nums">({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)</span></span>
           </div>
           <div className="flex h-1.5 overflow-hidden rounded-full bg-accent"><div className="h-full bg-primary" style={{ width: `${(r.total / maxRegiao) * 100}%` }} /></div>
-        </div>
+        </button>
       );
     })}
     {agrupamento === "estado" && porUF.map((r) => {
@@ -127,7 +129,7 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
     <div className="flex h-full min-h-0 flex-col md:flex-row">
       {!mapOnly && listaEstados}
       <div className="min-h-0 min-w-0 flex-1 p-2">
-        <StateHeatMap trialScale outlineOnly={showMAA} showOverview={false} ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />
+        <StateHeatMap trialScale outlineOnly={showMAA} showOverview={false} ufs={["SP", "MG", "MS", "GO"]} cityTotalsByUF={cityTotalsByUF} onSelectUF={setSel} stateTotals={ufTotals} regiaoDestaque={agrupamento === "imediata" ? regiaoSel : null} outrosTotal={porUF.find((r) => r.uf === "Outros")?.total ?? 0} />
       </div>
     </div>
   );
