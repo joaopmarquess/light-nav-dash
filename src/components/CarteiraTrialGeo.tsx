@@ -1,7 +1,7 @@
 import { AvisoErroDados } from "@/components/AvisoErroDados";
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, Eye, EyeOff, Hospital, Loader2, Map as MapIcon, Scissors, Slash, X } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Hospital, Loader2, Map as MapIcon, MapPinned, Slash, X } from "lucide-react";
 import { geographicToday, useCarteiraTrialGeo } from "@/hooks/useCarteiraTrialGeo";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 import { StateHeatMap } from "@/components/StateHeatMap";
@@ -74,7 +74,7 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
     <TooltipProvider delayDuration={150}><Tooltip><TooltipTrigger asChild>
       <Button type="button" variant={showMAA ? "secondary" : "outline"} size="icon" aria-label={showMAA ? "Ocultar MAA" : "Mostrar MAA"} aria-pressed={showMAA} onClick={() => setShowMAA((visible) => !visible)} className={botaoMapa}>{showMAA ? <Eye /> : <EyeOff />}</Button>
     </TooltipTrigger><TooltipContent>{showMAA ? "Ocultar MAA" : "Mostrar MAA"}</TooltipContent></Tooltip></TooltipProvider>
-    <Button type="button" variant="outline" size="icon" title="Área de atuação recortada" aria-label="Área de atuação recortada" onClick={() => { setShowHospitals(false); setHospitalListType(null); setCropOpen(true); }} className={botaoMapa}><Scissors /></Button>
+    <Button type="button" variant="outline" size="icon" title="Área de atuação recortada" aria-label="Área de atuação recortada" onClick={() => { setShowHospitals(false); setHospitalListType(null); setCropOpen(true); }} className={botaoMapa}><MapPinned /></Button>
   </div>;
   const maxUF = Math.max(1, ...porUF.map((x) => x.total));
   // Lista compacta de vidas por estado: coluna estreita para o mapa ocupar o restante da tela.
