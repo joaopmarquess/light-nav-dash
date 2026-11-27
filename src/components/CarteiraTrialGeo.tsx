@@ -1,7 +1,7 @@
 import { AvisoErroDados } from "@/components/AvisoErroDados";
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, Eye, EyeOff, Hospital, Loader2, Map as MapIcon, MapPinned, Slash, X } from "lucide-react";
+import { ArrowLeft, ChevronRight, Eye, EyeOff, Hospital, Loader2, Map as MapIcon, MapPinned, Slash, X } from "lucide-react";
 import { geographicToday, useCarteiraTrialGeo } from "@/hooks/useCarteiraTrialGeo";
 import { BrazilHeatMap } from "@/components/BrazilHeatMap";
 import { StateHeatMap } from "@/components/StateHeatMap";
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { vidasPorRegiaoIbge, type NivelRegiaoIbge } from "@/lib/regioesIbge";
+import { regiaoImediataDaCidade, vidasPorRegiaoIbge, type NivelRegiaoIbge } from "@/lib/regioesIbge";
 import { listarHospitaisPorTipo, type TipoHospital } from "@/lib/mapaHospitais";
 
 const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onDateChange, toolbarTarget }: { embedded?: boolean; mapOnly?: boolean; selectedDate?: string; onDateChange?: (date: string) => void; toolbarTarget?: HTMLElement | null }) => {
@@ -25,6 +25,8 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
   const [showHospitals, setShowHospitals] = useState(false);
   const [agrupamento, setAgrupamento] = useState<"estado" | NivelRegiaoIbge>("estado");
   const [regiaoSel, setRegiaoSel] = useState<number | null>(null);
+  const [abertos, setAbertos] = useState<Set<string>>(new Set());
+  const alternar = (k: string) => setAbertos((a) => { const n = new Set(a); n.has(k) ? n.delete(k) : n.add(k); return n; });
   const [hospitalListType, setHospitalListType] = useState<TipoHospital | null>(null);
 
   const { total, porUF, ufTotals, cityTotalsByUF } = useMemo(() => {
@@ -42,6 +44,24 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
   }, [rows]);
 
   const porRegiao = useMemo(() => agrupamento === "estado" ? [] : vidasPorRegiaoIbge(rows ?? [], agrupamento), [rows, agrupamento]);
+  // Nível 2: cidades por estado e por região imediata, em ordem decrescente de vidas.
+  const cidadesPorGrupo = useMemo(() => {
+    const g: Record<string, Record<string, number>> = {};
+    const add = (k: string, nome: string, v: number) => { (g[k] ??= {})[nome] = (g[k][nome] ?? 0) + v; };
+    for (const r of rows ?? []) {
+      const cidade = r.cidade || "Sem cidade";
+      add(`uf:${["SP", "MS", "MG", "GO"].includes(r.uf) ? r.uf : "Outros"}`, ["SP", "MS", "MG", "GO"].includes(r.uf) ? cidade : `${cidade} · ${r.uf || "?"}`, r.ativos);
+      const reg = r.uf && r.cidade ? regiaoImediataDaCidade(r.uf, r.cidade) : null;
+      add(`rg:${reg ?? "?"}`, `${cidade} · ${r.uf || "?"}`, r.ativos);
+    }
+    const out: Record<string, { nome: string; total: number }[]> = {};
+    for (const [k, m] of Object.entries(g)) out[k] = Object.entries(m).map(([nome, total]) => ({ nome, total })).sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome, "pt-BR"));
+    return out;
+  }, [rows]);
+  const listaCidades = (k: string) => abertos.has(k) && <ul className="mb-1 ml-6 border-l border-border pl-2">
+    {(cidadesPorGrupo[k] ?? []).map((c) => <li key={c.nome} className="flex justify-between gap-2 py-0.5 text-xs"><span className="min-w-0 truncate text-foreground">{c.nome}</span><span className="tabular-nums text-muted-foreground">{c.total.toLocaleString("pt-BR")}</span></li>)}
+  </ul>;
+  const seta = (k: string) => <button type="button" aria-label={abertos.has(k) ? "Recolher cidades" : "Abrir cidades"} aria-expanded={abertos.has(k)} onClick={() => alternar(k)} className="mt-1.5 shrink-0 rounded p-0.5 text-muted-foreground hover:bg-accent/40 hover:text-foreground"><ChevronRight className={`h-3.5 w-3.5 transition-transform ${abertos.has(k) ? "rotate-90" : ""}`} /></button>;
   const cidadesHospitalOrdenadas = useMemo(() => hospitalListType ? listarHospitaisPorTipo(cityTotalsByUF, hospitalListType) : [], [cityTotalsByUF, hospitalListType]);
 
   if (sel) {
@@ -90,23 +110,23 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
     {agrupamento !== "estado" && porRegiao.map((r) => {
       const share = total > 0 ? (r.total / total) * 100 : 0;
       return (
-        <button key={r.id} type="button" disabled={r.id === "?"} aria-pressed={regiaoSel === Number(r.id)} onClick={() => setRegiaoSel((atual) => atual === Number(r.id) ? null : Number(r.id))}
-          className={`w-full rounded-md px-2 py-1.5 text-left transition-colors ${regiaoSel === Number(r.id) ? "bg-orange-100 ring-1 ring-orange-400 dark:bg-orange-500/20" : r.id === "?" ? "" : "hover:bg-accent/40"}`}>
+        <div key={r.id}><div className="flex items-start gap-0.5">{seta(`rg:${r.id}`)}<button type="button" disabled={r.id === "?"} aria-pressed={regiaoSel === Number(r.id)} onClick={() => setRegiaoSel((atual) => atual === Number(r.id) ? null : Number(r.id))}
+          className={`min-w-0 flex-1 rounded-md px-2 py-1.5 text-left transition-colors ${regiaoSel === Number(r.id) ? "bg-orange-100 ring-1 ring-orange-400 dark:bg-orange-500/20" : r.id === "?" ? "" : "hover:bg-accent/40"}`}>
           <div className="mb-1 flex items-baseline justify-between gap-2 text-sm">
             <span className="min-w-0 text-foreground">{r.nome}{r.uf && <span className="ml-1 text-[11px] text-muted-foreground">{r.uf}</span>}</span>
             <span className="whitespace-nowrap"><span className="font-semibold text-foreground tabular-nums">{r.total.toLocaleString("pt-BR")}</span>{" "}
               <span className="text-[11px] text-muted-foreground tabular-nums">({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)</span></span>
           </div>
           <div className="flex h-1.5 overflow-hidden rounded-full bg-accent"><div className="h-full bg-primary" style={{ width: `${(r.total / maxRegiao) * 100}%` }} /></div>
-        </button>
+        </button></div>{listaCidades(`rg:${r.id}`)}</div>
       );
     })}
     {agrupamento === "estado" && porUF.map((r) => {
       const share = total > 0 ? (r.total / total) * 100 : 0;
       const outros = r.uf === "Outros";
       return (
-        <button key={r.uf} type="button" onClick={() => setSel(outros ? "BRASIL" : (r.uf as "SP" | "MG" | "MS" | "GO"))}
-          className="w-full rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent/40">
+        <div key={r.uf}><div className="flex items-start gap-0.5">{seta(`uf:${r.uf}`)}<button type="button" onClick={() => setSel(outros ? "BRASIL" : (r.uf as "SP" | "MG" | "MS" | "GO"))}
+          className="min-w-0 flex-1 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-accent/40">
           <div className="mb-1 flex items-baseline justify-between gap-2 text-sm">
             <span className="inline-flex items-center gap-1.5 text-foreground">
               {!outros && UF_FLAGS[r.uf] && <img src={UF_FLAGS[r.uf]} alt={`Bandeira ${r.uf}`} className="h-3 w-[18px] object-cover rounded-[2px] border border-border" />}
@@ -116,7 +136,7 @@ const CarteiraTrialGeo = ({ embedded = false, mapOnly = false, selectedDate, onD
               <span className="text-[11px] text-muted-foreground tabular-nums">({share.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%)</span></span>
           </div>
           <div className="flex h-1.5 overflow-hidden rounded-full bg-accent"><div className="h-full bg-primary" style={{ width: `${(r.total / maxUF) * 100}%` }} /></div>
-        </button>
+        </button></div>{listaCidades(`uf:${r.uf}`)}</div>
       );
     })}
   </nav>;
