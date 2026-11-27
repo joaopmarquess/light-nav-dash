@@ -372,8 +372,8 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
               {render(tree, 0)}
               {!historico && <tr aria-hidden className="h-full"><td colSpan={cols.length + 1} /></tr>}
             </tbody>
-            <tfoot className="sticky bottom-0 z-10 bg-card shadow-[0_-6px_12px_-8px_hsl(var(--foreground)/0.25)]">
-              <tr aria-hidden><td colSpan={cols.length + 1} className="h-1.5 p-0 bg-card shadow-[0_-2px_0_hsl(var(--card))]" /></tr>
+            <tfoot className="sticky bottom-0 z-10">
+              <tr aria-hidden><td colSpan={cols.length + 1} className="h-1.5 p-0" /></tr>
               {faturamento && <LinhaRodape tom="fat" titulo="Faturamento" valores={faturamento.map(fmt)} />}
               <LinhaRodape tom="res" titulo="Resultado" forte valores={total.map((v, i) => <>{fmt(v)}{faturamento && <span className="ml-2 text-xs font-normal opacity-80">{formatDreMargin(dreMargin(v, faturamento?.[i]))}</span>}</>)} />
               {!dados && <LinhaRodape tom="sin" titulo="Sinistralidade Operacional" dica="Despesas Assistenciais ÷ Entradas Operacionais" valores={sinOpColunas.map(formatarSinistralidadePainel)} />}
