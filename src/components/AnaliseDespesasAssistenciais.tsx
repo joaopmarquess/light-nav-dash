@@ -3,7 +3,7 @@ import { ChevronDown, ChevronRight, Loader2, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AvisoErroDados } from "@/components/AvisoErroDados";
-import { arvoreAssistencial, chaveCredenciado, conciliacaoAssistencial, filtrarAssistencial, resumoAssistencial, tipoGuia, type FiltroAssistencial, type NoAssistencial } from "@/lib/analiseDespesasAssistenciais";
+import { arvoreAssistencial, mesesIncompletos, chaveCredenciado, conciliacaoAssistencial, filtrarAssistencial, resumoAssistencial, tipoGuia, type FiltroAssistencial, type NoAssistencial } from "@/lib/analiseDespesasAssistenciais";
 import { carregarAnaliseAssistencial, ultimaCompetenciaAssistencial } from "@/lib/analiseDespesasAssistenciaisCarga";
 
 const moeda = (n: number | null) => n === null ? "—" : n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -57,6 +57,7 @@ export default function AnaliseDespesasAssistenciais() {
   const ativo = Object.values(filtro).some(Boolean);
   // Sem vínculo contábil por prestador/guia, não rateia o total entre seleções.
   const conciliacao = conciliacaoAssistencial(dados?.contabil ?? null, completo.total);
+  const incompletos = useMemo(() => dados ? mesesIncompletos(dados.meses, dados.erroContabil ? null : dados.contabilPorMes, rows) : [], [dados, rows]);
   const indicadores: [string, string, string?][] = [
     ["Despesa Assistencial Contábil", moeda(dados?.contabil ?? null), "Total do período · contas analíticas, líquido de recuperações"],
     ["Despesa na base assistencial", moeda(completo.total), "Total do período · soma dos valores pagos"],
@@ -79,6 +80,7 @@ export default function AnaliseDespesasAssistenciais() {
     {loading ? <div role="status" className="flex flex-1 items-center justify-center gap-2 py-20 text-sm text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" />{lidos.toLocaleString("pt-BR")} movimentos carregados</div> : dados ? <>
       <AvisoErroDados erro={dados.erroContabil} onTentar={() => void buscar()} className="mt-3" />
       {dados.contabil === null && !dados.erroContabil && <p className="py-2 text-sm text-destructive">Não foram encontradas contas analíticas de despesas assistenciais neste período; total contábil e diferença indisponíveis.</p>}
+      {incompletos.length > 0 && <div role="alert" className="mt-3 rounded-md border border-amber-400/60 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200"><b>Dados incompletos</b> — {incompletos.map(i => `${i.fonte} ${String(i.competencia % 100).padStart(2, "0")}/${Math.floor(i.competencia / 100)}: ${moeda(i.valor)}`).join(" · ")}. Total abaixo de R$ 20 milhões no mês: a carga ou o fechamento ainda não foi concluído, e a conciliação desse mês fica distorcida.</div>}
       <div className="grid grid-cols-2 gap-x-5 gap-y-3 border-b border-border py-4 lg:grid-cols-3 xl:grid-cols-6">{indicadores.map(([nome, valor, dica]) => <div key={nome} title={dica}><div className="mb-1 text-xs text-muted-foreground">{nome}</div><div className="text-base font-semibold tabular-nums">{valor}</div>{dica && <div className="mt-1 text-[11px] text-muted-foreground">{dica}</div>}</div>)}</div>
       <div className="flex flex-wrap items-end gap-3 py-3">
         {([["tipo", "Tipo de credenciado"], ["executor", "Credenciado executor"], ["recebedor", "Credenciado recebedor"], ["guia", "Tipo de guia"]] as const).map(([campo, nome]) => <label key={campo} className="min-w-0 flex-1 text-xs text-muted-foreground">{nome}<select aria-label={nome} className="mt-1 h-9 w-full min-w-40 max-w-full rounded-md border border-input bg-background px-2 text-sm text-foreground" value={filtro[campo] ?? ""} onChange={e => setFiltro(f => ({ ...f, [campo]: e.target.value || undefined }))}><option value="">Todos</option>{opcoes[campo].map(([valor, rotulo]) => <option key={valor} value={valor}>{rotulo}</option>)}</select></label>)}

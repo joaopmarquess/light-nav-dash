@@ -65,3 +65,17 @@ export function arvoreAssistencial(rows: MovimentoAssistencial[], modo: "credenc
   };
   return agrupar(rows, 0, {});
 }
+/** Limite mensal (R$ 20 mi, mesmo corte da competência válida) abaixo do qual a base é tratada como incompleta. */
+export const LIMITE_MES_COMPLETO = 20_000_000;
+export type MesIncompleto = { competencia: number; fonte: "Contábil" | "Assistencial"; valor: number };
+/** Lista meses do período cujo total, em cada fonte, está abaixo do limite (inclui meses sem nenhum dado). */
+export function mesesIncompletos(meses: number[], contabilPorMes: Map<number, number> | null, rows: { bscmp: number; vrevt: string | number | null }[]): MesIncompleto[] {
+  const assist = new Map<number, number>();
+  for (const r of rows) assist.set(r.bscmp, (assist.get(r.bscmp) ?? 0) + (Number(r.vrevt) || 0));
+  const out: MesIncompleto[] = [];
+  for (const m of meses) {
+    if (contabilPorMes) { const v = contabilPorMes.get(m) ?? 0; if (v < LIMITE_MES_COMPLETO) out.push({ competencia: m, fonte: "Contábil", valor: v }); }
+    const a = assist.get(m) ?? 0; if (a < LIMITE_MES_COMPLETO) out.push({ competencia: m, fonte: "Assistencial", valor: a });
+  }
+  return out;
+}

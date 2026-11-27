@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { arvoreAssistencial, competenciasAssistenciais, conciliacaoAssistencial, despesaContabilAssistencial, filtrarAssistencial, FONTE_ASSISTENCIAL, movimentoDaView, HOSPITAL_BENE, resumoAssistencial, tipoExecutor, type MovimentoAssistencial } from "./analiseDespesasAssistenciais";
+import { mesesIncompletos } from "./analiseDespesasAssistenciais";
 const row = (extra: Partial<MovimentoAssistencial>): MovimentoAssistencial => ({ ideAssist: 1, bscmp: 202605, nrgui: 1, catipgui: "Consulta", cdcrdexe: 10, dscrdexe: HOSPITAL_BENE, cdcrdrec: 10, dscrdrec: HOSPITAL_BENE, vrevt: 100, ...extra });
 describe("Análise de Despesas Assistenciais", () => {
   it("usa a view_eassistencial confirmada e preserva os valores pagos e prestadores", () => {
@@ -44,5 +45,13 @@ describe("Análise de Despesas Assistenciais", () => {
   it("período inicial e final atravessam o ano sem incluir meses externos", () => {
     expect(competenciasAssistenciais("2025-12", "2026-02")).toEqual([202512, 202601, 202602]);
     expect(() => competenciasAssistenciais("2026-05", "2026-04")).toThrow();
+  });
+});
+describe("mesesIncompletos", () => {
+  it("flags months below R$ 20 mi in each source, including missing months", () => {
+    const rows = [{ bscmp: 202609, vrevt: 32_160_157 }, { bscmp: 202610, vrevt: 9_235_119 }];
+    const contabil = new Map([[202609, 32_660_323], [202610, 0]]);
+    expect(mesesIncompletos([202609, 202610], contabil, rows).map(i => `${i.fonte}${i.competencia}`)).toEqual(["Contábil202610", "Assistencial202610"]);
+    expect(mesesIncompletos([202609], null, rows)).toEqual([]);
   });
 });

@@ -138,10 +138,10 @@ export const menuItems: MenuItem[] = [
     { icon: Search, label: "Consulta", id: "Carteira · Consulta" }, { icon: Table2, label: "Tabelas", id: "Carteira · Tabelas" },
   ] },
   { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }, { icon: Layers, label: "Evolução Produtos", id: "Sinistralidade · Evolução Produtos" }] },
-  // Menu Mercado (pedido de 27/11/2026): benchmarks de mercado; ids antigos mantidos para preservar permissões.
-  { icon: Trophy, label: "Mercado", children: [
-    { icon: BarChart3, label: BENCH_SHORT_TEXT, id: "Control · Bench C" },
-    { icon: BarChart3, label: "Bench Vidas", id: "Carteira · Bench Vidas" },
+  // Menu Bench (antes "Mercado", pedido de 27/11/2026): benchmarks de mercado; ids antigos mantidos para preservar permissões.
+  { icon: Trophy, label: "Bench", children: [
+    { icon: BarChart3, label: "Contábil", id: "Control · Bench C" },
+    { icon: BarChart3, label: "Vidas", id: "Carteira · Bench Vidas" },
   ] },
 ];
 
@@ -166,8 +166,8 @@ export const homeShortcuts = [
   { icon: Tags, label: "Produtos Lancers", destination: "Produtos Lancers", menu: "Laboratory" },
   { icon: Layers, label: "Evolução Produtos", destination: "Evolução Produtos", menu: "Sinistralidade" },
   { icon: LayoutDashboard, label: "Painel", destination: "Carteira · Painel", menu: "Carteira" },
-  { icon: BarChart3, label: "Bench Vidas", destination: "Carteira · Bench Vidas", menu: "Mercado" },
-  { icon: BarChart3, label: BENCH_SHORT_TEXT, destination: "Control · Bench C", menu: "Mercado" },
+  { icon: BarChart3, label: "Vidas", destination: "Carteira · Bench Vidas", menu: "Bench" },
+  { icon: BarChart3, label: "Contábil", destination: "Control · Bench C", menu: "Bench" },
 ];
 export type HomeShortcut = (typeof homeShortcuts)[number];
 

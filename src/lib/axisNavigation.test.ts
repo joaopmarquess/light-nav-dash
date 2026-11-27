@@ -18,8 +18,8 @@ describe("Home shortcut permissions", () => {
     ["Produtos Lancers", "Produtos Lancers"],
     ["Evolução Produtos", "Evolução Produtos"],
     ["Painel", "Carteira · Painel"],
-    ["Bench Vidas", "Carteira · Bench Vidas"],
-    ["Bench Contábil", "Control · Bench C"],
+    ["Vidas", "Carteira · Bench Vidas"],
+    ["Contábil", "Control · Bench C"],
   ])("%s grants only its existing destination", (label, destination) => {
     const item = items.find(i => i.label === label);
     expect(item?.id).toBe(destination);
@@ -46,9 +46,9 @@ describe("Slides no celular", () => {
 });
 
 describe("Bench Vidas permission", () => {
-  it("provides a dedicated Mercado permission without granting other submenus", () => {
-    const items = axisPermissionGroups.find(g => g.label === "Mercado")?.items ?? [];
-    expect(items.find(i => i.label === "Bench Vidas")?.id).toBe("Carteira · Bench Vidas");
+  it("provides a dedicated Bench permission without granting other submenus", () => {
+    const items = axisPermissionGroups.find(g => g.label === "Bench")?.items ?? [];
+    expect(items.find(i => i.label === "Vidas")?.id).toBe("Carteira · Bench Vidas");
     const access: AxisAccess = { status: "ok", role: "user", permissions: ["Carteira · Bench Vidas"] };
     expect(canAccess(access, "Carteira · Bench Vidas")).toBe(true);
     expect(canAccess(access, "Carteira · Movimentação")).toBe(false);
@@ -74,7 +74,7 @@ describe("Home shortcut groups", () => {
       ["Assistencial", ["Desp. Assistencial"]],
       ["Carteira", ["Movimentação", "Área Geográfica", "Painel"]],
       ["Sinistralidade", ["Período", "Evolução Produtos"]],
-      ["Mercado", ["Bench Vidas", "Bench Contábil"]],
+      ["Bench", ["Vidas", "Contábil"]],
       ["Laboratory", ["Laboratory", "Proj. Uberaba", "Proposta Uberaba", "Proposta APB", "Simular Datas FM", "Produtos Lancers"]],
     ]);
   });
