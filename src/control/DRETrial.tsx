@@ -192,7 +192,21 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
 
   // Rolagem horizontal começa à direita (colunas mais recentes e acumulado à vista).
   const rolagem = useRef<HTMLDivElement>(null);
-  useEffect(() => { const el = rolagem.current; if (el) el.scrollLeft = el.scrollWidth; }, [rows, cols]);
+  useEffect(() => {
+    const el = rolagem.current;
+    if (!el || !rows) return;
+    // Encosta à direita sempre que a largura do conteúdo mudar (renderização tardia, fontes, expansão).
+    let ultimaLargura = -1;
+    const encostar = () => {
+      if (el.scrollWidth !== ultimaLargura) { ultimaLargura = el.scrollWidth; el.scrollLeft = el.scrollWidth; }
+    };
+    const raf = requestAnimationFrame(encostar);
+    const ro = new ResizeObserver(encostar);
+    ro.observe(el);
+    el.querySelectorAll(":scope > *, table").forEach((c) => ro.observe(c));
+    const t = setTimeout(() => ro.disconnect(), 3000);
+    return () => { cancelAnimationFrame(raf); clearTimeout(t); ro.disconnect(); };
+  }, [rows, cols, painel]);
   const tree = useMemo(() => buildTree(rows || [], cols), [rows, cols]);
   useEffect(() => {
     setOpen(initialDreExpansion(tree, recolhidoInicial));
