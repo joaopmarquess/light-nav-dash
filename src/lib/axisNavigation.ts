@@ -12,7 +12,6 @@ const controlItem: MenuItem = {
     label: "Control",
     children: [
       { icon: FileText, label: DRE_MENU_NAME, id: "Control · DRE Gerencial PE" },
-      { icon: BarChart3, label: BENCH_SHORT_TEXT, id: "Control · Bench C" },
       // Relatório de Controladoria (Mensal ou Trimestral, sem filtros de período) como submenu do Control (pedido de 18/11/2026); id mantido para preservar permissões.
       { icon: FileBarChart2, label: "Relatório de Controladoria", id: "Relatório · Controladoria" },
       // Submenu "Orçamento" (pedido de 23/11/2026): itens consecutivos com o mesmo grupo abrem sob um título recolhível; ids mantidos para preservar permissões.
@@ -137,10 +136,13 @@ export const menuItems: MenuItem[] = [
     { icon: ArrowRightLeft, label: "Movimentação", id: "Carteira · Movimentação" }, { icon: LogIn, label: "Entradas", id: "Carteira · Entradas" }, { icon: LogOut, label: "Saídas", id: "Carteira · Saídas" },
     // Consulta e apoio
     { icon: Search, label: "Consulta", id: "Carteira · Consulta" }, { icon: Table2, label: "Tabelas", id: "Carteira · Tabelas" },
-    // Mercado
-    { icon: BarChart3, label: "Bench Vidas", id: "Carteira · Bench Vidas" },
   ] },
   { icon: Percent, label: "Sinistralidade", children: [{ icon: CalendarCheck, label: "Períodos", id: "Sinistralidade · Períodos" }, { icon: Layers, label: "Evolução Produtos", id: "Sinistralidade · Evolução Produtos" }] },
+  // Menu Mercado (pedido de 27/11/2026): benchmarks de mercado; ids antigos mantidos para preservar permissões.
+  { icon: Trophy, label: "Mercado", children: [
+    { icon: BarChart3, label: BENCH_SHORT_TEXT, id: "Control · Bench C" },
+    { icon: BarChart3, label: "Bench Vidas", id: "Carteira · Bench Vidas" },
+  ] },
 ];
 
 /** Proj. Uberaba aberto direto em Estudo › Simulações › Resultados Comerciais (permissão própria do atalho, mesmo layout do Laboratory). */
@@ -164,8 +166,8 @@ export const homeShortcuts = [
   { icon: Tags, label: "Produtos Lancers", destination: "Produtos Lancers", menu: "Laboratory" },
   { icon: Layers, label: "Evolução Produtos", destination: "Evolução Produtos", menu: "Sinistralidade" },
   { icon: LayoutDashboard, label: "Painel", destination: "Carteira · Painel", menu: "Carteira" },
-  { icon: BarChart3, label: "Bench Vidas", destination: "Carteira · Bench Vidas", menu: "Carteira" },
-  { icon: BarChart3, label: BENCH_SHORT_TEXT, destination: "Control · Bench C", menu: "Control" },
+  { icon: BarChart3, label: "Bench Vidas", destination: "Carteira · Bench Vidas", menu: "Mercado" },
+  { icon: BarChart3, label: BENCH_SHORT_TEXT, destination: "Control · Bench C", menu: "Mercado" },
 ];
 export type HomeShortcut = (typeof homeShortcuts)[number];
 

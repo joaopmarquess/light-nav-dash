@@ -46,8 +46,8 @@ describe("Slides no celular", () => {
 });
 
 describe("Bench Vidas permission", () => {
-  it("provides a dedicated Carteira permission without granting other submenus", () => {
-    const items = axisPermissionGroups.find(g => g.label === "Carteira")?.items ?? [];
+  it("provides a dedicated Mercado permission without granting other submenus", () => {
+    const items = axisPermissionGroups.find(g => g.label === "Mercado")?.items ?? [];
     expect(items.find(i => i.label === "Bench Vidas")?.id).toBe("Carteira · Bench Vidas");
     const access: AxisAccess = { status: "ok", role: "user", permissions: ["Carteira · Bench Vidas"] };
     expect(canAccess(access, "Carteira · Bench Vidas")).toBe(true);
@@ -70,10 +70,11 @@ describe("Sinistralidade submenus", () => {
 describe("Home shortcut groups", () => {
   it("groups shortcuts under their main menu in sidebar order, Laboratory last", () => {
     expect(homeShortcutGroups().map(g => [g.menu, g.items.map(i => i.label)])).toEqual([
-      ["Control", ["Controladoria", "Demonstrações", "Bench Contábil"]],
+      ["Control", ["Controladoria", "Demonstrações"]],
       ["Assistencial", ["Desp. Assistencial"]],
-      ["Carteira", ["Movimentação", "Área Geográfica", "Painel", "Bench Vidas"]],
+      ["Carteira", ["Movimentação", "Área Geográfica", "Painel"]],
       ["Sinistralidade", ["Período", "Evolução Produtos"]],
+      ["Mercado", ["Bench Vidas", "Bench Contábil"]],
       ["Laboratory", ["Laboratory", "Proj. Uberaba", "Proposta Uberaba", "Proposta APB", "Simular Datas FM", "Produtos Lancers"]],
     ]);
   });
