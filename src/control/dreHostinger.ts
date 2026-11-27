@@ -3,7 +3,7 @@ import { hostinger } from "@/lib/hostingerClient";
 export type DreHRow = { ano: number; mes: number; tri: number; g1: string; g2: string; g3: string; g4: string; valor: number };
 
 // Paginação sempre com ORDER BY estável: sem ordem fixa o banco repete/pula linhas entre páginas.
-async function fetchAll(table: string, build: (q: any) => any): Promise<any[]> {
+export async function fetchAll(table: string, build: (q: any) => any): Promise<any[]> {
   const out: any[] = [];
   for (let from = 0; ; from += 1000) {
     const { data, error } = await build(hostinger.from(table)).range(from, from + 999);

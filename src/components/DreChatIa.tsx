@@ -20,7 +20,7 @@ const ler = (): UIMessage[] => {
   if (typeof window === "undefined") return [];
   try { const v = JSON.parse(localStorage.getItem(CHAVE) ?? "[]"); return Array.isArray(v) ? v : []; } catch { return []; }
 };
-const SUGESTOES = ["Qual o resultado líquido e a margem da DRE?", "Como evoluíram as despesas administrativas mês a mês?", "Quais contas da icontabil têm os maiores valores realizados?"];
+const SUGESTOES = ["Qual o resultado líquido e a margem da DRE?", "Como evoluíram as despesas administrativas mês a mês?", "Quais contas contábeis têm os maiores valores realizados?"];
 
 export type DadosDreIa = { cubo: CuboDreIa | null; contexto: string };
 
@@ -92,7 +92,7 @@ export default function DreChatIa({ aberto, onAbertoChange, dados }: { aberto: b
           <img src={logoIcon.url} alt="" className="h-8 w-8 rounded-md" />
           <div className="flex-1 min-w-0">
             <SheetTitle className="text-base">IA · DRE</SheetTitle>
-            <SheetDescription className="text-xs">DRE · Contábil (icontabil)</SheetDescription>
+            <SheetDescription className="text-xs">DRE · Contábil (balancete MV)</SheetDescription>
           </div>
           <Button variant="outline" size="sm" onClick={recomecar} disabled={!messages.length} title="Começar uma nova conversa" className="mr-8 h-8 px-2 rounded-md border border-border text-xs inline-flex items-center gap-1 hover:bg-accent/40 disabled:opacity-50">
             <RotateCcw className="h-3.5 w-3.5" />Nova conversa
