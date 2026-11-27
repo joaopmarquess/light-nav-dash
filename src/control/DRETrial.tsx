@@ -330,7 +330,7 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
   return (
     <div className={`flex flex-col ${historico || alturaCompleta ? "h-full" : "h-[calc(100vh-9rem)]"} min-h-0`}>
     <section className="bg-card rounded-xl border border-border shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
-      <div className="flex-1 min-h-0 overflow-auto">
+      <div className="flex-1 min-h-0 overflow-auto px-2 pt-1.5">
         {!rows ? (
           <div className="p-6 text-sm text-muted-foreground">Carregando…</div>
         ) : erro ? (
@@ -338,12 +338,13 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
         ) : !cols.length && visaoAtiva === "Trimestral" ? (
           <div className="p-6 text-sm text-muted-foreground">Ainda não há trimestre fechado em {ano}.</div>
         ) : (
-          <table className="w-full h-full text-sm border-separate border-spacing-x-0 border-spacing-y-0.5 px-1">
-            <thead className="sticky top-0 z-10 bg-primary text-primary-foreground shadow-md">
+          <table className="w-full h-full text-sm border-separate border-spacing-x-0 border-spacing-y-0.5">
+            <thead className="sticky top-0 z-10 bg-card">
               <tr>
-                <th className="py-2 px-4 text-left font-medium">Item</th>
-                {cols.map((c) => (
-                  <th key={c.label} className={`py-2 px-4 text-right font-medium whitespace-nowrap ${c.kind === "ano" ? "bg-primary-foreground/15" : ""}`}>{c.label}</th>
+                <th className="sticky left-0 z-[1] rounded-l-xl bg-primary py-2.5 px-4 text-left font-semibold text-primary-foreground">Item</th>
+                {cols.map((c, i) => (
+                  <th key={c.label} className={`py-2.5 px-4 text-right font-semibold whitespace-nowrap text-primary-foreground ${i === cols.length - 1 ? "rounded-r-xl" : ""}`}
+                    style={{ background: c.kind === "ano" ? "linear-gradient(hsl(var(--primary-foreground) / 0.15), hsl(var(--primary-foreground) / 0.15)), hsl(var(--primary))" : "hsl(var(--primary))" }}>{c.label}</th>
                 ))}
               </tr>
             </thead>
