@@ -20,8 +20,6 @@ const controlItem: MenuItem = {
       // Apresentação "Orçamento 2027" (pptx de 23/11/2026; antes "Slides Simulação"): mostra só o slide 4, o Ajuste do Simulador ao vivo; a apresentação completa está no Laboratory.
       { icon: Presentation, label: "Orçamento 2027", id: "Control · Slides Simulação", grupo: "Orçamento" },
       { icon: BarChart3, label: SLIDES_SHORT_TEXT, id: "Control · Dashboards" },
-      { icon: Settings, label: "Configurações", id: "__cfg_control__" },
-      { icon: ListTree, label: "Contas", id: "Control · Contas", nivel: 2 },
     ],
 };
 
@@ -122,6 +120,9 @@ export const labItems: MenuItem[] = [
   { icon: LayoutDashboard, label: "B.I. Overview" },
 ];
 
+/** Permissão (id antigo) do Plano de Contas, aberto pela engrenagem Configurações. */
+export const PLANO_CONTAS_ID = "Control · Contas";
+
 export const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
   controlItem,
@@ -186,6 +187,8 @@ export const axisPermissionGroups = [
       ? [{ id: "Home", label: "Home" }, ...homeShortcuts.map(s => ({ id: s.destination, label: s.label }))]
       : g.children?.filter(c => c.id !== "__cfg_control__").map(c => ({ id: c.id ?? c.label, label: c.grupo ? `${c.grupo} · ${c.label}` : c.label })) ?? [{ id: g.label, label: g.label }],
   })),
+  // Plano de Contas fica na engrenagem Configurações (pedido de 27/11/2026); id antigo mantido para preservar permissões.
+  { label: "Configurações", items: [{ id: PLANO_CONTAS_ID, label: "Plano de Contas" }] },
   { label: "Laboratory", items: [{ id: "Laboratory", label: "Laboratory" }, ...labItems.flatMap(g => g.children ? g.children.map(c => ({ id: c.id ?? c.label, label: `${g.label.trim()} · ${c.label}` })) : [{ id: g.label, label: g.label }])] },
 ];
 

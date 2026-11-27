@@ -158,7 +158,7 @@ import { Button } from "@/components/ui/button";
 import AxisSettings from "@/components/AxisSettings";
 import PesquisaApp from "@/components/PesquisaApp";
 import { useAxisAccess } from "@/hooks/useAxisAccess";
-import { menuItems, labItems, LAB_IDS, UBERABA_RESULTADOS_COMERCIAIS, appsCelular, menuSubgroupIcons } from "@/lib/axisNavigation";
+import { menuItems, labItems, LAB_IDS, UBERABA_RESULTADOS_COMERCIAIS, appsCelular, menuSubgroupIcons, PLANO_CONTAS_ID } from "@/lib/axisNavigation";
 const onControlSimulatorViewState = (_enabled: boolean[]) => {};
 
 const Index = () => {
@@ -193,7 +193,7 @@ const Index = () => {
   const [ctrlOrcDre, setCtrlOrcDre] = useState(false);
   const [ctrlCfgOpen, setCtrlCfgOpen] = useState(false);
   const [ctrlDreAba, setCtrlDreAba] = useState<"Painel" | "DRE" | "Histórico">("Painel");
-  const controlTitle = active === "Control · Bench C" ? BENCH_LONG_TEXT : active === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : active === "Control · Dashboards" ? SLIDES_LONG_TEXT : active === "Control · Orçamento Vigente" ? "Orçamento 2026" : active === "Control · Orçamento 2027" ? "old Orçamento 2027" : active === "Control · Simulador" ? "Simulador 2027" : active === "Control · Slides Simulação" ? "Orçamento 2027" : active === "Control · Contas" ? "Contas" : active === "Relatório · Controladoria" ? REPORT_FULL_NAME : active === "Financeiro · Inadimplência" ? "Inadimplência" : null;
+  const controlTitle = active === "Control · Bench C" ? BENCH_LONG_TEXT : active === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : active === "Control · Dashboards" ? SLIDES_LONG_TEXT : active === "Control · Orçamento Vigente" ? "Orçamento 2026" : active === "Control · Orçamento 2027" ? "old Orçamento 2027" : active === "Control · Simulador" ? "Simulador 2027" : active === "Control · Slides Simulação" ? "Orçamento 2027" : active === "Control · Contas" ? "Plano de Contas" : active === "Relatório · Controladoria" ? REPORT_FULL_NAME : active === "Financeiro · Inadimplência" ? "Inadimplência" : null;
   const controlSubtitle = active === "Control · Dashboards" ? SLIDES_MEDIUM_TEXT : null;
   useEffect(() => {
     if (active === "Control · Orçamento 2027") return;
@@ -461,7 +461,7 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-3">
             {!accessLoading && <PesquisaApp can={can} onAbrir={setActive} disabled={ctrlSimBusy} />}
-            {can("Configurações") && <Tooltip>
+            {(can("Configurações") || can(PLANO_CONTAS_ID)) && <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   type="button"
@@ -597,7 +597,7 @@ const Index = () => {
           ) : active === "Control · Bench C" ? (
             <div className="h-[calc(100vh-9rem)] min-h-0"><CtrlBench /></div>
           ) : active === "Control · Contas" ? (
-            <CtrlContas />
+            <ConfiguracoesTela aba="Plano de Contas" can={can} />
           ) : active === "Control · Orçamento Vigente" ? (
             ctrlOrcDre ? <CtrlOrcamento onAba={() => setCtrlOrcDre(false)} /> : <CtrlOrcamento painel onAba={() => setCtrlOrcDre(true)} />
           ) : active === "Relatório · Controladoria" ? (
@@ -652,7 +652,7 @@ const Index = () => {
               </p>
             </section>
           ) : active === "Configurações" ? (
-            <AxisSettings />
+            <ConfiguracoesTela aba={can("Configurações") ? "Acessos" : "Plano de Contas"} can={can} />
           ) : active === "Home" ? (
             <HomeView onNavigate={setActive} />
           ) : active === "Assistencial · Análise de Despesas Assistenciais" ? (
@@ -713,6 +713,16 @@ const Index = () => {
     </div>
   );
 };
+
+/** Engrenagem Configurações: Acessos (administração) e Plano de Contas, cada aba pela sua permissão. */
+function ConfiguracoesTela({ aba: inicial, can }: { aba: "Acessos" | "Plano de Contas"; can: (id: string) => boolean }) {
+  const abas = ([["Acessos", "Configurações"], ["Plano de Contas", PLANO_CONTAS_ID]] as const).filter(([, id]) => can(id)).map(([a]) => a);
+  const [aba, setAba] = useState<string>(abas.includes(inicial) ? inicial : abas[0]);
+  return <div className="flex min-h-0 flex-1 flex-col gap-4">
+    {abas.length > 1 && <div role="tablist" className="flex gap-6 border-b border-border">{abas.map(a => <button key={a} role="tab" aria-selected={aba === a} onClick={() => setAba(a)} className={cn("-mb-px border-b-2 pb-2 text-sm", aba === a ? "border-primary font-medium text-primary" : "border-transparent text-muted-foreground hover:text-primary")}>{a}</button>)}</div>}
+    {aba === "Acessos" ? <AxisSettings /> : <CtrlContas />}
+  </div>;
+}
 
 export default Index;
 

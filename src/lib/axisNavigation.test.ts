@@ -135,3 +135,11 @@ describe("Modo celular", () => {
     expect(appsCelular.map(a => a.id)).toEqual(["Carteira · Movimentação", "Control · DRE Gerencial PE", "Control · Bench C", "Control · Orçamento Vigente", "Control · Dashboards"]);
   });
 });
+
+describe("Plano de Contas em Configurações", () => {
+  it("sai do Control e mantém a permissão antiga sob Configurações", () => {
+    const control = menuItems.find(m => m.label === "Control")?.children ?? [];
+    expect(control.some(c => c.id === "Control · Contas" || c.id === "__cfg_control__")).toBe(false);
+    expect(axisPermissionGroups.find(g => g.label === "Configurações")?.items).toEqual([{ id: "Control · Contas", label: "Plano de Contas" }]);
+  });
+});
