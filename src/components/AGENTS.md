@@ -13,3 +13,4 @@
 - In mobile mode Index hides the sidebar/header and shows a hamburger listing only appsCelular (axisNavigation) filtered by can(); other screens are unreachable there.
 - Área Geográfica groups lives by IBGE intermediate/immediate region via tested src/lib/regioesIbge.ts over a literal IBGE municipality copy (src/data/ibgeRegioes.ts) plus district aliases; unmatched cities show as "Não identificada" so totals never change.
 - Área Geográfica region rows highlight their IBGE immediate region on the main map through StateHeatMap regiaoDestaque (display-only overlay matched by regiaoImediataDaCidade), never changing heat colors, totals or MAA.
+- AreaGeograficaCelular is the mobile mode of Carteira › Área Geográfica, reusing useCarteiraTrialGeo, StateHeatMap and vidasPorRegiaoIbge so mobile never queries or groups differently from desktop.

@@ -132,7 +132,7 @@ describe("Laboratory › Slides Simulador 2027", () => {
 
 describe("Modo celular", () => {
   it("lista Movimentação e Demonstrações", () => {
-    expect(appsCelular.map(a => a.id)).toEqual(["Carteira · Movimentação", "Control · DRE Gerencial PE", "Control · Bench C", "Control · Orçamento Vigente", "Control · Dashboards"]);
+    expect(appsCelular.map(a => a.id)).toEqual(["Carteira · Movimentação", "Carteira · Área Geográfica", "Control · DRE Gerencial PE", "Control · Bench C", "Control · Orçamento Vigente", "Control · Dashboards"]);
   });
 });
 
