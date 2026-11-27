@@ -33,6 +33,13 @@ const fmt = (v: number) => {
   return v < 0 ? `(${s})` : s;
 };
 
+// Linhas da DRE no visual do Painel: contornos arredondados e tons suaves de primário por nível (fundo opaco para a coluna fixa).
+const linhaCls = (depth: number) => (depth <= 1 ? "border-primary/20" : "border-border/60") + " group-hover:brightness-[0.97]";
+const linhaFundo = (depth: number) => {
+  const tom = depth === 0 ? 0.12 : depth === 1 ? 0.06 : 0;
+  return tom ? `linear-gradient(hsl(var(--primary) / ${tom}), hsl(var(--primary) / ${tom})), hsl(var(--card))` : "hsl(var(--card))";
+};
+
 function buildTree(rows: DreHRow[], cols: Col[]): Node[] {
   const roots: Node[] = [];
   const map = new Map<string, Node>();
@@ -198,8 +205,8 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
       const has = n.children.length > 0;
       const isOpen = open[n.key];
       return [
-        <tr key={n.key} className={"group transition-colors hover:bg-muted " + (depth === 0 ? "border-y-2 border-foreground/60 font-bold" : depth === 1 ? "border-y-2 border-foreground/40 font-bold" : depth === 2 ? "border-y border-foreground/25" : "border-b border-border")}>
-          <td className={`${historico ? "py-[3px]" : "py-2"} pr-4 whitespace-nowrap sticky left-0 bg-card group-hover:bg-muted transition-colors`} style={{ paddingLeft: `${0.75 + depth * 1.25}rem` }}>
+        <tr key={n.key} className={`group ${depth <= 1 ? "font-bold" : ""}`}>
+          <td className={`${historico ? "py-[3px]" : "py-2"} pr-4 whitespace-nowrap sticky left-0 z-[1] rounded-l-lg border-y border-l transition-colors ${linhaCls(depth)}`} style={{ paddingLeft: `${0.75 + depth * 1.25}rem`, background: linhaFundo(depth) }}>
             <Button variant="ghost" type="button" disabled={!has} onClick={() => setOpen((p) => ({ ...p, [n.key]: !p[n.key] }))}
               className={`h-auto p-0 flex items-center gap-1.5 text-left text-foreground disabled:cursor-default disabled:opacity-100 ${depth <= 1 ? "font-bold" : ""}`}>
               <ChevronRight className={`h-4 w-4 shrink-0 transition-transform ${has ? "" : "invisible"} ${isOpen ? "rotate-90" : ""}`} />
@@ -207,7 +214,7 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
             </Button>
           </td>
           {n.valores.map((v, i) => (
-            <td key={i} className={`${historico ? "py-[3px]" : "py-2"} px-4 text-right tabular-nums whitespace-nowrap ${colCls(cols[i])} text-foreground`}>{fmt(v)}</td>
+            <td key={i} className={`${historico ? "py-[3px]" : "py-2"} px-4 text-right tabular-nums whitespace-nowrap border-y transition-colors ${linhaCls(depth)} ${i === n.valores.length - 1 ? "rounded-r-lg border-r" : ""} ${colCls(cols[i])} text-foreground`} style={{ background: linhaFundo(depth) }}>{fmt(v)}</td>
           ))}
         </tr>,
         ...(has && isOpen ? render(n.children, depth + 1) : []),
@@ -321,7 +328,7 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
         ) : !cols.length && visaoAtiva === "Trimestral" ? (
           <div className="p-6 text-sm text-muted-foreground">Ainda não há trimestre fechado em {ano}.</div>
         ) : (
-          <table className="w-full h-full text-sm">
+          <table className="w-full h-full text-sm border-separate border-spacing-x-0 border-spacing-y-0.5 px-1">
             <thead className="sticky top-0 z-10 bg-primary text-primary-foreground shadow-md">
               <tr>
                 <th className="py-2 px-4 text-left font-medium">Item</th>

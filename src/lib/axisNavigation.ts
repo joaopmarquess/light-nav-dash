@@ -13,13 +13,12 @@ const controlItem: MenuItem = {
     children: [
       { icon: FileText, label: DRE_MENU_NAME, id: "Control · DRE Gerencial PE" },
       // Relatório de Controladoria (Mensal ou Trimestral, sem filtros de período) como submenu do Control (pedido de 18/11/2026); id mantido para preservar permissões.
-      { icon: FileBarChart2, label: "Relatório de Controladoria", id: "Relatório · Controladoria" },
+      { icon: FileBarChart2, label: "Relatório", id: "Relatório · Controladoria" },
       // Submenu "Orçamento" (pedido de 23/11/2026): itens consecutivos com o mesmo grupo abrem sob um título recolhível; ids mantidos para preservar permissões.
       { icon: Coins, label: "Orçamento 2026", id: "Control · Orçamento Vigente", grupo: "Orçamento" },
       { icon: FlaskConical, label: "Simulador 2027", id: "Control · Simulador", grupo: "Orçamento" },
       // Apresentação "Orçamento 2027" (pptx de 23/11/2026; antes "Slides Simulação"): mostra só o slide 4, o Ajuste do Simulador ao vivo; a apresentação completa está no Laboratory.
       { icon: Presentation, label: "Orçamento 2027", id: "Control · Slides Simulação", grupo: "Orçamento" },
-      { icon: BarChart3, label: SLIDES_SHORT_TEXT, id: "Control · Dashboards" },
     ],
 };
 
@@ -122,6 +121,8 @@ export const labItems: MenuItem[] = [
 
 /** Permissão (id antigo) do Plano de Contas, aberto pela engrenagem Configurações. */
 export const PLANO_CONTAS_ID = "Control · Contas";
+/** Permissão (id antigo) dos Slides do Control, abertos pelo ícone do cabeçalho. */
+export const SLIDES_ID = "Control · Dashboards";
 
 export const menuItems: MenuItem[] = [
   { icon: Home, label: "Home" },
@@ -189,6 +190,8 @@ export const axisPermissionGroups = [
   })),
   // Plano de Contas fica na engrenagem Configurações (pedido de 27/11/2026); id antigo mantido para preservar permissões.
   { label: "Configurações", items: [{ id: PLANO_CONTAS_ID, label: "Plano de Contas" }] },
+  // Slides do Control abrem pelo ícone do cabeçalho (pedido de 27/11/2026); id antigo mantido para preservar permissões.
+  { label: "Cabeçalho", items: [{ id: SLIDES_ID, label: "Slides" }] },
   { label: "Laboratory", items: [{ id: "Laboratory", label: "Laboratory" }, ...labItems.flatMap(g => g.children ? g.children.map(c => ({ id: c.id ?? c.label, label: `${g.label.trim()} · ${c.label}` })) : [{ id: g.label, label: g.label }])] },
 ];
 

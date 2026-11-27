@@ -143,3 +143,12 @@ describe("Plano de Contas em Configurações", () => {
     expect(axisPermissionGroups.find(g => g.label === "Configurações")?.items).toEqual([{ id: "Control · Contas", label: "Plano de Contas" }]);
   });
 });
+
+describe("Slides no cabeçalho", () => {
+  it("sai do menu Control e mantém a permissão antiga", () => {
+    const control = menuItems.find(m => m.label === "Control")?.children ?? [];
+    expect(control.some(c => c.id === "Control · Dashboards")).toBe(false);
+    expect(control.find(c => c.id === "Relatório · Controladoria")?.label).toBe("Relatório");
+    expect(axisPermissionGroups.find(g => g.label === "Cabeçalho")?.items).toEqual([{ id: "Control · Dashboards", label: "Slides" }]);
+  });
+});

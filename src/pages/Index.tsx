@@ -107,7 +107,7 @@ import CtrlSimulador from "@/control/Simulador";
 import CtrlSlidesSimulacao from "@/control/SlidesSimulacao";
 import { SLIDES_SIMULADOR_2027 } from "@/control/slidesSimulacao";
 import CtrlBench from "@/control/BenchC";
-import { BENCH_SHORT_TEXT, BENCH_LONG_TEXT, DRE_FULL_NAME, DRE_MENU_NAME, REPORT_FULL_NAME, SLIDES_SHORT_TEXT, SLIDES_MEDIUM_TEXT, SLIDES_LONG_TEXT } from "@/control/dreLabels";
+import { BENCH_SHORT_TEXT, BENCH_LONG_TEXT, DRE_FULL_NAME, DRE_MENU_NAME, REPORT_FULL_NAME, REPORT_MENU_NAME, SLIDES_SHORT_TEXT, SLIDES_MEDIUM_TEXT, SLIDES_LONG_TEXT } from "@/control/dreLabels";
 import { ListTree, Users2, ArrowLeft } from "lucide-react";
 
 function EntradasComFaixas() {
@@ -139,7 +139,7 @@ import AssistencialRelatorioExecutor from "@/components/AssistencialRelatorioExe
 import AssistencialReceitas2518 from "@/components/AssistencialReceitas2518";
 import Assistencial2518Prestadores from "@/components/Assistencial2518Prestadores";
 import { useConsultaState } from "@/lib/assistencialConsultaStore";
-import { Loader2, DollarSign, FlaskConical, Menu } from "lucide-react";
+import { Loader2, DollarSign, FlaskConical, Menu, Presentation } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import PropostaApb from "@/components/PropostaApb";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -158,7 +158,7 @@ import { Button } from "@/components/ui/button";
 import AxisSettings from "@/components/AxisSettings";
 import PesquisaApp from "@/components/PesquisaApp";
 import { useAxisAccess } from "@/hooks/useAxisAccess";
-import { menuItems, labItems, LAB_IDS, UBERABA_RESULTADOS_COMERCIAIS, appsCelular, menuSubgroupIcons, PLANO_CONTAS_ID } from "@/lib/axisNavigation";
+import { menuItems, labItems, LAB_IDS, UBERABA_RESULTADOS_COMERCIAIS, appsCelular, menuSubgroupIcons, PLANO_CONTAS_ID, SLIDES_ID } from "@/lib/axisNavigation";
 const onControlSimulatorViewState = (_enabled: boolean[]) => {};
 
 const Index = () => {
@@ -193,7 +193,7 @@ const Index = () => {
   const [ctrlOrcDre, setCtrlOrcDre] = useState(false);
   const [ctrlCfgOpen, setCtrlCfgOpen] = useState(false);
   const [ctrlDreAba, setCtrlDreAba] = useState<"Painel" | "DRE" | "Histórico">("Painel");
-  const controlTitle = active === "Control · Bench C" ? BENCH_LONG_TEXT : active === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : active === "Control · Dashboards" ? SLIDES_LONG_TEXT : active === "Control · Orçamento Vigente" ? "Orçamento 2026" : active === "Control · Orçamento 2027" ? "old Orçamento 2027" : active === "Control · Simulador" ? "Simulador 2027" : active === "Control · Slides Simulação" ? "Orçamento 2027" : active === "Control · Contas" ? "Plano de Contas" : active === "Relatório · Controladoria" ? REPORT_FULL_NAME : active === "Financeiro · Inadimplência" ? "Inadimplência" : null;
+  const controlTitle = active === "Control · Bench C" ? BENCH_LONG_TEXT : active === "Control · DRE Gerencial PE" ? DRE_FULL_NAME : active === "Control · Dashboards" ? SLIDES_LONG_TEXT : active === "Control · Orçamento Vigente" ? "Orçamento 2026" : active === "Control · Orçamento 2027" ? "old Orçamento 2027" : active === "Control · Simulador" ? "Simulador 2027" : active === "Control · Slides Simulação" ? "Orçamento 2027" : active === "Control · Contas" ? "Plano de Contas" : active === "Relatório · Controladoria" ? REPORT_MENU_NAME : active === "Financeiro · Inadimplência" ? "Inadimplência" : null;
   const controlSubtitle = active === "Control · Dashboards" ? SLIDES_MEDIUM_TEXT : null;
   useEffect(() => {
     if (active === "Control · Orçamento 2027") return;
@@ -461,6 +461,16 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-3">
             {!accessLoading && <PesquisaApp can={can} onAbrir={setActive} disabled={ctrlSimBusy} />}
+            {can(SLIDES_ID) && <Tooltip>
+              <TooltipTrigger asChild>
+                <Button type="button" variant="ghost" size="icon" aria-label="Slides" aria-pressed={active === SLIDES_ID} disabled={ctrlSimBusy}
+                  onClick={() => setActive(SLIDES_ID)}
+                  className={cn("h-9 w-9 shrink-0 text-muted-foreground hover:text-primary", active === SLIDES_ID && "bg-accent text-primary")}>
+                  <Presentation className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Slides</TooltipContent>
+            </Tooltip>}
             {(can("Configurações") || can(PLANO_CONTAS_ID)) && <Tooltip>
               <TooltipTrigger asChild>
                 <Button
