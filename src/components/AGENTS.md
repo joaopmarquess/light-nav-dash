@@ -11,3 +11,4 @@
 - The header "Pesquisar App" (every user, Ctrl+K) searches the screen catalogue built by tested src/lib/pesquisaApp.ts from the same axisNavigation lists as the sidebar (menu path, Home shortcut names as extra terms) and checks each result with the same can() as the sidebar, so search never lists a screen the menus lack or opens one without permission.
 - Mobile views (<768px) are separate components picked in Index (e.g. MovimentacaoCelular) over the same RPCs/helpers, so desktop screens stay untouched.
 - In mobile mode Index hides the sidebar/header and shows a hamburger listing only appsCelular (axisNavigation) filtered by can(); other screens are unreachable there.
+- Área Geográfica groups lives by IBGE intermediate/immediate region via tested src/lib/regioesIbge.ts over a literal IBGE municipality copy (src/data/ibgeRegioes.ts) plus district aliases; unmatched cities show as "Não identificada" so totals never change.
