@@ -44,9 +44,11 @@ const linhaFundo = (depth: number) => {
 function LinhaRodape({ tom, titulo, valores, dica, forte }: { tom: "fat" | "res" | "sin"; titulo: string; valores: React.ReactNode[]; dica?: string; forte?: boolean }) {
   const estilo = { background: `hsl(var(--dre-${tom}-bg))`, color: `hsl(var(--dre-${tom}-fg))`, borderColor: `hsl(var(--dre-${tom}-borda))` };
   const base = `${forte ? "py-2.5 font-bold" : "py-2 font-semibold"} px-4 border-y whitespace-nowrap`;
+  // Célula com fundo sólido (inclusive cantos e frestas entre linhas) para o grid sumir por baixo do rodapé.
+  const cel = "p-0 bg-card shadow-[0_2px_0_hsl(var(--card)),0_-2px_0_hsl(var(--card))]";
   return <tr title={dica}>
-    <td className={`${base} sticky left-0 z-[1] rounded-l-xl border-l`} style={estilo}>{titulo}</td>
-    {valores.map((v, i) => <td key={i} className={`${base} text-right tabular-nums ${i === valores.length - 1 ? "rounded-r-xl border-r" : ""}`} style={estilo}>{v}</td>)}
+    <td className={`${cel} sticky left-0 z-[1]`}><div className={`${base} rounded-l-xl border-l`} style={estilo}>{titulo}</div></td>
+    {valores.map((v, i) => <td key={i} className={cel}><div className={`${base} text-right tabular-nums ${i === valores.length - 1 ? "rounded-r-xl border-r" : ""}`} style={estilo}>{v}</div></td>)}
   </tr>;
 }
 
@@ -371,7 +373,7 @@ const DRETrial = ({ painel = false, onAba, dados, ano = ANO, meses: mesesProp, h
               {!historico && <tr aria-hidden className="h-full"><td colSpan={cols.length + 1} /></tr>}
             </tbody>
             <tfoot className="sticky bottom-0 z-10 bg-card shadow-[0_-6px_12px_-8px_hsl(var(--foreground)/0.25)]">
-              <tr aria-hidden><td colSpan={cols.length + 1} className="h-1.5 p-0" /></tr>
+              <tr aria-hidden><td colSpan={cols.length + 1} className="h-1.5 p-0 bg-card shadow-[0_-2px_0_hsl(var(--card))]" /></tr>
               {faturamento && <LinhaRodape tom="fat" titulo="Faturamento" valores={faturamento.map(fmt)} />}
               <LinhaRodape tom="res" titulo="Resultado" forte valores={total.map((v, i) => <>{fmt(v)}{faturamento && <span className="ml-2 text-xs font-normal opacity-80">{formatDreMargin(dreMargin(v, faturamento?.[i]))}</span>}</>)} />
               {!dados && <LinhaRodape tom="sin" titulo="Sinistralidade Operacional" dica="Despesas Assistenciais ÷ Entradas Operacionais" valores={sinOpColunas.map(formatarSinistralidadePainel)} />}
