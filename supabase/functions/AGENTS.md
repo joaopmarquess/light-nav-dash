@@ -1,0 +1,1 @@
+- Update notices go by e-mail only through the avisar-atualizacao function (Configurações permission, OK users, fixed axis-atualizacao template, per-notice idempotency) so the browser never chooses recipients or templates.
